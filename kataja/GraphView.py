@@ -1,0 +1,162 @@
+#############################################################################
+#
+# *** Kataja - Biolinguistic Visualization tool ***
+#
+# Copyright 2013 Jukka Purma
+#
+# This file is part of Kataja.
+#
+# Kataja is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Kataja is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
+#
+#############################################################################
+
+import math
+
+import PyQt5.QtCore as QtCore
+import PyQt5.QtGui as QtGui
+import PyQt5.QtWidgets as QtWidgets
+from PyQt5.QtCore import Qt
+
+
+class GraphView(QtWidgets.QGraphicsView):
+    """ GraphView holds both the viewport into the graph and the QGraphicsScene-object,
+    that holds the actual index of graphical objects to be displayed.
+    In this case nodes, edges and graphical elements.
+
+    UI-elements are kept in separate scene and separate view.
+    """
+
+    saved_fields = ['_scale_factor', '_target_rect']
+    singleton_key = 'GraphView'
+
+    def __init__(self, main=None, graph_view=None, graph_scene=None):
+        QtWidgets.QGraphicsView.__init__(self)
+        self.main = main
+        self.graph_scene = graph_scene
+        self.setScene(graph_scene)
+        self.setCacheMode(QtWidgets.QGraphicsView.CacheBackground)
+        self.setRenderHint(QtGui.QPainter.Antialiasing)
+        # self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
+        # self.setResizeAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
+        # self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorViewCenter)
+        # self.setResizeAnchor(QtWidgets.QGraphicsView.AnchorViewCenter)
+        self.setTransformationAnchor(QtWidgets.QGraphicsView.NoAnchor)
+        self.setResizeAnchor(QtWidgets.QGraphicsView.NoAnchor)
+
+        # if ctrl.move_tool:
+        self.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
+        # elif ctrl.selection_tool:
+        #    self.setDragMode(QtGui.QGraphicsView.RubberBandDrag)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        # self.setViewportUpdateMode(QtWidgets.QGraphicsView.BoundingRectViewportUpdate)
+        self.setViewportUpdateMode(QtWidgets.QGraphicsView.FullViewportUpdate)
+        #self.setViewportUpdateMode(QtWidgets.QGraphicsView.NoViewportUpdate)
+        self.setMouseTracking(True)
+        # self.setTransformationAnchor(QtWidgets.QGraphicsView.NoAnchor)
+        self._scale_factor = 1.0
+        self._target_rect = QtCore.QRectF(-300, -300, 300, 300)
+
+
+    # def drawBackground(self, painter, rect):
+    #    painter.fillRect(rect, colors.paper)
+    def instant_fit_to_view(self, _target_rect):
+        self.setSceneRect(_target_rect)
+        self.target_scale = min((self.width() / _target_rect.width(), self.height() / _target_rect.height()))
+        self.resetTransform()
+        # self.resetMatrix()
+        self.scale(self.target_scale, self.target_scale)
+        self.main.ui_manager.update_positions()
+
+    def scale_view_by(self, delta):
+        if delta < 1.0 and self._scale_factor == 0.3:
+            return self._scale_factor
+        elif delta > 1.0 and self._scale_factor == 9.0:
+            return self._scale_factor
+        factor = self.transform().scale(delta, delta).m11()
+        if factor < 0.3:
+            factor = 0.3
+        elif factor > 9.0:
+            factor = 9.0
+        self.resetTransform()
+        self.scale(factor, factor)
+        self.main.ui_manager.update_positions()
+        return factor
+
+    ### WINDOW ###
+
+    def resizeEvent(self, event):
+        QtWidgets.QGraphicsView.resizeEvent(self, event)
+        if hasattr(self.main, 'ui_manager'):
+            self.main.ui_manager.update_positions()
+
+    ########## MOUSE ##############
+
+    def mouseReleaseEvent(self, event):
+        QtWidgets.QGraphicsView.mouseReleaseEvent(self, event)
+
+    def mouseMoveEvent(self, event):
+        QtWidgets.QGraphicsView.mouseMoveEvent(self, event)
+
+
+    def wheelEvent(self, event):
+        view_center = self.mapToScene(self.rect().center())
+        pointer_pos = event.pos()
+        delta = math.pow(2.0, -event.angleDelta().y() / 360.0)
+        self._scale_factor = self.scale_view_by(delta)
+        if delta >= 1.0:
+            change = (pointer_pos - view_center) * (delta - 1)
+            self.centerOn(view_center + change)  # + change) # - (old_pos * (1-delta)))
+        else:
+            self.centerOn(view_center)
+        self.graph_scene._manual_zoom = True
+        # QtWidgets.QGraphicsView.wheelEvent(self, event)
+
+
+    #     def event(self, ev):
+    #         if ev.type() == QtCore.QEvent.Gesture:
+    #             print ev, ev.type()
+    #         elif ev.type() == QtCore.QEvent.Wheel:
+    #             print 'wheel!'
+    #             print ev.pixelDelta().y()
+    #             wel = QtGui.QWheelEvent(ev) #.QWheelEvent(ev)
+    #             print wel.angleDelta().y()
+    #         elif ev.type() == QtCore.QEvent.GraphicsSceneWheel:
+    #             print 'gs wheel!'
+    #
+    #         return QtWidgets.QGraphicsView.event(self, ev)
+
+    def leaveEvent(self, event):
+        # ctrl.scene.kill_dragging()
+        QtWidgets.QGraphicsView.leaveEvent(self, event)
+
+    def enterEvent(self, event):
+        # ctrl.scene.kill_dragging()
+        QtWidgets.QGraphicsView.enterEvent(self, event)
+
+    def dragEnterEvent(self, event):
+        QtWidgets.QGraphicsView.dragEnterEvent(self, event)
+
+    def dragLeaveEvent(self, event):
+        QtWidgets.QGraphicsView.dragLeaveEvent(self, event)
+
+    def dropEvent(self, event):
+        QtWidgets.QGraphicsView.dropEvent(self, event)
+
+    def dragMoveEvent(self, event):
+        QtWidgets.QGraphicsView.dragMoveEvent(self, event)
+
+
+        # def mousePressEvent(self, event):
+        #    QtGui.QGraphicsView.mousePressEvent(self, event)

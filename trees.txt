@@ -1,0 +1,65 @@
+
+#%demo/kielitiede_valkotaulu.jpg
+#%demo/examples.png
+#%demo/hemoglobin.png
+#%demo/goals.png
+#%demo/nodes.png
+#%demo/nodeforms.png
+#%demo/features.png
+
+#Siviä oli jo todella jättänyt Lahdenperän, joka vasta tavallisen kursastelun ja säädyllisen estelemisen jälkeen viimeinkin oli suostunut ottamaan toisenkin palasen sokeria astiasta, pistämättä sitä kuitenkaan kokonaisena kahvinsa sekaan, vaan puraisemalla siitä puolikkaan ja pistämällä sen takaisin astiaan. 
+
+#[.{EvidP} Part-Evid [.{EvidP} [.{NegP} Part-Neg [.{NegP_j} [.{vP_i} Args-Verb ] [.{Neg} Neg0 t_i ]]]] [.{Evid} Evid0 t_j ]]]
+
+[.{EvidP} Part-Evid [.{EvidP} [.{NegP_j} Part-Neg [.{NegP} [.{vP_i} Args Verb] [.{Neg} Neg^0 t_i]]] [.{Evid} Evid^0 t_j]]]
+
+#[.{EvidP} Part-Evid [.{EvidP} [.{NegP} Part-Neg [.{NegP_j} [.{vP_i} Args-Verb [.{Neg} Neg0 t_i ]]]] [.{Evid} Evid0 t_j ]]]
+
+#[.{EvidP} Part_{Evid} [.{EvidP} [.{NegP} Part_{Neg} [.{NegP_j} [.{vP_i} Args-Verb [.{Neg} Neg^0 t_i ]]]] [.{Evid} Evid^0 t_j ]]]
+
+
+[.{AspP} [.{Asp} Ininom] [.{vP} [.{KP} [.{K} ng] [.{DP} [.{D´} [.{D} {} ] [.{NP} lola ]] [.{KP} [.{K} ng] [.{DP} [.{D´} [.{D} {} ] [.{NP} alila] ] [.{KP} {ni Maria} ]]]]] [.{v´} [.{v} {} ] [.{VP} [.{V} {} ] [.{KP} {ang tubig}]]]]]
+Ininom = 'drank'
+ng = 'NG'
+ng = 'NG'
+lola = 'grandma'
+alila = 'servant'
+ni Maria = 'NG Maria'
+ang tubig = 'ANG water'
+'Maria's grandmother's servant drank the water'
+
+[.{CP} [.{YP_k} [.{XP_j} [.{whP_i} kenen nimmaria ] [ ilman t_i ] ]  [ jäätyään t_j ] ] [.{CP} [.{C} {} ] [.{TP} {Merja palasi suruissaan kotiin} t_k ] ] ]
+#kenen = Q:force
+
+[.{FP} t_i [.{F'} t_j [.{TP} t_i [.{T'} t_j [.{AuxP} on_j [.{PrtP} t_k [.{VP} {Graham Greene_i} [.{V'} kirjoittanut_k [.{DP} tämän kirjan ] ] ] ] ] ] ] ] ]
+#kirjoittanut = 3rd:person, perf:tense
+
+[.{FP} {Graham Greene_i} [.{F'} on_j [.{TP} t_i [.{T'} t_j [.{AuxP} t_j [.{PrtP} kirjoittanut_k [.{VP} t_i [.{V'} t_k [.{DP} tämän kirjan ] ] ] ] ] ] ] ] ]
+
+[.{FP} {Minä_i} [.{F'} en [.{TP} t_i [.{T'} ole_j [.{AuxP} t_j [.{PrtP} kirjoittanut_k [.{VP} t_i [.{V'} t_k [.{DP} tätä kirjaa ] ] ] ] ] ] ] ] ]
+
+[j k]
+
+#[ [.{Acc_i} B [.{Nom} A [.{DP} the grass ] ] ] [ S–Acc [ … [ [.{GenP_j} C t_i ] [ S–Gen [.{vP\rightarrow\emph{load}} … [.{v´} v^0 [.{VP} V [.{PP} [.{InsP} E [.{DatP} D t_j ] ] [.{P´} P [.{NP*} the truck ] ] ] ] ] ] ] ] ] ] ]
+
+[ Odotin-1sg>acc [ ne-pl [ pitkästyttävät-acc-pl [ >nom [ kolme-nom>prt [ loputonta-prt-sg minuuttia-prt-sg ] ] ] ] ] ]
+
+[.{CP} Pekka_i [.{TP} odotti_j [.{TP} t_i [.{vP} t_j [.{DP} t_i [.{DP} ne [.{AdjP} pitkästyttävät [.{NumP} kolme [.{AdjP} loputonta minuuttia ]]]]]]]]
+Pekka = person:3rd, D
+odotti = person:3rd, v, tense:past
+ne = D, number:pl
+pitkästyttävät = adj, number:pl
+kolme = num, number:sg, case:nom
+loputonta = adj, number:sg, case:prt
+minuuttia = n, number:sg, case:prt
+
+
+[.{CP} Odotin_i [.{TP} t_i [.{DP} ne [.{AdjP} pitkästyttävät [.{NumP} kolme [.{AdjP} loputonta minuuttia ]]]]]]
+Odotin = person:1st, v, tense:past
+ne = D, number:pl
+pitkästyttävät = adj, number:pl
+kolme = num, number:sg, case:nom
+loputonta = adj, number:sg, case:prt
+minuuttia = n, number:sg, case:prt
+
+[ [ [ C D ] [ A B ]] E ]

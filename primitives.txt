@@ -1,0 +1,21 @@
+# Features and other innate thingies
+
+acc: Case
+nom: Case
+gen: Case
+prt: Case
+acc0: Case
+accN: Case
+accT: Case
+nil: NilCase
+sg: Phi
+pl: Phi
+1sg: Phi
+2sg: Phi
+3sg: Phi
+1pl: Phi
+2pl: Phi
+3pl: Phi
+past: Temp
+fut: Temp
+prees: Temp

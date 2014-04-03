@@ -1,0 +1,49 @@
+Kataja development diary
+==========================
+
+
+16.12. 2012
+For some reason mouseover's over nodes have ceased to work. Have to restore them and find a way to have mouseover effects on all layers.
+Ok, found it. UIScene ate all of the mouse move events, it had mouseMoveEvent that tried to handle drag events, but in cases when mouse was not pressed, it didn't deliver the move event anywhere.
+Now let's fix hovering behaviour for other elements too. Cursor changing seems to work again, it should be crosshair when over control points.
+I need to establish some conventions. When objects receive left mouse click and it is certain that they are the correct recipient, they receive method call 'click'. When they are dragged and it is verified that they really should be dragged, they receive 'drag'. They also have features 'clickable' and 'draggable' to verify these.  
+25.12 2012
+Fixed properly problem with invisible edges when starting or changing visualizations.
+Removed edges_are_visible -preference. Unnecessary complication and we have other ways to make them less prominent.
+Next thing to do is to have a stable way to display features. First I need to recall what is there already in FeatureLeaf.
+26.12 2012
+Worked on cleaning presentation of features. Noticed that I should have computed position and adjusted position for each element.
+	computed_pos
+	adjustment
+	adjusted_pos 
+30.12 Put aside that positioning thing, found out that I need a better way to add features for structures. For each word, you should be able to use following syntax to add features:
+[Pekka [ ajaa kotiin ] ]
+Pekka: +n +sg:phi nom:case
+Since we now build the tree [Pekka [ ajaa kotiin ]] first and then start to add features, the situation is similar as with editing existing structures, so the same method should be used in both cases. 
+Features should have three dimensions:
+marker (+-=>)
+key (sg, pl, nom, acc,...)
+type (case, phi, number,...)
+[marker]key:type
+8.1. 2013 After long thinking about what to do with features and other elements that need to be visualized I've come up with using only one feature type, which has a list of optional keywords and name (key). All of the feature keywords have distinct graphical nodes. This way we can use one dynamic graph algorithm to put all nodes and features in place, without overlapping visual elements.
+Now there should be a more powerful base class for all of these graphical nodes. I still think that the actions should go one direction: graphical node --> logical node . This is problematic in cases where changing a logical node affects other logical nodes around it, it should either be avoided or it should announce somehow that these other logical nodes need to be updated.
+
+22.1. 2013 Got rid of Leafs, Branches etc. tree-based naming paradigm and changed to graph theory terms: ConstituentNodes, Relations and FeatureNodes. Also made FeatureNodes, ConstituentNodes and Trees all to use the same base class. One last thing is to get rid of Trees as unnecessary layer of abstraction. Big changes, Node is one powerful class now.
+
+
+
+16.4. 2013 Labels are causing problems. I need to make some conceptual differentation of things that are related to labels but need separate treatment.
+- renamed syntactic object's 'id' to the syntactic object's 'label'. This is what grammar recognizes as label. Chomsky's 'label selects and label is selected' 
+- Label_complex is the visual aspect of label+index+gloss+featurestring. It is built by constituentnode and sent as a html string to label_complex. Label_complex is about making a graphical element out of that and having its measures (boundingRect) available and cached.
+- Index_item is alternative graphic item that only displays index. Index_item doesn't reserve space, it just floats there. Index_item should never be used together with label_complex, index is part of that string.
+- update_label_visibility should decide if to use label_complex or index_item, and hide and flag them accordingly. 
+- the actual label-part of labelstring can be replaced with cosmetic_label. This can be raw html. Later maybe some latex mungling, or pasted image. Cosmetic label has no effect to actual constituent.
+- there should be editable fields for following:
+	Label
+	Alias
+	Index
+	Gloss
+	Features
+
+
+

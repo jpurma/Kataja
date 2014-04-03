@@ -1,0 +1,25 @@
+
+# Testing lexicon
+
+theth
+=n
+=v
++edge del
+
+guy
++n
++edge del
+
+drank
++v
+-n
++edge del
+
+wine
++n
++edge del
+
+shy
++a
+=n
++edge del
