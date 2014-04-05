@@ -24,6 +24,7 @@
 
 import random
 import json
+from collections import OrderedDict
 
 from PyQt5.QtGui import QColor as c
 import PyQt5.QtCore as QtCore
@@ -79,6 +80,181 @@ def in_range(h, s, v):
         print 'v: ', v
         raise
 
+class ColorManager:
+    """ Selects, creates and gives access to various Palettes """
+
+    def __init__(self):
+        self.active_palette = None
+        self.palettes = []
+
+
+    def get_color_name(self, hsv):
+        cc = c()
+        cc.setHsvF(hsv[0], hsv[1], hsv[2])
+        r, g, b, a = cc.getRgb()
+        d_min = 100000
+        best = 'white'
+        for key, color in color_map.items():
+            o_rgb = color['rgb']
+            d = (r - o_rgb[0]) * (r - o_rgb[0]) + (g - o_rgb[1]) * (g - o_rgb[1]) + (b - o_rgb[2]) * (b - o_rgb[2])
+            if d < d_min:
+                d_min = d
+                best = key
+        return color_map[best]['name']
+
+    def _prepare_root_color(self, prefs, settings, refresh=False, adjusting=False):
+        """ Prepare root color (self.hsv), depending on what kind of color settings are active """
+        pal = settings.my_palettes()
+        if adjusting:
+            print 'adjusting...'
+            self.hsv = settings.hsv()
+            pal[prefs.color_mode] = self.hsv
+            return
+
+        if prefs.color_mode == 'random':
+            value_low_limit = int(0.38 * 255)
+            value_high_limit = int(0.7 * 255)
+            if refresh or 'random' not in settings.my_palettes():
+                h = random.random()
+                s = random.random()  # *0.2+0.8
+                v = random.randint(value_low_limit, value_high_limit) / 255.0  # *0.2+0.8
+                self.hsv = h, s, v
+                pal['random'] = h, s, v
+            else:
+                self.hsv = pal['random']
+        elif prefs.color_mode == 'random-light':
+            value_low_limit = int(0.12 * 255)
+            value_high_limit = int(0.5 * 255)
+            if refresh or 'random-light' not in pal:
+                h = random.random()
+                s = random.random()  # *0.2+0.8
+                v = random.randint(value_low_limit, value_high_limit) / 255.0  # *0.2+0.8
+                self.hsv = h, s, v
+                pal['random-light'] = h, s, v
+            else:
+                self.hsv = pal['random-light']
+
+
+        elif prefs.color_mode == 'random-dark':
+            value_low_limit = int(0.6 * 255)
+            value_high_limit = int(0.8 * 255)
+            if refresh or 'random-dark' not in pal:
+                h = random.random()
+                s = random.random()  # *0.2+0.8
+                v = random.randint(value_low_limit, value_high_limit) / 255.0  # *0.2+0.8
+                self.hsv = h, s, v
+                pal = h, s, v
+            else:
+                self.hsv = pal['random-dark']
+
+        elif prefs.color_mode in prefs.color_modes:  # fixed colors and custom colors
+            if refresh or prefs.color_mode not in prefs.shared_palettes:
+                self.hsv = prefs.color_modes[prefs.color_mode]['hsv']
+                prefs.shared_palettes[prefs.color_mode] = self.hsv
+            else:
+                self.hsv = prefs.shared_palettes[prefs.color_mode]
+        settings.hsv(self.hsv)
+
+
+class Palette:
+    """ Kataja palette with keys for default names and
+    possibility to expand with custom colors. Includes methods for creating new palettes.
+
+    ForestSettings or single elements map their color definitions to keys in palette.
+
+    When a palette is saved, its QColors are turned to HSV+A tuples. 
+     """
+
+    def __init__(self, hsv_key = None):
+        if not hsv_key:
+            hsv_key = (0.00, 0.29, 0.35) # dark rose
+        self.hsv = hsv_key
+        self.d = OrderedDict()
+        self.compute_palette(hsv_key)
+
+    def get(self, key):
+        return self.d[key]
+
+    def compute_palette(self, hsv) :
+        """ Create/get root color and build palette around it """
+        self.hsv = hsv
+        h, s, v = hsv
+        # # This is the base color ##
+        key = c()
+        # in_range(h, s, v)
+        key.setHsvF(h, s, v)
+        light_bg = v < 0.5 or (s > 0.7 and 0.62 < h < 0.95)
+        self.d['key'] = key
+        key05 = c(key)
+        key05.setAlphaF(0.5)
+        self.d['key 0.5'] = key05
+        key07 = c(key)
+        key07.setAlphaF(0.7)
+        self.d['key 0.7'] = key07
+
+        analog1 = c()
+        h1, s1, v1 = colorize(rotating_add(h, -0.1), s, v)
+        # in_range(h1, s1, v1)
+        analog1.setHsvF(h1, s1, v1)
+        self.d['analog1'] = analog1
+
+        analog2 = c()
+        h2, s2, v2 = colorize(rotating_add(h, 0.1), s, v)
+        # in_range(h2, s2, v2)
+        analog2.setHsvF(h2, s2, v2)
+        self.d['analog2'] = analog2
+
+        paper = c()
+        hp = h  # -0.1
+        sp = s / 4
+        vp = (1 - v)
+        if light_bg and vp < 0.6:
+            vp += 0.3
+        if abs(v - vp) <= 0.35:
+            if light_bg:
+                vp = limited_add(vp, 0.35)
+            else:
+                vp = limited_add(vp, -0.35)
+        # in_range(hp, sp, vp)
+        paper.setHsvF(hp, sp, vp)
+        self.d['paper'] = paper
+        paper08 = c(paper)
+        paper08.setAlphaF(0.8)
+        self.d['paper 0.8'] = paper08
+        self.d['paper lighter'] = paper.lighter()
+
+        complement = c()
+        hc = rotating_add(h, -0.5)
+        sv = s
+        if sv < 0.5:
+            sv += 0.2
+        # in_range(hc, sv, v)
+        complement.setHsvF(hc, sv, v)
+        self.d['complement'] = complement
+        complement05 = c(complement)
+        complement05.setAlphaF(0.5)
+        self.d['complement 0.5'] = complement05
+        complement07 = c(complement)
+        complement07.setAlphaF(0.7)
+        self.d['complement 0.7'] = complement07
+
+        secondary = c()
+        secondary.setHsvF(abs(h - 0.2), s / 2, limited_add(v, 0.2))
+        self.d['secondary'] = secondary
+        self.d['white'] = c(255, 255, 255)
+        self.d['black'] = c(0,0,0)
+
+        ### Set of marker colors available for features ###
+        if s < 0.5:
+            ps = s + 0.4
+        else:
+            ps = s
+        if v < 0.5:
+            pv = v + 0.4
+        else:
+            pv = v
+        for i in range(0,10):
+            self.d['shade_%s' % (i+1)] = c().fromHsvF(i / 10.0, ps, pv) 
 
 class QtColors:
     """ Settings that store Qt object types. These are derived from ForestSettings """

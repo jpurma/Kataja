@@ -24,7 +24,7 @@
 import random
 
 from kataja.Controller import qt_prefs, colors
-from kataja.globals import FEATURE_EDGE
+from kataja.globals import FEATURE_EDGE, FEATURE_NODE
 from kataja.Node import Node
 
 
@@ -37,6 +37,7 @@ class FeatureNode(Node):
     default_edge_type = FEATURE_EDGE
     saved_fields = ['label_font', 'color']
     saved_fields = list(set(Node.saved_fields + saved_fields))
+    node_type = FEATURE_NODE
 
 
     def __init__(self, feature=None, forest=None, restoring=False):

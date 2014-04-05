@@ -386,12 +386,6 @@ SHAPE_PRESETS = OrderedDict(
 
 # ('shaped_relative_linear',{'method':shapedRelativeLinearPath,'fill':True,'pen':'thin'}),
 
-EDGE_PRESETS = {CONSTITUENT_EDGE: {'shape': 'shaped_relative_cubic', 'pull': .24, 'visible': True},
-                FEATURE_EDGE: {'shape': 'relative_cubic', 'pull': .32, 'visible': True},
-                GLOSS_EDGE: {'shape': 'relative_cubic', 'pull': .40, 'visible': True},
-                ATTRIBUTE_EDGE: {'shape': 'linear', 'pull': .40, 'visible': True},
-
-}
 
 
 class Edge(QtWidgets.QGraphicsItem):
@@ -435,9 +429,9 @@ class Edge(QtWidgets.QGraphicsItem):
 
         ### Adjustable values, defaults to ForestSettings if None for this element
         self._color = None
-        self._uses_pen = None
+        self._has_outline = None
         self._pen = None
-        self._uses_brush = None
+        self._is_filled = None
         self._brush = None
         self._shape_name = None
         self._pull = None
@@ -487,7 +481,7 @@ class Edge(QtWidgets.QGraphicsItem):
     def color(self, value = None):
         if value is None:
             if self._color is None:
-                return self.forest.settings.edge_color(self.edge_type)
+                return self.forest.settings.edge_settings(self.edge_type, 'color')
             else:
                 return self._color
         else:
@@ -506,57 +500,39 @@ class Edge(QtWidgets.QGraphicsItem):
 
     #### Pen & Brush ###############################################################
 
-    def uses_pen(self, value = None):
+    def has_outline(self, value = None):
         if value is None:
-            if self._uses_pen == None:
-                return self.forest.settings.edge_uses_pen(self.edge_type)
+            if self._has_outline == None:
+                return self.forest.settings.edge_settings(self.edge_type, 'has_outline')
             else:
-                return self._uses_pen
+                return self._has_outline
         else:
-            self._uses_pen = value
-
-    def pen(self, value = None):
-        if value is None:
-            if self._pen == None:
-                return self.forest.settings.edge_pen(self.edge_type)
-            else:
-                return self._pen
-        else:
-            self._pen = value
+            self._has_outline = value
 
     def pen_width(self, value = None):
         if value is None:
             if self._pen_width == None:
-                return self.forest.settings.edge_pen_width(self.edge_type)
+                return self.forest.settings.edge_settings(self.edge_type, 'pen_width')
             else:
                 return self._pen_width
         else:
             self._pen_width = value
 
-    def uses_brush(self, value = None):
+    def is_filled(self, value = None):
         if value is None:
-            if self._uses_brush is None:
-                return self.forest.settings.edge_uses_brush(self.edge_type)
+            if self._is_filled is None:
+                return self.forest.settings.edge_settings(self.edge_type, 'is_filled')
             else:
-                return self._uses_brush
+                return self._is_filled
         else:
-            self._uses_brush = value
-
-    def brush(self, value = None):
-        if value is None:
-            if self._brush == None:
-                return self.forest.settings.edge_brush(self.edge_type)
-            else:
-                return self._brush
-        else:
-            self._brush = value
+            self._is_filled = value
 
     #### Shape / pull / visibility ###############################################################
 
     def shape_name(self, value = None):
         if value is None:
             if self._shape_name is None:
-                return self.forest.settings.edge_shape_name(self.edge_type)
+                return self.forest.settings.edge_settings(self.edge_type, 'shape_name')
             else:
                 return self._shape_name
         else:
@@ -564,18 +540,16 @@ class Edge(QtWidgets.QGraphicsItem):
             self._shape_method = SHAPE_PRESETS[value]['method'] 
 
     def shape_method(self):
-        name = self.get_shape_name()
-        return SHAPE_PRESETS[name]['method'] 
+        return SHAPE_PRESETS[self.shape_name()]['method'] 
 
     def shape_control_point_support(self):
-        name = self.get_shape_name()
-        return SHAPE_PRESETS[name]['control_points'] 
+        return SHAPE_PRESETS[self.shape_name()]['control_points'] 
 
 
     def pull(self, value = None):
         if value is None:
             if self._pull is None:
-                return self.forest.settings.edge_pull(self.edge_type)
+                return self.forest.settings.edge_settings(self.edge_type, 'pull')
             else:
                 return self._pull
         else:
@@ -584,9 +558,9 @@ class Edge(QtWidgets.QGraphicsItem):
     def shape_visibility(self, value = None):
         if value is None:
             if self._shape_visible == None:
-                return self.forest.settings.edge_visibility(self.edge_type)
+                return self.forest.settings.edge_settings(self.edge_type, 'visible')
             else:
-                return self._visible
+                return self._shape_visible
         else:
             self._shape_visible = value
 
@@ -710,13 +684,13 @@ class Edge(QtWidgets.QGraphicsItem):
         if not self.start or not self.end:
             return
         c = self.contextual_color()
-        if self.uses_pen():
+        if self.has_outline():
             p = self.pen()
             p.setColor(c)
             p.setWidth(self.pen_width())
             painter.setPen(p)
             painter.drawPath(self._path)
-        if self.uses_brush():
+        if self.is_filled():
             painter.fillPath(self._path, c)
 
     def adjusted_control_point_list(self):

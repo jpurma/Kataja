@@ -26,6 +26,7 @@ import os
 import time
 from collections import OrderedDict
 from PyQt5 import QtGui, QtCore
+from kataja.globals import *
 
 fonts = {'font': ('Palatino', 'Normal', 12), 'big_font': ('Palatino', 'Normal', 24),
          'menu_font': ('Monaco', 'Normal', 10), 'ui_font': ('Helvetica', 'Normal', 10),
@@ -124,6 +125,83 @@ class Preferences(object):
         self.print_file_path = self.app_path
         self.print_file_name = 'kataja_print'
         self.include_gloss_to_print = True
+
+        ### Default edge settings 
+
+        self.edge_types = {
+            CONSTITUENT_EDGE: {
+                'shape_name': 'shaped_relative_cubic', 
+                'pull': .24, 
+                'visible': True,
+                'has_outline': True,
+                'pen_width': 1,
+                'is_filled': True
+                },
+            FEATURE_EDGE: {
+                'shape_name': 'relative_cubic', 
+                'pull': .32, 
+                'visible': True,
+                'has_outline': True,
+                'pen_width': 1,
+                'is_filled': True
+                },
+            GLOSS_EDGE: {
+                'shape_name': 'relative_cubic', 
+                'pull': .40, 
+                'visible': True,
+                'has_outline': True,
+                'pen_width': 1,
+                'is_filled': False
+                },
+            ARROW: {
+                'shape_name': 'arrow', 
+                'pull': 0, 
+                'visible': True,
+                'has_outline': True,
+                'pen_width': 1,
+                'is_filled': True
+                },
+            PROPERTY_EDGE: {
+                'shape_name': 'linear', 
+                'pull': .40, 
+                'visible': True,
+                'has_outline': True,
+                'pen_width': 1,
+                'is_filled': False
+                },
+            ABSTRACT_EDGE: {
+                'shape_name': 'linear', 
+                'pull': .40, 
+                'visible': True,
+                'has_outline': True,
+                'pen_width': 1,
+                'is_filled': False
+                },
+            ATTRIBUTE_EDGE: {
+                'shape_name': 'linear', 
+                'pull': .40, 
+                'visible': True,
+                'has_outline': True,
+                'pen_width': 1,
+                'is_filled': False
+                },
+
+        }
+
+
+        ### Default node settings
+        # ABSTRACT_NODE = 0
+        # CONSTITUENT_NODE = 1
+        # FEATURE_NODE = 2
+        # ATTRIBUTE_NODE = 3
+
+        self.node_color = {
+            ABSTRACT_NODE : 'key',
+            CONSTITUENT_NODE : 'key',
+            FEATURE_NODE: 'analog1',
+            ATTRIBUTE_NODE: 'analog2',
+        }
+
 
     def solve_app_path(self):
         full_path = os.path.abspath(os.path.dirname(__file__))

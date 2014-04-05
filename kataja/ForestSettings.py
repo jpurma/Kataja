@@ -22,8 +22,7 @@
 #
 #############################################################################
 
-from kataja.globals import CONSTITUENT_EDGE, FEATURE_EDGE, GLOSS_EDGE, ATTRIBUTE_EDGE
-
+from kataja.globals import *
 
 ONLY_LEAF_LABELS = 0
 ALL_LABELS = 1
@@ -54,16 +53,20 @@ class ForestSettings:
         self._hsv = None
         self._bracket_style = None
         ### Edges - take edge type as argument ###########################
-        self._edge_color = None
-        self._edge_uses_pen = None
-        self._edge_pen = None
-        self._edge_uses_brush = None
-        self._edge_brush = None
-        self._edge_shape_name = None
-        self._edge_pull = None
-        self._edge_visibility = None
+        self._edge_types = {
+            CONSTITUENT_EDGE: {},
+            FEATURE_EDGE: {},
+            GLOSS_EDGE: {},
+            ARROW: {},
+            PROPERTY_EDGE: {},
+            ABSTRACT_EDGE: {},
+            ATTRIBUTE_EDGE: {}
+        }
         ### Nodes - take node type as argument ########################### 
         self._node_color = None
+
+    def after_restore(self, values={}):
+        return
 
 
     def label_style(self, value = None):
@@ -168,105 +171,46 @@ class ForestSettings:
 
     ### Edges - all require edge type as argument, value is stored in dict ###########
 
-    def edge_color(self, edge_type, value = None):
+    def edge_settings(self, edge_type, key, value = None):
+        """ Getter/setter for settings related to various types of edges. 
+        If not found here, value is searched from preferences. 
+        If called with value, the value is set here and it overrides 
+        the preference setting.
+        """
+        e = self._edge_types[edge_type]
         if value is None:
-            if self._edge_color.get(edge_type) is None:
-                return self.prefs.default_edge_color(edge_type)
+            if e is None or e.get(key) is None: 
+                return self.prefs.edges[edge_type][key]
             else:
-                return self._edge_color.get(edge_type)
+                return e[key]
         else:
-            if self._edge_color is None:
-                self._edge_color= {edge_type : value}
+            if e is None:
+                self._edge_types[edge_type] = {key : value}
             else:
-                self._edge_color[edge_type] = value
+                e[key] = value
 
-    def edge_uses_pen(self, edge_type, value = None):
+
+    ### Nodes - all require edge type as argument, value is stored in dict ###########
+
+    #ABSTRACT_NODE = 0
+    #CONSTITUENT_NODE = 1
+    #FEATURE_NODE = 2
+    #ATTRIBUTE_NODE = 3
+
+    def node_color(self, node_type, value = None):
         if value is None:
-            if self._edge_uses_pen.get(edge_type) is None:
-                return self.prefs.default_edge_uses_pen(edge_type)
+            if self._node_color is None or self._node_color.get(node_type) is None:
+                return self.prefs.node_color[node_type]
             else:
-                return self._edge_uses_pen.get(edge_type)
+                return self._node_color.get(node_type)
         else:
-            if self._edge_uses_pen is None:
-                self._edge_uses_pen= {edge_type : value}
+            if self._node_color is None:
+                self._node_color = {node_type : value}
             else:
-                self._edge_uses_pen[edge_type] = value
-
-    def edge_pen(self, edge_type, value = None):
-        if value is None:
-            if self._edge_pen.get(edge_type) is None:
-                return self.prefs.default_edge_pen(edge_type)
-            else:
-                return self._edge_pen.get(edge_type)
-        else:
-            if self._edge_pen is None:
-                self._edge_pen= {edge_type : value}
-            else:
-                self._edge_pen[edge_type] = value
-
-    def edge_uses_brush(self, edge_type, value = None):
-        if value is None:
-            if self._edge_uses_brush.get(edge_type) is None:
-                return self.prefs.default_edge_uses_brush(edge_type)
-            else:
-                return self._edge_uses_brush.get(edge_type)
-        else:
-            if self._edge_uses_brush is None:
-                self._edge_uses_brush = {edge_type : value}
-            else:
-                self._edge_uses_brush[edge_type] = value
-
-    def edge_brush(self, edge_type, value = None):
-        if value is None:
-            if self._edge_brush.get(edge_type) is None:
-                return self.prefs.default_edge_brush(edge_type)
-            else:
-                return self._edge_brush.get(edge_type)
-        else:
-            if self._edge_brush is None:
-                self._edge_brush= {edge_type : value}
-            else:
-                self._edge_brush[edge_type] = value
-
-    def edge_shape_name(self, edge_type, value = None):
-        if value is None:
-            if self._edge_shape_name.get(edge_type) is None:
-                return self.prefs.default_edge_shape_name(edge_type)
-            else:
-                return self._edge_shape_name.get(edge_type)
-        else:
-            if self._edge_shape_name is None:
-                self._edge_shape_name= {edge_type : value}
-            else:
-                self._edge_shape_name[edge_type] = value
-
-    def edge_pull(self, edge_type, value = None):
-        if value is None:
-            if self._edge_pull.get(edge_type) is None:
-                return self.prefs.default_edge_pull(edge_type)
-            else:
-                return self._edge_pull.get(edge_type)
-        else:
-            if self._edge_pull is None:
-                self._edge_pull = {edge_type : value}
-            else:
-                self._edge_pull[edge_type] = value
-
-    def edge_visibility(self, edge_type, value = None):
-        if value is None:
-            if self._edge_visibility.get(edge_type) is None:
-                return self.prefs.default_edge_visibility(edge_type)
-            else:
-                return self._edge_visibility.get(edge_type)
-        else:
-            if self._edge_visibility is None:
-                self._edge_visibility = {edge_type : value}
-            else:
-                self._edge_visibility[edge_type] = value
+                self._node_color[node_type] = value
 
 
-    def after_restore(self, values={}):
-        return
+
 
 class ForestRules:
     saved_fields = 'all'

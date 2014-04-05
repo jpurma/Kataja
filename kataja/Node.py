@@ -24,12 +24,12 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from PyQt5.QtCore import Qt
-from kataja.Controller import ctrl, prefs, qt_prefs, colors
+from kataja.Controller import ctrl, prefs, qt_prefs, colors, palette
 from kataja.Label import Label
 from kataja.Movable import Movable
 from kataja.TouchArea import TouchArea
 from kataja.utils import to_tuple, time_me
-from kataja.globals import GENERIC_NODE_EDGE
+from kataja.globals import ABSTRACT_EDGE, ABSTRACT_NODE
 
 
 
@@ -45,9 +45,10 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     """ Basic class for syntactic elements that have graphic representation """
     width = 20
     height = 20
-    default_edge_type = GENERIC_NODE_EDGE
+    default_edge_type = ABSTRACT_EDGE
     saved_fields = ['level', 'syntactic_object', 'edges_up', 'edges_down', 'folded_away', 'folding_towards', 'index']
     saved_fields = list(set(Movable.saved_fields + saved_fields))
+    node_type = ABSTRACT_NODE
 
     def __init__(self, syntactic_object=None, restoring='', forest=None):
         """ Node is an abstract class that shouldn't be used by itself, though
@@ -247,9 +248,9 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     def color(self, value = None):
         if value is None:
             if self._color == None:
-                return self.forest.settings.get_node_color()
+                return palette.get(self.forest.settings.node_color(self.__class__.node_type))
             else:
-                return self._color
+                return palette.get(self._color)
         else:
             self._color = value
             if self._label_complex:
@@ -259,13 +260,13 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     def contextual_color(self):
         """ Drawing color that is sensitive to node's state """
         if ctrl.pressed == self:
-            return colors.active(self.get_color())
+            return colors.active(self.color())
         elif self._hovering:
-            return colors.hovering(self.get_color())
+            return colors.hovering(self.color())
         elif ctrl.is_selected(self):
-            return colors.selected(self.get_color())
+            return colors.selected(self.color())
         else:
-            return self.get_color()
+            return self.color()
 
     #### Labels and identity ###############################################################
 

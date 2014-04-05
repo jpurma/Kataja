@@ -26,7 +26,7 @@
 
 import sys
 
-from kataja.ColorSettings import QtColors
+from kataja.ColorSettings import QtColors, Palette
 from kataja.ForestSettings import ForestSettings
 from kataja.Preferences import Preferences, QtPreferences
 from kataja.utils import caller
@@ -40,6 +40,7 @@ prefs = Preferences()
 qt_prefs = QtPreferences()
 forest_settings = ForestSettings(None, prefs)
 colors = QtColors(prefs, forest_settings)
+palette = Palette()
 
 # gc.set_debug(gc.DEBUG_LEAK)
 

@@ -28,7 +28,7 @@ from kataja.FeatureNode import FeatureNode
 from kataja.Node import Node
 from kataja.ui.RadialMenu import RadialMenu
 from kataja.utils import to_unicode, to_tuple, time_me
-from kataja.globals import CONSTITUENT_EDGE, FEATURE_EDGE, ALL_LABELS, ALIASES, ATTRIBUTE_EDGE
+from kataja.globals import CONSTITUENT_EDGE, FEATURE_EDGE, ALL_LABELS, ALIASES, ATTRIBUTE_EDGE, CONSTITUENT_NODE
 
 
 # ctrl = Controller object, gives accessa to other modules
@@ -53,6 +53,9 @@ class ConstituentNode(Node):
     default_edge_type = CONSTITUENT_EDGE
     saved_fields = ['has_visible_brackets', 'alias', 'is_trace', 'triangle', 'merge_order', 'select_order']
     saved_fields = list(set(Node.saved_fields + saved_fields))
+    node_type = CONSTITUENT_NODE
+
+
 
     # ConstituentNode position points to the _center_ of the node.
     # boundingRect should be (w/-2, h/-2, w, h)
@@ -282,7 +285,7 @@ class ConstituentNode(Node):
             Can take key, value pair to create new syntactic feature object, and then a proper feature object is created from this.
         """
         if syntactic_feature:
-            if self.forest.settings.draws_features():
+            if self.forest.settings.draw_features():
                 self.forest.create_feature_node(self, syntactic_feature)
         elif key:
             sf = self.syntactic_object.set_feature(key, value)

@@ -45,5 +45,19 @@ Now there should be a more powerful base class for all of these graphical nodes.
 	Gloss
 	Features
 
+----
+4.4 2014 Haven't been adding here for a year. I've started building UI panels, and soon hit into preferences panel. That caused me to rethink the relationship between different levels of settings. In most cases when changing appearance e.g. edges, it is targeted to whole tree. There is always a need to change appearance of a single edge (e.g. different color, to point it out). Also there are the preferences, of how you generally want your trees to look. So there are three layers of preferences/settings.
+
+The preferences/settings should work so that if the element doesn't have its own setting, then look from ForestSettings and if it doesn't have its own setting, then look from Preferences. Preferences should then be the widest set, it contains defaults for everything that the user (or developer) may want to change during the program's run. 
+
+I'm now trying to implement this, which causes a lot of boring, almost redundant code. I'm not sure yet if it is efficient enough to get often-used settings always looking through several layers, but let's see how it turns out.
+
+Oh, and also moved to GitHub. 
+
+
+
+
+
+
 
 

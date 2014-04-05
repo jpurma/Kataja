@@ -51,7 +51,7 @@ from kataja.GraphScene import GraphScene
 from kataja.GraphView import GraphView
 from kataja.Preferences import Preferences, QtPreferences
 from kataja.Presentation import TextArea
-from kataja.Edge import SHAPE_PRESETS, EDGE_PRESETS
+from kataja.Edge import SHAPE_PRESETS
 from kataja.UIManager import UIManager
 from kataja.globals import FEATURE_EDGE, CONSTITUENT_EDGE
 from kataja.ui.UIPanel import ColorWheelPanel

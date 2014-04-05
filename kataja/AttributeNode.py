@@ -25,7 +25,7 @@
 import random
 
 from kataja.Controller import qt_prefs, colors
-from kataja.globals import ATTRIBUTE_EDGE
+from kataja.globals import ATTRIBUTE_EDGE, ATTRIBUTE_NODE
 from kataja.Node import Node
 from utils import to_unicode
 
@@ -42,6 +42,7 @@ class AttributeNode(Node):
     default_edge_type = ATTRIBUTE_EDGE
     saved_fields = ['host', 'label_font', 'color']
     saved_fields = list(set(Node.saved_fields + saved_fields))
+    node_type = ATTRIBUTE_NODE
 
 
     def __init__(self, host, attribute_id, attribute_label='', show_label=False, forest=None, restoring=False):
