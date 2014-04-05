@@ -23,7 +23,7 @@
 
 from kataja.Controller import qt_prefs, colors
 from kataja.Node import Node
-from kataja.globals import GLOSS_EDGE
+from kataja.globals import GLOSS_EDGE, GLOSS_NODE
 
 color_map = {'tense': 0, 'person': 2, 'number': 4, 'case': 6, 'unknown': 3}
 
@@ -34,6 +34,7 @@ class GlossNode(Node):
     default_edge_type = GLOSS_EDGE
     saved_fields = ['host', 'label_font', 'color']
     saved_fields = list(set(Node.saved_fields + saved_fields))
+    node_type = GLOSS_NODE
 
 
     def __init__(self, host=None, restoring=False):

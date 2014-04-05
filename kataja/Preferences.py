@@ -127,10 +127,19 @@ class Preferences(object):
         self.include_gloss_to_print = True
 
         ### Default edge settings 
+        # Edge types
+        # CONSTITUENT_EDGE = 1
+        # FEATURE_EDGE = 2
+        # GLOSS_EDGE = 3
+        # ARROW = 4
+        # PROPERTY_EDGE = 5
+        # ABSTRACT_EDGE = 0
+        # ATTRIBUTE_EDGE = 6
 
-        self.edge_types = {
+        self.edges = {
             CONSTITUENT_EDGE: {
                 'shape_name': 'shaped_relative_cubic', 
+                'color': 'key',
                 'pull': .24, 
                 'visible': True,
                 'has_outline': True,
@@ -139,6 +148,7 @@ class Preferences(object):
                 },
             FEATURE_EDGE: {
                 'shape_name': 'relative_cubic', 
+                'color': 'analog1',
                 'pull': .32, 
                 'visible': True,
                 'has_outline': True,
@@ -147,6 +157,7 @@ class Preferences(object):
                 },
             GLOSS_EDGE: {
                 'shape_name': 'relative_cubic', 
+                'color': 'analog2',
                 'pull': .40, 
                 'visible': True,
                 'has_outline': True,
@@ -155,6 +166,7 @@ class Preferences(object):
                 },
             ARROW: {
                 'shape_name': 'arrow', 
+                'color': 'key',
                 'pull': 0, 
                 'visible': True,
                 'has_outline': True,
@@ -163,6 +175,7 @@ class Preferences(object):
                 },
             PROPERTY_EDGE: {
                 'shape_name': 'linear', 
+                'color': 'key',
                 'pull': .40, 
                 'visible': True,
                 'has_outline': True,
@@ -171,6 +184,7 @@ class Preferences(object):
                 },
             ABSTRACT_EDGE: {
                 'shape_name': 'linear', 
+                'color': 'key',
                 'pull': .40, 
                 'visible': True,
                 'has_outline': True,
@@ -179,6 +193,7 @@ class Preferences(object):
                 },
             ATTRIBUTE_EDGE: {
                 'shape_name': 'linear', 
+                'color': 'key',
                 'pull': .40, 
                 'visible': True,
                 'has_outline': True,
@@ -188,20 +203,48 @@ class Preferences(object):
 
         }
 
-
         ### Default node settings
+        # Node types
         # ABSTRACT_NODE = 0
         # CONSTITUENT_NODE = 1
         # FEATURE_NODE = 2
         # ATTRIBUTE_NODE = 3
+        # GLOSS_NODE = 4
+        # PROPERTY_NODE = 5
+        self.nodes = {
+            ABSTRACT_NODE : {
+                'color': 'key',
+                'font': 'main',
+                'font-size': 10
+            },
+            CONSTITUENT_NODE : {
+                'color': 'key',
+                'font': 'main',
+                'font-size': 10                
+            },
+            FEATURE_NODE: {
+                'color': 'analog1',
+                'font': 'cursive',
+                'font-size': 10
+ 
+            },
+            ATTRIBUTE_NODE: {
+                'color': 'analog2',
+                'font': 'small-caps',
+                'font-size': 10
+            },          
+            GLOSS_NODE : {
+                'color': 'analog2',
+                'font': 'cursive',
+                'font-size': 10
+            },
+            PROPERTY_NODE : {
+                'color': 'key 0.7',
+                'font': 'small-caps',
+                'font-size': 10
+            },
 
-        self.node_color = {
-            ABSTRACT_NODE : 'key',
-            CONSTITUENT_NODE : 'key',
-            FEATURE_NODE: 'analog1',
-            ATTRIBUTE_NODE: 'analog2',
         }
-
 
     def solve_app_path(self):
         full_path = os.path.abspath(os.path.dirname(__file__))

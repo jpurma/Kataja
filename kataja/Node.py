@@ -248,7 +248,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     def color(self, value = None):
         if value is None:
             if self._color == None:
-                return palette.get(self.forest.settings.node_color(self.__class__.node_type))
+                return palette.get(self.forest.settings.node_settings(self.__class__.node_type, 'color'))
             else:
                 return palette.get(self._color)
         else:

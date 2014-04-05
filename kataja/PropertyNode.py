@@ -23,7 +23,7 @@
 
 from kataja.Controller import colors, qt_prefs
 from kataja.Node import Node
-from kataja.globals import PROPERTY_EDGE
+from kataja.globals import PROPERTY_EDGE, PROPERTY_NODE
 
 # ctrl = Controller object, gives accessa to other modules
 
@@ -33,6 +33,7 @@ class PropertyNode(Node):
     default_edge_type = PROPERTY_EDGE
     saved_fields = ['label_font', 'color']
     saved_fields = list(set(Node.saved_fields + saved_fields))
+    node_type = PROPERTY_NODE
 
 
     def __init__(self, property=None, host=None):

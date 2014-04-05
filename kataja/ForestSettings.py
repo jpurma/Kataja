@@ -63,7 +63,14 @@ class ForestSettings:
             ATTRIBUTE_EDGE: {}
         }
         ### Nodes - take node type as argument ########################### 
-        self._node_color = None
+        self._node_types = {
+            ABSTRACT_NODE : {},
+            CONSTITUENT_NODE : {},
+            FEATURE_NODE: {},
+            ATTRIBUTE_NODE: {},
+            PROPERTY_NODE: {},
+            GLOSS_NODE: {}        
+        }
 
     def after_restore(self, values={}):
         return
@@ -192,25 +199,31 @@ class ForestSettings:
 
     ### Nodes - all require edge type as argument, value is stored in dict ###########
 
-    #ABSTRACT_NODE = 0
-    #CONSTITUENT_NODE = 1
-    #FEATURE_NODE = 2
-    #ATTRIBUTE_NODE = 3
+    # Node types
+    # ABSTRACT_NODE = 0
+    # CONSTITUENT_NODE = 1
+    # FEATURE_NODE = 2
+    # ATTRIBUTE_NODE = 3
+    # GLOSS_NODE = 4
+    # PROPERTY_NODE = 5
 
-    def node_color(self, node_type, value = None):
+    def node_settings(self, node_type, key, value = None):
+        """ Getter/setter for settings related to various types of nodes. 
+        If not found here, value is searched from preferences. 
+        If called with value, the value is set here and it overrides 
+        the preference setting.
+        """
+        e = self._node_types[node_type]
         if value is None:
-            if self._node_color is None or self._node_color.get(node_type) is None:
-                return self.prefs.node_color[node_type]
+            if e is None or e.get(key) is None: 
+                return self.prefs.nodes[node_type][key]
             else:
-                return self._node_color.get(node_type)
+                return e[key]
         else:
-            if self._node_color is None:
-                self._node_color = {node_type : value}
+            if e is None:
+                self._node_types[node_type] = {key : value}
             else:
-                self._node_color[node_type] = value
-
-
-
+                e[key] = value
 
 class ForestRules:
     saved_fields = 'all'
