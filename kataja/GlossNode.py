@@ -47,7 +47,7 @@ class GlossNode(Node):
         self.save_key = 'GlN%s' % host.syntactic_object.uid
         intern(self.save_key)
         self.label_font = qt_prefs.sc_font
-        self.color = colors.drawing2
+        #self.color = colors.drawing2
         if not restoring:
             self.update_identity()
             self.update_label()
@@ -55,9 +55,10 @@ class GlossNode(Node):
             self.update_visibility()
 
     def update_colors(self):
-        self.color = colors.drawing2
-        if self._label_complex:
-            self._label_complex.setDefaultTextColor(colors.drawing2)
+        pass
+        #self.color = colors.drawing2
+        #if self._label_complex:
+        #    self._label_complex.setDefaultTextColor(colors.drawing2)
 
 
     def __str__(self):

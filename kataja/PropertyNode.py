@@ -42,5 +42,5 @@ class PropertyNode(Node):
         self.save_key = 'PN%s' % id(self)
         intern(self.save_key)
         self.label_font = qt_prefs.feature_small
-        self.color = colors.text
+        #self.color = colors.text
         self.update_identity()

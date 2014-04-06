@@ -371,10 +371,10 @@ class Forest:
             self.main.graph_scene.fade_background_gradient(old_gradient_base, colors.paper)
         else:
             self.main.graph_scene.setBackgroundBrush(qt_prefs.no_brush)
-        for node in self.nodes.values():
-            node.update_colors()
-        for edge in self.edges.values():
-            edge.update_colors()
+        #for node in self.nodes.values():
+        #    node.update_colors()
+        #for edge in self.edges.values():
+        #    edge.update_colors()
         for other in self.others.values():
             other.update_colors()
         self.bracket_manager.update_colors()

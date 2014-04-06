@@ -48,10 +48,10 @@ class FeatureNode(Node):
         self.save_key = 'FN%s' % self.syntactic_object.uid
         intern(self.save_key)
         self.label_font = qt_prefs.sc_font
-        if feature.get_value() in color_map:
-            self.color = colors.feature_palette[color_map[feature.get_value()]]
-        else:
-            self.color = colors.feature
+        #if feature.get_value() in color_map:
+        #    self.color = colors.feature_palette[color_map[feature.get_value()]]
+        #else:
+        #    self.color = colors.feature
         if not restoring:
             self.update_identity()
             self.update_label()

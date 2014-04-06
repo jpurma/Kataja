@@ -26,7 +26,7 @@ from math import sin, cos, pi, acos
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QPointF as Pf, Qt
-from kataja.Controller import ctrl, prefs, colors, qt_prefs
+from kataja.Controller import ctrl, prefs, colors, qt_prefs, palette
 from kataja.utils import to_tuple
 from kataja.TouchArea import TouchArea
 from kataja.globals import CONSTITUENT_EDGE, FEATURE_EDGE, GLOSS_EDGE, ATTRIBUTE_EDGE
@@ -391,7 +391,7 @@ SHAPE_PRESETS = OrderedDict(
 class Edge(QtWidgets.QGraphicsItem):
     """ Any connection between nodes: can be represented as curves, branches or arrows """
 
-    saved_fields = ['forest', 'edge_type', 'adjust', 'start', 'end', 'color', '_path_shape', 'pull', '_visible']
+    saved_fields = ['forest', 'edge_type', 'adjust', 'start', 'end', '_color', '_shape_name', '_pull','_shape_visible', '_visible', '_has_outline', '_is_filled']
 
     def __init__(self, forest, start=None, end=None, edge_type='', direction=''):
         """
@@ -431,11 +431,12 @@ class Edge(QtWidgets.QGraphicsItem):
         self._color = None
         self._has_outline = None
         self._pen = None
+        self._pen_width = None
         self._is_filled = None
         self._brush = None
         self._shape_name = None
         self._pull = None
-        self._visible = None
+        self._shape_visible = None
 
         # self.center_point = (0, 0, 0)
 
@@ -443,6 +444,7 @@ class Edge(QtWidgets.QGraphicsItem):
         self._shape_method = None
         self._shape_supports_control_points = 0
         self._path = None
+        self._visible = None
         self.selectable = True
         self.draggable = False
         self.clickable = True
@@ -463,7 +465,7 @@ class Edge(QtWidgets.QGraphicsItem):
         return self.touch_areas.get(place, None)
 
     def is_visible(self):
-        assert (self._visible == self.isVisible())
+        #assert (self._visible == self.isVisible())
         return self._visible
 
     def add_touch_area(self, touch_area):
@@ -481,9 +483,9 @@ class Edge(QtWidgets.QGraphicsItem):
     def color(self, value = None):
         if value is None:
             if self._color is None:
-                return self.forest.settings.edge_settings(self.edge_type, 'color')
+                return palette.get(self.forest.settings.edge_settings(self.edge_type, 'color'))
             else:
-                return self._color
+                return palette.get(self._color)
         else:
             self._color = value
 
@@ -508,6 +510,9 @@ class Edge(QtWidgets.QGraphicsItem):
                 return self._has_outline
         else:
             self._has_outline = value
+
+    def pen(self):
+        return QtGui.QPen()
 
     def pen_width(self, value = None):
         if value is None:
@@ -566,6 +571,12 @@ class Edge(QtWidgets.QGraphicsItem):
 
     #### Derivative features ############################################
 
+    def make_path(self):
+        if not self._shape_method:
+            self._shape_method = SHAPE_PRESETS[self.shape_name()]['method']
+        self._path = self._shape_method(self)
+
+
     def is_structural(self):
         return self.edge_type == self.start.default_edge_type
 
@@ -574,7 +585,7 @@ class Edge(QtWidgets.QGraphicsItem):
         x, y = points
         z = self.adjust[index][2]
         self.adjust[index] = (x, y, z)
-        self._path = self._path_method(self)
+        self.make_path()
         self.update()
 
 
@@ -642,12 +653,12 @@ class Edge(QtWidgets.QGraphicsItem):
         self.update()
 
     def boundingRect(self):
-        if self._path_shape == 'linear':
+        if self._shape_name == 'linear':
             return QtCore.QRectF(to_Pf(self.start_point), to_Pf(self.end_point))
         else:  # include curve adjustments
             if not self._path:
                 self.update_end_points()
-                self._path = self._path_method(self)
+                self.make_path()
             return self._path.controlPointRect()
 
     def hoverEnterEvent(self, event):
@@ -710,7 +721,7 @@ class Edge(QtWidgets.QGraphicsItem):
             d /= 2.0
         if not self._path:
             self.update_end_points()
-            self._path = self._path_method(self)
+            self.make_path()
         return self._path.pointAtPercent(d)
 
     def get_angle_at(self, d):
@@ -719,7 +730,7 @@ class Edge(QtWidgets.QGraphicsItem):
             # slopeAtPercent
         if not self._path:
             self.update_end_points()
-            self._path = self._path_method(self)
+            self.make_path()
         return self._path.angleAtPercent(d)
 
 

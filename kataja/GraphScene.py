@@ -62,7 +62,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         self._timer_id = 0
         self._dblclick = False
         self._dragging = False
-
+        self._fade_steps = 0
         self._left_border = -50
         self._right_border = 50
         self._top_border = -50
@@ -577,7 +577,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         #     ant.moveBy(random.random()*4-2, random.random()*4-2)
         for e in f.edges.values():
             e.update_end_points()
-            e._path = e._path_method(e)
+            e.make_path()
             e.update()
 
         for n, node in enumerate(f.visible_nodes()):
@@ -672,7 +672,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             self.fit_to_window()
 
         if items_have_moved:
-            if f.settings.uses_brackets():
+            if f.settings.bracket_style():
                 f.bracket_manager.update_positions()
                 # for area in f.touch_areas:
                 #    area.update_position()

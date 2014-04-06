@@ -45,10 +45,10 @@ class BracketManager:
         """
         self._bracket_slots = {}
         f = self.forest
-        if f.settings.uses_brackets():
+        if f.settings.bracket_style():
             for tree in f:
                 for node in f.list_nodes_once(tree):  # not sure if this should use 'once'
-                    node.update_visibility(brackets=f.settings.uses_brackets())
+                    node.update_visibility(brackets=f.settings.bracket_style())
                     if node.has_visible_brackets:
                         this_left = node
                         next_left = node.left()
@@ -76,7 +76,7 @@ class BracketManager:
                             self._bracket_slots[key] = ([], [node])
         else:
             for node in f.nodes.values():
-                node.update_visibility(brackets=f.settings.uses_brackets())
+                node.update_visibility(brackets=f.settings.bracket_style())
         for bracket in self.brackets.values():
             bracket.update_position()
 

@@ -598,7 +598,7 @@ class ConstituentNode(Node):
     ### Qt overrides ######################################################################
 
     def paint(self, painter, option, widget):
-        painter.setPen(self.get_contextual_color())
+        painter.setPen(self.contextual_color())
         if ctrl.pressed == self:
             rect = True
         elif self._hovering:

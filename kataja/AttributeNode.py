@@ -40,7 +40,7 @@ class AttributeNode(Node):
     width = 20
     height = 20
     default_edge_type = ATTRIBUTE_EDGE
-    saved_fields = ['host', 'label_font', 'color']
+    saved_fields = ['host', 'label_font', '_color']
     saved_fields = list(set(Node.saved_fields + saved_fields))
     node_type = ATTRIBUTE_NODE
 
@@ -66,10 +66,10 @@ class AttributeNode(Node):
         self.attribute_id = attribute_id
         self._show_label = show_label
         self.label_font = qt_prefs.sc_font
-        if self.attribute_label in color_map:
-            self.color = colors.feature_palette[color_map[self.attribute_label]]
-        else:
-            self.color = colors.feature
+        #if self.attribute_label in color_map:
+        #    self.color = colors.feature_palette[color_map[self.attribute_label]]
+        #else:
+        #    self.color = colors.feature
         if not restoring:
             # compute start position -- similar to FeatureNode, but happens on init
             # because host is given

@@ -253,8 +253,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
                 return palette.get(self._color)
         else:
             self._color = value
-            if self._label_complex:
-                self._label_complex.setDefaultTextColor(self._color)
+            #if self._label_complex:
+            #    self._label_complex.setDefaultTextColor(self._color)
 
 
     def contextual_color(self):
@@ -302,7 +302,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """ Painting is sensitive to mouse/selection issues, but usually with
         nodes it is the label of the node that needs complex painting """
         painter.setPen(self.contextual_color())
-        if ctrl.pressed == self or self._hovering or ctrl.is_selected():
+        if ctrl.pressed == self or self._hovering or ctrl.is_selected(self):
             painter.drawRoundedRect(self.inner_rect, 5, 5)
 
     def boundingRect(self, update=False, pass_size_calculation=False):
