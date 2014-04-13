@@ -24,7 +24,7 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from PyQt5.QtCore import Qt
-from kataja.Controller import ctrl, prefs, qt_prefs, colors, palette
+from kataja.Controller import ctrl, prefs, qt_prefs, palette
 from kataja.Label import Label
 from kataja.Movable import Movable
 from kataja.TouchArea import TouchArea
@@ -46,7 +46,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     width = 20
     height = 20
     default_edge_type = ABSTRACT_EDGE
-    saved_fields = ['level', 'syntactic_object', 'edges_up', 'edges_down', 'folded_away', 'folding_towards', 'index']
+    saved_fields = ['level', 'syntactic_object', 'edges_up', 'edges_down', 'folded_away', 'folding_towards', 'index', '_color']
     saved_fields = list(set(Movable.saved_fields + saved_fields))
     node_type = ABSTRACT_NODE
 
@@ -240,9 +240,10 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
     # is this necessary anymore? Does label_complex use pen color?
     def update_colors(self):
-        self._color = colors.drawing
-        if self._label_complex:
-            self._label_complex.setDefaultTextColor(self._color)
+        pass
+        #self._color = colors.drawing
+        #if self._label_complex:
+        #    self._label_complex.setDefaultTextColor(self._color)
 
 
     def color(self, value = None):
@@ -260,11 +261,11 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     def contextual_color(self):
         """ Drawing color that is sensitive to node's state """
         if ctrl.pressed == self:
-            return colors.active(self.color())
+            return palette.active(self.color())
         elif self._hovering:
-            return colors.hovering(self.color())
+            return palette.hovering(self.color())
         elif ctrl.is_selected(self):
-            return colors.selected(self.color())
+            return palette.selected(self.color())
         else:
             return self.color()
 
@@ -336,7 +337,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self._bottom_magnet = (0, h2 - 2)  # (0,-h2/2)
         self._bottom_left_magnet = (w2 / -2, h2 - 2)
         self._bottom_right_magnet = (w2 / 2, h2 - 2)
-        print 'updating bounding rect ', self
+        #print 'updating bounding rect ', self
         return self.inner_rect
 
     ### Magnets ######################################################################

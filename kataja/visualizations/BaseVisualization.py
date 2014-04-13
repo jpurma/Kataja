@@ -211,8 +211,8 @@ class BaseVisualization:
                 d_y = start_y - end_y
                 rd_x = target_d_x - d_x
                 rd_y = target_d_y - d_y
-                xvel += rd_x * edge.pull
-                yvel += rd_y * edge.pull
+                xvel += rd_x * edge.pull()
+                yvel += rd_y * edge.pull()
 
             for i, edge in enumerate(edges_up):
                 if not edge.is_visible():
@@ -228,19 +228,19 @@ class BaseVisualization:
                 d_y = end_y - start_y
                 rd_x = target_d_x - d_x
                 rd_y = target_d_y - d_y
-                xvel += rd_x * edge.pull / ((i + 1) * (i + 1))  # first branch has strongest pull
-                yvel += rd_y * edge.pull  # / ((i + 1) * (i + 1))
+                xvel += rd_x * edge.pull() / ((i + 1) * (i + 1))  # first branch has strongest pull
+                yvel += rd_y * edge.pull()  # / ((i + 1) * (i + 1))
 
         else:
             for edge in edges_down:
-                pull = edge.pull / rtotal
+                pull = edge.pull() / rtotal
                 other_x, other_y, other_z = edge.end_point  # @UnusedVariable
                 edge_length_x, edge_length_y = (other_x - node_x, other_y - node_y)
                 xvel += edge_length_x * pull
                 yvel += edge_length_y * pull
 
             for edge in edges_up:
-                pull = edge.pull / rtotal
+                pull = edge.pull() / rtotal
                 other_x, other_y, other_z = edge.start_point  # @UnusedVariable
                 edge_length_x, edge_length_y = (node_x - other_x, node_y - other_y)
                 xvel -= edge_length_x * pull

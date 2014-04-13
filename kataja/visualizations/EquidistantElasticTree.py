@@ -87,13 +87,13 @@ class EquidistantElasticTree(BaseVisualization):
                 dist_y = start_y - end_y
                 dist = math.hypot(dist_x, dist_y)
                 if dist > 30:
-                    pull = edge.pull
+                    pull = edge.pull()
                     fx = (dist_x / dist) * (dist - 30)
                     fy = (dist_y / dist) * (dist - 30)
                     xvel += fx * pull
                     yvel += fy * pull
                 elif dist < 20:
-                    push = edge.pull / -2
+                    push = edge.pull() / -2
                     xvel += dist_x * push
                     yvel += dist_y * push
                 else:

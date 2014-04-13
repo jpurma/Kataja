@@ -31,7 +31,7 @@ class PropertyNode(Node):
     width = 20
     height = 20
     default_edge_type = PROPERTY_EDGE
-    saved_fields = ['label_font', 'color']
+    saved_fields = ['label_font']
     saved_fields = list(set(Node.saved_fields + saved_fields))
     node_type = PROPERTY_NODE
 

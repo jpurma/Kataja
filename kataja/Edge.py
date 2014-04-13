@@ -26,7 +26,7 @@ from math import sin, cos, pi, acos
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QPointF as Pf, Qt
-from kataja.Controller import ctrl, prefs, colors, qt_prefs, palette
+from kataja.Controller import ctrl, prefs, qt_prefs, palette
 from kataja.utils import to_tuple
 from kataja.TouchArea import TouchArea
 from kataja.globals import CONSTITUENT_EDGE, FEATURE_EDGE, GLOSS_EDGE, ATTRIBUTE_EDGE
@@ -466,6 +466,7 @@ class Edge(QtWidgets.QGraphicsItem):
 
     def is_visible(self):
         #assert (self._visible == self.isVisible())
+        #print 'edge is_visible asked, ', self._visible
         return self._visible
 
     def add_touch_area(self, touch_area):
@@ -483,7 +484,8 @@ class Edge(QtWidgets.QGraphicsItem):
     def color(self, value = None):
         if value is None:
             if self._color is None:
-                return palette.get(self.forest.settings.edge_settings(self.edge_type, 'color'))
+                c = self.forest.settings.edge_settings(self.edge_type, 'color')
+                return palette.get(c)
             else:
                 return palette.get(self._color)
         else:
@@ -492,11 +494,11 @@ class Edge(QtWidgets.QGraphicsItem):
     def contextual_color(self):
         """ Drawing color that is sensitive to node's state """
         if ctrl.pressed == self:
-            return colors.active(self.color())
+            return palette.active(self.color())
         elif self._hovering:
-            return colors.hovering(self.color())
+            return palette.hovering(self.color())
         elif ctrl.is_selected(self):
-            return colors.selected(self.color())
+            return palette.selected(self.color())
         else:
             return self.color()
 
@@ -576,6 +578,8 @@ class Edge(QtWidgets.QGraphicsItem):
             self._shape_method = SHAPE_PRESETS[self.shape_name()]['method']
         self._path = self._shape_method(self)
 
+    def update_shape_method(self):
+        self._shape_method = SHAPE_PRESETS[self.shape_name()]['method']
 
     def is_structural(self):
         return self.edge_type == self.start.default_edge_type
@@ -643,6 +647,8 @@ class Edge(QtWidgets.QGraphicsItem):
             ctrl.main.ui_manager.show_control_points(self)  # @UndefinedVariable
             for touch_area in self.touch_areas.values():
                 touch_area.show()
+        else:
+            self._visible = visible
 
     def set_selection_status(self, selected):
         ui = ctrl.main.ui_manager  # @UndefinedVariable
@@ -717,7 +723,7 @@ class Edge(QtWidgets.QGraphicsItem):
         return self._path
 
     def get_point_at(self, d):
-        if self._filled_shape:
+        if self.is_filled():
             d /= 2.0
         if not self._path:
             self.update_end_points()
@@ -725,13 +731,19 @@ class Edge(QtWidgets.QGraphicsItem):
         return self._path.pointAtPercent(d)
 
     def get_angle_at(self, d):
-        if self._filled_shape:
+        if self.is_filled():
             d /= 2.0
             # slopeAtPercent
         if not self._path:
             self.update_end_points()
             self.make_path()
         return self._path.angleAtPercent(d)
+
+    #### Event filter - be sensitive to changes in settings  ########################################################
+
+    #def sceneEvent(self, event):
+    #    print 'Edge event received: ', event.type()
+    #    return QtWidgets.QGraphicsItem.sceneEvent(self, event)
 
 
     #### Restoring after load / undo #########################################

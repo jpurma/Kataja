@@ -256,6 +256,24 @@ class Palette:
         for i in range(0,10):
             self.d['shade_%s' % (i+1)] = c().fromHsvF(i / 10.0, ps, pv) 
 
+    def active(self, color):
+        if color.value() > 128:
+            return color.darker(300)
+        else:
+            return color.lighter(300)
+
+    def hovering(self, color):
+        if color.value() > 128:
+            return color.darker(200)
+        else:
+            return color.lighter(200)
+        
+    def selected(self, color):
+        if color.value() > 128:
+            return color.darker()
+        else:
+            return color.lighter()
+
 class QtColors:
     """ Settings that store Qt object types. These are derived from ForestSettings """
 

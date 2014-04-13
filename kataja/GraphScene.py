@@ -77,6 +77,23 @@ class GraphScene(QtWidgets.QGraphicsScene):
         #     self.addItem(ant)
         #     self.ants.append(ant)
 
+   #### General events ##########
+
+    # def event(self, event):
+    #     print 's:', event.type()
+    #     #print 'Scene event received: %s' % event.type()
+    #     return QtWidgets.QGraphicsScene.event(self, event)        
+    
+
+    def reset_edge_shapes(self):
+        if self.displayed_forest:
+            for e in self.displayed_forest.edges.values():
+                e.update_shape_method()
+                e.update()
+        print 'received signal'
+
+    #####
+
     def reset_zoom(self):
         self._manual_zoom = False
 

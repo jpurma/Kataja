@@ -25,6 +25,7 @@
 
 
 import sys
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 from kataja.ColorSettings import QtColors, Palette
 from kataja.ForestSettings import ForestSettings
@@ -93,6 +94,12 @@ class Controller:
 
     def set_colors(self, col):
         colors = col
+
+    def sendEvent(self, event_id, **kwargs):
+        event = QtCore.QEvent(event_id)
+        QtWidgets.QApplication.sendEvent(self.main, event)
+        #sevent = QtWidgets.QGraphicsSceneEvent(event_id)
+        self.main.graph_scene.sceneEvent(event)     
 
     # ******* Selection *******
     # trees and edges can be selected. UI objects are focused. multiple items can be selected, but actions do not necessary apply to them.

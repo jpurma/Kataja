@@ -1,3 +1,5 @@
+from PyQt5 import QtCore
+
 # ## Global enums
 
 # How to show labels
@@ -26,4 +28,11 @@ FEATURE_NODE = 2
 ATTRIBUTE_NODE = 3
 GLOSS_NODE = 4
 PROPERTY_NODE = 5
+
+### Our custom signals
+
+#EDGE_SHAPES_CHANGED = QtCore.pyqtSignal()
+
+#EDGE_SHAPES_CHANGED = QtCore.QEvent.registerEventType()
+#print 'EDGE_SHAPES_CHANGED: ', EDGE_SHAPES_CHANGED
 

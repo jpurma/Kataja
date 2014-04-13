@@ -130,18 +130,18 @@ class DynamicWidthTree(BaseVisualization):
             edge_length_x = edge.start_point[0] - edge.end_point[0]
             if edge_length_x > prefs.edge_width:
                 edge_length_x -= prefs.edge_width
-                xvel += edge_length_x * edge.pull / self.push
+                xvel += edge_length_x * edge.pull() / self.push
             elif edge_length_x < -prefs.edge_width:
                 edge_length_x += prefs.edge_width
-                xvel += edge_length_x * edge.pull / self.push
+                xvel += edge_length_x * edge.pull() / self.push
         for edge in node.get_edges_down():
             edge_length_x = edge.end_point[0] - edge.start_point[0]
             if edge_length_x > prefs.edge_width:
                 edge_length_x -= prefs.edge_width
-                xvel += edge_length_x * edge.pull / self.push
+                xvel += edge_length_x * edge.pull() / self.push
             elif edge_length_x < -prefs.edge_width:
                 edge_length_x += prefs.edge_width
-                xvel += edge_length_x * edge.pull / self.push
+                xvel += edge_length_x * edge.pull() / self.push
         return (xvel, 0, 0)
 
     def draw(self):

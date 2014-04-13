@@ -39,7 +39,7 @@ from kataja.ui.TargetReticle import TargetReticle
 from kataja.ui.UIPanel import UIPanel, LogPanel, NavigationPanel, VisualizationPanel, ColorWheelPanel, DockPanel, \
     LinesPanel
 from kataja.TouchArea import TouchArea
-from kataja.globals import CONSTITUENT_EDGE, FEATURE_EDGE, GLOSS_EDGE
+import kataja.globals as g
 from kataja.utils import to_tuple
 
 
@@ -128,6 +128,13 @@ class UIManager:
         self.update_field('treeset_counter',
                           '%s/%s' % (self.main.forest_keeper.current_index() + 1, self.main.forest_keeper.size()))
         self.update_field('visualization_selector', self.main.forest.visualization.name)
+
+
+    def update_edge_shapes(self, edge_type, i):
+        if edge_type == g.CONSTITUENT_EDGE:
+            self.ui_buttons['line_type'].setCurrentIndex(i)
+        elif edge_type == g.FEATURE_EDGE:
+            self.ui_buttons['feature_line_type'].setCurrentIndex(i)
 
 
     def update_field(self, field_name, value):
@@ -245,7 +252,7 @@ class UIManager:
                 for edge in item.get_edges_up():
                     self.create_touch_area(edge, 'left')
                     self.create_touch_area(edge, 'right')
-            elif isinstance(item, Edge) and item.edge_type == CONSTITUENT_EDGE:
+            elif isinstance(item, Edge) and item.edge_type == g.CONSTITUENT_EDGE:
                 self.create_touch_area(item, 'left')
                 self.create_touch_area(item, 'right')
 

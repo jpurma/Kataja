@@ -186,7 +186,7 @@ class ForestSettings:
         """
         e = self._edge_types[edge_type]
         if value is None:
-            if e is None or e.get(key) is None: 
+            if e is None or e.get(key, None) is None: 
                 return self.prefs.edges[edge_type][key]
             else:
                 return e[key]

@@ -53,6 +53,7 @@ from kataja.Preferences import Preferences, QtPreferences
 from kataja.Presentation import TextArea
 from kataja.Edge import SHAPE_PRESETS
 from kataja.UIManager import UIManager
+import kataja.globals as g
 from kataja.globals import FEATURE_EDGE, CONSTITUENT_EDGE
 from kataja.ui.UIPanel import ColorWheelPanel
 from kataja.ui.MenuItem import MenuItem
@@ -82,6 +83,10 @@ class KatajaMain(QtWidgets.QMainWindow):
 
     singleton_key = 'KatajaMain'
     saved_fields = ['graph_scene', 'graph_view', 'ui_manager', 'forest_keeper', 'forest']
+
+    changed_edge_shape = QtCore.pyqtSignal(int, int)
+
+
 
     @time_me
     def __init__(self, app, args):
@@ -128,6 +133,12 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.color_wheel = None
         self.action_finished()
         print '---- finished start sequence... ', time.time() - t
+        ########
+        #  Signals
+        #########
+        self.changed_edge_shape.connect(self.graph_scene.reset_edge_shapes)
+        self.changed_edge_shape.connect(self.ui_manager.update_edge_shapes)
+
 
 
     def load_treeset(self, treeset_list=[]):
@@ -184,6 +195,14 @@ class KatajaMain(QtWidgets.QMainWindow):
     def add_message(self, msg):
         """ :type msg: StringType """
         self.ui_manager.add_message(msg)
+
+
+    #### General events ##########
+
+    #def event(self, event):
+    #    print 'm:', event.type()
+        #print 'Main event received: %s' % event.type()
+    #    return QtWidgets.QMainWindow.event(self, event)        
 
 
     #### Keyboard events ##########
@@ -647,22 +666,18 @@ class KatajaMain(QtWidgets.QMainWindow):
     # Change node edge shapes -action (s)
     def change_node_edge_shape(self, shape=''):
         if shape and shape in SHAPE_PRESETS:
-            self.forest.settings.edge_shape_name(CONSTITUENT_EDGE, shape)
+            self.forest.settings.edge_settings(g.CONSTITUENT_EDGE, 'shape_name', shape)
             i = SHAPE_PRESETS.keys().index(shape)
         else:
-            i = SHAPE_PRESETS.keys().index(self.forest.settings.edge_shape_name(CONSTITUENT_EDGE))
+            shape = self.forest.settings.edge_settings(g.CONSTITUENT_EDGE, 'shape_name')
+            i = SHAPE_PRESETS.keys().index(shape)
+            i += 1
             if i == len(SHAPE_PRESETS):
                 i = 0
             shape = SHAPE_PRESETS.keys()[i]
-            self.forest.settings.edge_shape_name(CONSTITUENT_EDGE, name)
-        self.ui_manager.ui_buttons['line_type'].setCurrentIndex(i)
+            self.forest.settings.edge_settings(g.CONSTITUENT_EDGE, 'shape_name', shape)
         self.add_message('(s) Change constituent edge shape: %s-%s' % (i, shape))
-        #EDGE_PRESETS[CONSTITUENT_EDGE]['shape'] = shape 
-        #for forest in self.forest_keeper.get_forests():
-        #    for edge in [x for x in forest.edges.values() if x.edge_type == CONSTITUENT_EDGE]:
-        #        edge.set_shape(shape)
-        #        self.ui_manager.reset_control_points(edge)
-        #        edge.update()
+        self.changed_edge_shape.emit(g.CONSTITUENT_EDGE, i)
 
         self.action_finished('change edge shape')
 
@@ -670,14 +685,14 @@ class KatajaMain(QtWidgets.QMainWindow):
     # Change feature edge shapes -action (S)
     def change_feature_edge_shape(self):
         if shape and shape in SHAPE_PRESETS:
-            self.forest.settings.edge_shape_name(CONSTITUENT_EDGE, shape)
+            self.forest.settings.edge_shape_name(g.CONSTITUENT_EDGE, shape)
             i = SHAPE_PRESETS.keys().index(shape)
         else:
-            i = SHAPE_PRESETS.keys().index(self.forest.settings.edge_shape_name(FEATURE_EDGE))
+            i = SHAPE_PRESETS.keys().index(self.forest.settings.edge_shape_name(g.FEATURE_EDGE))
             if i == len(SHAPE_PRESETS):
                 i = 0
             shape = SHAPE_PRESETS.keys()[i]
-            self.forest.settings.edge_shape_name(FEATURE_EDGE, name)
+            self.forest.settings.edge_shape_name(g.FEATURE_EDGE, name)
         self.ui_manager.ui_buttons['feature_line_type'].setCurrentIndex(i)
         self.add_message('(s) Change feature edge shape: %s-%s' % (i, shape))
 

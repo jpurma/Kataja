@@ -28,7 +28,7 @@ from kataja.FeatureNode import FeatureNode
 from kataja.Node import Node
 from kataja.ui.RadialMenu import RadialMenu
 from kataja.utils import to_unicode, to_tuple, time_me
-from kataja.globals import CONSTITUENT_EDGE, FEATURE_EDGE, ALL_LABELS, ALIASES, ATTRIBUTE_EDGE, CONSTITUENT_NODE
+import kataja.globals as g
 
 
 # ctrl = Controller object, gives accessa to other modules
@@ -50,10 +50,10 @@ class ConstituentNode(Node):
     """ ConstituentNodes are graphical representations of constituents. They are primary objects and need to support saving and loading."""
     width = 20
     height = 20
-    default_edge_type = CONSTITUENT_EDGE
+    default_edge_type = g.CONSTITUENT_EDGE
     saved_fields = ['has_visible_brackets', 'alias', 'is_trace', 'triangle', 'merge_order', 'select_order']
     saved_fields = list(set(Node.saved_fields + saved_fields))
-    node_type = CONSTITUENT_NODE
+    node_type = g.CONSTITUENT_NODE
 
 
 
@@ -182,7 +182,7 @@ class ConstituentNode(Node):
 
 
     def get_attribute_nodes(self, label_key=''):
-        atts = [x.end for x in self.edges_down if x.edge_type == ATTRIBUTE_EDGE]
+        atts = [x.end for x in self.edges_down if x.edge_type == g.ATTRIBUTE_EDGE]
         if label_key:
             for a in atts:
                 if a.attribute_label == label_key:
@@ -218,8 +218,8 @@ class ConstituentNode(Node):
                 self.fade_out()
         else:
             self.setVisible(visible)
-        label_visible = self._visibility_label == ALL_LABELS
-        label_visible = label_visible or (self._visibility_label == ALIASES and self.alias)
+        label_visible = self._visibility_label == g.ALL_LABELS
+        label_visible = label_visible or (self._visibility_label == g.ALIASES and self.alias)
         label_visible = bool(label_visible or self.triangle or (self.has_label() and self.is_leaf_node()))
         self._label_visible = label_visible
         if not self._label_complex:
@@ -323,7 +323,7 @@ class ConstituentNode(Node):
 
     def get_features(self):
         """ Returns FeatureNodes """
-        return self.get_children(edge_type=FEATURE_EDGE)
+        return self.get_children(edge_type = g.FEATURE_EDGE)
 
     def update_features(self):
         current_features = set([x.syntactic_object.get() for x in self.get_features()])
