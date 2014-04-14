@@ -31,7 +31,9 @@ PROPERTY_NODE = 5
 
 ### Our custom signals
 
-#EDGE_SHAPES_CHANGED = QtCore.pyqtSignal()
+EDGE_SHAPES_CHANGED = 101
+#EDGE_SHAPES_CHANGED = QtCore.pyqtSignal(int, int)
+
 
 #EDGE_SHAPES_CHANGED = QtCore.QEvent.registerEventType()
 #print 'EDGE_SHAPES_CHANGED: ', EDGE_SHAPES_CHANGED

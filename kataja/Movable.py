@@ -266,12 +266,6 @@ class Movable(object):
 
     ### Existence ############################################################
 
-    def assert_scene(self, scene):
-        """ Verify that object exists in QtScene """
-        assert (self.scene() == scene)
-        if self.scene() != scene:
-            scene.addItem(self)
-
     def update_visibility(self, **kwargs):
         """ Simplest case of update_visibility.
         This will be overridden for more complex objects """

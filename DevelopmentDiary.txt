@@ -54,6 +54,9 @@ I'm now trying to implement this, which causes a lot of boring, almost redundant
 
 Oh, and also moved to GitHub. 
 
+15.4. 2014 Tried different ways to elegantly announce changes in data model that need to be updated in visible elements. Both Qt signals and events had problems. Qt signals don't support GraphicsItems at all and events need special sceneEvents for events that happen for GraphicsScene objects. Also the event inheritance system is bit off from what I want. I want to broadcast changes, and whoever is following those broadcasts should take notice. Tried different combinations of going half-way with signals and using specific calls for going rest of the ways to objects, and finally ended up with home-brew signaling system where graph_scene and ui_manager both forward 'signals' (which are just integers distinguishing different signal types) and their arguments to those objects that follow that kind of signals. The mapping from signals to objects that listen to them is done by dicts in graph_scene and in ui_manager. Using the 'announcements' is done through Controller, ctrl.announce(signal, *args).
+Ui_manager's implementation is unfinished, and probably instead of args I should have **kwargs for better readability.
+After quite a mess, I think that the current solution is quite clean and easy to manage. Hope there is use for it.      
 
 
 

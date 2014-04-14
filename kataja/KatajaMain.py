@@ -84,8 +84,6 @@ class KatajaMain(QtWidgets.QMainWindow):
     singleton_key = 'KatajaMain'
     saved_fields = ['graph_scene', 'graph_view', 'ui_manager', 'forest_keeper', 'forest']
 
-    changed_edge_shape = QtCore.pyqtSignal(int, int)
-
 
 
     @time_me
@@ -136,8 +134,8 @@ class KatajaMain(QtWidgets.QMainWindow):
         ########
         #  Signals
         #########
-        self.changed_edge_shape.connect(self.graph_scene.reset_edge_shapes)
-        self.changed_edge_shape.connect(self.ui_manager.update_edge_shapes)
+        #self.changed_edge_shape.connect(self.graph_scene.forward_signal)
+        #self.changed_edge_shape.connect(self.ui_manager.update_edge_shapes)
 
 
 
@@ -506,7 +504,6 @@ class KatajaMain(QtWidgets.QMainWindow):
             text_area = TextArea(text)
             text_area.set_original_position(caller.get_current_position())
             self.forest.store(text_area)
-            text_area.assert_scene()
         self.action_finished()
 
     def add_new_constituent(self, caller=None):
@@ -677,8 +674,7 @@ class KatajaMain(QtWidgets.QMainWindow):
             shape = SHAPE_PRESETS.keys()[i]
             self.forest.settings.edge_settings(g.CONSTITUENT_EDGE, 'shape_name', shape)
         self.add_message('(s) Change constituent edge shape: %s-%s' % (i, shape))
-        self.changed_edge_shape.emit(g.CONSTITUENT_EDGE, i)
-
+        ctrl.announce(g.EDGE_SHAPES_CHANGED, g.CONSTITUENT_EDGE, i)
         self.action_finished('change edge shape')
 
 

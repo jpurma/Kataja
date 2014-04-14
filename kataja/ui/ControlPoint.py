@@ -29,6 +29,7 @@ class ControlPoint(QtWidgets.QGraphicsItem):
     def _compute_position(self):
         p = self.host_edge.control_points[self._index]
         a = self.host_edge.adjust[self._index]
+        print p, a
         p = Pf(p[0] + a[0], p[1] + a[1])
         self.setPos(p)
 

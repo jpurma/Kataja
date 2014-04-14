@@ -26,10 +26,10 @@ from math import sin, cos, pi, acos
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QPointF as Pf, Qt
-from kataja.Controller import ctrl, prefs, qt_prefs, palette
+from kataja.Controller import ctrl, prefs, qt_prefs, palette, Controller
 from kataja.utils import to_tuple
 from kataja.TouchArea import TouchArea
-from kataja.globals import CONSTITUENT_EDGE, FEATURE_EDGE, GLOSS_EDGE, ATTRIBUTE_EDGE
+import kataja.globals as g
 from kataja.ui.TwoColorIcon import TwoColorIcon, TwoColorIconEngine
 
 
@@ -393,6 +393,8 @@ class Edge(QtWidgets.QGraphicsItem):
 
     saved_fields = ['forest', 'edge_type', 'adjust', 'start', 'end', '_color', '_shape_name', '_pull','_shape_visible', '_visible', '_has_outline', '_is_filled']
 
+    receives_signals = [g.EDGE_SHAPES_CHANGED]
+
     def __init__(self, forest, start=None, end=None, edge_type='', direction=''):
         """
 
@@ -460,6 +462,10 @@ class Edge(QtWidgets.QGraphicsItem):
         if not ctrl.loading:
             forest.store(self)
 
+    def receive_signal(self, signal, *args):
+        if signal is g.EDGE_SHAPES_CHANGED:
+            if (args and args[0] == self.edge_type) or not args:
+                self.update_shape_method()
 
     def get_touch_area(self, place):
         return self.touch_areas.get(place, None)
@@ -577,6 +583,7 @@ class Edge(QtWidgets.QGraphicsItem):
         if not self._shape_method:
             self._shape_method = SHAPE_PRESETS[self.shape_name()]['method']
         self._path = self._shape_method(self)
+
 
     def update_shape_method(self):
         self._shape_method = SHAPE_PRESETS[self.shape_name()]['method']

@@ -68,6 +68,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         self._top_border = -50
         self._bottom_border = 50
         self._manual_zoom = False
+        self._signal_forwarding = {}
 
         # self.ants = []
         # for n in range(0,1000):
@@ -84,6 +85,45 @@ class GraphScene(QtWidgets.QGraphicsScene):
     #     #print 'Scene event received: %s' % event.type()
     #     return QtWidgets.QGraphicsScene.event(self, event)        
     
+    def forward_signal(self, signal, *args):
+        """ When graph scene receives signals, they are forwarded to Kataja's graphic item subclasses. They all have a signal receiver class that can handle certain kinds of signals and modify the item accordingly. 
+        """
+        receiving_items = self._signal_forwarding.get(signal, [])
+        print signal, receiving_items, self._signal_forwarding
+        for item in receiving_items:
+            item.receive_signal(signal, *args)
+
+    def add_to_signal_receivers(self, item):
+        """ Add item to scene's items that receive certain types of signals. 
+        Types of signals that item receives are determined by its receives_signals -list.
+        """ 
+        receives = getattr(item.__class__, 'receives_signals', [])
+
+        for signal in receives:
+            if signal in self._signal_forwarding:
+                receiving_items = self._signal_forwarding[signal] 
+                receiving_items.add(item)
+            else:
+                self._signal_forwarding[signal] = set((item,))               
+
+    def remove_from_signal_receivers(self, item):
+        receives = getattr(item.__class__, 'receives_signals', [])
+        for signal in receives:
+            if id(signal) in self._signal_forwarding:
+                receiving_items = self._signal_forwarding[signal] 
+                receiving_items.remove(item)
+
+
+    # Overriding QGraphicsScene method
+    def addItem(self, item):
+        self.add_to_signal_receivers(item)
+        QtWidgets.QGraphicsScene.addItem(self, item)      
+
+    # Overriding QGraphicsScene method
+    def removeItem(self, item):
+        self.remove_from_signal_receivers(item)
+        QtWidgets.QGraphicsScene.removeItem(self, item)      
+
 
     def reset_edge_shapes(self):
         if self.displayed_forest:

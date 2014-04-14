@@ -53,8 +53,12 @@ palette = Palette()
 #         )
 # gc.set_debug(flags)
 
-class Controller:
+class Controller(QtCore.QObject):
+
+    EDGE_SHAPES_CHANGED = QtCore.pyqtSignal(int, int)
+
     def __init__(self):
+        QtCore.QObject.__init__(self)
         # self.set_prefs('default')
         # : :type self.main: KatajaMain
         self.main = None
@@ -94,6 +98,18 @@ class Controller:
 
     def set_colors(self, col):
         colors = col
+
+    def announce(self, signal, *args):
+        """ Announcing is used to broadcast update requests to objects in graph scene
+        or UI items. Items need to support this by having signal in 
+        'receives_signals'- list and by having 'receive_signal' method that then
+        distinguishes between different signals. Announcements can include arguments. """ 
+        #if args:
+        #    signal.emit(*args)
+        #else:
+        #    signal.emit()
+        #self.main.ui_manager.forward_signal(signal, *args)
+        self.main.graph_scene.forward_signal(signal, *args)
 
     def sendEvent(self, event_id, **kwargs):
         event = QtCore.QEvent(event_id)

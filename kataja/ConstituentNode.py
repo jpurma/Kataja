@@ -53,6 +53,7 @@ class ConstituentNode(Node):
     default_edge_type = g.CONSTITUENT_EDGE
     saved_fields = ['has_visible_brackets', 'alias', 'is_trace', 'triangle', 'merge_order', 'select_order']
     saved_fields = list(set(Node.saved_fields + saved_fields))
+    receives_signals = []
     node_type = g.CONSTITUENT_NODE
 
 
