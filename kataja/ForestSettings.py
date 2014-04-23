@@ -49,8 +49,9 @@ class ForestSettings:
         self._show_select_order = None
         self._draw_features = None
         self._draw_width = None
-        self._my_palettes = None
         self._hsv = None
+        self._color_mode = None
+        self._last_key_colors = {}
         self._bracket_style = None
         ### Edges - take edge type as argument ###########################
         self._edge_types = {
@@ -148,15 +149,6 @@ class ForestSettings:
         else:
             self._draw_width = value
 
-    def my_palettes(self, value = None):
-        if value is None:
-            if self._my_palettes is None:
-                return self.prefs.default_my_palettes
-            else:
-                return self._my_palettes
-        else:
-            self._my_palettes = value
-
     def hsv(self, value = None):
         if value is None:
             if self._hsv is None:
@@ -175,6 +167,21 @@ class ForestSettings:
         else:
             self._bracket_style = value
 
+    def last_key_color_for_mode(self, mode_key, value = None):
+        if value is None:
+            return self._last_key_colors.get(mode_key, None)
+        else:
+            self._last_key_colors[mode_key] = value
+
+
+    def color_mode(self, value = None):
+        if value is None:
+            if self._color_mode is None:
+                return self.prefs.default_color_mode
+            else:
+                return self._color_mode
+        else:
+            self._color_mode = value
 
     ### Edges - all require edge type as argument, value is stored in dict ###########
 

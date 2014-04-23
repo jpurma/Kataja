@@ -4,7 +4,7 @@ Created on 28.8.2013
 @author: purma
 '''
 from kataja.ui.MenuItem import MenuItem
-from kataja.Controller import colors, ctrl, qt_prefs
+from kataja.Controller import ctrl, qt_prefs
 from PyQt5.QtCore import QPointF as Pf
 from PyQt5 import QtWidgets, QtCore
 
@@ -14,34 +14,35 @@ class ButtonMenuItem(MenuItem, QtWidgets.QGraphicsSimpleTextItem):
         QtWidgets.QGraphicsSimpleTextItem.__init__(self, parent=parent)
         MenuItem.__init__(self, parent, args)
         self.setText(self._label_text)
-        self.setBrush(colors.ui)
+        self.setBrush(ctrl.cm().ui())
         self.setZValue(52)
 
 
     def paint(self, painter, option, widget):
+        cm = ctrl.cm()
         if ctrl.has_focus(self) or self.activated:
-            painter.setBrush(colors.ui_active)
-            painter.setPen(colors.ui)
+            painter.setBrush(cm.active(cm.ui()))
+            painter.setPen(cm.ui())
             painter.drawRoundedRect(self._inner_bounding_rect, 5, 5)
             r = QtCore.QRectF(self._inner_bounding_rect.topRight() + Pf(-2, 5), QtCore.QSizeF(15, 15))
             painter.drawRect(r)
             painter.drawText(r, u'\u21A9')
-            self.setBrush(colors.paper)
+            self.setBrush(cm.paper())
         elif self._hovering:
-            painter.setBrush(colors.ui_hover)
-            painter.setPen(colors.ui)
+            painter.setBrush(cm.hover(cm.ui()))
+            painter.setPen(cm.ui())
             painter.drawRoundedRect(self._inner_bounding_rect, 5, 5)
-            self.setBrush(colors.ui)
+            self.setBrush(cm.ui())
         elif self.enabled:
-            painter.setBrush(colors.ui_background)
-            painter.setPen(colors.ui)
+            painter.setBrush(cm.ui_paper())
+            painter.setPen(cm.ui())
             painter.drawRoundedRect(self._inner_bounding_rect, 5, 5)
-            self.setBrush(colors.ui)
+            self.setBrush(cm.ui())
         else:
-            painter.setBrush(colors.ui_background)
-            painter.setPen(colors.ui)
+            painter.setBrush(cm.ui_paper())
+            painter.setPen(cm.ui())
             painter.drawRoundedRect(self._inner_bounding_rect, 5, 5)
-            self.setBrush(colors.ui)
+            self.setBrush(cm.ui())
         painter.setPen(qt_prefs.no_pen)
         QtWidgets.QGraphicsSimpleTextItem.paint(self, painter, option, widget)
 

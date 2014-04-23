@@ -25,7 +25,7 @@ from PyQt5 import QtWidgets
 
 # noinspection PyUnresolvedReferences
 from PyQt5.QtCore import Qt
-from kataja.Controller import ctrl, colors
+from kataja.Controller import ctrl
 from kataja.Movable import Movable
 
 
@@ -95,10 +95,6 @@ class Bracket(Movable, QtWidgets.QGraphicsSimpleTextItem):
             my_x = x + node.boundingRect().right() + (steps - 1) * adjust
         my_y = y - self.boundingRect().height() / 2
         self.set_current_position((my_x, my_y, z))
-
-
-    def update_colors(self):
-        self.setBrush(self.host.color())
 
     def __repr__(self):
         return '<bracket %s>' % self.key

@@ -20,10 +20,6 @@ class BracketManager:
         for bracket in self.brackets.values():
             bracket.update_position()
 
-    def update_colors(self):
-        for bracket in self.brackets.values():
-            bracket.update_colors()
-
     def create_bracket(self, host=None, left=True):
         br = Bracket(self.forest, host=host, left=left)
         self.brackets[br.key] = br

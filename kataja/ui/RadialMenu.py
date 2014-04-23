@@ -7,7 +7,7 @@ import math
 
 from PyQt5 import QtGui, QtCore, QtWidgets
 
-from kataja.Controller import colors, prefs, ctrl
+from kataja.Controller import prefs, ctrl
 from kataja.ui.ButtonMenuItem import ButtonMenuItem
 from kataja.ui.CheckButtonMenuItem import CheckButtonMenuItem
 from kataja.ui.MenuItem import MenuItem
@@ -34,7 +34,7 @@ class RadialMenu(QtWidgets.QGraphicsItem, MovableUI):
         self.setPos(0, 0)
         self._build_menu_items(actions)
         self.radius_pen = QtGui.QPen()
-        self.radius_pen.setColor(colors.ui_inactive)
+        self.radius_pen.setColor(ctrl.cm().ui_inactive())
         self.radius_pen.setWidth(5)
         self._polygon_rect = QtCore.QRectF()
         self._focus_taker = None
@@ -336,14 +336,14 @@ class RadialMenu(QtWidgets.QGraphicsItem, MovableUI):
         for item in self.menu_items:
             px, py = to_tuple(item.center_point_in_scene())
             painter.drawLine(0, 0, px, py)
-        painter.setPen(colors.selection_pen)
-        painter.setBrush(colors.ui)
+        painter.setPen(ctrl.cm().selection())
+        painter.setBrush(ctrl.cm().ui())
         polygon = QtGui.QPolygon()
-        polygon.append(P(0, 0))
-        polygon.append(P(20, 0))
+        polygon.append(QtCore.QPoint(0, 0))
+        polygon.append(QtCore.QPoint(20, 0))
         x, y = to_tuple(self.pos())
-        polygon.append(P(self._host_pos[0] - x, self._host_pos[1] - y))
-        polygon.append(P(0, 0))
+        polygon.append(QtCore.QPoint(self._host_pos[0] - x, self._host_pos[1] - y))
+        polygon.append(QtCore.QPoint(0, 0))
         self._polygon_rect = QtCore.QRectF(polygon.boundingRect())
         painter.drawPolygon(polygon)
         # painter.drawLine(-10, 0, self._host_pos[0] - x, self._host_pos[1] - y)

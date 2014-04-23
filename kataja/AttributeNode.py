@@ -24,7 +24,7 @@
 
 import random
 
-from kataja.Controller import qt_prefs, colors
+from kataja.Controller import qt_prefs, ctrl
 from kataja.globals import ATTRIBUTE_EDGE, ATTRIBUTE_NODE
 from kataja.Node import Node
 from utils import to_unicode
@@ -87,18 +87,6 @@ class AttributeNode(Node):
             self.boundingRect(update=True)
             self.update_visibility()
 
-
-    def update_colors(self):
-        """
-
-        
-        """
-        if self.attribute_label in color_map:
-            self.color = colors.feature_palette[color_map[self.attribute_label]]
-        else:
-            self.color = colors.feature
-        if self._label_complex:
-            self._label_complex.setDefaultTextColor(self.color)
 
     def get_text_for_label(self):
         """ This should be overridden if there are alternative displays for label 

@@ -1,4 +1,4 @@
-from kataja.Controller import colors, ctrl
+from kataja.Controller import ctrl
 from PyQt5 import QtWidgets, QtCore
 
 
@@ -12,19 +12,20 @@ class CheckBox(QtWidgets.QGraphicsItem):
 
     def paint(self, painter, option, widget):
         r = QtCore.QRectF(-8, -4, 15, 15)
-        painter.setPen(colors.ui)
+        cm = ctrl.cm()
+        painter.setPen(cm.ui())
         if self._hover:
-            painter.setBrush(colors.ui_hover)
+            painter.setBrush(cm.ui_hover())
             painter.drawRect(r)
-            painter.setPen(colors.ui)
+            painter.setPen(cm.ui())
             painter.drawText(r, self.marker)
         elif self.parentItem().checked:
-            painter.setBrush(colors.ui_secondary)
+            painter.setBrush(cm.ui_secondary())
             painter.drawRect(r)
-            painter.setPen(colors.ui)
+            painter.setPen(cm.ui())
             painter.drawText(r, self.marker)
         else:
-            painter.setBrush(colors.paper)
+            painter.setBrush(cm.paper())
             painter.drawRect(r)
 
     def hoverEnterEvent(self, event):

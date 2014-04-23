@@ -27,7 +27,7 @@
 from types import StringTypes
 import re
 
-from kataja.Controller import ctrl, colors
+from kataja.Controller import ctrl
 from kataja.Presentation import TextArea, Image
 from kataja.utils import to_unicode
 import utils
@@ -51,11 +51,11 @@ cosmetic_features = ('emph', 'textsc', 'overrightarrow', 'sup')
 cases = ['NOM', 'ACC', 'PRT', 'GEN', 'DAT', 'ILL']
 
 # # this doesn't work now because of preferences rearrangement
-def get_color_for_feature(feature_name):
-    if feature_name in cases:
-        return colors[cases.index(feature_name)]
-    else:
-        return colors[-1]
+# def get_color_for_feature(feature_name):
+#     if feature_name in cases:
+#         return colors[cases.index(feature_name)]
+#     else:
+#         return colors[-1]
 
 
 class Parser:

@@ -23,7 +23,7 @@
 
 import random
 
-from kataja.Controller import qt_prefs, colors
+from kataja.Controller import qt_prefs
 from kataja.globals import FEATURE_EDGE, FEATURE_NODE
 from kataja.Node import Node
 
@@ -58,13 +58,8 @@ class FeatureNode(Node):
             self.boundingRect(update=True)
             self.update_visibility()
 
-    def update_colors(self):
-        if self.syntactic_object.key in color_map:
-            self.color = colors.feature_palette[color_map[self.syntactic_object.key]]
-        else:
-            self.color = colors.feature
-        if self._label_complex:
-            self._label_complex.setDefaultTextColor(self.color)
+
+    # implement color() to map one of the d['rainbow_%'] colors here. Or if bw mode is on, then something else.
 
     def compute_start_position(self, host):
         """ Makes features start at somewhat predictable position, if they are of common kinds of features. If not, then some random noise is added to prevent features sticking together """

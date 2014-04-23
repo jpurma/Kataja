@@ -26,7 +26,7 @@ from math import sin, cos, pi, acos
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QPointF as Pf, Qt
-from kataja.Controller import ctrl, prefs, qt_prefs, palette, Controller
+from kataja.Controller import ctrl, prefs, qt_prefs, Controller
 from kataja.utils import to_tuple
 from kataja.TouchArea import TouchArea
 import kataja.globals as g
@@ -491,20 +491,20 @@ class Edge(QtWidgets.QGraphicsItem):
         if value is None:
             if self._color is None:
                 c = self.forest.settings.edge_settings(self.edge_type, 'color')
-                return palette.get(c)
+                return ctrl.cm().get(c)
             else:
-                return palette.get(self._color)
+                return ctrl.cm().get(self._color)
         else:
             self._color = value
 
     def contextual_color(self):
         """ Drawing color that is sensitive to node's state """
         if ctrl.pressed == self:
-            return palette.active(self.color())
+            return ctrl.cm().active(self.color())
         elif self._hovering:
-            return palette.hovering(self.color())
+            return ctrl.cm().hovering(self.color())
         elif ctrl.is_selected(self):
-            return palette.selected(self.color())
+            return ctrl.cm().selected(self.color())
         else:
             return self.color()
 

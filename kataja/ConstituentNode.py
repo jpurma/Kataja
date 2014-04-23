@@ -613,7 +613,8 @@ class ConstituentNode(Node):
         if self.triangle:
             self.paint_triangle(painter, rect)
         elif rect:
-            painter.drawRect(self.inner_rect)
+            pass
+            #painter.drawRect(self.inner_rect)
             # elif self.uses_scope_area:
             #    self.paint_scope_rect(painter, rect)
 
@@ -849,7 +850,9 @@ class ConstituentNode(Node):
         """ Hovering has some visual effects, usually handled in paint-method """
         if not self._hovering:
             self._hovering = True
+            self.effect.setEnabled(True)
             self.prepareGeometryChange()
+
             if self.left_bracket:
                 self.left_bracket._hovering = True
                 self.left_bracket.update()
@@ -863,6 +866,7 @@ class ConstituentNode(Node):
         """ Object needs to be updated """
         if self._hovering:
             self._hovering = False
+            self.effect.setEnabled(False)
             self.prepareGeometryChange()
             if self.left_bracket:
                 self.left_bracket._hovering = False

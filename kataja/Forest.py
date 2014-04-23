@@ -32,7 +32,7 @@ from kataja.Bracket import Bracket
 from kataja.BracketManager import BracketManager
 from kataja.ConstituentNode import ConstituentNode
 from kataja.AttributeNode import AttributeNode
-from kataja.Controller import ctrl, prefs, qt_prefs, colors
+from kataja.Controller import ctrl, prefs, qt_prefs
 from kataja.ChainManager import ChainManager
 from kataja.DerivationStep import DerivationStepManager
 from kataja.GlossNode import GlossNode
@@ -233,7 +233,6 @@ class Forest:
             print '| Others: %s' % len(self.others)
             print '| Visualization: ', self.visualization
             print '| Color scheme: ', self.settings.hsv()
-            print '| Color object: ', colors
         else:
             print 'odd forest, not initialized.'
 
@@ -252,7 +251,7 @@ class Forest:
             if not self.gloss:
                 self.gloss = QtWidgets.QGraphicsTextItem(parent=None)
                 self.gloss.setTextWidth(400)
-                self.gloss.setDefaultTextColor(colors.drawing)
+                self.gloss.setDefaultTextColor(ctrl.cm().drawing())
                 self.gloss.setFont(qt_prefs.font)  # @UndefinedVariable
                 # self.gloss.setFlag(QtGui.QGraphicsItem.ItemIsMovable)
             self.gloss.setPlainText(u"‘" + self._gloss_text + u"’")
@@ -362,13 +361,14 @@ class Forest:
         self.draw_gloss_text()
 
 
-    def update_colors(self, adjusting=False):
-        global colors
-        old_gradient_base = colors.paper
-        colors.update_colors(prefs, self.settings, adjusting=adjusting)
-        self.main.app.setPalette(colors.palette)
-        if old_gradient_base != colors.paper and colors.gradient:
-            self.main.graph_scene.fade_background_gradient(old_gradient_base, colors.paper)
+    def update_colors(self, adjusting = False):
+        cm = ctrl.cm()
+        old_gradient_base = cm.paper()
+        self.main.color_manager.update_colors(prefs, self.settings, adjusting=adjusting)
+        #colors.update_colors(prefs, self.settings, adjusting=adjusting)
+        self.main.app.setPalette(cm.get_qt_palette())
+        if old_gradient_base != cm.paper() and cm.gradient:
+            self.main.graph_scene.fade_background_gradient(old_gradient_base, cm.paper())
         else:
             self.main.graph_scene.setBackgroundBrush(qt_prefs.no_brush)
         #for node in self.nodes.values():
@@ -377,9 +377,9 @@ class Forest:
         #    edge.update_colors()
         for other in self.others.values():
             other.update_colors()
-        self.bracket_manager.update_colors()
+        #self.bracket_manager.update_colors()
         if self.gloss:
-            self.gloss.setDefaultTextColor(colors.drawing)
+            self.gloss.setDefaultTextColor(cm.drawing())
         self.main.ui_manager.update_colors()
 
 

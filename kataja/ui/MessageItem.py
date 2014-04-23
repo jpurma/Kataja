@@ -1,5 +1,5 @@
 ########################################################
-from kataja.Controller import colors, prefs
+from kataja.Controller import ctrl, prefs
 from kataja.utils import to_unicode
 from PyQt5 import QtCore, QtWidgets
 
@@ -13,7 +13,7 @@ class MessageItem(QtWidgets.QGraphicsTextItem):
         self._msg_string = msg
         # self.setFont(qt_prefs.menu_font)
         self.setPlainText('\n' + self._msg_string)
-        self.setDefaultTextColor(colors.ui)
+        self.setDefaultTextColor(ctrl.cm().ui())
         self.adjustSize()
         self.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
         self._widget = log_panel
@@ -29,7 +29,7 @@ class MessageItem(QtWidgets.QGraphicsTextItem):
         self.setTextWidth(self.ui_manager.width() - 20)
 
     def update_color(self):
-        self.setDefaultTextColor(colors.ui)
+        self.setDefaultTextColor(ctrl.cm().ui())
         self.display_messages()
 
     def display_messages(self):

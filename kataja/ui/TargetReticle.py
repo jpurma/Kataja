@@ -1,7 +1,7 @@
 ########################################################
 from PyQt5 import QtCore, QtWidgets
 
-from kataja.Controller import colors
+from kataja.Controller import ctrl
 
 
 class TargetReticle(QtWidgets.QGraphicsItem):
@@ -18,7 +18,7 @@ class TargetReticle(QtWidgets.QGraphicsItem):
                                            TargetReticle.height)
 
     def paint(self, painter, option, widget):
-        painter.setPen(colors.selection_pen)
+        painter.setPen(ctrl.cm().selection())
         painter.drawLine(0, -15, 0, 15)
         painter.drawLine(-15, 0, 15, 0)
         painter.drawEllipse(-10, -10, 20, 20)

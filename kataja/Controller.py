@@ -27,7 +27,6 @@
 import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-from kataja.ColorSettings import QtColors, Palette
 from kataja.ForestSettings import ForestSettings
 from kataja.Preferences import Preferences, QtPreferences
 from kataja.utils import caller
@@ -40,8 +39,6 @@ global prefs, qt_prefs, colors
 prefs = Preferences()
 qt_prefs = QtPreferences()
 forest_settings = ForestSettings(None, prefs)
-colors = QtColors(prefs, forest_settings)
-palette = Palette()
 
 # gc.set_debug(gc.DEBUG_LEAK)
 
@@ -53,12 +50,9 @@ palette = Palette()
 #         )
 # gc.set_debug(flags)
 
-class Controller(QtCore.QObject):
-
-    EDGE_SHAPES_CHANGED = QtCore.pyqtSignal(int, int)
+class Controller:
 
     def __init__(self):
-        QtCore.QObject.__init__(self)
         # self.set_prefs('default')
         # : :type self.main: KatajaMain
         self.main = None
@@ -93,21 +87,27 @@ class Controller(QtCore.QObject):
     def late_init(self, main):
         self.main = main
 
+    def cm(self):
+        """ Shortcut to color manager, which replaces palettes, colors etc. older solutions. """ 
+        return self.main.color_manager
+
+    def forest(self):
+        """ Shortcut to active forest """
+        return self.main.forest
+
+    def fs(self):
+        """ Shortcut to active forest's settings """
+        return self.main.forest.settings
+
+
     def add_message(self, msg):
         self.main.add_message(msg)
-
-    def set_colors(self, col):
-        colors = col
 
     def announce(self, signal, *args):
         """ Announcing is used to broadcast update requests to objects in graph scene
         or UI items. Items need to support this by having signal in 
         'receives_signals'- list and by having 'receive_signal' method that then
         distinguishes between different signals. Announcements can include arguments. """ 
-        #if args:
-        #    signal.emit(*args)
-        #else:
-        #    signal.emit()
         #self.main.ui_manager.forward_signal(signal, *args)
         self.main.graph_scene.forward_signal(signal, *args)
 

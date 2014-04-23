@@ -44,7 +44,7 @@ import PyQt5.QtGui as QtGui
 import PyQt5.QtPrintSupport as QtPrintSupport
 import PyQt5.QtWidgets as QtWidgets
 from kataja.ConstituentNode import ConstituentNode
-from kataja.Controller import ctrl, prefs, qt_prefs, colors
+from kataja.Controller import ctrl, prefs, qt_prefs
 from kataja.Forest import Forest
 from kataja.ForestKeeper import ForestKeeper
 from kataja.GraphScene import GraphScene
@@ -53,6 +53,7 @@ from kataja.Preferences import Preferences, QtPreferences
 from kataja.Presentation import TextArea
 from kataja.Edge import SHAPE_PRESETS
 from kataja.UIManager import UIManager
+from kataja.ColorManager import ColorManager
 import kataja.globals as g
 from kataja.globals import FEATURE_EDGE, CONSTITUENT_EDGE
 from kataja.ui.UIPanel import ColorWheelPanel
@@ -96,6 +97,8 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.app = app
         self.fontdb = QtGui.QFontDatabase()
         print '---- set up font db ... ', time.time() - t
+        self.color_manager = ColorManager()
+        print '---- Initialized color manager ... ', time.time() - t
         qt_prefs.late_init(prefs, self.fontdb)
         self.app.setFont(qt_prefs.ui_font)
         print '---- initialized prefs ... ', time.time() - t
@@ -114,7 +117,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         print '---- forest init ... ', time.time() - t
         self.visualizations = VISUALIZATIONS
         print '---- visualizations init ... ', time.time() - t
-        app.setPalette(colors.palette)
+        app.setPalette(self.color_manager.get_qt_palette())
         self.setCentralWidget(self.graph_view)
 
         print '---- set palette ... ', time.time() - t

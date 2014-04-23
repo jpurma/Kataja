@@ -1,7 +1,7 @@
 ########################################################
 from PyQt5 import QtGui, QtCore, QtWidgets
 
-from kataja.Controller import colors
+from kataja.Controller import ctrl
 from PyQt5.QtCore import QPointF as Pf
 
 
@@ -27,7 +27,7 @@ class MergeHintLine(QtWidgets.QGraphicsItem):
         if hasattr(self.end, 'middle_point'):
             endpos = self.graph.mapFromScene(self.end.middle_point)
             self._ui_line = QtCore.QLineF(startpos, endpos)
-            painter.setPen(QtGui.QPen(colors.ui, max((0.1, (80 - self._ui_line.length()) / 10))))
+            painter.setPen(QtGui.QPen(ctrl.cm().ui(), max((0.1, (80 - self._ui_line.length()) / 10))))
             painter.drawLine(self._ui_line)
             if endpos.x() < startpos.x():
                 painter.drawText(endpos.x(), endpos.y() - 30, unichr(8594))  # 0x2192 8594 rightarrow
@@ -37,7 +37,7 @@ class MergeHintLine(QtWidgets.QGraphicsItem):
         else:
             endpos = self.graph.mapFromScene(self.end.pos())
             self._ui_line = QtCore.QLineF(startpos, endpos)
-            painter.setPen(QtGui.QPen(colors.ui, max((0.1, (80 - self._ui_line.length()) / 10))))
+            painter.setPen(QtGui.QPen(ctrl.cm().ui(), max((0.1, (80 - self._ui_line.length()) / 10))))
             cp = Pf((startpos.x() + endpos.x()) / 2, ((startpos.y() + endpos.y()) / 2) - 15)
             painter.drawLine(startpos, cp)
             painter.drawLine(cp, endpos)

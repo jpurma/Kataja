@@ -101,7 +101,8 @@ class Preferences(object):
         self.default_show_select_order = False
         self.default_draw_features = True
         self.default_draw_width = 2
-        self.default_my_palettes = {}
+        self.my_palettes = {}
+        self.default_color_mode = 'random'
         self.default_hsv = None
         self.default_bracket_style = 0 
 
@@ -245,6 +246,7 @@ class Preferences(object):
             },
 
         }
+        self.custom_colors = {}
 
     def solve_app_path(self):
         full_path = os.path.abspath(os.path.dirname(__file__))

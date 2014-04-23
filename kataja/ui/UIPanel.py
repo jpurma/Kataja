@@ -26,7 +26,7 @@ import math
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from PyQt5.QtCore import QPointF as Pf, QPoint as P, Qt
-from kataja.Controller import ctrl, prefs, qt_prefs, colors
+from kataja.Controller import ctrl, prefs, qt_prefs
 from kataja.utils import to_tuple
 from kataja.visualizations.available import VISUALIZATIONS
 from kataja.ui.TwoColorButton import TwoColorButton
@@ -270,13 +270,14 @@ class ColorWheelInner(QtWidgets.QWidget):
         painter = QtGui.QPainter(self)
         painter.setRenderHints(QtGui.QPainter.Antialiasing | QtGui.QPainter.TextAntialiasing)
         #painter.setBrush(colors.dark_gray)
-        painter.setPen(colors.text)
+        painter.setPen(ctrl.cm().ui())
         #painter.drawRect(0, 0, 160, 160)
         #painter.setBrush(colors.paper)
         #painter.setPen(colors.paper)
         r = self._radius
         painter.drawEllipse(4, 4, r + r, r + r)
         painter.drawRect(self._lum_box_x, self._lum_box_y, 8, r)
+        cm = ctrl.cm()
 
         def draw_as_circle(color):
             h, s, v, a = color.getHsvF()
@@ -288,8 +289,9 @@ class ColorWheelInner(QtWidgets.QWidget):
             y += self._origin_y
             size = (1 - v) * 20.0 + 5
             size2 = size / 2
-            if color == colors.paper:
-                painter.setPen(colors.drawing)
+
+            if color == cm.paper():
+                painter.setPen(cm.drawing())
                 painter.setBrush(color)
             else:
                 painter.setBrush(color)
@@ -297,18 +299,17 @@ class ColorWheelInner(QtWidgets.QWidget):
             painter.drawEllipse(x - size2, y - size2, size, size)
             return x, y, v
 
-        draw_these = [colors.paper, colors.hover, colors.ui, colors.active, colors.drawing2, colors.text,
-                      colors.drawing]
+        draw_these = [cm.paper(), cm.ui(), cm.secondary(), cm.drawing()]
         for color in draw_these:
             x, y, v = draw_as_circle(color)
         self._color_spot_area = x, y, v
         size = (1 - v) * 20.0 + 5
         size2 = size / 2
-        painter.setPen(colors.ui)
+        painter.setPen(cm.ui())
         painter.drawLine(x, y - size2, x, y + size2)
         painter.drawLine(x - size2, y, x + size2, y)
         self._flag_area = self._lum_box_x, self._lum_box_y + r * (1 - v), 8, 8
-        painter.setBrush(colors.drawing)
+        painter.setBrush(cm.drawing())
         painter.drawRect(self._flag_area[0], self._flag_area[1], self._flag_area[2], self._flag_area[3])
         #QtWidgets.QWidget.paintEvent(self, event)
 
@@ -354,16 +355,17 @@ class ColorWheelInner(QtWidgets.QWidget):
             h = (math.atan2(dy, dx) + math.pi) / (math.pi * 2)
             return h, s
 
+        cm = ctrl.cm()
         if self._pressed == FLAG:
             x, y = to_tuple(event.localPos())
-            new_value = get_value_from_flag_position(colors.hsv[2], y)
-            hsv = (colors.hsv[0], colors.hsv[1], new_value)
+            new_value = get_value_from_flag_position(cm.hsv[2], y)
+            hsv = (cm.hsv[0], cm.hsv[1], new_value)
             ctrl.main.adjust_colors(hsv)  # @UndefinedVariable
             self.update()
         elif self._pressed == CIRCLE:
             x, y = to_tuple(event.localPos())
             h, s = get_color_from_position(x, y)
-            hsv = (h, s, colors.hsv[2])
+            hsv = (h, s, cm.hsv[2])
             ctrl.main.adjust_colors(hsv)  # @UndefinedVariable
             self.update()
 
@@ -412,7 +414,7 @@ class ColorWheelPanel(UIPanel):
         #selector.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
         layout.addWidget(selector)
         hlayout = QtWidgets.QHBoxLayout()
-        color_name = QtWidgets.QLabel(colors.get_color_name(colors.hsv), self)
+        color_name = QtWidgets.QLabel(ctrl.cm().get_color_name(ctrl.cm().hsv), self)
         color_name.setFixedWidth(120)
         color_name.setSizePolicy(label_policy)
         self.color_name = color_name
@@ -471,21 +473,24 @@ class ColorWheelPanel(UIPanel):
     def h_changed(self, value):
         if self._updating:
             return
-        hsv = (value / 255.0, colors.hsv[1], colors.hsv[2])
+        cm = ctrl.cm()
+        hsv = (value / 255.0, cm.hsv[1], cm.hsv[2])
         ctrl.main.adjust_colors(hsv)  # @UndefinedVariable
         self.update()
 
     def s_changed(self, value):
         if self._updating:
             return
-        hsv = (colors.hsv[0], value / 254.9, colors.hsv[2])
+        cm = ctrl.cm()
+        hsv = (cm.hsv[0], value / 254.9, cm.hsv[2])
         ctrl.main.adjust_colors(hsv)  # @UndefinedVariable
         self.update()
 
     def v_changed(self, value):
         if self._updating:
             return
-        hsv = (colors.hsv[0], colors.hsv[1], value / 255.0)
+        cm = ctrl.cm()
+        hsv = (cm.hsv[0], cm.hsv[1], value / 255.0)
         ctrl.main.adjust_colors(hsv)  # @UndefinedVariable
         self.update()
 
@@ -495,21 +500,23 @@ class ColorWheelPanel(UIPanel):
         ctrl.main.change_color_mode(mode_key)
 
     def remember_color(self):
-        color_key = str(colors.hsv)
+        cm = ctrl.cm()
+        color_key = str(cm.hsv)
         if color_key not in prefs.color_modes:
-            prefs.add_color_mode(color_key, colors.hsv, colors)
+            prefs.add_color_mode(color_key, cm.hsv, cm)
             color_item = prefs.color_modes[color_key]
             self.mode_select.addItem(color_item['name'])
             self.mode_select.setCurrentIndex(self.mode_select.count() - 1)
         ctrl.main.change_color_mode(color_key)
 
     def update_colors(self):
-        h, s, v = colors.hsv
+        cm = ctrl.cm()
+        h, s, v = cm.hsv
         self._updating = True
         self.h_spinner.setValue(h * 255)
         self.s_spinner.setValue(s * 255)
         self.v_spinner.setValue(v * 255)
-        self.color_name.setText(colors.get_color_name(colors.hsv))
+        self.color_name.setText(cm.get_color_name(cm.hsv))
         self._updating = False
 
 

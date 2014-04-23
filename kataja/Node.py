@@ -24,7 +24,7 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from PyQt5.QtCore import Qt
-from kataja.Controller import ctrl, prefs, qt_prefs, palette
+from kataja.Controller import ctrl, prefs, qt_prefs
 from kataja.Label import Label
 from kataja.Movable import Movable
 from kataja.TouchArea import TouchArea
@@ -106,6 +106,15 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self.setZValue(10)
         self.fade_in()
         # # Remember to call update_identity in subclassed __init__s!
+        self.effect = QtWidgets.QGraphicsDropShadowEffect()
+        self.effect.setBlurRadius(20)
+        #self.effect.setColor(ctrl.cm().drawing())
+        self.effect.setColor(ctrl.cm().d['white'])
+        self.effect.setOffset(0,5)
+        self.effect.setEnabled(False)
+        self.setGraphicsEffect(self.effect)
+
+
 
     def __repr__(self):
         """ This is a node and this represents this UG item """
@@ -249,9 +258,9 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     def color(self, value = None):
         if value is None:
             if self._color == None:
-                return palette.get(self.forest.settings.node_settings(self.__class__.node_type, 'color'))
+                return ctrl.cm().get(self.forest.settings.node_settings(self.__class__.node_type, 'color'))
             else:
-                return palette.get(self._color)
+                return ctrl.cm().get(self._color)
         else:
             self._color = value
             #if self._label_complex:
@@ -261,11 +270,11 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     def contextual_color(self):
         """ Drawing color that is sensitive to node's state """
         if ctrl.pressed == self:
-            return palette.active(self.color())
+            return ctrl.cm().active(self.color())
         elif self._hovering:
-            return palette.hovering(self.color())
+            return ctrl.cm().hovering(self.color())
         elif ctrl.is_selected(self):
-            return palette.selected(self.color())
+            return ctrl.cm().selected(self.color())
         else:
             return self.color()
 
@@ -530,14 +539,17 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """ Hovering has some visual effects, usually handled in paint-method """
         if not self._hovering:
             self._hovering = True
+            self.effect.setEnabled(True)
             self.prepareGeometryChange()
             self.update()
+
         QtWidgets.QGraphicsItem.hoverEnterEvent(self, event)
 
     def hoverLeaveEvent(self, event):
         """ Object needs to be updated """
         if self._hovering:
             self._hovering = False
+            self.effect.setEnabled(False)
             self.prepareGeometryChange()
             self.update()
         QtWidgets.QGraphicsItem.hoverLeaveEvent(self, event)

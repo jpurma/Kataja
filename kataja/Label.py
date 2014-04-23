@@ -91,3 +91,8 @@ class Label(QtWidgets.QGraphicsTextItem):
         brect = br or self.boundingRect()
         self.setPos(brect.width() / -2.0, brect.height() / -2.0)
 
+    def paint(self, painter, option, widget):
+        """ Painting is sensitive to mouse/selection issues, but usually with
+        nodes it is the label of the node that needs complex painting """
+        self.setDefaultTextColor(self._host.contextual_color())
+        QtWidgets.QGraphicsTextItem.paint(self, painter, option, widget)

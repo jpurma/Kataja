@@ -23,7 +23,6 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-from kataja.Controller import colors
 from kataja.Movable import Movable
 
 
@@ -35,7 +34,6 @@ class TextArea(Movable, QtWidgets.QGraphicsTextItem):
         # self.setFlag(QtGui.QGraphicsRectItem.ItemIsSelectable)
         self.setTextInteractionFlags(QtCore.Qt.TextEditorInteraction)
         self.prepareGeometryChange()
-        self.setDefaultTextColor(colors.drawing)
         # self.setFont(qt_prefs.font)
         # self.setTextWidth(box.width())
         self.set_position(box.x(), box.y(), 0)

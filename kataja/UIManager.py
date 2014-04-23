@@ -23,20 +23,18 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-from PyQt5.QtCore import QPointF as Pf, QPoint as P, Qt
 from kataja.ConstituentNode import ConstituentNode
-from kataja.Controller import ctrl, prefs, qt_prefs, colors
+from kataja.Controller import ctrl, prefs, qt_prefs
 from kataja.Edge import Edge
 from kataja.ui.ActivityMarker import ActivityMarker
 from kataja.ui.ControlPoint import ControlPoint
 from kataja.ui.FadingSymbol import FadingSymbol
-from kataja.ui.HUD import HUD
 from kataja.ui.MergeHintLine import MergeHintLine
 from kataja.ui.MessageItem import MessageItem
 from kataja.ui.RadialMenu import RadialMenu
 from kataja.ui.StretchLine import StretchLine
 from kataja.ui.TargetReticle import TargetReticle
-from kataja.ui.UIPanel import UIPanel, LogPanel, NavigationPanel, VisualizationPanel, ColorWheelPanel, DockPanel, \
+from kataja.ui.UIPanel import LogPanel, NavigationPanel, VisualizationPanel, ColorWheelPanel, DockPanel, \
     LinesPanel
 from kataja.TouchArea import TouchArea
 import kataja.globals as g
@@ -308,7 +306,7 @@ class UIManager:
         if not self._stretchline:
             line = QtCore.QLineF(start, end)
             self._stretchline = StretchLine(line)  # QtGui.QGraphicsLineItem(line)
-            self._stretchline.setPen(colors.selection_pen)
+            self._stretchline.setPen(ctrl.cm().ui())
             self.add_ui(self._stretchline)
         else:
             line = self._stretchline.line()
@@ -361,7 +359,7 @@ class UIManager:
                 self.add_ui(self._message)
             else:
                 print "what happened to 'Log' panel?"
-                raise hell
+                quit()
         else:
             self._message.add(msg)
 

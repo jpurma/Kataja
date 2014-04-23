@@ -25,7 +25,7 @@ import math
 
 from PyQt5 import QtCore
 
-from kataja.Controller import ctrl, prefs, qt_prefs, colors
+from kataja.Controller import ctrl, prefs, qt_prefs
 from kataja.utils import to_tuple
 from PyQt5.QtCore import QPointF as Pf
 import PyQt5.QtGui as QtGui
@@ -158,9 +158,6 @@ class TouchArea(QtWidgets.QGraphicsItem):
             self._path.moveTo(plus_point[0], plus_point[1] - 2)
             self._path.lineTo(plus_point[0], plus_point[1] + 2)
 
-    def update_colors(self):
-        self.setBrush(self.host.color)
-
     def __repr__(self):
         return '<toucharea %s>' % self.key
 
@@ -253,22 +250,23 @@ class TouchArea(QtWidgets.QGraphicsItem):
             pass
 
         if self._hovering:
-            painter.setBrush(colors.ui_hover)
+            ui = ctrl.cm().ui()
+            painter.setBrush(ctrl.cm().hovering(ui))
             painter.setPen(qt_prefs.no_pen)
             painter.drawEllipse(self.end_point[0] - end_spot_size + 1, self.end_point[1] - end_spot_size + 1,
                                 2 * end_spot_size, 2 * end_spot_size)
             painter.setBrush(qt_prefs.no_brush)
-            painter.setPen(colors.ui)
+            painter.setPen(ui)
 
         elif ctrl.is_selected(self):  # wrong colors, just testing
             print 'cant select ui toucharea'
             raise
-            painter.setPen(colors.ui)
+            painter.setPen(ctrl.cm().ui())
         self.update_end_points()
         # painter.drawRect(self.boundingRect()) # debug
         painter.drawPath(self._path)
         if self._hovering and ctrl.dragged:
-            painter.setPen(colors.ui_hover)
+            painter.setPen(ctrl.cm().hover(ctrl.cm().ui()))
             ex, ey = self.end_point
             painter.drawLine(ex, ey - 30, ex, ey + 30)
             painter.drawLine(ex - 30, ey, ex + 30, ey)

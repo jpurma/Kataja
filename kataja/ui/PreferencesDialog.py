@@ -21,7 +21,7 @@
 #
 #############################################################################
 
-from kataja.Controller import prefs, colors
+from kataja.Controller import prefs, ctrl
 from PyQt5 import QtCore, QtWidgets
 
 
@@ -177,7 +177,6 @@ class PreferencesDialog(QtWidgets.QDialog):
         self.setLayout(layout)
 
     def update_pens(self):
-        colors.update_pens(prefs)
         self.main.redraw()
 
     def dpi_changed(self, index):

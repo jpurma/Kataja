@@ -1,5 +1,5 @@
 ########################################################
-from kataja.Controller import prefs, colors
+from kataja.Controller import prefs, ctrl
 from kataja.utils import to_tuple
 from PyQt5.QtCore import QPointF as Pf
 from PyQt5.QtCore import Qt
@@ -64,14 +64,15 @@ class ControlPoint(QtWidgets.QGraphicsItem):
 
 
     def paint(self, painter, option, widget):
+        cm = ctrl.cm()
         if self.pressed:
-            pen = colors.ui_active
+            pen = cm.ui_active()
             # pen = colors.active
-            painter.setBrush(colors.ui_active)
+            painter.setBrush(cm.ui_active())
         elif self._hovering:
-            pen = colors.ui_hover
-            painter.setBrush(colors.ui_hover)
+            pen = cm.ui_hover()
+            painter.setBrush(cm.ui_hover())
         else:
-            pen = colors.ui
+            pen = cm.ui()
         painter.setPen(pen)
         painter.drawEllipse(self._xy, self._xy, self._wh, self._wh)

@@ -21,7 +21,7 @@
 #
 #############################################################################
 
-from kataja.Controller import qt_prefs, colors
+from kataja.Controller import qt_prefs
 from kataja.Node import Node
 from kataja.globals import GLOSS_EDGE, GLOSS_NODE
 
