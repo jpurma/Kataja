@@ -108,7 +108,7 @@ class EquidistantElasticTree(BaseVisualization):
                 dist_y = end_y - start_y
                 dist = math.hypot(dist_x, dist_y)
                 if dist > 30:
-                    pull = edge.pull
+                    pull = edge.pull()
                     # ang=math.atan2(by,bx)
                     # fx=math.cos(ang)*(dist-30)
                     # fy=math.sin(ang)*(dist-30)

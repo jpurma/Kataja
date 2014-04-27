@@ -42,6 +42,8 @@ NO_ALIGN = 0
 LEFT = 1
 RIGHT = 2
 
+outline_stroker = QtGui.QPainterPathStroker()
+outline_stroker.setWidth(4)
 
 
 # Shapes
@@ -447,12 +449,14 @@ class Edge(QtWidgets.QGraphicsItem):
         self._shape_method = None
         self._shape_supports_control_points = 0
         self._path = None
+        self._fat_path = None
         self._visible = None
         self.selectable = True
         self.draggable = False
         self.clickable = True
         self._hovering = False
         self.touch_areas = {}
+        self.setZValue(10)
         if start and end:
             self.connect_end_points(start, end)
 
@@ -460,6 +464,7 @@ class Edge(QtWidgets.QGraphicsItem):
         # self.setFlag(QtGui.QGraphicsItem.ItemIsMovable)
         # self.setFlag(QtGui.QGraphicsItem.ItemIsSelectable)
         self.setAcceptHoverEvents(True)
+        self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.effect = utils.create_shadow_effect(self, ctrl)
         self.setGraphicsEffect(self.effect)
 
@@ -563,6 +568,7 @@ class Edge(QtWidgets.QGraphicsItem):
         return SHAPE_PRESETS[self.shape_name()]['control_points'] 
 
 
+
     def pull(self, value = None):
         if value is None:
             if self._pull is None:
@@ -587,6 +593,20 @@ class Edge(QtWidgets.QGraphicsItem):
         if not self._shape_method:
             self._shape_method = SHAPE_PRESETS[self.shape_name()]['method']
         self._path = self._shape_method(self)
+        if not self.is_filled(): # expensive with filled shapes
+            self._fat_path = outline_stroker.createStroke(self._path).united(self._path)
+
+
+    def shape(self):
+        if not self.is_filled():
+            if not self._fat_path:
+                self.make_path()
+            return self._fat_path
+        else:
+            if not self._path:
+                self.make_path()
+            return self._path
+
 
 
     def update_shape_method(self):
@@ -680,26 +700,36 @@ class Edge(QtWidgets.QGraphicsItem):
 
     #### Mouse - Qt events ##################################################
 
-    def hoverEnterEvent(self, event):
+    def _hovering_on(self):
         if not self._hovering:
             self._hovering = True
+            self.setZValue(100)
             self.effect.setEnabled(True)
             self.prepareGeometryChange()
             self.update()
+
+    def hoverEnterEvent(self, event):
+        self._hovering_on()
         QtWidgets.QGraphicsItem.hoverEnterEvent(self, event)
 
-    def hoverLeaveEvent(self, event):
+    def _hovering_off(self):
         if self._hovering:
             self._hovering = False
+            self.setZValue(10)
             self.effect.setEnabled(False)
             self.prepareGeometryChange()
             self.update()
+
+
+    def hoverLeaveEvent(self, event):
+        self._hovering_off()
+        QtWidgets.QGraphicsItem.hoverLeaveEvent(self, event)
 
     ### Scene-managed call
 
     def click(self, event=None):
         """ Scene has decided that this node has been clicked """
-        self._hovering = False
+        self._hovering_off()
         if event and event.modifiers() == Qt.ShiftModifier:  # multiple selection
             if ctrl.is_selected(self):
                 ctrl.remove_from_selection(self)
