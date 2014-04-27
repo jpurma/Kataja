@@ -29,7 +29,7 @@ import time
 import traceback
 
 from PyQt5.QtCore import QPointF, QPoint
-from PyQt5 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 
 def print_rect(rect):
@@ -475,3 +475,13 @@ def save_object(obj, saved_objs, open_refs, ignore=[]):
 
 def quit():
     sys.exit()
+
+
+def create_shadow_effect(obj, ctrl):
+    effect = QtWidgets.QGraphicsDropShadowEffect()
+    effect.setBlurRadius(20)
+    #self.effect.setColor(ctrl.cm().drawing())
+    effect.setColor(ctrl.cm().d['white'])
+    effect.setOffset(0,5)
+    effect.setEnabled(False)
+    return effect

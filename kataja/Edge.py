@@ -31,6 +31,7 @@ from kataja.utils import to_tuple
 from kataja.TouchArea import TouchArea
 import kataja.globals as g
 from kataja.ui.TwoColorIcon import TwoColorIcon, TwoColorIconEngine
+import utils
 
 
 pipi = pi * 2.0
@@ -458,7 +459,10 @@ class Edge(QtWidgets.QGraphicsItem):
         # self.setAcceptedMouseButtons(QtCore.Qt.NoButton)
         # self.setFlag(QtGui.QGraphicsItem.ItemIsMovable)
         # self.setFlag(QtGui.QGraphicsItem.ItemIsSelectable)
-        self.setAcceptHoverEvents(False)
+        self.setAcceptHoverEvents(True)
+        self.effect = utils.create_shadow_effect(self, ctrl)
+        self.setGraphicsEffect(self.effect)
+
         if not ctrl.loading:
             forest.store(self)
 
@@ -674,9 +678,12 @@ class Edge(QtWidgets.QGraphicsItem):
                 self.make_path()
             return self._path.controlPointRect()
 
+    #### Mouse - Qt events ##################################################
+
     def hoverEnterEvent(self, event):
         if not self._hovering:
             self._hovering = True
+            self.effect.setEnabled(True)
             self.prepareGeometryChange()
             self.update()
         QtWidgets.QGraphicsItem.hoverEnterEvent(self, event)
@@ -684,9 +691,11 @@ class Edge(QtWidgets.QGraphicsItem):
     def hoverLeaveEvent(self, event):
         if self._hovering:
             self._hovering = False
+            self.effect.setEnabled(False)
             self.prepareGeometryChange()
             self.update()
 
+    ### Scene-managed call
 
     def click(self, event=None):
         """ Scene has decided that this node has been clicked """
@@ -703,6 +712,8 @@ class Edge(QtWidgets.QGraphicsItem):
         else:
             ctrl.select(self)
 
+
+    ### Qt paint method override
 
     def paint(self, painter, option, widget):
         if not self.start or not self.end:

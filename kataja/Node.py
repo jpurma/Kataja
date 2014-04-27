@@ -30,12 +30,14 @@ from kataja.Movable import Movable
 from kataja.TouchArea import TouchArea
 from kataja.utils import to_tuple, time_me
 from kataja.globals import ABSTRACT_EDGE, ABSTRACT_NODE
+import utils
 
 
 
 # ctrl = Controller object, gives accessa to other modules
 
 # alignment of edges -- in some cases it is good to draw left branches differently than right branches
+
 NO_ALIGN = 0
 LEFT = 1
 RIGHT = 2
@@ -106,12 +108,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self.setZValue(10)
         self.fade_in()
         # # Remember to call update_identity in subclassed __init__s!
-        self.effect = QtWidgets.QGraphicsDropShadowEffect()
-        self.effect.setBlurRadius(20)
-        #self.effect.setColor(ctrl.cm().drawing())
-        self.effect.setColor(ctrl.cm().d['white'])
-        self.effect.setOffset(0,5)
-        self.effect.setEnabled(False)
+        self.effect = utils.create_shadow_effect(self, ctrl)
         self.setGraphicsEffect(self.effect)
 
 
