@@ -56,7 +56,7 @@ from kataja.UIManager import UIManager
 from kataja.ColorManager import ColorManager
 import kataja.globals as g
 from kataja.globals import FEATURE_EDGE, CONSTITUENT_EDGE
-from kataja.ui.UIPanel import ColorWheelPanel
+from kataja.ui.UIPanel import ColorPanel
 from kataja.ui.MenuItem import MenuItem
 from kataja.ui.PreferencesDialog import PreferencesDialog
 from kataja.utils import to_unicode, time_me, save_object

@@ -1,3 +1,4 @@
+# coding=utf-8
 #############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
@@ -37,6 +38,12 @@ class TwoColorIcon(QtGui.QIcon):
     """ Icons that change their color according to widget where they are """
 
     def paint(self, painter, **kwargs):
+        """
+
+        :param painter:
+        :param kwargs:
+        :return:
+        """
         print 'using twocoloricon painter'
         return QtGui.QIcon.paint(self, painter, kwargs)
 
@@ -44,7 +51,14 @@ class TwoColorIcon(QtGui.QIcon):
 class DockPanel(QtWidgets.QDockWidget):
     """ Big panel where other dock panels are folded in"""
 
-    def __init__(self, name, parent=None):
+    def __init__(self, name, default_position=None, parent=None, ui_buttons=None):
+        """
+        All of the panel constructors follow the same format so that the construction can be automated.
+        :param name: Title of the panel and the key for accessing it
+        :param default_position: 'bottom', 'right'... -- not used here.
+        :param parent: self.main
+        :param ui_buttons: pass a dictionary where buttons from this panel will be added -- not really used here
+        """
         QtWidgets.QDockWidget.__init__(self, name, parent=None)
         self.name = name
         self.setFloating(True)
@@ -56,6 +70,12 @@ class UIPanel(QtWidgets.QDockWidget):
     """ UI windows that can be docked to main window or separated. Gives some extra control and helper methods on QDockWidget. """
 
     def __init__(self, name, default_position='bottom', parent=None):
+        """
+
+        :param name:
+        :param default_position:
+        :param parent:
+        """
         QtWidgets.QDockWidget.__init__(self, name, parent=parent)
         self.name = name
         if default_position == 'bottom':
@@ -79,22 +99,43 @@ class UIPanel(QtWidgets.QDockWidget):
     #    print 'UIPanel %s floating: %s' % (self, floating)
 
     def report_dock_location(self, area):
+        """
+
+        :param area:
+        """
         print 'UIPanel %s docked: %s' % (self, area)
 
     def report_top_level(self, floating):
+        """
+
+        :param floating:
+        """
         if floating:
             w, h = self.preferred_size
             self.resize(w, h)
         print 'UIPanel %s floating: %s' % (self, floating)
 
     def update_field(self, field_key, field, value):
+        """
+
+        :param field_key:
+        :param field:
+        :param value:
+        """
         field.setText(value)
 
 
 class VisualizationPanel(UIPanel):
     """ Switch visualizations and their adjust their settings """
 
-    def __init__(self, name, default_position='right', parent=None, ui_buttons={}):
+    def __init__(self, name, default_position='right', parent=None, ui_buttons=None):
+        """
+        All of the panel constructors follow the same format so that the construction can be automated.
+        :param name: Title of the panel and the key for accessing it
+        :param default_position: 'bottom', 'right'...
+        :param parent: self.main
+        :param ui_buttons: pass a dictionary where buttons from this panel will be added
+        """
         UIPanel.__init__(self, name, default_position, parent)
         label_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
         button_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.MinimumExpanding)
@@ -124,16 +165,31 @@ class VisualizationPanel(UIPanel):
         self.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
 
     def update_field(self, field_key, field, value):
+        """
+
+        :param field_key:
+        :param field:
+        :param value:
+        """
         if field_key == 'visualization_selector':
             index = VISUALIZATIONS.keys().index(value)
             field.setCurrentIndex(index)
 
 
     def sizeHint(self):
+        """
+
+
+        :return:
+        """
         print 'navigation panel asked for size hint'
         return QtCore.QSize(300, 80)
 
     def submit_action(self, index):
+        """
+
+        :param index:
+        """
         action_key = VISUALIZATIONS.keys()[index]
         if action_key in self.parent()._actions:
             self.parent()._actions[action_key].trigger()
@@ -142,7 +198,14 @@ class VisualizationPanel(UIPanel):
 class NavigationPanel(UIPanel):
     """ Switch between trees or derivation steps """
 
-    def __init__(self, name, default_position='bottom', parent=None, ui_buttons={}):
+    def __init__(self, name, default_position='bottom', parent=None, ui_buttons=None):
+        """
+        All of the panel constructors follow the same format so that the construction can be automated.
+        :param name: Title of the panel and the key for accessing it
+        :param default_position: 'bottom', 'right'...
+        :param parent: self.main
+        :param ui_buttons: pass a dictionary where buttons from this panel will be added
+        """
         UIPanel.__init__(self, name, default_position, parent)
         label_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
         button_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.MinimumExpanding)
@@ -204,6 +267,11 @@ class NavigationPanel(UIPanel):
         self.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
 
     def sizeHint(self):
+        """
+
+
+        :return:
+        """
         print 'navigation panel asked for size hint'
         return QtCore.QSize(200, 80)
 
@@ -211,7 +279,14 @@ class NavigationPanel(UIPanel):
 class LogPanel(UIPanel):
     """ Dump window """
 
-    def __init__(self, name, default_position='bottom', parent=None, ui_buttons={}):
+    def __init__(self, name, default_position='bottom', parent=None, ui_buttons=None):
+        """
+        All of the panel constructors follow the same format so that the construction can be automated.
+        :param name: Title of the panel and the key for accessing it
+        :param default_position: 'bottom', 'right'...
+        :param parent: self.main
+        :param ui_buttons: pass a dictionary where buttons from this panel will be added
+        """
         UIPanel.__init__(self, name, default_position, parent)
         x, y, w, h = parent.geometry().getRect()
         #self.setLayout(QtWidgets.QHBoxLayout())
@@ -241,6 +316,11 @@ class LogPanel(UIPanel):
         print '*** created log panel ***'
 
     def sizeHint(self):
+        """
+
+
+        :return:
+        """
         return QtCore.QSize(640, 80)
 
 
@@ -251,6 +331,13 @@ CIRCLE = 2
 
 class ColorWheelInner(QtWidgets.QWidget):
     def __init__(self, parent):
+        """
+        All of the panel constructors follow the same format so that the construction can be automated.
+        :param name: Title of the panel and the key for accessing it
+        :param default_position: 'bottom', 'right'...
+        :param parent: self.main
+        :param ui_buttons: pass a dictionary where buttons from this panel will be added
+        """
         QtWidgets.QWidget.__init__(self, parent=parent)
         self._pressed = 0
         self._color_spot_area = 0, 0, 0
@@ -267,6 +354,11 @@ class ColorWheelInner(QtWidgets.QWidget):
 
 
     def paintEvent(self, event):
+        """
+
+        :param event:
+        :return:
+        """
         painter = QtGui.QPainter(self)
         painter.setRenderHints(QtGui.QPainter.Antialiasing | QtGui.QPainter.TextAntialiasing)
         #painter.setBrush(colors.dark_gray)
@@ -300,6 +392,7 @@ class ColorWheelInner(QtWidgets.QWidget):
             return x, y, v
 
         draw_these = [cm.paper(), cm.ui(), cm.secondary(), cm.drawing()]
+        x, y, v = 0, 0, 0
         for color in draw_these:
             x, y, v = draw_as_circle(color)
         self._color_spot_area = x, y, v
@@ -314,6 +407,10 @@ class ColorWheelInner(QtWidgets.QWidget):
         #QtWidgets.QWidget.paintEvent(self, event)
 
     def wheelEvent(self, event):
+        """
+
+        :param event:
+        """
         h, s, v = ctrl.main.forest.settings.hsv()  # @UndefinedVariable
         ov = v
         v += event.angleDelta().y() / 100.0
@@ -327,6 +424,10 @@ class ColorWheelInner(QtWidgets.QWidget):
 
 
     def mousePressEvent(self, event):
+        """
+
+        :param event:
+        """
         x, y = to_tuple(event.localPos())
         f_x, f_y, f_w, f_h = self._flag_area
         # print 'x:%s y:%s f_x1:%s f_y1:%s, f_x2:%s, f_y2:%s' % (x,y, f_x, f_y, f_x+f_w, f_y+f_h)
@@ -337,6 +438,12 @@ class ColorWheelInner(QtWidgets.QWidget):
             self._pressed = CIRCLE
 
     def mouseMoveEvent(self, event):
+        """
+
+        :param event:
+        :return:
+        """
+
         def get_value_from_flag_position(value, y):
             dv = (self._radius - (y - self._lum_box_y)) / self._radius
             if dv < 0:
@@ -370,11 +477,26 @@ class ColorWheelInner(QtWidgets.QWidget):
             self.update()
 
     def mouseReleaseEvent(self, event):
+        """
+
+        :param event:
+        """
         self._pressed = 0
 
 
 class LinesPanel(UIPanel):
-    def __init__(self, name, default_position='right', parent=None, ui_buttons={}):
+    """
+
+    """
+
+    def __init__(self, name, default_position='right', parent=None, ui_buttons=None):
+        """
+        All of the panel constructors follow the same format so that the construction can be automated.
+        :param name: Title of the panel and the key for accessing it
+        :param default_position: 'bottom', 'right'...
+        :param parent: self.main
+        :param ui_buttons: pass a dictionary where buttons from this panel will be added
+        """
         UIPanel.__init__(self, name, default_position, parent)
         inner = QtWidgets.QWidget(self)
         layout = QtWidgets.QVBoxLayout()
@@ -388,15 +510,27 @@ class LinesPanel(UIPanel):
         self.setWidget(inner)
 
     def change_main_line_type(self, index):
+        """
+
+        :param index:
+        """
         ctrl.main.change_node_edge_shape(SHAPE_PRESETS.keys()[index])
 
 
-class ColorWheelPanel(UIPanel):
-    def __init__(self, name, default_position='right', parent=None, ui_buttons={}):
+class ColorMappingPanel(UIPanel):
+    """
+
+    """
+
+    def __init__(self, name, default_position='right', parent=None, ui_buttons=None):
+        """
+        All of the panel constructors follow the same format so that the construction can be automated.
+        :param name: Title of the panel and the key for accessing it
+        :param default_position: 'bottom', 'right'...
+        :param parent: self.main
+        :param ui_buttons: pass a dictionary where buttons from this panel will be added
+        """
         UIPanel.__init__(self, name, default_position, parent)
-        #self.setMaximumSize(200,170)
-        #self.preferred_size = (160, 170)
-        #self.setAutoFillBackground(True)        
         inner = QtWidgets.QWidget(self)
         layout = QtWidgets.QVBoxLayout()
         layout.setContentsMargins(4, 4, 4, 4)
@@ -405,7 +539,6 @@ class ColorWheelPanel(UIPanel):
         button_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.MinimumExpanding)
         self.preferred_size = (200, 220)
         selector = QtWidgets.QComboBox(self)
-        #selector.setSizePolicy(label_policy)
         ui_buttons['color_mode'] = selector
 
         selector.addItems([c['name'] for c in prefs.color_modes.values()])
@@ -466,11 +599,156 @@ class ColorWheelPanel(UIPanel):
         inner.setLayout(layout)
         #inner.setMaximumSize(200, 228)
 
+        #self.inner.addTab(ColorWheelInner(self.inner), 'Wheel')
+        self.setWidget(inner)
+        self.show()
+
+
+class TestPanel(UIPanel):
+    """
+        Panel for rapid testing of various UI elements that otherwise may be hidden behind complex screens or logic.
+    """
+
+    def __init__(self, name, default_position='right', parent=None, ui_buttons=None):
+        """
+        All of the panel constructors follow the same format so that the construction can be automated.
+        :param name: Title of the panel and the key for accessing it
+        :param default_position: 'bottom', 'right'...
+        :param parent: self.main
+        :param ui_buttons: pass a dictionary where buttons from this panel will be added
+        """
+        UIPanel.__init__(self, name, default_position, parent)
+        inner = QtWidgets.QWidget()
+        layout = QtWidgets.QVBoxLayout()
+        label = QtWidgets.QLabel("Test area")
+        layout.addWidget(label)
+        color_button = ColorBox()
+        inner.setLayout(layout)
+        self.setWidget(inner)
+
+
+class ColorBox(QtWidgets.QPushButton):
+    """
+        Rectangular solid button for displaying a color. Clicking it should open system's color selector.
+    """
+    def __init__(self, color, color_name):
+        """
+
+        :param color:
+        :param color_name:
+        """
+        QtWidgets.QPushButton.__init__(self)
+        self.color = color
+        self.color_name = color_name
+
+
+
+class ColorPanel(UIPanel):
+    """
+
+    """
+
+    def __init__(self, name, default_position='right', parent=None, ui_buttons=None):
+        """
+        All of the panel constructors follow the same format so that the construction can be automated.
+        :param name: Title of the panel and the key for accessing it
+        :param default_position: 'bottom', 'right'...
+        :param parent: self.main
+        :param ui_buttons: pass a dictionary where buttons from this panel will be added
+        """
+        UIPanel.__init__(self, name, default_position, parent)
+        #self.setMaximumSize(200,170)
+        #self.preferred_size = (160, 170)
+        #self.setAutoFillBackground(True)
+        inner = QtWidgets.QToolBox()
+        #### Color wheel
+        color_wheel_inner = QtWidgets.QWidget(self)
+        inner.addItem(color_wheel_inner, "Main color")
+        color_wheel_layout = QtWidgets.QVBoxLayout()
+        #color_wheel_layout.setContentsMargins(4, 4, 4, 4)
+
+        label_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        button_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.MinimumExpanding)
+        self.preferred_size = (200, 220)
+        selector = QtWidgets.QComboBox(self)
+        #selector.setSizePolicy(label_policy)
+        ui_buttons['color_mode'] = selector
+
+        selector.addItems([c['name'] for c in prefs.color_modes.values()])
+        selector.activated.connect(self.change_color_mode)
+        self.mode_select = selector
+        #selector.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
+        color_wheel_layout.addWidget(selector)
+        hlayout = QtWidgets.QHBoxLayout()
+        color_name = QtWidgets.QLabel(ctrl.cm().get_color_name(ctrl.cm().hsv), self)
+        color_name.setFixedWidth(120)
+        color_name.setSizePolicy(label_policy)
+        self.color_name = color_name
+        hlayout.addWidget(color_name)
+        add_color_button = QtWidgets.QPushButton('+', self)
+        add_color_button.setFixedWidth(20)
+        add_color_button.setSizePolicy(label_policy)
+        add_color_button.clicked.connect(self.remember_color)
+        hlayout.addWidget(add_color_button)
+        color_wheel_layout.addLayout(hlayout)
+
+        color_wheel = ColorWheelInner(color_wheel_inner)
+        color_wheel.setFixedSize(160, 148)
+        color_wheel_layout.addWidget(color_wheel)
+        #layout.setRowMinimumHeight(0, color_wheel.height())
+        h_spinner = QtWidgets.QSpinBox(self)
+        h_spinner.setRange(0, 255)
+        h_spinner.valueChanged.connect(self.h_changed)
+        h_spinner.setAccelerated(True)
+        h_spinner.setWrapping(True)
+        self.h_spinner = h_spinner
+        h_label = QtWidgets.QLabel('&H:', self)
+        h_label.setBuddy(h_spinner)
+        h_label.setSizePolicy(label_policy)
+        s_spinner = QtWidgets.QSpinBox(self)
+        s_spinner.setRange(0, 255)
+        s_spinner.valueChanged.connect(self.s_changed)
+        s_label = QtWidgets.QLabel('&S:', self)
+        s_label.setBuddy(s_spinner)
+        s_label.setSizePolicy(label_policy)
+        s_spinner.setAccelerated(True)
+        self.s_spinner = s_spinner
+        v_spinner = QtWidgets.QSpinBox(self)
+        v_spinner.setRange(0, 255)
+        v_spinner.valueChanged.connect(self.v_changed)
+        v_label = QtWidgets.QLabel('&V:', self)
+        v_label.setBuddy(v_spinner)
+        v_label.setSizePolicy(label_policy)
+        v_spinner.setAccelerated(True)
+        self.v_spinner = v_spinner
+        hlayout = QtWidgets.QHBoxLayout()
+        hlayout.addWidget(h_label)
+        hlayout.addWidget(h_spinner)
+        hlayout.addWidget(s_label)
+        hlayout.addWidget(s_spinner)
+        hlayout.addWidget(v_label)
+        hlayout.addWidget(v_spinner)
+        color_wheel_layout.addLayout(hlayout)
+        color_wheel_inner.setLayout(color_wheel_layout)
+        #inner.setMaximumSize(200, 228)
+        # Color mapping
+
+        color_mapping_inner = QtWidgets.QWidget(self)
+        inner.addItem(color_mapping_inner, "Mappings")
+        layout = QtWidgets.QVBoxLayout()
+        layout.setContentsMargins(4, 4, 4, 4)
+
+
         #self.inner.addTab(ColorWheelInner(self.inner), 'Wheel')        
         self.setWidget(inner)
         self.show()
 
     def h_changed(self, value):
+        """
+
+        :param value:
+        :return:
+        """
         if self._updating:
             return
         cm = ctrl.cm()
@@ -479,6 +757,11 @@ class ColorWheelPanel(UIPanel):
         self.update()
 
     def s_changed(self, value):
+        """
+
+        :param value:
+        :return:
+        """
         if self._updating:
             return
         cm = ctrl.cm()
@@ -487,6 +770,11 @@ class ColorWheelPanel(UIPanel):
         self.update()
 
     def v_changed(self, value):
+        """
+
+        :param value:
+        :return:
+        """
         if self._updating:
             return
         cm = ctrl.cm()
@@ -495,11 +783,19 @@ class ColorWheelPanel(UIPanel):
         self.update()
 
     def change_color_mode(self, mode):
+        """
+
+        :param mode:
+        """
         mode_key = prefs.color_modes.keys()[mode]
         print 'changing color mode to:', mode, mode_key
         ctrl.main.change_color_mode(mode_key)
 
     def remember_color(self):
+        """
+
+
+        """
         cm = ctrl.cm()
         color_key = str(cm.hsv)
         if color_key not in prefs.color_modes:
@@ -510,6 +806,10 @@ class ColorWheelPanel(UIPanel):
         ctrl.main.change_color_mode(color_key)
 
     def update_colors(self):
+        """
+
+
+        """
         cm = ctrl.cm()
         h, s, v = cm.hsv
         self._updating = True

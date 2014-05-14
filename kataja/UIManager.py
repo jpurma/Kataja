@@ -34,8 +34,8 @@ from kataja.ui.MessageItem import MessageItem
 from kataja.ui.RadialMenu import RadialMenu
 from kataja.ui.StretchLine import StretchLine
 from kataja.ui.TargetReticle import TargetReticle
-from kataja.ui.UIPanel import LogPanel, NavigationPanel, VisualizationPanel, ColorWheelPanel, DockPanel, \
-    LinesPanel
+from kataja.ui.UIPanel import LogPanel, NavigationPanel, VisualizationPanel, ColorPanel, DockPanel, \
+    LinesPanel, TestPanel
 from kataja.TouchArea import TouchArea
 import kataja.globals as g
 from kataja.utils import to_tuple
@@ -45,6 +45,16 @@ NOTHING = 0
 SELECTING_AREA = 1
 DRAGGING = 2
 POINTING = 3
+
+panels = [
+    {'class':DockPanel, 'name':'Log'},
+    {'class':LogPanel, 'name':'Log', 'position':'bottom'},
+    {'class':TestPanel, 'name':'Test', 'position':'right'},
+    {'class':NavigationPanel, 'name':'Trees', 'position':'right'},
+    {'class':VisualizationPanel, 'name':'Visualization', 'position':'right'},
+    {'class':ColorPanel, 'name':'Colors', 'position':'right'},
+    {'class':LinesPanel, 'name':'Lines', 'position':'right'}
+]
 
 
 class UIManager:
@@ -70,20 +80,29 @@ class UIManager:
         self.moving_things = set()
         self.touch_areas = set()
         self.symbols = set()
-        dock = DockPanel('Dock', self.main)
-        dock.show()
-        self.ui_panels[dock.name] = dock
-        log = LogPanel('Log', 'bottom', self.main, self.ui_buttons)
-        self.ui_panels[log.name] = log
-        navigation = NavigationPanel('Trees', 'right', self.main, self.ui_buttons)
-        self.ui_panels[navigation.name] = navigation
-        visualizations = VisualizationPanel('Visualization', 'right', self.main, self.ui_buttons)
-        self.ui_panels[visualizations.name] = visualizations
-        color_wheel = ColorWheelPanel('Colors', 'right', self.main, self.ui_buttons)
-        self.ui_panels[color_wheel.name] = color_wheel
-        # self.activity_marker=self.addRect(0,0,10,10, pen=colors.drawing, brush=colors.drawing)
-        lines = LinesPanel('Lines', 'right', self.main, self.ui_buttons)
-        self.ui_panels[lines.name] = lines
+        for panel in panels:
+            constructor = panel['class']
+            name = panel['name']
+            position = panel.get('position', None)
+            new_panel = constructor(name, position, self.main, self.ui_buttons)
+            self.ui_panels[new_panel.name] = new_panel
+            new_panel.show()
+
+        # self.addPanels()
+        # dock = DockPanel('Dock', self.main)
+        # dock.show()
+        # self.ui_panels[dock.name] = dock
+        # log = LogPanel('Log', 'bottom', self.main, self.ui_buttons)
+        # self.ui_panels[log.name] = log
+        # navigation = NavigationPanel('Trees', 'right', self.main, self.ui_buttons)
+        # self.ui_panels[navigation.name] = navigation
+        # visualizations = VisualizationPanel('Visualization', 'right', self.main, self.ui_buttons)
+        # self.ui_panels[visualizations.name] = visualizations
+        # color_wheel = ColorPanel('Colors', 'right', self.main, self.ui_buttons)
+        # self.ui_panels[color_wheel.name] = color_wheel
+        # # self.activity_marker=self.addRect(0,0,10,10, pen=colors.drawing, brush=colors.drawing)
+        # lines = LinesPanel('Lines', 'right', self.main, self.ui_buttons)
+        # self.ui_panels[lines.name] = lines
         self.activity_marker = ActivityMarker(self)
         self.add_ui(self.activity_marker)
         self.activity_marker.setPos(5, 5)
@@ -96,6 +115,7 @@ class UIManager:
         self.hud = None
         # self.hud = HUD(self)
         # self.info('free drawing')
+
 
 
     #    def parseConstituentNodebox(self, escaped=False, finish=False):
