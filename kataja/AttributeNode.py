@@ -1,5 +1,5 @@
 # coding=utf-8
-#############################################################################
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -20,11 +20,11 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 import random
 
-from kataja.Controller import qt_prefs, ctrl
+from kataja.Controller import qt_prefs
 from kataja.globals import ATTRIBUTE_EDGE, ATTRIBUTE_NODE
 from kataja.Node import Node
 from utils import to_unicode
@@ -66,7 +66,7 @@ class AttributeNode(Node):
         self.attribute_id = attribute_id
         self._show_label = show_label
         self.label_font = qt_prefs.sc_font
-        #if self.attribute_label in color_map:
+        # if self.attribute_label in color_map:
         #    self.color = colors.feature_palette[color_map[self.attribute_label]]
         #else:
         #    self.color = colors.feature

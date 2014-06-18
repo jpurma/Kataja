@@ -1,4 +1,5 @@
-#############################################################################
+# coding=utf-8
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -19,13 +20,12 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 from PyQt5 import QtWidgets
 
 # noinspection PyUnresolvedReferences
 from PyQt5.QtCore import Qt
-from kataja.Controller import ctrl
 from kataja.Movable import Movable
 
 
@@ -36,6 +36,10 @@ class Bracket(Movable, QtWidgets.QGraphicsSimpleTextItem):
     def create_key(host, left=True):
         """
 
+
+
+        :param host:
+        :param left:
         :param Movable host:
         :param boolean left:
         """
@@ -73,6 +77,10 @@ class Bracket(Movable, QtWidgets.QGraphicsSimpleTextItem):
         self.setVisible(self.host.has_visible_brackets)
 
     def update_position(self):
+        """
+
+
+        """
         adjust = self.boundingRect().width()
         steps = 0
         if self.left:
@@ -100,6 +108,10 @@ class Bracket(Movable, QtWidgets.QGraphicsSimpleTextItem):
         return '<bracket %s>' % self.key
 
     def hoverEnterEvent(self, event):
+        """
+
+        :param event:
+        """
         if not self._hovering:
             self.host._hovering = True
             self.host.left_bracket._hovering = True
@@ -111,6 +123,10 @@ class Bracket(Movable, QtWidgets.QGraphicsSimpleTextItem):
         QtWidgets.QGraphicsSimpleTextItem.hoverEnterEvent(self, event)
 
     def hoverLeaveEvent(self, event):
+        """
+
+        :param event:
+        """
         if self._hovering:
             self.host.left_bracket._hovering = False
             self.host.right_bracket._hovering = False
@@ -121,12 +137,18 @@ class Bracket(Movable, QtWidgets.QGraphicsSimpleTextItem):
             self.host.update()
 
     def click(self, event=None):
-        """ Scene has decided that this node has been clicked """
+        """ Scene has decided that this node has been clicked
+        :param event:
+        """
         self._hovering = False
         self.host.click(event)
 
 
     def set_selection_status(self):
+        """
+
+
+        """
         pass
 
     def paint(self, painter, option, widget):

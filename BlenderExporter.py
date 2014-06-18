@@ -24,13 +24,21 @@
 #############################################################################
 
 
-import PyQt5.QtCore as QtCore, PyQt4.QtGui as QtGui
+import PyQt5.QtCore as QtCore, PyQt5.QtGui as QtGui
 from PyQt5.QtCore import QPointF as Pf, QPoint as P, Qt
 from kataja.ConstituentNode import ConstituentNode
 from kataja.Controller import colors
 import collections, json
 
 def export_visible_items(path = 'tempdata.json', scene = None, forest = None, prefs = None):
+    """
+
+    :param path:
+    :param scene:
+    :param forest:
+    :param prefs:
+    :return:
+    """
     data = collections.OrderedDict()
     for n, node in enumerate(scene.visible_nodes()):
         nobj = collections.OrderedDict([('Type', 'ConstituentNode'),

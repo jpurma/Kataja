@@ -1,4 +1,5 @@
-#############################################################################
+# coding=utf-8
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -27,6 +28,10 @@ from kataja.Movable import Movable
 
 
 class TextArea(Movable, QtWidgets.QGraphicsTextItem):
+    """
+
+    """
+
     def __init__(self, text='', box=QtCore.QRectF(0, 0, 480, 400)):
         QtWidgets.QGraphicsTextItem.__init__(self)
         Movable.__init__(self)
@@ -42,13 +47,27 @@ class TextArea(Movable, QtWidgets.QGraphicsTextItem):
             self.setPlainText(text)
 
     def left(self, **kw):
+        """
+
+        :param kw:
+        :return:
+        """
         return None
 
     def right(self, **kw):
+        """
+
+        :param kw:
+        :return:
+        """
         return None
 
 
 class Image(Movable, QtWidgets.QGraphicsPixmapItem):
+    """
+
+    """
+
     def __init__(self, img, box=QtCore.QRectF(0, 0, 480, 400)):
         pixmap = QtGui.QPixmap(img)
         # pixmap=pixmap.scaledToHeight(int(box.height()))
@@ -59,9 +78,19 @@ class Image(Movable, QtWidgets.QGraphicsPixmapItem):
         # self.setPos(pixmap.width()*-.5, pixmap.height()*-.5)
 
     def left(self, **kw):
+        """
+
+        :param kw:
+        :return:
+        """
         return None
 
     def right(self, **kw):
+        """
+
+        :param kw:
+        :return:
+        """
         return None
 
 
@@ -69,6 +98,11 @@ other_types = {'TextArea': TextArea, 'Image': Image}
 
 
 def GenerateOthers(object_type, data):
+    """
+
+    :param object_type:
+    :param data:
+    """
     other_types[object_type](data)
 
 

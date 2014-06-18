@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-#############################################################################
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -20,12 +20,9 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
-
-
+# ############################################################################
 
 import sys
-from PyQt5 import QtCore, QtGui, QtWidgets
 
 from kataja.ForestSettings import ForestSettings
 from kataja.Preferences import Preferences, QtPreferences
@@ -33,7 +30,7 @@ from kataja.utils import caller
 from syntax.BareConstituent import BareConstituent
 from syntax.BaseUG import UG
 from syntax.ConfigurableFeature import Feature
-
+from PyQt5 import QtCore, QtWidgets
 
 global prefs, qt_prefs, colors
 prefs = Preferences()
@@ -42,15 +39,16 @@ forest_settings = ForestSettings(None, prefs)
 
 # gc.set_debug(gc.DEBUG_LEAK)
 
-
-
 # flags = (gc.DEBUG_COLLECTABLE |
-#         gc.DEBUG_UNCOLLECTABLE |
-#         gc.DEBUG_OBJECTS
-#         )
+# gc.DEBUG_UNCOLLECTABLE |
+# gc.DEBUG_OBJECTS
+# )
 # gc.set_debug(flags)
 
 class Controller:
+    """
+
+    """
 
     def __init__(self):
         # self.set_prefs('default')
@@ -85,10 +83,14 @@ class Controller:
         self.watch_for_drag_end = False
 
     def late_init(self, main):
+        """
+
+        :param main:
+        """
         self.main = main
 
     def cm(self):
-        """ Shortcut to color manager, which replaces palettes, colors etc. older solutions. """ 
+        """ Shortcut to color manager, which replaces palettes, colors etc. older solutions. """
         return self.main.color_manager
 
     def forest(self):
@@ -101,44 +103,85 @@ class Controller:
 
 
     def add_message(self, msg):
+        """
+
+        :param msg:
+        """
         self.main.add_message(msg)
 
     def announce(self, signal, *args):
         """ Announcing is used to broadcast update requests to objects in graph scene
         or UI items. Items need to support this by having signal in 
         'receives_signals'- list and by having 'receive_signal' method that then
-        distinguishes between different signals. Announcements can include arguments. """ 
-        #self.main.ui_manager.forward_signal(signal, *args)
+        :param signal:
+        :param args:
+        distinguishes between different signals. Announcements can include arguments. """
+        # self.main.ui_manager.forward_signal(signal, *args)
         self.main.graph_scene.forward_signal(signal, *args)
 
     def sendEvent(self, event_id, **kwargs):
+        """
+
+        :param event_id:
+        :param kwargs:
+        """
         event = QtCore.QEvent(event_id)
         QtWidgets.QApplication.sendEvent(self.main, event)
-        #sevent = QtWidgets.QGraphicsSceneEvent(event_id)
-        self.main.graph_scene.sceneEvent(event)     
+        # sevent = QtWidgets.QGraphicsSceneEvent(event_id)
+        self.main.graph_scene.sceneEvent(event)
 
-    # ******* Selection *******
+        # ******* Selection *******
+
     # trees and edges can be selected. UI objects are focused. multiple items can be selected, but actions do not necessary apply to them.
 
     def single_selection(self):
+        """
+
+
+        :return:
+        """
         return len(self.selected) == 1
 
     def multiple_selection(self):
+        """
+
+
+        :return:
+        """
         return len(self.selected) > 1
 
     def get_selected(self):
+        """
+
+
+        :return:
+        """
         if self.selected:
             return self.selected[-1]
         else:
             return None
 
     def get_all_selected(self):
+        """
+
+
+        :return:
+        """
         return self.selected
 
     def is_selected(self, obj):
+        """
+
+        :param obj:
+        :return:
+        """
         return obj in self.selected
 
     def deselect_objects(self, update_ui=True):
+        """
+
+        :param update_ui:
+        """
         olds = list(self.selected)
         self.selected = []
         for obj in olds:
@@ -147,6 +190,10 @@ class Controller:
             self.main.ui_manager.update_selections()
 
     def select(self, obj):
+        """
+
+        :param obj:
+        """
         if hasattr(obj, 'info_dump'):
             obj.info_dump()
         if self.selected:
@@ -157,6 +204,10 @@ class Controller:
         self.main.ui_manager.update_selections()
 
     def add_to_selection(self, obj):
+        """
+
+        :param obj:
+        """
         if obj not in self.selected:
             self.selected.append(obj)
             self.add_message(u'added to selection %s' % unicode(obj))
@@ -164,6 +215,10 @@ class Controller:
             self.main.ui_manager.update_selections()
 
     def remove_from_selection(self, obj):
+        """
+
+        :param obj:
+        """
         if obj in self.selected:
             self.selected.remove(obj)
             obj.set_selection_status(False)
@@ -171,26 +226,48 @@ class Controller:
 
     # ******** /selection *******
 
-
     # ******** Focus *********
     # focus is used only for UI objects. scene objects use selection. only one ui object or its part can have focus
 
     def get_focus_object(self):
+        """
+
+
+        :return:
+        """
         return self.ui_focus
 
     def has_focus(self, ui_obj):
+        """
+
+        :param ui_obj:
+        :return:
+        """
         return self.ui_focus == ui_obj
 
     def hosts_focus(self, ui_obj):
-        return (self.ui_focus and self.ui_focus.host == ui_obj)
+        """
+
+        :param ui_obj:
+        :return:
+        """
+        return self.ui_focus and self.ui_focus.host == ui_obj
 
     def take_focus(self, ui_obj):
+        """
+
+        :param ui_obj:
+        """
         if self.ui_focus:
             self.release_focus()
         self.ui_focus = ui_obj
         ui_obj.update()
 
     def release_focus(self):
+        """
+
+
+        """
         old = self.ui_focus
         self.ui_focus = None
         if old:
@@ -202,7 +279,7 @@ class Controller:
 
     @caller
     def quit(self):
-        '*** calling quits ***'
+        """*** calling quits ***"""
         sys.exit()
 
 

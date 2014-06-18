@@ -1,4 +1,5 @@
-#############################################################################
+# coding=utf-8
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -51,17 +52,31 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.clickable = False
 
     def set_get_method(self, getter):
-        """ Assign method that is used to get text for label """
+        """ Assign method that is used to get text for label
+        :param getter:
+        """
         self._get_host_text = getter
 
     def get_plaintext(self):
+        """
+
+
+        :return:
+        """
         return self._doc.toPlainText()
 
     def set_set_method(self, setter):
-        """ Assign method that is called when label is edited """
+        """ Assign method that is called when label is edited
+        :param setter:
+        """
         self._set_host_text = setter
 
     def is_empty(self):
+        """
+
+
+        :return:
+        """
         return not bool(self._source_text)
 
     def update_label(self):
@@ -88,11 +103,18 @@ class Label(QtWidgets.QGraphicsTextItem):
         return True
 
     def update_position(self, br=None):
+        """
+
+        :param br:
+        """
         brect = br or self.boundingRect()
         self.setPos(brect.width() / -2.0, brect.height() / -2.0)
 
     def paint(self, painter, option, widget):
         """ Painting is sensitive to mouse/selection issues, but usually with
+        :param painter:
+        :param option:
+        :param widget:
         nodes it is the label of the node that needs complex painting """
         self.setDefaultTextColor(self._host.contextual_color())
         QtWidgets.QGraphicsTextItem.paint(self, painter, option, widget)

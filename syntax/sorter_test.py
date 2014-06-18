@@ -1,3 +1,4 @@
+# coding=utf-8
 t = ['table', 'ate', 'at', 'the']
 
 d1 = [('ate', 'at'), ('at', 'the'), ('at', 'table'), ('ate', 'the'), ('ate', 'table')]
@@ -5,6 +6,12 @@ d2 = [('ate', 'at'), ('at', 'the'), ('at', 'table'), ('ate', 'the'), ('ate', 'ta
 
 
 def sort_func(x, y):
+    """
+
+    :param x:
+    :param y:
+    :return:
+    """
     for first, second in d2:
         if first == x and second == y:
             return -1
@@ -15,6 +22,13 @@ def sort_func(x, y):
 
 
 def sortlist(first, second, result):
+    """
+
+    :param first:
+    :param second:
+    :param result:
+    :return:
+    """
     i_max = len(result) - 1
     for i, item in enumerate(result):
         if item == first:
@@ -29,6 +43,10 @@ def sortlist(first, second, result):
 
 
 def sorter(dA):
+    """
+
+    :param dA:
+    """
     result = []
     for (first, second) in dA:
         if not result:

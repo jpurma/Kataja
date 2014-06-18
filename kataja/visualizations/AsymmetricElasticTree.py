@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-#############################################################################
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool *** 
 # 
@@ -20,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 
 from kataja.visualizations.BaseVisualization import BaseVisualization
@@ -28,13 +28,22 @@ from kataja.ConstituentNode import ConstituentNode
 
 
 class AsymmetricElasticTree(BaseVisualization):
+    """
+
+    """
     name = 'Dynamic directed net'
 
     def __init__(self):
+        BaseVisualization.__init__(self)
         self._directed = True
         self.forest = None
 
     def prepare(self, forest, loading=False):
+        """
+
+        :param forest:
+        :param loading:
+        """
         self.forest = forest
         self.forest.settings.bracket_style(0)
         self.forest.settings.show_constituent_edges = True
@@ -45,6 +54,10 @@ class AsymmetricElasticTree(BaseVisualization):
 
 
     def reset_node(self, node):
+        """
+
+        :param node:
+        """
         node.locked_to_position = False
         node.reset_adjustment()
         node.update_label()
@@ -52,4 +65,3 @@ class AsymmetricElasticTree(BaseVisualization):
             node.update_visibility(show_edges=True, scope=0, brackets=self.forest.settings.bracket_style())
         node.bind_y = False
         node.bind_x = False
-        

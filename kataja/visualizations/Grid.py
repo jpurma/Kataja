@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-#############################################################################
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -20,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 from kataja.ConstituentNode import ConstituentNode
 from kataja.Node import Node
@@ -47,6 +47,10 @@ class Grid:
         return '\n'.join(rowlist)
 
     def ascii_dump(self):
+        """
+
+
+        """
         for row in self._rows:
             s = []
             for item in row:
@@ -62,6 +66,10 @@ class Grid:
     def get(self, x, y):
         """
 
+
+
+        :param x:
+        :param y:
         :param int x:
         :param int y:
         """
@@ -71,6 +79,14 @@ class Grid:
             return self._rows[y][x]
 
     def set(self, x, y, item, w=1, h=1):
+        """
+
+        :param x:
+        :param y:
+        :param item:
+        :param w:
+        :param h:
+        """
         if w > 1 or h > 1:
             l = x - (w - 1) / 2
             r = x + (w - 1) / 2
@@ -107,20 +123,35 @@ class Grid:
             assert len(self._rows) == self._height
 
     def row(self, y):
+        """
+
+        :param y:
+        :return:
+        """
         if y < self._height:
             return self._rows[y]
         else:
             return []
 
     def find_in_grid(self, item_to_find):
+        """
+
+        :param item_to_find:
+        :return:
+        """
         for y, row in enumerate(self._rows):
             for x, item in enumerate(row):
                 if item is item_to_find:
                     return x, y
-        return (-1, -1)
+        return -1, -1
 
 
     def last_filled_column(self, y):
+        """
+
+        :param y:
+        :return:
+        """
         row = self.row(y)
         found = -1
         for i, item in enumerate(row):
@@ -129,6 +160,11 @@ class Grid:
         return found
 
     def first_filled_column(self, y):
+        """
+
+        :param y:
+        :return:
+        """
         row = self.row(y)
         for i, item in enumerate(row):
             if item:
@@ -136,6 +172,10 @@ class Grid:
         return -1
 
     def insert_row(self):
+        """
+
+
+        """
         row = self._width * [0]
         self._height += 1
         self._rows.insert(0, row)
@@ -144,7 +184,7 @@ class Grid:
         return self._rows.__iter__()
 
 # def _closestDistance(nodeA, nodeB,Ax,Ay):
-#    nodeAx=Ax or nodeA.pos_tuple[0]
+# nodeAx=Ax or nodeA.pos_tuple[0]
 #    nodeAy=Ay or nodeA.pos_tuple[1]
 #    nodeBx=nodeB.pos_tuple[0]
 #    nodeBy=nodeB.pos_tuple[1]

@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-#############################################################################
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -20,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 
 from random import randint, choice
@@ -30,13 +30,24 @@ log_level = 4
 
 
 def log(message, importance=3):
+    """
+
+    :param message:
+    :param importance:
+    """
     if importance >= log_level:
         print message
 
 
 class Node:
-    def __init__(self, id, left=None, right=None, features=[]):
+    """
+
+    """
+
+    def __init__(self, id, left=None, right=None, features=None):
         """ Nodes are constituents """
+        if not features:
+            features = []
         self.label = id
         self.left = left
         self.right = right
@@ -56,7 +67,9 @@ class Node:
 
 
     def merge(self, other):
-        """ This node (left) merged to another node (right), and a new node is returned """
+        """ This node (left) merged to another node (right), and a new node is returned
+        :param other:
+        """
         new_node = Node(self.label, self, other)
         return new_node
 
@@ -109,6 +122,11 @@ class Node:
     def mergeD(self, other):
         # merge needs to do more work now. It removes features from merged elements.
         # Watch out you don't do any trial merges before the actual one!
+        """
+
+        :param other:
+        :return:
+        """
         new_node = Node(self.label, self, other)
         pl_l, min_l, neut_l = self.get_features()
         pl_r, min_r, neut_r = other.get_features()
@@ -142,6 +160,11 @@ class Node:
 
     def get_featuresD(self):
         # this can be simple now that merge is so complex
+        """
+
+
+        :return:
+        """
         return self._plus_features, self._minus_features, self._neutral_features
 
     # switch to destructive merge. comment these lines to turn off
@@ -149,15 +172,35 @@ class Node:
     get_features = get_featuresD
 
     def getPosFeatures(self):
+        """
+
+
+        :return:
+        """
         return self.get_features()[0]
 
     def getNegFeatures(self):
+        """
+
+
+        :return:
+        """
         return self.get_features()[1]
 
     def getNeutralFeatures(self):
+        """
+
+
+        :return:
+        """
         return self.get_features()[2]
 
     def printFeatures(self):
+        """
+
+
+        :return:
+        """
         plusses, minuses, neutrals = self.get_features()
         s = ''
         if plusses:
@@ -169,11 +212,19 @@ class Node:
         return s
 
     def clearFeatures(self):
+        """
+
+
+        """
         self._plus_features = set()
         self._neutral_features = set()
         self._minus_features = set()
 
     def addFeature(self, feature):
+        """
+
+        :param feature:
+        """
         if feature.startswith('+'):
             self._plus_features.add(feature[1:])
         elif feature.startswith('-'):
@@ -182,6 +233,10 @@ class Node:
             self._neutral_features.add(feature[1:])
 
     def removeFeature(self, feature):
+        """
+
+        :param feature:
+        """
         if feature.startswith('+'):
             self._plus_features.discard(feature[1:])
         elif feature.startswith('-'):
@@ -191,6 +246,12 @@ class Node:
 
 
     def match(self, needy, strict=False):
+        """
+
+        :param needy:
+        :param strict:
+        :return:
+        """
         if self == needy:  # heuristic rule, not founded on theory
             return False
         if not needy:
@@ -207,6 +268,11 @@ class Node:
             return needy.getNegFeatures() & (self.getPosFeatures() | self.getNeutralFeatures())
 
     def findMatchFor(self, needy):
+        """
+
+        :param needy:
+        :return:
+        """
         m = self.match(needy)  # , strict=True)
         if m:
             return self
@@ -221,6 +287,12 @@ class Node:
         return None
 
     def isParentOf(self, node):
+        """
+
+        :param node:
+        :return:
+        """
+
         def _find(n, target):
             if n == target:
                 return True
@@ -233,6 +305,11 @@ class Node:
         return _find(self, node)
 
     def copy(self):
+        """
+
+
+        :return:
+        """
         new = Node(self.label)
         if self.left:
             new.left = self.left.copy()
@@ -245,6 +322,12 @@ class Node:
 
 
 def Merge(node1, node2):
+    """
+
+    :param node1:
+    :param node2:
+    :return:
+    """
     if hasattr(node1, 'merge'):
         return node1.merge(node2)
     else:
@@ -252,12 +335,20 @@ def Merge(node1, node2):
 
 
 def pause():
+    """
+
+
+    """
     N = raw_input('')
     if N == 'q':
         sys.exit()
 
 
 class Parser:
+    """
+
+    """
+
     def __init__(self):
         self.trees_n = 3
         self.rounds = 5000
@@ -271,12 +362,16 @@ class Parser:
 
 
     def randomly_assign_all_features(self, n=3):
+        """
+
+        :param n:
+        """
         for item in self.lexicon.values():
             item.clearFeatures()
             for c in range(0, n):
                 feature = None
                 while (
-                not feature) or feature in item._plus_features or feature in item._minus_features or feature in item._neutral_features:
+                        not feature) or feature in item._plus_features or feature in item._minus_features or feature in item._neutral_features:
                     feature = self.features[randint(0, len(self.features) - 1)]
                 polarity = '-=+'[randint(0, 2)]
                 item.addFeature(polarity + feature)
@@ -285,7 +380,9 @@ class Parser:
 
 
     def adjust_one_feature(self, words):
-        """ This forces a single random mutation in the lexicon """
+        """ This forces a single random mutation in the lexicon
+        :param words:
+        """
         word = choice(words)
         node = self.lexicon[word]
         features = node.getSignedFeatures()
@@ -294,7 +391,7 @@ class Parser:
             node.removeFeature(features[pos])
         feature = None
         while (
-        not feature) or feature in node._plus_features or feature in node._minus_features or feature in node._neutral_features:
+                not feature) or feature in node._plus_features or feature in node._minus_features or feature in node._neutral_features:
             feature = self.features[randint(0, len(self.features) - 1)]
         polarity = '-=+'[randint(0, 2)]
         node.addFeature(polarity + feature)
@@ -304,6 +401,11 @@ class Parser:
 
 
     def addNode(self, node):
+        """
+
+        :param node:
+        :return:
+        """
         for i, tree in enumerate(self.trees):
             if not tree:
                 print node, 'fills empty position'
@@ -319,6 +421,11 @@ class Parser:
 
     def repair(self):
         # try merging top elements to each other
+        """
+
+
+        :return:
+        """
         print 'doing repairs...',
         for i, left in enumerate(self.trees):
             if not left:
@@ -351,12 +458,16 @@ class Parser:
         print 'None'
 
     def parse(self, original_feed):
+        """
+
+        :param original_feed:
+        """
         crash = True
         c = 0
         repair_all = True
         J_for_these_features = 0
 
-        while (crash) and c < self.rounds:
+        while crash and c < self.rounds:
             feed = list(original_feed)
             while feed:
                 text = feed.pop(0)
@@ -435,7 +546,8 @@ class Parser:
                             print 'too many features left:' + tree.printFeatures()
                             crash = True
                             break
-                        if tree: not_empty += 1
+                        if tree:
+                            not_empty += 1
                     if not_empty > 1:
                         crash = True
                 if crash:
@@ -477,9 +589,19 @@ class Parser:
         print 'done.'
 
     def linearize(self):
+        """
+
+
+        :return:
+        """
         words = []
 
         def spell_out(node):
+            """
+
+            :param node:
+            :return:
+            """
             if not node:
                 return
             if node.left:
@@ -497,17 +619,8 @@ class Parser:
 
 P = Parser()
 
-feed = [
-    'Jukka juoksee',
-    'Jukka juoksee kotiin',
-    'kotiin Jukka juoksee',
-    'asum me ko han',
-    'Jukka näkee Pekan',
-    'Pekan näkee Jukka',
-    'Pekka juoksee kotiin',
-    'Jukka heittää palloa',
-    'Pallo lentää koriin'
-]
+feed = ['Jukka juoksee', 'Jukka juoksee kotiin', 'kotiin Jukka juoksee', 'asum me ko han', 'Jukka näkee Pekan',
+        'Pekan näkee Jukka', 'Pekka juoksee kotiin', 'Jukka heittää palloa', 'Pallo lentää koriin']
 
 P.parse(feed[0:2])
 

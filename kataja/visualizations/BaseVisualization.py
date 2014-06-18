@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-#############################################################################
+# ############################################################################
 #
 # *** Kataja - Biolinguistic BaseVisualization tool ***
 #
@@ -20,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 from kataja.Controller import prefs
 from kataja.utils import caller
@@ -46,6 +46,11 @@ class BaseVisualization:
         self._max_hits = {}
 
     def prepare(self, forest, loading=False):
+        """
+
+        :param forest:
+        :param loading:
+        """
         self.forest = forest
         self._directed = False
         self._hits = {}
@@ -58,9 +63,17 @@ class BaseVisualization:
             self.reset_node(node)
 
     def set_forest(self, forest):
+        """
+
+        :param forest:
+        """
         self.forest = forest
 
     def reset_node(self, node):
+        """
+
+        :param node:
+        """
         node.locked_to_position = False
         node.reset_adjustment()
         node.update_label()
@@ -83,17 +96,22 @@ class BaseVisualization:
         return self.forest.main.graph_scene
 
     def get_ui_manager(self):
+        """
+
+
+        :return:
+        """
         return self.forest.main.graph_scene
 
 
     # def reset(self):
-    #     """ Not sure if this should be used at all, it is confusing in its purpose """
-    #     #print '*** Reset visualization (base) ***'
-    #     if not self.forest:
-    #         return
+    # """ Not sure if this should be used at all, it is confusing in its purpose """
+    # #print '*** Reset visualization (base) ***'
+    # if not self.forest:
+    # return
 
-    #     for node in ctrl.scene.visible_nodes(self.forest):
-    #         node.reset()
+    # for node in ctrl.scene.visible_nodes(self.forest):
+    # node.reset()
     #         node.update_label()
     #         vis = node.is_visible()
     #         node.update_visibility(show_edges = True, scope = 0)
@@ -177,6 +195,11 @@ class BaseVisualization:
 
     def calculate_movement(self, node):
         # Sum up all forces pushing this item away.
+        """
+
+        :param node:
+        :return:
+        """
         xvel = 0.0
         yvel = 0.0
         node_x, node_y, node_z = node.get_current_position()  # @UnusedVariable
@@ -250,10 +273,16 @@ class BaseVisualization:
             xvel = 0
         if node.bind_y:
             yvel = 0
-        return (xvel, yvel, 0)
+        return xvel, yvel, 0
 
 
     def should_we_draw(self, node, parent):
+        """
+
+        :param node:
+        :param parent:
+        :return:
+        """
         if len(node.get_parents()) > 1:
             key = node.get_index()
             if key in self.traces_to_draw:

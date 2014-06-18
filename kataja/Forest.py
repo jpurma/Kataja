@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-#############################################################################
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -20,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 
 import string
@@ -37,13 +37,13 @@ from kataja.ChainManager import ChainManager
 from kataja.DerivationStep import DerivationStepManager
 from kataja.GlossNode import GlossNode
 from kataja.Node import Node
-from kataja.Parser import Parser, BottomUpParser
+from kataja.Parser import BottomUpParser
 from kataja.Presentation import TextArea, Image
 from kataja.Edge import Edge
 from kataja.UndoManager import UndoManager
-from kataja.utils import next_free_index, to_tuple, time_me, quit, to_unicode
+from kataja.utils import next_free_index, to_tuple
 from kataja.FeatureNode import FeatureNode
-from kataja.globals import CONSTITUENT_EDGE, FEATURE_EDGE, GLOSS_EDGE
+from kataja.globals import CONSTITUENT_EDGE, FEATURE_EDGE
 
 
 ONLY_LEAF_LABELS = 0
@@ -57,15 +57,20 @@ RIGHT = 2
 
 
 def restore_forest(key):
+    """
+
+    :param key:
+    :return:
+    """
     print 'restore forest? who is calling this and is it doable?'
-    assert (False)
+    assert False
     obj = None
     for forest in ctrl.forest_keeper:
         if forest.key == key:
             obj = forest
             break
     if not obj:
-        assert (False)
+        assert False
         obj = Forest()
         obj._revived = True
     # ctrl.undo.repair_later(obj)
@@ -73,49 +78,49 @@ def restore_forest(key):
 
 
 # class Iterator:
-#     """ Iterates through binary tree """
-#     def __init__(self, host):
-#         """ Iterator is given one node 'host' to begin with """
-#         self._host = host
-#         self._iter_stack = [host]
-#         self._count = 0
+# """ Iterates through binary tree """
+# def __init__(self, host):
+# """ Iterator is given one node 'host' to begin with """
+# self._host = host
+# self._iter_stack = [host]
+# self._count = 0
 
-#     def __iter__(self):
-#         """ This is iterator by itself """
-#         return self
+# def __iter__(self):
+# """ This is iterator by itself """
+# return self
 
-#     def next(self):
-#         """ Implements left-first -iteration through the tree. """
-#         if self._iter_stack:
-#             next = self._iter_stack.pop(0)
-#             self._iter_stack = next.get_children() + self._iter_stack
-#             self._count += 1
-#             return next
-#         else:
-#             raise StopIteration
+# def next(self):
+# """ Implements left-first -iteration through the tree. """
+# if self._iter_stack:
+# next = self._iter_stack.pop(0)
+# self._iter_stack = next.get_children() + self._iter_stack
+# self._count += 1
+# return next
+# else:
+# raise StopIteration
 
 # class IterateOnce:
-#     """ Iterator that returns each node only once """
-#     def __init__(self, host):
-#         """ Iterator is given one node 'host' to begin with """
-#         self._host = host
-#         self._iter_stack = [host]
-#         self._count = 0
-#         self._done = set()
+# """ Iterator that returns each node only once """
+# def __init__(self, host):
+# """ Iterator is given one node 'host' to begin with """
+# self._host = host
+# self._iter_stack = [host]
+# self._count = 0
+# self._done = set()
 
-#     def __iter__(self):
-#         """ This is iterator by itself """
-#         return self
+# def __iter__(self):
+# """ This is iterator by itself """
+# return self
 
-#     def next(self):
-#         """ Implements left-first -iteration through the tree. """
-#         if self._iter_stack:
-#             next = None
-#             while self._iter_stack and not next:
-#                 l = self._iter_stack.pop(0)
-#                 if l not in self._done:
-#                     next = l
-#                     self._done.add(next)
+# def next(self):
+# """ Implements left-first -iteration through the tree. """
+# if self._iter_stack:
+# next = None
+# while self._iter_stack and not next:
+# l = self._iter_stack.pop(0)
+# if l not in self._done:
+# next = l
+# self._done.add(next)
 #             if next:
 #                 self._iter_stack = next.get_children() + self._iter_stack
 #                 self._count += 1
@@ -166,7 +171,9 @@ class Forest:
 
 
     def after_restore(self, changes):
-        """ Changes in some fields may cause need for manual fixes or running methods to update derived variables """
+        """ Changes in some fields may cause need for manual fixes or running methods to update derived variables
+        :param changes:
+        """
         print 'changes in forest: ', changes.keys()
         if 'vis_data' in changes:
 
@@ -180,11 +187,21 @@ class Forest:
                 self.visualization.set_forest(self)
 
     def get_scene(self):
+        """
+
+
+        :return:
+        """
         return self.main.graph_scene
 
 
     #@time_me
     def list_nodes(self, first):
+        """
+
+        :param first:
+        :return:
+        """
         res = []
 
         def _iterate(node):
@@ -197,6 +214,11 @@ class Forest:
 
     #@time_me
     def list_nodes_once(self, first):
+        """
+
+        :param first:
+        :return:
+        """
         res = []
 
         def _iterate(node):
@@ -226,6 +248,10 @@ class Forest:
 
 
     def info_dump(self):
+        """
+
+
+        """
         if hasattr(self, 'key'):
             print '----- Forest %s ------' % self.save_key
             print '| Nodes: %s' % len(self.nodes)
@@ -238,11 +264,17 @@ class Forest:
 
 
     def build(self, buildstring):
-        """ Populate forest from a buildstring, store buildstring for reference """
+        """ Populate forest from a buildstring, store buildstring for reference
+        :param buildstring:
+        """
         self._buildstring = buildstring
         self.create_tree_from_string(buildstring)
 
     def set_gloss_text(self, gloss):
+        """
+
+        :param gloss:
+        """
         self._gloss_text = gloss
 
     def draw_gloss_text(self):
@@ -262,6 +294,10 @@ class Forest:
                 self.gloss = None
 
     def change_visualization(self, key):
+        """
+
+        :param key:
+        """
         if self.visualization and self.visualization.__class__.name == key:
             self.visualization.reselect()
         else:
@@ -276,6 +312,7 @@ class Forest:
 
     def textual_form(self, root=None):
         """ return (unicode) version of linearizations of all trees with traces removed --
+        :param root:
             as close to original sentences as possible. If root is given, return linearization of only that. """
 
         def _tree_as_text(root_node, gap):
@@ -294,7 +331,9 @@ class Forest:
             return u'/ '.join(roots)
 
     def store(self, item):
-        """ Confirm that item is stored in some dictionary or other storage in forest """
+        """ Confirm that item is stored in some dictionary or other storage in forest
+        :param item:
+        """
         # if isinstance(item, ConstituentNode):
         #    self.nodes[item.key] = item
         # elif isinstance(item, FeatureNode):
@@ -317,6 +356,11 @@ class Forest:
 
 
     def get_all_objects(self):
+        """
+
+
+        :return:
+        """
         return self.nodes.values() + self.edges.values() + self.others.values() + self.bracket_manager.get_brackets()
 
     def clear_scene(self):
@@ -341,7 +385,9 @@ class Forest:
             scene.addItem(item)
 
     def add_to_scene(self, item):
-        """ Put items belonging to this forest to scene """
+        """ Put items belonging to this forest to scene
+        :param item:
+        """
         if ctrl.loading:
             return
         scene = self.get_scene()
@@ -361,7 +407,11 @@ class Forest:
         self.draw_gloss_text()
 
 
-    def update_colors(self, adjusting = False):
+    def update_colors(self, adjusting=False):
+        """
+
+        :param adjusting:
+        """
         cm = ctrl.cm()
         old_gradient_base = cm.paper()
         self.main.color_manager.update_colors(prefs, self.settings, adjusting=adjusting)
@@ -397,28 +447,57 @@ class Forest:
     def get_node(self, constituent):
         """
         Returns a node corresponding to a constituent
+        :param constituent:
         :param syntax.BaseConstituent constituent:
         :rtype kataja.ConstituentNode
         """
         return self.nodes.get('CN%s' % constituent.uid, None)
 
     def get_constituent_edges(self):
+        """
+
+
+        :return:
+        """
         return [x for x in self.edges.values() if x.edge_type == 'constituent_edge' and x.is_visible()]
 
     def get_constituent_nodes(self):
+        """
+
+
+        :return:
+        """
         return [x for x in self.nodes.values() if isinstance(x, ConstituentNode) and x.isVisible()]
 
     def get_feature_nodes(self):
+        """
+
+
+        :return:
+        """
         return [x for x in self.nodes.values() if isinstance(x, FeatureNode)]
 
     def get_attribute_nodes(self):
+        """
+
+
+        :return:
+        """
         return [x for x in self.nodes.values() if isinstance(x, AttributeNode)]
 
     def add_comment(self, comment):
+        """
+
+        :param comment:
+        """
         self._comments.append(comment)
 
     #@time_me
     def update_roots(self):
+        """
+
+
+        """
         self.roots = []
         for node in self.nodes.values():
             if not node.edges_up:
@@ -428,6 +507,12 @@ class Forest:
 
     # refactor this, implementation is not good
     def is_higher_in_tree(self, node_A, node_B):
+        """
+
+        :param node_A:
+        :param node_B:
+        :return:
+        """
         node_A_root = node_A_index = node_B_root = node_B_index = 999
         found_A = False
         found_B = False
@@ -448,6 +533,11 @@ class Forest:
         return int(node_A_index < node_B_index)
 
     def index_in_tree(self, node):
+        """
+
+        :param node:
+        :return:
+        """
         for root in self.roots:
             for i, n in enumerate(self.list_nodes_once(root)):
                 if n is node:
@@ -455,6 +545,11 @@ class Forest:
         return -1
 
     def get_first_free_constituent_name(self):
+        """
+
+
+        :return:
+        """
         names = [node.syntactic_object.get_label() for node in self.nodes.values() if
                  isinstance(node, ConstituentNode) and node.syntactic_object]
         # I'm not trying to be efficient here.
@@ -474,12 +569,20 @@ class Forest:
     #@time_me
     def create_node_from_constituent(self, C, pos=None, result_of_merge=False, result_of_select=False,
                                      replacing_merge=0, replacing_select=0, silent=False):
-        """ All of the node creation should go through this! """
+        """ All of the node creation should go through this!
+        :param C:
+        :param pos:
+        :param result_of_merge:
+        :param result_of_select:
+        :param replacing_merge:
+        :param replacing_select:
+        :param silent:
+        """
         node = self.get_node(C)
         if not node:
             node = ConstituentNode(constituent=C, forest=self)
         else:
-            assert (False)
+            assert False
         if pos:
             node.set_original_position(pos)
         self.add_to_scene(node)
@@ -505,6 +608,12 @@ class Forest:
         return node
 
     def create_feature_node(self, host, syntactic_feature):
+        """
+
+        :param host:
+        :param syntactic_feature:
+        :return:
+        """
         FN = FeatureNode(syntactic_feature, self)
         FN.compute_start_position(host)
         self._connect_node(host, child=FN, edge_type=FN.__class__.default_edge_type)
@@ -513,6 +622,14 @@ class Forest:
         return FN
 
     def create_attribute_node(self, host, attribute_id, attribute_label, show_label=False):
+        """
+
+        :param host:
+        :param attribute_id:
+        :param attribute_label:
+        :param show_label:
+        :return:
+        """
         AN = AttributeNode(host, attribute_id, attribute_label, show_label=show_label, forest=self)
         self._connect_node(host, child=AN, edge_type=AN.__class__.default_edge_type)
         self.add_to_scene(AN)
@@ -521,6 +638,14 @@ class Forest:
 
     def create_edge(self, start=None, end=None, edge_type='', direction=''):
         #print 'creating edge ', start, end, edge_type
+        """
+
+        :param start:
+        :param end:
+        :param edge_type:
+        :param direction:
+        :return:
+        """
         rel = Edge(self, start=start, end=end, edge_type=edge_type, direction=direction)
         if ctrl.loading:
             pass
@@ -529,13 +654,21 @@ class Forest:
         return rel
 
     def create_bracket(self, host=None, left=True):
+        """
+
+        :param host:
+        :param left:
+        :return:
+        """
         br = self.bracket_manager.create_bracket(host, left)
         self.add_to_scene(br)
         return br
 
 
     def create_gloss_node(self, host_node):
-        """ Creates the gloss node for existing constituent node and necessary connection Doesn't do any checks """
+        """ Creates the gloss node for existing constituent node and necessary connection Doesn't do any checks
+        :param host_node:
+        """
         gn = GlossNode(host_node)
         self._connect_node(child=gn, parent=host_node, edge_type=gn.__class__.default_edge_type)
         self.add_to_scene(gn)
@@ -543,19 +676,32 @@ class Forest:
 
     # not used
     def create_image(self, image_path):
+        """
+
+        :param image_path:
+        :return:
+        """
         im = Image(image_path)
         self.others[im.save_key] = im
         self.add_to_scene(im)
         return im
 
     def create_node_from_string(self, text='', pos=None):
+        """
+
+        :param text:
+        :param pos:
+        """
         root_node = self._parser.parse(text)
         self.add_to_scene(root_node)
         self.update_roots()
 
     # @time_me
     def create_tree_from_string(self, text, replace=False):
-        """ This will probably end up resulting one tree, but during parsing there may be multiple roots/trees """
+        """ This will probably end up resulting one tree, but during parsing there may be multiple roots/trees
+        :param text:
+        :param replace:
+        """
         if replace:
             self.roots = []
         text = text.strip()
@@ -570,13 +716,18 @@ class Forest:
             self.chain_manager.rebuild_chains()
 
     def create_trace_for(self, node):
+        """
+
+        :param node:
+        :return:
+        """
         index = node.get_index()
         new_chain = False
         if not index:
             index = self.next_free_index()
             node.set_index(index)
             new_chain = True
-        assert (index)
+        assert index
         constituent = ctrl.Constituent('t', source='t_' + index)
         constituent.set_index(index)
         trace = self.create_node_from_constituent(constituent, silent=True)
@@ -588,6 +739,12 @@ class Forest:
         return trace
 
     def create_empty_node(self, pos, give_label=True):
+        """
+
+        :param pos:
+        :param give_label:
+        :return:
+        """
         if give_label:
             label = self.get_first_free_constituent_name()
         else:
@@ -604,6 +761,7 @@ class Forest:
 
     def delete_node(self, node):
         """ Delete given node and its children and fix the tree accordingly
+        :param node:
         Note: This and other complicated revisions assume that the target tree is 'normalized' by replacing multidomination
         with traces. Each node can have only one parent. This makes calculation easier, just remember to call multidomination_to_traces
         and traces_to_multidomination after deletions.
@@ -630,7 +788,9 @@ class Forest:
 
 
     def delete_edge(self, edge):
-        """ remove from scene and remove references from nodes """
+        """ remove from scene and remove references from nodes
+        :param edge:
+        """
         # -- connections to host nodes --
         start_node = edge.start
         end_node = edge.end
@@ -675,6 +835,10 @@ class Forest:
         #             del self.others[item.key]
         #         else:
         #             print 'F trying to remove broken item:', item.__class__.__name__
+        """
+
+        :param item:
+        """
         pass
 
 
@@ -682,6 +846,10 @@ class Forest:
     #######################################################################
 
     def add_order_features(self, key='M'):
+        """
+
+        :param key:
+        """
         if key == 'M':
             attr_id = 'merge_order'
             show_label = True
@@ -699,12 +867,20 @@ class Forest:
 
 
     def remove_order_features(self, key='M'):
+        """
+
+        :param key:
+        """
         for node in self.get_attribute_nodes():
             if node.attribute_label == key:
                 self.delete_node(node)
 
 
     def update_order_features(self, node):
+        """
+
+        :param node:
+        """
         M = node.get_attribute_nodes('M')
         S = node.get_attribute_nodes('S')
         if M and not self.settings.shows_merge_order():
@@ -717,6 +893,11 @@ class Forest:
             self.create_attribute_node(node, 'select_order', attribute_label='S', show_label=False)
 
     def add_select_counter(self, node, replace=0):
+        """
+
+        :param node:
+        :param replace:
+        """
         if replace:
             node.select_order = replace
         else:
@@ -725,6 +906,11 @@ class Forest:
         self.update_order_features(node)
 
     def add_merge_counter(self, node, replace=0):
+        """
+
+        :param node:
+        :param replace:
+        """
         if replace:
             node.select_order = replace
         else:
@@ -737,30 +923,57 @@ class Forest:
 
 
     def reform_constituent_node_from_string(self, text, node):
+        """
+
+        :param text:
+        :param node:
+        """
         new_node = self._parser.parse(text)
         self._replace_node(node, new_node)
 
     # not used
     def edit_node_alias(self, node, text):
         # this just changes the node without modifying its identity
-        assert (False)
+        """
+
+        :param node:
+        :param text:
+        """
+        assert False
         node.alias = text
 
     # not used
     def rebuild_constituent_node(self, node, text):
         # I think this has to be done by removing the old node and replacing it with a new one.
+        """
+
+        :param node:
+        :param text:
+        """
         new_node = self._parser.parse(text, forest=self)
         self._replace_node(node, new_node)
 
     #### Switching between multidomination and traces ######################################
 
     def group_traces_to_chain_head(self):
+        """
+
+
+        """
         self.chain_manager.group_traces_to_chain_head()
 
     def traces_to_multidomination(self):
+        """
+
+
+        """
         self.chain_manager.traces_to_multidomination()
 
     def multidomination_to_traces(self):
+        """
+
+
+        """
         self.chain_manager.multidomination_to_traces()
 
 
@@ -798,7 +1011,9 @@ class Forest:
     #### Undoable commands ###############################################################
 
     def disconnect_node_from_tree(self, node):
-        """ Delete node from tree and make a new tree out of it """
+        """ Delete node from tree and make a new tree out of it
+        :param node:
+        """
         self.main.add_message("Disconnecting node %s" % node)
         if self.settings.uses_multidomination():
             self.multidomination_to_traces()
@@ -820,7 +1035,9 @@ class Forest:
         return None
 
     def command_delete(self, node):
-        """ Undoable UI interface for deletion """
+        """ Undoable UI interface for deletion
+        :param node:
+        """
         self.main.add_message("Deleting node %s" % node)
         if self.settings.uses_multidomination():
             self.multidomination_to_traces()
@@ -844,6 +1061,11 @@ class Forest:
         # add things to undo stack
         # affected = [self]
         #########
+        """
+
+        :param node:
+        :return:
+        """
         self.undo_manager.record('delete constituent')
         is_root = node.is_root_node()
         if not self.settings.uses_multidomination():
@@ -895,6 +1117,11 @@ class Forest:
 
     def undoable_delete_edge(self, R):
         # add things to undo stack
+        """
+
+        :param R:
+        :return:
+        """
         self.undo_manager.record('delete edge')
         #########
         if R.start:
@@ -1022,7 +1249,7 @@ class Forest:
             self._reflect_disconnection_in_syntax(edge)
             self.delete_edge(edge)
         else:
-            assert (False)
+            assert False
 
     def _replace_node(self, old_node, new_node, only_for_parent=None, replace_children=False):
         """ When replacing a node we should make sure that edges get fixed too. """
@@ -1058,6 +1285,12 @@ class Forest:
 
     # @time_me
     def merge_nodes(self, node_A, node_B):
+        """
+
+        :param node_A:
+        :param node_B:
+        :return:
+        """
         if node_B in node_A:
             self.main.add_message('Cannot Merge into itself')
             return
@@ -1075,7 +1308,7 @@ class Forest:
         If using trace view, create a trace and merge it to node_B.
         """
         print "who is using this??? _merge(A,B)"
-        assert (False)
+        assert False
 
         if not node_A.parents:
             external_merge = True
@@ -1184,6 +1417,14 @@ class Forest:
 
 
     def replace_node_with_merged_empty_node(self, N, R, merge_to_left, new_node_pos, merger_node_pos):
+        """
+
+        :param N:
+        :param R:
+        :param merge_to_left:
+        :param new_node_pos:
+        :param merger_node_pos:
+        """
         ex, ey = new_node_pos
         empty_node = self.create_empty_node(pos=(ex, ey, N.z))
         self.replace_node_with_merged_node(N, empty_node, R, merge_to_left, merger_node_pos)
@@ -1193,6 +1434,11 @@ class Forest:
         """ This happens when touch area in edge R going up from node N is clicked.
         [N B] -> [[x N] B] (left == True) or
         [N B] -> [[N x] B] (left == False)
+        :param N:
+        :param new_node:
+        :param R:
+        :param merge_to_left:
+        :param merger_node_pos:
         """
         print 'called replace_node_with_merged_empty_node'
         if R:
@@ -1212,7 +1458,11 @@ class Forest:
         self.update_roots()
 
     def create_merger_node(self, left=None, right=None, pos=(0, 0, 0)):
-        """ Gives a merger node of two nodes. Doesn't try to fix their edges upwards """
+        """ Gives a merger node of two nodes. Doesn't try to fix their edges upwards
+        :param left:
+        :param right:
+        :param pos:
+        """
         merger_const = ctrl.UG.Merge(left.syntactic_object, right.syntactic_object)
         merger_node = self.create_node_from_constituent(merger_const, pos=pos, result_of_merge=True)
         self._connect_node(parent=merger_node, child=left, direction='left')
@@ -1223,6 +1473,12 @@ class Forest:
 
     # @time_me
     def cut_and_merge(self, node_A, node_B):
+        """
+
+        :param node_A:
+        :param node_B:
+        :return:
+        """
         if node_B in node_A:
             self.main.add_message('Cannot move into itself')
             return
@@ -1251,7 +1507,9 @@ class Forest:
 
     # @time_me
     def copy_node(self, node):
-        """ Copy a node and make a new tree out of it """
+        """ Copy a node and make a new tree out of it
+        :param node:
+        """
         if not node:
             return
         new_node = self._copy_node(node)
@@ -1264,6 +1522,10 @@ class Forest:
     ##### Dragging ##############################################
 
     def prepare_touch_areas_for_dragging(self, excluded=set()):
+        """
+
+        :param excluded:
+        """
         print '---- preparing for dragging ------'
         um = self.main.ui_manager
         um.remove_touch_areas()
@@ -1282,5 +1544,11 @@ class Forest:
     ######### Utility functions ###############################
 
     def parse_features(self, string, node):
+        """
+
+        :param string:
+        :param node:
+        :return:
+        """
         return self._parser.parse_definition(string, node)
 

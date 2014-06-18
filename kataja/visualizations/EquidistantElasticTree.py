@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-#############################################################################
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool *** 
 # 
@@ -32,13 +32,22 @@ from kataja.GlossNode import GlossNode
 
 
 class EquidistantElasticTree(BaseVisualization):
+    """
+
+    """
     name = 'Equidistant net'
 
     def __init__(self):
+        BaseVisualization.__init__(self)
         self.forest = None
         self._directed = False
 
     def prepare(self, forest, loading=False):
+        """
+
+        :param forest:
+        :param loading:
+        """
         self.forest = forest
         self.forest.settings.show_constituent_edges = True
         self.forest.settings.bracket_style(0)
@@ -48,6 +57,10 @@ class EquidistantElasticTree(BaseVisualization):
             self.reset_node(node)
 
     def reset_node(self, node):
+        """
+
+        :param node:
+        """
         node.locked_to_position = False
         node.reset_adjustment()
         node.update_label()
@@ -58,10 +71,14 @@ class EquidistantElasticTree(BaseVisualization):
         node.bind_y = False
         node.bind_x = False
 
-
     def calculate_movement(self, node):
         # @time_me
         # Sum up all forces pushing this item away.
+        """
+
+        :param node:
+        :return:
+        """
         xvel = 0.0
         yvel = 0.0
         node_x, node_y, node_z = node.get_current_position()
@@ -117,7 +134,7 @@ class EquidistantElasticTree(BaseVisualization):
                     xvel += fx * pull
                     yvel += fy * pull
                 elif dist < 20:
-                    push = edge.pull / -2
+                    push = edge.pull() / -2
                     xvel += dist_x * push
                     yvel += dist_y * push
                 else:
@@ -138,5 +155,4 @@ class EquidistantElasticTree(BaseVisualization):
                 yvel = 10
             elif yvel < -10:
                 yvel = -10
-        return (xvel, yvel, 0)
-
+        return xvel, yvel, 0

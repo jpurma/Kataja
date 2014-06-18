@@ -1,4 +1,5 @@
-#############################################################################
+# coding=utf-8
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -19,21 +20,25 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from kataja.Controller import ctrl, prefs, qt_prefs
-from kataja.FeatureNode import FeatureNode
 from kataja.Node import Node
-from kataja.ui.RadialMenu import RadialMenu
-from kataja.utils import to_unicode, to_tuple, time_me
+from kataja.utils import to_unicode, to_tuple
 import kataja.globals as g
 
 
 # ctrl = Controller object, gives accessa to other modules
 
 def restore_me(key, forest):
+    """
+
+    :param key:
+    :param forest:
+    :return:
+    """
     if key in forest.nodes:
         obj = forest.nodes[key]
     else:
@@ -70,19 +75,19 @@ class ConstituentNode(Node):
         self.has_visible_brackets = False
         self.left_bracket = None
         self.right_bracket = None
-        ####
+        # ###
         self.alias = ""
         self.is_trace = False
         self.triangle = False
         self.selectable = True
         self.label_font = qt_prefs.font  # @UndefinedVariable
 
-        #### Projection -- see also preferences that govern if these are used
+        # ### Projection -- see also preferences that govern if these are used
         self.can_project = True
         self.projecting_to = set()
 
 
-        #### Cycle index stores the order when node was originally merged to structure.
+        # ### Cycle index stores the order when node was originally merged to structure.
         # going up in tree, cycle index should go up too
         self.merge_order = 0
         self.select_order = 0
@@ -120,7 +125,9 @@ class ConstituentNode(Node):
         # self.qt_menu = None
 
     def boundingRect(self, update=False):
-        """ In addition to Node boundingRect, we need to take account the scope boxes """
+        """ In addition to Node boundingRect, we need to take account the scope boxes
+        :param update:
+        """
         if update and self.triangle:
             lbr = self._label_complex.boundingRect()
             lbh = lbr.height()
@@ -163,6 +170,10 @@ class ConstituentNode(Node):
 
 
     def info_dump(self):
+        """
+
+
+        """
         print '---- %s ----' % self.save_key
         print '| scene: %s' % self.scene()
         print '| isVisible: %s' % self.isVisible()
@@ -183,6 +194,11 @@ class ConstituentNode(Node):
 
 
     def get_attribute_nodes(self, label_key=''):
+        """
+
+        :param label_key:
+        :return:
+        """
         atts = [x.end for x in self.edges_down if x.edge_type == g.ATTRIBUTE_EDGE]
         if label_key:
             for a in atts:
@@ -192,6 +208,10 @@ class ConstituentNode(Node):
             return atts
 
     def update_visibility(self, **kw):
+        """
+
+        :param kw:
+        """
         if 'folded' in kw:
             self._visibility_folded = kw['folded']
         if 'active' in kw:
@@ -255,18 +275,30 @@ class ConstituentNode(Node):
             self.right_bracket.setVisible(self.has_visible_brackets)
 
     def reset(self):
+        """
+
+
+        """
         Node.reset(self)
         # self.uses_scope_area = False
         # self.has_visible_brackets = False
         # self.boundingRect(update = True)
 
 
-    #### Parents & Children ####################################################
+    # ### Parents & Children ####################################################
 
     def is_projecting_to(self, other):
+        """
+
+        :param other:
+        """
         pass
 
     def rebuild_brackets(self):
+        """
+
+
+        """
         if self.left():
             if not self.left_bracket:
                 self.left_bracket = self.forest.create_bracket(host=self, left=True)
@@ -278,12 +310,16 @@ class ConstituentNode(Node):
         else:
             self.right_bracket = None
 
-    #### Features #########################################
+    # ### Features #########################################
 
     def set_feature(self, syntactic_feature=None, key=None, value=None, string=''):
         """ Convenience method for assigning a new feature node related to this constituent.
         can take syntactic feature, which is assumed to be already assigned for the syntactic constituent.
             Can take key, value pair to create new syntactic feature object, and then a proper feature object is created from this.
+        :param syntactic_feature:
+        :param key:
+        :param value:
+        :param string:
         """
         if syntactic_feature:
             if self.forest.settings.draw_features():
@@ -302,16 +338,29 @@ class ConstituentNode(Node):
 
 
     def set_gloss_text(self, gloss):
+        """
+
+        :param gloss:
+        """
         self.syntactic_object.set_gloss(gloss)
         self.update_gloss()
 
     def get_gloss(self):
+        """
+
+
+        :return:
+        """
         gl = self.get_children(edge_type='gloss_edge')
         if gl:
             return gl[0]
 
 
     def update_gloss(self):
+        """
+
+
+        """
         syn_gloss = self.syntactic_object.get_gloss()
         gloss_node = self.get_gloss()
         if gloss_node and not syn_gloss:
@@ -324,9 +373,13 @@ class ConstituentNode(Node):
 
     def get_features(self):
         """ Returns FeatureNodes """
-        return self.get_children(edge_type = g.FEATURE_EDGE)
+        return self.get_children(edge_type=g.FEATURE_EDGE)
 
     def update_features(self):
+        """
+
+
+        """
         current_features = set([x.syntactic_object.get() for x in self.get_features()])
         correct_features = self.syntactic_object.get_features()
         for key, item in correct_features.items():
@@ -338,7 +391,7 @@ class ConstituentNode(Node):
             print 'leftover features:', current_features
 
 
-    #### Labels #############################################
+    # ### Labels #############################################
 
 
     # things to do with traces:
@@ -394,44 +447,91 @@ class ConstituentNode(Node):
         return unicode(self.syntactic_object.label)
 
     def has_label(self):
+        """
+
+
+        :return:
+        """
         return self.syntactic_object.label
 
     def get_features_as_string(self):
+        """
+
+
+        :return:
+        """
         features = [f.syntactic_object for f in self.get_features()]
         feature_strings = [unicode(f) for f in features]
         return u', '.join(feature_strings)
 
     def get_alias(self):
+        """
+
+
+        :return:
+        """
         return self.alias
 
     def set_alias(self, alias):
+        """
+
+        :param alias:
+        """
         self.alias = alias
         self.update_identity()
 
     def get_gloss_text(self):
+        """
+
+
+        :return:
+        """
         return self.syntactic_object.get_gloss()
 
-    ### Indexes and chains ###################################
+    # ## Indexes and chains ###################################
 
     def get_index(self):
+        """
+
+
+        :return:
+        """
         return self.syntactic_object.get_index()
 
     def set_index(self, i):
+        """
+
+        :param i:
+        """
         self.syntactic_object.set_index(i)
         self.update_identity()
 
     def remove_index(self):
+        """
+
+
+        """
         self.syntactic_object.set_index('')
         self.update_identity()
 
     def is_chain_head(self):
+        """
+
+
+        :return:
+        """
         if self.get_index():
             return not (self.is_leaf_node() and self.syntactic_object.get_label() == 't')
         return False
 
-    #### Folding / Triangles #################################
+    # ### Folding / Triangles #################################
 
     def is_folded_away(self):
+        """
+
+
+        :return:
+        """
         if self.folding_towards:
             return True
         else:
@@ -482,6 +582,7 @@ class ConstituentNode(Node):
 
     def prepare_to_be_folded(self, triangle):
         """ Initialize move to triangle's position and make sure that move is not
+        :param triangle:
         interrupted  """
         # print u'node %s preparing to collapse to %s at %s' % (self, triangle, triangle.target_position )
         self.folding_towards = triangle  # folding_towards should override other kinds of movements
@@ -499,7 +600,10 @@ class ConstituentNode(Node):
         self.boundingRect(update=True)
 
     def unfold(self, from_node, n=0):
-        """ Restore folded elements, add some variance (n) to node positions so visualization algorithms won't get stuck """
+        """ Restore folded elements, add some variance (n) to node positions so visualization algorithms won't get stuck
+        :param from_node:
+        :param n:
+        """
         self.folded_away = False
         self.folding_towards = None
         x, y, z = from_node.get_computed_position()
@@ -513,7 +617,10 @@ class ConstituentNode(Node):
             feature.fade_in()
 
     def paint_triangle(self, painter, draw_rect):
-        """ Drawing the triangle, called from paint-method """
+        """ Drawing the triangle, called from paint-method
+        :param painter:
+        :param draw_rect:
+        """
         br = self.label_rect
         w2 = br.width() / 2
         left = br.x()
@@ -532,7 +639,7 @@ class ConstituentNode(Node):
             painter.drawRoundedRect(self.label_rect, 5, 5)
 
 
-    ### Multidomination #############################################
+    # ## Multidomination #############################################
 
 
     def is_multidominated(self):
@@ -551,54 +658,80 @@ class ConstituentNode(Node):
     # ## Magnets
 
     def top_magnet(self):
+        """
+
+
+        :return:
+        """
         if self.triangle:
             x1, y1, z1 = self.get_current_position()
             y2 = self.label_rect.y() - self.label_rect.height() / 2
-            return (x1, y1 + y2, z1)
+            return x1, y1 + y2, z1
         else:
             return Node.top_magnet(self)
 
     def bottom_magnet(self):
+        """
+
+
+        :return:
+        """
         if self.triangle:
             x1, y1, z1 = self.get_current_position()
             y2 = self.label_rect.y() + self.label_rect.height() / 2
-            return (x1, y1 + y2, z1)
+            return x1, y1 + y2, z1
         else:
             return Node.bottom_magnet(self)
 
 
     def left_magnet(self):
+        """
+
+
+        :return:
+        """
         if self.triangle:
             x1, y1, z1 = self.get_current_position()
             x2 = self.label_rect.x()
-            return (x1 + x2, y1, z1)
+            return x1 + x2, y1, z1
         else:
             return Node.left_magnet(self)
 
     def right_magnet(self):
+        """
+
+
+        :return:
+        """
         if self.triangle:
             x1, y1, z1 = self.get_current_position()
             x2 = self.label_rect.x() + self.label_rect.width()
-            return (x1 + x2, y1, z1)
+            return x1 + x2, y1, z1
         else:
             return Node.right_magnet(self)
 
-    ### Scope brackets and scope rectangles #############################################
+    # ## Scope brackets and scope rectangles #############################################
 
     # not used
     # def paint_scope_rect(self, painter, draw_rect):
-    #     if draw_rect or True:
-    #         painter.drawRoundedRect(self.scope_rect, 5, 5)
-    #         painter.drawRect(self.label_rect)
-    #     if self.has_visible_brackets:
-    #         painter.setFont(prefs.font)
-    #         painter.drawText(self.scope_rect.left(), self.scope_rect.top() + ((self.scope_rect.height() + (prefs.font_bracket_height / 2)) / 2), '[')
-    #         painter.drawText(self.scope_rect.right() - prefs.font_bracket_width, self.scope_rect.top() + ((self.scope_rect.height() + (prefs.font_bracket_height / 2)) / 2), ']')
+    # if draw_rect or True:
+    # painter.drawRoundedRect(self.scope_rect, 5, 5)
+    # painter.drawRect(self.label_rect)
+    # if self.has_visible_brackets:
+    # painter.setFont(prefs.font)
+    # painter.drawText(self.scope_rect.left(), self.scope_rect.top() + ((self.scope_rect.height() + (prefs.font_bracket_height / 2)) / 2), '[')
+    # painter.drawText(self.scope_rect.right() - prefs.font_bracket_width, self.scope_rect.top() + ((self.scope_rect.height() + (prefs.font_bracket_height / 2)) / 2), ']')
 
 
-    ### Qt overrides ######################################################################
+    # ## Qt overrides ######################################################################
 
     def paint(self, painter, option, widget):
+        """
+
+        :param painter:
+        :param option:
+        :param widget:
+        """
         painter.setPen(self.contextual_color())
         if ctrl.pressed == self:
             rect = True
@@ -620,6 +753,8 @@ class ConstituentNode(Node):
 
     def itemChange(self, change, value):
         """ Whatever menus or UI objects are associated with object, they move
+        :param change:
+        :param value:
         when node moves """
         if change == QtWidgets.QGraphicsItem.ItemPositionHasChanged:
             if self.ui_menu and self.ui_menu.isVisible():
@@ -638,13 +773,28 @@ class ConstituentNode(Node):
     #### Qt menus ###################################################
 
     def open_qt_menu(self):
+        """
+
+
+        """
         if not self.qt_menu:
             self.create_qt_menu()
         else:
             self.qt_menu.focus()
 
     def create_qt_menu(self, scene):
+        """
+
+        :param scene:
+        :return:
+        """
+
         def label_edited(self):
+            """
+
+            :param self:
+            :return:
+            """
             return
 
         widget = QtWidgets.QDialog(self.forest.main)  # QGroupBox
@@ -668,12 +818,20 @@ class ConstituentNode(Node):
         self.qt_menu = widget
 
     def close_qt_menu(self):
+        """
+
+
+        """
         self.qt_menu.hide()
         self.qt_menu = None
 
     #### Selection ########################################################
 
     def set_selection_status(self, selected):
+        """
+
+        :param selected:
+        """
         if (not selected) and self.ui_menu and self.ui_menu.is_open():
             self.close_menus()
         self.update()
@@ -681,6 +839,11 @@ class ConstituentNode(Node):
     #### Radial menu #########################################################
 
     def create_menu(self):
+        """
+
+
+        :return:
+        """
         main = self.forest.main
         menu = main.ui_manager.create_menu(self, actions=[
             {'name': 'Root Merge', 'method': main.do_merge, 'local_shortcut': 'r', 'condition': 'can_root_merge',
@@ -722,6 +885,11 @@ class ConstituentNode(Node):
     #### Menu commands and related behaviour #############################################
 
     def change_label(self, caller=None, event=None):
+        """
+
+        :param caller:
+        :param event:
+        """
         label = caller.get_value()
         self.syntactic_object.label = label
         self.update_label()
@@ -734,21 +902,41 @@ class ConstituentNode(Node):
         self.forest.main.action_finished('edit node text')
 
     def change_index(self, caller=None, event=None):
+        """
+
+        :param caller:
+        :param event:
+        """
         index = caller.get_value()
         self.set_index(index)
         self.forest.main.action_finished('edit node index')
 
     def change_gloss_text(self, caller=None, event=None):
+        """
+
+        :param caller:
+        :param event:
+        """
         gloss = caller.get_value()
         self.set_gloss_text(gloss)
         self.forest.main.action_finished('edit node gloss text')
 
     def change_alias(self, caller=None, event=None):
+        """
+
+        :param caller:
+        :param event:
+        """
         alias = caller.get_value()
         self.set_alias(to_unicode(alias))
         self.forest.main.action_finished('edit node label')
 
     def change_features_string(self, caller=None, event=None):
+        """
+
+        :param caller:
+        :param event:
+        """
         featurestring = caller.get_value()
         self.set_feature(string=featurestring)
         self.forest.main.action_finished('edit node feature text')
@@ -756,13 +944,28 @@ class ConstituentNode(Node):
     #### Checks for callable actions ####
 
     def can_root_merge(self):
+        """
+
+
+        :return:
+        """
         root = self.get_root_node()
         return self is not root and self is not root.left(only_visible=False)
 
     def can_fold(self):
+        """
+
+
+        :return:
+        """
         return not self.triangle
 
     def can_unfold(self):
+        """
+
+
+        :return:
+        """
         return self.triangle
 
     #### Dragging #####################################################################
@@ -770,6 +973,11 @@ class ConstituentNode(Node):
     # ## Some of this needs to be implemented further down in constituentnode-node-movable -inheritance
 
     def start_dragging(self, mx, my):
+        """
+
+        :param mx:
+        :param my:
+        """
         if ctrl.is_selected(self):
             drag_hosts = ctrl.get_all_selected()
         else:
@@ -793,7 +1001,9 @@ class ConstituentNode(Node):
             self.forest.prepare_touch_areas_for_dragging(excluded=ctrl.dragged)
 
     def drag(self, event):
-        """ Drags also elements that are counted to be involved: features, children etc """
+        """ Drags also elements that are counted to be involved: features, children etc
+        :param event:
+        """
         pos = event.scenePos()
         now_x, now_y = to_tuple(pos)
         if not getattr(ctrl, 'dragged', None):
@@ -818,6 +1028,12 @@ class ConstituentNode(Node):
             node.set_current_position((now_x + dx, now_y + dy, pz))
 
     def drop_to(self, x, y, received=False):
+        """
+
+        :param x:
+        :param y:
+        :param received:
+        """
         self.release()
         self.update()
         if not received:
@@ -833,7 +1049,11 @@ class ConstituentNode(Node):
         # ctrl.scene.fit_to_window()
 
     def cancel_dragging(self):
-        assert (False)
+        """
+
+
+        """
+        assert False
         sx, sy = self._before_drag_position
         z = self.get_current_position()[2]
         self.set_computed_position((sx, sy, z))
@@ -847,7 +1067,9 @@ class ConstituentNode(Node):
     #################################
 
     def hoverEnterEvent(self, event):
-        """ Hovering has some visual effects, usually handled in paint-method """
+        """ Hovering has some visual effects, usually handled in paint-method
+        :param event:
+        """
         if not self._hovering:
             self._hovering = True
             self.effect.setEnabled(True)
@@ -863,7 +1085,9 @@ class ConstituentNode(Node):
         QtWidgets.QGraphicsItem.hoverEnterEvent(self, event)
 
     def hoverLeaveEvent(self, event):
-        """ Object needs to be updated """
+        """ Object needs to be updated
+        :param event:
+        """
         if self._hovering:
             self._hovering = False
             self.effect.setEnabled(False)
@@ -878,7 +1102,9 @@ class ConstituentNode(Node):
         QtWidgets.QGraphicsItem.hoverLeaveEvent(self, event)
 
     def after_restore(self, changes):
-        """ Check what needs to be done """
+        """ Check what needs to be done
+        :param changes:
+        """
         self.update_visibility()
         Node.after_restore(self, changes)
         

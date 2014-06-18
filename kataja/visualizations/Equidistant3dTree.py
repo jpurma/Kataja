@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-#############################################################################
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool *** 
 # 
@@ -20,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 
 import math
@@ -38,14 +38,23 @@ RIGHT = 2
 
 
 class Equidistant3dTree(BaseVisualization):
+    """
+
+    """
     name = 'Equidistant 3d-net'
 
     def __init__(self):
+        BaseVisualization.__init__(self)
         self.forest = None
         self._directed = False
 
 
     def prepare(self, forest, loading=False):
+        """
+
+        :param forest:
+        :param loading:
+        """
         self.forest = forest
         self.forest.settings.bracket_style(0)
         self.forest.settings.show_constituent_edges = True
@@ -55,6 +64,10 @@ class Equidistant3dTree(BaseVisualization):
             self.reset_node(node)
 
     def reset_node(self, node):
+        """
+
+        :param node:
+        """
         node.locked_to_position = False
         node.reset_adjustment()
         node.update_label()
@@ -72,6 +85,11 @@ class Equidistant3dTree(BaseVisualization):
     def calculate_movement_o(self, node):
         # @time_me
         # Sum up all forces pushing this item away.
+        """
+
+        :param node:
+        :return:
+        """
         xvel = 0.0
         yvel = 0.0
 
@@ -106,12 +124,17 @@ class Equidistant3dTree(BaseVisualization):
             else:
                 print 'hidden edge ', edge
 
-        return (xvel, yvel, 0)
+        return xvel, yvel, 0
 
 
     def calculate_movement(self, node):
         # @time_me
         # Sum up all forces pushing this item away.
+        """
+
+        :param node:
+        :return:
+        """
         xvel = 0.0
         yvel = 0.0
         zvel = 0.0
@@ -143,7 +166,7 @@ class Equidistant3dTree(BaseVisualization):
                 dist = math.sqrt(bx * bx + by * by + bz * bz)
                 if dist > 300:
                     print dist, edge
-                    #raise hell
+                    # raise hell
                 if dist > 15:
                     fx = (bx / dist) * (dist - 30) * 0.2
                     fy = (by / dist) * (dist - 30) * 0.2
@@ -153,8 +176,8 @@ class Equidistant3dTree(BaseVisualization):
                     yvel += fy
                     zvel += fz
                     # elif dist < 20:
-                    #    xvel -= bx
-                    #    yvel -= by
+                    # xvel -= bx
+                    # yvel -= by
                     #    zvel -= bz
             else:
                 print 'hidden edge ', edge
@@ -167,4 +190,4 @@ class Equidistant3dTree(BaseVisualization):
             zvel = 0
 
         # print 'after:', (xvel, yvel, zvel)
-        return (xvel, yvel, zvel)
+        return xvel, yvel, zvel

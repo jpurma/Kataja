@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-#############################################################################
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool *** 
 # 
@@ -20,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 from kataja.Movable import Movable
 from kataja.Controller import prefs
@@ -32,14 +32,23 @@ from kataja.GlossNode import GlossNode
 
 
 class LinearizedStaticTree(BalancedTree):
+    """
+
+    """
     name = 'Linearized static tree'
 
 
     def __init__(self):
+        BalancedTree.__init__(self)
         self.forest = None
         self._directed = True
 
     def prepare(self, forest, loading=False):
+        """
+
+        :param forest:
+        :param loading:
+        """
         self.forest = forest
         self._directed = True
         self.forest.settings.bracket_style(0)
@@ -50,6 +59,10 @@ class LinearizedStaticTree(BalancedTree):
             self.reset_node(node)
 
     def reset_node(self, node):
+        """
+
+        :param node:
+        """
         node.locked_to_position = False
         node.reset_adjustment()
         node.update_label()
@@ -63,6 +76,10 @@ class LinearizedStaticTree(BalancedTree):
 
 
     def reselect(self):
+        """
+
+
+        """
         self.forest.vis_data['rotation'] -= 1
 
 
@@ -109,6 +126,8 @@ class LinearizedStaticTree(BalancedTree):
 
         def _build_grid(node, parent=None):
             if self.should_we_draw(node, parent):
+                left_grid = None
+                right_grid = None
                 left_child = node.left()
                 if left_child:
                     left_grid = _build_grid(left_child, parent=node)
@@ -132,7 +151,7 @@ class LinearizedStaticTree(BalancedTree):
             # actual merging of grids begins with calculating the closest fit for two grids
 
             if not (right_grid or left_grid):
-                assert (False)
+                assert False
 
             if left_grid and right_grid:
                 for row_n, right_side_row in enumerate(right_grid):

@@ -1,4 +1,5 @@
-#############################################################################
+# coding=utf-8
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -19,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 from kataja.Controller import qt_prefs
 from kataja.Node import Node
@@ -28,6 +29,9 @@ from kataja.globals import PROPERTY_EDGE, PROPERTY_NODE
 # ctrl = Controller object, gives accessa to other modules
 
 class PropertyNode(Node):
+    """
+
+    """
     width = 20
     height = 20
     default_edge_type = PROPERTY_EDGE
@@ -42,5 +46,5 @@ class PropertyNode(Node):
         self.save_key = 'PN%s' % id(self)
         intern(self.save_key)
         self.label_font = qt_prefs.feature_small
-        #self.color = colors.text
+        # self.color = colors.text
         self.update_identity()

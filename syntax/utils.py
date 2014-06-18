@@ -1,3 +1,4 @@
+# coding=utf-8
 #############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
@@ -29,11 +30,26 @@ from PyQt5.QtCore import QPointF, QPoint
 
 
 def print_rect(rect):
+    """
+
+    :param rect:
+    """
     print 'x: %s y: %s width: %s height: %s' % (rect.x(), rect.y(), rect.width(), rect.height())
 
 
 def caller(function):
+    """
+
+    :param function:
+    :return:
+    """
+
     def wrap(*arg):
+        """
+
+        :param arg:
+        :return:
+        """
         if len(traceback.extract_stack()) > 1:
             mod, line, fun, cmd = traceback.extract_stack()[-2]
             print "%s was called by %s l.%s at %s %s" % (function.func_name, cmd, line, mod, fun)
@@ -43,7 +59,18 @@ def caller(function):
 
 
 def time_me(function):
+    """
+
+    :param function:
+    :return:
+    """
+
     def wrap(*arg):
+        """
+
+        :param arg:
+        :return:
+        """
         start = time.time()
         r = function(*arg)
         end = time.time()
@@ -54,6 +81,13 @@ def time_me(function):
 
 
 def load_features(obj, key, d):
+    """
+
+    :param obj:
+    :param key:
+    :param d:
+    :return:
+    """
     if (isinstance(obj, str) or isinstance(obj, unicode)) and obj.startswith('_*'):
         if isinstance(d[obj], str) or isinstance(d[obj], unicode):
             classname = obj.split('_')[1][1:]  # _*[classname]_id
@@ -66,13 +100,26 @@ def load_features(obj, key, d):
 
 
 def save_features(obj, saved, d):
+    """
+
+    :param obj:
+    :param saved:
+    :param d:
+    :return:
+    """
+
     def save_feature(feat):
+        """
+
+        :param feat:
+        :return:
+        """
         fval = getattr(obj, feat)
         try:
             return fval.save(d)
         except AttributeError:
             if isinstance(fval, QPointF) or isinstance(fval, QPoint):
-                return (fval.x(), fval.y())
+                return fval.x(), fval.y()
             if isinstance(fval, list):
                 nval = []
                 for item in fval:
@@ -104,6 +151,13 @@ def save_features(obj, saved, d):
 
 
 def load_lexicon(filename, Constituent, Feature):
+    """
+
+    :param filename:
+    :param Constituent:
+    :param Feature:
+    :return:
+    """
     new_dict = {}
     try:
         f = open(filename, 'r')
@@ -142,6 +196,12 @@ def load_lexicon(filename, Constituent, Feature):
 
 
 def save_lexicon(lexicon, filename):
+    """
+
+    :param lexicon:
+    :param filename:
+    :return:
+    """
     try:
         f = open(filename, 'w')
     except IOError:
@@ -159,7 +219,10 @@ def save_lexicon(lexicon, filename):
 
 
 def to_unicode(string, encoding='utf-8'):
-    """Convenience method for converting strings to unicode."""
+    """Convenience method for converting strings to unicode.
+    :param string:
+    :param encoding:
+    """
     if not string:
         return u''
     if type(string) == UnicodeType:

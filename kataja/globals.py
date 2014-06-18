@@ -1,4 +1,4 @@
-from PyQt5 import QtCore
+# coding=utf-8
 
 # ## Global enums
 
@@ -29,7 +29,7 @@ ATTRIBUTE_NODE = 3
 GLOSS_NODE = 4
 PROPERTY_NODE = 5
 
-### Our custom signals
+# ## Our custom signals
 
 EDGE_SHAPES_CHANGED = 101
 #EDGE_SHAPES_CHANGED = QtCore.pyqtSignal(int, int)

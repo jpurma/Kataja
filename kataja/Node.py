@@ -1,4 +1,5 @@
-#############################################################################
+# coding=utf-8
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -19,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
@@ -27,8 +28,7 @@ from PyQt5.QtCore import Qt
 from kataja.Controller import ctrl, prefs, qt_prefs
 from kataja.Label import Label
 from kataja.Movable import Movable
-from kataja.TouchArea import TouchArea
-from kataja.utils import to_tuple, time_me
+from kataja.utils import to_tuple
 from kataja.globals import ABSTRACT_EDGE, ABSTRACT_NODE
 import utils
 
@@ -48,7 +48,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     width = 20
     height = 20
     default_edge_type = ABSTRACT_EDGE
-    saved_fields = ['level', 'syntactic_object', 'edges_up', 'edges_down', 'folded_away', 'folding_towards', 'index', '_color']
+    saved_fields = ['level', 'syntactic_object', 'edges_up', 'edges_down', 'folded_away', 'folding_towards', 'index',
+                    '_color']
     saved_fields = list(set(Movable.saved_fields + saved_fields))
     node_type = ABSTRACT_NODE
 
@@ -112,7 +113,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self.setGraphicsEffect(self.effect)
 
 
-
     def __repr__(self):
         """ This is a node and this represents this UG item """
         r = u'%s-%s-%s' % (self.__class__.__name__, self.syntactic_object, self.save_key)
@@ -122,7 +122,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     # Let's not have nodes be able to iterate through tree --
     # it is ambiguous thing when node structures are not trees.
     # def __iter__(self):
-    #    return IterateOnce(self)
+    # return IterateOnce(self)
 
 
     def calculate_movement(self):
@@ -130,6 +130,10 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         return self.forest.visualization.calculate_movement(self)
 
     def reset(self):
+        """
+
+
+        """
         Movable.reset(self)
         self.boundingRect(update=True)
 
@@ -137,10 +141,17 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             self.forest.remove_touch_area(touch_area)
 
 
-    #### Children and parents ####################################################
+    # ### Children and parents ####################################################
 
 
     def get_children(self, only_similar=True, only_visible=False, edge_type=''):
+        """
+
+        :param only_similar:
+        :param only_visible:
+        :param edge_type:
+        :return:
+        """
         if only_similar or edge_type:
             edge_type = edge_type or self.__class__.default_edge_type
             if only_visible:
@@ -154,6 +165,13 @@ class Node(Movable, QtWidgets.QGraphicsItem):
                 return [edge.end for edge in self.edges_down]
 
     def get_parents(self, only_similar=True, only_visible=False, edge_type=''):
+        """
+
+        :param only_similar:
+        :param only_visible:
+        :param edge_type:
+        :return:
+        """
         if only_similar or edge_type:
             edge_type = edge_type or self.__class__.default_edge_type
             if only_visible:
@@ -167,18 +185,34 @@ class Node(Movable, QtWidgets.QGraphicsItem):
                 return [edge.start for edge in self.edges_up]
 
     def left(self, only_visible=True):
+        """
+
+        :param only_visible:
+        :return:
+        """
         for edge in self.edges_down:
             if edge.edge_type == self.__class__.default_edge_type and edge.align == 1:
                 if (only_visible and edge.end.is_visible()) or not only_visible:
                     return edge.end
 
     def right(self, only_visible=True):
+        """
+
+        :param only_visible:
+        :return:
+        """
         for edge in self.edges_down:
             if edge.edge_type == self.__class__.default_edge_type and edge.align == 2:
                 if (only_visible and edge.end.is_visible()) or not only_visible:
                     return edge.end
 
     def is_leaf_node(self, only_similar=True, only_visible=True):
+        """
+
+        :param only_similar:
+        :param only_visible:
+        :return:
+        """
         children = self.get_children(only_similar, only_visible)
         if children:
             return False
@@ -186,14 +220,20 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             return True
 
     def get_only_parent(self, only_similar=True, only_visible=True):
-        """ Returns one or zero parents -- useful when not using multidomination """
+        """ Returns one or zero parents -- useful when not using multidomination
+        :param only_similar:
+        :param only_visible:
+        """
         parents = self.get_parents(only_similar, only_visible)
         if parents:
             return parents[0]
         return None
 
     def is_root_node(self, only_similar=True, only_visible=True):
-        """ Root node is the topmost node of a tree """
+        """ Root node is the topmost node of a tree
+        :param only_similar:
+        :param only_visible:
+        """
         if self.get_parents(only_similar, only_visible):
             return False
         else:
@@ -201,6 +241,10 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
     def get_root_node(self, only_similar=True, only_visible=False, recursion=False, visited=None):
         """ Getting the root node is not trivial if there are derivation_steps in the tree.
+        :param only_similar:
+        :param only_visible:
+        :param recursion:
+        :param visited:
         If a node that is already visited is visited again, this is a derivation_step that should not be followed. """
         if not recursion:
             visited = set()
@@ -217,7 +261,10 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         return self
 
     def get_edge_to(self, other, edge_type=''):
-        """ Returns edge object, not the related node. There should be only one instance of edge of certain type between two elements. """
+        """ Returns edge object, not the related node. There should be only one instance of edge of certain type between two elements.
+        :param other:
+        :param edge_type:
+        """
         for edge in self.edges_down:
             if edge.end == other:
                 if (edge_type and edge_type == edge.edge_type) or (not edge_type):
@@ -230,38 +277,53 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         return None
 
     def get_edges_up(self, similar=True, visible=False):
-        """ Returns edges up, filtered """
+        """ Returns edges up, filtered
+        :param similar:
+        :param visible:
+        """
         return [rel for rel in self.edges_up if
                 ((not similar) or rel.edge_type == self.__class__.default_edge_type) and (
                     (not visible) or rel.is_visible())]
 
     def get_edges_down(self, similar=True, visible=False):
-        """ Returns edges down, filtered """
+        """ Returns edges down, filtered
+        :param similar:
+        :param visible:
+        """
         return [rel for rel in self.edges_down if
                 ((not similar) or rel.edge_type == self.__class__.default_edge_type) and (
                     (not visible) or rel.is_visible())]
 
 
-    #### Colors and drawing settings ############################################################
+    # ### Colors and drawing settings ############################################################
 
     # is this necessary anymore? Does label_complex use pen color?
     def update_colors(self):
+        """
+
+
+        """
         pass
-        #self._color = colors.drawing
-        #if self._label_complex:
-        #    self._label_complex.setDefaultTextColor(self._color)
+        # self._color = colors.drawing
+        # if self._label_complex:
+        # self._label_complex.setDefaultTextColor(self._color)
 
 
-    def color(self, value = None):
+    def color(self, value=None):
+        """
+
+        :param value:
+        :return:
+        """
         if value is None:
-            if self._color == None:
+            if self._color is None:
                 return ctrl.cm().get(self.forest.settings.node_settings(self.__class__.node_type, 'color'))
             else:
                 return ctrl.cm().get(self._color)
         else:
             self._color = value
-            #if self._label_complex:
-            #    self._label_complex.setDefaultTextColor(self._color)
+            # if self._label_complex:
+            # self._label_complex.setDefaultTextColor(self._color)
 
 
     def contextual_color(self):
@@ -275,7 +337,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         else:
             return self.color()
 
-    #### Labels and identity ###############################################################
+    # ### Labels and identity ###############################################################
 
     def update_identity(self):
         """ Make sure that the node reflects its syntactic_object and that node exists in the world"""
@@ -284,6 +346,11 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self.update_label()
 
     def update_label(self):
+        """
+
+
+        :return:
+        """
         if not self._label_complex:
             self._label_complex = Label(parent=self)
             self._label_complex.set_get_method(self.get_text_for_label)
@@ -297,16 +364,24 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         return unicode(self.syntactic_object)
 
     def has_empty_label(self):
+        """
+
+
+        :return:
+        """
         return self._label_complex.is_empty()
 
     def label_edited(self):
         """ Label has been modified, update this and the syntactic object """
         new_value = self._label_complex.get_plaintext()
 
-    ### Qt overrides ######################################################################
+    # ## Qt overrides ######################################################################
 
     def paint(self, painter, option, widget):
         """ Painting is sensitive to mouse/selection issues, but usually with
+        :param painter:
+        :param option:
+        :param widget:
         nodes it is the label of the node that needs complex painting """
         painter.setPen(self.contextual_color())
         if ctrl.pressed == self or self._hovering or ctrl.is_selected(self):
@@ -315,6 +390,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     def boundingRect(self, update=False, pass_size_calculation=False):
         """ BoundingRects are used often and cost of this method affects performance.
         inner_rect is used as a cached bounding rect and returned fast if there is no explicit
+        :param update:
+        :param pass_size_calculation:
         update asked. """
         if self.inner_rect and not update:
             return self.inner_rect
@@ -343,17 +420,17 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self._bottom_magnet = (0, h2 - 2)  # (0,-h2/2)
         self._bottom_left_magnet = (w2 / -2, h2 - 2)
         self._bottom_right_magnet = (w2 / 2, h2 - 2)
-        #print 'updating bounding rect ', self
+        # print 'updating bounding rect ', self
         return self.inner_rect
 
-    ### Magnets ######################################################################
+    # ## Magnets ######################################################################
 
     def top_magnet(self):
         """ Adjusted coordinates to center top of the node """
         if prefs.use_magnets and self._label_visible:
             x1, y1, z1 = self.get_current_position()
             x2, y2 = self._top_magnet
-            return (x1 + x2, y1 + y2, z1)
+            return x1 + x2, y1 + y2, z1
         else:
             return self.get_current_position()
 
@@ -362,7 +439,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         if prefs.use_magnets and self._label_visible:
             x1, y1, z1 = self.get_current_position()
             x2, y2 = self._bottom_magnet
-            return (x1 + x2, y1 + y2, z1)
+            return x1 + x2, y1 + y2, z1
         else:
             return self.get_current_position()
 
@@ -371,7 +448,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         if prefs.use_magnets and self._label_visible:
             x1, y1, z1 = self.get_current_position()
             x2, y2 = self._bottom_left_magnet
-            return (x1 + x2, y1 + y2, z1)
+            return x1 + x2, y1 + y2, z1
         else:
             return self.get_current_position()
 
@@ -380,11 +457,11 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         if prefs.use_magnets and self._label_visible:
             x1, y1, z1 = self.get_current_position()
             x2, y2 = self._bottom_right_magnet
-            return (x1 + x2, y1 + y2, z1)
+            return x1 + x2, y1 + y2, z1
         else:
             return self.get_current_position()
 
-    #### Menus #########################################
+    # ### Menus #########################################
 
     def create_menu(self):
         """ Define menus for this node type """
@@ -409,29 +486,53 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             self.ui_menu.close()
 
     def remove_menu(self, menu):
-        """ Tries to remove a menu associated with this node """
+        """ Tries to remove a menu associated with this node
+        :param menu:
+        """
         ui = ctrl.main.ui_manager  # @UndefinedVariable
         if menu is self.ui_menu:
             ui.remove_menu(menu)
             self.ui_menu = None
 
     def set_selection_status(self, selected):
+        """
+
+        :param selected:
+        """
         if not selected:
             self.remove_merge_options()
         self.update()
 
-    #### Merge options ########################################################
+    # ### Merge options ########################################################
 
     def add_merge_options(self):
+        """
+
+
+        """
         pass
 
     def remove_merge_options(self):
+        """
+
+
+        """
         pass
 
     def get_touch_area(self, place):
+        """
+
+        :param place:
+        :return:
+        """
         return self.touch_areas.get(place, None)
 
     def add_touch_area(self, touch_area):
+        """
+
+        :param touch_area:
+        :return: :raise:
+        """
         if touch_area.place in self.touch_areas:
             print 'Touch area exists already. Someone is confused'
             raise
@@ -439,13 +540,18 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         return touch_area
 
     def remove_touch_area(self, touch_area):
+        """
+
+        :param touch_area:
+        """
         del self.touch_areas[touch_area.place]
 
-    #### MOUSE - kataja ########################################################
+    # ### MOUSE - kataja ########################################################
 
     def clickQt(self, event=None):
         """ temporary testing with qt menus
             it may be faster to develope prototype by relying on default menus
+        :param event:
             """
         if not self.qt_menu:
             self.open_qt_menu()
@@ -453,7 +559,9 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             self.close_qt_menu()
 
     def double_click(self, event=None):
-        """ Scene has decided that this node has been clicked """
+        """ Scene has decided that this node has been clicked
+        :param event:
+        """
         self._hovering = False
         if ctrl.is_selected(self):
             if (not self.ui_menu) or (not self.ui_menu.is_open()):
@@ -464,7 +572,9 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             ctrl.select(self)
 
     def click(self, event=None):
-        """ Scene has decided that this node has been clicked """
+        """ Scene has decided that this node has been clicked
+        :param event:
+        """
         self._hovering = False
         if event and event.modifiers() == Qt.ShiftModifier:  # multiple selection
             for node in ctrl.get_all_selected():
@@ -485,8 +595,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             self.add_merge_options()
 
     # def drag(self, event):
-    #     """ Drags also elements that are counted to be involved: features, children etc """
-    #     mx, my = to_tuple(event.scenePos())
+    # """ Drags also elements that are counted to be involved: features, children etc """
+    # mx, my = to_tuple(event.scenePos())
     #     if not getattr(ctrl, 'dragged', None):
     #         self.start_dragging(mx, my)
     #     for item, ox, oy in ctrl.dragged_positions:
@@ -499,6 +609,11 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
 
     def start_dragging(self, mx, my):
+        """
+
+        :param mx:
+        :param my:
+        """
         print 'start dragging with node ', self
         ctrl.dragged = set()
 
@@ -511,6 +626,10 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
 
     def drag(self, event):
+        """
+
+        :param event:
+        """
         pos = event.scenePos()
         now_x, now_y = to_tuple(pos)
         if not getattr(ctrl, 'dragged', None):
@@ -533,7 +652,9 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     #### Mouse - Qt events ##################################################
 
     def hoverEnterEvent(self, event):
-        """ Hovering has some visual effects, usually handled in paint-method """
+        """ Hovering has some visual effects, usually handled in paint-method
+        :param event:
+        """
         if not self._hovering:
             self._hovering = True
             self.effect.setEnabled(True)
@@ -543,7 +664,9 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         QtWidgets.QGraphicsItem.hoverEnterEvent(self, event)
 
     def hoverLeaveEvent(self, event):
-        """ Object needs to be updated """
+        """ Object needs to be updated
+        :param event:
+        """
         if self._hovering:
             self._hovering = False
             self.effect.setEnabled(False)
@@ -574,7 +697,9 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     #### Restoring after load / undo #########################################
 
     def after_restore(self, changes):
-        """ Fix derived attributes """
+        """ Fix derived attributes
+        :param changes:
+        """
         Movable.after_restore(self, changes)
 
 

@@ -1,4 +1,5 @@
-########################################################
+# coding=utf-8
+# #######################################################
 from PyQt5 import QtGui, QtCore, QtWidgets
 
 from kataja.Controller import ctrl
@@ -19,9 +20,19 @@ class MergeHintLine(QtWidgets.QGraphicsItem):
         QtWidgets.QGraphicsItem.__init__(self)
 
     def remove(self):
+        """
+
+
+        """
         del self
 
     def paint(self, painter, option, widget):
+        """
+
+        :param painter:
+        :param option:
+        :param widget:
+        """
         startpos = self.graph.mapFromScene(self.start.pos())
         self.prepareGeometryChange()
         if hasattr(self.end, 'middle_point'):
@@ -48,9 +59,18 @@ class MergeHintLine(QtWidgets.QGraphicsItem):
             self._ui_line = QtCore.QLineF(Pf(xmin, ymin), Pf(xmax, ymax))
 
     def boundingRect(self):
+        """
+
+
+        :return:
+        """
         l = self._ui_line
         return QtCore.QRectF(l.p1(), l.p2())
 
     def update_visibility(self):
+        """
+
+
+        """
         self.show()
 

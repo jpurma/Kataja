@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-#############################################################################
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -20,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 
 import math
@@ -39,6 +39,7 @@ class LeftFirstTree(BaseVisualization):
     name = 'Left first tree'
 
     def __init__(self):
+        BaseVisualization.__init__(self)
         self.forest = None
         self._hits = {}
         self._max_hits = {}
@@ -46,6 +47,11 @@ class LeftFirstTree(BaseVisualization):
         self._indentation = 0
 
     def prepare(self, forest, loading=False):
+        """
+
+        :param forest:
+        :param loading:
+        """
         print 'preparing LeftFirstVisualization'
         self.forest = forest
         self._hits = {}
@@ -59,6 +65,10 @@ class LeftFirstTree(BaseVisualization):
             self.reset_node(node)
 
     def reset_node(self, node):
+        """
+
+        :param node:
+        """
         node.locked_to_position = False
         node.reset_adjustment()
         node.update_label()
@@ -101,7 +111,7 @@ class LeftFirstTree(BaseVisualization):
                 grid.set(x - 1, y + 1, 1)
                 self._fill_grid(grid, left, x - 2, y + 2, parent=node)
         elif self.forest.settings.draw_features and getattr(node.syntactic_object, 'feature_tree', None):
-            raise
+            print "(1) drawing feature_tree, this shouldn't happen anymore!"
             self._fill_grid(grid, left, x - 1, y + 1, parent=node)
 
         right = node.right()
@@ -118,7 +128,7 @@ class LeftFirstTree(BaseVisualization):
             grid.set(nx - 1, ny - 1, 1)
             self._fill_grid(grid, right, nx, ny, parent=node)
 
-        #             if isinstance(right, FeatureNode):
+        # if isinstance(right, FeatureNode):
         #                 block_size = 1
         #             else:
         #                 block_size = 2
@@ -138,7 +148,7 @@ class LeftFirstTree(BaseVisualization):
         #                 ny += block_size
         #             self._fill_grid(grid, right, nx, ny, parent = node)
         elif self.forest.settings.draw_features and getattr(node.syntactic_object, 'feature_tree', None):
-            raise
+            print "(2) drawing feature_tree, this shouldn't happen anymore!"
             nx = x + 1
             ny = y + 1
             while grid.get(nx - 1, ny + 1):
@@ -191,7 +201,7 @@ class LeftFirstTree(BaseVisualization):
         # Actual drawing: set nodes to their places in scene
         extra_height = 0
         if merged_grid:
-            #merged_grid.ascii_dump()
+            # merged_grid.ascii_dump()
             extra_width = [0] * merged_grid._width
         else:
             extra_width = [0]

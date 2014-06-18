@@ -1,4 +1,5 @@
-#############################################################################
+# coding=utf-8
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -19,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 import random
 
@@ -32,6 +33,9 @@ color_map = {'tense': 0, 'order': 1, 'person': 2, 'number': 4, 'case': 6, 'unkno
 
 
 class FeatureNode(Node):
+    """
+
+    """
     width = 20
     height = 20
     default_edge_type = FEATURE_EDGE
@@ -48,8 +52,8 @@ class FeatureNode(Node):
         self.save_key = 'FN%s' % self.syntactic_object.uid
         intern(self.save_key)
         self.label_font = qt_prefs.sc_font
-        #if feature.get_value() in color_map:
-        #    self.color = colors.feature_palette[color_map[feature.get_value()]]
+        # if feature.get_value() in color_map:
+        # self.color = colors.feature_palette[color_map[feature.get_value()]]
         #else:
         #    self.color = colors.feature
         if not restoring:
@@ -62,7 +66,9 @@ class FeatureNode(Node):
     # implement color() to map one of the d['rainbow_%'] colors here. Or if bw mode is on, then something else.
 
     def compute_start_position(self, host):
-        """ Makes features start at somewhat predictable position, if they are of common kinds of features. If not, then some random noise is added to prevent features sticking together """
+        """ Makes features start at somewhat predictable position, if they are of common kinds of features. If not, then some random noise is added to prevent features sticking together
+        :param host:
+        """
         x, y, z = host.get_current_position()
         k = self.syntactic_object.key
         if k in color_map:

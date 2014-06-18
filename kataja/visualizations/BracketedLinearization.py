@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-#############################################################################
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -20,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 
 from kataja.ConstituentNode import ConstituentNode
@@ -31,9 +31,13 @@ from kataja.GlossNode import GlossNode
 
 
 class BracketedLinearization(BaseVisualization):
+    """
+
+    """
     name = 'Bracketed linearization'
 
     def __init__(self):
+        BaseVisualization.__init__(self)
         self.forest = None
         self._hits = {}
         self._max_hits = {}
@@ -43,6 +47,8 @@ class BracketedLinearization(BaseVisualization):
     def prepare(self, forest, loading=False):
         """ This is called when switching to this visualization
 
+        :param forest:
+        :param loading:
         :param Forest forest:
         """
         self.forest = forest
@@ -56,6 +62,10 @@ class BracketedLinearization(BaseVisualization):
             self.reset_node(node)
 
     def reset_node(self, node):
+        """
+
+        :param node:
+        """
         node.locked_to_position = False
         node.reset_adjustment()
         if isinstance(node, ConstituentNode):
@@ -86,6 +96,13 @@ class BracketedLinearization(BaseVisualization):
         """ We should draw recursively starting from right bottom edge and add layers when needed. """
         # print '** drawing (bracketed linearization) **'
         def draw_node(node, used=set(), left_edge=0):
+            """
+
+            :param node:
+            :param used:
+            :param left_edge:
+            :return:
+            """
             if node in used:
                 return used, left_edge
             else:

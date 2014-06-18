@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-#############################################################################
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool *** 
 # 
@@ -20,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 
 from kataja.Movable import Movable
@@ -33,13 +33,22 @@ from kataja.GlossNode import GlossNode
 
 
 class BalancedTree(BaseVisualization):
+    """
+
+    """
     name = 'Balanced tree'
 
     def __init__(self):
+        BaseVisualization.__init__(self)
         self.forest = None
         self._directed = True
 
     def prepare(self, forest, loading=False):
+        """
+
+        :param forest:
+        :param loading:
+        """
         self.forest = forest
         self.forest.settings.bracket_style(0)
         self.forest.settings.show_constituent_edges = True
@@ -50,6 +59,10 @@ class BalancedTree(BaseVisualization):
             self.reset_node(node)
 
     def reset_node(self, node):
+        """
+
+        :param node:
+        """
         node.locked_to_position = False
         node.reset_adjustment()
         node.update_label()
@@ -63,6 +76,10 @@ class BalancedTree(BaseVisualization):
 
 
     def reselect(self):
+        """
+
+
+        """
         self.forest.vis_data['rotation'] -= 1
 
 
@@ -103,6 +120,8 @@ class BalancedTree(BaseVisualization):
 
         def _build_grid(node, parent=None):
             if self.should_we_draw(node, parent):
+                left_grid = None
+                right_grid = None
                 left_child = node.left()
                 if left_child:
                     left_grid = _build_grid(left_child, parent=node)
@@ -124,9 +143,10 @@ class BalancedTree(BaseVisualization):
         def _merge_grids(left_grid=None, right_grid=None, combining_node=None, extra_padding=1):
             paddings = []
             # actual merging of grids begins with calculating the closest fit for two grids
+            combined_grid = None
 
             if not (right_grid or left_grid):
-                assert (False)
+                assert False
 
             if left_grid and right_grid:
                 for row_n, right_side_row in enumerate(right_grid):
@@ -180,7 +200,7 @@ class BalancedTree(BaseVisualization):
         height_reduction = (edge_height / 3.0) / (merged_grid._height or 1)
         height_now = offset_y
 
-        #merged_grid.ascii_dump()
+        # merged_grid.ascii_dump()
         # Actual drawing: set nodes to their places in scene
 
         for y, row in enumerate(merged_grid):

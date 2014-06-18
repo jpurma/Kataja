@@ -1,16 +1,27 @@
-'''
+# coding=utf-8
+"""
 Created on 28.8.2013
 
 @author: purma
-'''
+"""
+from PyQt5 import QtWidgets, QtCore
+
 from kataja.ui.MenuItem import MenuItem
 from kataja.Controller import ctrl, qt_prefs
 from PyQt5.QtCore import QPointF as Pf
-from PyQt5 import QtWidgets, QtCore
 
 
 class ButtonMenuItem(MenuItem, QtWidgets.QGraphicsSimpleTextItem):
+    """
+
+    """
+
     def __init__(self, parent, args):
+        """
+
+        :param parent:
+        :param args:
+        """
         QtWidgets.QGraphicsSimpleTextItem.__init__(self, parent=parent)
         MenuItem.__init__(self, parent, args)
         self.setText(self._label_text)
@@ -19,6 +30,12 @@ class ButtonMenuItem(MenuItem, QtWidgets.QGraphicsSimpleTextItem):
 
 
     def paint(self, painter, option, widget):
+        """
+
+        :param painter:
+        :param option:
+        :param widget:
+        """
         cm = ctrl.cm()
         if ctrl.has_focus(self) or self.activated:
             painter.setBrush(cm.active(cm.ui()))
@@ -47,9 +64,17 @@ class ButtonMenuItem(MenuItem, QtWidgets.QGraphicsSimpleTextItem):
         QtWidgets.QGraphicsSimpleTextItem.paint(self, painter, option, widget)
 
     def hoverEnterEvent(self, event):
+        """
+
+        :param event:
+        """
         MenuItem.hoverEnterEvent(self, event)
         QtWidgets.QGraphicsSimpleTextItem.hoverEnterEvent(self, event)
 
     def hoverLeaveEvent(self, event):
+        """
+
+        :param event:
+        """
         MenuItem.hoverLeaveEvent(self, event)
         QtWidgets.QGraphicsSimpleTextItem.hoverLeaveEvent(self, event)

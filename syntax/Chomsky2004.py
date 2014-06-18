@@ -1,3 +1,4 @@
+# coding=utf-8
 class ComputationalSystem:
     def __init__(self, lexicon, pf, lf):
         self._lexicon = lexicon

@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-#############################################################################
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -20,13 +20,16 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 import os
 import time
 from collections import OrderedDict
+
 from PyQt5 import QtGui, QtCore
+
 from kataja.globals import *
+
 
 fonts = {'font': ('Palatino', 'Normal', 12), 'big_font': ('Palatino', 'Normal', 24),
          'menu_font': ('Monaco', 'Normal', 10), 'ui_font': ('Helvetica', 'Normal', 10),
@@ -42,13 +45,13 @@ color_modes = OrderedDict([('random', {'name': 'Random for each treeset', 'fixed
 
 
 # fonts = {'font': ('Palatino', 12),
-#     'big_font': ('Palatino', 24),
-#     'menu_font': ('Palatino', 10),
-#     'phrase_label_font': ('Palatino', 10),
-#     'italic_font': ('Palatino', 10),
-#     'sc_font': ('Palatino', 9),
-#     'feature_small': ('Palatino', 7),
-#     'symbol_font': ('Palatino', 14)
+# 'big_font': ('Palatino', 24),
+# 'menu_font': ('Palatino', 10),
+# 'phrase_label_font': ('Palatino', 10),
+# 'italic_font': ('Palatino', 10),
+# 'sc_font': ('Palatino', 9),
+# 'feature_small': ('Palatino', 7),
+# 'symbol_font': ('Palatino', 14)
 # }
 
 
@@ -68,6 +71,7 @@ class Preferences(object):
     singleton_key = 'Preferences'
 
     def __init__(self):
+        self.save_key = 'preferences'
         self.draw_width = .5
         self.selection_width = 0.8
         self.thickness_multiplier = 2
@@ -86,16 +90,16 @@ class Preferences(object):
         self.move_frames = 12
         self._curve = 'InQuad'
 
-        ### Default structural rules that apply to new trees
+        # ## Default structural rules that apply to new trees
         self.default_use_projection = True
         self.default_who_projects = 'left_external'
         self.default_use_multidomination = True
         self.default_binary_branching = False
 
-        ### Default settings for new trees
+        # ## Default settings for new trees
         self.default_label_style = 2
         self.default_uses_multidomination = True
-        self.default_traces_are_grouped_together = 0 
+        self.default_traces_are_grouped_together = 0
         self.default_show_constituent_edges = True
         self.default_show_merge_order = True
         self.default_show_select_order = False
@@ -104,9 +108,9 @@ class Preferences(object):
         self.my_palettes = {}
         self.default_color_mode = 'random'
         self.default_hsv = None
-        self.default_bracket_style = 0 
+        self.default_bracket_style = 0
 
-        ### Global preferences
+        # ## Global preferences
         self.fonts = fonts
         self.keep_vertical_order = False
         self.use_magnets = True
@@ -138,69 +142,20 @@ class Preferences(object):
         # ATTRIBUTE_EDGE = 6
 
         self.edges = {
-            CONSTITUENT_EDGE: {
-                'shape_name': 'shaped_relative_cubic', 
-                'color': 'key',
-                'pull': .24, 
-                'visible': True,
-                'has_outline': True,
-                'pen_width': 1,
-                'is_filled': True
-                },
-            FEATURE_EDGE: {
-                'shape_name': 'relative_cubic', 
-                'color': 'analog1',
-                'pull': .32, 
-                'visible': True,
-                'has_outline': True,
-                'pen_width': 1,
-                'is_filled': True
-                },
-            GLOSS_EDGE: {
-                'shape_name': 'relative_cubic', 
-                'color': 'analog2',
-                'pull': .40, 
-                'visible': True,
-                'has_outline': True,
-                'pen_width': 1,
-                'is_filled': False
-                },
-            ARROW: {
-                'shape_name': 'arrow', 
-                'color': 'key',
-                'pull': 0, 
-                'visible': True,
-                'has_outline': True,
-                'pen_width': 1,
-                'is_filled': True
-                },
-            PROPERTY_EDGE: {
-                'shape_name': 'linear', 
-                'color': 'key',
-                'pull': .40, 
-                'visible': True,
-                'has_outline': True,
-                'pen_width': 1,
-                'is_filled': False
-                },
-            ABSTRACT_EDGE: {
-                'shape_name': 'linear', 
-                'color': 'key',
-                'pull': .40, 
-                'visible': True,
-                'has_outline': True,
-                'pen_width': 1,
-                'is_filled': False
-                },
-            ATTRIBUTE_EDGE: {
-                'shape_name': 'linear', 
-                'color': 'key',
-                'pull': .40, 
-                'visible': True,
-                'has_outline': True,
-                'pen_width': 1,
-                'is_filled': False
-                },
+            CONSTITUENT_EDGE: {'shape_name': 'shaped_relative_cubic', 'color': 'key', 'pull': .24, 'visible': True,
+                               'has_outline': True, 'pen_width': 1, 'is_filled': True},
+            FEATURE_EDGE: {'shape_name': 'relative_cubic', 'color': 'analog1', 'pull': .32, 'visible': True,
+                           'has_outline': True, 'pen_width': 1, 'is_filled': True},
+            GLOSS_EDGE: {'shape_name': 'relative_cubic', 'color': 'analog2', 'pull': .40, 'visible': True,
+                         'has_outline': True, 'pen_width': 1, 'is_filled': False},
+            ARROW: {'shape_name': 'arrow', 'color': 'key', 'pull': 0, 'visible': True, 'has_outline': True,
+                    'pen_width': 1, 'is_filled': True},
+            PROPERTY_EDGE: {'shape_name': 'linear', 'color': 'key', 'pull': .40, 'visible': True, 'has_outline': True,
+                            'pen_width': 1, 'is_filled': False},
+            ABSTRACT_EDGE: {'shape_name': 'linear', 'color': 'key', 'pull': .40, 'visible': True, 'has_outline': True,
+                            'pen_width': 1, 'is_filled': False},
+            ATTRIBUTE_EDGE: {'shape_name': 'linear', 'color': 'key', 'pull': .40, 'visible': True, 'has_outline': True,
+                             'pen_width': 1, 'is_filled': False},
 
         }
 
@@ -212,47 +167,27 @@ class Preferences(object):
         # ATTRIBUTE_NODE = 3
         # GLOSS_NODE = 4
         # PROPERTY_NODE = 5
-        self.nodes = {
-            ABSTRACT_NODE : {
-                'color': 'key',
-                'font': 'main',
-                'font-size': 10
-            },
-            CONSTITUENT_NODE : {
-                'color': 'key',
-                'font': 'main',
-                'font-size': 10                
-            },
-            FEATURE_NODE: {
-                'color': 'analog1',
-                'font': 'cursive',
-                'font-size': 10
- 
-            },
-            ATTRIBUTE_NODE: {
-                'color': 'analog2',
-                'font': 'small-caps',
-                'font-size': 10
-            },          
-            GLOSS_NODE : {
-                'color': 'analog2',
-                'font': 'cursive',
-                'font-size': 10
-            },
-            PROPERTY_NODE : {
-                'color': 'key 0.7',
-                'font': 'small-caps',
-                'font-size': 10
-            },
+        self.nodes = {ABSTRACT_NODE: {'color': 'key', 'font': 'main', 'font-size': 10},
+                      CONSTITUENT_NODE: {'color': 'key', 'font': 'main', 'font-size': 10},
+                      FEATURE_NODE: {'color': 'analog1', 'font': 'cursive', 'font-size': 10
+
+                      }, ATTRIBUTE_NODE: {'color': 'analog2', 'font': 'small-caps', 'font-size': 10},
+                      GLOSS_NODE: {'color': 'analog2', 'font': 'cursive', 'font-size': 10},
+                      PROPERTY_NODE: {'color': 'key 0.7', 'font': 'small-caps', 'font-size': 10},
 
         }
         self.custom_colors = {}
 
     def solve_app_path(self):
+        """
+
+
+        :return:
+        """
         full_path = os.path.abspath(os.path.dirname(__file__))
-        #         if getattr(sys, 'frozen', None) and hasattr(sys, '_MEIPASS'):
-        #            print 'found meipass:',sys._MEIPASS
-        #         else:
+        # if getattr(sys, 'frozen', None) and hasattr(sys, '_MEIPASS'):
+        # print 'found meipass:',sys._MEIPASS
+        # else:
         #            print 'plain pathname:', os.path.dirname(__file__)
         path_list = full_path.split('/')
         if 'Kataja.app' in path_list:
@@ -264,15 +199,25 @@ class Preferences(object):
 
 
     def update(self, update_dict):
+        """
+
+        :param update_dict:
+        """
         for key, value in update_dict.items():
             setattr(self, key, value)
 
 
     def add_color_mode(self, color_key, hsv, color_settings):
+        """
+
+        :param color_key:
+        :param hsv:
+        :param color_settings:
+        """
         self.color_modes[color_key] = {'name': color_settings.get_color_name(hsv), 'fixed': True, 'hsv': hsv}
 
 
-    ###### Save & Load ########################################
+    # ##### Save & Load ########################################
 
     def save(self):
         """ Dumps the preferences as a dict """
@@ -281,19 +226,28 @@ class Preferences(object):
         return dump
 
     def load(self, data):
+        """
+
+        :param data:
+        """
         for key, value in data:
             setattr(self, key, value)
 
 
 def extract_bitmaps(filename):
+    """
+
+    :param filename:
+    :return:
+    """
     pm = QtGui.QPixmap(filename)
     color1 = QtGui.QColor(0, 0, 255)
     color2 = QtGui.QColor(0, 0, 0)
     bms = (
         pm, pm.createMaskFromColor(color1, QtCore.Qt.MaskOutColor),
         pm.createMaskFromColor(color2, QtCore.Qt.MaskOutColor))
-    #for bmp in bms:
-    #    bmp.setMask(bmp.createMaskFromColor(QtGui.QColor(255,255,255))) 
+    # for bmp in bms:
+    # bmp.setMask(bmp.createMaskFromColor(QtGui.QColor(255,255,255)))
     return bms
 
 
@@ -312,6 +266,11 @@ class QtPreferences:
 
     def late_init(self, preferences, fontdb):  # called when Qt app exists
         # graphics and fonts can be initiated only when QApplication exists
+        """
+
+        :param preferences:
+        :param fontdb:
+        """
         t = time.time()
         self.easing_curve = []
         self.prepare_fonts(preferences.fonts, fontdb)
@@ -327,14 +286,29 @@ class QtPreferences:
         print '-- loaded icon and scaled it ... ', time.time() - t
 
     def update(self, preferences):
+        """
+
+        :param preferences:
+        """
         self.prepare_fonts(preferences.fonts)
         self.prepare_easing_curve(preferences._curve, preferences.move_frames)
 
 
     def prepare_easing_curve(self, curve_type, frames):
+        """
+
+        :param curve_type:
+        :param frames:
+        :return:
+        """
         curve = QtCore.QEasingCurve(getattr(QtCore.QEasingCurve, curve_type))
 
         def curve_value(x):
+            """
+
+            :param x:
+            :return:
+            """
             z = 1.0 / frames
             y = float(x) / frames
             return z + y - curve.valueForProgress(y)
@@ -346,6 +320,11 @@ class QtPreferences:
         self.easing_curve = [x / s for x in self.easing_curve]
 
     def prepare_fonts(self, fonts_dict, fontdb):
+        """
+
+        :param fonts_dict:
+        :param fontdb:
+        """
         for key, font_tuple in fonts_dict.items():
             setattr(self, '_' + key, font_tuple)
             setattr(self, key, fontdb.font(font_tuple[0], font_tuple[1], font_tuple[2]))

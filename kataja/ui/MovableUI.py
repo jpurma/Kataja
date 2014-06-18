@@ -1,8 +1,9 @@
-'''
+# coding=utf-8
+"""
 Created on 28.8.2013
 
 @author: purma
-'''
+"""
 from PyQt5 import QtCore
 
 from kataja.Controller import prefs, ctrl
@@ -15,6 +16,10 @@ class MovableUI(object):
     # more responsive.
 
     # Only one animation per item is allowed.
+
+    """
+
+    """
 
     def __init__(self):
         # position
@@ -32,6 +37,9 @@ class MovableUI(object):
     # @time_me
     def set_timer(self, ticks, tick_method, final_method=None):
         """ Start a new timer that will last 'frames' ticks and call frame_method for every tick.
+        :param ticks:
+        :param tick_method:
+        :param final_method:
         final_method is called after the last tick. If there is an existing timer it is stopped first."""
         # stop existing timer
         if self._timer:
@@ -68,6 +76,10 @@ class MovableUI(object):
             self.stop_timer()
 
     def stop_timer(self):
+        """
+
+
+        """
         ctrl.main.ui_manager.ui_activity_marker.hide()  # @UndefinedVariable
         self._timer.stop()
         self._timer = None
@@ -76,6 +88,11 @@ class MovableUI(object):
 
 
     def move_towards_target_position(self, ticks_left=0, ticks=0):
+        """
+
+        :param ticks_left:
+        :param ticks:
+        """
         self.prepareGeometryChange()
         ticks_left = ticks_left or self._ticks_left
         ticks = ticks or self._ticks
@@ -89,6 +106,11 @@ class MovableUI(object):
             self.setPos(tx, ty)
 
     def adjust_opacity(self, ticks_left=0, ticks=0):
+        """
+
+        :param ticks_left:
+        :param ticks:
+        """
         ticks_left = ticks_left or self._ticks_left
         ticks = ticks or self._ticks
         if ticks == ticks_left:
@@ -100,7 +122,17 @@ class MovableUI(object):
             self.setOpacity(self._target_opacity)
 
     def moving(self):
+        """
+
+
+        :return:
+        """
         return self._timer and self._ticks_left
 
     def set_target_position(self, x, y):
+        """
+
+        :param x:
+        :param y:
+        """
         self._target_position = (x, y)

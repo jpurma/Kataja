@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-#############################################################################
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool *** 
 # 
@@ -20,23 +20,36 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 from kataja.visualizations.BaseVisualization import BaseVisualization
 
 
 class Slide(BaseVisualization):
+    """
+
+    """
     name = 'Presentation'
 
     def __init__(self):
+        BaseVisualization.__init__(self)
         self.forest = None
         self._directed = False
 
 
     def prepare(self, forest, loading=False):
+        """
+
+        :param forest:
+        :param loading:
+        """
         self.forest = forest
 
     def draw(self):
+        """
+
+
+        """
         pass
         # if not ctrl.slide.scene():
         #    ctrl.scene.addItem(ctrl.slide)

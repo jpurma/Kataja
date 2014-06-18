@@ -1,4 +1,5 @@
-#############################################################################
+# coding=utf-8
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -19,13 +20,18 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
-from kataja.Controller import prefs, ctrl
 from PyQt5 import QtCore, QtWidgets
+
+from kataja.Controller import prefs
 
 
 class DoubleSlider(QtWidgets.QHBoxLayout):
+    """
+
+    """
+
     def __init__(self, field_name, parent, decimals=True):
         QtWidgets.QHBoxLayout.__init__(self)
         self.slider = QtWidgets.QSlider(QtCore.Qt.Horizontal, parent)
@@ -50,9 +56,18 @@ class DoubleSlider(QtWidgets.QHBoxLayout):
         self.addWidget(self.spinbox)
 
     def set_on_change_method(self, method):
+        """
+
+        :param method:
+        """
         self.on_change_method = method
 
     def setRange(self, min, max):
+        """
+
+        :param min:
+        :param max:
+        """
         self.spinbox.setRange(min, max)
         if self.decimals:
             self.slider.setRange(min * 10, max * 10)
@@ -60,6 +75,11 @@ class DoubleSlider(QtWidgets.QHBoxLayout):
             self.slider.setRange(min, max)
 
     def slider_changed(self, value):
+        """
+
+        :param value:
+        :return:
+        """
         if self.now_changing:
             return
         else:
@@ -74,6 +94,11 @@ class DoubleSlider(QtWidgets.QHBoxLayout):
 
 
     def spinbox_changed(self, value):
+        """
+
+        :param value:
+        :return:
+        """
         if self.now_changing:
             return
         else:
@@ -89,6 +114,10 @@ class DoubleSlider(QtWidgets.QHBoxLayout):
 
 
 class PreferencesDialog(QtWidgets.QDialog):
+    """
+
+    """
+
     def __init__(self, main):
         QtWidgets.QDialog.__init__(self, parent=None)  # separate window
         self.main = main
@@ -104,7 +133,7 @@ class PreferencesDialog(QtWidgets.QDialog):
         layout.addRow('Base line thickness', draw_width)
 
         # self.selection_width = 0.8
-        #  -- No need for preferences
+        # -- No need for preferences
 
         # self.thickness_multiplier = 2
         thickness_multiplier = DoubleSlider('thickness_multiplier', self, decimals=True)
@@ -177,7 +206,15 @@ class PreferencesDialog(QtWidgets.QDialog):
         self.setLayout(layout)
 
     def update_pens(self):
+        """
+
+
+        """
         self.main.redraw()
 
     def dpi_changed(self, index):
+        """
+
+        :param index:
+        """
         prefs.dpi = int(self.dpi_choices[index])

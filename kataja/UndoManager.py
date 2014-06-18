@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-#############################################################################
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -20,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 
 from kataja.utils import time_me, save_object, load_objects
@@ -29,7 +29,10 @@ from Controller import ctrl
 
 class UndoManager:
     # if _stack is saved, the save files can become really large, but undo works beyond load point.
-    #saved_fields = ['forest', '_stack', '_current']
+    # saved_fields = ['forest', '_stack', '_current']
+    """
+
+    """
     saved_fields = ['forest']
 
     def __init__(self, forest):
@@ -41,11 +44,20 @@ class UndoManager:
         self._current = 0
 
     def init_if_empty(self):
+        """
+
+
+        """
         if not self.full_state:
             self.record('starting undo')
 
     @time_me
     def take_snapshot(self):
+        """
+
+
+        :return:
+        """
         saved_objects = {}
         open_refs = {}
         save_object(self.forest, saved_objects, open_refs, ignore=['undo_manager'])
@@ -67,6 +79,7 @@ class UndoManager:
 
 
 
+        :param msg:
         self._stack =  [, i-1: +- diff of previous state-1 and full_state ,   i: +- diff of previous_state and full_state)]
         """
         print '*** undo manager: recording %s' % msg
@@ -88,6 +101,12 @@ class UndoManager:
         print 'recorded stack and updated full state. stack size & current index: %s' % len(self._stack)
 
     def compare_saved_dicts(self, d1, d2):
+        """
+
+        :param d1:
+        :param d2:
+        :return:
+        """
         d2_missing = {}
         d2_has_more = dict(d2)
         diffs = {}
@@ -113,6 +132,11 @@ class UndoManager:
 
     @time_me
     def restore(self):
+        """
+
+
+        :return: :raise:
+        """
         if not self._stack:
             return
         to_be_deleted = {}
@@ -125,7 +149,7 @@ class UndoManager:
                         print "weird, state should have the 'new' value of diff: %s %s" % (item['new'], state[key])
                         raise
                     else:
-                        #print 'replaced %s (%s) with %s' % (key, state[key], item['old'])
+                        # print 'replaced %s (%s) with %s' % (key, state[key], item['old'])
                         state[key] = item['old']
                 elif key == '++':
                     # remove these objects from state
@@ -148,7 +172,7 @@ class UndoManager:
                         print "weird, state should have the 'old' value of diff: %s %s" % (item['old'], state[key])
                         raise
                     else:
-                        #print 'replaced %s (%s) with %s' % (key, state[key], item['new'])
+                        # print 'replaced %s (%s) with %s' % (key, state[key], item['new'])
                         state[key] = item['new']
                 elif key == '++':
                     # restore these objects to state
@@ -176,12 +200,16 @@ class UndoManager:
         print 'modified the state, next we should restore forest to that state'
         print 'current stack index and state: %s' % self._current
         print 'to be deleted: ', to_be_deleted
-        #forest_data = self.full_state[self.full_state['start_key']]
+        # forest_data = self.full_state[self.full_state['start_key']]
         load_objects(self.forest, self.full_state)
         self.forest.main.graph_scene.draw_forest(self.forest)
 
 
     def undo(self):
+        """
+
+
+        """
         self._current -= 1
         if self._current < 0:
             self._current = 0
@@ -193,6 +221,10 @@ class UndoManager:
 
 
     def redo(self):
+        """
+
+
+        """
         self._current += 1
         if self._current > len(self._stack):
             self._current = len(self._stack)
@@ -203,4 +235,4 @@ class UndoManager:
             self.restore()
 
             # def repair_later(self, item):
-            #     self._repair_list.append(item)
+            # self._repair_list.append(item)

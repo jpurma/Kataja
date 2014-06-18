@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-#############################################################################
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -20,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 
 import cPickle
@@ -30,16 +30,21 @@ from Forest import Forest
 
 
 class ForestKeeper:
+    """
+
+    """
     saved_fields = ['main', '_forests', '_forests_dict', '_i', 'forest']
     singleton_key = 'ForestKeeper'
 
-    def __init__(self, main, treelist=[], file_name=None):
+    def __init__(self, main, treelist=None, file_name=None):
         """
 
         :param MainWindow main:
         :param List treelist:
         :param StringType file_name:
         """
+        if not treelist:
+            treelist = []
         self.main = main
         self._forests = []
         self._forests_dict = {}
@@ -53,6 +58,7 @@ class ForestKeeper:
     def get_forest(self, key):
         """
         Return one forest
+        :param key:
         :param str key:
         """
         if key in self._forests_dict:
@@ -61,12 +67,27 @@ class ForestKeeper:
             return None
 
     def all(self):
+        """
+
+
+        :return:
+        """
         return self._forests
 
     def get_forests(self):
+        """
+
+
+        :return:
+        """
         return self._forests
 
     def next(self):
+        """
+
+
+        :return:
+        """
         if not self._forests:
             return None
         if self._i < len(self._forests) - 1:
@@ -77,6 +98,11 @@ class ForestKeeper:
         return self._i, self.forest
 
     def prev(self):
+        """
+
+
+        :return:
+        """
         if not self._forests:
             return None
         if self._i > 0:
@@ -87,14 +113,26 @@ class ForestKeeper:
         return self._i, self.forest
 
     def size(self):
+        """
+
+
+        :return:
+        """
         return len(self._forests)
 
     def current_index(self):
+        """
+
+
+        :return:
+        """
         return self._i
 
     def load(self, data):
         """
 
+
+        :param data:
         :param dict data:
         """
         self._i = data['_i']
@@ -103,7 +141,7 @@ class ForestKeeper:
         for key, item in ctrl.unassigned_objects.items():
             forest = self.get_forest(item.forest_key)
             if not forest:
-                assert (False)
+                assert False
             forest.store(item)
             item._finalize()
             del ctrl.unassigned_objects[key]
@@ -117,7 +155,7 @@ class ForestKeeper:
             # print 'storing %s to %s' % (key, item.forest_key)
             forest = self.get_forest(item.forest_key)
             if not forest:
-                assert (False)
+                assert False
             forest.store(item)
             del ctrl.unassigned_objects[key]
 
@@ -132,10 +170,19 @@ class ForestKeeper:
         self.main.set_forest(self.forest)
 
     def save(self):
+        """
+
+
+        :return:
+        """
         data = {'_i': self._i, '_forests': self._forests}
         return data
 
     def save_safe(self):
+        """
+
+
+        """
         savedata = {'_i': self._i, '_forests_pickled': []}
         for forest in self._forests:
             self.main.set_forest(forest)
@@ -146,6 +193,8 @@ class ForestKeeper:
     def create_forests_from_file(self, filename):
         """
 
+
+        :param filename:
         :param StringType filename:
         """
         # f = codecs.open(filename, 'rb', encoding = 'utf-8')
@@ -157,6 +206,8 @@ class ForestKeeper:
     def create_forests(self, treelist):
         """
 
+
+        :param treelist:
         :param list treelist:
         """
         self._forests = []

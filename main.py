@@ -1,9 +1,10 @@
 #! /usr/bin/env python
-'''
+# coding=utf-8
+"""
 Created on 28.8.2013
 
 @author: purma
-'''
+"""
 from PyQt5 import QtWidgets
 from kataja.KatajaMain import KatajaMain
 import sys

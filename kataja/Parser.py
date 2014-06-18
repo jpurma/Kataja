@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 
-#############################################################################
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -21,7 +21,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 
 from types import StringTypes
@@ -33,7 +33,7 @@ from kataja.utils import to_unicode
 import utils
 
 
-latex_symbols_to_unicode = {'bar': u'\u00AF', 'abar': u'\u0100', # small greek alphabet
+latex_symbols_to_unicode = {'bar': u'\u00AF', 'abar': u'\u0100',  # small greek alphabet
                             'alpha': u'\u03b1', 'beta': u'\u03b2', 'gamma': u'\u03b3', 'delta': u'\u03b4',
                             'epsilon': u'\u03b5', 'zeta': u'\u03b6', 'eta': u'\u03b7', 'theta': u'\u03b8',
                             'iota': u'\u03b9', 'kappa': u'\u03ba', 'lambda': u'\u03bb', 'mu': u'\u03bc',
@@ -43,7 +43,7 @@ latex_symbols_to_unicode = {'bar': u'\u00AF', 'abar': u'\u0100', # small greek a
                             'leftarrow': u'\u2190', 'rightarrow': u'\u2192', 'righthookarrow': u'\u21aa'}
 
 latex_scopes_to_tags = {'sup': 'sup', 'emph': 'i', 'textbf': 'b'}
-#    'index':'sub'}
+# 'index':'sub'}
 
 feature_markers = ('+', '-', '=', '>')
 feature_names = ('index', 'dotlabel')
@@ -52,10 +52,10 @@ cases = ['NOM', 'ACC', 'PRT', 'GEN', 'DAT', 'ILL']
 
 # # this doesn't work now because of preferences rearrangement
 # def get_color_for_feature(feature_name):
-#     if feature_name in cases:
-#         return colors[cases.index(feature_name)]
-#     else:
-#         return colors[-1]
+# if feature_name in cases:
+# return colors[cases.index(feature_name)]
+# else:
+# return colors[-1]
 
 
 class Parser:
@@ -74,7 +74,9 @@ class Parser:
 
 
     def detect_suitable_parser(self, text):
-        """ There are several parser methods that can be used to create different kinds of objects """
+        """ There are several parser methods that can be used to create different kinds of objects
+        :param text:
+        """
         if text.startswith("'"):
             return self.text_area_parser
         elif text.startswith('%'):
@@ -93,13 +95,28 @@ class Parser:
     # ## General methods
 
     def add_definition(self, word, definition):
+        """
+
+        :param word:
+        :param definition:
+        """
         self._definitions[word] = definition  # self.parse_definition(definition)
         # we don't want to create the features yet, separate words would get the same instance of feature then.
 
     def add_gloss(self, gloss):
+        """
+
+        :param gloss:
+        """
         self._gloss = gloss
 
     def parse_definition(self, definition, host=None):
+        """
+
+        :param definition:
+        :param host:
+        :return:
+        """
         definitions = [d.strip() for d in definition.split(',')]
         gloss = ''
         new_values = {}
@@ -130,13 +147,24 @@ class Parser:
         return features
 
     def add_local_lexicon(self, C):
+        """
+
+        :param C:
+        """
         self.local_lexicon[C.label] = C
 
     def get_word(self, word):
+        """
+
+        :param word:
+        :return:
+        """
         return self.local_lexicon.get(word, None)
 
     def text_area_parser(self, text):
-        """ string to TextArea """
+        """ string to TextArea
+        :param text:
+        """
         if text.startswith("'"):
             text = text[1:]
         ta = TextArea(text)
@@ -144,7 +172,9 @@ class Parser:
         return ta
 
     def image_parser(self, text):
-        """ string to Image """
+        """ string to Image
+        :param text:
+        """
         if text.startswith("%"):
             image_path = text[1:]
         else:
@@ -194,7 +224,9 @@ class Parser:
     # ## Bottom-up Parser, does not handle trees, but strings of words
 
     def bottom_up_parser(self, buildstring):
-        """ stringToBottomUp"""
+        """ stringToBottomUp
+        :param buildstring:
+        """
         topmost_C = None
         self.indexes = []
         if buildstring.startswith('>>'):
@@ -230,7 +262,7 @@ class Parser:
             if dotlabel:
                 dotlabel = dotlabel.get_value()
                 if not dotlabel:
-                    assert (False)
+                    assert False
             C = _find_in_tree(const_id)
             if not C:
                 C = self._create_constituent(features=features)
@@ -279,12 +311,23 @@ class Parser:
         root = self.forest.get_node(topmost_C)
         return root
 
-    def after_restore(self, values={}):
+    def after_restore(self, values=None):
+        """
+
+        :param values:
+        :return:
+        """
+        if not values:
+            values = {}
         return
 
 
 class LayeredParser(Parser):
-    #### Layered parser ########################################################
+    # ### Layered parser ########################################################
+
+    """
+
+    """
 
     def __init__(self, forest):
         Parser.__init__(self, forest)
@@ -356,7 +399,9 @@ class LayeredParser(Parser):
         node = self._new_node_from_constituent(constituent)
         return constituent
 
-    def _new_command(self, command, args=[]):
+    def _new_command(self, command, args=None):
+        if not args:
+            args = []
         commands = []
         if command in commands:
             pass
@@ -390,7 +435,7 @@ class LayeredParser(Parser):
         if alias and others:
             return [('alias', alias)] + others
         elif alias:
-            return ('alias', alias)
+            return 'alias', alias
         elif others:
             if len(others) == 1:
                 return others[0]
@@ -400,7 +445,7 @@ class LayeredParser(Parser):
             return u""
 
     def _new_index(self, args):
-        return ('index', u''.join(args))
+        return 'index', u''.join(args)
 
     def _new_superscript(self, args):
         return u'<sup>%s</sup>' % u''.join(args)
@@ -418,6 +463,7 @@ class LayeredParser(Parser):
         are built, their arguments can only be plain strings or other Objects.
         (commands are special, they get their arguments as [command_name, [list_of_args]])
 
+        :param string:
         layers are stored as a stack: you only operate on topmost object, but when it turns to Object, you remove it from stack and add the Object as an argument for next layer in stack.
 
         """
@@ -451,6 +497,9 @@ class LayeredParser(Parser):
 
         def finalized_layer(type, layer, prev_type):
             """ This layer is ready to be turned into command with arguments. Layer
+            :param type:
+            :param layer:
+            :param prev_type:
             turns into some kind of object: Constituent, Feature, Merge etc. """
             if type == 'word':
                 if prev_type in ['\\', '_', '^', '.']:
@@ -634,12 +683,19 @@ class LayeredParser(Parser):
     # p=Parser()
     # out= p.parse(tree)
 
-    def after_restore(self, values={}):
+    def after_restore(self, values=None):
+        """
+
+        :param values:
+        :return:
+        """
+        if not values:
+            values = {}
         return
 
 
 class BottomUpParser(Parser):
-    #### Layered parser 2 -- start from right ########################################################
+    # ### Layered parser 2 -- start from right ########################################################
 
     def parse(self, string):
         """ parse parse state machine.
@@ -654,6 +710,7 @@ class BottomUpParser(Parser):
         are built, their arguments can only be plain strings or other Objects.
         (commands are special, they get their arguments as [command_name, [list_of_args]])
 
+        :param string:
         layers are stored as a stack: you only operate on topmost object, but when it turns to Object, you remove it from stack and add the Object as an argument for next layer in stack.
 
         """
@@ -665,6 +722,11 @@ class BottomUpParser(Parser):
 
 
         def find_index(label):
+            """
+
+            :param label:
+            :return:
+            """
             label_tuple = tuple(label.split('_', 1))
             if len(label_tuple) == 2:
                 hlabel, index = label_tuple
@@ -675,6 +737,12 @@ class BottomUpParser(Parser):
 
         def create_constituent(label, dot_alias=u''):
             # print 'creating a constituent for label "%s"' % label
+            """
+
+            :param label:
+            :param dot_alias:
+            :return:
+            """
             label, index = find_index(label)
             constituent = ctrl.Constituent(label)
             # print label, label in self._definitions, self._definitions
@@ -696,6 +764,13 @@ class BottomUpParser(Parser):
             return node
 
         def merge_constituents(left, right, dot_alias):
+            """
+
+            :param left:
+            :param right:
+            :param dot_alias:
+            :return:
+            """
             f = self.forest
             constituent = ctrl.Constituent()
             constituent.left = left.syntactic_object
@@ -716,9 +791,14 @@ class BottomUpParser(Parser):
             return node
 
         def merge_curlies(s):
+            """
+
+            :param s:
+            :return:
+            """
             pieces = []
             i = 0
-            while (i < len(s)):
+            while i < len(s):
                 if s[i] == '{':
                     # print 'more curlies'
                     s, merged = merge_curlies(s[i + 1:])
@@ -731,10 +811,15 @@ class BottomUpParser(Parser):
             return [], u''.join(pieces)
 
         def find_word(s):
+            """
+
+            :param s:
+            :return:
+            """
             i = 0
             word = ''
             command = False
-            while (i < len(s)):
+            while i < len(s):
                 c = s[i]
                 if c == '{':
                     # print 'found curlies, merging:', s[i+1:]
@@ -758,6 +843,11 @@ class BottomUpParser(Parser):
             return [], word.strip()
 
         def find_dot_alias(s):
+            """
+
+            :param s:
+            :return:
+            """
             alias_string = u''
             if s[0] == '.':
                 # print 'starting dot alias'
@@ -766,13 +856,24 @@ class BottomUpParser(Parser):
             return s, alias_string
 
         def find_constituent(s):
+            """
+
+            :param s:
+            :return:
+            """
             s, word = find_word(s)
             # if word:
-            #    print 'find constituent found %s, still remaining %s' % (word, s)
+            # print 'find constituent found %s, still remaining %s' % (word, s)
             return s, word
 
         def analyze_words_inside_brackets(s, constituents):
             # print 'starting analyze, len(s): %s, s: %s' % (len(s), s)
+            """
+
+            :param s:
+            :param constituents:
+            :return: :raise:
+            """
             merging = []
             s, dot_alias = find_dot_alias(s)
             s, new_label = find_constituent(s)
@@ -796,7 +897,6 @@ class BottomUpParser(Parser):
             if len(merging) > 2:
                 print 'too many constituents for binary branching. \nConstituents: %s \nMerging: %s \n%s' % (
                     constituents, merging, string)
-                raise
                 M = merge_constituents(merging[0], merging[1], dot_alias)
                 return M
             elif len(merging) == 2:
@@ -813,6 +913,11 @@ class BottomUpParser(Parser):
                 return C
 
         def bottom_up_bracket_parser(s):
+            """
+
+            :param s:
+            :return:
+            """
             self.layers += 1
             # print 'starting layer ', self.layers
             inside = []
@@ -845,7 +950,14 @@ class BottomUpParser(Parser):
         print constituent
         print self._definitions
 
-    def after_restore(self, values={}):
+    def after_restore(self, values=None):
+        """
+
+        :param values:
+        :return:
+        """
+        if not values:
+            values = {}
         return
 
 

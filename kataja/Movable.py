@@ -1,4 +1,5 @@
-#############################################################################
+# coding=utf-8
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -19,12 +20,13 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 import random
 
-from kataja.Controller import prefs, qt_prefs, ctrl
 from PyQt5 import QtWidgets
+
+from kataja.Controller import prefs, qt_prefs, ctrl
 
 # Verified 8.4. 2013
 class Movable(object):
@@ -80,11 +82,20 @@ class Movable(object):
         self.forest = forest
 
     def reset(self):
+        """
+
+
+        """
         self._hovering = False
 
-    ### Opacity ##############################################################
+    # ## Opacity ##############################################################
 
     def is_fading_away(self):
+        """
+
+
+        :return:
+        """
         return self._fade_out_counter or not self.isVisible()
 
     def fade_in(self):
@@ -100,6 +111,11 @@ class Movable(object):
         self._fade_in_counter = 0
 
     def is_fading(self):
+        """
+
+
+        :return:
+        """
         return self._fade_in_counter or self._fade_out_counter
 
     def adjust_opacity(self):
@@ -120,14 +136,19 @@ class Movable(object):
         return active
 
     def is_visible(self):
+        """
+
+
+        :return:
+        """
         return self._visible
 
-    ### Movement ##############################################################
+    # ## Movement ##############################################################
 
     def move_towards_target_position(self):
         """ Takes one step in movement trajectory or finishes movement """
         # if self.locked_to_position:
-        #    return False
+        # return False
         if not self._move_counter:
             return False
         px, py, pz = self._current_position
@@ -165,13 +186,24 @@ class Movable(object):
         return self._move_counter
 
     def should_move(self):
+        """
+
+
+        :return:
+        """
         return self._final_position != self._current_position
 
     def get_final_position(self):
+        """
+
+
+        :return:
+        """
         return self._final_position
 
     def set_original_position(self, pos):
         """ Sets both current position and computed position to same place,
+        :param pos:
             use when first adding items to scene to prevent them wandering from afar """
         self._computed_position = pos
         self._final_position = pos
@@ -179,10 +211,19 @@ class Movable(object):
         self.set_current_position(pos)
 
     def get_computed_position(self):
+        """
+
+
+        :return:
+        """
         return self._computed_position
 
     def set_computed_position(self, pos):
         # print 'computed position set to %s, adjusted: %s ' % ( pos, self._adjustment)
+        """
+
+        :param pos:
+        """
         x, y, z = pos
         self._computed_position = pos
         if self.can_adjust_position():
@@ -195,6 +236,10 @@ class Movable(object):
             self.start_moving()
 
     def start_moving(self):
+        """
+
+
+        """
         x, y, z = self._final_position
         sx, sy, sz = self._current_position
         # print 'item %s starts moving from (%s %s %s) to (%s %s %s)' % (self, sx,sy,sz,x,y,z)
@@ -203,6 +248,10 @@ class Movable(object):
         self._x_step, self._y_step, self._z_step = sx - x, sy - y, sz - z
 
     def stop_moving(self):
+        """
+
+
+        """
         if self.after_move_function:
             self.after_move_function()
             self.after_move_function = None
@@ -210,12 +259,26 @@ class Movable(object):
 
 
     def can_adjust_position(self):
+        """
+
+
+        :return:
+        """
         return self.bind_x and self.bind_y
 
     def get_adjustment(self):
+        """
+
+
+        :return:
+        """
         return self._adjustment
 
     def set_adjustment(self, adj_pos):
+        """
+
+        :param adj_pos:
+        """
         self._adjustment = adj_pos
         if self.can_adjust_position():
             ax, ay, az = adj_pos
@@ -223,6 +286,10 @@ class Movable(object):
             self._final_position = (x + ax, y + ay, z + az)
 
     def reset_adjustment(self):
+        """
+
+
+        """
         self._adjustment = (0, 0, 0)
         self._final_position = tuple(self._computed_position)
 
@@ -231,28 +298,42 @@ class Movable(object):
         return self._current_position
 
     def set_current_position(self, pos):
-        """ Save the 3rd dimension in separate variable """
+        """ Save the 3rd dimension in separate variable
+        :param pos:
+        """
         assert (len(pos) == 3)
         self._current_position = pos
         self.z = pos[2]
         QtWidgets.QGraphicsItem.setPos(self, pos[0], pos[1])
 
     def update_target_position(self, pos):
-        """ Sometimes target position changes in middle of movement """
+        """ Sometimes target position changes in middle of movement
+        :param pos:
+        """
         self._final_position = pos
 
 
-    ### Selection ############################################################
+    # ## Selection ############################################################
 
     def is_selected(self):
+        """
+
+
+        :return:
+        """
         return ctrl.is_selected(self)
 
 
-    ### Dragging ############################################################
+    # ## Dragging ############################################################
 
 
 
     def drop_to(self, x, y):
+        """
+
+        :param x:
+        :param y:
+        """
         print 'movable drop to'
         closest_ma = None
         for ma in ctrl.main.ui_manager.touch_areas:  # @UndefinedVariable
@@ -260,19 +341,20 @@ class Movable(object):
                 closest_ma = ma
                 break
                 # if closest_ma and closest_ma.drop(self):
-                #    print 'dropped to:', closest_ma
+                # print 'dropped to:', closest_ma
                 # ctrl.scene.fit_to_window()
 
 
-    ### Existence ############################################################
+    # ## Existence ############################################################
 
     def update_visibility(self, **kwargs):
         """ Simplest case of update_visibility.
+        :param kwargs:
         This will be overridden for more complex objects """
         if not self.isVisible():
             self.show()
 
-    #### Locked to position
+    # ### Locked to position
 
     def release(self):
         """ Item can be affected by computed positions """
@@ -283,13 +365,20 @@ class Movable(object):
         self.locked_to_position = True
 
     def is_locked(self):
+        """
+
+
+        :return:
+        """
         return self.locked_to_position
 
 
     #### Restoring after load / undo #########################################
 
     def after_restore(self, changes):
-        """ Fix derived attributes. In dict 'changes' each changed attribute has tuple w. (old, new) values """
+        """ Fix derived attributes. In dict 'changes' each changed attribute has tuple w. (old, new) values
+        :param changes:
+        """
         print changes
         if '_current_position' in changes:
             self.set_current_position(changes['_current_position'][1])

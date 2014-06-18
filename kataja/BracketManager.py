@@ -1,3 +1,4 @@
+# coding=utf-8
 from kataja.Controller import qt_prefs
 from kataja.Bracket import Bracket
 
@@ -11,23 +12,46 @@ class BracketManager:
         self._bracket_slots = {}
 
     def get_brackets(self):
+        """
+
+
+        :return:
+        """
         return self.brackets.values()
 
     def store(self, item):
+        """
+
+        :param item:
+        """
         self.brackets[item.key] = item
 
     def update_positions(self):
+        """
+
+
+        """
         for bracket in self.brackets.values():
             bracket.update_position()
 
     def create_bracket(self, host=None, left=True):
+        """
+
+        :param host:
+        :param left:
+        :return:
+        """
         br = Bracket(self.forest, host=host, left=left)
         self.brackets[br.key] = br
         return br
 
-    #### Scope rectangles and bracket notation ###########################################
+    # ### Scope rectangles and bracket notation ###########################################
 
     def rebuild_brackets(self):
+        """
+
+
+        """
         for node in self.forest.nodes.values():
             node.rebuild_brackets()
 
@@ -77,6 +101,12 @@ class BracketManager:
             bracket.update_position()
 
     def count_bracket_space(self, node, left=True):
+        """
+
+        :param node:
+        :param left:
+        :return:
+        """
         if node.save_key in self._bracket_slots:
             left_brackets, right_brackets = self._bracket_slots[node.save_key]
             if left:
@@ -88,6 +118,10 @@ class BracketManager:
 
 
     def remove_brackets(self, node):
+        """
+
+        :param node:
+        """
         if hasattr(node, 'left_bracket'):
             if node.left_bracket:
                 self.delete_bracket(node.left_bracket)
@@ -95,7 +129,9 @@ class BracketManager:
                 self.delete_bracket(node.right_bracket)
 
     def delete_bracket(self, bracket):
-        """ remove from scene and remove references from nodes """
+        """ remove from scene and remove references from nodes
+        :param bracket:
+        """
         node = bracket.host
         if bracket.left:
             node.left_bracket = None

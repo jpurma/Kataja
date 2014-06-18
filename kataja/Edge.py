@@ -1,4 +1,5 @@
-#############################################################################
+# coding=utf-8
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -19,18 +20,16 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 from collections import OrderedDict
 from math import sin, cos, pi, acos
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+
 from PyQt5.QtCore import QPointF as Pf, Qt
-from kataja.Controller import ctrl, prefs, qt_prefs, Controller
-from kataja.utils import to_tuple
-from kataja.TouchArea import TouchArea
+from kataja.Controller import ctrl
 import kataja.globals as g
-from kataja.ui.TwoColorIcon import TwoColorIcon, TwoColorIconEngine
 import utils
 
 
@@ -49,6 +48,12 @@ outline_stroker.setWidth(4)
 # Shapes
 
 def draw_arrow_shape(self, painter):
+    """
+
+    :param self:
+    :param painter:
+    :return:
+    """
     l = self.line()
     painter.setPen(self._pen)
     painter.setBrush(self._pen.color())
@@ -82,7 +87,7 @@ def arrow_shape_bounding_rect(self):
     p1y = p1.y()
     p2y = p2.y()
 
-    extra = (self._arrow_size) / 2.0
+    extra = self._arrow_size / 2.0
     if p1x > p2x - extra:
         l = p2x - extra
         r = p1x + extra
@@ -99,6 +104,11 @@ def arrow_shape_bounding_rect(self):
 
 
 def to_Pf(triple):
+    """
+
+    :param triple:
+    :return:
+    """
     return Pf(triple[0], triple[1])
 
 
@@ -283,6 +293,7 @@ def linear_path(self):
     self.middle_point = path.pointAtPercent(0.5)
     return path
 
+
 def blob_path(self):
     """ Surround the node with circular shape that stretches to other node """
     scx, scy, scz = self.start.get_current_position()
@@ -299,25 +310,26 @@ def blob_path(self):
     c1x = (scx + ecx) / 2
     c1y = (scy + ecy) / 2
     path1 = QtGui.QPainterPath()
-    path1.addEllipse(sx1-4, sy1-4, sw+8, sh+8)
+    path1.addEllipse(sx1 - 4, sy1 - 4, sw + 8, sh + 8)
     path1neg = QtGui.QPainterPath()
     path1neg.addEllipse(sx1, sy1, sw, sh)
 
     path2 = QtGui.QPainterPath()
-    path2.addEllipse(ex1-4, ey1-4, ew+8, eh+8)
+    path2.addEllipse(ex1 - 4, ey1 - 4, ew + 8, eh + 8)
     path2neg = QtGui.QPainterPath()
     path2neg.addEllipse(ex1, ey1, ew, eh)
     path3 = QtGui.QPainterPath()
     path3.moveTo(sx1, scy)
     path3.quadTo(c1x, c1y, ex1, ecy)
-    path3.lineTo(ex1+ew, ecy)
-    path3.quadTo(c1x, c1y, sx1+sw, scy)
+    path3.lineTo(ex1 + ew, ecy)
+    path3.quadTo(c1x, c1y, sx1 + sw, scy)
     path = path1.united(path2)
     path = path.united(path3)
     path = path.subtracted(path1neg)
     path = path.subtracted(path2neg)
     self.middle_point = Pf(c1x, c1y)
     return path.simplified()
+
 
 def directional_blob_path(self):
     """ Surround the node with circular shape that stretches to other node """
@@ -331,13 +343,13 @@ def directional_blob_path(self):
         c1x = (sx + ecx) / 2
         c1y = (sy + ecy) / 2
         path1 = QtGui.QPainterPath()
-        path1.addEllipse(ex1-4, ey1-4, ew+8, eh+8)
+        path1.addEllipse(ex1 - 4, ey1 - 4, ew + 8, eh + 8)
         path1neg = QtGui.QPainterPath()
         path1neg.addEllipse(ex1, ey1, ew, eh)
         path2 = QtGui.QPainterPath()
         path2.moveTo(sx, sy)
         path2.quadTo(c1x, c1y, ex1, ecy)
-        path2.lineTo(ex1+ew, ecy)
+        path2.lineTo(ex1 + ew, ecy)
         path2.quadTo(c1x, c1y, sx, sy)
         path = path1.united(path2)
         path = path.subtracted(path1neg)
@@ -351,25 +363,24 @@ def directional_blob_path(self):
         c1x = (scx + ecx) / 2
         c1y = (scy + ecy) / 2
         path1 = QtGui.QPainterPath()
-        path1.addEllipse(sx1-4, sy1-4, sw+8, sh+8)
+        path1.addEllipse(sx1 - 4, sy1 - 4, sw + 8, sh + 8)
         path1neg = QtGui.QPainterPath()
         path1neg.addEllipse(sx1, sy1, sw, sh)
         path2 = QtGui.QPainterPath()
-        path2.addEllipse(ex1-4, ey1-4, ew+8, eh+8)
+        path2.addEllipse(ex1 - 4, ey1 - 4, ew + 8, eh + 8)
         path2neg = QtGui.QPainterPath()
         path2neg.addEllipse(ex1, ey1, ew, eh)
         path3 = QtGui.QPainterPath()
         path3.moveTo(sx1, scy)
         path3.quadTo(c1x, c1y, ex1, ecy)
-        path3.lineTo(ex1+ew, ecy)
-        path3.quadTo(c1x, c1y, sx1+sw, scy)
+        path3.lineTo(ex1 + ew, ecy)
+        path3.quadTo(c1x, c1y, sx1 + sw, scy)
         path = path1.united(path2)
         path = path.united(path3)
         path = path.subtracted(path1neg)
         path = path.subtracted(path2neg)
     self.middle_point = Pf(c1x, c1y)
     return path.simplified()
-
 
 
 SHAPE_PRESETS = OrderedDict(
@@ -394,7 +405,8 @@ SHAPE_PRESETS = OrderedDict(
 class Edge(QtWidgets.QGraphicsItem):
     """ Any connection between nodes: can be represented as curves, branches or arrows """
 
-    saved_fields = ['forest', 'edge_type', 'adjust', 'start', 'end', '_color', '_shape_name', '_pull','_shape_visible', '_visible', '_has_outline', '_is_filled']
+    saved_fields = ['forest', 'edge_type', 'adjust', 'start', 'end', '_color', '_shape_name', '_pull', '_shape_visible',
+                    '_visible', '_has_outline', '_is_filled']
 
     receives_signals = [g.EDGE_SHAPES_CHANGED]
 
@@ -432,7 +444,7 @@ class Edge(QtWidgets.QGraphicsItem):
         self.start = start
         self.end = end
 
-        ### Adjustable values, defaults to ForestSettings if None for this element
+        # ## Adjustable values, defaults to ForestSettings if None for this element
         self._color = None
         self._has_outline = None
         self._pen = None
@@ -445,7 +457,7 @@ class Edge(QtWidgets.QGraphicsItem):
 
         # self.center_point = (0, 0, 0)
 
-        ### Derivative elements 
+        # ## Derivative elements
         self._shape_method = None
         self._shape_supports_control_points = 0
         self._path = None
@@ -472,19 +484,39 @@ class Edge(QtWidgets.QGraphicsItem):
             forest.store(self)
 
     def receive_signal(self, signal, *args):
+        """
+
+        :param signal:
+        :param args:
+        """
         if signal is g.EDGE_SHAPES_CHANGED:
             if (args and args[0] == self.edge_type) or not args:
                 self.update_shape_method()
 
     def get_touch_area(self, place):
+        """
+
+        :param place:
+        :return:
+        """
         return self.touch_areas.get(place, None)
 
     def is_visible(self):
-        #assert (self._visible == self.isVisible())
-        #print 'edge is_visible asked, ', self._visible
+        # assert (self._visible == self.isVisible())
+        # print 'edge is_visible asked, ', self._visible
+        """
+
+
+        :return:
+        """
         return self._visible
 
     def add_touch_area(self, touch_area):
+        """
+
+        :param touch_area:
+        :return: :raise:
+        """
         if touch_area.place in self.touch_areas:
             print 'Touch area already exists. Someone is confused.'
             raise
@@ -492,11 +524,20 @@ class Edge(QtWidgets.QGraphicsItem):
         return touch_area
 
     def remove_touch_area(self, touch_area):
+        """
+
+        :param touch_area:
+        """
         del self.touch_areas[touch_area.place]
 
-    #### Color ############################################################
+    # ### Color ############################################################
 
-    def color(self, value = None):
+    def color(self, value=None):
+        """
+
+        :param value:
+        :return:
+        """
         if value is None:
             if self._color is None:
                 c = self.forest.settings.edge_settings(self.edge_type, 'color')
@@ -517,11 +558,16 @@ class Edge(QtWidgets.QGraphicsItem):
         else:
             return self.color()
 
-    #### Pen & Brush ###############################################################
+    # ### Pen & Brush ###############################################################
 
-    def has_outline(self, value = None):
+    def has_outline(self, value=None):
+        """
+
+        :param value:
+        :return:
+        """
         if value is None:
-            if self._has_outline == None:
+            if self._has_outline is None:
                 return self.forest.settings.edge_settings(self.edge_type, 'has_outline')
             else:
                 return self._has_outline
@@ -529,18 +575,33 @@ class Edge(QtWidgets.QGraphicsItem):
             self._has_outline = value
 
     def pen(self):
+        """
+
+
+        :return:
+        """
         return QtGui.QPen()
 
-    def pen_width(self, value = None):
+    def pen_width(self, value=None):
+        """
+
+        :param value:
+        :return:
+        """
         if value is None:
-            if self._pen_width == None:
+            if self._pen_width is None:
                 return self.forest.settings.edge_settings(self.edge_type, 'pen_width')
             else:
                 return self._pen_width
         else:
             self._pen_width = value
 
-    def is_filled(self, value = None):
+    def is_filled(self, value=None):
+        """
+
+        :param value:
+        :return:
+        """
         if value is None:
             if self._is_filled is None:
                 return self.forest.settings.edge_settings(self.edge_type, 'is_filled')
@@ -549,9 +610,14 @@ class Edge(QtWidgets.QGraphicsItem):
         else:
             self._is_filled = value
 
-    #### Shape / pull / visibility ###############################################################
+    # ### Shape / pull / visibility ###############################################################
 
-    def shape_name(self, value = None):
+    def shape_name(self, value=None):
+        """
+
+        :param value:
+        :return:
+        """
         if value is None:
             if self._shape_name is None:
                 return self.forest.settings.edge_settings(self.edge_type, 'shape_name')
@@ -559,17 +625,31 @@ class Edge(QtWidgets.QGraphicsItem):
                 return self._shape_name
         else:
             self._shape_name = value
-            self._shape_method = SHAPE_PRESETS[value]['method'] 
+            self._shape_method = SHAPE_PRESETS[value]['method']
 
     def shape_method(self):
-        return SHAPE_PRESETS[self.shape_name()]['method'] 
+        """
+
+
+        :return:
+        """
+        return SHAPE_PRESETS[self.shape_name()]['method']
 
     def shape_control_point_support(self):
-        return SHAPE_PRESETS[self.shape_name()]['control_points'] 
+        """
 
 
+        :return:
+        """
+        return SHAPE_PRESETS[self.shape_name()]['control_points']
 
-    def pull(self, value = None):
+
+    def pull(self, value=None):
+        """
+
+        :param value:
+        :return:
+        """
         if value is None:
             if self._pull is None:
                 return self.forest.settings.edge_settings(self.edge_type, 'pull')
@@ -578,26 +658,40 @@ class Edge(QtWidgets.QGraphicsItem):
         else:
             self._pull = value
 
-    def shape_visibility(self, value = None):
+    def shape_visibility(self, value=None):
+        """
+
+        :param value:
+        :return:
+        """
         if value is None:
-            if self._shape_visible == None:
+            if self._shape_visible is None:
                 return self.forest.settings.edge_settings(self.edge_type, 'visible')
             else:
                 return self._shape_visible
         else:
             self._shape_visible = value
 
-    #### Derivative features ############################################
+    # ### Derivative features ############################################
 
     def make_path(self):
+        """
+
+
+        """
         if not self._shape_method:
             self._shape_method = SHAPE_PRESETS[self.shape_name()]['method']
         self._path = self._shape_method(self)
-        if not self.is_filled(): # expensive with filled shapes
+        if not self.is_filled():  # expensive with filled shapes
             self._fat_path = outline_stroker.createStroke(self._path).united(self._path)
 
 
     def shape(self):
+        """
+
+
+        :return:
+        """
         if not self.is_filled():
             if not self._fat_path:
                 self.make_path()
@@ -608,15 +702,26 @@ class Edge(QtWidgets.QGraphicsItem):
             return self._path
 
 
-
     def update_shape_method(self):
+        """
+
+
+        """
         self._shape_method = SHAPE_PRESETS[self.shape_name()]['method']
 
     def is_structural(self):
+        """
+
+
+        :return:
+        """
         return self.edge_type == self.start.default_edge_type
 
     def adjust_control_point(self, index, points):
-        """ Called from UI, when dragging """
+        """ Called from UI, when dragging
+        :param index:
+        :param points:
+        """
         x, y = points
         z = self.adjust[index][2]
         self.adjust[index] = (x, y, z)
@@ -625,6 +730,10 @@ class Edge(QtWidgets.QGraphicsItem):
 
 
     def update_end_points(self):
+        """
+
+
+        """
         if self.align == LEFT:
             self.start_point = self.start.left_magnet()
         elif self.align == RIGHT:
@@ -638,6 +747,11 @@ class Edge(QtWidgets.QGraphicsItem):
 
 
     def connect_end_points(self, start, end):
+        """
+
+        :param start:
+        :param end:
+        """
         self.start_point = start.get_current_position()
         self.end_point = end.get_current_position()
         self.start = start
@@ -660,12 +774,19 @@ class Edge(QtWidgets.QGraphicsItem):
 
 
     def drop_to(self, x, y):
+        """
+
+        :param x:
+        :param y:
+        """
         pass
 
     def set_visible(self, visible):
-        """ Hide or show, and also manage related UI objects. Note that the shape itself may be visible or not independent of this. It has to be visible in this level so that UI elements can be used. """
+        """ Hide or show, and also manage related UI objects. Note that the shape itself may be visible or not independent of this. It has to be visible in this level so that UI elements can be used.
+        :param visible:
+        """
         v = self.isVisible()
-        #print 'set visible called with vis %s when isVisible is %s' % (visible, v)
+        # print 'set visible called with vis %s when isVisible is %s' % (visible, v)
         if v and not visible:
             self._visible = False
             self.hide()
@@ -682,6 +803,10 @@ class Edge(QtWidgets.QGraphicsItem):
             self._visible = visible
 
     def set_selection_status(self, selected):
+        """
+
+        :param selected:
+        """
         ui = ctrl.main.ui_manager  # @UndefinedVariable
         if selected:
             ui.add_control_points(self)
@@ -690,6 +815,11 @@ class Edge(QtWidgets.QGraphicsItem):
         self.update()
 
     def boundingRect(self):
+        """
+
+
+        :return:
+        """
         if self._shape_name == 'linear':
             return QtCore.QRectF(to_Pf(self.start_point), to_Pf(self.end_point))
         else:  # include curve adjustments
@@ -698,7 +828,7 @@ class Edge(QtWidgets.QGraphicsItem):
                 self.make_path()
             return self._path.controlPointRect()
 
-    #### Mouse - Qt events ##################################################
+    # ### Mouse - Qt events ##################################################
 
     def _hovering_on(self):
         if not self._hovering:
@@ -709,6 +839,10 @@ class Edge(QtWidgets.QGraphicsItem):
             self.update()
 
     def hoverEnterEvent(self, event):
+        """
+
+        :param event:
+        """
         self._hovering_on()
         QtWidgets.QGraphicsItem.hoverEnterEvent(self, event)
 
@@ -722,13 +856,19 @@ class Edge(QtWidgets.QGraphicsItem):
 
 
     def hoverLeaveEvent(self, event):
+        """
+
+        :param event:
+        """
         self._hovering_off()
         QtWidgets.QGraphicsItem.hoverLeaveEvent(self, event)
 
-    ### Scene-managed call
+    # ## Scene-managed call
 
     def click(self, event=None):
-        """ Scene has decided that this node has been clicked """
+        """ Scene has decided that this node has been clicked
+        :param event:
+        """
         self._hovering_off()
         if event and event.modifiers() == Qt.ShiftModifier:  # multiple selection
             if ctrl.is_selected(self):
@@ -743,9 +883,16 @@ class Edge(QtWidgets.QGraphicsItem):
             ctrl.select(self)
 
 
-    ### Qt paint method override
+    # ## Qt paint method override
 
     def paint(self, painter, option, widget):
+        """
+
+        :param painter:
+        :param option:
+        :param widget:
+        :return:
+        """
         if not self.start or not self.end:
             return
         c = self.contextual_color()
@@ -759,6 +906,11 @@ class Edge(QtWidgets.QGraphicsItem):
             painter.fillPath(self._path, c)
 
     def adjusted_control_point_list(self):
+        """
+
+
+        :return:
+        """
         l = []
         for a_point, c_point in zip(self.adjust, self.control_points):
             if not c_point:
@@ -768,9 +920,19 @@ class Edge(QtWidgets.QGraphicsItem):
         return l
 
     def get_path(self):
+        """
+
+
+        :return:
+        """
         return self._path
 
     def get_point_at(self, d):
+        """
+
+        :param d:
+        :return:
+        """
         if self.is_filled():
             d /= 2.0
         if not self._path:
@@ -779,6 +941,11 @@ class Edge(QtWidgets.QGraphicsItem):
         return self._path.pointAtPercent(d)
 
     def get_angle_at(self, d):
+        """
+
+        :param d:
+        :return:
+        """
         if self.is_filled():
             d /= 2.0
             # slopeAtPercent
@@ -787,17 +954,19 @@ class Edge(QtWidgets.QGraphicsItem):
             self.make_path()
         return self._path.angleAtPercent(d)
 
-    #### Event filter - be sensitive to changes in settings  ########################################################
+    # ### Event filter - be sensitive to changes in settings  ########################################################
 
-    #def sceneEvent(self, event):
-    #    print 'Edge event received: ', event.type()
-    #    return QtWidgets.QGraphicsItem.sceneEvent(self, event)
+    # def sceneEvent(self, event):
+    # print 'Edge event received: ', event.type()
+    # return QtWidgets.QGraphicsItem.sceneEvent(self, event)
 
 
     #### Restoring after load / undo #########################################
 
     def after_restore(self, changes):
-        """ Fix derived attributes """
+        """ Fix derived attributes
+        :param changes:
+        """
         self.update_end_points()
         self.set_visible(self._visible)
 

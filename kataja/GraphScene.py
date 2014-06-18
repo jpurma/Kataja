@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
-#############################################################################
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -21,7 +21,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 
 from PyQt5.QtCore import QPointF as Pf, Qt
@@ -40,6 +40,9 @@ from kataja.utils import to_tuple
 
 # from BlenderExporter import export_visible_items
 class GraphScene(QtWidgets.QGraphicsScene):
+    """
+
+    """
     saved_fields = ['main', 'graph_view', 'displayed_forest']
     singleton_key = 'GraphScene'
 
@@ -57,7 +60,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         else:
             self.setBackgroundBrush(qt_prefs.no_brush)
         # else:
-        #    self.setBackgroundBrush(QtGui.QBrush(colors.paper))
+        # self.setBackgroundBrush(QtGui.QBrush(colors.paper))
         self.displayed_forest = None
         self._timer_id = 0
         self._dblclick = False
@@ -72,21 +75,23 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         # self.ants = []
         # for n in range(0,1000):
-        #     ant = QtGui.QGraphicsRectItem(0,0,10,10)
-        #     ant.setPos(random.random()*400-200, random.random()*400-200)
-        #     #ant.setPen(colors.drawing2)
-        #     self.addItem(ant)
-        #     self.ants.append(ant)
+        # ant = QtGui.QGraphicsRectItem(0,0,10,10)
+        # ant.setPos(random.random()*400-200, random.random()*400-200)
+        # #ant.setPen(colors.drawing2)
+        # self.addItem(ant)
+        # self.ants.append(ant)
 
-   #### General events ##########
+        # ### General events ##########
 
     # def event(self, event):
-    #     print 's:', event.type()
-    #     #print 'Scene event received: %s' % event.type()
-    #     return QtWidgets.QGraphicsScene.event(self, event)        
-    
+    # print 's:', event.type()
+    # #print 'Scene event received: %s' % event.type()
+    # return QtWidgets.QGraphicsScene.event(self, event)
+
     def forward_signal(self, signal, *args):
         """ When graph scene receives signals, they are forwarded to Kataja's graphic item subclasses. They all have a signal receiver class that can handle certain kinds of signals and modify the item accordingly. 
+        :param signal:
+        :param args:
         """
         receiving_items = self._signal_forwarding.get(signal, [])
         print signal, receiving_items, self._signal_forwarding
@@ -96,45 +101,67 @@ class GraphScene(QtWidgets.QGraphicsScene):
     def add_to_signal_receivers(self, item):
         """ Add item to scene's items that receive certain types of signals. 
         Types of signals that item receives are determined by its receives_signals -list.
-        """ 
+        :param item:
+        """
         receives = getattr(item.__class__, 'receives_signals', [])
 
         for signal in receives:
             if signal in self._signal_forwarding:
-                receiving_items = self._signal_forwarding[signal] 
+                receiving_items = self._signal_forwarding[signal]
                 receiving_items.add(item)
             else:
-                self._signal_forwarding[signal] = set((item,))               
+                self._signal_forwarding[signal] = {item}
 
     def remove_from_signal_receivers(self, item):
+        """
+
+        :param item:
+        """
         receives = getattr(item.__class__, 'receives_signals', [])
         for signal in receives:
             if id(signal) in self._signal_forwarding:
-                receiving_items = self._signal_forwarding[signal] 
+                receiving_items = self._signal_forwarding[signal]
                 receiving_items.remove(item)
 
 
     # Overriding QGraphicsScene method
     def addItem(self, item):
-        self.add_to_signal_receivers(item)
-        QtWidgets.QGraphicsScene.addItem(self, item)      
+        """
 
-    # Overriding QGraphicsScene method
+        :param item:
+        """
+        self.add_to_signal_receivers(item)
+        QtWidgets.QGraphicsScene.addItem(self, item)
+
+        # Overriding QGraphicsScene method
+
     def removeItem(self, item):
+        """
+
+        :param item:
+        """
         self.remove_from_signal_receivers(item)
-        QtWidgets.QGraphicsScene.removeItem(self, item)      
+        QtWidgets.QGraphicsScene.removeItem(self, item)
 
 
     def reset_edge_shapes(self):
+        """
+
+
+        """
         if self.displayed_forest:
             for e in self.displayed_forest.edges.values():
                 e.update_shape_method()
                 e.update()
         print 'received signal'
 
-    #####
+    # ####
 
     def reset_zoom(self):
+        """
+
+
+        """
         self._manual_zoom = False
 
     def fit_to_window(self):
@@ -156,11 +183,11 @@ class GraphScene(QtWidgets.QGraphicsScene):
         for item in self.items():
             if isinstance(item, ConstituentNode) and not item.is_fading_away():
                 # if item.uses_scope_area:
-                #     br = item.scope_rect
-                #     x, y, z = item.get_current_position()
-                #     lefts.append(x + br.left())
-                #     rights.append(x + br.right())
-                #     tops.append(y + br.top())
+                # br = item.scope_rect
+                # x, y, z = item.get_current_position()
+                # lefts.append(x + br.left())
+                # rights.append(x + br.right())
+                # tops.append(y + br.top())
                 #     bottoms.append(y + br.bottom())
                 # else:
                 top, right, bottom, left = item.magnets
@@ -183,6 +210,11 @@ class GraphScene(QtWidgets.QGraphicsScene):
         return r
 
     def visible_rect_and_gloss(self):
+        """
+
+
+        :return:
+        """
         if self.main.forest.gloss:
             return self.visible_rect().united(self.main.forest.gloss.sceneBoundingRect())
         else:
@@ -190,7 +222,9 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
     # @time_me
     def draw_forest(self, forest):
-        """ Update all trees in the forest """
+        """ Update all trees in the forest
+        :param forest:
+        """
         self.killTimer(self._timer_id)
         self._timer_id = 0
         if not forest.visualization:
@@ -203,23 +237,36 @@ class GraphScene(QtWidgets.QGraphicsScene):
         self.graph_view.repaint()
 
     def export_3d(self, path, forest):
+        """
+
+        :param path:
+        :param forest:
+        """
         pass
         # export_visible_items(path = path, scene = self, forest = forest, prefs = prefs)
 
     def item_moved(self):
+        """
+
+
+        """
         if not self._timer_id:
             self._timer_id = self.startTimer(prefs.fps_in_msec)
 
     def move_selection(self, direction):
 
+        """
+
+        :param direction:
+        """
         selectables = [(item, to_tuple(item.sceneBoundingRect().center())) for item in self.items() if
                        getattr(item, 'selectable', False) and item.is_visible()]
         # debugging plotter
         # for item, pos in selectables:
-        #     x,y = pos
-        #     el = QtGui.QGraphicsEllipseItem(x-2, y-2, 4, 4)
-        #     el.setBrush(colors.drawing)
-        #     self.addItem(el)
+        # x,y = pos
+        # el = QtGui.QGraphicsEllipseItem(x-2, y-2, 4, 4)
+        # el.setBrush(colors.drawing)
+        # self.addItem(el)
 
         # if nothing is selected, select the edgemost item from given direction
         if not ctrl.selected:
@@ -389,8 +436,16 @@ class GraphScene(QtWidgets.QGraphicsScene):
         ctrl.select(best)
 
 
-    ########## MOUSE ##############
+    # ######### MOUSE ##############
     def get_closest_item(self, x, y, candidates, must_contain=True):
+        """
+
+        :param x:
+        :param y:
+        :param candidates:
+        :param must_contain:
+        :return:
+        """
         min_d = 1000
         closest_item = None
         for item in candidates:
@@ -410,6 +465,11 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
 
     def mousePressEvent(self, event):
+        """
+
+        :param event:
+        :return:
+        """
         print 'gs mousePressEvent'
         x, y = to_tuple(event.scenePos())
         um = self.main.ui_manager
@@ -446,16 +506,24 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
 
     def start_dragging(self):
+        """
+
+
+        """
         print '--- start dragging ---'
         ctrl.watch_for_drag_end = True
         # these should be activated by constituentnode instead in start_dragging -method
         # for ma in ctrl.forest.touch_areas:
-        #    if ma.host not in ctrl.dragged and ma.host is not ctrl.pressed:
-        #        ma.set_hint_visible(True)
+        # if ma.host not in ctrl.dragged and ma.host is not ctrl.pressed:
+        # ma.set_hint_visible(True)
         self._dragging = True
 
 
     def kill_dragging(self):
+        """
+
+
+        """
         print '--- killing dragging ---'
         ctrl.dragged = set()
         ctrl.dragged_positions = set()
@@ -470,6 +538,11 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
 
     def mouseReleaseEvent(self, event):
+        """
+
+        :param event:
+        :return:
+        """
         print 'gs mouseReleaseEvent'
         self.graph_view.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
 
@@ -512,11 +585,16 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 ctrl.deselect_objects()
         event.released = None
         if self._dragging or ctrl.pressed:
-            assert (False)
+            assert False
         return QtWidgets.QGraphicsScene.mouseReleaseEvent(self, event)
 
     def mouseMoveEvent(self, event):
         # ctrl.ui_manager.info(str((event.scenePos().x(), event.scenePos().y())))
+        """
+
+        :param event:
+        :return:
+        """
         if ctrl.ui_pressed:
             self.main.ui_manager.mouse_move_event(event)
         elif ctrl.pressed:
@@ -539,19 +617,40 @@ class GraphScene(QtWidgets.QGraphicsScene):
         return QtWidgets.QGraphicsScene.mouseMoveEvent(self, event)
 
     def dragEnterEvent(self, event):
+        """
+
+        :param event:
+        """
         QtWidgets.QGraphicsScene.dragEnterEvent(self, event)
 
     def dragLeaveEvent(self, event):
+        """
+
+        :param event:
+        """
         QtWidgets.QGraphicsScene.dragLeaveEvent(self, event)
 
     def dragMoveEvent(self, event):
+        """
+
+        :param event:
+        """
         QtWidgets.QGraphicsScene.dragMoveEvent(self, event)
 
     def dropEvent(self, event):
+        """
+
+        :param event:
+        """
         print 'dropEvent registered'
         QtWidgets.QGraphicsScene.dropEvent(self, event)
 
     def mouseDoubleClickEvent(self, event):
+        """
+
+        :param event:
+        :return:
+        """
         print 'doubleClick registered'
         self._dblclick = True
         QtWidgets.QGraphicsScene.mouseDoubleClickEvent(self, event)
@@ -574,9 +673,14 @@ class GraphScene(QtWidgets.QGraphicsScene):
         node._hovering = False
         node.open_menus()
 
-    #### Timer loop #################################################################
+    # ### Timer loop #################################################################
 
     def fade_background_gradient(self, old_base_color, new_base_color):
+        """
+
+        :param old_base_color:
+        :param new_base_color:
+        """
         self._fade_steps = 3
         if not self._timer_id:
             self._timer_id = self.startTimer(prefs.fps_in_msec)
@@ -609,6 +713,10 @@ class GraphScene(QtWidgets.QGraphicsScene):
     # @time_me
     def timerEvent(self, event):
         # Main loop for animations and movement in scene
+        """
+
+        :param event:
+        """
         items_have_moved = False
         frame_has_moved = False
         background_fade = False
@@ -631,7 +739,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             f.gloss.setPos(pt[0] - 20, pt[1] - 40)
 
         # for ant in self.ants:
-        #     ant.moveBy(random.random()*4-2, random.random()*4-2)
+        # ant.moveBy(random.random()*4-2, random.random()*4-2)
         for e in f.edges.values():
             e.update_end_points()
             e.make_path()
@@ -639,7 +747,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         for n, node in enumerate(f.visible_nodes()):
             node.adjust_opacity()
-            #    items_have_moved = True
+            # items_have_moved = True
             if node.folding_towards and node.folding_towards is not node:
                 x, y, z = node.folding_towards.get_computed_position()
                 node.set_computed_position((x, y + 30, z))
@@ -689,8 +797,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         items_have_moved = True
 
                         # if x < self._left_border:
-                        #     self._left_border = x
-                        #     resize_required = True
+                        # self._left_border = x
+                        # resize_required = True
                         # elif x > self._right_border:
                         #     self._right_border = x
                         #     resize_required = True
@@ -712,8 +820,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         items_have_moved = True
 
                         # for xvel,yvel,zvel, node in moved_nodes:
-                        #     x, y, z = node.get_current_position()
-                        #     if x < self._left_border:
+                        # x, y, z = node.get_current_position()
+                        # if x < self._left_border:
                         #         self._left_border = x
                         #         resize_required = True
                         #     elif x > self._right_border:
@@ -732,7 +840,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             if f.settings.bracket_style():
                 f.bracket_manager.update_positions()
                 # for area in f.touch_areas:
-                #    area.update_position()
+                # area.update_position()
         if not (items_have_moved or frame_has_moved or background_fade):
             self.killTimer(self._timer_id)
             self.main.ui_manager.activity_marker.hide()

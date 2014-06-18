@@ -46,6 +46,7 @@ class UIView(QtWidgets.QGraphicsView):
 
     def resizeEvent(self, event):
         """ Full screen mode causes resize event to happen here, but not in 
+        :param event:
         graph scene item """
         self.main.graph_view.resize(event.size())
         self.ui_scene.resize_ui(event.size())

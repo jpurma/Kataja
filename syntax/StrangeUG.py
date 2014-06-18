@@ -1,4 +1,5 @@
-#############################################################################
+# coding=utf-8
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -19,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 
 from syntax.BaseConstituent import BaseConstituent as Constituent
@@ -29,7 +30,9 @@ from syntax.utils import load_lexicon, time_me
 # Try adding semantic forms DP, VP and CP as pre-created structures with their own features as syntactic features that can and need to be satisfied.
 
 
-def _closest_parents(A, context, is_not=None, parent_list=[]):
+def _closest_parents(A, context, is_not=None, parent_list=None):
+    if not parent_list:
+        parent_list = []
     if context.left == A or context.right == A:
         parent_list.append(context)
     if context.left and not context.left == is_not:
@@ -40,6 +43,10 @@ def _closest_parents(A, context, is_not=None, parent_list=[]):
 
 
 class UG:
+    """
+
+    """
+
     def __init__(self, lexicon='testlexicon.txt', constituent=Constituent, feature=Feature):
         self.Constituent = constituent
         self.Feature = feature
@@ -47,6 +54,12 @@ class UG:
         self.structure = None
 
     def feature_check(self, left, right):
+        """
+
+        :param left:
+        :param right:
+        :return:
+        """
         matches = []
         selects = []
         for key, f_left in left.features.iteritems():
@@ -59,6 +72,12 @@ class UG:
         return matches, selects
 
     def Merge(self, left, right):
+        """
+
+        :param left:
+        :param right:
+        :return:
+        """
         id = left.label
         new = self.Constituent(id, left, right)
         if not (left and right):
@@ -72,6 +91,9 @@ class UG:
 
     def CCommands(self, A, B, context):
         """ C-Command edge needs the root constituent of the tree as a context, as
+        :param A:
+        :param B:
+        :param context:
             my implementation of UG tries to do without constituents having access to their parents """
         closest_parents = _closest_parents(A, context, parent_list=[])
         # if 'closest_parent' for B is found within (other edge of) closest_parent, B sure is dominated by it.
@@ -81,7 +103,9 @@ class UG:
         return False
 
     def getChildren(self, A):
-        """ Returns immediate children of this element, [left, right] or [] if no children """
+        """ Returns immediate children of this element, [left, right] or [] if no children
+        :param A:
+        """
         children = []
         if A.left:
             children.append(A.left)
@@ -90,7 +114,10 @@ class UG:
         return children
 
     def getCCommanded(self, A, context):
-        """ Returns elements c-commanded by this element """
+        """ Returns elements c-commanded by this element
+        :param A:
+        :param context:
+        """
         closest_parents = _closest_parents(A, context, parent_list=[])
         result = []
         for p in closest_parents:
@@ -101,7 +128,10 @@ class UG:
         return result
 
     def getAsymmetricCCommanded(self, A, context):
-        """ Returns first elements c-commanded by this element that do not c-command this element """
+        """ Returns first elements c-commanded by this element that do not c-command this element
+        :param A:
+        :param context:
+        """
         result = []
 
         def _downward(item, A, result):
@@ -123,6 +153,12 @@ class UG:
         return result
 
     def parse(self, sentence, silent=False):
+        """
+
+        :param sentence:
+        :param silent:
+        :return: :raise "Word '%s' missing from the lexicon" % word:
+        """
         if not isinstance(sentence, list):
             sentence = [word.lower() for word in sentence.split()]
         for word in sentence:
@@ -131,11 +167,18 @@ class UG:
             except KeyError:
                 raise "Word '%s' missing from the lexicon" % word
             self.structure = self.Merge(constituent, self.structure)
-        if not silent: print 'Finished: %s' % self.structure
+        if not silent:
+            print 'Finished: %s' % self.structure
         return self.structure
 
 
     def Linearize(self, structure):
+        """
+
+        :param structure:
+        :return:
+        """
+
         def _lin(node, s):
             if node.left:
                 _lin(node.left, s)
@@ -150,7 +193,9 @@ class UG:
 
     @time_me
     def CLinearize(self, structure):
-        """ Bare phrase structure linearization. Like Kayne's, but allows ambiguous cases to exist. It is assumed that phonology deals with them, usually by having null element in ambiguous pair. """
+        """ Bare phrase structure linearization. Like Kayne's, but allows ambiguous cases to exist. It is assumed that phonology deals with them, usually by having null element in ambiguous pair.
+        :param structure:
+        """
         # returns asymmetric c-command status between two elements
         def _asymmetric_c(A, B):
             AC = self.CCommands(A, B, structure)
@@ -158,9 +203,9 @@ class UG:
             if AC and BC:
                 return None
             elif AC:
-                return (A, B)
+                return A, B
             elif BC:
-                return (B, A)
+                return B, A
             else:
                 return None
 

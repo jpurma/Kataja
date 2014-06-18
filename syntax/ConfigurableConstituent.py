@@ -1,4 +1,5 @@
-#############################################################################
+# coding=utf-8
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -19,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 
 from syntax.ConfigurableFeature import Feature
@@ -30,9 +31,11 @@ class ConfigurableConstituent:
     Feature = Feature
     saved_fields = ['features', 'sourcestring', 'label', 'left', 'right', 'index', 'gloss', 'uid']
 
-    def __init__(self, cid=u'', left=None, right=None, source='', data={}):
+    def __init__(self, cid=u'', left=None, right=None, source='', data=None):
         """ ConfigurableConstituent tries to be theory-editable constituent, whose behaviour can be adjusted in very specific manner. Configuration is stored in UG-instance.config -dict and can be changed from outside.
          """
+        if not data:
+            data = {}
         if data:
             self.features = {}
             self.sourcestring = ''

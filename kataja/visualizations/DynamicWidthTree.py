@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-#############################################################################
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -20,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 
 from kataja.ConstituentNode import ConstituentNode
@@ -31,16 +31,25 @@ from kataja.GlossNode import GlossNode
 
 
 class DynamicWidthTree(BaseVisualization):
+    """
+
+    """
     name = 'Dynamic width tree'
 
 
     def __init__(self):
+        BaseVisualization.__init__(self)
         self.forest = None
         self._directed = True
         self._linear = []
         self.push = 0
 
     def prepare(self, forest, loading=False):
+        """
+
+        :param forest:
+        :param loading:
+        """
         self.forest = forest
         self._directed = True
         self.forest.settings.show_constituent_edges = True
@@ -56,6 +65,10 @@ class DynamicWidthTree(BaseVisualization):
             self.reset_node(node)
 
     def reset_node(self, node):
+        """
+
+        :param node:
+        """
         node.locked_to_position = False
         node.reset_adjustment()
         node.update_label()
@@ -69,6 +82,10 @@ class DynamicWidthTree(BaseVisualization):
 
 
     def reselect(self):
+        """
+
+
+        """
         push = self.forest.vis_data['push']
         push -= 5
         if push > 30:
@@ -82,12 +99,17 @@ class DynamicWidthTree(BaseVisualization):
     def calculate_movement(self, node):
         # like calculate_movement in elastic net, but only count x-dimension.
         # Sum up all forces pushing this item away.
+        """
+
+        :param node:
+        :return:
+        """
         if isinstance(node, FeatureNode) or isinstance(node, GlossNode):
             return BaseVisualization.calculate_movement(self, node)
         xvel = 0.0
         node_x, node_y, node_z = node.get_current_position()
         if not isinstance(node, ConstituentNode):
-            return (0, 0, 0)
+            return 0, 0, 0
         # linear = self.forest.list_nodes_once(node.get_root_node())
         node_index = self._linear.index(node)
         for other_index, other in enumerate(self._linear):
@@ -98,8 +120,8 @@ class DynamicWidthTree(BaseVisualization):
             width = (node.width + other.width) * .5  # / 2
             dist_y = other_y - node_y
 
-            #  --d2---------->  <-d1-----------
-            #  |   -d1->     |  |   <-d2-     |
+            # --d2---------->  <-d1-----------
+            # |   -d1->     |  |   <-d2-     |
             #  [ N ]   [  O  ]  [ O ]   [  N  ]
             d1 = int(other_x - width - node_x)  # 300 - 60 -240
             d2 = int(other_x + width - node_x)
@@ -142,7 +164,7 @@ class DynamicWidthTree(BaseVisualization):
             elif edge_length_x < -prefs.edge_width:
                 edge_length_x += prefs.edge_width
                 xvel += edge_length_x * edge.pull() / self.push
-        return (xvel, 0, 0)
+        return xvel, 0, 0
 
     def draw(self):
         """ Draws the tree from bottom to top, trying to fit every horizontal row to as small as possible """

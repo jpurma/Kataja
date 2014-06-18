@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-#############################################################################
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool *** 
 # 
@@ -20,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 from kataja.ConstituentNode import ConstituentNode
 from kataja.Controller import prefs
@@ -30,6 +30,9 @@ from kataja.GlossNode import GlossNode
 
 
 class WindDriftTree(BaseVisualization):
+    """
+
+    """
     name = 'Wind drift linearization'
 
     def __init__(self):
@@ -43,6 +46,11 @@ class WindDriftTree(BaseVisualization):
         self._max_hits = {}
 
     def prepare(self, forest, loading=False):
+        """
+
+        :param forest:
+        :param loading:
+        """
         self.forest = forest
         self._last_pos = (0, 0)
         self._leftmost = None
@@ -56,6 +64,10 @@ class WindDriftTree(BaseVisualization):
             self.reset_node(node)
 
     def reset_node(self, node):
+        """
+
+        :param node:
+        """
         node.locked_to_position = False
         node.reset_adjustment()
         if isinstance(node, ConstituentNode):
@@ -71,6 +83,11 @@ class WindDriftTree(BaseVisualization):
     def _draw_wind_drift_tree(self, topmost_node):
 
         def draw_node(node, parent):
+            """
+
+            :param node:
+            :param parent:
+            """
             right = node.right()
             left = node.left()
             if right:

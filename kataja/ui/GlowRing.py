@@ -1,8 +1,9 @@
-'''
+# coding=utf-8
+"""
 Created on 28.8.2013
 
 @author: purma
-'''
+"""
 from PyQt5 import QtGui, QtCore, QtWidgets
 
 from kataja.Controller import ctrl
@@ -25,10 +26,18 @@ class GlowRing(QtWidgets.QGraphicsEllipseItem):
         self._step_size = radius / 6.0
 
     def grow(self):
+        """
+
+
+        """
         self._radius += self._step_size
         self.setRect(-self._radius, -self._radius, 2 * self._radius, 2 * self._radius)
 
     def shrink(self):
+        """
+
+
+        """
         self.radius -= self.step_size
         self.setRect(-self.radius, -self.radius, 2 * self.radius, 2 * self.radius)
 

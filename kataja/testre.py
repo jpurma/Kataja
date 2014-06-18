@@ -26,6 +26,11 @@ words = []
 
 
 def merge_curlies(s):
+    """
+
+    :param s:
+    :return:
+    """
     merged = ''
     for c in s:
         print c
@@ -34,6 +39,11 @@ def merge_curlies(s):
 
 
 def find_dot_alias(s):
+    """
+
+    :param s:
+    :return:
+    """
     label_string = ''
     if s[0] == '.':
         s, label_string = merge_curlies(s[1:])
@@ -41,10 +51,19 @@ def find_dot_alias(s):
 
 
 def find_constituent(s):
+    """
+
+    :param s:
+    :return:
+    """
     return s, None
 
 
 def analyze_word(s):
+    """
+
+    :param s:
+    """
     print s
     s, dot_alias = find_dot_alias(s)
     s, constituent = find_constituent(s)
@@ -53,6 +72,11 @@ def analyze_word(s):
 
 
 def bottom_up_bracket_parser(s):
+    """
+
+    :param s:
+    :return:
+    """
     word = []
     while s:
         c = s.pop()

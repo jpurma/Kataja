@@ -1,4 +1,5 @@
-#############################################################################
+# coding=utf-8
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -19,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 from types import FrameType, StringTypes, UnicodeType
 import gc
@@ -28,15 +29,32 @@ import sys
 import time
 import traceback
 
-from PyQt5.QtCore import QPointF, QPoint
 from PyQt5 import QtCore, QtGui, QtWidgets
+
+from PyQt5.QtCore import QPointF, QPoint
 
 
 def print_rect(rect):
+    """
+
+    :param rect:
+    """
     print 'x: %s y: %s width: %s height: %s' % (rect.x(), rect.y(), rect.width(), rect.height())
 
+
 def caller(function):
+    """
+
+    :param function:
+    :return:
+    """
+
     def wrap(*arg):
+        """
+
+        :param arg:
+        :return:
+        """
         if len(traceback.extract_stack()) > 1:
             mod, line, fun, cmd = traceback.extract_stack()[-2]
             print "%s was called by %s l.%s at %s" % (function.func_name, cmd, line, mod)
@@ -46,7 +64,19 @@ def caller(function):
 
 
 def time_me(function):
+    """
+
+    :param function:
+    :return:
+    """
+
     def wrap(*arg, **kwargs):
+        """
+
+        :param arg:
+        :param kwargs:
+        :return:
+        """
         start = time.time()
         r = function(*arg, **kwargs)
         end = time.time()
@@ -57,12 +87,21 @@ def time_me(function):
 
 
 def to_tuple(p):
-    """ PySide's to_tuple-helper method for PyQt """
+    """ PySide's to_tuple-helper method for PyQt
+    :param p:
+    """
     return p.x(), p.y()
 
 
 # not used
 def load_features(obj, key, d):
+    """
+
+    :param obj:
+    :param key:
+    :param d:
+    :return:
+    """
     if (isinstance(obj, str) or isinstance(obj, unicode)) and obj.startswith('_*'):
         if isinstance(d[obj], str) or isinstance(d[obj], unicode):
             classname = obj.split('_')[1][1:]  # _*[classname]_id
@@ -75,13 +114,26 @@ def load_features(obj, key, d):
 
 # not used
 def save_features(obj, saved, d):
-    def save_feature(feat):
+    """
+
+    :param obj:
+    :param saved:
+    :param d:
+    :return:
+    """
+
+    def _save_feature(feat):
+        """
+
+        :param feat:
+        :return:
+        """
         fval = getattr(obj, feat)
         try:
             return fval.save(d)
         except AttributeError:
             if isinstance(fval, QPointF) or isinstance(fval, QPoint):
-                return (fval.x(), fval.y())
+                return fval.x(), fval.y()
             if isinstance(fval, list):
                 nval = []
                 for item in fval:
@@ -101,19 +153,26 @@ def save_features(obj, saved, d):
             else:
                 return fval
 
-        key = '_*%s_%s' % (obj.__class__.__name__, id(obj))
-        if key in d:
-            return key
-        sob = {}
-        d[key] = sob
-        for feat in saved:
-            sob[feat] = save_feature(feat)
-        d[key] = sob
+    key = '_*%s_%s' % (obj.__class__.__name__, id(obj))
+    if key in d:
         return key
+    sob = {}
+    d[key] = sob
+    for feat in saved:
+        sob[feat] = _save_feature(feat)
+    d[key] = sob
+    return key
 
 
 # used only in syntax
 def load_lexicon(filename, Constituent, Feature):
+    """
+
+    :param filename:
+    :param Constituent:
+    :param Feature:
+    :return:
+    """
     dict = {}
     try:
         file = open(filename, 'r')
@@ -150,6 +209,12 @@ def load_lexicon(filename, Constituent, Feature):
 
 # used only in syntax
 def save_lexicon(lexicon, filename):
+    """
+
+    :param lexicon:
+    :param filename:
+    :return:
+    """
     try:
         file = open(filename, 'w')
     except IOError:
@@ -167,11 +232,14 @@ def save_lexicon(lexicon, filename):
 
 
 def to_unicode(string, encoding='utf-8'):
-    """Convenience method for converting strings to unicode."""
+    """Convenience method for converting strings to unicode.
+    :param string:
+    :param encoding:
+    """
     if not string:
         return u''
     # if isinstance(string, QtCore.QString):
-    #    return unicode(string.toUtf8(), "utf-8")
+    # return unicode(string.toUtf8(), "utf-8")
     elif not isinstance(string, StringTypes):
         s = str(string)
         return unicode(s, encoding)
@@ -181,13 +249,18 @@ def to_unicode(string, encoding='utf-8'):
 
 
 # def linearize(node):
-#   res = []
-#    for n in node:
-#        if n not in res:
+# res = []
+# for n in node:
+# if n not in res:
 #            res.append(n)
 #    return res
 
 def next_free_index(indexes):
+    """
+
+    :param indexes:
+    :return:
+    """
     letters = [c for c in indexes if len(c) == 1 and c in string.ascii_letters]
     # 1 -- default i
     if not letters:
@@ -208,6 +281,12 @@ def next_free_index(indexes):
 
 def print_derivation_steps(objects=gc.garbage, outstream=sys.stdout, show_progress=True):
     """
+
+
+
+    :param objects:
+    :param outstream:
+    :param show_progress:
     objects:       A list of objects to find derivation_steps in.  It is often useful
                    to pass in gc.garbage to find the derivation_steps that are
                    preventing some objects from being garbage collected.
@@ -217,6 +296,10 @@ def print_derivation_steps(objects=gc.garbage, outstream=sys.stdout, show_progre
     """
 
     def print_path(path):
+        """
+
+        :param path:
+        """
         for i, step in enumerate(path):
             # next "wraps around"
             next = path[(i + 1) % len(path)]
@@ -240,6 +323,13 @@ def print_derivation_steps(objects=gc.garbage, outstream=sys.stdout, show_progre
         outstream.write("\n")
 
     def recurse(obj, start, all, current_path):
+        """
+
+        :param obj:
+        :param start:
+        :param all:
+        :param current_path:
+        """
         if show_progress:
             outstream.write("%d\r" % len(all))
 
@@ -270,7 +360,10 @@ def print_derivation_steps(objects=gc.garbage, outstream=sys.stdout, show_progre
 
 @time_me
 def load_objects(start_obj, full_data):
-    """ Load and restore objects starting from given obj (probably Forest or KatajaMain instance) """
+    """ Load and restore objects starting from given obj (probably Forest or KatajaMain instance)
+    :param start_obj:
+    :param full_data:
+    """
 
     full_map = {}
     restored = {}
@@ -279,6 +372,11 @@ def load_objects(start_obj, full_data):
     # This is to avoid recreating those objects. We just want to modify them
     def map_existing(obj):
         # containers 
+        """
+
+        :param obj:
+        :return:
+        """
         if isinstance(obj, dict):
             for item in obj.values():
                 map_existing(item)
@@ -300,6 +398,13 @@ def load_objects(start_obj, full_data):
 
     # Restore either takes existing object or creates a new 'stub' object and then loads it with given data
     def restore(obj_key, class_key='', host=None):
+        """
+
+        :param obj_key:
+        :param class_key:
+        :param host:
+        :return:
+        """
         if obj_key in restored:
             return restored[obj_key]
         obj = full_map.get(obj_key, None)
@@ -331,6 +436,12 @@ def load_objects(start_obj, full_data):
 
     # Recursively turn QObject descriptions back into actual objects and object references back into real objects
     def inflate(data, host_obj):
+        """
+
+        :param data:
+        :param host_obj:
+        :return:
+        """
         if isinstance(data, (int, float, str, unicode)):
             return data
         elif isinstance(data, dict):
@@ -376,7 +487,7 @@ def load_objects(start_obj, full_data):
             for item in data:
                 result.add(inflate(item, host_obj))
             return result
-        elif data == None:
+        elif data is None:
             return data
         return data
 
@@ -384,7 +495,18 @@ def load_objects(start_obj, full_data):
     restore(start_obj.save_key)
 
 
-def save_object(obj, saved_objs, open_refs, ignore=[]):
+def save_object(obj, saved_objs, open_refs, ignore=None):
+    """
+
+    :param obj:
+    :param saved_objs:
+    :param open_refs:
+    :param ignore:
+    :return: :raise:
+    """
+    if not ignore:
+        ignore = []
+
     def _simplify(data):
         """ Goes through common iterable datatypes and if common Qt types are found, replaces them
         with basic python tuples. 
@@ -416,35 +538,34 @@ def save_object(obj, saved_objs, open_refs, ignore=[]):
             for item in data:
                 result.add(_simplify(item))
             return result
-        elif data == None:
+        elif data is None:
             return data
         elif isinstance(data, QPointF):
-            return ('QPointF', to_tuple(QPointF))
+            return 'QPointF', to_tuple(QPointF)
         elif isinstance(data, QPoint):
-            return ('QPoint', to_tuple(QPoint))
+            return 'QPoint', to_tuple(QPoint)
         elif isinstance(data, QtGui.QColor):
-            return ('QColor', data.red(), data.green(), data.blue(), data.alpha())
+            return 'QColor', data.red(), data.green(), data.blue(), data.alpha()
         elif isinstance(data, QtGui.QPen):
             pass
         elif isinstance(data, QtCore.QRectF):
-            return ('QRectF', data.x(), data.y(), data.width(), data.height())
+            return 'QRectF', data.x(), data.y(), data.width(), data.height()
         elif isinstance(data, QtCore.QRect):
-            return ('QRect', data.x(), data.y(), data.width(), data.height())
+            return 'QRect', data.x(), data.y(), data.width(), data.height()
         elif isinstance(data, QtGui.QFont):
-            return ('QFont', data.toString())
+            return 'QFont', data.toString()
         elif hasattr(data, 'save_key'):
             key = getattr(data, 'save_key')
             if key not in saved_objs and key not in open_refs:
                 open_refs[key] = data
-            return ('*ref*', key, data.__class__.__name__)
+            return '*ref*', key, data.__class__.__name__
         elif hasattr(data.__class__, 'singleton_key'):
             key = getattr(data.__class__, 'singleton_key')
             if key not in saved_objs and key not in open_refs:
                 open_refs[key] = data
-            return ('*ref*', key, data.__class__.__name__)
+            return '*ref*', key, data.__class__.__name__
         else:
             print 'simplifying unknown data type:', data, type(data)
-            raise
             return str(data)
 
 
@@ -459,8 +580,6 @@ def save_object(obj, saved_objs, open_refs, ignore=[]):
         field_names = vars(obj).keys()
         if 'save_key' in field_names:
             field_names.remove('save_key')
-        else:
-            print 'object type %s doesnt have save_key' % type(obj)
     obj_data = {}
     #print 'working on object %s of type %s' % (obj, type(obj))
     for fname in field_names:
@@ -474,14 +593,24 @@ def save_object(obj, saved_objs, open_refs, ignore=[]):
 
 
 def quit():
+    """
+
+
+    """
     sys.exit()
 
 
 def create_shadow_effect(obj, ctrl):
+    """
+
+    :param obj:
+    :param ctrl:
+    :return:
+    """
     effect = QtWidgets.QGraphicsDropShadowEffect()
     effect.setBlurRadius(20)
     #self.effect.setColor(ctrl.cm().drawing())
     effect.setColor(ctrl.cm().d['white'])
-    effect.setOffset(0,5)
+    effect.setOffset(0, 5)
     effect.setEnabled(False)
     return effect

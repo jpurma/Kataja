@@ -1,4 +1,5 @@
-#############################################################################
+# coding=utf-8
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -19,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 import math
 
@@ -57,12 +58,12 @@ class GraphView(QtWidgets.QGraphicsView):
         # if ctrl.move_tool:
         self.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
         # elif ctrl.selection_tool:
-        #    self.setDragMode(QtGui.QGraphicsView.RubberBandDrag)
+        # self.setDragMode(QtGui.QGraphicsView.RubberBandDrag)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         # self.setViewportUpdateMode(QtWidgets.QGraphicsView.BoundingRectViewportUpdate)
         self.setViewportUpdateMode(QtWidgets.QGraphicsView.FullViewportUpdate)
-        #self.setViewportUpdateMode(QtWidgets.QGraphicsView.NoViewportUpdate)
+        # self.setViewportUpdateMode(QtWidgets.QGraphicsView.NoViewportUpdate)
         self.setMouseTracking(True)
         # self.setTransformationAnchor(QtWidgets.QGraphicsView.NoAnchor)
         self._scale_factor = 1.0
@@ -70,8 +71,12 @@ class GraphView(QtWidgets.QGraphicsView):
 
 
     # def drawBackground(self, painter, rect):
-    #    painter.fillRect(rect, colors.paper)
+    # painter.fillRect(rect, colors.paper)
     def instant_fit_to_view(self, _target_rect):
+        """
+
+        :param _target_rect:
+        """
         self.setSceneRect(_target_rect)
         self.target_scale = min((self.width() / _target_rect.width(), self.height() / _target_rect.height()))
         self.resetTransform()
@@ -80,6 +85,11 @@ class GraphView(QtWidgets.QGraphicsView):
         self.main.ui_manager.update_positions()
 
     def scale_view_by(self, delta):
+        """
+
+        :param delta:
+        :return:
+        """
         if delta < 1.0 and self._scale_factor == 0.3:
             return self._scale_factor
         elif delta > 1.0 and self._scale_factor == 9.0:
@@ -94,9 +104,13 @@ class GraphView(QtWidgets.QGraphicsView):
         self.main.ui_manager.update_positions()
         return factor
 
-    ### WINDOW ###
+    # ## WINDOW ###
 
     def resizeEvent(self, event):
+        """
+
+        :param event:
+        """
         QtWidgets.QGraphicsView.resizeEvent(self, event)
         if hasattr(self.main, 'ui_manager'):
             self.main.ui_manager.update_positions()
@@ -104,13 +118,25 @@ class GraphView(QtWidgets.QGraphicsView):
     ########## MOUSE ##############
 
     def mouseReleaseEvent(self, event):
+        """
+
+        :param event:
+        """
         QtWidgets.QGraphicsView.mouseReleaseEvent(self, event)
 
     def mouseMoveEvent(self, event):
+        """
+
+        :param event:
+        """
         QtWidgets.QGraphicsView.mouseMoveEvent(self, event)
 
 
     def wheelEvent(self, event):
+        """
+
+        :param event:
+        """
         view_center = self.mapToScene(self.rect().center())
         pointer_pos = event.pos()
         delta = math.pow(2.0, -event.angleDelta().y() / 360.0)
@@ -139,22 +165,46 @@ class GraphView(QtWidgets.QGraphicsView):
 
     def leaveEvent(self, event):
         # ctrl.scene.kill_dragging()
+        """
+
+        :param event:
+        """
         QtWidgets.QGraphicsView.leaveEvent(self, event)
 
     def enterEvent(self, event):
         # ctrl.scene.kill_dragging()
+        """
+
+        :param event:
+        """
         QtWidgets.QGraphicsView.enterEvent(self, event)
 
     def dragEnterEvent(self, event):
+        """
+
+        :param event:
+        """
         QtWidgets.QGraphicsView.dragEnterEvent(self, event)
 
     def dragLeaveEvent(self, event):
+        """
+
+        :param event:
+        """
         QtWidgets.QGraphicsView.dragLeaveEvent(self, event)
 
     def dropEvent(self, event):
+        """
+
+        :param event:
+        """
         QtWidgets.QGraphicsView.dropEvent(self, event)
 
     def dragMoveEvent(self, event):
+        """
+
+        :param event:
+        """
         QtWidgets.QGraphicsView.dragMoveEvent(self, event)
 
 

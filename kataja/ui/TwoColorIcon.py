@@ -1,4 +1,5 @@
-#############################################################################
+# coding=utf-8
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -21,8 +22,9 @@
 #
 #############################################################################
 
-from kataja.Controller import ctrl
 from PyQt5 import QtGui, QtCore
+
+from kataja.Controller import ctrl
 
 
 class TwoColorIcon(QtGui.QIcon):
@@ -39,6 +41,10 @@ class TwoColorIcon(QtGui.QIcon):
 
 
 class TwoColorIconEngine(QtGui.QIconEngine):
+    """
+
+    """
+
     def __init__(self, bitmaps):
         print '*** initializing TwoColorIconEngine with bitmaps ', bitmaps
         QtGui.QIconEngine.__init__(self)
@@ -65,6 +71,13 @@ class TwoColorIconEngine(QtGui.QIconEngine):
         #painter.setRenderHints(QtGui.QPainter.SmoothPixmapTransform, False)
         #painter.setRenderHints(QtGui.QPainter.HighQualityAntialiasing, False)
         #painter.setRenderHints(QtGui.QPainter.NonCosmeticDefaultPen, False)
+        """
+
+        :param painter:
+        :param rect:
+        :param mode:
+        :param state:
+        """
         w = rect.width()
         if w == 16:
             pxm, bmp1, bmp2 = self.bitmaps16

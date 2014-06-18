@@ -1,8 +1,9 @@
-'''
+# coding=utf-8
+"""
 Created on 28.8.2013
 
 @author: purma
-'''
+"""
 from PyQt5 import QtGui, QtCore
 
 from kataja.Controller import qt_prefs
@@ -93,7 +94,7 @@ class MenuItem(MovableUI):
         self.enabled = True
         self.activated = False
 
-        #### Qt parts <-- this has to inherit QGraphicsItem to work
+        # ### Qt parts <-- this has to inherit QGraphicsItem to work
 
         # self.setFlag(QtGui.QGraphicsWidget.ItemIsMovable)
         # self.setFlag(QtGui.QGraphicsTextItem.ItemIsSelectable)
@@ -111,12 +112,27 @@ class MenuItem(MovableUI):
         # Typically subclass will override some of these
 
     def get_tab_index(self):
+        """
+
+
+        :return:
+        """
         return self._tab_index
 
     def get_value(self):
+        """
+
+
+        :return:
+        """
         return True
 
     def move_by(self, dx, dy):
+        """
+
+        :param dx:
+        :param dy:
+        """
         x, y = self.relative_position
         self.relative_position = (x + dx, y + dy)
         self.moveBy(dx, dy)  # setPos(menu_item.x()+x_adjust, menu_item.y())
@@ -130,19 +146,37 @@ class MenuItem(MovableUI):
 
 
     def center_point_in_scene(self):
+        """
+
+
+        :return:
+        """
         return self.pos() + self.boundingRect().center()
 
     def centered(self, x, y):
+        """
+
+        :param x:
+        :param y:
+        :return:
+        """
         br = self.boundingRect()
         return x - (br.width() - 15) / 2, y - br.height() / 2
 
     def condition(self, event=None):
-        """ Menu items may have a condition method attached to them to decide if the menu item should be available """
+        """ Menu items may have a condition method attached to them to decide if the menu item should be available
+        :param event:
+        """
         if hasattr(self.host, self.condition):
             return getattr(self.host, self.condition)(event)  # calls method w. event as argument
         return True
 
     def boundingRect(self):
+        """
+
+
+        :return:
+        """
         if not self._cached_bounding_rect:
             self._cached_bounding_rect = QtCore.QRectF(-5, -5, self._width + 10, self._height + 10)
         return self._cached_bounding_rect
@@ -150,6 +184,10 @@ class MenuItem(MovableUI):
     # let's try to keep UI elements out from the main animation timer.
     # UIRadialMenu has its own timer
     def appear(self):
+        """
+
+
+        """
         self.show()
         x, y = self.centered(0, 0)
         self.setPos(x, y)
@@ -160,28 +198,49 @@ class MenuItem(MovableUI):
 
 
     def remove(self, ui):
+        """
+
+        :param ui:
+        """
         self.hide()
         ui.moving_things.discard(self)
 
     def disappear(self, after_move_function=None):
+        """
+
+        :param after_move_function:
+        """
         self._target_opacity = .0
         x, y = self.centered(0, 0)
         self.set_target_position(x, y)
 
-    ########## MOUSE ##############
+    # ######### MOUSE ##############
 
     def click(self, event):
+        """
+
+        :param event:
+        :return:
+        """
         self.method(caller=self, event=event)
         self._parent_menu.close(keep=self)
         self.activated = True
         return True  # consumes the click
 
     # def mouseReleaseEvent(self, event):
-    #    ctrl.pressed.remove(self)
-    #    event.ui_released = self
+    # ctrl.pressed.remove(self)
+    # event.ui_released = self
 
     def hoverEnterEvent(self, event):
+        """
+
+        :param event:
+        """
         self._hovering = True
 
     def hoverLeaveEvent(self, event):
+        """
+
+        :param event:
+        """
         self._hovering = False

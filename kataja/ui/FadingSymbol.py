@@ -1,9 +1,15 @@
+# coding=utf-8
+from PyQt5 import QtCore, QtWidgets
+
 from kataja.Controller import prefs
 from PyQt5.QtCore import QPointF as Pf
-from PyQt5 import QtCore, QtWidgets
 
 
 class FadingSymbol(QtWidgets.QGraphicsPixmapItem):
+    """
+
+    """
+
     def __init__(self, symbol, host, ui_manager, place='bottom_right'):
         QtWidgets.QGraphicsPixmapItem.__init__(self)
         self.setPixmap(symbol)
@@ -15,13 +21,20 @@ class FadingSymbol(QtWidgets.QGraphicsPixmapItem):
         self.setZValue(72)
         # self.setBrush(colors.ui)
 
-
     def update_position(self):
         # br = self.boundingRect()
+        """
+
+
+        """
         if self.place == 'bottom_right':
             self.setPos(Pf(self.host.sceneBoundingRect().bottomRight()))
 
     def fade_out(self, speed='slow'):
+        """
+
+        :param speed:
+        """
         if speed == 'slow':
             self._fade_out_counter = 30
         else:
@@ -45,6 +58,10 @@ class FadingSymbol(QtWidgets.QGraphicsPixmapItem):
             self.stop_timer()
 
     def stop_timer(self):
+        """
+
+
+        """
         self._timer.stop()
         self._timer = None
         self.hide()

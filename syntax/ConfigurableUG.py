@@ -1,4 +1,5 @@
-#############################################################################
+# coding=utf-8
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -19,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 
 from ConfigParser import ConfigParser
@@ -224,7 +225,7 @@ class ConfigurableUG:
         # needs to be checked, I'm not sure if this is correct
         for C in structure:
             if (self.immediate_dominance(C, A, structure) and self.dominates(C, B)) or (
-                self.dominates(C, A) and self.immediate_dominance(C, B, structure)):
+                        self.dominates(C, A) and self.immediate_dominance(C, B, structure)):
                 return True
         return False
 
@@ -598,7 +599,7 @@ class ConfigurableUG:
                 if self.c_command(A, X, structure) and self.asymmetric_c_command(X, B, structure):
                     return False
 
-                ##### Bare phrase structure, preliminaries
+                    # #### Bare phrase structure, preliminaries
 
 
     def projection_path_bottom_up(self, bottom, structure):
@@ -809,7 +810,7 @@ class ConfigurableUG:
         return True
 
 
-    ##### Bare phrase structure, Merge and other important parts
+    # #### Bare phrase structure, Merge and other important parts
 
     def set_merge(self, alpha, beta):
         """(40) Merge:
@@ -820,7 +821,7 @@ class ConfigurableUG:
         """
 
         delta = self.constituent()
-        delta.setChildren(set([alpha, beta]))
+        delta.setChildren({alpha, beta})
         try:
             gamma = self.head_is_label([alpha, beta])
             delta.setLabel(gamma)
@@ -851,13 +852,18 @@ class ConfigurableUG:
             raise ValueError
 
     def ordered_pair_merge(self, alpha, beta):
-        """ simplified merge based on ordered pairs: <alpha, beta>"""
+        """ simplified merge based on ordered pairs: <alpha, beta>
+        :param beta:
+        """
         delta = self.constituent()
         delta.setChildren([alpha, beta])
         delta.setLabel(alpha)
 
     def pair_merge(self, alpha, beta):
-        """ Chomsky's pair merge for adjunctions """
+        """ Chomsky's pair merge for adjunctions
+        :param alpha:
+        :param beta:
+        """
         delta = self.constituent()
         delta.setChildren([alpha, beta])
         gamma = self.head_is_label([alpha, beta])
@@ -865,9 +871,20 @@ class ConfigurableUG:
         return delta
 
     def bare_phrase_lca(self, structure):
+        """
+
+        :param structure:
+        :return: :raise ValueError:
+        """
         equals = []
 
         def sorting_function(x, y):
+            """
+
+            :param x:
+            :param y:
+            :return:
+            """
             xy = self.c_command(x, y, structure)
             yx = self.c_command(y, x, structure)
             if xy and yx:
@@ -889,6 +906,12 @@ class ConfigurableUG:
 
 
     def feature_check(self, left, right):
+        """
+
+        :param left:
+        :param right:
+        :return:
+        """
         matches = []
         selects = []
         for key, f_left in left.features.iteritems():
@@ -901,6 +924,12 @@ class ConfigurableUG:
         return matches, selects
 
     def Merge(self, left, right):
+        """
+
+        :param left:
+        :param right:
+        :return:
+        """
         id = left.label
         # remove index (_i, _j ...) from Merged id so that indexing won't get broken
         res = re.search(r'[^\\]_\{(.*)\}', id) or re.search(r'[^\\]_(.)', id)
@@ -917,11 +946,14 @@ class ConfigurableUG:
         # new.features.update(right.features)
         # matches, selects=self.feature_check(left, right)
         # for key in matches+selects:
-        #     del new.features[key]
+        # del new.features[key]
         return new
 
     def CCommands(self, A, B, context):
         """ C-Command edge needs the root constituent of the tree as a context, as
+        :param A:
+        :param B:
+        :param context:
             my implementation of UG tries to do without constituents having access to their parents """
         closest_parents = _closest_parents(A, context, parent_list=[])
         # if 'closest_parent' for B is found within (other edge of) closest_parent, B sure is dominated by it.
@@ -931,7 +963,9 @@ class ConfigurableUG:
         return False
 
     def getChildren(self, A):
-        """ Returns immediate children of this element, [left, right] or [] if no children """
+        """ Returns immediate children of this element, [left, right] or [] if no children
+        :param A:
+        """
         children = []
         if A.left:
             children.append(A.left)
@@ -940,7 +974,10 @@ class ConfigurableUG:
         return children
 
     def getCCommanded(self, A, context):
-        """ Returns elements c-commanded by this element """
+        """ Returns elements c-commanded by this element
+        :param A:
+        :param context:
+        """
         closest_parents = _closest_parents(A, context, parent_list=[])
         result = []
         for p in closest_parents:
@@ -951,7 +988,10 @@ class ConfigurableUG:
         return result
 
     def getAsymmetricCCommanded(self, A, context):
-        """ Returns first elements c-commanded by this element that do not c-command this element """
+        """ Returns first elements c-commanded by this element that do not c-command this element
+        :param A:
+        :param context:
+        """
         result = []
 
         def _downward(item, A, result):
@@ -973,6 +1013,12 @@ class ConfigurableUG:
         return result
 
     def parse(self, sentence, silent=False):
+        """
+
+        :param sentence:
+        :param silent:
+        :return: :raise "Word '%s' missing from the lexicon" % word:
+        """
         if not isinstance(sentence, list):
             sentence = [word.lower() for word in sentence.split()]
         for word in sentence:
@@ -981,11 +1027,18 @@ class ConfigurableUG:
             except KeyError:
                 raise "Word '%s' missing from the lexicon" % word
             self.structure = self.Merge(constituent, self.structure)
-        if not silent: print 'Finished: %s' % self.structure
+        if not silent:
+            print 'Finished: %s' % self.structure
         return self.structure
 
 
     def Linearize(self, structure):
+        """
+
+        :param structure:
+        :return:
+        """
+
         def _lin(node, s):
             if node.left:
                 _lin(node.left, s)
@@ -1000,7 +1053,9 @@ class ConfigurableUG:
 
     @time_me
     def CLinearize(self, structure):
-        """ Bare phrase structure linearization. Like Kayne's, but allows ambiguous cases to exist. It is assumed that phonology deals with them, usually by having null element in ambiguous pair. """
+        """ Bare phrase structure linearization. Like Kayne's, but allows ambiguous cases to exist. It is assumed that phonology deals with them, usually by having null element in ambiguous pair.
+        :param structure:
+        """
         # returns asymmetric c-command status between two elements
         def _asymmetric_c(A, B):
             AC = self.CCommands(A, B, structure)
@@ -1008,9 +1063,9 @@ class ConfigurableUG:
             if AC and BC:
                 return None
             elif AC:
-                return (A, B)
+                return A, B
             elif BC:
-                return (B, A)
+                return B, A
             else:
                 return None
 
@@ -1057,7 +1112,9 @@ class ConfigurableUG:
         return linear
 
 
-def _closest_parents(A, context, is_not=None, parent_list=[]):
+def _closest_parents(A, context, is_not=None, parent_list=None):
+    if not parent_list:
+        parent_list = []
     if context.left == A or context.right == A:
         parent_list.append(context)
     if context.left and not context.left == is_not:

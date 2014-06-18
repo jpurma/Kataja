@@ -1,8 +1,14 @@
-from kataja.Controller import ctrl
+# coding=utf-8
 from PyQt5 import QtWidgets, QtCore
+
+from kataja.Controller import ctrl
 
 
 class CheckBox(QtWidgets.QGraphicsItem):
+    """
+
+    """
+
     def __init__(self, parent, marker='X'):
         QtWidgets.QGraphicsItem.__init__(self, parent, scene=parent.scene())
         self._hover = False
@@ -11,6 +17,12 @@ class CheckBox(QtWidgets.QGraphicsItem):
         self.marker = marker
 
     def paint(self, painter, option, widget):
+        """
+
+        :param painter:
+        :param option:
+        :param widget:
+        """
         r = QtCore.QRectF(-8, -4, 15, 15)
         cm = ctrl.cm()
         painter.setPen(cm.ui())
@@ -29,18 +41,39 @@ class CheckBox(QtWidgets.QGraphicsItem):
             painter.drawRect(r)
 
     def hoverEnterEvent(self, event):
+        """
+
+        :param event:
+        """
         self._hover = True
         self.parentItem().hoverLeaveEvent(event)
 
     def hoverLeaveEvent(self, event):
+        """
+
+        :param event:
+        """
         self._hover = False
 
     def mousePressEvent(self, event):
+        """
+
+        :param event:
+        """
         self.parentItem().selectOption()
         ctrl.ui_pressed = self
 
     def mouseReleaseEvent(self, event):
+        """
+
+        :param event:
+        """
         ctrl.ui_pressed = None
 
     def boundingRect(self):
+        """
+
+
+        :return:
+        """
         return QtCore.QRectF(-8, -4, 15, 15)

@@ -1,4 +1,5 @@
-#############################################################################
+# coding=utf-8
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -19,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 
 
@@ -35,7 +36,11 @@ class DerivationStep:
      """
     saved_fields = ['_msg', '_roots', '_chains']
 
-    def __init__(self, msg=None, roots=[], chains={}, data=None):
+    def __init__(self, msg=None, roots=None, chains=None, data=None):
+        if not roots:
+            roots = []
+        if not chains:
+            chains = {}
         if data:
             self.load(data)
         else:
@@ -45,11 +50,17 @@ class DerivationStep:
             self.save_key = 'Dstep%s' % id(self)
 
     def get_message(self):
+        """
+
+
+        :return:
+        """
         return self._msg
 
 
     def snapshot_of_chains(self, chains):
         """ shallow copy of chains is not enough -- it refers to original lists -- and deepCopy is too much. 
+        :param chains:
         This copies the dict and the lists """
         snapshot = {}
         for key, item in chains.items():
@@ -58,6 +69,7 @@ class DerivationStep:
 
     def snapshot_of_tree(self, root_node):
         """ create a version of root with shallow copy for each node and a simple structure for rebuilding/restoring
+        :param root_node:
          them """
         snapshot = []
         done = set()
@@ -73,7 +85,10 @@ class DerivationStep:
         return {'root': snapshot}
 
     def rebuild_tree_from_snapshot(self, snapshot, forest):
-        """ Restores each node to use those connections it had when stored. Notice that this is rebuilding in a very limited sense. Probably we'll need something deeper soon. """
+        """ Restores each node to use those connections it had when stored. Notice that this is rebuilding in a very limited sense. Probably we'll need something deeper soon.
+        :param snapshot:
+        :param forest:
+        """
         root = snapshot['root']
         if root:
             root = root[0]['node']
@@ -92,7 +107,9 @@ class DerivationStep:
         return root
 
     def restore_from_snapshot(self, forest):
-        """ Puts the given forest back to state described in this derivation step """
+        """ Puts the given forest back to state described in this derivation step
+        :param forest:
+        """
         forest._roots = []
         for root_data in self.roots:
             root = self.rebuild_tree_from_snapshot(root_data, forest)
@@ -100,11 +117,21 @@ class DerivationStep:
         forest._chains = self._chains
 
 
-    def after_restore(self, values={}):
+    def after_restore(self, values=None):
+        """
+
+        :param values:
+        :return:
+        """
+        if not values:
+            values = {}
         return
 
 
 class DerivationStepManager:
+    """
+
+    """
     saved_fields = ['_derivation_steps', '_derivation_step_index', 'forest', 'save_key']
 
 
@@ -119,6 +146,10 @@ class DerivationStepManager:
 
         # print 'saving derivation_step %s' % self._derivation_step_index
         # needs to be reimplemented, make every operation bidirectional and undoable.
+        """
+
+        :param msg:
+        """
         roots = self.forest.roots
         chains = self.forest.chain_manager.get_chains()
         derivation_step = DerivationStep(msg, roots, chains)
@@ -126,9 +157,18 @@ class DerivationStepManager:
         self._derivation_steps.append(derivation_step)
 
     def restore_derivation_step(self, derivation_step):
+        """
+
+        :param derivation_step:
+        """
         derivation_step.restore_from_snapshot(self.forest)
 
     def next_derivation_step(self):
+        """
+
+
+        :return:
+        """
         if self._derivation_step_index + 1 >= len(self._derivation_steps):
             return
         self._derivation_step_index += 1
@@ -136,12 +176,24 @@ class DerivationStepManager:
         self.forest.main.add_message(self._derivation_steps[self._derivation_step_index].get_message())
 
     def previous_derivation_step(self):
+        """
+
+
+        :return:
+        """
         if self._derivation_step_index == 0:
             return
         self._derivation_step_index -= 1
         self.restore_derivation_step(self._derivation_steps[self._derivation_step_index])
         self.forest.main.add_message(self._derivation_steps[self._derivation_step_index].get_message())
 
-    def after_restore(self, values={}):
+    def after_restore(self, values=None):
+        """
+
+        :param values:
+        :return:
+        """
+        if not values:
+            values = {}
         return
 

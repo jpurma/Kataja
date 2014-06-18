@@ -1,4 +1,5 @@
-#############################################################################
+# coding=utf-8
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -19,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 import math
 
@@ -40,6 +41,12 @@ class TouchArea(QtWidgets.QGraphicsItem):
 
     @staticmethod
     def create_key(host, place):
+        """
+
+        :param host:
+        :param place:
+        :return:
+        """
         return 'touch_area_%s_%s' % (place, host.save_key)
 
     def __init__(self, host, place, drag_mode=False):
@@ -75,9 +82,19 @@ class TouchArea(QtWidgets.QGraphicsItem):
 
 
     def is_visible(self):
+        """
+
+
+        :return:
+        """
         return self._visible
 
     def boundingRect(self):
+        """
+
+
+        :return:
+        """
         ex, ey = self.end_point
         sx, sy = self.start_point
         e2 = end_spot_size * 2
@@ -100,14 +117,31 @@ class TouchArea(QtWidgets.QGraphicsItem):
             return r
 
     def sensitive_area(self):
+        """
+
+
+        :return:
+        """
         return self.boundingRect()
 
     def update_position(self):
+        """
+
+
+        """
         self.update_end_points()
 
     # edge.py
     def update_end_points(self):
         # start
+        """
+
+
+        """
+        use_middle_point = False
+        line_middle_point = None
+        line_end_point = None
+        plus_point = None
         if self.host.__class__.__name__ == 'Edge':
             rel = self.host
             # rel.get_path()
@@ -148,8 +182,8 @@ class TouchArea(QtWidgets.QGraphicsItem):
         if use_middle_point:
             self._path.lineTo(line_middle_point[0], line_middle_point[1])
         self._path.lineTo(line_end_point[0], line_end_point[1])
-        #self._path.addEllipse(self.end_point[0] - end_spot_size, self.end_point[1] - end_spot_size, 2 * end_spot_size,
-        #                      2 * end_spot_size)
+        # self._path.addEllipse(self.end_point[0] - end_spot_size, self.end_point[1] - end_spot_size, 2 * end_spot_size,
+        # 2 * end_spot_size)
         if self.drag_mode:
             self._path.addEllipse(plus_point[0] - 2, plus_point[1] - 2, 4, 4)
         else:
@@ -178,7 +212,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
         f = self.host.forest
         print '---- dropped node to touch area -----'
         # if not isinstance(dropped_node, ConstituentNode):
-        #    return False
+        # return False
         f.undo_manager.record('re-merge constituent')
         if self.host.__class__.__name__ == 'Edge':
             print 'calling replace_node_with_merged_node from edge'
@@ -218,6 +252,13 @@ class TouchArea(QtWidgets.QGraphicsItem):
     # self, N, R, merge_to_left, new_node_pos, merger_node_pos):
 
     def calculate_if_can_merge(self, dragged, root, node_list):
+        """
+
+        :param dragged:
+        :param root:
+        :param node_list:
+        :return:
+        """
         host = self.host
         if host == dragged:
             return False
@@ -229,23 +270,42 @@ class TouchArea(QtWidgets.QGraphicsItem):
 
 
     def toggle_hovering(self, value):
+        """
+
+        :param value:
+        """
         if value and not self._hovering:
             self._hovering = True
         elif (not value) and self._hovering:
             self._hovering = False
 
     def hoverEnterEvent(self, event):
+        """
+
+        :param event:
+        """
         if (not self._hovering) and not ctrl.pressed:
             self.toggle_hovering(True)
         QtWidgets.QGraphicsItem.hoverEnterEvent(self, event)
 
     def hoverLeaveEvent(self, event):
+        """
+
+        :param event:
+        """
         if self._hovering:
             self.toggle_hovering(False)
         QtWidgets.QGraphicsItem.hoverLeaveEvent(self, event)
 
 
     def paint(self, painter, option, widget):
+        """
+
+        :param painter:
+        :param option:
+        :param widget:
+        :raise:
+        """
         if ctrl.pressed == self:
             pass
 
@@ -260,7 +320,6 @@ class TouchArea(QtWidgets.QGraphicsItem):
 
         elif ctrl.is_selected(self):  # wrong colors, just testing
             print 'cant select ui toucharea'
-            raise
             painter.setPen(ctrl.cm().ui())
         self.update_end_points()
         # painter.drawRect(self.boundingRect()) # debug

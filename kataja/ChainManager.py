@@ -1,3 +1,4 @@
+# coding=utf-8
 from collections import Counter
 import string
 
@@ -5,12 +6,16 @@ from kataja.utils import time_me
 from kataja.ConstituentNode import ConstituentNode
 
 
-#### Chains #######################################################################
+
+# ### Chains #######################################################################
 
 # # chains should hold tuples of (node, parent), where node can be either real node or trace, and the parent provides the reliable/restorable identity/location for the trace.
 
 
 class ChainManager:
+    """
+
+    """
     saved_fields = "all"
 
     def __init__(self, forest):
@@ -19,21 +24,45 @@ class ChainManager:
         self.forest = forest
 
     def get_chains(self):
+        """
+
+
+        :return:
+        """
         return self._chains
 
     def get_chain(self, key):
+        """
+
+        :param key:
+        :return:
+        """
         return self._chains[key]
 
     def set_chain(self, key, chain):
+        """
+
+        :param key:
+        :param chain:
+        """
         self._chains[key] = chain
 
     def remove_chain(self, key, delete_traces=True):
+        """
+
+        :param key:
+        :param delete_traces:
+        """
         if delete_traces:
             for item in self._chains[key][1:]:
                 self.forest.delete_node(item)  # <<<<<<-------
         del self._chains[key]
 
     def remove_from_chain(self, node):
+        """
+
+        :param node:
+        """
         chain = self._chains[node.save_key]
         for i, np in enumerate(list(chain)):
             n, p = np
@@ -43,9 +72,18 @@ class ChainManager:
 
 
     def number_of_chains(self):
+        """
+
+
+        :return:
+        """
         return len(self._chains)
 
     def items_in_chains(self):
+        """
+
+
+        """
         for chain in self._chains.values():
             for item in chain:
                 yield item
@@ -59,6 +97,12 @@ class ChainManager:
 
     def add_to_chain(self, key, node, parent):
         # print 'adding %r to chain %s' % (node, key)
+        """
+
+        :param key:
+        :param node:
+        :param parent:
+        """
         if key in self._chains:
             self._chains[key].append((node, parent))
         else:
@@ -71,6 +115,11 @@ class ChainManager:
             self._chains[key] = [trace]
 
     def get_chain_head(self, chain_key):
+        """
+
+        :param chain_key:
+        :return: :raise 'F broken chain':
+        """
         chain = self._chains[chain_key]
         # assert chain[0].is_chain_head()
         for node, parent in chain:
@@ -79,6 +128,10 @@ class ChainManager:
         raise 'F broken chain'
 
     def dump_chains(self):
+        """
+
+
+        """
         r = []
         print '---- chains -----'
         for key, chain in self._chains.items():
@@ -112,7 +165,7 @@ class ChainManager:
                             if orig_parent == parent:
                                 chain.append((node, orig_parent))
                             else:
-                                chain.append((f.create_trace_for(node), parent))  #<<<<<<<<-----
+                                chain.append((f.create_trace_for(node), parent))  # <<<<<<<<-----
                     else:
                         chain.append((node, parents[0]))
 
@@ -120,8 +173,12 @@ class ChainManager:
 
     @time_me
     def group_traces_to_chain_head(self):
+        """
+
+
+        """
         print 'group traces to chain head'
-        ### Move traces to their multidominant originals, purely visual thing ###
+        # ## Move traces to their multidominant originals, purely visual thing ###
         self.rebuild_chains()
         y_adjust = {}
         for key, chain in self._chains.items():
@@ -148,7 +205,11 @@ class ChainManager:
 
     @time_me
     def traces_to_multidomination(self):
-        ### Switch traces to multidominant originals, also mirror changes in syntax ###
+        # ## Switch traces to multidominant originals, also mirror changes in syntax ###
+        """
+
+
+        """
         print 'traces to multidomination'
         # if not self._chains:
         self.rebuild_chains()
@@ -174,7 +235,11 @@ class ChainManager:
 
     @time_me
     def multidomination_to_traces(self):
-        ### Switch multidominated elements to use traces instead ###
+        # ## Switch multidominated elements to use traces instead ###
+        """
+
+
+        """
         print 'multidomination to traces'
         self.rebuild_chains()
         for key, chain in self._chains.items():
@@ -186,6 +251,11 @@ class ChainManager:
         self.forest.update_roots()
 
     def next_free_index(self):
+        """
+
+
+        :return:
+        """
         max_found = 7  # 'h'
         for node in self.forest.nodes.values():
             index = node.get_index()
@@ -195,9 +265,16 @@ class ChainManager:
                     max_found = pos
         max_found += 1
         if max_found == len(string.ascii_letters):
-            assert (False)
+            assert False
         return string.ascii_letters[max_found]
 
-    def after_restore(self, values={}):
+    def after_restore(self, values=None):
+        """
+
+        :param values:
+        :return:
+        """
+        if not values:
+            values = {}
         return
 

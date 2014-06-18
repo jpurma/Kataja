@@ -1,5 +1,6 @@
+# coding=utf-8
 # reverser 2013
-#############################################################################
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -24,6 +25,10 @@
 
 
 class Constituent:
+    """
+
+    """
+
     def __init__(self, id, left=None, right=None):
         id = id.replace(' ', '_')
         self.id = id
@@ -43,11 +48,21 @@ class Constituent:
             return self.id
 
     def merge(self, other):
+        """
+
+        :param other:
+        :return:
+        """
         new = Constituent(other.id, left=other, right=self)
         return new
 
     def find(self, label):
 
+        """
+
+        :param label:
+        :return:
+        """
         if self.id == label:
             return self
         if self.left:
@@ -62,9 +77,18 @@ class Constituent:
 
 
     def iterate(self):
+        """
+
+
+        :return:
+        """
         result_list = []
 
         def recursive_walk(item):
+            """
+
+            :param item:
+            """
             if item:
                 result_list.append(item)
                 recursive_walk(item.left)
@@ -74,6 +98,11 @@ class Constituent:
         return result_list
 
     def linearize(self):
+        """
+
+
+        :return:
+        """
         found = []
         for node in self.iterate():
             if node.id in found:

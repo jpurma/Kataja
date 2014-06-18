@@ -1,4 +1,5 @@
-#############################################################################
+# coding=utf-8
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -19,10 +20,11 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
+
+from PyQt5 import QtWidgets, QtGui
 
 from kataja.ui.TwoColorIcon import TwoColorIconEngine
-from PyQt5 import QtWidgets, QtGui
 
 
 class TwoColorButton(QtWidgets.QPushButton):
@@ -44,6 +46,10 @@ class TwoColorButton(QtWidgets.QPushButton):
     def paintEvent(self, event):
         #print 'got PaintEvent'
         #print self.icon(), self.iconSize(), type(self.icon())
+        """
+
+        :param event:
+        """
         QtWidgets.QPushButton.paintEvent(self, event)
         
 

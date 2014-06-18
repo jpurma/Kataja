@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-#############################################################################
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -20,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 
 import math
@@ -30,7 +30,6 @@ from kataja.Controller import prefs
 from kataja.FeatureNode import FeatureNode
 from kataja.utils import caller
 from kataja.visualizations.BaseVisualization import BaseVisualization
-from kataja.visualizations.Grid import Grid
 from kataja.GlossNode import GlossNode
 
 
@@ -39,6 +38,7 @@ class LeftFirstHexTree(BaseVisualization):
     name = 'Hexagonal tree'
 
     def __init__(self):
+        BaseVisualization.__init__(self)
         self.forest = None
         self._hits = {}
         self._max_hits = {}
@@ -46,6 +46,11 @@ class LeftFirstHexTree(BaseVisualization):
         self._indentation = 0
 
     def prepare(self, forest, loading=False):
+        """
+
+        :param forest:
+        :param loading:
+        """
         print 'preparing LeftFirstHexTree'
         self.forest = forest
         self._hits = {}
@@ -59,6 +64,10 @@ class LeftFirstHexTree(BaseVisualization):
             self.reset_node(node)
 
     def reset_node(self, node):
+        """
+
+        :param node:
+        """
         node.locked_to_position = False
         node.reset_adjustment()
         node.update_label()
@@ -78,7 +87,20 @@ class LeftFirstHexTree(BaseVisualization):
 
     def drawNot(self):
 
+        """
+
+
+        :return:
+        """
+
         def find_last(node, parent, is_left=False):
+            """
+
+            :param node:
+            :param parent:
+            :param is_left:
+            :return:
+            """
             right = node.right()
             if right and self.should_we_draw(right, node):
                 return find_last(right, node, is_left=False)
@@ -88,12 +110,22 @@ class LeftFirstHexTree(BaseVisualization):
             return node, parent, is_left
 
         def has_room(new_area):
+            """
+
+            :param new_area:
+            :return:
+            """
             for area in self.areas.values():
                 if new_area.intersects(area):
                     return False
             return True
 
         def redraw_node(node):
+            """
+
+            :param node:
+            :return:
+            """
             self.iterations += 1
             del self.areas[node.save_key]
             d = self.drawn[node.save_key]
@@ -118,6 +150,14 @@ class LeftFirstHexTree(BaseVisualization):
                 draw_node(right, node, is_left=False, allow_crossing=allow_crossing)
 
         def draw_node_old(node, parent, is_left=False, allow_crossing=False):
+            """
+
+            :param node:
+            :param parent:
+            :param is_left:
+            :param allow_crossing:
+            :return:
+            """
             if not self.should_we_draw(node, parent):
                 return
 
@@ -170,6 +210,13 @@ class LeftFirstHexTree(BaseVisualization):
         self.node_list = []
 
         def prepare_nodes(node, parent, is_left=False, angle=math.pi / 2):
+            """
+
+            :param node:
+            :param parent:
+            :param is_left:
+            :param angle:
+            """
             d = {'parent': parent, 'is_left': is_left, 'x': 0, 'y': 0, 'angle': angle, 'placed': False, 'size': 1,
                  'rect': None, 'node': node, 'i': self.counter, 'left': None, 'right': None}
             left = node.left()
@@ -188,6 +235,12 @@ class LeftFirstHexTree(BaseVisualization):
 
 
         def draw_node(node, is_first=False):
+            """
+
+            :param node:
+            :param is_first:
+            :return:
+            """
             d = self.nodes[node.save_key]
             right = d['right']
             left = d['left']
@@ -254,13 +307,29 @@ class LeftFirstHexTree(BaseVisualization):
 
     def draw(self):
 
+        """
+
+
+        :return:
+        """
+
         def has_room(new_area):
+            """
+
+            :param new_area:
+            :return:
+            """
             for area in self.areas.values():
                 if new_area.intersects(area):
                     return False
             return True
 
         def redraw_node(node):
+            """
+
+            :param node:
+            :return:
+            """
             self.iterations += 1
             del self.areas[node.save_key]
             d = self.drawn[node.save_key]
@@ -285,6 +354,14 @@ class LeftFirstHexTree(BaseVisualization):
                 draw_node(right, node, is_left=False, allow_crossing=allow_crossing)
 
         def draw_node(node, parent, is_left=False, allow_crossing=False):
+            """
+
+            :param node:
+            :param parent:
+            :param is_left:
+            :param allow_crossing:
+            :return:
+            """
             if not self.should_we_draw(node, parent):
                 return
 

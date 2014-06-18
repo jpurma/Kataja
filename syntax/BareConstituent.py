@@ -1,4 +1,5 @@
-#############################################################################
+# coding=utf-8
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -19,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 
 from syntax.BaseConstituent import BaseConstituent
@@ -33,7 +34,9 @@ class BareConstituent(BaseConstituent):
     saved_fields = list(set(BaseConstituent.saved_fields + saved_fields))
 
 
-    def __init__(self, cid=u'', left=None, right=None, source='', data={}):
+    def __init__(self, cid=u'', left=None, right=None, source='', data=None):
+        if not data:
+            data = {}
         BaseConstituent.__init__(self, cid, left, right, source, data)
         self.feature_tree = None
 
@@ -79,5 +82,7 @@ class BareConstituent(BaseConstituent):
             else:
                 return "[ %s %s ]" % (self.left.__repr__(), self.right.__repr__())
 
-    def after_restore(self, values={}):
+    def after_restore(self, values=None):
+        if not values:
+            values = {}
         return

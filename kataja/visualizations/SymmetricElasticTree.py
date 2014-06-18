@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-#############################################################################
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool *** 
 # 
@@ -20,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 from kataja.visualizations.BaseVisualization import BaseVisualization
 from kataja.ConstituentNode import ConstituentNode
@@ -29,13 +29,22 @@ from kataja.GlossNode import GlossNode
 
 
 class SymmetricElasticTree(BaseVisualization):
+    """
+
+    """
     name = 'Dynamic nondirected net'
 
     def __init__(self):
+        BaseVisualization.__init__(self)
         self.forest = None
         self._directed = False
 
     def prepare(self, forest, loading=False):
+        """
+
+        :param forest:
+        :param loading:
+        """
         self.forest = forest
         self.forest.settings.bracket_style(0)
         self.forest.settings.show_constituent_edges = True
@@ -46,6 +55,10 @@ class SymmetricElasticTree(BaseVisualization):
 
 
     def reset_node(self, node):
+        """
+
+        :param node:
+        """
         node.update_label()
         if isinstance(node, ConstituentNode):
             node.update_visibility(show_edges=True, scope=0, brackets=self.forest.settings.bracket_style())

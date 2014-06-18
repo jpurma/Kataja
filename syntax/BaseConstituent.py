@@ -1,4 +1,5 @@
-#############################################################################
+# coding=utf-8
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -19,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 
 from syntax.ConfigurableFeature import Feature
@@ -32,9 +33,11 @@ class BaseConstituent(object):
     saved_fields = ['features', 'sourcestring', 'label', 'left', 'right', 'index', 'gloss', 'uid']
 
 
-    def __init__(self, cid=u'', left=None, right=None, source='', data={}):
+    def __init__(self, cid=u'', left=None, right=None, source='', data=None):
         """ BaseConstituent is a default constituent used in syntax.
         It uses getters and setters so that other compatible constituent implementations can be built using the same interface """
+        if not data:
+            data = {}
         if data:
             self.features = {}
             self.sourcestring = ''

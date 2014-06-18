@@ -1,4 +1,5 @@
-#############################################################################
+# coding=utf-8
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -19,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 
 import re
@@ -32,7 +33,9 @@ from syntax.utils import load_lexicon, time_me  # , save_lexicon
 
 # Try adding semantic forms DP, VP and CP as pre-created structures with their own features as syntactic features that can and need to be satisfied.
 
-def _closest_parents(A, context, is_not=None, parent_list=[]):
+def _closest_parents(A, context, is_not=None, parent_list=None):
+    if not parent_list:
+        parent_list = []
     if context.left == A or context.right == A:
         parent_list.append(context)
     if context.left and not context.left == is_not:
@@ -78,7 +81,7 @@ class UG:
         # new.features.update(right.features)
         # matches, selects=self.feature_check(left, right)
         # for key in matches+selects:
-        #     del new.features[key]
+        # del new.features[key]
         return new
 
     def CCommands(self, A, B, context):
@@ -142,7 +145,8 @@ class UG:
             except KeyError:
                 raise "Word '%s' missing from the lexicon" % word
             self.structure = self.Merge(constituent, self.structure)
-        if not silent: print 'Finished: %s' % self.structure
+        if not silent:
+            print 'Finished: %s' % self.structure
         return self.structure
 
 
@@ -169,9 +173,9 @@ class UG:
             if AC and BC:
                 return None
             elif AC:
-                return (A, B)
+                return A, B
             elif BC:
-                return (B, A)
+                return B, A
             else:
                 return None
 

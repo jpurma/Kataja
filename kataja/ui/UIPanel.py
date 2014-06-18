@@ -1,5 +1,5 @@
 # coding=utf-8
-#############################################################################
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -20,13 +20,12 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 import math
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-from PyQt5.QtCore import QPointF as Pf, QPoint as P, Qt
 from kataja.Controller import ctrl, prefs, qt_prefs
 from kataja.utils import to_tuple
 from kataja.visualizations.available import VISUALIZATIONS
@@ -92,11 +91,11 @@ class UIPanel(QtWidgets.QDockWidget):
         self.dockLocationChanged.connect(self.report_dock_location)
         self.topLevelChanged.connect(self.report_top_level)
 
-    #def dockLocationChanged(self, area):
-    #    print 'UIPanel %s docked: %s' % (self, area)
+    # def dockLocationChanged(self, area):
+    # print 'UIPanel %s docked: %s' % (self, area)
 
-    #def topLevelChanged(self, floating):
-    #    print 'UIPanel %s floating: %s' % (self, floating)
+    # def topLevelChanged(self, floating):
+    # print 'UIPanel %s floating: %s' % (self, floating)
 
     def report_dock_location(self, area):
         """
@@ -144,12 +143,12 @@ class VisualizationPanel(UIPanel):
         self.preferred_size = (300, 80)
         self.setMaximumSize(200, 80)
 
-        #label = QtWidgets.QLabel('Use visualization', self)
-        #label.setSizePolicy(label_policy)
-        #layout.addWidget(label, 0, 0)
+        # label = QtWidgets.QLabel('Use visualization', self)
+        # label.setSizePolicy(label_policy)
+        # layout.addWidget(label, 0, 0)
 
         selector = QtWidgets.QComboBox(self)
-        #selector.setSizePolicy(label_policy)
+        # selector.setSizePolicy(label_policy)
         ui_buttons['visualization_selector'] = selector
         selector.addItems(['%s (%s)' % (key, item.shortcut) for key, item in VISUALIZATIONS.items()])
         selector.activated.connect(self.submit_action)
@@ -212,8 +211,8 @@ class NavigationPanel(UIPanel):
         inner = QtWidgets.QWidget()
         layout = QtWidgets.QGridLayout()
         self.preferred_size = (200, 80)
-        #self.setMaximumSize(200,120)
-        #self.setFont(qt_prefs.menu_font)
+        # self.setMaximumSize(200,120)
+        # self.setFont(qt_prefs.menu_font)
 
         label = QtWidgets.QLabel('Tree set', self)
         label.setSizePolicy(label_policy)
@@ -289,7 +288,7 @@ class LogPanel(UIPanel):
         """
         UIPanel.__init__(self, name, default_position, parent)
         x, y, w, h = parent.geometry().getRect()
-        #self.setLayout(QtWidgets.QHBoxLayout())
+        # self.setLayout(QtWidgets.QHBoxLayout())
         widget = QtWidgets.QTextBrowser()
         w = 640
         h = 80
@@ -303,10 +302,10 @@ class LogPanel(UIPanel):
         self.setWidget(widget)
         print widget.sizePolicy().verticalPolicy()
         print self.sizePolicy().verticalPolicy()
-        #self.setMaximumSize(w,120)
+        # self.setMaximumSize(w,120)
 
-        #self.resize(w, 80)
-        #self.widget().resize(w, 80)
+        # self.resize(w, 80)
+        # self.widget().resize(w, 80)
         #self.widget().setGeometry(x, y + h, w, 80)
         #self.setGeometry(x, y + h, w, 80)
         self.widget().setFont(qt_prefs.menu_font)  # @UndefinedVariable
@@ -330,6 +329,10 @@ CIRCLE = 2
 
 
 class ColorWheelInner(QtWidgets.QWidget):
+    """
+
+    """
+
     def __init__(self, parent):
         """
         All of the panel constructors follow the same format so that the construction can be automated.
@@ -361,17 +364,22 @@ class ColorWheelInner(QtWidgets.QWidget):
         """
         painter = QtGui.QPainter(self)
         painter.setRenderHints(QtGui.QPainter.Antialiasing | QtGui.QPainter.TextAntialiasing)
-        #painter.setBrush(colors.dark_gray)
+        # painter.setBrush(colors.dark_gray)
         painter.setPen(ctrl.cm().ui())
-        #painter.drawRect(0, 0, 160, 160)
-        #painter.setBrush(colors.paper)
-        #painter.setPen(colors.paper)
+        # painter.drawRect(0, 0, 160, 160)
+        # painter.setBrush(colors.paper)
+        # painter.setPen(colors.paper)
         r = self._radius
         painter.drawEllipse(4, 4, r + r, r + r)
         painter.drawRect(self._lum_box_x, self._lum_box_y, 8, r)
         cm = ctrl.cm()
 
         def draw_as_circle(color):
+            """
+
+            :param color:
+            :return:
+            """
             h, s, v, a = color.getHsvF()
             angle = math.radians(h * 360)
             depth = s * r
@@ -445,6 +453,12 @@ class ColorWheelInner(QtWidgets.QWidget):
         """
 
         def get_value_from_flag_position(value, y):
+            """
+
+            :param value:
+            :param y:
+            :return:
+            """
             dv = (self._radius - (y - self._lum_box_y)) / self._radius
             if dv < 0:
                 dv = 0
@@ -453,6 +467,12 @@ class ColorWheelInner(QtWidgets.QWidget):
             return dv
 
         def get_color_from_position(x, y):
+            """
+
+            :param x:
+            :param y:
+            :return:
+            """
             dx = self._origin_x - x
             dy = self._origin_y - y
             hyp = math.sqrt(dx * dx + dy * dy)
@@ -544,7 +564,7 @@ class ColorMappingPanel(UIPanel):
         selector.addItems([c['name'] for c in prefs.color_modes.values()])
         selector.activated.connect(self.change_color_mode)
         self.mode_select = selector
-        #selector.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
+        # selector.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
         layout.addWidget(selector)
         hlayout = QtWidgets.QHBoxLayout()
         color_name = QtWidgets.QLabel(ctrl.cm().get_color_name(ctrl.cm().hsv), self)
@@ -562,7 +582,7 @@ class ColorMappingPanel(UIPanel):
         color_wheel = ColorWheelInner(inner)
         color_wheel.setFixedSize(160, 148)
         layout.addWidget(color_wheel)
-        #layout.setRowMinimumHeight(0, color_wheel.height())
+        # layout.setRowMinimumHeight(0, color_wheel.height())
         h_spinner = QtWidgets.QSpinBox(self)
         h_spinner.setRange(0, 255)
         h_spinner.valueChanged.connect(self.h_changed)
@@ -597,9 +617,9 @@ class ColorMappingPanel(UIPanel):
         hlayout.addWidget(v_spinner)
         layout.addLayout(hlayout)
         inner.setLayout(layout)
-        #inner.setMaximumSize(200, 228)
+        # inner.setMaximumSize(200, 228)
 
-        #self.inner.addTab(ColorWheelInner(self.inner), 'Wheel')
+        # self.inner.addTab(ColorWheelInner(self.inner), 'Wheel')
         self.setWidget(inner)
         self.show()
 
@@ -622,7 +642,8 @@ class TestPanel(UIPanel):
         layout = QtWidgets.QVBoxLayout()
         label = QtWidgets.QLabel("Test area")
         layout.addWidget(label)
-        color_button = ColorBox()
+        color_button = ColorBox(ctrl.cm().drawing(), "Mauve")
+        layout.addWidget(color_button)
         inner.setLayout(layout)
         self.setWidget(inner)
 
@@ -631,6 +652,7 @@ class ColorBox(QtWidgets.QPushButton):
     """
         Rectangular solid button for displaying a color. Clicking it should open system's color selector.
     """
+
     def __init__(self, color, color_name):
         """
 
@@ -640,7 +662,17 @@ class ColorBox(QtWidgets.QPushButton):
         QtWidgets.QPushButton.__init__(self)
         self.color = color
         self.color_name = color_name
+        self.setFlat(True)
 
+    def paintEvent(self, event):
+        """
+
+        :param event:
+        """
+        painter = QtGui.QPainter(self)
+        painter.setBrush(self.color)
+        painter.setPen(self.color)
+        painter.drawRect(QtCore.QRect(0, 0, 40, 20))
 
 
 class ColorPanel(UIPanel):
@@ -657,11 +689,11 @@ class ColorPanel(UIPanel):
         :param ui_buttons: pass a dictionary where buttons from this panel will be added
         """
         UIPanel.__init__(self, name, default_position, parent)
-        #self.setMaximumSize(200,170)
-        #self.preferred_size = (160, 170)
-        #self.setAutoFillBackground(True)
+        # self.setMaximumSize(200,170)
+        # self.preferred_size = (160, 170)
+        # self.setAutoFillBackground(True)
         inner = QtWidgets.QToolBox()
-        #### Color wheel
+        # ### Color wheel
         color_wheel_inner = QtWidgets.QWidget(self)
         inner.addItem(color_wheel_inner, "Main color")
         color_wheel_layout = QtWidgets.QVBoxLayout()

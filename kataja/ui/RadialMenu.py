@@ -1,8 +1,9 @@
-'''
+# coding=utf-8
+"""
 Created on 28.8.2013
 
 @author: purma
-'''
+"""
 import math
 
 from PyQt5 import QtGui, QtCore, QtWidgets
@@ -20,7 +21,9 @@ from kataja.utils import to_tuple
 class RadialMenu(QtWidgets.QGraphicsItem, MovableUI):
     """ When user clicks a node, a circle of menu items appear. RadialMenu organizes and animates the menu items.  """
 
-    def __init__(self, host, actions=[], shape='ring', radius=100):
+    def __init__(self, host, actions=None, shape='ring', radius=100):
+        if not actions:
+            actions = []
         QtWidgets.QGraphicsItem.__init__(self)
         MovableUI.__init__(self)
         self.hide()
@@ -118,13 +121,13 @@ class RadialMenu(QtWidgets.QGraphicsItem, MovableUI):
 
     # deprecated
     # def _fitting_to_screen_pos(self):
-    #     ui_view = ctrl.main.ui_view  # @UndefinedVariable
-    #     min_x = min_y = 100
-    #     max_x = max_y = dx = dy = 0
-    #     x, y = self._host_pos
-    #     for menu in self.menu_items:
-    #         mx, my = menu.relative_position
-    #         mw, mh = menu.boundingRect().width() * 0.5, menu.boundingRect().height() * 0.5
+    # ui_view = ctrl.main.ui_view  # @UndefinedVariable
+    # min_x = min_y = 100
+    # max_x = max_y = dx = dy = 0
+    # x, y = self._host_pos
+    # for menu in self.menu_items:
+    # mx, my = menu.relative_position
+    # mw, mh = menu.boundingRect().width() * 0.5, menu.boundingRect().height() * 0.5
     #         if mx - mw < min_x:
     #             min_x = mx - mw
     #         if mx + mw > max_x:
@@ -151,7 +154,9 @@ class RadialMenu(QtWidgets.QGraphicsItem, MovableUI):
 
 
     def selected_radio_menu(self, selected):
-        """ If there are radio menus, only one of them can be checked. Uncheck others. """
+        """ If there are radio menus, only one of them can be checked. Uncheck others.
+        :param selected:
+        """
         for menu in self.menu_items:
             if menu == selected:
                 self.submit_method = selected.action
@@ -168,15 +173,29 @@ class RadialMenu(QtWidgets.QGraphicsItem, MovableUI):
         #    return self.editor.toPlainText()
 
     def is_open(self):
+        """
+
+
+        :return:
+        """
         return self.isVisible()
 
     def click(self, event=None):
+        """
+
+        :param event:
+        :return:
+        """
         self.close()
         self.update()
         return False  # doesn't consume this click: can click something under menu
 
     def key_press_enter(self):
         # trigger some default action
+        """
+
+
+        """
         if self.submit_method:
             if isinstance(self.submit_method, QtWidgets.QAction):
                 self.submit_method.trigger()
@@ -186,13 +205,27 @@ class RadialMenu(QtWidgets.QGraphicsItem, MovableUI):
         pass
 
     def key_press_esc(self):
+        """
+
+
+        """
         self.cancel()
 
     def cancel(self):
+        """
+
+
+        """
         self.close()
 
 
     def update_position(self, drag=False, slide=False, fit=True):
+        """
+
+        :param drag:
+        :param slide:
+        :param fit:
+        """
         graph = ctrl.main.graph_view  # @UndefinedVariable
         self._host_pos = to_tuple(self.host.pos())
         if fit and False:
@@ -207,6 +240,11 @@ class RadialMenu(QtWidgets.QGraphicsItem, MovableUI):
                 self.setPos(good_x, good_y)
 
     def boundingRect(self):
+        """
+
+
+        :return:
+        """
         return self.childrenBoundingRect().united(self._polygon_rect)
 
 
@@ -270,6 +308,10 @@ class RadialMenu(QtWidgets.QGraphicsItem, MovableUI):
     # open & close
 
     def open(self, focus=''):
+        """
+
+        :param focus:
+        """
         self.update_position(slide=True)
         self.show()
         for item in self.menu_items:
@@ -300,6 +342,12 @@ class RadialMenu(QtWidgets.QGraphicsItem, MovableUI):
             self._focus_taker.setFocus()
 
     def close(self, immediately=False, keep=None):
+        """
+
+        :param immediately:
+        :param keep:
+        :return:
+        """
         if not self.isVisible():
             return
         self.focusable = False
@@ -332,6 +380,12 @@ class RadialMenu(QtWidgets.QGraphicsItem, MovableUI):
 
 
     def paint(self, painter, option, widget):
+        """
+
+        :param painter:
+        :param option:
+        :param widget:
+        """
         painter.setPen(self.radius_pen)
         for item in self.menu_items:
             px, py = to_tuple(item.center_point_in_scene())

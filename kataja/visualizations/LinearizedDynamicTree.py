@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-#############################################################################
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool *** 
 # 
@@ -20,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 from kataja.ConstituentNode import ConstituentNode
 from kataja.Controller import prefs
@@ -30,13 +30,22 @@ from kataja.GlossNode import GlossNode
 
 
 class LinearizedDynamicTree(BaseVisualization):
+    """
+
+    """
     name = 'Linearized Dynamic'
 
     def __init__(self):
+        BaseVisualization.__init__(self)
         self.forest = None
         self._directed = True
 
     def prepare(self, forest, loading=False):
+        """
+
+        :param forest:
+        :param loading:
+        """
         self.forest = forest
         self.forest.settings.show_constituent_edges = True
         self.forest.settings.bracket_style(0)
@@ -49,6 +58,10 @@ class LinearizedDynamicTree(BaseVisualization):
             self.reset_node(node)
 
     def reset_node(self, node):
+        """
+
+        :param node:
+        """
         node.locked_to_position = False
         node.reset_adjustment()
         node.update_label()
@@ -77,6 +90,10 @@ class LinearizedDynamicTree(BaseVisualization):
 
 
     def draw(self):
+        """
+
+
+        """
         x = 0
         y = 0
         start_height = self.forest.vis_data['_height_steps'] * prefs.edge_height

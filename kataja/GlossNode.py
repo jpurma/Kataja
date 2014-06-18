@@ -1,4 +1,5 @@
-#############################################################################
+# coding=utf-8
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -19,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 from kataja.Controller import qt_prefs
 from kataja.Node import Node
@@ -29,6 +30,9 @@ color_map = {'tense': 0, 'person': 2, 'number': 4, 'case': 6, 'unknown': 3}
 
 
 class GlossNode(Node):
+    """
+
+    """
     width = 20
     height = 20
     default_edge_type = GLOSS_EDGE
@@ -47,7 +51,7 @@ class GlossNode(Node):
         self.save_key = 'GlN%s' % host.syntactic_object.uid
         intern(self.save_key)
         self.label_font = qt_prefs.sc_font
-        #self.color = colors.drawing2
+        # self.color = colors.drawing2
         if not restoring:
             self.update_identity()
             self.update_label()
@@ -55,8 +59,12 @@ class GlossNode(Node):
             self.update_visibility()
 
     def update_colors(self):
+        """
+
+
+        """
         pass
-        #self.color = colors.drawing2
+        # self.color = colors.drawing2
         #if self._label_complex:
         #    self._label_complex.setDefaultTextColor(colors.drawing2)
 
