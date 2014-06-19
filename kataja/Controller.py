@@ -24,13 +24,14 @@
 
 import sys
 
+from PyQt5 import QtCore, QtWidgets
+
 from kataja.ForestSettings import ForestSettings
 from kataja.Preferences import Preferences, QtPreferences
 from kataja.utils import caller
 from syntax.BareConstituent import BareConstituent
 from syntax.BaseUG import UG
 from syntax.ConfigurableFeature import Feature
-from PyQt5 import QtCore, QtWidgets
 
 global prefs, qt_prefs, colors
 prefs = Preferences()
@@ -199,7 +200,7 @@ class Controller:
         if self.selected:
             self.deselect_objects(update_ui=False)
         self.selected = [obj]
-        self.add_message(u'selected %s' % unicode(obj))
+        self.add_message('selected %s' % str(obj))
         obj.set_selection_status(True)
         self.main.ui_manager.update_selections()
 
@@ -210,7 +211,7 @@ class Controller:
         """
         if obj not in self.selected:
             self.selected.append(obj)
-            self.add_message(u'added to selection %s' % unicode(obj))
+            self.add_message('added to selection %s' % str(obj))
             obj.set_selection_status(True)
             self.main.ui_manager.update_selections()
 

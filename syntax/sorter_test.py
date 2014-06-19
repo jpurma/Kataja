@@ -17,7 +17,7 @@ def sort_func(x, y):
             return -1
         elif first == y and second == x:
             return 1
-    print "failed to sort '%s' and '%s'" % (x, y)
+    print("failed to sort '%s' and '%s'" % (x, y))
     return 0
 
 
@@ -53,8 +53,8 @@ def sorter(dA):
             result = [first, second]
         else:
             result = sortlist(first, second, result)
-        print result
+        print(result)
 
 
-print sorted(t, sort_func)
+print(sorted(t, sort_func))
 

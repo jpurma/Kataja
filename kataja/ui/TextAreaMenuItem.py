@@ -8,7 +8,6 @@ from PyQt5 import QtGui, QtCore, QtWidgets
 
 from kataja.Controller import ctrl
 from kataja.ui.MenuItem import MenuItem
-from kataja.utils import to_unicode
 
 
 # Note that TextAreaMenuItem inherits QGraphicsTextItem while the other menuitems inherit QGraphicsSimpleTextItem
@@ -43,7 +42,7 @@ class TextAreaMenuItem(MenuItem, QtWidgets.QGraphicsTextItem):
 
         :return:
         """
-        return to_unicode(self.toPlainText())
+        return self.toPlainText()
 
     def set_target_position(self, x, y):
         """ Since we cannot center the drawing of textitem, we adjust every try to move it so
@@ -125,7 +124,7 @@ class TextAreaMenuItem(MenuItem, QtWidgets.QGraphicsTextItem):
         :return:
         """
         self.setFocus()
-        print 'clicked on textarea ', self
+        print('clicked on textarea ', self)
         return True  # consumes click
 
     def submit(self, event):
@@ -173,7 +172,7 @@ class TextAreaMenuItem(MenuItem, QtWidgets.QGraphicsTextItem):
         # if self.has_focus():
         # painter.setBrush(prefs.white)
         # else:
-        #    painter.setBrush(prefs.lighter_color)
+        # painter.setBrush(prefs.lighter_color)
         """
 
         :param painter:

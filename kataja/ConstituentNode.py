@@ -26,7 +26,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 from kataja.Controller import ctrl, prefs, qt_prefs
 from kataja.Node import Node
-from kataja.utils import to_unicode, to_tuple
+from kataja.utils import to_tuple
 import kataja.globals as g
 
 
@@ -140,33 +140,26 @@ class ConstituentNode(Node):
             return Node.boundingRect(self, update)
 
     def __str__(self):
-        alias = self.alias.encode('utf-8')
-        label = self.syntactic_object.label.encode('utf-8')
+        alias = self.alias
+        label = self.syntactic_object.label
         if alias and label:
             return ' '.join((alias, label))
         else:
             return alias or label
 
-    def __unicode__(self):
-        alias = self.alias
-        label = to_unicode(self.syntactic_object.label)
-        if alias and label:
-            return ' '.join((alias, label))
-        else:
-            return alias or label
 
     def as_bracket_string(self):
         """ returns a simple bracket string representation """
         children = self.get_children()
         if children:
             if self.alias:
-                return u'[.%s %s %s ]' % (self.alias, children[0].as_bracket_string(), children[1].as_bracket_string())
+                return '[.%s %s %s ]' % (self.alias, children[0].as_bracket_string(), children[1].as_bracket_string())
             elif len(children) == 2:
-                return u'[ %s %s ]' % (children[0].as_bracket_string(), children[1].as_bracket_string())
+                return '[ %s %s ]' % (children[0].as_bracket_string(), children[1].as_bracket_string())
             else:
-                return u'[ %s ]' % children[0].as_bracket_string()
+                return '[ %s ]' % children[0].as_bracket_string()
         else:
-            return to_unicode(self.alias or self.syntactic_object)
+            return self.alias or self.syntactic_object
 
 
     def info_dump(self):
@@ -174,23 +167,23 @@ class ConstituentNode(Node):
 
 
         """
-        print '---- %s ----' % self.save_key
-        print '| scene: %s' % self.scene()
-        print '| isVisible: %s' % self.isVisible()
-        print '| print: %s ' % self
-        print '| x: %s y: %s z: %s' % self.get_current_position()
-        print '| adjustment: x: %s y: %s z: %s ' % self.get_adjustment()
-        print '| computed x: %s y: %s z: %s' % self.get_computed_position()
-        print '| final: x: %s y: %s z: %s ' % self.get_final_position()
-        print '| bind x: %s y: %s z: %s' % (self.bind_x, self.bind_y, self.bind_z)
-        print '| locked_to_position: %s ' % self.locked_to_position
-        print '| label rect: ', self.label_rect
-        print '| index: %s' % self.index
-        print '| edges up:', self.edges_up
-        print '| edges down:', self.edges_down
-        print '| syntactic_object:_________________'
-        print self.syntactic_object.__repr__()
-        print '----------------------------------'
+        print('---- %s ----' % self.save_key)
+        print('| scene: %s' % self.scene())
+        print('| isVisible: %s' % self.isVisible())
+        print('| print: %s ' % self)
+        print('| x: %s y: %s z: %s' % self.get_current_position())
+        print('| adjustment: x: %s y: %s z: %s ' % self.get_adjustment())
+        print('| computed x: %s y: %s z: %s' % self.get_computed_position())
+        print('| final: x: %s y: %s z: %s ' % self.get_final_position())
+        print('| bind x: %s y: %s z: %s' % (self.bind_x, self.bind_y, self.bind_z))
+        print('| locked_to_position: %s ' % self.locked_to_position)
+        print('| label rect: ', self.label_rect)
+        print('| index: %s' % self.index)
+        print('| edges up:', self.edges_up)
+        print('| edges down:', self.edges_down)
+        print('| syntactic_object:_________________')
+        print(self.syntactic_object.__repr__())
+        print('----------------------------------')
 
 
     def get_attribute_nodes(self, label_key=''):
@@ -332,7 +325,7 @@ class ConstituentNode(Node):
             if 'gloss' in features:
                 self.set_gloss_text(features['gloss'])
                 del features['gloss']
-            for feature in features.values():
+            for feature in list(features.values()):
                 self.set_feature(syntactic_feature=feature)
             self.update_features()
 
@@ -382,13 +375,13 @@ class ConstituentNode(Node):
         """
         current_features = set([x.syntactic_object.get() for x in self.get_features()])
         correct_features = self.syntactic_object.get_features()
-        for key, item in correct_features.items():
+        for key, item in list(correct_features.items()):
             if key not in current_features:
                 self.set_feature(syntactic_feature=item, key=key)
             else:
                 current_features.remove(key)
         if current_features:
-            print 'leftover features:', current_features
+            print('leftover features:', current_features)
 
 
     # ### Labels #############################################
@@ -408,7 +401,7 @@ class ConstituentNode(Node):
     def get_text_for_label(self):
         """ Build html string to be displayed in label_complex """
         alias = self.alias
-        label = to_unicode(self.syntactic_object.label)
+        label = self.syntactic_object.label
 
         index = self.get_index()
         if index:
@@ -444,7 +437,7 @@ class ConstituentNode(Node):
 
     def get_editable_label(self):
         """ """
-        return unicode(self.syntactic_object.label)
+        return str(self.syntactic_object.label)
 
     def has_label(self):
         """
@@ -461,8 +454,8 @@ class ConstituentNode(Node):
         :return:
         """
         features = [f.syntactic_object for f in self.get_features()]
-        feature_strings = [unicode(f) for f in features]
-        return u', '.join(feature_strings)
+        feature_strings = [str(f) for f in features]
+        return ', '.join(feature_strings)
 
     def get_alias(self):
         """
@@ -747,7 +740,7 @@ class ConstituentNode(Node):
             self.paint_triangle(painter, rect)
         elif rect:
             pass
-            #painter.drawRect(self.inner_rect)
+            # painter.drawRect(self.inner_rect)
             # elif self.uses_scope_area:
             #    self.paint_scope_rect(painter, rect)
 
@@ -765,10 +758,10 @@ class ConstituentNode(Node):
                 # assert(False)
                 # if self.forest.main.ui.is_target_reticle_over(self):
                 # if ctrl.ui.is_target_reticle_over(self):
-                #    ctrl.ui.update_target_reticle_position()
+                # ctrl.ui.update_target_reticle_position()
         return QtWidgets.QGraphicsItem.itemChange(self, change, value)
 
-    ########### SAVING AND LOADING #######################################################
+    # ########## SAVING AND LOADING #######################################################
 
     #### Qt menus ###################################################
 

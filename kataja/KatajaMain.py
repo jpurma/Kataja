@@ -29,12 +29,13 @@
 # Classnames are in camelcase.
 
 import gc
+import gzip
 import os.path
 import shlex
 import subprocess
 import sys
 import time
-import cPickle
+import pickle
 import pprint
 
 from PyQt5.QtCore import Qt
@@ -42,6 +43,7 @@ import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
 import PyQt5.QtPrintSupport as QtPrintSupport
 import PyQt5.QtWidgets as QtWidgets
+
 from kataja.ConstituentNode import ConstituentNode
 from kataja.Controller import ctrl, prefs, qt_prefs
 from kataja.Forest import Forest
@@ -55,8 +57,9 @@ from kataja.ColorManager import ColorManager
 import kataja.globals as g
 from kataja.ui.MenuItem import MenuItem
 from kataja.ui.PreferencesDialog import PreferencesDialog
-from kataja.utils import to_unicode, time_me, save_object
+from kataja.utils import time_me, save_object
 from kataja.visualizations.available import VISUALIZATIONS
+
 
 
 
@@ -89,36 +92,36 @@ class KatajaMain(QtWidgets.QMainWindow):
         be the main window of the given application. """
         t = time.time()
         QtWidgets.QMainWindow.__init__(self)
-        print '---- initialized MainWindow base class ... ', time.time() - t
+        print('---- initialized MainWindow base class ... ', time.time() - t)
         self.app = app
         self.fontdb = QtGui.QFontDatabase()
-        print '---- set up font db ... ', time.time() - t
+        print('---- set up font db ... ', time.time() - t)
         self.color_manager = ColorManager()
-        print '---- Initialized color manager ... ', time.time() - t
+        print('---- Initialized color manager ... ', time.time() - t)
         qt_prefs.late_init(prefs, self.fontdb)
         self.app.setFont(qt_prefs.ui_font)
-        print '---- initialized prefs ... ', time.time() - t
+        print('---- initialized prefs ... ', time.time() - t)
         ctrl.late_init(self)
-        print '---- controller late init ... ', time.time() - t
+        print('---- controller late init ... ', time.time() - t)
         self.graph_scene = GraphScene(main=self, graph_view=None)
-        print '---- scene init ... ', time.time() - t
+        print('---- scene init ... ', time.time() - t)
         self.graph_view = GraphView(main=self, graph_scene=self.graph_scene)
-        print '---- view init ... ', time.time() - t
+        print('---- view init ... ', time.time() - t)
         self.graph_scene.graph_view = self.graph_view
         self.ui_manager = UIManager(self)
-        print '---- ui init ... ', time.time() - t
+        print('---- ui init ... ', time.time() - t)
         self.forest_keeper = ForestKeeper(main=self)
-        print '---- forest_keeper init ... ', time.time() - t
+        print('---- forest_keeper init ... ', time.time() - t)
         self.forest = Forest(main=self)
-        print '---- forest init ... ', time.time() - t
+        print('---- forest init ... ', time.time() - t)
         self.visualizations = VISUALIZATIONS
-        print '---- visualizations init ... ', time.time() - t
+        print('---- visualizations init ... ', time.time() - t)
         app.setPalette(self.color_manager.get_qt_palette())
         self.setCentralWidget(self.graph_view)
 
-        print '---- set palette ... ', time.time() - t
+        print('---- set palette ... ', time.time() - t)
         self.load_treeset()
-        print '---- loaded treeset ... ', time.time() - t
+        print('---- loaded treeset ... ', time.time() - t)
         self._actions = {}
         self._shortcuts = {}
         x, y, w, h = (50, 50, 940, 720)
@@ -129,7 +132,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.add_message('Welcome to Kataja! (h) for help')
         self.color_wheel = None
         self.action_finished()
-        print '---- finished start sequence... ', time.time() - t
+        print('---- finished start sequence... ', time.time() - t)
         # #######
         # Signals
         # ########
@@ -187,7 +190,7 @@ class KatajaMain(QtWidgets.QMainWindow):
 
         :return:
         """
-        i, forest = self.forest_keeper.next()
+        i, forest = self.forest_keeper.next_forest()
         self.change_forest(forest)
         return i
 
@@ -197,7 +200,7 @@ class KatajaMain(QtWidgets.QMainWindow):
 
         :return:
         """
-        i, forest = self.forest_keeper.prev()
+        i, forest = self.forest_keeper.prev_forest()
         self.change_forest(forest)
         return i
 
@@ -401,7 +404,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         view_actions = QtWidgets.QActionGroup(self)
         view_menu = QtWidgets.QMenu('View', self)
         vis_actions = []
-        for name, vis in VISUALIZATIONS.items():
+        for name, vis in list(VISUALIZATIONS.items()):
             vis_actions.append(self.action(name, self.change_visualization_command, vis.shortcut, checkable=True,
                                            viewgroup=view_actions))
 
@@ -464,7 +467,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         if ctrl.single_selection():
             item = ctrl.get_selected()
             if isinstance(item, ConstituentNode):
-                print 'merge up, missing function call here'
+                print('merge up, missing function call here')
                 assert False
 
     def key_left(self):
@@ -515,7 +518,7 @@ class KatajaMain(QtWidgets.QMainWindow):
 
 
         """
-        print 'tab-tab!'
+        print('tab-tab!')
 
     def undo(self):
         """
@@ -578,11 +581,11 @@ class KatajaMain(QtWidgets.QMainWindow):
         if isinstance(caller, MenuItem):
             caller = caller.host_node
         if caller.is_folded_away():
-            self.add_message(u'Unfolding %s to %s' % (caller.linearized(), unicode(caller)))
+            self.add_message('Unfolding %s to %s' % (caller.linearized(), str(caller)))
             caller.unfold_triangle()
             self.action_finished()  # recalculate their positions
         else:
-            self.add_message(u'Folding %s to %s' % (unicode(caller), caller.linearized()))
+            self.add_message('Folding %s to %s' % (str(caller), caller.linearized()))
             caller.fold()
         return True
 
@@ -656,13 +659,13 @@ class KatajaMain(QtWidgets.QMainWindow):
 
     def enable_actions(self):
         """ Restores menus """
-        for action in self._actions.values():
+        for action in list(self._actions.values()):
             action.setDisabled(False)
 
     def disable_actions(self):
         """ Actions shouldn't be initiated when there is other multi-phase
         action going on """
-        for action in self._actions.values():
+        for action in list(self._actions.values()):
             action.setDisabled(True)
 
 
@@ -687,7 +690,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         # ConstituentNode.font = prefs.sc_font
         self.forest.settings.label_style(new_value)
 
-        for node in self.forest.nodes.values():
+        for node in list(self.forest.nodes.values()):
             node.update_visibility(label=new_value)
             # change = node.update_label()
         self.action_finished('toggle label visibility')
@@ -726,7 +729,7 @@ class KatajaMain(QtWidgets.QMainWindow):
 
         :param mode:
         """
-        print mode
+        print(mode)
         if mode != prefs.color_mode:
             prefs.color_mode = mode
             self.forest.update_colors()
@@ -832,14 +835,14 @@ class KatajaMain(QtWidgets.QMainWindow):
         """
         if shape and shape in SHAPE_PRESETS:
             self.forest.settings.edge_settings(g.CONSTITUENT_EDGE, 'shape_name', shape)
-            i = SHAPE_PRESETS.keys().index(shape)
+            i = list(SHAPE_PRESETS.keys()).index(shape)
         else:
             shape = self.forest.settings.edge_settings(g.CONSTITUENT_EDGE, 'shape_name')
-            i = SHAPE_PRESETS.keys().index(shape)
+            i = list(SHAPE_PRESETS.keys()).index(shape)
             i += 1
             if i == len(SHAPE_PRESETS):
                 i = 0
-            shape = SHAPE_PRESETS.keys()[i]
+            shape = list(SHAPE_PRESETS.keys())[i]
             self.forest.settings.edge_settings(g.CONSTITUENT_EDGE, 'shape_name', shape)
         self.add_message('(s) Change constituent edge shape: %s-%s' % (i, shape))
         ctrl.announce(g.EDGE_SHAPES_CHANGED, g.CONSTITUENT_EDGE, i)
@@ -847,20 +850,20 @@ class KatajaMain(QtWidgets.QMainWindow):
 
 
     # Change feature edge shapes -action (S)
-    def change_feature_edge_shape(self):
+    def change_feature_edge_shape(self, shape):
         """
 
 
         """
         if shape and shape in SHAPE_PRESETS:
             self.forest.settings.edge_shape_name(g.CONSTITUENT_EDGE, shape)
-            i = SHAPE_PRESETS.keys().index(shape)
+            i = list(SHAPE_PRESETS.keys()).index(shape)
         else:
-            i = SHAPE_PRESETS.keys().index(self.forest.settings.edge_shape_name(g.FEATURE_EDGE))
+            i = list(SHAPE_PRESETS.keys()).index(self.forest.settings.edge_shape_name(g.FEATURE_EDGE))
             if i == len(SHAPE_PRESETS):
                 i = 0
-            shape = SHAPE_PRESETS.keys()[i]
-            self.forest.settings.edge_shape_name(g.FEATURE_EDGE, name)
+            shape = list(SHAPE_PRESETS.keys())[i]
+            self.forest.settings.edge_shape_name(g.FEATURE_EDGE, shape)
         self.ui_manager.ui_buttons['feature_line_type'].setCurrentIndex(i)
         self.add_message('(s) Change feature edge shape: %s-%s' % (i, shape))
 
@@ -875,7 +878,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         """
         i = self.switch_to_next_forest()
         self.ui_manager.clear_items()
-        self.add_message(u'(.) tree %s: %s' % (i + 1, self.forest.textual_form()))
+        self.add_message('(.) tree %s: %s' % (i + 1, self.forest.textual_form()))
         self.action_finished('switch next tree set')
 
     # Prev structure -action (,)
@@ -886,7 +889,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         """
         i = self.switch_to_previous_forest()
         self.ui_manager.clear_items()
-        self.add_message(u'(,) tree %s: %s' % (i + 1, self.forest.textual_form()))
+        self.add_message('(,) tree %s: %s' % (i + 1, self.forest.textual_form()))
         self.action_finished('switch previous tree set')
 
     # Change visualization style -action (1...9)
@@ -964,7 +967,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         if not path.endswith('/'):
             path += '/'
         if not os.path.exists(path):
-            print "bad path for printing (print_file_path in preferences) , using '.' instead."
+            print("bad path for printing (print_file_path in preferences) , using '.' instead.")
             path = './'
         filename = prefs.print_file_name
         if filename.endswith('.pdf'):
@@ -1087,7 +1090,7 @@ class KatajaMain(QtWidgets.QMainWindow):
             self.add_message("Loaded '%s'." % to_unicode(filename))
             self.action_finished()
 
-    def load_state_from_file(self, filename=u''):
+    def load_state_from_file(self, filename=''):
         """
 
         :param filename:
@@ -1097,11 +1100,11 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.scene.displayed_forest = None
         if filename.endswith('.zkataja'):
             f = gzip.open(filename, 'rb')
-            data = cPickle.load(f)
+            data = pickle.load(f)
         else:
             f = open(filename, 'rb')
             # f = codecs.open(filename, 'rb', encoding = 'utf-8')
-            data = cPickle.load(f)
+            data = pickle.load(f)
         f.close()
         prefs.update(data['preferences'].__dict__)
         qt_prefs.update(prefs)
@@ -1123,14 +1126,14 @@ class KatajaMain(QtWidgets.QMainWindow):
             f = gzip.open(filename, 'w')
         else:
             f = open(filename, 'w')
-        cPickle.dump(all_data, f, pickle_format)
+        pickle.dump(all_data, f, pickle_format)
         f.close()
         self.add_message("Saved to '%s'." % filename)
 
         filename = prefs.file_name + '.dict'
         f = open(filename, 'w')
         pp = pprint.PrettyPrinter(indent=1, stream=f)
-        print 'is readable: ', pprint.isreadable(all_data)
+        print('is readable: ', pprint.isreadable(all_data))
         pp.pprint(all_data)
         f.close()
         self.add_message("Saved to '%s'." % filename)
@@ -1144,8 +1147,8 @@ class KatajaMain(QtWidgets.QMainWindow):
 
         """
         self.action_finished()
-        filename = to_unicode(QtWidgets.QFileDialog.getSaveFileName(self, "Save KatajaMain tree", "",
-                                                                    "KatajaMain files (*.kataja *.zkataja)"))
+        filename = QtWidgets.QFileDialog.getSaveFileName(self, "Save KatajaMain tree", "",
+                                                                    "KatajaMain files (*.kataja *.zkataja)")
         prefs.file_name = filename
         ctrl.save_state_to_file(filename)
         self.add_message("Saved to '%s'." % filename)
@@ -1258,14 +1261,14 @@ class KatajaMain(QtWidgets.QMainWindow):
         QtWidgets.QMainWindow.closeEvent(self, event)
         if ctrl.print_garbage:
             # import objgraph
-            print 'garbage stats:', gc.get_count()
+            print('garbage stats:', gc.get_count())
             gc.collect()
-            print 'after collection:', gc.get_count()
+            print('after collection:', gc.get_count())
             if gc.garbage:
-                print 'garbage:', gc.garbage
+                print('garbage:', gc.garbage)
 
                 # objgraph.show_most_common_types(limit =40)
-        print '...done'
+        print('...done')
 
 
     @time_me
@@ -1283,9 +1286,9 @@ class KatajaMain(QtWidgets.QMainWindow):
         c = 0
         while open_references and c < 10:
             c += 1
-            print len(savedata)
-            print '---------------------------'
-            for obj in open_references.values():
+            print(len(savedata))
+            print('---------------------------')
+            for obj in list(open_references.values()):
                 save_object(obj, savedata, open_references)
 
         # savedata['forest_keeper'] = self.forest_keeper.save()
@@ -1293,7 +1296,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         # savedata['graph_scene'] = self.graph_scene.save()
         # savedata['graph_view'] = self.graph_view.save()
         # print savedata
-        print 'total savedata: %s chars.' % len(str(savedata))
+        print('total savedata: %s chars.' % len(str(savedata)))
         return savedata
 
         # f = open('kataja_default.cfg', 'w')
@@ -1325,7 +1328,7 @@ class KatajaMain(QtWidgets.QMainWindow):
 # .arg(QtCore.QString(fileFormat.toUpper()))
 # .arg(QtCore.QString(fileFormat)))
 # if fileName.isEmpty():
-#            return False
+# return False
 #        else:
 #            return self.scribbleArea.saveImage(fileName, fileFormat)
 

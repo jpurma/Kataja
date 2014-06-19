@@ -20,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 from PyQt5 import QtGui, QtCore
 
@@ -46,7 +46,7 @@ class TwoColorIconEngine(QtGui.QIconEngine):
     """
 
     def __init__(self, bitmaps):
-        print '*** initializing TwoColorIconEngine with bitmaps ', bitmaps
+        print('*** initializing TwoColorIconEngine with bitmaps ', bitmaps)
         QtGui.QIconEngine.__init__(self)
         if bitmaps:
             self.addPixmap(bitmaps)
@@ -56,7 +56,7 @@ class TwoColorIconEngine(QtGui.QIconEngine):
 
         :type bitmaps:
         """
-        print '*** add pixmap called for engine ***'
+        print('*** add pixmap called for engine ***')
         if isinstance(bitmaps, tuple):
             self.bitmaps = bitmaps
             self.bitmaps16 = [bitmap.scaled(16, 16, QtCore.Qt.KeepAspectRatio) for bitmap in bitmaps]

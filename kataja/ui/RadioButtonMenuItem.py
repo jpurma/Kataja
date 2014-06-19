@@ -14,7 +14,7 @@ class RadioButtonMenuItem(MenuItem):
     def __init__(self, parent, action):
         # menu item size should be size of the menu text + some.
         MenuItem.__init__(self, parent, action)
-        self.checkbox = CheckBox(self, marker=u'\u21A9')
+        self.checkbox = CheckBox(self, marker='\u21A9')
         self.checkbox.addToIndex()
         self.checked = action.get('checked', False)
 

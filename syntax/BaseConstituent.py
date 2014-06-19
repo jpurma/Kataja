@@ -24,7 +24,6 @@
 
 
 from syntax.ConfigurableFeature import Feature
-from syntax.utils import to_unicode
 # from copy import deepcopy
 
 class BaseConstituent(object):
@@ -33,7 +32,7 @@ class BaseConstituent(object):
     saved_fields = ['features', 'sourcestring', 'label', 'left', 'right', 'index', 'gloss', 'uid']
 
 
-    def __init__(self, cid=u'', left=None, right=None, source='', data=None):
+    def __init__(self, cid='', left=None, right=None, source='', data=None):
         """ BaseConstituent is a default constituent used in syntax.
         It uses getters and setters so that other compatible constituent implementations can be built using the same interface """
         if not data:
@@ -41,37 +40,32 @@ class BaseConstituent(object):
         if data:
             self.features = {}
             self.sourcestring = ''
-            self.label = u''
+            self.label = ''
             self.left = None
             self.right = None
-            self.index = u''
-            self.gloss = u''
+            self.index = ''
+            self.gloss = ''
             self.uid = id(self)
             self.save_key = self.uid
             self.load(data)
         else:
             self.features = {}
             self.sourcestring = source or cid
-            self.label = to_unicode(cid)
+            self.label = cid
             self.left = left
             self.right = right
-            self.gloss = u''
-            self.index = u''
+            self.gloss = ''
+            self.index = ''
             self.uid = id(self)
             self.save_key = self.uid
 
     def __str__(self):
         if self.index:
-            return '_'.join((self.label.encode('utf-8', 'ignore'), self.index.encode('utf-8', 'ignore')))
-        else:
-            return self.label.encode('utf-8', 'ignore')
-
-
-    def __unicode__(self):
-        if self.index:
-            return u'_'.join((self.label, self.index))
+            return '_'.join((self.label, self.index))
         else:
             return self.label
+
+
 
     def __repr__(self):
         if self.is_leaf():
@@ -81,9 +75,9 @@ class BaseConstituent(object):
                 return 'Constituent(id=%s)' % self.label
         else:
             if self.index:
-                return u"[.%s %s %s ]" % (self.index, self.left, self.right)
+                return "[.%s %s %s ]" % (self.index, self.left, self.right)
             else:
-                return u"[ %s %s ]" % (self.left, self.right)
+                return "[ %s %s ]" % (self.left, self.right)
 
 
     def __contains__(self, C):
@@ -105,7 +99,7 @@ class BaseConstituent(object):
         return self.index
 
     def set_index(self, index):
-        self.index = to_unicode(index)
+        self.index = index
 
     def get_feature(self, key):
         f = self.features.get(key, None)
@@ -115,8 +109,8 @@ class BaseConstituent(object):
 
     def has_feature(self, key):
         if isinstance(key, Feature):
-            return key in self.features.values()
-        return key in self.features.keys()
+            return key in list(self.features.values())
+        return key in list(self.features.keys())
 
     def set_left(self, left):
         """ Derived classes can need more complex implementation """
@@ -149,7 +143,7 @@ class BaseConstituent(object):
             self.features[key] = f
 
     def set_features(self, my_dict):
-        for key, feature in my_dict.items():
+        for key, feature in list(my_dict.items()):
             if key == 'label':
                 self.label = feature.get_value()
             elif key == 'index':
@@ -182,6 +176,6 @@ class BaseConstituent(object):
         else:
             right = None
         new = self.__class__(self.label, left, right)
-        for key, value in self.features.items():
+        for key, value in list(self.features.items()):
             new.set_feature(key, value)
         return new

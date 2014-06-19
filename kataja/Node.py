@@ -23,16 +23,14 @@
 # ############################################################################
 
 from PyQt5 import QtWidgets, QtGui, QtCore
-
 from PyQt5.QtCore import Qt
+
 from kataja.Controller import ctrl, prefs, qt_prefs
 from kataja.Label import Label
 from kataja.Movable import Movable
 from kataja.utils import to_tuple
 from kataja.globals import ABSTRACT_EDGE, ABSTRACT_NODE
-import utils
-
-
+from . import utils
 
 # ctrl = Controller object, gives accessa to other modules
 
@@ -53,13 +51,14 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     saved_fields = list(set(Movable.saved_fields + saved_fields))
     node_type = ABSTRACT_NODE
 
-    def __init__(self, syntactic_object=None, restoring='', forest=None):
+    def __init__(self, syntactic_object=None, forest=None, restoring=None):
         """ Node is an abstract class that shouldn't be used by itself, though
         it should contain all methods to make it work. Inherit and modify this for
         Constituents, Features etc. """
         QtWidgets.QGraphicsItem.__init__(self)
         # QtWidgets.QGraphicsItem.__init__(self, parent = None)
         Movable.__init__(self, forest=forest)
+        self.save_key = "Undefined Node"
         self.level = 1
         self.syntactic_object = syntactic_object
 
@@ -112,10 +111,9 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self.effect = utils.create_shadow_effect(self, ctrl)
         self.setGraphicsEffect(self.effect)
 
-
     def __repr__(self):
         """ This is a node and this represents this UG item """
-        r = u'%s-%s-%s' % (self.__class__.__name__, self.syntactic_object, self.save_key)
+        r = '%s-%s-%s' % (self.__class__.__name__, self.syntactic_object, self.save_key)
         return r.encode('utf-8')
 
 
@@ -126,31 +124,30 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
 
     def calculate_movement(self):
-        """ Let visualization algorithm work its magic """
+        """ Let a dynamic visualization algorithm work its magic """
         return self.forest.visualization.calculate_movement(self)
 
     def reset(self):
         """
-
-
+        Remove temporary/state information from node, eg. remove touch areas.
         """
+        print("Resetting node ", self)
         Movable.reset(self)
         self.boundingRect(update=True)
-
-        for touch_area in self.touch_areas.values():
-            self.forest.remove_touch_area(touch_area)
+        for touch_area in list(self.touch_areas.values()):
+            ctrl.ui.remove_touch_area(touch_area)
 
 
     # ### Children and parents ####################################################
 
 
-    def get_children(self, only_similar=True, only_visible=False, edge_type=''):
+    def get_children(self, only_similar=True, only_visible=False, edge_type=ABSTRACT_EDGE):
         """
-
-        :param only_similar:
-        :param only_visible:
-        :param edge_type:
-        :return:
+        Get child nodes of this node.
+        :param only_similar: boolean, only return nodes of same type (eg. ConstituentNodes)
+        :param only_visible: boolean, only return visible nodes
+        :param edge_type: int, only return Edges of certain subclass.
+        :return: list of Nodes
         """
         if only_similar or edge_type:
             edge_type = edge_type or self.__class__.default_edge_type
@@ -166,11 +163,11 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
     def get_parents(self, only_similar=True, only_visible=False, edge_type=''):
         """
-
-        :param only_similar:
-        :param only_visible:
-        :param edge_type:
-        :return:
+        Get parent nodes of this node.
+        :param only_similar: boolean, only return nodes of same type (eg. ConstituentNodes)
+        :param only_visible: boolean, only return visible nodes
+        :param edge_type: int, only return Edges of certain subclass.
+        :return: list of Nodes
         """
         if only_similar or edge_type:
             edge_type = edge_type or self.__class__.default_edge_type
@@ -361,7 +358,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
     def get_text_for_label(self):
         """ This should be overridden if there are alternative displays for label """
-        return unicode(self.syntactic_object)
+        return str(self.syntactic_object)
 
     def has_empty_label(self):
         """
@@ -377,7 +374,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
     # ## Qt overrides ######################################################################
 
-    def paint(self, painter, option, widget):
+    def paint(self, painter, option, widget=None):
         """ Painting is sensitive to mouse/selection issues, but usually with
         :param painter:
         :param option:
@@ -465,7 +462,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
     def create_menu(self):
         """ Define menus for this node type """
-        ctrl.add_message(u'Menu not implemented')
+        ctrl.add_message('Menu not implemented')
         return None
 
     def open_menus(self):
@@ -534,29 +531,20 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :return: :raise:
         """
         if touch_area.place in self.touch_areas:
-            print 'Touch area exists already. Someone is confused'
-            raise
+            print('Touch area exists already. Someone is confused')
+            raise Exception("Touch area exists already")
         self.touch_areas[touch_area.place] = touch_area
         return touch_area
 
     def remove_touch_area(self, touch_area):
         """
-
-        :param touch_area:
+        Forget about given TouchArea. Does not do anything about its scene presence, only cuts the association between
+        node and TouchArea.
+        :param touch_area: TouchArea
         """
         del self.touch_areas[touch_area.place]
 
     # ### MOUSE - kataja ########################################################
-
-    def clickQt(self, event=None):
-        """ temporary testing with qt menus
-            it may be faster to develope prototype by relying on default menus
-        :param event:
-            """
-        if not self.qt_menu:
-            self.open_qt_menu()
-        else:
-            self.close_qt_menu()
 
     def double_click(self, event=None):
         """ Scene has decided that this node has been clicked
@@ -614,7 +602,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :param mx:
         :param my:
         """
-        print 'start dragging with node ', self
+        print('start dragging with node ', self)
         ctrl.dragged = set()
 
         # there if node is both above and below the dragged node, it shouldn't move

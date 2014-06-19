@@ -3,7 +3,6 @@
 from PyQt5 import QtCore, QtWidgets
 
 from kataja.Controller import ctrl, prefs
-from kataja.utils import to_unicode
 
 
 class MessageItem(QtWidgets.QGraphicsTextItem):
@@ -70,9 +69,8 @@ class MessageItem(QtWidgets.QGraphicsTextItem):
 
         :param msg:
         """
-        msg = to_unicode(msg)
         self._widget.append(msg)
-        self._messages.append(to_unicode(msg))
+        self._messages.append(msg)
         self.display_messages()
 
     def show_next_query(self):

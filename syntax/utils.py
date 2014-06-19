@@ -34,7 +34,7 @@ def print_rect(rect):
 
     :param rect:
     """
-    print 'x: %s y: %s width: %s height: %s' % (rect.x(), rect.y(), rect.width(), rect.height())
+    print('x: %s y: %s width: %s height: %s' % (rect.x(), rect.y(), rect.width(), rect.height()))
 
 
 def caller(function):
@@ -52,7 +52,7 @@ def caller(function):
         """
         if len(traceback.extract_stack()) > 1:
             mod, line, fun, cmd = traceback.extract_stack()[-2]
-            print "%s was called by %s l.%s at %s %s" % (function.func_name, cmd, line, mod, fun)
+            print("%s was called by %s l.%s at %s %s" % (function.__name__, cmd, line, mod, fun))
         return function(*arg)
 
     return wrap
@@ -74,7 +74,7 @@ def time_me(function):
         start = time.time()
         r = function(*arg)
         end = time.time()
-        print "%s (%0.3f ms)" % (function.func_name, (end - start) * 1000)
+        print("%s (%0.3f ms)" % (function.__name__, (end - start) * 1000))
         return r
 
     return wrap
@@ -88,8 +88,8 @@ def load_features(obj, key, d):
     :param d:
     :return:
     """
-    if (isinstance(obj, str) or isinstance(obj, unicode)) and obj.startswith('_*'):
-        if isinstance(d[obj], str) or isinstance(d[obj], unicode):
+    if (isinstance(obj, str) or isinstance(obj, str)) and obj.startswith('_*'):
+        if isinstance(d[obj], str) or isinstance(d[obj], str):
             classname = obj.split('_')[1][1:]  # _*[classname]_id
             obj = eval(classname + '()')
             d[obj] = load_features(obj, obj, d)
@@ -130,7 +130,7 @@ def save_features(obj, saved, d):
                 return nval
             elif isinstance(fval, dict):
                 nval = {}
-                for ikey, item in fval.items():
+                for ikey, item in list(fval.items()):
                     try:
                         nval[ikey] = item.save(d)
                     except AttributeError:
@@ -162,7 +162,7 @@ def load_lexicon(filename, Constituent, Feature):
     try:
         f = open(filename, 'r')
     except IOError:
-        print 'FileNotFound: %s' % filename
+        print('FileNotFound: %s' % filename)
         return new_dict
     constituent = None
     constituent_id = ''
@@ -205,29 +205,16 @@ def save_lexicon(lexicon, filename):
     try:
         f = open(filename, 'w')
     except IOError:
-        print 'IOError: %s' % filename
+        print('IOError: %s' % filename)
         return
-    keys = lexicon.keys()
+    keys = list(lexicon.keys())
     keys.sort()
     for key in keys:
         constituent = lexicon[key]
         f.write('%s\n' % key)
-        for feature in constituent.features.values():
+        for feature in list(constituent.features.values()):
             f.write('%s\n' % feature)
         f.write('\n')
     f.close()
 
-
-def to_unicode(string, encoding='utf-8'):
-    """Convenience method for converting strings to unicode.
-    :param string:
-    :param encoding:
-    """
-    if not string:
-        return u''
-    if type(string) == UnicodeType:
-        return string
-    elif type(string) != StringType:
-        string = str(string)
-    return unicode(string, encoding)
 

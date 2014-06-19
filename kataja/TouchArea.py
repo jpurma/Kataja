@@ -23,14 +23,15 @@
 # ############################################################################
 
 import math
+import sys
 
 from PyQt5 import QtCore
-
-from kataja.Controller import ctrl, prefs, qt_prefs
-from kataja.utils import to_tuple
 from PyQt5.QtCore import QPointF as Pf
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
+
+from kataja.Controller import ctrl, prefs, qt_prefs
+from kataja.utils import to_tuple
 
 
 end_spot_size = 7
@@ -76,7 +77,6 @@ class TouchArea(QtWidgets.QGraphicsItem):
         self.drag_mode = drag_mode
         self.update_end_points()
         self.key = TouchArea.create_key(host, place)
-        intern(self.key)
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.setAcceptHoverEvents(True)
 
@@ -210,15 +210,15 @@ class TouchArea(QtWidgets.QGraphicsItem):
         :param dropped_node:
         """
         f = self.host.forest
-        print '---- dropped node to touch area -----'
+        print('---- dropped node to touch area -----')
         # if not isinstance(dropped_node, ConstituentNode):
         # return False
         f.undo_manager.record('re-merge constituent')
         if self.host.__class__.__name__ == 'Edge':
-            print 'calling replace_node_with_merged_node from edge'
+            print('calling replace_node_with_merged_node from edge')
             f.replace_node_with_merged_node(self.host.end, dropped_node, left=self.left)
         else:
-            print 'calling replace_node_with_merged_node'
+            print('calling replace_node_with_merged_node')
             f.replace_node_with_merged_node(self.host, dropped_node, None, merge_to_left=self.left,
                                             merger_node_pos=self.start_point)
 
@@ -240,7 +240,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
             ox, oy = to_tuple(self.pos())
             x, y = x + ox, y + oy
         if self.host.__class__.__name__ == 'Edge':
-            print 'click on edge %s, end node: %s' % (self.host, self.host.end)
+            print('click on edge %s, end node: %s' % (self.host, self.host.end))
             f.replace_node_with_merged_empty_node(N=self.host.end, R=self.host, merge_to_left=self.left,
                                                   new_node_pos=self.end_point, merger_node_pos=self.start_point)
         else:
@@ -319,7 +319,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
             painter.setPen(ui)
 
         elif ctrl.is_selected(self):  # wrong colors, just testing
-            print 'cant select ui toucharea'
+            print('cant select ui toucharea')
             painter.setPen(ctrl.cm().ui())
         self.update_end_points()
         # painter.drawRect(self.boundingRect()) # debug

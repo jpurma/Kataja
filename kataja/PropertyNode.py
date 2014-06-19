@@ -22,9 +22,12 @@
 #
 # ############################################################################
 
+import sys
+
 from kataja.Controller import qt_prefs
 from kataja.Node import Node
 from kataja.globals import PROPERTY_EDGE, PROPERTY_NODE
+
 
 # ctrl = Controller object, gives accessa to other modules
 
@@ -44,7 +47,7 @@ class PropertyNode(Node):
         Node.__init__(self, syntactic_object=property, host=host)
         self.level = 1
         self.save_key = 'PN%s' % id(self)
-        intern(self.save_key)
+        sys.intern(self.save_key)
         self.label_font = qt_prefs.feature_small
         # self.color = colors.text
         self.update_identity()

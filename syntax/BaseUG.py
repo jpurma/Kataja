@@ -55,8 +55,8 @@ class UG:
     def feature_check(self, left, right):
         matches = []
         selects = []
-        for key, f_left in left.features.iteritems():
-            if key in right.features.iterkeys():
+        for key, f_left in left.features.items():
+            if key in iter(right.features.keys()):
                 f_right = right.features[key]
                 if (f_left.value == '-' and f_right.value == '+') or (f_left.value == '+' and f_right.value == '-'):
                     matches.append(key)
@@ -146,7 +146,7 @@ class UG:
                 raise "Word '%s' missing from the lexicon" % word
             self.structure = self.Merge(constituent, self.structure)
         if not silent:
-            print 'Finished: %s' % self.structure
+            print('Finished: %s' % self.structure)
         return self.structure
 
 
@@ -218,6 +218,6 @@ class UG:
                 if found:
                     linear.append(item)
 
-        print linear
+        print(linear)
         return linear
 

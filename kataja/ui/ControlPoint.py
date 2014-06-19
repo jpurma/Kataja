@@ -1,11 +1,11 @@
 # coding=utf-8
 # #######################################################
 from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtCore import QPointF as Pf
+from PyQt5.QtCore import Qt
 
 from kataja.Controller import prefs, ctrl
 from kataja.utils import to_tuple
-from PyQt5.QtCore import QPointF as Pf
-from PyQt5.QtCore import Qt
 
 
 class ControlPoint(QtWidgets.QGraphicsItem):
@@ -35,7 +35,7 @@ class ControlPoint(QtWidgets.QGraphicsItem):
     def _compute_position(self):
         p = self.host_edge.control_points[self._index]
         a = self.host_edge.adjust[self._index]
-        print p, a
+        print(p, a)
         p = Pf(p[0] + a[0], p[1] + a[1])
         self.setPos(p)
 

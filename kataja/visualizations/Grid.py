@@ -60,7 +60,7 @@ class Grid:
                     s.append('|')
                 else:
                     s.append('.')
-            print ''.join(s)
+            print(''.join(s))
 
 
     def get(self, x, y):
@@ -117,8 +117,8 @@ class Grid:
             try:
                 self._rows[y][x] = item
             except IndexError:
-                print 'catched index error'
-                print self._rows, len(self._rows), y, x
+                print('catched index error')
+                print(self._rows, len(self._rows), y, x)
             assert len(self._rows[y]) == self._width
             assert len(self._rows) == self._height
 
@@ -185,7 +185,7 @@ class Grid:
 
 # def _closestDistance(nodeA, nodeB,Ax,Ay):
 # nodeAx=Ax or nodeA.pos_tuple[0]
-#    nodeAy=Ay or nodeA.pos_tuple[1]
+# nodeAy=Ay or nodeA.pos_tuple[1]
 #    nodeBx=nodeB.pos_tuple[0]
 #    nodeBy=nodeB.pos_tuple[1]
 #    dist_x=nodeAx-nodeBx

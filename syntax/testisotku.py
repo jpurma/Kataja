@@ -12,7 +12,7 @@ class Noob:
 
         :param kw:
         """
-        print kw['hei']
+        print((kw['hei']))
 
 
 a = {'hei': 'jukka', 'goo': 'goo'}

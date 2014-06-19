@@ -20,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 from PyQt5.QtCore import QPointF as Pf
 import PyQt5.QtGui as QtGui

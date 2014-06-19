@@ -24,14 +24,13 @@
 
 
 from syntax.ConfigurableFeature import Feature
-from syntax.utils import to_unicode
 # from copy import deepcopy
 
 class ConfigurableConstituent:
     Feature = Feature
     saved_fields = ['features', 'sourcestring', 'label', 'left', 'right', 'index', 'gloss', 'uid']
 
-    def __init__(self, cid=u'', left=None, right=None, source='', data=None):
+    def __init__(self, cid='', left=None, right=None, source='', data=None):
         """ ConfigurableConstituent tries to be theory-editable constituent, whose behaviour can be adjusted in very specific manner. Configuration is stored in UG-instance.config -dict and can be changed from outside.
          """
         if not data:
@@ -39,25 +38,25 @@ class ConfigurableConstituent:
         if data:
             self.features = {}
             self.sourcestring = ''
-            self.label = u''
+            self.label = ''
             self.alias = ''
             self.left = None
             self.right = None
             self.index = ''
-            self.gloss = u''
+            self.gloss = ''
             self.uid = id(self)
             self.save_key = self.uid
             self.load(data)
         else:
             self.features = {}
             self.sourcestring = source or cid
-            self.label = to_unicode(cid)
-            self.gloss = u''
+            self.label = cid
+            self.gloss = ''
             self.alias = ''
             self.left = left
             self.right = right
             self.index = ''
-            self.gloss = u''
+            self.gloss = ''
             self.uid = id(self)
             self.save_key = self.uid
 
@@ -86,7 +85,7 @@ class ConfigurableConstituent:
         return self.index
 
     def set_index(self, index):
-        self.index = to_unicode(index)
+        self.index = index
 
     def get_feature(self, key):
         f = self.features.get(key, None)
@@ -109,9 +108,9 @@ class ConfigurableConstituent:
             self.features[key] = f
 
     def set_features(self, my_dict):
-        for key, feat in my_dict.items():
+        for key, feat in list(my_dict.items()):
             if key == 'label':
-                self.label = to_unicode(feat)
+                self.label = feat
             elif key == 'index':
                 self.set_index(feat)
             else:
@@ -136,7 +135,7 @@ class ConfigurableConstituent:
         else:
             right = None
         new = self.__class__(self.label, left, right)
-        for key, value in self.features.items():
+        for key, value in list(self.features.items()):
             new.set_feature(key, value)
         return new
 
@@ -147,9 +146,9 @@ class ConfigurableConstituent:
         return self.gloss
 
     def __repr__(self):
-        print 'BC __repr__ called'
+        print('BC __repr__ called')
 
         if self.is_leaf():
             return self.label
         else:
-            return u"[%s %s %s ]" % (self.index, self.left, self.right)
+            return "[%s %s %s ]" % (self.index, self.left, self.right)

@@ -23,6 +23,7 @@
 # ############################################################################
 
 import random
+import sys
 
 from kataja.Controller import qt_prefs
 from kataja.globals import FEATURE_EDGE, FEATURE_NODE
@@ -46,15 +47,14 @@ class FeatureNode(Node):
 
     def __init__(self, feature=None, forest=None, restoring=False):
         if not forest:
-            raise
+            raise Exception("Forest is missing")
         Node.__init__(self, syntactic_object=feature, forest=forest)
         self.level = 2
         self.save_key = 'FN%s' % self.syntactic_object.uid
-        intern(self.save_key)
         self.label_font = qt_prefs.sc_font
         # if feature.get_value() in color_map:
         # self.color = colors.feature_palette[color_map[feature.get_value()]]
-        #else:
+        # else:
         #    self.color = colors.feature
         if not restoring:
             self.update_identity()
@@ -83,15 +83,15 @@ class FeatureNode(Node):
         """ This should be overridden if there are alternative displays for label """
         f = self.syntactic_object
         if f.key in color_map:
-            return unicode(f.get_value_string())
+            return str(f.get_value_string())
         else:
-            return unicode(f)
+            return str(f)
             # u'%s:%s' % (self.syntactic_object.key, self.syntactic_object.get_value_string())
 
     def __str__(self):
         return 'feature %s' % self.syntactic_object
 
     def __unicode__(self):
-        return u'feature %s' % self.syntactic_object
+        return 'feature %s' % self.syntactic_object
 
 

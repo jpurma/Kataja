@@ -26,8 +26,8 @@
 
 import PyQt5.QtCore as QtCore, PyQt5.QtGui as QtGui
 from PyQt5.QtCore import QPointF as Pf, QPoint as P, Qt
-from kataja.ConstituentNode import ConstituentNode
-from kataja.Controller import colors
+from .kataja.ConstituentNode import ConstituentNode
+from .kataja.Controller import colors
 import collections, json
 
 def export_visible_items(path = 'tempdata.json', scene = None, forest = None, prefs = None):
@@ -57,7 +57,7 @@ def export_visible_items(path = 'tempdata.json', scene = None, forest = None, pr
     'background' : colors.paper.getRgbF()[ :3],
     'background_lighter' : colors.paper.lighter().getRgbF()[ :3]
     }
-    print 'exporting to ', path
+    print('exporting to ', path)
     f = open(path, 'w')
     f.write(json.dumps(data, indent = 4))
     f.close()

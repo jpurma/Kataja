@@ -20,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-# ############################################################################
+#############################################################################
 
 import random
 
@@ -28,13 +28,15 @@ from PyQt5 import QtWidgets
 
 from kataja.Controller import prefs, qt_prefs, ctrl
 
+
 # Verified 8.4. 2013
 class Movable(object):
     """ Movable objects have support for smooth movement from one point to another with
         set_target_position, and fade_in and fade_out. Once set, the animation derivation_steps are
         triggered by timerEvent in GraphScene.
 
-        Class using Movable has to inherit also some kind of QtGraphicsItem, otherwise its positioning methods won't work.
+        Class using Movable has to inherit also some kind of QtGraphicsItem,
+        otherwise its positioning methods won't work.
         """
     saved_fields = ['_computed_position', '_adjustment', '_final_position', '_current_position', '_visible', 'bind_x',
                     'bind_y', 'bind_z', 'locked_to_position', 'forest']
@@ -52,12 +54,14 @@ class Movable(object):
          """
         self.z = 0
         if not forest:
-            raise
+            raise Exception("Forest is missing")
 
         self._computed_position = (0, 0, 0)
         self._adjustment = (0, 0, 0)
         self._final_position = (0, 0, 0)
         self._current_position = (0, 0, 0)
+
+        self._x_step, self._y_step, self._z_step = 0, 0, 0
 
         self.set_current_position(((random.random() * 150) - 75, (random.random() * 150) - 75, 0))
 
@@ -83,8 +87,7 @@ class Movable(object):
 
     def reset(self):
         """
-
-
+        Remove mode information, eg. hovering
         """
         self._hovering = False
 
@@ -92,16 +95,21 @@ class Movable(object):
 
     def is_fading_away(self):
         """
-
-
-        :return:
+        Fade animation is ongoing or just finished
+        :return: Boolean
         """
-        return self._fade_out_counter or not self.isVisible()
+        if self._fade_out_counter:
+            return True
+        if hasattr(self, "isVisible"):
+            return not self.isVisible()
+        return False
 
     def fade_in(self):
         """ Simple fade effect. The object exists already when fade starts. """
-        self.setOpacity(0)
-        self.show()
+        if hasattr(self, "setOpacity"):
+            self.setOpacity(0)
+        if hasattr(self, "show"):
+            self.show()
         self._fade_in_counter = 10
         self._fade_out_counter = 0
 
@@ -112,9 +120,8 @@ class Movable(object):
 
     def is_fading(self):
         """
-
-
-        :return:
+        Either fade in or fade out is ongoing
+        :return:boolean
         """
         return self._fade_in_counter or self._fade_out_counter
 
@@ -123,30 +130,34 @@ class Movable(object):
         active = False
         if self._fade_in_counter:
             self._fade_in_counter -= 1
-            self.setOpacity((10 - self._fade_in_counter) / 10.0)
+            if hasattr(self, "setOpacity"):
+                self.setOpacity((10 - self._fade_in_counter) / 10.0)
             active = True
 
         if self._fade_out_counter:
             self._fade_out_counter -= 1
             if self._fade_out_counter:
-                self.setOpacity(self._fade_out_counter / 10.0)
+                if hasattr(self, "setOpacity"):
+                    self.setOpacity(self._fade_out_counter / 10.0)
                 active = True
             else:
-                self.hide()
+                if hasattr(self, "hide"):
+                    self.hide()
         return active
 
     def is_visible(self):
         """
-
-
-        :return:
+        Our own tracking of object visibility, not based on Qt's scene visibility.
+        :return: boolean
         """
         return self._visible
 
     # ## Movement ##############################################################
 
     def move_towards_target_position(self):
-        """ Takes one step in movement trajectory or finishes movement """
+        """ Takes one step in movement trajectory or finishes movement. Returns true if the movement is still
+        continuing, false if it has stopped.
+        :return: boolean """
         # if self.locked_to_position:
         # return False
         if not self._move_counter:
@@ -187,24 +198,24 @@ class Movable(object):
 
     def should_move(self):
         """
-
-
-        :return:
+        Returns true if the item is not yet where it should be.
+        :return: boolean
         """
         return self._final_position != self._current_position
 
     def get_final_position(self):
         """
-
-
-        :return:
+        Return computed final position, which is computed position based on visualization algorithm
+        + user-made adjustments
+        :return: tuple (x, y, z)
         """
         return self._final_position
 
     def set_original_position(self, pos):
         """ Sets both current position and computed position to same place,
-        :param pos:
-            use when first adding items to scene to prevent them wandering from afar """
+        use when first adding items to scene to prevent them wandering from afar
+        :param pos: tuple (x, y, z)
+        """
         self._computed_position = pos
         self._final_position = pos
         self._adjustment = (0, 0, 0)
@@ -212,17 +223,16 @@ class Movable(object):
 
     def get_computed_position(self):
         """
-
-
-        :return:
+        Return the computed position, which was set by visualization algorithm.
+        :return: tuple (x, y, z)
         """
         return self._computed_position
 
     def set_computed_position(self, pos):
         # print 'computed position set to %s, adjusted: %s ' % ( pos, self._adjustment)
         """
-
-        :param pos:
+        Set the computed position of this item. This is usually called by visualization algorithm.
+        :param pos: tuple (x, y, z)
         """
         x, y, z = pos
         self._computed_position = pos
@@ -237,8 +247,7 @@ class Movable(object):
 
     def start_moving(self):
         """
-
-
+        Initiate moving animation for object.
         """
         x, y, z = self._final_position
         sx, sy, sz = self._current_position
@@ -249,35 +258,32 @@ class Movable(object):
 
     def stop_moving(self):
         """
-
-
+        Kill moving animation for this object.
         """
         if self.after_move_function:
             self.after_move_function()
             self.after_move_function = None
         self._move_counter = 0
 
-
     def can_adjust_position(self):
         """
-
-
-        :return:
+        Only those items that get their fixed position from algorithm can be adjusted. Dynamically moving items are just
+        dragged around. Returns if the object gets both x and y coords from algorithm.
+        :return: boolean
         """
         return self.bind_x and self.bind_y
 
     def get_adjustment(self):
         """
-
-
-        :return:
+        Return adjustments, which are user-made fine tuning to objects computed coordinates.
+        :return: tuple (dx, dy, dz)
         """
         return self._adjustment
 
     def set_adjustment(self, adj_pos):
         """
-
-        :param adj_pos:
+        Set adjustments, which are user-made fine tuning to objects computed coordinates.
+        :param adj_pos: tuple (dx, dy, dz):
         """
         self._adjustment = adj_pos
         if self.can_adjust_position():
@@ -287,74 +293,70 @@ class Movable(object):
 
     def reset_adjustment(self):
         """
-
-
+        Remove adjustments from this object.
         """
         self._adjustment = (0, 0, 0)
         self._final_position = tuple(self._computed_position)
 
     def get_current_position(self):
-        """ Returns Qt position as a triplet with z-dimension """
+        """ Returns Qt position as a triplet with z-dimension
+        :return: tuple (x, y, z)"""
         return self._current_position
 
     def set_current_position(self, pos):
-        """ Save the 3rd dimension in separate variable
-        :param pos:
+        """ Sets the QtObjects coordinates, and saves the z-dimension to separate variable
+        :rtype : None
+        :param pos: tuple(x, y, z)
         """
         assert (len(pos) == 3)
         self._current_position = pos
         self.z = pos[2]
-        QtWidgets.QGraphicsItem.setPos(self, pos[0], pos[1])
-
-    def update_target_position(self, pos):
-        """ Sometimes target position changes in middle of movement
-        :param pos:
-        """
-        self._final_position = pos
-
+        if isinstance(self, QtWidgets.QGraphicsItem):
+            QtWidgets.QGraphicsItem.setPos(self, pos[0], pos[1])
 
     # ## Selection ############################################################
 
     def is_selected(self):
         """
-
-
-        :return:
+        Return the selection status of this object.
+        :return: boolean
         """
         return ctrl.is_selected(self)
 
-
     # ## Dragging ############################################################
-
-
 
     def drop_to(self, x, y):
         """
-
-        :param x:
-        :param y:
+        This item is dropped to screen coordinates. Evaluate if there are sensitive objects (TouchAreas) there and if
+        there are, call their 'drop'-method with self as argument.
+        :param x: int or float
+        :param y: int or float
         """
-        print 'movable drop to'
+        print('movable drop to')
         closest_ma = None
         for ma in ctrl.main.ui_manager.touch_areas:  # @UndefinedVariable
             if ma.sceneBoundingRect().contains(x, y):
                 closest_ma = ma
                 break
-                # if closest_ma and closest_ma.drop(self):
-                # print 'dropped to:', closest_ma
-                # ctrl.scene.fit_to_window()
+        if closest_ma:
+            closest_ma.drop(self)
+            print('dropped to:', closest_ma)
+            # ctrl.scene.fit_to_window()
 
-
-    # ## Existence ############################################################
+    ### Existence ############################################################
 
     def update_visibility(self, **kwargs):
         """ Simplest case of update_visibility.
-        :param kwargs:
-        This will be overridden for more complex objects """
-        if not self.isVisible():
-            self.show()
+        Forces item to be visible, mainly for debugging purposes.
+        This will be overridden for more complex objects
+        :param kwargs: dict of arguments, which are ignored
+        """
+        if hasattr(self, "isVisible") and hasattr(self, "show"):
+            if not self.isVisible():
+                print('Forcing %s to be visible' % self)
+                self.show()
 
-    # ### Locked to position
+    #### Locked to position
 
     def release(self):
         """ Item can be affected by computed positions """
@@ -366,24 +368,19 @@ class Movable(object):
 
     def is_locked(self):
         """
-
-
-        :return:
+        Returns if the item's position can be changed by algorithm, or if it is fixed to position.
+        :return: boolean
         """
         return self.locked_to_position
-
 
     #### Restoring after load / undo #########################################
 
     def after_restore(self, changes):
         """ Fix derived attributes. In dict 'changes' each changed attribute has tuple w. (old, new) values
-        :param changes:
+        :param changes: dict
         """
-        print changes
+        print(changes)
         if '_current_position' in changes:
             self.set_current_position(changes['_current_position'][1])
         if '_computed_position' in changes:
             self.set_computed_position(changes['_computed_position'][1])
-
-
-

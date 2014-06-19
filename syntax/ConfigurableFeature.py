@@ -23,8 +23,6 @@
 # ############################################################################
 
 
-from syntax.utils import to_unicode
-
 
 class Feature:
     """
@@ -65,10 +63,10 @@ class Feature:
         if not args:
             args = key.split(':')
             key = args.pop(0)
-        self.key = to_unicode(key)
+        self.key = key
         self.values = []
         for value in args:
-            self.values.append(to_unicode(value))
+            self.values.append(value)
 
     def get(self):
         return self.key
@@ -77,13 +75,12 @@ class Feature:
         if self.values:
             return self.values[0]
         else:
-            return u''
+            return ''
 
     def get_value_string(self):
-        return u', '.join(self.values)
+        return ', '.join(self.values)
 
     def add(self, prop):
-        prop = to_unicode(prop)
         if not prop in self.values:
             self.values.append(prop)
 
@@ -109,7 +106,7 @@ class Feature:
         return ":".join([self.key] + self.values).encode('utf-8')
 
     def __unicode__(self):
-        return u":".join([self.key] + self.values)
+        return ":".join([self.key] + self.values)
 
     def save(self):
         return self.__repr__()

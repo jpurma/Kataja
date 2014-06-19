@@ -23,11 +23,11 @@
 # ############################################################################
 
 import random
+import collections
 
 from kataja.Controller import qt_prefs
 from kataja.globals import ATTRIBUTE_EDGE, ATTRIBUTE_NODE
 from kataja.Node import Node
-from utils import to_unicode
 
 
 color_map = {'S': 0, 'order': 1, 'M': 2, 'unknown': 3}
@@ -57,7 +57,7 @@ class AttributeNode(Node):
         :raise: 
         """
         if not forest:
-            raise
+            raise Exception("Forest is missing")
         Node.__init__(self, syntactic_object=None, forest=forest)
         self.level = 2
         self.save_key = 'AN%s' % id(self)
@@ -67,7 +67,7 @@ class AttributeNode(Node):
         self._show_label = show_label
         self.label_font = qt_prefs.sc_font
         # if self.attribute_label in color_map:
-        #    self.color = colors.feature_palette[color_map[self.attribute_label]]
+        # self.color = colors.feature_palette[color_map[self.attribute_label]]
         #else:
         #    self.color = colors.feature
         if not restoring:
@@ -92,11 +92,11 @@ class AttributeNode(Node):
         """ This should be overridden if there are alternative displays for label 
         :rtype : unicode
         """
-        val = getattr(self.host, self.attribute_id, u'')
-        if callable(val):
+        val = getattr(self.host, self.attribute_id, '')
+        if isinstance(val, collections.Callable):
             val = val()
         if self._show_label:
-            return u'%s:%s' % (self.attribute_label, val)
+            return '%s:%s' % (self.attribute_label, val)
         else:
             return to_unicode(val)
             # u'%s:%s' % (self.syntactic_object.key, self.syntactic_object.get_value_string())
@@ -111,6 +111,6 @@ class AttributeNode(Node):
         """
         :rtype : unicode
         """
-        return u'AttributeNode %s' % self.attribute_label
+        return 'AttributeNode %s' % self.attribute_label
 
 

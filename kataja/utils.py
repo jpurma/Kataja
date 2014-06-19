@@ -22,7 +22,7 @@
 #
 # ############################################################################
 
-from types import FrameType, StringTypes, UnicodeType
+from types import FrameType
 import gc
 import string
 import sys
@@ -30,7 +30,6 @@ import time
 import traceback
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 from PyQt5.QtCore import QPointF, QPoint
 
 
@@ -39,7 +38,7 @@ def print_rect(rect):
 
     :param rect:
     """
-    print 'x: %s y: %s width: %s height: %s' % (rect.x(), rect.y(), rect.width(), rect.height())
+    print('x: %s y: %s width: %s height: %s' % (rect.x(), rect.y(), rect.width(), rect.height()))
 
 
 def caller(function):
@@ -57,7 +56,7 @@ def caller(function):
         """
         if len(traceback.extract_stack()) > 1:
             mod, line, fun, cmd = traceback.extract_stack()[-2]
-            print "%s was called by %s l.%s at %s" % (function.func_name, cmd, line, mod)
+            print("%s was called by %s l.%s at %s" % (function.__name__, cmd, line, mod))
         return function(*arg)
 
     return wrap
@@ -80,7 +79,7 @@ def time_me(function):
         start = time.time()
         r = function(*arg, **kwargs)
         end = time.time()
-        print "%s (%0.3f ms) at %s" % (function.func_name, (end - start) * 1000, function.__module__)
+        print("%s (%0.3f ms) at %s" % (function.__name__, (end - start) * 1000, function.__module__))
         return r
 
     return wrap
@@ -102,8 +101,8 @@ def load_features(obj, key, d):
     :param d:
     :return:
     """
-    if (isinstance(obj, str) or isinstance(obj, unicode)) and obj.startswith('_*'):
-        if isinstance(d[obj], str) or isinstance(d[obj], unicode):
+    if (isinstance(obj, str) or isinstance(obj, str)) and obj.startswith('_*'):
+        if isinstance(d[obj], str) or isinstance(d[obj], str):
             classname = obj.split('_')[1][1:]  # _*[classname]_id
             obj = eval(classname + '()')
             d[obj] = load_features(obj, obj, d)
@@ -144,7 +143,7 @@ def save_features(obj, saved, d):
                 return nval
             elif isinstance(fval, dict):
                 nval = {}
-                for ikey, item in fval.items():
+                for ikey, item in list(fval.items()):
                     try:
                         nval[ikey] = item.save(d)
                     except AttributeError:
@@ -177,7 +176,7 @@ def load_lexicon(filename, Constituent, Feature):
     try:
         file = open(filename, 'r')
     except IOError:
-        print 'FileNotFound: %s' % filename
+        print('FileNotFound: %s' % filename)
         return dict
     constituent = None
     constituent_id = ''
@@ -218,41 +217,24 @@ def save_lexicon(lexicon, filename):
     try:
         file = open(filename, 'w')
     except IOError:
-        print 'IOError: %s' % filename
+        print('IOError: %s' % filename)
         return
-    keys = lexicon.keys()
+    keys = list(lexicon.keys())
     keys.sort()
     for key in keys:
         constituent = lexicon[key]
         file.write('%s\n' % key)
-        for feature in constituent.get_features().values():
+        for feature in list(constituent.get_features().values()):
             file.write('%s\n' % feature)
         file.write('\n')
     file.close()
-
-
-def to_unicode(string, encoding='utf-8'):
-    """Convenience method for converting strings to unicode.
-    :param string:
-    :param encoding:
-    """
-    if not string:
-        return u''
-    # if isinstance(string, QtCore.QString):
-    # return unicode(string.toUtf8(), "utf-8")
-    elif not isinstance(string, StringTypes):
-        s = str(string)
-        return unicode(s, encoding)
-    if type(string) == UnicodeType:
-        return string
-    return unicode(string, encoding)
 
 
 # def linearize(node):
 # res = []
 # for n in node:
 # if n not in res:
-#            res.append(n)
+# res.append(n)
 #    return res
 
 def next_free_index(indexes):
@@ -306,7 +288,7 @@ def print_derivation_steps(objects=gc.garbage, outstream=sys.stdout, show_progre
 
             outstream.write("   %s -- " % str(type(step)))
             if isinstance(step, dict):
-                for key, val in step.items():
+                for key, val in list(step.items()):
                     if val is next:
                         outstream.write("[%s]" % repr(key))
                         break
@@ -352,7 +334,7 @@ def print_derivation_steps(objects=gc.garbage, outstream=sys.stdout, show_progre
             elif id(referent) not in all:
                 recurse(referent, start, all, current_path + [obj])
 
-    print 'gc:', objects
+    print('gc:', objects)
     for obj in objects:
         outstream.write("Examining: %r\n" % obj)
         recurse(obj, obj, {}, [])
@@ -378,7 +360,7 @@ def load_objects(start_obj, full_data):
         :return:
         """
         if isinstance(obj, dict):
-            for item in obj.values():
+            for item in list(obj.values()):
                 map_existing(item)
             return
         elif isinstance(obj, (list, tuple, set)):
@@ -391,7 +373,7 @@ def load_objects(start_obj, full_data):
             full_map[key] = obj
             field_names = obj.__class__.saved_fields
             if isinstance(field_names, str) and field_names == 'all':
-                field_names = vars(obj).keys()
+                field_names = list(vars(obj).keys())
                 field_names.remove('save_key')
             for fname in field_names:
                 map_existing(getattr(obj, fname))
@@ -415,7 +397,7 @@ def load_objects(start_obj, full_data):
             pass
         obj_data = full_data[obj_key]
         changes = {}
-        for key, value in obj_data.items():
+        for key, value in list(obj_data.items()):
             new_value = inflate(value, obj)
             old_value = getattr(obj, key)
             if new_value != old_value:
@@ -430,7 +412,7 @@ def load_objects(start_obj, full_data):
         if hasattr(obj, 'after_restore'):
             obj.after_restore(changes)
         else:
-            print ' *obj %s (%s) after_restore -method missing *' % (obj, type(obj))
+            print(' *obj %s (%s) after_restore -method missing *' % (obj, type(obj)))
         return obj
 
 
@@ -442,11 +424,11 @@ def load_objects(start_obj, full_data):
         :param host_obj:
         :return:
         """
-        if isinstance(data, (int, float, str, unicode)):
+        if isinstance(data, (int, float, str)):
             return data
         elif isinstance(data, dict):
             result = {}
-            for key, value in data.items():
+            for key, value in list(data.items()):
                 value = inflate(value, host_obj)
                 result[key] = value
             return result
@@ -473,7 +455,7 @@ def load_objects(start_obj, full_data):
                     f.fromString(data[1])
                     return f
                 else:
-                    print 'unknown QObject: ', data
+                    print('unknown QObject: ', data)
             elif data and isinstance(data[0], str) and data[0] == '*ref*':
                 return restore(data[1], data[2], host_obj)
             else:
@@ -514,11 +496,11 @@ def save_object(obj, saved_objs, open_refs, ignore=None):
         If object is one of Kataja's own data classes, then save its save_key
         """
 
-        if isinstance(data, (int, float, str, unicode)):
+        if isinstance(data, (int, float, str)):
             return data
         elif isinstance(data, dict):
             result = {}
-            for key, value in data.items():
+            for key, value in list(data.items()):
                 value = _simplify(value)
                 result[key] = value
             return result
@@ -565,19 +547,19 @@ def save_object(obj, saved_objs, open_refs, ignore=None):
                 open_refs[key] = data
             return '*ref*', key, data.__class__.__name__
         else:
-            print 'simplifying unknown data type:', data, type(data)
+            print("simplifying unknown data type:", data, type(data))
             return str(data)
 
 
     key = getattr(obj.__class__, 'singleton_key', None) or getattr(obj, 'save_key', None)
     if not key:
-        print "trying to save object that doesn't support our save protocol:", obj
-        raise
+        print("trying to save object that doesn't support our save protocol:", obj)
+        raise Exception("Trying to save object that doesn't support save protocol")
     if key in saved_objs:
         return
     field_names = obj.__class__.saved_fields
     if isinstance(field_names, str) and field_names == 'all':
-        field_names = vars(obj).keys()
+        field_names = list(vars(obj).keys())
         if 'save_key' in field_names:
             field_names.remove('save_key')
     obj_data = {}

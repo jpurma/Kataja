@@ -51,7 +51,7 @@ class LeftFirstHexTree(BaseVisualization):
         :param forest:
         :param loading:
         """
-        print 'preparing LeftFirstHexTree'
+        print('preparing LeftFirstHexTree')
         self.forest = forest
         self._hits = {}
         self._max_hits = {}
@@ -115,7 +115,7 @@ class LeftFirstHexTree(BaseVisualization):
             :param new_area:
             :return:
             """
-            for area in self.areas.values():
+            for area in list(self.areas.values()):
                 if new_area.intersects(area):
                     return False
             return True
@@ -169,7 +169,7 @@ class LeftFirstHexTree(BaseVisualization):
                 draw_node(left, node, is_left=True, allow_crossing=allow_crossing)
 
             if self.iterations > 100:
-                print self.iterations
+                print(self.iterations)
                 allow_crossing = True
 
             if parent:
@@ -246,29 +246,29 @@ class LeftFirstHexTree(BaseVisualization):
             left = d['left']
             parent = d['parent']
             if right and self.nodes[right.save_key]['placed']:
-                print 'using right as reference'
+                print('using right as reference')
                 data = self.nodes[right.save_key]
                 dx = -math.cos(d['angle']) * self.edge
                 dy = -math.sin(d['angle']) * self.edge
             elif left and self.nodes[left.save_key]['placed']:
-                print '*****using left as reference'
+                print('*****using left as reference')
                 data = self.nodes[left.save_key]
                 dx = -math.cos(d['angle']) * self.edge
                 dy = -math.sin(d['angle']) * self.edge
             elif parent and self.nodes[parent.save_key]['placed']:
-                print 'using parent as reference'
+                print('using parent as reference')
                 data = self.nodes[parent.save_key]
                 dx = math.cos(d['angle']) * self.edge
                 dy = math.sin(d['angle']) * self.edge
             elif is_first:
-                print 'using nothing as reference'
+                print('using nothing as reference')
                 dx = 0
                 dy = 0
                 data = d
             else:
-                print 'postponing this'
+                print('postponing this')
                 return False
-            print math.degrees(d['angle']), dx, dy
+            print(math.degrees(d['angle']), dx, dy)
             d['x'] = data['x'] + dx
             d['y'] = data['y'] + dy
             d['placed'] = True
@@ -291,7 +291,7 @@ class LeftFirstHexTree(BaseVisualization):
             is_first = True
             while self.node_list or self.postponed_list:
                 last = self.node_list.pop()
-                print 'drawing node ', last
+                print('drawing node ', last)
                 placed = draw_node(last, is_first=is_first)
                 is_first = False
                 if not placed:
@@ -319,7 +319,7 @@ class LeftFirstHexTree(BaseVisualization):
             :param new_area:
             :return:
             """
-            for area in self.areas.values():
+            for area in list(self.areas.values()):
                 if new_area.intersects(area):
                     return False
             return True
@@ -366,7 +366,7 @@ class LeftFirstHexTree(BaseVisualization):
                 return
 
             if self.iterations > 100:
-                print self.iterations
+                print(self.iterations)
                 allow_crossing = True
 
             if parent:

@@ -25,11 +25,11 @@
 
 
 from PyQt5.QtCore import QPointF as Pf, Qt
-
 import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
-from Edge import Edge
+
+from .Edge import Edge
 from kataja.ConstituentNode import ConstituentNode
 from kataja.Controller import ctrl, prefs, qt_prefs
 from kataja.TouchArea import TouchArea
@@ -94,7 +94,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         :param args:
         """
         receiving_items = self._signal_forwarding.get(signal, [])
-        print signal, receiving_items, self._signal_forwarding
+        print(signal, receiving_items, self._signal_forwarding)
         for item in receiving_items:
             item.receive_signal(signal, *args)
 
@@ -150,10 +150,10 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         """
         if self.displayed_forest:
-            for e in self.displayed_forest.edges.values():
+            for e in list(self.displayed_forest.edges.values()):
                 e.update_shape_method()
                 e.update()
-        print 'received signal'
+        print('received signal')
 
     # ####
 
@@ -180,7 +180,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         rights = []
         tops = []
         bottoms = []
-        for item in self.items():
+        for item in list(self.items()):
             if isinstance(item, ConstituentNode) and not item.is_fading_away():
                 # if item.uses_scope_area:
                 # br = item.scope_rect
@@ -188,7 +188,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 # lefts.append(x + br.left())
                 # rights.append(x + br.right())
                 # tops.append(y + br.top())
-                #     bottoms.append(y + br.bottom())
+                # bottoms.append(y + br.bottom())
                 # else:
                 top, right, bottom, left = item.magnets
                 x, y, z = item.get_current_position()  # try using final position here
@@ -259,7 +259,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         :param direction:
         """
-        selectables = [(item, to_tuple(item.sceneBoundingRect().center())) for item in self.items() if
+        selectables = [(item, to_tuple(item.sceneBoundingRect().center())) for item in list(self.items()) if
                        getattr(item, 'selectable', False) and item.is_visible()]
         # debugging plotter
         # for item, pos in selectables:
@@ -470,7 +470,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         :param event:
         :return:
         """
-        print 'gs mousePressEvent'
+        print('gs mousePressEvent')
         x, y = to_tuple(event.scenePos())
         um = self.main.ui_manager
         assert (not ctrl.pressed)
@@ -485,7 +485,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             consumed = um.mouse_press_event(closest_item, event)
             if consumed:
                 self.graph_view.setDragMode(QtWidgets.QGraphicsView.NoDrag)
-                print 'eating gs mousePressEvent 1'
+                print('eating gs mousePressEvent 1')
                 return None
             ui_items.remove(closest_item)
         # It wasn't consumed, continue with other selectables:
@@ -495,11 +495,11 @@ class GraphScene(QtWidgets.QGraphicsScene):
             if closest_item:
                 ctrl.pressed = closest_item
                 if closest_item.draggable:
-                    print 'pressed on ', closest_item
-                    print '--- turning drag hand off ---'
+                    print('pressed on ', closest_item)
+                    print('--- turning drag hand off ---')
                     self.graph_view.setDragMode(QtWidgets.QGraphicsView.NoDrag)
                     self._drag_start_point = to_tuple(event.screenPos())
-            print 'eating gs mousePressEvent 2'
+            print('eating gs mousePressEvent 2')
             return None  # QtWidgets.QGraphicsScene.mousePressEvent(self, event)  # None
         else:
             return QtWidgets.QGraphicsScene.mousePressEvent(self, event)
@@ -510,7 +510,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
 
         """
-        print '--- start dragging ---'
+        print('--- start dragging ---')
         ctrl.watch_for_drag_end = True
         # these should be activated by constituentnode instead in start_dragging -method
         # for ma in ctrl.forest.touch_areas:
@@ -524,7 +524,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
 
         """
-        print '--- killing dragging ---'
+        print('--- killing dragging ---')
         ctrl.dragged = set()
         ctrl.dragged_positions = set()
         ctrl.pressed = None
@@ -533,7 +533,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         f = self.main.forest
         ctrl.main.ui_manager.remove_touch_areas()  # @UndefinedVariable
         ctrl.main.ui_manager.update_touch_areas()  # @UndefinedVariable
-        print '--- turning drag hand on ---'
+        print('--- turning drag hand on ---')
         self.graph_view.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
 
 
@@ -543,20 +543,20 @@ class GraphScene(QtWidgets.QGraphicsScene):
         :param event:
         :return:
         """
-        print 'gs mouseReleaseEvent'
+        print('gs mouseReleaseEvent')
         self.graph_view.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
 
         consumed = self.main.ui_manager.mouse_release_event(event)
         if consumed:
-            print 'mouse release consumed, exit now'
+            print('mouse release consumed, exit now')
             ctrl.main.action_finished()  # @UndefinedVariable
-            print 'eating gs mouseReleaseEvent'
+            print('eating gs mouseReleaseEvent')
             return
 
         if self._dblclick and not ctrl.pressed:  # doubleclick sends one release event at the end, swallow that
             self._dblclick = False
-            print 'swallowed doubleclick'
-            print 'eating gs mouseReleaseEvent'
+            print('swallowed doubleclick')
+            print('eating gs mouseReleaseEvent')
             return
         elif ctrl.pressed:
 
@@ -569,14 +569,14 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 self.kill_dragging()
             elif pressed.sceneBoundingRect().contains(x, y):
                 if pressed.clickable:
-                    print 'click on ', pressed
+                    print('click on ', pressed)
                     success = pressed.click(event)
                 pressed.update()
             ctrl.pressed = None
             if success:
                 ctrl.main.action_finished()  # @UndefinedVariable
-            print 'set pressed to none'
-            print 'eating gs mouseReleaseEvent'
+            print('set pressed to none')
+            print('eating gs mouseReleaseEvent')
             return None  # this mouseRelease is now consumed
         else:
             if event.modifiers() == Qt.ShiftModifier:
@@ -642,7 +642,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         :param event:
         """
-        print 'dropEvent registered'
+        print('dropEvent registered')
         QtWidgets.QGraphicsScene.dropEvent(self, event)
 
     def mouseDoubleClickEvent(self, event):
@@ -651,7 +651,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         :param event:
         :return:
         """
-        print 'doubleClick registered'
+        print('doubleClick registered')
         self._dblclick = True
         QtWidgets.QGraphicsScene.mouseDoubleClickEvent(self, event)
         found = False
@@ -740,7 +740,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         # for ant in self.ants:
         # ant.moveBy(random.random()*4-2, random.random()*4-2)
-        for e in f.edges.values():
+        for e in list(f.edges.values()):
             e.update_end_points()
             e.make_path()
             e.update()
@@ -800,7 +800,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         # self._left_border = x
                         # resize_required = True
                         # elif x > self._right_border:
-                        #     self._right_border = x
+                        # self._right_border = x
                         #     resize_required = True
                         # if y < self._top_border:
                         #     self._top_border = y
@@ -822,7 +822,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         # for xvel,yvel,zvel, node in moved_nodes:
                         # x, y, z = node.get_current_position()
                         # if x < self._left_border:
-                        #         self._left_border = x
+                        # self._left_border = x
                         #         resize_required = True
                         #     elif x > self._right_border:
                         #         self._right_border = x

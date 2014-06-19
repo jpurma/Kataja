@@ -34,7 +34,7 @@ class BareConstituent(BaseConstituent):
     saved_fields = list(set(BaseConstituent.saved_fields + saved_fields))
 
 
-    def __init__(self, cid=u'', left=None, right=None, source='', data=None):
+    def __init__(self, cid='', left=None, right=None, source='', data=None):
         if not data:
             data = {}
         BaseConstituent.__init__(self, cid, left, right, source, data)

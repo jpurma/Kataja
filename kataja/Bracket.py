@@ -27,6 +27,7 @@ from PyQt5 import QtWidgets
 # noinspection PyUnresolvedReferences
 from PyQt5.QtCore import Qt
 from kataja.Movable import Movable
+import sys
 
 
 class Bracket(Movable, QtWidgets.QGraphicsSimpleTextItem):
@@ -70,7 +71,6 @@ class Bracket(Movable, QtWidgets.QGraphicsSimpleTextItem):
         else:
             self.key = 'rb_%s' % host.save_key
 
-        intern(self.key)
         self.setBrush(self.host.color())
         self.update_position()
         self.setAcceptHoverEvents(True)

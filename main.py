@@ -15,7 +15,7 @@ import sys
 # PyInstaller-2.1/pyinstaller.py main.py --clean -n Kataja -i kataja.icns --windowed
 
 if __name__ == '__main__':
-    print QtWidgets.QStyleFactory.keys()
+    print(list(QtWidgets.QStyleFactory.keys()))
     QtWidgets.QApplication.setStyle('Fusion')
 
     app = QtWidgets.QApplication(sys.argv)

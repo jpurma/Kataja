@@ -1,8 +1,8 @@
 # coding=utf-8
 from PyQt5 import QtCore, QtWidgets
+from PyQt5.QtCore import QPointF as Pf
 
 from kataja.Controller import prefs
-from PyQt5.QtCore import QPointF as Pf
 
 
 class FadingSymbol(QtWidgets.QGraphicsPixmapItem):

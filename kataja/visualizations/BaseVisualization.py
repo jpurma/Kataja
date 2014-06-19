@@ -112,7 +112,7 @@ class BaseVisualization:
 
     # for node in ctrl.scene.visible_nodes(self.forest):
     # node.reset()
-    #         node.update_label()
+    # node.update_label()
     #         vis = node.is_visible()
     #         node.update_visibility(show_edges = True, scope = 0)
     #         if node.is_visible() != vis:

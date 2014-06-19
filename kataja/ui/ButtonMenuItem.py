@@ -5,10 +5,10 @@ Created on 28.8.2013
 @author: purma
 """
 from PyQt5 import QtWidgets, QtCore
+from PyQt5.QtCore import QPointF as Pf
 
 from kataja.ui.MenuItem import MenuItem
 from kataja.Controller import ctrl, qt_prefs
-from PyQt5.QtCore import QPointF as Pf
 
 
 class ButtonMenuItem(MenuItem, QtWidgets.QGraphicsSimpleTextItem):
@@ -43,7 +43,7 @@ class ButtonMenuItem(MenuItem, QtWidgets.QGraphicsSimpleTextItem):
             painter.drawRoundedRect(self._inner_bounding_rect, 5, 5)
             r = QtCore.QRectF(self._inner_bounding_rect.topRight() + Pf(-2, 5), QtCore.QSizeF(15, 15))
             painter.drawRect(r)
-            painter.drawText(r, u'\u21A9')
+            painter.drawText(r, '\u21A9')
             self.setBrush(cm.paper())
         elif self._hovering:
             painter.setBrush(cm.hover(cm.ui()))

@@ -23,7 +23,7 @@
 # ############################################################################
 
 
-from ConfigParser import ConfigParser
+from configparser import ConfigParser
 from random import randint, choice
 import re
 
@@ -72,7 +72,7 @@ class ConfigurableUG:
 
 
     def undefined(self, *args, **kw):
-        print 'Undefined function called'
+        print('Undefined function called')
 
     # ## Definitions for edges, operations and conditions from Carnie 2010
 
@@ -114,11 +114,11 @@ class ConfigurableUG:
     # ## Dominance Axioms
 
     def check_dominance_axioms(self, structure):
-        print 'Reflexivity Axiom:', self.reflexivity_axiom(structure)
-        print 'Single Root Axiom:', self.single_root_axiom(structure)
-        print 'Dominance Transitivity Axiom:', self.dominance_transitivity_axiom(structure)
-        print 'Dominance Antisymmetry Axiom:', self.dominance_antisymmetry_axiom(structure)
-        print 'No Multiple Mothers Axiom:', self.no_multiple_mothers_axiom(structure)
+        print('Reflexivity Axiom:', self.reflexivity_axiom(structure))
+        print('Single Root Axiom:', self.single_root_axiom(structure))
+        print('Dominance Transitivity Axiom:', self.dominance_transitivity_axiom(structure))
+        print('Dominance Antisymmetry Axiom:', self.dominance_antisymmetry_axiom(structure))
+        print('No Multiple Mothers Axiom:', self.no_multiple_mothers_axiom(structure))
 
     def reflexivity_axiom(self, structure):
         """ (A1) all:x belonging to N, x dominates x. (Carnie 2010, p. 31) """
@@ -306,11 +306,11 @@ class ConfigurableUG:
     # ## Precedence axioms
 
     def check_precedence_axioms(self, structure):
-        print 'Precedence Transitivity Axiom: ', self.precedence_transitivity_axiom(structure)
-        print 'Precedence Asymmetry Axiom: ', self.precedence_asymmetry_axiom(structure)
-        print 'Precedence Irreflexivity Axiom: ', self.precedence_irreflexivity_axiom(structure)
-        print 'Precedence Exclusivity Axiom: ', self.precedence_exclusivity_axiom(structure)
-        print 'Precedence Non-tangling Axiom: ', self.precedence_non_tangling_axiom(structure)
+        print('Precedence Transitivity Axiom: ', self.precedence_transitivity_axiom(structure))
+        print('Precedence Asymmetry Axiom: ', self.precedence_asymmetry_axiom(structure))
+        print('Precedence Irreflexivity Axiom: ', self.precedence_irreflexivity_axiom(structure))
+        print('Precedence Exclusivity Axiom: ', self.precedence_exclusivity_axiom(structure))
+        print('Precedence Non-tangling Axiom: ', self.precedence_non_tangling_axiom(structure))
 
     def precedence_transitivity_axiom(self, structure):
         """ (A6) P is transitive: for all x,y,z in N [(x precedes y) & (y precedes z) -> (x precedes z)]  (Carnie 2010, p. 42)"""
@@ -767,7 +767,7 @@ class ConfigurableUG:
                     return -1
                 elif first == y and second == x:
                     return 1
-            print "failed to sort '%s' and '%s'" % (x, y)
+            print("failed to sort '%s' and '%s'" % (x, y))
             raise ValueError
 
         try:
@@ -826,7 +826,7 @@ class ConfigurableUG:
             gamma = self.head_is_label([alpha, beta])
             delta.setLabel(gamma)
         except ValueError:
-            print 'Labeling problem'
+            print('Labeling problem')
         return delta
 
 
@@ -914,8 +914,8 @@ class ConfigurableUG:
         """
         matches = []
         selects = []
-        for key, f_left in left.features.iteritems():
-            if key in right.features.iterkeys():
+        for key, f_left in left.features.items():
+            if key in iter(right.features.keys()):
                 f_right = right.features[key]
                 if (f_left.value == '-' and f_right.value == '+') or (f_left.value == '+' and f_right.value == '-'):
                     matches.append(key)
@@ -1028,7 +1028,7 @@ class ConfigurableUG:
                 raise "Word '%s' missing from the lexicon" % word
             self.structure = self.Merge(constituent, self.structure)
         if not silent:
-            print 'Finished: %s' % self.structure
+            print('Finished: %s' % self.structure)
         return self.structure
 
 
@@ -1108,7 +1108,7 @@ class ConfigurableUG:
                 if found:
                     linear.append(item)
 
-        print linear
+        print(linear)
         return linear
 
 

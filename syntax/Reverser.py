@@ -36,7 +36,7 @@ def log(message, importance=3):
     :param importance:
     """
     if importance >= log_level:
-        print message
+        print(message)
 
 
 class Node:
@@ -339,7 +339,7 @@ def pause():
 
 
     """
-    N = raw_input('')
+    N = input('')
     if N == 'q':
         sys.exit()
 
@@ -366,7 +366,7 @@ class Parser:
 
         :param n:
         """
-        for item in self.lexicon.values():
+        for item in list(self.lexicon.values()):
             item.clearFeatures()
             for c in range(0, n):
                 feature = None
@@ -375,8 +375,8 @@ class Parser:
                     feature = self.features[randint(0, len(self.features) - 1)]
                 polarity = '-=+'[randint(0, 2)]
                 item.addFeature(polarity + feature)
-        print 'Lexicon:',
-        print self.lexicon
+        print('Lexicon:', end=' ')
+        print(self.lexicon)
 
 
     def adjust_one_feature(self, words):
@@ -396,8 +396,8 @@ class Parser:
         polarity = '-=+'[randint(0, 2)]
         node.addFeature(polarity + feature)
         self.lexicon[word] = node
-        print 'Lexicon:',
-        print self.lexicon
+        print('Lexicon:', end=' ')
+        print(self.lexicon)
 
 
     def addNode(self, node):
@@ -408,15 +408,15 @@ class Parser:
         """
         for i, tree in enumerate(self.trees):
             if not tree:
-                print node, 'fills empty position'
+                print(node, 'fills empty position')
                 self.trees[i] = node
                 return True
             if node.match(tree):
-                print '%s merged to [%s]' % (node, i)
+                print('%s merged to [%s]' % (node, i))
                 merged = Merge(node, tree)
                 self.trees[i] = merged
                 return True
-        print "couldn't add node"
+        print("couldn't add node")
         return False
 
     def repair(self):
@@ -426,7 +426,7 @@ class Parser:
 
         :return:
         """
-        print 'doing repairs...',
+        print('doing repairs...', end=' ')
         for i, left in enumerate(self.trees):
             if not left:
                 continue
@@ -434,7 +434,7 @@ class Parser:
                 if (not right) or i == j:
                     continue
                 if left.match(right):
-                    print 'unifying merge, [%s] to [%s]' % (i, j)
+                    print('unifying merge, [%s] to [%s]' % (i, j))
                     merged = Merge(left, right)
                     self.trees[j] = merged
                     self.trees[i] = None
@@ -447,15 +447,15 @@ class Parser:
                 node = left.findMatchFor(right)
                 if node and node != left and node.get_features() != right.get_features():
                     if j == i:
-                        print 'internal merge, %s to %s' % (node, right)
+                        print('internal merge, %s to %s' % (node, right))
                     else:
-                        print 'crossing merge, %s to %s' % (node, right)
+                        print('crossing merge, %s to %s' % (node, right))
                     merged = Merge(node, right)
                     self.trees[j] = merged
                     # print merged
                     # pause()
                     return True
-        print 'None'
+        print('None')
 
     def parse(self, original_feed):
         """
@@ -471,8 +471,8 @@ class Parser:
             feed = list(original_feed)
             while feed:
                 text = feed.pop(0)
-                print '***************************'
-                print text
+                print('***************************')
+                print(text)
                 self.text = text
                 stack = text.split()
                 stack.reverse()
@@ -491,31 +491,31 @@ class Parser:
                     # merge it to somewhere
                     crash = False
                     success = self.addNode(node)
-                    print self.trees
+                    print(self.trees)
 
                     # there are two possibilities:
                     # 1. repair only when necessary (and clean at end)
                     if not repair_all:
                         while not success:
-                            print "can't merge, trying to repair."
+                            print("can't merge, trying to repair.")
                             repair_is_success = self.repair()
-                            print self.trees
+                            print(self.trees)
                             if not repair_is_success:
-                                print 'Repairs failed.'
+                                print('Repairs failed.')
                                 crash = True
                                 break
                             success = self.addNode(node)
-                            print self.trees
+                            print(self.trees)
                     # 2. repair all that can be repaired
                     if repair_all:
                         if not success:
                             crash = True
                             break
                         while self.repair():
-                            print 'repaired:', self.trees
+                            print('repaired:', self.trees)
                             # endless recursion
                             if len(str(self.trees)) > 600:
-                                print 'Endless recursion, aborting.'
+                                print('Endless recursion, aborting.')
                                 crash = True
                                 break
 
@@ -523,18 +523,18 @@ class Parser:
                         break
                 if not crash:
                     if not repair_all:
-                        print 'trying final repairs'
+                        print('trying final repairs')
                         while self.repair():
-                            print 'final repairs:', self.trees
+                            print('final repairs:', self.trees)
                             # endless recursion
                             if len(str(self.trees)) > 600:
-                                print 'Endless recursion, aborting.'
+                                print('Endless recursion, aborting.')
                                 crash = True
                                 break
 
                 if not crash:
                     if self.linearize() != self.text:
-                        print "linearization doesn't match with original:"
+                        print("linearization doesn't match with original:")
                         crash = True
                         # else:
 
@@ -543,7 +543,7 @@ class Parser:
                     not_empty = 0
                     for tree in self.trees:
                         if tree and tree.getNegFeatures() or tree and tree.getPosFeatures():
-                            print 'too many features left:' + tree.printFeatures()
+                            print('too many features left:' + tree.printFeatures())
                             crash = True
                             break
                         if tree:
@@ -553,19 +553,19 @@ class Parser:
                 if crash:
                     break
                 else:
-                    print '**** SUCCESS! ****', c
-                    print self.linearize()
+                    print('**** SUCCESS! ****', c)
+                    print(self.linearize())
                     self.results.append(self.trees)
                     for i, tree in enumerate(self.trees):
-                        print '[%s]: %s' % (i, tree)
+                        print('[%s]: %s' % (i, tree))
                     J_for_these_features += 1
 
                     # pause()
             if crash:
                 c += 1
-                print self.linearize()
+                print(self.linearize())
                 # pause()
-                print '** Round %s **' % c
+                print('** Round %s **' % c)
                 self.trees = self.trees_n * [None]
                 J_for_these_features += 1
 
@@ -582,11 +582,11 @@ class Parser:
                 self.results = []
                 pause()
 
-        print '** Finished at round %s **' % c
-        print self.linearize()
-        print self.results
-        print self.lexicon
-        print 'done.'
+        print('** Finished at round %s **' % c)
+        print(self.linearize())
+        print(self.results)
+        print(self.lexicon)
+        print('done.')
 
     def linearize(self):
         """

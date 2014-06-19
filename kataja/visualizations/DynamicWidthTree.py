@@ -122,7 +122,7 @@ class DynamicWidthTree(BaseVisualization):
 
             # --d2---------->  <-d1-----------
             # |   -d1->     |  |   <-d2-     |
-            #  [ N ]   [  O  ]  [ O ]   [  N  ]
+            # [ N ]   [  O  ]  [ O ]   [  N  ]
             d1 = int(other_x - width - node_x)  # 300 - 60 -240
             d2 = int(other_x + width - node_x)
             dx = 0

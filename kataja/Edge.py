@@ -26,11 +26,11 @@ from collections import OrderedDict
 from math import sin, cos, pi, acos
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 from PyQt5.QtCore import QPointF as Pf, Qt
+
 from kataja.Controller import ctrl
 import kataja.globals as g
-import utils
+from kataja import utils
 
 
 pipi = pi * 2.0
@@ -275,6 +275,10 @@ def shaped_fixed_linear_path(self):
     elif self.align is RIGHT:
         x_diff = 4
         y_diff = 4
+    else:
+        print("Unknown align value in Edge: ", self)
+        x_diff = 2
+        y_diff = 2
     c = [(dx - x_diff, dy - y_diff, sz), (dx + x_diff, dy - y_diff, sz)]
     path = QtGui.QPainterPath(Pf(sx, sy))
     path.quadTo(c[0][0], c[0][1], dx, dy)
@@ -423,7 +427,6 @@ class Edge(QtWidgets.QGraphicsItem):
         QtWidgets.QGraphicsItem.__init__(self)
         self.forest = forest
         self.save_key = 'R%s' % id(self)
-        intern(self.save_key)
 
         self.start_point = (0, 0, 0)
         self.end_point = (0, 0, 0)
@@ -518,15 +521,16 @@ class Edge(QtWidgets.QGraphicsItem):
         :return: :raise:
         """
         if touch_area.place in self.touch_areas:
-            print 'Touch area already exists. Someone is confused.'
-            raise
+            print('Touch area already exists. Someone is confused.')
+            raise Exception("Touch area exists already")
         self.touch_areas[touch_area.place] = touch_area
         return touch_area
 
     def remove_touch_area(self, touch_area):
         """
-
-        :param touch_area:
+        Forget about given TouchArea. Does not do anything about its scene presence, only cuts the association between
+        edge and TouchArea.
+        :param touch_area: TouchArea
         """
         del self.touch_areas[touch_area.place]
 
@@ -534,9 +538,9 @@ class Edge(QtWidgets.QGraphicsItem):
 
     def color(self, value=None):
         """
-
-        :param value:
-        :return:
+        get color of the edge, or set it.
+        :param value: QColor
+        :return: QColor
         """
         if value is None:
             if self._color is None:
@@ -548,7 +552,9 @@ class Edge(QtWidgets.QGraphicsItem):
             self._color = value
 
     def contextual_color(self):
-        """ Drawing color that is sensitive to node's state """
+        """ Drawing color that is sensitive to node's state
+        :return: QColor
+        """
         if ctrl.pressed == self:
             return ctrl.cm().active(self.color())
         elif self._hovering:
@@ -562,9 +568,9 @@ class Edge(QtWidgets.QGraphicsItem):
 
     def has_outline(self, value=None):
         """
-
-        :param value:
-        :return:
+        Edge should draw outline. If value is given, has_outline is set to value.
+        :param value:boolean
+        :return:boolean
         """
         if value is None:
             if self._has_outline is None:
@@ -768,9 +774,9 @@ class Edge(QtWidgets.QGraphicsItem):
 
     def __unicode__(self):
         if self.start and self.end:
-            return u'<%s %s-%s %s>' % (self.edge_type, self.start, self.end, self.align)
+            return '<%s %s-%s %s>' % (self.edge_type, self.start, self.end, self.align)
         else:
-            return u'<%s stub from %s to %s>' % (self.edge_type, self.start, self.end)
+            return '<%s stub from %s to %s>' % (self.edge_type, self.start, self.end)
 
 
     def drop_to(self, x, y):
@@ -791,13 +797,13 @@ class Edge(QtWidgets.QGraphicsItem):
             self._visible = False
             self.hide()
             ctrl.main.ui_manager.hide_control_points(self)  # @UndefinedVariable
-            for touch_area in self.touch_areas.values():
+            for touch_area in list(self.touch_areas.values()):
                 touch_area.hide()
         elif (not v) and visible:
             self._visible = True
             self.show()
             ctrl.main.ui_manager.show_control_points(self)  # @UndefinedVariable
-            for touch_area in self.touch_areas.values():
+            for touch_area in list(self.touch_areas.values()):
                 touch_area.show()
         else:
             self._visible = visible
@@ -885,7 +891,9 @@ class Edge(QtWidgets.QGraphicsItem):
 
     # ## Qt paint method override
 
-    def paint(self, painter, option, widget):
+
+
+    def paint(self, painter, option, widget=None):
         """
 
         :param painter:
@@ -961,7 +969,7 @@ class Edge(QtWidgets.QGraphicsItem):
     # return QtWidgets.QGraphicsItem.sceneEvent(self, event)
 
 
-    #### Restoring after load / undo #########################################
+    # ### Restoring after load / undo #########################################
 
     def after_restore(self, changes):
         """ Fix derived attributes

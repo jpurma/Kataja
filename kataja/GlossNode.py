@@ -22,9 +22,12 @@
 #
 # ############################################################################
 
+import sys
+
 from kataja.Controller import qt_prefs
 from kataja.Node import Node
 from kataja.globals import GLOSS_EDGE, GLOSS_NODE
+
 
 color_map = {'tense': 0, 'person': 2, 'number': 4, 'case': 6, 'unknown': 3}
 
@@ -44,12 +47,11 @@ class GlossNode(Node):
     def __init__(self, host=None, restoring=False):
         forest = host.forest
         if not forest:
-            raise
+            raise Exception("Forest is missing")
         Node.__init__(self, forest=forest)
         self.host = host
         self.level = 2
         self.save_key = 'GlN%s' % host.syntactic_object.uid
-        intern(self.save_key)
         self.label_font = qt_prefs.sc_font
         # self.color = colors.drawing2
         if not restoring:
@@ -65,7 +67,7 @@ class GlossNode(Node):
         """
         pass
         # self.color = colors.drawing2
-        #if self._label_complex:
+        # if self._label_complex:
         #    self._label_complex.setDefaultTextColor(colors.drawing2)
 
 
@@ -73,7 +75,7 @@ class GlossNode(Node):
         return '%s, gloss for %s' % (self.host.get_gloss_text(), self.host)
 
     def __unicode__(self):
-        return u'%s, gloss for %s' % (self.host.get_gloss_text(), self.host)
+        return '%s, gloss for %s' % (self.host.get_gloss_text(), self.host)
 
     def get_text_for_label(self):
         """ This should be overridden if there are alternative displays for label """

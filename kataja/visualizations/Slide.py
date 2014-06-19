@@ -52,6 +52,6 @@ class Slide(BaseVisualization):
         """
         pass
         # if not ctrl.slide.scene():
-        #    ctrl.scene.addItem(ctrl.slide)
+        # ctrl.scene.addItem(ctrl.slide)
         #    ctrl.slide.show()
         # ctrl.slide.setPos(0,0)

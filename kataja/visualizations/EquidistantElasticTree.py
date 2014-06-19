@@ -20,7 +20,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 
 import math
@@ -116,7 +116,7 @@ class EquidistantElasticTree(BaseVisualization):
                 else:
                     pass
             else:
-                print 'hidden edges up'
+                print('hidden edges up')
         for edge in node.edges_down:
             if edge.is_visible():
                 start_x, start_y, start_z = edge.start_point
@@ -140,7 +140,7 @@ class EquidistantElasticTree(BaseVisualization):
                 else:
                     pass
             else:
-                print 'hidden edges down'
+                print('hidden edges down')
         if node.bind_x:
             xvel = 0
         if node.bind_y:

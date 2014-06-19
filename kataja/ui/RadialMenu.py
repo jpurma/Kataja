@@ -128,7 +128,7 @@ class RadialMenu(QtWidgets.QGraphicsItem, MovableUI):
     # for menu in self.menu_items:
     # mx, my = menu.relative_position
     # mw, mh = menu.boundingRect().width() * 0.5, menu.boundingRect().height() * 0.5
-    #         if mx - mw < min_x:
+    # if mx - mw < min_x:
     #             min_x = mx - mw
     #         if mx + mw > max_x:
     #             max_x = mx + mw

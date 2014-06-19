@@ -43,7 +43,7 @@ class TwoColorIcon(QtGui.QIcon):
         :param kwargs:
         :return:
         """
-        print 'using twocoloricon painter'
+        print('using twocoloricon painter')
         return QtGui.QIcon.paint(self, painter, kwargs)
 
 
@@ -102,7 +102,7 @@ class UIPanel(QtWidgets.QDockWidget):
 
         :param area:
         """
-        print 'UIPanel %s docked: %s' % (self, area)
+        print('UIPanel %s docked: %s' % (self, area))
 
     def report_top_level(self, floating):
         """
@@ -112,7 +112,7 @@ class UIPanel(QtWidgets.QDockWidget):
         if floating:
             w, h = self.preferred_size
             self.resize(w, h)
-        print 'UIPanel %s floating: %s' % (self, floating)
+        print('UIPanel %s floating: %s' % (self, floating))
 
     def update_field(self, field_key, field, value):
         """
@@ -150,7 +150,7 @@ class VisualizationPanel(UIPanel):
         selector = QtWidgets.QComboBox(self)
         # selector.setSizePolicy(label_policy)
         ui_buttons['visualization_selector'] = selector
-        selector.addItems(['%s (%s)' % (key, item.shortcut) for key, item in VISUALIZATIONS.items()])
+        selector.addItems(['%s (%s)' % (key, item.shortcut) for key, item in list(VISUALIZATIONS.items())])
         selector.activated.connect(self.submit_action)
         selector.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
         layout.addWidget(selector, 1, 0)
@@ -171,7 +171,7 @@ class VisualizationPanel(UIPanel):
         :param value:
         """
         if field_key == 'visualization_selector':
-            index = VISUALIZATIONS.keys().index(value)
+            index = list(VISUALIZATIONS.keys()).index(value)
             field.setCurrentIndex(index)
 
 
@@ -181,7 +181,7 @@ class VisualizationPanel(UIPanel):
 
         :return:
         """
-        print 'navigation panel asked for size hint'
+        print('navigation panel asked for size hint')
         return QtCore.QSize(300, 80)
 
     def submit_action(self, index):
@@ -189,7 +189,7 @@ class VisualizationPanel(UIPanel):
 
         :param index:
         """
-        action_key = VISUALIZATIONS.keys()[index]
+        action_key = list(VISUALIZATIONS.keys())[index]
         if action_key in self.parent()._actions:
             self.parent()._actions[action_key].trigger()
 
@@ -271,7 +271,7 @@ class NavigationPanel(UIPanel):
 
         :return:
         """
-        print 'navigation panel asked for size hint'
+        print('navigation panel asked for size hint')
         return QtCore.QSize(200, 80)
 
 
@@ -293,26 +293,26 @@ class LogPanel(UIPanel):
         w = 640
         h = 80
         self.preferred_size = (w, h)
-        print widget.sizePolicy().verticalPolicy()
+        print(widget.sizePolicy().verticalPolicy())
         widget.setSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
         self.setSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
         widget.resize(w, h)
         widget.sizeHint = self.sizeHint
         self.resize(w, h)
         self.setWidget(widget)
-        print widget.sizePolicy().verticalPolicy()
-        print self.sizePolicy().verticalPolicy()
+        print(widget.sizePolicy().verticalPolicy())
+        print(self.sizePolicy().verticalPolicy())
         # self.setMaximumSize(w,120)
 
         # self.resize(w, 80)
         # self.widget().resize(w, 80)
-        #self.widget().setGeometry(x, y + h, w, 80)
+        # self.widget().setGeometry(x, y + h, w, 80)
         #self.setGeometry(x, y + h, w, 80)
         self.widget().setFont(qt_prefs.menu_font)  # @UndefinedVariable
         self.widget().setAutoFillBackground(True)
         self.show()
 
-        print '*** created log panel ***'
+        print('*** created log panel ***')
 
     def sizeHint(self):
         """
@@ -412,7 +412,7 @@ class ColorWheelInner(QtWidgets.QWidget):
         self._flag_area = self._lum_box_x, self._lum_box_y + r * (1 - v), 8, 8
         painter.setBrush(cm.drawing())
         painter.drawRect(self._flag_area[0], self._flag_area[1], self._flag_area[2], self._flag_area[3])
-        #QtWidgets.QWidget.paintEvent(self, event)
+        # QtWidgets.QWidget.paintEvent(self, event)
 
     def wheelEvent(self, event):
         """
@@ -523,7 +523,7 @@ class LinesPanel(UIPanel):
         layout.setContentsMargins(4, 4, 4, 4)
         selector = QtWidgets.QComboBox(self)
         ui_buttons['line_type'] = selector
-        selector.addItems([lt for lt in SHAPE_PRESETS.keys()])
+        selector.addItems([lt for lt in list(SHAPE_PRESETS.keys())])
         selector.activated.connect(self.change_main_line_type)
         layout.addWidget(selector)
         inner.setLayout(layout)
@@ -534,7 +534,7 @@ class LinesPanel(UIPanel):
 
         :param index:
         """
-        ctrl.main.change_node_edge_shape(SHAPE_PRESETS.keys()[index])
+        ctrl.main.change_node_edge_shape(list(SHAPE_PRESETS.keys())[index])
 
 
 class ColorMappingPanel(UIPanel):
@@ -561,7 +561,7 @@ class ColorMappingPanel(UIPanel):
         selector = QtWidgets.QComboBox(self)
         ui_buttons['color_mode'] = selector
 
-        selector.addItems([c['name'] for c in prefs.color_modes.values()])
+        selector.addItems([c['name'] for c in list(prefs.color_modes.values())])
         selector.activated.connect(self.change_color_mode)
         self.mode_select = selector
         # selector.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
@@ -697,7 +697,7 @@ class ColorPanel(UIPanel):
         color_wheel_inner = QtWidgets.QWidget(self)
         inner.addItem(color_wheel_inner, "Main color")
         color_wheel_layout = QtWidgets.QVBoxLayout()
-        #color_wheel_layout.setContentsMargins(4, 4, 4, 4)
+        # color_wheel_layout.setContentsMargins(4, 4, 4, 4)
 
         label_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         button_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.MinimumExpanding)
@@ -706,7 +706,7 @@ class ColorPanel(UIPanel):
         #selector.setSizePolicy(label_policy)
         ui_buttons['color_mode'] = selector
 
-        selector.addItems([c['name'] for c in prefs.color_modes.values()])
+        selector.addItems([c['name'] for c in list(prefs.color_modes.values())])
         selector.activated.connect(self.change_color_mode)
         self.mode_select = selector
         #selector.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
@@ -819,8 +819,8 @@ class ColorPanel(UIPanel):
 
         :param mode:
         """
-        mode_key = prefs.color_modes.keys()[mode]
-        print 'changing color mode to:', mode, mode_key
+        mode_key = list(prefs.color_modes.keys())[mode]
+        print('changing color mode to:', mode, mode_key)
         ctrl.main.change_color_mode(mode_key)
 
     def remember_color(self):

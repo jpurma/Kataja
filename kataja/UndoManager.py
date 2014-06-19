@@ -24,7 +24,7 @@
 
 
 from kataja.utils import time_me, save_object, load_objects
-from Controller import ctrl
+from .Controller import ctrl
 
 
 class UndoManager:
@@ -65,9 +65,9 @@ class UndoManager:
         c = 0
         while open_refs and c < 10:
             c += 1
-            for obj in open_refs.values():
+            for obj in list(open_refs.values()):
                 save_object(obj, saved_objects, open_refs)
-        print 'total savedata: %s chars.' % len(str(saved_objects))
+        print('total savedata: %s chars.' % len(str(saved_objects)))
         return saved_objects
 
 
@@ -82,23 +82,23 @@ class UndoManager:
         :param msg:
         self._stack =  [, i-1: +- diff of previous state-1 and full_state ,   i: +- diff of previous_state and full_state)]
         """
-        print '*** undo manager: recording %s' % msg
+        print('*** undo manager: recording %s' % msg)
         saved_objects = self.take_snapshot()
 
         # Undo stack is cut 
-        print 'pre-cut stack size: %s, current index %s' % (len(self._stack), self._current)
+        print('pre-cut stack size: %s, current index %s' % (len(self._stack), self._current))
         self._stack = self._stack[:self._current]
         self._msg_stack = self._msg_stack[:self._current]
-        print 'cut stack size: %s, current index %s' % (len(self._stack), self._current)
+        print('cut stack size: %s, current index %s' % (len(self._stack), self._current))
         if self.full_state:
             diff = self.compare_saved_dicts(self.full_state, saved_objects)
-            print 'diff size: ', len(str(diff))
+            print('diff size: ', len(str(diff)))
             self._stack.append(diff)
             self._msg_stack.append(msg)
         self._current = len(self._stack)
         saved_objects['stack_index'] = self._current
         self.full_state = saved_objects
-        print 'recorded stack and updated full state. stack size & current index: %s' % len(self._stack)
+        print('recorded stack and updated full state. stack size & current index: %s' % len(self._stack))
 
     def compare_saved_dicts(self, d1, d2):
         """
@@ -110,7 +110,7 @@ class UndoManager:
         d2_missing = {}
         d2_has_more = dict(d2)
         diffs = {}
-        for key, i1 in d1.items():
+        for key, i1 in list(d1.items()):
             if key not in d2:
                 d2_missing[key] = i1
                 continue
@@ -142,64 +142,64 @@ class UndoManager:
         to_be_deleted = {}
 
         def _restore_older(state, diff):
-            for key, item in diff.items():
+            for key, item in list(diff.items()):
                 if isinstance(item, dict) and len(item) == 2 and 'old' in item and 'new' in item:
                     # restore older value 
                     if item['new'] != state[key]:
-                        print "weird, state should have the 'new' value of diff: %s %s" % (item['new'], state[key])
-                        raise
+                        print("weird, state should have the 'new' value of diff: %s %s" % (item['new'], state[key]))
+                        raise Exception("Weird state to restore")
                     else:
                         # print 'replaced %s (%s) with %s' % (key, state[key], item['old'])
                         state[key] = item['old']
                 elif key == '++':
                     # remove these objects from state
-                    for dkey in item.keys():
-                        print 'del ', dkey
+                    for dkey in list(item.keys()):
+                        print('del ', dkey)
                         to_be_deleted[dkey] = state[dkey]
                         del state[dkey]
                 elif key == '--':
                     # restore these objects to state
-                    for akey, aitem in item.items():
+                    for akey, aitem in list(item.items()):
                         state[akey] = aitem
                 elif key in state:
                     _restore_older(state[key], item)
 
         def _restore_newer(state, diff):
-            for key, item in diff.items():
+            for key, item in list(diff.items()):
                 if isinstance(item, dict) and len(item) == 2 and 'old' in item and 'new' in item:
                     # restore older value 
                     if item['old'] != state[key]:
-                        print "weird, state should have the 'old' value of diff: %s %s" % (item['old'], state[key])
-                        raise
+                        print("weird, state should have the 'old' value of diff: %s %s" % (item['old'], state[key]))
+                        raise Exception("Weird state to restore")
                     else:
                         # print 'replaced %s (%s) with %s' % (key, state[key], item['new'])
                         state[key] = item['new']
                 elif key == '++':
                     # restore these objects to state
-                    for akey, aitem in item.items():
+                    for akey, aitem in list(item.items()):
                         state[akey] = aitem
                 elif key == '--':
                     # remove these objects from state
-                    for dkey in item.keys():
-                        print 'del ', dkey
+                    for dkey in list(item.keys()):
+                        print('del ', dkey)
                         to_be_deleted[dkey] = state[dkey]
                         del state[dkey]
                 elif key in state:
                     _restore_newer(state[key], item)
 
 
-        print "full state's stack index: ", self.full_state['stack_index']
+        print("full state's stack index: ", self.full_state['stack_index'])
         if self._current < self.full_state['stack_index']:
             _restore_older(self.full_state, self._stack[self._current])
         elif self._current > self.full_state['stack_index']:
             _restore_newer(self.full_state, self._stack[self._current - 1])
         elif self._current == self.full_state['stack_index']:
-            print 'shouldnt restore to the current full state'
+            print('shouldnt restore to the current full state')
 
         self.full_state['stack_index'] = self._current
-        print 'modified the state, next we should restore forest to that state'
-        print 'current stack index and state: %s' % self._current
-        print 'to be deleted: ', to_be_deleted
+        print('modified the state, next we should restore forest to that state')
+        print('current stack index and state: %s' % self._current)
+        print('to be deleted: ', to_be_deleted)
         # forest_data = self.full_state[self.full_state['start_key']]
         load_objects(self.forest, self.full_state)
         self.forest.main.graph_scene.draw_forest(self.forest)
@@ -216,7 +216,7 @@ class UndoManager:
             ctrl.add_message('cannot undo')
         else:
             ctrl.add_message('undo - %s (%s)' % (self._msg_stack[self._current], self._current))
-            print 'undoing to stack index %s' % self._current
+            print('undoing to stack index %s' % self._current)
             self.restore()
 
 
@@ -231,7 +231,7 @@ class UndoManager:
             ctrl.add_message('cannot redo')
         else:
             ctrl.add_message('redo - %s (%s)' % (self._msg_stack[self._current - 1], self._current))
-            print 'redoing to stack index %s' % (self._current - 1)
+            print('redoing to stack index %s' % (self._current - 1))
             self.restore()
 
             # def repair_later(self, item):

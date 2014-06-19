@@ -33,7 +33,7 @@ def merge_curlies(s):
     """
     merged = ''
     for c in s:
-        print c
+        print(c)
         # if modes[-1] == 'start':
     return s, merged
 
@@ -64,11 +64,11 @@ def analyze_word(s):
 
     :param s:
     """
-    print s
+    print(s)
     s, dot_alias = find_dot_alias(s)
     s, constituent = find_constituent(s)
     s, other = find_constituent(s)
-    print s, dot_alias, constituent, other
+    print((s, dot_alias, constituent, other))
 
 
 def bottom_up_bracket_parser(s):
@@ -98,7 +98,7 @@ def bottom_up_bracket_parser(s):
 
 
 items = [x for x in re.split(splitter, string) if x]
-print 'split:', items
-print 'original:', string
+print('split:', items)
+print('original:', string)
 bottom_up_bracket_parser(list(items))
-print 'words:', words
+print('words:', words)

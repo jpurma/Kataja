@@ -24,23 +24,21 @@
 # ############################################################################
 
 
-from types import StringTypes
 import re
 
 from kataja.Controller import ctrl
 from kataja.Presentation import TextArea, Image
-from kataja.utils import to_unicode
-import utils
+from . import utils
 
 
-latex_symbols_to_unicode = {'bar': u'\u00AF', 'abar': u'\u0100',  # small greek alphabet
-                            'alpha': u'\u03b1', 'beta': u'\u03b2', 'gamma': u'\u03b3', 'delta': u'\u03b4',
-                            'epsilon': u'\u03b5', 'zeta': u'\u03b6', 'eta': u'\u03b7', 'theta': u'\u03b8',
-                            'iota': u'\u03b9', 'kappa': u'\u03ba', 'lambda': u'\u03bb', 'mu': u'\u03bc',
-                            'nu': u'\u03bd', 'xi': u'\u03be', 'omicron': u'\u03bf', 'pi': u'\u03c0', 'rho': u'\u03c1',
-                            'varsigma': u'\u03c2', 'sigma': u'\u03c3', 'tau': u'\u03c4', 'upsilon': u'\u03c5',
-                            'phi': u'\u03c6', 'chi': u'\u03c7', 'psi': u'\u03c8', 'omega': u'\u03c9',
-                            'leftarrow': u'\u2190', 'rightarrow': u'\u2192', 'righthookarrow': u'\u21aa'}
+latex_symbols_to_unicode = {'bar': '\u00AF', 'abar': '\u0100',  # small greek alphabet
+                            'alpha': '\u03b1', 'beta': '\u03b2', 'gamma': '\u03b3', 'delta': '\u03b4',
+                            'epsilon': '\u03b5', 'zeta': '\u03b6', 'eta': '\u03b7', 'theta': '\u03b8', 'iota': '\u03b9',
+                            'kappa': '\u03ba', 'lambda': '\u03bb', 'mu': '\u03bc', 'nu': '\u03bd', 'xi': '\u03be',
+                            'omicron': '\u03bf', 'pi': '\u03c0', 'rho': '\u03c1', 'varsigma': '\u03c2',
+                            'sigma': '\u03c3', 'tau': '\u03c4', 'upsilon': '\u03c5', 'phi': '\u03c6', 'chi': '\u03c7',
+                            'psi': '\u03c8', 'omega': '\u03c9', 'leftarrow': '\u2190', 'rightarrow': '\u2192',
+                            'righthookarrow': '\u21aa'}
 
 latex_scopes_to_tags = {'sup': 'sup', 'emph': 'i', 'textbf': 'b'}
 # 'index':'sub'}
@@ -136,7 +134,7 @@ class Parser:
             elif len(parts) == 1:
                 key = parts[0]
                 new_values[key] = ''
-        for key, value in new_values.items():
+        for key, value in list(new_values.items()):
             if key in features:
                 features[key].set(value)
             else:
@@ -189,7 +187,7 @@ class Parser:
         if isinstance(label, ctrl.Feature):
             label = features['label'].get_value()
         else:
-            raise
+            raise Exception("Label is not a proper Feature")
         lexicon_entry = ctrl.UG.lexicon.get(label, None)
         local_entry = self.local_lexicon.get(label, None)
         if local_entry:
@@ -406,15 +404,15 @@ class LayeredParser(Parser):
         if command in commands:
             pass
         else:
-            feature = ctrl.Feature(command, u''.join(args))
+            feature = ctrl.Feature(command, ''.join(args))
             return feature
 
     def _new_string(self, args):
-        string = u''
+        string = ''
         as_list = []
         for arg in args:
-            if isinstance(arg, StringTypes):
-                string += to_unicode(arg)
+            if isinstance(arg, str):
+                string += arg
             else:
                 as_list.append(arg)
         if as_list:
@@ -423,7 +421,7 @@ class LayeredParser(Parser):
             return string
 
     def _new_alias(self, args):
-        alias = u""
+        alias = ""
         others = []
         if len(args) == 1 and isinstance(args[0], list):
             args = args[0]
@@ -442,13 +440,13 @@ class LayeredParser(Parser):
             else:
                 return others
         else:
-            return u""
+            return ""
 
     def _new_index(self, args):
-        return 'index', u''.join(args)
+        return 'index', ''.join(args)
 
     def _new_superscript(self, args):
-        return u'<sup>%s</sup>' % u''.join(args)
+        return '<sup>%s</sup>' % ''.join(args)
 
     def parse(self, string):
         """ parse parse state machine.
@@ -503,7 +501,7 @@ class LayeredParser(Parser):
             turns into some kind of object: Constituent, Feature, Merge etc. """
             if type == 'word':
                 if prev_type in ['\\', '_', '^', '.']:
-                    return u''.join(layer)
+                    return ''.join(layer)
                 else:
                     return self._new_constituent(layer)
             elif type == '[':
@@ -718,7 +716,7 @@ class BottomUpParser(Parser):
 
         splitter = re.compile(r'(\\|\[|\]|{|}| +)')
 
-        stream = [to_unicode(x) for x in re.split(splitter, string) if x]
+        stream = [x for x in re.split(splitter, string) if x]
 
 
         def find_index(label):
@@ -735,7 +733,7 @@ class BottomUpParser(Parser):
                 index = ''
             return hlabel, index
 
-        def create_constituent(label, dot_alias=u''):
+        def create_constituent(label, dot_alias=''):
             # print 'creating a constituent for label "%s"' % label
             """
 
@@ -808,7 +806,7 @@ class BottomUpParser(Parser):
                 else:
                     pieces.append(s[i])
                 i += 1
-            return [], u''.join(pieces)
+            return [], ''.join(pieces)
 
         def find_word(s):
             """
@@ -831,7 +829,7 @@ class BottomUpParser(Parser):
                 elif c == '\\':
                     # found something that starts a command word
                     # keep listening for next word
-                    word = u'\\'
+                    word = '\\'
                     command = True
                 else:
                     # found regular word
@@ -848,7 +846,7 @@ class BottomUpParser(Parser):
             :param s:
             :return:
             """
-            alias_string = u''
+            alias_string = ''
             if s[0] == '.':
                 # print 'starting dot alias'
                 s, alias_string = find_word(s[1:])
@@ -893,10 +891,10 @@ class BottomUpParser(Parser):
             # print 'done analyzing, len(s): %s, s: %s' % (len(s), s)
             merging += constituents
             if not merging:
-                merging.append(create_constituent(u''))
+                merging.append(create_constituent(''))
             if len(merging) > 2:
-                print 'too many constituents for binary branching. \nConstituents: %s \nMerging: %s \n%s' % (
-                    constituents, merging, string)
+                print('too many constituents for binary branching. \nConstituents: %s \nMerging: %s \n%s' % (
+                    constituents, merging, string))
                 M = merge_constituents(merging[0], merging[1], dot_alias)
                 return M
             elif len(merging) == 2:
@@ -946,9 +944,9 @@ class BottomUpParser(Parser):
             return s, constituent
 
         remainder, constituent = bottom_up_bracket_parser(list(stream))
-        print string
-        print constituent
-        print self._definitions
+        print(string)
+        print(constituent)
+        print(self._definitions)
 
     def after_restore(self, values=None):
         """

@@ -21,6 +21,7 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
+from PyQt5 import QtCore
 
 from kataja.ConstituentNode import ConstituentNode
 from kataja.Controller import ctrl, prefs, qt_prefs
@@ -147,7 +148,7 @@ class UIManager:
 
         """
         self._panel_positions = {}
-        for name, panel in self.ui_panels.items():
+        for name, panel in list(self.ui_panels.items()):
             self._panel_positions[name] = panel.geometry()
             # self.log_panel.setGeometry(0, self.size().height() - self.log_panel.height(), self.log_panel.width(), self.log_panel.height())
 
@@ -186,14 +187,14 @@ class UIManager:
         if parent:
             parent.update_field(field_name, field, value)
         else:
-            print 'did not found field %s from any ui panels' % field_name
+            print('did not found field %s from any ui panels' % field_name)
 
     def restore_panel_positions(self):
         """
 
 
         """
-        for name, panel in self.ui_panels.items():
+        for name, panel in list(self.ui_panels.items()):
             if name in self._panel_positions:
                 panel.setGeometry(self._panel_positions[name])
 
@@ -232,7 +233,7 @@ class UIManager:
 
 
         """
-        for e in self.items():
+        for e in list(self.items()):
             if getattr(e.focusable) and e.isVisible():
                 yield e
 
@@ -271,7 +272,7 @@ class UIManager:
         :param item:
         """
         if hasattr(item, 'touch_areas'):
-            for touch_area in item.touch_areas.values():
+            for touch_area in list(item.touch_areas.values()):
                 self.delete_touch_area(touch_area)
 
 
@@ -497,11 +498,11 @@ class UIManager:
         if not self._message:
             if 'Log' in self.ui_panels:
                 message_area = self.ui_panels['Log'].widget()
-                print 'Creating messages to: ', message_area
+                print('Creating messages to: ', message_area)
                 self._message = MessageItem(msg, message_area, self)
                 self.add_ui(self._message)
             else:
-                print "what happened to 'Log' panel?"
+                print("what happened to 'Log' panel?")
                 quit()
         else:
             self._message.add(msg)
@@ -527,7 +528,7 @@ class UIManager:
         """
         self.hud.setText(msg)
 
-    #### Target reticle ####################################################################
+    # ### Target reticle ####################################################################
 
     def is_target_reticle_over(self, node):
         """
@@ -697,12 +698,12 @@ class UIManager:
             """
         # print type(event)
         # print self.itemAt(event.scenePos())
-        print 'mouse_press_event at UIManager'
+        print('mouse_press_event at UIManager')
         drag = getattr(item, 'draggable', False)
         focus = getattr(item, 'focusable', False)
         if drag or focus:
             if isinstance(item, RadialMenu):
-                print 'clicked child item of RadialMenu'
+                print('clicked child item of RadialMenu')
                 for child in item.childItems():
                     if child.sceneBoundingRect().contains(event.scenePos()):
                         child.pressed = True
@@ -737,9 +738,9 @@ class UIManager:
 
         :param event:
             """
-        print 'ui mouseReleaseEvent', ctrl.watch_for_drag_end
+        print('ui mouseReleaseEvent', ctrl.watch_for_drag_end)
         if ctrl.watch_for_drag_end:
-            print "ending drag at UIManager. shouldn't be done here"
+            print("ending drag at UIManager. shouldn't be done here")
             x, y = to_tuple(event.scenePos())
             pressed = ctrl.pressed
             if pressed:
@@ -747,11 +748,11 @@ class UIManager:
             self.main.graph_scene.kill_dragging()
         elif ctrl.ui_pressed:
             item = ctrl.ui_pressed
-            print 'release on ui item ', item
+            print('release on ui item ', item)
             if ctrl.has_focus(item):
                 item.pressed = False
                 consume = item.click(event)
-                print 'click on ', item
+                print('click on ', item)
                 item.update()
                 ctrl.ui_pressed = None
                 ctrl.dragged = set()

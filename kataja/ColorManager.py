@@ -26,9 +26,10 @@ import random
 import json
 from collections import OrderedDict
 
-from kataja.Controller import ctrl, prefs
 from PyQt5.QtGui import QColor as c
 import PyQt5.QtGui as QtGui
+
+from kataja.Controller import ctrl, prefs
 
 
 f = open('colors.json', 'r')
@@ -88,14 +89,14 @@ def in_range(h, s, v):
     :raise:
     """
     if h < 0 or h > 1:
-        print 'h: ', h
-        raise
+        print('h: ', h)
+        raise Exception("Hue not in range: " + h)
     if s < 0 or s > 1:
-        print 's: ', s
-        raise
+        print('s: ', s)
+        raise Exception("Saturation not in range: " + s)
     if v < 0 or v > 1:
-        print 'v: ', v
-        raise
+        print('v: ', v)
+        raise Exception("Value (lightness) not in range: " + v)
 
 
 class ColorManager:
@@ -140,7 +141,7 @@ class ColorManager:
         if not data:
             data = prefs.custom_color_modes.get(mode, None)
             if not data:
-                print '**** Missing color mode data for "%s" ****' % mode
+                print('**** Missing color mode data for "%s" ****' % mode)
                 data = prefs.color_modes['random']
         return data
 
@@ -160,7 +161,7 @@ class ColorManager:
         :param adjusting:
         """
 
-        print 'update colors called with refresh: %s adjusting: %s' % (refresh, adjusting)
+        print('update colors called with refresh: %s adjusting: %s' % (refresh, adjusting))
         self.activate_color_mode(refresh=refresh)
         self.compute_palette(self.hsv)
 
@@ -361,7 +362,7 @@ class ColorManager:
             # find the first free (empty) custom color
             j = -1
             found = True
-            keys = self.d.keys()
+            keys = list(self.d.keys())
             while found:
                 j += 1
                 found = ('custom_%s' % j) in keys
@@ -420,7 +421,7 @@ class ColorManager:
         r, g, b, a = cc.getRgb()
         d_min = 100000
         best = 'white'
-        for key, color in color_map.items():
+        for key, color in list(color_map.items()):
             o_rgb = color['rgb']
             d = (r - o_rgb[0]) * (r - o_rgb[0]) + (g - o_rgb[1]) * (g - o_rgb[1]) + (b - o_rgb[2]) * (b - o_rgb[2])
             if d < d_min:
@@ -489,7 +490,7 @@ class ColorManager:
         # self._prepare_root_color(prefs, settings, refresh, adjusting)
         # h, s, v = self.hsv
         # # # This is the base color ##
-        #     key = c()
+        # key = c()
         #     # in_range(h, s, v)
         #     key.setHsvF(h, s, v)
         #     light_bg = v < 0.5 or (s > 0.7 and 0.62 < h < 0.95)

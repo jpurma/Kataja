@@ -17,7 +17,7 @@ class BracketManager:
 
         :return:
         """
-        return self.brackets.values()
+        return list(self.brackets.values())
 
     def store(self, item):
         """
@@ -31,7 +31,7 @@ class BracketManager:
 
 
         """
-        for bracket in self.brackets.values():
+        for bracket in list(self.brackets.values()):
             bracket.update_position()
 
     def create_bracket(self, host=None, left=True):
@@ -52,7 +52,7 @@ class BracketManager:
 
 
         """
-        for node in self.forest.nodes.values():
+        for node in list(self.forest.nodes.values()):
             node.rebuild_brackets()
 
     def update_brackets(self):
@@ -95,9 +95,9 @@ class BracketManager:
                         else:
                             self._bracket_slots[key] = ([], [node])
         else:
-            for node in f.nodes.values():
+            for node in list(f.nodes.values()):
                 node.update_visibility(brackets=f.settings.bracket_style())
-        for bracket in self.brackets.values():
+        for bracket in list(self.brackets.values()):
             bracket.update_position()
 
     def count_bracket_space(self, node, left=True):

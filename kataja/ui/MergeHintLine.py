@@ -1,9 +1,9 @@
 # coding=utf-8
 # #######################################################
 from PyQt5 import QtGui, QtCore, QtWidgets
+from PyQt5.QtCore import QPointF as Pf
 
 from kataja.Controller import ctrl
-from PyQt5.QtCore import QPointF as Pf
 
 
 class MergeHintLine(QtWidgets.QGraphicsItem):
@@ -41,9 +41,9 @@ class MergeHintLine(QtWidgets.QGraphicsItem):
             painter.setPen(QtGui.QPen(ctrl.cm().ui(), max((0.1, (80 - self._ui_line.length()) / 10))))
             painter.drawLine(self._ui_line)
             if endpos.x() < startpos.x():
-                painter.drawText(endpos.x(), endpos.y() - 30, unichr(8594))  # 0x2192 8594 rightarrow
+                painter.drawText(endpos.x(), endpos.y() - 30, chr(8594))  # 0x2192 8594 rightarrow
             else:
-                painter.drawText(endpos.x(), endpos.y() - 30, unichr(8592))  # 0x2190 8592 leftarrow
+                painter.drawText(endpos.x(), endpos.y() - 30, chr(8592))  # 0x2190 8592 leftarrow
 
         else:
             endpos = self.graph.mapFromScene(self.end.pos())

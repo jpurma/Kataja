@@ -23,10 +23,10 @@
 # ############################################################################
 
 
-import cPickle
+import pickle
 
-from Controller import ctrl
-from Forest import Forest
+from .Controller import ctrl
+from .Forest import Forest
 
 
 class ForestKeeper:
@@ -82,7 +82,7 @@ class ForestKeeper:
         """
         return self._forests
 
-    def next(self):
+    def next_forest(self):
         """
 
 
@@ -97,7 +97,7 @@ class ForestKeeper:
         self.forest = self._forests[self._i]
         return self._i, self.forest
 
-    def prev(self):
+    def prev_forest(self):
         """
 
 
@@ -138,7 +138,7 @@ class ForestKeeper:
         self._i = data['_i']
         self._forests = data['_forests']
         self._forests_dict = dict([(f.save_key, f) for f in self._forests])
-        for key, item in ctrl.unassigned_objects.items():
+        for key, item in list(ctrl.unassigned_objects.items()):
             forest = self.get_forest(item.forest_key)
             if not forest:
                 assert False
@@ -151,7 +151,7 @@ class ForestKeeper:
             forest.rebuild_brackets()
             if not forest.settings.uses_multidomination():
                 forest.rebuild_chains()
-        for key, item in ctrl.unassigned_objects.items():
+        for key, item in list(ctrl.unassigned_objects.items()):
             # print 'storing %s to %s' % (key, item.forest_key)
             forest = self.get_forest(item.forest_key)
             if not forest:
@@ -159,7 +159,7 @@ class ForestKeeper:
             forest.store(item)
             del ctrl.unassigned_objects[key]
 
-        #     ctrl.set_forest(forest)
+        # ctrl.set_forest(forest)
         #     print forest.info_dump()
         #     forest.undo_manager.finalize_objects()
         #     for node in forest.nodes.values():
@@ -186,7 +186,7 @@ class ForestKeeper:
         savedata = {'_i': self._i, '_forests_pickled': []}
         for forest in self._forests:
             self.main.set_forest(forest)
-            dump = cPickle.dumps(forest, 0)
+            dump = pickle.dumps(forest, 0)
             savedata['forest_keeper'].append(dump)
 
 
@@ -230,7 +230,7 @@ class ForestKeeper:
                 values = parts[1]
                 forest._parser.add_definition(word, values)
                 # if key== '\gll':
-                #    forest.setGloss(line)
+                # forest.setGloss(line)
             elif line.startswith("'"):
                 if forest:
                     if line.endswith("'"):

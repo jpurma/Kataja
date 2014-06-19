@@ -7,6 +7,7 @@ from kataja.ConstituentNode import ConstituentNode
 
 
 
+
 # ### Chains #######################################################################
 
 # # chains should hold tuples of (node, parent), where node can be either real node or trace, and the parent provides the reliable/restorable identity/location for the trace.
@@ -84,14 +85,14 @@ class ChainManager:
 
 
         """
-        for chain in self._chains.values():
+        for chain in list(self._chains.values()):
             for item in chain:
                 yield item
 
     def chain_counter(self):
         """ Returns a counter object where values of dict are lengths of each chain """
         c = Counter()
-        for key, item in self._chains.items():
+        for key, item in list(self._chains.items()):
             c[key] = len(item)
         return c
 
@@ -125,7 +126,7 @@ class ChainManager:
         for node, parent in chain:
             if node.is_chain_head():
                 return node
-        raise 'F broken chain'
+        raise Exception('F broken chain')
 
     def dump_chains(self):
         """
@@ -133,15 +134,15 @@ class ChainManager:
 
         """
         r = []
-        print '---- chains -----'
-        for key, chain in self._chains.items():
-            print '%s :' % key,
+        print('---- chains -----')
+        for key, chain in list(self._chains.items()):
+            print('%s :' % key)
             for (item, parent) in chain:
                 if item.is_trace:
-                    print 'trace ',
+                    print('trace ')
                 else:
-                    print 'head ',
-            print ''
+                    print('head ')
+            print('')
 
     # @time_me
     def rebuild_chains(self):
@@ -150,7 +151,7 @@ class ChainManager:
         f = self.forest
         multidomination = False
         # decide if there is multidomination present and build dictionary of nodes with index.
-        for node in f.nodes.values():
+        for node in list(f.nodes.values()):
             if isinstance(node, ConstituentNode):
                 index = node.get_index()
                 if index:
@@ -177,11 +178,11 @@ class ChainManager:
 
 
         """
-        print 'group traces to chain head'
+        print('group traces to chain head')
         # ## Move traces to their multidominant originals, purely visual thing ###
         self.rebuild_chains()
         y_adjust = {}
-        for key, chain in self._chains.items():
+        for key, chain in list(self._chains.items()):
             head = self.get_chain_head(key)
             for node, parent in chain:
                 if node != head:
@@ -210,7 +211,7 @@ class ChainManager:
 
 
         """
-        print 'traces to multidomination'
+        print('traces to multidomination')
         # if not self._chains:
         self.rebuild_chains()
         self.dump_chains()
@@ -220,14 +221,14 @@ class ChainManager:
             for i, node in enumerate(self.forest.list_nodes(root)):
                 if node.get_index():
                     order_dict[node.save_key] = (t, i, node)
-        ordered = order_dict.values()
+        ordered = list(order_dict.values())
         ordered.sort(reverse=True)
         for t, i, node in ordered:
             if not node.is_trace:
                 node.original_parent = node.get_parents()[0].save_key
         for t, i, node in ordered:
             if node.is_trace:
-                print 'replacing trace ', node
+                print('replacing trace ', node)
                 original = self.get_chain_head(node.get_index())
                 self.forest._replace_node(node, original)
                 self.forest.delete_node(node)
@@ -240,9 +241,9 @@ class ChainManager:
 
 
         """
-        print 'multidomination to traces'
+        print('multidomination to traces')
         self.rebuild_chains()
-        for key, chain in self._chains.items():
+        for key, chain in list(self._chains.items()):
             head = self.get_chain_head(key)
             for node, parent in chain:
                 if node != head:
@@ -257,7 +258,7 @@ class ChainManager:
         :return:
         """
         max_found = 7  # 'h'
-        for node in self.forest.nodes.values():
+        for node in list(self.forest.nodes.values()):
             index = node.get_index()
             if index and len(index) == 1 and index[0].isalpha():
                 pos = string.ascii_letters.find(index[0])

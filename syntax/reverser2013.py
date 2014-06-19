@@ -43,7 +43,7 @@ class Constituent:
 
     def __unicode__(self):
         if self.left and self.right:
-            return u'[%s %s]' % (self.left.__unicode__(), self.right.__unicode__())
+            return '[%s %s]' % (self.left.__unicode__(), self.right.__unicode__())
         else:
             return self.id
 
@@ -115,14 +115,14 @@ class Constituent:
 tree = None
 history = []
 
-c = raw_input('-->').strip()
+c = input('-->').strip()
 while c:
     if c == 'u':
         if tree:
             tree = tree.right
             history.pop()
     elif c == 'h':
-        print history
+        print(history)
     else:
         history.append(c)
         if tree:
@@ -137,8 +137,8 @@ while c:
                 tree = tree.merge(new)
             else:
                 tree = new
-    print tree
+    print(tree)
     if tree:
-        print tree.linearize()
-    c = raw_input('-->').strip()
-print tree
+        print(tree.linearize())
+    c = input('-->').strip()
+print(tree)

@@ -122,7 +122,7 @@ class Equidistant3dTree(BaseVisualization):
                 xvel += rd_x * edge.pull() / ((i + 1) * (i + 1))  # first branch has strongest pull
                 yvel += rd_y * edge.pull()  # / ((i + 1) * (i + 1))
             else:
-                print 'hidden edge ', edge
+                print('hidden edge ', edge)
 
         return xvel, yvel, 0
 
@@ -165,7 +165,7 @@ class Equidistant3dTree(BaseVisualization):
                     bx, by, bz = bsx - bdx, bsy - bdy, bsz - bdz
                 dist = math.sqrt(bx * bx + by * by + bz * bz)
                 if dist > 300:
-                    print dist, edge
+                    print(dist, edge)
                     # raise hell
                 if dist > 15:
                     fx = (bx / dist) * (dist - 30) * 0.2
@@ -178,9 +178,9 @@ class Equidistant3dTree(BaseVisualization):
                     # elif dist < 20:
                     # xvel -= bx
                     # yvel -= by
-                    #    zvel -= bz
+                    # zvel -= bz
             else:
-                print 'hidden edge ', edge
+                print('hidden edge ', edge)
 
         if node.bind_x:
             xvel = 0

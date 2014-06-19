@@ -39,7 +39,7 @@ class TwoColorButton(QtWidgets.QPushButton):
         self.setIcon(i)
 
 
-    #def paint(self, painter, **kwargs):        
+    # def paint(self, painter, **kwargs):
     #    print 'using twocoloricon painter'
     #    return QtGui.QIcon.paint(self, painter, kwargs) 
 

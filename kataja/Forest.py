@@ -24,6 +24,7 @@
 
 
 import string
+import collections
 
 from PyQt5 import QtWidgets
 
@@ -62,7 +63,7 @@ def restore_forest(key):
     :param key:
     :return:
     """
-    print 'restore forest? who is calling this and is it doable?'
+    print('restore forest? who is calling this and is it doable?')
     assert False
     obj = None
     for forest in ctrl.forest_keeper:
@@ -121,7 +122,7 @@ def restore_forest(key):
 # if l not in self._done:
 # next = l
 # self._done.add(next)
-#             if next:
+# if next:
 #                 self._iter_stack = next.get_children() + self._iter_stack
 #                 self._count += 1
 #                 return next
@@ -165,7 +166,7 @@ class Forest:
         self._comments = []
         self._parser = BottomUpParser(self)
         # self._parser = Parser(self)
-        self._gloss_text = u''
+        self._gloss_text = ''
         self._buildstring = ''
         self.undo_manager = UndoManager(self)
 
@@ -174,7 +175,7 @@ class Forest:
         """ Changes in some fields may cause need for manual fixes or running methods to update derived variables
         :param changes:
         """
-        print 'changes in forest: ', changes.keys()
+        print('changes in forest: ', list(changes.keys()))
         if 'vis_data' in changes:
 
             old_vis, new_vis = changes['vis_data']
@@ -182,7 +183,7 @@ class Forest:
             # prepare again. 
             if old_vis['name'] != new_vis['name']:
                 # if visualization is changed, then it should change the visualization object and not let it to use the new_vis_data.  
-                print 'changing visualization to: ', new_vis['name']
+                print('changing visualization to: ', new_vis['name'])
                 self.visualization = self.main.visualizations[new_vis['name']]
                 self.visualization.set_forest(self)
 
@@ -253,14 +254,14 @@ class Forest:
 
         """
         if hasattr(self, 'key'):
-            print '----- Forest %s ------' % self.save_key
-            print '| Nodes: %s' % len(self.nodes)
-            print '| Edges: %s' % len(self.edges)
-            print '| Others: %s' % len(self.others)
-            print '| Visualization: ', self.visualization
-            print '| Color scheme: ', self.settings.hsv()
+            print('----- Forest %s ------' % self.save_key)
+            print('| Nodes: %s' % len(self.nodes))
+            print('| Edges: %s' % len(self.edges))
+            print('| Others: %s' % len(self.others))
+            print('| Visualization: ', self.visualization)
+            print('| Color scheme: ', self.settings.hsv())
         else:
-            print 'odd forest, not initialized.'
+            print('odd forest, not initialized.')
 
 
     def build(self, buildstring):
@@ -286,7 +287,7 @@ class Forest:
                 self.gloss.setDefaultTextColor(ctrl.cm().drawing())
                 self.gloss.setFont(qt_prefs.font)  # @UndefinedVariable
                 # self.gloss.setFlag(QtGui.QGraphicsItem.ItemIsMovable)
-            self.gloss.setPlainText(u"‘" + self._gloss_text + u"’")
+            self.gloss.setPlainText("‘" + self._gloss_text + "’")
             self.gloss.show()
         else:
             if self.gloss:
@@ -319,16 +320,16 @@ class Forest:
             """ Cheapo linearization algorithm for Node structures."""
             l = []
             for node in self.list_nodes_once(root_node):
-                l.append(unicode(node.syntactic_object))
+                l.append(str(node.syntactic_object))
             return gap.join(l)
 
         if root:
-            return _tree_as_text(root, u' ')
+            return _tree_as_text(root, ' ')
         else:
             roots = []
             for root in self.roots:
-                roots.append(_tree_as_text(root, u' '))
-            return u'/ '.join(roots)
+                roots.append(_tree_as_text(root, ' '))
+            return '/ '.join(roots)
 
     def store(self, item):
         """ Confirm that item is stored in some dictionary or other storage in forest
@@ -352,7 +353,7 @@ class Forest:
             if key and key not in self.others:
                 self.others[key] = item
             else:
-                print 'F trying to store broken type:', item.__class__.__name__
+                print('F trying to store broken type:', item.__class__.__name__)
 
 
     def get_all_objects(self):
@@ -361,7 +362,8 @@ class Forest:
 
         :return:
         """
-        return self.nodes.values() + self.edges.values() + self.others.values() + self.bracket_manager.get_brackets()
+        return list(self.nodes.values()) + list(self.edges.values()) + list(
+            self.others.values()) + self.bracket_manager.get_brackets()
 
     def clear_scene(self):
         """ Disconnect related graphic items from GraphScene """
@@ -425,7 +427,7 @@ class Forest:
         #    node.update_colors()
         #for edge in self.edges.values():
         #    edge.update_colors()
-        for other in self.others.values():
+        for other in list(self.others.values()):
             other.update_colors()
         #self.bracket_manager.update_colors()
         if self.gloss:
@@ -437,7 +439,7 @@ class Forest:
         """
             :rtype kataja.Node
          """
-        return self.nodes.values()
+        return list(self.nodes.values())
         # for n in self.nodes.values():
         #     if n and n.is_visible():
         #         yield n
@@ -459,7 +461,7 @@ class Forest:
 
         :return:
         """
-        return [x for x in self.edges.values() if x.edge_type == 'constituent_edge' and x.is_visible()]
+        return [x for x in list(self.edges.values()) if x.edge_type == 'constituent_edge' and x.is_visible()]
 
     def get_constituent_nodes(self):
         """
@@ -467,7 +469,7 @@ class Forest:
 
         :return:
         """
-        return [x for x in self.nodes.values() if isinstance(x, ConstituentNode) and x.isVisible()]
+        return [x for x in list(self.nodes.values()) if isinstance(x, ConstituentNode) and x.isVisible()]
 
     def get_feature_nodes(self):
         """
@@ -475,7 +477,7 @@ class Forest:
 
         :return:
         """
-        return [x for x in self.nodes.values() if isinstance(x, FeatureNode)]
+        return [x for x in list(self.nodes.values()) if isinstance(x, FeatureNode)]
 
     def get_attribute_nodes(self):
         """
@@ -483,7 +485,7 @@ class Forest:
 
         :return:
         """
-        return [x for x in self.nodes.values() if isinstance(x, AttributeNode)]
+        return [x for x in list(self.nodes.values()) if isinstance(x, AttributeNode)]
 
     def add_comment(self, comment):
         """
@@ -499,7 +501,7 @@ class Forest:
 
         """
         self.roots = []
-        for node in self.nodes.values():
+        for node in list(self.nodes.values()):
             if not node.edges_up:
                 self.roots.append(node)
                 # print '*** updating roots ***: ', len(self.roots)
@@ -550,7 +552,7 @@ class Forest:
 
         :return:
         """
-        names = [node.syntactic_object.get_label() for node in self.nodes.values() if
+        names = [node.syntactic_object.get_label() for node in list(self.nodes.values()) if
                  isinstance(node, ConstituentNode) and node.syntactic_object]
         # I'm not trying to be efficient here.
         for letter in string.ascii_uppercase:
@@ -598,7 +600,7 @@ class Forest:
         elif silent:
             pass
         else:
-            print "ConstituentNode doesn't announce its origin"
+            print("ConstituentNode doesn't announce its origin")
             raise KeyError
 
         # for key, feature in C.get_features().items():
@@ -860,7 +862,7 @@ class Forest:
             assert (node.attribute_label != key)
         for node in self.get_constituent_nodes():
             val = getattr(node, attr_id)
-            if callable(val):
+            if isinstance(val, collections.Callable):
                 val = val()
             if val:
                 self.create_attribute_node(node, attr_id, attribute_label=key, show_label=show_label)
@@ -1166,14 +1168,14 @@ class Forest:
             if edge.align == LEFT:
                 if C_start.get_left() != C_end:
                     if C_start.get_left():
-                        print '***** warning! constituent %s has left and we are overwriting it with %s' % (
-                            C_start, C_end)
+                        print('***** warning! constituent %s has left and we are overwriting it with %s' % (
+                            C_start, C_end))
                     C_start.set_left(C_end)
             elif edge.align == RIGHT:
                 if C_start.get_right() != C_end:
                     if C_start.get_right():
-                        print '***** warning! constituent %s has right and we are overwriting it with %s' % (
-                            C_start, C_end)
+                        print('***** warning! constituent %s has right and we are overwriting it with %s' % (
+                            C_start, C_end))
         elif edge.edge_type == FEATURE_EDGE:
             constituent = edge.start.syntactic_object
             feature = edge.end.syntactic_object
@@ -1188,19 +1190,19 @@ class Forest:
             - Cannot link to itself.
           """
         if parent == child:
-            raise
+            raise Exception('Connecting to self')
         if not parent and child:
-            raise
+            raise Exception('Connection with missing child or parent')
         edge_type = edge_type or parent.__class__.default_edge_type
         new_edge = self.create_edge(start=parent, end=child, edge_type=edge_type, direction=direction)
         for old_edge in child.edges_up:
             if old_edge.edge_type == edge_type:
                 if old_edge.end == child and old_edge.start == parent:
-                    print 'edge exists already', old_edge
-                    raise
+                    print('edge exists already', old_edge)
+                    raise Exception('Connection exists already')
                 elif old_edge.start == child and old_edge.end == parent:
-                    print 'circular edge'
-                    raise
+                    print('circular edge')
+                    raise Exception('Connection is circular')
         child.edges_up.append(new_edge)
         if direction == '' or direction == 'right' or direction == 2:
             parent.edges_down.append(new_edge)
@@ -1298,8 +1300,8 @@ class Forest:
             merger = self._merge(node_A, node_B)
         else:
             merger = self._merge_and_tuck(node_A, node_B)
-        self.undo_manager.record(u"Merge %s with %s" % (unicode(node_A), unicode(node_B)))
-        self.main.add_message(u"Merge %s with %s" % (unicode(node_A), unicode(node_B)))
+        self.undo_manager.record("Merge %s with %s" % (str(node_A), str(node_B)))
+        self.main.add_message("Merge %s with %s" % (str(node_A), str(node_B)))
         return merger
 
     def _merge(self, node_A, node_B):
@@ -1307,7 +1309,7 @@ class Forest:
         If using multidomination, then merge itself is simple, but we still need to create a trace constituent to be used when switched to trace view.
         If using trace view, create a trace and merge it to node_B.
         """
-        print "who is using this??? _merge(A,B)"
+        print("who is using this??? _merge(A,B)")
         assert False
 
         if not node_A.parents:
@@ -1320,7 +1322,7 @@ class Forest:
             if index:
                 # this is a strange case, but needs to be covered. there is no reason for singular constituent to have an index
                 if index in self._chains:
-                    index = next_free_index(self._chains.keys())
+                    index = next_free_index(list(self._chains.keys()))
                     node_A.set_index(index)
                 self.add_to_chain(index, node_A)  # now we have a chain with single node in it.
             else:
@@ -1329,7 +1331,7 @@ class Forest:
         else:  # internal merges always involve chains
             if not index:
                 # need to create a new trace index for merged constituent and a matching trace
-                index = next_free_index(self._chains.keys())
+                index = next_free_index(list(self._chains.keys()))
                 node_A.set_index(index)
                 self.add_to_chain(index, node_A)
             # needs to create a trace for trace view
@@ -1440,7 +1442,7 @@ class Forest:
         :param merge_to_left:
         :param merger_node_pos:
         """
-        print 'called replace_node_with_merged_empty_node'
+        print('called replace_node_with_merged_empty_node')
         if R:
             start_node = R.start
             end_node = R.end
@@ -1453,7 +1455,7 @@ class Forest:
         else:
             merger_node = self.create_merger_node(left=N, right=new_node, pos=(mx, my, N.z))
         if R:
-            print 'connecting merger to parent'
+            print('connecting merger to parent')
             self._connect_node(start_node, merger_node, direction=align)
         self.update_roots()
 
@@ -1526,7 +1528,7 @@ class Forest:
 
         :param excluded:
         """
-        print '---- preparing for dragging ------'
+        print('---- preparing for dragging ------')
         um = self.main.ui_manager
         um.remove_touch_areas()
         for root in self.roots:

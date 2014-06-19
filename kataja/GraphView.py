@@ -115,7 +115,7 @@ class GraphView(QtWidgets.QGraphicsView):
         if hasattr(self.main, 'ui_manager'):
             self.main.ui_manager.update_positions()
 
-    ########## MOUSE ##############
+    # ######### MOUSE ##############
 
     def mouseReleaseEvent(self, event):
         """

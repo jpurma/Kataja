@@ -131,7 +131,7 @@ class Preferences(object):
         self.print_file_name = 'kataja_print'
         self.include_gloss_to_print = True
 
-        ### Default edge settings 
+        # ## Default edge settings
         # Edge types
         # CONSTITUENT_EDGE = 1
         # FEATURE_EDGE = 2
@@ -188,7 +188,7 @@ class Preferences(object):
         # if getattr(sys, 'frozen', None) and hasattr(sys, '_MEIPASS'):
         # print 'found meipass:',sys._MEIPASS
         # else:
-        #            print 'plain pathname:', os.path.dirname(__file__)
+        # print 'plain pathname:', os.path.dirname(__file__)
         path_list = full_path.split('/')
         if 'Kataja.app' in path_list:
             i = path_list.index('Kataja.app')
@@ -203,7 +203,7 @@ class Preferences(object):
 
         :param update_dict:
         """
-        for key, value in update_dict.items():
+        for key, value in list(update_dict.items()):
             setattr(self, key, value)
 
 
@@ -222,7 +222,7 @@ class Preferences(object):
     def save(self):
         """ Dumps the preferences as a dict """
         dump = vars(self)
-        print 'written preferences, %s chars.' % len(unicode(dump))
+        print('written preferences, %s chars.' % len(str(dump)))
         return dump
 
     def load(self, data):
@@ -274,7 +274,7 @@ class QtPreferences:
         t = time.time()
         self.easing_curve = []
         self.prepare_fonts(preferences.fonts, fontdb)
-        print '-- prepared fonts ... ', time.time() - t
+        print('-- prepared fonts ... ', time.time() - t)
         self.prepare_easing_curve(preferences._curve, preferences.move_frames)
         self.no_pen = QtGui.QPen()
         self.no_pen.setStyle(QtCore.Qt.NoPen)
@@ -283,7 +283,7 @@ class QtPreferences:
         self.lock_icon = QtGui.QPixmap('icons/lock.png').scaledToWidth(16)
         self.left_arrow = extract_bitmaps('kataja/icons/triangle_left.gif')
         self.right_arrow = extract_bitmaps('kataja/icons/right_2c.png')
-        print '-- loaded icon and scaled it ... ', time.time() - t
+        print('-- loaded icon and scaled it ... ', time.time() - t)
 
     def update(self, preferences):
         """
@@ -325,13 +325,13 @@ class QtPreferences:
         :param fonts_dict:
         :param fontdb:
         """
-        for key, font_tuple in fonts_dict.items():
+        for key, font_tuple in list(fonts_dict.items()):
             setattr(self, '_' + key, font_tuple)
             setattr(self, key, fontdb.font(font_tuple[0], font_tuple[1], font_tuple[2]))
         font = QtGui.QFontMetrics(self.font)  # it takes 2 seconds to get FontMetrics
         self.font_space_width = font.width(' ')
         self.font_bracket_width = font.width(']')
         self.font_bracket_height = font.height()
-        print self.font_space_width, self.font_bracket_width, self.font_bracket_height
+        print(self.font_space_width, self.font_bracket_width, self.font_bracket_height)
         self.sc_font.setCapitalization(QtGui.QFont.SmallCaps)
 
