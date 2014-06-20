@@ -22,8 +22,9 @@ class ButtonMenuItem(MenuItem, QtWidgets.QGraphicsSimpleTextItem):
         :param parent:
         :param args:
         """
-        QtWidgets.QGraphicsSimpleTextItem.__init__(self, parent=parent)
+        QtWidgets.QGraphicsSimpleTextItem.__init__(self)
         MenuItem.__init__(self, parent, args)
+        self.setParentItem(parent)
         self.setText(self._label_text)
         self.setBrush(ctrl.cm().ui())
         self.setZValue(52)

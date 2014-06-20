@@ -1,4 +1,6 @@
 # coding=utf-8
+""" BareConstituents are version of BaseConstituent that stores features as trees.
+This may have significance at some point. They are primary objects and need to support saving and loading. """
 # ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
@@ -22,17 +24,16 @@
 #
 # ############################################################################
 
-
 from syntax.BaseConstituent import BaseConstituent
 from syntax.ConfigurableFeature import Feature
 # from copy import copy
 # from types import UnicodeType
 
 class BareConstituent(BaseConstituent):
-    """ BareConstituents are version of BaseConstituent that stores features as trees. This may have significance at some point. They are primary objects and need to support saving and loading. """
+    """ BareConstituents are version of BaseConstituent that stores features as trees.
+    This may have significance at some point. They are primary objects and need to support saving and loading. """
     saved_fields = ['feature_tree']
     saved_fields = list(set(BaseConstituent.saved_fields + saved_fields))
-
 
     def __init__(self, cid='', left=None, right=None, source='', data=None):
         if not data:
@@ -41,13 +42,21 @@ class BareConstituent(BaseConstituent):
         self.feature_tree = None
 
     def get_feature(self, key):
+        """
+
+        :param key:
+        :return:
+        """
         f = self.features.get(key, None)
         if f:
             return f.get()
         return None
 
     def set_feature(self, key, value):
-        """ Puts feature to feature dictionary and returns corresponding Feature object """
+        """ Puts feature to feature dictionary and returns corresponding Feature object
+        :param value:
+        :param key:
+        """
         if not key in self.features:
             if isinstance(value, Feature):
                 self.features[key] = value
@@ -61,8 +70,12 @@ class BareConstituent(BaseConstituent):
         return self.features[key]
 
     def merge_to_feature_tree(self, feature):
+        """
+
+        :param feature:
+        """
         if self.feature_tree:
-            merged = Feature()
+            merged = Feature('')
             merged.left = feature
             merged.right = self.feature_tree
             self.feature_tree = merged
@@ -73,16 +86,21 @@ class BareConstituent(BaseConstituent):
     def __repr__(self):
         if self.is_leaf():
             if self.index:
-                return 'Constituent(id=%s, index=%s)' % (self.label.encode('utf-8'), self.index.encode('utf-8'))
+                return 'Constituent(id=%s, index=%s)' % (self.label, self.index)
             else:
-                return 'Constituent(id=%s)' % self.label.encode('utf-8')
+                return 'Constituent(id=%s)' % self.label
         else:
             if self.index:
-                return "[.%s %s %s ]" % (self.index.encode('utf-8'), self.left.__repr__(), self.right.__repr__())
+                return "[.%s %s %s ]" % (self.index, self.left.__repr__(), self.right.__repr__())
             else:
                 return "[ %s %s ]" % (self.left.__repr__(), self.right.__repr__())
 
     def after_restore(self, values=None):
+        """
+
+        :param values:
+        :return:
+        """
         if not values:
             values = {}
         return

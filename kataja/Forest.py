@@ -64,15 +64,13 @@ def restore_forest(key):
     :return:
     """
     print('restore forest? who is calling this and is it doable?')
-    assert False
     obj = None
     for forest in ctrl.forest_keeper:
         if forest.key == key:
             obj = forest
             break
     if not obj:
-        assert False
-        obj = Forest()
+        obj = Forest(main=ctrl.main)
         obj._revived = True
     # ctrl.undo.repair_later(obj)
     return obj
@@ -143,7 +141,6 @@ class Forest:
                     'merge_counter', 'select_counter', '_comments', '_parser', '_gloss_text', '_buildstring',
                     'undo_manager', 'vis_data']
 
-
     def __init__(self, main, restoring=''):
         """ Create an empty forest """
         self.save_key = 'forest_%s' % id(self)
@@ -170,10 +167,9 @@ class Forest:
         self._buildstring = ''
         self.undo_manager = UndoManager(self)
 
-
     def after_restore(self, changes):
         """ Changes in some fields may cause need for manual fixes or running methods to update derived variables
-        :param changes:
+        :param changes: dictionary of changes
         """
         print('changes in forest: ', list(changes.keys()))
         if 'vis_data' in changes:
@@ -182,16 +178,15 @@ class Forest:
             # if visualization keeps the same, it can use vis_data directly, it doesn't need to 
             # prepare again. 
             if old_vis['name'] != new_vis['name']:
-                # if visualization is changed, then it should change the visualization object and not let it to use the new_vis_data.  
+                # if visualization is changed, then it should change the visualization object and
+                # not let it to use the new_vis_data.
                 print('changing visualization to: ', new_vis['name'])
                 self.visualization = self.main.visualizations[new_vis['name']]
                 self.visualization.set_forest(self)
 
     def get_scene(self):
-        """
-
-
-        :return:
+        """ Return the graphics scene where objects are stored and drawn.
+        :return: GraphScene instance
         """
         return self.main.graph_scene
 
@@ -199,9 +194,9 @@ class Forest:
     #@time_me
     def list_nodes(self, first):
         """
-
-        :param first:
-        :return:
+        Do left-first iteration through all nodes. Can become quite large if there is lots of multidomination.
+        :param first: Node, can be started from a certain point in structure
+        :return: list of nodes
         """
         res = []
 
@@ -216,9 +211,9 @@ class Forest:
     #@time_me
     def list_nodes_once(self, first):
         """
-
-        :param first:
-        :return:
+        Do left-first iteration through all nodes and return a list where only first instance of each node is present.
+        :param first: Node, can be started from a certain point in structure
+        :return: list of nodes
         """
         res = []
 
@@ -247,11 +242,9 @@ class Forest:
     #                     l.append(to_unicode(self.alias or node.syntactic_object))
     #         return u' '.join(l)
 
-
     def info_dump(self):
         """
-
-
+        Show debug info about forest in console
         """
         if hasattr(self, 'key'):
             print('----- Forest %s ------' % self.save_key)
@@ -263,7 +256,6 @@ class Forest:
         else:
             print('odd forest, not initialized.')
 
-
     def build(self, buildstring):
         """ Populate forest from a buildstring, store buildstring for reference
         :param buildstring:
@@ -273,15 +265,16 @@ class Forest:
 
     def set_gloss_text(self, gloss):
         """
-
+        Set the special gloss text for the whole tree/trees on display. It will be drawn later.
         :param gloss:
         """
         self._gloss_text = gloss
 
     def draw_gloss_text(self):
-        """ Create a gloss text, a freeform translation of tree in some familiar language """
+        """ Draw the gloss text on screen, if it exists. """
         if self._gloss_text:
             if not self.gloss:
+                # noinspection PyArgumentList
                 self.gloss = QtWidgets.QGraphicsTextItem(parent=None)
                 self.gloss.setTextWidth(400)
                 self.gloss.setDefaultTextColor(ctrl.cm().drawing())
@@ -291,13 +284,12 @@ class Forest:
             self.gloss.show()
         else:
             if self.gloss:
-                self.remove_item_from_scene(self.gloss)
+                self.get_scene().removeItem(self.gloss)
                 self.gloss = None
 
     def change_visualization(self, key):
-        """
-
-        :param key:
+        """ Switches the active visualization to visualization with given key
+        :param key: string
         """
         if self.visualization and self.visualization.__class__.name == key:
             self.visualization.reselect()
@@ -313,8 +305,9 @@ class Forest:
 
     def textual_form(self, root=None):
         """ return (unicode) version of linearizations of all trees with traces removed --
+            as close to original sentences as possible. If root is given, return linearization of only that.
         :param root:
-            as close to original sentences as possible. If root is given, return linearization of only that. """
+        """
 
         def _tree_as_text(root_node, gap):
             """ Cheapo linearization algorithm for Node structures."""
@@ -427,7 +420,7 @@ class Forest:
         #    node.update_colors()
         #for edge in self.edges.values():
         #    edge.update_colors()
-        for other in list(self.others.values()):
+        for other in self.others.values():
             other.update_colors()
         #self.bracket_manager.update_colors()
         if self.gloss:
@@ -461,7 +454,7 @@ class Forest:
 
         :return:
         """
-        return [x for x in list(self.edges.values()) if x.edge_type == 'constituent_edge' and x.is_visible()]
+        return [x for x in self.edges.values() if x.edge_type == 'constituent_edge' and x.is_visible()]
 
     def get_constituent_nodes(self):
         """
@@ -469,7 +462,7 @@ class Forest:
 
         :return:
         """
-        return [x for x in list(self.nodes.values()) if isinstance(x, ConstituentNode) and x.isVisible()]
+        return [x for x in self.nodes.values() if isinstance(x, ConstituentNode) and x.isVisible()]
 
     def get_feature_nodes(self):
         """
@@ -477,7 +470,7 @@ class Forest:
 
         :return:
         """
-        return [x for x in list(self.nodes.values()) if isinstance(x, FeatureNode)]
+        return [x for x in self.nodes.values() if isinstance(x, FeatureNode)]
 
     def get_attribute_nodes(self):
         """
@@ -485,7 +478,7 @@ class Forest:
 
         :return:
         """
-        return [x for x in list(self.nodes.values()) if isinstance(x, AttributeNode)]
+        return [x for x in self.nodes.values() if isinstance(x, AttributeNode)]
 
     def add_comment(self, comment):
         """
@@ -501,7 +494,7 @@ class Forest:
 
         """
         self.roots = []
-        for node in list(self.nodes.values()):
+        for node in self.nodes.values():
             if not node.edges_up:
                 self.roots.append(node)
                 # print '*** updating roots ***: ', len(self.roots)
@@ -552,7 +545,7 @@ class Forest:
 
         :return:
         """
-        names = [node.syntactic_object.get_label() for node in list(self.nodes.values()) if
+        names = [node.syntactic_object.get_label() for node in self.nodes.values() if
                  isinstance(node, ConstituentNode) and node.syntactic_object]
         # I'm not trying to be efficient here.
         for letter in string.ascii_uppercase:

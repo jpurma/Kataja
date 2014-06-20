@@ -23,7 +23,6 @@
 # ############################################################################
 
 import random
-import sys
 
 from kataja.Controller import qt_prefs
 from kataja.globals import FEATURE_EDGE, FEATURE_NODE
@@ -35,7 +34,7 @@ color_map = {'tense': 0, 'order': 1, 'person': 2, 'number': 4, 'case': 6, 'unkno
 
 class FeatureNode(Node):
     """
-
+    Node to express a feature of a constituent
     """
     width = 20
     height = 20
@@ -43,7 +42,6 @@ class FeatureNode(Node):
     saved_fields = ['label_font']
     saved_fields = list(set(Node.saved_fields + saved_fields))
     node_type = FEATURE_NODE
-
 
     def __init__(self, feature=None, forest=None, restoring=False):
         if not forest:
@@ -62,11 +60,11 @@ class FeatureNode(Node):
             self.boundingRect(update=True)
             self.update_visibility()
 
-
     # implement color() to map one of the d['rainbow_%'] colors here. Or if bw mode is on, then something else.
 
     def compute_start_position(self, host):
-        """ Makes features start at somewhat predictable position, if they are of common kinds of features. If not, then some random noise is added to prevent features sticking together
+        """ Makes features start at somewhat predictable position, if they are of common kinds of features.
+        If not, then some random noise is added to prevent features sticking together
         :param host:
         """
         x, y, z = host.get_current_position()
@@ -90,8 +88,3 @@ class FeatureNode(Node):
 
     def __str__(self):
         return 'feature %s' % self.syntactic_object
-
-    def __unicode__(self):
-        return 'feature %s' % self.syntactic_object
-
-

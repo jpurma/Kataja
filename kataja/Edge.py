@@ -772,12 +772,6 @@ class Edge(QtWidgets.QGraphicsItem):
         else:
             return '<%s stub from %s to %s>' % (self.edge_type, self.start, self.end)
 
-    def __unicode__(self):
-        if self.start and self.end:
-            return '<%s %s-%s %s>' % (self.edge_type, self.start, self.end, self.align)
-        else:
-            return '<%s stub from %s to %s>' % (self.edge_type, self.start, self.end)
-
 
     def drop_to(self, x, y):
         """
@@ -797,18 +791,18 @@ class Edge(QtWidgets.QGraphicsItem):
             self._visible = False
             self.hide()
             ctrl.main.ui_manager.hide_control_points(self)  # @UndefinedVariable
-            for touch_area in list(self.touch_areas.values()):
+            for touch_area in self.touch_areas.values():
                 touch_area.hide()
         elif (not v) and visible:
             self._visible = True
             self.show()
             ctrl.main.ui_manager.show_control_points(self)  # @UndefinedVariable
-            for touch_area in list(self.touch_areas.values()):
+            for touch_area in self.touch_areas.values():
                 touch_area.show()
         else:
             self._visible = visible
 
-    def set_selection_status(self, selected):
+    def refresh_selection_status(self, selected):
         """
 
         :param selected:
@@ -846,7 +840,8 @@ class Edge(QtWidgets.QGraphicsItem):
 
     def hoverEnterEvent(self, event):
         """
-
+        Overrides (and calls) QtWidgets.QGraphicsItem.hoverEnterEvent
+        Toggles hovering state and necessary graphical effects.
         :param event:
         """
         self._hovering_on()

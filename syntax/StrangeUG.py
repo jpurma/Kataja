@@ -1,4 +1,5 @@
 # coding=utf-8
+""" Playing with UG """
 # ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
@@ -27,7 +28,8 @@ from syntax.BaseConstituent import BaseConstituent as Constituent
 from syntax.ConfigurableFeature import Feature
 from syntax.utils import load_lexicon, time_me
 
-# Try adding semantic forms DP, VP and CP as pre-created structures with their own features as syntactic features that can and need to be satisfied.
+# Try adding semantic forms DP, VP and CP as pre-created structures with their own features as
+# syntactic features that can and need to be satisfied.
 
 
 def _closest_parents(A, context, is_not=None, parent_list=None):
@@ -44,7 +46,7 @@ def _closest_parents(A, context, is_not=None, parent_list=None):
 
 class UG:
     """
-
+    A system that connects lexicon and interfaces
     """
 
     def __init__(self, lexicon='testlexicon.txt', constituent=Constituent, feature=Feature):

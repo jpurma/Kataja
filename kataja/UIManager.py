@@ -148,9 +148,10 @@ class UIManager:
 
         """
         self._panel_positions = {}
-        for name, panel in list(self.ui_panels.items()):
+        for name, panel in self.ui_panels.items():
             self._panel_positions[name] = panel.geometry()
-            # self.log_panel.setGeometry(0, self.size().height() - self.log_panel.height(), self.log_panel.width(), self.log_panel.height())
+            # self.log_panel.setGeometry(0, self.size().height() - self.log_panel.height(),
+            # self.log_panel.width(), self.log_panel.height())
 
 
     def update_all_fields(self):
@@ -194,7 +195,7 @@ class UIManager:
 
 
         """
-        for name, panel in list(self.ui_panels.items()):
+        for name, panel in self.ui_panels.items():
             if name in self._panel_positions:
                 panel.setGeometry(self._panel_positions[name])
 
@@ -233,7 +234,7 @@ class UIManager:
 
 
         """
-        for e in list(self.items()):
+        for e in self._items:
             if getattr(e.focusable) and e.isVisible():
                 yield e
 
@@ -808,7 +809,7 @@ class UIManager:
         """
         self.ui_activity_marker.show()
         items_have_moved = False
-        for item in list(self.moving_things):
+        for item in self.moving_things:
             if item.move_towards_target_position():
                 items_have_moved = True
         if not items_have_moved:

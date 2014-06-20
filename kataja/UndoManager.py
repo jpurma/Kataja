@@ -1,4 +1,6 @@
 # -*- coding: UTF-8 -*-
+""" UndoManager is an object in a forest to store the previous states of the forest and to restore these states.
+"""
 # ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
@@ -110,7 +112,7 @@ class UndoManager:
         d2_missing = {}
         d2_has_more = dict(d2)
         diffs = {}
-        for key, i1 in list(d1.items()):
+        for key, i1 in d1.items():
             if key not in d2:
                 d2_missing[key] = i1
                 continue
@@ -142,7 +144,7 @@ class UndoManager:
         to_be_deleted = {}
 
         def _restore_older(state, diff):
-            for key, item in list(diff.items()):
+            for key, item in diff.items():
                 if isinstance(item, dict) and len(item) == 2 and 'old' in item and 'new' in item:
                     # restore older value 
                     if item['new'] != state[key]:
@@ -153,19 +155,19 @@ class UndoManager:
                         state[key] = item['old']
                 elif key == '++':
                     # remove these objects from state
-                    for dkey in list(item.keys()):
+                    for dkey in item.keys():
                         print('del ', dkey)
                         to_be_deleted[dkey] = state[dkey]
                         del state[dkey]
                 elif key == '--':
                     # restore these objects to state
-                    for akey, aitem in list(item.items()):
+                    for akey, aitem in item.items():
                         state[akey] = aitem
                 elif key in state:
                     _restore_older(state[key], item)
 
         def _restore_newer(state, diff):
-            for key, item in list(diff.items()):
+            for key, item in diff.items():
                 if isinstance(item, dict) and len(item) == 2 and 'old' in item and 'new' in item:
                     # restore older value 
                     if item['old'] != state[key]:
@@ -176,11 +178,11 @@ class UndoManager:
                         state[key] = item['new']
                 elif key == '++':
                     # restore these objects to state
-                    for akey, aitem in list(item.items()):
+                    for akey, aitem in item.items():
                         state[akey] = aitem
                 elif key == '--':
                     # remove these objects from state
-                    for dkey in list(item.keys()):
+                    for dkey in item.keys():
                         print('del ', dkey)
                         to_be_deleted[dkey] = state[dkey]
                         del state[dkey]

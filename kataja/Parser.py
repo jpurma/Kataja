@@ -134,7 +134,7 @@ class Parser:
             elif len(parts) == 1:
                 key = parts[0]
                 new_values[key] = ''
-        for key, value in list(new_values.items()):
+        for key, value in new_values.items():
             if key in features:
                 features[key].set(value)
             else:

@@ -10,7 +10,7 @@ class CheckBox(QtWidgets.QGraphicsItem):
     """
 
     def __init__(self, parent, marker='X'):
-        QtWidgets.QGraphicsItem.__init__(self, parent, scene=parent.scene())
+        QtWidgets.QGraphicsItem.__init__(self, parent)
         self._hover = False
         self.setAcceptHoverEvents(False)
         self.setZValue(52)

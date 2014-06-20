@@ -1,4 +1,7 @@
 # coding=utf-8
+""" BaseConstituent is a default constituent used in syntax.
+It uses getters and setters so that other compatible implementations can be built using the same interface.
+It is a primary datatype, needs to support saving and loading. """
 # ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
@@ -28,7 +31,8 @@ from syntax.ConfigurableFeature import Feature
 
 class BaseConstituent(object):
     """ BaseConstituent is a default constituent used in syntax.
-    It uses getters and setters so that other compatible constituent implementations can be built using the same interface. It is a primary datatype, needs to support saving and loading. """
+    It uses getters and setters so that other compatible implementations can be built using the same interface.
+    It is a primary datatype, needs to support saving and loading. """
     saved_fields = ['features', 'sourcestring', 'label', 'left', 'right', 'index', 'gloss', 'uid']
 
 
@@ -66,7 +70,6 @@ class BaseConstituent(object):
             return self.label
 
 
-
     def __repr__(self):
         if self.is_leaf():
             if self.index:
@@ -93,45 +96,93 @@ class BaseConstituent(object):
             return False
 
     def get_label(self):
+        """
+
+
+        :return:
+        """
         return self.label
 
     def get_index(self):
+        """
+
+
+        :return:
+        """
         return self.index
 
     def set_index(self, index):
+        """
+
+        :param index:
+        """
         self.index = index
 
     def get_feature(self, key):
+        """
+
+        :param key:
+        :return:
+        """
         f = self.features.get(key, None)
         if f:
             return f.get()
         return None
 
     def has_feature(self, key):
+        """
+
+        :param key:
+        :return:
+        """
         if isinstance(key, Feature):
             return key in list(self.features.values())
         return key in list(self.features.keys())
 
     def set_left(self, left):
-        """ Derived classes can need more complex implementation """
+        """ Derived classes can need more complex implementation
+        :param left:
+        """
         self.left = left
 
 
     def set_right(self, right):
-        """ Derived classes can need more complex implementation """
+        """ Derived classes can need more complex implementation
+        :param right:
+        """
         self.right = right
 
 
     def get_left(self):
+        """
+
+
+        :return:
+        """
         return self.left
 
     def get_right(self):
+        """
+
+
+        :return:
+        """
         return self.right
 
     def get_features(self):
+        """
+
+
+        :return:
+        """
         return self.features
 
     def set_feature(self, key, value):
+        """
+
+        :param key:
+        :param value:
+        """
         if isinstance(value, Feature):
             self.features[key] = value
         else:
@@ -143,7 +194,11 @@ class BaseConstituent(object):
             self.features[key] = f
 
     def set_features(self, my_dict):
-        for key, feature in list(my_dict.items()):
+        """
+
+        :param my_dict:
+        """
+        for key, feature in my_dict.items():
             if key == 'label':
                 self.label = feature.get_value()
             elif key == 'index':
@@ -152,21 +207,44 @@ class BaseConstituent(object):
                 self.features[key] = feature
 
     def set_gloss(self, gloss):
+        """
+
+        :param gloss:
+        """
         self.gloss = gloss
 
     def get_gloss(self):
+        """
+
+
+        :return:
+        """
         return self.gloss
 
     def del_feature(self, key):
+        """
+
+        :param key:
+        """
         if isinstance(key, Feature):
             key = key.key
         if hasattr(self.features, key):
             del self.features[key]
 
     def is_leaf(self):
+        """
+
+
+        :return:
+        """
         return not (self.left or self.right)
 
     def copy(self):
+        """
+
+
+        :return:
+        """
         if self.left:
             left = self.left.copy()
         else:
@@ -176,6 +254,12 @@ class BaseConstituent(object):
         else:
             right = None
         new = self.__class__(self.label, left, right)
-        for key, value in list(self.features.items()):
+        for key, value in self.features.items():
             new.set_feature(key, value)
         return new
+
+    def load(self, data):
+        """
+        :param data:
+        :return:
+        """

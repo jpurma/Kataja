@@ -404,7 +404,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         view_actions = QtWidgets.QActionGroup(self)
         view_menu = QtWidgets.QMenu('View', self)
         vis_actions = []
-        for name, vis in list(VISUALIZATIONS.items()):
+        for name, vis in VISUALIZATIONS.items():
             vis_actions.append(self.action(name, self.change_visualization_command, vis.shortcut, checkable=True,
                                            viewgroup=view_actions))
 
@@ -659,13 +659,13 @@ class KatajaMain(QtWidgets.QMainWindow):
 
     def enable_actions(self):
         """ Restores menus """
-        for action in list(self._actions.values()):
+        for action in self._actions.values():
             action.setDisabled(False)
 
     def disable_actions(self):
         """ Actions shouldn't be initiated when there is other multi-phase
         action going on """
-        for action in list(self._actions.values()):
+        for action in self._actions.values():
             action.setDisabled(True)
 
 
@@ -690,7 +690,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         # ConstituentNode.font = prefs.sc_font
         self.forest.settings.label_style(new_value)
 
-        for node in list(self.forest.nodes.values()):
+        for node in self.forest.nodes.values():
             node.update_visibility(label=new_value)
             # change = node.update_label()
         self.action_finished('toggle label visibility')
@@ -947,12 +947,12 @@ class KatajaMain(QtWidgets.QMainWindow):
         gloss = prefs.include_gloss_to_print
         if gloss:
             self.graph_scene.photo_frame = self.graph_scene.addRect(sc.visible_rect_and_gloss().adjusted(-1, -1, 2, 2),
-                                                                    colors.selection_pen)
+                                                                    self.color_manager.drawing())
         else:
             if self.forest.gloss and self.forest.gloss.isVisible():
                 self.forest.gloss.hide()
             self.graph_scene.photo_frame = self.graph_scene.addRect(sc.visible_rect().adjusted(-1, -1, 2, 2),
-                                                                    colors.selection_pen)
+                                                                    self.color_manager.selection())
         self.graph_scene.update()
         self.graph_view.repaint()
         self.startTimer(50)
@@ -1008,7 +1008,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         # Thank you!
         self.add_message("printed to %s as PDF with %s dpi." % (full_path, prefs.dpi))
         # Restore image
-        self.graph_scene.setBackgroundBrush(colors.gradient)
+        self.graph_scene.setBackgroundBrush(self.color_manager.gradient)
         if self.forest.gloss:
             self.forest.gloss.show()
         self.action_finished()
@@ -1078,31 +1078,34 @@ class KatajaMain(QtWidgets.QMainWindow):
         # open -action (Command-o)
 
     def open_kataja_file(self):
-        """ Load kataja data """
+        """ Open file browser to load kataja data file"""
         # fileName  = QtGui.QFileDialog.getOpenFileName(self,
         # self.tr("Open File"),
         # QtCore.QDir.currentPath())
-        filename, filetypes = QtWidgets.QFileDialog.getOpenFileName(self, "Open KatajaMain tree", "",
-                                                                    "KatajaMain files (*.kataja *.zkataja);;Text files containing bracket trees (*.txt, *.tex)")
+        file_help = "KatajaMain files (*.kataja *.zkataja);;Text files containing bracket trees (*.txt, *.tex)"
+
+        # inspection doesn't recognize that getOpenFileName is static, switch it off:
+        # noinspection PyTypeChecker,PyCallByClass
+        filename, filetypes = QtWidgets.QFileDialog.getOpenFileName(self, "Open KatajaMain tree", "", file_help)
         # filename = 'savetest.kataja'
         if filename:
             self.load_state_from_file(filename)
-            self.add_message("Loaded '%s'." % to_unicode(filename))
+            self.add_message("Loaded '%s'." % filename)
             self.action_finished()
 
     def load_state_from_file(self, filename=''):
         """
-
-        :param filename:
+        Perform the loading of kataja state from a file.
+        :param filename: string
         """
         ctrl.loading = True
         self.clear_all()
         self.scene.displayed_forest = None
         if filename.endswith('.zkataja'):
-            f = gzip.open(filename, 'rb')
+            f = gzip.open(filename, 'r')
             data = pickle.load(f)
         else:
-            f = open(filename, 'rb')
+            f = open(filename, 'r')
             # f = codecs.open(filename, 'rb', encoding = 'utf-8')
             data = pickle.load(f)
         f.close()
@@ -1113,20 +1116,20 @@ class KatajaMain(QtWidgets.QMainWindow):
         ctrl.change_forest(self.forest_keeper.forest)
         ctrl.update_colors()
 
-
     # save -action (Command-s)
     def save_kataja_file(self):
-        """ Save kataja data """
+        """ Save kataja data with an existing file name. """
         # action  = self.sender()
         self.action_finished()
         filename = prefs.file_name
         all_data = self.create_save_data()
-        pickle_format = 0
+        pickle_format = 4
         if filename.endswith('.zkataja'):
             f = gzip.open(filename, 'w')
         else:
             f = open(filename, 'w')
-        pickle.dump(all_data, f, pickle_format)
+        pickle_worker = pickle.Pickler(f, protocol=pickle_format)
+        pickle_worker.dumb(all_data)
         f.close()
         self.add_message("Saved to '%s'." % filename)
 

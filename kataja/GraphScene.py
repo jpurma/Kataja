@@ -150,7 +150,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         """
         if self.displayed_forest:
-            for e in list(self.displayed_forest.edges.values()):
+            for e in self.displayed_forest.edges.values():
                 e.update_shape_method()
                 e.update()
         print('received signal')
@@ -180,7 +180,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         rights = []
         tops = []
         bottoms = []
-        for item in list(self.items()):
+        for item in self.items():
             if isinstance(item, ConstituentNode) and not item.is_fading_away():
                 # if item.uses_scope_area:
                 # br = item.scope_rect
@@ -259,7 +259,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         :param direction:
         """
-        selectables = [(item, to_tuple(item.sceneBoundingRect().center())) for item in list(self.items()) if
+        selectables = [(item, to_tuple(item.sceneBoundingRect().center())) for item in self.items() if
                        getattr(item, 'selectable', False) and item.is_visible()]
         # debugging plotter
         # for item, pos in selectables:
@@ -740,7 +740,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         # for ant in self.ants:
         # ant.moveBy(random.random()*4-2, random.random()*4-2)
-        for e in list(f.edges.values()):
+        for e in f.edges.values():
             e.update_end_points()
             e.make_path()
             e.update()

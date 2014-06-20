@@ -1,4 +1,7 @@
 # coding=utf-8
+""" ConfigurableConstituent tries to be theory-editable constituent, whose behaviour can be adjusted
+in very specific manner. Configuration is stored in UG-instance.config -dict and can be changed from outside. """
+
 # ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
@@ -27,11 +30,20 @@ from syntax.ConfigurableFeature import Feature
 # from copy import deepcopy
 
 class ConfigurableConstituent:
+    """
+
+    :param cid:
+    :param left:
+    :param right:
+    :param source:
+    :param data:
+    """
     Feature = Feature
     saved_fields = ['features', 'sourcestring', 'label', 'left', 'right', 'index', 'gloss', 'uid']
 
     def __init__(self, cid='', left=None, right=None, source='', data=None):
-        """ ConfigurableConstituent tries to be theory-editable constituent, whose behaviour can be adjusted in very specific manner. Configuration is stored in UG-instance.config -dict and can be changed from outside.
+        """ ConfigurableConstituent tries to be theory-editable constituent, whose behaviour can be adjusted
+        in very specific manner. Configuration is stored in UG-instance.config -dict and can be changed from outside.
          """
         if not data:
             data = {}
@@ -61,9 +73,6 @@ class ConfigurableConstituent:
             self.save_key = self.uid
 
     def __str__(self):
-        return self.label.encode('utf-8', 'ignore')
-
-    def __unicode__(self):
         return self.label
 
     def __contains__(self, C):
@@ -79,24 +88,53 @@ class ConfigurableConstituent:
             return False
 
     def get_label(self):
+        """
+
+
+        :return:
+        """
         return self.label
 
     def get_index(self):
+        """
+
+
+        :return:
+        """
         return self.index
 
     def set_index(self, index):
+        """
+
+        :param index:
+        """
         self.index = index
 
     def get_feature(self, key):
+        """
+
+        :param key:
+        :return:
+        """
         f = self.features.get(key, None)
         if f:
             return f.get()
         return None
 
     def get_features(self):
+        """
+
+
+        :return:
+        """
         return self.features
 
     def set_feature(self, key, value):
+        """
+
+        :param key:
+        :param value:
+        """
         if isinstance(value, ConfigurableConstituent.Feature):
             self.features[key] = value
         else:
@@ -108,7 +146,11 @@ class ConfigurableConstituent:
             self.features[key] = f
 
     def set_features(self, my_dict):
-        for key, feat in list(my_dict.items()):
+        """
+
+        :param my_dict:
+        """
+        for key, feat in my_dict.items():
             if key == 'label':
                 self.label = feat
             elif key == 'index':
@@ -117,15 +159,28 @@ class ConfigurableConstituent:
                 self.features[key] = feat
 
     def del_feature(self, key):
+        """
+
+        :param key:
+        """
         f = self.features.get(key, None)
         if f and f.isDeletable():
             del self.features[key]
 
-
     def is_leaf(self):
+        """
+
+
+        :return:
+        """
         return not (self.left or self.right)
 
     def copy(self):
+        """
+
+
+        :return:
+        """
         if self.left:
             left = self.left.copy()
         else:
@@ -135,14 +190,23 @@ class ConfigurableConstituent:
         else:
             right = None
         new = self.__class__(self.label, left, right)
-        for key, value in list(self.features.items()):
+        for key, value in self.features.items():
             new.set_feature(key, value)
         return new
 
     def set_gloss(self, gloss):
+        """
+
+        :param gloss:
+        """
         self.gloss = gloss
 
     def get_gloss(self):
+        """
+
+
+        :return:
+        """
         return self.gloss
 
     def __repr__(self):

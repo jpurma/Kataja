@@ -1,4 +1,5 @@
 # coding=utf-8
+""" Testing algorithm for sorting based on asymmetric c-command pairs from Kayne's linearization """
 t = ['table', 'ate', 'at', 'the']
 
 d1 = [('ate', 'at'), ('at', 'the'), ('at', 'table'), ('ate', 'the'), ('ate', 'table')]

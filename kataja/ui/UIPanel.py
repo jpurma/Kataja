@@ -66,7 +66,8 @@ class DockPanel(QtWidgets.QDockWidget):
 
 
 class UIPanel(QtWidgets.QDockWidget):
-    """ UI windows that can be docked to main window or separated. Gives some extra control and helper methods on QDockWidget. """
+    """ UI windows that can be docked to main window or separated.
+    Gives some extra control and helper methods on QDockWidget. """
 
     def __init__(self, name, default_position='bottom', parent=None):
         """
@@ -150,7 +151,7 @@ class VisualizationPanel(UIPanel):
         selector = QtWidgets.QComboBox(self)
         # selector.setSizePolicy(label_policy)
         ui_buttons['visualization_selector'] = selector
-        selector.addItems(['%s (%s)' % (key, item.shortcut) for key, item in list(VISUALIZATIONS.items())])
+        selector.addItems(['%s (%s)' % (key, item.shortcut) for key, item in VISUALIZATIONS.items()])
         selector.activated.connect(self.submit_action)
         selector.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
         layout.addWidget(selector, 1, 0)
@@ -523,7 +524,7 @@ class LinesPanel(UIPanel):
         layout.setContentsMargins(4, 4, 4, 4)
         selector = QtWidgets.QComboBox(self)
         ui_buttons['line_type'] = selector
-        selector.addItems([lt for lt in list(SHAPE_PRESETS.keys())])
+        selector.addItems([lt for lt in SHAPE_PRESETS.keys()])
         selector.activated.connect(self.change_main_line_type)
         layout.addWidget(selector)
         inner.setLayout(layout)
@@ -561,7 +562,7 @@ class ColorMappingPanel(UIPanel):
         selector = QtWidgets.QComboBox(self)
         ui_buttons['color_mode'] = selector
 
-        selector.addItems([c['name'] for c in list(prefs.color_modes.values())])
+        selector.addItems([c['name'] for c in prefs.color_modes.values()])
         selector.activated.connect(self.change_color_mode)
         self.mode_select = selector
         # selector.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
@@ -706,7 +707,7 @@ class ColorPanel(UIPanel):
         #selector.setSizePolicy(label_policy)
         ui_buttons['color_mode'] = selector
 
-        selector.addItems([c['name'] for c in list(prefs.color_modes.values())])
+        selector.addItems([c['name'] for c in prefs.color_modes.values()])
         selector.activated.connect(self.change_color_mode)
         self.mode_select = selector
         #selector.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)

@@ -32,11 +32,6 @@ import PyQt5.QtGui as QtGui
 from kataja.Controller import ctrl, prefs
 
 
-f = open('colors.json', 'r')
-color_map = json.load(f, 'utf-8')
-f.close()
-
-
 def rotating_add(base, added):
     """ Adds two numbers, but keeps result between (0,1) rotating over
     :param base:
@@ -109,6 +104,11 @@ class ColorManager:
      """
 
     def __init__(self, hsv_key=None):
+        print("*** Creating ColorManager")
+        f = open('colors.json', 'r')
+        self.color_map = json.load(f) # json.load(f, 'utf-8')
+        f.close()
+
         if not hsv_key:
             hsv_key = (0.00, 0.29, 0.35)  # dark rose
         self.hsv = hsv_key
@@ -421,13 +421,13 @@ class ColorManager:
         r, g, b, a = cc.getRgb()
         d_min = 100000
         best = 'white'
-        for key, color in list(color_map.items()):
+        for key, color in self.color_map.items():
             o_rgb = color['rgb']
             d = (r - o_rgb[0]) * (r - o_rgb[0]) + (g - o_rgb[1]) * (g - o_rgb[1]) + (b - o_rgb[2]) * (b - o_rgb[2])
             if d < d_min:
                 d_min = d
                 best = key
-        return color_map[best]['name']
+        return self.color_map[best]['name']
 
     def _prepare_root_color(self, refresh=False):
         """ Prepare root color (self.hsv), depending on what kind of color settings are active """

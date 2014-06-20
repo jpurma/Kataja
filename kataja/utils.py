@@ -143,7 +143,7 @@ def save_features(obj, saved, d):
                 return nval
             elif isinstance(fval, dict):
                 nval = {}
-                for ikey, item in list(fval.items()):
+                for ikey, item in fval.items():
                     try:
                         nval[ikey] = item.save(d)
                     except AttributeError:
@@ -224,7 +224,7 @@ def save_lexicon(lexicon, filename):
     for key in keys:
         constituent = lexicon[key]
         file.write('%s\n' % key)
-        for feature in list(constituent.get_features().values()):
+        for feature in constituent.get_features().values():
             file.write('%s\n' % feature)
         file.write('\n')
     file.close()
@@ -288,7 +288,7 @@ def print_derivation_steps(objects=gc.garbage, outstream=sys.stdout, show_progre
 
             outstream.write("   %s -- " % str(type(step)))
             if isinstance(step, dict):
-                for key, val in list(step.items()):
+                for key, val in step.items():
                     if val is next:
                         outstream.write("[%s]" % repr(key))
                         break
@@ -360,7 +360,7 @@ def load_objects(start_obj, full_data):
         :return:
         """
         if isinstance(obj, dict):
-            for item in list(obj.values()):
+            for item in obj.values():
                 map_existing(item)
             return
         elif isinstance(obj, (list, tuple, set)):
@@ -397,7 +397,7 @@ def load_objects(start_obj, full_data):
             pass
         obj_data = full_data[obj_key]
         changes = {}
-        for key, value in list(obj_data.items()):
+        for key, value in obj_data.items():
             new_value = inflate(value, obj)
             old_value = getattr(obj, key)
             if new_value != old_value:
@@ -428,7 +428,7 @@ def load_objects(start_obj, full_data):
             return data
         elif isinstance(data, dict):
             result = {}
-            for key, value in list(data.items()):
+            for key, value in data.items():
                 value = inflate(value, host_obj)
                 result[key] = value
             return result
@@ -500,7 +500,7 @@ def save_object(obj, saved_objs, open_refs, ignore=None):
             return data
         elif isinstance(data, dict):
             result = {}
-            for key, value in list(data.items()):
+            for key, value in data.items():
                 value = _simplify(value)
                 result[key] = value
             return result

@@ -63,7 +63,7 @@ class DerivationStep:
         :param chains:
         This copies the dict and the lists """
         snapshot = {}
-        for key, item in list(chains.items()):
+        for key, item in chains.items():
             snapshot[key] = list(item)
         return snapshot
 

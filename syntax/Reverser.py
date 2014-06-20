@@ -1,4 +1,5 @@
 # -*- coding: UTF-8 -*-
+""" Testing a weird reversibility hypothesis I have """
 # ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
@@ -41,7 +42,7 @@ def log(message, importance=3):
 
 class Node:
     """
-
+    A constituent
     """
 
     def __init__(self, id, left=None, right=None, features=None):
@@ -212,10 +213,7 @@ class Node:
         return s
 
     def clearFeatures(self):
-        """
-
-
-        """
+        """ remove all features. probably in order to try with another set of features. """
         self._plus_features = set()
         self._neutral_features = set()
         self._minus_features = set()
@@ -335,10 +333,7 @@ def Merge(node1, node2):
 
 
 def pause():
-    """
-
-
-    """
+    """ Checks if q is pressed to quit. """
     N = input('')
     if N == 'q':
         sys.exit()
@@ -346,7 +341,7 @@ def pause():
 
 class Parser:
     """
-
+    Parser to turn string into constituents and start pushing them into system.
     """
 
     def __init__(self):
@@ -466,6 +461,7 @@ class Parser:
         c = 0
         repair_all = True
         J_for_these_features = 0
+        involved_words = []
 
         while crash and c < self.rounds:
             feed = list(original_feed)

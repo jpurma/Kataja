@@ -186,7 +186,7 @@ class Controller:
         olds = list(self.selected)
         self.selected = []
         for obj in olds:
-            obj.set_selection_status(False)
+            obj.refresh_selection_status(False)
         if update_ui:
             self.main.ui_manager.update_selections()
 
@@ -201,7 +201,7 @@ class Controller:
             self.deselect_objects(update_ui=False)
         self.selected = [obj]
         self.add_message('selected %s' % str(obj))
-        obj.set_selection_status(True)
+        obj.refresh_selection_status(True)
         self.main.ui_manager.update_selections()
 
     def add_to_selection(self, obj):
@@ -212,7 +212,7 @@ class Controller:
         if obj not in self.selected:
             self.selected.append(obj)
             self.add_message('added to selection %s' % str(obj))
-            obj.set_selection_status(True)
+            obj.refresh_selection_status(True)
             self.main.ui_manager.update_selections()
 
     def remove_from_selection(self, obj):
@@ -222,7 +222,7 @@ class Controller:
         """
         if obj in self.selected:
             self.selected.remove(obj)
-            obj.set_selection_status(False)
+            obj.refresh_selection_status(False)
             self.main.ui_manager.update_selections()
 
     # ******** /selection *******

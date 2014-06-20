@@ -1,5 +1,8 @@
 # coding=utf-8
-# ############################################################################
+"""
+GlossNode is a Node to display translation or explanation of a constituent
+"""
+#############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -20,9 +23,7 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-# ############################################################################
-
-import sys
+#############################################################################
 
 from kataja.Controller import qt_prefs
 from kataja.Node import Node
@@ -34,7 +35,7 @@ color_map = {'tense': 0, 'person': 2, 'number': 4, 'case': 6, 'unknown': 3}
 
 class GlossNode(Node):
     """
-
+    Node to display translation of a constituent
     """
     width = 20
     height = 20
@@ -42,7 +43,6 @@ class GlossNode(Node):
     saved_fields = ['host', 'label_font']
     saved_fields = list(set(Node.saved_fields + saved_fields))
     node_type = GLOSS_NODE
-
 
     def __init__(self, host=None, restoring=False):
         forest = host.forest
@@ -62,22 +62,16 @@ class GlossNode(Node):
 
     def update_colors(self):
         """
-
-
+        Deprecated for now? Does nothing, overrides, but doesn't call Node's update_colors.
         """
         pass
         # self.color = colors.drawing2
         # if self._label_complex:
         #    self._label_complex.setDefaultTextColor(colors.drawing2)
 
-
     def __str__(self):
-        return '%s, gloss for %s' % (self.host.get_gloss_text(), self.host)
-
-    def __unicode__(self):
         return '%s, gloss for %s' % (self.host.get_gloss_text(), self.host)
 
     def get_text_for_label(self):
         """ This should be overridden if there are alternative displays for label """
         return self.host.get_gloss_text()
-

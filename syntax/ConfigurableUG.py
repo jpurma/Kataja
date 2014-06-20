@@ -1,4 +1,5 @@
 # coding=utf-8
+""" ConfigurableUG includes implementations of rules and definitions used in Carnie 2010, Constituent Structures. """
 # ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
@@ -24,12 +25,10 @@
 
 
 from configparser import ConfigParser
-from random import randint, choice
 import re
+from BaseConstituent import BaseConstituent as Constituent
 
-from syntax.ConfigurableConstituent import ConfigurableConstituent
-from syntax.ConfigurableFeature import Feature
-from syntax.utils import load_lexicon, save_lexicon, time_me
+from syntax.utils import time_me
 
 
 DEFAULT = """
@@ -63,48 +62,72 @@ class ConfigurableUG:
         self.config = ConfigParser()
         # self.config.readfp(io.BytesIO(DEFAULT))
         self.config.read(config_path)
-        # self.Constituent=constituent
+        self.Constituent = Constituent
         # self.Feature=feature
         # self.lexicon=load_lexicon(lexicon, constituent, feature)
         # self.structure=None
 
         self.dominates = self.undefined
 
-
     def undefined(self, *args, **kw):
+        """
+
+        :param args:
+        :param kw:
+        """
         print('Undefined function called')
 
     # ## Definitions for edges, operations and conditions from Carnie 2010
 
     # ## DOMINANCE
 
-    def set_based_dominance(self, dom, sub):
-        """ Simple dominance, 'dominance is essentially a containment edge' (Carnie 2010, p. 29) """
+    @staticmethod
+    def set_based_dominance(dom: Constituent, sub: Constituent) -> bool:
+        """ Simple dominance, 'dominance is essentially a containment edge' (Carnie 2010, p. 29)
+        :param sub: Constituent that should be dominated
+        :param dom: Constituent that should be dominating
+        """
         return sub in dom
 
     dominates = set_based_dominance
 
-    def properly_dominates(self, dom, sub):
+    def properly_dominates(self, dom: Constituent, sub: Constituent) -> bool:
+        """ Does dom dominate sub?
+        :param sub:
+        :param dom:
+        """
         return self.dominates(dom, sub) and dom != sub
 
-    def is_root_node(self, A, structure):
-        """ (5a) Root node: the node that dominates everything, but is dominated by nothing except itself (Carnie 2010, p. 29) """
-        for B in structure:
-            if not self.dominates(A, B):
+    def is_root_node(self, a: Constituent, structure: Constituent) -> bool:
+        """ (5a) Root node: the node that dominates everything, but is dominated by nothing except itself
+        (Carnie 2010, p. 29)
+        This is a bit stupid way of doing this, since by giving the structure where the evaluation is done we are
+                giving the actual root element already.
+        :param a: Constituent
+        :param structure: Constituent structure where the analysis is done.
+        """
+        for b in structure:
+            if not self.dominates(a, b):
                 return False
-            if B != A and self.dominates(B, A):
+            if b != a and self.dominates(b, a):
                 return False
         return True
 
-    def is_terminal_node(self, A, structure):
-        """ (5b) Terminal node: A node that dominates nothing except itself. (Carnie 2010, p. 30) """
+    def is_terminal_node(self, a, structure) -> bool:
+        """ (5b) Terminal node: A node that dominates nothing except itself. (Carnie 2010, p. 30)
+        :param a:
+        :param structure:
+        """
         for B in structure:
-            if A != B and self.dominates(A, B):
+            if a != B and self.dominates(a, B):
                 return False
         return True
 
-    def is_non_terminal_node(self, node, structure):
-        """ (5c) Non-terminal node: A node that dominates something except itself. (Carnie 2010, p. 30) """
+    def is_non_terminal_node(self, node, structure) -> bool:
+        """ (5c) Non-terminal node: A node that dominates something except itself. (Carnie 2010, p. 30)
+        :param node:
+        :param structure:
+        """
         for B in structure:
             if node != B and self.dominates(node, B):
                 return True
@@ -114,6 +137,10 @@ class ConfigurableUG:
     # ## Dominance Axioms
 
     def check_dominance_axioms(self, structure):
+        """
+
+        :param structure:
+        """
         print('Reflexivity Axiom:', self.reflexivity_axiom(structure))
         print('Single Root Axiom:', self.single_root_axiom(structure))
         print('Dominance Transitivity Axiom:', self.dominance_transitivity_axiom(structure))
@@ -121,7 +148,9 @@ class ConfigurableUG:
         print('No Multiple Mothers Axiom:', self.no_multiple_mothers_axiom(structure))
 
     def reflexivity_axiom(self, structure):
-        """ (A1) all:x belonging to N, x dominates x. (Carnie 2010, p. 31) """
+        """ (A1) all:x belonging to N, x dominates x. (Carnie 2010, p. 31)
+        :param structure:
+        """
         for node in structure:
             if not self.dominates(node, node):
                 return False
@@ -129,7 +158,9 @@ class ConfigurableUG:
 
 
     def single_root_axiom(self, structure):
-        """ (A2) exists:x, all:y belonging to N that x dominates y. (Carnie 2010, p. 31) """
+        """ (A2) exists:x, all:y belonging to N that x dominates y. (Carnie 2010, p. 31)
+        :param structure:
+        """
         for node in list(structure):
             found = False
             for other_node in structure:
@@ -140,7 +171,9 @@ class ConfigurableUG:
         return False
 
     def dominance_transitivity_axiom(self, structure):
-        """ (A3) all: x,y,z belonging to N: (x dominates y) & (y dominates z) -> (x dominates z) (Carnie 2010, p. 33)"""
+        """ (A3) all: x,y,z belonging to N: (x dominates y) & (y dominates z) -> (x dominates z) (Carnie 2010, p. 33)
+        :param structure:
+        """
         for x in structure:
             ys = [y for y in structure if self.dominates(x, y)]
             zetas = []
@@ -154,7 +187,9 @@ class ConfigurableUG:
         return True
 
     def dominance_antisymmetry_axiom(self, structure):
-        """ (A4) all: x,y belonging to N: (x dominates y) & (y dominates x) -> (x = y) (Carnie 2010, p. 31)"""
+        """ (A4) all: x,y belonging to N: (x dominates y) & (y dominates x) -> (x = y) (Carnie 2010, p. 31)
+        :param structure:
+        """
         for x in structure:
             dominated = [y for y in structure if self.dominates(x, y)]
             ys = [y for y in dominated if self.dominates(y, x)]
@@ -165,7 +200,10 @@ class ConfigurableUG:
 
 
     def no_multiple_mothers_axiom(self, structure):
-        """ (A5) all: x,y,z belonging to N: (x dominates y) & (y dominates z) -> (x dominates y) or (y dominates x) (Carnie 2010, p. 34)"""
+        """ (A5) all: x,y,z belonging to N: (x dominates y) & (y dominates z) -> (x dominates y) or (y dominates x)
+        (Carnie 2010, p. 34)
+        :param structure:
+        """
         for z in structure:
             for y in structure:
                 if self.dominates(y, z):
@@ -178,8 +216,12 @@ class ConfigurableUG:
     # Immediate dominance
 
     def immediate_dominance_carnie(self, x, z, structure):
-        """ (12) Node A immediately dominates node B if there is no Intervening node G that is properly dominated by A and properly dominates B. (In other words, A is the first node that dominates B.) (Carnie 2010, p. 35)
+        """ (12) Node A immediately dominates node B if there is no Intervening node G that is properly dominated by A
+        and properly dominates B. (In other words, A is the first node that dominates B.) (Carnie 2010, p. 35)
             all x,z: not exists y, where x prop.dominates y and y prop.dominates z
+        :param x:
+        :param z:
+        :param structure:
             """
         # fix, not based on Carnie:
         if not self.dominates(x, z):
@@ -193,7 +235,12 @@ class ConfigurableUG:
         return True
 
     def immediate_dominance_pullum_scholz(self, x, y, structure):
-        """ (x dominates y) & (x!=y) & not exists z:[(x dominates z) & (z dominates y) & (x!=z) & (z!=y) ] (Carnie 2010, p. 35)"""
+        """ (x dominates y) & (x!=y) & not exists z:[(x dominates z) & (z dominates y) & (x!=z) & (z!=y) ]
+        (Carnie 2010, p. 35)
+        :param x:
+        :param y:
+        :param structure:
+        """
         if x == y:
             return False
         for z in structure:
@@ -203,17 +250,30 @@ class ConfigurableUG:
 
 
     immediate_dominance = immediate_dominance_carnie
+    immediately_dominates = immediate_dominance_carnie
 
     def is_mother(self, A, B, structure):
-        """ (13 a) Mother: A is the mother of B iff A immediately dominates B. (Carnie 2010, p. 35) """
+        """ (13 a) Mother: A is the mother of B iff A immediately dominates B. (Carnie 2010, p. 35)
+        :param A:
+        :param B:
+        :param structure:
+        """
         return self.immediate_dominance(A, B, structure)
 
     def is_daughter(self, B, A, structure):
-        """ (13 b) Daughter: B is the daughter of A iff B is immediately dominated by A. (Carnie 2010, p. 35) """
+        """ (13 b) Daughter: B is the daughter of A iff B is immediately dominated by A. (Carnie 2010, p. 35)
+        :param B:
+        :param A:
+        :param structure:
+        """
         return self.immediate_dominance(A, B, structure)
 
     def is_sister(self, A, B, structure):
-        """ (14) A is a sister of B if there is a C, such that C immediately dominates both A and B (Carnie 2010, p. 35)"""
+        """ (14) A is a sister of B if there is a C, such that C immediately dominates both A and B (Carnie 2010, p. 35)
+        :param A:
+        :param B:
+        :param structure:
+        """
         # hmm, this allows A to be sister of A
         for C in structure:
             if self.immediate_dominance(C, A, structure) and self.immediate_dominance(C, B, structure):
@@ -221,7 +281,12 @@ class ConfigurableUG:
         return False
 
     def is_sister_chomsky(self, A, B, structure):
-        """ ...Chomsky (1986b) gives a much broader description of sisterhood, where sisters include all material dominated by a single phrasal node (instead of a single edgeing node) (Carnie 2010, p. 35)"""
+        """ ...Chomsky (1986b) gives a much broader description of sisterhood, where sisters include all material
+        dominated by a single phrasal node (instead of a single edgeing node) (Carnie 2010, p. 35)
+        :param A:
+        :param B:
+        :param structure:
+        """
         # needs to be checked, I'm not sure if this is correct
         for C in structure:
             if (self.immediate_dominance(C, A, structure) and self.dominates(C, B)) or (
@@ -232,7 +297,13 @@ class ConfigurableUG:
     # Exhaustive dominance
 
     def exhaustive_dominance(self, A, nodes, structure):
-        """ Node A exhaustively dominates a set of terminal nodes {b, c, ...d}, provided it dominates all the members of the set (so that there is not member of the set that is not dominated by A) and there is no terminal node g dominated by A that is not a member of the set. (Carnie 2010, p. 36)"""
+        """ Node A exhaustively dominates a set of terminal nodes {b, c, ...d}, provided it dominates all the members
+        of the set (so that there is not member of the set that is not dominated by A) and there is no terminal node g
+         dominated by A that is not a member of the set. (Carnie 2010, p. 36)
+        :param A:
+        :param nodes:
+        :param structure:
+        """
         for B in nodes:
             if not self.dominates(A, B):
                 return False
@@ -243,7 +314,10 @@ class ConfigurableUG:
         return True
 
     def constituent_set(self, A, structure):
-        """ A set of nodes exhaustively dominated by a single node (Carnie 2010, p. 37)"""
+        """ A set of nodes exhaustively dominated by a single node (Carnie 2010, p. 37)
+        :param A:
+        :param structure:
+        """
         nodes = [B for B in structure if self.dominates(A, B)]
         assert self.exhaustive_dominance(A, nodes, structure)
         return nodes
@@ -251,7 +325,11 @@ class ConfigurableUG:
     # ## PRECEDENCE
 
     def is_left_edge(self, A, B, parent):
-        """ This assumes only that parent has an ordering method that returns iterable results """
+        """ This assumes only that parent has an ordering method that returns iterable results
+        :param A:
+        :param B:
+        :param parent:
+        """
         left_found = False
         right_found = False
         left_index = 0
@@ -266,7 +344,12 @@ class ConfigurableUG:
         return left_found and right_found and left_index < right_index
 
     def sister_precedence(self, A, B, structure):
-        """ (24) Node A sister-precedes node B if and only if both are immediately dominated by the same node M, and A emerges from a edge from M that is left of the edge over B (Carnie 2010, p. 40)"""
+        """ (24) Node A sister-precedes node B if and only if both are immediately dominated by the same node M,
+        and A emerges from a edge from M that is left of the edge over B (Carnie 2010, p. 40)
+        :param A:
+        :param B:
+        :param structure:
+        """
         for M in structure:
             if self.immediate_dominance(M, A, structure) and self.immediate_dominance(M, B,
                                                                                       structure) and self.is_left_edge(
@@ -277,7 +360,11 @@ class ConfigurableUG:
     def precedence(self, A, B, structure):
         """ (25) Node A precedes node B if and only if:
         (i) neither A dominates B nor B dominates A and
-        (ii) some node E dominating A sister-precedes some node F dominating B (because domination is reflexive, E may equal A and F may equal B, but they need not do so.) (Carnie 2010, p. 40)
+        (ii) some node E dominating A sister-precedes some node F dominating B (because domination is reflexive,
+         E may equal A and F may equal B, but they need not do so.) (Carnie 2010, p. 40)
+        :param A:
+        :param B:
+        :param structure:
         """
         if self.dominates(A, B) or self.dominates(B, A):
             return False
@@ -290,13 +377,18 @@ class ConfigurableUG:
         return False
 
     def immediate_precedence(self, A, B, structure):
-        """(27) A immediately precedes B if A precedes B and there is no node G that follows A but precedes B. (Carnie 2010, p. 41) """
-        if not self.precedence(A, B):
+        """(27) A immediately precedes B if A precedes B and there is no node G that follows A but precedes B.
+        (Carnie 2010, p. 41)
+        :param A:
+        :param B:
+        :param structure:
+        """
+        if not self.precedence(A, B, structure):
             return False
         for G in structure:
             if G is A or G is B:
                 continue
-            if self.precedence(A, G) and self.precedence(G, B):
+            if self.precedence(A, G, structure) and self.precedence(G, B, structure):
                 return False
         return True
 
@@ -306,6 +398,9 @@ class ConfigurableUG:
     # ## Precedence axioms
 
     def check_precedence_axioms(self, structure):
+        """
+        :param structure:
+        """
         print('Precedence Transitivity Axiom: ', self.precedence_transitivity_axiom(structure))
         print('Precedence Asymmetry Axiom: ', self.precedence_asymmetry_axiom(structure))
         print('Precedence Irreflexivity Axiom: ', self.precedence_irreflexivity_axiom(structure))
@@ -313,18 +408,23 @@ class ConfigurableUG:
         print('Precedence Non-tangling Axiom: ', self.precedence_non_tangling_axiom(structure))
 
     def precedence_transitivity_axiom(self, structure):
-        """ (A6) P is transitive: for all x,y,z in N [(x precedes y) & (y precedes z) -> (x precedes z)]  (Carnie 2010, p. 42)"""
+        """ (A6) P is transitive: for all x,y,z in N [(x precedes y) & (y precedes z) -> (x precedes z)]
+        (Carnie 2010, p. 42)
+        :param structure:
+        """
         for x in structure:
             for y in structure:
                 for z in structure:
                     if self.precedes(x, y, structure) and self.precedes(y, z, structure):
-                        if not self.precedes(x, z):
+                        if not self.precedes(x, z, structure):
                             return False
         return True
 
     def precedence_asymmetry_axiom(self, structure):
         """ (A7) P is asymmetric: for all x,y in N [(( x precedes y) -> not (y precedes x))]
-        (Carnie 2010, p. 43)"""
+        (Carnie 2010, p. 43)
+        :param structure:
+        """
         for x in structure:
             for y in structure:
                 if self.precedes(x, y, structure):
@@ -333,14 +433,19 @@ class ConfigurableUG:
         return True
 
     def precedence_irreflexivity_axiom(self, structure):
-        """ (T1) P is irreflexive: for all x in N [ not x precedes x] (Carnie 2010, p.43) """
+        """ (T1) P is irreflexive: for all x in N [ not x precedes x] (Carnie 2010, p.43)
+        :param structure:
+        """
         for x in structure:
             if self.precedes(x, x, structure):
                 return False
         return True
 
     def precedence_exclusivity_axiom(self, structure):
-        """ (A8) for all x,y in N [ (x precedes y) or (y precedes x) -> not ((x dominates y) or (y dominates x))] (Carnie 2010, p. 43)"""
+        """ (A8) for all x,y in N [ (x precedes y) or (y precedes x) -> not ((x dominates y) or (y dominates x))]
+        (Carnie 2010, p. 43)
+        :param structure:
+        """
         for x in structure:
             for y in structure:
                 if self.precedes(x, y, structure) or self.precedes(y, x, structure):
@@ -349,7 +454,10 @@ class ConfigurableUG:
         return True
 
     def precedence_non_tangling_axiom(self, structure):
-        """ (A9) for all w,x,y,z in N [ ((w precedes x) and (w dominates y) and (x dominates z) -> (y precedes z))] (Carnie 2010, p. 43)"""
+        """ (A9) for all w,x,y,z in N [ ((w precedes x) and (w dominates y) and (x dominates z) -> (y precedes z))]
+        (Carnie 2010, p. 43)
+        :param structure:
+        """
 
         for w in structure:
             for x in structure:
@@ -366,19 +474,32 @@ class ConfigurableUG:
     # ## C-Command and Government
 
     def command(self, A, B, structure):
-        """ Command: Node A commands B, if the first S (Sentence) node dominating A also dominates B. (Carnie 2010, p. 47)
-            let's not implement this. S-nodes do not exist anymore and defining the first dominating S-node would be pain.
+        """
+        Command: Node A commands B, if the first S (Sentence) node dominating A also dominates B. (Carnie 2010, p. 47)
+        let's not implement this. S-nodes do not exist anymore and defining the first dominating S-node would be pain.
+        :param A:
+        :param B:
+        :param structure:
         """
         pass
 
     def kommand(self, A, B, structure):
-        """ Kommand: Node A kommands B, if the first cyclic node (S or NP) dominating A also dominates B. (Carnie 2010, p. 49)
-            same thing as with command. No sense to implement as S and NP are not that meaningful
+        """
+        Kommand: Node A kommands B, if the first cyclic node (S or NP) dominating A also dominates B. (Carnie 2010, p. 49)
+        same thing as with command. No sense to implement as S and NP are not that meaningful
+        :param A:
+        :param B:
+        :param structure:
         """
         pass
 
     def c_command(self, A, B, structure):
-        """ (23) C-command: Node A c-commands node B if every node properly dominating A also properly dominates B, and neither A nor B dominate the other. (Carnie 2010, p. 54) """
+        """ (23) C-command: Node A c-commands node B if every node properly dominating A also properly dominates B,
+        and neither A nor B dominate the other. (Carnie 2010, p. 54)
+        :param A:
+        :param B:
+        :param structure:
+        """
         if self.dominates(A, B) or self.dominates(B, A):
             return False
         for g in structure:
@@ -388,11 +509,19 @@ class ConfigurableUG:
         return True
 
     def symmetric_c_command(self, A, B, structure):
-        """ (17) A symmetrically c-commands B, if A c-commands B and B c-commands A. (Carnie 2010, p. 52) """
+        """ (17) A symmetrically c-commands B, if A c-commands B and B c-commands A. (Carnie 2010, p. 52)
+        :param A:
+        :param B:
+        :param structure:
+        """
         return self.c_command(A, B, structure) and self.c_command(B, A, structure)
 
     def asymmetric_c_command(self, A, B, structure):
-        """ (18) A asymmetrically c-commands B, if A c-commands B but B does not c-command A. (Carnie 2010, p. 52) """
+        """ (18) A asymmetrically c-commands B, if A c-commands B but B does not c-command A. (Carnie 2010, p. 52)
+        :param A:
+        :param B:
+        :param structure:
+        """
         return self.c_command(A, B, structure) and not self.c_command(B, A, structure)
 
     def path(self, start, end, structure):
@@ -400,14 +529,23 @@ class ConfigurableUG:
         (a) all ij, n >= i, j >= 0, A_i = A_j -> i = j.
         (b) all i, n > i >= 0, A_i immediately dominates A_i+1 or A_i+1 immediately dominates A_i.
 
-        expensive to implement in this way. Better to implement unambiguous path only, as it is used in Kayne's definition.
+        expensive to implement in this way. Better to implement unambiguous path only,
+        as it is used in Kayne's definition.
+        :param start:
+        :param end:
+        :param structure:
         """
         pass
 
     def unambiguous_path(self, start, end, structure):
         """ An unambiguous path T is a path P = (A_0,..., A_i, A_i+1, ... A_n) such that all i, n>i>=0:
-        (a) if A_i immediately dominates A_i+1, then A_i immediately dominates no node in T other than A_i+1, with the exception of A_i-1;
-        (b) if A_i is immediately dominated by A_i+1, then A_i is immediately dominated by no node in T other than A_i+1.
+        (a) if A_i immediately dominates A_i+1, then A_i immediately dominates no node in T other than A_i+1, with the
+        exception of A_i-1;
+        (b) if A_i is immediately dominated by A_i+1, then A_i is immediately dominated by
+        no node in T other than A_i+1.
+        :param start:
+        :param end:
+        :param structure:
         """
         P = [end]
         turning_points = []
@@ -432,23 +570,25 @@ class ConfigurableUG:
         # first step down:
         candidates = []
         for n in structure:
-            if self.immediately_dominates(latest, n) and n not in P:
+            if self.immediately_dominates(latest, n, structure) and n not in P:
                 candidates.append(n)
         if len(candidates) > 1:
             return []  # ambiguous, more than one possible children
         latest = candidates[0]
         P.append(latest)
 
-        # ## Here is an interesting possibility: that 'turning point' allows node to have two daughters, because the other is already included in path. In Kayne's definition this is a special case, but it could be generalized.
+        # ## Here is an interesting possibility: that 'turning point' allows node to have two daughters,
+        # because the other is already included in path. In Kayne's definition this is a special case,
+        # but it could be generalized.
         generalized_exclude_path_members = False
         while latest is not start:
             candidates = []
             for n in structure:
                 if generalized_exclude_path_members:
-                    if self.immediately_dominates(latest, n) and (n not in P):
+                    if self.immediately_dominates(latest, n, structure) and (n not in P):
                         candidates.append(n)
                 else:
-                    if self.immediately_dominates(latest, n):
+                    if self.immediately_dominates(latest, n, structure):
                         candidates.append(n)
             if len(candidates) > 1 or len(candidates) == 0:
                 return []  # ambiguous, more than one possible children
@@ -457,9 +597,15 @@ class ConfigurableUG:
         return P
 
     def minimal_factorization(self, target, structure):
-        """ {F, E, B} provides the minimal factorization of the phrase-marker with respect to G. That is, there is no other set of nodes that is smaller than ... {F, E, B} which when unioned with G provides a complete non-redundant constituent analysis of the phrase marker. (Chametzky (2000:45), according to Carnie 2010, p. 58)
+        """ {F, E, B} provides the minimal factorization of the phrase-marker with respect to G. That is, there is
+        no other set of nodes that is smaller than ... {F, E, B} which when unioned with G provides a complete
+        non-redundant constituent analysis of the phrase marker. (Chametzky (2000:45), according to Carnie 2010, p. 58)
 
-        This is tricky, but I think equivalent can be done by taking all target's dominating nodes and taking the other node involved than the one that is in dominating nodes or the target node.
+        This is tricky, but I think equivalent can be done by taking all target's dominating nodes and taking
+        the other node involved than the one that is in dominating nodes or the target node.
+        :param target:
+        :param structure:
+
         """
         dominators = []
         for n in structure:
@@ -474,8 +620,13 @@ class ConfigurableUG:
         return factors
 
     def m_command(self, A, B, structure):
-        """ (30) M-command: Node A c-commands node B if every maximal category (XP) node properly dominating A also dominates B and neither A nor B dominate the other. (Carnie 2010, p.59)
+        """ (30) M-command: Node A c-commands node B if every maximal category (XP) node properly dominating A also
+        dominates B and neither A nor B dominate the other. (Carnie 2010, p.59)
             This requires recognition of maximal category. I'm not sure if that will be implemented.
+        :param A:
+        :param B:
+        :param structure:
+
         """
         if self.dominates(A, B) or self.dominates(B, A):
             return False
@@ -489,7 +640,12 @@ class ConfigurableUG:
     # Parker and Pullum (1990): Command edges through minimal upper bound
 
     def upper_bounds(self, a, P, structure):
-        """ (35) The set of upper bounds for a with respect to property P (written UB(a, P)) is given by UB(a, P) = { b | b properly_dominates a & P(b) } (Carnie 2010, p.61)"""
+        """ (35) The set of upper bounds for a with respect to property P (written UB(a, P)) is given by UB(a, P) =
+        { b | b properly_dominates a & P(b) } (Carnie 2010, p.61)
+        :param a:
+        :param P:
+        :param structure:
+        """
 
         result_set = set()
         for b in structure:
@@ -498,9 +654,14 @@ class ConfigurableUG:
         return result_set
 
     def minimal_upper_bound(self, a, P, structure):
-        """ (36) MUB(a, P) = { b | b belongs_to UB(a, P) & all x [ (x belongs_to UB(a, P) & b dominates x) -> (b = x)]} (Carnie 2010, p.61)"""
+        """ (36) MUB(a, P) = { b | b belongs_to UB(a, P) & all x [ (x belongs_to UB(a, P) & b dominates x) -> (b = x)]}
+        (Carnie 2010, p.61)
+        :param a:
+        :param P:
+        :param structure:
+        """
 
-        UB = list(self.upper_bounds(self, a, P, structure))
+        UB = list(self.upper_bounds(a, P, structure))
         result_set = set()
 
         for b in UB:
@@ -514,8 +675,10 @@ class ConfigurableUG:
 
     def general_command_edge(self, a, P, structure):
         """ (37) C_P = { <a, b>: all x [(x belongs to MUB(a, P)) -> x dominates b ] } (Carnie 2010, p.61)
-
             returns the c-command domain: all of the nodes that can be b.
+        :param a:
+        :param P:
+        :param structure:
         """
 
         MUB = self.minimal_upper_bound(a, P, structure)
@@ -527,43 +690,80 @@ class ConfigurableUG:
                     continue
                 if self.dominates(x, b):
                     result_set.add(b)
-        return b
+        return result_set
 
     def barker_pullum_s_command(self, A, structure):
         """ S-command is the command edge C_P1, where P1 is given by: P1 = { a | LABEL(a)=S } (Carnie 2010, p.61)
+        :param A:
+        :param structure:
         """
 
         def P1(a, structure):
+            """
+
+            :param a:
+            :param structure:
+            :return:
+            """
             return a.node_type_label() == 'S'
 
         return self.general_command_edge(A, P1, structure)
 
     def barker_pullum_k_command(self, A, structure):
-        """ K-command is the command edge C_P3, where P3 is given by: P3 = { a | LABEL(a) belongs to {S,NP} } (Carnie 2010, p.61)
+        """ K-command is the command edge C_P3, where P3 is given by: P3 = { a | LABEL(a) belongs to {S,NP} }
+        (Carnie 2010, p.61)
+        :param A:
+        :param structure:
+
         """
 
         def P3(a, structure):
+            """
+
+            :param a:
+            :param structure:
+            :return:
+            """
             return a.node_type_label() in ['S', 'NP']
 
         return self.general_command_edge(A, P3, structure)
 
     def barker_pullum_m_command(self, A, structure):
-        """ M-command is the command edge C_P4, where P4 is given by: P4 = { a | LABEL(a) belongs to MAX } (Carnie 2010, p.61)
+        """ M-command is the command edge C_P4, where P4 is given by: P4 = { a | LABEL(a) belongs to MAX }
+        (Carnie 2010, p.61)
+        :param A:
+        :param structure:
         """
 
         def P4(a, structure):
+            """
+
+            :param a:
+            :param structure:
+            :return:
+            """
             return self.is_maximal_category(a, structure)
 
         return self.general_command_edge(A, P4, structure)
 
 
     def barker_pullum_c_command(self, A, structure):
-        """ C-command is the command edge C_P5, where P5 is given by: P5 = { a | exists xy [ x != y & M(a,x) & M(a, y)]} (Carnie 2010, p.62)
+        """ C-command is the command edge C_P5, where P5 is given by:
+        P5 = { a | exists xy [ x != y & M(a,x) & M(a, y)]}
+        (Carnie 2010, p.62)
 
         I'm using is_mother instead of Barker and Pullum's definition of M: they are equivalent
+        :param A:
+        :param structure:
         """
 
         def P5(a, structure):
+            """
+
+            :param a:
+            :param structure:
+            :return:
+            """
             found = set()
             # if we go through structure and find (at least) two daughters, the condition is satisfied.
             for x in structure:
@@ -578,10 +778,19 @@ class ConfigurableUG:
 
     def immediate_dominance_c_command(self, A, structure):
         """ C-command is the command edge C_P6, where P6 is given by: P6 = N (N the set of nodes)  (Carnie 2010, p.62)
-        I'm using P:s as function that checks if something is part of the set, Carnie uses P as a set. So P6 = N means that everything goes.
+        I'm using P:s as function that checks if something is part of the set, Carnie uses P as a set.
+        So P6 = N means that everything goes.
+        :param A:
+        :param structure:
         """
 
         def P6(a, structure):
+            """
+
+            :param a:
+            :param structure:
+            :return:
+            """
             return a in structure
 
         return self.general_command_edge(A, P6, structure)
@@ -591,6 +800,9 @@ class ConfigurableUG:
         """ (45) Government: A governs B iff
         a) A c-commands B;
         b) There is no X, such that A c-commands X and X asymmetrically c-commands B. (Carnie 2010, p. 63)
+        :param A:
+        :param B:
+        :param structure:
         """
         if not self.c_command(A, B, structure):
             return False
@@ -610,6 +822,8 @@ class ConfigurableUG:
         (Carnie 2010 p.137)
 
         Give projection path that starts from node 'bottom'
+        :param bottom:
+        :param structure:
         """
         matching_nodes = [n for n in structure if n.get_features() == bottom.get_features() and n is not bottom]
         path = [bottom]
@@ -634,6 +848,8 @@ class ConfigurableUG:
         (Carnie 2010 p.137)
 
         Give projection path that starts from node 'top'
+        :param structure:
+        :param top:
         """
         matching_nodes = [n for n in structure if n.get_features() == top.get_features() and n is not top]
         path = [top]
@@ -651,13 +867,18 @@ class ConfigurableUG:
         return path
 
     def maximal_projection_node(self, path):
-        """ (4) n_i is the maximal projection node of a projection path Pi = (n_1, ..., n_n) iff i=1  (Carnie 2010 p.137) """
+        """ (4) n_i is the maximal projection node of a projection path Pi = (n_1, ..., n_n) iff i=1  (Carnie 2010 p.137)
+        :param path:
+        """
         return path[0]
 
     def project_alpha(self, word, structure):
-        """ (6) Project Alpha: A word of syntactic category X is dominated by an uninterrupted sequence of X nodes. (Carnie 2010 p.138)
+        """ (6) Project Alpha: A word of syntactic category X is dominated by an uninterrupted sequence of X nodes.
+         (Carnie 2010 p.138)
 
             These chains give (for me unintuitive) order [X_max ,..., X_0]
+        :param word:
+        :param structure:
         """
         found = True
         path = [word]
@@ -675,6 +896,8 @@ class ConfigurableUG:
         """ (7) Projection Chain of X = an uninterrupted sequence of projections of X (Carnie 2010, p. 138)
             The chain can go to both directions from X, if X is assumed to be a node.
             These chains give (for me unintuitive) order [X_max ,..., X_0]
+        :param X:
+        :param structure:
         """
         path = self.project_alpha(X, structure)  # this is the upper part of path, from X_max to X
         found = True
@@ -690,7 +913,10 @@ class ConfigurableUG:
     def maximal_projection_speas(self, X, structure):
         """ (8) Maximal projection: X = XP if for all G, dominating X, G!=X (Carnie 2010, p. 138)
 
-        This is Speas's original version, which is a bit broken. There is revised version that will be used as a standard, as domination can happen over distances.
+        This is Speas's original version, which is a bit broken.
+        There is revised version that will be used as a standard, as domination can happen over distances.
+        :param X:
+        :param structure:
         """
         for G in structure:
             if G.syntactic_category() == X.syntactic_category() and self.dominates(G, X):
@@ -698,7 +924,11 @@ class ConfigurableUG:
         return True
 
     def maximal_projection(self, X, structure):
-        """ (9) Maximal Projection (revised): X = XP if each G, immediately dominating X, the head of G != the head of X. (Carnie 2010, p. 138)"""
+        """ (9) Maximal Projection (revised): X = XP if each G, immediately dominating X,
+        the head of G != the head of X. (Carnie 2010, p. 138)
+        :param X:
+        :param structure:
+        """
 
         for G in structure:
             if G.head() == X.head() and self.immediately_dominates(G, X, structure):
@@ -707,7 +937,11 @@ class ConfigurableUG:
 
 
     def asymmetric_immediate_dominance_c_command(self, A, structure):
-        """ Used for Kayne's LCA: Some node A only c-commands B if the node immediately dominating A, dominates (not necessarily immediately) B. (Carnie 2010, p. 146) Add asymmetry, and return all suitable targets. """
+        """ Used for Kayne's LCA: Some node A only c-commands B if the node immediately dominating A,
+        dominates (not necessarily immediately) B. (Carnie 2010, p. 146) Add asymmetry, and return all suitable targets.
+        :param A:
+        :param structure:
+        """
         results = set()
         for B in structure:
             if A is B:
@@ -715,11 +949,11 @@ class ConfigurableUG:
             if self.dominates(A, B) or self.dominates(B, A):
                 continue
             for p in structure:
-                if self.immediately_dominates(p, A, structure) and self.dominates(p,
-                                                                                  B) and not self.immediately_dominates(
-                        p, B):
+                if self.immediately_dominates(p, A, structure) and \
+                        self.dominates(p, B) and \
+                        not self.immediately_dominates(p, B, structure):
                     results.add(p)
-
+        return results
 
     def linear_correspondence_axiom(self, structure):
         """ (24) Linear Correspondence Axiom: d(A) is a linear ordering of T.
@@ -727,10 +961,17 @@ class ConfigurableUG:
         T is a set of terminals in a structure.
         A is a set of asymmetric c-command edges in a structure. Each edge is a pair, where <command, commanded>
         d(A) is an image of A, where each edge is described by their corresponding terminals.
-            Carnie is a bit unspecific with this, I cannot say what should be done when there are several terminals dominated by a node. It seems that they are omitted from d(A), so I do so.
+            Carnie is a bit unspecific with this, I cannot say what should be done when there are several terminals
+             dominated by a node. It seems that they are omitted from d(A), so I do so.
+        :param structure:
         """
 
         def get_terminals(x):
+            """
+
+            :param x:
+            :return:
+            """
             terminals = []
             for t in structure:
                 if self.dominates(x, t) and self.is_terminal_node(t, structure):
@@ -759,9 +1000,16 @@ class ConfigurableUG:
                 continue
             dA.add((at[0], bt[0]))
 
-        # now we have sorted pairs of terminals. now these need to be sorted into one list, and check if there are unresolved orderings.
+        # now we have sorted pairs of terminals. now these need to be sorted into one list,
+        # and check if there are unresolved orderings.
 
         def sort_func(x, y):
+            """
+
+            :param x:
+            :param y:
+            :return: :raise ValueError:
+            """
             for first, second in dA:
                 if first == x and second == y:
                     return -1
@@ -780,8 +1028,12 @@ class ConfigurableUG:
     def excludes(self, X, Y, structure):
         """ (32) X excludes Y iff no segment of X dominates Y.
         (Carnie 2010, p. 152)
-        I am now assuming that segment is identified by the same syntactic category and there is a domination edgeship between segments
+        I am now assuming that segment is identified by the same syntactic category and there is
+        a domination edgeship between segments
             not sure if it should be immediate domination
+        :param structure:
+        :param Y:
+        :param X:
         """
         segments = [z for z in structure if
                     X.syntactic_category() == z.syntactic_category() and self.dominates(z, X) or self.dominates(X, z)]
@@ -797,6 +1049,9 @@ class ConfigurableUG:
         (b) A excludes B;
         (c) every category that dominates A dominates B.
         (Carnie 2010, p. 152)
+        :param structure:
+        :param B:
+        :param A:
         """
         if not A.syntactic_category() or B.syntactic_category():
             return False
@@ -818,9 +1073,11 @@ class ConfigurableUG:
         Example: delta = {gamma, {alpha, beta}}
 
         gamma here is the label of constituent delta.
+        :param alpha:
+        :param beta:
         """
 
-        delta = self.constituent()
+        delta = self.Constituent()
         delta.setChildren({alpha, beta})
         try:
             gamma = self.head_is_label([alpha, beta])
@@ -831,7 +1088,9 @@ class ConfigurableUG:
 
 
     def head_is_label(self, candidates):
-        """ Chomsky's minimalist labeling function: head projects: one that is head is label. """
+        """ Chomsky's minimalist labeling function: head projects: one that is head is label.
+        :param candidates:
+        """
         found = None
         for c in candidates:
             if c.isHead():
@@ -839,13 +1098,15 @@ class ConfigurableUG:
                     found = c
                 else:
                     raise ValueError  # ambiguous labeling: two heads
-        if not c:
+        if not found:
             raise ValueError
         else:
-            return c
+            return found
 
     def first_is_label(self, candidates):
-        """ Labeling based on ordered pairs """
+        """ Labeling based on ordered pairs
+        :param candidates: constituents in any ordered sequence
+        """
         if candidates:
             return candidates[0]
         else:
@@ -853,9 +1114,10 @@ class ConfigurableUG:
 
     def ordered_pair_merge(self, alpha, beta):
         """ simplified merge based on ordered pairs: <alpha, beta>
+        :param alpha:
         :param beta:
         """
-        delta = self.constituent()
+        delta = self.Constituent()
         delta.setChildren([alpha, beta])
         delta.setLabel(alpha)
 
@@ -864,7 +1126,7 @@ class ConfigurableUG:
         :param alpha:
         :param beta:
         """
-        delta = self.constituent()
+        delta = self.Constituent()
         delta.setChildren([alpha, beta])
         gamma = self.head_is_label([alpha, beta])
         delta.setLabel((gamma, gamma))
@@ -874,7 +1136,8 @@ class ConfigurableUG:
         """
 
         :param structure:
-        :return: :raise ValueError:
+        :return: list[Constituent]
+        :raise ValueError:
         """
         equals = []
 

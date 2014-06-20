@@ -1,5 +1,5 @@
 # coding=utf-8
-# reverser 2013
+""" Testing a weird reversibility hypothesis I have, part 2 """
 # ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
@@ -21,12 +21,12 @@
 # You should have received a copy of the GNU General Public License
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
-#############################################################################
+# ############################################################################
 
 
 class Constituent:
     """
-
+    Constituent where Merge is an ability of a constituent.
     """
 
     def __init__(self, id, left=None, right=None):

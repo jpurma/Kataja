@@ -113,8 +113,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
     def __repr__(self):
         """ This is a node and this represents this UG item """
-        r = '%s-%s-%s' % (self.__class__.__name__, self.syntactic_object, self.save_key)
-        return r.encode('utf-8')
+        return '%s-%s-%s' % (self.__class__.__name__, self.syntactic_object, self.save_key)
 
 
     # Let's not have nodes be able to iterate through tree --
@@ -491,13 +490,16 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             ui.remove_menu(menu)
             self.ui_menu = None
 
-    def set_selection_status(self, selected):
-        """
+    def refresh_selection_status(self, selected):
+        """ This is called
 
         :param selected:
         """
         if not selected:
             self.remove_merge_options()
+            self.setZValue(10)
+        else:
+            self.setZValue(200)
         self.update()
 
     # ### Merge options ########################################################
@@ -655,9 +657,10 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """ Object needs to be updated
         :param event:
         """
+        self.effect.setEnabled(False)
         if self._hovering:
             self._hovering = False
-            self.effect.setEnabled(False)
+            #self.effect.setEnabled(False)
             self.prepareGeometryChange()
             self.update()
         QtWidgets.QGraphicsItem.hoverLeaveEvent(self, event)

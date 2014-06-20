@@ -43,8 +43,8 @@ class PropertyNode(Node):
     node_type = PROPERTY_NODE
 
 
-    def __init__(self, property=None, host=None):
-        Node.__init__(self, syntactic_object=property, host=host)
+    def __init__(self, property=None, forest=None):
+        Node.__init__(self, syntactic_object=property, forest=forest)
         self.level = 1
         self.save_key = 'PN%s' % id(self)
         sys.intern(self.save_key)

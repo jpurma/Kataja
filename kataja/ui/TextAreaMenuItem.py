@@ -16,8 +16,9 @@ class TextAreaMenuItem(MenuItem, QtWidgets.QGraphicsTextItem):
     """ This is an editable text field that stays centered in position and stretches when necessary """
 
     def __init__(self, parent, args):
-        QtWidgets.QGraphicsTextItem.__init__(self, parent=parent)
+        QtWidgets.QGraphicsTextItem.__init__(self)
         MenuItem.__init__(self, parent, args)
+        self.setParent(parent)
         self.setZValue(53)
         # self.setFont(args.get('font', qt_prefs.font))
         self.setCursor(QtCore.Qt.IBeamCursor)

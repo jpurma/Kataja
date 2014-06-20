@@ -144,7 +144,7 @@ class Bracket(Movable, QtWidgets.QGraphicsSimpleTextItem):
         self.host.click(event)
 
 
-    def set_selection_status(self):
+    def refresh_selection_status(self):
         """
 
 

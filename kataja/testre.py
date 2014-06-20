@@ -6,11 +6,11 @@ string = '''[ {Hei} [ sana\komento{parametri} {pitempi kokonaisuus_{toinen kokon
 
 string = '''[ [.{Acc_i} B [.{Nom} A [.{DP} the grass ] ] ] [ S-Acc [ ... [ [.{GenP_j} C t_i ] [ S-Gen [.{vP\rightarrow\emph{load}} ... [.{v'} v^0 [.{VP} V [.{PP} [.{InsP} E [.{DatP} D t_j ] ] [.{P'} P [.{NP*} the truck ] ] ] ] ] ] ] ] ] ] ]'''
 
-splitter = re.compile('''(
+splitter = re.compile(r'''(
     \\  # slash = command starts
     | [  # [
     | ]  #
-    | \ + # space, can be more than one
+    |  + # space, can be more than one
     | _   # underscore (subscription)
     | ^  # superscription
     | $  # latex math mode

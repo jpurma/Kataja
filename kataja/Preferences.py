@@ -203,7 +203,7 @@ class Preferences(object):
 
         :param update_dict:
         """
-        for key, value in list(update_dict.items()):
+        for key, value in update_dict.items():
             setattr(self, key, value)
 
 
@@ -325,7 +325,7 @@ class QtPreferences:
         :param fonts_dict:
         :param fontdb:
         """
-        for key, font_tuple in list(fonts_dict.items()):
+        for key, font_tuple in fonts_dict.items():
             setattr(self, '_' + key, font_tuple)
             setattr(self, key, fontdb.font(font_tuple[0], font_tuple[1], font_tuple[2]))
         font = QtGui.QFontMetrics(self.font)  # it takes 2 seconds to get FontMetrics

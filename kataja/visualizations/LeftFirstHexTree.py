@@ -115,7 +115,7 @@ class LeftFirstHexTree(BaseVisualization):
             :param new_area:
             :return:
             """
-            for area in list(self.areas.values()):
+            for area in self.areas.values():
                 if new_area.intersects(area):
                     return False
             return True
@@ -319,7 +319,7 @@ class LeftFirstHexTree(BaseVisualization):
             :param new_area:
             :return:
             """
-            for area in list(self.areas.values()):
+            for area in self.areas.values():
                 if new_area.intersects(area):
                     return False
             return True

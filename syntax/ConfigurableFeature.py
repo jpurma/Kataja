@@ -1,4 +1,5 @@
 # coding=utf-8
+""" ConfigurableFeature aims to be general implementation for a (syntactic) Feature """
 # ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
@@ -60,58 +61,99 @@ class Feature:
     def __init__(self, key, *args):
         self.uid = id(self)
         self.save_key = self.uid
-        if not args:
+        if (not args) and key:
             args = key.split(':')
             key = args.pop(0)
+        elif not key:
+            key = "AnonymousFeature"
         self.key = key
         self.values = []
         for value in args:
             self.values.append(value)
 
     def get(self):
+        """
+
+
+        :return:
+        """
         return self.key
 
     def get_value(self):
+        """
+
+
+        :return:
+        """
         if self.values:
             return self.values[0]
         else:
             return ''
 
     def get_value_string(self):
+        """
+
+
+        :return:
+        """
         return ', '.join(self.values)
 
     def add(self, prop):
+        """
+
+        :param prop:
+        """
         if not prop in self.values:
             self.values.append(prop)
 
     def set(self, values):
+        """
+
+        :param values:
+        """
         if isinstance(values, list):
             self.values = values
         else:
             self.values = [values]
 
     def iss(self, prop):
+        """
+
+        :param prop:
+        :return:
+        """
         return prop == self.key or prop in self.values
 
     def remove(self, prop):
+        """
+
+        :param prop:
+        :raise KeyError:
+        """
         if prop in self.values:
             self.values.remove(prop)
         else:
             raise KeyError
 
     def __repr__(self):
-        return ":".join([self.key] + self.values).encode('utf-8')
+        return ":".join([self.key] + self.values)
 
     def __str__(self):
-        return ":".join([self.key] + self.values).encode('utf-8')
-
-    def __unicode__(self):
         return ":".join([self.key] + self.values)
 
     def save(self):
+        """
+
+
+        :return:
+        """
         return self.__repr__()
 
     def reconnect(self, d):
+        """
+
+        :param d:
+        """
         pass
 
 

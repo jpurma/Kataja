@@ -10,12 +10,11 @@ from kataja.KatajaMain import KatajaMain
 import sys
 
 
-
-# building:
+# building with pyinstaller:
 # PyInstaller-2.1/pyinstaller.py main.py --clean -n Kataja -i kataja.icns --windowed
 
 if __name__ == '__main__':
-    print(list(QtWidgets.QStyleFactory.keys()))
+    # noinspection PyCallByClass,PyTypeChecker
     QtWidgets.QApplication.setStyle('Fusion')
 
     app = QtWidgets.QApplication(sys.argv)

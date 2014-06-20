@@ -85,14 +85,14 @@ class ChainManager:
 
 
         """
-        for chain in list(self._chains.values()):
+        for chain in self._chains.values():
             for item in chain:
                 yield item
 
     def chain_counter(self):
         """ Returns a counter object where values of dict are lengths of each chain """
         c = Counter()
-        for key, item in list(self._chains.items()):
+        for key, item in self._chains.items():
             c[key] = len(item)
         return c
 
@@ -135,7 +135,7 @@ class ChainManager:
         """
         r = []
         print('---- chains -----')
-        for key, chain in list(self._chains.items()):
+        for key, chain in self._chains.items():
             print('%s :' % key)
             for (item, parent) in chain:
                 if item.is_trace:
@@ -151,7 +151,7 @@ class ChainManager:
         f = self.forest
         multidomination = False
         # decide if there is multidomination present and build dictionary of nodes with index.
-        for node in list(f.nodes.values()):
+        for node in f.nodes.values():
             if isinstance(node, ConstituentNode):
                 index = node.get_index()
                 if index:
@@ -182,7 +182,7 @@ class ChainManager:
         # ## Move traces to their multidominant originals, purely visual thing ###
         self.rebuild_chains()
         y_adjust = {}
-        for key, chain in list(self._chains.items()):
+        for key, chain in self._chains.items():
             head = self.get_chain_head(key)
             for node, parent in chain:
                 if node != head:
@@ -243,7 +243,7 @@ class ChainManager:
         """
         print('multidomination to traces')
         self.rebuild_chains()
-        for key, chain in list(self._chains.items()):
+        for key, chain in self._chains.items():
             head = self.get_chain_head(key)
             for node, parent in chain:
                 if node != head:
@@ -258,7 +258,7 @@ class ChainManager:
         :return:
         """
         max_found = 7  # 'h'
-        for node in list(self.forest.nodes.values()):
+        for node in self.forest.nodes.values():
             index = node.get_index()
             if index and len(index) == 1 and index[0].isalpha():
                 pos = string.ascii_letters.find(index[0])

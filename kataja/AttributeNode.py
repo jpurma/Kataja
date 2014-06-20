@@ -98,18 +98,12 @@ class AttributeNode(Node):
         if self._show_label:
             return '%s:%s' % (self.attribute_label, val)
         else:
-            return to_unicode(val)
+            return val
             # u'%s:%s' % (self.syntactic_object.key, self.syntactic_object.get_value_string())
 
     def __str__(self):
         """
         :rtype : str
-        """
-        return 'AttributeNode %s' % self.attribute_label
-
-    def __unicode__(self):
-        """
-        :rtype : unicode
         """
         return 'AttributeNode %s' % self.attribute_label
 

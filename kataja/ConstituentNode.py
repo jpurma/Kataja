@@ -325,7 +325,7 @@ class ConstituentNode(Node):
             if 'gloss' in features:
                 self.set_gloss_text(features['gloss'])
                 del features['gloss']
-            for feature in list(features.values()):
+            for feature in features.values():
                 self.set_feature(syntactic_feature=feature)
             self.update_features()
 
@@ -375,7 +375,7 @@ class ConstituentNode(Node):
         """
         current_features = set([x.syntactic_object.get() for x in self.get_features()])
         correct_features = self.syntactic_object.get_features()
-        for key, item in list(correct_features.items()):
+        for key, item in correct_features.items():
             if key not in current_features:
                 self.set_feature(syntactic_feature=item, key=key)
             else:
@@ -412,10 +412,10 @@ class ConstituentNode(Node):
             if alias and label:
                 padding = len(label) - len(alias)
                 if padding > 0:
-                    padding = padding / 2
+                    padding = int(padding / 2)
                     s = '%s<b>%s</b>%s<br/>%s' % (padding * "&nbsp;", alias, i_string, label)
                 elif padding < 0:
-                    padding = padding / -2
+                    padding = int(padding / -2)
                     s = '<b>%s</b>%s<br/>%s%s' % (alias, i_string, padding * "&nbsp;", label)
                 else:
                     s = '<b>%s</b>%s<br/>%s' % (alias, i_string, label)
@@ -820,7 +820,7 @@ class ConstituentNode(Node):
 
     #### Selection ########################################################
 
-    def set_selection_status(self, selected):
+    def refresh_selection_status(self, selected):
         """
 
         :param selected:
@@ -921,7 +921,7 @@ class ConstituentNode(Node):
         :param event:
         """
         alias = caller.get_value()
-        self.set_alias(to_unicode(alias))
+        self.set_alias(alias)
         self.forest.main.action_finished('edit node label')
 
     def change_features_string(self, caller=None, event=None):

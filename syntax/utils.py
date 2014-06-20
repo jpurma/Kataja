@@ -1,5 +1,6 @@
 # coding=utf-8
-#############################################################################
+""" helper methods for syntax """
+# ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
 #
@@ -22,7 +23,6 @@
 #
 #############################################################################
 
-from types import UnicodeType, StringType
 import time
 import traceback
 
@@ -130,7 +130,7 @@ def save_features(obj, saved, d):
                 return nval
             elif isinstance(fval, dict):
                 nval = {}
-                for ikey, item in list(fval.items()):
+                for ikey, item in fval.items():
                     try:
                         nval[ikey] = item.save(d)
                     except AttributeError:
@@ -212,7 +212,7 @@ def save_lexicon(lexicon, filename):
     for key in keys:
         constituent = lexicon[key]
         f.write('%s\n' % key)
-        for feature in list(constituent.features.values()):
+        for feature in constituent.features.values():
             f.write('%s\n' % feature)
         f.write('\n')
     f.close()

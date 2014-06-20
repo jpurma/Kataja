@@ -138,7 +138,7 @@ class ForestKeeper:
         self._i = data['_i']
         self._forests = data['_forests']
         self._forests_dict = dict([(f.save_key, f) for f in self._forests])
-        for key, item in list(ctrl.unassigned_objects.items()):
+        for key, item in ctrl.unassigned_objects.items():
             forest = self.get_forest(item.forest_key)
             if not forest:
                 assert False
@@ -151,7 +151,7 @@ class ForestKeeper:
             forest.rebuild_brackets()
             if not forest.settings.uses_multidomination():
                 forest.rebuild_chains()
-        for key, item in list(ctrl.unassigned_objects.items()):
+        for key, item in ctrl.unassigned_objects.items():
             # print 'storing %s to %s' % (key, item.forest_key)
             forest = self.get_forest(item.forest_key)
             if not forest:
@@ -198,7 +198,7 @@ class ForestKeeper:
         :param StringType filename:
         """
         # f = codecs.open(filename, 'rb', encoding = 'utf-8')
-        f = open(filename, 'rb')
+        f = open(filename, 'r')
         treelist = f.readlines()
         f.close()
         self.create_forests(treelist)
@@ -216,6 +216,7 @@ class ForestKeeper:
         buildstring = ''
         for line in treelist:
             line = line.strip()
+            line.split('=', 1)
             parts = line.split('=', 1)
             if line.startswith('#'):
                 if forest:
