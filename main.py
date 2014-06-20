@@ -18,7 +18,7 @@ if __name__ == '__main__':
     QtWidgets.QApplication.setStyle('Fusion')
 
     app = QtWidgets.QApplication(sys.argv)
-
+    print("Launching Kataja with Python %s.%s" % (sys.version_info.major, sys.version_info.minor))
     window = KatajaMain(app, sys.argv)
     window.show()
 

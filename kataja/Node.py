@@ -43,6 +43,7 @@ RIGHT = 2
 
 class Node(Movable, QtWidgets.QGraphicsItem):
     """ Basic class for syntactic elements that have graphic representation """
+    z_value = 10
     width = 20
     height = 20
     default_edge_type = ABSTRACT_EDGE
@@ -552,7 +553,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """ Scene has decided that this node has been clicked
         :param event:
         """
-        self._hovering = False
+        self.set_hovering(False)
         if ctrl.is_selected(self):
             if (not self.ui_menu) or (not self.ui_menu.is_open()):
                 self.open_menus()
@@ -565,7 +566,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """ Scene has decided that this node has been clicked
         :param event:
         """
-        self._hovering = False
+        self.set_hovering(False)
         if event and event.modifiers() == Qt.ShiftModifier:  # multiple selection
             for node in ctrl.get_all_selected():
                 if hasattr(node, 'remove_merge_options'):
@@ -641,28 +642,36 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
     #### Mouse - Qt events ##################################################
 
-    def hoverEnterEvent(self, event):
-        """ Hovering has some visual effects, usually handled in paint-method
-        :param event:
+    def set_hovering(self, value):
+        """ Toggle hovering effects and internal bookkeeping
+        :param value: bool
+        :return:
         """
-        if not self._hovering:
+        if value and not self._hovering:
             self._hovering = True
             self.effect.setEnabled(True)
             self.prepareGeometryChange()
             self.update()
+            self.setZValue(150)
+        elif (not value) and self._hovering:
+            self.effect.setEnabled(False)
+            self._hovering = False
+            self.prepareGeometryChange()
+            self.setZValue(self.__class__.z_value)
+            self.update()
 
+    def hoverEnterEvent(self, event):
+        """ Hovering has some visual effects, usually handled in paint-method
+        :param event:
+        """
+        self.set_hovering(True)
         QtWidgets.QGraphicsItem.hoverEnterEvent(self, event)
 
     def hoverLeaveEvent(self, event):
         """ Object needs to be updated
         :param event:
         """
-        self.effect.setEnabled(False)
-        if self._hovering:
-            self._hovering = False
-            #self.effect.setEnabled(False)
-            self.prepareGeometryChange()
-            self.update()
+        self.set_hovering(False)
         QtWidgets.QGraphicsItem.hoverLeaveEvent(self, event)
 
     # def dragMoveEvent(self, event):

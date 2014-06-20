@@ -33,6 +33,8 @@ import sys
 class Bracket(Movable, QtWidgets.QGraphicsSimpleTextItem):
     """ Brackets are added as separate characters next to nodes. They are created dynamically and shouldn't be saved or loaded. """
 
+    z_value = 10
+
     @staticmethod
     def create_key(host, left=True):
         """
@@ -107,34 +109,35 @@ class Bracket(Movable, QtWidgets.QGraphicsSimpleTextItem):
     def __repr__(self):
         return '<bracket %s>' % self.key
 
-    def hoverEnterEvent(self, event):
+    def set_hovering(self, value):
+        """ Toggle hovering effects and internal bookkeeping
+        :param value: bool
+        :return:
         """
-
-        :param event:
-        """
-        if not self._hovering:
-            self.host._hovering = True
-            self.host.left_bracket._hovering = True
-            self.host.right_bracket._hovering = True
+        if value and not self._hovering:
+            self._hovering = True
             self.prepareGeometryChange()
-            self.host.left_bracket.update()
-            self.host.right_bracket.update()
-            self.host.update()
+            self.update()
+            self.setZValue(150)
+        elif (not value) and self._hovering:
+            self._hovering = False
+            self.prepareGeometryChange()
+            self.setZValue(self.__class__.z_value)
+            self.update()
+
+    def hoverEnterEvent(self, event):
+        """ Hovering over a bracket is same as hovering over the host constituent
+        :param event: mouse event
+        """
+        self.host.set_hovering(True)
         QtWidgets.QGraphicsSimpleTextItem.hoverEnterEvent(self, event)
 
     def hoverLeaveEvent(self, event):
+        """ Hovering over a bracket is same as hovering over the host constituent
+        :param event: mouse event
         """
-
-        :param event:
-        """
-        if self._hovering:
-            self.host.left_bracket._hovering = False
-            self.host.right_bracket._hovering = False
-            self.host._hovering = False
-            self.prepareGeometryChange()
-            self.host.left_bracket.update()
-            self.host.right_bracket.update()
-            self.host.update()
+        self.host.set_hovering(False)
+        QtWidgets.QGraphicsSimpleTextItem.hoverLeaveEvent(self, event)
 
     def click(self, event=None):
         """ Scene has decided that this node has been clicked

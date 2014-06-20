@@ -1059,40 +1059,17 @@ class ConstituentNode(Node):
 
     #################################
 
-    def hoverEnterEvent(self, event):
-        """ Hovering has some visual effects, usually handled in paint-method
-        :param event:
+    def set_hovering(self, value):
+        """ Toggle hovering effects
+        Overrides Node.set_hovering.
+        :param value: bool
+        :return:
         """
-        if not self._hovering:
-            self._hovering = True
-            self.effect.setEnabled(True)
-            self.prepareGeometryChange()
-
-            if self.left_bracket:
-                self.left_bracket._hovering = True
-                self.left_bracket.update()
-            if self.right_bracket:
-                self.right_bracket._hovering = True
-                self.right_bracket.update()
-            self.update()
-        QtWidgets.QGraphicsItem.hoverEnterEvent(self, event)
-
-    def hoverLeaveEvent(self, event):
-        """ Object needs to be updated
-        :param event:
-        """
-        if self._hovering:
-            self._hovering = False
-            self.effect.setEnabled(False)
-            self.prepareGeometryChange()
-            if self.left_bracket:
-                self.left_bracket._hovering = False
-                self.left_bracket.update()
-            if self.right_bracket:
-                self.right_bracket._hovering = False
-                self.right_bracket.update()
-            self.update()
-        QtWidgets.QGraphicsItem.hoverLeaveEvent(self, event)
+        if self.left_bracket:
+            self.left_bracket.set_hovering(value)
+        if self.right_bracket:
+            self.right_bracket.set_hovering(value)
+        Node.set_hovering(self, value)
 
     def after_restore(self, changes):
         """ Check what needs to be done

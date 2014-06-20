@@ -5,6 +5,7 @@ Created on 28.8.2013
 @author: purma
 """
 from PyQt5 import QtGui, QtCore, QtWidgets
+from PyQt5.QtWidgets import QGraphicsItem
 
 from kataja.Controller import ctrl
 from kataja.ui.MenuItem import MenuItem
@@ -15,10 +16,10 @@ from kataja.ui.MenuItem import MenuItem
 class TextAreaMenuItem(MenuItem, QtWidgets.QGraphicsTextItem):
     """ This is an editable text field that stays centered in position and stretches when necessary """
 
-    def __init__(self, parent, args):
+    def __init__(self, parent: QGraphicsItem, args):
         QtWidgets.QGraphicsTextItem.__init__(self)
         MenuItem.__init__(self, parent, args)
-        self.setParent(parent)
+        self.setParentItem(parent)
         self.setZValue(53)
         # self.setFont(args.get('font', qt_prefs.font))
         self.setCursor(QtCore.Qt.IBeamCursor)

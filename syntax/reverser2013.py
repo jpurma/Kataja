@@ -41,12 +41,6 @@ class Constituent:
         else:
             return self.id
 
-    def __unicode__(self):
-        if self.left and self.right:
-            return '[%s %s]' % (self.left.__unicode__(), self.right.__unicode__())
-        else:
-            return self.id
-
     def merge(self, other):
         """
 

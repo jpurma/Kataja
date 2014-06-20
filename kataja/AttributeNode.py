@@ -90,7 +90,7 @@ class AttributeNode(Node):
 
     def get_text_for_label(self):
         """ This should be overridden if there are alternative displays for label 
-        :rtype : unicode
+        :returns : str 
         """
         val = getattr(self.host, self.attribute_id, '')
         if isinstance(val, collections.Callable):
@@ -103,7 +103,7 @@ class AttributeNode(Node):
 
     def __str__(self):
         """
-        :rtype : str
+        :returns : str
         """
         return 'AttributeNode %s' % self.attribute_label
 

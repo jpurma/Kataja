@@ -409,6 +409,7 @@ SHAPE_PRESETS = OrderedDict(
 class Edge(QtWidgets.QGraphicsItem):
     """ Any connection between nodes: can be represented as curves, branches or arrows """
 
+    z_value = 10
     saved_fields = ['forest', 'edge_type', 'adjust', 'start', 'end', '_color', '_shape_name', '_pull', '_shape_visible',
                     '_visible', '_has_outline', '_is_filled']
 
@@ -830,12 +831,23 @@ class Edge(QtWidgets.QGraphicsItem):
 
     # ### Mouse - Qt events ##################################################
 
-    def _hovering_on(self):
-        if not self._hovering:
+
+    def set_hovering(self, value):
+        """ Toggle hovering effects and internal bookkeeping
+        :param value: bool
+        :return:
+        """
+        if value and not self._hovering:
             self._hovering = True
             self.setZValue(100)
             self.effect.setEnabled(True)
             self.prepareGeometryChange()
+            self.update()
+        elif (not value) and self._hovering:
+            self.effect.setEnabled(False)
+            self._hovering = False
+            self.prepareGeometryChange()
+            self.setZValue(self.__class__.z_value)
             self.update()
 
     def hoverEnterEvent(self, event):
@@ -844,16 +856,8 @@ class Edge(QtWidgets.QGraphicsItem):
         Toggles hovering state and necessary graphical effects.
         :param event:
         """
-        self._hovering_on()
+        self.set_hovering(True)
         QtWidgets.QGraphicsItem.hoverEnterEvent(self, event)
-
-    def _hovering_off(self):
-        if self._hovering:
-            self._hovering = False
-            self.setZValue(10)
-            self.effect.setEnabled(False)
-            self.prepareGeometryChange()
-            self.update()
 
 
     def hoverLeaveEvent(self, event):
@@ -861,7 +865,7 @@ class Edge(QtWidgets.QGraphicsItem):
 
         :param event:
         """
-        self._hovering_off()
+        self.set_hovering(False)
         QtWidgets.QGraphicsItem.hoverLeaveEvent(self, event)
 
     # ## Scene-managed call
@@ -870,7 +874,7 @@ class Edge(QtWidgets.QGraphicsItem):
         """ Scene has decided that this node has been clicked
         :param event:
         """
-        self._hovering_off()
+        self.set_hovering(False)
         if event and event.modifiers() == Qt.ShiftModifier:  # multiple selection
             if ctrl.is_selected(self):
                 ctrl.remove_from_selection(self)

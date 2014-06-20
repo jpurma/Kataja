@@ -30,6 +30,7 @@
 
 import gc
 import gzip
+import json
 import os.path
 import shlex
 import subprocess
@@ -61,9 +62,6 @@ from kataja.utils import time_me, save_object
 from kataja.visualizations.available import VISUALIZATIONS
 
 
-
-
-
 # show labels
 ONLY_LEAF_LABELS = 0
 ALL_LABELS = 1
@@ -77,6 +75,7 @@ ALIASES = 2
 
 # KatajaMain > UIView > UIManager > GraphView > GraphScene > Leaves etc.
 
+
 class KatajaMain(QtWidgets.QMainWindow):
     """ Qt's main window. When this is closed, application closes. Graphics are
     inside this, in scene objects with view widgets. This window also manages
@@ -85,15 +84,14 @@ class KatajaMain(QtWidgets.QMainWindow):
     singleton_key = 'KatajaMain'
     saved_fields = ['graph_scene', 'graph_view', 'ui_manager', 'forest_keeper', 'forest']
 
-
     @time_me
-    def __init__(self, app, args):
+    def __init__(self, kataja_app, args):
         """ KatajaMain initializes all its children and connects itself to
         be the main window of the given application. """
         t = time.time()
         QtWidgets.QMainWindow.__init__(self)
         print('---- initialized MainWindow base class ... ', time.time() - t)
-        self.app = app
+        self.app = kataja_app
         self.fontdb = QtGui.QFontDatabase()
         print('---- set up font db ... ', time.time() - t)
         self.color_manager = ColorManager()
@@ -116,7 +114,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         print('---- forest init ... ', time.time() - t)
         self.visualizations = VISUALIZATIONS
         print('---- visualizations init ... ', time.time() - t)
-        app.setPalette(self.color_manager.get_qt_palette())
+        kataja_app.setPalette(self.color_manager.get_qt_palette())
         self.setCentralWidget(self.graph_view)
 
         print('---- set palette ... ', time.time() - t)
@@ -139,7 +137,6 @@ class KatajaMain(QtWidgets.QMainWindow):
         # self.changed_edge_shape.connect(self.graph_scene.forward_signal)
         # self.changed_edge_shape.connect(self.ui_manager.update_edge_shapes)
 
-
     def load_treeset(self, treeset_list=None):
         """ Loads and initializes a new set of trees. Has to be done before the program can do anything sane.
         :param treeset_list:
@@ -152,10 +149,7 @@ class KatajaMain(QtWidgets.QMainWindow):
             self.forest_keeper = ForestKeeper(main=self, file_name=prefs.debug_treeset)
         self.change_forest(self.forest_keeper.forest)
 
-
     # ### Visualization #############################################################
-
-
 
     def set_forest(self, forest):
         """
@@ -225,7 +219,6 @@ class KatajaMain(QtWidgets.QMainWindow):
         """
         self.ui_manager.add_message(msg)
 
-
         # ### General events ##########
 
         # def event(self, event):
@@ -234,7 +227,6 @@ class KatajaMain(QtWidgets.QMainWindow):
 
     # return QtWidgets.QMainWindow.event(self, event)
 
-
     # ### Keyboard events ##########
     def mousePressEvent(self, event):
         """ KatajaMain doesn't do anything with mousePressEvents, it delegates
@@ -242,7 +234,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         them downwards. This is for debugging. """
         QtWidgets.QMainWindow.mousePressEvent(self, event)
 
-    def kkeyPressEvent(self, event):
+    def keyPressEvent(self, event):
         """ keyPresses are intercepted here and some feedback of them is given,
         :param event:
         then they are delegated further """
@@ -318,6 +310,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         :param button:
         enable actions when necessary. """
         act = QtWidgets.QAction(text, self)
+        # noinspection PyUnresolvedReferences
         act.triggered.connect(method)
         data = {}
         if shortcut:
@@ -354,8 +347,8 @@ class KatajaMain(QtWidgets.QMainWindow):
     def create_actions(self):
         """ Build menus and other actions that can be triggered by user"""
 
-        def _build_menu(menu, actions):
-            for item in actions:
+        def _build_menu(menu, m_actions):
+            for item in m_actions:
                 if isinstance(item, str) and item == '---':
                     menu.addSeparator()
                 else:
@@ -471,42 +464,27 @@ class KatajaMain(QtWidgets.QMainWindow):
                 assert False
 
     def key_left(self):
-        """
-
-
-        """
+        """ Move selection left """
         if not ctrl.ui_focus:
             self.graph_scene.move_selection('left')
 
     def key_right(self):
-        """
-
-
-        """
+        """ Move selection right """
         if not ctrl.ui_focus:
             self.graph_scene.move_selection('right')
 
     def key_up(self):
-        """
-
-
-        """
+        """ Move selection up """
         if not ctrl.ui_focus:
             self.graph_scene.move_selection('up')
 
     def key_down(self):
-        """
-
-
-        """
+        """ Move selection down """
         if not ctrl.ui_focus:
             self.graph_scene.move_selection('down')
 
     def key_esc(self):
-        """
-
-
-        """
+        """ Esc pressed, escape from current menu/focus/action """
         if ctrl.ui_focus:
             ui_focus = ctrl.ui_focus  # : :type ui_focus = MovableUI
             ui_focus.cancel()
@@ -514,28 +492,18 @@ class KatajaMain(QtWidgets.QMainWindow):
             self.forest.delete_item(item)
 
     def key_tab(self):
-        """
-
-
-        """
+        """ Tab pressed, move focus to next whatever"""
         print('tab-tab!')
 
     def undo(self):
-        """
-
-
-        """
+        """ Undo -command triggered """
         self.forest.undo_manager.undo()
         # self.action_finished()
 
     def redo(self):
-        """
-
-
-        """
+        """ Redo -command triggered """
         self.forest.undo_manager.redo()
         # self.action_finished()
-
 
     # ### ConstituentNode's radial menu commands ################################
 
@@ -598,7 +566,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         """
         if isinstance(caller, MenuItem):
             caller = caller.host_node
-        self.forest.disconnect_node_node_from_tree(caller)
+        self.forest.disconnect_node_from_tree(caller)
         self.action_finished()
         ctrl.focus = None
         return True
@@ -611,7 +579,6 @@ class KatajaMain(QtWidgets.QMainWindow):
             self.forest.copy_node(node)
         self.action_finished()
         return True
-
 
     # ## New node creation commands #############################################
 
@@ -650,10 +617,9 @@ class KatajaMain(QtWidgets.QMainWindow):
         text = ''
         if hasattr(caller, 'get_text_input'):
             text = caller.get_text_input()
-        pos = caller.pos()
-        self.forest.create_tree_from_string(text, pos=pos)
+        #pos = caller.pos()
+        self.forest.create_tree_from_string(text)  # , pos=pos)
         self.action_finished()
-
 
     # ## Menu management #######################################################
 
@@ -668,12 +634,11 @@ class KatajaMain(QtWidgets.QMainWindow):
         for action in self._actions.values():
             action.setDisabled(True)
 
-
     # ## Menu actions ##########################################################
 
-    # toggle label visibility -action (l)
     def toggle_label_visibility(self):
         """
+        toggle label visibility -action (l)
 
 
         """
@@ -695,10 +660,9 @@ class KatajaMain(QtWidgets.QMainWindow):
             # change = node.update_label()
         self.action_finished('toggle label visibility')
 
-
-    # change colors -action (shift-c)
     def change_colors(self):
         """
+        change colors -action (shift-c)
 
 
         """
@@ -712,9 +676,9 @@ class KatajaMain(QtWidgets.QMainWindow):
             # self.ui.add_message('Color seed: H: %.2f S: %.2f L: %.2f' % ( h, s, l))
             self.action_finished()
 
-    # adjust colors -action (shift-alt-c)
     def adjust_colors(self, hsv):
         """
+        adjust colors -action (shift-alt-c)
 
         :param hsv:
         """
@@ -723,9 +687,9 @@ class KatajaMain(QtWidgets.QMainWindow):
         # adjust_colorsself.activateWindow()
         # self.action_finished('adjust colors')
 
-    # triggered by color mode selector in colors panel 
     def change_color_mode(self, mode):
         """
+        triggered by color mode selector in colors panel
 
         :param mode:
         """
@@ -848,7 +812,6 @@ class KatajaMain(QtWidgets.QMainWindow):
         ctrl.announce(g.EDGE_SHAPES_CHANGED, g.CONSTITUENT_EDGE, i)
         self.action_finished('change edge shape')
 
-
     # Change feature edge shapes -action (S)
     def change_feature_edge_shape(self, shape):
         """
@@ -868,7 +831,6 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.add_message('(s) Change feature edge shape: %s-%s' % (i, shape))
 
         self.action_finished('change feature edge shape')
-
 
     # Next structure -action (.)
     def next_structure(self):
@@ -904,12 +866,8 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.add_message(visualization_key)
         self.action_finished('change visualization to %s' % visualization_key)
 
-    # Full screen -action (f)
     def toggle_full_screen(self):
-        """
-
-
-        """
+        """ Full screen -action (f) """
         if self.isFullScreen():
             self.showNormal()
             self.add_message('(f) windowed')
@@ -924,10 +882,9 @@ class KatajaMain(QtWidgets.QMainWindow):
     # Blender export -action (Command-r)
     def render_in_blender(self):
         """
-
-
+        Try to export as a blender file and run blender render.
         """
-        self.graph_scene.export_3d(prefs.blender_env_path + '/temptree.json')
+        self.graph_scene.export_3d(prefs.blender_env_path + '/temptree.json', self.forest)
         self.add_message('Command-r  - render in blender')
         command = '%s -b %s/puutausta.blend -P %s/treeloader.py -o //blenderkataja -F JPEG -x 1 -f 1' % (
             prefs.blender_app_path, prefs.blender_env_path, prefs.blender_env_path)
@@ -1014,23 +971,16 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.action_finished()
         # hide unwanted components
 
-    # step forward -action (>)
     def animation_step_forward(self):
-        """
-
-
-        """
-        self.forest.next_derivation_step()
+        """ User action "step forward (>)", Move to next derivation step """
+        self.forest.derivation_steps.next_derivation_step()
         self.add_message('Step forward')
         self.action_finished()
 
-    # step backward -action (<)
+
     def animation_step_backward(self):
-        """
-
-
-        """
-        self.forest.previous_derivation_step()
+        """ User action "step backward (<)" , Move backward in derivation steps """
+        self.forest.derivation_steps.previous_derivation_step()
         self.add_message('Step backward')
         self.action_finished()
 
@@ -1045,7 +995,6 @@ class KatajaMain(QtWidgets.QMainWindow):
             node.release()
         self.action_finished()
         return True
-
 
     # help -action (h)
     def show_help_message(self):
@@ -1064,7 +1013,6 @@ class KatajaMain(QtWidgets.QMainWindow):
         # (c):curved/straight edges
         # (q):quit"""
         self.add_message(m)
-
 
     def open_preferences(self):
         """
@@ -1103,11 +1051,11 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.scene.displayed_forest = None
         if filename.endswith('.zkataja'):
             f = gzip.open(filename, 'r')
-            data = pickle.load(f)
         else:
             f = open(filename, 'r')
             # f = codecs.open(filename, 'rb', encoding = 'utf-8')
-            data = pickle.load(f)
+        pickle_worker = pickle.Pickler(f)
+        data = pickle_worker.load()
         f.close()
         prefs.update(data['preferences'].__dict__)
         qt_prefs.update(prefs)
@@ -1123,59 +1071,58 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.action_finished()
         filename = prefs.file_name
         all_data = self.create_save_data()
+        t=time.time()
         pickle_format = 4
         if filename.endswith('.zkataja'):
-            f = gzip.open(filename, 'w')
+            f = gzip.open(filename, 'wb')
         else:
-            f = open(filename, 'w')
+            f = open(filename, 'wb')
         pickle_worker = pickle.Pickler(f, protocol=pickle_format)
-        pickle_worker.dumb(all_data)
+        pickle_worker.dump(all_data)
         f.close()
-        self.add_message("Saved to '%s'." % filename)
-
+        self.add_message("Saved to '%s'. Took %s seconds." % (filename, time.time()-t))
+        t=time.time()
         filename = prefs.file_name + '.dict'
         f = open(filename, 'w')
         pp = pprint.PrettyPrinter(indent=1, stream=f)
         print('is readable: ', pprint.isreadable(all_data))
         pp.pprint(all_data)
         f.close()
-        self.add_message("Saved to '%s'." % filename)
+        self.add_message("Saved to '%s'. Took %s seconds." % (filename, time.time()-t))
 
+        filename = prefs.file_name + '.json'
+        f = open(filename, 'w')
+        json.dump(all_data, f, indent="\t", sort_keys=False)
+        f.close()
+        self.add_message("Saved to '%s'. Took %s seconds." % (filename, time.time()-t))
         # fileFormat  = action.data().toByteArray()
         # self.saveFile(fileFormat)
 
     def save_as(self):
-        """
-
-
-        """
+        """ Save kataja data to file set by file dialog """
         self.action_finished()
+        # noinspection PyCallByClass,PyTypeChecker
         filename = QtWidgets.QFileDialog.getSaveFileName(self, "Save KatajaMain tree", "",
-                                                                    "KatajaMain files (*.kataja *.zkataja)")
+                                                         "KatajaMain files (*.kataja *.zkataja)")
         prefs.file_name = filename
         ctrl.save_state_to_file(filename)
         self.add_message("Saved to '%s'." % filename)
 
     def clear_all(self):
-        """
-
-
-        """
+        """ Empty everything - maybe necessary before loading new data. """
         if self.forest:
             self.forest.clear_scene()
         self.ui_manager.clear_items()
-        self.forest_keeper = ForestKeeper()
-
+        self.forest_keeper = ForestKeeper(self)
 
     # ### Action preconditions ##################################################
 
     # return True or False: should the related action be enabled or disabled
 
-    def can_root_merge(self, event):
-        """
-
-        :param event:
-        :return:
+    # noinspection PyMethodMayBeStatic
+    def can_root_merge(self):
+        """ Check if the selected node can be merged upwards to the root node of its current tree.
+        :return: bool
         """
         return ctrl.single_selection() and not ctrl.get_selected().is_root_node()
 
@@ -1197,6 +1144,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.app.setOverrideCursor(QtCore.Qt.CrossCursor)
         self.graph.setDragMode(QtWidgets.QGraphicsView.NoDrag)
 
+    # noinspection PyUnusedLocal
     def end_pointing_mode(self, event):
         """ End pointing mode and return to normal
         :param event:
@@ -1217,14 +1165,14 @@ class KatajaMain(QtWidgets.QMainWindow):
 
     def end_merge_to(self, event):
         """
-
-        :param event:
+        Merging a node -activity ends.
+        :param event: mouse-event that triggered the end.
         :return:
         """
-        node_A = ctrl.pointing_data['start']
-        node_B = ctrl.pointing_data['target']
-        self.forest.Merge(node_A, node_B)
-        node_A.release()
+        node_a = ctrl.pointing_data['start']
+        node_b = ctrl.pointing_data['target']
+        self.forest.merge_nodes(node_a, node_b)
+        node_a.release()
         # node_A.state =SELECTED # deselect doesn't have effect unless node is selected
         self.end_pointing_mode(event)
         self.action_finished()
@@ -1232,8 +1180,8 @@ class KatajaMain(QtWidgets.QMainWindow):
 
     def begin_move_to(self, event):
         """
-
-        :param event:
+        Moving a branch or node -activity starts.
+        :param event: mouseevent that triggered the action, if available
         :return:
         """
         self.start_pointing_mode(event, method=self.end_move_to, data={'start': ctrl.get_selected()})
@@ -1241,19 +1189,18 @@ class KatajaMain(QtWidgets.QMainWindow):
 
     def end_move_to(self, event):
         """
-
-        :param event:
+        Moving a branch or node -activity ends.
+        :param event: mouseevent that triggered the end, if available
         :return:
         """
-        node_A = ctrl.pointing_data['start']
-        node_B = ctrl.pointing_data['target']
-        self.forest.cut_and_merge(node_A, node_B)
-        node_A.release()
+        node_a = ctrl.pointing_data['start']
+        node_b = ctrl.pointing_data['target']
+        self.forest.cut_and_merge(node_a, node_b)
+        node_a.release()
         # node_A.state =SELECTED # deselect doesn't have effect unless node is selected
         self.end_pointing_mode(event)
         self.action_finished()
         return True
-
 
     # ### Other window events ###################################################
 
@@ -1273,13 +1220,11 @@ class KatajaMain(QtWidgets.QMainWindow):
                 # objgraph.show_most_common_types(limit =40)
         print('...done')
 
-
     @time_me
     def create_save_data(self):
         """
-
-
-        :return:
+        Make a large dictionary of all objects with all of the complex stuff and circular references stripped out.
+        :return: dict
         """
         savedata = {}
         open_references = {}
@@ -1300,12 +1245,12 @@ class KatajaMain(QtWidgets.QMainWindow):
         # savedata['graph_view'] = self.graph_view.save()
         # print savedata
         print('total savedata: %s chars.' % len(str(savedata)))
+        print(savedata)
         return savedata
 
         # f = open('kataja_default.cfg', 'w')
         # json.dump(prefs.__dict__, f, indent = 1)
         # f.close()
-
 
 # def maybeSave(self):
 # if False and self.scribbleArea.isModified():

@@ -111,7 +111,7 @@ class DerivationStep:
         :param forest:
         """
         forest._roots = []
-        for root_data in self.roots:
+        for root_data in self._roots:
             root = self.rebuild_tree_from_snapshot(root_data, forest)
             forest._roots.append(root)
         forest._chains = self._chains
