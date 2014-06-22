@@ -24,7 +24,7 @@
 
 from PyQt5 import QtCore, QtWidgets
 
-from kataja.Controller import prefs
+from kataja.singletons import prefs
 
 
 class DoubleSlider(QtWidgets.QHBoxLayout):

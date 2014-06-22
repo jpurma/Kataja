@@ -24,7 +24,7 @@
 from PyQt5 import QtCore
 
 from kataja.ConstituentNode import ConstituentNode
-from kataja.Controller import ctrl, prefs, qt_prefs
+from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.Edge import Edge
 from kataja.ui.ActivityMarker import ActivityMarker
 from kataja.ui.ControlPoint import ControlPoint
@@ -438,7 +438,7 @@ class UIManager:
         if not self._stretchline:
             line = QtCore.QLineF(start, end)
             self._stretchline = StretchLine(line)  # QtGui.QGraphicsLineItem(line)
-            self._stretchline.setPen(ctrl.cm().ui())
+            self._stretchline.setPen(ctrl.cm.ui())
             self.add_ui(self._stretchline)
         else:
             line = self._stretchline.line()

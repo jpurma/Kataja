@@ -6,7 +6,7 @@ Created on 28.8.2013
 """
 from PyQt5 import QtGui, QtCore
 
-from kataja.Controller import qt_prefs
+from kataja.singletons import qt_prefs
 from kataja.ui.MovableUI import MovableUI
 
 

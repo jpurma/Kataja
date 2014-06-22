@@ -28,7 +28,7 @@ from math import sin, cos, pi, acos
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QPointF as Pf, Qt
 
-from kataja.Controller import ctrl
+from kataja.singletons import ctrl
 import kataja.globals as g
 from kataja import utils
 
@@ -386,7 +386,6 @@ def directional_blob_path(self):
     self.middle_point = Pf(c1x, c1y)
     return path.simplified()
 
-
 SHAPE_PRESETS = OrderedDict(
     [('shaped_relative_cubic', {'method': shaped_relative_cubic_path, 'fill': True, 'pen': 'thin'}),
      ('blob', {'method': blob_path, 'fill': True, 'pen': None}),
@@ -403,7 +402,6 @@ SHAPE_PRESETS = OrderedDict(
      ('no draw', {'method': linear_path, 'fill': False, 'pen': None})])
 
 # ('shaped_relative_linear',{'method':shapedRelativeLinearPath,'fill':True,'pen':'thin'}),
-
 
 
 class Edge(QtWidgets.QGraphicsItem):
@@ -546,9 +544,9 @@ class Edge(QtWidgets.QGraphicsItem):
         if value is None:
             if self._color is None:
                 c = self.forest.settings.edge_settings(self.edge_type, 'color')
-                return ctrl.cm().get(c)
+                return ctrl.cm.get(c)
             else:
-                return ctrl.cm().get(self._color)
+                return ctrl.cm.get(self._color)
         else:
             self._color = value
 
@@ -557,11 +555,11 @@ class Edge(QtWidgets.QGraphicsItem):
         :return: QColor
         """
         if ctrl.pressed == self:
-            return ctrl.cm().active(self.color())
+            return ctrl.cm.active(self.color())
         elif self._hovering:
-            return ctrl.cm().hovering(self.color())
+            return ctrl.cm.hovering(self.color())
         elif ctrl.is_selected(self):
-            return ctrl.cm().selected(self.color())
+            return ctrl.cm.selected(self.color())
         else:
             return self.color()
 
@@ -650,7 +648,6 @@ class Edge(QtWidgets.QGraphicsItem):
         """
         return SHAPE_PRESETS[self.shape_name()]['control_points']
 
-
     def pull(self, value=None):
         """
 
@@ -692,7 +689,6 @@ class Edge(QtWidgets.QGraphicsItem):
         if not self.is_filled():  # expensive with filled shapes
             self._fat_path = outline_stroker.createStroke(self._path).united(self._path)
 
-
     def shape(self):
         """
 
@@ -707,7 +703,6 @@ class Edge(QtWidgets.QGraphicsItem):
             if not self._path:
                 self.make_path()
             return self._path
-
 
     def update_shape_method(self):
         """
@@ -735,7 +730,6 @@ class Edge(QtWidgets.QGraphicsItem):
         self.make_path()
         self.update()
 
-
     def update_end_points(self):
         """
 
@@ -751,7 +745,6 @@ class Edge(QtWidgets.QGraphicsItem):
         # sx, sy, sz = self.start_point
         # ex, ey, ez = self.end_point
         # self.center_point = sx + ((ex - sx) / 2), sy + ((ey - sy) / 2)
-
 
     def connect_end_points(self, start, end):
         """
@@ -772,7 +765,6 @@ class Edge(QtWidgets.QGraphicsItem):
             return '<%s %s-%s %s>' % (self.edge_type, self.start, self.end, self.align)
         else:
             return '<%s stub from %s to %s>' % (self.edge_type, self.start, self.end)
-
 
     def drop_to(self, x, y):
         """
@@ -831,7 +823,6 @@ class Edge(QtWidgets.QGraphicsItem):
 
     # ### Mouse - Qt events ##################################################
 
-
     def set_hovering(self, value):
         """ Toggle hovering effects and internal bookkeeping
         :param value: bool
@@ -858,7 +849,6 @@ class Edge(QtWidgets.QGraphicsItem):
         """
         self.set_hovering(True)
         QtWidgets.QGraphicsItem.hoverEnterEvent(self, event)
-
 
     def hoverLeaveEvent(self, event):
         """
@@ -887,10 +877,7 @@ class Edge(QtWidgets.QGraphicsItem):
         else:
             ctrl.select(self)
 
-
     # ## Qt paint method override
-
-
 
     def paint(self, painter, option, widget=None):
         """
@@ -926,19 +913,16 @@ class Edge(QtWidgets.QGraphicsItem):
             l.append(a_point[1] + c_point[1])
         return l
 
-    def get_path(self):
-        """
-
-
-        :return:
+    def get_path(self)-> QtGui.QPainterPath:
+        """ Get drawing path of this edge
+        :return: QPath
         """
         return self._path
 
-    def get_point_at(self, d):
-        """
-
-        :param d:
-        :return:
+    def get_point_at(self, d: int)-> Pf:
+        """ Get coordinates at the percentage of the length of the path.
+        :param d: int
+        :return: QPoint
         """
         if self.is_filled():
             d /= 2.0
@@ -947,11 +931,10 @@ class Edge(QtWidgets.QGraphicsItem):
             self.make_path()
         return self._path.pointAtPercent(d)
 
-    def get_angle_at(self, d):
-        """
-
-        :param d:
-        :return:
+    def get_angle_at(self, d) -> float:
+        """ Get angle at the percentage of the length of the path.
+        :param d: int
+        :return: float
         """
         if self.is_filled():
             d /= 2.0
@@ -967,7 +950,6 @@ class Edge(QtWidgets.QGraphicsItem):
     # print 'Edge event received: ', event.type()
     # return QtWidgets.QGraphicsItem.sceneEvent(self, event)
 
-
     # ### Restoring after load / undo #########################################
 
     def after_restore(self, changes):
@@ -976,5 +958,3 @@ class Edge(QtWidgets.QGraphicsItem):
         """
         self.update_end_points()
         self.set_visible(self._visible)
-
-

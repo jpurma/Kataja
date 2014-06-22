@@ -23,7 +23,7 @@
 # ############################################################################
 
 from kataja.Movable import Movable
-from kataja.Controller import prefs
+from kataja.singletons import prefs
 from kataja.visualizations.Grid import Grid
 from kataja.visualizations.BalancedTree import BalancedTree
 from kataja.ConstituentNode import ConstituentNode

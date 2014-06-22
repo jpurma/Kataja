@@ -26,7 +26,7 @@
 
 
 from kataja.utils import time_me, save_object, load_objects
-from .Controller import ctrl
+from kataja.singletons import ctrl
 
 
 class UndoManager:

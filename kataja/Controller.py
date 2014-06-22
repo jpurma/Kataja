@@ -25,18 +25,12 @@
 import sys
 
 from PyQt5 import QtCore, QtWidgets
-
-from kataja.ForestSettings import ForestSettings
-from kataja.Preferences import Preferences, QtPreferences
 from kataja.utils import caller
 from syntax.BareConstituent import BareConstituent
 from syntax.BaseUG import UG
 from syntax.ConfigurableFeature import Feature
 
-global prefs, qt_prefs, colors
-prefs = Preferences()
-qt_prefs = QtPreferences()
-forest_settings = ForestSettings(None, prefs)
+#global prefs, qt_prefs, colors
 
 # gc.set_debug(gc.DEBUG_LEAK)
 
@@ -47,8 +41,14 @@ forest_settings = ForestSettings(None, prefs)
 # gc.set_debug(flags)
 
 class Controller:
-    """
-
+    """ Controller provides
+    a) access to shared objects or objects upstream in containers.
+    b) selected objects
+    c) focused UI object
+    d) capability to send announcements, which are announcement_id + argument that is sent to all objects that listen
+    to such announcements. These can be used to e.g. send requests to update ui elements without having to know what
+    elements there are.
+    e) capability to send Qt signals as main application.
     """
 
     def __init__(self):
@@ -86,22 +86,28 @@ class Controller:
     def late_init(self, main):
         """
 
-        :param main:
+        :param main: KatajaMain
         """
         self.main = main
 
+    @property
     def cm(self):
-        """ Shortcut to color manager, which replaces palettes, colors etc. older solutions. """
+        """ Shortcut to color manager, which replaces palettes, colors etc. older solutions.
+        :return: ColorManager
+        """
         return self.main.color_manager
 
+    @property
     def forest(self):
-        """ Shortcut to active forest """
+        """ Shortcut to active forest
+        :return: Forest
+        """
         return self.main.forest
 
+    @property
     def fs(self):
         """ Shortcut to active forest's settings """
         return self.main.forest.settings
-
 
     def add_message(self, msg):
         """
@@ -114,28 +120,31 @@ class Controller:
         """ Announcing is used to broadcast update requests to objects in graph scene
         or UI items. Items need to support this by having signal in 
         'receives_signals'- list and by having 'receive_signal' method that then
+        distinguishes between different signals. Announcements can include arguments.
         :param signal:
         :param args:
-        distinguishes between different signals. Announcements can include arguments. """
+        """
         # self.main.ui_manager.forward_signal(signal, *args)
         self.main.graph_scene.forward_signal(signal, *args)
 
-    def sendEvent(self, event_id, **kwargs):
+    def send_event(self, event_id, **kwargs):
         """
 
         :param event_id:
         :param kwargs:
         """
         event = QtCore.QEvent(event_id)
+        # noinspection PyTypeChecker
         QtWidgets.QApplication.sendEvent(self.main, event)
         # sevent = QtWidgets.QGraphicsSceneEvent(event_id)
         self.main.graph_scene.sceneEvent(event)
 
         # ******* Selection *******
 
-    # trees and edges can be selected. UI objects are focused. multiple items can be selected, but actions do not necessary apply to them.
+    # trees and edges can be selected.
+    # UI objects are focused. multiple items can be selected, but actions do not necessary apply to them.
 
-    def single_selection(self):
+    def single_selection(self) -> bool:
         """
 
 
@@ -170,7 +179,7 @@ class Controller:
         """
         return self.selected
 
-    def is_selected(self, obj):
+    def is_selected(self, obj) -> bool:
         """
 
         :param obj:
@@ -238,7 +247,7 @@ class Controller:
         """
         return self.ui_focus
 
-    def has_focus(self, ui_obj):
+    def has_focus(self, ui_obj) -> bool:
         """
 
         :param ui_obj:
@@ -246,7 +255,7 @@ class Controller:
         """
         return self.ui_focus == ui_obj
 
-    def hosts_focus(self, ui_obj):
+    def hosts_focus(self, ui_obj) -> bool:
         """
 
         :param ui_obj:
@@ -283,5 +292,3 @@ class Controller:
         """*** calling quits ***"""
         sys.exit()
 
-
-ctrl = Controller()  # Controller()

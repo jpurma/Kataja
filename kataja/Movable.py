@@ -26,7 +26,7 @@ import random
 
 from PyQt5 import QtWidgets
 
-from kataja.Controller import prefs, qt_prefs, ctrl
+from kataja.singletons import prefs, qt_prefs, ctrl
 
 
 # Verified 8.4. 2013

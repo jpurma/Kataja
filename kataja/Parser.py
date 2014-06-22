@@ -26,7 +26,7 @@
 
 import re
 
-from kataja.Controller import ctrl
+from kataja.singletons import ctrl
 from kataja.Presentation import TextArea, Image
 from . import utils
 

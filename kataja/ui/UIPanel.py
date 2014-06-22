@@ -26,11 +26,12 @@ import math
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-from kataja.Controller import ctrl, prefs, qt_prefs
+from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.utils import to_tuple
 from kataja.visualizations.available import VISUALIZATIONS
 from kataja.ui.TwoColorButton import TwoColorButton
 from kataja.Edge import SHAPE_PRESETS
+from ui.ColorBox import ColorBox
 
 
 class TwoColorIcon(QtGui.QIcon):
@@ -366,14 +367,14 @@ class ColorWheelInner(QtWidgets.QWidget):
         painter = QtGui.QPainter(self)
         painter.setRenderHints(QtGui.QPainter.Antialiasing | QtGui.QPainter.TextAntialiasing)
         # painter.setBrush(colors.dark_gray)
-        painter.setPen(ctrl.cm().ui())
+        painter.setPen(ctrl.cm.ui())
         # painter.drawRect(0, 0, 160, 160)
         # painter.setBrush(colors.paper)
         # painter.setPen(colors.paper)
         r = self._radius
         painter.drawEllipse(4, 4, r + r, r + r)
         painter.drawRect(self._lum_box_x, self._lum_box_y, 8, r)
-        cm = ctrl.cm()
+        cm = ctrl.cm
 
         def draw_as_circle(color):
             """
@@ -483,7 +484,7 @@ class ColorWheelInner(QtWidgets.QWidget):
             h = (math.atan2(dy, dx) + math.pi) / (math.pi * 2)
             return h, s
 
-        cm = ctrl.cm()
+        cm = ctrl.cm
         if self._pressed == FLAG:
             x, y = to_tuple(event.localPos())
             new_value = get_value_from_flag_position(cm.hsv[2], y)
@@ -568,7 +569,7 @@ class ColorMappingPanel(UIPanel):
         # selector.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
         layout.addWidget(selector)
         hlayout = QtWidgets.QHBoxLayout()
-        color_name = QtWidgets.QLabel(ctrl.cm().get_color_name(ctrl.cm().hsv), self)
+        color_name = QtWidgets.QLabel(ctrl.cm.get_color_name(ctrl.cm.hsv), self)
         color_name.setFixedWidth(120)
         color_name.setSizePolicy(label_policy)
         self.color_name = color_name
@@ -641,39 +642,22 @@ class TestPanel(UIPanel):
         UIPanel.__init__(self, name, default_position, parent)
         inner = QtWidgets.QWidget()
         layout = QtWidgets.QVBoxLayout()
-        label = QtWidgets.QLabel("Test area")
-        layout.addWidget(label)
-        color_button = ColorBox(ctrl.cm().drawing(), "Mauve")
-        layout.addWidget(color_button)
+        boxes = [('drawing', "Drawing"), ('text', "Text"), ('paper', "Paper"), ('ui', "UI"), ('ui_paper', "UI paper"),
+                 ('ui_secondary', "UI secondary"), ('secondary', "Secondary"), ('selection', "Selection"),
+                 ('ui_hover', "UI hover"), ('ui_active', "UI active"), ('ui_selected', "UI selected")]
+        for box_base, box_text in boxes:
+            color_button = ColorBox(box_base, box_text)
+            layout.addWidget(color_button)
         inner.setLayout(layout)
         self.setWidget(inner)
 
+   # def secondary(self):
+   #  def selection(self):
+   #  def ui_hover(self):
+   #  def ui_active(self):
+   #  def ui_selected(self):
 
-class ColorBox(QtWidgets.QPushButton):
-    """
-        Rectangular solid button for displaying a color. Clicking it should open system's color selector.
-    """
 
-    def __init__(self, color, color_name):
-        """
-
-        :param color:
-        :param color_name:
-        """
-        QtWidgets.QPushButton.__init__(self)
-        self.color = color
-        self.color_name = color_name
-        self.setFlat(True)
-
-    def paintEvent(self, event):
-        """
-
-        :param event:
-        """
-        painter = QtGui.QPainter(self)
-        painter.setBrush(self.color)
-        painter.setPen(self.color)
-        painter.drawRect(QtCore.QRect(0, 0, 40, 20))
 
 
 class ColorPanel(UIPanel):
@@ -713,7 +697,7 @@ class ColorPanel(UIPanel):
         #selector.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
         color_wheel_layout.addWidget(selector)
         hlayout = QtWidgets.QHBoxLayout()
-        color_name = QtWidgets.QLabel(ctrl.cm().get_color_name(ctrl.cm().hsv), self)
+        color_name = QtWidgets.QLabel(ctrl.cm.get_color_name(ctrl.cm.hsv), self)
         color_name.setFixedWidth(120)
         color_name.setSizePolicy(label_policy)
         self.color_name = color_name
@@ -784,7 +768,7 @@ class ColorPanel(UIPanel):
         """
         if self._updating:
             return
-        cm = ctrl.cm()
+        cm = ctrl.cm
         hsv = (value / 255.0, cm.hsv[1], cm.hsv[2])
         ctrl.main.adjust_colors(hsv)  # @UndefinedVariable
         self.update()
@@ -797,7 +781,7 @@ class ColorPanel(UIPanel):
         """
         if self._updating:
             return
-        cm = ctrl.cm()
+        cm = ctrl.cm
         hsv = (cm.hsv[0], value / 254.9, cm.hsv[2])
         ctrl.main.adjust_colors(hsv)  # @UndefinedVariable
         self.update()
@@ -810,7 +794,7 @@ class ColorPanel(UIPanel):
         """
         if self._updating:
             return
-        cm = ctrl.cm()
+        cm = ctrl.cm
         hsv = (cm.hsv[0], cm.hsv[1], value / 255.0)
         ctrl.main.adjust_colors(hsv)  # @UndefinedVariable
         self.update()
@@ -829,7 +813,7 @@ class ColorPanel(UIPanel):
 
 
         """
-        cm = ctrl.cm()
+        cm = ctrl.cm
         color_key = str(cm.hsv)
         if color_key not in prefs.color_modes:
             prefs.add_color_mode(color_key, cm.hsv, cm)
@@ -843,7 +827,7 @@ class ColorPanel(UIPanel):
 
 
         """
-        cm = ctrl.cm()
+        cm = ctrl.cm
         h, s, v = cm.hsv
         self._updating = True
         self.h_spinner.setValue(h * 255)

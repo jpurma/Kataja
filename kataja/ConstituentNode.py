@@ -24,7 +24,7 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-from kataja.Controller import ctrl, prefs, qt_prefs
+from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.Node import Node
 from kataja.utils import to_tuple
 import kataja.globals as g

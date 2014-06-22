@@ -1,5 +1,5 @@
 # coding=utf-8
-from kataja.Controller import qt_prefs
+from kataja.singletons import qt_prefs
 from kataja.Bracket import Bracket
 
 

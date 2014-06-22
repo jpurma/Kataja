@@ -6,7 +6,7 @@ Created on 28.8.2013
 """
 from PyQt5 import QtGui, QtCore, QtWidgets
 
-from kataja.Controller import ctrl
+from kataja.singletons import ctrl
 
 
 class GlowRing(QtWidgets.QGraphicsEllipseItem):
@@ -14,7 +14,7 @@ class GlowRing(QtWidgets.QGraphicsEllipseItem):
 
     def __init__(self, parent, radius=40):
         QtWidgets.QGraphicsEllipseItem.__init__(self, QtCore.QRectF(0, 0, 0, 0), parent)
-        pen = QtGui.QPen(ctrl.cm().ui())
+        pen = QtGui.QPen(ctrl.cm.ui())
         pen.setWidth(4)
         self.setPen(pen)
         glow = QtWidgets.QGraphicsBlurEffect(parent)

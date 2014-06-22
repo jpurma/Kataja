@@ -25,7 +25,7 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import Qt
 
-from kataja.Controller import ctrl, prefs, qt_prefs
+from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.Label import Label
 from kataja.Movable import Movable
 from kataja.utils import to_tuple
@@ -314,9 +314,9 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """
         if value is None:
             if self._color is None:
-                return ctrl.cm().get(self.forest.settings.node_settings(self.__class__.node_type, 'color'))
+                return ctrl.cm.get(self.forest.settings.node_settings(self.__class__.node_type, 'color'))
             else:
-                return ctrl.cm().get(self._color)
+                return ctrl.cm.get(self._color)
         else:
             self._color = value
             # if self._label_complex:
@@ -326,11 +326,11 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     def contextual_color(self):
         """ Drawing color that is sensitive to node's state """
         if ctrl.pressed == self:
-            return ctrl.cm().active(self.color())
+            return ctrl.cm.active(self.color())
         elif self._hovering:
-            return ctrl.cm().hovering(self.color())
+            return ctrl.cm.hovering(self.color())
         elif ctrl.is_selected(self):
-            return ctrl.cm().selected(self.color())
+            return ctrl.cm.selected(self.color())
         else:
             return self.color()
 

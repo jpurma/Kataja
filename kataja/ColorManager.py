@@ -27,9 +27,12 @@ import json
 from collections import OrderedDict
 
 from PyQt5.QtGui import QColor as c
+from PyQt5.QtGui import QColor
 import PyQt5.QtGui as QtGui
 
-from kataja.Controller import ctrl, prefs
+from kataja.singletons import ctrl, prefs
+
+
 
 
 def rotating_add(base, added):
@@ -122,7 +125,7 @@ class ColorManager:
         :param value:
         :return:
         """
-        return ctrl.fs().color_mode(value)
+        return ctrl.fs.color_mode(value)
 
     def activate_color_mode(self, refresh=False):
         """
@@ -254,51 +257,39 @@ class ColorManager:
         self.gradient.setColorAt(1, self.d['paper'])
         self.gradient.setColorAt(0, self.d['paper'].lighter())
 
-    def drawing(self):
-        """
-
-
-        :return:
+    def drawing(self) -> QColor:
+        """ Main drawing color for constituent branches
+        :return: QColor
         """
         return self.d['key']
 
-    def text(self):
-        """
-
-
-        :return:
+    def text(self) -> QColor:
+        """ Main text color for constituent nodes
+        :return: QColor
         """
         return self.d['analog2']
 
-    def paper(self):
-        """
-
-
-        :return:
+    def paper(self) -> QColor:
+        """ Background color
+        :return: QColor
         """
         return self.d['paper']
 
-    def ui(self):
-        """
-
-
-        :return:
+    def ui(self) -> QColor:
+        """ Primary UI text color
+        :return: QColor
         """
         return self.d['complement']
 
-    def ui_paper(self):
-        """
-
-
-        :return:
+    def ui_paper(self) -> QColor:
+        """ UI background color -- use for UI elements that float over main drawing.
+        :return: QColor
         """
         return self.d['complement 0.5']
 
-    def ui_secondary(self):
-        """
-
-
-        :return:
+    def ui_secondary(self) -> QColor:
+        """ UI emphasis color
+        :return: QColor
         """
         return self.d['secondary']
 
@@ -432,7 +423,7 @@ class ColorManager:
     def _prepare_root_color(self, refresh=False):
         """ Prepare root color (self.hsv), depending on what kind of color settings are active """
         mode = self.current_color_mode()
-        fs = ctrl.fs()
+        fs = ctrl.fs
 
         remembered_value = fs.last_key_color_for_mode(mode)
         if remembered_value and not refresh:

@@ -1,7 +1,7 @@
 # coding=utf-8
 from PyQt5 import QtWidgets, QtCore
 
-from kataja.Controller import ctrl
+from kataja.singletons import ctrl
 
 
 class CheckBox(QtWidgets.QGraphicsItem):
@@ -16,18 +16,19 @@ class CheckBox(QtWidgets.QGraphicsItem):
         self.setZValue(52)
         self.marker = marker
 
-    def paint(self, painter, option, widget):
+    def paint(self, painter, option, widget=None):
         """
 
         :param painter:
         :param option:
         :param widget:
         """
+        QtWidgets.QGraphicsItem.paint()
         r = QtCore.QRectF(-8, -4, 15, 15)
-        cm = ctrl.cm()
+        cm = ctrl.cm
         painter.setPen(cm.ui())
         if self._hover:
-            painter.setBrush(cm.ui_hover())
+            painter.setBrush(cm.hovering(cm.ui()))
             painter.drawRect(r)
             painter.setPen(cm.ui())
             painter.drawText(r, self.marker)

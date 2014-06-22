@@ -2,7 +2,7 @@
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import QPointF as Pf
 
-from kataja.Controller import prefs
+from kataja.singletons import prefs
 
 
 class FadingSymbol(QtWidgets.QGraphicsPixmapItem):

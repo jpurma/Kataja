@@ -2,7 +2,7 @@
 # #######################################################
 from PyQt5 import QtCore, QtWidgets
 
-from kataja.Controller import ctrl, prefs
+from kataja.singletons import ctrl, prefs
 
 
 class MessageItem(QtWidgets.QGraphicsTextItem):
@@ -14,7 +14,7 @@ class MessageItem(QtWidgets.QGraphicsTextItem):
         self._msg_string = msg
         # self.setFont(qt_prefs.menu_font)
         self.setPlainText('\n' + self._msg_string)
-        self.setDefaultTextColor(ctrl.cm().ui())
+        self.setDefaultTextColor(ctrl.cm.ui())
         self.adjustSize()
         self.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse)
         self._widget = log_panel
@@ -38,7 +38,7 @@ class MessageItem(QtWidgets.QGraphicsTextItem):
 
 
         """
-        self.setDefaultTextColor(ctrl.cm().ui())
+        self.setDefaultTextColor(ctrl.cm.ui())
         self.display_messages()
 
     def display_messages(self):

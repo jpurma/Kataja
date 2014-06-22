@@ -26,7 +26,7 @@
 import math
 
 from kataja.ConstituentNode import ConstituentNode
-from kataja.Controller import prefs
+from kataja.singletons import prefs
 from kataja.FeatureNode import FeatureNode
 from kataja.utils import caller
 from kataja.visualizations.BaseVisualization import BaseVisualization
@@ -34,7 +34,9 @@ from kataja.GlossNode import GlossNode
 
 
 class LeftFirstHexTree(BaseVisualization):
-    """ Visualization that draws branches, starting from top and left. Each branching creates 120° angle, so trees are drawn in something resembling a hex grid. Each branch takes the space it needs, and may force next branch drawing to further down and right. """
+    """ Visualization that draws branches, starting from top and left.
+    Each branching creates 120° angle, so trees are drawn in something resembling a hex grid.
+    Each branch takes the space it needs, and may force next branch drawing to further down and right. """
     name = 'Hexagonal tree'
 
     def __init__(self):

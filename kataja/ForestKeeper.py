@@ -25,8 +25,8 @@
 
 import pickle
 
-from .Controller import ctrl
-from .Forest import Forest
+from kataja.singletons import ctrl
+from kataja.Forest import Forest
 
 
 class ForestKeeper:

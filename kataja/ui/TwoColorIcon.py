@@ -24,7 +24,7 @@
 
 from PyQt5 import QtGui, QtCore
 
-from kataja.Controller import ctrl
+from kataja.singletons import ctrl
 
 
 class TwoColorIcon(QtGui.QIcon):
@@ -87,13 +87,13 @@ class TwoColorIconEngine(QtGui.QIconEngine):
             pxm, bmp1, bmp2 = self.bitmaps
 
         if mode == 0:  # normal
-            painter.setPen(ctrl.cm().ui())
+            painter.setPen(ctrl.cm.ui())
         elif mode == 1:  # disabled
-            painter.setPen(ctrl.cm().ui_inactive())
+            painter.setPen(ctrl.cm.ui_inactive())
         elif mode == 2:  # hovering
-            painter.setPen(ctrl.cm().ui_hover())
+            painter.setPen(ctrl.cm.ui_hover())
         elif mode == 3:  # selected
-            painter.setPen(ctrl.cm().ui_active())
+            painter.setPen(ctrl.cm.ui_active())
         #painter.setBackgroundMode(QtCore.Qt.TransparentMode) # 
         #painter.setBackground(colors.transparent)
         #painter.fillRect(rect, colors.paper)

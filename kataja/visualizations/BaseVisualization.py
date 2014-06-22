@@ -22,7 +22,7 @@
 #
 # ############################################################################
 
-from kataja.Controller import prefs
+from kataja.singletons import prefs
 from kataja.utils import caller
 from kataja.ConstituentNode import ConstituentNode
 from kataja.FeatureNode import FeatureNode

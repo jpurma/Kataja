@@ -44,9 +44,11 @@ import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
 import PyQt5.QtPrintSupport as QtPrintSupport
 import PyQt5.QtWidgets as QtWidgets
+from ForestSettings import ForestSettings
+from Preferences import Preferences, QtPreferences
 
 from kataja.ConstituentNode import ConstituentNode
-from kataja.Controller import ctrl, prefs, qt_prefs
+from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.Forest import Forest
 from kataja.ForestKeeper import ForestKeeper
 from kataja.GraphScene import GraphScene
@@ -74,6 +76,7 @@ ALIASES = 2
 # objgraph = None
 
 # KatajaMain > UIView > UIManager > GraphView > GraphScene > Leaves etc.
+
 
 
 class KatajaMain(QtWidgets.QMainWindow):

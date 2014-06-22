@@ -25,7 +25,7 @@
 import random
 import collections
 
-from kataja.Controller import qt_prefs
+from kataja.singletons import qt_prefs
 from kataja.globals import ATTRIBUTE_EDGE, ATTRIBUTE_NODE
 from kataja.Node import Node
 

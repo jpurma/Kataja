@@ -33,7 +33,7 @@ from kataja.Bracket import Bracket
 from kataja.BracketManager import BracketManager
 from kataja.ConstituentNode import ConstituentNode
 from kataja.AttributeNode import AttributeNode
-from kataja.Controller import ctrl, prefs, qt_prefs
+from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.ChainManager import ChainManager
 from kataja.DerivationStep import DerivationStepManager
 from kataja.GlossNode import GlossNode
@@ -277,7 +277,7 @@ class Forest:
                 # noinspection PyArgumentList
                 self.gloss = QtWidgets.QGraphicsTextItem(parent=None)
                 self.gloss.setTextWidth(400)
-                self.gloss.setDefaultTextColor(ctrl.cm().drawing())
+                self.gloss.setDefaultTextColor(ctrl.cm.drawing())
                 self.gloss.setFont(qt_prefs.font)  # @UndefinedVariable
                 # self.gloss.setFlag(QtGui.QGraphicsItem.ItemIsMovable)
             self.gloss.setPlainText("‘" + self._gloss_text + "’")
@@ -407,7 +407,7 @@ class Forest:
 
         :param adjusting:
         """
-        cm = ctrl.cm()
+        cm = ctrl.cm
         old_gradient_base = cm.paper()
         self.main.color_manager.update_colors(prefs, self.settings, adjusting=adjusting)
         #colors.update_colors(prefs, self.settings, adjusting=adjusting)

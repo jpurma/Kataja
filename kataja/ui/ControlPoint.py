@@ -4,7 +4,7 @@ from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import QPointF as Pf
 from PyQt5.QtCore import Qt
 
-from kataja.Controller import prefs, ctrl
+from kataja.singletons import prefs, ctrl
 from kataja.utils import to_tuple
 
 
@@ -102,7 +102,7 @@ class ControlPoint(QtWidgets.QGraphicsItem):
         :param option:
         :param widget:
         """
-        cm = ctrl.cm()
+        cm = ctrl.cm
         if self.pressed:
             pen = cm.ui_active()
             # pen = colors.active

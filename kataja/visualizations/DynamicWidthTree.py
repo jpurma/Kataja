@@ -24,7 +24,7 @@
 
 
 from kataja.ConstituentNode import ConstituentNode
-from kataja.Controller import prefs, ctrl
+from kataja.singletons import prefs, ctrl
 from kataja.visualizations.BaseVisualization import BaseVisualization
 from kataja.FeatureNode import FeatureNode
 from kataja.GlossNode import GlossNode

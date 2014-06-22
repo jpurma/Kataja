@@ -24,7 +24,7 @@
 
 import sys
 
-from kataja.Controller import qt_prefs
+from kataja.singletons import qt_prefs
 from kataja.Node import Node
 from kataja.globals import PROPERTY_EDGE, PROPERTY_NODE
 

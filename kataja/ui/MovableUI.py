@@ -6,7 +6,7 @@ Created on 28.8.2013
 """
 from PyQt5 import QtCore
 
-from kataja.Controller import prefs, ctrl
+from kataja.singletons import prefs, ctrl
 from kataja.utils import to_tuple
 
 

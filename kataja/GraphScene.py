@@ -31,7 +31,7 @@ import PyQt5.QtWidgets as QtWidgets
 
 from .Edge import Edge
 from kataja.ConstituentNode import ConstituentNode
-from kataja.Controller import ctrl, prefs, qt_prefs
+from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.TouchArea import TouchArea
 from kataja.Movable import Movable
 from kataja.Node import Node
@@ -55,8 +55,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         self.setItemIndexMethod(QtWidgets.QGraphicsScene.NoIndex)
         self.setSceneRect(-300, -200, 600, 400)
-        if ctrl.cm().gradient:
-            self.setBackgroundBrush(ctrl.cm().gradient)
+        if ctrl.cm.gradient:
+            self.setBackgroundBrush(ctrl.cm.gradient)
         else:
             self.setBackgroundBrush(qt_prefs.no_brush)
         # else:

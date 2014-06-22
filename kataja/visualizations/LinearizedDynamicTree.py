@@ -23,7 +23,7 @@
 # ############################################################################
 
 from kataja.ConstituentNode import ConstituentNode
-from kataja.Controller import prefs
+from kataja.singletons import prefs
 from kataja.visualizations.BaseVisualization import BaseVisualization
 from kataja.FeatureNode import FeatureNode
 from kataja.GlossNode import GlossNode

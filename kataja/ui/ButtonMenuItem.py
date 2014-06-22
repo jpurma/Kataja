@@ -8,7 +8,7 @@ from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtCore import QPointF as Pf
 
 from kataja.ui.MenuItem import MenuItem
-from kataja.Controller import ctrl, qt_prefs
+from kataja.singletons import ctrl, qt_prefs
 
 
 class ButtonMenuItem(MenuItem, QtWidgets.QGraphicsSimpleTextItem):
@@ -26,7 +26,7 @@ class ButtonMenuItem(MenuItem, QtWidgets.QGraphicsSimpleTextItem):
         MenuItem.__init__(self, parent, args)
         self.setParentItem(parent)
         self.setText(self._label_text)
-        self.setBrush(ctrl.cm().ui())
+        self.setBrush(ctrl.cm.ui())
         self.setZValue(52)
 
 
@@ -37,7 +37,7 @@ class ButtonMenuItem(MenuItem, QtWidgets.QGraphicsSimpleTextItem):
         :param option:
         :param widget:
         """
-        cm = ctrl.cm()
+        cm = ctrl.cm
         if ctrl.has_focus(self) or self.activated:
             painter.setBrush(cm.active(cm.ui()))
             painter.setPen(cm.ui())

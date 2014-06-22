@@ -2,7 +2,7 @@
 # #######################################################
 from PyQt5 import QtCore, QtWidgets
 
-from kataja.Controller import ctrl
+from kataja.singletons import ctrl
 
 
 class TargetReticle(QtWidgets.QGraphicsItem):
@@ -28,7 +28,7 @@ class TargetReticle(QtWidgets.QGraphicsItem):
         :param option:
         :param widget:
         """
-        painter.setPen(ctrl.cm().selection())
+        painter.setPen(ctrl.cm.selection())
         painter.drawLine(0, -15, 0, 15)
         painter.drawLine(-15, 0, 15, 0)
         painter.drawEllipse(-10, -10, 20, 20)

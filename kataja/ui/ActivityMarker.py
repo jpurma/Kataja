@@ -3,7 +3,7 @@ import random
 
 from PyQt5 import QtGui, QtWidgets
 
-from kataja.Controller import qt_prefs
+from kataja.singletons import qt_prefs
 
 
 class ActivityMarker(QtWidgets.QGraphicsRectItem):

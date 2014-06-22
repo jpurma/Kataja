@@ -7,7 +7,7 @@ Created on 28.8.2013
 from PyQt5 import QtGui, QtCore, QtWidgets
 from PyQt5.QtWidgets import QGraphicsItem
 
-from kataja.Controller import ctrl
+from kataja.singletons import ctrl
 from kataja.ui.MenuItem import MenuItem
 
 
@@ -181,11 +181,11 @@ class TextAreaMenuItem(MenuItem, QtWidgets.QGraphicsTextItem):
         :param option:
         :param widget:
         """
-        painter.setBrush(ctrl.cm().ui_paper())
+        painter.setBrush(ctrl.cm.ui_paper())
         if ctrl.has_focus(self):
-            painter.setPen(ctrl.cm().ui())
+            painter.setPen(ctrl.cm.ui())
         else:
-            painter.setPen(ctrl.cm().ui_inactive())
+            painter.setPen(ctrl.cm.ui_inactive())
 
         # painter.setFont(qt_prefs.menu_font)
         painter.drawRect(self.boundingRect())

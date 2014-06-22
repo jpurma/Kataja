@@ -26,7 +26,7 @@
 import math
 
 from kataja.ConstituentNode import ConstituentNode
-from kataja.Controller import prefs
+from kataja.singletons import prefs
 from kataja.FeatureNode import FeatureNode
 from kataja.utils import caller
 from kataja.visualizations.BaseVisualization import BaseVisualization

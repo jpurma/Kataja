@@ -592,7 +592,7 @@ def create_shadow_effect(obj, ctrl):
     effect = QtWidgets.QGraphicsDropShadowEffect()
     effect.setBlurRadius(20)
     #self.effect.setColor(ctrl.cm().drawing())
-    effect.setColor(ctrl.cm().d['white'])
+    effect.setColor(ctrl.cm.d['white'])
     effect.setOffset(0, 5)
     effect.setEnabled(False)
     return effect
