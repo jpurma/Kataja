@@ -111,7 +111,7 @@ class UIPanel(QtWidgets.QDockWidget):
 
         :param floating:
         """
-        if floating:
+        if floating and hasattr(self, 'preferred_size'):
             w, h = self.preferred_size
             self.resize(w, h)
         print('UIPanel %s floating: %s' % (self, floating))
@@ -643,8 +643,7 @@ class TestPanel(UIPanel):
         inner = QtWidgets.QWidget()
         layout = QtWidgets.QVBoxLayout()
         boxes = [('drawing', "Drawing"), ('text', "Text"), ('paper', "Paper"), ('ui', "UI"), ('ui_paper', "UI paper"),
-                 ('ui_secondary', "UI secondary"), ('secondary', "Secondary"), ('selection', "Selection"),
-                 ('ui_hover', "UI hover"), ('ui_active', "UI active"), ('ui_selected', "UI selected")]
+                 ('secondary', "Secondary"), ('selection', "Selection")]
         for box_base, box_text in boxes:
             color_button = ColorBox(box_base, box_text)
             layout.addWidget(color_button)

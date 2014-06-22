@@ -33,7 +33,7 @@ class CheckBox(QtWidgets.QGraphicsItem):
             painter.setPen(cm.ui())
             painter.drawText(r, self.marker)
         elif self.parentItem().checked:
-            painter.setBrush(cm.ui_secondary())
+            painter.setBrush(cm.secondary())
             painter.drawRect(r)
             painter.setPen(cm.ui())
             painter.drawText(r, self.marker)

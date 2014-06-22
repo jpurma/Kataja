@@ -85,15 +85,15 @@ class TwoColorIconEngine(QtGui.QIconEngine):
             pxm, bmp1, bmp2 = self.bitmaps32
         else:
             pxm, bmp1, bmp2 = self.bitmaps
-
+        c = ctrl.cm.ui()
         if mode == 0:  # normal
-            painter.setPen(ctrl.cm.ui())
+            painter.setPen(c)
         elif mode == 1:  # disabled
-            painter.setPen(ctrl.cm.ui_inactive())
+            painter.setPen(ctrl.cm.inactive(c))
         elif mode == 2:  # hovering
-            painter.setPen(ctrl.cm.ui_hover())
+            painter.setPen(ctrl.cm.hovering(c))
         elif mode == 3:  # selected
-            painter.setPen(ctrl.cm.ui_active())
+            painter.setPen(ctrl.cm.active(c))
         #painter.setBackgroundMode(QtCore.Qt.TransparentMode) # 
         #painter.setBackground(colors.transparent)
         #painter.fillRect(rect, colors.paper)

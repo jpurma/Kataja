@@ -94,8 +94,7 @@ class ControlPoint(QtWidgets.QGraphicsItem):
         self._hovering = False
         QtWidgets.QGraphicsItem.hoverLeaveEvent(self, event)
 
-
-    def paint(self, painter, option, widget):
+    def paint(self, painter, option, widget=None):
         """
 
         :param painter:
@@ -104,12 +103,11 @@ class ControlPoint(QtWidgets.QGraphicsItem):
         """
         cm = ctrl.cm
         if self.pressed:
-            pen = cm.ui_active()
-            # pen = colors.active
-            painter.setBrush(cm.ui_active())
+            pen = cm.active(cm.ui())
+            painter.setBrush(pen)
         elif self._hovering:
-            pen = cm.ui_hover()
-            painter.setBrush(cm.ui_hover())
+            pen = cm.hovering(cm.ui())
+            painter.setBrush(pen)
         else:
             pen = cm.ui()
         painter.setPen(pen)

@@ -185,7 +185,7 @@ class TextAreaMenuItem(MenuItem, QtWidgets.QGraphicsTextItem):
         if ctrl.has_focus(self):
             painter.setPen(ctrl.cm.ui())
         else:
-            painter.setPen(ctrl.cm.ui_inactive())
+            painter.setPen(ctrl.cm.inactive(ctrl.cm.ui()))
 
         # painter.setFont(qt_prefs.menu_font)
         painter.drawRect(self.boundingRect())

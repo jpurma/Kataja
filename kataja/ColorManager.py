@@ -287,20 +287,13 @@ class ColorManager:
         """
         return self.d['complement 0.5']
 
-    def ui_secondary(self) -> QColor:
-        """ UI emphasis color
-        :return: QColor
-        """
-        return self.d['secondary']
-
-    def secondary(self):
+    def secondary(self) -> QColor:
         """
 
 
         :return:
         """
         return self.d['secondary']
-
 
     def selection(self):
         """
@@ -309,31 +302,6 @@ class ColorManager:
         :return:
         """
         return self.d['secondary']
-
-
-    def ui_hover(self):
-        """
-
-
-        :return:
-        """
-        return self.hovering(self.ui())
-
-    def ui_active(self):
-        """
-
-
-        :return:
-        """
-        return self.active(self.ui())
-
-    def ui_selected(self):
-        """
-
-
-        :return:
-        """
-        return self.selected(self.ui())
 
     def rainbow(self, n):
         """
@@ -378,6 +346,16 @@ class ColorManager:
             return color.darker(300)
         else:
             return color.lighter(300)
+
+    def inactive(self, color):
+        """
+
+        :param color:
+        :return:
+        """
+        nc = c(color)
+        nc.setAlphaF(0.5)
+        return nc
 
     def hovering(self, color):
         """
