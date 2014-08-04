@@ -65,6 +65,7 @@ class AttributeNode(Node):
         self.attribute_label = attribute_label or attribute_id
         self.attribute_id = attribute_id
         self._show_label = show_label
+        self.force = 72
         self.label_font = qt_prefs.sc_font
         # if self.attribute_label in color_map:
         # self.color = colors.feature_palette[color_map[self.attribute_label]]

@@ -47,7 +47,7 @@ class ButtonMenuItem(MenuItem, QtWidgets.QGraphicsSimpleTextItem):
             painter.drawText(r, '\u21A9')
             self.setBrush(cm.paper())
         elif self._hovering:
-            painter.setBrush(cm.hover(cm.ui()))
+            painter.setBrush(cm.hovering(cm.ui()))
             painter.setPen(cm.ui())
             painter.drawRoundedRect(self._inner_bounding_rect, 5, 5)
             self.setBrush(cm.ui())

@@ -80,18 +80,22 @@ class Grid:
 
     def set(self, x, y, item, w=1, h=1):
         """
-
-        :param x:
-        :param y:
-        :param item:
-        :param w:
-        :param h:
+        Put node into grid into coords x,y. If node should take several slots, use w and h to give its size.
+        The grid is expanded to fit the node.
+        :param x: int
+        :param y: int
+        :param item: node
+        :param w: int
+        :param h: int
         """
+        if x < 0 or y < 0:
+            print("Grid coords cannot be negative.")
+            raise IndexError
         if w > 1 or h > 1:
-            l = x - (w - 1) / 2
-            r = x + (w - 1) / 2
-            u = y - (h - 1) / 2
-            d = y + (h - 1) / 2
+            l = x - (w - 1) // 2
+            r = x + (w - 1) // 2
+            u = y - (h - 1) // 2
+            d = y + (h - 1) // 2
             if l < 0:
                 r -= l
                 x -= l
@@ -113,7 +117,6 @@ class Grid:
                 new_row = [0] * self._width
                 self._rows.append(new_row)
                 self._height += 1
-            # print x, y
             try:
                 self._rows[y][x] = item
             except IndexError:

@@ -432,6 +432,7 @@ class Edge(QtWidgets.QGraphicsItem):
         self.setZValue(-1)
         self.edge_type = edge_type
         self.control_points = (None, None)
+        self.middle_point = None
         self.adjust = [(0, 0, 0), (0, 0, 0)]
 
         if isinstance(direction, str):

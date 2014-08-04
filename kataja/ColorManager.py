@@ -285,7 +285,7 @@ class ColorManager:
         """ UI background color -- use for UI elements that float over main drawing.
         :return: QColor
         """
-        return self.d['complement 0.5']
+        return self.d['complement 0.7']
 
     def secondary(self) -> QColor:
         """

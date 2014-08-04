@@ -325,8 +325,8 @@ class TouchArea(QtWidgets.QGraphicsItem):
         # painter.drawRect(self.boundingRect()) # debug
         painter.drawPath(self._path)
         if self._hovering and ctrl.dragged:
-            painter.setPen(ctrl.cm.hover(ctrl.cm.ui()))
+            painter.setPen(ctrl.cm.hovering(ctrl.cm.ui()))
             ex, ey = self.end_point
-            painter.drawLine(ex, ey - 30, ex, ey + 30)
-            painter.drawLine(ex - 30, ey, ex + 30, ey)
+            painter.drawLine(ex, ey - 10, ex, ey + 10)
+            painter.drawLine(ex - 10, ey, ex + 10, ey)
 

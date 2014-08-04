@@ -11,18 +11,18 @@ from kataja.utils import to_tuple
 
 
 class MovableUI(object):
-    # Animation and movement of UI elements should be based on individual timers.
-    # This way UI and actual animation are easier to keep separated and UI can be made
-    # more responsive.
-
-    # Only one animation per item is allowed.
 
     """
+    Animation and movement of UI elements should be based on individual timers.
+    This way UI and actual animation are easier to keep separated and UI can be kept responsive.
+
+    Only one animation per item is allowed.
 
     """
 
     def __init__(self):
         # position
+        assert(hasattr(self, "pos"))
         self._target_position = to_tuple(self.pos())
         # timer related stuff
         self._timer = None
@@ -30,6 +30,9 @@ class MovableUI(object):
         self._ticks = 0
         self._tick_method = None
         self._final_method = None
+        self.clickable = False
+        self.draggable = False
+        self.focusable = False
         # opacity
         self._target_opacity = 1.0
         self._hovering = False
@@ -50,7 +53,8 @@ class MovableUI(object):
         if ticks == 0:
             self._final_method = final_method
             self._tick_method = tick_method
-            self._tick_method()
+            if self._tick_method:
+                self._tick_method()
             self._final_method()
 
         # start a new timer
@@ -70,7 +74,7 @@ class MovableUI(object):
             call tick method or final method if this is the last tick. """
         if self._ticks_left:
             self._ticks_left -= 1
-            if self._tick_method:
+            if self._tick_method and callable(self._tick_method):
                 self._tick_method()
         else:
             self.stop_timer()
@@ -83,7 +87,7 @@ class MovableUI(object):
         ctrl.main.ui_manager.ui_activity_marker.hide()  # @UndefinedVariable
         self._timer.stop()
         self._timer = None
-        if self._final_method:
+        if self._final_method and callable(self._final_method):
             self._final_method()
 
 

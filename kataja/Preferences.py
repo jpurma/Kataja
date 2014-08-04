@@ -154,7 +154,7 @@ class Preferences(object):
                             'pen_width': 1, 'is_filled': False},
             ABSTRACT_EDGE: {'shape_name': 'linear', 'color': 'key', 'pull': .40, 'visible': True, 'has_outline': True,
                             'pen_width': 1, 'is_filled': False},
-            ATTRIBUTE_EDGE: {'shape_name': 'linear', 'color': 'key', 'pull': .40, 'visible': True, 'has_outline': True,
+            ATTRIBUTE_EDGE: {'shape_name': 'linear', 'color': 'key', 'pull': .50, 'visible': True, 'has_outline': False,
                              'pen_width': 1, 'is_filled': False},
 
         }

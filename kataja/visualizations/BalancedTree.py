@@ -181,7 +181,7 @@ class BalancedTree(BaseVisualization):
             elif left_root and right_root:
                 lx, ly = combined_grid.find_in_grid(left_root)
                 rx, ry = combined_grid.find_in_grid(right_root)
-                x = (lx + rx) / 2
+                x = (lx + rx) // 2
 
             combined_grid.insert_row()
             combined_grid.insert_row()

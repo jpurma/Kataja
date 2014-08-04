@@ -22,12 +22,12 @@
 #
 # ############################################################################
 
-
 from kataja.ConstituentNode import ConstituentNode
 from kataja.singletons import prefs, ctrl
 from kataja.visualizations.BaseVisualization import BaseVisualization
 from kataja.FeatureNode import FeatureNode
 from kataja.GlossNode import GlossNode
+from kataja.AttributeNode import AttributeNode
 
 
 class DynamicWidthTree(BaseVisualization):
@@ -76,7 +76,7 @@ class DynamicWidthTree(BaseVisualization):
             node.update_visibility(show_edges=True, scope=0, brackets=self.forest.settings.bracket_style())
             node.bind_y = True
             node.bind_x = False
-        elif isinstance(node, FeatureNode) or isinstance(node, GlossNode):
+        elif isinstance(node, (FeatureNode, GlossNode, AttributeNode)):
             node.bind_x = False
             node.bind_y = False
 
@@ -104,12 +104,10 @@ class DynamicWidthTree(BaseVisualization):
         :param node:
         :return:
         """
-        if isinstance(node, FeatureNode) or isinstance(node, GlossNode):
+        if not isinstance(node, ConstituentNode):
             return BaseVisualization.calculate_movement(self, node)
         xvel = 0.0
         node_x, node_y, node_z = node.get_current_position()
-        if not isinstance(node, ConstituentNode):
-            return 0, 0, 0
         # linear = self.forest.list_nodes_once(node.get_root_node())
         node_index = self._linear.index(node)
         for other_index, other in enumerate(self._linear):
