@@ -34,11 +34,15 @@ from kataja.ui.MessageItem import MessageItem
 from kataja.ui.RadialMenu import RadialMenu
 from kataja.ui.StretchLine import StretchLine
 from kataja.ui.TargetReticle import TargetReticle
-from kataja.ui.UIPanel import LogPanel, NavigationPanel, VisualizationPanel, ColorPanel, DockPanel, LinesPanel, \
-    TestPanel
 from kataja.TouchArea import TouchArea
 import kataja.globals as g
 from kataja.utils import to_tuple
+from ui.ColorPanel import ColorPanel
+from ui.LinesPanel import LinesPanel
+from ui.LogPanel import LogPanel
+from ui.NavigationPanel import NavigationPanel
+from ui.TestPanel import TestPanel
+from ui.VisualizationPanel import VisualizationPanel
 
 
 NOTHING = 0
@@ -46,7 +50,7 @@ SELECTING_AREA = 1
 DRAGGING = 2
 POINTING = 3
 
-panels = [{'class': DockPanel, 'name': 'Log'}, {'class': LogPanel, 'name': 'Log', 'position': 'bottom'},
+panels = [{'class': LogPanel, 'name': 'Log', 'position': 'bottom'},
           {'class': TestPanel, 'name': 'Test', 'position': 'right'},
           {'class': NavigationPanel, 'name': 'Trees', 'position': 'right'},
           {'class': VisualizationPanel, 'name': 'Visualization', 'position': 'right'},
@@ -84,7 +88,8 @@ class UIManager:
             constructor = panel['class']
             name = panel['name']
             position = panel.get('position', None)
-            new_panel = constructor(name, position, self.main, self.ui_buttons)
+            dock_id = panel.get('id', None)
+            new_panel = constructor(name, default_position=position, parent=self.main, ui_buttons=self.ui_buttons)
             self.ui_panels[new_panel.name] = new_panel
             new_panel.show()
 

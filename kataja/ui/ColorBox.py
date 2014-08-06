@@ -33,4 +33,8 @@ class ColorBox(QtWidgets.QPushButton):
         else:
             painter.setPen(c)
         painter.drawRect(QtCore.QRect(0, 0, 40, 20))
-        painter.drawText(48, 10, self.color_name)
+        painter.drawText(48, 12, self.color_name)
+
+
+    def sizeHint(self):
+        return QtCore.QSize(160, 22)

@@ -129,6 +129,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.create_actions()
         self.setMinimumSize(w, h)
         self.setWindowTitle(self.tr("Kataja"))
+        self.setDockOptions(QtWidgets.QMainWindow.AnimatedDocks)
         self.setGeometry(x, y, w, h)
         self.add_message('Welcome to Kataja! (h) for help')
         self.color_wheel = None

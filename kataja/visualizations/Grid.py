@@ -27,7 +27,7 @@ from kataja.Node import Node
 
 
 class Grid:
-    """ 2-dimensional grid to help drawing """
+    """ 2-dimensional grid to help drawing nodes and avoiding overlaps """
 
     def __init__(self):
         self._rows = []
@@ -48,8 +48,7 @@ class Grid:
 
     def ascii_dump(self):
         """
-
-
+        Give an ascii presentation of the grid for debugging.
         """
         for row in self._rows:
             s = []
@@ -62,17 +61,13 @@ class Grid:
                     s.append('.')
             print(''.join(s))
 
-
     def get(self, x, y):
+        """ Get object in grid at given coords. None if empty.
+        :param x: int
+        :param y: int
         """
-
-
-
-        :param x:
-        :param y:
-        :param int x:
-        :param int y:
-        """
+        assert(x >= 0)
+        assert(y >= 0)
         if x > self._width - 1 or y > self._height - 1:
             return None
         else:
@@ -80,17 +75,18 @@ class Grid:
 
     def set(self, x, y, item, w=1, h=1):
         """
-        Put node into grid into coords x,y. If node should take several slots, use w and h to give its size.
-        The grid is expanded to fit the node.
+        Put object into grid into coords x,y. If object should take several slots, use w and h to give its size.
+        The grid is expanded to fit the object.
         :param x: int
         :param y: int
         :param item: node
         :param w: int
         :param h: int
         """
-        if x < 0 or y < 0:
-            print("Grid coords cannot be negative.")
-            raise IndexError
+        assert(isinstance(x, int))
+        assert(isinstance(y, int))
+        assert(x >= 0)
+        assert(y >= 0)
         if w > 1 or h > 1:
             l = x - (w - 1) // 2
             r = x + (w - 1) // 2
@@ -127,7 +123,7 @@ class Grid:
 
     def row(self, y):
         """
-
+        Return one row from the grid
         :param y:
         :return:
         """
@@ -138,7 +134,7 @@ class Grid:
 
     def find_in_grid(self, item_to_find):
         """
-
+        Return coordinates of item in grid as a tuple. -1, -1 if not found
         :param item_to_find:
         :return:
         """
@@ -148,10 +144,9 @@ class Grid:
                     return x, y
         return -1, -1
 
-
     def last_filled_column(self, y):
         """
-
+        Return index of last column that is not empty.
         :param y:
         :return:
         """
@@ -164,7 +159,7 @@ class Grid:
 
     def first_filled_column(self, y):
         """
-
+        Return index of first column that is not empty.
         :param y:
         :return:
         """
@@ -176,8 +171,7 @@ class Grid:
 
     def insert_row(self):
         """
-
-
+        Add one row to the grid.
         """
         row = self._width * [0]
         self._height += 1
