@@ -54,24 +54,10 @@ from kataja.singletons import ctrl, prefs
 # cyan      #2aa198  6/6 cyan      37 #00afaf 60 -35 -05  42 161 152 175  74  63
 # green     #859900  2/2 green     64 #5f8700 60 -20  65 133 153   0  68 100  60
 
-# accents = []
-# self.d['yellow'] = c(181, 137, 0)
-# self.d['orange'] = c(203, 75, 22)
-# self.d['red'] = c(220, 50, 47)
-# self.d['magenta'] = c(211, 54, 130)
-# self.d['violet'] = c(108, 113, 196)
-# self.d['blue'] = c(38, 139, 210)
-# self.d['cyan'] = c(42, 161, 152)
-# self.d['green'] = c(133, 153, 0)
-# accents.append(self.d['yellow'])
-# accents.append(self.d['orange'])
-# accents.append(self.d['red'])
-# accents.append(self.d['magenta'])
-# accents.append(self.d['violet'])
-# accents.append(self.d['blue'])
-# accents.append(self.d['cyan'])
-# accents.append(self.d['green'])
-# self.d['accents'] = accents
+sol = [c(0, 43, 54), c(7, 54, 66), c(88, 110, 117), c(101, 123, 131), c(131, 148, 150), c(147, 161, 161),
+       c(238, 232, 213), c(253, 246, 227)]
+accents = [c(181, 137, 0), c(203, 75, 22), c(220, 50, 47), c(211, 54, 130), c(108, 113, 196), c(38, 139, 210),
+           c(42, 161, 152), c(133, 153, 0)]
 
 
 def rotating_add(base, added):
@@ -155,8 +141,12 @@ class ColorManager:
             hsv_key = (0.00, 0.29, 0.35)  # dark rose
         self.hsv = hsv_key
         self.d = OrderedDict()
+        self.d['white'] = c(255, 255, 255)
+        self.d['black'] = c(0, 0, 0)
         self.custom_colors = []
-        self.compute_palette(hsv_key)
+        self.gradient = QtGui.QRadialGradient(0, 0, 300)
+        self.gradient.setSpread(QtGui.QGradient.PadSpread)
+        self.activate_color_mode('solarized_lt', cold_start=True)
 
     def current_color_mode(self, value=None):
         """
@@ -166,12 +156,82 @@ class ColorManager:
         """
         return ctrl.fs.color_mode(value)
 
-    def activate_color_mode(self, refresh=False):
+    def activate_color_mode(self, mode, refresh=False, cold_start=False):
         """
+        Prepare root color (self.hsv), depending on what kind of color settings are active
 
         :param refresh:
+        :param cold_start: bool -- use this if some color palette is required, but ctrl-infrastructure
+            is not yet available
         """
-        self._prepare_root_color(refresh=refresh)
+        print('Activating color mode ', mode)
+        store_last_hsv = True
+
+        if mode == 'solarized_lt':
+            base = sol[3]
+            self.hsv = base.hueF(), base.saturationF(), base.valueF()
+            self.build_solarized(light=True)
+        elif mode == 'solarized_dk':
+            base = sol[4]
+            self.hsv = base.hueF(), base.saturationF(), base.valueF()
+            self.build_solarized(light=False)
+        elif mode == 'random':
+            if not cold_start:
+                remembered_value = ctrl.fs.last_key_color_for_mode(mode)
+                if remembered_value and not refresh:
+                    print('Using remembered value ', self.hsv, ' for color mode ', mode)
+                    self.hsv = remembered_value
+                    self.compute_palette(self.hsv)
+                    return
+
+            h = random.random()
+            s = random.random()  # *0.2+0.8
+            value_low_limit = int(0.38 * 255)
+            value_high_limit = int(0.7 * 255)
+            v = random.randint(value_low_limit, value_high_limit) / 255.0  # *0.2+0.8
+            self.hsv = h, s, v
+            self.compute_palette(self.hsv)
+
+        elif mode == 'random-light':
+            if not cold_start:
+                remembered_value = ctrl.fs.last_key_color_for_mode(mode)
+                if remembered_value and not refresh:
+                    print('Using remembered value ', self.hsv, ' for color mode ', mode)
+                    self.hsv = remembered_value
+                    self.compute_palette(self.hsv)
+                    return
+            h = random.random()
+            s = random.random()  # *0.2+0.8
+            value_low_limit = int(0.12 * 255)
+            value_high_limit = int(0.5 * 255)
+            v = random.randint(value_low_limit, value_high_limit) / 255.0  # *0.2+0.8
+            self.hsv = h, s, v
+            self.compute_palette(self.hsv)
+
+        elif mode == 'random-dark':
+            if not cold_start:
+                remembered_value = ctrl.fs.last_key_color_for_mode(mode)
+                if remembered_value and not refresh:
+                    print('Using remembered value ', self.hsv, ' for color mode ', mode)
+                    self.hsv = remembered_value
+                    self.compute_palette(self.hsv)
+                    return
+            h = random.random()
+            s = random.random()  # *0.2+0.8
+            value_low_limit = int(0.6 * 255)
+            value_high_limit = int(0.8 * 255)
+            v = random.randint(value_low_limit, value_high_limit) / 255.0  # *0.2+0.8
+            self.hsv = h, s, v
+            self.compute_palette(self.hsv)
+
+        else:
+            self.hsv = self.get_color_mode_data(mode)['hsv']
+            self.compute_palette(self.hsv)
+            store_last_hsv = False
+
+        if store_last_hsv and not cold_start:
+            ctrl.fs.last_key_color_for_mode(mode, self.hsv)
+
 
     def get_color_mode_data(self, mode):
         """
@@ -204,8 +264,42 @@ class ColorManager:
         """
 
         print('update colors called with refresh: %s adjusting: %s' % (refresh, adjusting))
-        self.activate_color_mode(refresh=refresh)
-        self.compute_palette(self.hsv)
+        self.activate_color_mode(self.current_color_mode(), refresh=refresh)
+
+
+    def build_solarized(self, light=True):
+        if light:
+            # Solarized light
+            # base3     #fdf6e3 15/7 brwhite  230 #ffffd7 97  00  10 253 246 227  44  10  99
+            self.d['background1'] = sol[7]
+            # base2     #eee8d5  7/7 white    254 #e4e4e4 92 -00  10 238 232 213  44  11  93
+            self.d['background2'] = sol[6]
+            # base00    #657b83 11/7 bryellow 241 #626262 50 -07 -07 101 123 131 195  23  51
+            self.d['content1'] = sol[3]
+            # base1     #93a1a1 14/4 brcyan   245 #8a8a8a 65 -05 -02 147 161 161 180   9  63
+            self.d['content2'] = sol[5]
+            # base01    #586e75 10/7 brgreen  240 #585858 45 -07 -07  88 110 117 194  25  46
+            self.d['content3'] = sol[2]
+        else:
+            # Solarized dark
+            self.d['background1'] = sol[0]
+            self.d['background2'] = sol[1]
+            self.d['content1'] = sol[4]
+            self.d['content2'] = sol[2]
+            self.d['content3'] = sol[5]
+        self.d['key'] = self.d['content1']
+        self.d['accents'] = accents
+        for i, accent in enumerate(accents):
+            self.d['accent%s' % (i+1)] = accent
+            tr = c(accent)
+            tr.setAlphaF(0.5)
+            self.d['accent%str' % (i+1)] = tr
+        self.d['accents'] = accents
+
+        self.gradient.setColorAt(1, self.d['background1'])
+        self.gradient.setColorAt(0, self.d['background2'])
+
+
 
     def compute_palette(self, hsv):
         """ Create/get root color and build palette around it. 
@@ -256,6 +350,10 @@ class ColorManager:
         paper08.setAlphaF(0.8)
         self.d['paper 0.8'] = paper08
         self.d['paper lighter'] = paper.lighter()
+        if vp < 0.7:
+            self.d['paper2'] = paper.darker(107)
+        else:
+            self.d['paper2'] = paper.lighter(107)
 
         complement = c()
         hc = rotating_add(h, -0.5)
@@ -275,8 +373,6 @@ class ColorManager:
         secondary = c()
         secondary.setHsvF(abs(h - 0.2), s / 2, limited_add(v, 0.2))
         self.d['secondary'] = secondary
-        self.d['white'] = c(255, 255, 255)
-        self.d['black'] = c(0, 0, 0)
 
         # ## Set of marker colors available for features ###
         if s < 0.5:
@@ -291,8 +387,6 @@ class ColorManager:
             self.d['rainbow_%s' % (i + 1)] = c().fromHsvF(i / 10.0, ps, pv)
 
             # ## Gradient ###
-        self.gradient = QtGui.QRadialGradient(0, 0, 300)
-        self.gradient.setSpread(QtGui.QGradient.PadSpread)
         self.gradient.setColorAt(1, self.d['paper'])
         self.gradient.setColorAt(0, self.d['paper'].lighter())
 
@@ -300,31 +394,38 @@ class ColorManager:
         """ Main drawing color for constituent branches
         :return: QColor
         """
-        return self.d['key']
+        return self.d['content1']
 
     def text(self) -> QColor:
         """ Main text color for constituent nodes
         :return: QColor
         """
-        return self.d['analog2']
+        return self.d['content1']
 
     def paper(self) -> QColor:
         """ Background color
         :return: QColor
         """
-        return self.d['paper']
+        return self.d['background1']
+
+    def paper2(self) -> QColor:
+        """ Background color
+        :return: QColor
+        """
+        return self.d['background2']
+
 
     def ui(self) -> QColor:
         """ Primary UI text color
         :return: QColor
         """
-        return self.d['complement']
+        return self.d['accent1']
 
     def ui_paper(self) -> QColor:
         """ UI background color -- use for UI elements that float over main drawing.
         :return: QColor
         """
-        return self.d['complement 0.7']
+        return self.d['accent1tr']
 
     def secondary(self) -> QColor:
         """
@@ -332,7 +433,7 @@ class ColorManager:
 
         :return:
         """
-        return self.d['secondary']
+        return self.d['accent2']
 
     def selection(self):
         """
@@ -340,7 +441,7 @@ class ColorManager:
 
         :return:
         """
-        return self.d['secondary']
+        return self.d['accent2']
 
     def rainbow(self, n):
         """
@@ -437,43 +538,6 @@ class ColorManager:
                 best = key
         return self.color_map[best]['name']
 
-    def _prepare_root_color(self, refresh=False):
-        """ Prepare root color (self.hsv), depending on what kind of color settings are active """
-        print('_prepare_root_color called')
-        mode = self.current_color_mode()
-        fs = ctrl.fs
-
-        remembered_value = fs.last_key_color_for_mode(mode)
-        if remembered_value and not refresh:
-            self.hsv = remembered_value
-        else:
-            if mode == 'random':
-                h = random.random()
-                s = random.random()  # *0.2+0.8
-                value_low_limit = int(0.38 * 255)
-                value_high_limit = int(0.7 * 255)
-                v = random.randint(value_low_limit, value_high_limit) / 255.0  # *0.2+0.8
-                self.hsv = h, s, v
-                fs.last_key_color_for_mode(mode, (h, s, v))
-            elif mode == 'random-light':
-                h = random.random()
-                s = random.random()  # *0.2+0.8
-                value_low_limit = int(0.12 * 255)
-                value_high_limit = int(0.5 * 255)
-                v = random.randint(value_low_limit, value_high_limit) / 255.0  # *0.2+0.8
-                self.hsv = h, s, v
-                fs.last_key_color_for_mode(mode, (h, s, v))
-
-            elif mode == 'random-dark':
-                h = random.random()
-                s = random.random()  # *0.2+0.8
-                value_low_limit = int(0.6 * 255)
-                value_high_limit = int(0.8 * 255)
-                v = random.randint(value_low_limit, value_high_limit) / 255.0  # *0.2+0.8
-                self.hsv = h, s, v
-                fs.last_key_color_for_mode(mode, (h, s, v))
-            else:
-                self.hsv = self.get_color_mode_data(mode)['hsv']
 
 
     def get_qt_palette(self):
@@ -482,185 +546,18 @@ class ColorManager:
 
         :return:
         """
-        p = {'windowText': QtGui.QBrush(self.d['key']), 'button': QtGui.QBrush(self.paper()),
-             'light': QtGui.QBrush(self.active(self.d['complement'])), 'dark': QtGui.QBrush(self.d['complement 0.7']),
-             'mid': QtGui.QBrush(self.hovering(self.d['complement'])), 'text': QtGui.QBrush(self.d['secondary']),
-             'bright_text': QtGui.QBrush(self.d['secondary'].lighter()), 'base': QtGui.QBrush(self.paper()),
-             'window': QtGui.QBrush(self.paper())}
+        p = {'windowText': QtGui.QBrush(self.d['content1']), 'button': QtGui.QBrush(self.d['background1']),
+             'light': QtGui.QBrush(self.d['content3']), 'dark': QtGui.QBrush(self.d['content2']),
+             'mid': QtGui.QBrush(self.hovering(self.d['content1'])), 'text': QtGui.QBrush(self.d['content1']),
+             'bright_text': QtGui.QBrush(self.d['accent1']), 'base': QtGui.QBrush(self.d['background2']),
+             'window': QtGui.QBrush(self.d['background1'])}
+
+        # p = {'windowText': QtGui.QBrush(self.d['key']), 'button': QtGui.QBrush(self.paper()),
+        #      'light': QtGui.QBrush(self.active(self.d['complement'])), 'dark': QtGui.QBrush(self.d['complement 0.7']),
+        #      'mid': QtGui.QBrush(self.hovering(self.d['complement'])), 'text': QtGui.QBrush(self.d['secondary']),
+        #      'bright_text': QtGui.QBrush(self.d['secondary'].lighter()), 'base': QtGui.QBrush(self.paper2()),
+        #      'window': QtGui.QBrush(self.paper())}
 
         return QtGui.QPalette(p['windowText'], p['button'], p['light'], p['dark'], p['mid'], p['text'],
                               p['bright_text'], p['base'], p['window'])
-
-
-
-        # def update_colors(self, prefs, settings, refresh=False, adjusting=False):
-        # """ Create/get root color and build palette around it """
-
-        # self._prepare_root_color(prefs, settings, refresh, adjusting)
-        # h, s, v = self.hsv
-        # # # This is the base color ##
-        # key = c()
-        #     # in_range(h, s, v)
-        #     key.setHsvF(h, s, v)
-        #     light_bg = v < 0.5 or (s > 0.7 and 0.62 < h < 0.95)
-
-        #     analog1 = c()
-        #     h1, s1, v1 = colorize(rotating_add(h, -0.1), s, v)
-        #     # in_range(h1, s1, v1)
-        #     analog1.setHsvF(h1, s1, v1)
-
-        #     analog2 = c()
-        #     h2, s2, v2 = colorize(rotating_add(h, 0.1), s, v)
-        #     # in_range(h2, s2, v2)
-        #     analog2.setHsvF(h2, s2, v2)
-
-        #     paper = c()
-        #     hp = h  # -0.1
-        #     sp = s / 4
-        #     vp = (1 - v)
-        #     if light_bg and vp < 0.6:
-        #         vp += 0.3
-        #     if abs(v - vp) <= 0.35:
-        #         if light_bg:
-        #             vp = limited_add(vp, 0.35)
-        #         else:
-        #             vp = limited_add(vp, -0.35)
-        #     # in_range(hp, sp, vp)
-        #     paper.setHsvF(hp, sp, vp)
-        #     complement = c()
-        #     hc = rotating_add(h, -0.5)
-        #     sv = s
-        #     if sv < 0.5:
-        #         sv += 0.2
-        #     # in_range(hc, sv, v)
-        #     complement.setHsvF(hc, sv, v)
-        #     self.drawing = key
-        #     self.drawing2 = analog1
-        #     self.feature = analog2
-        #     self.text = analog2
-        #     self.paper = paper
-        #     self.ui = complement
-        #     self.ui_background = c(paper)
-        #     self.ui_background.setAlphaF(0.8)
-        #     self.ui_inactive = c(complement)
-        #     self.ui_inactive.setAlphaF(0.5)
-        #     self.ui_secondary = c()
-        #     # in_range(abs(h-0.1), s/2, limited_add(v, 0.2))
-        #     self.ui_secondary.setHsvF(abs(h - 0.2), s / 2, limited_add(v, 0.2))
-        #     self.hover = c(key)
-        #     self.hover.setAlphaF(0.5)
-        #     self.active = c(key)
-        #     self.active.setAlphaF(0.7)
-        #     self.ui_hover = c(self.ui)
-        #     self.ui_hover.setAlphaF(0.5)
-        #     self.ui_active = c(self.ui)
-        #     self.ui_active.setAlphaF(0.7)
-        #     # if light_bg:
-        #     #     self.hover = key.lighter()
-        #     #     self.active = self.hover.lighter()
-        #     #     self.ui_hover = self.ui.lighter()
-        #     #     self.ui_active = self.ui_hover.lighter()
-        #     # else:
-        #     #     self.hover = key.darker()
-        #     #     self.active = self.hover.darker()
-        #     #     self.ui_hover = self.ui.darker()
-        #     #     self.ui_active = self.ui_hover.darker()
-
-        #     self.selected = analog1
-        #     self.console = complement
-        #     if False:  ## Debug colors
-        #         print '--------- color scheme ----------'
-        #         print 'base hue: %.3f' % self.hsv[0]
-        #         print 'base saturation: %.3f' % self.hsv[1]
-        #         print 'base value: %.3f' % self.hsv[2]
-        #         print 'key:     ', self.color_as_string(key)
-        #         print 'analog1: ', self.color_as_string(analog1)
-        #         print 'analog2: ', self.color_as_string(analog2)
-        #         print 'paper:   ', self.color_as_string(paper)
-        #         print 'complement: ', self.color_as_string(complement)
-        #         print '---------------'
-        #         print 'dist between saturation, key - paper: %.3f' % (key.saturationF() - paper.saturationF())
-        #         print 'dist between value, key - paper: %.3f' % (key.valueF() - paper.valueF())
-        #         print 'dist between saturation, complement - paper: %.3f' % (key.saturationF() - paper.saturationF())
-        #         print 'dist between value, complement - paper: %.3f' % (key.valueF() - paper.valueF())
-
-        #         print '---------------'
-        #         print 'drawing (key):  ', self.color_as_string(self.drawing)
-        #         print 'drawing2 (analog1): ', self.color_as_string(self.drawing2)
-        #         print 'feature(analog2): ', self.color_as_string(self.feature)
-        #         print 'text (analog2):     ', self.color_as_string(self.text)
-        #         print 'paper (paper):    ', self.color_as_string(self.paper)
-        #         print 'ui (complement):       ', self.color_as_string(self.ui)
-        #         print 'ui_inactive (complement a=100): ', self.color_as_string(self.ui_inactive)
-        #         print 'ui_secondary (shifted complement): ', self.color_as_string(self.ui_secondary)
-        #         print 'selected: (analog1)', self.color_as_string(self.selected)
-        #         print 'hover: ', self.color_as_string(self.hover)
-        #         print 'active: ', self.color_as_string(self.active)
-        #         print 'ui_hover: ', self.color_as_string(self.ui_hover)
-        #         print 'ui_active: ', self.color_as_string(self.ui_active)
-        #         print 'console: ', self.color_as_string(self.console)
-
-
-        #     ### Gradient ###
-        #     self.gradient = QtGui.QRadialGradient(0, 0, 300)
-        #     self.gradient.setSpread(QtGui.QGradient.PadSpread)
-        #     self.gradient.setColorAt(1, self.paper)
-        #     self.gradient.setColorAt(0, self.paper.lighter())
-
-        #     ### Pens ###
-        #     self.update_pens(prefs)
-
-        #     ### Set of marker colors available for features ###
-        #     if s < 0.5:
-        #         ps = s + 0.4
-        #     else:
-        #         ps = s
-        #     if v < 0.5:
-        #         pv = v + 0.4
-        #     else:
-        #         pv = v
-        #     self.feature_palette = [c().fromHsvF(hh / 10.0, ps, pv) for hh in range(0, 10)]
-
-        # rose: H 0.00 S 0.29 L 0.35
-        # darker rose: H: 0.97849560877 S: 0.518232476278 L: 0.476821036259
-        # (windowText, button, light, dark, mid, text, bright_text, base, window)
-
-        #self.palette = QtGui.QPalette(QtGui.QBrush(self.text), QtGui.QBrush(self.ui), QtGui.QBrush(self.ui_active), QtGui.QBrush(self.ui_inactive), QtGui.QBrush(self.ui), QtGui.QBrush(self.console), QtGui.QBrush(self.console.lighter()), QtGui.QBrush(self.paper), QtGui.QBrush(self.paper))
-        # p = {'windowText': QtGui.QBrush(self.text), 'button': QtGui.QBrush(self.paper),
-        #      'light': QtGui.QBrush(self.ui_active), 'dark': QtGui.QBrush(self.ui_inactive),
-        #      'mid': QtGui.QBrush(self.ui), 'text': QtGui.QBrush(self.console),
-        #      'bright_text': QtGui.QBrush(self.console.lighter()), 'base': QtGui.QBrush(self.paper),
-        #      'window': QtGui.QBrush(self.paper)}
-
-        # self.palette = QtGui.QPalette(p['windowText'], p['button'], p['light'], p['dark'], p['mid'], p['text'],
-        #                               p['bright_text'], p['base'], p['window'])
-
-        # return (h, s, v)
-
-
-
-
-        # def update_pens(self, prefs):
-        #     print 'updating pens, base width: ', prefs.draw_width
-        #     self.drawing_pen = QtGui.QPen(self.drawing, prefs.draw_width)
-        #     self.drawing_pen2 = QtGui.QPen(self.drawing, prefs.draw_width)
-        #     self.drawing_pen.setCapStyle(QtCore.Qt.RoundCap)
-        #     self.drawing_pen.setJoinStyle(QtCore.Qt.RoundJoin)
-        #     self.thin = prefs.draw_width / 2.0
-        #     self.normal = prefs.draw_width
-
-        #     self.writing_pen = QtGui.QPen(self.text, 0)
-        #     self.selection_pen = QtGui.QPen(self.ui, prefs.selection_width)
-        #     self.thin_pen = QtGui.QPen(self.drawing, prefs.draw_width / 2.0)
-        #     self.thin_pen2 = QtGui.QPen(self.drawing2, prefs.draw_width / 2.0)
-
-        #     self.white_pen = QtGui.QPen(c(255, 255, 255), prefs.draw_width)
-        #     self.thick_drawing_pen = QtGui.QPen(self.drawing, prefs.draw_width * prefs.thickness_multiplier)
-
-        #     for pen in [self.drawing_pen, self.drawing_pen2, self.selection_pen, self.thin_pen, self.thin_pen2,
-        #                 self.white_pen, self.thick_drawing_pen]:
-        #         pen.setCapStyle(QtCore.Qt.RoundCap)
-        #         pen.setJoinStyle(QtCore.Qt.RoundJoin)
-
-
 

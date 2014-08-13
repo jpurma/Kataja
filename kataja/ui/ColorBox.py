@@ -26,15 +26,21 @@ class ColorBox(QtWidgets.QPushButton):
         :param event:
         """
         painter = QtGui.QPainter(self)
-        c = getattr(ctrl.cm, self.color_id)()
-        painter.setBrush(c)
-        if self.color_id == 'paper':
-            painter.setPen(ctrl.cm.drawing())
+        c = getattr(ctrl.cm, self.color_id)
+        if c and callable(c):
+            c = c()
+            if not c:
+                print('Color method %s returns None' % self.color_id)
+            else:
+                painter.setBrush(c)
+                if self.color_id == 'background1':
+                    painter.setPen(ctrl.cm.drawing())
+                else:
+                    painter.setPen(c)
+                painter.drawRect(QtCore.QRect(0, 0, 40, 20))
+                painter.drawText(48, 12, self.color_name)
         else:
-            painter.setPen(c)
-        painter.drawRect(QtCore.QRect(0, 0, 40, 20))
-        painter.drawText(48, 12, self.color_name)
-
+            print("Color method %s is missing" % self.color_id)
 
     def sizeHint(self):
         return QtCore.QSize(160, 22)

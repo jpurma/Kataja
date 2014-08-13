@@ -472,6 +472,7 @@ class Edge(QtWidgets.QGraphicsItem):
         self._hovering = False
         self.touch_areas = {}
         self.setZValue(10)
+        self.status_tip = ""
         if start and end:
             self.connect_end_points(start, end)
 
@@ -520,10 +521,10 @@ class Edge(QtWidgets.QGraphicsItem):
         :param touch_area:
         :return: :raise:
         """
-        if touch_area.place in self.touch_areas:
+        if touch_area.type in self.touch_areas:
             print('Touch area already exists. Someone is confused.')
             raise Exception("Touch area exists already")
-        self.touch_areas[touch_area.place] = touch_area
+        self.touch_areas[touch_area.type] = touch_area
         return touch_area
 
     def remove_touch_area(self, touch_area):
@@ -532,7 +533,7 @@ class Edge(QtWidgets.QGraphicsItem):
         edge and TouchArea.
         :param touch_area: TouchArea
         """
-        del self.touch_areas[touch_area.place]
+        del self.touch_areas[touch_area.type]
 
     # ### Color ############################################################
 
@@ -760,6 +761,11 @@ class Edge(QtWidgets.QGraphicsItem):
         # sx, sy, sz = self.start_point
         # ex, ey, ez = self.end_point
         # self.center_point = sx + ((ex - sx) / 2), sy + ((ey - sy) / 2)
+        self.update_status_tip()
+
+    def update_status_tip(self):
+        if self.edge_type == g.CONSTITUENT_EDGE:
+            self.status_tip = 'Constituent relation: %s is part of %s' % (self.end, self.start)        
 
     def __repr__(self):
         if self.start and self.end:
@@ -835,12 +841,14 @@ class Edge(QtWidgets.QGraphicsItem):
             self.effect.setEnabled(True)
             self.prepareGeometryChange()
             self.update()
+            ctrl.set_status(self.status_tip)
         elif (not value) and self._hovering:
             self.effect.setEnabled(False)
             self._hovering = False
             self.prepareGeometryChange()
             self.setZValue(self.__class__.z_value)
             self.update()
+            ctrl.remove_status(self.status_tip)
 
     def hoverEnterEvent(self, event):
         """

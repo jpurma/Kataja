@@ -563,7 +563,7 @@ class Forest:
 
     #@time_me
     def create_node_from_constituent(self, C, pos=None, result_of_merge=False, result_of_select=False,
-                                     replacing_merge=0, replacing_select=0, silent=False):
+                                     replacing_merge=0, replacing_select=0, silent=False, inherits_from = None):
         """ All of the node creation should go through this!
         :param C:
         :param pos:
@@ -572,6 +572,7 @@ class Forest:
         :param replacing_merge:
         :param replacing_select:
         :param silent:
+        :param inherits_from:
         """
         node = self.get_node(C)
         if not node:
@@ -582,6 +583,13 @@ class Forest:
             node.set_original_position(pos)
         self.add_to_scene(node)
         node.update_visibility()
+        if inherits_from:
+            alias = inherits_from.get_alias()
+            if alias:
+                if (not alias.endswith("'")) and True: # add here prefs for how to label merged nodes
+                    alias+="'"
+                node.set_alias(alias)
+
         if result_of_merge:
             self.add_merge_counter(node)
         elif replacing_merge:
@@ -1208,6 +1216,8 @@ class Forest:
         if parent.right():
             if not parent.right_bracket:
                 parent.right_bracket = self.create_bracket(host=parent, left=False)
+        parent.update_label()
+        child.update_label()
         return new_edge
 
     def _reflect_disconnection_in_syntax(self, edge):
@@ -1459,7 +1469,15 @@ class Forest:
         :param pos:
         """
         merger_const = ctrl.UG.Merge(left.syntactic_object, right.syntactic_object)
-        merger_node = self.create_node_from_constituent(merger_const, pos=pos, result_of_merge=True)
+        selected_syn = ctrl.UG.merge_selects(left.syntactic_object, right.syntactic_object)
+        if selected_syn == left.syntactic_object:
+            selected = left
+        elif selected_syn == right.syntactic_object:
+            selected = right
+        else:
+            print("*** Problem, selection is not properly implemented in UG:", ctrl.UG)
+            selected = None
+        merger_node = self.create_node_from_constituent(merger_const, pos=pos, result_of_merge=True, inherits_from=selected)
         self._connect_node(parent=merger_node, child=left, direction='left')
         self._connect_node(parent=merger_node, child=right, direction='right')
         self.update_roots()

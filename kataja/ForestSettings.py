@@ -235,7 +235,7 @@ class ForestSettings:
         """
         if value is None:
             if self._color_mode is None:
-                return self.prefs.default_color_mode
+                return self.prefs.color_mode
             else:
                 return self._color_mode
         else:

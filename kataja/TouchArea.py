@@ -32,6 +32,7 @@ import PyQt5.QtWidgets as QtWidgets
 
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.utils import to_tuple
+import kataja.globals as g 
 
 
 end_spot_size = 7
@@ -41,16 +42,16 @@ class TouchArea(QtWidgets.QGraphicsItem):
     """ Mouse sensitive areas connected to either nodes or edges between them. """
 
     @staticmethod
-    def create_key(host, place):
+    def create_key(host, type):
         """
 
         :param host:
-        :param place:
+        :param type:
         :return:
         """
-        return 'touch_area_%s_%s' % (place, host.save_key)
+        return 'touch_area_%s_%s' % (type, host.save_key)
 
-    def __init__(self, host, place, drag_mode=False):
+    def __init__(self, host, type, drag_mode=False):
         """
 
         :param ConstituentNode host:
@@ -64,9 +65,9 @@ class TouchArea(QtWidgets.QGraphicsItem):
         self.start_point = 0, 0
         self.end_point = 0, 0
         self.setZValue(20)
-        self.place = place
-        self.left = 'left' in place
-        self._shape_is_arc = 'top' in place
+        self.type = type
+        self.left = type == g.LEFT_ADD_ROOT or type == g.LEFT_ADD_SIBLING
+        self._shape_is_arc = type == g.LEFT_ADD_ROOT or type == g.RIGHT_ADD_ROOT
         self.selectable = False
         self.focusable = True
         self.draggable = False
@@ -76,9 +77,19 @@ class TouchArea(QtWidgets.QGraphicsItem):
         self._drag_hint = False
         self.drag_mode = drag_mode
         self.update_end_points()
-        self.key = TouchArea.create_key(host, place)
+        self.key = TouchArea.create_key(host, type)
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.setAcceptHoverEvents(True)
+        if self.type == g.LEFT_ADD_ROOT:
+            self.status_tip = "Add new constituent to left of %s" % self.host
+        elif self.type == g.RIGHT_ADD_ROOT:
+            self.status_tip = "Add new constituent to right of %s" % self.host
+        elif self.type == g.LEFT_ADD_SIBLING:
+            self.status_tip = "Add new sibling to left of %s" % self.host.end
+        elif self.type == g.RIGHT_ADD_SIBLING:
+            self.status_tip = "Add new sibling to right of %s" % self.host.end
+        else:
+            self.status_tip = "Unknown touch area???"
 
 
     def is_visible(self):
@@ -276,8 +287,11 @@ class TouchArea(QtWidgets.QGraphicsItem):
         """
         if value and not self._hovering:
             self._hovering = True
+            ctrl.set_status(self.status_tip)
+
         elif (not value) and self._hovering:
             self._hovering = False
+            ctrl.remove_status(self.status_tip)
 
     def hoverEnterEvent(self, event):
         """

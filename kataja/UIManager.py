@@ -37,25 +37,28 @@ from kataja.ui.TargetReticle import TargetReticle
 from kataja.TouchArea import TouchArea
 import kataja.globals as g
 from kataja.utils import to_tuple
-from ui.ColorPanel import ColorPanel
+from ui.ColorThemePanel import ColorPanel
+from ui.ColorWheelPanel import ColorWheelPanel
 from ui.LinesPanel import LinesPanel
 from ui.LogPanel import LogPanel
 from ui.NavigationPanel import NavigationPanel
 from ui.TestPanel import TestPanel
 from ui.VisualizationPanel import VisualizationPanel
 
-
 NOTHING = 0
 SELECTING_AREA = 1
 DRAGGING = 2
 POINTING = 3
 
-panels = [{'class': LogPanel, 'name': 'Log', 'position': 'bottom'},
-          {'class': TestPanel, 'name': 'Test', 'position': 'right'},
-          {'class': NavigationPanel, 'name': 'Trees', 'position': 'right'},
-          {'class': VisualizationPanel, 'name': 'Visualization', 'position': 'right'},
-          {'class': ColorPanel, 'name': 'Colors', 'position': 'right'},
-          {'class': LinesPanel, 'name': 'Lines', 'position': 'right'}]
+panels = [{'id': g.LOG, 'name': 'Log', 'position': 'bottom'}, {'id': g.TEST, 'name': 'Test', 'position': 'right'},
+          {'id': g.NAVIGATION, 'name': 'Trees', 'position': 'right'},
+          {'id': g.VISUALIZATION, 'name': 'Visualization', 'position': 'right'},
+          {'id': g.COLOR_THEME, 'name': 'Color theme', 'position': 'right'},
+          {'id': g.COLOR_WHEEL, 'name': 'Color theme wheel', 'position': 'right', 'folded': True},
+          {'id': g.LINES, 'name': 'Lines', 'position': 'right'}]
+
+panel_classes = {g.LOG: LogPanel, g.TEST: TestPanel, g.NAVIGATION: NavigationPanel, g.VISUALIZATION: VisualizationPanel,
+                 g.COLOR_THEME: ColorPanel, g.COLOR_WHEEL: ColorWheelPanel, g.LINES: LinesPanel}
 
 
 class UIManager:
@@ -85,12 +88,13 @@ class UIManager:
         self.touch_areas = set()
         self.symbols = set()
         for panel in panels:
-            constructor = panel['class']
+            constructor = panel_classes[panel['id']]
             name = panel['name']
             position = panel.get('position', None)
-            dock_id = panel.get('id', None)
-            new_panel = constructor(name, default_position=position, parent=self.main, ui_buttons=self.ui_buttons)
-            self.ui_panels[new_panel.name] = new_panel
+            folded = panel.get('folded', False)
+            print("Creating panel type ", constructor)
+            new_panel = constructor(name, default_position=position, parent=self.main, ui_buttons=self.ui_buttons, folded=folded)
+            self.ui_panels[panel['id']] = new_panel
             new_panel.show()
 
         # self.addPanels()
@@ -153,8 +157,8 @@ class UIManager:
 
         """
         self._panel_positions = {}
-        for name, panel in self.ui_panels.items():
-            self._panel_positions[name] = panel.geometry()
+        for panel_id, panel in self.ui_panels.items():
+            self._panel_positions[panel_id] = panel.geometry()
             # self.log_panel.setGeometry(0, self.size().height() - self.log_panel.height(),
             # self.log_panel.width(), self.log_panel.height())
 
@@ -224,7 +228,8 @@ class UIManager:
             self._message.update_color()
         if self.hud:
             self.hud.update_color()
-        self.ui_panels['Colors'].update_colors()
+        self.ui_panels[g.COLOR_THEME].update_colors()
+        self.ui_panels[g.COLOR_WHEEL].update_colors()
 
     def update_selections(self):
         """
@@ -304,7 +309,7 @@ class UIManager:
     # ### Touch areas #####################################################################
 
 
-    def create_touch_area(self, host=None, place='', for_dragging=False):
+    def create_touch_area(self, host=None, type='', for_dragging=False):
         """
 
         :param host:
@@ -312,8 +317,8 @@ class UIManager:
         :param for_dragging:
         :return:
         """
-        assert (not host.get_touch_area(place))
-        ta = TouchArea(host, place, for_dragging)
+        assert (not host.get_touch_area(type))
+        ta = TouchArea(host, type, for_dragging)
         host.add_touch_area(ta)
         self.touch_areas.add(ta)
         self.add_ui(ta)
@@ -346,14 +351,14 @@ class UIManager:
         for item in ctrl.get_all_selected():
             if isinstance(item, ConstituentNode):
                 if item.is_root_node():
-                    self.create_touch_area(item, 'top_left')
-                    self.create_touch_area(item, 'top_right')
+                    self.create_touch_area(item, g.LEFT_ADD_ROOT)
+                    self.create_touch_area(item, g.RIGHT_ADD_ROOT)
                 for edge in item.get_edges_up():
-                    self.create_touch_area(edge, 'left')
-                    self.create_touch_area(edge, 'right')
+                    self.create_touch_area(edge, g.LEFT_ADD_SIBLING)
+                    self.create_touch_area(edge, g.RIGHT_ADD_SIBLING)
             elif isinstance(item, Edge) and item.edge_type == g.CONSTITUENT_EDGE:
-                self.create_touch_area(item, 'left')
-                self.create_touch_area(item, 'right')
+                self.create_touch_area(item, g.LEFT_ADD_SIBLING)
+                self.create_touch_area(item, g.RIGHT_ADD_SIBLING)
 
 
     # ### Flashing symbols ################################################################
@@ -502,8 +507,8 @@ class UIManager:
         """
 
         if not self._message:
-            if 'Log' in self.ui_panels:
-                message_area = self.ui_panels['Log'].widget()
+            if g.LOG in self.ui_panels:
+                message_area = self.ui_panels[g.LOG].widget()
                 print('Creating messages to: ', message_area)
                 self._message = MessageItem(msg, message_area, self)
                 self.add_ui(self._message)
@@ -573,7 +578,7 @@ class UIManager:
             self._target_reticle.hide()
 
 
-    #### Merge hint ####################################################################
+    # ### Merge hint ####################################################################
 
     def begin_merge_hint(self, start_node, end_item):
         """

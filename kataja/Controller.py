@@ -55,7 +55,6 @@ class Controller:
         # self.set_prefs('default')
         # : :type self.main: KatajaMain
         self.main = None
-        self.ui = None
         self.Constituent = BareConstituent
         self.Feature = Feature
         self.UG = UG(constituent=self.Constituent, feature=self.Feature)
@@ -90,6 +89,14 @@ class Controller:
         """
         self.main = main
 
+
+    @property
+    def ui(self):
+        """
+        :return: UIManager
+        """
+        return self.main.ui_manager
+
     @property
     def cm(self):
         """ Shortcut to color manager, which replaces palettes, colors etc. older solutions.
@@ -115,6 +122,20 @@ class Controller:
         :param msg:
         """
         self.main.add_message(msg)
+
+    def set_status(self, msg):
+        """ Show message in status bar. Send empty message to clear status bar. """
+        if msg:
+            self.main.status_bar.showMessage(msg)
+        else:
+            self.main.status_bar.clearMessage()
+
+    def remove_status(self, msg):
+        """ Clears status message, but only if it is not been replaced by another message 
+            (E.g. when contained object has put its own message, and hoverLeaveEvent has not been called for containing object. )
+        """ 
+        if msg == self.main.status_bar.currentMessage():
+            self.main.status_bar.clearMessage()
 
     def announce(self, signal, *args):
         """ Announcing is used to broadcast update requests to objects in graph scene

@@ -8,7 +8,7 @@ __author__ = 'purma'
 class LogPanel(UIPanel):
     """ Dump window """
 
-    def __init__(self, name, default_position='bottom', parent=None, ui_buttons=None):
+    def __init__(self, name, default_position='bottom', parent=None, ui_buttons=None, folded=False):
         """
         All of the panel constructors follow the same format so that the construction can be automated.
         :param name: Title of the panel and the key for accessing it
@@ -16,9 +16,17 @@ class LogPanel(UIPanel):
         :param parent: self.main
         :param ui_buttons: pass a dictionary where buttons from this panel will be added
         """
-        UIPanel.__init__(self, name, default_position, parent)
-        self.setWidget(QtWidgets.QTextBrowser())
-        self.widget().setFont(qt_prefs.menu_font)  # @UndefinedVariable
-        self.widget().setAutoFillBackground(True)
-        self.show()
+        UIPanel.__init__(self, name, default_position, parent, folded)
+        inner = QtWidgets.QTextBrowser()
+        inner.setMinimumHeight(48)
+        inner.preferred_size = QtCore.QSize(940, 64)
+        inner.setFont(qt_prefs.menu_font)  # @UndefinedVariable
+        inner.setAutoFillBackground(True)
+        inner.sizeHint = self.sizeHint
+        self.preferred_size = inner.preferred_size
+        self.setWidget(inner)
         print('*** created log panel ***')
+
+
+    def sizeHint(self):
+        return self.preferred_size

@@ -80,12 +80,15 @@ class UG:
         :param right: Constituent
         :return: Constituent
         """
-        new_id = left.label
+        selected = self.merge_selects(left, right)
+        new_id = selected.label
+        print("Merging with label from left constituent:", new_id)
         # remove index (_i, _j ...) from Merged id so that indexing won't get broken
         res = re.search(r'[^\\]_\{(.*)\}', new_id) or re.search(r'[^\\]_(.)', new_id)
         if res:
             new_id = new_id[:new_id.rindex('_')]
         new = self.Constituent(new_id, left, right)
+
         if not (left and right):
             return new
 
@@ -98,6 +101,16 @@ class UG:
         # for key in matches+selects:
         # del new.features[key]
         return new
+
+    def merge_selects(self, left, right):
+        """ Implements selection in merge. By default left element (new element to be merged)
+         selects.
+        :param left:
+        :param right:
+        :return: constituent that should be selected
+        """
+        return left
+
 
     def CCommands(self, A, B, context):
         """ C-Command edge needs the root constituent of the tree as a context, as

@@ -256,7 +256,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
     def move_selection(self, direction):
 
         """
-
+        Compute which is the closest or most appropriate object in given direction. Used for keyboard movement.
         :param direction:
         """
         selectables = [(item, to_tuple(item.sceneBoundingRect().center())) for item in self.items() if
@@ -332,13 +332,12 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         best = current.end
                         found = True
                 elif isinstance(current, TouchArea):
-                    if not current.left:
-                        if current.top and current.host.top_left_touch_area:
-                            best = current.host.top_left_touch_area
-                            found = True
-                        elif current.host.left_touch_area:
-                            best = current.host.left_touch_area
-                            found = True
+                    if current.type == g.RIGHT_ADD_ROOT and current.host.top_left_touch_area:
+                        best = current.host.top_left_touch_area
+                        found = True
+                    elif current.type == g.RIGHT_ADD_SIBLING and current.host.left_touch_area:
+                        best = current.host.left_touch_area
+                        found = True
                 if not found:
                     for item, pos in selectables:
                         if item == current:
@@ -369,13 +368,12 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         best = current.start
                         found = True
                 elif isinstance(current, TouchArea):
-                    if current.left:
-                        if current.top and current.host.top_right_touch_area:
-                            best = current.host.top_right_touch_area
-                            found = True
-                        elif current.host.right_touch_area:
-                            best = current.host.right_touch_area
-                            found = True
+                    if current.type == g.LEFT_ADD_ROOT and current.host.top_right_touch_area:
+                        best = current.host.top_right_touch_area
+                        found = True
+                    elif current.type == g.LEFT_ADD_SIBLING and current.host.right_touch_area:
+                        best = current.host.right_touch_area
+                        found = True
                 if not found:
                     for item, pos in selectables:
                         if item == current:

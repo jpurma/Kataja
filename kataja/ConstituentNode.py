@@ -123,6 +123,24 @@ class ConstituentNode(Node):
         self._revived = False
         # ## Crude qt-menus for prototyping
         # self.qt_menu = None
+        self.update_status_tip()
+
+
+    def update_status_tip(self):
+        if self.alias:
+            alias = '"%s" ' % self.alias
+        else:
+            alias = ''
+        if self.is_trace:
+            name = "Trace"
+        if self.is_leaf_node():
+            name = "Leaf constituent"
+        elif self.is_root_node():
+            name = "Root constituent"
+        else:
+            name = "Inner constituent"
+        self.status_tip = "%s %s%s" % (name, alias, self.syntactic_object.label)
+
 
     def boundingRect(self, update=False):
         """ In addition to Node boundingRect, we need to take account the scope boxes
@@ -434,6 +452,10 @@ class ConstituentNode(Node):
             # return '<center>%s</center>' % s
         else:
             return ''
+
+    def get_plain_text_label(self):
+        """ Label that can be displayed in e.g. tooltip """
+        return str(self.syntactic_object.label)
 
     def get_editable_label(self):
         """ """

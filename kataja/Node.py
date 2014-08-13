@@ -93,6 +93,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self._bottom_left_magnet = None
         self.force = 72
         self.touch_areas = {}
+        self.status_tip = ""
+
 
         self.width = 0
         self.height = 0
@@ -354,7 +356,15 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             self._label_complex.set_set_method(self.label_edited)
         a = self._label_complex.update_label()
         self.boundingRect(update=True)
+        self.update_status_tip()
         return a
+
+    def update_status_tip(self):
+        """ implement properly in subclasses, let tooltip tell about the node
+        :return: None
+        """
+        self.status_tip = str(self)
+
 
     def get_text_for_label(self):
         """ This should be overridden if there are alternative displays for label """
@@ -419,6 +429,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self._bottom_right_magnet = (w2 / 2, h2 - 2)
         # print 'updating bounding rect ', self
         return self.inner_rect
+
 
     # ## Magnets ######################################################################
 
@@ -533,10 +544,10 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :param touch_area:
         :return: :raise:
         """
-        if touch_area.place in self.touch_areas:
+        if touch_area.type in self.touch_areas:
             print('Touch area exists already. Someone is confused')
             raise Exception("Touch area exists already")
-        self.touch_areas[touch_area.place] = touch_area
+        self.touch_areas[touch_area.type] = touch_area
         return touch_area
 
     def remove_touch_area(self, touch_area):
@@ -545,7 +556,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         node and TouchArea.
         :param touch_area: TouchArea
         """
-        del self.touch_areas[touch_area.place]
+        del self.touch_areas[touch_area.type]
 
     # ### MOUSE - kataja ########################################################
 
@@ -653,12 +664,14 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             self.prepareGeometryChange()
             self.update()
             self.setZValue(150)
+            ctrl.set_status(self.status_tip)
         elif (not value) and self._hovering:
             self.effect.setEnabled(False)
             self._hovering = False
             self.prepareGeometryChange()
             self.setZValue(self.__class__.z_value)
             self.update()
+            ctrl.remove_status(self.status_tip)
 
     def hoverEnterEvent(self, event):
         """ Hovering has some visual effects, usually handled in paint-method

@@ -8,7 +8,7 @@ __author__ = 'purma'
 class VisualizationPanel(UIPanel):
     """ Switch visualizations and their adjust their settings """
 
-    def __init__(self, name, default_position='right', parent=None, ui_buttons=None):
+    def __init__(self, name, default_position='right', parent=None, ui_buttons=None, folded=False):
         """
         All of the panel constructors follow the same format so that the construction can be automated.
         :param name: Title of the panel and the key for accessing it
@@ -16,7 +16,7 @@ class VisualizationPanel(UIPanel):
         :param parent: self.main
         :param ui_buttons: pass a dictionary where buttons from this panel will be added
         """
-        UIPanel.__init__(self, name, default_position, parent)
+        UIPanel.__init__(self, name, default_position, parent, folded)
         inner = QtWidgets.QWidget()
         layout = QtWidgets.QGridLayout()
 

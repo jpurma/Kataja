@@ -1,5 +1,7 @@
 import math
 from PyQt5 import QtWidgets, QtGui
+from globals import COLOR_THEME
+
 from kataja.singletons import prefs, ctrl
 from kataja.ui.UIPanel import UIPanel, FLAG, CIRCLE
 from kataja.utils import to_tuple
@@ -7,12 +9,12 @@ from kataja.utils import to_tuple
 __author__ = 'purma'
 
 
-class ColorPanel(UIPanel):
+class ColorWheelPanel(UIPanel):
     """
 
     """
 
-    def __init__(self, name, default_position='right', parent=None, ui_buttons=None):
+    def __init__(self, name, default_position='right', parent=None, ui_buttons=None, folded=False):
         """
         All of the panel constructors follow the same format so that the construction can be automated.
         :param name: Title of the panel and the key for accessing it
@@ -20,23 +22,14 @@ class ColorPanel(UIPanel):
         :param parent: self.main
         :param ui_buttons: pass a dictionary where buttons from this panel will be added
         """
-        UIPanel.__init__(self, name, default_position, parent)
-        inner = QtWidgets.QToolBox()
+        UIPanel.__init__(self, name, default_position, parent, folded)
         # ### Color wheel
-        color_wheel_inner = QtWidgets.QWidget(self)
-        inner.addItem(color_wheel_inner, "Main color")
-        color_wheel_layout = QtWidgets.QVBoxLayout()
+        layout = QtWidgets.QVBoxLayout()
+        widget = QtWidgets.QWidget(self)
         # color_wheel_layout.setContentsMargins(4, 4, 4, 4)
 
         label_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         button_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.MinimumExpanding)
-        selector = QtWidgets.QComboBox(self)
-        ui_buttons['color_mode'] = selector
-
-        selector.addItems([c['name'] for c in prefs.color_modes.values()])
-        selector.activated.connect(self.change_color_mode)
-        self.mode_select = selector
-        color_wheel_layout.addWidget(selector)
         hlayout = QtWidgets.QHBoxLayout()
         color_name = QtWidgets.QLabel(ctrl.cm.get_color_name(ctrl.cm.hsv), self)
         color_name.setFixedWidth(120)
@@ -48,11 +41,11 @@ class ColorPanel(UIPanel):
         add_color_button.setSizePolicy(label_policy)
         add_color_button.clicked.connect(self.remember_color)
         hlayout.addWidget(add_color_button)
-        color_wheel_layout.addLayout(hlayout)
+        layout.addLayout(hlayout)
 
-        color_wheel = ColorWheelInner(color_wheel_inner)
+        color_wheel = ColorWheelInner(widget)
         color_wheel.setFixedSize(160, 148)
-        color_wheel_layout.addWidget(color_wheel)
+        layout.addWidget(color_wheel)
         h_spinner = QtWidgets.QSpinBox(self)
         h_spinner.setRange(0, 255)
         h_spinner.valueChanged.connect(self.h_changed)
@@ -85,13 +78,13 @@ class ColorPanel(UIPanel):
         hlayout.addWidget(s_spinner)
         hlayout.addWidget(v_label)
         hlayout.addWidget(v_spinner)
-        color_wheel_layout.addLayout(hlayout)
-        color_wheel_inner.setLayout(color_wheel_layout)
+        layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
+        layout.addLayout(hlayout)
+        widget.setLayout(layout)
         # Color mapping
 
-        color_mapping_inner = QtWidgets.QWidget(self)
-        inner.addItem(color_mapping_inner, "Mappings")
-        self.setWidget(inner)
+
+        self.setWidget(widget)
         self.finish_init()
 
 
@@ -134,27 +127,13 @@ class ColorPanel(UIPanel):
         ctrl.main.adjust_colors(hsv)  # @UndefinedVariable
         self.update()
 
-    def change_color_mode(self, mode):
-        """
-
-        :param mode:
-        """
-        mode_key = list(prefs.color_modes.keys())[mode]
-        print('changing color mode to:', mode, mode_key)
-        ctrl.main.change_color_mode(mode_key)
-
     def remember_color(self):
         """
 
 
         """
         cm = ctrl.cm
-        color_key = str(cm.hsv)
-        if color_key not in prefs.color_modes:
-            prefs.add_color_mode(color_key, cm.hsv, cm)
-            color_item = prefs.color_modes[color_key]
-            self.mode_select.addItem(color_item['name'])
-            self.mode_select.setCurrentIndex(self.mode_select.count() - 1)
+        color_key = ctrl.ui.ui_panels[COLOR_THEME].create_theme_from_color(cm.hsv)
         ctrl.main.change_color_mode(color_key)
 
     def update_colors(self):

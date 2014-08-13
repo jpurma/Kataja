@@ -130,6 +130,27 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.setMinimumSize(w, h)
         self.setWindowTitle(self.tr("Kataja"))
         self.setDockOptions(QtWidgets.QMainWindow.AnimatedDocks)
+        self.setCorner(QtCore.Qt.TopLeftCorner, QtCore.Qt.LeftDockWidgetArea)
+        self.setCorner(QtCore.Qt.TopRightCorner, QtCore.Qt.RightDockWidgetArea)
+        self.setCorner(QtCore.Qt.BottomLeftCorner, QtCore.Qt.LeftDockWidgetArea)
+        self.setCorner(QtCore.Qt.BottomRightCorner, QtCore.Qt.RightDockWidgetArea)
+        top_dock = QtWidgets.QDockWidget()
+        self.addDockWidget(QtCore.Qt.TopDockWidgetArea, top_dock, QtCore.Qt.Horizontal)
+        toolbar = QtWidgets.QToolBar()
+
+        self.status_bar = QtWidgets.QStatusBar()
+        self.setStatusBar(self.status_bar)
+
+        top_dock.setWidget(self.status_bar)
+        #toolbar.setMovable(False)
+        #toolbar.setFloatable(False)
+        #toolbar.setOrientation(QtCore.Qt.Horizontal)
+        #print(self.statusBar())
+        top_dock.setTitleBarWidget(QtWidgets.QWidget())
+        self.setStatusBar(self.status_bar)
+        #toolbar.setFixedSize(480, 40)
+        #self.addToolBar(toolbar)
+        #self.statusBar().
         self.setGeometry(x, y, w, h)
         self.add_message('Welcome to Kataja! (h) for help')
         self.color_wheel = None

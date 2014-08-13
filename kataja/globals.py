@@ -29,6 +29,12 @@ ATTRIBUTE_NODE = 3
 GLOSS_NODE = 4
 PROPERTY_NODE = 5
 
+# Touch area types
+LEFT_ADD_ROOT = 0
+RIGHT_ADD_ROOT = 1
+LEFT_ADD_SIBLING = 2
+RIGHT_ADD_SIBLING = 3
+
 # ## Our custom signals
 
 EDGE_SHAPES_CHANGED = 101
@@ -37,3 +43,12 @@ EDGE_SHAPES_CHANGED = 101
 
 #EDGE_SHAPES_CHANGED = QtCore.QEvent.registerEventType()
 #print 'EDGE_SHAPES_CHANGED: ', EDGE_SHAPES_CHANGED
+
+# UI_PANELS
+LOG = 'log'
+TEST = 'test'
+NAVIGATION = 'navigation'
+VISUALIZATION = 'visualization'
+COLOR_THEME = 'color_theme'
+COLOR_WHEEL = 'color_wheel'
+LINES = 'lines'

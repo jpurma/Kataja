@@ -22,7 +22,7 @@
 #
 # ############################################################################
 
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtWidgets, QtGui
 
 # class TwoColorIcon(QtGui.QIcon):
 #     """ Icons that change their color according to widget where they are """
@@ -54,6 +54,8 @@ class PanelTitle(QtWidgets.QWidget):
         #self.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum))
         self.panel = panel
         self.preferred_size = QtCore.QSize(220, 22)
+        self.setBackgroundRole(QtGui.QPalette.Base)
+        self.setAutoFillBackground(True)
         layout = QtWidgets.QHBoxLayout()
         layout.setContentsMargins(0, 2, 0, 2)
         layout.setSpacing(0)
@@ -62,12 +64,21 @@ class PanelTitle(QtWidgets.QWidget):
         close_button.setMaximumWidth(16)
         close_action = panel.toggleViewAction()
         close_button.clicked.connect(close_action.trigger)
+        close_button.setStatusTip("Close this panel")
         layout.addWidget(close_button)
         self.setMinimumSize(self.preferred_size)
         self.folded = False
         self.fold_button = QtWidgets.QPushButton("-")
         self.fold_button.setMaximumWidth(16)
         self.fold_button.clicked.connect(self.toggle_fold)
+        self.fold_button.setStatusTip("Minimize this panel")
+        self.pin_button = QtWidgets.QPushButton("p")
+        self.pin_button.setMaximumWidth(16)
+        self.pin_button.clicked.connect(self.pin_to_dock)
+        self.pin_button.setStatusTip("Pin this panel to main window")
+        layout.addWidget(self.pin_button)
+
+        self.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.fold_button)
         layout.addSpacing(8)
         layout.addWidget(QtWidgets.QLabel(name))
@@ -78,12 +89,17 @@ class PanelTitle(QtWidgets.QWidget):
         self.panel.set_folded(self.folded)
         if self.folded:
             self.fold_button.setText('+')
+            self.fold_button.setStatusTip("Expand this panel")
+
         else:
             self.fold_button.setText('-')
+            self.fold_button.setStatusTip("Minimize this panel")
 
     def sizeHint(self):
         return self.preferred_size
 
+    def pin_to_dock(self):
+        self.panel.pin_to_dock()
 
 
 class UIPanel(QtWidgets.QDockWidget):
@@ -98,10 +114,11 @@ class UIPanel(QtWidgets.QDockWidget):
         :param parent:
         """
         QtWidgets.QDockWidget.__init__(self, name, parent=parent)
-        self.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed))
+        #self.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed))
         self.folded = folded
         self.name = name
         self.ui_manager = ui_manager
+        self.default_position = default_position
         if default_position == 'bottom':
             parent.addDockWidget(QtCore.Qt.BottomDockWidgetArea, self)
         elif default_position == 'top':
@@ -115,8 +132,10 @@ class UIPanel(QtWidgets.QDockWidget):
             self.setFloating(True)
         self.dockLocationChanged.connect(self.report_dock_location)
         self.topLevelChanged.connect(self.report_top_level)
+        self.setContentsMargins(0, 0, 0, 0)
         title_widget = PanelTitle(name, self)
         self.setTitleBarWidget(title_widget)
+        self.report_top_level(self.isFloating())
 
 
     def finish_init(self):
@@ -130,12 +149,19 @@ class UIPanel(QtWidgets.QDockWidget):
 
     def set_folded(self, folded):
         self.folded = folded
+        print('Titlebar size:', self.titleBarWidget().size())
+        print('Inner widget size:', self.widget().size())
+        print('Before fold: ', self.size())
         if folded:
             self.widget().hide()
         else:
             self.widget().show()
+        self.setFixedSize(self.sizeHint())
         self.updateGeometry()
+        print('After fold: ', self.size())
 
+    def pin_to_dock(self):
+        self.setFloating(False)
 
     def report_dock_location(self, area):
         """
@@ -149,9 +175,13 @@ class UIPanel(QtWidgets.QDockWidget):
 
         :param floating:
         """
-        if floating and hasattr(self, 'preferred_size'):
-            w, h = self.preferred_size
-            self.resize(w, h)
+        if floating:
+            if hasattr(self, 'preferred_size'):
+                w, h = self.preferred_size
+                self.resize(w, h)
+            self.titleBarWidget().pin_button.show()
+        else:
+            self.titleBarWidget().pin_button.hide()
         print('UIPanel %s floating: %s' % (self, floating))
 
     def update_field(self, field_key, field, value):
@@ -163,6 +193,43 @@ class UIPanel(QtWidgets.QDockWidget):
         """
         field.setText(value)
 
+    def baseSize(self):
+        print("Asking for UIPanel baseSize")
+        return QtWidgets.QDockWidget.baseSize(self)
+
+    def minimumSize(self):
+        print("Asking for UIPanel minimumSize")
+        return QtWidgets.QDockWidget.minimumSize(self)
+
+    def minimumWidth(self):
+        print("Asking for UIPanel minimumWidth")
+        return QtWidgets.QDockWidget.minimumWidth(self)
+
+    def minimumHeight(self):
+        print("Asking for UIPanel minimumHeight")
+        return QtWidgets.QDockWidget.minimumHeight(self)
+
+    def maximumSize(self):
+        print("Asking for UIPanel maximumSize")
+        return QtWidgets.QDockWidget.maximumSize(self)
+
+    def maximumWidth(self):
+        print("Asking for UIPanel maximumWidth")
+        return QtWidgets.QDockWidget.maximumWidth(self)
+
+    def maximumHeight(self):
+        print("Asking for UIPanel maximumHeight")
+        return QtWidgets.QDockWidget.maximumHeight(self)
+
+    def minimumSizeHint(self):
+        print("Asking for UIPanel minimumSizeHint")
+        if self.folded:
+            return self.titleBarWidget().sizeHint()
+        else:
+            ws = self.widget().sizeHint()
+            ts = self.titleBarWidget().sizeHint()
+            return QtCore.QSize(max((ws.width(), ts.width())), ws.height()+ts.height())
+
     def sizeHint(self):
         print("Asking for UIPanel sizeHint")
         if self.folded:
@@ -170,7 +237,11 @@ class UIPanel(QtWidgets.QDockWidget):
         else:
             ws = self.widget().sizeHint()
             ts = self.titleBarWidget().sizeHint()
-            return QtCore.QSize(max((ws.width, ts.width)), ws.height()+ts.height())
+            return QtCore.QSize(max((ws.width(), ts.width())), ws.height()+ts.height())
+
+    def sizePolicy(self):
+        print("Asking for UIPanel sizePolicy")
+        return QtWidgets.QDockWidget.sizePolicy(self)
 
 
 NONE = 0

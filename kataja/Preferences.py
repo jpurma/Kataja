@@ -37,7 +37,10 @@ fonts = {'font': ('Palatino', 'Normal', 12), 'big_font': ('Palatino', 'Normal', 
          'sc_font': ('Lao MN', 'Normal', 9), 'feature_small': ('Lao MN', 'Normal', 7),
          'symbol_font': ('Menlo', 'Normal', 14)}
 
-color_modes = OrderedDict([('random', {'name': 'Random for each treeset', 'fixed': False, 'hsv': (0, 0, 0)}),
+color_modes = OrderedDict([
+        ('solarized_dk', {'name': 'Solarized dark', 'fixed': True, 'hsv': (0, 0, 0)}),
+        ('solarized_lt', {'name': 'Solarized light', 'fixed': True, 'hsv': (0, 0, 0)}),
+        ('random', {'name': 'Random for each treeset', 'fixed': False, 'hsv': (0, 0, 0)}),
                            ('print', {'name': 'Print-friendly', 'fixed': True, 'hsv': (0.2, 0.2, 0.2)}),
                            ('bw', {'name': 'Black and white', 'fixed': True, 'hsv': (0, 0, 0)}),
                            ('random-light', {'name': 'Random on a light background', 'fixed': False, 'hsv': (0, 0, 0)}),
@@ -75,7 +78,7 @@ class Preferences(object):
         self.draw_width = .5
         self.selection_width = 0.8
         self.thickness_multiplier = 2
-        self.color_mode = 'random'
+        self.color_mode = 'solarized_dk'
         self.color_modes = color_modes
         self.shared_palettes = {}
 
@@ -106,7 +109,7 @@ class Preferences(object):
         self.default_draw_features = True
         self.default_draw_width = 2
         self.my_palettes = {}
-        self.default_color_mode = 'random'
+        self.default_color_mode = 'solarized_lt'
         self.default_hsv = None
         self.default_bracket_style = 0
 
@@ -144,13 +147,13 @@ class Preferences(object):
         self.edges = {
             CONSTITUENT_EDGE: {'shape_name': 'shaped_relative_cubic', 'color': 'key', 'pull': .24, 'visible': True,
                                'has_outline': True, 'pen_width': 1, 'is_filled': True},
-            FEATURE_EDGE: {'shape_name': 'relative_cubic', 'color': 'analog1', 'pull': .32, 'visible': True,
+            FEATURE_EDGE: {'shape_name': 'relative_cubic', 'color': 'accent2', 'pull': .32, 'visible': True,
                            'has_outline': True, 'pen_width': 1, 'is_filled': True},
-            GLOSS_EDGE: {'shape_name': 'relative_cubic', 'color': 'analog2', 'pull': .40, 'visible': True,
+            GLOSS_EDGE: {'shape_name': 'relative_cubic', 'color': 'accent4', 'pull': .40, 'visible': True,
                          'has_outline': True, 'pen_width': 1, 'is_filled': False},
             ARROW: {'shape_name': 'arrow', 'color': 'key', 'pull': 0, 'visible': True, 'has_outline': True,
                     'pen_width': 1, 'is_filled': True},
-            PROPERTY_EDGE: {'shape_name': 'linear', 'color': 'key', 'pull': .40, 'visible': True, 'has_outline': True,
+            PROPERTY_EDGE: {'shape_name': 'linear', 'color': 'accent5', 'pull': .40, 'visible': True, 'has_outline': True,
                             'pen_width': 1, 'is_filled': False},
             ABSTRACT_EDGE: {'shape_name': 'linear', 'color': 'key', 'pull': .40, 'visible': True, 'has_outline': True,
                             'pen_width': 1, 'is_filled': False},
@@ -169,11 +172,11 @@ class Preferences(object):
         # PROPERTY_NODE = 5
         self.nodes = {ABSTRACT_NODE: {'color': 'key', 'font': 'main', 'font-size': 10},
                       CONSTITUENT_NODE: {'color': 'key', 'font': 'main', 'font-size': 10},
-                      FEATURE_NODE: {'color': 'analog1', 'font': 'cursive', 'font-size': 10
+                      FEATURE_NODE: {'color': 'accent2', 'font': 'cursive', 'font-size': 10
 
-                      }, ATTRIBUTE_NODE: {'color': 'analog2', 'font': 'small-caps', 'font-size': 10},
-                      GLOSS_NODE: {'color': 'analog2', 'font': 'cursive', 'font-size': 10},
-                      PROPERTY_NODE: {'color': 'key 0.7', 'font': 'small-caps', 'font-size': 10},
+                      }, ATTRIBUTE_NODE: {'color': 'accent3', 'font': 'small-caps', 'font-size': 10},
+                      GLOSS_NODE: {'color': 'accent4', 'font': 'cursive', 'font-size': 10},
+                      PROPERTY_NODE: {'color': 'accent5', 'font': 'small-caps', 'font-size': 10},
 
         }
         self.custom_colors = {}
