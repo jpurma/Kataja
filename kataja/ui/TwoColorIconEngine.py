@@ -26,51 +26,54 @@ from PyQt5 import QtGui, QtCore
 
 from kataja.singletons import ctrl
 
-
-class TwoColorIcon(QtGui.QIcon):
-    """ Icons that change their color according to widget where they are """
-
-    #def paint(self, painter, **kwargs):        
-    #    print 'using twocoloricon painter'
-    #    return QtGui.QIcon.paint(self, painter, kwargs) 
-
-    def __init__(self, filename):
-        bitmap = QtGui.QBitmap(filename)
-        e = TwoColorIconEngine(bitmap)
-        QtGui.QIcon.__init__(self, e)
-
-
 class TwoColorIconEngine(QtGui.QIconEngine):
     """
 
     """
 
     def __init__(self, bitmaps):
-        print('*** initializing TwoColorIconEngine with bitmaps ', bitmaps)
         QtGui.QIconEngine.__init__(self)
+        self.mono = True
+        self.bitmap = None
+        self.filter1 = None
+        self.filter2 = None
+        self.mask = None
+
         if bitmaps:
             self.addPixmap(bitmaps)
+
+    def pixmap(self, QSize, QIcon_Mode=None, QIcon_State=None):
+        pm = QtGui.QIconEngine.pixmap(self, QSize, QIcon_Mode, QIcon_State)
+        if not self.mask.isNull():
+            pm.setMask(QtGui.QBitmap(self.mask.scaled(QSize, QtCore.Qt.KeepAspectRatio)))
+        return pm
+
 
     def addPixmap(self, bitmaps):
         """
 
         :type bitmaps:
         """
-        print('*** add pixmap called for engine ***')
+        if isinstance(bitmaps, str):
+            bitmaps = QtGui.QPixmap(bitmaps)
+
         if isinstance(bitmaps, tuple):
-            self.bitmaps = bitmaps
-            self.bitmaps16 = [bitmap.scaled(16, 16, QtCore.Qt.KeepAspectRatio).mask() for bitmap in bitmaps]
-            self.bitmaps32 = [bitmap.scaled(32, 32, QtCore.Qt.KeepAspectRatio).mask() for bitmap in bitmaps]
+            self.mono = False
+            self.bitmap = bitmaps[0]
+            self.filter1 = bitmaps[1]
+            self.filter2 = bitmaps[2]
+            self.mask = self.bitmap.mask()
+
+        elif isinstance(bitmaps, QtGui.QPixmap):
+            self.mono = True
+            self.bitmap = bitmaps
+            self.filter1 = None
+            self.filter2 = None
+            self.mask = self.bitmap.mask()
+
 
     #@caller
     def paint(self, painter, rect, mode, state):
-        #painter.setCompositionMode(painter.CompositionMode_Source)
-        #print 'composition: ', painter.compositionMode()
-        #painter.setRenderHints(QtGui.QPainter.Antialiasing, False)
-        #painter.setRenderHints(QtGui.QPainter.TextAntialiasing, False)
-        #painter.setRenderHints(QtGui.QPainter.SmoothPixmapTransform, False)
-        #painter.setRenderHints(QtGui.QPainter.HighQualityAntialiasing, False)
-        #painter.setRenderHints(QtGui.QPainter.NonCosmeticDefaultPen, False)
         """
 
         :param painter:
@@ -78,14 +81,7 @@ class TwoColorIconEngine(QtGui.QIconEngine):
         :param mode:
         :param state:
         """
-        w = rect.width()
-        if w == 16:
-            pxm, bmp1, bmp2 = self.bitmaps16
-        elif w == 32:
-            pxm, bmp1, bmp2 = self.bitmaps32
-        else:
-            pxm, bmp1, bmp2 = self.bitmaps
-        c = ctrl.cm.text()
+        c = ctrl.cm.ui()
         if mode == 0:  # normal
             painter.setPen(c)
         elif mode == 1:  # disabled
@@ -94,7 +90,19 @@ class TwoColorIconEngine(QtGui.QIconEngine):
             painter.setPen(ctrl.cm.hovering(c))
         elif mode == 3:  # selected
             painter.setPen(ctrl.cm.active(c))
-        painter.fillRect(rect, ctrl.cm.paper())
-        painter.drawPixmap(rect, pxm)
+        else:
+            painter.setPen(c)
+            print('Weird button mode: ', mode)
+        #b = painter.background()
+        #painter.setBackgroundMode(QtCore.Qt.TransparentMode)
+        #print(painter.backgroundMode(), painter.background(), QtCore.Qt.OpaqueMode, QtCore.Qt.TransparentMode)
+        #painter.fillRect(rect, b) #ctrl.cm.transparent)
+
+        if self.mono:
+            painter.drawPixmap(rect, self.mask)
+        else:
+            painter.drawPixmap(rect, self.filter1)
+            painter.setPen(c.darker())
+            painter.drawPixmap(rect, self.filter2)
 
 

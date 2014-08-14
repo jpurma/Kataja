@@ -24,33 +24,20 @@
 
 from PyQt5 import QtWidgets, QtGui
 
-from kataja.ui.TwoColorIcon import TwoColorIconEngine
+from kataja.ui.TwoColorIconEngine import TwoColorIconEngine
 
 
 class TwoColorButton(QtWidgets.QPushButton):
-    """ Buttons that change their color according to widget where they are """
+    """ Buttons that change their color according to widget where they are.
+        Currently this is not doing anything special that can't be done by setting TwoColorIconEngine for normal button,
+        but let's keep this in case we need to deliver palette updates to icon engines.
+     """
 
     def __init__(self, bitmaps, text, parent):
         QtWidgets.QPushButton.__init__(self, text, parent)
-        self.setAutoFillBackground(True)
+        self.setAutoFillBackground(False)
         e = TwoColorIconEngine(bitmaps)
         i = QtGui.QIcon(e)
-        self.setFlat(True)
+        self.setFlat(False)
         self.setIcon(i)
-
-
-    # def paint(self, painter, **kwargs):
-    #    print 'using twocoloricon painter'
-    #    return QtGui.QIcon.paint(self, painter, kwargs) 
-
-    def paintEvent(self, event):
-        #print 'got PaintEvent'
-        #print self.icon(), self.iconSize(), type(self.icon())
-        """
-
-        :param event:
-        """
-        QtWidgets.QPushButton.paintEvent(self, event)
-        
-
 

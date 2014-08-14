@@ -284,8 +284,8 @@ class QtPreferences:
         self.no_brush = QtGui.QBrush()
         self.no_brush.setStyle(QtCore.Qt.NoBrush)
         self.lock_icon = QtGui.QPixmap('icons/lock.png').scaledToWidth(16)
-        self.left_arrow = extract_bitmaps('kataja/icons/triangle_left.gif')
-        self.right_arrow = extract_bitmaps('kataja/icons/right_2c.png')
+        self.left_arrow = extract_bitmaps('kataja/icons/left_2c.gif')
+        self.right_arrow = extract_bitmaps('kataja/icons/right_2c.gif')
         print('-- loaded icon and scaled it ... ', time.time() - t)
 
     def update(self, preferences):
