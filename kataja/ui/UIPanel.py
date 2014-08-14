@@ -177,8 +177,7 @@ class UIPanel(QtWidgets.QDockWidget):
         """
         if floating:
             if hasattr(self, 'preferred_size'):
-                w, h = self.preferred_size
-                self.resize(w, h)
+                self.resize(self.preferred_size)
             self.titleBarWidget().pin_button.show()
         else:
             self.titleBarWidget().pin_button.hide()

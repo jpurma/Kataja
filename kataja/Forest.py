@@ -44,7 +44,7 @@ from kataja.Edge import Edge
 from kataja.UndoManager import UndoManager
 from kataja.utils import next_free_index, to_tuple
 from kataja.FeatureNode import FeatureNode
-from kataja.globals import CONSTITUENT_EDGE, FEATURE_EDGE
+import kataja.globals as g
 
 
 ONLY_LEAF_LABELS = 0
@@ -853,6 +853,7 @@ class Forest:
 
         :param key:
         """
+        help_text = ''
         if key == 'M':
             attr_id = 'merge_order'
             show_label = True
@@ -866,7 +867,7 @@ class Forest:
             if isinstance(val, collections.Callable):
                 val = val()
             if val:
-                self.create_attribute_node(node, attr_id, attribute_label=key, show_label=show_label)
+                attr_node = self.create_attribute_node(node, attr_id, attribute_label=key, show_label=show_label)
 
 
     def remove_order_features(self, key='M'):
@@ -1163,7 +1164,7 @@ class Forest:
         """ This edge has been created into the graph.
         Verify that there exists a syntactic edge corresponding to this, if doesn't,
         create it. """
-        if edge.edge_type == CONSTITUENT_EDGE:
+        if edge.edge_type == g.CONSTITUENT_EDGE:
             C_start = edge.start.syntactic_object
             C_end = edge.end.syntactic_object
             if edge.align == LEFT:
@@ -1177,7 +1178,7 @@ class Forest:
                     if C_start.get_right():
                         print('***** warning! constituent %s has right and we are overwriting it with %s' % (
                             C_start, C_end))
-        elif edge.edge_type == FEATURE_EDGE:
+        elif edge.edge_type == g.FEATURE_EDGE:
             constituent = edge.start.syntactic_object
             feature = edge.end.syntactic_object
             if not constituent.has_feature(feature.key):
@@ -1224,7 +1225,7 @@ class Forest:
         """ This edge has been disconnected in graph and soon will be removed altogether.
         Verify that there doesn't exist syntactic edge corresponding to this, and if does,
         remove it. """
-        if edge.edge_type == CONSTITUENT_EDGE:
+        if edge.edge_type == g.CONSTITUENT_EDGE:
             C_start = edge.start.syntactic_object
             C_end = edge.end.syntactic_object
             if edge.align == LEFT:
@@ -1233,7 +1234,7 @@ class Forest:
             elif edge.align == RIGHT:
                 if C_end.get_right():
                     C_end.set_right(None)
-        elif edge.edge_type == FEATURE_EDGE:
+        elif edge.edge_type == g.FEATURE_EDGE:
             constituent = edge.start.syntactic_object
             feature = edge.end.syntactic_object
             if edge.start and edge.end and constituent.has_feature(feature):
@@ -1545,13 +1546,13 @@ class Forest:
         for root in self.roots:
             if root in excluded:
                 continue
-            um.create_touch_area(root, 'top_left', for_dragging=True)
-            um.create_touch_area(root, 'top_right', for_dragging=True)
+            um.create_touch_area(root, g.LEFT_ADD_ROOT, for_dragging=True)
+            um.create_touch_area(root, g.RIGHT_ADD_ROOT, for_dragging=True)
         for edge in self.get_constituent_edges():
             if edge.start in excluded or edge.end in excluded:
                 continue
-            um.create_touch_area(edge, 'left', for_dragging=True)
-            um.create_touch_area(edge, 'right', for_dragging=True)
+            um.create_touch_area(edge, g.LEFT_ADD_SIBLING, for_dragging=True)
+            um.create_touch_area(edge, g.RIGHT_ADD_SIBLING, for_dragging=True)
 
 
     ######### Utility functions ###############################

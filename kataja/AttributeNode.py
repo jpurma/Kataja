@@ -33,6 +33,29 @@ from kataja.Node import Node
 color_map = {'S': 0, 'order': 1, 'M': 2, 'unknown': 3}
 
 
+def ordinal(value):
+    if isinstance(value, int):
+        val = value
+    elif isinstance(value, str) and value.isdigit():
+        val = int(value)
+    else:
+        try:
+            val = int(value)
+        except ValueError:
+            return ''
+    val_str = str(val)
+
+    if val_str.endswith('1') and not val_str.endswith('11'):
+        suffix = 'st'
+    elif val_str.endswith('2') and not val_str.endswith('12'):
+        suffix = 'nd'
+    elif val_str.endswith('3') and not val_str.endswith('13'):
+        suffix = 'rd'
+    else:
+        suffix = 'th'
+    return val_str+suffix
+
+
 class AttributeNode(Node):
     """
 
@@ -67,6 +90,7 @@ class AttributeNode(Node):
         self._show_label = show_label
         self.force = 72
         self.label_font = qt_prefs.sc_font
+        self.help_text = ""
         # if self.attribute_label in color_map:
         # self.color = colors.feature_palette[color_map[self.attribute_label]]
         #else:
@@ -83,24 +107,49 @@ class AttributeNode(Node):
                 x += random.uniform(-4, 4)
                 y += random.uniform(-4, 4)
             self.set_original_position((x, y, z))
+            self.update_help_text()
             self.update_identity()
             self.update_label()
             self.boundingRect(update=True)
             self.update_visibility()
 
 
+    def update_help_text(self):
+        if self.attribute_id == 'select_order':
+            self.help_text = "'{host}' was Selected {value_ordinal} when constructing the tree."
+        elif self.attribute_id == 'merge_order':
+            self.help_text = "'{host}' was Merged {value_ordinal} when constructing the tree."
+
+
+    def set_help_text(self, text):
+        self.help_text = text
+        self.update_status_tip()
+
+    def update_status_tip(self):
+        if self.help_text:
+            self.status_tip = self.help_text.format(host=self.host, value=self.value, value_ordinal=ordinal(self.value), label=self.attribute_label)
+        else:
+            self.status_tip = "Attribute %s for %s" % (self.get_text_for_label(), self.host)
+
     def get_text_for_label(self):
         """ This should be overridden if there are alternative displays for label 
         :returns : str 
         """
+
+        if self._show_label:
+            return '%s:%s' % (self.attribute_label, self.value)
+        else:
+            return self.value
+            # u'%s:%s' % (self.syntactic_object.key, self.syntactic_object.get_value_string())
+
+    @property
+    def value(self):
         val = getattr(self.host, self.attribute_id, '')
         if isinstance(val, collections.Callable):
-            val = val()
-        if self._show_label:
-            return '%s:%s' % (self.attribute_label, val)
+            return val()
         else:
             return val
-            # u'%s:%s' % (self.syntactic_object.key, self.syntactic_object.get_value_string())
+
 
     def __str__(self):
         """

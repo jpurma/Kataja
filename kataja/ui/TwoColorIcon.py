@@ -59,8 +59,8 @@ class TwoColorIconEngine(QtGui.QIconEngine):
         print('*** add pixmap called for engine ***')
         if isinstance(bitmaps, tuple):
             self.bitmaps = bitmaps
-            self.bitmaps16 = [bitmap.scaled(16, 16, QtCore.Qt.KeepAspectRatio) for bitmap in bitmaps]
-            self.bitmaps32 = [bitmap.scaled(32, 32, QtCore.Qt.KeepAspectRatio) for bitmap in bitmaps]
+            self.bitmaps16 = [bitmap.scaled(16, 16, QtCore.Qt.KeepAspectRatio).mask() for bitmap in bitmaps]
+            self.bitmaps32 = [bitmap.scaled(32, 32, QtCore.Qt.KeepAspectRatio).mask() for bitmap in bitmaps]
 
     #@caller
     def paint(self, painter, rect, mode, state):
@@ -85,7 +85,7 @@ class TwoColorIconEngine(QtGui.QIconEngine):
             pxm, bmp1, bmp2 = self.bitmaps32
         else:
             pxm, bmp1, bmp2 = self.bitmaps
-        c = ctrl.cm.ui()
+        c = ctrl.cm.text()
         if mode == 0:  # normal
             painter.setPen(c)
         elif mode == 1:  # disabled
@@ -94,15 +94,7 @@ class TwoColorIconEngine(QtGui.QIconEngine):
             painter.setPen(ctrl.cm.hovering(c))
         elif mode == 3:  # selected
             painter.setPen(ctrl.cm.active(c))
-        #painter.setBackgroundMode(QtCore.Qt.TransparentMode) # 
-        #painter.setBackground(colors.transparent)
-        #painter.fillRect(rect, colors.paper)
-        #painter.drawPixmap(0,0, pxm)
-        painter.drawPixmap(rect, bmp2)
-        #painter.setPen(colors.hover)
-        #painter.drawPixmap(rect, bmp2)        
-        #painter.drawEllipse(5,5,5,5)
-        #painter.drawRect(rect)
-        #return QtGui.QIconEngine.paint(self, painter, rect, mode, state) 
+        painter.fillRect(rect, ctrl.cm.paper())
+        painter.drawPixmap(rect, pxm)
 
 

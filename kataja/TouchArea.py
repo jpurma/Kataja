@@ -29,6 +29,7 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import QPointF as Pf
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
+from Edge import Edge
 
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.utils import to_tuple
@@ -153,7 +154,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
         line_middle_point = None
         line_end_point = None
         plus_point = None
-        if self.host.__class__.__name__ == 'Edge':
+        if self.host.__class__ == Edge: # Touch area starts from relation between nodes
             rel = self.host
             # rel.get_path()
             # sx, sy = to_tuple(rel.get_point_at(0.5))

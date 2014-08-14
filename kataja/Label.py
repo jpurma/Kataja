@@ -83,24 +83,26 @@ class Label(QtWidgets.QGraphicsTextItem):
         """ Asks for node/host to give text and update if changed """
         #self.setDefaultTextColor(self._host.color())
         self.setFont(self._host.label_font)
-        new_source_text = self._get_host_text()
-        if new_source_text == self._source_text:
-            return False
-        self._source_text = new_source_text
-        self.prepareGeometryChange()
-        if self._doc:
-            self._doc.clear()
-        else:
-            self._doc = QtGui.QTextDocument()
-            # self._doc.setUseDesignMetrics(True)
-            self._doc.contentsChanged = self._set_host_text
-            self.setDocument(self._doc)
-        self._doc.setHtml(self._source_text)
-        brect = self.boundingRect()
-        self.setPos(brect.width() / -2.0, brect.height() / -2.0)
-        self._ellipse = QtGui.QPainterPath()
-        self._ellipse.addEllipse(Pf(0, 0), brect.width() / 2, brect.height() / 2)
-        return True
+        if self._get_host_text:
+            new_source_text = self._get_host_text()
+            if new_source_text == self._source_text:
+                return False
+            self._source_text = str(new_source_text)
+            self.prepareGeometryChange()
+            if self._doc:
+                self._doc.clear()
+            else:
+                self._doc = QtGui.QTextDocument()
+                # self._doc.setUseDesignMetrics(True)
+                self._doc.contentsChanged = self._set_host_text
+                self.setDocument(self._doc)
+            self._doc.setHtml(self._source_text)
+            brect = self.boundingRect()
+            self.setPos(brect.width() / -2.0, brect.height() / -2.0)
+            self._ellipse = QtGui.QPainterPath()
+            self._ellipse.addEllipse(Pf(0, 0), brect.width() / 2, brect.height() / 2)
+            return True
+        return False
 
     def update_position(self, br=None):
         """

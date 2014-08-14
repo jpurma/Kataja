@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore, QtGui
 from kataja.singletons import qt_prefs
 from kataja.ui.TwoColorButton import TwoColorButton
 from kataja.ui.UIPanel import UIPanel
@@ -61,6 +61,10 @@ class NavigationPanel(UIPanel):
         layout.addWidget(next_der, 3, 1, 1, 1)
         ui_buttons['next_der'] = next_der
         layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
+        test_button = QtWidgets.QPushButton("testing")
+        print("Making test button")
+        test_button.setIcon(QtGui.QIcon('kataja/icons/triangle_right.ico'))
+        layout.addWidget(test_button)
         inner.setLayout(layout)
         self.setWidget(inner)
         self.widget().setAutoFillBackground(True)

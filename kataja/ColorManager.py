@@ -28,6 +28,7 @@ from collections import OrderedDict
 
 from PyQt5.QtGui import QColor as c
 from PyQt5.QtGui import QColor
+from PyQt5.QtCore import Qt
 import PyQt5.QtGui as QtGui
 
 from kataja.singletons import ctrl, prefs
@@ -144,6 +145,7 @@ class ColorManager:
         self.d['white'] = c(255, 255, 255)
         self.d['black'] = c(0, 0, 0)
         self.custom_colors = []
+        self.transparent = Qt.transparent
         self.gradient = QtGui.QRadialGradient(0, 0, 300)
         self.gradient.setSpread(QtGui.QGradient.PadSpread)
         self.activate_color_mode('solarized_lt', cold_start=True)
