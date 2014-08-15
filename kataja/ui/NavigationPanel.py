@@ -33,13 +33,19 @@ class NavigationPanel(UIPanel):
         layout.addWidget(treeset_counter, 0, 1, 1, 1)
         ui_buttons['treeset_counter'] = treeset_counter
 
-        prev_tree = TwoColorButton(qt_prefs.left_arrow, 'Previous', inner)
+        prev_tree = TwoColorButton(qt_prefs.left_arrow, '', inner)
+        #prev_tree.setIconSize(QtCore.QSize(24,24))
         prev_tree.setSizePolicy(button_policy)
+        prev_tree.setMinimumWidth(72)
+        #prev_tree.setMinimumHeight(32)
         layout.addWidget(prev_tree, 1, 0, 1, 1)
         ui_buttons['prev_tree'] = prev_tree
 
-        next_tree = TwoColorButton(qt_prefs.right_arrow, 'Next', self)
+        next_tree = TwoColorButton(qt_prefs.right_arrow, '', self)
+        #next_tree.setIconSize(QtCore.QSize(24,24))
         next_tree.setSizePolicy(button_policy)
+        next_tree.setMinimumWidth(72)
+        #next_tree.setMinimumHeight(32)
         layout.addWidget(next_tree, 1, 1, 1, 1)
         ui_buttons['next_tree'] = next_tree
 
@@ -52,12 +58,12 @@ class NavigationPanel(UIPanel):
         layout.addWidget(derivation_counter, 2, 1, 1, 1)
         ui_buttons['derivation_counter'] = derivation_counter
 
-        prev_der = TwoColorButton(qt_prefs.left_arrow, 'Previous', self)
+        prev_der = TwoColorButton(qt_prefs.left_arrow, '', self)
         prev_der.setSizePolicy(label_policy)
         layout.addWidget(prev_der, 3, 0, 1, 1)
         ui_buttons['prev_der'] = prev_der
 
-        next_der = TwoColorButton(qt_prefs.right_arrow, 'Next', self)
+        next_der = TwoColorButton(qt_prefs.right_arrow, '', self)
         next_der.setSizePolicy(label_policy)
         layout.addWidget(next_der, 3, 1, 1, 1)
         ui_buttons['next_der'] = next_der

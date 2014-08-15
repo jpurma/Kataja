@@ -78,7 +78,6 @@ class Preferences(object):
         self.draw_width = .5
         self.selection_width = 0.8
         self.thickness_multiplier = 2
-        self.color_mode = 'solarized_dk'
         self.color_modes = color_modes
         self.shared_palettes = {}
 
@@ -114,6 +113,7 @@ class Preferences(object):
         self.default_bracket_style = 0
 
         # ## Global preferences
+        self.color_mode = self.default_color_mode
         self.fonts = fonts
         self.keep_vertical_order = False
         self.use_magnets = True

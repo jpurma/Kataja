@@ -104,6 +104,23 @@ def colorize(h, s, v):
     return h, ns, nv
 
 
+def matching_hue(hue, color_list):
+    min_d = 1.0
+    best = 0
+    optimal = 0.39166
+    for i, color in enumerate(color_list):
+        hueF = color.hsvHueF()
+        if hue < optimal:
+            hue += 1
+        d = abs(optimal - (hue - hueF))
+        if d < min_d:
+            min_d = d
+            best = i
+    return best
+
+
+
+
 def in_range(h, s, v):
     """
 
@@ -291,6 +308,7 @@ class ColorManager:
             self.d['content3'] = sol[5]
         self.d['key'] = self.d['content1']
         self.d['accents'] = accents
+
         for i, accent in enumerate(accents):
             self.d['accent%s' % (i+1)] = accent
             tr = c(accent)
@@ -315,26 +333,22 @@ class ColorManager:
         key.setHsvF(h, s, v)
         light_bg = v < 0.5 or (s > 0.7 and 0.62 < h < 0.95)
         self.d['key'] = key
-        key05 = c(key)
-        key05.setAlphaF(0.5)
-        self.d['key 0.5'] = key05
-        key07 = c(key)
-        key07.setAlphaF(0.7)
-        self.d['key 0.7'] = key07
+        self.d['content1'] = key
+        content2 = key.lighter(107)
+        content3 = key.darker(107)
+        self.d['content2'] = content2
+        self.d['content3'] = content3
+        self.d['accents'] = accents
+        start_index = matching_hue(h, accents)
+        rotated_accents = accents[start_index:] + accents[:start_index]
+        for i, accent in enumerate(rotated_accents):
+            self.d['accent%s' % (i+1)] = accent
+            tr = c(accent)
+            tr.setAlphaF(0.5)
+            self.d['accent%str' % (i+1)] = tr
+        self.d['accents'] = rotated_accents
 
-        analog1 = c()
-        h1, s1, v1 = colorize(rotating_add(h, -0.1), s, v)
-        # in_range(h1, s1, v1)
-        analog1.setHsvF(h1, s1, v1)
-        self.d['analog1'] = analog1
-
-        analog2 = c()
-        h2, s2, v2 = colorize(rotating_add(h, 0.1), s, v)
-        # in_range(h2, s2, v2)
-        analog2.setHsvF(h2, s2, v2)
-        self.d['analog2'] = analog2
-
-        paper = c()
+        background1 = c()
         hp = h  # -0.1
         sp = s / 4
         vp = (1 - v)
@@ -346,51 +360,16 @@ class ColorManager:
             else:
                 vp = limited_add(vp, -0.35)
         # in_range(hp, sp, vp)
-        paper.setHsvF(hp, sp, vp)
-        self.d['paper'] = paper
-        paper08 = c(paper)
-        paper08.setAlphaF(0.8)
-        self.d['paper 0.8'] = paper08
-        self.d['paper lighter'] = paper.lighter()
+        background1.setHsvF(hp, sp, vp)
+        self.d['background1'] = background1
         if vp < 0.7:
-            self.d['paper2'] = paper.darker(107)
+            self.d['background2'] = background1.darker(107)
         else:
-            self.d['paper2'] = paper.lighter(107)
-
-        complement = c()
-        hc = rotating_add(h, -0.5)
-        sv = s
-        if sv < 0.5:
-            sv += 0.2
-        # in_range(hc, sv, v)
-        complement.setHsvF(hc, sv, v)
-        self.d['complement'] = complement
-        complement05 = c(complement)
-        complement05.setAlphaF(0.5)
-        self.d['complement 0.5'] = complement05
-        complement07 = c(complement)
-        complement07.setAlphaF(0.7)
-        self.d['complement 0.7'] = complement07
-
-        secondary = c()
-        secondary.setHsvF(abs(h - 0.2), s / 2, limited_add(v, 0.2))
-        self.d['secondary'] = secondary
-
-        # ## Set of marker colors available for features ###
-        if s < 0.5:
-            ps = s + 0.4
-        else:
-            ps = s
-        if v < 0.5:
-            pv = v + 0.4
-        else:
-            pv = v
-        for i in range(0, 10):
-            self.d['rainbow_%s' % (i + 1)] = c().fromHsvF(i / 10.0, ps, pv)
+            self.d['background2'] = background1.lighter(107)
 
             # ## Gradient ###
-        self.gradient.setColorAt(1, self.d['paper'])
-        self.gradient.setColorAt(0, self.d['paper'].lighter())
+        self.gradient.setColorAt(1, self.d['background1'])
+        self.gradient.setColorAt(0, self.d['background2'])
 
     def drawing(self) -> QColor:
         """ Main drawing color for constituent branches
@@ -443,15 +422,7 @@ class ColorManager:
 
         :return:
         """
-        return self.d['accent2']
-
-    def rainbow(self, n):
-        """
-
-        :param n:
-        :return:
-        """
-        return self.d['rainbow_%s' % (n % 10)]
+        return self.d['accent3']
 
     def add_custom_color(self, color, n=-1):
         """
@@ -563,3 +534,93 @@ class ColorManager:
         return QtGui.QPalette(p['windowText'], p['button'], p['light'], p['dark'], p['mid'], p['text'],
                               p['bright_text'], p['base'], p['window'])
 
+
+
+   # def compute_palette(self, hsv):
+   #      """ Create/get root color and build palette around it.
+   #      :param hsv:
+   #      Leaves custom colors as they are. """
+   #      self.hsv = hsv
+   #      h, s, v = hsv
+   #      # # This is the base color ##
+   #      key = c()
+   #      # in_range(h, s, v)
+   #      key.setHsvF(h, s, v)
+   #      light_bg = v < 0.5 or (s > 0.7 and 0.62 < h < 0.95)
+   #      self.d['key'] = key
+   #      key05 = c(key)
+   #      key05.setAlphaF(0.5)
+   #      self.d['key 0.5'] = key05
+   #      key07 = c(key)
+   #      key07.setAlphaF(0.7)
+   #      self.d['key 0.7'] = key07
+   #
+   #      analog1 = c()
+   #      h1, s1, v1 = colorize(rotating_add(h, -0.1), s, v)
+   #      # in_range(h1, s1, v1)
+   #      analog1.setHsvF(h1, s1, v1)
+   #      self.d['analog1'] = analog1
+   #
+   #      analog2 = c()
+   #      h2, s2, v2 = colorize(rotating_add(h, 0.1), s, v)
+   #      # in_range(h2, s2, v2)
+   #      analog2.setHsvF(h2, s2, v2)
+   #      self.d['analog2'] = analog2
+   #
+   #      paper = c()
+   #      hp = h  # -0.1
+   #      sp = s / 4
+   #      vp = (1 - v)
+   #      if light_bg and vp < 0.6:
+   #          vp += 0.3
+   #      if abs(v - vp) <= 0.35:
+   #          if light_bg:
+   #              vp = limited_add(vp, 0.35)
+   #          else:
+   #              vp = limited_add(vp, -0.35)
+   #      # in_range(hp, sp, vp)
+   #      paper.setHsvF(hp, sp, vp)
+   #      self.d['paper'] = paper
+   #      paper08 = c(paper)
+   #      paper08.setAlphaF(0.8)
+   #      self.d['paper 0.8'] = paper08
+   #      self.d['paper lighter'] = paper.lighter()
+   #      if vp < 0.7:
+   #          self.d['paper2'] = paper.darker(107)
+   #      else:
+   #          self.d['paper2'] = paper.lighter(107)
+   #
+   #      complement = c()
+   #      hc = rotating_add(h, -0.5)
+   #      sv = s
+   #      if sv < 0.5:
+   #          sv += 0.2
+   #      # in_range(hc, sv, v)
+   #      complement.setHsvF(hc, sv, v)
+   #      self.d['complement'] = complement
+   #      complement05 = c(complement)
+   #      complement05.setAlphaF(0.5)
+   #      self.d['complement 0.5'] = complement05
+   #      complement07 = c(complement)
+   #      complement07.setAlphaF(0.7)
+   #      self.d['complement 0.7'] = complement07
+   #
+   #      secondary = c()
+   #      secondary.setHsvF(abs(h - 0.2), s / 2, limited_add(v, 0.2))
+   #      self.d['secondary'] = secondary
+   #
+   #      # ## Set of marker colors available for features ###
+   #      if s < 0.5:
+   #          ps = s + 0.4
+   #      else:
+   #          ps = s
+   #      if v < 0.5:
+   #          pv = v + 0.4
+   #      else:
+   #          pv = v
+   #      for i in range(0, 10):
+   #          self.d['rainbow_%s' % (i + 1)] = c().fromHsvF(i / 10.0, ps, pv)
+   #
+   #          # ## Gradient ###
+   #      self.gradient.setColorAt(1, self.d['paper'])
+   #      self.gradient.setColorAt(0, self.d['paper'].lighter())

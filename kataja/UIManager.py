@@ -54,7 +54,7 @@ panels = [{'id': g.LOG, 'name': 'Log', 'position': 'bottom'}, {'id': g.TEST, 'na
           {'id': g.NAVIGATION, 'name': 'Trees', 'position': 'right'},
           {'id': g.VISUALIZATION, 'name': 'Visualization', 'position': 'right'},
           {'id': g.COLOR_THEME, 'name': 'Color theme', 'position': 'right'},
-          {'id': g.COLOR_WHEEL, 'name': 'Color theme wheel', 'position': 'right', 'folded': True},
+          {'id': g.COLOR_WHEEL, 'name': 'Color theme wheel', 'position': 'right', 'folded': True, 'closed': True},
           {'id': g.LINES, 'name': 'Lines', 'position': 'right'}]
 
 panel_classes = {g.LOG: LogPanel, g.TEST: TestPanel, g.NAVIGATION: NavigationPanel, g.VISUALIZATION: VisualizationPanel,
@@ -95,7 +95,10 @@ class UIManager:
             print("Creating panel type ", constructor)
             new_panel = constructor(name, default_position=position, parent=self.main, ui_buttons=self.ui_buttons, folded=folded)
             self.ui_panels[panel['id']] = new_panel
-            new_panel.show()
+            if panel.get('closed', False):
+                new_panel.hide()
+            else:
+                new_panel.show()
 
         # self.addPanels()
         # dock = DockPanel('Dock', self.main)
