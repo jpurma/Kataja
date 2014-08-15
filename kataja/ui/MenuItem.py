@@ -6,7 +6,7 @@ Created on 28.8.2013
 """
 from PyQt5 import QtGui, QtCore
 
-from kataja.singletons import qt_prefs
+from kataja.singletons import qt_prefs, ctrl
 from kataja.ui.MovableUI import MovableUI
 
 
@@ -197,13 +197,12 @@ class MenuItem(MovableUI):
         self.set_target_position(x, y)
 
 
-    def remove(self, ui):
+    def remove(self):
         """
 
-        :param ui:
         """
         self.hide()
-        ui.moving_things.discard(self)
+        ctrl.main.ui_manager.moving_things.discard(self)
 
     def disappear(self, after_move_function=None):
         """

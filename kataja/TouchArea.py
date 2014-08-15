@@ -29,7 +29,7 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import QPointF as Pf
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
-from Edge import Edge
+from kataja.Edge import Edge
 
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.utils import to_tuple
@@ -67,8 +67,8 @@ class TouchArea(QtWidgets.QGraphicsItem):
         self.end_point = 0, 0
         self.setZValue(20)
         self.type = type
-        self.left = type == g.LEFT_ADD_ROOT or type == g.LEFT_ADD_SIBLING
-        self._shape_is_arc = type == g.LEFT_ADD_ROOT or type == g.RIGHT_ADD_ROOT
+        self.left = (type == g.LEFT_ADD_ROOT or type == g.LEFT_ADD_SIBLING)
+        self._shape_is_arc = (type == g.LEFT_ADD_ROOT or type == g.RIGHT_ADD_ROOT)
         self.selectable = False
         self.focusable = True
         self.draggable = False
@@ -77,8 +77,8 @@ class TouchArea(QtWidgets.QGraphicsItem):
         self._hovering = False
         self._drag_hint = False
         self.drag_mode = drag_mode
-        self.update_end_points()
         self.key = TouchArea.create_key(host, type)
+        self.update_end_points()
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.setAcceptHoverEvents(True)
         if self.type == g.LEFT_ADD_ROOT:
@@ -154,7 +154,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
         line_middle_point = None
         line_end_point = None
         plus_point = None
-        if self.host.__class__ == Edge: # Touch area starts from relation between nodes
+        if isinstance(self.host, Edge): # Touch area starts from relation between nodes
             rel = self.host
             # rel.get_path()
             # sx, sy = to_tuple(rel.get_point_at(0.5))
@@ -175,7 +175,6 @@ class TouchArea(QtWidgets.QGraphicsItem):
             line_end_point = sx + dx * (l - 4), sy + dy * (l - 4)
             plus_point = x + dx * 2, y + dy * 2
             use_middle_point = False
-
         elif self._shape_is_arc:
             sx, sy, dummy = self.host.top_magnet()
             self.start_point = sx, sy
@@ -189,7 +188,8 @@ class TouchArea(QtWidgets.QGraphicsItem):
                 plus_point = self.end_point[0] + 2, self.end_point[1]
             use_middle_point = True
             line_middle_point = sx - (0.5 * (sx - self.end_point[0])), sy - 10
-
+        else:
+            print("What is this toucharea?", self, " connected to ", self.host)
         self._path = QtGui.QPainterPath(Pf(self.start_point[0], self.start_point[1]))
         if use_middle_point:
             self._path.lineTo(line_middle_point[0], line_middle_point[1])
