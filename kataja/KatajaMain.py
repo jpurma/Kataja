@@ -123,10 +123,8 @@ class KatajaMain(QtWidgets.QMainWindow):
         print('---- set palette ... ', time.time() - t)
         self.load_treeset()
         print('---- loaded treeset ... ', time.time() - t)
-        self._actions = {}
         self._shortcuts = {}
         x, y, w, h = (50, 50, 940, 720)
-        self.create_actions()
         self.setMinimumSize(w, h)
         self.setWindowTitle(self.tr("Kataja"))
         self.setDockOptions(QtWidgets.QMainWindow.AnimatedDocks)
@@ -314,141 +312,7 @@ class KatajaMain(QtWidgets.QMainWindow):
             if focus:
                 focus.trigger_menu()
 
-    # ### Actions and Menus ####################################################
-
-    def action(self, text, method, shortcut='', local_shortcut='', trig=None, checkable=False, checked=False,
-               viewgroup=None, condition=None, clickable=False, menu_type='', source=None, button=''):
-        """ Creates Qt's QAction and populates it with some properties. Action
-        is added to our dictionary of actions, which is used to disable and
-        :param text:
-        :param method:
-        :param shortcut:
-        :param local_shortcut:
-        :param trig:
-        :param checkable:
-        :param checked:
-        :param viewgroup:
-        :param condition:
-        :param clickable:
-        :param menu_type:
-        :param source:
-        :param button:
-        enable actions when necessary. """
-        act = QtWidgets.QAction(text, self)
-        # noinspection PyUnresolvedReferences
-        act.triggered.connect(method)
-        data = {}
-        if shortcut:
-            # self._shortcuts[shortcut] = act
-            act.setShortcut(QtGui.QKeySequence(shortcut))
-            act.setShortcutContext(QtCore.Qt.ApplicationShortcut)
-        if local_shortcut:
-            data['local_shortcut'] = QtGui.QKeySequence(local_shortcut)
-        if viewgroup:
-            act.setActionGroup(viewgroup)
-        if checkable or checked:
-            act.setCheckable(True)
-            act.setChecked(checked)
-        if condition:
-            data['condition'] = condition
-        if menu_type:
-            data['menu_type'] = menu_type
-        if source:
-            data['source'] = source
-        if data:
-            act.setData(data)
-        if button:
-            if button in self.ui_manager.ui_buttons:
-                button_item = self.ui_manager.ui_buttons[button]
-                if hasattr(button_item, 'clicked'):
-                    button_item.clicked.connect(act.trigger)
-                elif hasattr(button_item, 'activated'):
-                    button_item.activated.connect(act.trigger)
-
-        self._actions[text] = act
-        return act
-
-
-    def create_actions(self):
-        """ Build menus and other actions that can be triggered by user"""
-
-        def _build_menu(menu, m_actions):
-            for item in m_actions:
-                if isinstance(item, str) and item == '---':
-                    menu.addSeparator()
-                else:
-                    menu.addAction(item)
-                    self.addAction(item)
-            self.menuBar().addMenu(menu)
-
-        # File menu
-        file_menu = QtWidgets.QMenu(self.tr("&File"), self)
-        actions = [self.action('&Open', self.open_kataja_file, shortcut='Ctrl+o'), '---',
-                   self.action('&Save', self.save_kataja_file, shortcut='Ctrl+s'), self.action('Save as', self.save_as),
-                   '---', self.action('&Print', self.print_to_file, 'Ctrl+p'),
-                   self.action('&Render in Blender', self.render_in_blender, 'Ctrl+r'), '---',
-                   self.action("Preferences", self.open_preferences),
-                   self.action("&Quit", self.app.closeAllWindows, 'Ctrl+q')]
-        _build_menu(file_menu, actions)
-
-        # Build menu
-        build_menu = QtWidgets.QMenu(self.tr("&Build"), self)
-        actions = [self.action('&Next structure', self.next_structure, shortcut='.', button='next_tree'),
-                   self.action('&Prev structure', self.previous_structure, shortcut=',', button='prev_tree'),
-                   self.action('Animation step forward', self.animation_step_forward, shortcut='>'),
-                   self.action('Animation step backward', self.animation_step_backward, shortcut='<')]
-        _build_menu(build_menu, actions)
-
-        # Add a visualization design menu, where you can change all attributes of visualization. Or make it a Panel.
-
-        # Rules menu
-        rules_menu = QtWidgets.QMenu('&Rules', self)
-
-        # change this to show 3 options instead of check.
-        actions = [self.action('Show &labels in middle nodes', self.toggle_label_visibility, 'l', checkable=True,
-                               checked=self.forest.settings.label_style()),
-                   self.action('Show &brackets', self.toggle_brackets, 'b', checkable=True),
-                   self.action('&connections end at center', self.toggle_magnets, 'c', checkable=True,
-                               checked=not prefs.use_magnets),
-                   self.action('Show &traces', self.toggle_traces, 't', checkable=True,
-                               checked=not self.forest.settings.uses_multidomination()),
-                   self.action('Edge &shapes', self.change_node_edge_shape, 's', checkable=False),
-                   self.action('Feature edge &Shapes', self.change_feature_edge_shape, 'Shift+S', checkable=False),
-                   self.action('Show merge &order', self.show_merge_order, 'o', checkable=True),
-                   self.action('Show select &Order', self.show_select_order, 'Shift+o', checkable=True)]
-        _build_menu(rules_menu, actions)
-
-        # View
-        view_actions = QtWidgets.QActionGroup(self)
-        view_menu = QtWidgets.QMenu('View', self)
-        vis_actions = []
-        for name, vis in VISUALIZATIONS.items():
-            vis_actions.append(self.action(name, self.change_visualization_command, vis.shortcut, checkable=True,
-                                           viewgroup=view_actions))
-
-        actions = vis_actions + ['---', self.action('Change &Colors', self.change_colors, 'Shift+C', checkable=False),
-                                 self.action('Adjust &Colors', self.adjust_colors, 'Shift+Alt+C', checkable=False),
-                                 self.action('&Zoom to fit', self.graph_scene.fit_to_window, 'z'), '---',
-                                 self.action('&Fullscreen', self.toggle_full_screen, 'F', checkable=True)]
-        _build_menu(view_menu, actions)
-
-        # Help
-        help_menu = QtWidgets.QMenu(self.tr("Help"), self)
-        actions = [self.action('&Help', self.show_help_message, 'h')]
-        _build_menu(help_menu, actions)
-
-        self.addAction(self.action('key_esc', self.key_esc, 'Escape'))
-        self.addAction(self.action('key_backspace', self.key_backspace, 'Backspace'))
-        self.addAction(self.action('key_return', self.key_return, 'Return'))
-        self.addAction(self.action('key_left', self.key_left, 'Left'))
-        self.addAction(self.action('key_right', self.key_right, 'Right'))
-        self.addAction(self.action('key_up', self.key_up, 'Up'))
-        self.addAction(self.action('key_down', self.key_down, 'Down'))
-        self.addAction(self.action('key_tab', self.key_tab, 'Tab'))
-        self.addAction(self.action('undo', self.undo, 'Ctrl+z'))
-        self.addAction(self.action('redo', self.redo, 'Ctrl+Shift+z'))
-        self.addAction(self.action('key_m', self.key_m, 'm'))
-
+    
     # ### Keyboard reading ######################################################
 
     # Since QGraphicsItems cannot have actions and action shortcuts tend to
@@ -903,6 +767,13 @@ class KatajaMain(QtWidgets.QMainWindow):
             self.add_message('(f) fullscreen')
         self.graph_scene.fit_to_window()
         self.action_finished('resize to full screen')
+
+    def fit_to_window(self):
+        """ Fit graph to current window. Usually happens automatically, but also available as user action
+        :return: None
+        """
+        self.graph_scene.fit_to_window()
+        self.action_finished('resized to fit window')
 
     # Blender export -action (Command-r)
     def render_in_blender(self):

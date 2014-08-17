@@ -21,7 +21,8 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
-from PyQt5 import QtCore
+from collections import OrderedDict
+from PyQt5 import QtCore, QtWidgets, QtGui
 
 from kataja.ConstituentNode import ConstituentNode
 from kataja.singletons import ctrl, prefs, qt_prefs
@@ -44,6 +45,7 @@ from ui.LogPanel import LogPanel
 from ui.NavigationPanel import NavigationPanel
 from ui.TestPanel import TestPanel
 from ui.VisualizationPanel import VisualizationPanel
+from visualizations.available import VISUALIZATIONS
 
 NOTHING = 0
 SELECTING_AREA = 1
@@ -61,6 +63,64 @@ panel_classes = {g.LOG: LogPanel, g.TEST: TestPanel, g.NAVIGATION: NavigationPan
                  g.COLOR_THEME: ColorPanel, g.COLOR_WHEEL: ColorWheelPanel, g.LINES: LinesPanel}
 
 
+def compose_action_library(main):
+    return {  # ### File ######
+              'open': {'command': '&Open', 'method': main.open_kataja_file, 'shortcut': 'Ctrl+o'},
+              'save': {'command': '&Save', 'method': main.save_kataja_file, 'shortcut': 'Ctrl+s'},
+              'save_as': {'command': '&Save as', 'method': main.save_as},
+              'print_pdf': {'command': '&Print', 'method': main.print_to_file, 'shortcut': 'Ctrl+p'},
+              'blender_render': {'command': '&Render in Blender', 'method': main.render_in_blender,
+                                 'shortcut': 'Ctrl+r'},
+              'preferences': {'command': '&Preferences', 'method': main.open_preferences},
+              'quit': {'command': '&Quit', 'method': main.app.closeAllWindows, 'shortcut': 'Ctrl+q'}, # ### Build ######
+              'next_forest': {'command': '&Next forest', 'method': main.next_structure, 'shortcut': '.',
+                              'button': 'next_tree'},
+              'prev_forest': {'command': '&Previous forest', 'method': main.previous_structure, 'shortcut': ',',
+                              'button': 'prev_tree'},
+              'next_derivation_step': {'command': 'Animation step forward', 'method': main.animation_step_forward,
+                                       'shortcut': '>', 'button': 'next_der'},
+              'prev_derivation_step': {'command': 'Animation step backward', 'method': main.animation_step_backward,
+                                       'shortcut': '<', 'button': 'prev_der'}, # Rules ######
+              'label_visibility': {'command': 'Show &labels in middle nodes', 'method': main.toggle_label_visibility,
+                                   'shortcut': 'l', 'checkable': True, },
+              'bracket_mode': {'command': 'Show &brackets', 'method': main.toggle_brackets, 'shortcut': 'b',
+                               'checkable': True, },
+              'trace_mode': {'command': 'Show &traces', 'method': main.toggle_traces, 'shortcut': 't',
+                             'checkable': True, },
+              'merge_edge_shape': {'command': 'Change branch &shape', 'method': main.change_node_edge_shape,
+                                   'shortcut': 's'},
+              'feature_edge_shape': {'command': 'Change feature branch &shape',
+                                     'method': main.change_feature_edge_shape, 'shortcut': 'Shift+s'},
+              'merge_order_attribute': {'command': 'Show merge &order', 'method': main.show_merge_order,
+                                        'shortcut': 'o', 'checkable': True},
+              'select_order_attribute': {'command': 'Show select &Order', 'method': main.show_select_order,
+                                         'shortcut': 'Shift+o', 'checkable': True}, # View ####
+              'change_colors': {'command': 'Change %Colors', 'method': main.change_colors, 'shortcut': 'Shift+c'},
+              'adjust_colors': {'command': 'Adjust colors', 'method': main.change_colors, 'shortcut': 'Shift+Alt+c'},
+              'zoom_to_fit': {'command': '&Zoom to fit', 'method': main.fit_to_window, 'shortcut': 'z'},
+              'fullscreen_mode': {'command': '&Fullscreen', 'method': main.toggle_full_screen, 'shortcut': 'f',
+                                  'checkable': True}, # Help ####
+              'help': {'command': '&Help', 'method': main.show_help_message, 'shortcut': 'h', }, # Generic keys ####
+              'key_esc': {'command': 'key_esc', 'method': main.key_esc, 'shortcut': 'Escape'},
+              'key_backspace': {'command': 'key_backspace', 'method': main.key_backspace, 'shortcut': 'Backspace'},
+              'key_return': {'command': 'key_return', 'method': main.key_return, 'shortcut': 'Return'},
+              'key_left': {'command': 'key_left', 'method': main.key_left, 'shortcut': 'Left'},
+              'key_right': {'command': 'key_right', 'method': main.key_right, 'shortcut': 'Right'},
+              'key_up': {'command': 'key_up', 'method': main.key_up, 'shortcut': 'Up'},
+              'key_down': {'command': 'key_down', 'method': main.key_down, 'shortcut': 'Down'},
+              'key_tab': {'command': 'key_tab', 'method': main.key_tab, 'shortcut': 'Tab'},
+              'undo': {'command': 'undo', 'method': main.undo, 'shortcut': 'Ctrl+z'},
+              'redo': {'command': 'redo', 'method': main.redo, 'shortcut': 'Ctrl+Shift+z'},
+              'key_m': {'command': 'key_m', 'method': main.key_m, 'shortcut': 'm'}}
+
+menu_structure = OrderedDict([
+    ('file_menu', ('&File', ['open', 'save', 'save_as', '---', 'print_pdf', 'blender_render', '---', 'preferences', '---', 'quit'])),
+    ('build_menu', ('&Build', ['next_forest', 'prev_forest', 'next_derivation_step', 'prev_derivation_step'])),
+    ('rules_menu', ('&Rules', ['label_visibility', 'bracket_mode', 'trace_mode', 'merge_edge_shape', 'feature_edge_shape', 'merge_order_attribute', 'select_order_attribute'])),
+    ('view_menu', ('&View', ['---', 'change_colors', 'adjust_colors', 'zoom_to_fit', '---', 'fullscreen_mode'])),
+    ('help_menu', ('&Help', ['help']))
+])
+
 class UIManager:
     """
 
@@ -71,6 +131,9 @@ class UIManager:
     def __init__(self, main=None):
         self.main = main
         self.scene = main.graph_scene
+        self._action_groups = {}
+        self._actions = {}
+
         self._items = set()
         # self.setSceneRect(view.parent.geometry())
         self._merge_hint = None
@@ -93,7 +156,8 @@ class UIManager:
             position = panel.get('position', None)
             folded = panel.get('folded', False)
             print("Creating panel type ", constructor)
-            new_panel = constructor(name, default_position=position, parent=self.main, ui_buttons=self.ui_buttons, folded=folded)
+            new_panel = constructor(name, default_position=position, parent=self.main, ui_buttons=self.ui_buttons,
+                                    folded=folded)
             self.ui_panels[panel['id']] = new_panel
             if panel.get('closed', False):
                 new_panel.hide()
@@ -125,6 +189,8 @@ class UIManager:
         self.ui_activity_marker.hide()
         self.preferences_dialog = None
         self.hud = None
+        self.create_actions()
+
         # self.hud = HUD(self)
         # self.info('free drawing')
 
@@ -308,6 +374,62 @@ class UIManager:
                 candidates.append(item)
         return candidates
 
+
+    # ### Actions and Menus ####################################################
+
+    def create_actions(self):
+        """ Build menus and other actions that can be triggered by user"""
+
+        main = self.main
+
+        self.action_definitions = compose_action_library(main)
+
+        vis_mode_action_keys = []
+        i = 0
+        for name, vis in VISUALIZATIONS.items():
+            i += 1
+            key = 'vis_%s' % i
+            self.action_definitions[key] = {'command': name, 'method': main.change_visualization_command, 'shortcut': vis.shortcut,
+                      'checkable': True, 'action_group': 'visualizations'}
+            vis_mode_action_keys.append(key)
+
+        # ## Create actions
+        self._action_groups = {}
+        self._actions = {}
+
+        for key, data in self.action_definitions.items():
+            act = QtWidgets.QAction(data['command'], main)
+            # noinspection PyUnresolvedReferences
+            act.triggered.connect(data['method'])
+            shortcut = data.get('shortcut', None)
+            if shortcut:
+                act.setShortcut(QtGui.QKeySequence(shortcut))
+                act.setShortcutContext(QtCore.Qt.ApplicationShortcut)
+            viewgroup = data.get('viewgroup', None)
+            if viewgroup:
+                if viewgroup not in self._action_groups:
+                    self._action_groups[viewgroup] = QtWidgets.QActionGroup(main)
+                act.setActionGroup(self._action_groups[viewgroup])
+            checkable = data.get('checkable', None)
+            if checkable:
+                act.setCheckable(True)
+            self._actions[key] = act
+
+        ### Put actions to menus
+
+        self._top_menus = {}
+        for key, data in menu_structure.items():
+            menu_label, menu_items = data
+            menu = QtWidgets.QMenu(menu_label, main)
+            if key == 'view_menu':
+                menu_items = vis_mode_action_keys + menu_items
+            for item in menu_items:
+                if item == '---':
+                    menu.addSeparator()
+                else:
+                    menu.addAction(self._actions[item])
+            main.menuBar().addMenu(menu)
+            self._top_menus[key] = menu
 
     # ### Touch areas #####################################################################
 
@@ -647,7 +769,7 @@ class UIManager:
         return edge
 
 
-    #### Control points ####################################################################
+    # ### Control points ####################################################################
 
     def add_control_points(self, edge):
         """ Display control points for this edge
@@ -702,7 +824,7 @@ class UIManager:
             self.remove_control_points(edge)
             self.add_control_points(edge)
 
-    ########## MOUSE ########################################################
+    # ######### MOUSE ########################################################
 
     def mouse_press_event(self, item, event):
         """ UIManager is interested in setting focus and sending clicks to UI elements. GraphScene should send an item here and depending on what kind of object it is, we take focus or
