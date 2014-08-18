@@ -12,7 +12,7 @@ class ColorPanel(UIPanel):
 
     """
 
-    def __init__(self, name, default_position='right', parent=None, ui_buttons=None, folded=False):
+    def __init__(self, name, default_position='right', parent=None, ui_manager=None, folded=False):
         """
         All of the panel constructors follow the same format so that the construction can be automated.
         :param name: Title of the panel and the key for accessing it
@@ -29,7 +29,7 @@ class ColorPanel(UIPanel):
         label_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         button_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.MinimumExpanding)
         selector = QtWidgets.QComboBox(self)
-        ui_buttons['color_mode'] = selector
+        ui_manager.ui_buttons['color_mode'] = selector
 
         selector.addItems([c['name'] for c in prefs.color_modes.values()])
         selector.activated.connect(self.change_color_mode)

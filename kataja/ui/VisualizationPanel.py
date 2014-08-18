@@ -8,7 +8,7 @@ __author__ = 'purma'
 class VisualizationPanel(UIPanel):
     """ Switch visualizations and their adjust their settings """
 
-    def __init__(self, name, default_position='right', parent=None, ui_buttons=None, folded=False):
+    def __init__(self, name, default_position='right', parent=None, ui_manager=None, folded=False):
         """
         All of the panel constructors follow the same format so that the construction can be automated.
         :param name: Title of the panel and the key for accessing it
@@ -21,7 +21,7 @@ class VisualizationPanel(UIPanel):
         layout = QtWidgets.QGridLayout()
 
         selector = QtWidgets.QComboBox(self)
-        ui_buttons['visualization_selector'] = selector
+        ui_manager.ui_buttons['visualization_selector'] = selector
         selector.addItems(['%s (%s)' % (key, item.shortcut) for key, item in VISUALIZATIONS.items()])
         selector.activated.connect(self.submit_action)
         selector.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)

@@ -46,6 +46,7 @@ import PyQt5.QtPrintSupport as QtPrintSupport
 import PyQt5.QtWidgets as QtWidgets
 from ForestSettings import ForestSettings
 from Preferences import Preferences, QtPreferences
+from kataja.actions import actions
 
 from kataja.ConstituentNode import ConstituentNode
 from kataja.singletons import ctrl, prefs, qt_prefs
@@ -154,11 +155,6 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.color_wheel = None
         self.action_finished()
         print('---- finished start sequence... ', time.time() - t)
-        # #######
-        # Signals
-        # ########
-        # self.changed_edge_shape.connect(self.graph_scene.forward_signal)
-        # self.changed_edge_shape.connect(self.ui_manager.update_edge_shapes)
 
     def load_treeset(self, treeset_list=None):
         """ Loads and initializes a new set of trees. Has to be done before the program can do anything sane.
@@ -221,12 +217,13 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.change_forest(forest)
         return i
 
-    def action_finished(self, m=''):
+    def action_finished(self, m='', undoable=True):
         """
 
         :param m:
         """
-        self.forest.undo_manager.record(m)
+        if undoable:
+            self.forest.undo_manager.record(m)
         self.graph_scene.draw_forest(self.forest)
 
     def redraw(self):
@@ -512,15 +509,38 @@ class KatajaMain(QtWidgets.QMainWindow):
 
     # ## Menu management #######################################################
 
+    def action_triggered(self):
+        print('Received trigger from action ')
+        sender = self.sender()
+        key = sender.data()
+        data = actions[key]
+        context = data.get('context', 'main')
+        if context == 'main':
+            c = self
+        elif context == 'selected':
+            c = ctrl.selected
+        elif context == 'app':
+            c = self.app
+        else:
+            c = self
+        method = getattr(c, data['method'])()
+        if 'no_undo' in data:
+            undoable = False
+        else:
+            undoable = True
+        self.action_finished(undoable=undoable)
+
+
+
     def enable_actions(self):
         """ Restores menus """
-        for action in self._actions.values():
+        for action in self.ui_manager.qt_actions.values():
             action.setDisabled(False)
 
     def disable_actions(self):
         """ Actions shouldn't be initiated when there is other multi-phase
         action going on """
-        for action in self._actions.values():
+        for action in self.ui_manager.qt_actions.values():
             action.setDisabled(True)
 
     # ## Menu actions ##########################################################
@@ -599,20 +619,17 @@ class KatajaMain(QtWidgets.QMainWindow):
             self.forest.settings.traces_are_grouped_together(False)
             self.add_message('(t) use multidominance')
             self.forest.traces_to_multidomination()
-            self.action_finished('use multidominance')
         elif (
                 not self.forest.settings.traces_are_grouped_together()) and not self.forest.settings.uses_multidomination():
             self.forest.settings.uses_multidomination(False)
             self.forest.settings.traces_are_grouped_together(True)
             self.add_message('(t) use traces, group them to one spot')
-            self.action_finished('use traces, group them to one spot')
             self.forest.group_traces_to_chain_head()
         elif self.forest.settings.uses_multidomination():
             self.forest.settings.uses_multidomination(False)
             self.forest.settings.traces_are_grouped_together(False)
             self.add_message('(t) use traces, show constituents in their base merge positions')
             self.forest.multidomination_to_traces()
-            self.action_finished('use traces, show constituents in their base merge positions')
 
     # Brackets are visible always for non-leaves, never or for important parts
     def toggle_brackets(self):
@@ -632,7 +649,6 @@ class KatajaMain(QtWidgets.QMainWindow):
             self.add_message('(b) 2: Always use brackets')
         self.forest.settings.bracket_style(bs)
         self.forest.bracket_manager.update_brackets()
-        self.action_finished('toggle brackets')
 
     # Show order-feature
     def show_merge_order(self):
@@ -648,7 +664,6 @@ class KatajaMain(QtWidgets.QMainWindow):
             self.add_message('(o) Show merge order')
             self.forest.settings.shows_merge_order(True)
             self.forest.add_order_features('M')
-        self.action_finished('toggle merge order')
 
     def show_select_order(self):
         """
@@ -663,7 +678,6 @@ class KatajaMain(QtWidgets.QMainWindow):
             self.add_message('(O) Show select order')
             self.forest.settings.shows_select_order(True)
             self.forest.add_order_features('S')
-        self.action_finished('toggle select order')
 
 
     # Lines connect to margins -action (b)
@@ -678,7 +692,6 @@ class KatajaMain(QtWidgets.QMainWindow):
         else:
             self.add_message('(c) 1: Lines aim to the center of the node')
             self.forest.settings.uses_magnets(True)
-        self.action_finished('toggle magnets')
 
     # Change node edge shapes -action (s)
     def change_node_edge_shape(self, shape=''):
@@ -699,7 +712,6 @@ class KatajaMain(QtWidgets.QMainWindow):
             self.forest.settings.edge_settings(g.CONSTITUENT_EDGE, 'shape_name', shape)
         self.add_message('(s) Change constituent edge shape: %s-%s' % (i, shape))
         ctrl.announce(g.EDGE_SHAPES_CHANGED, g.CONSTITUENT_EDGE, i)
-        self.action_finished('change edge shape')
 
     # Change feature edge shapes -action (S)
     def change_feature_edge_shape(self, shape):
@@ -719,8 +731,6 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.ui_manager.ui_buttons['feature_line_type'].setCurrentIndex(i)
         self.add_message('(s) Change feature edge shape: %s-%s' % (i, shape))
 
-        self.action_finished('change feature edge shape')
-
     # Next structure -action (.)
     def next_structure(self):
         """
@@ -730,7 +740,6 @@ class KatajaMain(QtWidgets.QMainWindow):
         i = self.switch_to_next_forest()
         self.ui_manager.clear_items()
         self.add_message('(.) tree %s: %s' % (i + 1, self.forest.textual_form()))
-        self.action_finished('switch next tree set')
 
     # Prev structure -action (,)
     def previous_structure(self):
@@ -741,7 +750,6 @@ class KatajaMain(QtWidgets.QMainWindow):
         i = self.switch_to_previous_forest()
         self.ui_manager.clear_items()
         self.add_message('(,) tree %s: %s' % (i + 1, self.forest.textual_form()))
-        self.action_finished('switch previous tree set')
 
     # Change visualization style -action (1...9)
     def change_visualization_command(self):
@@ -753,7 +761,6 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.ui_manager.update_field('visualization_selector', visualization_key)
         self.forest.change_visualization(visualization_key)
         self.add_message(visualization_key)
-        self.action_finished('change visualization to %s' % visualization_key)
 
     def toggle_full_screen(self):
         """ Full screen -action (f) """
@@ -766,14 +773,12 @@ class KatajaMain(QtWidgets.QMainWindow):
             self.showFullScreen()
             self.add_message('(f) fullscreen')
         self.graph_scene.fit_to_window()
-        self.action_finished('resize to full screen')
 
     def fit_to_window(self):
         """ Fit graph to current window. Usually happens automatically, but also available as user action
         :return: None
         """
         self.graph_scene.fit_to_window()
-        self.action_finished('resized to fit window')
 
     # Blender export -action (Command-r)
     def render_in_blender(self):
@@ -864,21 +869,18 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.graph_scene.setBackgroundBrush(self.color_manager.gradient)
         if self.forest.gloss:
             self.forest.gloss.show()
-        self.action_finished()
         # hide unwanted components
 
     def animation_step_forward(self):
         """ User action "step forward (>)", Move to next derivation step """
         self.forest.derivation_steps.next_derivation_step()
         self.add_message('Step forward')
-        self.action_finished()
 
 
     def animation_step_backward(self):
         """ User action "step backward (<)" , Move backward in derivation steps """
         self.forest.derivation_steps.previous_derivation_step()
         self.add_message('Step backward')
-        self.action_finished()
 
     # Not called from anywhere yet, but useful
     def release_selected(self, **kw):
@@ -935,7 +937,6 @@ class KatajaMain(QtWidgets.QMainWindow):
         if filename:
             self.load_state_from_file(filename)
             self.add_message("Loaded '%s'." % filename)
-            self.action_finished()
 
     def load_state_from_file(self, filename=''):
         """
