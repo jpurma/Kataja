@@ -22,6 +22,7 @@
 #
 # ############################################################################
 from collections import OrderedDict
+
 from PyQt5 import QtCore, QtWidgets, QtGui
 
 from kataja.ConstituentNode import ConstituentNode
@@ -35,10 +36,10 @@ from kataja.ui.MessageItem import MessageItem
 from kataja.ui.RadialMenu import RadialMenu
 from kataja.ui.StretchLine import StretchLine
 from kataja.ui.TargetReticle import TargetReticle
-from kataja.TouchArea import TouchArea
 from kataja.actions import actions
 import kataja.globals as g
 from kataja.utils import to_tuple
+from kataja.ui.TouchArea import TouchArea
 from ui.ColorThemePanel import ColorPanel
 from ui.ColorWheelPanel import ColorWheelPanel
 from ui.LinesPanel import LinesPanel
@@ -47,6 +48,7 @@ from ui.NavigationPanel import NavigationPanel
 from ui.TestPanel import TestPanel
 from ui.VisualizationPanel import VisualizationPanel
 from visualizations.available import VISUALIZATIONS
+
 
 NOTHING = 0
 SELECTING_AREA = 1
@@ -74,7 +76,7 @@ menu_structure = OrderedDict([
 
 class UIManager:
     """
-
+    UIManager Keeps track of all UI-related widgets and tries to do the most work to keep KatajaMain as simple as possible.
     """
     saved_fields = ['main', 'scene']
     singleton_key = 'UIManager'

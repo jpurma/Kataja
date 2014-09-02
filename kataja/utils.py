@@ -582,7 +582,7 @@ def quit():
     sys.exit()
 
 
-def create_shadow_effect(obj, ctrl):
+def create_shadow_effect(color):
     """
 
     :param obj:
@@ -591,8 +591,7 @@ def create_shadow_effect(obj, ctrl):
     """
     effect = QtWidgets.QGraphicsDropShadowEffect()
     effect.setBlurRadius(20)
-    #self.effect.setColor(ctrl.cm().drawing())
-    effect.setColor(ctrl.cm.d['white'])
+    effect.setColor(color)
     effect.setOffset(0, 5)
     effect.setEnabled(False)
     return effect

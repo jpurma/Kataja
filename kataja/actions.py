@@ -1,20 +1,55 @@
 __author__ = 'purma'
 
+# (Order of actions is irrelevant, menus are built according to instructions at another dict.)
+# key : used internally to fetch the action
+# command : displayed in menus
+# method : method that is called when the action is activated
+# shortcut : keyboard shortcut to activate the action
+# context : where the method is called 'main' is default, referring to KatajaMain
+#           other values: 'app', 'selected', 'node'...
+# checkable : True/False -- as a menu item, does the action have two states
 actions = {
     # ### File ######
-    'open': {'command': '&Open', 'method': 'open_kataja_file', 'shortcut': 'Ctrl+o'},
-    'save': {'command': '&Save', 'method': 'save_kataja_file', 'shortcut': 'Ctrl+s'},
-    'save_as': {'command': '&Save as', 'method': 'save_as'},
-    'print_pdf': {'command': '&Print', 'method': 'print_to_file', 'shortcut': 'Ctrl+p'},
-    'blender_render': {'command': '&Render in Blender', 'method': 'main.render_in_blender',
-                    'shortcut': 'Ctrl+r'},
-    'preferences': {'command': '&Preferences', 'method': 'main.open_preferences'},
-    'quit': {'command': '&Quit', 'method': 'closeAllWindows', 'context': 'app', 'shortcut': 'Ctrl+q'},
+    'open': {
+        'command': '&Open',
+        'method': 'open_kataja_file',
+        'shortcut': 'Ctrl+o'},
+    'save': {
+        'command': '&Save',
+        'method': 'save_kataja_file',
+        'shortcut': 'Ctrl+s'},
+    'save_as': {
+        'command': '&Save as',
+        'method': 'save_as'},
+    'print_pdf': {
+        'command': '&Print',
+        'method': 'print_to_file',
+        'shortcut': 'Ctrl+p'},
+    'blender_render': {
+        'command': '&Render in Blender',
+        'method': 'render_in_blender',
+        'shortcut': 'Ctrl+r'},
+    'preferences': {
+        'command': '&Preferences',
+        'method': 'main.open_preferences'},
+    'quit': {
+        'command': '&Quit',
+        'method': 'closeAllWindows',
+        'context': 'app',
+        'shortcut': 'Ctrl+q'},
     # ### Build ######
-    'next_forest': {'command': '&Next forest', 'method': 'next_structure', 'shortcut': '.',
-                    'button': 'next_tree', 'tooltip': 'Switch to next forest'},
-    'prev_forest': {'command': '&Previous forest', 'method': 'previous_structure', 'shortcut': ',',
-                    'button': 'prev_tree', 'tooltip': 'Switch to previous forest'},
+    'next_forest': {
+        'command': '&Next forest',
+        'method': 'next_structure',
+        'shortcut': '.',
+        'button': 'next_tree',
+        'tooltip': 'Switch to next forest'},
+    'prev_forest': {
+        'command': '&Previous forest',
+        'method': 'previous_structure',
+        'shortcut': ',',
+        'button': 'prev_tree',
+        'tooltip': 'Switch to previous forest'},
     'next_derivation_step': {'command': 'Animation step forward', 'method': 'animation_step_forward',
                              'shortcut': '>', 'button': 'next_der'},
     'prev_derivation_step': {'command': 'Animation step backward', 'method': 'animation_step_backward',

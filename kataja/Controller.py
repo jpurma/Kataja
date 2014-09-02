@@ -100,7 +100,7 @@ class Controller:
     @property
     def cm(self):
         """ Shortcut to color manager, which replaces palettes, colors etc. older solutions.
-        :return: ColorManager
+        :return: PaletteManager
         """
         return self.main.color_manager
 

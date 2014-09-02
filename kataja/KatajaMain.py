@@ -57,7 +57,7 @@ from kataja.GraphView import GraphView
 from kataja.Presentation import TextArea
 from kataja.Edge import SHAPE_PRESETS
 from kataja.UIManager import UIManager
-from kataja.ColorManager import ColorManager
+from kataja.PaletteManager import PaletteManager
 import kataja.globals as g
 from kataja.ui.MenuItem import MenuItem
 from kataja.ui.PreferencesDialog import PreferencesDialog
@@ -98,7 +98,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.app = kataja_app
         self.fontdb = QtGui.QFontDatabase()
         print('---- set up font db ... ', time.time() - t)
-        self.color_manager = ColorManager()
+        self.color_manager = PaletteManager()
         print('---- Initialized color manager ... ', time.time() - t)
         qt_prefs.late_init(prefs, self.fontdb)
         self.app.setFont(qt_prefs.ui_font)

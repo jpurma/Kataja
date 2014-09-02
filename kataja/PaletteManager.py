@@ -140,7 +140,7 @@ def in_range(h, s, v):
         raise Exception("Value (lightness) not in range: " + v)
 
 
-class ColorManager:
+class PaletteManager:
     """ Selects, creates and gives access to various palettes. The current palette is available in dict d with keys for default names and
         possibility to expand with custom colors. Includes methods for creating new palettes.
 
@@ -150,7 +150,7 @@ class ColorManager:
      """
 
     def __init__(self, hsv_key=None):
-        print("*** Creating ColorManager")
+        print("*** Creating PaletteManager")
         f = open('colors.json', 'r')
         self.color_map = json.load(f) # json.load(f, 'utf-8')
         f.close()
@@ -455,10 +455,10 @@ class ColorManager:
         :param color:
         :return:
         """
-        if color.value() > 230:
-            return color.darker(300)
+        if self.light_on_dark():
+            return color.lighter(160)
         else:
-            return color.lighter(300)
+            return color.darker(160)
 
     def inactive(self, color):
         """
@@ -476,10 +476,15 @@ class ColorManager:
         :param color:
         :return:
         """
-        if color.value() > 230:
-            return color.darker(200)
+        if self.light_on_dark():
+            return color.lighter(120)
         else:
-            return color.lighter(200)
+            return color.darker(120)
+        #if color.value() > 230:
+        #    return color.darker(120)
+        #else:
+        #    return color.lighter(120)
+
 
     def selected(self, color):
         """
@@ -487,10 +492,10 @@ class ColorManager:
         :param color:
         :return:
         """
-        if color.value() > 230:
-            return color.darker()
-        else:
+        if self.light_on_dark():
             return color.lighter()
+        else:
+            return color.darker()
 
     def get_color_name(self, hsv):
         """
@@ -511,7 +516,14 @@ class ColorManager:
                 best = key
         return self.color_map[best]['name']
 
+    def light_on_dark(self):
+        return self.d['background1'].value() < 100
 
+    def use_glow(self):
+        """ In dark backgrounds the glow effect is nice, in light we prefer not.
+        :return: boolean
+        """
+        return self.light_on_dark()
 
     def get_qt_palette(self):
         """

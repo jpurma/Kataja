@@ -325,22 +325,22 @@ class TouchArea(QtWidgets.QGraphicsItem):
             pass
 
         if self._hovering:
-            ui = ctrl.cm.ui()
-            painter.setBrush(ctrl.cm.hovering(ui))
-            painter.setPen(qt_prefs.no_pen)
+            painter.setPen(ctrl.cm.hovering(ctrl.cm.selection()))
+            #painter.setBrush(ctrl.cm.hovering(selection))
+            #painter.setPen(qt_prefs.no_pen)
             painter.drawEllipse(self.end_point[0] - end_spot_size + 1, self.end_point[1] - end_spot_size + 1,
                                 2 * end_spot_size, 2 * end_spot_size)
-            painter.setBrush(qt_prefs.no_brush)
-            painter.setPen(ui)
-
+            #painter.setBrush(qt_prefs.no_brush)
         elif ctrl.is_selected(self):  # wrong colors, just testing
             print('cant select ui toucharea')
+            painter.setPen(ctrl.cm.selection())
+        else:
             painter.setPen(ctrl.cm.ui())
+
         self.update_end_points()
         # painter.drawRect(self.boundingRect()) # debug
         painter.drawPath(self._path)
         if self._hovering and ctrl.dragged:
-            painter.setPen(ctrl.cm.hovering(ctrl.cm.ui()))
             ex, ey = self.end_point
             painter.drawLine(ex, ey - 10, ex, ey + 10)
             painter.drawLine(ex - 10, ey, ex + 10, ey)

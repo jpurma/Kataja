@@ -15,11 +15,11 @@ class ControlPoint(QtWidgets.QGraphicsItem):
 
     def __init__(self, edge=None, index=0, point=(0, 0), adjust=(0, 0)):
         if prefs.touch:
-            self._wh = 24
-            self._xy = -12
+            self._wh = 16
+            self._xy = -8
         else:
-            self._wh = 6
-            self._xy = -3
+            self._wh = 4
+            self._xy = -2
         QtWidgets.QGraphicsItem.__init__(self)
         self.setCursor(Qt.CrossCursor)
         self.host_edge = edge
@@ -103,12 +103,10 @@ class ControlPoint(QtWidgets.QGraphicsItem):
         """
         cm = ctrl.cm
         if self.pressed:
-            pen = cm.active(cm.ui())
-            painter.setBrush(pen)
+            pen = cm.active(cm.selection())
         elif self._hovering:
-            pen = cm.hovering(cm.ui())
-            painter.setBrush(pen)
+            pen = cm.hovering(cm.selection())
         else:
             pen = cm.ui()
         painter.setPen(pen)
-        painter.drawEllipse(self._xy, self._xy, self._wh, self._wh)
+        painter.drawRect(self._xy, self._xy, self._wh, self._wh)

@@ -32,13 +32,16 @@ import PyQt5.QtWidgets as QtWidgets
 from .Edge import Edge
 from kataja.ConstituentNode import ConstituentNode
 from kataja.singletons import ctrl, prefs, qt_prefs
-from kataja.TouchArea import TouchArea
 from kataja.Movable import Movable
 from kataja.Node import Node
 from kataja.utils import to_tuple
 
 
+
 # from BlenderExporter import export_visible_items
+from ui import TouchArea
+
+
 class GraphScene(QtWidgets.QGraphicsScene):
     """
 

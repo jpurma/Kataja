@@ -103,12 +103,12 @@ class Preferences(object):
         self.default_uses_multidomination = True
         self.default_traces_are_grouped_together = 0
         self.default_show_constituent_edges = True
-        self.default_show_merge_order = True
+        self.default_show_merge_order = False
         self.default_show_select_order = False
         self.default_draw_features = True
         self.default_draw_width = 2
         self.my_palettes = {}
-        self.default_color_mode = 'solarized_lt'
+        self.default_color_mode = 'solarized_dk'
         self.default_hsv = None
         self.default_bracket_style = 0
 
@@ -174,9 +174,9 @@ class Preferences(object):
                       CONSTITUENT_NODE: {'color': 'key', 'font': 'main', 'font-size': 10},
                       FEATURE_NODE: {'color': 'accent2', 'font': 'cursive', 'font-size': 10
 
-                      }, ATTRIBUTE_NODE: {'color': 'accent3', 'font': 'small-caps', 'font-size': 10},
-                      GLOSS_NODE: {'color': 'accent4', 'font': 'cursive', 'font-size': 10},
-                      PROPERTY_NODE: {'color': 'accent5', 'font': 'small-caps', 'font-size': 10},
+                      }, ATTRIBUTE_NODE: {'color': 'accent4', 'font': 'small-caps', 'font-size': 10},
+                      GLOSS_NODE: {'color': 'accent5', 'font': 'cursive', 'font-size': 10},
+                      PROPERTY_NODE: {'color': 'accent6', 'font': 'small-caps', 'font-size': 10},
 
         }
         self.custom_colors = {}

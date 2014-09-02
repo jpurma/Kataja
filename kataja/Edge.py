@@ -481,7 +481,7 @@ class Edge(QtWidgets.QGraphicsItem):
         # self.setFlag(QtGui.QGraphicsItem.ItemIsSelectable)
         self.setAcceptHoverEvents(True)
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.effect = utils.create_shadow_effect(self, ctrl)
+        self.effect = utils.create_shadow_effect(ctrl.cm.selection())
         self.setGraphicsEffect(self.effect)
 
         if not ctrl.loading:
@@ -557,11 +557,12 @@ class Edge(QtWidgets.QGraphicsItem):
         :return: QColor
         """
         if ctrl.pressed == self:
-            return ctrl.cm.active(self.color())
+            return ctrl.cm.active(ctrl.cm.selection())
         elif self._hovering:
-            return ctrl.cm.hovering(self.color())
+            return ctrl.cm.hovering(ctrl.cm.selection())
         elif ctrl.is_selected(self):
-            return ctrl.cm.selected(self.color())
+            return ctrl.cm.selection()
+            #return ctrl.cm.selected(self.color())
         else:
             return self.color()
 
@@ -838,12 +839,15 @@ class Edge(QtWidgets.QGraphicsItem):
         if value and not self._hovering:
             self._hovering = True
             self.setZValue(100)
-            self.effect.setEnabled(True)
+            if ctrl.cm.use_glow():
+                self.effect.setColor(ctrl.cm.selection())
+                self.effect.setEnabled(True)
             self.prepareGeometryChange()
             self.update()
             ctrl.set_status(self.status_tip)
         elif (not value) and self._hovering:
-            self.effect.setEnabled(False)
+            if ctrl.cm.use_glow():
+                self.effect.setEnabled(False)
             self._hovering = False
             self.prepareGeometryChange()
             self.setZValue(self.__class__.z_value)

@@ -111,7 +111,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self.setZValue(10)
         self.fade_in()
         # # Remember to call update_identity in subclassed __init__s!
-        self.effect = utils.create_shadow_effect(self, ctrl)
+        self.effect = utils.create_shadow_effect(ctrl.cm.selection())
         self.setGraphicsEffect(self.effect)
 
     def __repr__(self):
@@ -328,11 +328,12 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     def contextual_color(self):
         """ Drawing color that is sensitive to node's state """
         if ctrl.pressed == self:
-            return ctrl.cm.active(self.color())
+            return ctrl.cm.active(ctrl.cm.selection())
         elif self._hovering:
-            return ctrl.cm.hovering(self.color())
+            return ctrl.cm.hovering(ctrl.cm.selection())
         elif ctrl.is_selected(self):
-            return ctrl.cm.selected(self.color())
+            return ctrl.cm.selection()
+            #return ctrl.cm.selected(ctrl.cm.selection())
         else:
             return self.color()
 
@@ -660,13 +661,16 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """
         if value and not self._hovering:
             self._hovering = True
-            self.effect.setEnabled(True)
+            if ctrl.cm.use_glow():
+                self.effect.setColor(ctrl.cm.selection())
+                self.effect.setEnabled(True)
             self.prepareGeometryChange()
             self.update()
             self.setZValue(150)
             ctrl.set_status(self.status_tip)
         elif (not value) and self._hovering:
-            self.effect.setEnabled(False)
+            if ctrl.cm.use_glow():
+                self.effect.setEnabled(False)
             self._hovering = False
             self.prepareGeometryChange()
             self.setZValue(self.__class__.z_value)
