@@ -32,6 +32,7 @@ from kataja.utils import to_tuple
 from kataja.globals import ABSTRACT_EDGE, ABSTRACT_NODE
 from . import utils
 
+
 # ctrl = Controller object, gives accessa to other modules
 
 # alignment of edges -- in some cases it is good to draw left branches differently than right branches

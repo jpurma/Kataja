@@ -23,17 +23,16 @@
 # ############################################################################
 
 import math
-import sys
 
 from PyQt5 import QtCore
 from PyQt5.QtCore import QPointF as Pf
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
-from kataja.Edge import Edge
 
-from kataja.singletons import ctrl, prefs, qt_prefs
+from kataja.Edge import Edge
+from kataja.singletons import ctrl, prefs
 from kataja.utils import to_tuple
-import kataja.globals as g 
+import kataja.globals as g
 
 
 end_spot_size = 7

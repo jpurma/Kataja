@@ -27,7 +27,6 @@ from PyQt5 import QtWidgets
 # noinspection PyUnresolvedReferences
 from PyQt5.QtCore import Qt
 from kataja.Movable import Movable
-import sys
 
 
 class Bracket(Movable, QtWidgets.QGraphicsSimpleTextItem):

@@ -62,20 +62,16 @@ class PanelTitle(QtWidgets.QWidget):
         layout.minimumSize = self.sizeHint
         close_button = QtWidgets.QPushButton("x")
         close_button.setMaximumWidth(16)
-        close_action = panel.toggleViewAction()
-        close_button.clicked.connect(close_action.trigger)
-        close_button.setStatusTip("Close this panel")
+        panel.connect_button_to_action(close_button, panel.get_visibility_action())
         layout.addWidget(close_button)
         self.setMinimumSize(self.preferred_size)
         self.folded = False
         self.fold_button = QtWidgets.QPushButton("-")
         self.fold_button.setMaximumWidth(16)
-        self.fold_button.clicked.connect(self.toggle_fold)
-        self.fold_button.setStatusTip("Minimize this panel")
+        panel.connect_button_to_action(self.fold_button, panel.get_fold_action())
         self.pin_button = QtWidgets.QPushButton("p")
         self.pin_button.setMaximumWidth(16)
-        self.pin_button.clicked.connect(self.pin_to_dock)
-        self.pin_button.setStatusTip("Pin this panel to main window")
+        panel.connect_button_to_action(self.pin_button, panel.get_pin_action())
         layout.addWidget(self.pin_button)
 
         self.setContentsMargins(0, 0, 0, 0)
@@ -106,7 +102,7 @@ class UIPanel(QtWidgets.QDockWidget):
     """ UI windows that can be docked to main window or separated.
     Gives some extra control and helper methods on QDockWidget. """
 
-    def __init__(self, name, default_position='bottom', parent=None, ui_manager=None, folded=False):
+    def __init__(self, name, key, default_position='bottom', parent=None, ui_manager=None, folded=False):
         """
 
         :param name:
@@ -117,6 +113,7 @@ class UIPanel(QtWidgets.QDockWidget):
         #self.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed))
         self.folded = folded
         self.name = name
+        self._id = key
         self.ui_manager = ui_manager
         self.default_position = default_position
         if default_position == 'bottom':
@@ -140,12 +137,21 @@ class UIPanel(QtWidgets.QDockWidget):
 
     def finish_init(self):
         self.set_folded(self.folded)
-
     # def dockLocationChanged(self, area):
     # print 'UIPanel %s docked: %s' % (self, area)
 
     # def topLevelChanged(self, floating):
     # print 'UIPanel %s floating: %s' % (self, floating)
+
+    def get_visibility_action(self):
+        return self.ui_manager.qt_actions['toggle_panel_%s' % self._id]
+
+    def get_fold_action(self):
+        return self.ui_manager.qt_actions['toggle_fold_panel_%s' % self._id]
+
+    def get_pin_action(self):
+        return self.ui_manager.qt_actions['pin_panel_%s' % self._id]
+
 
     def set_folded(self, folded):
         self.folded = folded
@@ -162,6 +168,15 @@ class UIPanel(QtWidgets.QDockWidget):
 
     def pin_to_dock(self):
         self.setFloating(False)
+
+    def connect_button_to_action(self, button, action):
+        action_data = self.ui_manager.actions[action.data()]
+        button.clicked.connect(action.trigger)
+        tooltip = action_data.get('tooltip', None)
+        if tooltip:
+            button.setStatusTip(tooltip)
+            button.setToolTip(tooltip)
+
 
     def report_dock_location(self, area):
         """

@@ -25,6 +25,7 @@
 import sys
 
 from PyQt5 import QtCore, QtWidgets
+
 from kataja.utils import caller
 from syntax.BareConstituent import BareConstituent
 from syntax.BaseUG import UG

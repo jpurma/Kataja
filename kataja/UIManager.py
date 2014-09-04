@@ -55,7 +55,8 @@ SELECTING_AREA = 1
 DRAGGING = 2
 POINTING = 3
 
-panels = [{'id': g.LOG, 'name': 'Log', 'position': 'bottom'}, {'id': g.TEST, 'name': 'Test', 'position': 'right'},
+panels = [{'id': g.LOG, 'name': 'Log', 'position': 'bottom'},
+          {'id': g.TEST, 'name': 'Test', 'position': 'right'},
           {'id': g.NAVIGATION, 'name': 'Trees', 'position': 'right'},
           {'id': g.VISUALIZATION, 'name': 'Visualization', 'position': 'right'},
           {'id': g.COLOR_THEME, 'name': 'Color theme', 'position': 'right'},
@@ -70,7 +71,8 @@ menu_structure = OrderedDict([
     ('file_menu', ('&File', ['open', 'save', 'save_as', '---', 'print_pdf', 'blender_render', '---', 'preferences', '---', 'quit'])),
     ('build_menu', ('&Build', ['next_forest', 'prev_forest', 'next_derivation_step', 'prev_derivation_step'])),
     ('rules_menu', ('&Rules', ['label_visibility', 'bracket_mode', 'trace_mode', 'merge_edge_shape', 'feature_edge_shape', 'merge_order_attribute', 'select_order_attribute'])),
-    ('view_menu', ('&View', ['---', 'change_colors', 'adjust_colors', 'zoom_to_fit', '---', 'fullscreen_mode'])),
+    ('view_menu', ('&View', ['$visualizations', '---', 'change_colors', 'adjust_colors', 'zoom_to_fit', '---', 'fullscreen_mode'])),
+    ('panels_menu', ('&Panels', ['$panels', '---', 'toggle_all_panels'])),
     ('help_menu', ('&Help', ['help']))
 ])
 
@@ -84,8 +86,11 @@ class UIManager:
     def __init__(self, main=None):
         self.main = main
         self.scene = main.graph_scene
+        self.actions = {}
         self._action_groups = {}
+        self._dynamic_action_groups = {}
         self.qt_actions = {}
+        self._top_menus = {}
 
         self._items = set()
         # self.setSceneRect(view.parent.geometry())
@@ -98,42 +103,19 @@ class UIManager:
         self._rubber_band = None
         self._rubber_band_origin = None
         self._timer_id = 0
-        self.ui_panels = {}
+        self._ui_panels = {}
         self.ui_buttons = {}
         self.moving_things = set()
         self.touch_areas = set()
         self.symbols = set()
+
+        ## Create actions based on actions.py and menus based on
         self.create_actions()
+        ## Create top menus, requires actions to exist
+        self.create_menus()
+        ## Create UI panels, requires actions to exist
+        self.create_panels()
 
-        for panel in panels:
-            constructor = panel_classes[panel['id']]
-            name = panel['name']
-            position = panel.get('position', None)
-            folded = panel.get('folded', False)
-            print("Creating panel type ", constructor)
-            new_panel = constructor(name, default_position=position, parent=self.main, ui_manager=self,
-                                    folded=folded)
-            self.ui_panels[panel['id']] = new_panel
-            if panel.get('closed', False):
-                new_panel.hide()
-            else:
-                new_panel.show()
-
-        # self.addPanels()
-        # dock = DockPanel('Dock', self.main)
-        # dock.show()
-        # self.ui_panels[dock.name] = dock
-        # log = LogPanel('Log', 'bottom', self.main, self.ui_buttons)
-        # self.ui_panels[log.name] = log
-        # navigation = NavigationPanel('Trees', 'right', self.main, self.ui_buttons)
-        # self.ui_panels[navigation.name] = navigation
-        # visualizations = VisualizationPanel('Visualization', 'right', self.main, self.ui_buttons)
-        # self.ui_panels[visualizations.name] = visualizations
-        # color_wheel = ColorPanel('Colors', 'right', self.main, self.ui_buttons)
-        # self.ui_panels[color_wheel.name] = color_wheel
-        # # self.activity_marker=self.addRect(0,0,10,10, pen=colors.drawing, brush=colors.drawing)
-        # lines = LinesPanel('Lines', 'right', self.main, self.ui_buttons)
-        # self.ui_panels[lines.name] = lines
         self.activity_marker = ActivityMarker(self)
         self.add_ui(self.activity_marker)
         self.activity_marker.setPos(5, 5)
@@ -158,6 +140,29 @@ class UIManager:
     # self.abortConstituentNodebox()
     # ctrl.action_finished()
 
+    def get_panel(self, panel_id):
+        return self._ui_panels[panel_id]
+
+    def toggle_panel(self, panel_id):
+        """
+        UI action.
+        :return:
+        """
+        panel = self.get_panel(panel_id)
+        if panel.isVisible():
+            panel.close()
+        else:
+            panel.setVisible(True)
+            panel.set_folded(False)
+
+    def toggle_fold_panel(self, panel_id):
+        panel = self.get_panel(panel_id)
+        panel.set_folded(not panel.folded)
+
+    def pin_panel(self, panel_id):
+        panel = self.get_panel(panel_id)
+        panel.pin_to_dock()
+
     def add_ui(self, item):
         """
 
@@ -180,7 +185,7 @@ class UIManager:
 
         """
         self._panel_positions = {}
-        for panel_id, panel in self.ui_panels.items():
+        for panel_id, panel in self._ui_panels.items():
             self._panel_positions[panel_id] = panel.geometry()
             # self.log_panel.setGeometry(0, self.size().height() - self.log_panel.height(),
             # self.log_panel.width(), self.log_panel.height())
@@ -227,7 +232,7 @@ class UIManager:
 
 
         """
-        for name, panel in self.ui_panels.items():
+        for name, panel in self._ui_panels.items():
             if name in self._panel_positions:
                 panel.setGeometry(self._panel_positions[name])
 
@@ -251,8 +256,8 @@ class UIManager:
             self._message.update_color()
         if self.hud:
             self.hud.update_color()
-        self.ui_panels[g.COLOR_THEME].update_colors()
-        self.ui_panels[g.COLOR_WHEEL].update_colors()
+        self._ui_panels[g.COLOR_THEME].update_colors()
+        self._ui_panels[g.COLOR_WHEEL].update_colors()
 
     def update_selections(self):
         """
@@ -329,27 +334,50 @@ class UIManager:
         return candidates
 
 
-    # ### Actions and Menus ####################################################
+    # ### Actions, Menus and Panels ####################################################
 
     def create_actions(self):
-        """ Build menus and other actions that can be triggered by user"""
+        """ Build menus and other actions that can be triggered by user based on actions.py"""
 
         main = self.main
 
-        vis_mode_action_keys = []
+        # dynamic actions are created based on other data e.g. available visualization plugins.
+        # they are added into actions as everyone else, but there is a special mapping to find them later.
+        # eg. self._dynamic_action_groups['visualizations'] = ['vis_1','vis_2','vis_3'...]
+        self._dynamic_action_groups = {}
+        self.actions = actions
+
         i = 0
+        self._dynamic_action_groups['visualizations'] = []
         for name, vis in VISUALIZATIONS.items():
             i += 1
             key = 'vis_%s' % i
-            actions[key] = {'command': name, 'method': 'change_visualization_command', 'shortcut': vis.shortcut,
+            self.actions[key] = {'command': name, 'method': 'change_visualization_command', 'shortcut': vis.shortcut,
                       'checkable': True, 'action_group': 'visualizations'}
-            vis_mode_action_keys.append(key)
+            self._dynamic_action_groups['visualizations'].append(key)
+
+        self._dynamic_action_groups['panels'] = []
+        for panel_data in panels:
+            key = 'toggle_panel_%s' % panel_data['id']
+            self.actions[key] = {'command': panel_data['name'], 'method': 'toggle_panel', 'checkable': True,
+                            'action_group': 'Panels', 'args': [panel_data['id']], 'context': 'ui', 'no_undo': True,
+                            'tooltip': "Close this panel"}
+            self._dynamic_action_groups['panels'].append(key)
+            key = 'toggle_fold_panel_%s' % panel_data['id']
+            self.actions[key] = {'command': 'Fold %s' % panel_data['name'], 'method': 'toggle_fold_panel', 'checkable': True,
+                            'action_group': 'Panels', 'args': [panel_data['id']], 'context': 'ui', 'no_undo': True,
+                            'tooltip': "Minimize this panel"}
+            key = 'pin_panel_%s' % panel_data['id']
+            self.actions[key] = {'command': 'Pin to dock %s' % panel_data['name'], 'method': 'pin_panel',
+                            'action_group': 'Panels', 'args': [panel_data['id']], 'context': 'ui', 'no_undo': True,
+                            'tooltip': "Pin to dock"}
+
 
         # ## Create actions
         self._action_groups = {}
         self.qt_actions = {}
 
-        for key, data in actions.items():
+        for key, data in self.actions.items():
             act = QtWidgets.QAction(data['command'], main)
             # noinspection PyUnresolvedReferences
             act.triggered.connect(main.action_triggered)
@@ -372,21 +400,66 @@ class UIManager:
                 act.setStatusTip(tooltip)
             self.qt_actions[key] = act
 
-        ### Put actions to menus
 
-        self._top_menus = {}
-        for key, data in menu_structure.items():
+    def create_menus(self):
+        """ Put actions to menus. Menu structure is defined at the top of this file.
+        :return: None
+        """
+        def add_menu(parent, data):
             menu_label, menu_items = data
-            menu = QtWidgets.QMenu(menu_label, main)
-            if key == 'view_menu':
-                menu_items = vis_mode_action_keys + menu_items
+            menu = QtWidgets.QMenu(menu_label, self.main)
             for item in menu_items:
-                if item == '---':
+                if isinstance(item, tuple):
+                    add_menu(menu, item)
+                elif item == '---':
                     menu.addSeparator()
                 else:
                     menu.addAction(self.qt_actions[item])
-            main.menuBar().addMenu(menu)
+            parent.addMenu(menu)
+            return menu
+
+        def expand_list(data):
+            label, items = data
+            exp_items = []
+            for item in items:
+                if isinstance(item, str) and item.startswith("$"):
+                    exp_items += self._dynamic_action_groups[item[1:]]
+                elif isinstance(item, tuple):
+                    exp_items.append(expand_list(item))
+                else:
+                    exp_items.append(item)
+            return (label, exp_items)
+
+        # replace '$names' with dynamic actions
+        expanded_menu_structure = OrderedDict()
+        for key, data in menu_structure.items():
+            expanded_menu_structure[key] = expand_list(data)
+
+        # build menus
+        self._top_menus = {}
+        for key, data in expanded_menu_structure.items():
+            menu = add_menu(self.main.menuBar(), data)
             self._top_menus[key] = menu
+
+    def create_panels(self):
+        """ Put actions to panels. Panel contents are defined at the top of this file.
+        :return: None
+        """
+        self._ui_panels = {}
+        for panel in panels:
+            id = panel['id']
+            print(id)
+            constructor = panel_classes[id]
+            name = panel['name']
+            position = panel.get('position', None)
+            folded = panel.get('folded', False)
+            print("Creating panel type ", constructor)
+            new_panel = constructor(name, id,  default_position=position, parent=self.main, ui_manager=self,
+                                    folded=folded)
+            self._ui_panels[id] = new_panel
+            # use action to toggle panel visible or hidden, so that menu gets updated properly
+            new_panel.get_visibility_action().setChecked(not panel.get('closed', False))
+
 
     # ### Touch areas #####################################################################
 
@@ -589,8 +662,8 @@ class UIManager:
         """
 
         if not self._message:
-            if g.LOG in self.ui_panels:
-                message_area = self.ui_panels[g.LOG].widget()
+            if g.LOG in self._ui_panels:
+                message_area = self._ui_panels[g.LOG].widget()
                 print('Creating messages to: ', message_area)
                 self._message = MessageItem(msg, message_area, self)
                 self.add_ui(self._message)

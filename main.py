@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#! /usr/bin/env python3.4
 # coding=utf-8
 """
 Created on 28.8.2013

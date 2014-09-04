@@ -11,6 +11,7 @@ from kataja.singletons import ctrl
 from kataja.ui.MenuItem import MenuItem
 
 
+
 # Note that TextAreaMenuItem inherits QGraphicsTextItem while the other menuitems inherit QGraphicsSimpleTextItem
 # ######
 class TextAreaMenuItem(MenuItem, QtWidgets.QGraphicsTextItem):

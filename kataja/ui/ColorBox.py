@@ -1,5 +1,7 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
+
 from kataja.singletons import ctrl
+
 
 __author__ = 'purma'
 

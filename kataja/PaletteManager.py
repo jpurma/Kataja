@@ -33,6 +33,7 @@ import PyQt5.QtGui as QtGui
 
 from kataja.singletons import ctrl, prefs
 
+
 # Solarized colors from http://ethanschoonover.com/solarized  (Ethan Schoonover)
 # We are going to have one theme built around these.
 

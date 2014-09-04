@@ -44,9 +44,6 @@ import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
 import PyQt5.QtPrintSupport as QtPrintSupport
 import PyQt5.QtWidgets as QtWidgets
-from ForestSettings import ForestSettings
-from Preferences import Preferences, QtPreferences
-from kataja.actions import actions
 
 from kataja.ConstituentNode import ConstituentNode
 from kataja.singletons import ctrl, prefs, qt_prefs
@@ -63,6 +60,7 @@ from kataja.ui.MenuItem import MenuItem
 from kataja.ui.PreferencesDialog import PreferencesDialog
 from kataja.utils import time_me, save_object
 from kataja.visualizations.available import VISUALIZATIONS
+
 
 
 # show labels
@@ -510,20 +508,27 @@ class KatajaMain(QtWidgets.QMainWindow):
     # ## Menu management #######################################################
 
     def action_triggered(self):
-        print('Received trigger from action ')
         sender = self.sender()
         key = sender.data()
-        data = actions[key]
+        data = self.ui_manager.actions[key]
         context = data.get('context', 'main')
+        args = data.get('args', None)
         if context == 'main':
             c = self
         elif context == 'selected':
             c = ctrl.selected
+        elif context == 'ui':
+            c = self.ui_manager
         elif context == 'app':
             c = self.app
         else:
             c = self
-        method = getattr(c, data['method'])()
+        print('Doing action %s, args: %s' % (key, str(args)))
+        method = getattr(c, data['method'])
+        if args:
+            method(*args)
+        else:
+            method()
         if 'no_undo' in data:
             undoable = False
         else:
@@ -575,7 +580,7 @@ class KatajaMain(QtWidgets.QMainWindow):
 
 
         """
-        color_panel = self.ui_manager.ui_panels['Colors']
+        color_panel = self.ui_manager._ui_panels['Colors']
         if not color_panel.isVisible():
             color_panel.show()
         else:
