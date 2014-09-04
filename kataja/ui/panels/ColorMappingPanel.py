@@ -1,8 +1,8 @@
 from PyQt5 import QtWidgets
 
 from kataja.singletons import prefs, ctrl
-from kataja.ui.ColorThemePanel import ColorWheelInner
-from kataja.ui.UIPanel import UIPanel
+from kataja.ui.panels.ColorThemePanel import ColorWheelInner
+from kataja.ui.panels import UIPanel
 
 
 __author__ = 'purma'

@@ -1,7 +1,7 @@
 from PyQt5 import QtWidgets
 
 from kataja.ui.ColorBox import ColorBox
-from kataja.ui.UIPanel import UIPanel
+from ui.panels.UIPanel import UIPanel
 
 
 __author__ = 'purma'

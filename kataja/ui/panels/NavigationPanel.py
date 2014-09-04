@@ -2,8 +2,7 @@ from PyQt5 import QtWidgets
 
 from kataja.singletons import qt_prefs
 from kataja.ui.TwoColorButton import TwoColorButton
-from kataja.ui.UIPanel import UIPanel
-
+from kataja.ui.panels.UIPanel import UIPanel
 
 __author__ = 'purma'
 

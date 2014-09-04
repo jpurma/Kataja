@@ -2,7 +2,7 @@ from PyQt5 import QtWidgets
 
 from kataja.Edge import SHAPE_PRESETS
 from kataja.singletons import ctrl
-from kataja.ui.UIPanel import UIPanel
+from kataja.ui.panels.UIPanel import UIPanel
 
 
 __author__ = 'purma'

@@ -4,7 +4,7 @@ from PyQt5 import QtWidgets, QtGui
 
 from globals import COLOR_THEME
 from kataja.singletons import ctrl
-from kataja.ui.UIPanel import UIPanel, FLAG, CIRCLE
+from kataja.ui.panels.UIPanel import FLAG, CIRCLE, UIPanel
 from kataja.utils import to_tuple
 
 

@@ -1,7 +1,7 @@
 from PyQt5 import QtWidgets
 
 from kataja.singletons import prefs, ctrl
-from kataja.ui.UIPanel import UIPanel
+from kataja.ui.panels.UIPanel import UIPanel
 
 
 __author__ = 'purma'

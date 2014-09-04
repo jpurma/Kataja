@@ -40,13 +40,13 @@ from kataja.actions import actions
 import kataja.globals as g
 from kataja.utils import to_tuple
 from kataja.ui.TouchArea import TouchArea
-from ui.ColorThemePanel import ColorPanel
-from ui.ColorWheelPanel import ColorWheelPanel
-from ui.LinesPanel import LinesPanel
-from ui.LogPanel import LogPanel
-from ui.NavigationPanel import NavigationPanel
-from ui.TestPanel import TestPanel
-from ui.VisualizationPanel import VisualizationPanel
+from ui.panels.ColorThemePanel import ColorPanel
+from ui.panels.ColorWheelPanel import ColorWheelPanel
+from ui.panels.LinesPanel import LinesPanel
+from ui.panels.LogPanel import LogPanel
+from ui.panels.NavigationPanel import NavigationPanel
+from ui.panels.TestPanel import TestPanel
+from ui.panels.VisualizationPanel import VisualizationPanel
 from visualizations.available import VISUALIZATIONS
 
 
