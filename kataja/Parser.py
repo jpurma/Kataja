@@ -28,7 +28,7 @@ import re
 
 from kataja.singletons import ctrl
 from kataja.Presentation import TextArea, Image
-from . import utils
+from kataja.utils import debug_parser, next_free_index
 
 
 latex_symbols_to_unicode = {'bar': '\u00AF', 'abar': '\u0100',  # small greek alphabet
@@ -274,7 +274,7 @@ class Parser:
                 node = self.forest.get_node(C)
                 index = node.get_index()
                 if not index:
-                    index = utils.next_free_index(self.indexes)
+                    index = next_free_index(self.indexes)
                     self.indexes.append(index)
                     node.set_index(index)
                 node = self.forest.create_trace_for(node)
@@ -893,7 +893,7 @@ class BottomUpParser(Parser):
             if not merging:
                 merging.append(create_constituent(''))
             if len(merging) > 2:
-                print('too many constituents for binary branching. \nConstituents: %s \nMerging: %s \n%s' % (
+                debug_parser('too many constituents for binary branching. \nConstituents: %s \nMerging: %s \n%s' % (
                     constituents, merging, string))
                 M = merge_constituents(merging[0], merging[1], dot_alias)
                 return M
@@ -944,9 +944,9 @@ class BottomUpParser(Parser):
             return s, constituent
 
         remainder, constituent = bottom_up_bracket_parser(list(stream))
-        print(string)
-        print(constituent)
-        print(self._definitions)
+        debug_parser(string)
+        debug_parser(constituent)
+        debug_parser(self._definitions)
 
     def after_restore(self, values=None):
         """

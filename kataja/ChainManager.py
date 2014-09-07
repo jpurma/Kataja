@@ -2,7 +2,7 @@
 from collections import Counter
 import string
 
-from kataja.utils import time_me
+from kataja.utils import time_me, debug_forest
 from kataja.ConstituentNode import ConstituentNode
 
 
@@ -135,15 +135,15 @@ class ChainManager:
 
         """
         r = []
-        print('---- chains -----')
+        debug_forest('---- chains -----')
         for key, chain in self._chains.items():
-            print('%s :' % key)
+            debug_forest('%s :' % key)
             for (item, parent) in chain:
                 if item.is_trace:
-                    print('trace ')
+                    debug_forest('trace ')
                 else:
-                    print('head ')
-            print('')
+                    debug_forest('head ')
+            debug_forest('')
 
     # @time_me
     def rebuild_chains(self):
@@ -179,7 +179,7 @@ class ChainManager:
 
 
         """
-        print('group traces to chain head')
+        debug_forest('group traces to chain head')
         # ## Move traces to their multidominant originals, purely visual thing ###
         self.rebuild_chains()
         y_adjust = {}
@@ -212,7 +212,7 @@ class ChainManager:
 
 
         """
-        print('traces to multidomination')
+        debug_forest('traces to multidomination')
         # if not self._chains:
         self.rebuild_chains()
         self.dump_chains()
@@ -229,7 +229,7 @@ class ChainManager:
                 node.original_parent = node.get_parents()[0].save_key
         for t, i, node in ordered:
             if node.is_trace:
-                print('replacing trace ', node)
+                debug_forest('replacing trace ', node)
                 original = self.get_chain_head(node.get_index())
                 self.forest._replace_node(node, original)
                 self.forest.delete_node(node)
@@ -242,7 +242,7 @@ class ChainManager:
 
 
         """
-        print('multidomination to traces')
+        debug_forest('multidomination to traces')
         self.rebuild_chains()
         for key, chain in self._chains.items():
             head = self.get_chain_head(key)

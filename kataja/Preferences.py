@@ -27,6 +27,7 @@ import time
 from collections import OrderedDict
 
 from PyQt5 import QtGui, QtCore
+import sys
 
 from kataja.globals import *
 
@@ -128,7 +129,7 @@ class Preferences(object):
         self.ui_speed = 8
         self.touch = False
         self.app_path = self.solve_app_path()
-        self.debug_treeset = self.app_path + '/trees.txt'
+        self.debug_treeset = self.app_path + 'trees.txt'
         self.file_name = 'savetest.kataja'
         self.print_file_path = self.app_path
         self.print_file_name = 'kataja_print'
@@ -187,18 +188,16 @@ class Preferences(object):
 
         :return:
         """
-        full_path = os.path.abspath(os.path.dirname(__file__))
-        # if getattr(sys, 'frozen', None) and hasattr(sys, '_MEIPASS'):
-        # print 'found meipass:',sys._MEIPASS
-        # else:
-        # print 'plain pathname:', os.path.dirname(__file__)
-        path_list = full_path.split('/')
-        if 'Kataja.app' in path_list:
-            i = path_list.index('Kataja.app')
-            path = '/'.join(path_list[:i])
+        #full_path = os.path.abspath(os.path.dirname(__file__))
+        path_zero = sys.path[0]
+        print("path zero: ", path_zero)
+        if path_zero.startswith(":"):
+            # first guess: this is pyqtdeploy built osx app
+            print("Kataja believes that we are in static build, path should be resources")
+            return 'resources/'
         else:
-            path = '/'.join(path_list[:-1])
-        return path
+            print("Kataja believes that app path is ", path_zero)
+            return path_zero+'/'
 
 
     def update(self, update_dict):

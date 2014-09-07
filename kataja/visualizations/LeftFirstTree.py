@@ -28,7 +28,7 @@ import math
 from kataja.ConstituentNode import ConstituentNode
 from kataja.singletons import prefs
 from kataja.FeatureNode import FeatureNode
-from kataja.utils import caller
+from kataja.utils import caller, debug_vis
 from kataja.visualizations.BaseVisualization import BaseVisualization
 from kataja.visualizations.Grid import Grid
 from kataja.GlossNode import GlossNode
@@ -52,7 +52,7 @@ class LeftFirstTree(BaseVisualization):
         :param forest:
         :param loading:
         """
-        print('preparing LeftFirstVisualization')
+        debug_vis('preparing LeftFirstVisualization')
         self.forest = forest
         self._hits = {}
         self._max_hits = {}
@@ -111,7 +111,7 @@ class LeftFirstTree(BaseVisualization):
                 grid.set(x - 1, y + 1, 1)
                 self._fill_grid(grid, left, x - 2, y + 2, parent=node)
         elif self.forest.settings.draw_features and getattr(node.syntactic_object, 'feature_tree', None):
-            print("(1) drawing feature_tree, this shouldn't happen anymore!")
+            debug_vis("(1) drawing feature_tree, this shouldn't happen anymore!")
             self._fill_grid(grid, left, x - 1, y + 1, parent=node)
 
         right = node.right()
@@ -148,7 +148,7 @@ class LeftFirstTree(BaseVisualization):
         #                 ny += block_size
         #             self._fill_grid(grid, right, nx, ny, parent = node)
         elif self.forest.settings.draw_features and getattr(node.syntactic_object, 'feature_tree', None):
-            print("(2) drawing feature_tree, this shouldn't happen anymore!")
+            debug_vis("(2) drawing feature_tree, this shouldn't happen anymore!")
             nx = x + 1
             ny = y + 1
             while grid.get(nx - 1, ny + 1):
@@ -234,5 +234,5 @@ class LeftFirstTree(BaseVisualization):
                 x += edge_width
             y += edge_height + extra_height
         if all_nodes:
-            print('nodes left remaining: ', all_nodes)
+            debug_vis('nodes left remaining: ', all_nodes)
 

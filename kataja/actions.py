@@ -43,13 +43,15 @@ actions = {
         'method': 'next_structure',
         'shortcut': '.',
         'button': 'next_tree',
-        'tooltip': 'Switch to next forest'},
+        'tooltip': 'Switch to next forest',
+        'no_undo': True},
     'prev_forest': {
         'command': '&Previous forest',
         'method': 'previous_structure',
         'shortcut': ',',
         'button': 'prev_tree',
-        'tooltip': 'Switch to previous forest'},
+        'tooltip': 'Switch to previous forest',
+        'no_undo': True},
     'next_derivation_step': {
         'command': 'Animation step forward',
         'method': 'animation_step_forward',

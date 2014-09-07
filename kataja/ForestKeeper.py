@@ -198,7 +198,8 @@ class ForestKeeper:
         :param StringType filename:
         """
         # f = codecs.open(filename, 'rb', encoding = 'utf-8')
-        f = open(filename, 'r')
+        print(filename)
+        f = open(filename, 'r', encoding='UTF-8')
         treelist = f.readlines()
         f.close()
         self.create_forests(treelist)

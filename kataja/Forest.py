@@ -42,7 +42,7 @@ from kataja.Parser import BottomUpParser
 from kataja.Presentation import TextArea, Image
 from kataja.Edge import Edge
 from kataja.UndoManager import UndoManager
-from kataja.utils import next_free_index, to_tuple
+from kataja.utils import next_free_index, to_tuple, debug_forest
 from kataja.FeatureNode import FeatureNode
 import kataja.globals as g
 
@@ -246,7 +246,7 @@ class Forest:
         """
         Show debug info about forest in console
         """
-        if hasattr(self, 'key'):
+        if hasattr(self, 'save_key'):
             print('----- Forest %s ------' % self.save_key)
             print('| Nodes: %s' % len(self.nodes))
             print('| Edges: %s' % len(self.edges))
@@ -1446,7 +1446,7 @@ class Forest:
         :param merge_to_left:
         :param merger_node_pos:
         """
-        print('called replace_node_with_merged_empty_node')
+        debug_forest('called replace_node_with_merged_empty_node')
         if R:
             start_node = R.start
             end_node = R.end
@@ -1459,7 +1459,7 @@ class Forest:
         else:
             merger_node = self.create_merger_node(left=N, right=new_node, pos=(mx, my, N.z))
         if R:
-            print('connecting merger to parent')
+            debug_forest('connecting merger to parent')
             self._connect_node(start_node, merger_node, direction=align)
         self.update_roots()
 
@@ -1476,7 +1476,7 @@ class Forest:
         elif selected_syn == right.syntactic_object:
             selected = right
         else:
-            print("*** Problem, selection is not properly implemented in UG:", ctrl.UG)
+            debug_forest("*** Problem, selection is not properly implemented in UG:", ctrl.UG)
             selected = None
         merger_node = self.create_node_from_constituent(merger_const, pos=pos, result_of_merge=True, inherits_from=selected)
         self._connect_node(parent=merger_node, child=left, direction='left')
@@ -1540,7 +1540,7 @@ class Forest:
 
         :param excluded:
         """
-        print('---- preparing for dragging ------')
+        debug_forest('---- preparing for dragging ------')
         um = self.main.ui_manager
         um.remove_touch_areas()
         for root in self.roots:

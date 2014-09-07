@@ -29,7 +29,7 @@
 # Classnames are in camelcase.
 
 import gc
-import gzip
+#import gzip
 import json
 import os.path
 import shlex
@@ -952,7 +952,8 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.clear_all()
         self.scene.displayed_forest = None
         if filename.endswith('.zkataja'):
-            f = gzip.open(filename, 'r')
+            #f = gzip.open(filename, 'r')
+            f = open(filename, 'r')
         else:
             f = open(filename, 'r')
             # f = codecs.open(filename, 'rb', encoding = 'utf-8')
@@ -976,7 +977,8 @@ class KatajaMain(QtWidgets.QMainWindow):
         t=time.time()
         pickle_format = 4
         if filename.endswith('.zkataja'):
-            f = gzip.open(filename, 'wb')
+            #f = gzip.open(filename, 'wb')
+            f = open(filename, 'wb')
         else:
             f = open(filename, 'wb')
         pickle_worker = pickle.Pickler(f, protocol=pickle_format)

@@ -32,6 +32,13 @@ import traceback
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QPointF, QPoint
 
+DEBUG_TIME_ME = False
+DEBUG_PRINT_MOUSE_EVENTS = False
+DEBUG_PRINT_PARSER_EVENTS = False
+DEBUG_FOREST_OPERATION = False
+DEBUG_VISUALIZATION = False
+DEBUG_KEYPRESS = False
+DEBUG_UNDO = False
 
 def print_rect(rect):
     """
@@ -68,6 +75,8 @@ def time_me(function):
     :param function:
     :return:
     """
+    if not DEBUG_TIME_ME:
+        return function
 
     def wrap(*arg, **kwargs):
         """
@@ -595,3 +604,58 @@ def create_shadow_effect(color):
     effect.setOffset(0, 5)
     effect.setEnabled(False)
     return effect
+
+
+def _debug_print(key, *args):
+    path, ln, func, caller = traceback.extract_stack(limit=3)[0]
+    path = path.split('/')[-1]
+    s = '%s %s:%s: %s/ ' % (key, path, ln, func)
+    args = [s] + list(args)
+    print(*args)
+
+
+def debug_mouse(*args):
+    """ More helpful print, can be toggled on/off through var at the beginning of this file.
+    :param args: arguments for print
+    """
+    if DEBUG_PRINT_MOUSE_EVENTS:
+        _debug_print('MOU', *args)
+
+
+def debug_parser(*args):
+    """ More helpful print, can be toggled on/off through var at the beginning of this file.
+    :param args: arguments for print
+    """
+    if DEBUG_PRINT_PARSER_EVENTS:
+        _debug_print('PAR', *args)
+
+
+def debug_forest(*args):
+    """ More helpful print, can be toggled on/off through var at the beginning of this file.
+    :param args: arguments for print
+    """
+    if DEBUG_FOREST_OPERATION:
+        _debug_print('FOR', *args)
+
+
+def debug_vis(*args):
+    """ More helpful print, can be toggled on/off through var at the beginning of this file.
+    :param args: arguments for print
+    """
+    if DEBUG_VISUALIZATION:
+        _debug_print('VIS', *args)
+
+
+def debug_keys(*args):
+    """ More helpful print, can be toggled on/off through var at the beginning of this file.
+    :param args: arguments for print
+    """
+    if DEBUG_KEYPRESS:
+        _debug_print('KEY', *args)
+
+def debug_undo(*args):
+    """ More helpful print, can be toggled on/off through var at the beginning of this file.
+    :param args: arguments for print
+    """
+    if DEBUG_UNDO:
+        _debug_print('UNDO', *args)

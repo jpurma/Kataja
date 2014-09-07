@@ -28,9 +28,8 @@ from PyQt5.QtCore import Qt
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.Label import Label
 from kataja.Movable import Movable
-from kataja.utils import to_tuple
+from kataja.utils import to_tuple, create_shadow_effect
 from kataja.globals import ABSTRACT_EDGE, ABSTRACT_NODE
-from . import utils
 
 
 # ctrl = Controller object, gives accessa to other modules
@@ -112,7 +111,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self.setZValue(10)
         self.fade_in()
         # # Remember to call update_identity in subclassed __init__s!
-        self.effect = utils.create_shadow_effect(ctrl.cm.selection())
+        self.effect = create_shadow_effect(ctrl.cm.selection())
         self.setGraphicsEffect(self.effect)
 
     def __repr__(self):

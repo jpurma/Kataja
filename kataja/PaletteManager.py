@@ -21,6 +21,7 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
+import os
 
 import random
 import json
@@ -152,7 +153,7 @@ class PaletteManager:
 
     def __init__(self, hsv_key=None):
         print("*** Creating PaletteManager")
-        f = open('colors.json', 'r')
+        f = open(prefs.app_path + 'colors.json', 'r', encoding='UTF-8')
         self.color_map = json.load(f) # json.load(f, 'utf-8')
         f.close()
 
