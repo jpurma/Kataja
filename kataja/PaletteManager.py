@@ -153,7 +153,7 @@ class PaletteManager:
 
     def __init__(self, hsv_key=None):
         print("*** Creating PaletteManager")
-        f = open(prefs.app_path + 'colors.json', 'r', encoding='UTF-8')
+        f = open(prefs.resources_path + 'colors.json', 'r', encoding='UTF-8')
         self.color_map = json.load(f) # json.load(f, 'utf-8')
         f.close()
 

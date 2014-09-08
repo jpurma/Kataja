@@ -23,6 +23,7 @@
 # ############################################################################
 
 import os
+import plistlib
 import time
 from collections import OrderedDict
 
@@ -128,10 +129,13 @@ class Preferences(object):
         self.console_visible = False
         self.ui_speed = 8
         self.touch = False
-        self.app_path = self.solve_app_path()
-        self.debug_treeset = self.app_path + 'trees.txt'
+        self.environment = "osx"
+        self.resources_path = self.solve_resources_path()
+        self.user_space_path = self.solve_user_space_path()
+        self.app_settings_path = self.solve_app_settings_path()
+        self.debug_treeset = self.resources_path + 'trees.txt'
         self.file_name = 'savetest.kataja'
-        self.print_file_path = self.app_path
+        self.print_file_path = self.resources_path
         self.print_file_name = 'kataja_print'
         self.include_gloss_to_print = True
 
@@ -182,7 +186,7 @@ class Preferences(object):
         }
         self.custom_colors = {}
 
-    def solve_app_path(self):
+    def solve_resources_path(self):
         """
 
 
@@ -234,6 +238,14 @@ class Preferences(object):
         """
         for key, value in data:
             setattr(self, key, value)
+
+    # saving to plist is simple as this:
+    # enable when we have the paths thought out.
+    #def save_as_plist(self):
+    #    f = open("prefs.plist", "w")
+    #    plistlib.dump(vars(self), f)
+    #    f.close()
+
 
 
 def extract_bitmaps(filename):
