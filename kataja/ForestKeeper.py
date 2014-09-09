@@ -199,9 +199,12 @@ class ForestKeeper:
         """
         # f = codecs.open(filename, 'rb', encoding = 'utf-8')
         print(filename)
-        f = open(filename, 'r', encoding='UTF-8')
-        treelist = f.readlines()
-        f.close()
+        try:
+            f = open(filename, 'r', encoding='UTF-8')
+            treelist = f.readlines()
+            f.close()
+        except FileNotFoundError:
+            treelist = ['[A B]']
         self.create_forests(treelist)
 
     def create_forests(self, treelist):

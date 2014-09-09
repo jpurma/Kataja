@@ -23,6 +23,7 @@
 # ############################################################################
 
 import os
+from pathlib import Path
 import plistlib
 import time
 from collections import OrderedDict
@@ -31,6 +32,7 @@ from PyQt5 import QtGui, QtCore
 import sys
 
 from kataja.globals import *
+from utils import time_me
 
 
 fonts = {'font': ('Palatino', 'Normal', 12), 'big_font': ('Palatino', 'Normal', 24),
@@ -72,8 +74,11 @@ class Preferences(object):
     This means that the implementation for getting and setting is done mostly in elements and in forest settings. Preferences it self can be written and read directly.
 
     """
+    # Prefs are not saved in save command, but changes here are undoable, so this must support the save protocol.
     saved_fields = 'all'
     singleton_key = 'Preferences'
+    not_saved = ['resources_path', 'default_userspace_path', 'preferences_path', 'in_app']
+
 
     def __init__(self):
         self.save_key = 'preferences'
@@ -129,10 +134,23 @@ class Preferences(object):
         self.console_visible = False
         self.ui_speed = 8
         self.touch = False
-        self.environment = "osx"
-        self.resources_path = self.solve_resources_path()
-        self.user_space_path = self.solve_user_space_path()
-        self.app_settings_path = self.solve_app_settings_path()
+
+        my_path = Path(__file__).parts
+        if sys.platform == 'darwin' and 'Kataja.app' in my_path:
+            i = my_path.index('Kataja.app')
+            self.resources_path = str(Path(*list(my_path[:i]) + ['Contents', 'Resources', 'resources', '']))
+            self.default_userspace_path = '~/'
+            self.preferences_path = '~/Library/Preferences/Kataja.plist'
+            self.in_app = True
+        else:
+            self.resources_path = './resources/'
+            self.default_userspace_path = './'
+            self.preferences_path = './Kataja.plist'
+            self.in_app = False
+        print("resources_path: ", self.resources_path)
+        print("default_userspace_path: ", self.default_userspace_path)
+        print("preferences_path: ", self.preferences_path)
+        self.userspace_path = ''
         self.debug_treeset = self.resources_path + 'trees.txt'
         self.file_name = 'savetest.kataja'
         self.print_file_path = self.resources_path
@@ -185,23 +203,9 @@ class Preferences(object):
 
         }
         self.custom_colors = {}
-
-    def solve_resources_path(self):
-        """
-
-
-        :return:
-        """
-        #full_path = os.path.abspath(os.path.dirname(__file__))
-        path_zero = sys.path[0]
-        print("path zero: ", path_zero)
-        if path_zero.startswith(":"):
-            # first guess: this is pyqtdeploy built osx app
-            print("Kataja believes that we are in static build, path should be resources")
-            return 'resources/'
-        else:
-            print("Kataja believes that app path is ", path_zero)
-            return path_zero+'/'
+        if not self.load_preferences():
+            print("Didn't find any settings plist -file, trying to write one.")
+            self.save_preferences(path=self.resources_path+'default.plist')
 
 
     def update(self, update_dict):
@@ -239,20 +243,98 @@ class Preferences(object):
         for key, value in data:
             setattr(self, key, value)
 
-    # saving to plist is simple as this:
-    # enable when we have the paths thought out.
-    #def save_as_plist(self):
-    #    f = open("prefs.plist", "w")
-    #    plistlib.dump(vars(self), f)
-    #    f.close()
+    def save_preferences(self, path=None):
+        """ Save preferences as a plist file. Since plists can only have string keys, all int keys are turned into
+        _ikey_%s - form, and restored when loaded.
+        If argument path is given, save preferences there, otherwise save to environment's default preference location.
+        :param path: (optional) string for location and filename where to save.
+        :return: None
+        """
+        # some 'preferences' are set based on environment where we are running and shouldn't be saved
+        # or loaded from file.
 
+        def int_keys_to_str(dd):
+            """ Recursively turn int keys to strings
+            :param dd: dict
+            :return: new dict where int keys are turned to strings
+            """
+            nl = {}
+            for key, item in dd.items():
+                if item is None:
+                    item = '_None'
+                if isinstance(key, int):
+                    key = '_ikey_%s' % key
+                if isinstance(item, dict):
+                    item = int_keys_to_str(item)
+                nl[key] = item
+            return nl
+
+        if not path:
+            path = self.preferences_path
+        d = dict(vars(self))
+        for k in Preferences.not_saved:
+            del d[k]
+        d = int_keys_to_str(d)
+
+        f = open(path, 'wb')
+        plistlib.dump(d, f)
+        f.close()
+        print("Wrote settings to: " + path)
+
+
+    @time_me
+    def load_preferences(self):
+        """ Tries to load preferences from plist and overwrite values in this object.
+        Looks to preferences path (~/Library/Preferences/Kataja.plist) and
+        if not there, takes default preferences from resources/default.plist.
+        If even that fails, takes the current preferences and makes a
+        resources/default.plist out of that.
+        :return: None
+        """
+
+        def str_keys_to_int(dd):
+            """ Recursively turn encoded (_ikey_%) string keys back to ints and None -values replaced with '_None'
+            :param dd: dict
+            :return: new dict where string keys are turned back to ints
+            """
+            nl = {}
+            for key, item in dd.items():
+                if key.startswith('_ikey_'):
+                    key = int(key[6:])
+                if isinstance(item, str) and item == '_None':
+                    item = None
+                if isinstance(item, dict):
+                    item = str_keys_to_int(item)
+                nl[key] = item
+            return nl
+
+        paths = [self.preferences_path, self.resources_path+'default.plist']
+        found = False
+        for path in paths:
+            if os.path.exists(path):
+                f = open(path, 'rb')
+                d = plistlib.load(f)
+                d = str_keys_to_int(d)
+
+                writables = dict(vars(self))
+                for k in Preferences.not_saved:
+                    del writables[k]
+                good_keys = list(writables.keys())
+
+                for key, value in d.items():
+                    if key in good_keys:
+                        setattr(self, key, value)
+                print('loaded settings: ', d)
+                found = True
+                break
+        return found
 
 
 def extract_bitmaps(filename):
     """
-
+    Helper method to turn 3-color image (blue, black, transparent) into bitmap masks.
     :param filename:
-    :return:
+    :return: tuple(original as pixmap, color1 as mask (bitmap), color2 as mask)
     """
     pm = QtGui.QPixmap(filename)
     color1 = QtGui.QColor(0, 0, 255)
@@ -260,8 +342,6 @@ def extract_bitmaps(filename):
     bms = (
         pm, pm.createMaskFromColor(color1, QtCore.Qt.MaskOutColor),
         pm.createMaskFromColor(color2, QtCore.Qt.MaskOutColor))
-    # for bmp in bms:
-    # bmp.setMask(bmp.createMaskFromColor(QtGui.QColor(255,255,255)))
     return bms
 
 
@@ -288,16 +368,14 @@ class QtPreferences:
         t = time.time()
         self.easing_curve = []
         self.prepare_fonts(preferences.fonts, fontdb)
-        print('-- prepared fonts ... ', time.time() - t)
         self.prepare_easing_curve(preferences._curve, preferences.move_frames)
         self.no_pen = QtGui.QPen()
         self.no_pen.setStyle(QtCore.Qt.NoPen)
         self.no_brush = QtGui.QBrush()
         self.no_brush.setStyle(QtCore.Qt.NoBrush)
-        self.lock_icon = QtGui.QPixmap('icons/lock.png').scaledToWidth(16)
-        self.left_arrow = extract_bitmaps('kataja/icons/left_2c.gif')
-        self.right_arrow = extract_bitmaps('kataja/icons/right_2c.gif')
-        print('-- loaded icon and scaled it ... ', time.time() - t)
+        #self.lock_icon = QtGui.QPixmap(preferences.resources_path+'icons/lock.png').scaledToWidth(16)
+        self.left_arrow = extract_bitmaps(preferences.resources_path+'icons/left_2c.gif')
+        self.right_arrow = extract_bitmaps(preferences.resources_path+'icons/right_2c.gif')
 
     def update(self, preferences):
         """

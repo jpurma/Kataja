@@ -31,4 +31,5 @@ class LogPanel(UIPanel):
 
 
     def sizeHint(self):
+        print("LogPanel asking for sizeHint, ", self.preferred_size)
         return self.preferred_size

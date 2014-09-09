@@ -64,6 +64,7 @@ class PanelTitle(QtWidgets.QWidget):
         close_button.setMaximumWidth(16)
         panel.connect_button_to_action(close_button, panel.get_visibility_action())
         layout.addWidget(close_button)
+        print("Setting minimumSize for UIpanel to ", self.preferred_size)
         self.setMinimumSize(self.preferred_size)
         self.folded = False
         self.fold_button = QtWidgets.QPushButton("-")
@@ -257,6 +258,10 @@ class UIPanel(QtWidgets.QDockWidget):
         print("Asking for UIPanel sizePolicy")
         return QtWidgets.QDockWidget.sizePolicy(self)
 
+
+    def setMinimumSize(self, *__args):
+        print("called setMinimumSize, ", str(__args))
+        return QtWidgets.QDockWidget.setMinimumSize(self, *__args)
 
 NONE = 0
 FLAG = 1

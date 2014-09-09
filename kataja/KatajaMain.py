@@ -132,19 +132,19 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.setCorner(QtCore.Qt.BottomLeftCorner, QtCore.Qt.LeftDockWidgetArea)
         self.setCorner(QtCore.Qt.BottomRightCorner, QtCore.Qt.RightDockWidgetArea)
         top_dock = QtWidgets.QDockWidget()
-        self.addDockWidget(QtCore.Qt.TopDockWidgetArea, top_dock, QtCore.Qt.Horizontal)
+        #self.addDockWidget(QtCore.Qt.TopDockWidgetArea, top_dock, QtCore.Qt.Horizontal)
         toolbar = QtWidgets.QToolBar()
 
         self.status_bar = QtWidgets.QStatusBar()
         self.setStatusBar(self.status_bar)
 
-        top_dock.setWidget(self.status_bar)
+        #top_dock.setWidget(self.status_bar)
         #toolbar.setMovable(False)
         #toolbar.setFloatable(False)
         #toolbar.setOrientation(QtCore.Qt.Horizontal)
         #print(self.statusBar())
-        top_dock.setTitleBarWidget(QtWidgets.QWidget())
-        self.setStatusBar(self.status_bar)
+        #top_dock.setTitleBarWidget(QtWidgets.QWidget())
+        #self.setStatusBar(self.status_bar)
         #toolbar.setFixedSize(480, 40)
         #self.addToolBar(toolbar)
         #self.statusBar().
@@ -1122,6 +1122,7 @@ class KatajaMain(QtWidgets.QMainWindow):
                 print('garbage:', gc.garbage)
 
                 # objgraph.show_most_common_types(limit =40)
+        prefs.save_preferences()
         print('...done')
 
     @time_me
@@ -1132,7 +1133,6 @@ class KatajaMain(QtWidgets.QMainWindow):
         """
         savedata = {}
         open_references = {}
-        save_object(prefs, savedata, open_references)
         savedata['save_scheme_version'] = 0.1
         save_object(self, savedata, open_references)
         c = 0

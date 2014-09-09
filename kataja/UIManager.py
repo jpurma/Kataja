@@ -218,14 +218,18 @@ class UIManager:
         :param field_name:
         :param value:
         """
-        field = self.ui_buttons[field_name]
-        parent = field.parent()
-        while (not hasattr(parent, 'update_field')) and parent:
-            parent = parent.parent()
-        if parent:
-            parent.update_field(field_name, field, value)
+        if field_name in self.ui_buttons:
+            field = self.ui_buttons[field_name]
+            parent = field.parent()
+            while (not hasattr(parent, 'update_field')) and parent:
+                parent = parent.parent()
+            if parent:
+                parent.update_field(field_name, field, value)
+            else:
+                print('did not found field %s from any ui panels' % field_name)
         else:
             print('did not found field %s from any ui panels' % field_name)
+
 
     def restore_panel_positions(self):
         """
@@ -256,8 +260,10 @@ class UIManager:
             self._message.update_color()
         if self.hud:
             self.hud.update_color()
-        self._ui_panels[g.COLOR_THEME].update_colors()
-        self._ui_panels[g.COLOR_WHEEL].update_colors()
+        if g.COLOR_THEME in self._ui_panels:
+            self._ui_panels[g.COLOR_THEME].update_colors()
+        if g.COLOR_WHEEL in self._ui_panels:
+            self._ui_panels[g.COLOR_WHEEL].update_colors()
 
     def update_selections(self):
         """

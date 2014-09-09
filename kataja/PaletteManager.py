@@ -153,9 +153,13 @@ class PaletteManager:
 
     def __init__(self, hsv_key=None):
         print("*** Creating PaletteManager")
-        f = open(prefs.resources_path + 'colors.json', 'r', encoding='UTF-8')
-        self.color_map = json.load(f) # json.load(f, 'utf-8')
-        f.close()
+        try:
+            f = open(prefs.resources_path + 'colors.json', 'r', encoding='UTF-8')
+            self.color_map = json.load(f) # json.load(f, 'utf-8')
+
+            f.close()
+        except FileNotFoundError:
+            self.color_map = {}
 
         if not hsv_key:
             hsv_key = (0.00, 0.29, 0.35)  # dark rose
@@ -505,6 +509,8 @@ class PaletteManager:
         :param hsv:
         :return:
         """
+        if not self.color_map:
+            return ''
         cc = c()
         cc.setHsvF(hsv[0], hsv[1], hsv[2])
         r, g, b, a = cc.getRgb()

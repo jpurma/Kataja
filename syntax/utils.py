@@ -162,7 +162,7 @@ def load_lexicon(filename, Constituent, Feature):
     try:
         f = open(filename, 'r')
     except IOError:
-        print('FileNotFound: %s' % filename)
+        print('FileNotFound (Harmless): %s' % filename)
         return new_dict
     constituent = None
     constituent_id = ''

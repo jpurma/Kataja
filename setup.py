@@ -9,9 +9,10 @@ Usage:
 from setuptools import setup
 
 APP = ['Kataja.py']
-DATA_FILES = []
+DATA_FILES = ['resources']
 OPTIONS = {'argv_emulation': True, 
-'includes': ['sip']
+'includes': ['sip', 'PyQt5'],
+'iconfile': 'resources/icons/Kataja.icns'
 }
 
 setup(
