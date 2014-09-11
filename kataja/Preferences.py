@@ -32,7 +32,7 @@ from PyQt5 import QtGui, QtCore
 import sys
 
 from kataja.globals import *
-from utils import time_me
+from kataja.utils import time_me
 
 
 fonts = {'font': ('Palatino', 'Normal', 12), 'big_font': ('Palatino', 'Normal', 24),
@@ -153,7 +153,7 @@ class Preferences(object):
         self.userspace_path = ''
         self.debug_treeset = self.resources_path + 'trees.txt'
         self.file_name = 'savetest.kataja'
-        self.print_file_path = self.resources_path
+        self.print_file_path = ''
         self.print_file_name = 'kataja_print'
         self.include_gloss_to_print = True
 

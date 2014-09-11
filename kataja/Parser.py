@@ -25,10 +25,10 @@
 
 
 import re
-
+from kataja.debug import parser
 from kataja.singletons import ctrl
 from kataja.Presentation import TextArea, Image
-from kataja.utils import debug_parser, next_free_index
+from kataja.utils import next_free_index
 
 
 latex_symbols_to_unicode = {'bar': '\u00AF', 'abar': '\u0100',  # small greek alphabet
@@ -893,7 +893,7 @@ class BottomUpParser(Parser):
             if not merging:
                 merging.append(create_constituent(''))
             if len(merging) > 2:
-                debug_parser('too many constituents for binary branching. \nConstituents: %s \nMerging: %s \n%s' % (
+                parser('too many constituents for binary branching. \nConstituents: %s \nMerging: %s \n%s' % (
                     constituents, merging, string))
                 M = merge_constituents(merging[0], merging[1], dot_alias)
                 return M
@@ -944,9 +944,9 @@ class BottomUpParser(Parser):
             return s, constituent
 
         remainder, constituent = bottom_up_bracket_parser(list(stream))
-        debug_parser(string)
-        debug_parser(constituent)
-        debug_parser(self._definitions)
+        parser(string)
+        parser(constituent)
+        parser(self._definitions)
 
     def after_restore(self, values=None):
         """

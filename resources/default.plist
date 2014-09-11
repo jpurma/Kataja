@@ -411,7 +411,7 @@
 	<key>print_file_name</key>
 	<string>kataja_print</string>
 	<key>print_file_path</key>
-	<string>./resources/</string>
+	<string></string>
 	<key>save_key</key>
 	<string>preferences</string>
 	<key>selection_width</key>

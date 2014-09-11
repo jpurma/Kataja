@@ -24,6 +24,7 @@
 from collections import OrderedDict
 
 from PyQt5 import QtCore, QtWidgets, QtGui
+import kataja.debug as debug
 
 from kataja.ConstituentNode import ConstituentNode
 from kataja.singletons import ctrl, prefs, qt_prefs
@@ -38,7 +39,7 @@ from kataja.ui.StretchLine import StretchLine
 from kataja.ui.TargetReticle import TargetReticle
 from kataja.actions import actions
 import kataja.globals as g
-from kataja.utils import to_tuple, debug_mouse
+from kataja.utils import to_tuple
 from kataja.ui.TouchArea import TouchArea
 from kataja.ui.panels.ColorThemePanel import ColorPanel
 from kataja.ui.panels.ColorWheelPanel import ColorWheelPanel
@@ -340,6 +341,8 @@ class UIManager:
         return candidates
 
 
+
+
     # ### Actions, Menus and Panels ####################################################
 
     def create_actions(self):
@@ -405,6 +408,7 @@ class UIManager:
                 act.setToolTip(tooltip)
                 act.setStatusTip(tooltip)
             self.qt_actions[key] = act
+            main.addAction(act)
 
 
     def create_menus(self):
@@ -870,12 +874,12 @@ class UIManager:
             """
         # print type(event)
         # print self.itemAt(event.scenePos())
-        debug_mouse('mouse_press_event at UIManager')
+        debug.mouse('mouse_press_event at UIManager')
         drag = getattr(item, 'draggable', False)
         focus = getattr(item, 'focusable', False)
         if drag or focus:
             if isinstance(item, RadialMenu):
-                debug_mouse('clicked child item of RadialMenu')
+                debug.mouse('clicked child item of RadialMenu')
                 for child in item.childItems():
                     if child.sceneBoundingRect().contains(event.scenePos()):
                         child.pressed = True
@@ -910,9 +914,9 @@ class UIManager:
 
         :param event:
             """
-        debug_mouse('ui mouseReleaseEvent', ctrl.watch_for_drag_end)
+        debug.mouse('ui mouseReleaseEvent', ctrl.watch_for_drag_end)
         if ctrl.watch_for_drag_end:
-            debug_mouse("ending drag at UIManager. shouldn't be done here")
+            debug.mouse("ending drag at UIManager. shouldn't be done here")
             x, y = to_tuple(event.scenePos())
             pressed = ctrl.pressed
             if pressed:
@@ -920,11 +924,11 @@ class UIManager:
             self.main.graph_scene.kill_dragging()
         elif ctrl.ui_pressed:
             item = ctrl.ui_pressed
-            debug_mouse('release on ui item ', item)
+            debug.mouse('release on ui item ', item)
             if ctrl.has_focus(item):
                 item.pressed = False
                 consume = item.click(event)
-                debug_mouse('click on ', item)
+                debug.mouse('click on ', item)
                 item.update()
                 ctrl.ui_pressed = None
                 ctrl.dragged = set()
@@ -987,6 +991,8 @@ class UIManager:
             self.ui_activity_marker.hide()
             self.killTimer(self._timer_id)
             self._timer_id = 0
+
+
 
 
 

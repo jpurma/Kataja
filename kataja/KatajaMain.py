@@ -44,6 +44,7 @@ import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
 import PyQt5.QtPrintSupport as QtPrintSupport
 import PyQt5.QtWidgets as QtWidgets
+from kataja.KeyPressManager import KeyPressManager
 
 from kataja.ConstituentNode import ConstituentNode
 from kataja.singletons import ctrl, prefs, qt_prefs
@@ -60,6 +61,7 @@ from kataja.ui.MenuItem import MenuItem
 from kataja.ui.PreferencesDialog import PreferencesDialog
 from kataja.utils import time_me, save_object
 from kataja.visualizations.available import VISUALIZATIONS
+import kataja.debug as debug
 
 
 
@@ -109,6 +111,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         print('---- view init ... ', time.time() - t)
         self.graph_scene.graph_view = self.graph_view
         self.ui_manager = UIManager(self)
+        self.key_manager = KeyPressManager(self)
         print('---- ui init ... ', time.time() - t)
         self.forest_keeper = ForestKeeper(main=self)
         print('---- forest_keeper init ... ', time.time() - t)
@@ -122,7 +125,6 @@ class KatajaMain(QtWidgets.QMainWindow):
         print('---- set palette ... ', time.time() - t)
         self.load_treeset()
         print('---- loaded treeset ... ', time.time() - t)
-        self._shortcuts = {}
         x, y, w, h = (50, 50, 940, 720)
         self.setMinimumSize(w, h)
         self.setWindowTitle(self.tr("Kataja"))
@@ -245,139 +247,16 @@ class KatajaMain(QtWidgets.QMainWindow):
 
     # return QtWidgets.QMainWindow.event(self, event)
 
-    # ### Keyboard events ##########
     def mousePressEvent(self, event):
         """ KatajaMain doesn't do anything with mousePressEvents, it delegates
         :param event:
         them downwards. This is for debugging. """
         QtWidgets.QMainWindow.mousePressEvent(self, event)
 
-    def keyPressEvent(self, event):
-        """ keyPresses are intercepted here and some feedback of them is given,
-        :param event:
-        then they are delegated further """
-        self.ui_manager.add_feedback_from_command(event.text())
-        # if all([item.can_take_keyevent(event) for item in ctrl.selected]):
-        # for item in ctrl.selected:
-        # item.take_keyevent(event)
-        # return
+    def dkeyPressEvent(self, event):
+        if not self.key_manager.receive_key_press(event):
+            return QtWidgets.QMainWindow.keyPressEvent(self, event)
 
-        # if event.text() in self._shortcuts:
-        # act = self._shortcuts[event.text()]
-        # act.trigger()
-        self.ui_manager.show_command_prompt()
-        return QtWidgets.QMainWindow.keyPressEvent(self, event)
-
-    def key_press(self, event):
-        """ Other widgets can send their key presses here for global navigation
-        :param event:
-        """
-        key = event.key()
-        qtkey = QtCore.Qt.Key
-        focus = ctrl.focus  # : :type focus: Movable
-
-        if key == qtkey.Key_Down:
-            if not focus:
-                if self.forest.roots:
-                    self.forest.roots[0].take_focus()
-            else:
-                focus.move_focus_down()
-        elif key == qtkey.Key_Right:
-            if not focus:
-                if self.forest.roots:
-                    self.forest.roots[0].take_focus()
-            else:
-                focus.move_focus_right()
-        elif key == qtkey.Key_Up:
-            if not focus:
-                if self.forest.roots:
-                    self.forest.roots[0].take_focus()
-            else:
-                focus.move_focus_up()
-        elif key == qtkey.Key_Left:
-            if not focus:
-                if self.forest.roots:
-                    self.forest.roots[0].take_focus()
-            else:
-                focus.move_focus_left()
-        elif key == qtkey.Key_Space:
-            if focus:
-                focus.activate_menu()
-        elif key == qtkey.Key_Enter or key == qtkey.Key_Return:
-            if focus:
-                focus.trigger_menu()
-
-    
-    # ### Keyboard reading ######################################################
-
-    # Since QGraphicsItems cannot have actions and action shortcuts tend to
-    # override QGraphicsItems' keyevents, we can make main window's actions as general mechanism
-    # for delivering keypresses to further items.
-
-    def key_backspace(self):
-        """
-
-
-        """
-        for item in ctrl.selected:
-            item.undoable_delete()
-        self.action_finished()
-
-
-    def key_return(self, **kw):
-        """
-
-        :param kw:
-        """
-        if ctrl.ui_focus:
-            pass
-        elif ctrl.selected:
-            for item in ctrl.selected:
-                if hasattr(item, 'click'):
-                    item.click(None)
-
-    def key_m(self):
-        """
-
-
-        """
-        if ctrl.single_selection():
-            item = ctrl.get_selected()
-            if isinstance(item, ConstituentNode):
-                print('merge up, missing function call here')
-                assert False
-
-    def key_left(self):
-        """ Move selection left """
-        if not ctrl.ui_focus:
-            self.graph_scene.move_selection('left')
-
-    def key_right(self):
-        """ Move selection right """
-        if not ctrl.ui_focus:
-            self.graph_scene.move_selection('right')
-
-    def key_up(self):
-        """ Move selection up """
-        if not ctrl.ui_focus:
-            self.graph_scene.move_selection('up')
-
-    def key_down(self):
-        """ Move selection down """
-        if not ctrl.ui_focus:
-            self.graph_scene.move_selection('down')
-
-    def key_esc(self):
-        """ Esc pressed, escape from current menu/focus/action """
-        if ctrl.ui_focus:
-            ui_focus = ctrl.ui_focus  # : :type ui_focus = MovableUI
-            ui_focus.cancel()
-        for item in ctrl.on_cancel_delete:
-            self.forest.delete_item(item)
-
-    def key_tab(self):
-        """ Tab pressed, move focus to next whatever"""
-        print('tab-tab!')
 
     def undo(self):
         """ Undo -command triggered """
@@ -804,6 +683,7 @@ class KatajaMain(QtWidgets.QMainWindow):
 
 
         """
+        debug.keys("Print to file called")
         sc = self.graph_scene
         no_brush = QtGui.QBrush(Qt.NoBrush)
         sc.setBackgroundBrush(no_brush)
@@ -826,7 +706,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         """
         self.killTimer(event.timerId())
         # Prepare file and path
-        path = prefs.print_file_path
+        path = prefs.print_file_path or prefs.userspace_path or prefs.default_userspace_path
         if not path.endswith('/'):
             path += '/'
         if not os.path.exists(path):
@@ -850,13 +730,18 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.graph_scene.photo_frame = None
         target = QtCore.QRectF(0, 0, source.width(), source.height())
         # Prepare printer
+        print(1)
+
         pr = QtPrintSupport.QPrinter
 
-        printer = pr(pr.ScreenResolution)
+        printer = pr(mode=pr.ScreenResolution)
+        print(2)
+
         # printer = QtGui.QPrinter(QtGui.QPrinter.HighResolution)
         printer.setPaperSize(target.size(), pr.DevicePixel)
         printer.setOutputFormat(pr.NativeFormat)
         printer.setResolution(prefs.dpi)
+        print(3)
         # printer.setFontEmbeddingEnabled(True)
         # print printer.fontEmbeddingEnabled()
         # printer.setOutputFormat(QtGui.QPrinter.PdfFormat)
@@ -864,11 +749,15 @@ class KatajaMain(QtWidgets.QMainWindow):
         printer.setOutputFileName(full_path)
         printer.setFullPage(True)
         # Paint it
+        print(4)
         painter = QtGui.QPainter()
         painter.begin(printer)
+        print(5)
         self.graph_scene.render(painter, target=target, source=source)
+        print(6)
         painter.end()
         # Thank you!
+        print('printing done.')
         self.add_message("printed to %s as PDF with %s dpi." % (full_path, prefs.dpi))
         # Restore image
         self.graph_scene.setBackgroundBrush(self.color_manager.gradient)
@@ -943,12 +832,12 @@ class KatajaMain(QtWidgets.QMainWindow):
             self.load_state_from_file(filename)
             self.add_message("Loaded '%s'." % filename)
 
+
     def load_state_from_file(self, filename=''):
         """
         Perform the loading of kataja state from a file.
         :param filename: string
         """
-        ctrl.loading = True
         self.clear_all()
         self.scene.displayed_forest = None
         if filename.endswith('.zkataja'):

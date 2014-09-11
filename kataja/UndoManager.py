@@ -23,9 +23,8 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
-
-
-from kataja.utils import time_me, save_object, load_objects, debug_undo
+from kataja.debug import undo
+from kataja.utils import time_me, save_object, load_objects
 from kataja.singletons import ctrl
 
 
@@ -69,7 +68,7 @@ class UndoManager:
             c += 1
             for obj in list(open_refs.values()):
                 save_object(obj, saved_objects, open_refs)
-        debug_undo('total savedata: %s chars.' % len(str(saved_objects)))
+        undo('total savedata: %s chars.' % len(str(saved_objects)))
         return saved_objects
 
 
@@ -84,23 +83,23 @@ class UndoManager:
         :param msg:
         self._stack =  [, i-1: +- diff of previous state-1 and full_state ,   i: +- diff of previous_state and full_state)]
         """
-        debug_undo('*** undo manager: recording %s' % msg)
+        undo('*** undo manager: recording %s' % msg)
         saved_objects = self.take_snapshot()
 
         # Undo stack is cut 
-        debug_undo('pre-cut stack size: %s, current index %s' % (len(self._stack), self._current))
+        undo('pre-cut stack size: %s, current index %s' % (len(self._stack), self._current))
         self._stack = self._stack[:self._current]
         self._msg_stack = self._msg_stack[:self._current]
-        debug_undo('cut stack size: %s, current index %s' % (len(self._stack), self._current))
+        undo('cut stack size: %s, current index %s' % (len(self._stack), self._current))
         if self.full_state:
             diff = self.compare_saved_dicts(self.full_state, saved_objects)
-            debug_undo('diff size: ', len(str(diff)))
+            undo('diff size: ', len(str(diff)))
             self._stack.append(diff)
             self._msg_stack.append(msg)
         self._current = len(self._stack)
         saved_objects['stack_index'] = self._current
         self.full_state = saved_objects
-        debug_undo('recorded stack and updated full state. stack size & current index: %s' % len(self._stack))
+        undo('recorded stack and updated full state. stack size & current index: %s' % len(self._stack))
 
     def compare_saved_dicts(self, d1, d2):
         """
@@ -156,7 +155,7 @@ class UndoManager:
                 elif key == '++':
                     # remove these objects from state
                     for dkey in item.keys():
-                        debug_undo('del ', dkey)
+                        undo('del ', dkey)
                         to_be_deleted[dkey] = state[dkey]
                         del state[dkey]
                 elif key == '--':
@@ -183,25 +182,25 @@ class UndoManager:
                 elif key == '--':
                     # remove these objects from state
                     for dkey in item.keys():
-                        debug_undo('del ', dkey)
+                        undo('del ', dkey)
                         to_be_deleted[dkey] = state[dkey]
                         del state[dkey]
                 elif key in state:
                     _restore_newer(state[key], item)
 
 
-        debug_undo("full state's stack index: ", self.full_state['stack_index'])
+        undo("full state's stack index: ", self.full_state['stack_index'])
         if self._current < self.full_state['stack_index']:
             _restore_older(self.full_state, self._stack[self._current])
         elif self._current > self.full_state['stack_index']:
             _restore_newer(self.full_state, self._stack[self._current - 1])
         elif self._current == self.full_state['stack_index']:
-            debug_undo('shouldnt restore to the current full state')
+            undo('shouldnt restore to the current full state')
 
         self.full_state['stack_index'] = self._current
-        debug_undo('modified the state, next we should restore forest to that state')
-        debug_undo('current stack index and state: %s' % self._current)
-        debug_undo('to be deleted: ', to_be_deleted)
+        undo('modified the state, next we should restore forest to that state')
+        undo('current stack index and state: %s' % self._current)
+        undo('to be deleted: ', to_be_deleted)
         # forest_data = self.full_state[self.full_state['start_key']]
         load_objects(self.forest, self.full_state)
         self.forest.main.graph_scene.draw_forest(self.forest)
@@ -218,7 +217,7 @@ class UndoManager:
             ctrl.add_message('cannot undo')
         else:
             ctrl.add_message('undo - %s (%s)' % (self._msg_stack[self._current], self._current))
-            debug_undo('undoing to stack index %s' % self._current)
+            undo('undoing to stack index %s' % self._current)
             self.restore()
 
 
@@ -233,7 +232,7 @@ class UndoManager:
             ctrl.add_message('cannot redo')
         else:
             ctrl.add_message('redo - %s (%s)' % (self._msg_stack[self._current - 1], self._current))
-            debug_undo('redoing to stack index %s' % (self._current - 1))
+            undo('redoing to stack index %s' % (self._current - 1))
             self.restore()
 
             # def repair_later(self, item):

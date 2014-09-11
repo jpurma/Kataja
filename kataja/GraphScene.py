@@ -28,13 +28,13 @@ from PyQt5.QtCore import QPointF as Pf, Qt
 import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
-
+from kataja.debug import mouse
 from kataja.Edge import Edge
 from kataja.ConstituentNode import ConstituentNode
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.Movable import Movable
 from kataja.Node import Node
-from kataja.utils import to_tuple, debug_mouse
+from kataja.utils import to_tuple
 from kataja.ui import TouchArea
 
 
@@ -98,7 +98,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         :param args:
         """
         receiving_items = self._signal_forwarding.get(signal, [])
-        debug_mouse("gs forwarding signal", signal, receiving_items, self._signal_forwarding)
+        mouse("gs forwarding signal", signal, receiving_items, self._signal_forwarding)
         for item in receiving_items:
             item.receive_signal(signal, *args)
 
@@ -472,7 +472,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         :param event:
         :return:
         """
-        debug_mouse('gs mousePressEvent')
+        mouse('gs mousePressEvent')
         x, y = to_tuple(event.scenePos())
         um = self.main.ui_manager
         assert (not ctrl.pressed)
@@ -487,7 +487,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             consumed = um.mouse_press_event(closest_item, event)
             if consumed:
                 self.graph_view.setDragMode(QtWidgets.QGraphicsView.NoDrag)
-                debug_mouse('eating gs mousePressEvent 1')
+                mouse('eating gs mousePressEvent 1')
                 return None
             ui_items.remove(closest_item)
         # It wasn't consumed, continue with other selectables:
@@ -497,11 +497,11 @@ class GraphScene(QtWidgets.QGraphicsScene):
             if closest_item:
                 ctrl.pressed = closest_item
                 if closest_item.draggable:
-                    debug_mouse('pressed on ', closest_item)
-                    debug_mouse('--- turning drag hand off ---')
+                    mouse('pressed on ', closest_item)
+                    mouse('--- turning drag hand off ---')
                     self.graph_view.setDragMode(QtWidgets.QGraphicsView.NoDrag)
                     self._drag_start_point = to_tuple(event.screenPos())
-            debug_mouse('eating gs mousePressEvent 2')
+            mouse('eating gs mousePressEvent 2')
             return None  # QtWidgets.QGraphicsScene.mousePressEvent(self, event)  # None
         else:
             return QtWidgets.QGraphicsScene.mousePressEvent(self, event)
@@ -512,7 +512,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
 
         """
-        debug_mouse('--- start dragging ---')
+        mouse('--- start dragging ---')
         ctrl.watch_for_drag_end = True
         # these should be activated by constituentnode instead in start_dragging -method
         # for ma in ctrl.forest.touch_areas:
@@ -526,7 +526,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
 
         """
-        debug_mouse('--- killing dragging ---')
+        mouse('--- killing dragging ---')
         ctrl.dragged = set()
         ctrl.dragged_positions = set()
         ctrl.pressed = None
@@ -535,7 +535,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         f = self.main.forest
         ctrl.main.ui_manager.remove_touch_areas()  # @UndefinedVariable
         ctrl.main.ui_manager.update_touch_areas()  # @UndefinedVariable
-        debug_mouse('--- turning drag hand on ---')
+        mouse('--- turning drag hand on ---')
         self.graph_view.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
 
 
@@ -545,20 +545,20 @@ class GraphScene(QtWidgets.QGraphicsScene):
         :param event:
         :return:
         """
-        debug_mouse('gs mouseReleaseEvent')
+        mouse('gs mouseReleaseEvent')
         self.graph_view.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
 
         consumed = self.main.ui_manager.mouse_release_event(event)
         if consumed:
-            debug_mouse('mouse release consumed, exit now')
+            mouse('mouse release consumed, exit now')
             ctrl.main.action_finished()  # @UndefinedVariable
-            debug_mouse('eating gs mouseReleaseEvent')
+            mouse('eating gs mouseReleaseEvent')
             return
 
         if self._dblclick and not ctrl.pressed:  # doubleclick sends one release event at the end, swallow that
             self._dblclick = False
-            debug_mouse('swallowed doubleclick')
-            debug_mouse('eating gs mouseReleaseEvent')
+            mouse('swallowed doubleclick')
+            mouse('eating gs mouseReleaseEvent')
             return
         elif ctrl.pressed:
 
@@ -571,14 +571,14 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 self.kill_dragging()
             elif pressed.sceneBoundingRect().contains(x, y):
                 if pressed.clickable:
-                    debug_mouse('click on ', pressed)
+                    mouse('click on ', pressed)
                     success = pressed.click(event)
                 pressed.update()
             ctrl.pressed = None
             if success:
                 ctrl.main.action_finished()  # @UndefinedVariable
-            debug_mouse('set pressed to none')
-            debug_mouse('eating gs mouseReleaseEvent')
+            mouse('set pressed to none')
+            mouse('eating gs mouseReleaseEvent')
             return None  # this mouseRelease is now consumed
         else:
             if event.modifiers() == Qt.ShiftModifier:
@@ -644,7 +644,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         :param event:
         """
-        debug_mouse('dropEvent registered')
+        mouse('dropEvent registered')
         QtWidgets.QGraphicsScene.dropEvent(self, event)
 
     def mouseDoubleClickEvent(self, event):
@@ -653,7 +653,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         :param event:
         :return:
         """
-        debug_mouse('doubleClick registered')
+        mouse('doubleClick registered')
         self._dblclick = True
         QtWidgets.QGraphicsScene.mouseDoubleClickEvent(self, event)
         found = False

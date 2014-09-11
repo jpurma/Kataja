@@ -1,8 +1,9 @@
 # coding=utf-8
 from collections import Counter
 import string
+from kataja.debug import forest
 
-from kataja.utils import time_me, debug_forest
+from kataja.utils import time_me
 from kataja.ConstituentNode import ConstituentNode
 
 
@@ -135,15 +136,15 @@ class ChainManager:
 
         """
         r = []
-        debug_forest('---- chains -----')
+        forest('---- chains -----')
         for key, chain in self._chains.items():
-            debug_forest('%s :' % key)
+            forest('%s :' % key)
             for (item, parent) in chain:
                 if item.is_trace:
-                    debug_forest('trace ')
+                    forest('trace ')
                 else:
-                    debug_forest('head ')
-            debug_forest('')
+                    forest('head ')
+            forest('')
 
     # @time_me
     def rebuild_chains(self):
@@ -152,7 +153,7 @@ class ChainManager:
         f = self.forest
         multidomination = False
         # decide if there is multidomination present and build dictionary of nodes with index.
-        for node in f.nodes.values():
+        for node in list(f.nodes.values()):
             if isinstance(node, ConstituentNode):
                 index = node.get_index()
                 if index:
@@ -167,7 +168,7 @@ class ChainManager:
                             if orig_parent == parent:
                                 chain.append((node, orig_parent))
                             else:
-                                chain.append((f.create_trace_for(node), parent))  # <<<<<<<<-----
+                                chain.append((f.create_trace_for(node), parent))  # <----- modifies node dict
                     else:
                         chain.append((node, parents[0]))
 
@@ -179,7 +180,7 @@ class ChainManager:
 
 
         """
-        debug_forest('group traces to chain head')
+        forest('group traces to chain head')
         # ## Move traces to their multidominant originals, purely visual thing ###
         self.rebuild_chains()
         y_adjust = {}
@@ -212,7 +213,7 @@ class ChainManager:
 
 
         """
-        debug_forest('traces to multidomination')
+        forest('traces to multidomination')
         # if not self._chains:
         self.rebuild_chains()
         self.dump_chains()
@@ -229,7 +230,7 @@ class ChainManager:
                 node.original_parent = node.get_parents()[0].save_key
         for t, i, node in ordered:
             if node.is_trace:
-                debug_forest('replacing trace ', node)
+                forest('replacing trace ', node)
                 original = self.get_chain_head(node.get_index())
                 self.forest._replace_node(node, original)
                 self.forest.delete_node(node)
@@ -242,7 +243,7 @@ class ChainManager:
 
 
         """
-        debug_forest('multidomination to traces')
+        forest('multidomination to traces')
         self.rebuild_chains()
         for key, chain in self._chains.items():
             head = self.get_chain_head(key)
