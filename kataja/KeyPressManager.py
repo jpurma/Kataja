@@ -5,6 +5,44 @@ from kataja.singletons import ctrl
 
 __author__ = 'purma'
 
+class ShortcutSolver(QtCore.QObject):
+    """ I want to have Shortcuts available in Menus and also to have 'button clicked' effect in panels when the
+    relevant shortcut is pressed. Qt doesn't like ambiguous shortcuts, so we interrupt those and only pseudo-click
+    the button in those cases.
+
+    :param ui_manager:
+    """
+
+    def __init__(self, ui_manager):
+        QtCore.QObject.__init__(self)
+        self.ui_manager = ui_manager
+
+    def eventFilter(self, action, event):
+        if event.type() == QtCore.QEvent.Shortcut and event.isAmbiguous():
+            act_data = self.ui_manager.actions[action.data()]
+            button = act_data['button']
+            if button:
+                print('Dealing with ambiguous action shortcut')
+                button.animateClick()
+                return True     # eat this event
+            else:
+                print("Don't know how to handle this ambiguous shortcut in ", action)
+        return False
+
+class ButtonShortcutFilter(QtCore.QObject):
+    """ For some reason button shortcut sometimes focuses instead of clicks.
+
+    """
+
+    def eventFilter(self, button, event):
+        if event.type() == QtCore.QEvent.Shortcut:
+            button.animateClick()
+            return True
+        return False
+
+
+
+
 class KeyPressManager:
 
     def __init__(self, main):

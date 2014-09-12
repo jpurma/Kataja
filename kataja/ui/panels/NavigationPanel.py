@@ -40,7 +40,8 @@ class NavigationPanel(UIPanel):
         #prev_tree.setMinimumHeight(32)
         layout.addWidget(prev_tree, 1, 0, 1, 1)
         ui_manager.ui_buttons['prev_forest'] = prev_tree
-        prev_tree.setDefaultAction(ui_manager.qt_actions['prev_forest'])
+        ui_manager.connect_button_to_action(prev_tree, ui_manager.qt_actions['prev_forest'])
+        #prev_tree.setDefaultAction(ui_manager.qt_actions['prev_forest'])
 
         next_tree = TwoColorButton(qt_prefs.right_arrow, '', self)
         #next_tree.setIconSize(QtCore.QSize(24,24))
@@ -49,7 +50,8 @@ class NavigationPanel(UIPanel):
         #next_tree.setMinimumHeight(32)
         layout.addWidget(next_tree, 1, 1, 1, 1)
         ui_manager.ui_buttons['next_forest'] = next_tree
-        next_tree.setDefaultAction(ui_manager.qt_actions['next_forest'])
+        ui_manager.connect_button_to_action(next_tree, ui_manager.qt_actions['next_forest'])
+        #next_tree.setDefaultAction(ui_manager.qt_actions['next_forest'])
 
 
         label = QtWidgets.QLabel('Derivation step', self)

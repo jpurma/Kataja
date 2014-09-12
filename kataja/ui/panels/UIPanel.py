@@ -62,17 +62,17 @@ class PanelTitle(QtWidgets.QWidget):
         layout.minimumSize = self.sizeHint
         close_button = QtWidgets.QPushButton("x")
         close_button.setMaximumWidth(16)
-        panel.connect_button_to_action(close_button, panel.get_visibility_action())
+        self.panel.ui_manager.connect_button_to_action(close_button, panel.get_visibility_action())
         layout.addWidget(close_button)
         debug.ui("Setting minimumSize for UIpanel to ", self.preferred_size)
         self.setMinimumSize(self.preferred_size)
         self.folded = False
         self.fold_button = QtWidgets.QPushButton("-")
         self.fold_button.setMaximumWidth(16)
-        panel.connect_button_to_action(self.fold_button, panel.get_fold_action())
+        self.panel.ui_manager.connect_button_to_action(self.fold_button, panel.get_fold_action())
         self.pin_button = QtWidgets.QPushButton("p")
         self.pin_button.setMaximumWidth(16)
-        panel.connect_button_to_action(self.pin_button, panel.get_pin_action())
+        self.panel.ui_manager.connect_button_to_action(self.pin_button, panel.get_pin_action())
         layout.addWidget(self.pin_button)
 
         self.setContentsMargins(0, 0, 0, 0)
@@ -169,14 +169,6 @@ class UIPanel(QtWidgets.QDockWidget):
 
     def pin_to_dock(self):
         self.setFloating(False)
-
-    def connect_button_to_action(self, button, action):
-        action_data = self.ui_manager.actions[action.data()]
-        button.clicked.connect(action.trigger)
-        tooltip = action_data.get('tooltip', None)
-        if tooltip:
-            button.setStatusTip(tooltip)
-            button.setToolTip(tooltip)
 
 
     def report_dock_location(self, area):

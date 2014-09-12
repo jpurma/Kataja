@@ -24,6 +24,7 @@
 from collections import OrderedDict
 
 from PyQt5 import QtCore, QtWidgets, QtGui
+from KeyPressManager import ShortcutSolver, ButtonShortcutFilter
 import kataja.debug as debug
 
 from kataja.ConstituentNode import ConstituentNode
@@ -77,6 +78,8 @@ menu_structure = OrderedDict([
     ('help_menu', ('&Help', ['help']))
 ])
 
+
+
 class UIManager:
     """
     UIManager Keeps track of all UI-related widgets and tries to do the most work to keep KatajaMain as simple as possible.
@@ -109,6 +112,8 @@ class UIManager:
         self.moving_things = set()
         self.touch_areas = set()
         self.symbols = set()
+        self.shortcut_solver = ShortcutSolver(self)
+        self.button_shortcut_filter = ButtonShortcutFilter()
 
         ## Create actions based on actions.py and menus based on
         self.create_actions()
@@ -408,6 +413,7 @@ class UIManager:
                 act.setToolTip(tooltip)
                 act.setStatusTip(tooltip)
             self.qt_actions[key] = act
+            act.installEventFilter(self.shortcut_solver)
             main.addAction(act)
 
 
@@ -469,6 +475,22 @@ class UIManager:
             self._ui_panels[id] = new_panel
             # use action to toggle panel visible or hidden, so that menu gets updated properly
             new_panel.get_visibility_action().setChecked(not panel.get('closed', False))
+
+
+    def connect_button_to_action(self, button, action):
+        action_data = self.actions[action.data()]
+        button.clicked.connect(action.trigger)
+        tooltip = action_data.get('tooltip', None)
+        action_data['button'] = button
+        if tooltip:
+            button.setStatusTip(tooltip)
+            button.setToolTip(tooltip)
+            shortcut = action_data.get('shortcut', None)
+            if shortcut:
+                button.setShortcut(QtGui.QKeySequence(shortcut))
+                button.installEventFilter(self.button_shortcut_filter)
+            button.setFocusPolicy(QtCore.Qt.TabFocus)
+
 
 
     # ### Touch areas #####################################################################

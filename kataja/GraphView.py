@@ -46,7 +46,7 @@ class GraphView(QtWidgets.QGraphicsView):
         self.main = main
         self.graph_scene = graph_scene
         self.setScene(graph_scene)
-        #self.setCacheMode(QtWidgets.QGraphicsView.CacheBackground)
+        self.setCacheMode(QtWidgets.QGraphicsView.CacheBackground)
         self.setRenderHint(QtGui.QPainter.Antialiasing)
         # self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
         # self.setResizeAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
@@ -62,7 +62,7 @@ class GraphView(QtWidgets.QGraphicsView):
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         # self.setViewportUpdateMode(QtWidgets.QGraphicsView.BoundingRectViewportUpdate)
-        #self.setViewportUpdateMode(QtWidgets.QGraphicsView.FullViewportUpdate)
+        self.setViewportUpdateMode(QtWidgets.QGraphicsView.FullViewportUpdate)
         # self.setViewportUpdateMode(QtWidgets.QGraphicsView.NoViewportUpdate)
         self.setMouseTracking(True)
         # self.setTransformationAnchor(QtWidgets.QGraphicsView.NoAnchor)
@@ -83,8 +83,8 @@ class GraphView(QtWidgets.QGraphicsView):
         self.target_scale = min((self.width() / _target_rect.width(), self.height() / _target_rect.height()))
         self.resetTransform()
         # self.resetMatrix()
-        if prev_target_scale and abs(self.target_scale - prev_target_scale) > 0.2:
-            print("glitching with zoom:", prev_target_scale, self.target_scale)
+        #if prev_target_scale and abs(self.target_scale - prev_target_scale) > 0.2:
+        #    print("glitching with zoom:", prev_target_scale, self.target_scale)
         self.scale(self.target_scale, self.target_scale)
         self.main.ui_manager.update_positions()
 

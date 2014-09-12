@@ -42,11 +42,9 @@ import pprint
 from PyQt5.QtCore import Qt
 import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
-import PyQt5.QtPrintSupport as QtPrintSupport
 import PyQt5.QtWidgets as QtWidgets
 from kataja.KeyPressManager import KeyPressManager
 
-from kataja.ConstituentNode import ConstituentNode
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.Forest import Forest
 from kataja.ForestKeeper import ForestKeeper
@@ -62,10 +60,12 @@ from kataja.ui.PreferencesDialog import PreferencesDialog
 from kataja.utils import time_me, save_object
 from kataja.visualizations.available import VISUALIZATIONS
 import kataja.debug as debug
+from kataja.ui.TwoColorButton import TwoColorButton
 
 
 
 # show labels
+
 ONLY_LEAF_LABELS = 0
 ALL_LABELS = 1
 ALIASES = 2
@@ -190,7 +190,8 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.ui_manager.clear_items()
         self.set_forest(forest)
         self.forest.update_colors()
-        self.forest.info_dump()
+        if debug.DEBUG_FOREST_OPERATION:
+            self.forest.info_dump()
         self.graph_scene.displayed_forest = forest
         self.forest.add_all_to_scene()
         self.graph_scene.reset_zoom()
@@ -253,7 +254,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         them downwards. This is for debugging. """
         QtWidgets.QMainWindow.mousePressEvent(self, event)
 
-    def dkeyPressEvent(self, event):
+    def keyPressEvent(self, event):
         if not self.key_manager.receive_key_press(event):
             return QtWidgets.QMainWindow.keyPressEvent(self, event)
 
@@ -413,7 +414,6 @@ class KatajaMain(QtWidgets.QMainWindow):
         else:
             undoable = True
         self.action_finished(undoable=undoable)
-
 
 
     def enable_actions(self):
@@ -728,37 +728,21 @@ class KatajaMain(QtWidgets.QMainWindow):
             source = self.graph_scene.visible_rect()
         self.graph_scene.removeItem(self.graph_scene.photo_frame)
         self.graph_scene.photo_frame = None
-        target = QtCore.QRectF(0, 0, source.width(), source.height())
+        target = QtCore.QRectF(0, 0, source.width()/2.0, source.height()/2.0)
+        dpi = 25.4
         # Prepare printer
-        print(1)
+        writer = QtGui.QPdfWriter(full_path)
+        writer.setResolution(dpi)
+        writer.setPageSizeMM(target.size())
+        writer.setPageMargins(QtCore.QMarginsF(0, 0, 0, 0))
 
-        pr = QtPrintSupport.QPrinter
-
-        printer = pr(mode=pr.ScreenResolution)
-        print(2)
-
-        # printer = QtGui.QPrinter(QtGui.QPrinter.HighResolution)
-        printer.setPaperSize(target.size(), pr.DevicePixel)
-        printer.setOutputFormat(pr.NativeFormat)
-        printer.setResolution(prefs.dpi)
-        print(3)
-        # printer.setFontEmbeddingEnabled(True)
-        # print printer.fontEmbeddingEnabled()
-        # printer.setOutputFormat(QtGui.QPrinter.PdfFormat)
-
-        printer.setOutputFileName(full_path)
-        printer.setFullPage(True)
-        # Paint it
-        print(4)
         painter = QtGui.QPainter()
-        painter.begin(printer)
-        print(5)
+        painter.begin(writer)
         self.graph_scene.render(painter, target=target, source=source)
-        print(6)
         painter.end()
         # Thank you!
         print('printing done.')
-        self.add_message("printed to %s as PDF with %s dpi." % (full_path, prefs.dpi))
+        self.add_message("printed to %s as PDF with %s dpi." % (full_path, dpi))
         # Restore image
         self.graph_scene.setBackgroundBrush(self.color_manager.gradient)
         if self.forest.gloss:
