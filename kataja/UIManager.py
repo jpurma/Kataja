@@ -837,32 +837,14 @@ class UIManager:
         """ Display control points for this edge
         :param edge:
         """
-        for i, adjust in enumerate(edge.adjust):
-            point = edge.control_points[i]
-            if point:
-                cp = ControlPoint(edge, index=i, point=point, adjust=adjust)
-                self.add_ui(cp)
-                assert (cp not in self._control_points)
-                self._control_points.append(cp)
-                cp.update_position()
+        for i, point in enumerate(edge.control_points):
+            adjust = edge.adjust[i]
+            cp = ControlPoint(edge, index=i, point=point, adjust=adjust)
+            self.add_ui(cp)
+            assert (cp not in self._control_points)
+            self._control_points.append(cp)
+            cp.update_position()
 
-    def hide_control_points(self, edge):
-        """
-
-        :param edge:
-        """
-        for cp in self._control_points:
-            if cp.host_edge == edge:
-                cp.hide()
-
-    def show_control_points(self, edge):
-        """
-
-        :param edge:
-        """
-        for cp in self._control_points:
-            if cp.host_edge == edge:
-                cp.show()
 
     def remove_control_points(self, edge):
         """ Removes control points from this edge
@@ -877,13 +859,13 @@ class UIManager:
 
     def reset_control_points(self, edge):
         """
-
         :param edge:
         """
-        edges = [x.host_edge for x in self._control_points]
-        if edge in edges:
-            # print 'reseting control points'
-            self.remove_control_points(edge)
+        #edges = [x.host_edge for x in self._control_points]
+        #if edge in edges:
+        # print 'reseting control points'
+        self.remove_control_points(edge)
+        if ctrl.is_selected(edge):
             self.add_control_points(edge)
 
     # ######### MOUSE ########################################################

@@ -122,9 +122,9 @@ def shaped_relative_cubic_path(self):
                     self.align is RIGHT and sx >= ex):  # edges that go to wrong direction have stronger curvature
         dx *= -2
     if self.align is LEFT or self.align is RIGHT:
-        self.control_points = ((sx + dx, sy + dy, sz), (ex, ey - dy, ez))
+        self.control_points = [(sx + dx, sy + dy, sz), (ex, ey - dy, ez)]
     else:
-        self.control_points = ((sx, sy + dy, sz), (ex, ey - dy, ez))
+        self.control_points = [(sx, sy + dy, sz), (ex, ey - dy, ez)]
     path = QtGui.QPainterPath(Pf(sx, sy))
     c = self.adjusted_control_point_list()
     path.cubicTo(c[0] - 1, c[1], c[2], c[3] + 3, ex, ey)
@@ -143,9 +143,9 @@ def relative_cubic_path(self):
                     self.align is RIGHT and sx >= ex):  # edges that go to wrong direction have stronger curvature
         dx *= -2
     if self.align is LEFT or self.align is RIGHT:
-        self.control_points = ((sx + dx, sy + dy, sz), (ex, ey - dy, ez))
+        self.control_points = [(sx + dx, sy + dy, sz), (ex, ey - dy, ez)]
     else:
-        self.control_points = ((sx, sy + dy, sz), (ex, ey - dy, ez))
+        self.control_points = [(sx, sy + dy, sz), (ex, ey - dy, ez)]
     path = QtGui.QPainterPath(Pf(sx, sy))
     c = self.adjusted_control_point_list()
     path.cubicTo(c[0], c[1], c[2], c[3], ex, ey)
@@ -158,11 +158,11 @@ def shaped_fixed_cubic_path(self):
     sx, sy, sz = self.start_point
     dx, dy, dz = self.end_point
     if self.align is LEFT:
-        self.control_points = ((sx - 20, sy + 15, sz), (dx, dy - 15, dz))
+        self.control_points = [(sx - 20, sy + 15, sz), (dx, dy - 15, dz)]
     elif self.align is RIGHT:
-        self.control_points = ((sx + 20, sy + 15, sz), (dx, dy - 15, dz))
+        self.control_points = [(sx + 20, sy + 15, sz), (dx, dy - 15, dz)]
     else:
-        self.control_points = ((sx, sy + 15, sz), (dx, dy - 15, dz))
+        self.control_points = [(sx, sy + 15, sz), (dx, dy - 15, dz)]
     path = QtGui.QPainterPath(Pf(sx, sy))
     c = self.adjusted_control_point_list()
     path.cubicTo(c[0] - 1, c[1], c[2], c[3] + 3, dx, dy)
@@ -176,11 +176,11 @@ def fixed_cubic_path(self):
     sx, sy, sz = self.start_point
     dx, dy, dz = self.end_point
     if self.align is LEFT:
-        self.control_points = ((sx - 20, sy + 15, sz), (dx, dy - 15, dz))
+        self.control_points = [(sx - 20, sy + 15, sz), (dx, dy - 15, dz)]
     elif self.align is RIGHT:
-        self.control_points = ((sx + 20, sy + 15, sz), (dx, dy - 15, dz))
+        self.control_points = [(sx + 20, sy + 15, sz), (dx, dy - 15, dz)]
     else:
-        self.control_points = ((sx, sy + 15, sz), (dx, dy - 15, dz))
+        self.control_points = [(sx, sy + 15, sz), (dx, dy - 15, dz)]
     path = QtGui.QPainterPath(Pf(sx, sy))
     c = self.adjusted_control_point_list()
     path.cubicTo(c[0], c[1], c[2], c[3], dx, dy)
@@ -197,9 +197,9 @@ def shaped_relative_quadratic_path(self):  # align 0=none, 1=left, 2=right
     if (self.align is LEFT and sx <= dx) or (self.align is RIGHT and sx >= dx):
         diff_x *= -2
     if self.align is NO_ALIGN:
-        self.control_points = ((sx, sy, sz), None)
+        self.control_points = [(sx, sy, sz)]
     else:
-        self.control_points = ((sx - diff_x, sy, sz), None)
+        self.control_points = [(sx - diff_x, sy, sz)]
     path = QtGui.QPainterPath(Pf(sx, sy))
     c = self.adjusted_control_point_list()
     path.quadTo(c[0] - 3, c[1] - 3, dx, dy)
@@ -216,9 +216,9 @@ def relative_quadratic_path(self):  # align 0=none, 1=left, 2=right
     if (self.align is LEFT and sx <= dx) or (self.align is RIGHT and sx >= dx):
         diff_x *= -2
     if self.align is NO_ALIGN:
-        self.control_points = ((sx, sy, sz), None)
+        self.control_points = [(sx, sy, sz)]
     else:
-        self.control_points = ((sx - diff_x, sy, sz), None)
+        self.control_points = [(sx - diff_x, sy, sz)]
     path = QtGui.QPainterPath(Pf(sx, sy))
     c = self.adjusted_control_point_list()
     path.quadTo(c[0], c[1], dx, dy)
@@ -231,11 +231,11 @@ def shaped_fixed_quadratic_path(self):
     sx, sy, sz = self.start_point
     dx, dy, dummy = self.end_point
     if self.align is NO_ALIGN:
-        self.control_points = ((sx - 20, sy + 15, sz), None)
+        self.control_points = [(sx - 20, sy + 15, sz)]
     elif self.align is LEFT:
-        self.control_points = ((sx - 20, sy + 15, sz), None)
+        self.control_points = [(sx - 20, sy + 15, sz)]
     elif self.align is RIGHT:
-        self.control_points = ((sx + 20, sy + 15, sz), None)
+        self.control_points = [(sx + 20, sy + 15, sz)]
     path = QtGui.QPainterPath(Pf(sx, sy))
     c = self.adjusted_control_point_list()
     path.quadTo(c[0] - 3, c[1] - 3, dx, dy)
@@ -249,11 +249,11 @@ def fixed_quadratic_path(self):
     sx, sy, sz = self.start_point
     dx, dy, dummy = self.end_point
     if self.align is NO_ALIGN:
-        self.control_points = ((sx - 20, sy + 15, sz), None)
+        self.control_points = [(sx - 20, sy + 15, sz)]
     elif self.align is LEFT:
-        self.control_points = ((sx - 20, sy + 15, sz), None)
+        self.control_points = [(sx - 20, sy + 15, sz)]
     elif self.align is RIGHT:
-        self.control_points = ((sx + 20, sy + 15, sz), None)
+        self.control_points = [(sx + 20, sy + 15, sz)]
     path = QtGui.QPainterPath(Pf(sx, sy))
     c = self.adjusted_control_point_list()
     path.quadTo(c[0], c[1], dx, dy)
@@ -265,7 +265,7 @@ def shaped_fixed_linear_path(self):
     """ A straight line with a slight leaf shape """
     sx, sy, sz = self.start_point
     dx, dy, dummy = self.end_point
-    self.control_points = (None, None)
+    self.control_points = []
     if self.align is NO_ALIGN:
         x_diff = 2
         y_diff = 2
@@ -291,7 +291,7 @@ def linear_path(self):
     """ Just a straight line """
     sx, sy, dummy = self.start_point
     dx, dy, dummy = self.end_point
-    self.control_points = (None, None)
+    self.control_points = []
     path = QtGui.QPainterPath(Pf(sx, sy))
     path.lineTo(dx, dy)
     self.middle_point = path.pointAtPercent(0.5)
@@ -332,6 +332,8 @@ def blob_path(self):
     path = path.subtracted(path1neg)
     path = path.subtracted(path2neg)
     self.middle_point = Pf(c1x, c1y)
+    self.control_points = []
+
     return path.simplified()
 
 
@@ -384,6 +386,8 @@ def directional_blob_path(self):
         path = path.subtracted(path1neg)
         path = path.subtracted(path2neg)
     self.middle_point = Pf(c1x, c1y)
+    self.control_points = []
+
     return path.simplified()
 
 SHAPE_PRESETS = OrderedDict(
@@ -431,9 +435,9 @@ class Edge(QtWidgets.QGraphicsItem):
         self.end_point = (0, 0, 0)
         self.setZValue(-1)
         self.edge_type = edge_type
-        self.control_points = (None, None)
+        self.control_points = []
         self.middle_point = None
-        self.adjust = [(0, 0, 0), (0, 0, 0)]
+        self.adjust = []
 
         if isinstance(direction, str):
             if direction == 'left':
@@ -495,7 +499,7 @@ class Edge(QtWidgets.QGraphicsItem):
         """
         if signal is g.EDGE_SHAPES_CHANGED:
             if (args and args[0] == self.edge_type) or not args:
-                self.update_shape_method()
+                self.update_shape()
 
     def get_touch_area(self, place):
         """
@@ -687,7 +691,7 @@ class Edge(QtWidgets.QGraphicsItem):
 
         """
         if not self._shape_method:
-            self._shape_method = SHAPE_PRESETS[self.shape_name()]['method']
+            self.update_shape()
         self._path = self._shape_method(self)
         if not self.is_filled():  # expensive with filled shapes
             self._fat_path = outline_stroker.createStroke(self._path).united(self._path)
@@ -707,12 +711,21 @@ class Edge(QtWidgets.QGraphicsItem):
                 self.make_path()
             return self._path
 
-    def update_shape_method(self):
+    def update_shape(self):
         """
 
 
         """
-        self._shape_method = SHAPE_PRESETS[self.shape_name()]['method']
+        d = SHAPE_PRESETS[self.shape_name()]
+
+        self._shape_method = d['method']
+        self.is_filled(d['fill'])
+        self.make_path()
+        while len(self.adjust) < len(self.control_points):
+            self.adjust.append((0, 0, 0))
+        ctrl.ui.reset_control_points(self)
+        self.update()
+
 
     def is_structural(self):
         """
@@ -791,13 +804,14 @@ class Edge(QtWidgets.QGraphicsItem):
         if v and not visible:
             self._visible = False
             self.hide()
-            ctrl.main.ui_manager.hide_control_points(self)  # @UndefinedVariable
+            ctrl.main.ui_manager.remove_control_points(self)
             for touch_area in self.touch_areas.values():
                 touch_area.hide()
         elif (not v) and visible:
             self._visible = True
             self.show()
-            ctrl.main.ui_manager.show_control_points(self)  # @UndefinedVariable
+            if ctrl.is_selected(self):
+                ctrl.main.ui_manager.add_control_points(self)
             for touch_area in self.touch_areas.values():
                 touch_area.show()
         else:
@@ -913,17 +927,19 @@ class Edge(QtWidgets.QGraphicsItem):
             painter.fillPath(self._path, c)
 
     def adjusted_control_point_list(self):
-        """
-
-
-        :return:
+        """ List where control points and their adjustments are added up, and (x,y) tuples
+        are break down into one big list x1, y1, x2, y2,... to be used in path construction
+        :return: list
         """
         l = []
-        for a_point, c_point in zip(self.adjust, self.control_points):
-            if not c_point:
-                return l
-            l.append(a_point[0] + c_point[0])
-            l.append(a_point[1] + c_point[1])
+        la = len(self.adjust)
+        for i, cp in enumerate(self.control_points):
+            if la <= i:
+                l.append(cp[0])
+                l.append(cp[1])
+            else:
+                l.append(cp[0] + self.adjust[i][0])
+                l.append(cp[1] + self.adjust[i][1])
         return l
 
     def get_path(self)-> QtGui.QPainterPath:

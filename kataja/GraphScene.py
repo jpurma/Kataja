@@ -36,6 +36,7 @@ from kataja.Movable import Movable
 from kataja.Node import Node
 from kataja.utils import to_tuple
 from kataja.ui import TouchArea
+import kataja.globals as g
 
 
 
@@ -847,4 +848,3 @@ class GraphScene(QtWidgets.QGraphicsScene):
             self.killTimer(self._timer_id)
             self.main.ui_manager.activity_marker.hide()
             self._timer_id = 0
-
