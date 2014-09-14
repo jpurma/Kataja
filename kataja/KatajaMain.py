@@ -585,6 +585,7 @@ class KatajaMain(QtWidgets.QMainWindow):
 
     def change_edge_panel_scope(self, selection):
         self.ui_manager.scope_for_edge_changes = selection
+        self.ui_manager.get_panel(g.LINES).change_scope(selection, user_action=True)
 
     def change_edge_shape(self, shape):
         scope = self.ui_manager.scope_for_edge_changes

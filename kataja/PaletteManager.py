@@ -131,15 +131,25 @@ def in_range(h, s, v):
     :param v:
     :raise:
     """
-    if h < 0 or h > 1:
-        print('h: ', h)
-        raise Exception("Hue not in range: " + h)
-    if s < 0 or s > 1:
-        print('s: ', s)
-        raise Exception("Saturation not in range: " + s)
-    if v < 0 or v > 1:
-        print('v: ', v)
-        raise Exception("Value (lightness) not in range: " + v)
+    if h < 0:
+        print("Hue not in range: " + h)
+        h = 0
+    if s < 0:
+        print("Saturation not in range: " + s)
+        s = 0
+    if v < 0:
+        print("Value (lightness) not in range: " + v)
+        v = 0
+    if h > 1:
+        print("Hue not in range: " + h)
+        h = 1
+    if s > 1:
+        print("Saturation not in range: " + s)
+        s = 1
+    if v > 1:
+        print("Value (lightness) not in range: " + v)
+        v = 1
+    return h, s, v
 
 
 class PaletteManager:
@@ -287,8 +297,6 @@ class PaletteManager:
         :param refresh:
         :param adjusting:
         """
-
-        print('update colors called with refresh: %s adjusting: %s' % (refresh, adjusting))
         self.activate_color_mode(self.current_color_mode(), refresh=refresh)
 
 
@@ -335,7 +343,7 @@ class PaletteManager:
         h, s, v = hsv
         # # This is the base color ##
         key = c()
-        # in_range(h, s, v)
+        h, s, v = in_range(h, s, v)
         key.setHsvF(h, s, v)
         light_bg = v < 0.5 or (s > 0.7 and 0.62 < h < 0.95)
         self.d['key'] = key
@@ -351,7 +359,10 @@ class PaletteManager:
             self.d['accent%s' % (i+1)] = accent
             tr = c(accent)
             tr.setAlphaF(0.5)
+            tr9 = c(accent)
+            tr9.setAlphaF(0.9)
             self.d['accent%str' % (i+1)] = tr
+            self.d['accent%str9' % (i+1)] = tr9
         self.d['accents'] = rotated_accents
 
         background1 = c()
@@ -365,7 +376,7 @@ class PaletteManager:
                 vp = limited_add(vp, 0.35)
             else:
                 vp = limited_add(vp, -0.35)
-        # in_range(hp, sp, vp)
+        hp, sp, vp = in_range(hp, sp, vp)
         background1.setHsvF(hp, sp, vp)
         self.d['background1'] = background1
         if vp < 0.7:
@@ -412,7 +423,7 @@ class PaletteManager:
         """ UI background color -- use for UI elements that float over main drawing.
         :return: QColor
         """
-        return self.d['accent1tr']
+        return self.d['accent1tr9']
 
     def secondary(self) -> QColor:
         """

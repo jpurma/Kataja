@@ -684,7 +684,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         :param old_base_color:
         :param new_base_color:
         """
-        self._fade_steps = 3
+        self._fade_steps = 7
         if not self._timer_id:
             self._timer_id = self.startTimer(prefs.fps_in_msec)
         self._fade_steps_list = []
@@ -692,19 +692,15 @@ class GraphScene(QtWidgets.QGraphicsScene):
         # nh, ns, nv, na = new_base_color.getRgbF()
         oh, os, ov, oa = old_base_color.getHsvF()
         nh, ns, nv, na = new_base_color.getHsvF()
-
-        h_step = (nh - oh) / self._fade_steps
-        s_step = (ns - os) / self._fade_steps
-        v_step = (nv - ov) / self._fade_steps
+        h_step = (nh - oh) / (self._fade_steps + 1)
+        s_step = (ns - os) / (self._fade_steps + 1)
+        v_step = (nv - ov) / (self._fade_steps + 1)
         for n in range(self._fade_steps):
             oh += h_step
             os += s_step
             ov += v_step
             color = QtGui.QColor()
-            color.setRgbF(oh, os, ov)
             color.setHsvF(oh, os, ov)
-            color2 = QtGui.QColor()
-            color2.setRgbF(min((oh + .1, 1.0)), min((os + .1, 1.0)), min((ov + .1, 1.0)))
             gradient = QtGui.QRadialGradient(0, 0, 300)
             gradient.setSpread(QtGui.QGradient.PadSpread)
             gradient.setColorAt(1, color)

@@ -243,6 +243,9 @@ class UIManager:
             print('did not found field %s from any ui panels' % field_name)
 
 
+    def update_panel(self, panel_id):
+        self._ui_panels[panel_id].update_fields()
+
     def restore_panel_positions(self):
         """
 

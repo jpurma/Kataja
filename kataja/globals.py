@@ -3,6 +3,7 @@
 # ## Global enums
 
 SELECTION = 66
+AMBIGUOUS_VALUES = 88
 
 # How to show labels
 ONLY_LEAF_LABELS = 0
