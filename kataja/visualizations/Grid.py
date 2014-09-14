@@ -83,10 +83,13 @@ class Grid:
         :param w: int
         :param h: int
         """
-        assert(isinstance(x, int))
-        assert(isinstance(y, int))
-        assert(x >= 0)
-        assert(y >= 0)
+        try:
+            assert(isinstance(x, int))
+            assert(isinstance(y, int))
+            assert(x >= 0)
+            assert(y >= 0)
+        except AssertionError:
+            print('Bad coordinates in grid: ', x, y)
         if w > 1 or h > 1:
             l = x - (w - 1) // 2
             r = x + (w - 1) // 2

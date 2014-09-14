@@ -183,20 +183,18 @@ class Controller:
         return len(self.selected) > 1
 
     def get_selected(self):
-        """
-
-
+        """ Return as one object
         :return:
         """
+
         if self.selected:
+            # todo: do we need this? creates more complications than it solves?
             return self.selected[-1]
         else:
             return None
 
     def get_all_selected(self):
-        """
-
-
+        """ Fixme: Always return selected as a list
         :return:
         """
         return self.selected
@@ -219,7 +217,7 @@ class Controller:
         for obj in olds:
             obj.refresh_selection_status(False)
         if update_ui:
-            self.main.ui_manager.update_selections()
+            self.main.ui_manager.update_selections(self.selected)
 
     def select(self, obj):
         """
@@ -233,7 +231,7 @@ class Controller:
         self.selected = [obj]
         self.add_message('selected %s' % str(obj))
         obj.refresh_selection_status(True)
-        self.main.ui_manager.update_selections()
+        self.main.ui_manager.update_selections(self.selected)
 
     def add_to_selection(self, obj):
         """
@@ -244,7 +242,7 @@ class Controller:
             self.selected.append(obj)
             self.add_message('added to selection %s' % str(obj))
             obj.refresh_selection_status(True)
-            self.main.ui_manager.update_selections()
+            self.main.ui_manager.update_selections(self.selected)
 
     def remove_from_selection(self, obj):
         """
@@ -254,7 +252,7 @@ class Controller:
         if obj in self.selected:
             self.selected.remove(obj)
             obj.refresh_selection_status(False)
-            self.main.ui_manager.update_selections()
+            self.main.ui_manager.update_selections(self.selected)
 
     # ******** /selection *******
 

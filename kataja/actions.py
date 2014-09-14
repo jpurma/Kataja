@@ -39,14 +39,14 @@ actions = {
         'shortcut': 'Ctrl+q'},
     # ### Build ######
     'next_forest': {
-        'command': '&Next forest',
+        'command': 'Next forest',
         'method': 'next_structure',
         'shortcut': '.',
         'button': 'next_tree',
         'tooltip': 'Switch to next forest',
         'no_undo': True},
     'prev_forest': {
-        'command': '&Previous forest',
+        'command': 'Previous forest',
         'method': 'previous_structure',
         'shortcut': ',',
         'button': 'prev_tree',
@@ -121,6 +121,19 @@ actions = {
         'toggleable': True,
         'condition': 'are_panels_visible',
         'context': 'ui'
+    },
+    'edge_shape_scope': {
+        'command': 'Select shape for...',
+        'method': 'change_edge_panel_scope',
+        'selection': 'line_type_target',
+        'tooltip': 'Which relations are affected?',
+        'no_undo': True
+    },
+    'change_edge_shape': {
+        'command': 'Change relation shape',
+        'method': 'change_edge_shape',
+        'selection': 'line_type',
+        'tooltip': 'Change shape of relations (lines, edges) between objects'
     },
     # Help ####
     'help': {

@@ -40,7 +40,7 @@ class MenuItem(MovableUI):
 
         self._label_width = 80  # f.width(self._label_text) + 6
         self._label_height = 17  # f.lineSpacing() + 4
-        print('font metrics: ', self._label_width, self._label_height)
+        #print('font metrics: ', self._label_width, self._label_height)
         if 'size' in args:
             self._width, self._height = args['size']
         else:

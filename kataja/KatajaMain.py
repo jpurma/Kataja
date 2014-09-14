@@ -51,7 +51,7 @@ from kataja.ForestKeeper import ForestKeeper
 from kataja.GraphScene import GraphScene
 from kataja.GraphView import GraphView
 from kataja.Presentation import TextArea
-from kataja.Edge import SHAPE_PRESETS
+from kataja.Edge import SHAPE_PRESETS, Edge
 from kataja.UIManager import UIManager
 from kataja.PaletteManager import PaletteManager
 import kataja.globals as g
@@ -391,8 +391,13 @@ class KatajaMain(QtWidgets.QMainWindow):
         sender = self.sender()
         key = sender.data()
         data = self.ui_manager.actions[key]
+        selector = data.get('selector', None)
+        args = data.get('args', [])
+        if selector:
+            # This is a combobox, get the data and add it as an argument
+            i = selector.currentIndex()
+            args.append(selector.itemData(i))
         context = data.get('context', 'main')
-        args = data.get('args', None)
         if context == 'main':
             c = self
         elif context == 'selected':
@@ -576,6 +581,22 @@ class KatajaMain(QtWidgets.QMainWindow):
         else:
             self.add_message('(c) 1: Lines aim to the center of the node')
             self.forest.settings.uses_magnets(True)
+
+
+    def change_edge_panel_scope(self, selection):
+        self.ui_manager.scope_for_edge_changes = selection
+
+    def change_edge_shape(self, shape):
+        scope = self.ui_manager.scope_for_edge_changes
+        if scope == g.SELECTION:
+            for edge in ctrl.get_all_selected():
+                if isinstance(edge, Edge):
+                    edge.shape_name(shape)
+                    edge.update_shape()
+        elif scope:
+            self.forest.settings.edge_settings(scope, 'shape_name', shape)
+            ctrl.announce(g.EDGE_SHAPES_CHANGED, scope, shape)
+        self.add_message('(s) Changed relation shape to: %s' % shape)
 
     # Change node edge shapes -action (s)
     def change_node_edge_shape(self, shape=''):
@@ -946,8 +967,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         :param event: mouse-event that triggered the end.
         :return:
         """
-        node_a = ctrl.pointing_data['start']
-        node_b = ctrl.pointing_data['target']
+        node_a = ctrl.pointing_data['target']
         self.forest.merge_nodes(node_a, node_b)
         node_a.release()
         # node_A.state =SELECTED # deselect doesn't have effect unless node is selected

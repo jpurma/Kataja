@@ -1002,7 +1002,7 @@ class ConstituentNode(Node):
         # there if node is both above and below the dragged node, it shouldn't move
         for drag_host in drag_hosts:
             root = drag_host.get_root_node()
-            nodes = self.forest.list_nodes(root)
+            nodes = self.forest.list_nodes_once(root)
             drag_host_index = nodes.index(drag_host)
             dx, dy, dummy_z = drag_host.get_current_position()
             for node in self.forest.list_nodes_once(drag_host):

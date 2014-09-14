@@ -24,7 +24,8 @@
 from collections import OrderedDict
 
 from PyQt5 import QtCore, QtWidgets, QtGui
-from KeyPressManager import ShortcutSolver, ButtonShortcutFilter
+from kataja.KeyPressManager import ShortcutSolver, ButtonShortcutFilter
+from kataja.Node import Node
 import kataja.debug as debug
 
 from kataja.ConstituentNode import ConstituentNode
@@ -114,6 +115,11 @@ class UIManager:
         self.symbols = set()
         self.shortcut_solver = ShortcutSolver(self)
         self.button_shortcut_filter = ButtonShortcutFilter()
+        self.scope_for_edge_changes = g.CONSTITUENT_EDGE
+        self.scope_for_node_changes = g.CONSTITUENT_NODE
+        self._old_edge_scope = self.scope_for_edge_changes
+        self._old_node_scope = self.scope_for_node_changes
+
 
         ## Create actions based on actions.py and menus based on
         self.create_actions()
@@ -271,12 +277,39 @@ class UIManager:
         if g.COLOR_WHEEL in self._ui_panels:
             self._ui_panels[g.COLOR_WHEEL].update_colors()
 
-    def update_selections(self):
-        """
+    def update_selections(self, selection):
+        """ Many UI elements change mode depending on if object of specific type is selected
 
 
         """
+        self._old_node_scope = self.scope_for_node_changes
+
+        edge_found = False
+        node_found = False
+        if selection:
+            for item in selection:
+                if isinstance(item, Edge):
+                    edge_found = True
+                elif isinstance(item, Node):
+                    node_found = True
+
+        if node_found:
+            self.scope_for_node_changes = g.SELECTION
+        if edge_found:
+            if self.scope_for_edge_changes != g.SELECTION:
+                self._old_edge_scope = self.scope_for_edge_changes
+                self.scope_for_edge_changes = g.SELECTION
+            panel = self._ui_panels.get(g.LINES, None)
+            if panel:
+                panel.change_scope(self.scope_for_edge_changes)
+        else:
+            if self.scope_for_edge_changes == g.SELECTION:
+                self.scope_for_edge_changes = self._old_edge_scope
+                panel = self._ui_panels.get(g.LINES, None)
+                if panel:
+                    panel.change_scope(self.scope_for_edge_changes)
         self.update_touch_areas()
+
 
     # unused, but sane
     def focusable_elements(self):
@@ -464,12 +497,11 @@ class UIManager:
         self._ui_panels = {}
         for panel in panels:
             id = panel['id']
-            print(id)
             constructor = panel_classes[id]
             name = panel['name']
             position = panel.get('position', None)
             folded = panel.get('folded', False)
-            print("Creating panel type ", constructor)
+            debug.ui("Creating panel type ", constructor)
             new_panel = constructor(name, id,  default_position=position, parent=self.main, ui_manager=self,
                                     folded=folded)
             self._ui_panels[id] = new_panel
@@ -478,7 +510,11 @@ class UIManager:
 
 
     def connect_button_to_action(self, button, action):
-        action_data = self.actions[action.data()]
+        if isinstance(action, str):
+            action_data = self.actions[action]
+            action = self.qt_actions[action]
+        else:
+            action_data = self.actions[action.data()]
         button.clicked.connect(action.trigger)
         tooltip = action_data.get('tooltip', None)
         action_data['button'] = button
@@ -491,7 +527,28 @@ class UIManager:
                 button.installEventFilter(self.button_shortcut_filter)
             button.setFocusPolicy(QtCore.Qt.TabFocus)
 
+    def connect_selector_to_action(self, selector, action):
+        if isinstance(action, str):
+            action_data = self.actions[action]
+            action = self.qt_actions[action]
+        else:
+            action_data = self.actions[action.data()]
+        selector.activated.connect(action.trigger)
+        tooltip = action_data.get('tooltip', None)
+        action_data['selector'] = selector
+        if tooltip:
+            selector.setStatusTip(tooltip)
+            selector.setToolTip(tooltip)
+            shortcut = action_data.get('shortcut', None)
+            if shortcut:
+                selector.setShortcut(QtGui.QKeySequence(shortcut))
+                #selector.installEventFilter(self.button_shortcut_filter)
+            selector.setFocusPolicy(QtCore.Qt.TabFocus)
 
+
+    def get_selector_value(self, selector):
+        i = selector.currentIndex()
+        return selector.itemData(i)
 
     # ### Touch areas #####################################################################
 
@@ -696,7 +753,7 @@ class UIManager:
         if not self._message:
             if g.LOG in self._ui_panels:
                 message_area = self._ui_panels[g.LOG].widget()
-                print('Creating messages to: ', message_area)
+                debug.ui('Creating messages to: ', message_area)
                 self._message = MessageItem(msg, message_area, self)
                 self.add_ui(self._message)
             else:
@@ -995,6 +1052,9 @@ class UIManager:
             self.ui_activity_marker.hide()
             self.killTimer(self._timer_id)
             self._timer_id = 0
+
+    def scope_for_edge_changes(self):
+        pass
 
 
 

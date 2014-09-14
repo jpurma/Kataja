@@ -380,26 +380,28 @@ class RadialMenu(QtWidgets.QGraphicsItem, MovableUI):
         self.host.remove_menu(self)
 
 
-    def dpaint(self, painter, option, widget):
+    def paint(self, painter, option, widget):
         """
 
         :param painter:
         :param option:
         :param widget:
         """
-        painter.setPen(self.radius_pen)
-        #for item in self.menu_items:
-        #    px, py = to_tuple(item.center_point_in_scene())
-        #    painter.drawLine(0, 0, px, py)
-        painter.setPen(ctrl.cm.selection())
-        painter.setBrush(ctrl.cm.ui())
-        polygon = QtGui.QPolygon()
-        polygon.append(QtCore.QPoint(0, 0))
-        polygon.append(QtCore.QPoint(20, 0))
-        x, y = to_tuple(self.pos())
-        polygon.append(QtCore.QPoint(self._host_pos[0] - x, self._host_pos[1] - y))
-        polygon.append(QtCore.QPoint(0, 0))
-        self._polygon_rect = QtCore.QRectF(polygon.boundingRect())
-        painter.drawPolygon(polygon)
-        # painter.drawLine(-10, 0, self._host_pos[0] - x, self._host_pos[1] - y)
-        # painter.drawLine(20, 0, self._host_pos[0] - x, self._host_pos[1] - y)
+        pass
+
+        # painter.setPen(self.radius_pen)
+        # #for item in self.menu_items:
+        # #    px, py = to_tuple(item.center_point_in_scene())
+        # #    painter.drawLine(0, 0, px, py)
+        # painter.setPen(ctrl.cm.selection())
+        # painter.setBrush(ctrl.cm.ui())
+        # polygon = QtGui.QPolygon()
+        # polygon.append(QtCore.QPoint(0, 0))
+        # polygon.append(QtCore.QPoint(20, 0))
+        # x, y = to_tuple(self.pos())
+        # polygon.append(QtCore.QPoint(self._host_pos[0] - x, self._host_pos[1] - y))
+        # polygon.append(QtCore.QPoint(0, 0))
+        # self._polygon_rect = QtCore.QRectF(polygon.boundingRect())
+        # painter.drawPolygon(polygon)
+        # # painter.drawLine(-10, 0, self._host_pos[0] - x, self._host_pos[1] - y)
+        # # painter.drawLine(20, 0, self._host_pos[0] - x, self._host_pos[1] - y)

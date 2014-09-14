@@ -143,7 +143,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     # ### Children and parents ####################################################
 
 
-    def get_children(self, only_similar=True, only_visible=False, edge_type=ABSTRACT_EDGE):
+    def get_children(self, only_similar=True, only_visible=False, edge_type=None):
         """
         Get child nodes of this node.
         :param only_similar: boolean, only return nodes of same type (eg. ConstituentNodes)
@@ -151,8 +151,9 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :param edge_type: int, only return Edges of certain subclass.
         :return: list of Nodes
         """
-        if only_similar or edge_type:
-            edge_type = edge_type or self.__class__.default_edge_type
+        if only_similar or edge_type is not None:
+            if edge_type is None:
+                edge_type = self.__class__.default_edge_type
             if only_visible:
                 return [edge.end for edge in self.edges_down if edge.edge_type == edge_type and edge.end.is_visible()]
             else:
@@ -163,7 +164,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             else:
                 return [edge.end for edge in self.edges_down]
 
-    def get_parents(self, only_similar=True, only_visible=False, edge_type=''):
+    def get_parents(self, only_similar=True, only_visible=False, edge_type=None):
         """
         Get parent nodes of this node.
         :param only_similar: boolean, only return nodes of same type (eg. ConstituentNodes)
@@ -171,8 +172,9 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :param edge_type: int, only return Edges of certain subclass.
         :return: list of Nodes
         """
-        if only_similar or edge_type:
-            edge_type = edge_type or self.__class__.default_edge_type
+        if only_similar or edge_type is not None:
+            if edge_type is None:
+                edge_type = self.__class__.default_edge_type
             if only_visible:
                 return [edge.start for edge in self.edges_up if edge.edge_type == edge_type and edge.start.is_visible()]
             else:

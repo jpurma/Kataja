@@ -2,6 +2,8 @@
 
 # ## Global enums
 
+SELECTION = 66
+
 # How to show labels
 ONLY_LEAF_LABELS = 0
 ALL_LABELS = 1
@@ -18,7 +20,7 @@ FEATURE_EDGE = 2
 GLOSS_EDGE = 3
 ARROW = 4
 PROPERTY_EDGE = 5
-ABSTRACT_EDGE = 0
+ABSTRACT_EDGE = 7
 ATTRIBUTE_EDGE = 6
 
 # Node types
