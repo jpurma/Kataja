@@ -115,10 +115,6 @@ class UIManager:
         self.symbols = set()
         self.shortcut_solver = ShortcutSolver(self)
         self.button_shortcut_filter = ButtonShortcutFilter()
-        self.scope_for_edge_changes = g.CONSTITUENT_EDGE
-        self.scope_for_node_changes = g.CONSTITUENT_NODE
-        self._old_edge_scope = self.scope_for_edge_changes
-        self._old_node_scope = self.scope_for_node_changes
 
 
         ## Create actions based on actions.py and menus based on
@@ -285,32 +281,10 @@ class UIManager:
 
 
         """
-        self._old_node_scope = self.scope_for_node_changes
-
-        edge_found = False
-        node_found = False
-        if selection:
-            for item in selection:
-                if isinstance(item, Edge):
-                    edge_found = True
-                elif isinstance(item, Node):
-                    node_found = True
-
-        if node_found:
-            self.scope_for_node_changes = g.SELECTION
-        if edge_found:
-            if self.scope_for_edge_changes != g.SELECTION:
-                self._old_edge_scope = self.scope_for_edge_changes
-                self.scope_for_edge_changes = g.SELECTION
-            panel = self._ui_panels.get(g.LINES, None)
-            if panel:
-                panel.change_scope(self.scope_for_edge_changes)
-        else:
-            if self.scope_for_edge_changes == g.SELECTION:
-                self.scope_for_edge_changes = self._old_edge_scope
-                panel = self._ui_panels.get(g.LINES, None)
-                if panel:
-                    panel.change_scope(self.scope_for_edge_changes)
+        debug.ui("Update selections called")
+        lp = self._ui_panels[g.LINES]
+        lp.selected_objects_changed()
+        lp.update_panel()
         self.update_touch_areas()
 
 
@@ -1055,9 +1029,6 @@ class UIManager:
             self.ui_activity_marker.hide()
             self.killTimer(self._timer_id)
             self._timer_id = 0
-
-    def scope_for_edge_changes(self):
-        pass
 
 
 

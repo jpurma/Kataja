@@ -584,11 +584,12 @@ class KatajaMain(QtWidgets.QMainWindow):
 
 
     def change_edge_panel_scope(self, selection):
-        self.ui_manager.scope_for_edge_changes = selection
-        self.ui_manager.get_panel(g.LINES).change_scope(selection, user_action=True)
+        p = self.ui_manager.get_panel(g.LINES)
+        p.change_scope(selection)
+        p.update_panel()
 
     def change_edge_shape(self, shape):
-        scope = self.ui_manager.scope_for_edge_changes
+        scope = self.ui_manager.get_panel(g.LINES).scope
         if scope == g.SELECTION:
             for edge in ctrl.get_all_selected():
                 if isinstance(edge, Edge):
@@ -656,6 +657,13 @@ class KatajaMain(QtWidgets.QMainWindow):
         i = self.switch_to_previous_forest()
         self.ui_manager.clear_items()
         self.add_message('(,) tree %s: %s' % (i + 1, self.forest.textual_form()))
+
+    def change_visualization(self, i):
+        """
+        :param i: index of selected visualization in relevant panel
+        :return:
+        """
+        pass
 
     # Change visualization style -action (1...9)
     def change_visualization_command(self):

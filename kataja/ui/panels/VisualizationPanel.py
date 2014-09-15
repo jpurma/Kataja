@@ -25,7 +25,7 @@ class VisualizationPanel(UIPanel):
         selector = QtWidgets.QComboBox(self)
         ui_manager.ui_buttons['visualization_selector'] = selector
         selector.addItems(['%s (%s)' % (key, item.shortcut) for key, item in VISUALIZATIONS.items()])
-        selector.activated.connect(self.submit_action)
+        ui_manager.connect_selector_to_action(selector, 'change_visualization')
         selector.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
         layout.addWidget(selector, 1, 0)
         layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
@@ -45,12 +45,3 @@ class VisualizationPanel(UIPanel):
             index = list(VISUALIZATIONS.keys()).index(value)
             field.setCurrentIndex(index)
 
-
-    def submit_action(self, index):
-        """
-
-        :param index:
-        """
-        action_key = list(VISUALIZATIONS.keys())[index]
-        if action_key in self.parent()._actions:
-            self.parent()._actions[action_key].trigger()

@@ -122,6 +122,7 @@ actions = {
         'condition': 'are_panels_visible',
         'context': 'ui'
     },
+    # Lines panel
     'edge_shape_scope': {
         'command': 'Select shape for...',
         'method': 'change_edge_panel_scope',
@@ -134,6 +135,13 @@ actions = {
         'method': 'change_edge_shape',
         'selection': 'line_type',
         'tooltip': 'Change shape of relations (lines, edges) between objects'
+    },
+    # Visualizations panel
+    'change_visualization': {
+        'command': 'Change visualization algorithm',
+        'method': 'change_visualization',
+        'selection': 'visualization_selector',
+        'tooltip': 'Change visualization algorithm'
     },
     # Help ####
     'help': {
