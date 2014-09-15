@@ -69,16 +69,15 @@ class KeyPressManager:
         :param event:
         then they are delegated further """
 
-        kc = event.key()
         ks = event.text()
         debug.keys('received key press: ', ks)
         self.ui_manager.add_feedback_from_command(ks)
-        if ctrl.selected and all([item.can_take_keyevent(event) for item in ctrl.selected]):
-            for item in ctrl.selected:
-                item.take_keyevent(event)
-            return True
+        #if ctrl.selected and all([item.can_take_keyevent(event) for item in ctrl.selected]):
+        #    for item in ctrl.selected:
+        #        item.take_keyevent(event)
+        #    return True
 
-        act = self._shortcuts.get(k)
+        act = self._shortcuts.get(ks)
         if act:
             debug.keys('triggering action ', act.data())
             act.trigger()

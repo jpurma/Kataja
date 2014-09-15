@@ -55,3 +55,8 @@ VISUALIZATION = 'visualization'
 COLOR_THEME = 'color_theme'
 COLOR_WHEEL = 'color_wheel'
 LINES = 'lines'
+
+# Alignment of edges
+NO_ALIGN = 0
+LEFT = 1
+RIGHT = 2

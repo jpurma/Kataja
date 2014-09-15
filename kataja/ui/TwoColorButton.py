@@ -36,14 +36,6 @@ class TwoColorButton(QtWidgets.QPushButton):
     def __init__(self, bitmaps, text, parent):
         QtWidgets.QPushButton.__init__(self, parent)
         self.setText(text)
-        self.setAutoFillBackground(False)
         e = TwoColorIconEngine(bitmaps)
         i = QtGui.QIcon(e)
-        #self.setFlat(False)
         self.setIcon(i)
-
-
-    def setDefaultAction(self, action):
-        stored_icon = self.icon()
-        #QtWidgets.QToolButton.setDefaultAction(self, action)
-        self.setIcon(stored_icon)

@@ -1,10 +1,13 @@
 from PyQt5 import QtWidgets
+from PyQt5.QtCore import QRect, QSize
+from PyQt5.QtGui import QIcon, QPixmap, QColor
 
 from kataja.Edge import SHAPE_PRESETS, Edge
 from kataja.singletons import ctrl, prefs
 import kataja.globals as g
 from kataja.ui.panels.UIPanel import UIPanel
-from utils import time_me
+from kataja.ui.TwoColorIconEngine import TwoColorIconEngine
+from kataja.utils import time_me
 
 
 __author__ = 'purma'
@@ -21,6 +24,47 @@ scope_display_items = {
     g.ATTRIBUTE_EDGE: 'Attribute relatios',
     g.ABSTRACT_EDGE: 'Unspecified relations'
 }
+
+line_icons = {
+
+}
+
+
+class LineStyleIcon(QIcon):
+    def __init__(self, style_id, panel):
+        self.engine = TwoColorIconEngine(paint_method=SHAPE_PRESETS[style_id]['icon'], owner=self)
+        QIcon.__init__(self, self.engine)
+        self.panel = panel
+        #pixmap = QPixmap(60, 20)
+        #pixmap.fill(ctrl.cm.ui())
+        #self.addPixmap(pixmap)
+
+    def pen(self):
+        c = self.panel.active_line_pen
+        if not isinstance(c, QColor):
+            return ctrl.cm.get(c)
+        else:
+            return c
+
+    def brush(self):
+        return self.panel.active_line_brush
+
+    def paint(self, painter, *args, **kwargs):
+        print("Painting LineStyleIcon icon")
+        if isinstance(args[0], QRect):
+            rect = args[0]
+        else:
+            x,y,w,h = args
+            rect = QRect(x, y, w, h)
+        pen = ctrl.cm.get(self.panel.active_line_pen)
+        brush = self.panel.active_line_brush
+        self.draw_method(painter, rect, pen, brush)
+
+    def pixmap(self, *args):
+        print("Pixmap, args:", args)
+        QIcon.pixmap(self, *args)
+
+
 
 class LinesPanel(UIPanel):
     """ Panel for editing how edges/relations are drawn. """
@@ -42,16 +86,20 @@ class LinesPanel(UIPanel):
         self._old_scope = g.CONSTITUENT_EDGE
         self.scope_selector = QtWidgets.QComboBox(self)
         self._visible_scopes = []
+        self.active_line_pen = ctrl.cm.ui()
+        self.active_line_brush = ctrl.cm.ui_paper()
         ui_manager.ui_buttons['line_type_target'] = self.scope_selector
         # Other items may be temporarily added, they are defined as class.variables
         ui_manager.connect_selector_to_action(self.scope_selector, 'edge_shape_scope')
         layout.addWidget(self.scope_selector)
 
         self.shape_selector = QtWidgets.QComboBox(self)
+        self.shape_selector.setIconSize(QSize(64, 16))
+        #self.shape_selector.setView(view)
         ui_manager.ui_buttons['line_type'] = self.shape_selector
-        items = [(lt, lt) for lt in SHAPE_PRESETS.keys()]
-        for text, data in items:
-            self.shape_selector.addItem(text, data)
+        items = [('', LineStyleIcon(lt, self), lt) for lt in SHAPE_PRESETS.keys()]
+        for text, icon, data in items:
+            self.shape_selector.addItem(icon, text, data)
         ui_manager.connect_selector_to_action(self.shape_selector, 'change_edge_shape')
         layout.addWidget(self.shape_selector)
         inner.setLayout(layout)
@@ -131,8 +179,7 @@ class LinesPanel(UIPanel):
         for edge in ctrl.main.forest.edges.values():
             used_scopes.add(edge.edge_type)
         scope_list = [x for x in scope_display_order if x in used_scopes]
-        while self.scope_selector.count():
-            self.scope_selector.removeItem(0)
+        self.scope_selector.clear()
         for item in scope_list:
             self.scope_selector.addItem(scope_display_items[item], item)
 
@@ -179,9 +226,11 @@ class LinesPanel(UIPanel):
                 self.shape_selector.setCurrentIndex(i)
                 assert(i > -1)
                 remove_ambiguous_marker()
+                self.active_line_pen = edge.color()
 
         else:
             edge_shape = ctrl.forest.settings.edge_settings(self.scope, 'shape_name')
+            self.active_line_pen = ctrl.forest.settings.edge_settings(self.scope, 'color')
             i = self.find_list_item(edge_shape, self.shape_selector)
             assert(i > -1)
             self.shape_selector.setCurrentIndex(i)

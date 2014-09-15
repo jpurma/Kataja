@@ -23,6 +23,7 @@
 # ############################################################################
 
 from PyQt5 import QtGui, QtCore
+from PyQt5.QtGui import QPixmap
 
 from kataja.singletons import ctrl
 
@@ -31,20 +32,22 @@ class TwoColorIconEngine(QtGui.QIconEngine):
 
     """
 
-    def __init__(self, bitmaps):
+    def __init__(self, bitmaps=None, paint_method=None, owner=None):
         QtGui.QIconEngine.__init__(self)
         self.mono = True
         self.bitmap = None
         self.filter1 = None
         self.filter2 = None
         self.mask = None
+        self.paint_method = paint_method
+        self.owner = owner
 
         if bitmaps:
             self.addPixmap(bitmaps)
 
     def pixmap(self, QSize, QIcon_Mode=None, QIcon_State=None):
         pm = QtGui.QIconEngine.pixmap(self, QSize, QIcon_Mode, QIcon_State)
-        if not self.mask.isNull():
+        if self.mask:
             pm.setMask(QtGui.QBitmap(self.mask.scaled(QSize, QtCore.Qt.KeepAspectRatio)))
         return pm
 
@@ -81,6 +84,7 @@ class TwoColorIconEngine(QtGui.QIconEngine):
         :param mode:
         :param state:
         """
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
         c = ctrl.cm.ui()
         if mode == 0:  # normal
             painter.setPen(c)
@@ -93,16 +97,22 @@ class TwoColorIconEngine(QtGui.QIconEngine):
         else:
             painter.setPen(c)
             print('Weird button mode: ', mode)
-        #b = painter.background()
-        #painter.setBackgroundMode(QtCore.Qt.TransparentMode)
+        #
         #print(painter.backgroundMode(), painter.background(), QtCore.Qt.OpaqueMode, QtCore.Qt.TransparentMode)
-        #painter.fillRect(rect, b) #ctrl.cm.transparent)
+        #
 
-        if self.mono:
-            painter.drawPixmap(rect, self.mask)
+        if self.paint_method:
+            #painter.setBackgroundMode(QtCore.Qt.OpaqueMode)
+            #painter.setBackground(ctrl.cm.paper())
+            painter.fillRect(rect, ctrl.cm.paper2())
+            #b = painter.background()
+            self.paint_method(painter, rect, self.owner.pen(), self.owner.brush())
         else:
-            painter.drawPixmap(rect, self.filter1)
-            painter.setPen(c.darker())
-            painter.drawPixmap(rect, self.filter2)
+            if self.mono:
+                painter.drawPixmap(rect, self.mask)
+            else:
+                painter.drawPixmap(rect, self.filter1)
+                painter.setPen(c.darker())
+                painter.drawPixmap(rect, self.filter2)
 
 

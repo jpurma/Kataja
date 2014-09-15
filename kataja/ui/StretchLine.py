@@ -2,7 +2,7 @@
 # #######################################################
 from PyQt5 import QtWidgets
 
-from kataja.Edge import draw_arrow_shape, arrow_shape_bounding_rect
+from kataja.shapes import draw_arrow_shape, arrow_shape_bounding_rect
 
 
 class StretchLine(QtWidgets.QGraphicsLineItem):

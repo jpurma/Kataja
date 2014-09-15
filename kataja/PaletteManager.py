@@ -327,7 +327,10 @@ class PaletteManager:
             self.d['accent%s' % (i+1)] = accent
             tr = c(accent)
             tr.setAlphaF(0.5)
+            tr9 = c(accent)
+            tr9.setAlphaF(0.9)
             self.d['accent%str' % (i+1)] = tr
+            self.d['accent%str9' % (i+1)] = tr9
         self.d['accents'] = accents
 
         self.gradient.setColorAt(1, self.d['background1'])
