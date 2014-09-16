@@ -706,6 +706,13 @@ class GraphScene(QtWidgets.QGraphicsScene):
             gradient.setColorAt(1, color)
             gradient.setColorAt(0, color.lighter())
             self._fade_steps_list.append(gradient)
+        color = QtGui.QColor()
+        color.setHsvF(nh, ns, nv)
+        gradient = QtGui.QRadialGradient(0, 0, 300)
+        gradient.setSpread(QtGui.QGradient.PadSpread)
+        gradient.setColorAt(1, color)
+        gradient.setColorAt(0, color.lighter())
+        self._fade_steps_list.append(gradient)
         self._fade_steps_list.reverse()
 
 

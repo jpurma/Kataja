@@ -23,25 +23,22 @@
 # ############################################################################
 
 from PyQt5 import QtGui, QtCore
-from PyQt5.QtGui import QPixmap
 
 from kataja.singletons import ctrl
 
 class TwoColorIconEngine(QtGui.QIconEngine):
+    """ An icon that is drawn from two binary pixmaps with colors provided by the app environment.
+        The benefit is that the icons can adjust their colors based on the environment and with two colors
+        there are more possibilities for making the icons pretty.
     """
 
-    """
-
-    def __init__(self, bitmaps=None, paint_method=None, owner=None):
+    def __init__(self, bitmaps=None):
         QtGui.QIconEngine.__init__(self)
         self.mono = True
         self.bitmap = None
         self.filter1 = None
         self.filter2 = None
         self.mask = None
-        self.paint_method = paint_method
-        self.owner = owner
-
         if bitmaps:
             self.addPixmap(bitmaps)
 
@@ -51,11 +48,11 @@ class TwoColorIconEngine(QtGui.QIconEngine):
             pm.setMask(QtGui.QBitmap(self.mask.scaled(QSize, QtCore.Qt.KeepAspectRatio)))
         return pm
 
-
-    def addPixmap(self, bitmaps):
-        """
-
-        :type bitmaps:
+    def addPixmap(self, bitmaps, **kwargs):
+        """ Overrides addPixmap, allowing tuple of bitmaps as an input to provide all necessary
+        color layers.
+        :type bitmaps: filename, tuple of bitmaps or instance of QPixmap
+        :param kwargs: not used
         """
         if isinstance(bitmaps, str):
             bitmaps = QtGui.QPixmap(bitmaps)
@@ -84,7 +81,7 @@ class TwoColorIconEngine(QtGui.QIconEngine):
         :param mode:
         :param state:
         """
-        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        #painter.setRenderHint(QtGui.QPainter.Antialiasing)
         c = ctrl.cm.ui()
         if mode == 0:  # normal
             painter.setPen(c)
@@ -101,18 +98,11 @@ class TwoColorIconEngine(QtGui.QIconEngine):
         #print(painter.backgroundMode(), painter.background(), QtCore.Qt.OpaqueMode, QtCore.Qt.TransparentMode)
         #
 
-        if self.paint_method:
-            #painter.setBackgroundMode(QtCore.Qt.OpaqueMode)
-            #painter.setBackground(ctrl.cm.paper())
-            painter.fillRect(rect, ctrl.cm.paper2())
-            #b = painter.background()
-            self.paint_method(painter, rect, self.owner.pen(), self.owner.brush())
+        if self.mono:
+            painter.drawPixmap(rect, self.mask)
         else:
-            if self.mono:
-                painter.drawPixmap(rect, self.mask)
-            else:
-                painter.drawPixmap(rect, self.filter1)
-                painter.setPen(c.darker())
-                painter.drawPixmap(rect, self.filter2)
+            painter.drawPixmap(rect, self.filter1)
+            painter.setPen(c.darker())
+            painter.drawPixmap(rect, self.filter2)
 
 

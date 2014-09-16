@@ -156,23 +156,6 @@
 	<integer>20</integer>
 	<key>edges</key>
 	<dict>
-		<key>_ikey_0</key>
-		<dict>
-			<key>color</key>
-			<string>key</string>
-			<key>has_outline</key>
-			<true/>
-			<key>is_filled</key>
-			<false/>
-			<key>pen_width</key>
-			<integer>1</integer>
-			<key>pull</key>
-			<real>0.4</real>
-			<key>shape_name</key>
-			<string>linear</string>
-			<key>visible</key>
-			<true/>
-		</dict>
 		<key>_ikey_1</key>
 		<dict>
 			<key>color</key>
@@ -186,7 +169,7 @@
 			<key>pull</key>
 			<real>0.24</real>
 			<key>shape_name</key>
-			<string>shaped_relative_cubic</string>
+			<string>shaped_cubic</string>
 			<key>visible</key>
 			<true/>
 		</dict>
@@ -203,7 +186,7 @@
 			<key>pull</key>
 			<real>0.32</real>
 			<key>shape_name</key>
-			<string>relative_cubic</string>
+			<string>cubic</string>
 			<key>visible</key>
 			<true/>
 		</dict>
@@ -220,7 +203,7 @@
 			<key>pull</key>
 			<real>0.4</real>
 			<key>shape_name</key>
-			<string>relative_cubic</string>
+			<string>cubic</string>
 			<key>visible</key>
 			<true/>
 		</dict>
@@ -270,6 +253,23 @@
 			<integer>1</integer>
 			<key>pull</key>
 			<real>0.5</real>
+			<key>shape_name</key>
+			<string>linear</string>
+			<key>visible</key>
+			<true/>
+		</dict>
+		<key>_ikey_7</key>
+		<dict>
+			<key>color</key>
+			<string>key</string>
+			<key>has_outline</key>
+			<true/>
+			<key>is_filled</key>
+			<false/>
+			<key>pen_width</key>
+			<integer>1</integer>
+			<key>pull</key>
+			<real>0.4</real>
 			<key>shape_name</key>
 			<string>linear</string>
 			<key>visible</key>

@@ -1,13 +1,13 @@
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QRect, QSize
-from PyQt5.QtGui import QIcon, QPixmap, QColor
+from PyQt5.QtGui import QIcon, QColor
 
 from kataja.Edge import SHAPE_PRESETS, Edge
-from kataja.singletons import ctrl, prefs
+from kataja.singletons import ctrl
 import kataja.globals as g
 from kataja.ui.panels.UIPanel import UIPanel
-from kataja.ui.TwoColorIconEngine import TwoColorIconEngine
 from kataja.utils import time_me
+from kataja.ui.DrawnIconEngine import DrawnIconEngine
 
 
 __author__ = 'purma'
@@ -31,13 +31,25 @@ line_icons = {
 
 
 class LineStyleIcon(QIcon):
-    def __init__(self, style_id, panel):
-        self.engine = TwoColorIconEngine(paint_method=SHAPE_PRESETS[style_id]['icon'], owner=self)
+    def __init__(self, shape_key, panel):
+        self.shape_key = shape_key
+        self.engine = DrawnIconEngine(SHAPE_PRESETS[shape_key]['icon'], owner=self)
         QIcon.__init__(self, self.engine)
         self.panel = panel
         #pixmap = QPixmap(60, 20)
         #pixmap.fill(ctrl.cm.ui())
         #self.addPixmap(pixmap)
+
+
+    def paint_settings(self):
+        s = SHAPE_PRESETS[self.shape_key]
+        pen = self.panel.active_line_pen
+        if not isinstance(pen, QColor):
+            pen = ctrl.cm.get(pen)
+
+        d = {'color':pen}
+        return d
+
 
     def pen(self):
         c = self.panel.active_line_pen
@@ -45,25 +57,6 @@ class LineStyleIcon(QIcon):
             return ctrl.cm.get(c)
         else:
             return c
-
-    def brush(self):
-        return self.panel.active_line_brush
-
-    def paint(self, painter, *args, **kwargs):
-        print("Painting LineStyleIcon icon")
-        if isinstance(args[0], QRect):
-            rect = args[0]
-        else:
-            x,y,w,h = args
-            rect = QRect(x, y, w, h)
-        pen = ctrl.cm.get(self.panel.active_line_pen)
-        brush = self.panel.active_line_brush
-        self.draw_method(painter, rect, pen, brush)
-
-    def pixmap(self, *args):
-        print("Pixmap, args:", args)
-        QIcon.pixmap(self, *args)
-
 
 
 class LinesPanel(UIPanel):
@@ -85,9 +78,9 @@ class LinesPanel(UIPanel):
         self.scope = g.CONSTITUENT_EDGE
         self._old_scope = g.CONSTITUENT_EDGE
         self.scope_selector = QtWidgets.QComboBox(self)
+        self.scope_selector.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         self._visible_scopes = []
-        self.active_line_pen = ctrl.cm.ui()
-        self.active_line_brush = ctrl.cm.ui_paper()
+        self.active_line_pen = ctrl.cm.drawing()
         ui_manager.ui_buttons['line_type_target'] = self.scope_selector
         # Other items may be temporarily added, they are defined as class.variables
         ui_manager.connect_selector_to_action(self.scope_selector, 'edge_shape_scope')
@@ -95,6 +88,7 @@ class LinesPanel(UIPanel):
 
         self.shape_selector = QtWidgets.QComboBox(self)
         self.shape_selector.setIconSize(QSize(64, 16))
+        self.shape_selector.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         #self.shape_selector.setView(view)
         ui_manager.ui_buttons['line_type'] = self.shape_selector
         items = [('', LineStyleIcon(lt, self), lt) for lt in SHAPE_PRESETS.keys()]

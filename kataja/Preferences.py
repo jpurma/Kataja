@@ -168,11 +168,11 @@ class Preferences(object):
         # ATTRIBUTE_EDGE = 6
 
         self.edges = {
-            CONSTITUENT_EDGE: {'shape_name': 'shaped_relative_cubic', 'color': 'key', 'pull': .24, 'visible': True,
+            CONSTITUENT_EDGE: {'shape_name': 'shaped_cubic', 'color': 'key', 'pull': .24, 'visible': True,
                                'has_outline': True, 'pen_width': 1, 'is_filled': True},
-            FEATURE_EDGE: {'shape_name': 'relative_cubic', 'color': 'accent2', 'pull': .32, 'visible': True,
+            FEATURE_EDGE: {'shape_name': 'cubic', 'color': 'accent2', 'pull': .32, 'visible': True,
                            'has_outline': True, 'pen_width': 1, 'is_filled': True},
-            GLOSS_EDGE: {'shape_name': 'relative_cubic', 'color': 'accent4', 'pull': .40, 'visible': True,
+            GLOSS_EDGE: {'shape_name': 'cubic', 'color': 'accent4', 'pull': .40, 'visible': True,
                          'has_outline': True, 'pen_width': 1, 'is_filled': False},
             ARROW: {'shape_name': 'arrow', 'color': 'key', 'pull': 0, 'visible': True, 'has_outline': True,
                     'pen_width': 1, 'is_filled': True},
