@@ -182,6 +182,10 @@ class PaletteManager:
         self.gradient = QtGui.QRadialGradient(0, 0, 300)
         self.gradient.setSpread(QtGui.QGradient.PadSpread)
         self.activate_color_mode('solarized_lt', cold_start=True)
+        self.color_keys = ['content1', 'content2', 'content3', 'background1', 'background2',
+                     'accent1', 'accent2', 'accent3', 'accent4', 'accent5', 'accent6', 'accent7', 'accent8',
+                     'accent1tr', 'accent2tr', 'accent3tr', 'accent4tr', 'accent5tr', 'accent6tr', 'accent7tr',
+                     'accent8tr']
 
     def current_color_mode(self, value=None):
         """

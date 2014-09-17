@@ -136,6 +136,13 @@ actions = {
         'selection': 'line_type',
         'tooltip': 'Change shape of relations (lines, edges) between objects'
     },
+    'change_edge_color': {
+        'command': 'Change relation color',
+        'method': 'change_edge_color',
+        'selection': 'line_color',
+        'tooltip': 'Change drawing color of relations'
+    },
+
     # Visualizations panel
     'change_visualization': {
         'command': 'Change visualization algorithm',

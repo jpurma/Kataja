@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QRect, QSize
-from PyQt5.QtGui import QIcon, QColor
+from PyQt5.QtGui import QIcon, QColor, QPixmap
 
 from kataja.Edge import SHAPE_PRESETS, Edge
 from kataja.singletons import ctrl
@@ -50,13 +50,16 @@ class LineStyleIcon(QIcon):
         d = {'color':pen}
         return d
 
+class LineColorIcon(QIcon):
+    def __init__(self, color_id, panel):
+        pmap = QPixmap()
+        pmap.fill(ctrl.cm.get(color_id))
+        QIcon.__init__(self, pmap)
+        self.panel = panel
+        #pixmap = QPixmap(60, 20)
+        #pixmap.fill(ctrl.cm.ui())
+        #self.addPixmap(pixmap)
 
-    def pen(self):
-        c = self.panel.active_line_pen
-        if not isinstance(c, QColor):
-            return ctrl.cm.get(c)
-        else:
-            return c
 
 
 class LinesPanel(UIPanel):
@@ -95,7 +98,23 @@ class LinesPanel(UIPanel):
         for text, icon, data in items:
             self.shape_selector.addItem(icon, text, data)
         ui_manager.connect_selector_to_action(self.shape_selector, 'change_edge_shape')
-        layout.addWidget(self.shape_selector)
+        hlayout = QtWidgets.QHBoxLayout()
+        hlayout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
+
+        hlayout.addWidget(self.shape_selector)
+
+        self.color_selector = QtWidgets.QComboBox(self)
+        self.color_selector.setIconSize(QSize(24, 24))
+        self.color_selector.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        #self.shape_selector.setView(view)
+        ui_manager.ui_buttons['line_color'] = self.color_selector
+        items = [('', LineColorIcon(c, self), c) for c in ctrl.cm.color_keys]
+        for text, icon, data in items:
+            self.color_selector.addItem(icon, text, data)
+        ui_manager.connect_selector_to_action(self.color_selector, 'change_edge_color')
+        hlayout.addWidget(self.color_selector)
+        layout.addLayout(hlayout)
+
         inner.setLayout(layout)
         self.setWidget(inner)
         self.finish_init()
