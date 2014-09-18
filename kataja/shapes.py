@@ -109,6 +109,8 @@ def shaped_cubic_path(self, relative=True, rel_dx=0.2, rel_dy=0.2, fixed_dx=20, 
     path.cubicTo(c[0] - leaf_x, c[1], c[2], c[3] + leaf_y, ex, ey)
     path.cubicTo(c[2], c[3] - leaf_y, c[0] + leaf_x, c[1], sx, sy)
     self.middle_point = path.pointAtPercent(0.25)
+    self.has_outline = False
+    self.is_filled = True
     return path
 
 
@@ -150,6 +152,8 @@ def cubic_path(self, relative=True, rel_dx=0.2, rel_dy=0.2, fixed_dx=20, fixed_d
     c = self.adjusted_control_point_list()
     path.cubicTo(c[0], c[1], c[2], c[3], ex, ey)
     self.middle_point = path.pointAtPercent(0.5)
+    self.has_outline = True
+    self.is_filled = False
     return path
 
 
@@ -191,6 +195,8 @@ def shaped_quadratic_path(self, relative=True, rel_dx=0.2, rel_dy=0, fixed_dx=20
     path.quadTo(c[0] - leaf_x, c[1] - leaf_y, ex, ey)
     path.quadTo(c[0] + leaf_x, c[1] + leaf_y, sx, sy)
     self.middle_point = path.pointAtPercent(0.25)
+    self.has_outline = False
+    self.is_filled = True
     return path
 
 def shaped_quadratic_icon(painter, rect, color=None, rel_dx=0.4, rel_dy=0, leaf_x=1, leaf_y=3):
@@ -229,6 +235,8 @@ def quadratic_path(self, relative=True, rel_dx=0.2, rel_dy=0, fixed_dx=20, fixed
     c = self.adjusted_control_point_list()
     path.quadTo(c[0], c[1], ex, ey)
     self.middle_point = path.pointAtPercent(0.5)
+    self.has_outline = True
+    self.is_filled = False
     return path
 
 
@@ -257,6 +265,8 @@ def shaped_linear_path(self, leaf_x=2, leaf_y=2):
     path.quadTo(c[0][0], c[0][1], dx, dy)
     path.quadTo(c[1][0], c[1][1], sx, sy)
     self.middle_point = path.pointAtPercent(0.25)
+    self.has_outline = False
+    self.is_filled = True
     return path
 
 def shaped_linear_icon(painter, rect, color=None, leaf_x=4, leaf_y=4):
@@ -278,6 +288,8 @@ def linear_path(self):
     path = QtGui.QPainterPath(Pf(sx, sy))
     path.lineTo(dx, dy)
     self.middle_point = path.pointAtPercent(0.5)
+    self.has_outline = True
+    self.is_filled = False
     return path
 
 def linear_icon(painter, rect, color=None):
@@ -327,6 +339,8 @@ def blob_path(self, thickness=4):
     path = path.subtracted(path2neg)
     self.middle_point = Pf(c1x, c1y)
     self.control_points = []
+    self.has_outline = False
+    self.is_filled = True
 
     return path.simplified()
 
@@ -417,6 +431,9 @@ def directional_blob_path(self, thickness=4):
         path = path.subtracted(path2neg)
     self.middle_point = Pf(c1x, c1y)
     self.control_points = []
+    self.has_outline = False
+    self.is_filled = True
+
     return path.simplified()
 
 def directional_blob_icon(painter, rect, color=None):

@@ -156,38 +156,38 @@ actions = {
         'method': 'show_help_message',
         'shortcut': 'h', },
     # Generic keys ####
-    'key_esc': {
-        'command': 'key_esc',
-        'method': 'key_esc',
-        'shortcut': 'Escape'},
-    'key_backspace': {
-        'command': 'key_backspace',
-        'method': 'key_backspace',
-        'shortcut': 'Backspace'},
-    'key_return': {
-        'command': 'key_return',
-        'method': 'key_return',
-        'shortcut': 'Return'},
-    'key_left': {
-        'command': 'key_left',
-        'method': 'key_left',
-        'shortcut': 'Left'},
-    'key_right': {
-        'command': 'key_right',
-        'method': 'key_right',
-        'shortcut': 'Right'},
-    'key_up': {
-        'command': 'key_up',
-        'method': 'key_up',
-        'shortcut': 'Up'},
-    'key_down': {
-        'command': 'key_down',
-        'method': 'key_down',
-        'shortcut': 'Down'},
-    'key_tab': {
-        'command': 'key_tab',
-        'method': 'key_tab',
-        'shortcut': 'Tab'},
+    # 'key_esc': {
+    #     'command': 'key_esc',
+    #     'method': 'key_esc',
+    #     'shortcut': 'Escape'},
+    # 'key_backspace': {
+    #     'command': 'key_backspace',
+    #     'method': 'key_backspace',
+    #     'shortcut': 'Backspace'},
+    # 'key_return': {
+    #     'command': 'key_return',
+    #     'method': 'key_return',
+    #     'shortcut': 'Return'},
+    # 'key_left': {
+    #     'command': 'key_left',
+    #     'method': 'key_left',
+    #     'shortcut': 'Left'},
+    # 'key_right': {
+    #     'command': 'key_right',
+    #     'method': 'key_right',
+    #     'shortcut': 'Right'},
+    # 'key_up': {
+    #     'command': 'key_up',
+    #     'method': 'key_up',
+    #     'shortcut': 'Up'},
+    # 'key_down': {
+    #     'command': 'key_down',
+    #     'method': 'key_down',
+    #     'shortcut': 'Down'},
+    # 'key_tab': {
+    #     'command': 'key_tab',
+    #     'method': 'key_tab',
+    #     'shortcut': 'Tab'},
     'undo': {
         'command': 'undo',
         'method': 'undo',

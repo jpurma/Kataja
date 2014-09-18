@@ -134,6 +134,7 @@ class UIManager:
         self.ui_activity_marker.hide()
         self.preferences_dialog = None
         self.hud = None
+        self.color_dialog = None
 
         # self.hud = HUD(self)
         # self.info('free drawing')
@@ -170,6 +171,15 @@ class UIManager:
     def pin_panel(self, panel_id):
         panel = self.get_panel(panel_id)
         panel.pin_to_dock()
+
+
+    def start_color_dialog(self, receiver, slot_name):
+        if not self.color_dialog:
+            self.color_dialog = QtWidgets.QColorDialog(self.main)
+            self.color_dialog.setOption(QtWidgets.QColorDialog.NoButtons)
+        self.color_dialog.show()
+        self.color_dialog.setCurrentColor(ctrl.cm.drawing())
+
 
     def add_ui(self, item):
         """

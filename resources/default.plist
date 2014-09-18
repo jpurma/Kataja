@@ -160,8 +160,6 @@
 		<dict>
 			<key>color</key>
 			<string>key</string>
-			<key>has_outline</key>
-			<true/>
 			<key>is_filled</key>
 			<true/>
 			<key>pen_width</key>
@@ -177,8 +175,6 @@
 		<dict>
 			<key>color</key>
 			<string>accent2</string>
-			<key>has_outline</key>
-			<true/>
 			<key>is_filled</key>
 			<true/>
 			<key>pen_width</key>
@@ -194,8 +190,6 @@
 		<dict>
 			<key>color</key>
 			<string>accent4</string>
-			<key>has_outline</key>
-			<true/>
 			<key>is_filled</key>
 			<false/>
 			<key>pen_width</key>
@@ -211,8 +205,6 @@
 		<dict>
 			<key>color</key>
 			<string>key</string>
-			<key>has_outline</key>
-			<true/>
 			<key>is_filled</key>
 			<true/>
 			<key>pen_width</key>
@@ -228,8 +220,6 @@
 		<dict>
 			<key>color</key>
 			<string>accent5</string>
-			<key>has_outline</key>
-			<true/>
 			<key>is_filled</key>
 			<false/>
 			<key>pen_width</key>
@@ -245,8 +235,6 @@
 		<dict>
 			<key>color</key>
 			<string>key</string>
-			<key>has_outline</key>
-			<false/>
 			<key>is_filled</key>
 			<false/>
 			<key>pen_width</key>
@@ -262,8 +250,6 @@
 		<dict>
 			<key>color</key>
 			<string>key</string>
-			<key>has_outline</key>
-			<true/>
 			<key>is_filled</key>
 			<false/>
 			<key>pen_width</key>

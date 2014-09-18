@@ -152,7 +152,6 @@ class KatajaMain(QtWidgets.QMainWindow):
         #self.statusBar().
         self.setGeometry(x, y, w, h)
         self.add_message('Welcome to Kataja! (h) for help')
-        self.color_wheel = None
         self.action_finished()
         print('---- finished start sequence... ', time.time() - t)
 
@@ -255,8 +254,8 @@ class KatajaMain(QtWidgets.QMainWindow):
         QtWidgets.QMainWindow.mousePressEvent(self, event)
 
     def keyPressEvent(self, event):
-        if not self.key_manager.receive_key_press(event):
-            return QtWidgets.QMainWindow.keyPressEvent(self, event)
+        #if not self.key_manager.receive_key_press(event):
+        return QtWidgets.QMainWindow.keyPressEvent(self, event)
 
 
     def undo(self):
@@ -268,6 +267,8 @@ class KatajaMain(QtWidgets.QMainWindow):
         """ Redo -command triggered """
         self.forest.undo_manager.redo()
         # self.action_finished()
+
+
 
     # ### ConstituentNode's radial menu commands ################################
 
@@ -395,9 +396,12 @@ class KatajaMain(QtWidgets.QMainWindow):
         args = data.get('args', [])
         if selector:
             # This is a combobox, get the data and add it as an argument
-            print(selector.currentIndex(), selector.currentText())
-            i = selector.currentIndex()
-            args.append(selector.itemData(i))
+            view = selector.view()
+            if isinstance(view, QtWidgets.QListView):
+                args.append(selector.itemData(selector.currentIndex()))
+            elif isinstance(view, QtWidgets.QTableView):
+                i = selector.view().currentIndex()
+                args.append(selector.model().itemFromIndex(i).data())
         context = data.get('context', 'main')
         if context == 'main':
             c = self
@@ -602,6 +606,9 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.add_message('(s) Changed relation shape to: %s' % shape)
 
     def change_edge_color(self, color):
+        if not color:
+            self.ui_manager.start_color_dialog(self.ui_manager.get_panel(g.LINES), 'color_changed')
+            return
         scope = self.ui_manager.get_panel(g.LINES).scope
         if scope == g.SELECTION:
             for edge in ctrl.get_all_selected():
@@ -968,9 +975,7 @@ class KatajaMain(QtWidgets.QMainWindow):
 
     # noinspection PyUnusedLocal
     def end_pointing_mode(self, event):
-        """ End pointing mode and return to normal
-        :param event:
-        """
+        """ End pointing mode and return to normal """
         ctrl.pointing_mode = False
         ctrl.pointing_data = {}
         self.ui_manager.end_stretchline()

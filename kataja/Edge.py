@@ -40,7 +40,7 @@ class Edge(QtWidgets.QGraphicsItem):
 
     z_value = 10
     saved_fields = ['forest', 'edge_type', 'adjust', 'start', 'end', '_color', '_shape_name', '_pull', '_shape_visible',
-                    '_visible', '_has_outline', '_is_filled']
+                    '_visible']
 
     receives_signals = [g.EDGE_SHAPES_CHANGED]
 
@@ -65,6 +65,8 @@ class Edge(QtWidgets.QGraphicsItem):
         self.control_points = []
         self.middle_point = None
         self.adjust = []
+        self.has_outline = False
+        self.is_filled = None
 
         if isinstance(direction, str):
             if direction == 'left':
@@ -80,10 +82,8 @@ class Edge(QtWidgets.QGraphicsItem):
 
         # ## Adjustable values, defaults to ForestSettings if None for this element
         self._color = None
-        self._has_outline = None
         self._pen = None
         self._pen_width = None
-        self._is_filled = None
         self._brush = None
         self._shape_name = None
         self._pull = None
@@ -199,19 +199,6 @@ class Edge(QtWidgets.QGraphicsItem):
 
     # ### Pen & Brush ###############################################################
 
-    def has_outline(self, value=None):
-        """
-        Edge should draw outline. If value is given, has_outline is set to value.
-        :param value:boolean
-        :return:boolean
-        """
-        if value is None:
-            if self._has_outline is None:
-                return self.forest.settings.edge_settings(self.edge_type, 'has_outline')
-            else:
-                return self._has_outline
-        else:
-            self._has_outline = value
 
     def pen(self):
         """
@@ -234,20 +221,6 @@ class Edge(QtWidgets.QGraphicsItem):
                 return self._pen_width
         else:
             self._pen_width = value
-
-    def is_filled(self, value=None):
-        """
-
-        :param value:
-        :return:
-        """
-        if value is None:
-            if self._is_filled is None:
-                return self.forest.settings.edge_settings(self.edge_type, 'is_filled')
-            else:
-                return self._is_filled
-        else:
-            self._is_filled = value
 
     # ### Shape / pull / visibility ###############################################################
 
@@ -320,7 +293,7 @@ class Edge(QtWidgets.QGraphicsItem):
         if not self._shape_method:
             self.update_shape()
         self._path = self._shape_method(self)
-        if not self.is_filled():  # expensive with filled shapes
+        if not self.is_filled:  # expensive with filled shapes
             self._fat_path = outline_stroker.createStroke(self._path).united(self._path)
 
     def shape(self):
@@ -329,7 +302,7 @@ class Edge(QtWidgets.QGraphicsItem):
 
         :return:
         """
-        if not self.is_filled():
+        if not self.is_filled:
             if not self._fat_path:
                 self.make_path()
             return self._fat_path
@@ -346,7 +319,6 @@ class Edge(QtWidgets.QGraphicsItem):
         d = SHAPE_PRESETS[self.shape_name()]
 
         self._shape_method = d['method']
-        self.is_filled(d['fill'])
         self.make_path()
         while len(self.adjust) < len(self.control_points):
             self.adjust.append((0, 0, 0))
@@ -544,13 +516,13 @@ class Edge(QtWidgets.QGraphicsItem):
         if not self.start or not self.end:
             return
         c = self.contextual_color()
-        if self.has_outline():
+        if self.has_outline:
             p = self.pen()
             p.setColor(c)
             p.setWidth(self.pen_width())
             painter.setPen(p)
             painter.drawPath(self._path)
-        if self.is_filled():
+        if self.is_filled:
             painter.fillPath(self._path, c)
 
     def adjusted_control_point_list(self):
@@ -580,7 +552,7 @@ class Edge(QtWidgets.QGraphicsItem):
         :param d: int
         :return: QPoint
         """
-        if self.is_filled():
+        if self.is_filled:
             d /= 2.0
         if not self._path:
             self.update_end_points()
@@ -592,7 +564,7 @@ class Edge(QtWidgets.QGraphicsItem):
         :param d: int
         :return: float
         """
-        if self.is_filled():
+        if self.is_filled:
             d /= 2.0
             # slopeAtPercent
         if not self._path:

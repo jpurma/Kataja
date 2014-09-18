@@ -169,19 +169,19 @@ class Preferences(object):
 
         self.edges = {
             CONSTITUENT_EDGE: {'shape_name': 'shaped_cubic', 'color': 'key', 'pull': .24, 'visible': True,
-                               'has_outline': True, 'pen_width': 1, 'is_filled': True},
+                             'pen_width': 1},
             FEATURE_EDGE: {'shape_name': 'cubic', 'color': 'accent2', 'pull': .32, 'visible': True,
-                           'has_outline': True, 'pen_width': 1, 'is_filled': True},
+                            'pen_width': 1},
             GLOSS_EDGE: {'shape_name': 'cubic', 'color': 'accent4', 'pull': .40, 'visible': True,
-                         'has_outline': True, 'pen_width': 1, 'is_filled': False},
-            ARROW: {'shape_name': 'arrow', 'color': 'key', 'pull': 0, 'visible': True, 'has_outline': True,
-                    'pen_width': 1, 'is_filled': True},
-            PROPERTY_EDGE: {'shape_name': 'linear', 'color': 'accent5', 'pull': .40, 'visible': True, 'has_outline': True,
-                            'pen_width': 1, 'is_filled': False},
-            ABSTRACT_EDGE: {'shape_name': 'linear', 'color': 'key', 'pull': .40, 'visible': True, 'has_outline': True,
-                            'pen_width': 1, 'is_filled': False},
-            ATTRIBUTE_EDGE: {'shape_name': 'linear', 'color': 'key', 'pull': .50, 'visible': True, 'has_outline': False,
-                             'pen_width': 1, 'is_filled': False},
+                         'pen_width': 1},
+            ARROW: {'shape_name': 'arrow', 'color': 'key', 'pull': 0, 'visible': True,
+                    'pen_width': 1},
+            PROPERTY_EDGE: {'shape_name': 'linear', 'color': 'accent5', 'pull': .40, 'visible': True,
+                            'pen_width': 1},
+            ABSTRACT_EDGE: {'shape_name': 'linear', 'color': 'key', 'pull': .40, 'visible': True,
+                            'pen_width': 1},
+            ATTRIBUTE_EDGE: {'shape_name': 'linear', 'color': 'key', 'pull': .50, 'visible': True,
+                             'pen_width': 1},
 
         }
 

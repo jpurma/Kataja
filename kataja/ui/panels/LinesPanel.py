@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtCore import QRect, QSize
 from PyQt5.QtGui import QIcon, QColor, QPixmap, QStandardItem
 
@@ -64,7 +64,7 @@ class ColorSelector(QtWidgets.QComboBox):
         #self.color_selector.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         model = self.model()
         model.setRowCount(8)
-        model.setColumnCount(3)
+        model.setColumnCount(4)
         items = []
         for c in ctrl.cm.color_keys:
             item = QStandardItem(LineColorIcon(c), '')
@@ -72,7 +72,12 @@ class ColorSelector(QtWidgets.QComboBox):
             item.setSizeHint(QSize(22, 20))
             items.append(item)
         new_view = QtWidgets.QTableView()
-        table = [items[0:3], items[5:13], items[13:21]]
+        add_icon = QIcon()
+        add_icon.fromTheme("list-add")
+        add_item = QStandardItem('+')
+        add_item.setTextAlignment(QtCore.Qt.AlignCenter)
+        add_item.setSizeHint(QSize(22,20))
+        table = [items[0:3], items[5:13], items[13:21], [add_item]]
         for c, column in enumerate(table):
             for r, item in enumerate(column):
                 model.setItem(r, c, item)
