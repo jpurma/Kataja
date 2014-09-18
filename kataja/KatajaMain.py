@@ -395,6 +395,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         args = data.get('args', [])
         if selector:
             # This is a combobox, get the data and add it as an argument
+            print(selector.currentIndex(), selector.currentText())
             i = selector.currentIndex()
             args.append(selector.itemData(i))
         context = data.get('context', 'main')
@@ -599,6 +600,20 @@ class KatajaMain(QtWidgets.QMainWindow):
             self.forest.settings.edge_settings(scope, 'shape_name', shape)
             ctrl.announce(g.EDGE_SHAPES_CHANGED, scope, shape)
         self.add_message('(s) Changed relation shape to: %s' % shape)
+
+    def change_edge_color(self, color):
+        scope = self.ui_manager.get_panel(g.LINES).scope
+        if scope == g.SELECTION:
+            for edge in ctrl.get_all_selected():
+                if isinstance(edge, Edge):
+                    edge.color(color)
+                    #edge.update_shape()
+                    edge.update()
+        elif scope:
+            self.forest.settings.edge_settings(scope, 'color', color)
+            #ctrl.announce(g.EDGE_SHAPES_CHANGED, scope, color)
+        self.add_message('(s) Changed relation color to: %s' % ctrl.cm.get_color_name(color))
+
 
     # Change node edge shapes -action (s)
     def change_node_edge_shape(self, shape=''):

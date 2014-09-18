@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QRect, QSize
-from PyQt5.QtGui import QIcon, QColor, QPixmap
+from PyQt5.QtGui import QIcon, QColor, QPixmap, QStandardItem
 
 from kataja.Edge import SHAPE_PRESETS, Edge
 from kataja.singletons import ctrl
@@ -8,6 +8,7 @@ import kataja.globals as g
 from kataja.ui.panels.UIPanel import UIPanel
 from kataja.utils import time_me
 from kataja.ui.DrawnIconEngine import DrawnIconEngine
+from kataja.ui.ColorSwatchIconEngine import ColorSwatchIconEngine
 
 
 __author__ = 'purma'
@@ -51,16 +52,43 @@ class LineStyleIcon(QIcon):
         return d
 
 class LineColorIcon(QIcon):
-    def __init__(self, color_id, panel):
-        pmap = QPixmap()
-        pmap.fill(ctrl.cm.get(color_id))
-        QIcon.__init__(self, pmap)
-        self.panel = panel
-        #pixmap = QPixmap(60, 20)
-        #pixmap.fill(ctrl.cm.ui())
-        #self.addPixmap(pixmap)
+    def __init__(self, color_id):
+        QIcon.__init__(self, ColorSwatchIconEngine(color_id))
 
 
+class ColorSelector(QtWidgets.QComboBox):
+
+    def __init__(self, parent):
+        QtWidgets.QComboBox.__init__(self, parent)
+        self.setIconSize(QSize(16, 16))
+        #self.color_selector.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        model = self.model()
+        model.setRowCount(8)
+        model.setColumnCount(3)
+        items = []
+        for c in ctrl.cm.color_keys:
+            item = QStandardItem(LineColorIcon(c), '')
+            item.setData(c)
+            item.setSizeHint(QSize(22, 20))
+            items.append(item)
+        new_view = QtWidgets.QTableView()
+        table = [items[0:3], items[5:13], items[13:21]]
+        for c, column in enumerate(table):
+            for r, item in enumerate(column):
+                model.setItem(r, c, item)
+        new_view.horizontalHeader().hide()
+        new_view.verticalHeader().hide()
+        new_view.setCornerButtonEnabled(False)
+        new_view.setModel(model)
+        new_view.resizeColumnsToContents()
+        cw = new_view.columnWidth(0)
+        new_view.setMinimumWidth(model.columnCount() * cw)
+        self.setView(new_view)
+
+    def currentIndex(self):
+        print("overridden currentIndex!")
+
+        return QtWidgets.QComboBox.currentIndex(self)
 
 class LinesPanel(UIPanel):
     """ Panel for editing how edges/relations are drawn. """
@@ -103,14 +131,8 @@ class LinesPanel(UIPanel):
 
         hlayout.addWidget(self.shape_selector)
 
-        self.color_selector = QtWidgets.QComboBox(self)
-        self.color_selector.setIconSize(QSize(24, 24))
-        self.color_selector.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
-        #self.shape_selector.setView(view)
+        self.color_selector = ColorSelector(self)
         ui_manager.ui_buttons['line_color'] = self.color_selector
-        items = [('', LineColorIcon(c, self), c) for c in ctrl.cm.color_keys]
-        for text, icon, data in items:
-            self.color_selector.addItem(icon, text, data)
         ui_manager.connect_selector_to_action(self.color_selector, 'change_edge_color')
         hlayout.addWidget(self.color_selector)
         layout.addLayout(hlayout)
@@ -248,3 +270,4 @@ class LinesPanel(UIPanel):
             assert(i > -1)
             self.shape_selector.setCurrentIndex(i)
             remove_ambiguous_marker()
+
