@@ -606,19 +606,21 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.add_message('(s) Changed relation shape to: %s' % shape)
 
     def change_edge_color(self, color):
+        panel = self.ui_manager.get_panel(g.LINES)
         if not color:
-            self.ui_manager.start_color_dialog(self.ui_manager.get_panel(g.LINES), 'color_changed')
+            self.ui_manager.start_color_dialog(panel, 'color_changed')
             return
-        scope = self.ui_manager.get_panel(g.LINES).scope
-        if scope == g.SELECTION:
+        if panel.scope == g.SELECTION:
             for edge in ctrl.get_all_selected():
                 if isinstance(edge, Edge):
                     edge.color(color)
                     #edge.update_shape()
                     edge.update()
-        elif scope:
-            self.forest.settings.edge_settings(scope, 'color', color)
+        elif panel.scope:
+            self.forest.settings.edge_settings(panel.scope, 'color', color)
             #ctrl.announce(g.EDGE_SHAPES_CHANGED, scope, color)
+        panel.update_color(color)
+        panel.update_panel()
         self.add_message('(s) Changed relation color to: %s' % ctrl.cm.get_color_name(color))
 
 

@@ -44,7 +44,7 @@ class LineStyleIcon(QIcon):
 
     def paint_settings(self):
         s = SHAPE_PRESETS[self.shape_key]
-        pen = self.panel.active_line_pen
+        pen = self.panel.current_color
         if not isinstance(pen, QColor):
             pen = ctrl.cm.get(pen)
 
@@ -90,10 +90,6 @@ class ColorSelector(QtWidgets.QComboBox):
         new_view.setMinimumWidth(model.columnCount() * cw)
         self.setView(new_view)
 
-    def currentIndex(self):
-        print("overridden currentIndex!")
-
-        return QtWidgets.QComboBox.currentIndex(self)
 
 class LinesPanel(UIPanel):
     """ Panel for editing how edges/relations are drawn. """
@@ -116,7 +112,7 @@ class LinesPanel(UIPanel):
         self.scope_selector = QtWidgets.QComboBox(self)
         self.scope_selector.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         self._visible_scopes = []
-        self.active_line_pen = ctrl.cm.drawing()
+        self.current_color = ctrl.cm.drawing()
         ui_manager.ui_buttons['line_type_target'] = self.scope_selector
         # Other items may be temporarily added, they are defined as class.variables
         ui_manager.connect_selector_to_action(self.scope_selector, 'edge_shape_scope')
@@ -158,6 +154,21 @@ class LinesPanel(UIPanel):
             if selector.itemData(i) == data:
                 return i
         return -1
+
+    @staticmethod
+    def find_table_item(data, selector):
+        """ Helper method to check the index of data item in list
+        :param data: data to match
+        :param selector: QComboBox instance
+        :return: -1 if not found, index if found
+        """
+        model = selector.model()
+        for i in range(0, model.columnCount()):
+            for j in range(0, model.rowCount()):
+                item = model.item(j, i)
+                if item and item.data() == data:
+                    return item
+        return None
 
 
     @staticmethod
@@ -204,6 +215,13 @@ class LinesPanel(UIPanel):
         """
         self.scope = value
 
+    def update_color(self, color):
+        self.current_color = color
+        item = self.find_table_item(color, self.color_selector)
+        if item:
+            self.color_selector.setModelColumn(item.column())
+
+
     def update_panel(self):
         """ Panel update should be necessary when changing ctrl.selection or after the tree has otherwise changed.
         :return:
@@ -248,7 +266,7 @@ class LinesPanel(UIPanel):
                 self.shape_selector.removeItem(i)
 
 
-        # Shape selector - show shape of selected edges, or '---' if they contain more than 1 shape.
+        ### Shape selector - show shape of selected edges, or '---' if they contain more than 1 shape.
         if self.scope == g.SELECTION:
             edge_shape = None
             ambiguous = False
@@ -266,13 +284,16 @@ class LinesPanel(UIPanel):
                 self.shape_selector.setCurrentIndex(i)
                 assert(i > -1)
                 remove_ambiguous_marker()
-                self.active_line_pen = edge.color()
+                self.current_color = edge.color()
 
         else:
             edge_shape = ctrl.forest.settings.edge_settings(self.scope, 'shape_name')
-            self.active_line_pen = ctrl.forest.settings.edge_settings(self.scope, 'color')
+            self.current_color = ctrl.forest.settings.edge_settings(self.scope, 'color')
             i = self.find_list_item(edge_shape, self.shape_selector)
             assert(i > -1)
             self.shape_selector.setCurrentIndex(i)
             remove_ambiguous_marker()
+            self.shape_selector.update()
+        ### Color selector
+
 
