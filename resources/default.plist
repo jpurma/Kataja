@@ -159,9 +159,7 @@
 		<key>_ikey_1</key>
 		<dict>
 			<key>color</key>
-			<string>key</string>
-			<key>is_filled</key>
-			<true/>
+			<string>content1</string>
 			<key>pen_width</key>
 			<integer>1</integer>
 			<key>pull</key>
@@ -175,8 +173,6 @@
 		<dict>
 			<key>color</key>
 			<string>accent2</string>
-			<key>is_filled</key>
-			<true/>
 			<key>pen_width</key>
 			<integer>1</integer>
 			<key>pull</key>
@@ -190,8 +186,6 @@
 		<dict>
 			<key>color</key>
 			<string>accent4</string>
-			<key>is_filled</key>
-			<false/>
 			<key>pen_width</key>
 			<integer>1</integer>
 			<key>pull</key>
@@ -204,9 +198,7 @@
 		<key>_ikey_4</key>
 		<dict>
 			<key>color</key>
-			<string>key</string>
-			<key>is_filled</key>
-			<true/>
+			<string>content1</string>
 			<key>pen_width</key>
 			<integer>1</integer>
 			<key>pull</key>
@@ -220,8 +212,6 @@
 		<dict>
 			<key>color</key>
 			<string>accent5</string>
-			<key>is_filled</key>
-			<false/>
 			<key>pen_width</key>
 			<integer>1</integer>
 			<key>pull</key>
@@ -234,9 +224,7 @@
 		<key>_ikey_6</key>
 		<dict>
 			<key>color</key>
-			<string>key</string>
-			<key>is_filled</key>
-			<false/>
+			<string>content1</string>
 			<key>pen_width</key>
 			<integer>1</integer>
 			<key>pull</key>
@@ -249,9 +237,7 @@
 		<key>_ikey_7</key>
 		<dict>
 			<key>color</key>
-			<string>key</string>
-			<key>is_filled</key>
-			<false/>
+			<string>content1</string>
 			<key>pen_width</key>
 			<integer>1</integer>
 			<key>pull</key>
@@ -342,7 +328,7 @@
 		<key>_ikey_0</key>
 		<dict>
 			<key>color</key>
-			<string>key</string>
+			<string>content1</string>
 			<key>font</key>
 			<string>main</string>
 			<key>font-size</key>
@@ -351,7 +337,7 @@
 		<key>_ikey_1</key>
 		<dict>
 			<key>color</key>
-			<string>key</string>
+			<string>content1</string>
 			<key>font</key>
 			<string>main</string>
 			<key>font-size</key>

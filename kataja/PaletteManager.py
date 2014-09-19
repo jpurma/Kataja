@@ -324,7 +324,6 @@ class PaletteManager:
             self.d['content1'] = sol[4]
             self.d['content2'] = sol[2]
             self.d['content3'] = sol[5]
-        self.d['key'] = self.d['content1']
         self.d['accents'] = accents
 
         for i, accent in enumerate(accents):
@@ -353,7 +352,6 @@ class PaletteManager:
         h, s, v = in_range(h, s, v)
         key.setHsvF(h, s, v)
         light_bg = v < 0.5 or (s > 0.7 and 0.62 < h < 0.95)
-        self.d['key'] = key
         self.d['content1'] = key
         content2 = key.lighter(107)
         content3 = key.darker(107)

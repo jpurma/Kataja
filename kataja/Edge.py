@@ -183,6 +183,17 @@ class Edge(QtWidgets.QGraphicsItem):
         else:
             self._color = value
 
+    def color_id(self):
+        """
+        get palette id of the edge color.
+        :return: str
+        """
+        if self._color is None:
+            return self.forest.settings.edge_settings(self.edge_type, 'color')
+        else:
+            return self._color
+
+
     def contextual_color(self):
         """ Drawing color that is sensitive to node's state
         :return: QColor

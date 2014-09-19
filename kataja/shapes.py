@@ -4,7 +4,7 @@ from math import sin, cos, pi, acos
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import QPointF as Pf
 from kataja.globals import LEFT, RIGHT, NO_ALIGN
-from utils import time_me
+from kataja.utils import time_me
 
 __author__ = 'purma'
 

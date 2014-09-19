@@ -157,10 +157,10 @@ class LinesPanel(UIPanel):
 
     @staticmethod
     def find_table_item(data, selector):
-        """ Helper method to check the index of data item in list
+        """ Helper method to check the index of data item in table
         :param data: data to match
         :param selector: QComboBox instance
-        :return: -1 if not found, index if found
+        :return: None if not found, item itself if it is found
         """
         model = selector.model()
         for i in range(0, model.columnCount()):
@@ -252,48 +252,80 @@ class LinesPanel(UIPanel):
         There may be that this makes fields to remove or add new values to selectors or do other hard manipulation
         to fields.
         """
-        def add_and_select_ambiguous_marker():
-            i = self.find_list_item(g.AMBIGUOUS_VALUES, self.shape_selector)
+        def add_and_select_ambiguous_marker(selector):
+            i = self.find_list_item(g.AMBIGUOUS_VALUES, selector)
             if i == -1:
-                self.shape_selector.insertItem(0, '---', g.AMBIGUOUS_VALUES)
-                self.shape_selector.setCurrentIndex(0)
+                selector.insertItem(0, '---', g.AMBIGUOUS_VALUES)
+                selector.setCurrentIndex(0)
             else:
-                self.shape_selector.setCurrentIndex(i)
+                self.selector.setCurrentIndex(i)
 
-        def remove_ambiguous_marker():
-            i = self.find_list_item(g.AMBIGUOUS_VALUES, self.shape_selector)
+        def remove_ambiguous_marker(selector):
+            i = self.find_list_item(g.AMBIGUOUS_VALUES, selector)
             if i > -1:
-                self.shape_selector.removeItem(i)
+                print('found ambiguous marker:', i)
+                selector.removeItem(i)
 
-
-        ### Shape selector - show shape of selected edges, or '---' if they contain more than 1 shape.
+        ### First find what are the properties of the selected edges.
+        ### If they are conflicting, e.g. there are two different colors in selected edges,
+        ### then they cannot be shown in the color selector. They can still be overridden with new selection.
         if self.scope == g.SELECTION:
             edge_shape = None
-            ambiguous = False
+            edge_color = None
+            ambiguous_edge = False
+            ambiguous_color = False
             for edge in ctrl.get_all_selected():
                 if isinstance(edge, Edge):
                     if not edge_shape:
                         edge_shape = edge.shape_name()
                     elif edge.shape_name() != edge_shape:
-                        ambiguous = True
-                        break
-            if ambiguous:
-                add_and_select_ambiguous_marker()
-            else:
-                i = self.find_list_item(edge_shape, self.shape_selector)
-                self.shape_selector.setCurrentIndex(i)
-                assert(i > -1)
-                remove_ambiguous_marker()
-                self.current_color = edge.color()
+                        ambiguous_edge = True
+                    if not edge_color:
+                        edge_color = edge.color_id()
+                    elif edge.color() != edge_color:
+                        ambiguous_color = True
+            ### Color selector - show
+            if edge_color:
+                if ambiguous_color:
+                    add_and_select_ambiguous_marker(self.color_selector)
+                else:
+                    print('updating edge color')
+                    item = self.find_table_item(edge_color, self.color_selector)
+                    assert(item)
+                    self.color_selector.setCurrentIndex(item.row())
+                    self.color_selector.setModelColumn(item.column())
+                    remove_ambiguous_marker(self.color_selector)
+                    self.current_color = edge_color
+
+            ### Shape selector - show shape of selected edges, or '---' if they contain more than 1 shape.
+            if edge_shape:
+                if ambiguous_edge:
+                    add_and_select_ambiguous_marker(self.shape_selector)
+                else:
+                    print('updating edge style')
+                    i = self.find_list_item(edge_shape, self.shape_selector)
+                    self.shape_selector.setCurrentIndex(i)
+                    self.shape_selector.update()
+                    remove_ambiguous_marker(self.shape_selector)
+
 
         else:
-            edge_shape = ctrl.forest.settings.edge_settings(self.scope, 'shape_name')
             self.current_color = ctrl.forest.settings.edge_settings(self.scope, 'color')
+
+            ### Edge selector
+            edge_shape = ctrl.forest.settings.edge_settings(self.scope, 'shape_name')
             i = self.find_list_item(edge_shape, self.shape_selector)
             assert(i > -1)
             self.shape_selector.setCurrentIndex(i)
-            remove_ambiguous_marker()
+            remove_ambiguous_marker(self.shape_selector)
             self.shape_selector.update()
-        ### Color selector
+
+            ### Color selector
+            item = self.find_table_item(self.current_color, self.color_selector)
+            assert(item)
+            self.color_selector.setCurrentIndex(item.row())
+            self.color_selector.setModelColumn(item.column())
+
+
 
 

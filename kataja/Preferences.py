@@ -168,19 +168,19 @@ class Preferences(object):
         # ATTRIBUTE_EDGE = 6
 
         self.edges = {
-            CONSTITUENT_EDGE: {'shape_name': 'shaped_cubic', 'color': 'key', 'pull': .24, 'visible': True,
+            CONSTITUENT_EDGE: {'shape_name': 'shaped_cubic', 'color': 'content1', 'pull': .24, 'visible': True,
                              'pen_width': 1},
             FEATURE_EDGE: {'shape_name': 'cubic', 'color': 'accent2', 'pull': .32, 'visible': True,
                             'pen_width': 1},
             GLOSS_EDGE: {'shape_name': 'cubic', 'color': 'accent4', 'pull': .40, 'visible': True,
                          'pen_width': 1},
-            ARROW: {'shape_name': 'arrow', 'color': 'key', 'pull': 0, 'visible': True,
+            ARROW: {'shape_name': 'arrow', 'color': 'content1', 'pull': 0, 'visible': True,
                     'pen_width': 1},
             PROPERTY_EDGE: {'shape_name': 'linear', 'color': 'accent5', 'pull': .40, 'visible': True,
                             'pen_width': 1},
-            ABSTRACT_EDGE: {'shape_name': 'linear', 'color': 'key', 'pull': .40, 'visible': True,
+            ABSTRACT_EDGE: {'shape_name': 'linear', 'color': 'content1', 'pull': .40, 'visible': True,
                             'pen_width': 1},
-            ATTRIBUTE_EDGE: {'shape_name': 'linear', 'color': 'key', 'pull': .50, 'visible': True,
+            ATTRIBUTE_EDGE: {'shape_name': 'linear', 'color': 'content1', 'pull': .50, 'visible': True,
                              'pen_width': 1},
 
         }
@@ -193,8 +193,8 @@ class Preferences(object):
         # ATTRIBUTE_NODE = 3
         # GLOSS_NODE = 4
         # PROPERTY_NODE = 5
-        self.nodes = {ABSTRACT_NODE: {'color': 'key', 'font': 'main', 'font-size': 10},
-                      CONSTITUENT_NODE: {'color': 'key', 'font': 'main', 'font-size': 10},
+        self.nodes = {ABSTRACT_NODE: {'color': 'content1', 'font': 'main', 'font-size': 10},
+                      CONSTITUENT_NODE: {'color': 'content1', 'font': 'main', 'font-size': 10},
                       FEATURE_NODE: {'color': 'accent2', 'font': 'cursive', 'font-size': 10
 
                       }, ATTRIBUTE_NODE: {'color': 'accent4', 'font': 'small-caps', 'font-size': 10},
