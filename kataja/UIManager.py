@@ -45,7 +45,7 @@ from kataja.utils import to_tuple
 from kataja.ui.TouchArea import TouchArea
 from kataja.ui.panels.ColorThemePanel import ColorPanel
 from kataja.ui.panels.ColorWheelPanel import ColorWheelPanel
-from kataja.ui.panels.LinesPanel import LinesPanel
+from kataja.ui.panels.DrawingPanel import DrawingPanel
 from kataja.ui.panels.LogPanel import LogPanel
 from kataja.ui.panels.NavigationPanel import NavigationPanel
 from kataja.ui.panels.TestPanel import TestPanel
@@ -64,10 +64,10 @@ panels = [{'id': g.LOG, 'name': 'Log', 'position': 'bottom'},
           {'id': g.VISUALIZATION, 'name': 'Visualization', 'position': 'right'},
           {'id': g.COLOR_THEME, 'name': 'Color theme', 'position': 'right'},
           {'id': g.COLOR_WHEEL, 'name': 'Color theme wheel', 'position': 'right', 'folded': True, 'closed': True},
-          {'id': g.LINES, 'name': 'Lines', 'position': 'right'}]
+          {'id': g.DRAWING, 'name': 'Drawing', 'position': 'right'}]
 
 panel_classes = {g.LOG: LogPanel, g.TEST: TestPanel, g.NAVIGATION: NavigationPanel, g.VISUALIZATION: VisualizationPanel,
-                 g.COLOR_THEME: ColorPanel, g.COLOR_WHEEL: ColorWheelPanel, g.LINES: LinesPanel}
+                 g.COLOR_THEME: ColorPanel, g.COLOR_WHEEL: ColorWheelPanel, g.DRAWING: DrawingPanel}
 
 
 menu_structure = OrderedDict([
@@ -292,7 +292,7 @@ class UIManager:
 
         """
         debug.ui("Update selections called")
-        lp = self._ui_panels[g.LINES]
+        lp = self._ui_panels[g.DRAWING]
         lp.selected_objects_changed()
         lp.update_panel()
         self.update_touch_areas()
@@ -531,6 +531,10 @@ class UIManager:
                 selector.setShortcut(QtGui.QKeySequence(shortcut))
                 #selector.installEventFilter(self.button_shortcut_filter)
             selector.setFocusPolicy(QtCore.Qt.TabFocus)
+
+
+    def toggle_line_options(self):
+        print('toggle line options')
 
 
     def get_selector_value(self, selector):

@@ -142,6 +142,15 @@ actions = {
         'selection': 'line_color',
         'tooltip': 'Change drawing color of relations'
     },
+    'toggle_line_options': {
+        'command': 'Show line options',
+        'command_alt': 'Hide line options',
+        'method': 'toggle_line_options',
+        'toggleable': True,
+        'condition': 'are_line_options_visible',
+        'context': 'ui',
+        'tooltip': 'Show/hide advanced options for line drawing'
+    },
 
     # Visualizations panel
     'change_visualization': {

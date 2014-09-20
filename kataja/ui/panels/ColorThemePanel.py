@@ -9,7 +9,12 @@ __author__ = 'purma'
 
 class ColorPanel(UIPanel):
     """
-
+        ⚀	U+2680	&#9856;
+        ⚁	U+2681	&#9857;
+        ⚂	U+2682	&#9858;
+        ⚃	U+2683	&#9859;
+        ⚄	U+2684	&#9860;
+        ⚅	U+2685	&#9861;
     """
 
     def __init__(self, name, key, default_position='right', parent=None, ui_manager=None, folded=False):

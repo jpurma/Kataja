@@ -54,7 +54,8 @@ NAVIGATION = 'navigation'
 VISUALIZATION = 'visualization'
 COLOR_THEME = 'color_theme'
 COLOR_WHEEL = 'color_wheel'
-LINES = 'lines'
+DRAWING = 'drawing'
+LINE_OPTIONS = 'line_options'
 
 # Alignment of edges
 NO_ALIGN = 0

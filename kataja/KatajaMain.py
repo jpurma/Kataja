@@ -589,12 +589,14 @@ class KatajaMain(QtWidgets.QMainWindow):
 
 
     def change_edge_panel_scope(self, selection):
-        p = self.ui_manager.get_panel(g.LINES)
+        p = self.ui_manager.get_panel(g.DRAWING)
         p.change_scope(selection)
         p.update_panel()
 
     def change_edge_shape(self, shape):
-        scope = self.ui_manager.get_panel(g.LINES).scope
+        if shape is g.AMBIGUOUS_VALUES:
+            return
+        scope = self.ui_manager.get_panel(g.DRAWING).scope
         if scope == g.SELECTION:
             for edge in ctrl.get_all_selected():
                 if isinstance(edge, Edge):
@@ -606,7 +608,9 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.add_message('(s) Changed relation shape to: %s' % shape)
 
     def change_edge_color(self, color):
-        panel = self.ui_manager.get_panel(g.LINES)
+        if color is g.AMBIGUOUS_VALUES:
+            return
+        panel = self.ui_manager.get_panel(g.DRAWING)
         if not color:
             self.ui_manager.start_color_dialog(panel, 'color_changed')
             return

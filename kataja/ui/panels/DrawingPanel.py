@@ -3,12 +3,13 @@ from PyQt5.QtCore import QRect, QSize
 from PyQt5.QtGui import QIcon, QColor, QPixmap, QStandardItem
 
 from kataja.Edge import SHAPE_PRESETS, Edge
-from kataja.singletons import ctrl
+from kataja.singletons import ctrl, qt_prefs
 import kataja.globals as g
 from kataja.ui.panels.UIPanel import UIPanel
 from kataja.utils import time_me
 from kataja.ui.DrawnIconEngine import DrawnIconEngine
 from kataja.ui.ColorSwatchIconEngine import ColorSwatchIconEngine
+from kataja.ui.TwoColorButton import TwoColorButton
 
 
 __author__ = 'purma'
@@ -91,8 +92,8 @@ class ColorSelector(QtWidgets.QComboBox):
         self.setView(new_view)
 
 
-class LinesPanel(UIPanel):
-    """ Panel for editing how edges/relations are drawn. """
+class DrawingPanel(UIPanel):
+    """ Panel for editing how edges and nodes are drawn. """
 
     def __init__(self, name, key, default_position='right', parent=None, ui_manager=None, folded=False):
         """
@@ -136,7 +137,19 @@ class LinesPanel(UIPanel):
         ui_manager.ui_buttons['line_color'] = self.color_selector
         ui_manager.connect_selector_to_action(self.color_selector, 'change_edge_color')
         hlayout.addWidget(self.color_selector)
+
+        self.edge_options = QtWidgets.QPushButton('#', self)
+        self.edge_options.setCheckable(True)
+        self.edge_options.setMinimumSize(QSize(24, 24))
+        self.edge_options.setMaximumSize(QSize(24, 24))
+        ui_manager.ui_buttons['line_options'] = self.edge_options
+        ui_manager.connect_button_to_action(self.edge_options, 'toggle_line_options')
+        #self.edge_options.setFlat(True)
+        hlayout.addWidget(self.edge_options)
         layout.addLayout(hlayout)
+
+
+
 
         inner.setLayout(layout)
         self.setWidget(inner)
@@ -248,7 +261,7 @@ class LinesPanel(UIPanel):
         self.scope_selector.setCurrentIndex(i)
 
     def update_fields(self):
-        """ Update different fields in the panel to show the correct values based on selection or scope.
+        """ Update different fields in the panel to show the correct values based on selection or current scope.
         There may be that this makes fields to remove or add new values to selectors or do other hard manipulation
         to fields.
         """
@@ -260,11 +273,33 @@ class LinesPanel(UIPanel):
             else:
                 self.selector.setCurrentIndex(i)
 
+        def add_and_select_ambiguous_marker_to_table(selector):
+            item = self.find_table_item(g.AMBIGUOUS_VALUES, selector)
+            if item:
+                selector.setCurrentIndex(item.row())
+                selector.setModelColumn(item.column())
+            else:
+                row = []
+                for i in range(0, selector.model().rowCount()):
+                    item = QStandardItem('---')
+                    item.setData(g.AMBIGUOUS_VALUES)
+                    item.setSizeHint(QSize(22, 20))
+                    row.append(item)
+                selector.model().insertRow(0, row)
+                selector.setCurrentIndex(0)
+                selector.setModelColumn(0)
+
+
         def remove_ambiguous_marker(selector):
             i = self.find_list_item(g.AMBIGUOUS_VALUES, selector)
             if i > -1:
-                print('found ambiguous marker:', i)
                 selector.removeItem(i)
+
+        def remove_ambiguous_marker_from_table(selector):
+            item = self.find_table_item(g.AMBIGUOUS_VALUES, selector)
+            if item:
+                selector.model().removeRow(item.row())
+
 
         ### First find what are the properties of the selected edges.
         ### If they are conflicting, e.g. there are two different colors in selected edges,
@@ -287,14 +322,13 @@ class LinesPanel(UIPanel):
             ### Color selector - show
             if edge_color:
                 if ambiguous_color:
-                    add_and_select_ambiguous_marker(self.color_selector)
+                    add_and_select_ambiguous_marker_to_table(self.color_selector)
                 else:
-                    print('updating edge color')
+                    remove_ambiguous_marker_from_table(self.color_selector)
                     item = self.find_table_item(edge_color, self.color_selector)
                     assert(item)
                     self.color_selector.setCurrentIndex(item.row())
                     self.color_selector.setModelColumn(item.column())
-                    remove_ambiguous_marker(self.color_selector)
                     self.current_color = edge_color
 
             ### Shape selector - show shape of selected edges, or '---' if they contain more than 1 shape.
@@ -302,29 +336,29 @@ class LinesPanel(UIPanel):
                 if ambiguous_edge:
                     add_and_select_ambiguous_marker(self.shape_selector)
                 else:
-                    print('updating edge style')
+                    remove_ambiguous_marker(self.shape_selector)
                     i = self.find_list_item(edge_shape, self.shape_selector)
                     self.shape_selector.setCurrentIndex(i)
                     self.shape_selector.update()
-                    remove_ambiguous_marker(self.shape_selector)
 
 
         else:
-            self.current_color = ctrl.forest.settings.edge_settings(self.scope, 'color')
-
-            ### Edge selector
-            edge_shape = ctrl.forest.settings.edge_settings(self.scope, 'shape_name')
-            i = self.find_list_item(edge_shape, self.shape_selector)
-            assert(i > -1)
-            self.shape_selector.setCurrentIndex(i)
-            remove_ambiguous_marker(self.shape_selector)
-            self.shape_selector.update()
-
             ### Color selector
+            remove_ambiguous_marker_from_table(self.color_selector)
+            self.current_color = ctrl.forest.settings.edge_settings(self.scope, 'color')
             item = self.find_table_item(self.current_color, self.color_selector)
             assert(item)
             self.color_selector.setCurrentIndex(item.row())
             self.color_selector.setModelColumn(item.column())
+
+            ### Edge selector
+            remove_ambiguous_marker(self.shape_selector)
+            edge_shape = ctrl.forest.settings.edge_settings(self.scope, 'shape_name')
+            i = self.find_list_item(edge_shape, self.shape_selector)
+            assert(i > -1)
+            self.shape_selector.setCurrentIndex(i)
+            self.shape_selector.update()
+
 
 
 
