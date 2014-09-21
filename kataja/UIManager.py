@@ -51,6 +51,7 @@ from kataja.ui.panels.NavigationPanel import NavigationPanel
 from kataja.ui.panels.TestPanel import TestPanel
 from kataja.ui.panels.VisualizationPanel import VisualizationPanel
 from kataja.visualizations.available import VISUALIZATIONS
+from kataja.ui.panels.LineOptionsPanel import LineOptionsPanel
 
 
 NOTHING = 0
@@ -64,10 +65,11 @@ panels = [{'id': g.LOG, 'name': 'Log', 'position': 'bottom'},
           {'id': g.VISUALIZATION, 'name': 'Visualization', 'position': 'right'},
           {'id': g.COLOR_THEME, 'name': 'Color theme', 'position': 'right'},
           {'id': g.COLOR_WHEEL, 'name': 'Color theme wheel', 'position': 'right', 'folded': True, 'closed': True},
-          {'id': g.DRAWING, 'name': 'Drawing', 'position': 'right'}]
+          {'id': g.DRAWING, 'name': 'Drawing', 'position': 'right'},
+          {'id': g.LINE_OPTIONS, 'name': 'Line options', 'position': 'float', 'closed': True}]
 
 panel_classes = {g.LOG: LogPanel, g.TEST: TestPanel, g.NAVIGATION: NavigationPanel, g.VISUALIZATION: VisualizationPanel,
-                 g.COLOR_THEME: ColorPanel, g.COLOR_WHEEL: ColorWheelPanel, g.DRAWING: DrawingPanel}
+                 g.COLOR_THEME: ColorPanel, g.COLOR_WHEEL: ColorWheelPanel, g.DRAWING: DrawingPanel, g.LINE_OPTIONS: LineOptionsPanel}
 
 
 menu_structure = OrderedDict([

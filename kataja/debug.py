@@ -9,7 +9,7 @@ DEBUG_FOREST_OPERATION = False
 DEBUG_VISUALIZATION = False
 DEBUG_KEYPRESS = True
 DEBUG_UNDO = False
-DEBUG_UI = False
+DEBUG_UI = True
 
 
 def mouse(*args):

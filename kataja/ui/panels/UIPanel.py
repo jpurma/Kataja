@@ -241,10 +241,14 @@ class UIPanel(QtWidgets.QDockWidget):
         debug.ui("Asking for UIPanel sizeHint")
         if self.folded:
             return self.titleBarWidget().sizeHint()
-        else:
+        elif self.widget():
             ws = self.widget().sizeHint()
             ts = self.titleBarWidget().sizeHint()
             return QtCore.QSize(max((ws.width(), ts.width())), ws.height()+ts.height())
+        else:
+            debug.ui("UIPanel sizeHint asked before panel has widget set.")
+            return QtCore.QSize(100, 100)
+
 
     def sizePolicy(self):
         debug.ui("Asking for UIPanel sizePolicy")
