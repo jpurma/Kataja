@@ -133,23 +133,10 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.setCorner(QtCore.Qt.TopRightCorner, QtCore.Qt.RightDockWidgetArea)
         self.setCorner(QtCore.Qt.BottomLeftCorner, QtCore.Qt.LeftDockWidgetArea)
         self.setCorner(QtCore.Qt.BottomRightCorner, QtCore.Qt.RightDockWidgetArea)
-        top_dock = QtWidgets.QDockWidget()
-        #self.addDockWidget(QtCore.Qt.TopDockWidgetArea, top_dock, QtCore.Qt.Horizontal)
-        toolbar = QtWidgets.QToolBar()
-
-        self.status_bar = QtWidgets.QStatusBar()
-        self.setStatusBar(self.status_bar)
-
-        #top_dock.setWidget(self.status_bar)
-        #toolbar.setMovable(False)
-        #toolbar.setFloatable(False)
-        #toolbar.setOrientation(QtCore.Qt.Horizontal)
-        #print(self.statusBar())
-        #top_dock.setTitleBarWidget(QtWidgets.QWidget())
-        #self.setStatusBar(self.status_bar)
+        #toolbar = QtWidgets.QToolBar()
         #toolbar.setFixedSize(480, 40)
         #self.addToolBar(toolbar)
-        #self.statusBar().
+        self.status_bar = self.statusBar()
         self.setGeometry(x, y, w, h)
         self.add_message('Welcome to Kataja! (h) for help')
         self.action_finished()
@@ -975,7 +962,6 @@ class KatajaMain(QtWidgets.QMainWindow):
         ctrl.pointing_method = method
         ctrl.pointing_data = data
         self.ui_manager.begin_stretchline(data['start'].pos(), event.scenePos())  # +data['startposF']
-        # self.setMouseTracking(True)
         self.app.setOverrideCursor(QtCore.Qt.CrossCursor)
         self.graph.setDragMode(QtWidgets.QGraphicsView.NoDrag)
 
@@ -985,7 +971,6 @@ class KatajaMain(QtWidgets.QMainWindow):
         ctrl.pointing_mode = False
         ctrl.pointing_data = {}
         self.ui_manager.end_stretchline()
-        # self.setMouseTracking(False)
         self.app.restoreOverrideCursor()
         self.graph.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
 

@@ -37,7 +37,7 @@ class UIView(QtWidgets.QGraphicsView):
         self.ui_scene = ui_scene
         self.setScene(ui_scene)
         # why this is still taking mouse move events?
-        # self.setMouseTracking(False)
+        self.setMouseTracking(False)
         self.setCacheMode(QtWidgets.QGraphicsView.CacheBackground)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)

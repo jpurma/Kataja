@@ -82,6 +82,7 @@ class Controller:
         self.unassigned_objects = {}
         self.on_cancel_delete = []
         self.watch_for_drag_end = False
+        self.items_moving = False
 
     def late_init(self, main):
         """
@@ -126,17 +127,19 @@ class Controller:
 
     def set_status(self, msg):
         """ Show message in status bar. Send empty message to clear status bar. """
-        if msg:
-            self.main.status_bar.showMessage(msg)
-        else:
-            self.main.status_bar.clearMessage()
+        if not self.items_moving:
+            if msg:
+                self.main.status_bar.showMessage(msg)
+            else:
+                self.main.status_bar.clearMessage()
 
     def remove_status(self, msg):
         """ Clears status message, but only if it is not been replaced by another message 
             (E.g. when contained object has put its own message, and hoverLeaveEvent has not been called for containing object. )
-        """ 
-        if msg == self.main.status_bar.currentMessage():
-            self.main.status_bar.clearMessage()
+        """
+        if not self.items_moving:
+            if msg == self.main.status_bar.currentMessage():
+                self.main.status_bar.clearMessage()
 
     def announce(self, signal, *args):
         """ Announcing is used to broadcast update requests to objects in graph scene

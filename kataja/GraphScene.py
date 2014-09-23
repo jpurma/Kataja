@@ -733,6 +733,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         y_sum = 0
         z_sum = 0
         self.main.ui_manager.activity_marker.show()
+        ctrl.items_moving = True
         if self._fade_steps:
             self.setBackgroundBrush(self._fade_steps_list[self._fade_steps - 1])
             self._fade_steps -= 1
@@ -744,8 +745,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
             pt = f.roots[0].get_current_position()
             f.gloss.setPos(pt[0] - 20, pt[1] - 40)
 
-        # for ant in self.ants:
-        # ant.moveBy(random.random()*4-2, random.random()*4-2)
         for e in f.edges.values():
             e.update_end_points()
             e.make_path()
@@ -753,7 +752,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         for n, node in enumerate(f.visible_nodes()):
             node.adjust_opacity()
-            # items_have_moved = True
             if node.folding_towards and node.folding_towards is not node:
                 x, y, z = node.folding_towards.get_computed_position()
                 node.set_computed_position((x, y + 30, z))
@@ -850,4 +848,5 @@ class GraphScene(QtWidgets.QGraphicsScene):
         if not (items_have_moved or frame_has_moved or background_fade):
             self.killTimer(self._timer_id)
             self.main.ui_manager.activity_marker.hide()
+            ctrl.items_moving = False
             self._timer_id = 0
