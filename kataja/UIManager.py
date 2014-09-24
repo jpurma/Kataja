@@ -65,8 +65,8 @@ panels = [{'id': g.LOG, 'name': 'Log', 'position': 'bottom'},
           {'id': g.VISUALIZATION, 'name': 'Visualization', 'position': 'right'},
           {'id': g.COLOR_THEME, 'name': 'Color theme', 'position': 'right'},
           {'id': g.COLOR_WHEEL, 'name': 'Color theme wheel', 'position': 'right', 'folded': True, 'closed': True},
-          {'id': g.DRAWING, 'name': 'Drawing', 'position': 'right'},
-          {'id': g.LINE_OPTIONS, 'name': 'Line options', 'position': 'float', 'closed': True}]
+          {'id': g.LINE_OPTIONS, 'name': 'More line options', 'position': 'float', 'closed': True},
+          {'id': g.DRAWING, 'name': 'Drawing', 'position': 'right'}]
 
 panel_classes = {g.LOG: LogPanel, g.TEST: TestPanel, g.NAVIGATION: NavigationPanel, g.VISUALIZATION: VisualizationPanel,
                  g.COLOR_THEME: ColorPanel, g.COLOR_WHEEL: ColorWheelPanel, g.DRAWING: DrawingPanel, g.LINE_OPTIONS: LineOptionsPanel}
@@ -297,6 +297,9 @@ class UIManager:
         lp = self._ui_panels[g.DRAWING]
         lp.selected_objects_changed()
         lp.update_panel()
+        lop = self._ui_panels[g.LINE_OPTIONS]
+        lop.update_panel()
+
         self.update_touch_areas()
 
 
@@ -490,12 +493,15 @@ class UIManager:
             name = panel['name']
             position = panel.get('position', None)
             folded = panel.get('folded', False)
+            closed = panel.get('closed', False)
             debug.ui("Creating panel type ", constructor)
             new_panel = constructor(name, id,  default_position=position, parent=self.main, ui_manager=self,
                                     folded=folded)
             self._ui_panels[id] = new_panel
             # use action to toggle panel visible or hidden, so that menu gets updated properly
-            new_panel.get_visibility_action().setChecked(not panel.get('closed', False))
+            new_panel.get_visibility_action().setChecked(not closed)
+            if closed:
+                new_panel.close()
 
 
     def connect_button_to_action(self, button, action):

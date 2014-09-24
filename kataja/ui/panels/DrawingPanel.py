@@ -138,12 +138,14 @@ class DrawingPanel(UIPanel):
         ui_manager.connect_selector_to_action(self.color_selector, 'change_edge_color')
         hlayout.addWidget(self.color_selector)
 
-        self.edge_options = QtWidgets.QPushButton('#', self)
+        self.edge_options = QtWidgets.QPushButton('more...', self)
         self.edge_options.setCheckable(True)
-        self.edge_options.setMinimumSize(QSize(24, 24))
-        self.edge_options.setMaximumSize(QSize(24, 24))
+        self.edge_options.setMinimumSize(QSize(40, 24))
+        self.edge_options.setMaximumSize(QSize(40, 24))
+        #self.edge_options.setMinimumWidth(40)
+        #self.edge_options.setMaximumWidth(40)
         ui_manager.ui_buttons['line_options'] = self.edge_options
-        ui_manager.connect_button_to_action(self.edge_options, 'toggle_line_options')
+        ui_manager.connect_button_to_action(self.edge_options, ui_manager.get_panel(g.LINE_OPTIONS).get_visibility_action()) # 'toggle_line_options'
         #self.edge_options.setFlat(True)
         hlayout.addWidget(self.edge_options)
         layout.addLayout(hlayout)

@@ -125,9 +125,12 @@ class Controller:
         """
         self.main.add_message(msg)
 
+    def is_zooming(self):
+        return self.main.graph_view.zoom_timer.isActive()
+
     def set_status(self, msg):
         """ Show message in status bar. Send empty message to clear status bar. """
-        if not self.items_moving:
+        if not (self.items_moving or self.is_zooming()):
             if msg:
                 self.main.status_bar.showMessage(msg)
             else:
@@ -137,7 +140,7 @@ class Controller:
         """ Clears status message, but only if it is not been replaced by another message 
             (E.g. when contained object has put its own message, and hoverLeaveEvent has not been called for containing object. )
         """
-        if not self.items_moving:
+        if not (self.items_moving or self.is_zooming()):
             if msg == self.main.status_bar.currentMessage():
                 self.main.status_bar.clearMessage()
 

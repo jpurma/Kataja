@@ -28,6 +28,7 @@ import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
 from PyQt5.QtCore import Qt
+from singletons import ctrl
 
 
 class GraphView(QtWidgets.QGraphicsView):
@@ -46,7 +47,7 @@ class GraphView(QtWidgets.QGraphicsView):
         self.main = main
         self.graph_scene = graph_scene
         self.setScene(graph_scene)
-        self.setCacheMode(QtWidgets.QGraphicsView.CacheBackground)
+        #self.setCacheMode(QtWidgets.QGraphicsView.CacheBackground)
         self.setRenderHint(QtGui.QPainter.Antialiasing)
         # self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
         # self.setResizeAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
@@ -69,7 +70,7 @@ class GraphView(QtWidgets.QGraphicsView):
         self.target_scale = 0
         self._scale_factor = 1.0
         self._target_rect = QtCore.QRectF(-300, -300, 300, 300)
-
+        self.zoom_timer = QtCore.QBasicTimer()
 
     # def drawBackground(self, painter, rect):
     # painter.fillRect(rect, colors.paper)
@@ -78,6 +79,7 @@ class GraphView(QtWidgets.QGraphicsView):
 
         :param _target_rect:
         """
+        print('install fit to view ', _target_rect)
         self.setSceneRect(_target_rect)
         prev_target_scale = self.target_scale
         self.target_scale = min((self.width() / _target_rect.width(), self.height() / _target_rect.height()))
@@ -94,6 +96,7 @@ class GraphView(QtWidgets.QGraphicsView):
         :param delta:
         :return:
         """
+        print('scale view by ', delta)
         if delta < 1.0 and self._scale_factor == 0.3:
             return self._scale_factor
         elif delta > 1.0 and self._scale_factor == 9.0:
@@ -136,21 +139,31 @@ class GraphView(QtWidgets.QGraphicsView):
         QtWidgets.QGraphicsView.mouseMoveEvent(self, event)
 
 
+
+    def timerEvent(self, event):
+        self.zoom_timer.stop()
+
+
+
     def wheelEvent(self, event):
         """
 
         :param event:
         """
+        #print('wheelEvent')
         view_center = self.mapToScene(self.rect().center())
         pointer_pos = event.pos()
         delta = math.pow(2.0, -event.angleDelta().y() / 360.0)
-        self._scale_factor = self.scale_view_by(delta)
-        if delta >= 1.0:
-            change = (pointer_pos - view_center) * (delta - 1)
-            self.centerOn(view_center + change)  # + change) # - (old_pos * (1-delta)))
-        else:
-            self.centerOn(view_center)
+        if delta != 1.0:
+            self.zoom_timer.start(1000, self)
+            self._scale_factor = self.scale_view_by(delta)
+            if delta > 1:
+                change = (pointer_pos - view_center) * (delta - 1)
+                self.centerOn(view_center + change)  # + change) # - (old_pos * (1-delta)))
+            else:
+                self.centerOn(view_center)
         self.graph_scene._manual_zoom = True
+
         # QtWidgets.QGraphicsView.wheelEvent(self, event)
 
 
