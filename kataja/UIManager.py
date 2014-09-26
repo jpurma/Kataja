@@ -152,7 +152,7 @@ class UIManager:
     # ctrl.action_finished()
 
     def get_panel(self, panel_id):
-        return self._ui_panels[panel_id]
+        return self._ui_panels.get(panel_id, None)
 
     def toggle_panel(self, panel_id):
         """

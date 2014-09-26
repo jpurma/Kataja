@@ -23,6 +23,7 @@
 # ############################################################################
 
 from kataja.globals import *
+from shapes import SHAPE_PRESETS
 
 ONLY_LEAF_LABELS = 0
 ALL_LABELS = 1
@@ -252,10 +253,10 @@ class ForestSettings:
         :param key:
         :param value:
         """
-        e = self._edge_types[edge_type]
+        e = self._edge_types.get(edge_type)
         if value is None:
             if e is None or e.get(key, None) is None:
-                return self.prefs.edges[edge_type][key]
+                return self.prefs.edges[edge_type].get(key, None)
             else:
                 return e[key]
         else:
@@ -264,6 +265,34 @@ class ForestSettings:
             else:
                 e[key] = value
 
+    def edge_shape_settings(self, edge_type, key=None, value=None):
+        """ Return the settings dict for certain edge type: often this defaults to edge_shape settings, but it can be
+        overridden for each edge_type and eventually for each edge.
+        With key, you can get one edge setting, with value you can set the edge setting.
+        :param edge_type:
+        :param key:
+        :param value:
+        :return:
+        """
+        e = self._edge_types.get(edge_type)
+        shape_args = e.get('shape_args', None)
+        if key is None:  # the whole dict is asked
+            if shape_args is None:  # return the original shape preferences for this shape
+                return SHAPE_PRESETS[self.edge_settings(edge_type, 'shape_name')]
+            else:  # return forest settings for this edge type
+                return shape_args
+        else:  # get/set single dict item from shape settings
+            if value is None:  # get single setting
+                if shape_args is None or shape_args.get(key, None) is None:  # get from original dict
+                    return SHAPE_PRESETS[self.edge_settings(edge_type, 'shape_name')].get(key, None)
+                else:  # get from here
+                    return shape_args[key]
+            else:  # set single setting
+                if shape_args is None:  # create a settings dict and set a value
+                    self._edge_types[edge_type] = SHAPE_PRESETS[self.edge_settings(edge_type, 'shape_name')].copy()
+                    self._edge_types[edge_type][key] = value
+                else:  # just set a value
+                    shape_args[key] = value
 
     # ## Nodes - all require edge type as argument, value is stored in dict ###########
 

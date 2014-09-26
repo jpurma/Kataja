@@ -88,6 +88,8 @@ class Edge(QtWidgets.QGraphicsItem):
         self._shape_name = None
         self._pull = None
         self._shape_visible = None
+        self._local_shape_args = {} # should include only those arguments that are explicitly changed by user, rest are
+        # based on the relation style
 
         # self.center_point = (0, 0, 0)
 
@@ -294,24 +296,49 @@ class Edge(QtWidgets.QGraphicsItem):
         else:
             self._shape_visible = value
 
+    def shape_args(self, key=None, value=None):
+        """ Without key, return a dict of shape drawing arguments that should be used with shape drawing method.
+        With key, give a certain shape_arg.
+        With key and value, set the key.
+        :param key:
+        :param value:
+        :return:
+        """
+        if key is None:
+            shape_args = self.forest.settings.edge_shape_settings(self.edge_type)
+            if self._local_shape_args:
+                shape_args = shape_args.copy()
+                shape_args.update(self._local_shape_args)
+            return shape_args
+        else:
+            if value is None:
+                local = self._local_shape_args.get(key, None)
+                if local is not None:
+                    return local
+                else:
+                    self.forest.settings.edge_shape_settings(self.edge_type, key)
+            else:
+                self._local_shape_args[key] = value
+
+
     # ### Derivative features ############################################
 
     def make_path(self):
-        """
+        """ Draw shape
 
 
         """
         if not self._shape_method:
             self.update_shape()
-        self._path = self._shape_method(self)
+        self.shape_name()
+        self._path = self._shape_method(self, **self._cached_shape_args)
         if not self.is_filled:  # expensive with filled shapes
             self._fat_path = outline_stroker.createStroke(self._path).united(self._path)
 
     def shape(self):
-        """
-
-
-        :return:
+        """ Override of the QGraphicsItem method. Should returns the real shape of item to allow exact hit detection.
+        In our case we should have special '_fat_path' for those shapes that are just narrow lines.
+        :return: QGraphicsPath
         """
         if not self.is_filled:
             if not self._fat_path:
@@ -323,13 +350,14 @@ class Edge(QtWidgets.QGraphicsItem):
             return self._path
 
     def update_shape(self):
-        """
+        """ Reload shape and shape settings
 
 
         """
         d = SHAPE_PRESETS[self.shape_name()]
 
         self._shape_method = d['method']
+        self._cached_shape_args = self.shape_args()
         self.make_path()
         while len(self.adjust) < len(self.control_points):
             self.adjust.append((0, 0, 0))

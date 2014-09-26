@@ -79,14 +79,9 @@ class GraphView(QtWidgets.QGraphicsView):
 
         :param _target_rect:
         """
-        print('install fit to view ', _target_rect)
         self.setSceneRect(_target_rect)
-        prev_target_scale = self.target_scale
         self.target_scale = min((self.width() / _target_rect.width(), self.height() / _target_rect.height()))
         self.resetTransform()
-        # self.resetMatrix()
-        #if prev_target_scale and abs(self.target_scale - prev_target_scale) > 0.2:
-        #    print("glitching with zoom:", prev_target_scale, self.target_scale)
         self.scale(self.target_scale, self.target_scale)
         self.main.ui_manager.update_positions()
 
@@ -96,7 +91,6 @@ class GraphView(QtWidgets.QGraphicsView):
         :param delta:
         :return:
         """
-        print('scale view by ', delta)
         if delta < 1.0 and self._scale_factor == 0.3:
             return self._scale_factor
         elif delta > 1.0 and self._scale_factor == 9.0:
@@ -150,7 +144,6 @@ class GraphView(QtWidgets.QGraphicsView):
 
         :param event:
         """
-        #print('wheelEvent')
         view_center = self.mapToScene(self.rect().center())
         pointer_pos = event.pos()
         delta = math.pow(2.0, -event.angleDelta().y() / 360.0)

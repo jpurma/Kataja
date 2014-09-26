@@ -37,6 +37,7 @@ from PyQt5 import QtCore, QtWidgets, QtGui
 #         print('using twocoloricon painter')
 #         return QtGui.QIcon.paint(self, painter, kwargs)
 import kataja.debug as debug
+from kataja.singletons import ctrl
 
 
 class PanelTitle(QtWidgets.QWidget):
@@ -115,6 +116,7 @@ class UIPanel(QtWidgets.QDockWidget):
         self.folded = folded
         self.name = name
         self._id = key
+        self._last_position = None
         self.ui_manager = ui_manager
         self.default_position = default_position
         if default_position == 'bottom':
@@ -128,6 +130,7 @@ class UIPanel(QtWidgets.QDockWidget):
         elif default_position == 'float':
             parent.addDockWidget(QtCore.Qt.RightDockWidgetArea, self)
             self.setFloating(True)
+            self.move(self.initial_position())
         self.dockLocationChanged.connect(self.report_dock_location)
         self.topLevelChanged.connect(self.report_top_level)
         self.setContentsMargins(0, 0, 0, 0)
@@ -258,6 +261,14 @@ class UIPanel(QtWidgets.QDockWidget):
     def setMinimumSize(self, *__args):
         debug.ui("called setMinimumSize, ", str(__args))
         return QtWidgets.QDockWidget.setMinimumSize(self, *__args)
+
+    def initial_position(self):
+        return QtCore.QPoint(ctrl.main.x() / ctrl.main.devicePixelRatio() + ctrl.main.width(), ctrl.main.y() / ctrl.main.devicePixelRatio())
+
+    def showEvent(self, QShowEvent):
+        if self.isFloating():
+            self.move(self.initial_position())
+        QtWidgets.QDockWidget.showEvent(self, QShowEvent)
 
 NONE = 0
 FLAG = 1
