@@ -57,7 +57,52 @@ class LineColorIcon(QIcon):
         QIcon.__init__(self, ColorSwatchIconEngine(color_id))
 
 
-class ColorSelector(QtWidgets.QComboBox):
+
+class TableModelComboBox(QtWidgets.QComboBox):
+
+    def find_item(self, data):
+        """ Return the item corresponding to this data
+        :param data: data to match
+        :return: None if not found, item itself if it is found
+        """
+        model = self.model()
+        for i in range(0, model.columnCount()):
+            for j in range(0, model.rowCount()):
+                item = model.item(j, i)
+                if item and item.data() == data:
+                    return item
+        return None
+
+    def add_and_select_ambiguous_marker(self):
+        item = self.find_item(g.AMBIGUOUS_VALUES)
+        if item:
+            self.setCurrentIndex(item.row())
+            self.setModelColumn(item.column())
+        else:
+            row = []
+            for i in range(0, self.model().rowCount()):
+                item = QStandardItem('---')
+                item.setData(g.AMBIGUOUS_VALUES)
+                item.setSizeHint(QSize(22, 20))
+                row.append(item)
+            self.model().insertRow(0, row)
+            self.setCurrentIndex(0)
+            self.setModelColumn(0)
+
+    def remove_ambiguous_marker(self):
+        item = self.find_item(g.AMBIGUOUS_VALUES)
+        if item:
+            self.model().removeRow(item.row())
+
+
+    def select_data(self, data):
+        item = self.find_item(data)
+        assert(item)
+        self.setCurrentIndex(item.row())
+        self.setModelColumn(item.column())
+
+
+class ColorSelector(TableModelComboBox):
 
     def __init__(self, parent):
         QtWidgets.QComboBox.__init__(self, parent)
@@ -92,6 +137,36 @@ class ColorSelector(QtWidgets.QComboBox):
         self.setView(new_view)
 
 
+class ShapeSelector(TableModelComboBox):
+
+    def __init__(self, parent):
+        QtWidgets.QComboBox.__init__(self, parent)
+        self.setIconSize(QSize(64, 16))
+        #self.shape_selector.setView(view)
+        items = []
+
+        for lt in SHAPE_PRESETS.keys():
+            item = QStandardItem(LineStyleIcon(lt, parent), '')
+            item.setData(lt)
+            item.setToolTip(lt)
+            item.setSizeHint(QSize(64, 16))
+            items.append(item)
+        model = self.model()
+        model.setRowCount(len(items))
+        for r, item in enumerate(items):
+            model.setItem(r, 0, item)
+        self.view().setModel(model)
+        # new_view.horizontalHeader().hide()
+        # new_view.verticalHeader().hide()
+        # new_view.setCornerButtonEnabled(False)
+        # new_view.setModel(model)
+        # new_view.resizeColumnsToContents()
+        # cw = new_view.columnWidth(0)
+        # new_view.setMinimumWidth(model.columnCount() * cw)
+        # self.setView(new_view)
+
+
+
 class DrawingPanel(UIPanel):
     """ Panel for editing how edges and nodes are drawn. """
 
@@ -119,18 +194,12 @@ class DrawingPanel(UIPanel):
         ui_manager.connect_selector_to_action(self.scope_selector, 'edge_shape_scope')
         layout.addWidget(self.scope_selector)
 
-        self.shape_selector = QtWidgets.QComboBox(self)
-        self.shape_selector.setIconSize(QSize(64, 16))
-        self.shape_selector.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
-        #self.shape_selector.setView(view)
-        ui_manager.ui_buttons['line_type'] = self.shape_selector
-        items = [('', LineStyleIcon(lt, self), lt) for lt in SHAPE_PRESETS.keys()]
-        for text, icon, data in items:
-            self.shape_selector.addItem(icon, text, data)
-        ui_manager.connect_selector_to_action(self.shape_selector, 'change_edge_shape')
         hlayout = QtWidgets.QHBoxLayout()
         hlayout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
 
+        self.shape_selector = ShapeSelector(self)
+        ui_manager.ui_buttons['line_type'] = self.shape_selector
+        ui_manager.connect_selector_to_action(self.shape_selector, 'change_edge_shape')
         hlayout.addWidget(self.shape_selector)
 
         self.color_selector = ColorSelector(self)
@@ -169,22 +238,6 @@ class DrawingPanel(UIPanel):
             if selector.itemData(i) == data:
                 return i
         return -1
-
-    @staticmethod
-    def find_table_item(data, selector):
-        """ Helper method to check the index of data item in table
-        :param data: data to match
-        :param selector: QComboBox instance
-        :return: None if not found, item itself if it is found
-        """
-        model = selector.model()
-        for i in range(0, model.columnCount()):
-            for j in range(0, model.rowCount()):
-                item = model.item(j, i)
-                if item and item.data() == data:
-                    return item
-        return None
-
 
     @staticmethod
     def remove_list_item(data, selector):
@@ -232,9 +285,7 @@ class DrawingPanel(UIPanel):
 
     def update_color(self, color):
         self.current_color = color
-        item = self.find_table_item(color, self.color_selector)
-        if item:
-            self.color_selector.setModelColumn(item.column())
+        self.color_selector.select_data(color)
 
 
     def update_panel(self):
@@ -275,32 +326,11 @@ class DrawingPanel(UIPanel):
             else:
                 self.selector.setCurrentIndex(i)
 
-        def add_and_select_ambiguous_marker_to_table(selector):
-            item = self.find_table_item(g.AMBIGUOUS_VALUES, selector)
-            if item:
-                selector.setCurrentIndex(item.row())
-                selector.setModelColumn(item.column())
-            else:
-                row = []
-                for i in range(0, selector.model().rowCount()):
-                    item = QStandardItem('---')
-                    item.setData(g.AMBIGUOUS_VALUES)
-                    item.setSizeHint(QSize(22, 20))
-                    row.append(item)
-                selector.model().insertRow(0, row)
-                selector.setCurrentIndex(0)
-                selector.setModelColumn(0)
-
 
         def remove_ambiguous_marker(selector):
             i = self.find_list_item(g.AMBIGUOUS_VALUES, selector)
             if i > -1:
                 selector.removeItem(i)
-
-        def remove_ambiguous_marker_from_table(selector):
-            item = self.find_table_item(g.AMBIGUOUS_VALUES, selector)
-            if item:
-                selector.model().removeRow(item.row())
 
 
         ### First find what are the properties of the selected edges.
@@ -324,42 +354,30 @@ class DrawingPanel(UIPanel):
             ### Color selector - show
             if edge_color:
                 if ambiguous_color:
-                    add_and_select_ambiguous_marker_to_table(self.color_selector)
+                    self.color_selector.add_and_select_ambiguous_marker()
                 else:
-                    remove_ambiguous_marker_from_table(self.color_selector)
-                    item = self.find_table_item(edge_color, self.color_selector)
-                    assert(item)
-                    self.color_selector.setCurrentIndex(item.row())
-                    self.color_selector.setModelColumn(item.column())
+                    self.color_selector.remove_ambiguous_marker()
+                    self.color_selector.select_data(edge_color)
                     self.current_color = edge_color
 
             ### Shape selector - show shape of selected edges, or '---' if they contain more than 1 shape.
             if edge_shape:
                 if ambiguous_edge:
-                    add_and_select_ambiguous_marker(self.shape_selector)
+                    self.shape_selector.add_and_select_ambiguous_marker()
                 else:
-                    remove_ambiguous_marker(self.shape_selector)
-                    i = self.find_list_item(edge_shape, self.shape_selector)
-                    self.shape_selector.setCurrentIndex(i)
-                    self.shape_selector.update()
-
+                    self.shape_selector.remove_ambiguous_marker()
+                    self.shape_selector.select_data(edge_shape)
 
         else:
             ### Color selector
-            remove_ambiguous_marker_from_table(self.color_selector)
+            self.color_selector.remove_ambiguous_marker()
             self.current_color = ctrl.forest.settings.edge_settings(self.scope, 'color')
-            item = self.find_table_item(self.current_color, self.color_selector)
-            assert(item)
-            self.color_selector.setCurrentIndex(item.row())
-            self.color_selector.setModelColumn(item.column())
+            self.color_selector.select_data(self.current_color)
 
             ### Edge selector
-            remove_ambiguous_marker(self.shape_selector)
+            self.shape_selector.remove_ambiguous_marker()
             edge_shape = ctrl.forest.settings.edge_settings(self.scope, 'shape_name')
-            i = self.find_list_item(edge_shape, self.shape_selector)
-            assert(i > -1)
-            self.shape_selector.setCurrentIndex(i)
-            self.shape_selector.update()
+            self.shape_selector.select_data(edge_shape)
 
 
 

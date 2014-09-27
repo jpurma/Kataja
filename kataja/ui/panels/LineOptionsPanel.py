@@ -94,9 +94,10 @@ class LineOptionsPanel(UIPanel):
         layout.addWidget(self.leaf_box)
 
         # Relative arc
-        self.rel_box = QtWidgets.QWidget(inner)
+        self.arc_box = QtWidgets.QWidget(inner)
+        arc_layout = QtWidgets.QVBoxLayout()
         rel_layout = QtWidgets.QHBoxLayout()
-        rel_label = QtWidgets.QLabel('Relative arc', self)
+        self.rel_radio = QtWidgets.QRadioButton('Relative arc', self)
         rel_dx_label = QtWidgets.QLabel('X', self)
         rel_dx_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.rel_dx_spinbox = QtWidgets.QDoubleSpinBox()
@@ -105,19 +106,16 @@ class LineOptionsPanel(UIPanel):
         rel_dy_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.rel_dy_spinbox = QtWidgets.QDoubleSpinBox()
         rel_dy_label.setBuddy(self.rel_dy_spinbox)
-        rel_layout.addWidget(rel_label)
+        rel_layout.addWidget(self.rel_radio)
         rel_layout.addWidget(rel_dx_label)
         rel_layout.addWidget(self.rel_dx_spinbox)
         rel_layout.addWidget(rel_dy_label)
         rel_layout.addWidget(self.rel_dy_spinbox)
         rel_layout.setContentsMargins(0, 0, 0, 0)
-        self.rel_box.setLayout(rel_layout)
-        layout.addWidget(self.rel_box)
-
+        arc_layout.addLayout(rel_layout)
         # Fixed arc
-        self.fixed_box = QtWidgets.QWidget(inner)
         fixed_layout = QtWidgets.QHBoxLayout()
-        fixed_label = QtWidgets.QLabel('Fixed arc', self)
+        self.fixed_radio = QtWidgets.QRadioButton('Fixed arc', self)
         fixed_dx_label = QtWidgets.QLabel('X', self)
         fixed_dx_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.fixed_dx_spinbox = QtWidgets.QDoubleSpinBox()
@@ -126,14 +124,15 @@ class LineOptionsPanel(UIPanel):
         self.fixed_dy_spinbox = QtWidgets.QDoubleSpinBox()
         fixed_dy_label.setBuddy(self.fixed_dy_spinbox)
         fixed_dy_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-        fixed_layout.addWidget(fixed_label)
+        fixed_layout.addWidget(self.fixed_radio)
         fixed_layout.addWidget(fixed_dx_label)
         fixed_layout.addWidget(self.fixed_dx_spinbox)
         fixed_layout.addWidget(fixed_dy_label)
         fixed_layout.addWidget(self.fixed_dy_spinbox)
         fixed_layout.setContentsMargins(0, 0, 0, 0)
-        self.fixed_box.setLayout(fixed_layout)
-        layout.addWidget(self.fixed_box)
+        arc_layout.addLayout(fixed_layout)
+        self.arc_box.setLayout(arc_layout)
+        layout.addWidget(self.arc_box)
 
         # Line thickness
         self.thickness_box = QtWidgets.QWidget(inner)
@@ -168,62 +167,66 @@ class LineOptionsPanel(UIPanel):
         :return: None
         """
         scope = ctrl.ui.get_panel(g.DRAWING).scope
-        d = None
-        cps = 0
-        filled = False
+        shape_dict = None
         if scope == g.SELECTION:
-            # check if selection has conflicting values: these cannot be shown then
-            shape_name_conflict = False
-            shape_name = None
-            for item in ctrl.get_all_selected():
-                if isinstance(item, Edge):
-                    if not shape_name:
-                        shape_name = item.shape_name()
-                    elif shape_name != item.shape_name():
-                        shape_name_conflict = True
-                        break
-            if shape_name:
-                d = SHAPE_PRESETS[shape_name]
-                cps = d.get('control_points', 0)
+            shape_dict = self.build_shape_dict_for_selection()
+            selection = True
         else: # Adjusting how this relation type is drawn
             e = ctrl.forest.settings.edge_settings
             shape_name = e(scope, 'shape_name')
-            filled = e(scope, 'fill', False)
-            d = ctrl.forest.settings.edge_shape_settings(scope)
-            print('necessary settings for this edge: ', d)
+            shape_dict = ctrl.forest.settings.edge_shape_settings(scope)
+            print('shape settings: ', shape_dict)
+            #print('edge settings: ', e)
+            selection = False
+
             #d = SHAPE_PRESETS[shape_name]
-        if d:
+        if shape_dict:
+            cps = shape_dict['control_points']
+
             # Control points
-            if cps == 2:
-                self.cp1_box.setVisible(True)
+            if selection and cps > 1:
                 self.cp2_box.setVisible(True)
-            elif cps == 1:
-                self.cp1_box.setVisible(True)
+                self.cp2_x_spinbox.setValue(shape_dict['adjust2_x'])
+                self.cp2_y_spinbox.setValue(shape_dict['adjust2_y'])
+            else:
                 self.cp2_box.setVisible(False)
+            if selection and cps > 0:
+                self.cp1_box.setVisible(True)
+                self.cp1_x_spinbox.setValue(shape_dict['adjust1_x'])
+                self.cp1_y_spinbox.setValue(shape_dict['adjust1_y'])
             else:
                 self.cp1_box.setVisible(False)
-                self.cp2_box.setVisible(False)
             # Relative / fixed curvature
             if cps > 0:
-                self.rel_box.setVisible(True)
-                self.fixed_box.setVisible(True)
+                self.arc_box.setVisible(True)
+                rel = shape_dict['relative']
+                self.rel_radio.setChecked(rel)
+                self.rel_dx_spinbox.setEnabled(rel)
+                self.rel_dy_spinbox.setEnabled(rel)
+                self.fixed_radio.setChecked(not rel)
+                self.fixed_dx_spinbox.setEnabled(not rel)
+                self.fixed_dy_spinbox.setEnabled(not rel)
+                self.rel_dx_spinbox.setValue(shape_dict['rel_dx'])
+                self.rel_dy_spinbox.setValue(shape_dict['rel_dy'])
+                self.fixed_dx_spinbox.setValue(shape_dict['fixed_dx'])
+                self.fixed_dy_spinbox.setValue(shape_dict['fixed_dy'])
             else:
-                self.rel_box.setVisible(False)
-                self.fixed_box.setVisible(False)
+                self.arc_box.setVisible(False)
             # Leaf-shaped lines or solid lines
-            if filled:
+            if shape_dict['fill']:
                 self.leaf_box.setVisible(True)
+                self.leaf_x_spinbox.setValue(shape_dict['leaf_x'])
+                self.leaf_y_spinbox.setValue(shape_dict['leaf_y'])
                 self.thickness_box.setVisible(False)
             else:
                 self.leaf_box.setVisible(False)
                 self.thickness_box.setVisible(True)
-
-
-
+                self.thickness_spinbox.setValue(shape_dict['thickness'])
         else: # This shouldn't happen
-            self.cp1_box.setVisible(False)
-            self.cp2_box.setVisible(False)
-            self.leaf_layout.setEnabled(False)
+            assert False
+            #self.cp1_box.setVisible(False)
+            #self.cp2_box.setVisible(False)
+            #self.leaf_layout.setEnabled(False)
         self.updateGeometry()
         self.update()
 
@@ -235,3 +238,28 @@ class LineOptionsPanel(UIPanel):
         else:
             return UIPanel.initial_position(self)
 
+
+    def build_shape_dict_for_selection(self):
+        d = {}
+        # check if selection has conflicting values: these cannot be shown then
+        shape_name_conflict = False
+        shape_name = None
+
+        for item in ctrl.get_all_selected():
+            if isinstance(item, Edge):
+                e = item.shape_args()
+                if not d:
+                    d = e.copy()
+                if not shape_name:
+                    shape_name = item.shape_name()
+                    d['shape_name'] = shape_name
+                elif shape_name != item.shape_name():
+                    shape_name_conflict = True
+
+        d['adjust2_x'] = 20
+        d['adjust2_y'] = 20
+        d['adjust1_x'] = 10
+        d['adjust1_y'] = -10
+        print('selection args:', d)
+
+        return d

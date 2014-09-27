@@ -60,7 +60,7 @@ from kataja.ui.PreferencesDialog import PreferencesDialog
 from kataja.utils import time_me, save_object
 from kataja.visualizations.available import VISUALIZATIONS
 import kataja.debug as debug
-from kataja.ui.TwoColorButton import TwoColorButton
+from kataja.ui.panels.DrawingPanel import TableModelComboBox
 
 
 
@@ -383,12 +383,11 @@ class KatajaMain(QtWidgets.QMainWindow):
         args = data.get('args', [])
         if selector:
             # This is a combobox, get the data and add it as an argument
-            view = selector.view()
-            if isinstance(view, QtWidgets.QListView):
-                args.append(selector.itemData(selector.currentIndex()))
-            elif isinstance(view, QtWidgets.QTableView):
+            if isinstance(selector, TableModelComboBox):
                 i = selector.view().currentIndex()
                 args.append(selector.model().itemFromIndex(i).data())
+            elif isinstance(selector, QtWidgets.QComboBox):
+                args.append(selector.itemData(selector.currentIndex()))
         context = data.get('context', 'main')
         if context == 'main':
             c = self
@@ -579,6 +578,9 @@ class KatajaMain(QtWidgets.QMainWindow):
         p = self.ui_manager.get_panel(g.DRAWING)
         p.change_scope(selection)
         p.update_panel()
+        p = self.ui_manager.get_panel(g.LINE_OPTIONS)
+        p.update_panel()
+
 
     def change_edge_shape(self, shape):
         if shape is g.AMBIGUOUS_VALUES:
