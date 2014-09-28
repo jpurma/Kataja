@@ -65,8 +65,6 @@ class Edge(QtWidgets.QGraphicsItem):
         self.control_points = []
         self.middle_point = None
         self.adjust = []
-        self.has_outline = False
-        self.is_filled = None
 
         if isinstance(direction, str):
             if direction == 'left':
@@ -95,7 +93,6 @@ class Edge(QtWidgets.QGraphicsItem):
 
         # ## Derivative elements
         self._shape_method = None
-        self._shape_supports_control_points = 0
         self._path = None
         self._fat_path = None
         self._visible = None
@@ -137,6 +134,14 @@ class Edge(QtWidgets.QGraphicsItem):
         :return:
         """
         return self.touch_areas.get(place, None)
+
+    def is_filled(self):
+        return self._cached_shape_args['fill']
+
+
+    def has_outline(self):
+        return self._cached_shape_args['pen']
+
 
     def is_visible(self):
         # assert (self._visible == self.isVisible())
@@ -331,8 +336,15 @@ class Edge(QtWidgets.QGraphicsItem):
         if not self._shape_method:
             self.update_shape()
         self.shape_name()
-        self._path = self._shape_method(self, **self._cached_shape_args)
-        if not self.is_filled:  # expensive with filled shapes
+        c = self._cached_shape_args
+        c['start_point'] = self.start_point
+        c['end_point'] = self.end_point
+        c['adjust'] = self.adjust
+        c['align'] = self.align
+        c['start'] = self.start
+        c['end'] = self.end
+        self._path, self.middle_point, self.control_points = self._shape_method(**c)
+        if not self.is_filled():  # expensive with filled shapes
             self._fat_path = outline_stroker.createStroke(self._path).united(self._path)
 
     def shape(self):
@@ -340,7 +352,7 @@ class Edge(QtWidgets.QGraphicsItem):
         In our case we should have special '_fat_path' for those shapes that are just narrow lines.
         :return: QGraphicsPath
         """
-        if not self.is_filled:
+        if not self.is_filled():
             if not self._fat_path:
                 self.make_path()
             return self._fat_path
@@ -591,30 +603,14 @@ class Edge(QtWidgets.QGraphicsItem):
         if not self.start or not self.end:
             return
         c = self.contextual_color()
-        if self.has_outline:
+        if self.has_outline():
             p = self.pen()
             p.setColor(c)
             p.setWidth(self.pen_width())
             painter.setPen(p)
             painter.drawPath(self._path)
-        if self.is_filled:
+        if self.is_filled():
             painter.fillPath(self._path, c)
-
-    def adjusted_control_point_list(self):
-        """ List where control points and their adjustments are added up, and (x,y) tuples
-        are break down into one big list x1, y1, x2, y2,... to be used in path construction
-        :return: list
-        """
-        l = []
-        la = len(self.adjust)
-        for i, cp in enumerate(self.control_points):
-            if la <= i:
-                l.append(cp[0])
-                l.append(cp[1])
-            else:
-                l.append(cp[0] + self.adjust[i][0])
-                l.append(cp[1] + self.adjust[i][1])
-        return l
 
     def get_path(self)-> QtGui.QPainterPath:
         """ Get drawing path of this edge
@@ -627,7 +623,7 @@ class Edge(QtWidgets.QGraphicsItem):
         :param d: int
         :return: QPoint
         """
-        if self.is_filled:
+        if self.is_filled():
             d /= 2.0
         if not self._path:
             self.update_end_points()
@@ -639,7 +635,7 @@ class Edge(QtWidgets.QGraphicsItem):
         :param d: int
         :return: float
         """
-        if self.is_filled:
+        if self.is_filled():
             d /= 2.0
             # slopeAtPercent
         if not self._path:

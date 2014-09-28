@@ -16,6 +16,24 @@ outline_stroker = QtGui.QPainterPathStroker()
 outline_stroker.setWidth(4)
 
 
+
+def adjusted_control_point_list(control_points, adjust):
+    """ List where control points and their adjustments are added up, and (x,y) tuples
+    are break down into one big list x1, y1, x2, y2,... to be used in path construction
+    :return: list
+    """
+    l = []
+    la = len(adjust)
+    for i, cp in enumerate(control_points):
+        if la <= i:
+            l.append(cp[0])
+            l.append(cp[1])
+        else:
+            l.append(cp[0] + adjust[i][0])
+            l.append(cp[1] + adjust[i][1])
+    return l
+
+
 # Shapes
 
 def draw_arrow_shape(self, painter):
@@ -83,37 +101,35 @@ def to_Pf(triple):
     return Pf(triple[0], triple[1])
 
 
-def shaped_cubic_path(self, relative=True, rel_dx=0.2, rel_dy=0.2, fixed_dx=20, fixed_dy=15, leaf_x=1, leaf_y=3, **kwargs):
+def shaped_cubic_path(start_point=None, end_point=None, adjust=None, align=LEFT, relative=True, rel_dx=0.2, rel_dy=0.2,
+                      fixed_dx=20, fixed_dy=15, leaf_x=1, leaf_y=3, **kwargs):
     """ Two point leaf-shaped curve
     :param kwargs: relative=True, rel_dx=0.2, rel_dy=0.2, fixed_dx=20, fixed_dy=15, leaf_x=1, leaf_y=3
     """
-    sx, sy, sz = self.start_point
-    ex, ey, ez = self.end_point
+    sx, sy, sz = start_point
+    ex, ey, ez = end_point
     # edges that go to wrong direction have stronger curvature
 
     if relative:
         dx = rel_dx * (ex - sx)
         dy = rel_dy * (ey - sy)
-        if (self.align is LEFT and sx <= ex) or (self.align is RIGHT and sx >= ex):
+        if (align is LEFT and sx <= ex) or (align is RIGHT and sx >= ex):
             dx *= -2
     else:
-        if self.align is LEFT:
+        if align is LEFT:
             dx = -fixed_dx
         else:
             dx = fixed_dx
         dy = fixed_dy
-    if self.align is LEFT or self.align is RIGHT:
-        self.control_points = [(sx + dx, sy + dy, sz), (ex, ey - dy, ez)]
+    if align is LEFT or align is RIGHT:
+        control_points = [(sx + dx, sy + dy, sz), (ex, ey - dy, ez)]
     else:
-        self.control_points = [(sx, sy + dy, sz), (ex, ey - dy, ez)]
+        control_points = [(sx, sy + dy, sz), (ex, ey - dy, ez)]
     path = QtGui.QPainterPath(Pf(sx, sy))
-    c = self.adjusted_control_point_list()
+    c = adjusted_control_point_list(control_points, adjust)
     path.cubicTo(c[0] - leaf_x, c[1], c[2], c[3] + leaf_y, ex, ey)
     path.cubicTo(c[2], c[3] - leaf_y, c[0] + leaf_x, c[1], sx, sy)
-    self.middle_point = path.pointAtPercent(0.25)
-    self.has_outline = False
-    self.is_filled = True
-    return path
+    return path, path.pointAtPercent(0.25), control_points
 
 
 def shaped_cubic_icon(painter, rect, color=None, rel_dx=0.4, rel_dy=0.8, leaf_x=1, leaf_y=3):
@@ -129,36 +145,33 @@ def shaped_cubic_icon(painter, rect, color=None, rel_dx=0.4, rel_dy=0.8, leaf_x=
     painter.fillPath(path, color)
 
 
-def cubic_path(self, relative=True, rel_dx=0.2, rel_dy=0.2, fixed_dx=20, fixed_dy=15, **kwargs):
+def cubic_path(start_point=None, end_point=None, adjust=None, align=LEFT, relative=True, rel_dx=0.2, rel_dy=0.2, fixed_dx=20, fixed_dy=15, **kwargs):
     """ Two point narrow curve
     :param kwargs:
     """
-    sx, sy, sz = self.start_point
-    ex, ey, ez = self.end_point
+    sx, sy, sz = start_point
+    ex, ey, ez = end_point
     # edges that go to wrong direction have stronger curvature
 
     if relative:
         dx = rel_dx * (ex - sx)
         dy = rel_dy * (ey - sy)
-        if (self.align is LEFT and sx <= ex) or (self.align is RIGHT and sx >= ex):
+        if (align is LEFT and sx <= ex) or (align is RIGHT and sx >= ex):
             dx *= -2
     else:
-        if self.align is LEFT:
+        if align is LEFT:
             dx = -fixed_dx
         else:
             dx = fixed_dx
         dy = fixed_dy
-    if self.align is LEFT or self.align is RIGHT:
-        self.control_points = [(sx + dx, sy + dy, sz), (ex, ey - dy, ez)]
+    if align is LEFT or align is RIGHT:
+        control_points = [(sx + dx, sy + dy, sz), (ex, ey - dy, ez)]
     else:
-        self.control_points = [(sx, sy + dy, sz), (ex, ey - dy, ez)]
+        control_points = [(sx, sy + dy, sz), (ex, ey - dy, ez)]
     path = QtGui.QPainterPath(Pf(sx, sy))
-    c = self.adjusted_control_point_list()
+    c = adjusted_control_point_list(control_points, adjust)
     path.cubicTo(c[0], c[1], c[2], c[3], ex, ey)
-    self.middle_point = path.pointAtPercent(0.5)
-    self.has_outline = True
-    self.is_filled = False
-    return path
+    return path, path.pointAtPercent(0.5), control_points
 
 
 def cubic_icon(painter, rect, color=None, rel_dx=0.2, rel_dy=0.8):
@@ -173,37 +186,34 @@ def cubic_icon(painter, rect, color=None, rel_dx=0.2, rel_dy=0.8):
     painter.drawPath(path)
 
 
-def shaped_quadratic_path(self, relative=True, rel_dx=0.2, rel_dy=0, fixed_dx=20, fixed_dy=0, leaf_x=3, leaf_y=3, **kwargs):
+def shaped_quadratic_path(start_point=None, end_point=None, adjust=None, align=LEFT, relative=True, rel_dx=0.2, rel_dy=0, fixed_dx=20, fixed_dy=0, leaf_x=3, leaf_y=3, **kwargs):
     """ One point leaf-shaped curve with curvature relative to line length
     :param kwargs:
     """
 
-    sx, sy, sz = self.start_point
-    ex, ey, ez = self.end_point
+    sx, sy, sz = start_point
+    ex, ey, ez = end_point
     if relative:
         dx = rel_dx * (ex - sx)
         dy = rel_dy * (ey - sy)
         # edges that go to wrong direction have stronger curvature
-        if (self.align is LEFT and sx <= ex) or (self.align is RIGHT and sx >= ex):
+        if (align is LEFT and sx <= ex) or (align is RIGHT and sx >= ex):
             dx *= -2
     else:
-        if self.align is LEFT:
+        if align is LEFT:
             dx = -fixed_dx
         else:
             dx = fixed_dx
         dy = fixed_dy
-    if self.align is LEFT or self.align is RIGHT:
-        self.control_points = [(sx + dx, sy + dy, sz)]
+    if align is LEFT or align is RIGHT:
+        control_points = [(sx + dx, sy + dy, sz)]
     else:
-        self.control_points = [(sx, sy + dy, sz)]
+        control_points = [(sx, sy + dy, sz)]
     path = QtGui.QPainterPath(Pf(sx, sy))
-    c = self.adjusted_control_point_list()
+    c = adjusted_control_point_list(control_points, adjust)
     path.quadTo(c[0] - leaf_x, c[1] - leaf_y, ex, ey)
     path.quadTo(c[0] + leaf_x, c[1] + leaf_y, sx, sy)
-    self.middle_point = path.pointAtPercent(0.25)
-    self.has_outline = False
-    self.is_filled = True
-    return path
+    return path, path.pointAtPercent(0.25), control_points
 
 def shaped_quadratic_icon(painter, rect, color=None, rel_dx=0.4, rel_dy=0, leaf_x=1, leaf_y=3):
     sx, sy = 0, 4
@@ -217,33 +227,30 @@ def shaped_quadratic_icon(painter, rect, color=None, rel_dx=0.4, rel_dy=0, leaf_
     path.quadTo(sx + dx + leaf_x, sy + dy + leaf_y, sx, sy)
     painter.fillPath(path, color)
 
-def quadratic_path(self, relative=True, rel_dx=0.2, rel_dy=0, fixed_dx=20, fixed_dy=0, **kwargs):
+def quadratic_path(start_point=None, end_point=None, adjust=None, align=LEFT, relative=True, rel_dx=0.2, rel_dy=0, fixed_dx=20, fixed_dy=0, **kwargs):
     """ One point curve with curvature relative to line length """
-    sx, sy, sz = self.start_point
-    ex, ey, ez = self.end_point
+    sx, sy, sz = start_point
+    ex, ey, ez = end_point
     if relative:
         dx = rel_dx * (ex - sx)
         dy = rel_dy * (ey - sy)
         # edges that go to wrong direction have stronger curvature
-        if (self.align is LEFT and sx <= ex) or (self.align is RIGHT and sx >= ex):
+        if (align is LEFT and sx <= ex) or (align is RIGHT and sx >= ex):
             dx *= -2
     else:
-        if self.align is LEFT:
+        if align is LEFT:
             dx = -fixed_dx
         else:
             dx = fixed_dx
         dy = fixed_dy
-    if self.align is LEFT or self.align is RIGHT:
-        self.control_points = [(sx + dx, sy + dy, sz)]
+    if align is LEFT or align is RIGHT:
+        control_points = [(sx + dx, sy + dy, sz)]
     else:
-        self.control_points = [(sx, sy + dy, sz)]
+        control_points = [(sx, sy + dy, sz)]
     path = QtGui.QPainterPath(Pf(sx, sy))
-    c = self.adjusted_control_point_list()
+    c = adjusted_control_point_list(control_points, adjust)
     path.quadTo(c[0], c[1], ex, ey)
-    self.middle_point = path.pointAtPercent(0.5)
-    self.has_outline = True
-    self.is_filled = False
-    return path
+    return path, path.pointAtPercent(0.5), control_points
 
 
 def quadratic_icon(painter, rect, color=None, rel_dx=0.4, rel_dy=0):
@@ -258,22 +265,19 @@ def quadratic_icon(painter, rect, color=None, rel_dx=0.4, rel_dy=0):
     painter.drawPath(path)
 
 
-def shaped_linear_path(self, leaf_x=2, leaf_y=2, **kwargs):
+def shaped_linear_path(start_point=None, end_point=None, adjust=None, align=LEFT, leaf_x=2, leaf_y=2, **kwargs):
     """ A straight line with a slight leaf shape """
-    sx, sy, sz = self.start_point
-    dx, dy, dummy = self.end_point
-    self.control_points = []
-    if self.align is RIGHT:
+    sx, sy, sz = start_point
+    dx, dy, dummy = end_point
+    control_points = []
+    if align is RIGHT:
         leaf_x *= 2
         leaf_y *= 2
     c = [(dx - leaf_x, dy - leaf_y, sz), (dx + leaf_x, dy - leaf_y, sz)]
     path = QtGui.QPainterPath(Pf(sx, sy))
     path.quadTo(c[0][0], c[0][1], dx, dy)
     path.quadTo(c[1][0], c[1][1], sx, sy)
-    self.middle_point = path.pointAtPercent(0.25)
-    self.has_outline = False
-    self.is_filled = True
-    return path
+    return path, path.pointAtPercent(0.25), control_points
 
 def shaped_linear_icon(painter, rect, color=None, leaf_x=4, leaf_y=4):
     sx, sy = 0, 0
@@ -286,17 +290,14 @@ def shaped_linear_icon(painter, rect, color=None, leaf_x=4, leaf_y=4):
     painter.fillPath(path, color)
 
 
-def linear_path(self, **kwargs):
+def linear_path(start_point=None, end_point=None, adjust=None, align=LEFT,  **kwargs):
     """ Just a straight line """
-    sx, sy, dummy = self.start_point
-    dx, dy, dummy = self.end_point
-    self.control_points = []
+    sx, sy, dummy = start_point
+    dx, dy, dummy = end_point
+    control_points = []
     path = QtGui.QPainterPath(Pf(sx, sy))
     path.lineTo(dx, dy)
-    self.middle_point = path.pointAtPercent(0.5)
-    self.has_outline = True
-    self.is_filled = False
-    return path
+    return path, path.pointAtPercent(0.5), control_points
 
 def linear_icon(painter, rect, color=None):
     sx, sy = 0, 0
@@ -309,16 +310,16 @@ def linear_icon(painter, rect, color=None):
 
 
 
-def blob_path(self, thickness=4, **kwargs):
+def blob_path(start_point=None, end_point=None, adjust=None, align=LEFT, thickness=4, start=None, end=None, **kwargs):
     """ Surround the node with circular shape that stretches to other node """
-    scx, scy, scz = self.start.get_current_position()
-    ecx, ecy, ecz = self.end.get_current_position()
+    scx, scy, scz = start.get_current_position()
+    ecx, ecy, ecz = end.get_current_position()
     t2 = thickness*2
 
-    sx, sy, sz = self.start_point
-    ex, ey, dummy = self.end_point
-    sx1, sy1, sw, sh = self.start.boundingRect().getRect()
-    ex1, ey1, ew, eh = self.end.boundingRect().getRect()
+    sx, sy, sz = start_point
+    ex, ey, dummy = end_point
+    sx1, sy1, sw, sh = start.boundingRect().getRect()
+    ex1, ey1, ew, eh = end.boundingRect().getRect()
     sx1 += scx
     sy1 += scy
     ex1 += ecx
@@ -343,12 +344,8 @@ def blob_path(self, thickness=4, **kwargs):
     path = path.united(path3)
     path = path.subtracted(path1neg)
     path = path.subtracted(path2neg)
-    self.middle_point = Pf(c1x, c1y)
-    self.control_points = []
-    self.has_outline = False
-    self.is_filled = True
 
-    return path.simplified()
+    return path.simplified(), Pf(c1x, c1y), []
 
 def blob_icon(painter, rect, color=None, thickness=3):
     sx, sy = 0, 0
@@ -386,14 +383,14 @@ def blob_icon(painter, rect, color=None, thickness=3):
     painter.fillPath(path, color)
 
 
-def directional_blob_path(self, thickness=4, **kwargs):
+def directional_blob_path(start_point=None, end_point=None, adjust=None, align=LEFT,  thickness=4, start=None, end=None, **kwargs):
     """ Surround the node with circular shape that stretches to other node """
-    scx, scy, scz = self.start.get_current_position()
-    ecx, ecy, ecz = self.end.get_current_position()
+    scx, scy, scz = start.get_current_position()
+    ecx, ecy, ecz = end.get_current_position()
     t2 = thickness*2
-    if self.align is LEFT:
-        sx, sy, sz = self.start_point
-        ex1, ey1, ew, eh = self.end.boundingRect().getRect()
+    if align is LEFT:
+        sx, sy, sz = start_point
+        ex1, ey1, ew, eh = end.boundingRect().getRect()
         ex1 += ecx
         ey1 += ecy
         c1x = (sx + ecx) / 2
@@ -410,8 +407,8 @@ def directional_blob_path(self, thickness=4, **kwargs):
         path = path1.united(path2)
         path = path.subtracted(path1neg)
     else:
-        sx1, sy1, sw, sh = self.start.boundingRect().getRect()
-        ex1, ey1, ew, eh = self.end.boundingRect().getRect()
+        sx1, sy1, sw, sh = start.boundingRect().getRect()
+        ex1, ey1, ew, eh = end.boundingRect().getRect()
         sx1 += scx
         sy1 += scy
         ex1 += ecx
@@ -435,12 +432,8 @@ def directional_blob_path(self, thickness=4, **kwargs):
         path = path.united(path3)
         path = path.subtracted(path1neg)
         path = path.subtracted(path2neg)
-    self.middle_point = Pf(c1x, c1y)
-    self.control_points = []
-    self.has_outline = False
-    self.is_filled = True
 
-    return path.simplified()
+    return path.simplified(), Pf(c1x, c1y), []
 
 def directional_blob_icon(painter, rect, color=None):
     sx, sy = 0, 0
