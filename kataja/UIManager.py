@@ -540,6 +540,24 @@ class UIManager:
                 #selector.installEventFilter(self.button_shortcut_filter)
             selector.setFocusPolicy(QtCore.Qt.TabFocus)
 
+    def connect_spinbox_to_action(self, spinbox, action):
+        if isinstance(action, str):
+            action_data = self.actions[action]
+            action = self.qt_actions[action]
+        else:
+            action_data = self.actions[action.data()]
+        spinbox.valueChanged.connect(action.trigger)
+        tooltip = action_data.get('tooltip', None)
+        action_data['spinbox'] = spinbox
+        if tooltip:
+            spinbox.setStatusTip(tooltip)
+            spinbox.setToolTip(tooltip)
+            shortcut = action_data.get('shortcut', None)
+            if shortcut:
+                spinbox.setShortcut(QtGui.QKeySequence(shortcut))
+                #selector.installEventFilter(self.button_shortcut_filter)
+            #spinbox.setFocusPolicy(QtCore.Qt.TabFocus)
+
 
     def toggle_line_options(self):
         print('toggle line options')
@@ -900,6 +918,14 @@ class UIManager:
             assert (cp not in self._control_points)
             self._control_points.append(cp)
             cp.update_position()
+
+    def update_control_point_positions(self):
+        """ Update positions for all control points without doing any checks to see if they are legit or used.
+        We assume that there won't be too many of them
+        :return:
+        """
+        for item in self._control_points:
+            item.update_position()
 
 
     def remove_control_points(self, edge):

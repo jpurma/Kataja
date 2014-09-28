@@ -57,7 +57,7 @@ class ControlPoint(QtWidgets.QGraphicsItem):
     def _compute_adjust(self):
         x, y = to_tuple(self.pos())
         p = self.host_edge.control_points[self._index]
-        return x - p[0], y - p[1]
+        return int(x - p[0]), int(y - p[1])
         # print 'computed adjust:', self.adjust
 
     def click(self, event=None):
@@ -75,7 +75,7 @@ class ControlPoint(QtWidgets.QGraphicsItem):
         :param event:
         """
         self.setPos(event.scenePos())
-        self.host_edge.adjust_control_point(self._index, self._compute_adjust())
+        self.host_edge.adjust_control_point(self._index, self._compute_adjust(), cp=True)
 
     def hoverEnterEvent(self, event):
         """

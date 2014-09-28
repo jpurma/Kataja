@@ -380,7 +380,9 @@ class KatajaMain(QtWidgets.QMainWindow):
         key = sender.data()
         data = self.ui_manager.actions[key]
         selector = data.get('selector', None)
-        args = data.get('args', [])
+        spinbox = data.get('spinbox', None)
+        args = []
+        args += data.get('args', [])
         if selector:
             # This is a combobox, get the data and add it as an argument
             if isinstance(selector, TableModelComboBox):
@@ -388,6 +390,8 @@ class KatajaMain(QtWidgets.QMainWindow):
                 args.append(selector.model().itemFromIndex(i).data())
             elif isinstance(selector, QtWidgets.QComboBox):
                 args.append(selector.itemData(selector.currentIndex()))
+        elif spinbox:
+            args.append(spinbox.value())
         context = data.get('context', 'main')
         if context == 'main':
             c = self
@@ -654,6 +658,15 @@ class KatajaMain(QtWidgets.QMainWindow):
             self.forest.settings.edge_shape_name(g.FEATURE_EDGE, shape)
         self.ui_manager.ui_buttons['feature_line_type'].setCurrentIndex(i)
         self.add_message('(s) Change feature edge shape: %s-%s' % (i, shape))
+
+    def adjust_control_point(self, cp_index, dim, value=0):
+        cp_index -= 1
+        for edge in ctrl.get_all_selected():
+            if isinstance(edge, Edge):
+                if dim == 'r':
+                    edge.reset_control_point(cp_index)
+                else:
+                    edge.adjust_control_point_xy(cp_index, dim, value)
 
     # Next structure -action (.)
     def next_structure(self):

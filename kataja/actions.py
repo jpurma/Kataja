@@ -151,7 +151,43 @@ actions = {
         'context': 'ui',
         'tooltip': 'Show/hide advanced options for line drawing'
     },
-
+    # More line options -panel
+    'control_point1_x': {
+        'command': 'Adjust curvature, point 1 X',
+        'method': 'adjust_control_point',
+        'args': [1, 'x'],
+        'tooltip': 'Adjust curvature, point 1 X'
+    },
+    'control_point1_y': {
+        'command': 'Adjust curvature, point 1 Y',
+        'method': 'adjust_control_point',
+        'args': [1, 'y'],
+        'tooltip': 'Adjust curvature, point 1 Y'
+    },
+    'control_point1_reset': {
+        'command': 'Reset control point 1',
+        'method': 'adjust_control_point',
+        'args': [1, 'r'],
+        'tooltip': 'Remove arc adjustments'
+    },
+    'control_point2_x': {
+        'command': 'Adjust curvature, point 2 X',
+        'method': 'adjust_control_point',
+        'args': [2, 'x'],
+        'tooltip': 'Adjust curvature, point 2 X'
+    },
+    'control_point2_y': {
+        'command': 'Adjust curvature, point 2 Y',
+        'method': 'adjust_control_point',
+        'args': [2, 'y'],
+        'tooltip': 'Adjust curvature, point 2 Y'
+    },
+    'control_point2_reset': {
+        'command': 'Reset control point 2',
+        'method': 'adjust_control_point',
+        'args': [2, 'r'],
+        'tooltip': 'Remove arc adjustments'
+    },
     # Visualizations panel
     'change_visualization': {
         'command': 'Change visualization algorithm',

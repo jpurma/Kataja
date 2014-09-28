@@ -37,16 +37,25 @@ class LineOptionsPanel(UIPanel):
         cp1_x_label = QtWidgets.QLabel('X', self)
         cp1_x_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.cp1_x_spinbox = QtWidgets.QSpinBox()
+        self.cp1_x_spinbox.setRange(-400, 400)
+        ui_manager.connect_spinbox_to_action(self.cp1_x_spinbox, 'control_point1_x')
         cp1_x_label.setBuddy(self.cp1_x_spinbox)
         cp1_y_label = QtWidgets.QLabel('Y', self)
         cp1_y_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.cp1_y_spinbox = QtWidgets.QSpinBox()
+        self.cp1_y_spinbox.setRange(-400, 400)
+        ui_manager.connect_spinbox_to_action(self.cp1_y_spinbox, 'control_point1_y')
         cp1_y_label.setBuddy(self.cp1_y_spinbox)
+        self.cp1_reset_button = QtWidgets.QPushButton('Reset')
+        self.cp1_reset_button.setMinimumSize(QSize(40, 20))
+        self.cp1_reset_button.setMaximumSize(QSize(40, 20))
+        ui_manager.connect_button_to_action(self.cp1_reset_button, 'control_point1_reset')
         cp1_layout.addWidget(cp1_label)
         cp1_layout.addWidget(cp1_x_label)
         cp1_layout.addWidget(self.cp1_x_spinbox)
         cp1_layout.addWidget(cp1_y_label)
         cp1_layout.addWidget(self.cp1_y_spinbox)
+        cp1_layout.addWidget(self.cp1_reset_button)
         cp1_layout.setContentsMargins(0, 0, 0, 0)
         self.cp1_box.setLayout(cp1_layout)
         layout.addWidget(self.cp1_box)
@@ -58,16 +67,26 @@ class LineOptionsPanel(UIPanel):
         cp2_x_label = QtWidgets.QLabel('X', self)
         cp2_x_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.cp2_x_spinbox = QtWidgets.QSpinBox()
+        self.cp2_x_spinbox.setRange(-400, 400)
+        ui_manager.connect_spinbox_to_action(self.cp2_x_spinbox, 'control_point2_x')
         cp2_x_label.setBuddy(self.cp2_x_spinbox)
         cp2_y_label = QtWidgets.QLabel('Y', self)
         cp2_y_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.cp2_y_spinbox = QtWidgets.QSpinBox()
+        self.cp2_y_spinbox.setRange(-400, 400)
         cp2_y_label.setBuddy(self.cp2_y_spinbox)
+        ui_manager.connect_spinbox_to_action(self.cp2_y_spinbox, 'control_point2_y')
+        self.cp2_reset_button = QtWidgets.QPushButton('Reset')
+        self.cp2_reset_button.setMinimumSize(QSize(40, 20))
+        self.cp2_reset_button.setMaximumSize(QSize(40, 20))
+        ui_manager.connect_button_to_action(self.cp2_reset_button, 'control_point2_reset')
+
         cp2_layout.addWidget(cp2_label)
         cp2_layout.addWidget(cp2_x_label)
         cp2_layout.addWidget(self.cp2_x_spinbox)
         cp2_layout.addWidget(cp2_y_label)
         cp2_layout.addWidget(self.cp2_y_spinbox)
+        cp2_layout.addWidget(self.cp2_reset_button)
         cp2_layout.setContentsMargins(0, 0, 0, 0)
         self.cp2_box.setLayout(cp2_layout)
         layout.addWidget(self.cp2_box)
@@ -170,13 +189,13 @@ class LineOptionsPanel(UIPanel):
         shape_dict = None
         if scope == g.SELECTION:
             shape_dict = self.build_shape_dict_for_selection()
+            self.update_control_point_spinboxes()
             selection = True
         else: # Adjusting how this relation type is drawn
             e = ctrl.forest.settings.edge_settings
             shape_name = e(scope, 'shape_name')
             shape_dict = ctrl.forest.settings.edge_shape_settings(scope)
             print('shape settings: ', shape_dict)
-            #print('edge settings: ', e)
             selection = False
 
             #d = SHAPE_PRESETS[shape_name]
@@ -186,14 +205,14 @@ class LineOptionsPanel(UIPanel):
             # Control points
             if selection and cps > 1:
                 self.cp2_box.setVisible(True)
-                self.cp2_x_spinbox.setValue(shape_dict['adjust2_x'])
-                self.cp2_y_spinbox.setValue(shape_dict['adjust2_y'])
+                #self.cp2_x_spinbox.setValue(shape_dict['adjust2_x'])
+                #self.cp2_y_spinbox.setValue(shape_dict['adjust2_y'])
             else:
                 self.cp2_box.setVisible(False)
             if selection and cps > 0:
                 self.cp1_box.setVisible(True)
-                self.cp1_x_spinbox.setValue(shape_dict['adjust1_x'])
-                self.cp1_y_spinbox.setValue(shape_dict['adjust1_y'])
+                #self.cp1_x_spinbox.setValue(shape_dict['adjust1_x'])
+                #self.cp1_y_spinbox.setValue(shape_dict['adjust1_y'])
             else:
                 self.cp1_box.setVisible(False)
             # Relative / fixed curvature
@@ -239,11 +258,79 @@ class LineOptionsPanel(UIPanel):
             return UIPanel.initial_position(self)
 
 
+    def show_conflict(self, spinbox):
+        """ Put '---' instead of value to show that there is no unambiguous value that can be put here
+        (this happens when modifying several different items)
+        :return: None
+        """
+        spinbox.setSpecialValueText('---')
+        spinbox.setValue(spinbox.minimum())
+
+    def update_control_point_spinboxes(self):
+        """ Only applies to selected edges, and only if the selection doesn't have conflicting values
+        :return: None
+        """
+        cp1_x_conflict = False
+        cp2_x_conflict = False
+        cp1_y_conflict = False
+        cp2_y_conflict = False
+        cp1_x = None
+        cp1_y = None
+        cp2_x = None
+        cp2_y = None
+        for item in ctrl.get_all_selected():
+            if isinstance(item, Edge):
+                if len(item.adjust) > 1:
+                    if cp2_x is None:
+                        cp2_x = item.adjust[1][0]
+                        cp2_y = item.adjust[1][1]
+                    else:
+                        if cp2_x != item.adjust[1][0]:
+                            cp2_x_conflict = True
+                        if cp2_y != item.adjust[1][1]:
+                            cp2_y_conflict = True
+                if len(item.adjust) > 0:
+                    if cp1_x is None:
+                        cp1_x = item.adjust[0][0]
+                        cp1_y = item.adjust[0][1]
+                    else:
+                        if cp1_x != item.adjust[0][0]:
+                            cp1_x_conflict = True
+                        if cp1_y != item.adjust[0][1]:
+                            cp1_y_conflict = True
+        self.cp1_x_spinbox.blockSignals(True)
+        self.cp1_y_spinbox.blockSignals(True)
+        self.cp2_x_spinbox.blockSignals(True)
+        self.cp2_y_spinbox.blockSignals(True)
+        if cp1_x_conflict:
+            self.show_conflict(self.cp1_x_spinbox)
+        else:
+            self.cp1_x_spinbox.setValue(cp1_x)
+        if cp1_y_conflict:
+            self.show_conflict(self.cp1_y_spinbox)
+        else:
+            self.cp1_y_spinbox.setValue(cp1_y)
+        if cp2_x_conflict:
+            self.show_conflict(self.cp2_x_spinbox)
+        else:
+            self.cp2_x_spinbox.setValue(cp2_x)
+        if cp2_y_conflict:
+            self.show_conflict(self.cp2_y_spinbox)
+        else:
+            self.cp2_y_spinbox.setValue(cp2_y)
+        self.cp1_x_spinbox.blockSignals(False)
+        self.cp1_y_spinbox.blockSignals(False)
+        self.cp2_x_spinbox.blockSignals(False)
+        self.cp2_y_spinbox.blockSignals(False)
+
+
+
     def build_shape_dict_for_selection(self):
         d = {}
         # check if selection has conflicting values: these cannot be shown then
         shape_name_conflict = False
         shape_name = None
+
 
         for item in ctrl.get_all_selected():
             if isinstance(item, Edge):
@@ -256,10 +343,6 @@ class LineOptionsPanel(UIPanel):
                 elif shape_name != item.shape_name():
                     shape_name_conflict = True
 
-        d['adjust2_x'] = 20
-        d['adjust2_y'] = 20
-        d['adjust1_x'] = 10
-        d['adjust1_y'] = -10
         print('selection args:', d)
 
         return d

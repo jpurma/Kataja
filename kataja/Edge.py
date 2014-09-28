@@ -373,7 +373,7 @@ class Edge(QtWidgets.QGraphicsItem):
         """
         return self.edge_type == self.start.default_edge_type
 
-    def adjust_control_point(self, index, points):
+    def adjust_control_point(self, index, points, cp=True):
         """ Called from UI, when dragging
         :param index:
         :param points:
@@ -383,6 +383,42 @@ class Edge(QtWidgets.QGraphicsItem):
         self.adjust[index] = (x, y, z)
         self.make_path()
         self.update()
+        if cp:
+            panel = ctrl.ui.get_panel(g.LINE_OPTIONS)
+            panel.update_control_point_spinboxes()
+
+    def adjust_control_point_xy(self, index, dim, value):
+        """ Called when modifying control point settings directly
+        :param index:
+        :param dim:
+        :param value:
+        :return:
+        """
+        x, y, z = self.adjust[index]
+        if dim == 'x':
+            self.adjust[index] = value, y, z
+        elif dim == 'y':
+            self.adjust[index] = x, value, z
+        elif dim == 'z':
+            self.adjust[index] = x, y, value
+        self.make_path()
+        ctrl.ui.update_control_point_positions()
+        self.update()
+
+    def reset_control_point(self, index):
+        """
+        Set adjustments back to zero
+        :param index:
+        :return:
+        """
+        self.adjust[index] = (0, 0, 0)
+        self.make_path()
+        ctrl.ui.update_control_point_positions()
+        self.update()
+        panel = ctrl.ui.get_panel(g.LINE_OPTIONS)
+        panel.update_control_point_spinboxes()
+
+
 
     def update_end_points(self):
         """
