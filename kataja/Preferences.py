@@ -168,20 +168,13 @@ class Preferences(object):
         # ATTRIBUTE_EDGE = 6
 
         self.edges = {
-            CONSTITUENT_EDGE: {'shape_name': 'shaped_cubic', 'color': 'content1', 'pull': .24, 'visible': True,
-                             'pen_width': 1},
-            FEATURE_EDGE: {'shape_name': 'cubic', 'color': 'accent2', 'pull': .32, 'visible': True,
-                            'pen_width': 1},
-            GLOSS_EDGE: {'shape_name': 'cubic', 'color': 'accent4', 'pull': .40, 'visible': True,
-                         'pen_width': 1},
-            ARROW: {'shape_name': 'arrow', 'color': 'content1', 'pull': 0, 'visible': True,
-                    'pen_width': 1},
-            PROPERTY_EDGE: {'shape_name': 'linear', 'color': 'accent5', 'pull': .40, 'visible': True,
-                            'pen_width': 1},
-            ABSTRACT_EDGE: {'shape_name': 'linear', 'color': 'content1', 'pull': .40, 'visible': True,
-                            'pen_width': 1},
-            ATTRIBUTE_EDGE: {'shape_name': 'linear', 'color': 'content1', 'pull': .50, 'visible': True,
-                             'pen_width': 1},
+            CONSTITUENT_EDGE: {'shape_name': 'shaped_cubic', 'color': 'content1', 'pull': .24, 'visible': True},
+            FEATURE_EDGE: {'shape_name': 'cubic', 'color': 'accent2', 'pull': .32, 'visible': True},
+            GLOSS_EDGE: {'shape_name': 'cubic', 'color': 'accent4', 'pull': .40, 'visible': True},
+            ARROW: {'shape_name': 'arrow', 'color': 'content1', 'pull': 0, 'visible': True},
+            PROPERTY_EDGE: {'shape_name': 'linear', 'color': 'accent5', 'pull': .40, 'visible': True},
+            ABSTRACT_EDGE: {'shape_name': 'linear', 'color': 'content1', 'pull': .40, 'visible': True},
+            ATTRIBUTE_EDGE: {'shape_name': 'linear', 'color': 'content1', 'pull': .50, 'visible': True},
 
         }
 

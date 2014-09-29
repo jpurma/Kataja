@@ -160,8 +160,6 @@
 		<dict>
 			<key>color</key>
 			<string>content1</string>
-			<key>pen_width</key>
-			<integer>1</integer>
 			<key>pull</key>
 			<real>0.24</real>
 			<key>shape_name</key>
@@ -173,8 +171,6 @@
 		<dict>
 			<key>color</key>
 			<string>accent2</string>
-			<key>pen_width</key>
-			<integer>1</integer>
 			<key>pull</key>
 			<real>0.32</real>
 			<key>shape_name</key>
@@ -186,8 +182,6 @@
 		<dict>
 			<key>color</key>
 			<string>accent4</string>
-			<key>pen_width</key>
-			<integer>1</integer>
 			<key>pull</key>
 			<real>0.4</real>
 			<key>shape_name</key>
@@ -199,8 +193,6 @@
 		<dict>
 			<key>color</key>
 			<string>content1</string>
-			<key>pen_width</key>
-			<integer>1</integer>
 			<key>pull</key>
 			<integer>0</integer>
 			<key>shape_name</key>
@@ -212,8 +204,6 @@
 		<dict>
 			<key>color</key>
 			<string>accent5</string>
-			<key>pen_width</key>
-			<integer>1</integer>
 			<key>pull</key>
 			<real>0.4</real>
 			<key>shape_name</key>
@@ -225,8 +215,6 @@
 		<dict>
 			<key>color</key>
 			<string>content1</string>
-			<key>pen_width</key>
-			<integer>1</integer>
 			<key>pull</key>
 			<real>0.5</real>
 			<key>shape_name</key>
@@ -238,8 +226,6 @@
 		<dict>
 			<key>color</key>
 			<string>content1</string>
-			<key>pen_width</key>
-			<integer>1</integer>
 			<key>pull</key>
 			<real>0.4</real>
 			<key>shape_name</key>

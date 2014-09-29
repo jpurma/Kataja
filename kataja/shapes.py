@@ -451,7 +451,6 @@ SHAPE_PRESETS = OrderedDict([
     ('shaped_cubic', {
         'method': shaped_cubic_path,
         'fill': True,
-        'pen': 'thin',
         'icon': shaped_cubic_icon,
         'control_points': 2,
         'relative': True,
@@ -464,7 +463,6 @@ SHAPE_PRESETS = OrderedDict([
     ('cubic', {
         'method': cubic_path,
         'fill': False,
-        'pen': 'thick',
         'icon': cubic_icon,
         'control_points': 2,
         'relative': True,
@@ -472,11 +470,10 @@ SHAPE_PRESETS = OrderedDict([
         'rel_dy': 0.2,
         'fixed_dx': 20,
         'fixed_dy': 15,
-        'thickness': 2}),
+        'thickness': 1}),
     ('shaped_quadratic', {
         'method': shaped_quadratic_path,
         'fill': True,
-        'pen': 'thin',
         'icon': shaped_quadratic_icon,
         'control_points': 1,
         'relative': True,
@@ -489,7 +486,6 @@ SHAPE_PRESETS = OrderedDict([
     ('quadratic', {
         'method': quadratic_path,
         'fill': False,
-        'pen': 'thick',
         'icon': quadratic_icon,
         'control_points': 1,
         'relative': True,
@@ -497,11 +493,10 @@ SHAPE_PRESETS = OrderedDict([
         'rel_dy': 0,
         'fixed_dx': 20,
         'fixed_dy': 0,
-        'thickness': 2}),
+        'thickness': 1}),
     ('shaped_linear', {
         'method': shaped_linear_path,
         'fill': True,
-        'pen': 'thin',
         'icon': shaped_linear_icon,
         'control_points': 0,
         'leaf_x': 2,
@@ -509,28 +504,24 @@ SHAPE_PRESETS = OrderedDict([
     ('linear', {
         'method': linear_path,
         'fill': False,
-        'pen': 'thin',
         'icon': linear_icon,
         'control_points': 0,
         'thickness': 2}),
     ('blob', {
         'method': blob_path,
         'fill': True,
-        'pen': None,
         'icon': blob_icon,
         'control_points': 1,
         'thickness': 2}),
     ('directional_blob', {
         'method': directional_blob_path,
         'fill': True,
-        'pen': None,
         'icon': directional_blob_icon,
         'control_points': 1,
         'thickness': 3}),
     ('no draw', {
         'method': linear_path,
         'fill': False,
-        'pen': None,
         'icon': no_path_icon,
         'control_points': 0,
         'thickness': 0})])

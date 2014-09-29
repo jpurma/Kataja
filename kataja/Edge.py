@@ -80,9 +80,6 @@ class Edge(QtWidgets.QGraphicsItem):
 
         # ## Adjustable values, defaults to ForestSettings if None for this element
         self._color = None
-        self._pen = None
-        self._pen_width = None
-        self._brush = None
         self._shape_name = None
         self._pull = None
         self._shape_visible = None
@@ -140,7 +137,7 @@ class Edge(QtWidgets.QGraphicsItem):
 
 
     def has_outline(self):
-        return self._cached_shape_args['pen']
+        return self._cached_shape_args.get('thickness', 0)
 
 
     def is_visible(self):
@@ -215,30 +212,6 @@ class Edge(QtWidgets.QGraphicsItem):
         else:
             return self.color()
 
-    # ### Pen & Brush ###############################################################
-
-
-    def pen(self):
-        """
-
-
-        :return:
-        """
-        return QtGui.QPen()
-
-    def pen_width(self, value=None):
-        """
-
-        :param value:
-        :return:
-        """
-        if value is None:
-            if self._pen_width is None:
-                return self.forest.settings.edge_settings(self.edge_type, 'pen_width')
-            else:
-                return self._pen_width
-        else:
-            self._pen_width = value
 
     # ### Shape / pull / visibility ###############################################################
 
@@ -362,13 +335,8 @@ class Edge(QtWidgets.QGraphicsItem):
             return self._path
 
     def update_shape(self):
-        """ Reload shape and shape settings
-
-
-        """
-        d = SHAPE_PRESETS[self.shape_name()]
-
-        self._shape_method = d['method']
+        """ Reload shape and shape settings """
+        self._shape_method = SHAPE_PRESETS[self.shape_name()]['method']
         self._cached_shape_args = self.shape_args()
         self.make_path()
         while len(self.adjust) < len(self.control_points):
@@ -603,10 +571,11 @@ class Edge(QtWidgets.QGraphicsItem):
         if not self.start or not self.end:
             return
         c = self.contextual_color()
-        if self.has_outline():
-            p = self.pen()
+        width = self.has_outline()
+        if width:
+            p = QtGui.QPen()
             p.setColor(c)
-            p.setWidth(self.pen_width())
+            p.setWidth(width)
             painter.setPen(p)
             painter.drawPath(self._path)
         if self.is_filled():
