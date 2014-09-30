@@ -98,16 +98,26 @@ class LineOptionsPanel(UIPanel):
         leaf_x_label = QtWidgets.QLabel('X', self)
         leaf_x_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.leaf_x_spinbox = QtWidgets.QSpinBox()
+        self.leaf_x_spinbox.setRange(-20, 20)
         leaf_x_label.setBuddy(self.leaf_x_spinbox)
+        ui_manager.connect_spinbox_to_action(self.leaf_x_spinbox, 'leaf_shape_x')
         leaf_y_label = QtWidgets.QLabel('Y', self)
         leaf_y_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.leaf_y_spinbox = QtWidgets.QSpinBox()
+        self.leaf_y_spinbox.setRange(-20, 20)
         leaf_y_label.setBuddy(self.leaf_y_spinbox)
+        ui_manager.connect_spinbox_to_action(self.leaf_y_spinbox, 'leaf_shape_y')
+        self.leaf_reset_button = QtWidgets.QPushButton('Reset')
+        self.leaf_reset_button.setMinimumSize(QSize(40, 20))
+        self.leaf_reset_button.setMaximumSize(QSize(40, 20))
+        ui_manager.connect_button_to_action(self.leaf_reset_button, 'leaf_shape_reset')
+
         leaf_layout.addWidget(leaf_label)
         leaf_layout.addWidget(leaf_x_label)
         leaf_layout.addWidget(self.leaf_x_spinbox)
         leaf_layout.addWidget(leaf_y_label)
         leaf_layout.addWidget(self.leaf_y_spinbox)
+        leaf_layout.addWidget(self.leaf_reset_button)
         leaf_layout.setContentsMargins(0, 0, 0, 0)
         self.leaf_box.setLayout(leaf_layout)
         layout.addWidget(self.leaf_box)
@@ -192,13 +202,9 @@ class LineOptionsPanel(UIPanel):
             self.update_control_point_spinboxes()
             selection = True
         else: # Adjusting how this relation type is drawn
-            e = ctrl.forest.settings.edge_settings
-            shape_name = e(scope, 'shape_name')
             shape_dict = ctrl.forest.settings.edge_shape_settings(scope)
             print('shape settings: ', shape_dict)
             selection = False
-
-            #d = SHAPE_PRESETS[shape_name]
         if shape_dict:
             cps = shape_dict['control_points']
 

@@ -28,6 +28,7 @@ import string
 import sys
 import time
 import traceback
+import types
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QPointF, QPoint
@@ -523,6 +524,11 @@ def save_object(obj, saved_objs, open_refs, ignore=None):
             for item in data:
                 result.add(_simplify(item))
             return result
+        elif isinstance(data, types.FunctionType):
+            # if functions are stored in the dict, there should be some original version of the same dict, where these
+            # are in their original form.
+            print('saving function in undo, at object ', obj)
+            return None
         elif data is None:
             return data
         elif isinstance(data, QPointF):

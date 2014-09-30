@@ -188,6 +188,25 @@ actions = {
         'args': [2, 'r'],
         'tooltip': 'Remove arc adjustments'
     },
+    'leaf_shape_x': {
+        'command': 'Line leaf shape width',
+        'method': 'change_leaf_shape',
+        'args': ['w'],
+        'tooltip': 'Line leaf shape width'
+    },
+    'leaf_shape_y': {
+        'command': 'Line leaf shape height',
+        'method': 'change_leaf_shape',
+        'args': ['h'],
+        'tooltip': 'Line leaf shape height'
+    },
+    'leaf_shape_reset': {
+        'command': 'Reset leaf shape settings',
+        'method': 'change_leaf_shape',
+        'args': ['r'],
+        'tooltip': 'Reset leaf shape settings'
+    },
+
     # Visualizations panel
     'change_visualization': {
         'command': 'Change visualization algorithm',

@@ -61,3 +61,6 @@ LINE_OPTIONS = 'line_options'
 NO_ALIGN = 0
 LEFT = 1
 RIGHT = 2
+
+# code for deleting a value
+DELETE = 9999

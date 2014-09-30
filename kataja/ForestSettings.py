@@ -274,25 +274,34 @@ class ForestSettings:
         :param value:
         :return:
         """
-        e = self._edge_types.get(edge_type)
-        shape_args = e.get('shape_args', None)
-        if key is None:  # the whole dict is asked
-            if shape_args is None:  # return the original shape preferences for this shape
-                return SHAPE_PRESETS[self.edge_settings(edge_type, 'shape_name')]
-            else:  # return forest settings for this edge type
+        shape_args = self._edge_types.get(edge_type).get('shape_args', None)
+        if shape_args is None:
+            shape_defaults = SHAPE_PRESETS[self.edge_settings(edge_type, 'shape_name')]
+            if key is None:  # the whole dict is asked
+                return shape_defaults #.copy()
+            elif value is None:  # get single setting
+                return shape_defaults.get(key, None)
+            elif value == DELETE:
+                pass
+            else:# set single setting
+                self._edge_types[edge_type]['shape_args'] = shape_defaults.copy()
+                self._edge_types[edge_type]['shape_args'][key] = value
+        else:
+            if key is None:  # the whole dict is asked
                 return shape_args
-        else:  # get/set single dict item from shape settings
-            if value is None:  # get single setting
-                if shape_args is None or shape_args.get(key, None) is None:  # get from original dict
-                    return SHAPE_PRESETS[self.edge_settings(edge_type, 'shape_name')].get(key, None)
+            elif value is None:  # get single setting
+                if shape_args.get(key, None) is None:  # get from original dict
+                    shape_defaults = SHAPE_PRESETS[self.edge_settings(edge_type, 'shape_name')]
+                    return shape_defaults.get(key, None)
                 else:  # get from here
                     return shape_args[key]
-            else:  # set single setting
-                if shape_args is None:  # create a settings dict and set a value
-                    self._edge_types[edge_type] = SHAPE_PRESETS[self.edge_settings(edge_type, 'shape_name')].copy()
-                    self._edge_types[edge_type][key] = value
-                else:  # just set a value
-                    shape_args[key] = value
+            elif value == DELETE:
+                if key in shape_args:
+                    #del shape_args[key]
+                    shape_defaults = SHAPE_PRESETS[self.edge_settings(edge_type, 'shape_name')]
+                    shape_args[key] = shape_defaults[key]
+            else:# set single setting
+                shape_args[key] = value
 
     # ## Nodes - all require edge type as argument, value is stored in dict ###########
 

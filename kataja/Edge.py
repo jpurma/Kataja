@@ -274,6 +274,13 @@ class Edge(QtWidgets.QGraphicsItem):
         else:
             self._shape_visible = value
 
+    def change_leaf_shape(self, dim, value):
+        if dim == 'w':
+            self.shape_args('leaf_x', value)
+        elif dim == 'h':
+            self.shape_args('leaf_y', value)
+        self.update_shape()
+
     def shape_args(self, key=None, value=None):
         """ Without key, return a dict of shape drawing arguments that should be used with shape drawing method.
         With key, give a certain shape_arg.
@@ -283,11 +290,15 @@ class Edge(QtWidgets.QGraphicsItem):
         :return:
         """
         if key is None:
+            #print('getting shape_args for edge ', self)
             shape_args = self.forest.settings.edge_shape_settings(self.edge_type)
             if self._local_shape_args:
-                shape_args = shape_args.copy()
-                shape_args.update(self._local_shape_args)
-            return shape_args
+                #print('local shape args', self._local_shape_args)
+                sa = shape_args.copy()
+                sa.update(self._local_shape_args)
+                return sa
+            else:
+                return shape_args.copy()
         else:
             if value is None:
                 local = self._local_shape_args.get(key, None)
@@ -295,6 +306,9 @@ class Edge(QtWidgets.QGraphicsItem):
                     return local
                 else:
                     self.forest.settings.edge_shape_settings(self.edge_type, key)
+            elif value == g.DELETE:
+                if key in self._local_shape_args:
+                    del self._local_shape_args[key]
             else:
                 self._local_shape_args[key] = value
 

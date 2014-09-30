@@ -660,6 +660,13 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.add_message('(s) Change feature edge shape: %s-%s' % (i, shape))
 
     def adjust_control_point(self, cp_index, dim, value=0):
+        """ Adjusting control point can be done only for selected edges, not for an edge type. So this method is
+        simpler than other adjustments, as it doesn't have to handle both cases.
+        :param cp_index: 1 or 2
+        :param dim: 'x', 'y' or 'r' for reset
+        :param value: new value for given dimension, doesn't matter for reset.
+        :return:
+        """
         cp_index -= 1
         for edge in ctrl.get_all_selected():
             if isinstance(edge, Edge):
@@ -667,6 +674,33 @@ class KatajaMain(QtWidgets.QMainWindow):
                     edge.reset_control_point(cp_index)
                 else:
                     edge.adjust_control_point_xy(cp_index, dim, value)
+
+
+    def change_leaf_shape(self, dim, value=0):
+        #if value is g.AMBIGUOUS_VALUES:
+        #  if we need this, we'll need to find some impossible ambiguous value to avoid weird, rare incidents
+        #    return
+        panel = self.ui_manager.get_panel(g.DRAWING)
+        if panel.scope == g.SELECTION:
+            for edge in ctrl.get_all_selected():
+                if isinstance(edge, Edge):
+                    edge.change_leaf_shape(dim, value)
+        elif panel.scope:
+            if dim == 'w':
+                self.forest.settings.edge_shape_settings(panel.scope, 'leaf_x', value)
+            elif dim == 'h':
+                self.forest.settings.edge_shape_settings(panel.scope, 'leaf_y', value)
+            elif dim == 'r':
+                self.forest.settings.edge_shape_settings(panel.scope, 'leaf_x', g.DELETE)
+                self.forest.settings.edge_shape_settings(panel.scope, 'leaf_y', g.DELETE)
+                options_panel = self.ui_manager.get_panel(g.LINE_OPTIONS)
+                options_panel.update_panel()
+            else:
+                raise ValueError
+            ctrl.announce(g.EDGE_SHAPES_CHANGED, panel.scope, value)
+        #panel.update_color(color)
+        #panel.update_panel()
+        #self.add_message('(s) Changed relation color to: %s' % ctrl.cm.get_color_name(color))
 
     # Next structure -action (.)
     def next_structure(self):
