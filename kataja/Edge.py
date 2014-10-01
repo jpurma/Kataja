@@ -309,6 +309,13 @@ class Edge(QtWidgets.QGraphicsItem):
                 self.shape_args('relative', True)
         self.update_shape()
 
+    def change_thickness(self, dim, value):
+        if dim == 'r':
+            self.shape_args('thickness', g.DELETE)
+        else:
+            self.shape_args('thickness', value)
+        self.update_shape()
+
 
     def shape_args(self, key=None, value=None):
         """ Without key, return a dict of shape drawing arguments that should be used with shape drawing method.
@@ -601,6 +608,9 @@ class Edge(QtWidgets.QGraphicsItem):
         else:
             ctrl.select(self)
 
+    def asymmetric(self):
+        return True
+
     # ## Qt paint method override
 
     def paint(self, painter, option, widget=None):
@@ -618,9 +628,16 @@ class Edge(QtWidgets.QGraphicsItem):
         if width:
             p = QtGui.QPen()
             p.setColor(c)
-            p.setWidth(width)
+            if self.asymmetric() and self.align is g.RIGHT:
+                width *= 2
+            p.setWidthF(width)
             painter.setPen(p)
             painter.drawPath(self._path)
+        elif self.asymmetric() and self.align is g.RIGHT:
+            p = QtGui.QPen()
+            p.setColor(c)
+            painter.drawPath(self._path)
+
         if self.is_filled():
             painter.fillPath(self._path, c)
 

@@ -379,19 +379,9 @@ class KatajaMain(QtWidgets.QMainWindow):
         sender = self.sender()
         key = sender.data()
         data = self.ui_manager.actions[key]
-        selector = data.get('selector', None)
-        spinbox = data.get('spinbox', None)
         args = []
         args += data.get('args', [])
-        if selector:
-            # This is a combobox, get the data and add it as an argument
-            if isinstance(selector, TableModelComboBox):
-                i = selector.view().currentIndex()
-                args.append(selector.model().itemFromIndex(i).data())
-            elif isinstance(selector, QtWidgets.QComboBox):
-                args.append(selector.itemData(selector.currentIndex()))
-        elif spinbox:
-            args.append(spinbox.value())
+        args += self.ui_manager.get_element_value(data.get('ui_element', None))
         context = data.get('context', 'main')
         if context == 'main':
             c = self
@@ -598,6 +588,9 @@ class KatajaMain(QtWidgets.QMainWindow):
         elif scope:
             self.forest.settings.edge_settings(scope, 'shape_name', shape)
             ctrl.announce(g.EDGE_SHAPES_CHANGED, scope, shape)
+        line_options = self.ui_manager.get_panel(g.LINE_OPTIONS)
+        if line_options:
+            line_options.update_panel()
         self.add_message('(s) Changed relation shape to: %s' % shape)
 
     def change_edge_color(self, color):
@@ -675,6 +668,9 @@ class KatajaMain(QtWidgets.QMainWindow):
                 else:
                     edge.adjust_control_point_xy(cp_index, dim, value)
 
+    def change_edge_asymmetry(self, value):
+        print('changing asymmetry: ', value)
+
     def change_curvature(self, dim, value=0):
         panel = self.ui_manager.get_panel(g.DRAWING)
         if panel.scope == g.SELECTION:
@@ -737,6 +733,22 @@ class KatajaMain(QtWidgets.QMainWindow):
         #panel.update_color(color)
         #panel.update_panel()
         #self.add_message('(s) Changed relation color to: %s' % ctrl.cm.get_color_name(color))
+
+    def change_edge_thickness(self, dim, value=0):
+        panel = self.ui_manager.get_panel(g.DRAWING)
+        if panel.scope == g.SELECTION:
+            for edge in ctrl.get_all_selected():
+                if isinstance(edge, Edge):
+                    edge.change_thickness(value)
+        elif panel.scope:
+            if dim == 'r':
+                self.forest.settings.edge_shape_settings(panel.scope, 'thickness', g.DELETE)
+                options_panel = self.ui_manager.get_panel(g.LINE_OPTIONS)
+                options_panel.update_panel()
+            else:
+                self.forest.settings.edge_shape_settings(panel.scope, 'thickness', value)
+            ctrl.announce(g.EDGE_SHAPES_CHANGED, panel.scope, value)
+
 
     # Next structure -action (.)
     def next_structure(self):

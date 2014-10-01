@@ -42,25 +42,22 @@ actions = {
         'command': 'Next forest',
         'method': 'next_structure',
         'shortcut': '.',
-        'button': 'next_tree',
         'tooltip': 'Switch to next forest',
         'no_undo': True},
     'prev_forest': {
         'command': 'Previous forest',
         'method': 'previous_structure',
         'shortcut': ',',
-        'button': 'prev_tree',
         'tooltip': 'Switch to previous forest',
         'no_undo': True},
     'next_derivation_step': {
         'command': 'Animation step forward',
         'method': 'animation_step_forward',
-        'shortcut': '>', 'button': 'next_der'},
+        'shortcut': '>'},
     'prev_derivation_step': {
         'command': 'Animation step backward',
         'method': 'animation_step_backward',
-        'shortcut': '<',
-        'button': 'prev_der'},
+        'shortcut': '<'},
     # Rules ######
     'label_visibility': {
         'command': 'Show &labels in middle nodes',
@@ -206,6 +203,18 @@ actions = {
         'args': ['r'],
         'tooltip': 'Reset leaf shape settings'
     },
+    'edge_thickness': {
+        'command': 'Line thickness',
+        'method': 'change_edge_thickness',
+        'args': ['x'],
+        'tooltip': 'Line thickness'
+    },
+    'edge_thickness_reset': {
+        'command': 'Reset line thickness',
+        'method': 'change_edge_thickness',
+        'args': ['r'],
+        'tooltip': 'Reset line thickness'
+    },
     'edge_curvature_x': {
         'command': 'Line curvature modifier X',
         'method': 'change_curvature',
@@ -229,6 +238,11 @@ actions = {
         'method': 'change_curvature',
         'args': ['r'],
         'tooltip': 'Reset line curvature to default'
+    },
+    'edge_asymmetry': {
+        'command': 'Set left and right to differ significantly',
+        'method': 'change_edge_asymmetry',
+        'tooltip': 'Set left and right to differ significantly'
     },
 
     # Visualizations panel

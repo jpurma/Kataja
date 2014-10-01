@@ -45,7 +45,7 @@ from kataja.utils import to_tuple
 from kataja.ui.TouchArea import TouchArea
 from kataja.ui.panels.ColorThemePanel import ColorPanel
 from kataja.ui.panels.ColorWheelPanel import ColorWheelPanel
-from kataja.ui.panels.DrawingPanel import DrawingPanel
+from kataja.ui.panels.DrawingPanel import DrawingPanel, TableModelComboBox
 from kataja.ui.panels.LogPanel import LogPanel
 from kataja.ui.panels.NavigationPanel import NavigationPanel
 from kataja.ui.panels.TestPanel import TestPanel
@@ -504,59 +504,46 @@ class UIManager:
                 new_panel.close()
 
 
-    def connect_button_to_action(self, button, action):
+    def connect_element_to_action(self, element, action):
         if isinstance(action, str):
             action_data = self.actions[action]
             action = self.qt_actions[action]
         else:
             action_data = self.actions[action.data()]
-        button.clicked.connect(action.trigger)
         tooltip = action_data.get('tooltip', None)
-        action_data['button'] = button
+        action_data['ui_element'] = element
         if tooltip:
-            button.setStatusTip(tooltip)
-            button.setToolTip(tooltip)
-            shortcut = action_data.get('shortcut', None)
-            if shortcut:
-                button.setShortcut(QtGui.QKeySequence(shortcut))
-                button.installEventFilter(self.button_shortcut_filter)
-            button.setFocusPolicy(QtCore.Qt.TabFocus)
+            element.setStatusTip(tooltip)
+            element.setToolTip(tooltip)
+        shortcut = action_data.get('shortcut', None)
+        if shortcut:
+            element.setShortcut(QtGui.QKeySequence(shortcut))
+            element.installEventFilter(self.button_shortcut_filter)
+        if isinstance(element, QtWidgets.QAbstractButton):
+            element.clicked.connect(action.trigger)
+            element.setFocusPolicy(QtCore.Qt.TabFocus)
+        elif isinstance(element, QtWidgets.QComboBox):
+            element.activated.connect(action.trigger)
+            element.setFocusPolicy(QtCore.Qt.TabFocus)
+        elif isinstance(element, QtWidgets.QAbstractSpinBox):
+            element.valueChanged.connect(action.trigger)
+        elif isinstance(element, QtWidgets.QCheckBox):
+            element.stateChanged.connect(action.trigger)
 
-    def connect_selector_to_action(self, selector, action):
-        if isinstance(action, str):
-            action_data = self.actions[action]
-            action = self.qt_actions[action]
-        else:
-            action_data = self.actions[action.data()]
-        selector.activated.connect(action.trigger)
-        tooltip = action_data.get('tooltip', None)
-        action_data['selector'] = selector
-        if tooltip:
-            selector.setStatusTip(tooltip)
-            selector.setToolTip(tooltip)
-            shortcut = action_data.get('shortcut', None)
-            if shortcut:
-                selector.setShortcut(QtGui.QKeySequence(shortcut))
-                #selector.installEventFilter(self.button_shortcut_filter)
-            selector.setFocusPolicy(QtCore.Qt.TabFocus)
-
-    def connect_spinbox_to_action(self, spinbox, action):
-        if isinstance(action, str):
-            action_data = self.actions[action]
-            action = self.qt_actions[action]
-        else:
-            action_data = self.actions[action.data()]
-        spinbox.valueChanged.connect(action.trigger)
-        tooltip = action_data.get('tooltip', None)
-        action_data['spinbox'] = spinbox
-        if tooltip:
-            spinbox.setStatusTip(tooltip)
-            spinbox.setToolTip(tooltip)
-            shortcut = action_data.get('shortcut', None)
-            if shortcut:
-                spinbox.setShortcut(QtGui.QKeySequence(shortcut))
-                #selector.installEventFilter(self.button_shortcut_filter)
-            #spinbox.setFocusPolicy(QtCore.Qt.TabFocus)
+    def get_element_value(self, element):
+        if not element:
+            return []
+        args = []
+        if isinstance(element, TableModelComboBox):
+            i = element.view().currentIndex()
+            args.append(element.model().itemFromIndex(i).data())
+        elif isinstance(element, QtWidgets.QComboBox):
+            args.append(element.itemData(element.currentIndex()))
+        elif isinstance(element, QtWidgets.QCheckBox):
+            args.append(element.checkState())
+        elif isinstance(element, QtWidgets.QAbstractSpinBox):
+            args.append(element.value())
+        return args
 
 
     def toggle_line_options(self):

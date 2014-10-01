@@ -191,7 +191,7 @@ class DrawingPanel(UIPanel):
         self.current_color = ctrl.cm.drawing()
         ui_manager.ui_buttons['line_type_target'] = self.scope_selector
         # Other items may be temporarily added, they are defined as class.variables
-        ui_manager.connect_selector_to_action(self.scope_selector, 'edge_shape_scope')
+        ui_manager.connect_element_to_action(self.scope_selector, 'edge_shape_scope')
         layout.addWidget(self.scope_selector)
 
         hlayout = QtWidgets.QHBoxLayout()
@@ -199,12 +199,12 @@ class DrawingPanel(UIPanel):
 
         self.shape_selector = ShapeSelector(self)
         ui_manager.ui_buttons['line_type'] = self.shape_selector
-        ui_manager.connect_selector_to_action(self.shape_selector, 'change_edge_shape')
+        ui_manager.connect_element_to_action(self.shape_selector, 'change_edge_shape')
         hlayout.addWidget(self.shape_selector)
 
         self.color_selector = ColorSelector(self)
         ui_manager.ui_buttons['line_color'] = self.color_selector
-        ui_manager.connect_selector_to_action(self.color_selector, 'change_edge_color')
+        ui_manager.connect_element_to_action(self.color_selector, 'change_edge_color')
         hlayout.addWidget(self.color_selector)
 
         self.edge_options = QtWidgets.QPushButton('more...', self)
@@ -214,7 +214,7 @@ class DrawingPanel(UIPanel):
         #self.edge_options.setMinimumWidth(40)
         #self.edge_options.setMaximumWidth(40)
         ui_manager.ui_buttons['line_options'] = self.edge_options
-        ui_manager.connect_button_to_action(self.edge_options, ui_manager.get_panel(g.LINE_OPTIONS).get_visibility_action()) # 'toggle_line_options'
+        ui_manager.connect_element_to_action(self.edge_options, ui_manager.get_panel(g.LINE_OPTIONS).get_visibility_action()) # 'toggle_line_options'
         #self.edge_options.setFlat(True)
         hlayout.addWidget(self.edge_options)
         layout.addLayout(hlayout)

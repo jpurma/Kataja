@@ -63,17 +63,17 @@ class PanelTitle(QtWidgets.QWidget):
         layout.minimumSize = self.sizeHint
         close_button = QtWidgets.QPushButton("x")
         close_button.setMaximumWidth(16)
-        self.panel.ui_manager.connect_button_to_action(close_button, panel.get_visibility_action())
+        self.panel.ui_manager.connect_element_to_action(close_button, panel.get_visibility_action())
         layout.addWidget(close_button)
         debug.ui("Setting minimumSize for UIpanel to ", self.preferred_size)
         self.setMinimumSize(self.preferred_size)
         self.folded = False
         self.fold_button = QtWidgets.QPushButton("-")
         self.fold_button.setMaximumWidth(16)
-        self.panel.ui_manager.connect_button_to_action(self.fold_button, panel.get_fold_action())
+        self.panel.ui_manager.connect_element_to_action(self.fold_button, panel.get_fold_action())
         self.pin_button = QtWidgets.QPushButton("p")
         self.pin_button.setMaximumWidth(16)
-        self.panel.ui_manager.connect_button_to_action(self.pin_button, panel.get_pin_action())
+        self.panel.ui_manager.connect_element_to_action(self.pin_button, panel.get_pin_action())
         layout.addWidget(self.pin_button)
 
         self.setContentsMargins(0, 0, 0, 0)

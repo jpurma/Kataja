@@ -20,10 +20,10 @@ class ShortcutSolver(QtCore.QObject):
     def eventFilter(self, action, event):
         if event.type() == QtCore.QEvent.Shortcut and event.isAmbiguous():
             act_data = self.ui_manager.actions[action.data()]
-            button = act_data['button']
-            if button:
+            element = act_data['ui_element']
+            if element and isinstance(element, QtWidgets.QAbstractButton):
                 print('Dealing with ambiguous action shortcut')
-                button.animateClick()
+                element.animateClick()
                 return True     # eat this event
             else:
                 print("Don't know how to handle this ambiguous shortcut in ", action)
