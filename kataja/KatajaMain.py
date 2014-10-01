@@ -675,6 +675,42 @@ class KatajaMain(QtWidgets.QMainWindow):
                 else:
                     edge.adjust_control_point_xy(cp_index, dim, value)
 
+    def change_curvature(self, dim, value=0):
+        panel = self.ui_manager.get_panel(g.DRAWING)
+        if panel.scope == g.SELECTION:
+            for edge in ctrl.get_all_selected():
+                if isinstance(edge, Edge):
+                    edge.change_curvature(dim, value)
+            if dim == 'r' or dim == 's':
+                options_panel = self.ui_manager.get_panel(g.LINE_OPTIONS)
+                options_panel.update_panel()
+        elif panel.scope:
+            options_panel = self.ui_manager.get_panel(g.LINE_OPTIONS)
+            relative = options_panel.relative_curvature()
+
+            if dim == 'x':
+                if relative:
+                    self.forest.settings.edge_shape_settings(panel.scope, 'rel_dx', value * .01)
+                else:
+                    self.forest.settings.edge_shape_settings(panel.scope, 'fixed_dx', value)
+            elif dim == 'y':
+                if relative:
+                    self.forest.settings.edge_shape_settings(panel.scope, 'rel_dy', value * .01)
+                else:
+                    self.forest.settings.edge_shape_settings(panel.scope, 'fixed_dy', value)
+            elif dim == 'r':
+                self.forest.settings.edge_shape_settings(panel.scope, 'rel_dx', g.DELETE)
+                self.forest.settings.edge_shape_settings(panel.scope, 'rel_dy', g.DELETE)
+                self.forest.settings.edge_shape_settings(panel.scope, 'fixed_dx', g.DELETE)
+                self.forest.settings.edge_shape_settings(panel.scope, 'fixed_dy', g.DELETE)
+                self.forest.settings.edge_shape_settings(panel.scope, 'relative', g.DELETE)
+                options_panel.update_panel()
+            elif dim == 's':
+                self.forest.settings.edge_shape_settings(panel.scope, 'relative', value == 'relative')
+                options_panel.update_panel()
+            else:
+                raise ValueError
+            ctrl.announce(g.EDGE_SHAPES_CHANGED, panel.scope, value)
 
     def change_leaf_shape(self, dim, value=0):
         #if value is g.AMBIGUOUS_VALUES:

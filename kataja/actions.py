@@ -206,6 +206,30 @@ actions = {
         'args': ['r'],
         'tooltip': 'Reset leaf shape settings'
     },
+    'edge_curvature_x': {
+        'command': 'Line curvature modifier X',
+        'method': 'change_curvature',
+        'args': ['x'],
+        'tooltip': 'Line curvature modifier X'
+    },
+    'edge_curvature_y': {
+        'command': 'Line curvature modifier Y',
+        'method': 'change_curvature',
+        'args': ['y'],
+        'tooltip': 'Line curvature modifier Y'
+    },
+    'edge_curvature_type': {
+        'command': 'Change line curvature to be relative or fixed amount',
+        'method': 'change_curvature',
+        'args': ['s'],
+        'tooltip': 'Change line curvature to be relative or fixed amount'
+    },
+    'edge_curvature_reset': {
+        'command': 'Reset line curvature to default',
+        'method': 'change_curvature',
+        'args': ['r'],
+        'tooltip': 'Reset line curvature to default'
+    },
 
     # Visualizations panel
     'change_visualization': {

@@ -279,7 +279,36 @@ class Edge(QtWidgets.QGraphicsItem):
             self.shape_args('leaf_x', value)
         elif dim == 'h':
             self.shape_args('leaf_y', value)
+        elif dim == 'r':
+            self.shape_args('leaf_x', g.DELETE)
+            self.shape_args('leaf_y', g.DELETE)
         self.update_shape()
+
+    def change_curvature(self, dim, value):
+        relative = self.shape_args('relative')
+        if dim == 'x':
+            if relative:
+                self.shape_args('rel_dx', value * .01)
+            else:
+                self.shape_args('fixed_dx', value)
+        elif dim == 'y':
+            if relative:
+                self.shape_args('rel_dy', value * .01)
+            else:
+                self.shape_args('fixed_dy', value)
+        elif dim == 'r':
+            self.shape_args('rel_dx', g.DELETE)
+            self.shape_args('rel_dy', g.DELETE)
+            self.shape_args('fixed_dx', g.DELETE)
+            self.shape_args('fixed_dy', g.DELETE)
+            self.shape_args('relative', g.DELETE)
+        elif dim == 's':
+            if value == 0:
+                self.shape_args('relative', False)
+            else:
+                self.shape_args('relative', True)
+        self.update_shape()
+
 
     def shape_args(self, key=None, value=None):
         """ Without key, return a dict of shape drawing arguments that should be used with shape drawing method.

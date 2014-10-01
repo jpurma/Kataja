@@ -122,44 +122,50 @@ class LineOptionsPanel(UIPanel):
         self.leaf_box.setLayout(leaf_layout)
         layout.addWidget(self.leaf_box)
 
-        # Relative arc
+        # Curvature
         self.arc_box = QtWidgets.QWidget(inner)
         arc_layout = QtWidgets.QVBoxLayout()
-        rel_layout = QtWidgets.QHBoxLayout()
-        self.rel_radio = QtWidgets.QRadioButton('Relative arc', self)
-        rel_dx_label = QtWidgets.QLabel('X', self)
-        rel_dx_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-        self.rel_dx_spinbox = QtWidgets.QDoubleSpinBox()
-        rel_dx_label.setBuddy(self.rel_dx_spinbox)
-        rel_dy_label = QtWidgets.QLabel('Y', self)
-        rel_dy_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-        self.rel_dy_spinbox = QtWidgets.QDoubleSpinBox()
-        rel_dy_label.setBuddy(self.rel_dy_spinbox)
-        rel_layout.addWidget(self.rel_radio)
-        rel_layout.addWidget(rel_dx_label)
-        rel_layout.addWidget(self.rel_dx_spinbox)
-        rel_layout.addWidget(rel_dy_label)
-        rel_layout.addWidget(self.rel_dy_spinbox)
-        rel_layout.setContentsMargins(0, 0, 0, 0)
-        arc_layout.addLayout(rel_layout)
-        # Fixed arc
-        fixed_layout = QtWidgets.QHBoxLayout()
-        self.fixed_radio = QtWidgets.QRadioButton('Fixed arc', self)
-        fixed_dx_label = QtWidgets.QLabel('X', self)
-        fixed_dx_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-        self.fixed_dx_spinbox = QtWidgets.QDoubleSpinBox()
-        fixed_dx_label.setBuddy(self.fixed_dx_spinbox)
-        fixed_dy_label = QtWidgets.QLabel('Y', self)
-        self.fixed_dy_spinbox = QtWidgets.QDoubleSpinBox()
-        fixed_dy_label.setBuddy(self.fixed_dy_spinbox)
-        fixed_dy_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
-        fixed_layout.addWidget(self.fixed_radio)
-        fixed_layout.addWidget(fixed_dx_label)
-        fixed_layout.addWidget(self.fixed_dx_spinbox)
-        fixed_layout.addWidget(fixed_dy_label)
-        fixed_layout.addWidget(self.fixed_dy_spinbox)
-        fixed_layout.setContentsMargins(0, 0, 0, 0)
-        arc_layout.addLayout(fixed_layout)
+        l1_layout = QtWidgets.QHBoxLayout()
+        l2_layout = QtWidgets.QHBoxLayout()
+        arc_label = QtWidgets.QLabel('Curvature', self)
+        arc_dx_label = QtWidgets.QLabel('X', self)
+        arc_dx_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+        self.arc_dx_spinbox = QtWidgets.QSpinBox()
+        self.arc_dx_spinbox.setRange(-200, 200)
+        ui_manager.connect_spinbox_to_action(self.arc_dx_spinbox, 'edge_curvature_x')
+        arc_dx_label.setBuddy(self.arc_dx_spinbox)
+        self.arc_type_selector = QtWidgets.QComboBox(self)
+        self.arc_type_selector.addItems(['pt', '%'])
+        self.arc_type_selector.setItemData(0, 'fixed')
+        self.arc_type_selector.setItemData(1, 'relative')
+        self.arc_type_selector.setMinimumSize(QSize(40, 20))
+        self.arc_type_selector.setMaximumSize(QSize(40, 20))
+        ui_manager.connect_selector_to_action(self.arc_type_selector, 'edge_curvature_type')
+
+        arc_dy_label = QtWidgets.QLabel('Y', self)
+        arc_dy_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+        self.arc_dy_spinbox = QtWidgets.QSpinBox()
+        self.arc_dy_spinbox.setRange(-200, 200)
+        ui_manager.connect_spinbox_to_action(self.arc_dy_spinbox, 'edge_curvature_y')
+        arc_dy_label.setBuddy(self.arc_dy_spinbox)
+        self.arc_reset_button = QtWidgets.QPushButton('Reset curvature')
+        #self.arc_reset_button.setMinimumSize(QSize(40, 20))
+        #self.arc_reset_button.setMaximumSize(QSize(40, 20))
+        ui_manager.connect_button_to_action(self.arc_reset_button, 'edge_curvature_reset')
+
+        l1_layout.addWidget(arc_label)
+        l1_layout.addWidget(arc_dx_label)
+        l1_layout.addWidget(self.arc_dx_spinbox)
+        l1_layout.addWidget(arc_dy_label)
+        l1_layout.addWidget(self.arc_dy_spinbox)
+        l1_layout.addWidget(self.arc_type_selector)
+        l2_layout.addWidget(self.arc_reset_button)
+        l2_layout.setAlignment(self.arc_reset_button, QtCore.Qt.AlignRight)
+        l1_layout.setContentsMargins(0, 0, 0, 0)
+        l2_layout.setContentsMargins(0, 0, 0, 0)
+        arc_layout.setContentsMargins(0, 0, 0, 0)
+        arc_layout.addLayout(l1_layout)
+        arc_layout.addLayout(l2_layout)
         self.arc_box.setLayout(arc_layout)
         layout.addWidget(self.arc_box)
 
@@ -211,30 +217,30 @@ class LineOptionsPanel(UIPanel):
             # Control points
             if selection and cps > 1:
                 self.cp2_box.setVisible(True)
-                #self.cp2_x_spinbox.setValue(shape_dict['adjust2_x'])
-                #self.cp2_y_spinbox.setValue(shape_dict['adjust2_y'])
             else:
                 self.cp2_box.setVisible(False)
             if selection and cps > 0:
                 self.cp1_box.setVisible(True)
-                #self.cp1_x_spinbox.setValue(shape_dict['adjust1_x'])
-                #self.cp1_y_spinbox.setValue(shape_dict['adjust1_y'])
             else:
                 self.cp1_box.setVisible(False)
             # Relative / fixed curvature
             if cps > 0:
                 self.arc_box.setVisible(True)
                 rel = shape_dict['relative']
-                self.rel_radio.setChecked(rel)
-                self.rel_dx_spinbox.setEnabled(rel)
-                self.rel_dy_spinbox.setEnabled(rel)
-                self.fixed_radio.setChecked(not rel)
-                self.fixed_dx_spinbox.setEnabled(not rel)
-                self.fixed_dy_spinbox.setEnabled(not rel)
-                self.rel_dx_spinbox.setValue(shape_dict['rel_dx'])
-                self.rel_dy_spinbox.setValue(shape_dict['rel_dy'])
-                self.fixed_dx_spinbox.setValue(shape_dict['fixed_dx'])
-                self.fixed_dy_spinbox.setValue(shape_dict['fixed_dy'])
+                self.arc_type_selector.blockSignals(True)
+                self.arc_dx_spinbox.blockSignals(True)
+                self.arc_dy_spinbox.blockSignals(True)
+                if rel:
+                    self.arc_type_selector.setCurrentIndex(1)
+                    self.arc_dx_spinbox.setValue(shape_dict['rel_dx'] * 100)
+                    self.arc_dy_spinbox.setValue(shape_dict['rel_dy'] * 100)
+                else:
+                    self.arc_type_selector.setCurrentIndex(0)
+                    self.arc_dx_spinbox.setValue(shape_dict['fixed_dx'])
+                    self.arc_dy_spinbox.setValue(shape_dict['fixed_dy'])
+                self.arc_type_selector.blockSignals(False)
+                self.arc_dx_spinbox.blockSignals(False)
+                self.arc_dy_spinbox.blockSignals(False)
             else:
                 self.arc_box.setVisible(False)
             # Leaf-shaped lines or solid lines
@@ -262,6 +268,9 @@ class LineOptionsPanel(UIPanel):
             return QtCore.QPoint(p.x() / dp.devicePixelRatio() + dp.width(), p.y() / dp.devicePixelRatio())
         else:
             return UIPanel.initial_position(self)
+
+    def relative_curvature(self):
+        return self.arc_type_selector.currentData() == 'relative'
 
 
     def show_conflict(self, spinbox):
