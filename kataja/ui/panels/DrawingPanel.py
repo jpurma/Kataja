@@ -227,34 +227,6 @@ class DrawingPanel(UIPanel):
         self.finish_init()
 
 
-    @staticmethod
-    def find_list_item(data, selector):
-        """ Helper method to check the index of data item in list
-        :param data: data to match
-        :param selector: QComboBox instance
-        :return: -1 if not found, index if found
-        """
-        for i in range(0, selector.count()):
-            if selector.itemData(i) == data:
-                return i
-        return -1
-
-    @staticmethod
-    def remove_list_item(data, selector):
-        """ Helper method to remove items from combo boxes
-        :param data: list item's data has to match this
-        :param selector: QComboBox instance
-        """
-        found = False
-        for i in range(0, selector.count()):
-            if selector.itemData(i) == data:
-                found = True
-                break
-        if found:
-            selector.removeItem(i)
-            return i
-        else:
-            return -1
 
 
     def selected_objects_changed(self):
@@ -318,20 +290,6 @@ class DrawingPanel(UIPanel):
         There may be that this makes fields to remove or add new values to selectors or do other hard manipulation
         to fields.
         """
-        def add_and_select_ambiguous_marker(selector):
-            i = self.find_list_item(g.AMBIGUOUS_VALUES, selector)
-            if i == -1:
-                selector.insertItem(0, '---', g.AMBIGUOUS_VALUES)
-                selector.setCurrentIndex(0)
-            else:
-                self.selector.setCurrentIndex(i)
-
-
-        def remove_ambiguous_marker(selector):
-            i = self.find_list_item(g.AMBIGUOUS_VALUES, selector)
-            if i > -1:
-                selector.removeItem(i)
-
 
         ### First find what are the properties of the selected edges.
         ### If they are conflicting, e.g. there are two different colors in selected edges,
@@ -349,7 +307,7 @@ class DrawingPanel(UIPanel):
                         ambiguous_edge = True
                     if not edge_color:
                         edge_color = edge.color_id()
-                    elif edge.color() != edge_color:
+                    elif edge.color_id() != edge_color:
                         ambiguous_color = True
             ### Color selector - show
             if edge_color:

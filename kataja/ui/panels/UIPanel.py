@@ -38,6 +38,7 @@ from PyQt5 import QtCore, QtWidgets, QtGui
 #         return QtGui.QIcon.paint(self, painter, kwargs)
 import kataja.debug as debug
 from kataja.singletons import ctrl
+import kataja.globals as g
 
 
 class PanelTitle(QtWidgets.QWidget):
@@ -202,6 +203,61 @@ class UIPanel(QtWidgets.QDockWidget):
         :param value:
         """
         field.setText(value)
+
+    @staticmethod
+    def find_list_item(data, selector):
+        """ Helper method to check the index of data item in list
+        :param data: data to match
+        :param selector: QComboBox instance
+        :return: -1 if not found, index if found
+        """
+        for i in range(0, selector.count()):
+            if selector.itemData(i) == data:
+                return i
+        return -1
+
+    @staticmethod
+    def remove_list_item(data, selector):
+        """ Helper method to remove items from combo boxes
+        :param data: list item's data has to match this
+        :param selector: QComboBox instance
+        """
+        found = False
+        for i in range(0, selector.count()):
+            if selector.itemData(i) == data:
+                found = True
+                break
+        if found:
+            selector.removeItem(i)
+            return i
+        else:
+            return -1
+
+    @staticmethod
+    def add_and_select_ambiguous_marker(element):
+
+        if isinstance(element, QtWidgets.QComboBox):
+            i = UIPanel.find_list_item(g.AMBIGUOUS_VALUES, element)
+            if i == -1:
+                element.insertItem(0, '---', g.AMBIGUOUS_VALUES)
+                element.setCurrentIndex(0)
+            else:
+                element.setCurrentIndex(i)
+        elif isinstance(element, (QtWidgets.QSpinBox, QtWidgets.QDoubleSpinBox)):
+            element.setSuffix(' (?)')
+
+
+
+    @staticmethod
+    def remove_ambiguous_marker(element):
+        if isinstance(element, QtWidgets.QComboBox):
+            i = UIPanel.find_list_item(g.AMBIGUOUS_VALUES, element)
+            if i > -1:
+                element.removeItem(i)
+        elif isinstance(element, (QtWidgets.QSpinBox, QtWidgets.QDoubleSpinBox)):
+            element.setSuffix('')
+
+
 
     def baseSize(self):
         debug.ui("Asking for UIPanel baseSize")

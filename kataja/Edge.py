@@ -303,7 +303,7 @@ class Edge(QtWidgets.QGraphicsItem):
             self.shape_args('fixed_dy', g.DELETE)
             self.shape_args('relative', g.DELETE)
         elif dim == 's':
-            if value == 0:
+            if value == 'fixed':
                 self.shape_args('relative', False)
             else:
                 self.shape_args('relative', True)
@@ -327,9 +327,8 @@ class Edge(QtWidgets.QGraphicsItem):
         """
         if key is None:
             #print('getting shape_args for edge ', self)
-            shape_args = self.forest.settings.edge_shape_settings(self.edge_type)
+            shape_args = self.forest.settings.edge_shape_settings(self.edge_type, shape_name=self._shape_name)
             if self._local_shape_args:
-                #print('local shape args', self._local_shape_args)
                 sa = shape_args.copy()
                 sa.update(self._local_shape_args)
                 return sa
@@ -341,7 +340,7 @@ class Edge(QtWidgets.QGraphicsItem):
                 if local is not None:
                     return local
                 else:
-                    self.forest.settings.edge_shape_settings(self.edge_type, key)
+                    self.forest.settings.edge_shape_settings(self.edge_type, key=key, shape_name=self._shape_name)
             elif value == g.DELETE:
                 if key in self._local_shape_args:
                     del self._local_shape_args[key]
@@ -636,6 +635,7 @@ class Edge(QtWidgets.QGraphicsItem):
         elif self.asymmetric() and self.align is g.RIGHT:
             p = QtGui.QPen()
             p.setColor(c)
+            painter.setPen(p)
             painter.drawPath(self._path)
 
         if self.is_filled():

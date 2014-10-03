@@ -218,7 +218,7 @@ class LineOptionsPanel(UIPanel):
             selection = True
         else: # Adjusting how this relation type is drawn
             shape_dict = ctrl.forest.settings.edge_shape_settings(scope)
-            print('shape settings: ', shape_dict)
+            #print('shape settings: ', shape_dict)
             selection = False
         if shape_dict:
             cps = shape_dict['control_points']
@@ -243,10 +243,26 @@ class LineOptionsPanel(UIPanel):
                     self.arc_type_selector.setCurrentIndex(1)
                     self.arc_dx_spinbox.setValue(shape_dict['rel_dx'] * 100)
                     self.arc_dy_spinbox.setValue(shape_dict['rel_dy'] * 100)
+                    if 'rel_dx_conflict' in shape_dict:
+                        self.add_and_select_ambiguous_marker(self.arc_dx_spinbox)
+                    else:
+                        self.remove_ambiguous_marker(self.arc_dx_spinbox)
+                    if 'rel_dy_conflict' in shape_dict:
+                        self.add_and_select_ambiguous_marker(self.arc_dy_spinbox)
+                    else:
+                        self.remove_ambiguous_marker(self.arc_dy_spinbox)
                 else:
                     self.arc_type_selector.setCurrentIndex(0)
                     self.arc_dx_spinbox.setValue(shape_dict['fixed_dx'])
                     self.arc_dy_spinbox.setValue(shape_dict['fixed_dy'])
+                    if 'fixed_dx_conflict' in shape_dict:
+                        self.add_and_select_ambiguous_marker(self.arc_dx_spinbox)
+                    else:
+                        self.remove_ambiguous_marker(self.arc_dx_spinbox)
+                    if 'fixed_dy_conflict' in shape_dict:
+                        self.add_and_select_ambiguous_marker(self.arc_dy_spinbox)
+                    else:
+                        self.remove_ambiguous_marker(self.arc_dy_spinbox)
                 self.arc_type_selector.blockSignals(False)
                 self.arc_dx_spinbox.blockSignals(False)
                 self.arc_dy_spinbox.blockSignals(False)
@@ -259,6 +275,15 @@ class LineOptionsPanel(UIPanel):
                 self.leaf_y_spinbox.blockSignals(True)
                 self.leaf_x_spinbox.setValue(shape_dict['leaf_x'])
                 self.leaf_y_spinbox.setValue(shape_dict['leaf_y'])
+                if 'leaf_x_conflict' in shape_dict:
+                    self.add_and_select_ambiguous_marker(self.leaf_x_spinbox)
+                else:
+                    self.remove_ambiguous_marker(self.leaf_x_spinbox)
+                if 'leaf_y_conflict' in shape_dict:
+                    self.add_and_select_ambiguous_marker(self.leaf_y_spinbox)
+                else:
+                    self.remove_ambiguous_marker(self.leaf_y_spinbox)
+
                 self.leaf_x_spinbox.blockSignals(False)
                 self.leaf_y_spinbox.blockSignals(False)
                 self.thickness_box.setVisible(False)
@@ -267,6 +292,11 @@ class LineOptionsPanel(UIPanel):
                 self.thickness_box.setVisible(True)
                 self.thickness_spinbox.blockSignals(True)
                 self.thickness_spinbox.setValue(shape_dict['thickness'])
+                if 'thickness_conflict' in shape_dict:
+                    self.add_and_select_ambiguous_marker(self.thickness_spinbox)
+                else:
+                    self.remove_ambiguous_marker(self.thickness_spinbox)
+
                 self.thickness_spinbox.blockSignals(False)
         else: # This shouldn't happen
             assert False
@@ -334,22 +364,26 @@ class LineOptionsPanel(UIPanel):
         self.cp1_y_spinbox.blockSignals(True)
         self.cp2_x_spinbox.blockSignals(True)
         self.cp2_y_spinbox.blockSignals(True)
+        self.cp1_x_spinbox.setValue(cp1_x)
         if cp1_x_conflict:
-            self.show_conflict(self.cp1_x_spinbox)
+            self.add_and_select_ambiguous_marker(self.cp1_x_spinbox)
         else:
-            self.cp1_x_spinbox.setValue(cp1_x)
+            self.remove_ambiguous_marker(self.cp1_x_spinbox)
+        self.cp1_y_spinbox.setValue(cp1_y)
         if cp1_y_conflict:
-            self.show_conflict(self.cp1_y_spinbox)
+            self.add_and_select_ambiguous_marker(self.cp1_y_spinbox)
         else:
-            self.cp1_y_spinbox.setValue(cp1_y)
+            self.remove_ambiguous_marker(self.cp1_y_spinbox)
+        self.cp2_x_spinbox.setValue(cp2_x)
         if cp2_x_conflict:
-            self.show_conflict(self.cp2_x_spinbox)
+            self.add_and_select_ambiguous_marker(self.cp2_x_spinbox)
         else:
-            self.cp2_x_spinbox.setValue(cp2_x)
+            self.remove_ambiguous_marker(self.cp2_x_spinbox)
+        self.cp2_y_spinbox.setValue(cp2_y)
         if cp2_y_conflict:
-            self.show_conflict(self.cp2_y_spinbox)
+            self.add_and_select_ambiguous_marker(self.cp2_y_spinbox)
         else:
-            self.cp2_y_spinbox.setValue(cp2_y)
+            self.remove_ambiguous_marker(self.cp2_y_spinbox)
         self.cp1_x_spinbox.blockSignals(False)
         self.cp1_y_spinbox.blockSignals(False)
         self.cp2_x_spinbox.blockSignals(False)
@@ -360,10 +394,8 @@ class LineOptionsPanel(UIPanel):
     def build_shape_dict_for_selection(self):
         d = {}
         # check if selection has conflicting values: these cannot be shown then
-        shape_name_conflict = False
         shape_name = None
-
-
+        keys = ['relative', 'leaf_x', 'leaf_y', 'thickness', 'rel_dx', 'rel_dy', 'fixed_dx', 'fixed_dy']
         for item in ctrl.get_all_selected():
             if isinstance(item, Edge):
                 e = item.shape_args()
@@ -373,8 +405,12 @@ class LineOptionsPanel(UIPanel):
                     shape_name = item.shape_name()
                     d['shape_name'] = shape_name
                 elif shape_name != item.shape_name():
-                    shape_name_conflict = True
-
-        print('selection args:', d)
-
+                    d['shape_name_conflict'] = True
+                for key in keys:
+                    old = d.get(key, None)
+                    new = e.get(key, None)
+                    if old is None and new is not None:
+                        d[key] = new
+                    elif old is not None and new is not None and old != new:
+                        d[key + '_conflict'] = True
         return d

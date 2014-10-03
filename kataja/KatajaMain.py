@@ -739,7 +739,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         if panel.scope == g.SELECTION:
             for edge in ctrl.get_all_selected():
                 if isinstance(edge, Edge):
-                    edge.change_thickness(value)
+                    edge.change_thickness(dim, value)
         elif panel.scope:
             if dim == 'r':
                 self.forest.settings.edge_shape_settings(panel.scope, 'thickness', g.DELETE)

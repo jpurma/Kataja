@@ -265,7 +265,7 @@ class ForestSettings:
             else:
                 e[key] = value
 
-    def edge_shape_settings(self, edge_type, key=None, value=None):
+    def edge_shape_settings(self, edge_type, key=None, value=None, shape_name=None):
         """ Return the settings dict for certain edge type: often this defaults to edge_shape settings, but it can be
         overridden for each edge_type and eventually for each edge.
         With key, you can get one edge setting, with value you can set the edge setting.
@@ -274,9 +274,13 @@ class ForestSettings:
         :param value:
         :return:
         """
+        if not shape_name:
+            shape_name = self.edge_settings(edge_type, 'shape_name')
+
         shape_args = self._edge_types.get(edge_type).get('shape_args', None)
+
         if shape_args is None:
-            shape_defaults = SHAPE_PRESETS[self.edge_settings(edge_type, 'shape_name')]
+            shape_defaults = SHAPE_PRESETS[shape_name]
             if key is None:  # the whole dict is asked
                 return shape_defaults #.copy()
             elif value is None:  # get single setting
@@ -291,7 +295,7 @@ class ForestSettings:
                 return shape_args
             elif value is None:  # get single setting
                 if shape_args.get(key, None) is None:  # get from original dict
-                    shape_defaults = SHAPE_PRESETS[self.edge_settings(edge_type, 'shape_name')]
+                    shape_defaults = SHAPE_PRESETS[shape_name]
                     return shape_defaults.get(key, None)
                 else:  # get from here
                     return shape_args[key]
