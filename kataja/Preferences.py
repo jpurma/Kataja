@@ -418,6 +418,6 @@ class QtPreferences:
         self.font_space_width = font.width(' ')
         self.font_bracket_width = font.width(']')
         self.font_bracket_height = font.height()
-        print(self.font_space_width, self.font_bracket_width, self.font_bracket_height)
+        #print(self.font_space_width, self.font_bracket_width, self.font_bracket_height)
         self.sc_font.setCapitalization(QtGui.QFont.SmallCaps)
 

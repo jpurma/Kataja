@@ -366,22 +366,18 @@ class Edge(QtWidgets.QGraphicsItem):
         c['start'] = self.start
         c['end'] = self.end
         self._path, self.middle_point, self.control_points = self._shape_method(**c)
-        if not self.is_filled():  # expensive with filled shapes
-            self._fat_path = outline_stroker.createStroke(self._path).united(self._path)
+        #if not self.is_filled():  # expensive with filled shapes
+        self._fat_path = outline_stroker.createStroke(self._path) #.united(self._path)
 
     def shape(self):
         """ Override of the QGraphicsItem method. Should returns the real shape of item to allow exact hit detection.
         In our case we should have special '_fat_path' for those shapes that are just narrow lines.
         :return: QGraphicsPath
         """
-        if not self.is_filled():
-            if not self._fat_path:
-                self.make_path()
-            return self._fat_path
-        else:
-            if not self._path:
-                self.make_path()
-            return self._path
+        if not self._fat_path:
+            self.make_path()
+        return self._fat_path
+
 
     def update_shape(self):
         """ Reload shape and shape settings """

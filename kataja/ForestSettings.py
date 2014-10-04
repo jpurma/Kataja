@@ -301,9 +301,11 @@ class ForestSettings:
                     return shape_args[key]
             elif value == DELETE:
                 if key in shape_args:
-                    #del shape_args[key]
                     shape_defaults = SHAPE_PRESETS[self.edge_settings(edge_type, 'shape_name')]
-                    shape_args[key] = shape_defaults[key]
+                    if key in shape_defaults:
+                        shape_args[key] = shape_defaults[key]
+                    else:
+                        del shape_args[key]
             else:# set single setting
                 shape_args[key] = value
 

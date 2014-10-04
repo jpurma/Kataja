@@ -577,6 +577,29 @@ class PaletteManager:
 
 
 
+    def get_qt_palette_for_ui(self):
+        """
+
+
+        :return:
+        """
+        p = {'windowText': QtGui.QBrush(self.d['accent1']), 'button': QtGui.QBrush(self.d['background1']),
+             'light': QtGui.QBrush(self.d['accent1'].lighter()), 'dark': QtGui.QBrush(self.d['accent1'].darker()),
+             'mid': QtGui.QBrush(self.hovering(self.d['accent1'])), 'text': QtGui.QBrush(self.d['accent1']),
+             'bright_text': QtGui.QBrush(self.d['accent2']), 'base': QtGui.QBrush(self.d['background2']),
+             'window': QtGui.QBrush(self.d['background1'])}
+
+        # p = {'windowText': QtGui.QBrush(self.d['key']), 'button': QtGui.QBrush(self.paper()),
+        #      'light': QtGui.QBrush(self.active(self.d['complement'])), 'dark': QtGui.QBrush(self.d['complement 0.7']),
+        #      'mid': QtGui.QBrush(self.hovering(self.d['complement'])), 'text': QtGui.QBrush(self.d['secondary']),
+        #      'bright_text': QtGui.QBrush(self.d['secondary'].lighter()), 'base': QtGui.QBrush(self.paper2()),
+        #      'window': QtGui.QBrush(self.paper())}
+
+        return QtGui.QPalette(p['windowText'], p['button'], p['light'], p['dark'], p['mid'], p['text'],
+                              p['bright_text'], p['base'], p['window'])
+
+
+
    # def compute_palette(self, hsv):
    #      """ Create/get root color and build palette around it.
    #      :param hsv:

@@ -109,6 +109,8 @@ class UIManager:
         self._target_reticle = None
         self._rubber_band = None
         self._rubber_band_origin = None
+        self._creation_dialog = None
+
         self._timer_id = 0
         self._ui_panels = {}
         self.ui_buttons = {}
@@ -553,6 +555,46 @@ class UIManager:
     def get_selector_value(self, selector):
         i = selector.currentIndex()
         return selector.itemData(i)
+
+    #### Creation dialog #########################################################
+
+    def create_creation_dialog(self, scenePos):
+        view = self.main.graph_view
+        view_pos = view.mapFromScene(scenePos)
+        print('Showing creation dialog, ', view_pos.x(), view_pos.y())
+        if not self._creation_dialog:
+            self._creation_dialog = QtWidgets.QWidget(self.main.graph_view)
+            self._creation_dialog.setPalette(ctrl.cm.get_qt_palette_for_ui())
+            layout = QtWidgets.QVBoxLayout()
+            hlayout = QtWidgets.QHBoxLayout()
+            closebutton = QtWidgets.QPushButton("x")
+            closebutton.setMaximumWidth(16)
+            hlayout.addWidget(closebutton)
+            arrowbutton = QtWidgets.QPushButton("Arrow ->")
+            hlayout.addWidget(arrowbutton)
+            dividerbutton = QtWidgets.QPushButton("Divider --")
+            hlayout.addWidget(dividerbutton)
+            layout.addLayout(hlayout)
+            layout.addSpacing(12)
+            text = QtWidgets.QLineEdit(self._creation_dialog)
+            f = QtGui.QFont(qt_prefs.font)
+            f.setPointSize(f.pointSize()*2)
+            text.setFont(f)
+            layout.addWidget(text)
+            selector = QtWidgets.QComboBox(self._creation_dialog)
+            selector.addItems(['guess from input', 'Constituent', 'Feature', 'Gloss', 'Text box'])
+            layout.addWidget(selector)
+            self._creation_dialog.setLayout(layout)
+            #self._creation_dialog.setBackgroundRole(QtGui.QPalette.AlternateBase)
+            #self._creation_dialog.setAutoFillBackground(True)
+        #self._creation_dialog.setGeometry(view_pos.x(), view_pos.y(), 200, 40)
+        self._creation_dialog.setPalette(ctrl.cm.get_qt_palette_for_ui())
+        self._creation_dialog.show()
+        self._creation_dialog.raise_()
+        self._creation_dialog.move(view_pos.x(), view_pos.y() - self._creation_dialog.height() / 2)
+        self._creation_dialog.setWindowTitle('Create new element')
+
+
 
     # ### Touch areas #####################################################################
 

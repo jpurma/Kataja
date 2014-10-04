@@ -668,13 +668,14 @@ class GraphScene(QtWidgets.QGraphicsScene):
             return
         forest = self.main.forest
         forest.undo_manager.record()
-        x, y = to_tuple(event.scenePos())
-        z = 0
-        node = forest.create_empty_node(pos=(x, y, z))
-        ctrl.select(node)
-        ctrl.on_cancel_delete = [node]
-        node._hovering = False
-        node.open_menus()
+        ctrl.ui.create_creation_dialog(event.scenePos())
+
+        # z = 0
+        # node = forest.create_empty_node(pos=(x, y, z))
+        #ctrl.select(node)
+        #ctrl.on_cancel_delete = [node]
+        #node._hovering = False
+        #node.open_menus()
 
     # ### Timer loop #################################################################
 
