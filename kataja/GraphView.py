@@ -53,8 +53,8 @@ class GraphView(QtWidgets.QGraphicsView):
         # self.setResizeAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
         # self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorViewCenter)
         # self.setResizeAnchor(QtWidgets.QGraphicsView.AnchorViewCenter)
-        self.setTransformationAnchor(QtWidgets.QGraphicsView.NoAnchor)
-        self.setResizeAnchor(QtWidgets.QGraphicsView.NoAnchor)
+        self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorViewCenter)
+        self.setResizeAnchor(QtWidgets.QGraphicsView.AnchorViewCenter)
 
         # if ctrl.move_tool:
         self.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
@@ -144,21 +144,20 @@ class GraphView(QtWidgets.QGraphicsView):
 
         :param event:
         """
-        view_center = self.mapToScene(self.rect().center())
+        view_center = self.mapToScene(self.viewport().rect().center())
         pointer_pos = event.pos()
         delta = math.pow(2.0, -event.angleDelta().y() / 360.0)
         if delta != 1.0:
             self.zoom_timer.start(1000, self)
             self._scale_factor = self.scale_view_by(delta)
             if delta > 1:
-                change = (pointer_pos - view_center) * (delta - 1)
-                self.centerOn(view_center + change)  # + change) # - (old_pos * (1-delta)))
+                change = (pointer_pos - view_center) * (delta - 1) * 0.5
+                self.centerOn(view_center + change)
             else:
                 self.centerOn(view_center)
         self.graph_scene._manual_zoom = True
 
         # QtWidgets.QGraphicsView.wheelEvent(self, event)
-
 
     #     def event(self, ev):
     #         if ev.type() == QtCore.QEvent.Gesture:

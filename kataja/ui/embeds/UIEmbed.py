@@ -30,6 +30,7 @@ class UIEmbed(QtWidgets.QWidget):
         closebutton.setMaximumWidth(16)
         self.top_row_layout.addWidget(closebutton)
 
+        # Remember to add top_row_layout to your layout
 
 
     def update_embed(self, scenePos=None):
@@ -38,6 +39,9 @@ class UIEmbed(QtWidgets.QWidget):
         if scenePos:
             view_pos = self.parent().mapFromScene(scenePos)
             self.move(view_pos.x(), view_pos.y() - self.height() / 2)
+
+    def update_color(self):
+        self.setPalette(ctrl.cm.get_qt_palette_for_ui())
 
     def wake_up(self):
         self.show()

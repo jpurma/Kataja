@@ -25,7 +25,6 @@ from collections import OrderedDict
 
 from PyQt5 import QtCore, QtWidgets, QtGui
 from kataja.KeyPressManager import ShortcutSolver, ButtonShortcutFilter
-from kataja.Node import Node
 import kataja.debug as debug
 
 from kataja.ConstituentNode import ConstituentNode
@@ -52,7 +51,7 @@ from kataja.ui.panels.TestPanel import TestPanel
 from kataja.ui.panels.VisualizationPanel import VisualizationPanel
 from kataja.visualizations.available import VISUALIZATIONS
 from kataja.ui.panels.LineOptionsPanel import LineOptionsPanel
-from kataja.ui.embeds.NewElementEmbed import NewElementEmbed
+from kataja.ui.embeds.NewElementEmbed import NewElementEmbed, NewElementMarker
 
 
 NOTHING = 0
@@ -111,6 +110,7 @@ class UIManager:
         self._rubber_band = None
         self._rubber_band_origin = None
         self._new_element_embed = None
+        self._new_element_marker = None
 
         self._timer_id = 0
         self._ui_panels = {}
@@ -290,6 +290,8 @@ class UIManager:
             self._ui_panels[g.COLOR_THEME].update_colors()
         if g.COLOR_WHEEL in self._ui_panels:
             self._ui_panels[g.COLOR_WHEEL].update_colors()
+        if self._new_element_embed:
+            self._new_element_embed.update_color()
 
     def update_selections(self, selection):
         """ Many UI elements change mode depending on if object of specific type is selected
@@ -344,6 +346,9 @@ class UIManager:
             cp.update_position()
         for symbol in self.symbols:
             symbol.update_position()
+        if self._new_element_marker:
+            print('ui update_positions calling update for marker')
+            self._new_element_marker.update_position()
 
     def delete_ui_elements_for(self, item):
         """
@@ -562,7 +567,12 @@ class UIManager:
     def create_creation_dialog(self, scenePos):
         if not self._new_element_embed:
             self._new_element_embed = NewElementEmbed(self.main.graph_view, self, scenePos)
+        if not self._new_element_marker:
+            self._new_element_marker = NewElementMarker(scenePos, self._new_element_embed)
+            self.add_ui(self._new_element_marker)
+            self._new_element_embed.marker = self._new_element_marker
         self._new_element_embed.update_embed(scenePos=scenePos)
+        self._new_element_marker.update_position(scenePos=scenePos)
         self._new_element_embed.wake_up()
 
 

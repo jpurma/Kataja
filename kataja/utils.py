@@ -605,6 +605,11 @@ def create_shadow_effect(color):
     effect.setEnabled(False)
     return effect
 
+def print_transform(transform):
+    t = transform
+
+    print('m11:%s m12:%s m13:%s | m21:%s m22:%s m23:%s | m31:%s m32:%s m33:%s | dx:%s dy:%s' % (t.m11(), t.m12(), t.m13(), t.m21(), t.m22(), t.m23(), t.m31(), t.m32(), t.m33(), t.dx(), t.dy()))
+    print('isRotating:%s isScaling:%s isTranslating:%s' % (t.isRotating(), t.isScaling(), t.isTranslating()))
 
 
 
