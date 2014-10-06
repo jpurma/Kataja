@@ -347,7 +347,6 @@ class UIManager:
         for symbol in self.symbols:
             symbol.update_position()
         if self._new_element_marker:
-            print('ui update_positions calling update for marker')
             self._new_element_marker.update_position()
 
     def delete_ui_elements_for(self, item):

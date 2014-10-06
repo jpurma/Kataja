@@ -5,6 +5,28 @@ from kataja.utils import print_transform
 
 __author__ = 'purma'
 
+class MarkerStartPoint(QtWidgets.QGraphicsItem):
+    def __init__(self, parent):
+        QtWidgets.QGraphicsItem.__init__(self, parent)
+        self.setCursor(QtCore.Qt.CrossCursor)
+        self.setAcceptHoverEvents(True)
+        self.draggable = True
+
+
+    def paint(self, painter, options, QWidget_widget=None):
+        p = QtGui.QPen(ctrl.cm.ui())
+        p.setWidthF(0.5)
+        painter.setPen(p)
+        painter.drawRect(-2, -2, 4, 4)
+
+    def boundingRect(self):
+        return QtCore.QRectF(-2, -2, 4, 4)
+
+    def drag(self, event):
+        self.parentItem().update_position(event.scenePos())
+
+    def drop_to(self, x, y):
+        pass
 
 class NewElementMarker(QtWidgets.QGraphicsItem):
     """ Element marker is line drawn to graphics scene pointing from place where new element should go to
@@ -21,13 +43,16 @@ class NewElementMarker(QtWidgets.QGraphicsItem):
         self.end_point = None
         self.embed = embed
         self.update_position(scenePos=scenePos)
+        self.start_point_cp = MarkerStartPoint(self)
+        self.start_point_cp.show()
 
 
     def paint(self, painter, options, QWidget_widget=None):
         p = QtGui.QPen(ctrl.cm.ui())
         p.setWidthF(0.5)
         painter.setPen(p)
-        painter.drawLine(self.start_point, self.end_point)
+        painter.drawLine(QtCore.QPoint(0, 0), self.end_point)
+        painter.drawRect(self.end_point.x() - 2, self.end_point.y() - 2, 4, 4)
 
     def boundingRect(self):
         return QtCore.QRectF(self.start_point, self.end_point)
@@ -38,7 +63,8 @@ class NewElementMarker(QtWidgets.QGraphicsItem):
             self.start_point = scenePos
         end_pos = QtCore.QPoint(self.embed.x(), self.embed.y() + self.embed.height() / 2)
         v = self.embed.parentWidget()
-        self.end_point = v.mapToScene(end_pos)
+        self.setPos(self.start_point)
+        self.end_point = self.mapFromScene(v.mapToScene(end_pos)).toPoint()
 
 
 
