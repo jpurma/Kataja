@@ -578,9 +578,18 @@ class UIManager:
             self._new_element_embed.close()
             self._new_element_marker.hide()
 
-
     def new_element_accept(self):
         print('got enter from new_element_embed')
+
+    def get_new_element_embed_points(self):
+        p1 = self._new_element_marker.pos()
+        p2 = self._new_element_marker.mapToScene(self._new_element_marker.end_point)
+        print(p1, p2)
+        return p1, p2
+
+    def close_new_element_embed(self):
+        self.close_embed()
+
 
     #### Creation dialog #########################################################
 

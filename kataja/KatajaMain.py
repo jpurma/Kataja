@@ -749,6 +749,16 @@ class KatajaMain(QtWidgets.QMainWindow):
                 self.forest.settings.edge_shape_settings(panel.scope, 'thickness', value)
             ctrl.announce(g.EDGE_SHAPES_CHANGED, panel.scope, value)
 
+    #
+    def create_new_arrow(self):
+        print("New arrow called")
+        p1, p2 = self.ui_manager.get_new_element_embed_points()
+        self.ui_manager.close_new_element_embed()
+
+    def create_new_divider(self):
+        print("New divider called")
+        p1, p2 = self.ui_manager.get_new_element_embed_points()
+        self.ui_manager.close_new_element_embed()
 
     # Next structure -action (.)
     def next_structure(self):

@@ -272,6 +272,18 @@ actions = {
         'context': 'ui',
         'shortcut_context': 'parent_and_children'
     },
+    'new_arrow': {
+        'command': 'New arrow',
+        'method': 'create_new_arrow',
+        'shortcut': 'a',
+        'shortcut_context': 'parent_and_children'
+    },
+    'new_divider': {
+        'command': 'New divider',
+        'method': 'create_new_divider',
+        'shortcut': 'd',
+        'shortcut_context': 'parent_and_children'
+    },
 
     # Generic keys ####
     # 'key_esc': {
