@@ -39,7 +39,20 @@ class ButtonShortcutFilter(QtCore.QObject):
             button.animateClick()
             return True
         return False
-
+    # events:
+    # paint: 12
+    # WindowActivate: 24
+    # WindowDeactivate: 25
+    # StatusTip: 112
+    # HoverLeave: 127
+    # HoverEnter: 128
+    # Enter: 10
+    # Leave: 11
+    # Timer: 1
+    # Shortcut: 117
+    # ShortcutOerride: 51
+    # Move: 13
+    #
 
 
 

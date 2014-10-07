@@ -523,9 +523,18 @@ class UIManager:
             element.setStatusTip(tooltip)
             element.setToolTip(tooltip)
         shortcut = action_data.get('shortcut', None)
-        if shortcut:
+        shortcut_context = action_data.get('shortcut_context', None)
+
+        if shortcut and shortcut_context and False: # disabled until we are sure that there is ambiguous shortcut problem
+            #s.activated.connect(action.trigger)
+            if shortcut_context == 'parent_and_children':
+                s = QtWidgets.QShortcut(QtGui.QKeySequence(shortcut), element)
+                s.setContext(QtCore.Qt.WidgetWithChildrenShortcut)
+                element.installEventFilter(self.button_shortcut_filter)
+        elif shortcut:
             element.setShortcut(QtGui.QKeySequence(shortcut))
             element.installEventFilter(self.button_shortcut_filter)
+
         if isinstance(element, QtWidgets.QAbstractButton):
             element.clicked.connect(action.trigger)
             element.setFocusPolicy(QtCore.Qt.TabFocus)
@@ -561,6 +570,18 @@ class UIManager:
         i = selector.currentIndex()
         return selector.itemData(i)
 
+
+    #### Embedded menus ################################
+
+    def close_embed(self):
+        if self._new_element_embed.isVisible():
+            self._new_element_embed.close()
+            self._new_element_marker.hide()
+
+
+    def new_element_accept(self):
+        print('got enter from new_element_embed')
+
     #### Creation dialog #########################################################
 
     def create_creation_dialog(self, scenePos):
@@ -572,6 +593,7 @@ class UIManager:
             self._new_element_embed.marker = self._new_element_marker
         self._new_element_embed.update_embed(scenePos=scenePos)
         self._new_element_marker.update_position(scenePos=scenePos)
+        self._new_element_marker.show()
         self._new_element_embed.wake_up()
 
 

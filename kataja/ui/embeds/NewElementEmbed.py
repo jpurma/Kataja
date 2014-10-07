@@ -11,6 +11,7 @@ class MarkerStartPoint(QtWidgets.QGraphicsItem):
         self.setCursor(QtCore.Qt.CrossCursor)
         self.setAcceptHoverEvents(True)
         self.draggable = True
+        self.clickable = False
 
 
     def paint(self, painter, options, QWidget_widget=None):
@@ -45,6 +46,8 @@ class NewElementMarker(QtWidgets.QGraphicsItem):
         self.update_position(scenePos=scenePos)
         self.start_point_cp = MarkerStartPoint(self)
         self.start_point_cp.show()
+        self.draggable = False # MarkerStartPoint is draggable, not this
+        self.clickable = False
 
 
     def paint(self, painter, options, QWidget_widget=None):
@@ -61,7 +64,10 @@ class NewElementMarker(QtWidgets.QGraphicsItem):
         self.prepareGeometryChange()
         if scenePos:
             self.start_point = scenePos
-        end_pos = QtCore.QPoint(self.embed.x(), self.embed.y() + self.embed.height() / 2)
+        h = self.embed.height()
+        if h < 100:
+            h = self.embed.assumed_height
+        end_pos = QtCore.QPoint(self.embed.x(), self.embed.y() + h / 2)
         v = self.embed.parentWidget()
         self.setPos(self.start_point)
         self.end_point = self.mapFromScene(v.mapToScene(end_pos)).toPoint()
@@ -91,9 +97,12 @@ class NewElementEmbed(UIEmbed):
         hlayout.addWidget(self.input_action_selector)
         self.enter_button = QtWidgets.QPushButton("↩") # U+21A9 &#8617;
         self.enter_button.setMaximumWidth(20)
+        ui_manager.connect_element_to_action(self.enter_button, 'new_element_enter_text')
+
         hlayout.addWidget(self.enter_button)
         layout.addLayout(hlayout)
         self.setLayout(layout)
+        self.assumed_height = 117
 
     def mouseMoveEvent(self, event):
         self.move(self.mapToParent(event.pos()) - self._drag_diff)

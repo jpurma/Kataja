@@ -26,19 +26,26 @@ class UIEmbed(QtWidgets.QWidget):
         self._drag_diff = None
 
         self.top_row_layout = QtWidgets.QHBoxLayout()
-        closebutton = QtWidgets.QPushButton("x")
-        closebutton.setMaximumWidth(16)
-        self.top_row_layout.addWidget(closebutton)
+        close_button = QtWidgets.QPushButton("x")
+        close_button.setMaximumWidth(16)
+        ui_manager.connect_element_to_action(close_button, 'close_embed')
+
+        self.top_row_layout.addWidget(close_button)
+        self.assumed_height = 100
 
         # Remember to add top_row_layout to your layout
 
+        # Remember Johnny fucking Marr
 
     def update_embed(self, scenePos=None):
 
         self.setPalette(ctrl.cm.get_qt_palette_for_ui())
         if scenePos:
+            h = self.height()
+            if h < 100:
+                h = self.assumed_height
             view_pos = self.parent().mapFromScene(scenePos)
-            self.move(view_pos.x(), view_pos.y() - self.height() / 2)
+            self.move(view_pos.x(), view_pos.y() - h / 2)
 
     def update_color(self):
         self.setPalette(ctrl.cm.get_qt_palette_for_ui())

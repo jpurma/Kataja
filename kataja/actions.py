@@ -257,6 +257,22 @@ actions = {
         'command': '&Help',
         'method': 'show_help_message',
         'shortcut': 'h', },
+    # Embed menus ####
+    'close_embed': {
+        'command': 'Cancel',
+        'method': 'close_embed',
+        'shortcut': 'Escape',
+        'context': 'ui',
+        'shortcut_context': 'parent_and_children'
+    },
+    'new_element_enter_text': {
+        'command': 'Enter',
+        'method': 'new_element_accept',
+        'shortcut': 'Return',
+        'context': 'ui',
+        'shortcut_context': 'parent_and_children'
+    },
+
     # Generic keys ####
     # 'key_esc': {
     #     'command': 'key_esc',
