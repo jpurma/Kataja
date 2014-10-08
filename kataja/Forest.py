@@ -654,6 +654,7 @@ class Forest:
         if ctrl.loading:
             pass
         else:
+            self.store(rel)
             self.add_to_scene(rel)
         return rel
 
@@ -757,6 +758,20 @@ class Forest:
         node = self.create_node_from_constituent(C, pos, result_of_select=True)
         return node
 
+    def create_arrow(self, p1, p2, text=None):
+        """ Create an arrow (Edge) using the default arrow style
+
+        :param p1: start point
+        :param p2: end point
+        :param text: explanatory text associated with the arrow
+        :return:
+        """
+        edge = self.create_edge(start=None, end=None, edge_type=g.ARROW)
+        edge.set_start_point(p1)
+        edge.set_end_point(p2)
+        edge.show()
+        print(edge)
+        return edge
 
     ############# Deleting items ######################################################
     # item classes don't have to know how they relate to each others.
@@ -796,6 +811,7 @@ class Forest:
         :param edge:
         """
         # -- connections to host nodes --
+        print('deleting edge ', edge)
         start_node = edge.start
         end_node = edge.end
         if start_node:

@@ -53,6 +53,11 @@ class UIEmbed(QtWidgets.QWidget):
     def wake_up(self):
         self.show()
         self.raise_()
+        self.focus_to_main()
+
+    def focus_to_main(self):
+        pass
+
 
     def mousePressEvent(self, event):
         self._drag_diff = event.pos()

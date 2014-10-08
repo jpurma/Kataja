@@ -527,13 +527,15 @@ class PaletteManager:
         """
         if not self.color_map:
             return ''
-        if isinstance(color, tuple):
+        if isinstance(color, (tuple, list)):
             cc = c()
             cc.setHsvF(color[0], color[1], color[2])
         elif isinstance(color, str):
             cc = self.get(color)
         elif isinstance(color, QColor):
             cc = color
+        else:
+            print('Unknown color: ', color)
         r, g, b, a = cc.getRgb()
         d_min = 100000
         best = 'white'

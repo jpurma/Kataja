@@ -192,11 +192,11 @@
 		<key>_ikey_4</key>
 		<dict>
 			<key>color</key>
-			<string>content1</string>
+			<string>accent4</string>
 			<key>pull</key>
 			<integer>0</integer>
 			<key>shape_name</key>
-			<string>arrow</string>
+			<string>linear</string>
 			<key>visible</key>
 			<true/>
 		</dict>

@@ -753,6 +753,8 @@ class KatajaMain(QtWidgets.QMainWindow):
     def create_new_arrow(self):
         print("New arrow called")
         p1, p2 = self.ui_manager.get_new_element_embed_points()
+        text = self.ui_manager.get_new_element_text()
+        self.forest.create_arrow(p1, p2)
         self.ui_manager.close_new_element_embed()
 
     def create_new_divider(self):

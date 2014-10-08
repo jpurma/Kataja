@@ -318,8 +318,21 @@ def blob_path(start_point=None, end_point=None, adjust=None, align=LEFT, thickne
 
     sx, sy, sz = start_point
     ex, ey, dummy = end_point
-    sx1, sy1, sw, sh = start.boundingRect().getRect()
-    ex1, ey1, ew, eh = end.boundingRect().getRect()
+    if start:
+        sx1, sy1, sw, sh = start.boundingRect().getRect()
+    else:
+        sx1 = sx - 10
+        sy1 = sy - 10
+        sw = 20
+        sh = 20
+    if end:
+        ex1, ey1, ew, eh = end.boundingRect().getRect()
+    else:
+        ex1 = ex - 10
+        ey1 = ey - 10
+        ew = 20
+        eh = 20
+
     sx1 += scx
     sy1 += scy
     ex1 += ecx
@@ -385,12 +398,25 @@ def blob_icon(painter, rect, color=None, thickness=3):
 
 def directional_blob_path(start_point=None, end_point=None, adjust=None, align=LEFT,  thickness=4, start=None, end=None, **kwargs):
     """ Surround the node with circular shape that stretches to other node """
-    scx, scy, scz = start.get_current_position()
-    ecx, ecy, ecz = end.get_current_position()
+    if start:
+        scx, scy, scz = start.get_current_position()
+    else:
+        scx, scy, scz = start_point
+    if end:
+        ecx, ecy, ecz = end.get_current_position()
+    else:
+        ecx, ecy, ecz = end_point
     t2 = thickness*2
     if align is LEFT:
         sx, sy, sz = start_point
-        ex1, ey1, ew, eh = end.boundingRect().getRect()
+        if end:
+            ex1, ey1, ew, eh = end.boundingRect().getRect()
+        else:
+            ex1 = ecx - 10
+            ey1 = ecy - 10
+            ew = 20
+            eh = 20
+
         ex1 += ecx
         ey1 += ecy
         c1x = (sx + ecx) / 2
@@ -407,8 +433,20 @@ def directional_blob_path(start_point=None, end_point=None, adjust=None, align=L
         path = path1.united(path2)
         path = path.subtracted(path1neg)
     else:
-        sx1, sy1, sw, sh = start.boundingRect().getRect()
-        ex1, ey1, ew, eh = end.boundingRect().getRect()
+        if start:
+            sx1, sy1, sw, sh = start.boundingRect().getRect()
+        else:
+            sx1 = scx - 10
+            sy1 = scy - 10
+            sw = 20
+            sh = 20
+        if end:
+            ex1, ey1, ew, eh = end.boundingRect().getRect()
+        else:
+            ex1 = ecx - 10
+            ey1 = ecy - 10
+            ew = 20
+            eh = 20
         sx1 += scx
         sy1 += scy
         ex1 += ecx

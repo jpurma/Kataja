@@ -364,26 +364,30 @@ class LineOptionsPanel(UIPanel):
         self.cp1_y_spinbox.blockSignals(True)
         self.cp2_x_spinbox.blockSignals(True)
         self.cp2_y_spinbox.blockSignals(True)
-        self.cp1_x_spinbox.setValue(cp1_x)
-        if cp1_x_conflict:
-            self.add_and_select_ambiguous_marker(self.cp1_x_spinbox)
-        else:
-            self.remove_ambiguous_marker(self.cp1_x_spinbox)
-        self.cp1_y_spinbox.setValue(cp1_y)
-        if cp1_y_conflict:
-            self.add_and_select_ambiguous_marker(self.cp1_y_spinbox)
-        else:
-            self.remove_ambiguous_marker(self.cp1_y_spinbox)
-        self.cp2_x_spinbox.setValue(cp2_x)
-        if cp2_x_conflict:
-            self.add_and_select_ambiguous_marker(self.cp2_x_spinbox)
-        else:
-            self.remove_ambiguous_marker(self.cp2_x_spinbox)
-        self.cp2_y_spinbox.setValue(cp2_y)
-        if cp2_y_conflict:
-            self.add_and_select_ambiguous_marker(self.cp2_y_spinbox)
-        else:
-            self.remove_ambiguous_marker(self.cp2_y_spinbox)
+        if cp1_x is not None:
+            self.cp1_x_spinbox.setValue(cp1_x)
+            if cp1_x_conflict:
+                self.add_and_select_ambiguous_marker(self.cp1_x_spinbox)
+            else:
+                self.remove_ambiguous_marker(self.cp1_x_spinbox)
+        if cp1_y is not None:
+            self.cp1_y_spinbox.setValue(cp1_y)
+            if cp1_y_conflict:
+                self.add_and_select_ambiguous_marker(self.cp1_y_spinbox)
+            else:
+                self.remove_ambiguous_marker(self.cp1_y_spinbox)
+        if cp2_x is not None:
+            self.cp2_x_spinbox.setValue(cp2_x)
+            if cp2_x_conflict:
+                self.add_and_select_ambiguous_marker(self.cp2_x_spinbox)
+            else:
+                self.remove_ambiguous_marker(self.cp2_x_spinbox)
+        if cp2_y is not None:
+            self.cp2_y_spinbox.setValue(cp2_y)
+            if cp2_y_conflict:
+                self.add_and_select_ambiguous_marker(self.cp2_y_spinbox)
+            else:
+                self.remove_ambiguous_marker(self.cp2_y_spinbox)
         self.cp1_x_spinbox.blockSignals(False)
         self.cp1_y_spinbox.blockSignals(False)
         self.cp2_x_spinbox.blockSignals(False)

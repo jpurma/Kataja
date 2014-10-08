@@ -162,6 +162,8 @@ class NewElementEmbed(UIEmbed):
         self.move(self.mapToParent(event.pos()) - self._drag_diff)
         self.marker.update_position()
 
+    def focus_to_main(self):
+        self.input_line_edit.setFocus()
 
 # line = new QFrame(w);
 #     line->setObjectName(QString::fromUtf8("line"));

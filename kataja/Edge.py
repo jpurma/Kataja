@@ -100,8 +100,7 @@ class Edge(QtWidgets.QGraphicsItem):
         self.touch_areas = {}
         self.setZValue(10)
         self.status_tip = ""
-        if start and end:
-            self.connect_end_points(start, end)
+        self.connect_end_points(start, end)
 
         # self.setAcceptedMouseButtons(QtCore.Qt.NoButton)
         # self.setFlag(QtGui.QGraphicsItem.ItemIsMovable)
@@ -110,9 +109,6 @@ class Edge(QtWidgets.QGraphicsItem):
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.effect = utils.create_shadow_effect(ctrl.cm.selection())
         self.setGraphicsEffect(self.effect)
-
-        if not ctrl.loading:
-            forest.store(self)
 
     def receive_signal(self, signal, *args):
         """
@@ -149,6 +145,46 @@ class Edge(QtWidgets.QGraphicsItem):
         :return:
         """
         return self._visible
+
+
+    def set_start_point(self, p, y=None, z=None):
+        """ Convenience method for setting start point: accepts QPoint(F)s, tuples and x,y coords.
+        :param p: first argument, either QPoint, tuple or x coordinate if y is also given
+        :param y: y coordinate
+        :return:
+        """
+        if y is not None:
+            if z is not None:
+                self.start_point = p, y, z
+            else:
+                self.start_point = p, y, self.start_point[2]
+        elif isinstance(p, tuple):
+            if len(p) == 3:
+                self.start_point = p
+            else:
+                self.start_point = (p[0], p[1], self.start_point[2])
+        if isinstance(p, (QtCore.QPoint, QtCore.QPointF)):
+            self.start_point = (p.x(), p.y(), self.start_point[2])
+
+    def set_end_point(self, p, y=None, z=None):
+        """ Convenience method for setting end point: accepts QPoint(F)s, tuples and x,y coords.
+        :param p: first argument, either QPoint, tuple or x coordinate if y is also given
+        :param y: y coordinate
+        :return:
+        """
+        if y is not None:
+            if z is not None:
+                self.end_point = p, y, z
+            else:
+                self.end_point = p, y, self.end_point[2]
+        elif isinstance(p, tuple):
+            if len(p) == 3:
+                self.end_point = p
+            else:
+                self.end_point = (p[0], p[1], self.end_point[2])
+        if isinstance(p, (QtCore.QPoint, QtCore.QPointF)):
+            self.end_point = (p.x(), p.y(), self.end_point[2])
+
 
     def add_touch_area(self, touch_area):
         """
@@ -450,13 +486,15 @@ class Edge(QtWidgets.QGraphicsItem):
 
 
         """
-        if self.align == LEFT:
-            self.start_point = self.start.left_magnet()
-        elif self.align == RIGHT:
-            self.start_point = self.start.right_magnet()
-        else:
-            self.start_point = self.start.bottom_magnet()
-        self.end_point = self.end.top_magnet()
+        if self.start:
+            if self.align == LEFT:
+                self.start_point = self.start.left_magnet()
+            elif self.align == RIGHT:
+                self.start_point = self.start.right_magnet()
+            else:
+                self.start_point = self.start.bottom_magnet()
+        if self.end:
+            self.end_point = self.end.top_magnet()
         # sx, sy, sz = self.start_point
         # ex, ey, ez = self.end_point
         # self.center_point = sx + ((ex - sx) / 2), sy + ((ey - sy) / 2)
@@ -467,10 +505,16 @@ class Edge(QtWidgets.QGraphicsItem):
         :param start:
         :param end:
         """
-        self.start_point = start.get_current_position()
-        self.end_point = end.get_current_position()
-        self.start = start
-        self.end = end
+        if start:
+            self.start_point = start.get_current_position()
+            self.start = start
+        else:
+            self.start = None
+        if end:
+            self.end_point = end.get_current_position()
+            self.end = end
+        else:
+            self.end = None
         # sx, sy, sz = self.start_point
         # ex, ey, ez = self.end_point
         # self.center_point = sx + ((ex - sx) / 2), sy + ((ey - sy) / 2)
@@ -499,7 +543,6 @@ class Edge(QtWidgets.QGraphicsItem):
         :param visible:
         """
         v = self.isVisible()
-        # print 'set visible called with vis %s when isVisible is %s' % (visible, v)
         if v and not visible:
             self._visible = False
             self.hide()
@@ -616,8 +659,6 @@ class Edge(QtWidgets.QGraphicsItem):
         :param widget:
         :return:
         """
-        if not self.start or not self.end:
-            return
         c = self.contextual_color()
         width = self.has_outline()
         if width:
