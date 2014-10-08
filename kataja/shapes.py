@@ -312,8 +312,14 @@ def linear_icon(painter, rect, color=None):
 
 def blob_path(start_point=None, end_point=None, adjust=None, align=LEFT, thickness=4, start=None, end=None, **kwargs):
     """ Surround the node with circular shape that stretches to other node """
-    scx, scy, scz = start.get_current_position()
-    ecx, ecy, ecz = end.get_current_position()
+    if start:
+        scx, scy, scz = start.get_current_position()
+    else:
+        scx, scy, scz = start_point
+    if end:
+        ecx, ecy, ecz = end.get_current_position()
+    else:
+        ecx, ecy, ecz = end_point
     t2 = thickness*2
 
     sx, sy, sz = start_point
@@ -321,15 +327,15 @@ def blob_path(start_point=None, end_point=None, adjust=None, align=LEFT, thickne
     if start:
         sx1, sy1, sw, sh = start.boundingRect().getRect()
     else:
-        sx1 = sx - 10
-        sy1 = sy - 10
+        sx1 = -10
+        sy1 = -10
         sw = 20
         sh = 20
     if end:
         ex1, ey1, ew, eh = end.boundingRect().getRect()
     else:
-        ex1 = ex - 10
-        ey1 = ey - 10
+        ex1 = -10
+        ey1 = -10
         ew = 20
         eh = 20
 
@@ -412,8 +418,8 @@ def directional_blob_path(start_point=None, end_point=None, adjust=None, align=L
         if end:
             ex1, ey1, ew, eh = end.boundingRect().getRect()
         else:
-            ex1 = ecx - 10
-            ey1 = ecy - 10
+            ex1 = -10
+            ey1 = -10
             ew = 20
             eh = 20
 
@@ -436,15 +442,15 @@ def directional_blob_path(start_point=None, end_point=None, adjust=None, align=L
         if start:
             sx1, sy1, sw, sh = start.boundingRect().getRect()
         else:
-            sx1 = scx - 10
-            sy1 = scy - 10
+            sx1 = -10
+            sy1 = -10
             sw = 20
             sh = 20
         if end:
             ex1, ey1, ew, eh = end.boundingRect().getRect()
         else:
-            ex1 = ecx - 10
-            ey1 = ecy - 10
+            ex1 = -10
+            ey1 = -10
             ew = 20
             eh = 20
         sx1 += scx

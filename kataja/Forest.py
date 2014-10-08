@@ -770,7 +770,7 @@ class Forest:
         edge.set_start_point(p1)
         edge.set_end_point(p2)
         edge.show()
-        print(edge)
+        ctrl.select(edge)
         return edge
 
     ############# Deleting items ######################################################

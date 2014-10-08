@@ -956,12 +956,21 @@ class UIManager:
         :param edge:
         """
         for i, point in enumerate(edge.control_points):
-            adjust = edge.adjust[i]
-            cp = ControlPoint(edge, index=i, point=point, adjust=adjust)
+            cp = ControlPoint(edge, index=i)
             self.add_ui(cp)
-            assert (cp not in self._control_points)
             self._control_points.append(cp)
             cp.update_position()
+        if not edge.start:
+            cp = ControlPoint(edge, role='start')
+            self.add_ui(cp)
+            self._control_points.append(cp)
+            cp.update_position()
+        if not edge.end:
+            cp = ControlPoint(edge, role='end')
+            self.add_ui(cp)
+            self._control_points.append(cp)
+            cp.update_position()
+
 
     def update_control_point_positions(self):
         """ Update positions for all control points without doing any checks to see if they are legit or used.
@@ -978,7 +987,6 @@ class UIManager:
         """
         cps = [cp for cp in self._control_points if cp.host_edge == edge]
         for cp in cps:
-            # print 'removing ', cp
             self.remove_ui(cp)
             self._control_points.remove(cp)
             del cp
@@ -989,7 +997,6 @@ class UIManager:
         """
         #edges = [x.host_edge for x in self._control_points]
         #if edge in edges:
-        # print 'reseting control points'
         self.remove_control_points(edge)
         if ctrl.is_selected(edge):
             self.add_control_points(edge)

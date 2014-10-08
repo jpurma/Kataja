@@ -235,7 +235,7 @@ class LineOptionsPanel(UIPanel):
             # Relative / fixed curvature
             if cps > 0:
                 self.arc_box.setVisible(True)
-                rel = shape_dict['relative']
+                rel = shape_dict.get('relative', None)
                 self.arc_type_selector.blockSignals(True)
                 self.arc_dx_spinbox.blockSignals(True)
                 self.arc_dy_spinbox.blockSignals(True)
@@ -251,7 +251,7 @@ class LineOptionsPanel(UIPanel):
                         self.add_and_select_ambiguous_marker(self.arc_dy_spinbox)
                     else:
                         self.remove_ambiguous_marker(self.arc_dy_spinbox)
-                else:
+                elif rel is not None:
                     self.arc_type_selector.setCurrentIndex(0)
                     self.arc_dx_spinbox.setValue(shape_dict['fixed_dx'])
                     self.arc_dy_spinbox.setValue(shape_dict['fixed_dy'])
@@ -270,22 +270,25 @@ class LineOptionsPanel(UIPanel):
                 self.arc_box.setVisible(False)
             # Leaf-shaped lines or solid lines
             if shape_dict['fill']:
-                self.leaf_box.setVisible(True)
-                self.leaf_x_spinbox.blockSignals(True)
-                self.leaf_y_spinbox.blockSignals(True)
-                self.leaf_x_spinbox.setValue(shape_dict['leaf_x'])
-                self.leaf_y_spinbox.setValue(shape_dict['leaf_y'])
-                if 'leaf_x_conflict' in shape_dict:
-                    self.add_and_select_ambiguous_marker(self.leaf_x_spinbox)
-                else:
-                    self.remove_ambiguous_marker(self.leaf_x_spinbox)
-                if 'leaf_y_conflict' in shape_dict:
-                    self.add_and_select_ambiguous_marker(self.leaf_y_spinbox)
-                else:
-                    self.remove_ambiguous_marker(self.leaf_y_spinbox)
+                if 'leaf_x' in shape_dict:
+                    self.leaf_box.setVisible(True)
+                    self.leaf_x_spinbox.blockSignals(True)
+                    self.leaf_y_spinbox.blockSignals(True)
+                    self.leaf_x_spinbox.setValue(shape_dict['leaf_x'])
+                    self.leaf_y_spinbox.setValue(shape_dict['leaf_y'])
+                    if 'leaf_x_conflict' in shape_dict:
+                        self.add_and_select_ambiguous_marker(self.leaf_x_spinbox)
+                    else:
+                        self.remove_ambiguous_marker(self.leaf_x_spinbox)
+                    if 'leaf_y_conflict' in shape_dict:
+                        self.add_and_select_ambiguous_marker(self.leaf_y_spinbox)
+                    else:
+                        self.remove_ambiguous_marker(self.leaf_y_spinbox)
 
-                self.leaf_x_spinbox.blockSignals(False)
-                self.leaf_y_spinbox.blockSignals(False)
+                    self.leaf_x_spinbox.blockSignals(False)
+                    self.leaf_y_spinbox.blockSignals(False)
+                else:
+                    self.leaf_box.setVisible(False)
                 self.thickness_box.setVisible(False)
             else:
                 self.leaf_box.setVisible(False)

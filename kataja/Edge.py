@@ -77,6 +77,7 @@ class Edge(QtWidgets.QGraphicsItem):
             self.align = direction
         self.start = start
         self.end = end
+        self._local_drag_handle_position = None
 
         # ## Adjustable values, defaults to ForestSettings if None for this element
         self._color = None
@@ -94,7 +95,7 @@ class Edge(QtWidgets.QGraphicsItem):
         self._fat_path = None
         self._visible = None
         self.selectable = True
-        self.draggable = False
+        self.draggable = not (self.start or self.end)
         self.clickable = True
         self._hovering = False
         self.touch_areas = {}
@@ -243,7 +244,8 @@ class Edge(QtWidgets.QGraphicsItem):
         elif self._hovering:
             return ctrl.cm.hovering(ctrl.cm.selection())
         elif ctrl.is_selected(self):
-            return ctrl.cm.selection()
+            #return ctrl.cm.selection()
+            return self.color()
             #return ctrl.cm.selected(self.color())
         else:
             return self.color()
@@ -295,6 +297,24 @@ class Edge(QtWidgets.QGraphicsItem):
                 return self._pull
         else:
             self._pull = value
+
+    def drag(self, event):
+        scx, scy = utils.to_tuple(event.scenePos())
+        sx, sy, z = self.start_point
+        dx = self.end_point[0] - sx
+        dy = self.end_point[1] - sy
+        if not self._local_drag_handle_position:
+            drag_x, drag_y = ctrl.main.graph_scene.drag_exact_start_point()
+            self._local_drag_handle_position = drag_x - sx, drag_y - sy
+        #d = self.start_point - self.end_point
+        lx, ly = self._local_drag_handle_position
+        sx, sy = scx - lx, scy - ly
+        self.set_start_point(sx, sy)
+        self.set_end_point(sx + dx, sy + dy)
+        self.make_path()
+        self.update()
+
+
 
     def shape_visibility(self, value=None):
         """
@@ -419,10 +439,14 @@ class Edge(QtWidgets.QGraphicsItem):
         """ Reload shape and shape settings """
         self._shape_method = SHAPE_PRESETS[self.shape_name()]['method']
         self._cached_shape_args = self.shape_args()
+        cpl = len(self.control_points)
         self.make_path()
         while len(self.adjust) < len(self.control_points):
             self.adjust.append((0, 0, 0))
-        ctrl.ui.reset_control_points(self)
+        if cpl != len(self.control_points):
+            ctrl.ui.reset_control_points(self)
+        else:
+            ctrl.ui.update_control_point_positions()
         self.update()
 
 
@@ -531,12 +555,12 @@ class Edge(QtWidgets.QGraphicsItem):
             return '<%s stub from %s to %s>' % (self.edge_type, self.start, self.end)
 
     def drop_to(self, x, y):
+        """ This happens only when dragging the whole edge. Just reset the drag handle position so that the next
+         drag attempt will take new handle.
+        :param x: not used
+        :param y: not used
         """
-
-        :param x:
-        :param y:
-        """
-        pass
+        self._local_drag_handle_position = None
 
     def set_visible(self, visible):
         """ Hide or show, and also manage related UI objects. Note that the shape itself may be visible or not independent of this. It has to be visible in this level so that UI elements can be used.
@@ -569,6 +593,7 @@ class Edge(QtWidgets.QGraphicsItem):
             ui.add_control_points(self)
         else:
             ui.remove_control_points(self)
+        print("selection done")
         self.update()
 
     def boundingRect(self):

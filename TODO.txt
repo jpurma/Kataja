@@ -1,0 +1,25 @@
+- Fix: Reset control points doesn't restore the value.
+- Default arrowheads
+* Dragging of edges that are not connected anywhere.
+- Connecting ends by dragging them over
+- Edge-specific embed menu
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

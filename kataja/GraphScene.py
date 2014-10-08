@@ -501,7 +501,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                     mouse('pressed on ', closest_item)
                     mouse('--- turning drag hand off ---')
                     self.graph_view.setDragMode(QtWidgets.QGraphicsView.NoDrag)
-                    self._drag_start_point = to_tuple(event.screenPos())
+                    self._drag_start_point = to_tuple(event.scenePos())
             mouse('eating gs mousePressEvent 2')
             return None  # QtWidgets.QGraphicsScene.mousePressEvent(self, event)  # None
         else:
@@ -647,6 +647,9 @@ class GraphScene(QtWidgets.QGraphicsScene):
         """
         mouse('dropEvent registered')
         QtWidgets.QGraphicsScene.dropEvent(self, event)
+
+    def drag_exact_start_point(self):
+        return self._drag_start_point
 
     def mouseDoubleClickEvent(self, event):
         """
