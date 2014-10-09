@@ -325,7 +325,7 @@ class DrawingPanel(UIPanel):
                 else:
                     self.shape_selector.remove_ambiguous_marker()
                     self.shape_selector.select_data(edge_shape)
-
+            self.shape_selector.update()
         else:
             ### Color selector
             self.color_selector.remove_ambiguous_marker()
@@ -336,6 +336,8 @@ class DrawingPanel(UIPanel):
             self.shape_selector.remove_ambiguous_marker()
             edge_shape = ctrl.forest.settings.edge_settings(self.scope, 'shape_name')
             self.shape_selector.select_data(edge_shape)
+            self.shape_selector.update()
+
 
 
 

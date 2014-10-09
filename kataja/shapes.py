@@ -129,7 +129,9 @@ def shaped_cubic_path(start_point=None, end_point=None, adjust=None, align=LEFT,
     c = adjusted_control_point_list(control_points, adjust)
     path.cubicTo(c[0] - leaf_x, c[1], c[2], c[3] + leaf_y, ex, ey)
     path.cubicTo(c[2], c[3] - leaf_y, c[0] + leaf_x, c[1], sx, sy)
-    return path, path.pointAtPercent(0.25), control_points
+    inner_path = QtGui.QPainterPath(Pf(sx, sy))
+    inner_path.cubicTo(c[0], c[1], c[2], c[3], ex, ey)
+    return path, inner_path, control_points
 
 
 def shaped_cubic_icon(painter, rect, color=None, rel_dx=0.4, rel_dy=0.8, leaf_x=1, leaf_y=3):
@@ -171,7 +173,7 @@ def cubic_path(start_point=None, end_point=None, adjust=None, align=LEFT, relati
     path = QtGui.QPainterPath(Pf(sx, sy))
     c = adjusted_control_point_list(control_points, adjust)
     path.cubicTo(c[0], c[1], c[2], c[3], ex, ey)
-    return path, path.pointAtPercent(0.5), control_points
+    return path, path, control_points
 
 
 def cubic_icon(painter, rect, color=None, rel_dx=0.2, rel_dy=0.8):
@@ -213,7 +215,9 @@ def shaped_quadratic_path(start_point=None, end_point=None, adjust=None, align=L
     c = adjusted_control_point_list(control_points, adjust)
     path.quadTo(c[0] - leaf_x, c[1] - leaf_y, ex, ey)
     path.quadTo(c[0] + leaf_x, c[1] + leaf_y, sx, sy)
-    return path, path.pointAtPercent(0.25), control_points
+    inner_path = QtGui.QPainterPath(Pf(sx, sy))
+    inner_path.quadTo(c[0], c[1], ex, ey)
+    return path, inner_path, control_points
 
 def shaped_quadratic_icon(painter, rect, color=None, rel_dx=0.4, rel_dy=0, leaf_x=1, leaf_y=3):
     sx, sy = 0, 4
@@ -250,7 +254,7 @@ def quadratic_path(start_point=None, end_point=None, adjust=None, align=LEFT, re
     path = QtGui.QPainterPath(Pf(sx, sy))
     c = adjusted_control_point_list(control_points, adjust)
     path.quadTo(c[0], c[1], ex, ey)
-    return path, path.pointAtPercent(0.5), control_points
+    return path, path, control_points
 
 
 def quadratic_icon(painter, rect, color=None, rel_dx=0.4, rel_dy=0):
@@ -277,7 +281,9 @@ def shaped_linear_path(start_point=None, end_point=None, adjust=None, align=LEFT
     path = QtGui.QPainterPath(Pf(sx, sy))
     path.quadTo(c[0][0], c[0][1], dx, dy)
     path.quadTo(c[1][0], c[1][1], sx, sy)
-    return path, path.pointAtPercent(0.25), control_points
+    inner_path = QtGui.QPainterPath(Pf(sx, sy))
+    inner_path.lineTo(dx, dy)
+    return path, inner_path, control_points
 
 def shaped_linear_icon(painter, rect, color=None, leaf_x=4, leaf_y=4):
     sx, sy = 0, 0
@@ -297,7 +303,7 @@ def linear_path(start_point=None, end_point=None, adjust=None, align=LEFT,  **kw
     control_points = []
     path = QtGui.QPainterPath(Pf(sx, sy))
     path.lineTo(dx, dy)
-    return path, path.pointAtPercent(0.5), control_points
+    return path, path, control_points
 
 def linear_icon(painter, rect, color=None):
     sx, sy = 0, 0
@@ -363,8 +369,9 @@ def blob_path(start_point=None, end_point=None, adjust=None, align=LEFT, thickne
     path = path.united(path3)
     path = path.subtracted(path1neg)
     path = path.subtracted(path2neg)
-
-    return path.simplified(), Pf(c1x, c1y), []
+    inner_path = QtGui.QPainterPath(Pf(sx, sy))
+    inner_path.lineTo(ex, ey)
+    return path.simplified(), inner_path, []
 
 def blob_icon(painter, rect, color=None, thickness=3):
     sx, sy = 0, 0
@@ -477,7 +484,9 @@ def directional_blob_path(start_point=None, end_point=None, adjust=None, align=L
         path = path.subtracted(path1neg)
         path = path.subtracted(path2neg)
 
-    return path.simplified(), Pf(c1x, c1y), []
+    inner_path = QtGui.QPainterPath(Pf(sx, sy))
+    inner_path.lineTo(end_point[0], end_point[1])
+    return path.simplified(), inner_path, []
 
 def directional_blob_icon(painter, rect, color=None):
     sx, sy = 0, 0

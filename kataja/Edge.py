@@ -24,6 +24,7 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QPointF as Pf, Qt
+import math
 
 from kataja.singletons import ctrl
 import kataja.globals as g
@@ -63,7 +64,6 @@ class Edge(QtWidgets.QGraphicsItem):
         self.setZValue(-1)
         self.edge_type = edge_type
         self.control_points = []
-        self.middle_point = None
         self.adjust = []
 
         if isinstance(direction, str):
@@ -78,6 +78,8 @@ class Edge(QtWidgets.QGraphicsItem):
         self.start = start
         self.end = end
         self._local_drag_handle_position = None
+        self.arrow_head_at_start = True
+        self.arrow_head_at_end = edge_type == g.ARROW
 
         # ## Adjustable values, defaults to ForestSettings if None for this element
         self._color = None
@@ -92,6 +94,7 @@ class Edge(QtWidgets.QGraphicsItem):
         # ## Derivative elements
         self._shape_method = None
         self._path = None
+        self._true_path = None # inner arc or line without the leaf effect
         self._fat_path = None
         self._visible = None
         self.selectable = True
@@ -299,22 +302,18 @@ class Edge(QtWidgets.QGraphicsItem):
             self._pull = value
 
     def drag(self, event):
-        scx, scy = utils.to_tuple(event.scenePos())
         sx, sy, z = self.start_point
-        dx = self.end_point[0] - sx
-        dy = self.end_point[1] - sy
+        dx, dy = self.end_point[0] - sx, self.end_point[1] - sy
         if not self._local_drag_handle_position:
             drag_x, drag_y = ctrl.main.graph_scene.drag_exact_start_point()
             self._local_drag_handle_position = drag_x - sx, drag_y - sy
-        #d = self.start_point - self.end_point
+        scx, scy = utils.to_tuple(event.scenePos())
         lx, ly = self._local_drag_handle_position
         sx, sy = scx - lx, scy - ly
         self.set_start_point(sx, sy)
         self.set_end_point(sx + dx, sy + dy)
         self.make_path()
         self.update()
-
-
 
     def shape_visibility(self, value=None):
         """
@@ -407,10 +406,7 @@ class Edge(QtWidgets.QGraphicsItem):
     # ### Derivative features ############################################
 
     def make_path(self):
-        """ Draw shape
-
-
-        """
+        """ Draws the shape as a path """
         if not self._shape_method:
             self.update_shape()
         self.shape_name()
@@ -421,7 +417,7 @@ class Edge(QtWidgets.QGraphicsItem):
         c['align'] = self.align
         c['start'] = self.start
         c['end'] = self.end
-        self._path, self.middle_point, self.control_points = self._shape_method(**c)
+        self._path, self._true_path, self.control_points = self._shape_method(**c)
         #if not self.is_filled():  # expensive with filled shapes
         self._fat_path = outline_stroker.createStroke(self._path) #.united(self._path)
 
@@ -702,6 +698,11 @@ class Edge(QtWidgets.QGraphicsItem):
 
         if self.is_filled():
             painter.fillPath(self._path, c)
+        if self.arrow_head_at_start:
+            self.draw_arrow_head(painter, width, c, 'start')
+        if self.arrow_head_at_end:
+            self.draw_arrow_head(painter, width, c, 'end')
+
 
     def get_path(self)-> QtGui.QPainterPath:
         """ Get drawing path of this edge
@@ -714,25 +715,20 @@ class Edge(QtWidgets.QGraphicsItem):
         :param d: int
         :return: QPoint
         """
-        if self.is_filled():
-            d /= 2.0
-        if not self._path:
+        if not self._true_path:
             self.update_end_points()
             self.make_path()
-        return self._path.pointAtPercent(d)
+        return self._true_path.pointAtPercent(d)
 
     def get_angle_at(self, d) -> float:
         """ Get angle at the percentage of the length of the path.
         :param d: int
         :return: float
         """
-        if self.is_filled():
-            d /= 2.0
-            # slopeAtPercent
-        if not self._path:
+        if not self._true_path:
             self.update_end_points()
             self.make_path()
-        return self._path.angleAtPercent(d)
+        return self._true_path.angleAtPercent(d)
 
     # ### Event filter - be sensitive to changes in settings  ########################################################
 
@@ -748,3 +744,27 @@ class Edge(QtWidgets.QGraphicsItem):
         """
         self.update_end_points()
         self.set_visible(self._visible)
+
+    def draw_arrow_head(self, painter, width, c, pos='end'):
+        hlength = 6
+        ad = 0.5
+        if pos == 'start':
+            x, y, z = self.start_point
+            a = math.radians(-self.get_angle_at(0) + 180)
+        elif pos == 'end':
+            x, y, z = self.end_point
+            a = math.radians(-self.get_angle_at(.95))
+        p = QtGui.QPainterPath()
+        p.moveTo(x, y)
+        x1, y1 = x - (math.cos(a + ad) * hlength), y - (math.sin(a + ad) * hlength)
+        xm, ym = x - (math.cos(a) * hlength * 0.5), y - (math.sin(a) * hlength * 0.5)
+        x2, y2 = x - (math.cos(a - ad) * hlength), y - (math.sin(a - ad) * hlength)
+        p.lineTo(x1, y1)
+        p.lineTo(xm, ym)
+        p.lineTo(x2, y2)
+        p.lineTo(x, y)
+        pen = QtGui.QPen(c)
+        pen.setWidthF(0.5)
+        painter.setPen(pen)
+        #painter.drawPath(p)
+        painter.fillPath(p, c)

@@ -156,8 +156,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
         if isinstance(self.host, Edge): # Touch area starts from relation between nodes
             rel = self.host
             # rel.get_path()
-            # sx, sy = to_tuple(rel.get_point_at(0.5))
-            sx, sy = to_tuple(rel.middle_point)
+            sx, sy = to_tuple(rel.get_point_at(0.5))
             self.start_point = sx, sy
             d = rel.get_angle_at(0.5)
             if self.left:
