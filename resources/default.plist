@@ -158,6 +158,10 @@
 	<dict>
 		<key>_ikey_1</key>
 		<dict>
+			<key>arrowhead_at_end</key>
+			<false/>
+			<key>arrowhead_at_start</key>
+			<false/>
 			<key>color</key>
 			<string>content1</string>
 			<key>pull</key>
@@ -169,6 +173,10 @@
 		</dict>
 		<key>_ikey_2</key>
 		<dict>
+			<key>arrowhead_at_end</key>
+			<false/>
+			<key>arrowhead_at_start</key>
+			<false/>
 			<key>color</key>
 			<string>accent2</string>
 			<key>pull</key>
@@ -180,6 +188,10 @@
 		</dict>
 		<key>_ikey_3</key>
 		<dict>
+			<key>arrowhead_at_end</key>
+			<false/>
+			<key>arrowhead_at_start</key>
+			<false/>
 			<key>color</key>
 			<string>accent4</string>
 			<key>pull</key>
@@ -191,6 +203,10 @@
 		</dict>
 		<key>_ikey_4</key>
 		<dict>
+			<key>arrowhead_at_end</key>
+			<true/>
+			<key>arrowhead_at_start</key>
+			<false/>
 			<key>color</key>
 			<string>accent4</string>
 			<key>pull</key>
@@ -202,6 +218,10 @@
 		</dict>
 		<key>_ikey_5</key>
 		<dict>
+			<key>arrowhead_at_end</key>
+			<false/>
+			<key>arrowhead_at_start</key>
+			<false/>
 			<key>color</key>
 			<string>accent5</string>
 			<key>pull</key>
@@ -213,6 +233,10 @@
 		</dict>
 		<key>_ikey_6</key>
 		<dict>
+			<key>arrowhead_at_end</key>
+			<false/>
+			<key>arrowhead_at_start</key>
+			<false/>
 			<key>color</key>
 			<string>content1</string>
 			<key>pull</key>
@@ -224,6 +248,10 @@
 		</dict>
 		<key>_ikey_7</key>
 		<dict>
+			<key>arrowhead_at_end</key>
+			<false/>
+			<key>arrowhead_at_start</key>
+			<false/>
 			<key>color</key>
 			<string>content1</string>
 			<key>pull</key>

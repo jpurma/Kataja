@@ -586,7 +586,7 @@ class KatajaMain(QtWidgets.QMainWindow):
                     edge.shape_name(shape)
                     edge.update_shape()
         elif scope:
-            self.forest.settings.edge_settings(scope, 'shape_name', shape)
+            self.forest.settings.edge_type_settings(scope, 'shape_name', shape)
             ctrl.announce(g.EDGE_SHAPES_CHANGED, scope, shape)
         line_options = self.ui_manager.get_panel(g.LINE_OPTIONS)
         if line_options:
@@ -607,12 +607,29 @@ class KatajaMain(QtWidgets.QMainWindow):
                     #edge.update_shape()
                     edge.update()
         elif panel.scope:
-            self.forest.settings.edge_settings(panel.scope, 'color', color)
+            self.forest.settings.edge_type_settings(panel.scope, 'color', color)
             #ctrl.announce(g.EDGE_SHAPES_CHANGED, scope, color)
         panel.update_color(color)
         panel.update_panel()
         self.add_message('(s) Changed relation color to: %s' % ctrl.cm.get_color_name(color))
 
+
+    def change_edge_ending(self, which_end, value):
+        if value is g.AMBIGUOUS_VALUES:
+            return
+        panel = self.ui_manager.get_panel(g.DRAWING)
+        if panel.scope == g.SELECTION:
+            for edge in ctrl.get_all_selected():
+                if isinstance(edge, Edge):
+                    edge.ending(which_end, value)
+                    edge.update_shape()
+        elif panel.scope:
+            if which_end == 'start':
+                self.forest.settings.edge_type_settings(panel.scope, 'arrowhead_at_start', value)
+            elif which_end == 'end':
+                self.forest.settings.edge_type_settings(panel.scope, 'arrowhead_at_end', value)
+            else:
+                print('Invalid place for edge ending: ', which_end)
 
     # Change node edge shapes -action (s)
     def change_node_edge_shape(self, shape=''):
@@ -621,16 +638,16 @@ class KatajaMain(QtWidgets.QMainWindow):
         :param shape:
         """
         if shape and shape in SHAPE_PRESETS:
-            self.forest.settings.edge_settings(g.CONSTITUENT_EDGE, 'shape_name', shape)
+            self.forest.settings.edge_type_settings(g.CONSTITUENT_EDGE, 'shape_name', shape)
             i = list(SHAPE_PRESETS.keys()).index(shape)
         else:
-            shape = self.forest.settings.edge_settings(g.CONSTITUENT_EDGE, 'shape_name')
+            shape = self.forest.settings.edge_type_settings(g.CONSTITUENT_EDGE, 'shape_name')
             i = list(SHAPE_PRESETS.keys()).index(shape)
             i += 1
             if i == len(SHAPE_PRESETS):
                 i = 0
             shape = list(SHAPE_PRESETS.keys())[i]
-            self.forest.settings.edge_settings(g.CONSTITUENT_EDGE, 'shape_name', shape)
+            self.forest.settings.edge_type_settings(g.CONSTITUENT_EDGE, 'shape_name', shape)
         self.add_message('(s) Change constituent edge shape: %s-%s' % (i, shape))
         ctrl.announce(g.EDGE_SHAPES_CHANGED, g.CONSTITUENT_EDGE, i)
 

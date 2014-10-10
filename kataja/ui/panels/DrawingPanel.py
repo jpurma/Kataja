@@ -329,12 +329,12 @@ class DrawingPanel(UIPanel):
         else:
             ### Color selector
             self.color_selector.remove_ambiguous_marker()
-            self.current_color = ctrl.forest.settings.edge_settings(self.scope, 'color')
+            self.current_color = ctrl.forest.settings.edge_type_settings(self.scope, 'color')
             self.color_selector.select_data(self.current_color)
 
             ### Edge selector
             self.shape_selector.remove_ambiguous_marker()
-            edge_shape = ctrl.forest.settings.edge_settings(self.scope, 'shape_name')
+            edge_shape = ctrl.forest.settings.edge_type_settings(self.scope, 'shape_name')
             self.shape_selector.select_data(edge_shape)
             self.shape_selector.update()
 

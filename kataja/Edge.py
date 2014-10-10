@@ -78,8 +78,8 @@ class Edge(QtWidgets.QGraphicsItem):
         self.start = start
         self.end = end
         self._local_drag_handle_position = None
-        self.arrow_head_at_start = True
-        self.arrow_head_at_end = edge_type == g.ARROW
+        self._arrowhead_at_start = None
+        self._arrowhead_at_end = None
 
         # ## Adjustable values, defaults to ForestSettings if None for this element
         self._color = None
@@ -105,6 +105,12 @@ class Edge(QtWidgets.QGraphicsItem):
         self.setZValue(10)
         self.status_tip = ""
         self.connect_end_points(start, end)
+        self.arrowhead_size_at_start = 6
+        self.arrowhead_size_at_end = 6
+        self._arrow_cut_point_start = None
+        self._arrow_cut_point_end = None
+        self._arrowhead_start_path = None
+        self._arrowhead_end_path = None
 
         # self.setAcceptedMouseButtons(QtCore.Qt.NoButton)
         # self.setFlag(QtGui.QGraphicsItem.ItemIsMovable)
@@ -220,7 +226,7 @@ class Edge(QtWidgets.QGraphicsItem):
         """
         if value is None:
             if self._color is None:
-                c = self.forest.settings.edge_settings(self.edge_type, 'color')
+                c = self.forest.settings.edge_type_settings(self.edge_type, 'color')
                 return ctrl.cm.get(c)
             else:
                 return ctrl.cm.get(self._color)
@@ -233,7 +239,7 @@ class Edge(QtWidgets.QGraphicsItem):
         :return: str
         """
         if self._color is None:
-            return self.forest.settings.edge_settings(self.edge_type, 'color')
+            return self.forest.settings.edge_type_settings(self.edge_type, 'color')
         else:
             return self._color
 
@@ -264,7 +270,7 @@ class Edge(QtWidgets.QGraphicsItem):
         """
         if value is None:
             if self._shape_name is None:
-                return self.forest.settings.edge_settings(self.edge_type, 'shape_name')
+                return self.forest.settings.edge_type_settings(self.edge_type, 'shape_name')
             else:
                 return self._shape_name
         else:
@@ -295,7 +301,7 @@ class Edge(QtWidgets.QGraphicsItem):
         """
         if value is None:
             if self._pull is None:
-                return self.forest.settings.edge_settings(self.edge_type, 'pull')
+                return self.forest.settings.edge_type_settings(self.edge_type, 'pull')
             else:
                 return self._pull
         else:
@@ -323,7 +329,7 @@ class Edge(QtWidgets.QGraphicsItem):
         """
         if value is None:
             if self._shape_visible is None:
-                return self.forest.settings.edge_settings(self.edge_type, 'visible')
+                return self.forest.settings.edge_type_settings(self.edge_type, 'visible')
             else:
                 return self._shape_visible
         else:
@@ -420,6 +426,23 @@ class Edge(QtWidgets.QGraphicsItem):
         self._path, self._true_path, self.control_points = self._shape_method(**c)
         #if not self.is_filled():  # expensive with filled shapes
         self._fat_path = outline_stroker.createStroke(self._path) #.united(self._path)
+        if self.ending('start'):
+            self._arrowhead_start_path = self.make_arrowhead_path('start')
+            if c.get('thickness', 0):
+                self._path = self.clip_ending('start', self._path)
+        else:
+            self._arrowhead_start_path = None
+        if self.ending('end'):
+            self._arrowhead_end_path = self.make_arrowhead_path('end')
+            if c.get('thickness', 0):
+                self._path = self.clip_ending('end', self._path)
+        else:
+            self._arrowhead_end_path = None
+        if c.get('thickness', 0):
+            if self.ending('start'):
+                self._path = self.clip_ending('start', self._path)
+            if self.ending('end'):
+                self._path = self.clip_ending('end', self._path)
 
     def shape(self):
         """ Override of the QGraphicsItem method. Should returns the real shape of item to allow exact hit detection.
@@ -698,10 +721,10 @@ class Edge(QtWidgets.QGraphicsItem):
 
         if self.is_filled():
             painter.fillPath(self._path, c)
-        if self.arrow_head_at_start:
-            self.draw_arrow_head(painter, width, c, 'start')
-        if self.arrow_head_at_end:
-            self.draw_arrow_head(painter, width, c, 'end')
+        if self.ending('start'):
+            painter.fillPath(self._arrowhead_start_path, c)
+        if self.ending('end'):
+            painter.fillPath(self._arrowhead_end_path, c)
 
 
     def get_path(self)-> QtGui.QPainterPath:
@@ -745,26 +768,75 @@ class Edge(QtWidgets.QGraphicsItem):
         self.update_end_points()
         self.set_visible(self._visible)
 
-    def draw_arrow_head(self, painter, width, c, pos='end'):
-        hlength = 6
+
+    def ending(self, which_end, value=None):
+        """
+        get ending to be used in the edge, or set it.
+        :param value: string or boolean
+        :return: string or boolean
+        """
+        if value is None:
+            if which_end == 'start':
+                if self._arrowhead_at_start is None:
+                    return self.forest.settings.edge_type_settings(self.edge_type, 'arrowhead_at_start')
+                else:
+                    return self._arrowhead_at_start
+            elif which_end == 'end':
+                if self._arrowhead_at_end is None:
+                    return self.forest.settings.edge_type_settings(self.edge_type, 'arrowhead_at_end')
+                else:
+                    return self._arrowhead_at_end
+
+        else:
+            if which_end == 'start':
+                self._arrowhead_at_start = value
+            elif which_end == 'end':
+                self._arrowhead_at_end = value
+
+    def clip_ending(self, which_end, path):
+        if which_end == 'start':
+            i = 0
+            if self._arrow_cut_point_start:
+                x, y = self._arrow_cut_point_start
+            else:
+                return path
+        else:
+            i = path.elementCount()-1
+            if self._arrow_cut_point_end:
+                x, y = self._arrow_cut_point_end
+            else:
+                return path
+        path.setElementPositionAt(i, x, y)
+        return path
+
+    def make_arrowhead_path(self, pos='end'):
+        """
+
+        :param painter:
+        :param c:
+        :param pos:
+        """
         ad = 0.5
         if pos == 'start':
+            size = self.arrowhead_size_at_start
             x, y, z = self.start_point
             a = math.radians(-self.get_angle_at(0) + 180)
         elif pos == 'end':
+            size = self.arrowhead_size_at_end
             x, y, z = self.end_point
             a = math.radians(-self.get_angle_at(.95))
         p = QtGui.QPainterPath()
         p.moveTo(x, y)
-        x1, y1 = x - (math.cos(a + ad) * hlength), y - (math.sin(a + ad) * hlength)
-        xm, ym = x - (math.cos(a) * hlength * 0.5), y - (math.sin(a) * hlength * 0.5)
-        x2, y2 = x - (math.cos(a - ad) * hlength), y - (math.sin(a - ad) * hlength)
+        x1, y1 = x - (math.cos(a + ad) * size), y - (math.sin(a + ad) * size)
+        xm, ym = x - (math.cos(a) * size * 0.5), y - (math.sin(a) * size * 0.5)
+        x2, y2 = x - (math.cos(a - ad) * size), y - (math.sin(a - ad) * size)
         p.lineTo(x1, y1)
         p.lineTo(xm, ym)
         p.lineTo(x2, y2)
         p.lineTo(x, y)
-        pen = QtGui.QPen(c)
-        pen.setWidthF(0.5)
-        painter.setPen(pen)
-        #painter.drawPath(p)
-        painter.fillPath(p, c)
+        if pos == 'start':
+            self._arrow_cut_point_start = xm, ym
+        elif pos == 'end':
+            self._arrow_cut_point_end = xm, ym
+        return p
+

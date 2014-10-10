@@ -244,7 +244,7 @@ class ForestSettings:
 
     # ## Edges - all require edge type as argument, value is stored in dict ###########
 
-    def edge_settings(self, edge_type, key, value=None):
+    def edge_type_settings(self, edge_type, key, value=None):
         """ Getter/setter for settings related to various types of edges. 
         If not found here, value is searched from preferences. 
         If called with value, the value is set here and it overrides 
@@ -275,7 +275,7 @@ class ForestSettings:
         :return:
         """
         if not shape_name:
-            shape_name = self.edge_settings(edge_type, 'shape_name')
+            shape_name = self.edge_type_settings(edge_type, 'shape_name')
 
         shape_args = self._edge_types.get(edge_type).get('shape_args', None)
 
@@ -301,7 +301,7 @@ class ForestSettings:
                     return shape_args[key]
             elif value == DELETE:
                 if key in shape_args:
-                    shape_defaults = SHAPE_PRESETS[self.edge_settings(edge_type, 'shape_name')]
+                    shape_defaults = SHAPE_PRESETS[self.edge_type_settings(edge_type, 'shape_name')]
                     if key in shape_defaults:
                         shape_args[key] = shape_defaults[key]
                     else:
