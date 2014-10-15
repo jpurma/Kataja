@@ -290,10 +290,10 @@ actions = {
     #     'command': 'key_esc',
     #     'method': 'key_esc',
     #     'shortcut': 'Escape'},
-    # 'key_backspace': {
-    #     'command': 'key_backspace',
-    #     'method': 'key_backspace',
-    #     'shortcut': 'Backspace'},
+     'key_backspace': {
+         'command': 'key_backspace',
+         'method': 'key_backspace',
+         'shortcut': 'Backspace'},
     # 'key_return': {
     #     'command': 'key_return',
     #     'method': 'key_return',

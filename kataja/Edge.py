@@ -112,6 +112,13 @@ class Edge(QtWidgets.QGraphicsItem):
         self._arrowhead_start_path = None
         self._arrowhead_end_path = None
 
+        self._label_text = None
+        self._label_item = None
+        self._label_rect = None
+        self._label_start_at = 0.1
+        self._label_angle = 90
+        self._label_dist = 20
+        self._label_size = None
         # self.setAcceptedMouseButtons(QtCore.Qt.NoButton)
         # self.setFlag(QtGui.QGraphicsItem.ItemIsMovable)
         # self.setFlag(QtGui.QGraphicsItem.ItemIsSelectable)
@@ -215,6 +222,51 @@ class Edge(QtWidgets.QGraphicsItem):
         :param touch_area: TouchArea
         """
         del self.touch_areas[touch_area.type]
+
+    #### Label for arrow etc. ##############################################
+
+    def label_text(self, value=None):
+        if value is None:
+            return self._label_text
+        else:
+            print("adding label text ", value)
+            self._label_text = value
+            if not self._label_item:
+                self._label_item = QtWidgets.QGraphicsTextItem(value, parent=self)
+            else:
+                self._label_item.setPlainText(self._label_text)
+            self._label_size = self._label_item.boundingRect().size()
+
+    def get_label_position(self):
+        return self._label_start_at, self._label_angle, self._label_dist
+
+    def set_label_position(self, start=None, angle=None, dist=None):
+        if start is not None:
+            self._label_start_at = start
+        if angle is not None:
+            self._label_angle = angle
+        if dist is not None:
+            self._label_dist = dist
+        self.update_label_pos()
+
+    def get_label_line_positions(self):
+        start = self.get_point_at(self._label_start_at)
+        angle = math.radians(self.get_angle_at(self._label_start_at))
+        end_x = start.x() + (self._label_dist * math.sin(angle))
+        end_y = start.y() + (self._label_dist * math.cos(angle))
+        end = QtCore.QPointF(end_x, end_y)
+        return start, end, angle
+
+    def update_label_pos(self):
+        if not self._label_item:
+            return
+        start, end, angle = self.get_label_line_positions()
+        label_pos = end + self.compute_label_rect_magnet(angle)
+        self._label_item.setPos(label_pos)
+
+    def compute_label_rect_magnet(self, rad_angle):
+        print(rad_angle, math.degrees(rad_angle))
+        return Pf(-self._label_size.width()/2, -self._label_size.height()/2)
 
     # ### Color ############################################################
 
@@ -443,6 +495,7 @@ class Edge(QtWidgets.QGraphicsItem):
                 self._path = self.clip_ending('start', self._path)
             if self.ending('end'):
                 self._path = self.clip_ending('end', self._path)
+        self.update_label_pos()
 
     def shape(self):
         """ Override of the QGraphicsItem method. Should returns the real shape of item to allow exact hit detection.
@@ -733,7 +786,7 @@ class Edge(QtWidgets.QGraphicsItem):
         """
         return self._path
 
-    def get_point_at(self, d: int)-> Pf:
+    def get_point_at(self, d: float)-> Pf:
         """ Get coordinates at the percentage of the length of the path.
         :param d: int
         :return: QPoint
@@ -743,7 +796,7 @@ class Edge(QtWidgets.QGraphicsItem):
             self.make_path()
         return self._true_path.pointAtPercent(d)
 
-    def get_angle_at(self, d) -> float:
+    def get_angle_at(self, d: float) -> float:
         """ Get angle at the percentage of the length of the path.
         :param d: int
         :return: float
@@ -817,12 +870,17 @@ class Edge(QtWidgets.QGraphicsItem):
         :param pos:
         """
         ad = 0.5
+        t = self._cached_shape_args.get('thickness', 0)
         if pos == 'start':
             size = self.arrowhead_size_at_start
+            if (t):
+                size *= t
             x, y, z = self.start_point
             a = math.radians(-self.get_angle_at(0) + 180)
         elif pos == 'end':
             size = self.arrowhead_size_at_end
+            if (t):
+                size *= t
             x, y, z = self.end_point
             a = math.radians(-self.get_angle_at(.95))
         p = QtGui.QPainterPath()

@@ -769,6 +769,8 @@ class Forest:
         edge = self.create_edge(start=None, end=None, edge_type=g.ARROW)
         edge.set_start_point(p1)
         edge.set_end_point(p2)
+        if text:
+            edge.label_text(text)
         edge.show()
         ctrl.select(edge)
         return edge
@@ -835,6 +837,10 @@ class Forest:
 
 
     def delete_item(self, item):
+        if isinstance(item, Edge):
+            self.delete_edge(item)
+        elif isinstance(item, Node):
+            self.delete_node(item)
         # def remove_stored(self, item):
         #     """ Remove item from various storages """
         #     if isinstance(item, Node):

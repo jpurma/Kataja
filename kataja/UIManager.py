@@ -357,6 +357,8 @@ class UIManager:
         if hasattr(item, 'touch_areas'):
             for touch_area in list(item.touch_areas.values()):
                 self.delete_touch_area(touch_area)
+        self.remove_control_points(item)
+
 
 
     def filter_active_items_from(self, items, x, y):

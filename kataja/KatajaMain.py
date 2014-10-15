@@ -576,6 +576,11 @@ class KatajaMain(QtWidgets.QMainWindow):
         p.update_panel()
 
 
+    def key_backspace(self):
+        print('Backspace pressed')
+        for item in ctrl.get_all_selected():
+            ctrl.forest.delete_item(item)
+
     def change_edge_shape(self, shape):
         if shape is g.AMBIGUOUS_VALUES:
             return
@@ -771,7 +776,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         print("New arrow called")
         p1, p2 = self.ui_manager.get_new_element_embed_points()
         text = self.ui_manager.get_new_element_text()
-        self.forest.create_arrow(p1, p2)
+        self.forest.create_arrow(p1, p2, text)
         self.ui_manager.close_new_element_embed()
 
     def create_new_divider(self):
