@@ -164,7 +164,7 @@ class Edge(QtWidgets.QGraphicsItem):
         # self.setFlag(QtGui.QGraphicsItem.ItemIsMovable)
         # self.setFlag(QtGui.QGraphicsItem.ItemIsSelectable)
         self.setAcceptHoverEvents(True)
-        self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        #self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.effect = utils.create_shadow_effect(ctrl.cm.selection())
         self.setGraphicsEffect(self.effect)
 
@@ -523,7 +523,7 @@ class Edge(QtWidgets.QGraphicsItem):
         c['end'] = self.end
         self._path, self._true_path, self.control_points = self._shape_method(**c)
         #if not self.is_filled():  # expensive with filled shapes
-        self._fat_path = outline_stroker.createStroke(self._path) #.united(self._path)
+        self._fat_path = outline_stroker.createStroke(self._path).united(self._path)
         if self.ending('start'):
             self._arrowhead_start_path = self.make_arrowhead_path('start')
             if c.get('thickness', 0):
@@ -824,6 +824,9 @@ class Edge(QtWidgets.QGraphicsItem):
             painter.fillPath(self._arrowhead_start_path, c)
         if self.ending('end'):
             painter.fillPath(self._arrowhead_end_path, c)
+        #painter.setPen(ctrl.cm.d['accent6'])
+        #painter.drawPath(self._fat_path)
+        #painter.fillPath(self._fat_path, ctrl.cm.d['accent7'])
 
 
     def get_path(self)-> QtGui.QPainterPath:

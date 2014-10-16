@@ -484,8 +484,8 @@ def directional_blob_path(start_point=None, end_point=None, adjust=None, align=L
         path = path.subtracted(path1neg)
         path = path.subtracted(path2neg)
 
-    inner_path = QtGui.QPainterPath(Pf(sx, sy))
-    inner_path.lineTo(end_point[0], end_point[1])
+    inner_path = QtGui.QPainterPath(Pf(scx, scy))
+    inner_path.lineTo(ecx, ecy)
     return path.simplified(), inner_path, []
 
 def directional_blob_icon(painter, rect, color=None):

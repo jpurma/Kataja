@@ -440,8 +440,9 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
 
     # ######### MOUSE ##############
-    def get_closest_item(self, x, y, candidates, must_contain=True):
-        """
+    def get_closest_item(self, x, y, candidates, must_contain=False):
+        """ If there are several partially overlapping items at the point, choose
+        the one that where we clicked closest to center.
 
         :param x:
         :param y:
@@ -452,8 +453,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
         min_d = 1000
         closest_item = None
         for item in candidates:
-            if item.isObscured():
-                continue
             sbr = item.sceneBoundingRect()
             if must_contain and not sbr.contains(x, y):
                 continue
@@ -481,7 +480,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         # Check if any UI items can receive this press
         items = self.items(event.scenePos())
-
         ui_items = um.filter_active_items_from(items, x, y)
         while ui_items:
             closest_item = self.get_closest_item(x, y, ui_items)
@@ -492,7 +490,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 return None
             ui_items.remove(closest_item)
         # It wasn't consumed, continue with other selectables:
-        selectables = [i for i in items if i.isVisible() and getattr(i, 'selectable', True)]
+        selectables = [i for i in items if getattr(i, 'selectable', True)]
         if selectables:
             closest_item = self.get_closest_item(x, y, selectables)
             if closest_item:
@@ -570,7 +568,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 success = ctrl.main.ui_manager.drop_item_to(pressed, event)  # @UndefinedVariable
                 pressed.drop_to(x, y, received=success)
                 self.kill_dragging()
-            elif pressed.sceneBoundingRect().contains(x, y):
+            else:
                 if pressed.clickable:
                     mouse('click on ', pressed)
                     success = pressed.click(event)

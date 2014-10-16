@@ -298,7 +298,7 @@ class UIManager:
 
 
         """
-        debug.ui("Update selections called")
+        debug.ui("Update selections called ", selection)
         lp = self._ui_panels[g.DRAWING]
         lp.selected_objects_changed()
         lp.update_panel()
