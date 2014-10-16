@@ -581,8 +581,20 @@ class UIManager:
             self._new_element_marker.hide()
 
     def new_element_accept(self):
-        print('got enter from new_element_embed')
-        self.close_embed()
+        type = self.get_new_element_type_selection()
+        if type == g.GUESS_FROM_INPUT:
+            print("Guessing input type")
+            text = self.get_new_element_text()
+            p1, p2 = self.get_new_element_embed_points()
+            # we can add a test if line p1 - p2 crosses several edges, then it can be a divider
+            if (p1 - p2).manhattanLength() > 20 and not text.startswith('['):
+                # It's an Arrow!
+                self.main.create_new_arrow()
+            else:
+                self.close_embed()
+        else:
+            print('got enter from new_element_embed')
+            self.close_embed()
 
     def get_new_element_embed_points(self):
         p1 = self._new_element_marker.pos()
@@ -592,6 +604,9 @@ class UIManager:
 
     def get_new_element_text(self):
         return self._new_element_embed.input_line_edit.text()
+
+    def get_new_element_type_selection(self):
+        return self._new_element_embed.input_action_selector.itemData(self._new_element_embed.input_action_selector.currentIndex())
 
     def close_new_element_embed(self):
         self.close_embed()
@@ -972,6 +987,13 @@ class UIManager:
             self.add_ui(cp)
             self._control_points.append(cp)
             cp.update_position()
+        if edge.has_label():
+            cp = ControlPoint(edge, role='label_start')
+            self.add_ui(cp)
+            self._control_points.append(cp)
+            cp = ControlPoint(edge, role='label_end')
+            self.add_ui(cp)
+            self._control_points.append(cp)
 
 
     def update_control_point_positions(self):

@@ -3,6 +3,7 @@ from kataja.ui.embeds.UIEmbed import UIEmbed
 from kataja.singletons import qt_prefs, ctrl
 from kataja.utils import print_transform
 from kataja.ui.DrawnIconEngine import DrawnIconEngine
+import kataja.globals as g
 
 __author__ = 'purma'
 
@@ -147,7 +148,8 @@ class NewElementEmbed(UIEmbed):
         layout.addWidget(self.input_line_edit)
         hlayout = QtWidgets.QHBoxLayout()
         self.input_action_selector = QtWidgets.QComboBox(self)
-        self.input_action_selector.addItems(['guess from input', 'Constituent', 'Feature', 'Gloss', 'Text box'])
+        for item in [g.GUESS_FROM_INPUT, g.ADD_CONSTITUENT, g.ADD_FEATURE, g.ADD_GLOSS, g.ADD_TEXT_BOX]:
+            self.input_action_selector.addItem(item, userData=item) # first item here can be translated
         hlayout.addWidget(self.input_action_selector)
         self.enter_button = QtWidgets.QPushButton("↩") # U+21A9 &#8617;
         self.enter_button.setMaximumWidth(20)

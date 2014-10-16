@@ -43,6 +43,11 @@ RIGHT_ADD_SIBLING = 3
 EDGE_SHAPES_CHANGED = 101
 # EDGE_SHAPES_CHANGED = QtCore.pyqtSignal(int, int)
 
+GUESS_FROM_INPUT = 'guess from input'
+ADD_CONSTITUENT = 'Constituent'
+ADD_FEATURE = 'Feature'
+ADD_GLOSS = 'Gloss'
+ADD_TEXT_BOX = 'Text box'
 
 #EDGE_SHAPES_CHANGED = QtCore.QEvent.registerEventType()
 #print 'EDGE_SHAPES_CHANGED: ', EDGE_SHAPES_CHANGED

@@ -36,6 +36,47 @@ from kataja import utils
 # ('shaped_relative_linear',{'method':shapedRelativeLinearPath,'fill':True,'pen':'thin'}),
 
 
+class EdgeLabel(QtWidgets.QGraphicsTextItem):
+    def __init__(self, text, parent=None):
+        QtWidgets.QGraphicsTextItem.__init__(self, text, parent=parent)
+        self.draggable = True
+        self.selectable = True
+        self.clickable = True
+        self._size = self.boundingRect().size()
+        self.setDefaultTextColor(self.parentItem().color())
+
+    def drag(self, event):
+        print("Dragging edgelabel")
+
+    def click(self, event):
+        print("Clicking edgelabel")
+
+    def update_text(self, value):
+        self.setPlainText(value)
+        self._size = self.boundingRect().size()
+
+    def compute_magnet(self, rad_angle):
+        s = self._size
+        angle = math.degrees(rad_angle)
+        print(angle)
+        if angle > 315 or angle <= 45:
+            # center top
+            return Pf(s.width()/2, 0)
+        elif 45 < angle <= 135:
+            # left middle
+            return Pf(0, s.height()/2)
+        elif 135 < angle <= 225:
+            #center bottom
+            return Pf(s.width()/2, s.height())
+        elif 225 < angle <= 315:
+            # right middle
+            return Pf(s.width(), s.height()/2)
+
+
+
+
+
+
 class Edge(QtWidgets.QGraphicsItem):
     """ Any connection between nodes: can be represented as curves, branches or arrows """
 
@@ -118,7 +159,7 @@ class Edge(QtWidgets.QGraphicsItem):
         self._label_start_at = 0.1
         self._label_angle = 90
         self._label_dist = 20
-        self._label_size = None
+        self._c_label_positions = None
         # self.setAcceptedMouseButtons(QtCore.Qt.NoButton)
         # self.setFlag(QtGui.QGraphicsItem.ItemIsMovable)
         # self.setFlag(QtGui.QGraphicsItem.ItemIsSelectable)
@@ -225,6 +266,9 @@ class Edge(QtWidgets.QGraphicsItem):
 
     #### Label for arrow etc. ##############################################
 
+    def has_label(self):
+        return self._label_item
+
     def label_text(self, value=None):
         if value is None:
             return self._label_text
@@ -232,10 +276,9 @@ class Edge(QtWidgets.QGraphicsItem):
             print("adding label text ", value)
             self._label_text = value
             if not self._label_item:
-                self._label_item = QtWidgets.QGraphicsTextItem(value, parent=self)
+                self._label_item = EdgeLabel(self._label_text, parent=self)
             else:
-                self._label_item.setPlainText(self._label_text)
-            self._label_size = self._label_item.boundingRect().size()
+                self._label_item.update_text(self._label_text)
 
     def get_label_position(self):
         return self._label_start_at, self._label_angle, self._label_dist
@@ -257,16 +300,18 @@ class Edge(QtWidgets.QGraphicsItem):
         end = QtCore.QPointF(end_x, end_y)
         return start, end, angle
 
+    def get_cached_label_positions(self):
+        if not self._c_label_positions:
+            self.update_label_pos()
+        return self._c_label_positions
+
     def update_label_pos(self):
         if not self._label_item:
             return
         start, end, angle = self.get_label_line_positions()
-        label_pos = end + self.compute_label_rect_magnet(angle)
+        self._c_label_positions = start, end
+        label_pos = end - self._label_item.compute_magnet(angle)
         self._label_item.setPos(label_pos)
-
-    def compute_label_rect_magnet(self, rad_angle):
-        print(rad_angle, math.degrees(rad_angle))
-        return Pf(-self._label_size.width()/2, -self._label_size.height()/2)
 
     # ### Color ############################################################
 
@@ -371,6 +416,7 @@ class Edge(QtWidgets.QGraphicsItem):
         self.set_start_point(sx, sy)
         self.set_end_point(sx + dx, sy + dy)
         self.make_path()
+
         self.update()
 
     def shape_visibility(self, value=None):
@@ -496,6 +542,7 @@ class Edge(QtWidgets.QGraphicsItem):
             if self.ending('end'):
                 self._path = self.clip_ending('end', self._path)
         self.update_label_pos()
+        ctrl.ui.update_control_point_positions()
 
     def shape(self):
         """ Override of the QGraphicsItem method. Should returns the real shape of item to allow exact hit detection.
@@ -517,8 +564,7 @@ class Edge(QtWidgets.QGraphicsItem):
             self.adjust.append((0, 0, 0))
         if cpl != len(self.control_points):
             ctrl.ui.reset_control_points(self)
-        else:
-            ctrl.ui.update_control_point_positions()
+        ctrl.ui.update_control_point_positions()
         self.update()
 
 

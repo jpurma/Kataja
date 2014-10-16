@@ -42,6 +42,11 @@ class ControlPoint(QtWidgets.QGraphicsItem):
             p = Pf(self.host_edge.start_point[0], self.host_edge.start_point[1])
         elif self.role == 'end':
             p = Pf(self.host_edge.end_point[0], self.host_edge.end_point[1])
+        elif self.role == 'label_start':
+            print('updating label start cp')
+            p = Pf(self.host_edge.get_cached_label_positions()[0].x(), self.host_edge.get_cached_label_positions()[0].y())
+        elif self.role == 'label_end':
+            p = Pf(self.host_edge.get_cached_label_positions()[1].x(), self.host_edge.get_cached_label_positions()[1].y())
         self.setPos(p)
 
     def boundingRect(self):
