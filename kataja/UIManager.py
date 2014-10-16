@@ -599,7 +599,6 @@ class UIManager:
     def get_new_element_embed_points(self):
         p1 = self._new_element_marker.pos()
         p2 = self._new_element_marker.mapToScene(self._new_element_marker.end_point)
-        print(p1, p2)
         return p1, p2
 
     def get_new_element_text(self):
@@ -1033,8 +1032,6 @@ class UIManager:
         :param item:
         :param event:
             """
-        # print type(event)
-        # print self.itemAt(event.scenePos())
         debug.mouse('mouse_press_event at UIManager')
         drag = getattr(item, 'draggable', False)
         focus = getattr(item, 'focusable', False)

@@ -113,10 +113,14 @@ class NewElementMarker(QtWidgets.QGraphicsItem):
         self.prepareGeometryChange()
         if scenePos:
             self.start_point = scenePos
-        h = self.embed.height()
-        if h < 100:
-            h = self.embed.assumed_height
-        end_pos = QtCore.QPoint(self.embed.x(), self.embed.y() + h / 2)
+        magnet, type = self.embed.magnet()
+        end_pos = self.embed.pos() + magnet
+        if type in [4, 5, 6, 8]:
+            end_pos -= QtCore.QPoint(0, 20)
+        elif type in [1, 3]:
+            end_pos += QtCore.QPoint(0, 20)
+        elif type in [2, 7]:
+            end_pos += QtCore.QPoint(20, 0)
         v = self.embed.parentWidget()
         self.setPos(self.start_point)
         self.end_point = self.mapFromScene(v.mapToScene(end_pos)).toPoint()
@@ -158,6 +162,7 @@ class NewElementEmbed(UIEmbed):
         hlayout.addWidget(self.enter_button)
         layout.addLayout(hlayout)
         self.setLayout(layout)
+        self.assumed_width = 200
         self.assumed_height = 117
 
     def mouseMoveEvent(self, event):

@@ -37,16 +37,21 @@ from kataja import utils
 
 
 class EdgeLabel(QtWidgets.QGraphicsTextItem):
-    def __init__(self, text, parent=None):
+    def __init__(self, text, parent=None, placeholder=False):
         QtWidgets.QGraphicsTextItem.__init__(self, text, parent=parent)
         self.draggable = True
         self.selectable = True
         self.clickable = True
+        self.placeholder = placeholder
+        self.selected = False
         self._size = self.boundingRect().size()
         self.setDefaultTextColor(self.parentItem().color())
 
     def drag(self, event):
         print("Dragging edgelabel")
+
+    def drop_to(self, x, y):
+        print("Dropping edgelabel")
 
     def click(self, event):
         print("Clicking edgelabel")
@@ -58,7 +63,6 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
     def compute_magnet(self, rad_angle):
         s = self._size
         angle = math.degrees(rad_angle)
-        print(angle)
         if angle > 315 or angle <= 45:
             # center top
             return Pf(s.width()/2, 0)
@@ -72,7 +76,13 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
             # right middle
             return Pf(s.width(), s.height()/2)
 
-
+    def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget):
+        if self.selected:
+            p = QtGui.QPen(ctrl.cm.ui())
+            p.setWidthF(0.5)
+            QPainter.setPen(p)
+            QPainter.drawRect(self.boundingRect())
+        QtWidgets.QGraphicsTextItem.paint(self, QPainter, QStyleOptionGraphicsItem, QWidget)
 
 
 
@@ -156,7 +166,7 @@ class Edge(QtWidgets.QGraphicsItem):
         self._label_text = None
         self._label_item = None
         self._label_rect = None
-        self._label_start_at = 0.1
+        self._label_start_at = 0.2
         self._label_angle = 90
         self._label_dist = 20
         self._c_label_positions = None
@@ -164,7 +174,7 @@ class Edge(QtWidgets.QGraphicsItem):
         # self.setFlag(QtGui.QGraphicsItem.ItemIsMovable)
         # self.setFlag(QtGui.QGraphicsItem.ItemIsSelectable)
         self.setAcceptHoverEvents(True)
-        #self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.effect = utils.create_shadow_effect(ctrl.cm.selection())
         self.setGraphicsEffect(self.effect)
 
@@ -273,7 +283,6 @@ class Edge(QtWidgets.QGraphicsItem):
         if value is None:
             return self._label_text
         else:
-            print("adding label text ", value)
             self._label_text = value
             if not self._label_item:
                 self._label_item = EdgeLabel(self._label_text, parent=self)
@@ -523,17 +532,13 @@ class Edge(QtWidgets.QGraphicsItem):
         c['end'] = self.end
         self._path, self._true_path, self.control_points = self._shape_method(**c)
         #if not self.is_filled():  # expensive with filled shapes
-        self._fat_path = outline_stroker.createStroke(self._path).united(self._path)
+        combined = self._path
         if self.ending('start'):
             self._arrowhead_start_path = self.make_arrowhead_path('start')
-            if c.get('thickness', 0):
-                self._path = self.clip_ending('start', self._path)
         else:
             self._arrowhead_start_path = None
         if self.ending('end'):
             self._arrowhead_end_path = self.make_arrowhead_path('end')
-            if c.get('thickness', 0):
-                self._path = self.clip_ending('end', self._path)
         else:
             self._arrowhead_end_path = None
         if c.get('thickness', 0):
@@ -541,6 +546,15 @@ class Edge(QtWidgets.QGraphicsItem):
                 self._path = self.clip_ending('start', self._path)
             if self.ending('end'):
                 self._path = self.clip_ending('end', self._path)
+            bi = QtGui.QPainterPath(self._path)
+            bi.addPath(self._path.toReversed())
+            self._fat_path = outline_stroker.createStroke(self._path).united(bi)
+        else:
+            self._fat_path = outline_stroker.createStroke(self._path).united(self._path)
+        if self._arrowhead_start_path:
+            self._fat_path = self._fat_path.united(self._arrowhead_start_path)
+        if self._arrowhead_end_path:
+            self._fat_path = self._fat_path.united(self._arrowhead_end_path)
         self.update_label_pos()
         ctrl.ui.update_control_point_positions()
 
@@ -709,9 +723,17 @@ class Edge(QtWidgets.QGraphicsItem):
         ui = ctrl.main.ui_manager  # @UndefinedVariable
         if selected:
             ui.add_control_points(self)
+            if not self._label_item:
+                self._label_item = EdgeLabel('', self, placeholder=True)
+                self.update_label_pos()
+            self._label_item.selected = True
         else:
             ui.remove_control_points(self)
-        print("selection done")
+            if self._label_item and self._label_item.placeholder:
+                self.scene().removeItem(self._label_item)
+                self._label_item = None
+            elif self._label_item:
+                self._label_item.selected = False
         self.update()
 
     def boundingRect(self):

@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 from kataja.singletons import ctrl
 
 __author__ = 'purma'
@@ -31,7 +31,9 @@ class UIEmbed(QtWidgets.QWidget):
         ui_manager.connect_element_to_action(close_button, 'close_embed')
 
         self.top_row_layout.addWidget(close_button)
+        self.assumed_width = 200
         self.assumed_height = 100
+        self._magnet = QtCore.QPoint(0, 0), 1
 
         # Remember to add top_row_layout to your layout
 
@@ -42,10 +44,43 @@ class UIEmbed(QtWidgets.QWidget):
         self.setPalette(ctrl.cm.get_qt_palette_for_ui())
         if scenePos:
             h = self.height()
+            w = self.width()
             if h < 100:
                 h = self.assumed_height
+            if w < 100:
+                w = self.assumed_width
             view_pos = self.parent().mapFromScene(scenePos)
-            self.move(view_pos.x(), view_pos.y() - h / 2)
+            vw = self.parent().width()
+            vh = self.parent().height()
+            x = view_pos.x()
+            y = view_pos.y()
+            p = 0
+            if x + w > vw:
+                if y + h > vh:
+                    magnet = QtCore.QPoint(w, h), 8
+                else:
+                    magnet = QtCore.QPoint(w, 0), 3
+            elif y + (h/2) > vh:
+                if x + (w/2) > vw:
+                    magnet = QtCore.QPoint(w, h), 8
+                elif x - (w/2) < 0:
+                    magnet = QtCore.QPoint(0, h), 6
+                else:
+                    magnet = QtCore.QPoint(w/2, h), 7
+            elif y - (h/2) < 0:
+                if x + (w/2) > vw:
+                    magnet = QtCore.QPoint(w, 0), 3
+                elif x - (w/2) < 0:
+                    magnet = QtCore.QPoint(0, 0), 1
+                else:
+                    magnet = QtCore.QPoint(w/2, 0), 2
+            else:
+                magnet = QtCore.QPoint(0, h/2), 4
+            self._magnet = magnet
+            self.move(view_pos - magnet[0])
+
+    def magnet(self):
+        return self._magnet
 
     def update_color(self):
         self.setPalette(ctrl.cm.get_qt_palette_for_ui())

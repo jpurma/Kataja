@@ -34,7 +34,7 @@ class ControlPoint(QtWidgets.QGraphicsItem):
         self._compute_position()
 
     def _compute_position(self):
-        if self._index > -1:
+        if -1 < self._index < len(self.host_edge.control_points):
             p = self.host_edge.control_points[self._index]
             a = self.host_edge.adjust[self._index]
             p = Pf(p[0] + a[0], p[1] + a[1])
@@ -43,7 +43,6 @@ class ControlPoint(QtWidgets.QGraphicsItem):
         elif self.role == 'end':
             p = Pf(self.host_edge.end_point[0], self.host_edge.end_point[1])
         elif self.role == 'label_start':
-            print('updating label start cp')
             p = Pf(self.host_edge.get_cached_label_positions()[0].x(), self.host_edge.get_cached_label_positions()[0].y())
         elif self.role == 'label_end':
             p = Pf(self.host_edge.get_cached_label_positions()[1].x(), self.host_edge.get_cached_label_positions()[1].y())
