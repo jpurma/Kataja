@@ -52,6 +52,7 @@ from kataja.ui.panels.VisualizationPanel import VisualizationPanel
 from kataja.visualizations.available import VISUALIZATIONS
 from kataja.ui.panels.LineOptionsPanel import LineOptionsPanel
 from kataja.ui.embeds.NewElementEmbed import NewElementEmbed, NewElementMarker
+from kataja.ui.embeds.EdgeLabelEmbed import EdgeLabelEmbed
 
 
 NOTHING = 0
@@ -111,6 +112,7 @@ class UIManager:
         self._rubber_band_origin = None
         self._new_element_embed = None
         self._new_element_marker = None
+        self._edge_label_embed = None
 
         self._timer_id = 0
         self._ui_panels = {}
@@ -576,9 +578,12 @@ class UIManager:
     #### Embedded menus ################################
 
     def close_embed(self):
-        if self._new_element_embed.isVisible():
+        if self._new_element_embed and self._new_element_embed.isVisible():
             self._new_element_embed.close()
             self._new_element_marker.hide()
+        if self._edge_label_embed and self._edge_label_embed.isVisible():
+            self._edge_label_embed.close()
+            self._edge_label_embed.hide()
 
     def new_element_accept(self):
         type = self.get_new_element_type_selection()
@@ -610,6 +615,18 @@ class UIManager:
     def close_new_element_embed(self):
         self.close_embed()
 
+
+    #### Label edge editin dialog #########################################################
+
+    def start_edge_label_editing(self, edge):
+        lp = edge.get_label_item().pos()
+        if not self._edge_label_embed:
+            self._edge_label_embed = EdgeLabelEmbed(self.main.graph_view, self, lp)
+        self._edge_label_embed.update_embed(scenePos=lp)
+        self._edge_label_embed.wake_up()
+
+    def edge_label_accept(self, **args):
+        print('edge label accept, ', args)
 
     #### Creation dialog #########################################################
 

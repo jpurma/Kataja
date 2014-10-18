@@ -48,13 +48,18 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         self.setDefaultTextColor(self.parentItem().color())
 
     def drag(self, event):
+        if self.placeholder:
+            return
         print("Dragging edgelabel")
 
     def drop_to(self, x, y):
+        if self.placeholder:
+            return
         print("Dropping edgelabel")
 
     def click(self, event):
-        print("Clicking edgelabel")
+        ctrl.ui.start_edge_label_editing(self.parentItem())
+        #print("Clicking edgelabel")
 
     def update_text(self, value):
         self.setPlainText(value)
@@ -277,6 +282,9 @@ class Edge(QtWidgets.QGraphicsItem):
     #### Label for arrow etc. ##############################################
 
     def has_label(self):
+        return self._label_item
+
+    def get_label_item(self):
         return self._label_item
 
     def label_text(self, value=None):
@@ -730,7 +738,9 @@ class Edge(QtWidgets.QGraphicsItem):
         else:
             ui.remove_control_points(self)
             if self._label_item and self._label_item.placeholder:
-                self.scene().removeItem(self._label_item)
+                scene = self.scene()
+                if scene:
+                    scene.removeItem(self._label_item)
                 self._label_item = None
             elif self._label_item:
                 self._label_item.selected = False

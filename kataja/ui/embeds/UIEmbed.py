@@ -31,6 +31,7 @@ class UIEmbed(QtWidgets.QWidget):
         ui_manager.connect_element_to_action(close_button, 'close_embed')
 
         self.top_row_layout.addWidget(close_button)
+        self.top_row_layout.setAlignment(QtCore.Qt.AlignLeft)
         self.assumed_width = 200
         self.assumed_height = 100
         self._magnet = QtCore.QPoint(0, 0), 1

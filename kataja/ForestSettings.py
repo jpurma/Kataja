@@ -23,7 +23,7 @@
 # ############################################################################
 
 from kataja.globals import *
-from shapes import SHAPE_PRESETS
+from kataja.shapes import SHAPE_PRESETS
 
 ONLY_LEAF_LABELS = 0
 ALL_LABELS = 1

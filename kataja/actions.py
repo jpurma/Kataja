@@ -284,6 +284,13 @@ actions = {
         'shortcut': 'd',
         'shortcut_context': 'parent_and_children'
     },
+    'edit_edge_label_enter_text': {
+        'command': 'Enter',
+        'method': 'edge_label_accept',
+        'shortcut': 'Return',
+        'context': 'ui',
+        'shortcut_context': 'parent_and_children'
+    },
 
     # Generic keys ####
     # 'key_esc': {
