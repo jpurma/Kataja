@@ -10,6 +10,7 @@ class EdgeLabelEmbed(UIEmbed):
     def __init__(self, parent, ui_manager, scenePos):
         UIEmbed.__init__(self, parent, ui_manager, scenePos)
         self.marker = None
+        self.edge = None
         layout = QtWidgets.QVBoxLayout()
         layout.addLayout(self.top_row_layout) # close-button from UIEmbed
         self.input_line_edit = QtWidgets.QLineEdit(self)
@@ -30,3 +31,10 @@ class EdgeLabelEmbed(UIEmbed):
 
     def focus_to_main(self):
         self.input_line_edit.setFocus()
+
+    def update_embed(self, scenePos=None, edge=None):
+        if edge:
+            self.edge = edge
+        if self.edge:
+            self.input_line_edit.setText(self.edge.label_text())
+        UIEmbed.update_embed(self, scenePos=scenePos)

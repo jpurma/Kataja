@@ -622,11 +622,16 @@ class UIManager:
         lp = edge.get_label_item().pos()
         if not self._edge_label_embed:
             self._edge_label_embed = EdgeLabelEmbed(self.main.graph_view, self, lp)
-        self._edge_label_embed.update_embed(scenePos=lp)
+        self._edge_label_embed.update_embed(scenePos=lp, edge=edge)
         self._edge_label_embed.wake_up()
 
     def edge_label_accept(self, **args):
         print('edge label accept, ', args)
+        e = self._edge_label_embed
+        e.edge.label_text(e.input_line_edit.text())
+        e.close()
+        e.hide()
+
 
     #### Creation dialog #########################################################
 

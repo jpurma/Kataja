@@ -47,7 +47,12 @@ class ColorSwatchIconEngine(QtGui.QIconEngine):
         :param mode:
         :param state:
         """
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
         painter.fillRect(rect, ctrl.cm.get('background1'))
-        painter.fillRect(rect, ctrl.cm.get(self.color_key))
+        c = ctrl.cm.get(self.color_key)
+        painter.setPen(c.darker())
+        painter.setBrush(c)
+        painter.drawRoundedRect(rect, 2, 2)
+        #painter.fillRect(rect, ctrl.cm.get(self.color_key))
 
 

@@ -28,6 +28,7 @@ class ColorBox(QtWidgets.QPushButton):
         :param event:
         """
         painter = QtGui.QPainter(self)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
         c = getattr(ctrl.cm, self.color_id)
         if c and callable(c):
             c = c()
@@ -38,9 +39,10 @@ class ColorBox(QtWidgets.QPushButton):
                 if self.color_id == 'background1':
                     painter.setPen(ctrl.cm.drawing())
                 else:
-                    painter.setPen(c)
-                painter.drawRect(QtCore.QRect(0, 0, 40, 20))
-                painter.drawText(48, 12, self.color_name)
+                    painter.setPen(c.darker())
+                painter.drawRoundedRect(QtCore.QRect(1, 1, 40, 20), 4, 3)
+                painter.setPen(c)
+                painter.drawText(48, 14, self.color_name)
         else:
             print("Color method %s is missing" % self.color_id)
 

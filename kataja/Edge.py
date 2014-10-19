@@ -58,12 +58,18 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         print("Dropping edgelabel")
 
     def click(self, event):
-        ctrl.ui.start_edge_label_editing(self.parentItem())
+        p = self.parentItem()
+        if p and ctrl.is_selected(p):
+            ctrl.ui.start_edge_label_editing(self.parentItem())
+        else:
+            ctrl.select(p)
         #print("Clicking edgelabel")
 
     def update_text(self, value):
         self.setPlainText(value)
         self._size = self.boundingRect().size()
+        if value:
+            self.placeholder = False
 
     def compute_magnet(self, rad_angle):
         s = self._size
@@ -296,6 +302,7 @@ class Edge(QtWidgets.QGraphicsItem):
                 self._label_item = EdgeLabel(self._label_text, parent=self)
             else:
                 self._label_item.update_text(self._label_text)
+
 
     def get_label_position(self):
         return self._label_start_at, self._label_angle, self._label_dist
