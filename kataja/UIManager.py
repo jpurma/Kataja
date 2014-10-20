@@ -577,13 +577,9 @@ class UIManager:
 
     #### Embedded menus ################################
 
-    def close_embed(self):
-        if self._new_element_embed and self._new_element_embed.isVisible():
-            self._new_element_embed.close()
-            self._new_element_marker.hide()
-        if self._edge_label_embed and self._edge_label_embed.isVisible():
-            self._edge_label_embed.close()
-            self._edge_label_embed.hide()
+    def close_embeds(self):
+        self.close_new_element_embed()
+        self.close_edge_label_editing()
 
     def new_element_accept(self):
         type = self.get_new_element_type_selection()
@@ -595,11 +591,10 @@ class UIManager:
             if (p1 - p2).manhattanLength() > 20 and not text.startswith('['):
                 # It's an Arrow!
                 self.main.create_new_arrow()
+                return
             else:
-                self.close_embed()
-        else:
-            print('got enter from new_element_embed')
-            self.close_embed()
+                print('do ', type)
+        self.close_new_element_embed()
 
     def get_new_element_embed_points(self):
         p1 = self._new_element_marker.pos()
@@ -613,7 +608,10 @@ class UIManager:
         return self._new_element_embed.input_action_selector.itemData(self._new_element_embed.input_action_selector.currentIndex())
 
     def close_new_element_embed(self):
-        self.close_embed()
+        if self._new_element_embed and self._new_element_embed.isVisible():
+            self._new_element_embed.label_text('')
+            self._new_element_embed.close()
+            self._new_element_marker.hide()
 
 
     #### Label edge editin dialog #########################################################
@@ -629,8 +627,13 @@ class UIManager:
         print('edge label accept, ', args)
         e = self._edge_label_embed
         e.edge.label_text(e.input_line_edit.text())
-        e.close()
-        e.hide()
+        self.close_edge_label_editing()
+
+    def close_edge_label_editing(self):
+        if self._edge_label_embed and self._edge_label_embed.isVisible():
+            self._edge_label_embed.close()
+            self._edge_label_embed.hide()
+
 
 
     #### Creation dialog #########################################################

@@ -23,8 +23,9 @@ class ShortcutSolver(QtCore.QObject):
             element = act_data['ui_element']
             if element and isinstance(element, QtWidgets.QAbstractButton):
                 print('Dealing with ambiguous action shortcut, ', element, element.isVisible())
-                element.animateClick()
-                return True     # eat this event
+                if element.isVisible():
+                    element.animateClick()
+                    return True
             else:
                 print("Don't know how to handle this ambiguous shortcut in ", action)
         return False
