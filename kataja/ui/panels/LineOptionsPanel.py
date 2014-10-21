@@ -15,7 +15,7 @@ __author__ = 'purma'
 class LineOptionsPanel(UIPanel):
     """ Panel for editing how edges and nodes are drawn. """
 
-    def __init__(self, name, key, default_position='float', parent=None, ui_manager=None, folded=False, closed=False):
+    def __init__(self, name, key, default_position='float', parent=None, ui_manager=None, folded=False):
         """
         BUild all advanced line options. Then in update filter what to show based on the line type.
 
@@ -25,7 +25,7 @@ class LineOptionsPanel(UIPanel):
         :param parent: self.main
         :param ui_buttons: pass a dictionary where buttons from this panel will be added
         """
-        UIPanel.__init__(self, name, key, default_position, parent, ui_manager, folded, closed)
+        UIPanel.__init__(self, name, key, default_position, parent, ui_manager, folded)
         inner = QtWidgets.QWidget(self)
         layout = QtWidgets.QVBoxLayout()
         layout.setSizeConstraint(QtWidgets.QLayout.SetMinimumSize)
@@ -205,6 +205,11 @@ class LineOptionsPanel(UIPanel):
         inner.setLayout(layout)
         self.setWidget(inner)
         self.finish_init()
+
+    def finish_init(self):
+        UIPanel.finish_init(self)
+        self.update_panel()
+        self.show()
 
     def update_panel(self):
         """ Choose which selectors to show and update their values
@@ -421,3 +426,15 @@ class LineOptionsPanel(UIPanel):
                     elif old is not None and new is not None and old != new:
                         d[key + '_conflict'] = True
         return d
+
+    def close(self):
+        dp = self.ui_manager.get_panel(g.DRAWING)
+        if dp:
+            dp.edge_options.setChecked(False)
+        UIPanel.close(self)
+
+    def show(self):
+        dp = self.ui_manager.get_panel(g.DRAWING)
+        if dp:
+            dp.edge_options.setChecked(True)
+        UIPanel.show(self)

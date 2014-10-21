@@ -53,6 +53,7 @@ from kataja.visualizations.available import VISUALIZATIONS
 from kataja.ui.panels.LineOptionsPanel import LineOptionsPanel
 from kataja.ui.embeds.NewElementEmbed import NewElementEmbed, NewElementMarker
 from kataja.ui.embeds.EdgeLabelEmbed import EdgeLabelEmbed
+from kataja.ui.panels import UIPanel
 
 
 NOTHING = 0
@@ -60,14 +61,17 @@ SELECTING_AREA = 1
 DRAGGING = 2
 POINTING = 3
 
-panels = [{'id': g.LOG, 'name': 'Log', 'position': 'bottom'},
-          {'id': g.TEST, 'name': 'Test', 'position': 'right'},
-          {'id': g.NAVIGATION, 'name': 'Trees', 'position': 'right'},
-          {'id': g.VISUALIZATION, 'name': 'Visualization', 'position': 'right'},
-          {'id': g.COLOR_THEME, 'name': 'Color theme', 'position': 'right'},
-          {'id': g.COLOR_WHEEL, 'name': 'Color theme wheel', 'position': 'right', 'folded': True, 'closed': True},
-          {'id': g.LINE_OPTIONS, 'name': 'More line options', 'position': 'float', 'closed': True},
-          {'id': g.DRAWING, 'name': 'Drawing', 'position': 'right'}]
+panels = {g.LOG: {'name': 'Log', 'position': 'bottom'},
+          g.TEST: {'name': 'Test', 'position': 'right'},
+          g.NAVIGATION: {'name': 'Trees', 'position': 'right'},
+          g.VISUALIZATION: {'name': 'Visualization', 'position': 'right'},
+          g.COLOR_THEME: {'name': 'Color theme', 'position': 'right'},
+          g.COLOR_WHEEL: {'name': 'Color theme wheel', 'position': 'right', 'folded': True, 'closed': True},
+          g.LINE_OPTIONS: {'name': 'More line options', 'position': 'float', 'closed': True},
+          g.DRAWING: {'name': 'Drawing', 'position': 'right'}
+}
+
+panel_order = [g.LOG, g.TEST, g.NAVIGATION, g.VISUALIZATION, g.COLOR_THEME, g.COLOR_WHEEL, g.LINE_OPTIONS, g.DRAWING]
 
 panel_classes = {g.LOG: LogPanel, g.TEST: TestPanel, g.NAVIGATION: NavigationPanel, g.VISUALIZATION: VisualizationPanel,
                  g.COLOR_THEME: ColorPanel, g.COLOR_WHEEL: ColorWheelPanel, g.DRAWING: DrawingPanel, g.LINE_OPTIONS: LineOptionsPanel}
@@ -156,7 +160,11 @@ class UIManager:
     # self.abortConstituentNodebox()
     # ctrl.action_finished()
 
-    def get_panel(self, panel_id):
+    def get_panel(self, panel_id) -> UIPanel:
+        """
+        :param panel_id: panel key. Probably from constant from globals
+        :return: UIPanel instance or None
+        """
         return self._ui_panels.get(panel_id, None)
 
     def toggle_panel(self, panel_id):
@@ -288,10 +296,12 @@ class UIManager:
             self._message.update_color()
         if self.hud:
             self.hud.update_color()
-        if g.COLOR_THEME in self._ui_panels:
-            self._ui_panels[g.COLOR_THEME].update_colors()
-        if g.COLOR_WHEEL in self._ui_panels:
-            self._ui_panels[g.COLOR_WHEEL].update_colors()
+        panel = self.get_panel(g.COLOR_THEME)
+        if panel:
+            panel.update_colors()
+        panel = self.get_panel(g.COLOR_WHEEL)
+        if panel:
+            panel.update_colors()
         if self._new_element_embed:
             self._new_element_embed.update_color()
 
@@ -300,12 +310,13 @@ class UIManager:
 
 
         """
-        debug.ui("Update selections called ", selection)
-        lp = self._ui_panels[g.DRAWING]
-        lp.selected_objects_changed()
-        lp.update_panel()
-        lop = self._ui_panels[g.LINE_OPTIONS]
-        lop.update_panel()
+        lp = self.get_panel(g.DRAWING)
+        if lp:
+            lp.selected_objects_changed()
+            lp.update_panel()
+        lop = self.get_panel(g.LINE_OPTIONS)
+        if lop:
+            lop.update_panel()
 
         self.update_touch_areas()
 
@@ -407,19 +418,19 @@ class UIManager:
             self._dynamic_action_groups['visualizations'].append(key)
 
         self._dynamic_action_groups['panels'] = []
-        for panel_data in panels:
-            key = 'toggle_panel_%s' % panel_data['id']
+        for panel_key, panel_data in panels.items():
+            key = 'toggle_panel_%s' % panel_key
             self.actions[key] = {'command': panel_data['name'], 'method': 'toggle_panel', 'checkable': True,
-                            'action_group': 'Panels', 'args': [panel_data['id']], 'context': 'ui', 'no_undo': True,
+                            'action_group': 'Panels', 'args': [panel_key], 'context': 'ui', 'no_undo': True,
                             'tooltip': "Close this panel"}
             self._dynamic_action_groups['panels'].append(key)
-            key = 'toggle_fold_panel_%s' % panel_data['id']
+            key = 'toggle_fold_panel_%s' % panel_key
             self.actions[key] = {'command': 'Fold %s' % panel_data['name'], 'method': 'toggle_fold_panel', 'checkable': True,
-                            'action_group': 'Panels', 'args': [panel_data['id']], 'context': 'ui', 'no_undo': True,
+                            'action_group': 'Panels', 'args': [panel_key], 'context': 'ui', 'no_undo': True,
                             'tooltip': "Minimize this panel"}
-            key = 'pin_panel_%s' % panel_data['id']
+            key = 'pin_panel_%s' % panel_key
             self.actions[key] = {'command': 'Pin to dock %s' % panel_data['name'], 'method': 'pin_panel',
-                            'action_group': 'Panels', 'args': [panel_data['id']], 'context': 'ui', 'no_undo': True,
+                            'action_group': 'Panels', 'args': [panel_key], 'context': 'ui', 'no_undo': True,
                             'tooltip': "Pin to dock"}
 
 
@@ -500,21 +511,16 @@ class UIManager:
         :return: None
         """
         self._ui_panels = {}
-        for panel in panels:
-            id = panel['id']
-            constructor = panel_classes[id]
-            name = panel['name']
-            position = panel.get('position', None)
-            folded = panel.get('folded', False)
-            closed = panel.get('closed', False)
-            debug.ui("Creating panel type ", constructor)
-            new_panel = constructor(name, id,  default_position=position, parent=self.main, ui_manager=self,
-                                    folded=folded, closed=closed)
-            self._ui_panels[id] = new_panel
-            # use action to toggle panel visible or hidden, so that menu gets updated properly
-            new_panel.get_visibility_action().setChecked(not closed)
-            if closed:
-                new_panel.close()
+        for panel_key in panel_order:
+            data = panels[panel_key]
+            if not data.get('closed', False):
+                self.create_panel(panel_key, **data)
+
+    def create_panel(self, id, name='', position=None, folded=False, closed=False):
+        constructor = panel_classes[id]
+        new_panel = constructor(name, id,  default_position=position, parent=self.main, ui_manager=self,
+                                folded=folded)
+        self._ui_panels[id] = new_panel
 
 
     def connect_element_to_action(self, element, action):
@@ -568,6 +574,16 @@ class UIManager:
 
     def toggle_line_options(self):
         print('toggle line options')
+        lo = self.get_panel(g.LINE_OPTIONS)
+        if lo:
+            if lo.isVisible():
+                lo.close()
+            else:
+                lo.show()
+        else:
+            self.create_panel(g.LINE_OPTIONS, **panels[g.LINE_OPTIONS])
+            lo = self.get_panel(g.LINE_OPTIONS)
+            lo.show()
 
 
     def get_selector_value(self, selector):
@@ -853,14 +869,10 @@ class UIManager:
         """
 
         if not self._message:
-            if g.LOG in self._ui_panels:
-                message_area = self._ui_panels[g.LOG].widget()
-                debug.ui('Creating messages to: ', message_area)
-                self._message = MessageItem(msg, message_area, self)
+            log = self.get_panel(g.LOG)
+            if log:
+                self._message = MessageItem(msg, log.widget(), self)
                 self.add_ui(self._message)
-            else:
-                print("what happened to 'Log' panel?")
-                quit()
         else:
             self._message.add(msg)
 

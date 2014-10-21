@@ -45,6 +45,7 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         self.placeholder = placeholder
         self.selected = False
         self._size = self.boundingRect().size()
+        self._local_drag_handle_position = None
         self.setDefaultTextColor(self.parentItem().color())
 
     def drag(self, event):
@@ -60,12 +61,11 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         self.setPos(sx, sy)
         self.compute_angle_for_pos(sx, sy)
         self.update()
-        print("Dragging edgelabel")
 
     def drop_to(self, x, y):
         if self.placeholder:
             return
-        print("Dropping edgelabel")
+        self._local_drag_handle_position = None
 
     def click(self, event):
         p = self.parentItem()
@@ -80,6 +80,10 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         self._size = self.boundingRect().size()
         if value:
             self.placeholder = False
+            self.draggable = True
+        p = self.parentItem()
+        if p:
+            p.refresh_selection_status(ctrl.is_selected(p))
 
     def compute_magnet(self, rad_angle):
         s = self._size
@@ -764,13 +768,14 @@ class Edge(QtWidgets.QGraphicsItem):
             self._label_item.selected = True
         else:
             ui.remove_control_points(self)
-            if self._label_item and self._label_item.placeholder:
-                scene = self.scene()
-                if scene:
-                    scene.removeItem(self._label_item)
-                self._label_item = None
-            elif self._label_item:
-                self._label_item.selected = False
+            if self._label_item:
+                if self._label_item.placeholder:
+                    scene = self.scene()
+                    if scene:
+                        scene.removeItem(self._label_item)
+                    self._label_item = None
+                else:
+                    self._label_item.selected = False
         self.update()
 
     def boundingRect(self):

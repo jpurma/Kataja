@@ -17,7 +17,7 @@ class ColorPanel(UIPanel):
         ⚅	U+2685	&#9861;
     """
 
-    def __init__(self, name, key, default_position='right', parent=None, ui_manager=None, folded=False, closed=False):
+    def __init__(self, name, key, default_position='right', parent=None, ui_manager=None, folded=False):
         """
         All of the panel constructors follow the same format so that the construction can be automated.
         :param name: Title of the panel and the key for accessing it
@@ -25,7 +25,7 @@ class ColorPanel(UIPanel):
         :param parent: self.main
         :param ui_buttons: pass a dictionary where buttons from this panel will be added
         """
-        UIPanel.__init__(self, name, key, default_position, parent, ui_manager, folded, closed)
+        UIPanel.__init__(self, name, key, default_position, parent, ui_manager, folded)
         # ### Color wheel
         layout = QtWidgets.QVBoxLayout()
         widget = QtWidgets.QWidget(self)
