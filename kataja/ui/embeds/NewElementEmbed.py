@@ -172,6 +172,10 @@ class NewElementEmbed(UIEmbed):
     def focus_to_main(self):
         self.input_line_edit.setFocus()
 
+    def close(self):
+        self.input_line_edit.setText('')
+        UIEmbed.close(self)
+
 
 # line = new QFrame(w);
 #     line->setObjectName(QString::fromUtf8("line"));

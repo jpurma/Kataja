@@ -15,7 +15,7 @@ __author__ = 'purma'
 class LineOptionsPanel(UIPanel):
     """ Panel for editing how edges and nodes are drawn. """
 
-    def __init__(self, name, key, default_position='float', parent=None, ui_manager=None, folded=False):
+    def __init__(self, name, key, default_position='float', parent=None, ui_manager=None, folded=False, closed=False):
         """
         BUild all advanced line options. Then in update filter what to show based on the line type.
 
@@ -25,7 +25,7 @@ class LineOptionsPanel(UIPanel):
         :param parent: self.main
         :param ui_buttons: pass a dictionary where buttons from this panel will be added
         """
-        UIPanel.__init__(self, name, key, default_position, parent, ui_manager, folded)
+        UIPanel.__init__(self, name, key, default_position, parent, ui_manager, folded, closed)
         inner = QtWidgets.QWidget(self)
         layout = QtWidgets.QVBoxLayout()
         layout.setSizeConstraint(QtWidgets.QLayout.SetMinimumSize)

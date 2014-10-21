@@ -39,7 +39,7 @@ from kataja import utils
 class EdgeLabel(QtWidgets.QGraphicsTextItem):
     def __init__(self, text, parent=None, placeholder=False):
         QtWidgets.QGraphicsTextItem.__init__(self, text, parent=parent)
-        self.draggable = True
+        self.draggable = not placeholder
         self.selectable = True
         self.clickable = True
         self.placeholder = placeholder
@@ -50,6 +50,16 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
     def drag(self, event):
         if self.placeholder:
             return
+        sx, sy = self.pos().x(), self.pos().y()
+        if not self._local_drag_handle_position:
+            drag_x, drag_y = ctrl.main.graph_scene.drag_exact_start_point()
+            self._local_drag_handle_position = drag_x - sx, drag_y - sy
+        scx, scy = utils.to_tuple(event.scenePos())
+        lx, ly = self._local_drag_handle_position
+        sx, sy = scx - lx, scy - ly
+        self.setPos(sx, sy)
+        self.compute_angle_for_pos(sx, sy)
+        self.update()
         print("Dragging edgelabel")
 
     def drop_to(self, x, y):
@@ -86,6 +96,16 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         elif 225 < angle <= 315:
             # right middle
             return Pf(s.width(), s.height()/2)
+
+    def compute_angle_for_pos(self, x, y):
+        e = self.parentItem()
+        xd = self._size.width()/2
+        yd = self._size.height()/2
+        start, end, angle = e.get_label_line_positions()
+        line_x = x + xd - start.x()
+        line_y = y + yd - start.y()
+
+        print(line_x, line_y)
 
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget):
         if self.selected:
@@ -179,7 +199,7 @@ class Edge(QtWidgets.QGraphicsItem):
         self._label_rect = None
         self._label_start_at = 0.2
         self._label_angle = 90
-        self._label_dist = 20
+        self._label_dist = 12
         self._c_label_positions = None
         # self.setAcceptedMouseButtons(QtCore.Qt.NoButton)
         # self.setFlag(QtGui.QGraphicsItem.ItemIsMovable)

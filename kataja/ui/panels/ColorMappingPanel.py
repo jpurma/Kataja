@@ -13,7 +13,7 @@ class ColorMappingPanel(UIPanel):
 
     """
 
-    def __init__(self, name, key, default_position='right', parent=None, ui_manager=None, folded=False):
+    def __init__(self, name, key, default_position='right', parent=None, ui_manager=None, folded=False, closed=False):
         """
         All of the panel constructors follow the same format so that the construction can be automated.
         :param name: Title of the panel and the key for accessing it
@@ -21,7 +21,7 @@ class ColorMappingPanel(UIPanel):
         :param parent: self.main
         :param ui_buttons: pass a dictionary where buttons from this panel will be added
         """
-        UIPanel.__init__(self, name, key, default_position, parent, ui_manager, folded)
+        UIPanel.__init__(self, name, key, default_position, parent, ui_manager, folded, closed)
         inner = QtWidgets.QWidget(self)
         layout = QtWidgets.QVBoxLayout()
         layout.setContentsMargins(4, 4, 4, 4)

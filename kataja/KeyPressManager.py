@@ -19,10 +19,12 @@ class ShortcutSolver(QtCore.QObject):
 
     def eventFilter(self, action, event):
         if event.type() == QtCore.QEvent.Shortcut and event.isAmbiguous():
+            print('Dealing with ambiguous action shortcut, ', action, action.isEnabled(), action.data())
             act_data = self.ui_manager.actions[action.data()]
-            element = act_data['ui_element']
+            element = act_data.get('ui_element', None)
             if element and isinstance(element, QtWidgets.QAbstractButton):
-                print('Dealing with ambiguous action shortcut, ', element, element.isVisible())
+                assert(element.isVisible())
+                print('Coming from element, ', element, element.isVisible())
                 if element.isVisible():
                     element.animateClick()
                     return True

@@ -60,7 +60,6 @@ from kataja.ui.PreferencesDialog import PreferencesDialog
 from kataja.utils import time_me, save_object
 from kataja.visualizations.available import VISUALIZATIONS
 import kataja.debug as debug
-from kataja.ui.panels.DrawingPanel import TableModelComboBox
 
 
 

@@ -260,7 +260,7 @@ actions = {
     # Embed menus ####
     'close_embed': {
         'command': 'Cancel',
-        'method': 'close_embed',
+        'method': 'close_embeds',
         'shortcut': 'Escape',
         'context': 'ui',
         'shortcut_context': 'parent_and_children'

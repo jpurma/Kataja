@@ -433,7 +433,9 @@ class UIManager:
             act.triggered.connect(main.action_triggered)
             act.setData(key)
             shortcut = data.get('shortcut', None)
-            if shortcut:
+            # if action has shortcut_context, it shouldn't have global shortcut
+            # in these cases shortcut is tied to ui_element.
+            if shortcut and not data.get('shortcut_context', None):
                 act.setShortcut(QtGui.QKeySequence(shortcut))
                 act.setShortcutContext(QtCore.Qt.ApplicationShortcut)
             viewgroup = data.get('viewgroup', None)
@@ -507,7 +509,7 @@ class UIManager:
             closed = panel.get('closed', False)
             debug.ui("Creating panel type ", constructor)
             new_panel = constructor(name, id,  default_position=position, parent=self.main, ui_manager=self,
-                                    folded=folded)
+                                    folded=folded, closed=closed)
             self._ui_panels[id] = new_panel
             # use action to toggle panel visible or hidden, so that menu gets updated properly
             new_panel.get_visibility_action().setChecked(not closed)
@@ -516,11 +518,13 @@ class UIManager:
 
 
     def connect_element_to_action(self, element, action):
+
         if isinstance(action, str):
-            action_data = self.actions[action]
-            action = self.qt_actions[action]
+            action_key = action
+            action = self.qt_actions[action_key]
         else:
-            action_data = self.actions[action.data()]
+            action_key = action.data()
+        action_data = self.actions[action_key]
         tooltip = action_data.get('tooltip', None)
         action_data['ui_element'] = element
         if tooltip:
@@ -528,17 +532,12 @@ class UIManager:
             element.setToolTip(tooltip)
         shortcut = action_data.get('shortcut', None)
         shortcut_context = action_data.get('shortcut_context', None)
-
-        if shortcut and shortcut_context and False: # disabled until we are sure that there is ambiguous shortcut problem
-            #s.activated.connect(action.trigger)
-            if shortcut_context == 'parent_and_children':
-                s = QtWidgets.QShortcut(QtGui.QKeySequence(shortcut), element)
-                s.setContext(QtCore.Qt.WidgetWithChildrenShortcut)
-                element.installEventFilter(self.button_shortcut_filter)
-        elif shortcut:
+        if shortcut and shortcut_context:
+            # element shortcuts are available only when element is visible
             element.setShortcut(QtGui.QKeySequence(shortcut))
+            # there are still possibility that e.g. two panels that read enter or esc are visible.
+            # button_shortcut_filter should decide between these.
             element.installEventFilter(self.button_shortcut_filter)
-
         if isinstance(element, QtWidgets.QAbstractButton):
             element.clicked.connect(action.trigger)
             element.setFocusPolicy(QtCore.Qt.TabFocus)
@@ -549,6 +548,7 @@ class UIManager:
             element.valueChanged.connect(action.trigger)
         elif isinstance(element, QtWidgets.QCheckBox):
             element.stateChanged.connect(action.trigger)
+        self.actions[action_key] = action_data
 
     def get_element_value(self, element):
         if not element:
@@ -609,7 +609,6 @@ class UIManager:
 
     def close_new_element_embed(self):
         if self._new_element_embed and self._new_element_embed.isVisible():
-            self._new_element_embed.label_text('')
             self._new_element_embed.close()
             self._new_element_marker.hide()
 
@@ -626,7 +625,8 @@ class UIManager:
     def edge_label_accept(self, **args):
         print('edge label accept, ', args)
         e = self._edge_label_embed
-        e.edge.label_text(e.input_line_edit.text())
+        if e:
+            e.edge.label_text(e.input_line_edit.text())
         self.close_edge_label_editing()
 
     def close_edge_label_editing(self):

@@ -105,7 +105,7 @@ class UIPanel(QtWidgets.QDockWidget):
     """ UI windows that can be docked to main window or separated.
     Gives some extra control and helper methods on QDockWidget. """
 
-    def __init__(self, name, key, default_position='bottom', parent=None, ui_manager=None, folded=False):
+    def __init__(self, name, key, default_position='bottom', parent=None, ui_manager=None, folded=False, closed=False):
         """
 
         :param name:
@@ -114,6 +114,8 @@ class UIPanel(QtWidgets.QDockWidget):
         """
         QtWidgets.QDockWidget.__init__(self, name, parent=parent)
         #self.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed))
+        if closed:
+            self.setVisible(False)
         self.folded = folded
         self.name = name
         self._id = key
