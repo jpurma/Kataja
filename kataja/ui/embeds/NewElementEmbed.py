@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 from kataja.ui.embeds.UIEmbed import UIEmbed
-from kataja.singletons import qt_prefs, ctrl
+from kataja.singletons import qt_prefs, ctrl, prefs
 from kataja.utils import print_transform
 from kataja.ui.DrawnIconEngine import DrawnIconEngine
 import kataja.globals as g
@@ -64,13 +64,22 @@ class MarkerStartPoint(QtWidgets.QGraphicsItem):
 
 
     def paint(self, painter, options, QWidget_widget=None):
-        p = QtGui.QPen(ctrl.cm.ui())
-        p.setWidthF(0.5)
-        painter.setPen(p)
-        painter.drawRect(-2, -2, 4, 4)
+        if prefs.touch:
+            b = ctrl.cm.ui_tr()
+            painter.setBrush(b)
+            painter.setPen(qt_prefs.no_pen)
+            painter.drawEllipse(-6, -6, 12, 12)
+        else:
+            p = QtGui.QPen(ctrl.cm.ui())
+            p.setWidthF(0.5)
+            painter.setPen(p)
+            painter.drawRect(-2, -2, 4, 4)
 
     def boundingRect(self):
-        return QtCore.QRectF(-2, -2, 4, 4)
+        if prefs.touch:
+            return QtCore.QRectF(-6, -6, 12, 12)
+        else:
+            return QtCore.QRectF(-2, -2, 4, 4)
 
     def drag(self, event):
         self.parentItem().update_position(event.scenePos())

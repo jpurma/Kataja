@@ -63,6 +63,9 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         self.compute_angle_for_pos(sx, sy)
         self.update()
 
+    def being_dragged(self):
+        return self._local_drag_handle_position
+
     def drop_to(self, x, y):
         if self.placeholder:
             return
@@ -88,19 +91,21 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
 
     def compute_magnet(self, rad_angle):
         s = self._size
+        if self.being_dragged():
+            return Pf(s.width()/2, s.height()/2)
         angle = math.degrees(rad_angle)
         if angle > 315 or angle <= 45:
-            # center top
-            return Pf(s.width()/2, 0)
-        elif 45 < angle <= 135:
             # left middle
             return Pf(0, s.height()/2)
+        elif 45 < angle <= 135:
+            # center top
+            return Pf(s.width()/2, 0)
         elif 135 < angle <= 225:
-            #center bottom
-            return Pf(s.width()/2, s.height())
-        elif 225 < angle <= 315:
             # right middle
             return Pf(s.width(), s.height()/2)
+        elif 225 < angle <= 315:
+            #center bottom
+            return Pf(s.width()/2, s.height())
 
     def compute_angle_for_pos(self, x, y):
         e = self.parentItem()
@@ -109,19 +114,30 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         start, end, angle = e.get_label_line_positions()
         line_x = x + xd - start.x()
         line_y = y + yd - start.y()
-        if line_x != 0:
-            rad = math.atan(line_y / line_x)
-        else:
-            rad = math.pi / 2
+        rad = math.atan2(line_y, line_x)
+        print(rad, math.degrees(rad))
         start_pos, a, d = e.get_label_position()
         edge_angle = (360 - e.get_angle_at(start_pos))
-        abs_angle = math.degrees(rad)
-        if abs_angle < 0:
-            abs_angle += 360
-        if edge_angle >= 360:
-            edge_angle -= 360
-        new_angle = abs_angle - edge_angle
-        print(abs_angle, edge_angle, new_angle)
+        my_angle = (360 - math.degrees(rad)) + 180
+        if my_angle >= 360:
+            my_angle -= 360
+        if edge_angle < 0:
+            edge_angle += 360
+        a1 = edge_angle - my_angle
+        a2 = edge_angle + 360 - my_angle
+        if abs(a1) < abs(a2):
+            new_angle = a1
+        else:
+            new_angle = a2
+        if new_angle > 180:
+            new_angle -= 360
+        elif new_angle < -180:
+            new_angle += 360
+        #print(x, y, start, end)
+        #print(edge_angle, my_angle, a1, a2, new_angle)
+        e.set_label_position(start_pos, new_angle, math.sqrt(pow(line_x, 2) + pow(line_y, 2)))
+        ctrl.set_status(str(e.get_label_position()))
+        ctrl.ui.update_control_point_positions()
 
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget):
         if self.selected:
@@ -368,9 +384,14 @@ class Edge(QtWidgets.QGraphicsItem):
 
     def get_label_line_positions(self):
         start = self.get_point_at(self._label_start_at)
-        angle = math.radians(self.get_angle_at(self._label_start_at))
-        end_x = start.x() + (self._label_dist * math.sin(angle))
-        end_y = start.y() + (self._label_dist * math.cos(angle))
+        angle = (360 - self.get_angle_at(self._label_start_at)) + self._label_angle
+        if angle > 360:
+            angle -= 360
+        if angle < 0:
+            angle += 360
+        angle = math.radians(angle)
+        end_x = start.x() + (self._label_dist * math.cos(angle))
+        end_y = start.y() + (self._label_dist * math.sin(angle))
         end = QtCore.QPointF(end_x, end_y)
         return start, end, angle
 
@@ -489,9 +510,9 @@ class Edge(QtWidgets.QGraphicsItem):
         sx, sy = scx - lx, scy - ly
         self.set_start_point(sx, sy)
         self.set_end_point(sx + dx, sy + dy)
-        self.make_path()
+        #self.make_path()
 
-        self.update()
+        #self.update()
 
     def shape_visibility(self, value=None):
         """

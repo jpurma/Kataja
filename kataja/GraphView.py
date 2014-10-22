@@ -79,6 +79,8 @@ class GraphView(QtWidgets.QGraphicsView):
 
         :param _target_rect:
         """
+        if self.sceneRect() == _target_rect:
+            return
         self.setSceneRect(_target_rect)
         self.target_scale = min((self.width() / _target_rect.width(), self.height() / _target_rect.height()))
         self.resetTransform()
