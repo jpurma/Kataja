@@ -32,7 +32,7 @@ class MenuItem(MovableUI):
         self._parent_menu = parent
         self._cached_bounding_rect = None
         self._dependant_menus = []
-        self._font = qt_prefs.font[g.MENU_FONT] # @UndefinedVariable
+        self._font = qt_prefs.font(g.MENU_FONT) # @UndefinedVariable
         self.focusable = True
         self.draggable = False
 

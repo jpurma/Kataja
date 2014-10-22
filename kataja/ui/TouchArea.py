@@ -30,7 +30,7 @@ import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
 
 from kataja.Edge import Edge
-from kataja.singletons import ctrl, prefs
+from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.utils import to_tuple
 import kataja.globals as g
 
@@ -80,6 +80,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
         self.update_end_points()
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.setAcceptHoverEvents(True)
+        self._fill_path = False
         if self.type == g.LEFT_ADD_ROOT:
             self.status_tip = "Add new constituent to left of %s" % self.host
         elif self.type == g.RIGHT_ADD_ROOT:
@@ -153,8 +154,10 @@ class TouchArea(QtWidgets.QGraphicsItem):
         line_middle_point = None
         line_end_point = None
         plus_point = None
+        path_settings = None
         if isinstance(self.host, Edge): # Touch area starts from relation between nodes
             rel = self.host
+            path_settings = ctrl.forest.settings.edge_shape_settings(rel.edge_type)
             # rel.get_path()
             sx, sy = to_tuple(rel.get_point_at(0.5))
             self.start_point = sx, sy
@@ -174,6 +177,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
             plus_point = x + dx * 2, y + dy * 2
             use_middle_point = False
         elif self._shape_is_arc:
+            path_settings = ctrl.forest.settings.edge_shape_settings(g.CONSTITUENT_EDGE)
             sx, sy, dummy = self.host.top_magnet()
             self.start_point = sx, sy
             if self.left:
@@ -188,19 +192,34 @@ class TouchArea(QtWidgets.QGraphicsItem):
             line_middle_point = sx - (0.5 * (sx - self.end_point[0])), sy - 10
         else:
             print("What is this toucharea?", self, " connected to ", self.host)
-        self._path = QtGui.QPainterPath(Pf(self.start_point[0], self.start_point[1]))
+        shape_method = path_settings['method']
+        self._fill_path = path_settings.get('fill', False)
+
         if use_middle_point:
-            self._path.lineTo(line_middle_point[0], line_middle_point[1])
-        self._path.lineTo(line_end_point[0], line_end_point[1])
-        # self._path.addEllipse(self.end_point[0] - end_spot_size, self.end_point[1] - end_spot_size, 2 * end_spot_size,
-        # 2 * end_spot_size)
-        if self.drag_mode:
-            self._path.addEllipse(plus_point[0] - 2, plus_point[1] - 2, 4, 4)
+            mp = line_middle_point[0], line_middle_point[1], 0
+            adjust = []
+            if self.left:
+                sp = self.start_point[0], self.start_point[1], 0
+                ep = self.end_point[0], self.end_point[1], 0
+            else:
+                ep = self.start_point[0], self.start_point[1], 0
+                sp = self.end_point[0], self.end_point[1], 0
+
+            self._path, true_path, control_points = shape_method(mp, sp, align=g.RIGHT, adjust=adjust, **path_settings)
+            self._path.moveTo(sp[0], sp[1])
+            path2, true_path, control_points = shape_method(mp, ep, align=g.LEFT, adjust=adjust, **path_settings)
+            self._path = self._path.united(path2)
+
         else:
-            self._path.moveTo(plus_point[0] - 2, plus_point[1])
-            self._path.lineTo(plus_point[0] + 2, plus_point[1])
-            self._path.moveTo(plus_point[0], plus_point[1] - 2)
-            self._path.lineTo(plus_point[0], plus_point[1] + 2)
+            sp = self.start_point[0], self.start_point[1], 0
+            ep = self.end_point[0], self.end_point[1], 0
+            adjust = []
+            if self.left:
+                align = g.LEFT
+            else:
+                align = g.RIGHT
+            self._path, true_path, control_points = shape_method(sp, ep, align=align, adjust=adjust, **path_settings)
+
 
     def __repr__(self):
         return '<toucharea %s>' % self.key
@@ -323,21 +342,27 @@ class TouchArea(QtWidgets.QGraphicsItem):
             pass
 
         if self._hovering:
-            painter.setPen(ctrl.cm.hovering(ctrl.cm.selection()))
-            #painter.setBrush(ctrl.cm.hovering(selection))
-            #painter.setPen(qt_prefs.no_pen)
-            painter.drawEllipse(self.end_point[0] - end_spot_size + 1, self.end_point[1] - end_spot_size + 1,
-                                2 * end_spot_size, 2 * end_spot_size)
-            #painter.setBrush(qt_prefs.no_brush)
+            c = ctrl.cm.hovering(ctrl.cm.ui())
         elif ctrl.is_selected(self):  # wrong colors, just testing
             print('cant select ui toucharea')
-            painter.setPen(ctrl.cm.selection())
+            c = ctrl.cm.selection()
         else:
-            painter.setPen(ctrl.cm.ui())
-
+            c = ctrl.cm.ui_tr()
         self.update_end_points()
-        # painter.drawRect(self.boundingRect()) # debug
-        painter.drawPath(self._path)
+        painter.setPen(c)
+
+        if self._fill_path:
+            painter.fillPath(self._path, c)
+        else:
+            painter.drawPath(self._path)
+        if self._hovering:
+            #painter.setBrush(qt_prefs.no_brush)
+            painter.setBrush(ctrl.cm.paper())
+            painter.drawEllipse(self.end_point[0] - end_spot_size + 1, self.end_point[1] - end_spot_size + 1,
+                                2 * end_spot_size, 2 * end_spot_size)
+            painter.drawLine(self.end_point[0] - 1, self.end_point[1] + 1, self.end_point[0] + 3, self.end_point[1] + 1)
+            painter.drawLine(self.end_point[0] + 1, self.end_point[1] - 1, self.end_point[0] + 1, self.end_point[1] + 3)
+
         if self._hovering and ctrl.dragged:
             ex, ey = self.end_point
             painter.drawLine(ex, ey - 10, ex, ey + 10)

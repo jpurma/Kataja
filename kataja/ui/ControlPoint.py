@@ -4,7 +4,7 @@ from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import QPointF as Pf
 from PyQt5.QtCore import Qt
 
-from kataja.singletons import prefs, ctrl
+from kataja.singletons import prefs, ctrl, qt_prefs
 from kataja.utils import to_tuple
 
 
@@ -17,9 +17,11 @@ class ControlPoint(QtWidgets.QGraphicsItem):
         if prefs.touch:
             self._wh = 16
             self._xy = -8
+            self.round = True
         else:
             self._wh = 4
             self._xy = -2
+            self.round = True
         QtWidgets.QGraphicsItem.__init__(self)
         self.setCursor(Qt.CrossCursor)
         self.role = role
@@ -123,11 +125,21 @@ class ControlPoint(QtWidgets.QGraphicsItem):
         :param widget:
         """
         cm = ctrl.cm
-        if self.pressed:
-            pen = cm.active(cm.selection())
-        elif self._hovering:
-            pen = cm.hovering(cm.selection())
+        if self.round:
+            if self.pressed:
+                painter.setBrush(cm.active(cm.ui_tr()))
+            elif self._hovering:
+                 painter.setBrush(cm.hovering(cm.ui_tr()))
+            else:
+                painter.setBrush(cm.ui_tr())
+            painter.setPen(qt_prefs.no_pen)
+            painter.drawEllipse(self._xy, self._xy, self._wh, self._wh)
         else:
-            pen = cm.ui()
-        painter.setPen(pen)
-        painter.drawRect(self._xy, self._xy, self._wh, self._wh)
+            if self.pressed:
+                pen = cm.active(cm.selection())
+            elif self._hovering:
+                pen = cm.hovering(cm.selection())
+            else:
+                pen = cm.ui()
+            painter.setPen(pen)
+            painter.drawRect(self._xy, self._xy, self._wh, self._wh)

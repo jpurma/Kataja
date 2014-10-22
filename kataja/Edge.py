@@ -104,13 +104,24 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
 
     def compute_angle_for_pos(self, x, y):
         e = self.parentItem()
-        xd = self._size.width()/2
-        yd = self._size.height()/2
+        xd = self._size.width()/2.0
+        yd = self._size.height()/2.0
         start, end, angle = e.get_label_line_positions()
         line_x = x + xd - start.x()
         line_y = y + yd - start.y()
-
-        print(line_x, line_y)
+        if line_x != 0:
+            rad = math.atan(line_y / line_x)
+        else:
+            rad = math.pi / 2
+        start_pos, a, d = e.get_label_position()
+        edge_angle = (360 - e.get_angle_at(start_pos))
+        abs_angle = math.degrees(rad)
+        if abs_angle < 0:
+            abs_angle += 360
+        if edge_angle >= 360:
+            edge_angle -= 360
+        new_angle = abs_angle - edge_angle
+        print(abs_angle, edge_angle, new_angle)
 
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget):
         if self.selected:
@@ -656,7 +667,8 @@ class Edge(QtWidgets.QGraphicsItem):
         self.update()
         if cp:
             panel = ctrl.ui.get_panel(g.LINE_OPTIONS)
-            panel.update_control_point_spinboxes()
+            if panel:
+                panel.update_control_point_spinboxes()
 
     def adjust_control_point_xy(self, index, dim, value):
         """ Called when modifying control point settings directly

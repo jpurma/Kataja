@@ -424,6 +424,13 @@ class PaletteManager:
         """
         return self.d['accent1']
 
+    def ui_tr(self) -> QColor:
+        """ Transparent UI color
+        :return: QColor
+        """
+        return self.d['accent1tr']
+
+
     def ui_paper(self) -> QColor:
         """ UI background color -- use for UI elements that float over main drawing.
         :return: QColor

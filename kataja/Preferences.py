@@ -137,7 +137,7 @@ class Preferences(object):
         self.feature_edge_shape = 3
         self.console_visible = False
         self.ui_speed = 8
-        self.touch = False
+        self.touch = True
 
         my_path = Path(__file__).parts
         if sys.platform == 'darwin' and 'Kataja.app' in my_path:
@@ -427,7 +427,7 @@ class QtPreferences:
     ### Font helper ###
 
     def font(self, name):
-        return self.fonts[name]
+        return self.fonts.get(name, self.fonts[MAIN_FONT])
 
     def get_key_for_font(self, font):
         """ Find the key for given QFont. Keys are cheaper to store than actual fonts.

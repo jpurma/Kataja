@@ -855,7 +855,7 @@ class ConstituentNode(Node):
             {'name': 'Disconnect', 'method': main.disconnect_node, 'local_shortcut': 'x', 'menu_type': 'Button'},
             {'name': 'Copy', 'method': main.copy_selected, 'local_shortcut': 'c', 'menu_type': 'Button'},
             {'name': 'Label', 'method': self.change_label, 'menu_type': 'TextArea', 'pos': (-10, 0),
-             'get_method': self.get_editable_label, 'font': qt_prefs.font[g.BIG_FONT],  # @UndefinedVariable
+             'get_method': self.get_editable_label, 'font': qt_prefs.font(g.BIG_FONT),  # @UndefinedVariable
              'tab_index': 0},
             {'name': 'Alias', 'method': self.change_alias, 'menu_type': 'TextArea', 'pos': ('top', 'Label'),
              'get_method': self.get_alias, 'tab_index': 1},
