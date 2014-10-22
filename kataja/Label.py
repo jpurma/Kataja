@@ -44,8 +44,6 @@ class Label(QtWidgets.QGraphicsTextItem):
         self._host = parent
         self._ellipse = None
         self._doc = None
-        # self.setFont(self._host.label_font)
-        # self.setDefaultTextColor(self._host.color)
         self._hovering = False
         self.selectable = False
         self.draggable = False
@@ -82,7 +80,7 @@ class Label(QtWidgets.QGraphicsTextItem):
     def update_label(self):
         """ Asks for node/host to give text and update if changed """
         #self.setDefaultTextColor(self._host.color())
-        self.setFont(self._host.label_font)
+        self.setFont(self._host.font())
         if self._get_host_text:
             new_source_text = self._get_host_text()
             if new_source_text == self._source_text:

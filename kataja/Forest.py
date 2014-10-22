@@ -279,7 +279,7 @@ class Forest:
                 self.gloss = QtWidgets.QGraphicsTextItem(parent=None)
                 self.gloss.setTextWidth(400)
                 self.gloss.setDefaultTextColor(ctrl.cm.drawing())
-                self.gloss.setFont(qt_prefs.font)  # @UndefinedVariable
+                self.gloss.setFont(qt_prefs.font(g.MAIN_FONT))  # @UndefinedVariable
                 # self.gloss.setFlag(QtGui.QGraphicsItem.ItemIsMovable)
             self.gloss.setPlainText("‘" + self._gloss_text + "’")
             self.gloss.show()

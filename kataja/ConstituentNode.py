@@ -80,7 +80,6 @@ class ConstituentNode(Node):
         self.is_trace = False
         self.triangle = False
         self.selectable = True
-        self.label_font = qt_prefs.font  # @UndefinedVariable
 
         # ### Projection -- see also preferences that govern if these are used
         self.can_project = True
@@ -725,19 +724,6 @@ class ConstituentNode(Node):
         else:
             return Node.right_magnet(self)
 
-    # ## Scope brackets and scope rectangles #############################################
-
-    # not used
-    # def paint_scope_rect(self, painter, draw_rect):
-    # if draw_rect or True:
-    # painter.drawRoundedRect(self.scope_rect, 5, 5)
-    # painter.drawRect(self.label_rect)
-    # if self.has_visible_brackets:
-    # painter.setFont(prefs.font)
-    # painter.drawText(self.scope_rect.left(), self.scope_rect.top() + ((self.scope_rect.height() + (prefs.font_bracket_height / 2)) / 2), '[')
-    # painter.drawText(self.scope_rect.right() - prefs.font_bracket_width, self.scope_rect.top() + ((self.scope_rect.height() + (prefs.font_bracket_height / 2)) / 2), ']')
-
-
     # ## Qt overrides ######################################################################
 
     def paint(self, painter, option, widget):
@@ -869,7 +855,7 @@ class ConstituentNode(Node):
             {'name': 'Disconnect', 'method': main.disconnect_node, 'local_shortcut': 'x', 'menu_type': 'Button'},
             {'name': 'Copy', 'method': main.copy_selected, 'local_shortcut': 'c', 'menu_type': 'Button'},
             {'name': 'Label', 'method': self.change_label, 'menu_type': 'TextArea', 'pos': (-10, 0),
-             'get_method': self.get_editable_label, 'font': qt_prefs.big_font,  # @UndefinedVariable
+             'get_method': self.get_editable_label, 'font': qt_prefs.font[g.BIG_FONT],  # @UndefinedVariable
              'tab_index': 0},
             {'name': 'Alias', 'method': self.change_alias, 'menu_type': 'TextArea', 'pos': ('top', 'Label'),
              'get_method': self.get_alias, 'tab_index': 1},

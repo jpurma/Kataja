@@ -12,7 +12,6 @@ class MessageItem(QtWidgets.QGraphicsTextItem):
         QtWidgets.QGraphicsTextItem.__init__(self, msg)
         self._messages = [msg]
         self._msg_string = msg
-        # self.setFont(qt_prefs.menu_font)
         self.setPlainText('\n' + self._msg_string)
         self.setDefaultTextColor(ctrl.cm.ui())
         self.adjustSize()

@@ -63,7 +63,7 @@ class AttributeNode(Node):
     width = 20
     height = 20
     default_edge_type = ATTRIBUTE_EDGE
-    saved_fields = ['host', 'label_font', '_color']
+    saved_fields = ['host']
     saved_fields = list(set(Node.saved_fields + saved_fields))
     node_type = ATTRIBUTE_NODE
 
@@ -89,7 +89,6 @@ class AttributeNode(Node):
         self.attribute_id = attribute_id
         self._show_label = show_label
         self.force = 72
-        self.label_font = qt_prefs.sc_font
         self.help_text = ""
         # if self.attribute_label in color_map:
         # self.color = colors.feature_palette[color_map[self.attribute_label]]

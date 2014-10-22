@@ -8,6 +8,7 @@ from PyQt5 import QtGui, QtCore
 
 from kataja.singletons import qt_prefs, ctrl
 from kataja.ui.MovableUI import MovableUI
+import kataja.globals as g
 
 
 class MenuItem(MovableUI):
@@ -31,7 +32,7 @@ class MenuItem(MovableUI):
         self._parent_menu = parent
         self._cached_bounding_rect = None
         self._dependant_menus = []
-        self._font = qt_prefs.menu_font  # @UndefinedVariable
+        self._font = qt_prefs.font[g.MENU_FONT] # @UndefinedVariable
         self.focusable = True
         self.draggable = False
 

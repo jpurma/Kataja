@@ -146,7 +146,7 @@ class NewElementEmbed(UIEmbed):
         layout.addLayout(self.top_row_layout)
         layout.addSpacing(12)
         self.input_line_edit = QtWidgets.QLineEdit(self)
-        f = QtGui.QFont(qt_prefs.font)
+        f = QtGui.QFont(qt_prefs.font(g.MAIN_FONT))
         f.setPointSize(f.pointSize()*2)
         self.input_line_edit.setFont(f)
         layout.addWidget(self.input_line_edit)

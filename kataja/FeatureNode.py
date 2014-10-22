@@ -39,7 +39,7 @@ class FeatureNode(Node):
     width = 20
     height = 20
     default_edge_type = FEATURE_EDGE
-    saved_fields = ['label_font']
+    saved_fields = []
     saved_fields = list(set(Node.saved_fields + saved_fields))
     node_type = FEATURE_NODE
 
@@ -49,7 +49,6 @@ class FeatureNode(Node):
         Node.__init__(self, syntactic_object=feature, forest=forest)
         self.level = 2
         self.save_key = 'FN%s' % self.syntactic_object.uid
-        self.label_font = qt_prefs.sc_font
         # if feature.get_value() in color_map:
         # self.color = colors.feature_palette[color_map[feature.get_value()]]
         # else:

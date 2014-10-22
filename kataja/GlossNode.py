@@ -40,7 +40,7 @@ class GlossNode(Node):
     width = 20
     height = 20
     default_edge_type = GLOSS_EDGE
-    saved_fields = ['host', 'label_font']
+    saved_fields = ['host']
     saved_fields = list(set(Node.saved_fields + saved_fields))
     node_type = GLOSS_NODE
 
@@ -52,7 +52,6 @@ class GlossNode(Node):
         self.host = host
         self.level = 2
         self.save_key = 'GlN%s' % host.syntactic_object.uid
-        self.label_font = qt_prefs.sc_font
         # self.color = colors.drawing2
         if not restoring:
             self.update_identity()

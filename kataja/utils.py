@@ -544,6 +544,7 @@ def save_object(obj, saved_objs, open_refs, ignore=None):
         elif isinstance(data, QtCore.QRect):
             return 'QRect', data.x(), data.y(), data.width(), data.height()
         elif isinstance(data, QtGui.QFont):
+            print("We shouldn't save QFonts!: ", data)
             return 'QFont', data.toString()
         elif hasattr(data, 'save_key'):
             key = getattr(data, 'save_key')

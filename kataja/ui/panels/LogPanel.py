@@ -2,6 +2,7 @@ from PyQt5 import QtWidgets, QtCore
 
 from kataja.singletons import qt_prefs
 from kataja.ui.panels.UIPanel import UIPanel
+import kataja.globals as g
 
 
 __author__ = 'purma'
@@ -22,7 +23,7 @@ class LogPanel(UIPanel):
         inner = QtWidgets.QTextBrowser()
         inner.setMinimumHeight(48)
         inner.preferred_size = QtCore.QSize(940, 64)
-        inner.setFont(qt_prefs.menu_font)  # @UndefinedVariable
+        inner.setFont(qt_prefs.font(g.MENU_FONT))  # @UndefinedVariable
         inner.setAutoFillBackground(True)
         inner.sizeHint = self.sizeHint
         self.preferred_size = inner.preferred_size

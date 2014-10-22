@@ -35,11 +35,15 @@ from kataja.globals import *
 from kataja.utils import time_me
 
 
-fonts = {'font': ('Palatino', 'Normal', 12), 'big_font': ('Palatino', 'Normal', 24),
-         'menu_font': ('Monaco', 'Normal', 10), 'ui_font': ('Helvetica', 'Normal', 10),
-         'phrase_label_font': ('Helvetica', 'Normal', 10), 'italic_font': ('Century', 'Normal', 10),
-         'sc_font': ('Lao MN', 'Normal', 9), 'feature_small': ('Lao MN', 'Normal', 7),
-         'symbol_font': ('Menlo', 'Normal', 14)}
+fonts = {MAIN_FONT: ('Palatino', 'Normal', 12),
+         BIG_FONT: ('Palatino', 'Normal', 24),
+         MENU_FONT: ('Monaco', 'Normal', 10),
+         UI_FONT: ('Helvetica', 'Normal', 10),
+         PHRASE_LABEL_FONT: ('Helvetica', 'Normal', 10),
+         ITALIC_FONT: ('Century', 'Normal', 10),
+         SMALL_CAPS: ('Lao MN', 'Normal', 9),
+         SMALL_FEATURE: ('Lao MN', 'Normal', 7),
+         SYMBOL_FONT: ('Menlo', 'Normal', 14)}
 
 color_modes = OrderedDict([
         ('solarized_dk', {'name': 'Solarized dark', 'fixed': True, 'hsv': (0, 0, 0)}),
@@ -175,7 +179,7 @@ class Preferences(object):
             GLOSS_EDGE: {'shape_name': 'cubic', 'color': 'accent4', 'pull': .40, 'visible': True,
                          'arrowhead_at_start': False, 'arrowhead_at_end': False},
             ARROW: {'shape_name': 'linear', 'color': 'accent4', 'pull': 0, 'visible': True,
-                    'arrowhead_at_start': False, 'arrowhead_at_end': True},
+                    'arrowhead_at_start': False, 'arrowhead_at_end': True, 'font': SMALL_CAPS},
             PROPERTY_EDGE: {'shape_name': 'linear', 'color': 'accent5', 'pull': .40, 'visible': True,
                             'arrowhead_at_start': False, 'arrowhead_at_end': False},
             ABSTRACT_EDGE: {'shape_name': 'linear', 'color': 'content1', 'pull': .40, 'visible': True,
@@ -192,13 +196,12 @@ class Preferences(object):
         # ATTRIBUTE_NODE = 3
         # GLOSS_NODE = 4
         # PROPERTY_NODE = 5
-        self.nodes = {ABSTRACT_NODE: {'color': 'content1', 'font': 'main', 'font-size': 10},
-                      CONSTITUENT_NODE: {'color': 'content1', 'font': 'main', 'font-size': 10},
-                      FEATURE_NODE: {'color': 'accent2', 'font': 'cursive', 'font-size': 10
-
-                      }, ATTRIBUTE_NODE: {'color': 'accent4', 'font': 'small-caps', 'font-size': 10},
-                      GLOSS_NODE: {'color': 'accent5', 'font': 'cursive', 'font-size': 10},
-                      PROPERTY_NODE: {'color': 'accent6', 'font': 'small-caps', 'font-size': 10},
+        self.nodes = {ABSTRACT_NODE: {'color': 'content1', 'font': MAIN_FONT, 'font-size': 10},
+                      CONSTITUENT_NODE: {'color': 'content1', 'font': MAIN_FONT, 'font-size': 10},
+                      FEATURE_NODE: {'color': 'accent2', 'font': ITALIC_FONT, 'font-size': 10},
+                      ATTRIBUTE_NODE: {'color': 'accent4', 'font': SMALL_CAPS, 'font-size': 10},
+                      GLOSS_NODE: {'color': 'accent5', 'font': ITALIC_FONT, 'font-size': 10},
+                      PROPERTY_NODE: {'color': 'accent6', 'font': SMALL_CAPS, 'font-size': 10},
 
         }
         self.custom_colors = {}
@@ -348,14 +351,7 @@ class QtPreferences:
     """ Preferences object that holds derived Qt objects like fonts and brushes. """
 
     def __init__(self):  # called to create a placeholder in early imports
-        self.font = QtGui.QFont()
-        self.big_font = QtGui.QFont()
-        self.menu_font = QtGui.QFont()
-        self.ui_font = QtGui.QFont()
-        self.phrase_label_font = QtGui.QFont()
-        self.italic_font = QtGui.QFont()
-        self.feature_small = QtGui.QFont()
-        self.sc_font = QtGui.QFont()
+        pass
 
     def late_init(self, preferences, fontdb):  # called when Qt app exists
         # graphics and fonts can be initiated only when QApplication exists
@@ -417,13 +413,36 @@ class QtPreferences:
         :param fonts_dict:
         :param fontdb:
         """
+        self.fonts = {}
         for key, font_tuple in fonts_dict.items():
-            setattr(self, '_' + key, font_tuple)
-            setattr(self, key, fontdb.font(font_tuple[0], font_tuple[1], font_tuple[2]))
-        font = QtGui.QFontMetrics(self.font)  # it takes 2 seconds to get FontMetrics
+            self.fonts[key] = fontdb.font(font_tuple[0], font_tuple[1], font_tuple[2])
+        font = QtGui.QFontMetrics(self.fonts[MAIN_FONT])  # it takes 2 seconds to get FontMetrics
         self.font_space_width = font.width(' ')
         self.font_bracket_width = font.width(']')
         self.font_bracket_height = font.height()
         #print(self.font_space_width, self.font_bracket_width, self.font_bracket_height)
-        self.sc_font.setCapitalization(QtGui.QFont.SmallCaps)
+        self.fonts[SMALL_CAPS].setCapitalization(QtGui.QFont.SmallCaps)
+        self.fonts[ITALIC_FONT].setItalic(True)
+
+    ### Font helper ###
+
+    def font(self, name):
+        return self.fonts[name]
+
+    def get_key_for_font(self, font):
+        """ Find the key for given QFont. Keys are cheaper to store than actual fonts.
+        If matching font is not found in current font dict, it is created as custom_n
+        :param font: QFont
+        :return: string
+        """
+        for key, value in self.fonts.items():
+            if font == value:
+                return key
+        key_suggestion = 'custom_1'
+        i = 1
+        while key_suggestion in self.fonts:
+            i += 1
+            key_suggestion = 'custom_%s' % i
+        self.fonts[key_suggestion] = font
+        return key_suggestion
 

@@ -69,3 +69,14 @@ RIGHT = 2
 
 # code for deleting a value
 DELETE = 9999
+
+# FONTS
+MAIN_FONT = 'main_font'
+BIG_FONT = 'big_font'
+MENU_FONT = 'menu_font'
+UI_FONT = 'ui_font'
+ITALIC_FONT = 'italic_font'
+PHRASE_LABEL_FONT = 'phrase_label_font'
+SMALL_FEATURE = 'small_feature'
+SMALL_CAPS = 'small_caps_font'
+SYMBOL_FONT = 'symbol_font'

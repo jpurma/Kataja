@@ -1,6 +1,7 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 from kataja.ui.embeds.UIEmbed import UIEmbed
 from kataja.singletons import qt_prefs, ctrl
+import kataja.globals as g
 
 __author__ = 'purma'
 
@@ -14,7 +15,7 @@ class EdgeLabelEmbed(UIEmbed):
         layout = QtWidgets.QVBoxLayout()
         layout.addLayout(self.top_row_layout) # close-button from UIEmbed
         self.input_line_edit = QtWidgets.QLineEdit(self)
-        f = QtGui.QFont(qt_prefs.font)
+        f = QtGui.QFont(qt_prefs.font(g.MAIN_FONT))
         f.setPointSize(f.pointSize()*2)
         self.input_line_edit.setFont(f)
         hlayout = QtWidgets.QHBoxLayout()
@@ -36,5 +37,9 @@ class EdgeLabelEmbed(UIEmbed):
         if edge:
             self.edge = edge
         if self.edge:
+            p = QtGui.QPalette()
+            p.setColor(QtGui.QPalette.Text, self.edge.color())
+            self.input_line_edit.setPalette(p)
             self.input_line_edit.setText(self.edge.label_text())
+
         UIEmbed.update_embed(self, scenePos=scenePos)

@@ -100,7 +100,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.color_manager = PaletteManager()
         print('---- Initialized color manager ... ', time.time() - t)
         qt_prefs.late_init(prefs, self.fontdb)
-        self.app.setFont(qt_prefs.ui_font)
+        self.app.setFont(qt_prefs.font(g.UI_FONT))
         print('---- initialized prefs ... ', time.time() - t)
         ctrl.late_init(self)
         print('---- controller late init ... ', time.time() - t)

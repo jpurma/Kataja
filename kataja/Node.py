@@ -68,7 +68,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
         self._label_complex = None
         self._label_visible = True
-        self.label_font = qt_prefs.font  # @UndefinedVariable
+        self._label_font = None  # @UndefinedVariable
         self.label_rect = None
 
         self.folded_away = False
@@ -76,7 +76,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
         self.folding_towards = None
         self._color = None
-        self.font = None  # @UndefinedVariable
 
         self._index_label = None
         self._index_visible = True
@@ -295,6 +294,20 @@ class Node(Movable, QtWidgets.QGraphicsItem):
                 ((not similar) or rel.edge_type == self.__class__.default_edge_type) and (
                     (not visible) or rel.is_visible())]
 
+
+    ### Font #####################################################################
+
+    def font(self, value=None):
+        if value is None:
+            if self._label_font:
+                return qt_prefs.font(self._label_font)
+            else:
+                return qt_prefs.font(self.forest.settings.node_settings(self.node_type, 'font'))
+        else:
+            if isinstance(value, QtGui.QFont):
+                self._label_font = qt_prefs.get_key_for_font(value)
+            else:
+                self._label_font = value
 
     # ### Colors and drawing settings ############################################################
 

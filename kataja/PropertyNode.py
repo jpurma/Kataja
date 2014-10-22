@@ -38,7 +38,7 @@ class PropertyNode(Node):
     width = 20
     height = 20
     default_edge_type = PROPERTY_EDGE
-    saved_fields = ['label_font']
+    saved_fields = []
     saved_fields = list(set(Node.saved_fields + saved_fields))
     node_type = PROPERTY_NODE
 
@@ -48,6 +48,5 @@ class PropertyNode(Node):
         self.level = 1
         self.save_key = 'PN%s' % id(self)
         sys.intern(self.save_key)
-        self.label_font = qt_prefs.feature_small
         # self.color = colors.text
         self.update_identity()

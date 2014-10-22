@@ -31,8 +31,6 @@ from syntax.BareConstituent import BareConstituent
 from syntax.BaseUG import UG
 from syntax.ConfigurableFeature import Feature
 
-#global prefs, qt_prefs, colors
-
 # gc.set_debug(gc.DEBUG_LEAK)
 
 # flags = (gc.DEBUG_COLLECTABLE |
@@ -311,7 +309,6 @@ class Controller:
 
     # ******** /focus *******
     #
-
 
     @caller
     def quit(self):

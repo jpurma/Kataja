@@ -26,7 +26,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QPointF as Pf, Qt
 import math
 
-from kataja.singletons import ctrl
+from kataja.singletons import ctrl, qt_prefs
 import kataja.globals as g
 from kataja.globals import LEFT, RIGHT, NO_ALIGN
 from kataja.shapes import SHAPE_PRESETS, to_Pf, outline_stroker
@@ -46,6 +46,7 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         self.selected = False
         self._size = self.boundingRect().size()
         self._local_drag_handle_position = None
+        self.setFont(self.parentItem().font())
         self.setDefaultTextColor(self.parentItem().color())
 
     def drag(self, event):
@@ -204,6 +205,7 @@ class Edge(QtWidgets.QGraphicsItem):
         self._label_start_at = 0.2
         self._label_angle = 90
         self._label_dist = 12
+        self._label_font = None # inherited from settings
         self._c_label_positions = None
         # self.setAcceptedMouseButtons(QtCore.Qt.NoButton)
         # self.setFlag(QtGui.QGraphicsItem.ItemIsMovable)
@@ -326,6 +328,19 @@ class Edge(QtWidgets.QGraphicsItem):
                 self._label_item = EdgeLabel(self._label_text, parent=self)
             else:
                 self._label_item.update_text(self._label_text)
+
+
+    def font(self, value=None):
+        if value is None:
+            if self._label_font:
+                return qt_prefs.font(self._label_font)
+            else:
+                return qt_prefs.font(self.forest.settings.edge_type_settings(self.edge_type, 'font'))
+        else:
+            if isinstance(value, QtGui.QFont):
+                self._label_font = qt_prefs.get_key_for_font(value)
+            else:
+                self._label_font = value
 
 
     def get_label_position(self):
