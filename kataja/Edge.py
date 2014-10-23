@@ -34,6 +34,7 @@ from kataja import utils
 
 
 # ('shaped_relative_linear',{'method':shapedRelativeLinearPath,'fill':True,'pen':'thin'}),
+from utils import time_me
 
 
 class EdgeLabel(QtWidgets.QGraphicsTextItem):
@@ -48,27 +49,21 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         self._local_drag_handle_position = None
         self.setFont(self.parentItem().font())
         self.setDefaultTextColor(self.parentItem().color())
+        self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+
 
     def drag(self, event):
         if self.placeholder:
             return
-        sx, sy = self.pos().x(), self.pos().y()
         if not self._local_drag_handle_position:
-            drag_x, drag_y = ctrl.main.graph_scene.drag_exact_start_point()
-            self._local_drag_handle_position = drag_x - sx, drag_y - sy
-        scx, scy = utils.to_tuple(event.scenePos())
-        lx, ly = self._local_drag_handle_position
-        sx, sy = scx - lx, scy - ly
-        self.setPos(sx, sy)
-        self.compute_angle_for_pos(sx, sy)
+            self._local_drag_handle_position = self.mapFromScene(event.buttonDownScenePos(Qt.LeftButton))
+        self.compute_angle_for_pos(event.scenePos() - self._local_drag_handle_position)
         self.update()
 
     def being_dragged(self):
         return self._local_drag_handle_position
 
-    def drop_to(self, x, y):
-        if self.placeholder:
-            return
+    def drop_to(self, x, y, received=False):
         self._local_drag_handle_position = None
 
     def click(self, event):
@@ -77,7 +72,6 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
             ctrl.ui.start_edge_label_editing(self.parentItem())
         else:
             ctrl.select(p)
-        #print("Clicking edgelabel")
 
     def update_text(self, value):
         self.setPlainText(value)
@@ -91,8 +85,8 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
 
     def compute_magnet(self, rad_angle):
         s = self._size
-        if self.being_dragged():
-            return Pf(s.width()/2, s.height()/2)
+        if self.being_dragged() or True:
+            return Pf(0, 0)
         angle = math.degrees(rad_angle)
         if angle > 315 or angle <= 45:
             # left middle
@@ -107,39 +101,54 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
             #center bottom
             return Pf(s.width()/2, s.height())
 
-    def compute_angle_for_pos(self, x, y):
-        e = self.parentItem()
-        xd = self._size.width()/2.0
-        yd = self._size.height()/2.0
-        start, end, angle = e.get_label_line_positions()
-        line_x = x + xd - start.x()
-        line_y = y + yd - start.y()
+    def compute_angle_for_pos(self, top_left):
+        """
+
+        :param top_left:
+        """
+        edge = self.parentItem()
+        smallest_d = 10000
+
+        start_pos, end_point, old_angle = edge.get_label_line_positions()
+        line_x = top_left.x() - start_pos.x()
+        line_y = top_left.y() - start_pos.y()
         rad = math.atan2(line_y, line_x)
-        print(rad, math.degrees(rad))
-        start_pos, a, d = e.get_label_position()
-        edge_angle = (360 - e.get_angle_at(start_pos))
-        my_angle = (360 - math.degrees(rad)) + 180
-        if my_angle >= 360:
-            my_angle -= 360
-        if edge_angle < 0:
-            edge_angle += 360
-        a1 = edge_angle - my_angle
-        a2 = edge_angle + 360 - my_angle
+        start_pos_in_line, a, d = edge.get_label_position()
+        edge_angle = (360 - edge.get_angle_at(start_pos_in_line))
+        my_angle = math.degrees(rad)
+        if my_angle < 0:
+            my_angle += 360
+        a1 = my_angle - edge_angle
+        a2 = my_angle - edge_angle + 360
         if abs(a1) < abs(a2):
             new_angle = a1
         else:
             new_angle = a2
-        if new_angle > 180:
-            new_angle -= 360
-        elif new_angle < -180:
-            new_angle += 360
-        #print(x, y, start, end)
-        #print(edge_angle, my_angle, a1, a2, new_angle)
-        e.set_label_position(start_pos, new_angle, math.sqrt(pow(line_x, 2) + pow(line_y, 2)))
-        ctrl.set_status(str(e.get_label_position()))
+        edge.set_label_position(start_pos_in_line, new_angle, math.hypot(line_x, line_y))
         ctrl.ui.update_control_point_positions()
 
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget):
+        if self.being_dragged():
+            p = QtGui.QPen(ctrl.cm.ui())
+            p.setWidthF(0.5)
+            QPainter.setPen(p)
+            sp, ep, a = self.parentItem().get_label_line_positions()
+            ex, ey = utils.to_tuple(self.mapFromScene(ep))
+            sx, sy = utils.to_tuple(self.mapFromScene(sp))
+            br = self.boundingRect()
+            w = br.width() / 2
+            h = br.height() / 2
+            #QPainter.drawLine(sx, sy, ex, ey)
+            QPainter.drawLine(sx, sy, ex+w, ey)
+            QPainter.drawLine(sx, sy, ex+w, ey+h+h)
+            QPainter.drawLine(sx, sy, ex, ey)
+            QPainter.drawLine(sx, sy, ex, ey+h)
+            QPainter.drawLine(sx, sy, ex, ey+h+h)
+            QPainter.drawLine(sx, sy, ex+w+w, ey)
+            QPainter.drawLine(sx, sy, ex+w+w, ey+h)
+            QPainter.drawLine(sx, sy, ex+w+w, ey+h+h)
+
+
         if self.selected:
             p = QtGui.QPen(ctrl.cm.ui())
             p.setWidthF(0.5)
@@ -226,6 +235,7 @@ class Edge(QtWidgets.QGraphicsItem):
         self._arrowhead_start_path = None
         self._arrowhead_end_path = None
 
+        self._use_labels = None
         self._label_text = None
         self._label_item = None
         self._label_rect = None
@@ -450,6 +460,13 @@ class Edge(QtWidgets.QGraphicsItem):
             #return ctrl.cm.selected(self.color())
         else:
             return self.color()
+
+
+    def use_labels(self):
+        if self._use_labels is None:
+            return self.forest.settings.edge_type_settings(self.edge_type, 'labeled')
+        else:
+            return self._use_labels
 
 
     # ### Shape / pull / visibility ###############################################################
@@ -810,10 +827,11 @@ class Edge(QtWidgets.QGraphicsItem):
         ui = ctrl.main.ui_manager  # @UndefinedVariable
         if selected:
             ui.add_control_points(self)
-            if not self._label_item:
-                self._label_item = EdgeLabel('', self, placeholder=True)
-                self.update_label_pos()
-            self._label_item.selected = True
+            if self.use_labels():
+                if not self._label_item:
+                    self._label_item = EdgeLabel('', self, placeholder=True)
+                    self.update_label_pos()
+                self._label_item.selected = True
         else:
             ui.remove_control_points(self)
             if self._label_item:
@@ -936,6 +954,11 @@ class Edge(QtWidgets.QGraphicsItem):
             painter.fillPath(self._arrowhead_start_path, c)
         if self.ending('end'):
             painter.fillPath(self._arrowhead_end_path, c)
+        if ctrl.is_selected(self):
+            p = QtGui.QPen(ctrl.cm.ui_tr())
+            painter.setPen(p)
+            painter.drawPath(self._true_path)
+
         #painter.setPen(ctrl.cm.d['accent6'])
         #painter.drawPath(self._fat_path)
         #painter.fillPath(self._fat_path, ctrl.cm.d['accent7'])
@@ -966,6 +989,24 @@ class Edge(QtWidgets.QGraphicsItem):
             self.update_end_points()
             self.make_path()
         return self._true_path.angleAtPercent(d)
+
+    #@time_me
+    def get_closest_path_point(self, pos):
+        if not self._true_path:
+            self.update_end_points()
+            self.make_path()
+        min_d = 1000
+        min_i = -1
+        min_pos = None
+        for i in range(0, 100, 2):
+            p2 = self._true_path.pointAtPercent(i/100.0)
+            d = (pos-p2).manhattanLength()
+            if d < min_d:
+                min_d = d
+                min_i = i
+                min_pos = p2
+        return min_i/100.0, min_pos
+
 
     # ### Event filter - be sensitive to changes in settings  ########################################################
 

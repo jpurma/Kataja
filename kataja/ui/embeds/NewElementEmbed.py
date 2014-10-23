@@ -65,9 +65,12 @@ class MarkerStartPoint(QtWidgets.QGraphicsItem):
 
     def paint(self, painter, options, QWidget_widget=None):
         if prefs.touch:
-            b = ctrl.cm.ui_tr()
-            painter.setBrush(b)
-            painter.setPen(qt_prefs.no_pen)
+            p = QtGui.QPen(ctrl.cm.ui_tr())
+            p.setWidth(2)
+            painter.setPen(p)
+            # b = ctrl.cm.ui_tr()
+            # painter.setBrush(b)
+            # painter.setPen(qt_prefs.no_pen)
             painter.drawEllipse(-6, -6, 12, 12)
         else:
             p = QtGui.QPen(ctrl.cm.ui())
@@ -124,9 +127,9 @@ class NewElementMarker(QtWidgets.QGraphicsItem):
             self.start_point = scenePos
         magnet, type = self.embed.magnet()
         end_pos = self.embed.pos() + magnet
-        if type in [4, 5, 6, 8]:
+        if type in [6, 8]:
             end_pos -= QtCore.QPoint(0, 20)
-        elif type in [1, 3]:
+        elif type in [1, 3, 4, 5]:
             end_pos += QtCore.QPoint(0, 20)
         elif type in [2, 7]:
             end_pos += QtCore.QPoint(20, 0)
@@ -156,7 +159,7 @@ class NewElementEmbed(UIEmbed):
         layout.addSpacing(12)
         self.input_line_edit = QtWidgets.QLineEdit(self)
         f = QtGui.QFont(qt_prefs.font(g.MAIN_FONT))
-        f.setPointSize(f.pointSize()*2)
+        f.setPointSize(f.pointSize() * 2)
         self.input_line_edit.setFont(f)
         layout.addWidget(self.input_line_edit)
         hlayout = QtWidgets.QHBoxLayout()

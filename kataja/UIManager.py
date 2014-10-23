@@ -1027,9 +1027,9 @@ class UIManager:
             cp = ControlPoint(edge, role='label_start')
             self.add_ui(cp)
             self._control_points.append(cp)
-            cp = ControlPoint(edge, role='label_end')
-            self.add_ui(cp)
-            self._control_points.append(cp)
+            #cp = ControlPoint(edge, role='label_end')
+            #self.add_ui(cp)
+            #self._control_points.append(cp)
 
 
     def update_control_point_positions(self):
@@ -1117,6 +1117,7 @@ class UIManager:
             if pressed:
                 pressed.drop_to(x, y)
             self.main.graph_scene.kill_dragging()
+            return True
         elif ctrl.ui_pressed:
             item = ctrl.ui_pressed
             debug.mouse('release on ui item ', item)

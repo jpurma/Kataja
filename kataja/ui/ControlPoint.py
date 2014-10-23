@@ -1,6 +1,6 @@
 # coding=utf-8
 # #######################################################
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore, QtWidgets, QtGui
 from PyQt5.QtCore import QPointF as Pf
 from PyQt5.QtCore import Qt
 
@@ -15,8 +15,8 @@ class ControlPoint(QtWidgets.QGraphicsItem):
 
     def __init__(self, edge=None, index=-1, role=''):
         if prefs.touch:
-            self._wh = 16
-            self._xy = -8
+            self._wh = 12
+            self._xy = -6
             self.round = True
         else:
             self._wh = 4
@@ -48,6 +48,8 @@ class ControlPoint(QtWidgets.QGraphicsItem):
             p = Pf(self.host_edge.get_cached_label_positions()[0].x(), self.host_edge.get_cached_label_positions()[0].y())
         elif self.role == 'label_end':
             p = Pf(self.host_edge.get_cached_label_positions()[1].x(), self.host_edge.get_cached_label_positions()[1].y())
+        else:
+            print('what is this? ', self.role, self._index)
         self.setPos(p)
 
     def boundingRect(self):
@@ -88,7 +90,14 @@ class ControlPoint(QtWidgets.QGraphicsItem):
 
         :param event:
         """
-        self.setPos(event.scenePos())
+        if self.role == 'label_start':
+            d, point = self.host_edge.get_closest_path_point(event.scenePos())
+            #self.setPos(point)
+            self.host_edge.set_label_position(start=d)
+            ctrl.ui.update_control_point_positions()
+            #self.update()
+        else:
+            self.setPos(event.scenePos())
         if self._index > -1:
             self.host_edge.adjust_control_point(self._index, self._compute_adjust(), cp=True)
         elif self.role == 'start':
@@ -99,6 +108,7 @@ class ControlPoint(QtWidgets.QGraphicsItem):
             self.host_edge.set_end_point(event.scenePos())
             self.host_edge.make_path()
             self.host_edge.update()
+
 
 
     def hoverEnterEvent(self, event):
@@ -127,13 +137,23 @@ class ControlPoint(QtWidgets.QGraphicsItem):
         cm = ctrl.cm
         if self.round:
             if self.pressed:
-                painter.setBrush(cm.active(cm.ui_tr()))
+                p = QtGui.QPen(cm.active(cm.ui_tr()))
             elif self._hovering:
-                 painter.setBrush(cm.hovering(cm.ui_tr()))
+                p = QtGui.QPen(cm.hovering(cm.ui_tr()))
             else:
-                painter.setBrush(cm.ui_tr())
-            painter.setPen(qt_prefs.no_pen)
+                p = QtGui.QPen(cm.ui_tr())
+            p.setWidth(2)
+            painter.setPen(p)
             painter.drawEllipse(self._xy, self._xy, self._wh, self._wh)
+            #
+            # if self.pressed:
+            #     painter.setBrush(cm.active(cm.ui_tr()))
+            # elif self._hovering:
+            #      painter.setBrush(cm.hovering(cm.ui_tr()))
+            # else:
+            #     painter.setBrush(cm.ui_tr())
+            # painter.setPen(qt_prefs.no_pen)
+            # painter.drawEllipse(self._xy, self._xy, self._wh, self._wh)
         else:
             if self.pressed:
                 pen = cm.active(cm.selection())
