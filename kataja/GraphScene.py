@@ -511,7 +511,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
 
         """
-        mouse('--- start dragging ---')
+        print('--- start dragging ---')
         ctrl.watch_for_drag_end = True
         # these should be activated by constituentnode instead in start_dragging -method
         # for ma in ctrl.forest.touch_areas:
@@ -549,6 +549,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         consumed = self.main.ui_manager.mouse_release_event(event)
         if consumed:
+            print('graph scene, ui consumed this release')
             mouse('mouse release consumed, exit now')
             ctrl.main.action_finished()  # @UndefinedVariable
             mouse('eating gs mouseReleaseEvent')
@@ -565,11 +566,13 @@ class GraphScene(QtWidgets.QGraphicsScene):
             x, y = to_tuple(event.scenePos())
             success = False
             if self._dragging:
+                print('graph scene dropping to...')
                 success = ctrl.main.ui_manager.drop_item_to(pressed, event)  # @UndefinedVariable
                 pressed.drop_to(x, y, received=success)
                 self.kill_dragging()
             else:
                 if pressed.clickable:
+                    print('graph scene clicked at...', pressed)
                     mouse('click on ', pressed)
                     success = pressed.click(event)
                 pressed.update()
@@ -580,6 +583,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
             mouse('eating gs mouseReleaseEvent')
             return None  # this mouseRelease is now consumed
         else:
+            print('graph scene, nothing was pressed...')
+
             if event.modifiers() == Qt.ShiftModifier:
                 pass
             else:

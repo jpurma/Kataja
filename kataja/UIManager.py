@@ -1117,14 +1117,15 @@ class UIManager:
             if pressed:
                 pressed.drop_to(x, y)
             self.main.graph_scene.kill_dragging()
+            print('ui kill dragging')
             return True
         elif ctrl.ui_pressed:
             item = ctrl.ui_pressed
-            debug.mouse('release on ui item ', item)
+            print('release on ui item ', item)
             if ctrl.has_focus(item):
                 item.pressed = False
                 consume = item.click(event)
-                debug.mouse('click on ', item)
+                print('click on ', item)
                 item.update()
                 ctrl.ui_pressed = None
                 ctrl.dragged = set()
