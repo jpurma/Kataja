@@ -87,7 +87,7 @@ class MarkerStartPoint(QtWidgets.QGraphicsItem):
     def drag(self, event):
         self.parentItem().update_position(event.scenePos())
 
-    def drop_to(self, x, y):
+    def drop_to(self, x, y, recipient=None):
         pass
 
 class NewElementMarker(QtWidgets.QGraphicsItem):

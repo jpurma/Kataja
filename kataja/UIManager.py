@@ -1063,105 +1063,87 @@ class UIManager:
 
     # ######### MOUSE ########################################################
 
-    def mouse_press_event(self, item, event):
-        """ UIManager is interested in setting focus and sending clicks to UI elements. GraphScene should send an item here and depending on what kind of object it is, we take focus or
-            redelegate click to child object.
-        :param item:
-        :param event:
-            """
-        debug.mouse('mouse_press_event at UIManager')
-        drag = getattr(item, 'draggable', False)
-        focus = getattr(item, 'focusable', False)
-        if drag or focus:
-            if isinstance(item, RadialMenu):
-                debug.mouse('clicked child item of RadialMenu')
-                for child in item.childItems():
-                    if child.sceneBoundingRect().contains(event.scenePos()):
-                        child.pressed = True
-                        ctrl.ui_pressed = child
-                        if child.focusable and not ctrl.has_focus(child):
-                            ctrl.take_focus(child)
-                        return True
-            if focus and not ctrl.has_focus(item):
-                ctrl.take_focus(item)
-            item.pressed = True
-            ctrl.ui_pressed = item
-            return True
-        return False
+    # def mouse_press_event(self, item, event):
+    #     """ UIManager is interested in setting focus and sending clicks to UI elements. GraphScene should send an item here and depending on what kind of object it is, we take focus or
+    #         redelegate click to child object.
+    #     :param item:
+    #     :param event:
+    #         """
+    #     debug.mouse('mouse_press_event at UIManager')
+    #     drag = getattr(item, 'draggable', False)
+    #     focus = getattr(item, 'focusable', False)
+    #     if drag or focus:
+    #         if isinstance(item, RadialMenu):
+    #             debug.mouse('clicked child item of RadialMenu')
+    #             for child in item.childItems():
+    #                 if child.sceneBoundingRect().contains(event.scenePos()):
+    #                     child.pressed = True
+    #                     ctrl.ui_pressed = child
+    #                     if child.focusable and not ctrl.has_focus(child):
+    #                         ctrl.take_focus(child)
+    #                     return True
+    #         if focus and not ctrl.has_focus(item):
+    #             ctrl.take_focus(item)
+    #         item.pressed = True
+    #         ctrl.ui_pressed = item
+    #         return True
+    #     return False
 
 
-    def mouse_move_event(self, event):
-        """
+    # def mouse_move_event(self, event):
+    #     """
 
-        :param event:
-        :return:
-        """
-        ui_pressed = ctrl.ui_pressed
-        if not ctrl.has_focus(ui_pressed):
-            return False
-        else:
-            if getattr(ui_pressed, 'draggable', False):
-                ui_pressed.drag(event)
-                return True
+    #     :param event:
+    #     :return:
+    #     """
+    #     ui_pressed = ctrl.ui_pressed
+    #     if not ctrl.has_focus(ui_pressed):
+    #         return False
+    #     else:
+    #         if getattr(ui_pressed, 'draggable', False):
+    #             print('dragging ui, eating mouse move event.')
+    #             ui_pressed.drag(event)
+    #             return True
 
-    def mouse_release_event(self, event):
-        """ This reacts only when ui_pressed -flag is on.
+    # def mouse_release_event(self, event):
+    #     """ This reacts only when ui_pressed -flag is on.
 
-        :param event:
-            """
-        debug.mouse('ui mouseReleaseEvent', ctrl.watch_for_drag_end)
-        if ctrl.watch_for_drag_end:
-            debug.mouse("ending drag at UIManager. shouldn't be done here")
-            x, y = to_tuple(event.scenePos())
-            pressed = ctrl.pressed
-            if pressed:
-                pressed.drop_to(x, y)
-            self.main.graph_scene.kill_dragging()
-            print('ui kill dragging')
-            return True
-        elif ctrl.ui_pressed:
-            item = ctrl.ui_pressed
-            print('release on ui item ', item)
-            if ctrl.has_focus(item):
-                item.pressed = False
-                consume = item.click(event)
-                print('click on ', item)
-                item.update()
-                ctrl.ui_pressed = None
-                ctrl.dragged = set()
-                ctrl.dragged_positions = set()
-                return consume
-        return False
+    #     :param event:
+    #         """
+    #     debug.mouse('ui mouseReleaseEvent', ctrl.watch_for_drag_end)
+    #     if ctrl.watch_for_drag_end:
+    #         debug.mouse("ending drag at UIManager. shouldn't be done here")
+    #         x, y = to_tuple(event.scenePos())
+    #         pressed = ctrl.pressed
+    #         if pressed:
+    #             pressed.drop_to(x, y)
+    #         self.main.graph_scene.kill_dragging()
+    #         print('ui kill dragging')
+    #         return True
+    #     elif ctrl.ui_pressed:
+    #         item = ctrl.ui_pressed
+    #         print('release on ui item ', item)
+    #         if ctrl.has_focus(item):
+    #             item.pressed = False
+    #             consume = item.click(event)
+    #             print('click on ', item)
+    #             item.update()
+    #             ctrl.ui_pressed = None
+    #             ctrl.dragged = set()
+    #             ctrl.dragged_positions = set()
+    #             return consume
+    #     return False
 
-    def drag_over(self, event):
-        """
+    # def drag_over(self, event):
+    #     """
 
-        :param event:
-        """
-        pos = event.scenePos()
-        for ta in self.touch_areas:
-            ta.toggle_hovering(ta.sensitive_area().contains(pos))
+    #     :param event:
+    #     """
+    #     pos = event.scenePos()
+    #     for ta in self.touch_areas:
+    #         ta.toggle_hovering(ta.sensitive_area().contains(pos))
 
 
-    def drop_item_to(self, pressed, event):
-        """ Check if any of the UI items is ready to accept dropped item
-        :param pressed:
-        :param event:
-        """
-        x, y = to_tuple(event.scenePos())
-        for ma in self.touch_areas:
-            if ma.sensitive_area().contains(x, y):
-                closest_touch_area = ma
-                break
-        if closest_touch_area:
-            success = closest_touch_area.drop(pressed)
-            if success:
-                f = self.main.forest
-                f.chain_manager.rebuild_chains()
-                if not f.settings.use_multidomination:
-                    f.multidomination_to_traces()
-                return True
-        return False
 
 
     #### Timer ########################################################

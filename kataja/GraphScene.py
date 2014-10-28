@@ -474,23 +474,30 @@ class GraphScene(QtWidgets.QGraphicsScene):
         """
         mouse('gs mousePressEvent')
         x, y = to_tuple(event.scenePos())
-        um = self.main.ui_manager
+        #um = self.main.ui_manager
         assert (not ctrl.pressed)
         assert (not ctrl.ui_pressed)
 
         # Check if any UI items can receive this press
         items = self.items(event.scenePos())
-        ui_items = um.filter_active_items_from(items, x, y)
-        while ui_items:
-            closest_item = self.get_closest_item(x, y, ui_items)
-            consumed = um.mouse_press_event(closest_item, event)
-            if consumed:
-                self.graph_view.setDragMode(QtWidgets.QGraphicsView.NoDrag)
-                mouse('eating gs mousePressEvent 1')
-                return None
-            ui_items.remove(closest_item)
+        #ui_items = um.filter_active_items_from(items, x, y)
+        #while ui_items:
+        #    closest_item = self.get_closest_item(x, y, ui_items)
+        #    consumed = um.mouse_press_event(closest_item, event)
+        #    if consumed:
+        #        self.graph_view.setDragMode(QtWidgets.QGraphicsView.NoDrag)
+        #        mouse('eating gs mousePressEvent because UI took it.')
+        #        return None
+        #    ui_items.remove(closest_item)
+        clickables = [i for i in items if getattr(i, 'clickable', False)]
+        if clickables:
+            closest_item = self.get_closest_item(x, y, clickables)
+            if closest_item:
+                ctrl.pressed = closest_item
+            mouse('eating gs mousePressEvent because there is an clickable item in scene.')
+            return None
         # It wasn't consumed, continue with other selectables:
-        selectables = [i for i in items if getattr(i, 'selectable', True)]
+        selectables = [i for i in items if getattr(i, 'selectable', False)]
         if selectables:
             closest_item = self.get_closest_item(x, y, selectables)
             if closest_item:
@@ -500,7 +507,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                     mouse('--- turning drag hand off ---')
                     self.graph_view.setDragMode(QtWidgets.QGraphicsView.NoDrag)
                     self._drag_start_point = to_tuple(event.scenePos())
-            mouse('eating gs mousePressEvent 2')
+            mouse('eating gs mousePressEvent because there is an selectable item in scene.')
             return None  # QtWidgets.QGraphicsScene.mousePressEvent(self, event)  # None
         else:
             return QtWidgets.QGraphicsScene.mousePressEvent(self, event)
@@ -547,13 +554,13 @@ class GraphScene(QtWidgets.QGraphicsScene):
         mouse('gs mouseReleaseEvent')
         self.graph_view.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
 
-        consumed = self.main.ui_manager.mouse_release_event(event)
-        if consumed:
-            print('graph scene, ui consumed this release')
-            mouse('mouse release consumed, exit now')
-            ctrl.main.action_finished()  # @UndefinedVariable
-            mouse('eating gs mouseReleaseEvent')
-            return
+        #consumed = self.main.ui_manager.mouse_release_event(event)
+        #if consumed:
+        #    print('graph scene, ui consumed this release')
+        #    mouse('mouse release consumed, exit now')
+        #    ctrl.main.action_finished()  # @UndefinedVariable
+        #    mouse('eating gs mouseReleaseEvent')
+        #    return
 
         if self._dblclick and not ctrl.pressed:  # doubleclick sends one release event at the end, swallow that
             self._dblclick = False
@@ -567,8 +574,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
             success = False
             if self._dragging:
                 print('graph scene dropping to...')
-                success = ctrl.main.ui_manager.drop_item_to(pressed, event)  # @UndefinedVariable
-                pressed.drop_to(x, y, received=success)
+                recipient = self.get_drop_recipient(pressed, event)  # @UndefinedVariable
+                pressed.drop_to(x, y, recipient=recipient)
                 self.kill_dragging()
             else:
                 if pressed.clickable:
@@ -594,6 +601,30 @@ class GraphScene(QtWidgets.QGraphicsScene):
             assert False
         return QtWidgets.QGraphicsScene.mouseReleaseEvent(self, event)
 
+    def get_drop_recipient(self, pressed, event):
+        """ Check which of the items in scene should accept the dropped item, if any
+        :param pressed:
+        :param event:
+        """
+        # redo this to be more generic
+        x, y = to_tuple(event.scenePos())
+        closest_touch_area = None
+        for ma in ctrl.main.ui_manager.touch_areas:
+            if ma.sensitive_area().contains(x, y):
+                closest_touch_area = ma
+                break
+        return closest_touch_area
+
+        # if closest_touch_area:
+        #     success = closest_touch_area.drop(pressed)
+        #     if success:
+        #         f = self.main.forest
+        #         f.chain_manager.rebuild_chains()
+        #         if not f.settings.use_multidomination:
+        #             f.multidomination_to_traces()
+        #         return True
+        # return False
+
     def mouseMoveEvent(self, event):
         # ctrl.ui_manager.info(str((event.scenePos().x(), event.scenePos().y())))
         """
@@ -601,16 +632,15 @@ class GraphScene(QtWidgets.QGraphicsScene):
         :param event:
         :return:
         """
-        if ctrl.ui_pressed:
-            self.main.ui_manager.mouse_move_event(event)
-        elif ctrl.pressed:
-            um = self.main.ui_manager
+        #if ctrl.ui_pressed:
+        #    self.main.ui_manager.mouse_move_event(event)
+        if ctrl.pressed:
             pressed = ctrl.pressed  # : :type pressed: Movable
             if pressed.draggable:
                 if self._dragging:
                     pressed.drag(event)
                     self.item_moved()
-                    um.update_positions()
+                    self.main.ui_manager.update_positions()
                 else:
                     scx, scy = to_tuple(event.screenPos())
                     startx, starty = self._drag_start_point
@@ -618,7 +648,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         self.start_dragging()
                         pressed.drag(event)
                         self.item_moved()
-                um.drag_over(event)
+                #um.drag_over(event)
                 return None
         return QtWidgets.QGraphicsScene.mouseMoveEvent(self, event)
 

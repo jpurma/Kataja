@@ -1028,16 +1028,17 @@ class ConstituentNode(Node):
             #    print px - ax, py - ay, node._computed_position
             node.set_current_position((now_x + dx, now_y + dy, pz))
 
-    def drop_to(self, x, y, received=False):
+    def drop_to(self, x, y, recipient=None):
         """
 
+
+        :param recipient:
         :param x:
         :param y:
-        :param received:
         """
         self.release()
         self.update()
-        if not received:
+        if not recipient:
             for node in ctrl.dragged:
                 node.lock()
                 ctrl.main.ui_manager.show_anchor(node)  # @UndefinedVariable

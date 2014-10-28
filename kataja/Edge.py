@@ -30,11 +30,11 @@ from kataja.singletons import ctrl, qt_prefs
 import kataja.globals as g
 from kataja.globals import LEFT, RIGHT, NO_ALIGN
 from kataja.shapes import SHAPE_PRESETS, to_Pf, outline_stroker
-from kataja import utils
+import kataja.utils as utils
 
 
 # ('shaped_relative_linear',{'method':shapedRelativeLinearPath,'fill':True,'pen':'thin'}),
-from utils import time_me
+from kataja.utils import time_me
 
 
 class EdgeLabel(QtWidgets.QGraphicsTextItem):
@@ -67,7 +67,7 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
     def being_dragged(self):
         return self._local_drag_handle_position
 
-    def drop_to(self, x, y, received=False):
+    def drop_to(self, x, y, recipient=None):
         self._local_drag_handle_position = None
 
     def click(self, event):
@@ -834,7 +834,7 @@ class Edge(QtWidgets.QGraphicsItem):
         else:
             return '<%s stub from %s to %s>' % (self.edge_type, self.start, self.end)
 
-    def drop_to(self, x, y):
+    def drop_to(self, x, y, recipient=None):
         """ This happens only when dragging the whole edge. Just reset the drag handle position so that the next
          drag attempt will take new handle.
         :param x: not used

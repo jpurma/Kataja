@@ -325,23 +325,24 @@ class Movable(object):
 
     # ## Dragging ############################################################
 
-    def drop_to(self, x, y):
+    def drop_to(self, x, y, recipient=None):
         """
         This item is dropped to screen coordinates. Evaluate if there are sensitive objects (TouchAreas) there and if
         there are, call their 'drop'-method with self as argument.
+        :param recipient:
         :param x: int or float
         :param y: int or float
         """
         print('movable drop to')
-        closest_ma = None
-        for ma in ctrl.main.ui_manager.touch_areas:  # @UndefinedVariable
-            if ma.sceneBoundingRect().contains(x, y):
-                closest_ma = ma
-                break
-        if closest_ma:
-            closest_ma.drop(self)
-            print('dropped to:', closest_ma)
-            # ctrl.scene.fit_to_window()
+        # closest_ma = None
+        # for ma in ctrl.main.ui_manager.touch_areas:  # @UndefinedVariable
+        #     if ma.sceneBoundingRect().contains(x, y):
+        #         closest_ma = ma
+        #         break
+        # if closest_ma:
+        #     closest_ma.drop(self)
+        #     print('dropped to:', closest_ma)
+        #     # ctrl.scene.fit_to_window()
 
     ### Existence ############################################################
 

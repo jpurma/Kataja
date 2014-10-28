@@ -109,8 +109,8 @@ class ControlPoint(QtWidgets.QGraphicsItem):
             self.host_edge.make_path()
             self.host_edge.update()
 
-    def drop_to(self, x, y, **kwargs):
-        print('control point drop to:', self, kwargs, self.role)
+    def drop_to(self, x, y, recipient=None):
+        print('control point drop to:', self, recipient, self.role)
 
 
     def hoverEnterEvent(self, event):
