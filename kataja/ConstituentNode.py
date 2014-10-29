@@ -1038,7 +1038,9 @@ class ConstituentNode(Node):
         """
         self.release()
         self.update()
-        if not recipient:
+        if recipient and recipient.accept_drop(self):
+            pass
+        else:
             for node in ctrl.dragged:
                 node.lock()
                 ctrl.main.ui_manager.show_anchor(node)  # @UndefinedVariable

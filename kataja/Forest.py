@@ -867,6 +867,27 @@ class Forest:
         """
         pass
 
+    ### Free edges ###############################
+
+    # there are edges that are initially not connected anywhere and which need to be able to connect and disconnect
+    # start and end points separately
+
+    def set_edge_start(self, edge, new_start):
+        if edge.start:
+            edge.start.edges_down.remove(edge)
+        edge.connect_end_points(new_start, edge.end)
+        edge.update_end_points()
+        new_start.edges_down.append(edge)
+
+    def set_edge_end(self, edge, new_end):
+        if edge.end:
+            edge.end.edges_up.remove(edge)
+        edge.connect_end_points(edge.start, new_end)
+        edge.update_end_points()
+        new_end.edges_up.append(edge)
+
+
+
 
     # ## order markers are special nodes added to nodes to signal the order when the node was merged/added to forest
     #######################################################################

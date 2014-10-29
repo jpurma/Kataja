@@ -1014,17 +1014,17 @@ class UIManager:
             self._control_points.append(cp)
             cp.update_position()
         if not edge.start:
-            cp = ControlPoint(edge, role='start')
+            cp = ControlPoint(edge, role=g.START_POINT)
             self.add_ui(cp)
             self._control_points.append(cp)
             cp.update_position()
         if not edge.end:
-            cp = ControlPoint(edge, role='end')
+            cp = ControlPoint(edge, role=g.END_POINT)
             self.add_ui(cp)
             self._control_points.append(cp)
             cp.update_position()
         if edge.has_label():
-            cp = ControlPoint(edge, role='label_start')
+            cp = ControlPoint(edge, role=g.LABEL_START)
             self.add_ui(cp)
             self._control_points.append(cp)
             #cp = ControlPoint(edge, role='label_end')
@@ -1141,7 +1141,7 @@ class UIManager:
     #     """
     #     pos = event.scenePos()
     #     for ta in self.touch_areas:
-    #         ta.toggle_hovering(ta.sensitive_area().contains(pos))
+    #         ta.set_hovering(ta.sensitive_area().contains(pos))
 
 
 

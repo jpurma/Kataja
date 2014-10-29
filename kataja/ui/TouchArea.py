@@ -298,7 +298,19 @@ class TouchArea(QtWidgets.QGraphicsItem):
         return True
 
 
-    def toggle_hovering(self, value):
+    def dragged_over_by(self, dragged):
+        if not self._hovering and self.accepts_drops(dragged):
+            if ctrl.latest_hover and not ctrl.latest_hover is self:
+                ctrl.latest_hover.set_hovering(False)
+            ctrl.latest_hover = self
+            self.set_hovering(True)
+
+
+    def accepts_drops(self, dragged):
+        return self.calculate_if_can_merge(dragged, None, None)
+
+
+    def set_hovering(self, value):
         """
 
         :param value:
@@ -317,7 +329,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
         :param event:
         """
         if (not self._hovering) and not ctrl.pressed:
-            self.toggle_hovering(True)
+            self.set_hovering(True)
         QtWidgets.QGraphicsItem.hoverEnterEvent(self, event)
 
     def hoverLeaveEvent(self, event):
@@ -326,7 +338,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
         :param event:
         """
         if self._hovering:
-            self.toggle_hovering(False)
+            self.set_hovering(False)
         QtWidgets.QGraphicsItem.hoverLeaveEvent(self, event)
 
 
@@ -362,9 +374,4 @@ class TouchArea(QtWidgets.QGraphicsItem):
                                 2 * end_spot_size, 2 * end_spot_size)
             painter.drawLine(self.end_point[0] - 1, self.end_point[1] + 1, self.end_point[0] + 3, self.end_point[1] + 1)
             painter.drawLine(self.end_point[0] + 1, self.end_point[1] - 1, self.end_point[0] + 1, self.end_point[1] + 3)
-
-        if self._hovering and ctrl.dragged:
-            ex, ey = self.end_point
-            painter.drawLine(ex, ey - 10, ex, ey + 10)
-            painter.drawLine(ex - 10, ey, ex + 10, ey)
 

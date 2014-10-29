@@ -81,3 +81,8 @@ PHRASE_LABEL_FONT = 'phrase_label_font'
 SMALL_FEATURE = 'small_feature'
 SMALL_CAPS = 'small_caps_font'
 SYMBOL_FONT = 'symbol_font'
+
+# Control point roles
+START_POINT = 'start'
+END_POINT = 'end'
+LABEL_START = 'label_start'

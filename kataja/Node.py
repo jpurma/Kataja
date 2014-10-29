@@ -25,11 +25,13 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import Qt
 
+from kataja.ui.ControlPoint import ControlPoint
+from kataja.ui.TouchArea import TouchArea
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.Label import Label
 from kataja.Movable import Movable
 from kataja.utils import to_tuple, create_shadow_effect
-from kataja.globals import ABSTRACT_EDGE, ABSTRACT_NODE
+import kataja.globals as g
 
 
 # ctrl = Controller object, gives accessa to other modules
@@ -46,11 +48,11 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     z_value = 10
     width = 20
     height = 20
-    default_edge_type = ABSTRACT_EDGE
+    default_edge_type = g.ABSTRACT_EDGE
     saved_fields = ['level', 'syntactic_object', 'edges_up', 'edges_down', 'folded_away', 'folding_towards', 'index',
                     '_color']
     saved_fields = list(set(Movable.saved_fields + saved_fields))
-    node_type = ABSTRACT_NODE
+    node_type = g.ABSTRACT_NODE
 
     def __init__(self, syntactic_object=None, forest=None, restoring=None):
         """ Node is an abstract class that shouldn't be used by itself, though
@@ -100,10 +102,10 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
         self.inner_rect = None
         self.setAcceptHoverEvents(True)
-        self.setAcceptDrops(True)
+        #self.setAcceptDrops(True)
         self.setFlag(QtWidgets.QGraphicsItem.ItemSendsGeometryChanges)
-        # self.setFlag(QtGui.QGraphicsItem.ItemIsMovable)
-        # self.setFlag(QtGui.QGraphicsItem.ItemIsSelectable)
+        #self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable)
+        self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable)
 
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
 
@@ -706,25 +708,22 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self.set_hovering(False)
         QtWidgets.QGraphicsItem.hoverLeaveEvent(self, event)
 
-    # def dragMoveEvent(self, event):
-    #     """ """
-    #     print 'Node dragMoveEvent!'
-    #     QtGui.QGraphicsItem.dragMoveEvent(self, event)
 
-    # def dragEnterEvent(self, event):
-    #     """ """
-    #     print 'Node dragEnterEvent!'
-    #     QtGui.QGraphicsItem.dragEnterEvent(self, event)
+    def dragged_over_by(self, dragged):
+        if not self._hovering and self.accepts_drops(dragged):
+            if ctrl.latest_hover and not ctrl.latest_hover is self:
+                ctrl.latest_hover.set_hovering(False)
+            ctrl.latest_hover = self
+            self.set_hovering(True)
 
-    # def dragLeaveEvent(self, event):
-    #     """ """
-    #     print 'Node dragLeaveEvent!'
-    #     QtGui.QGraphicsItem.dragLeaveEvent(self, event)
 
-    # def dropEvent(self, event):
-    #     """ """
-    #     print 'Node dropEvent!'
-    #     QtGui.QGraphicsItem.dropEvent(self, event)
+    def accepts_drops(self, dragged):
+        if isinstance(dragged, ControlPoint):
+            if dragged.role == g.START_POINT or dragged.role == g.END_POINT:
+                return True
+        #elif isinstance(dragged, TouchArea):
+        #    return True
+        return False
 
     #### Restoring after load / undo #########################################
 

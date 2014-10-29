@@ -6,6 +6,7 @@ from PyQt5.QtCore import Qt
 
 from kataja.singletons import prefs, ctrl, qt_prefs
 from kataja.utils import to_tuple
+import kataja.globals as g
 
 
 class ControlPoint(QtWidgets.QGraphicsItem):
@@ -40,11 +41,11 @@ class ControlPoint(QtWidgets.QGraphicsItem):
             p = self.host_edge.control_points[self._index]
             a = self.host_edge.adjust[self._index]
             p = Pf(p[0] + a[0], p[1] + a[1])
-        elif self.role == 'start':
+        elif self.role == g.START_POINT:
             p = Pf(self.host_edge.start_point[0], self.host_edge.start_point[1])
-        elif self.role == 'end':
+        elif self.role == g.END_POINT:
             p = Pf(self.host_edge.end_point[0], self.host_edge.end_point[1])
-        elif self.role == 'label_start':
+        elif self.role == g.LABEL_START:
             p = Pf(self.host_edge.get_cached_label_start().x(), self.host_edge.get_cached_label_start().y())
         #elif self.role == 'label_end':
         #    p = Pf(self.host_edge.get_cached_label_positions()[1].x(), self.host_edge.get_cached_label_positions()[1].y())
@@ -70,8 +71,7 @@ class ControlPoint(QtWidgets.QGraphicsItem):
 
     def _compute_adjust(self):
         x, y = to_tuple(self.pos())
-        if self._index == -1:
-            raise hell
+        assert(self._index != -1)
         p = self.host_edge.control_points[self._index]
         return int(x - p[0]), int(y - p[1])
         # print 'computed adjust:', self.adjust
@@ -90,7 +90,7 @@ class ControlPoint(QtWidgets.QGraphicsItem):
 
         :param event:
         """
-        if self.role == 'label_start':
+        if self.role == g.LABEL_START:
             d, point = self.host_edge.get_closest_path_point(event.scenePos())
             #self.setPos(point)
             self.host_edge.set_label_position(start=d)
@@ -100,17 +100,30 @@ class ControlPoint(QtWidgets.QGraphicsItem):
             self.setPos(event.scenePos())
         if self._index > -1:
             self.host_edge.adjust_control_point(self._index, self._compute_adjust(), cp=True)
-        elif self.role == 'start':
+        elif self.role == g.START_POINT:
             self.host_edge.set_start_point(event.scenePos())
             self.host_edge.make_path()
             self.host_edge.update()
-        elif self.role == 'end':
+        elif self.role == g.END_POINT:
             self.host_edge.set_end_point(event.scenePos())
             self.host_edge.make_path()
             self.host_edge.update()
 
     def drop_to(self, x, y, recipient=None):
         print('control point drop to:', self, recipient, self.role)
+        if recipient:
+            #recipient.accept_drop(self)
+            if self.role == g.START_POINT:
+                print('Connecting %s to be start point of %s ' % (recipient, self.host_edge))
+                ctrl.forest.set_edge_start(self.host_edge, recipient)
+                ctrl.ui.reset_control_points(self.host_edge)
+                self.host_edge.update()
+            elif self.role == g.END_POINT:
+                print('Connecting %s to be end point of %s ' % (recipient, self.host_edge))
+                ctrl.forest.set_edge_end(self.host_edge, recipient)
+                ctrl.ui.reset_control_points(self.host_edge)
+                self.host_edge.update()
+
 
 
     def hoverEnterEvent(self, event):

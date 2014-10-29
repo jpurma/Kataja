@@ -30,175 +30,12 @@ from kataja.singletons import ctrl, qt_prefs
 import kataja.globals as g
 from kataja.globals import LEFT, RIGHT, NO_ALIGN
 from kataja.shapes import SHAPE_PRESETS, to_Pf, outline_stroker
+from kataja.EdgeLabel import EdgeLabel
 import kataja.utils as utils
 
 
 # ('shaped_relative_linear',{'method':shapedRelativeLinearPath,'fill':True,'pen':'thin'}),
 from kataja.utils import time_me
-
-
-class EdgeLabel(QtWidgets.QGraphicsTextItem):
-    def __init__(self, text, parent=None, placeholder=False):
-        QtWidgets.QGraphicsTextItem.__init__(self, text, parent=parent)
-        self.draggable = not placeholder
-        self.selectable = True
-        self.clickable = True
-        self.placeholder = placeholder
-        self.selected = False
-        self._size = self.boundingRect().size()
-        self._local_drag_handle_position = None
-        self.setFont(self.parentItem().font())
-        self.setDefaultTextColor(self.parentItem().color())
-        self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-
-    def magnet_positions(self):
-        w = self._size.width() / 2.0
-        h = self._size.height() / 2.0
-        return [(0, 0), (w, 0), (w + w, 0), (0, h), (w + w, h), (0, h + h), (w, h + h), (w + w, h + h)]
-
-    def drag(self, event):
-        if self.placeholder:
-            return
-        if not self._local_drag_handle_position:
-            self._local_drag_handle_position = self.mapFromScene(event.buttonDownScenePos(Qt.LeftButton))
-        self.compute_angle_for_pos(event.scenePos(),  self._local_drag_handle_position)
-        self.update()
-
-    def being_dragged(self):
-        return self._local_drag_handle_position
-
-    def drop_to(self, x, y, recipient=None):
-        self._local_drag_handle_position = None
-
-    def click(self, event):
-        p = self.parentItem()
-        if p and ctrl.is_selected(p):
-            ctrl.ui.start_edge_label_editing(self.parentItem())
-        else:
-            ctrl.select(p)
-
-    def update_text(self, value):
-        self.setPlainText(value)
-        self._size = self.boundingRect().size()
-        if value:
-            self.placeholder = False
-            self.draggable = True
-        p = self.parentItem()
-        if p:
-            p.refresh_selection_status(ctrl.is_selected(p))
-
-    def find_closest_magnet(self, top_left, start_pos):
-        spx, spy = start_pos.x(), start_pos.y()
-        tlx, tly = top_left.x(), top_left.y()
-        smallest_d = 10000
-        closest_magnet = None
-        for x,y in self.magnet_positions():
-            d = abs((tlx + x) - spx) + abs((tly + y) - spy)
-            if d < smallest_d:
-                smallest_d = d
-                closest_magnet = (x, y)
-        return closest_magnet
-
-    def find_suitable_magnet(self, start_pos, end_pos):
-        spx, spy = start_pos.x(), start_pos.y()
-        epx, epy = end_pos.x(), end_pos.y()
-        dx = spx - epx
-        dy = spy - epy
-        angle = math.degrees(math.atan2(dy, dx)) + 180
-        if angle < 22.5 or angle >= 327.5:
-            i = 3 # left middle
-        elif 22.5 <= angle < 67.5:
-            i = 0 # left top
-        elif 67.5 <= angle < 112.5:
-            i = 1 # center top
-        elif 112.5 <= angle < 147.5:
-            i = 2 #
-        elif 147.5 <= angle < 202.5:
-            i = 4
-        elif 202.5 <= angle < 247.5:
-            i = 7
-        elif 247.5 <= angle < 292.5:
-            i = 6
-        elif 292.5 <= angle < 327.5:
-            i = 5
-        return self.magnet_positions()[i]
-
-    def compute_magnet(self, rad_angle):
-        s = self._size
-        if self.being_dragged() or True:
-            return Pf(0, 0)
-        angle = math.degrees(rad_angle)
-        if angle > 315 or angle <= 45:
-            # left middle
-            return Pf(0, s.height()/2)
-        elif 45 < angle <= 135:
-            # center top
-            return Pf(s.width()/2, 0)
-        elif 135 < angle <= 225:
-            # right middle
-            return Pf(s.width(), s.height()/2)
-        elif 225 < angle <= 315:
-            #center bottom
-            return Pf(s.width()/2, s.height())
-
-    def compute_angle_for_pos(self, event_pos, adjustment):
-        """
-
-        :param top_left:
-        """
-        edge = self.parentItem()
-        start_pos, end_point = edge.get_label_line_positions()
-        #closest_magnet = self.find_closest_magnet(top_left, start_pos)
-        #line_x = top_left.x() + closest_magnet[0] - start_pos.x()
-        #line_y = top_left.y() + closest_magnet[1] - start_pos.y()
-        line_x = event_pos.x() - start_pos.x()
-        line_y = event_pos.y() - start_pos.y()
-        rad = math.atan2(line_y, line_x)
-        edge_angle = (360 - edge.get_angle_at(edge._label_start_at))
-        my_angle = math.degrees(rad)
-        if my_angle < 0:
-            my_angle += 360
-        a1 = my_angle - edge_angle
-        a2 = my_angle - edge_angle + 360
-        if abs(a1) < abs(a2):
-            new_angle = a1
-        else:
-            new_angle = a2
-        edge.set_label_position(angle=new_angle, dist=math.hypot(line_x, line_y))
-        ctrl.ui.update_control_point_positions()
-
-    def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget):
-        if self.being_dragged():
-            #p = QtGui.QPen(ctrl.cm.ui_tr())
-            #p.setWidthF(0.5)
-            #QPainter.setPen(p)
-            pos = self.pos()
-            sp, end_point = self.parentItem().get_label_line_positions()
-            ex, ey = utils.to_tuple(self.mapFromScene(pos))
-            epx, epy = utils.to_tuple(self.mapFromScene(end_point))
-            sx, sy = utils.to_tuple(self.mapFromScene(sp))
-            #for mx, my in self.magnet_positions():
-            #    QPainter.drawLine(sx, sy, ex + mx, ey + my)
-            mx, my = self.find_closest_magnet(pos, sp)
-            p = QtGui.QPen(ctrl.cm.ui_tr())
-            p.setWidthF(0.5)
-            QPainter.setPen(p)
-            QPainter.drawLine(sx, sy, ex + mx, ey + my)
-            QPainter.drawLine(sx, sy, epx, epy)
-            p = QtGui.QPen(ctrl.cm.ui_tr())
-            p.setWidthF(2.0)
-            QPainter.setPen(p)
-            QPainter.drawEllipse(self.mapFromScene(end_point), 4, 4)
-
-
-        if self.selected:
-            p = QtGui.QPen(ctrl.cm.ui_tr())
-            p.setWidthF(0.5)
-            QPainter.setPen(p)
-            QPainter.drawRect(self.boundingRect())
-        QtWidgets.QGraphicsTextItem.paint(self, QPainter, QStyleOptionGraphicsItem, QWidget)
-
-
 
 
 class Edge(QtWidgets.QGraphicsItem):
@@ -564,8 +401,9 @@ class Edge(QtWidgets.QGraphicsItem):
         sx, sy, z = self.start_point
         dx, dy = self.end_point[0] - sx, self.end_point[1] - sy
         if not self._local_drag_handle_position:
-            drag_x, drag_y = ctrl.main.graph_scene.drag_exact_start_point()
-            self._local_drag_handle_position = drag_x - sx, drag_y - sy
+            print(event.buttonDownScenePos())
+            #drag_x, drag_y = ctrl.main.graph_scene.drag_exact_start_point()
+            #self._local_drag_handle_position = drag_x - sx, drag_y - sy
         scx, scy = utils.to_tuple(event.scenePos())
         lx, ly = self._local_drag_handle_position
         sx, sy = scx - lx, scy - ly
@@ -790,18 +628,46 @@ class Edge(QtWidgets.QGraphicsItem):
 
 
         """
-        if self.start:
-            if self.align == LEFT:
-                self.start_point = self.start.left_magnet()
-            elif self.align == RIGHT:
-                self.start_point = self.start.right_magnet()
-            else:
-                self.start_point = self.start.bottom_magnet()
-        if self.end:
-            self.end_point = self.end.top_magnet()
-        # sx, sy, sz = self.start_point
-        # ex, ey, ez = self.end_point
-        # self.center_point = sx + ((ex - sx) / 2), sy + ((ey - sy) / 2)
+
+        if self.edge_type == g.ARROW:
+            sx, sy, sz = self.start_point
+            ex, ey, ez = self.end_point
+            if self.start:
+                if sy < ey:
+                    if sx - ex > 20:
+                        self.start_point = self.start.left_magnet()
+                    elif -20 < sx - ex <= 20:
+                        self.start_point = self.start.bottom_magnet()
+                    elif sx - ex < -20:
+                        self.start_point = self.start.right_magnet()
+                else:
+                    self.start_point = self.start.top_magnet()
+            if self.end:
+                if ey < sy:
+                    if ex - sx > 20:
+                        self.end_point = self.end.left_magnet()
+                    elif -20 < ex - sx <= 20:
+                        self.end_point = self.end.bottom_magnet()
+                    elif ex - sx < -20:
+                        self.end_point = self.end.right_magnet()
+                else:
+                    self.end_point = self.end.top_magnet()
+        elif self.edge_type == g.DIVIDER:
+            pass
+
+        else:
+            if self.start:
+                if self.align == LEFT:
+                    self.start_point = self.start.left_magnet()
+                elif self.align == RIGHT:
+                    self.start_point = self.start.right_magnet()
+                else:
+                    self.start_point = self.start.bottom_magnet()
+            if self.end:
+                self.end_point = self.end.top_magnet()
+            # sx, sy, sz = self.start_point
+            # ex, ey, ez = self.end_point
+            # self.center_point = sx + ((ex - sx) / 2), sy + ((ey - sy) / 2)
 
     def connect_end_points(self, start, end):
         """
@@ -828,11 +694,25 @@ class Edge(QtWidgets.QGraphicsItem):
         if self.edge_type == g.CONSTITUENT_EDGE:
             self.status_tip = 'Constituent relation: %s is part of %s' % (self.end, self.start)        
 
-    def __repr__(self):
-        if self.start and self.end:
-            return '<%s %s-%s %s>' % (self.edge_type, self.start, self.end, self.align)
+
+    def description(self):
+        if self.edge_type == g.ARROW:
+            label = 'Arrow'
         else:
-            return '<%s stub from %s to %s>' % (self.edge_type, self.start, self.end)
+            label = 'Edge'
+        if self.start:
+            s1 = self.start
+        else:
+            s1 = '(%s, %s)' % (int(self.start_point[0]), int(self.start_point[1]))
+        if self.end:
+            s2 = self.end
+        else:
+            s2 = '(%s, %s)' % (int(self.end_point[0]), int(self.end_point[1]))
+        return '%s from %s to %s' % (label, s1, s2)
+
+
+    def __repr__(self):
+        return self.description()
 
     def drop_to(self, x, y, recipient=None):
         """ This happens only when dragging the whole edge. Just reset the drag handle position so that the next
