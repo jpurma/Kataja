@@ -37,6 +37,14 @@ import kataja.utils as utils
 # ('shaped_relative_linear',{'method':shapedRelativeLinearPath,'fill':True,'pen':'thin'}),
 from kataja.utils import time_me
 
+angle_magnet_map = {
+    0: 6, 1: 6, 2: 4, 3: 3, 4: 2, 5: 1, 6: 0, 7: 5, 8: 5, 9: 5, 10: 7, 11: 8, 12: 9, 13: 10, 14: 11, 15: 6, 16: 6
+}
+
+atan_magnet_map = {
+    -8: 5, -7: 5, -6: 0, -5: 1, -4: 2, -3: 3, -2: 4, -1: 6, 0: 6, 1: 6, 2: 11, 3: 10, 4: 9, 5: 8, 6: 7, 7: 5, 8: 5
+}
+
 
 class Edge(QtWidgets.QGraphicsItem):
     """ Any connection between nodes: can be represented as curves, branches or arrows """
@@ -101,7 +109,7 @@ class Edge(QtWidgets.QGraphicsItem):
         self._visible = None
         self.selectable = True
         self.draggable = not (self.start or self.end)
-        self.clickable = True
+        self.clickable = False
         self._hovering = False
         self.touch_areas = {}
         self.setZValue(10)
@@ -121,6 +129,7 @@ class Edge(QtWidgets.QGraphicsItem):
         self._label_start_at = 0.2
         self._label_angle = 90
         self._label_dist = 12
+        self._relative_vector = None
         self._label_font = None # inherited from settings
         self._cached_label_start = None
         # self.setAcceptedMouseButtons(QtCore.Qt.NoButton)
@@ -167,6 +176,32 @@ class Edge(QtWidgets.QGraphicsItem):
         """
         return self._visible
 
+    def make_relative_vector(self):
+        if self.start and not self.end:
+            sx, sy, sz = self.start.get_current_position()
+            ex, ey, ez = self.end_point
+            self._relative_vector =  ex - sx, ey - sy, ez - sz
+        elif self.end and not self.start:
+            sx, sy, sz = self.start_point
+            ex, ey, ez = self.end.get_current_position()
+            self._relative_vector = ex - sx, ey - sy, ez - sz
+
+
+    def connect_start_to(self, node):
+        print('Connecting %s to be start point of %s ' % (node, self))
+        ctrl.forest.set_edge_start(self, node)
+        self.make_relative_vector()
+        ctrl.ui.reset_control_points(self)
+        self.update_shape()
+        #self.update()
+
+    def connect_end_to(self, node):
+        print('Connecting %s to be end point of %s ' % (node, self))
+        ctrl.forest.set_edge_end(self, node)
+        self.make_relative_vector()
+        ctrl.ui.reset_control_points(self)
+        self.update_shape()
+
 
     def set_start_point(self, p, y=None, z=None):
         """ Convenience method for setting start point: accepts QPoint(F)s, tuples and x,y coords.
@@ -186,6 +221,7 @@ class Edge(QtWidgets.QGraphicsItem):
                 self.start_point = (p[0], p[1], self.start_point[2])
         if isinstance(p, (QtCore.QPoint, QtCore.QPointF)):
             self.start_point = (p.x(), p.y(), self.start_point[2])
+        self.make_relative_vector()
 
     def set_end_point(self, p, y=None, z=None):
         """ Convenience method for setting end point: accepts QPoint(F)s, tuples and x,y coords.
@@ -205,6 +241,7 @@ class Edge(QtWidgets.QGraphicsItem):
                 self.end_point = (p[0], p[1], self.end_point[2])
         if isinstance(p, (QtCore.QPoint, QtCore.QPointF)):
             self.end_point = (p.x(), p.y(), self.end_point[2])
+        self.make_relative_vector()
 
 
     def add_touch_area(self, touch_area):
@@ -315,6 +352,8 @@ class Edge(QtWidgets.QGraphicsItem):
                 return ctrl.cm.get(self._color)
         else:
             self._color = value
+            if self._label_item:
+                self._label_item.setDefaultTextColor(ctrl.cm.get(value))
 
     def color_id(self):
         """
@@ -401,17 +440,16 @@ class Edge(QtWidgets.QGraphicsItem):
         sx, sy, z = self.start_point
         dx, dy = self.end_point[0] - sx, self.end_point[1] - sy
         if not self._local_drag_handle_position:
-            print(event.buttonDownScenePos())
-            #drag_x, drag_y = ctrl.main.graph_scene.drag_exact_start_point()
-            #self._local_drag_handle_position = drag_x - sx, drag_y - sy
+            drag_x = event.buttonDownScenePos(QtCore.Qt.LeftButton).x()
+            drag_y = event.buttonDownScenePos(QtCore.Qt.LeftButton).y()
+            self._local_drag_handle_position = drag_x - sx, drag_y - sy
         scx, scy = utils.to_tuple(event.scenePos())
         lx, ly = self._local_drag_handle_position
         sx, sy = scx - lx, scy - ly
-        self.set_start_point(sx, sy)
-        self.set_end_point(sx + dx, sy + dy)
-        #self.make_path()
-
-        #self.update()
+        if not self.start:
+            self.set_start_point(sx, sy)
+        if not self.end:
+            self.set_end_point(sx + dx, sy + dy)
 
     def shape_visibility(self, value=None):
         """
@@ -629,42 +667,60 @@ class Edge(QtWidgets.QGraphicsItem):
 
         """
 
+        if self.start and not self.end:
+            sp_x, sp_y, sp_z = self.start.get_current_position()
+            r_x, r_y, r_z = self._relative_vector
+            self.end_point = sp_x + r_x, sp_y + r_y, sp_z + r_z
+        elif self.end and not self.start:
+            ep_x, ep_y, ep_z = self.end.get_current_position()
+            r_x, r_y, r_z = self._relative_vector
+            self.start_point = ep_x - r_x, ep_y - r_y, ep_z - r_z
+
         if self.edge_type == g.ARROW:
-            sx, sy, sz = self.start_point
-            ex, ey, ez = self.end_point
+
             if self.start:
-                if sy < ey:
-                    if sx - ex > 20:
-                        self.start_point = self.start.left_magnet()
-                    elif -20 < sx - ex <= 20:
-                        self.start_point = self.start.bottom_magnet()
-                    elif sx - ex < -20:
-                        self.start_point = self.start.right_magnet()
+                if self._true_path:
+                    a = self.get_angle_at(0)
+                    i = round(a / 22.5)
+                    print(a, i)
+                    #self.end_point = self.end.get_current_position()
+                    self.start_point = self.start.magnet(angle_magnet_map[i])
                 else:
-                    self.start_point = self.start.top_magnet()
+                    sx, sy, sz = self.start_point
+                    ex, ey, ez = self.end_point
+                    dx = ex - sx
+                    dy = ey - sy
+                    i = round(math.degrees(math.atan2(dy, dx)) / 22.5)
+                    self.start_point = self.start.magnet(atan_magnet_map[i])
             if self.end:
-                if ey < sy:
-                    if ex - sx > 20:
-                        self.end_point = self.end.left_magnet()
-                    elif -20 < ex - sx <= 20:
-                        self.end_point = self.end.bottom_magnet()
-                    elif ex - sx < -20:
-                        self.end_point = self.end.right_magnet()
+                if self._true_path:
+                    a = self.get_angle_at(1.0)
+                    if a >= 180:
+                        a -= 180
+                    elif a < 180:
+                        a += 180
+                    i = round(a / 22.5)
+                    self.end_point = self.end.magnet(angle_magnet_map[i])
                 else:
-                    self.end_point = self.end.top_magnet()
+                    sx, sy, sz = self.start_point
+                    ex, ey, ez = self.end_point
+                    dx = sx - ex
+                    dy = sy - ey
+                    i = round(math.degrees(math.atan2(dy, dx)) / 22.5)
+                    self.end_point = self.end.magnet(atan_magnet_map[i])
         elif self.edge_type == g.DIVIDER:
             pass
 
         else:
             if self.start:
                 if self.align == LEFT:
-                    self.start_point = self.start.left_magnet()
+                    self.start_point = self.start.magnet(8)
                 elif self.align == RIGHT:
-                    self.start_point = self.start.right_magnet()
+                    self.start_point = self.start.magnet(10)
                 else:
-                    self.start_point = self.start.bottom_magnet()
+                    self.start_point = self.start.magnet(9)
             if self.end:
-                self.end_point = self.end.top_magnet()
+                self.end_point = self.end.magnet(2)
             # sx, sy, sz = self.start_point
             # ex, ey, ez = self.end_point
             # self.center_point = sx + ((ex - sx) / 2), sy + ((ey - sy) / 2)
@@ -685,9 +741,7 @@ class Edge(QtWidgets.QGraphicsItem):
             self.end = end
         else:
             self.end = None
-        # sx, sy, sz = self.start_point
-        # ex, ey, ez = self.end_point
-        # self.center_point = sx + ((ex - sx) / 2), sy + ((ey - sy) / 2)
+        self.make_relative_vector()
         self.update_status_tip()
 
     def update_status_tip(self):
@@ -826,8 +880,8 @@ class Edge(QtWidgets.QGraphicsItem):
 
     # ## Scene-managed call
 
-    def click(self, event=None):
-        """ Scene has decided that this node has been clicked
+    def select(self, event=None):
+        """ Scene has decided that this node has been selected
         :param event:
         """
         self.set_hovering(False)

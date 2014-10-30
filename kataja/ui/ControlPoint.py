@@ -31,12 +31,16 @@ class ControlPoint(QtWidgets.QGraphicsItem):
         self.focusable = True
         self.draggable = True
         self.pressed = False
+        self.clickable = False
         self._hovering = False
         self.setAcceptHoverEvents(True)
         self.setZValue(52)
         self._compute_position()
 
     def _compute_position(self):
+        """
+        :return:
+        """
         if -1 < self._index < len(self.host_edge.control_points):
             p = self.host_edge.control_points[self._index]
             a = self.host_edge.adjust[self._index]
@@ -47,11 +51,10 @@ class ControlPoint(QtWidgets.QGraphicsItem):
             p = Pf(self.host_edge.end_point[0], self.host_edge.end_point[1])
         elif self.role == g.LABEL_START:
             p = Pf(self.host_edge.get_cached_label_start().x(), self.host_edge.get_cached_label_start().y())
-        #elif self.role == 'label_end':
-        #    p = Pf(self.host_edge.get_cached_label_positions()[1].x(), self.host_edge.get_cached_label_positions()[1].y())
         else:
-            print('what is this? ', self.role, self._index)
+            return False
         self.setPos(p)
+        return True
 
     def boundingRect(self):
         """
@@ -66,8 +69,9 @@ class ControlPoint(QtWidgets.QGraphicsItem):
 
 
         """
-        self._compute_position()
+        ok = self._compute_position()
         self.update()
+        return ok
 
     def _compute_adjust(self):
         x, y = to_tuple(self.pos())
@@ -110,20 +114,12 @@ class ControlPoint(QtWidgets.QGraphicsItem):
             self.host_edge.update()
 
     def drop_to(self, x, y, recipient=None):
-        print('control point drop to:', self, recipient, self.role)
         if recipient:
             #recipient.accept_drop(self)
             if self.role == g.START_POINT:
-                print('Connecting %s to be start point of %s ' % (recipient, self.host_edge))
-                ctrl.forest.set_edge_start(self.host_edge, recipient)
-                ctrl.ui.reset_control_points(self.host_edge)
-                self.host_edge.update()
+                self.host_edge.connect_start_to(recipient)
             elif self.role == g.END_POINT:
-                print('Connecting %s to be end point of %s ' % (recipient, self.host_edge))
-                ctrl.forest.set_edge_end(self.host_edge, recipient)
-                ctrl.ui.reset_control_points(self.host_edge)
-                self.host_edge.update()
-
+                self.host_edge.connect_end_to(recipient)
 
 
     def hoverEnterEvent(self, event):

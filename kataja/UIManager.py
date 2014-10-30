@@ -1038,7 +1038,11 @@ class UIManager:
         :return:
         """
         for item in self._control_points:
-            item.update_position()
+            if not item.update_position():
+                self.remove_ui(item)
+                self._control_points.remove(item)
+                del item
+
 
 
     def remove_control_points(self, edge):

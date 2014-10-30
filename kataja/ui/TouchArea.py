@@ -178,7 +178,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
             use_middle_point = False
         elif self._shape_is_arc:
             path_settings = ctrl.forest.settings.edge_shape_settings(g.CONSTITUENT_EDGE)
-            sx, sy, dummy = self.host.top_magnet()
+            sx, sy, dummy = self.host.magnet(2)
             self.start_point = sx, sy
             if self.left:
                 self.end_point = sx - max((prefs.edge_width * 2, self.host.width)), sy
@@ -293,7 +293,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
             return False
         elif host in ctrl.dragged:
             return False
-        elif host in ctrl.pressed:
+        elif host is ctrl.pressed:
             return False
         return True
 

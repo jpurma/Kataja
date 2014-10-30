@@ -669,60 +669,6 @@ class ConstituentNode(Node):
                     result.append(child)
         return result
 
-    # ## Magnets
-
-    def top_magnet(self):
-        """
-
-
-        :return:
-        """
-        if self.triangle:
-            x1, y1, z1 = self.get_current_position()
-            y2 = self.label_rect.y() - self.label_rect.height() / 2
-            return x1, y1 + y2, z1
-        else:
-            return Node.top_magnet(self)
-
-    def bottom_magnet(self):
-        """
-
-
-        :return:
-        """
-        if self.triangle:
-            x1, y1, z1 = self.get_current_position()
-            y2 = self.label_rect.y() + self.label_rect.height() / 2
-            return x1, y1 + y2, z1
-        else:
-            return Node.bottom_magnet(self)
-
-
-    def left_magnet(self):
-        """
-
-
-        :return:
-        """
-        if self.triangle:
-            x1, y1, z1 = self.get_current_position()
-            x2 = self.label_rect.x()
-            return x1 + x2, y1, z1
-        else:
-            return Node.left_magnet(self)
-
-    def right_magnet(self):
-        """
-
-
-        :return:
-        """
-        if self.triangle:
-            x1, y1, z1 = self.get_current_position()
-            x2 = self.label_rect.x() + self.label_rect.width()
-            return x1 + x2, y1, z1
-        else:
-            return Node.right_magnet(self)
 
     # ## Qt overrides ######################################################################
 
@@ -1038,7 +984,7 @@ class ConstituentNode(Node):
         """
         self.release()
         self.update()
-        if recipient and recipient.accept_drop(self):
+        if recipient and recipient.accepts_drops(self):
             pass
         else:
             for node in ctrl.dragged:

@@ -83,15 +83,11 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self._index_visible = True
         self.index = None
 
-        self.clickable = True
+        self.clickable = False
         self.selectable = True
         self.draggable = True
 
-        self.magnets = []
-        self._top_magnet = None
-        self._bottom_magnet = None
-        self._bottom_right_magnet = None
-        self._bottom_left_magnet = None
+        self._magnets = []
         self.force = 72
         self.touch_areas = {}
         self.status_tip = ""
@@ -437,52 +433,47 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             self.label_rect = QtCore.QRectF(0, 0, 0, 0)
             self.width = my_class.width
             self.height = my_class.height
-        w2 = self.width / 2.0
-        h2 = self.height / 2.0
-        self.inner_rect = QtCore.QRectF(-w2, -h2, self.width, self.height)
-        self.magnets = (-h2, w2, h2, -w2)  # (top, right, bottom, left)
-        self._top_magnet = (0, -h2 + 2)  # (0,-h2/2)
-        self._bottom_magnet = (0, h2 - 2)  # (0,-h2/2)
-        self._bottom_left_magnet = (w2 / -2, h2 - 2)
-        self._bottom_right_magnet = (w2 / 2, h2 - 2)
+        self.inner_rect = QtCore.QRectF(self.width / -2, self.height / -2, self.width, self.height)
+        self._update_magnets = True
         # print 'updating bounding rect ', self
         return self.inner_rect
 
 
     # ## Magnets ######################################################################
 
-    def top_magnet(self):
-        """ Adjusted coordinates to center top of the node """
-        if prefs.use_magnets and self._label_visible:
-            x1, y1, z1 = self.get_current_position()
-            x2, y2 = self._top_magnet
-            return x1 + x2, y1 + y2, z1
-        else:
-            return self.get_current_position()
 
-    def bottom_magnet(self):
-        """ Adjusted coordinates to center bottom of the node """
-        if prefs.use_magnets and self._label_visible:
-            x1, y1, z1 = self.get_current_position()
-            x2, y2 = self._bottom_magnet
-            return x1 + x2, y1 + y2, z1
-        else:
-            return self.get_current_position()
+    def magnet(self, n):
+        """
+        :param n: index of magnets. There are five magnets in top and bottom and three for sides:
 
-    def left_magnet(self):
-        """ Adjusted coordinates to ~left bottom of the node """
-        if prefs.use_magnets and self._label_visible:
-            x1, y1, z1 = self.get_current_position()
-            x2, y2 = self._bottom_left_magnet
-            return x1 + x2, y1 + y2, z1
-        else:
-            return self.get_current_position()
+        0   1   2   3   4
+        5               6
+        7   8   9   10  11
 
-    def right_magnet(self):
-        """ Adjusted coordinates to ~right bottom of the node """
+        :return:
+        """
         if prefs.use_magnets and self._label_visible:
+            if self._update_magnets:
+                self._update_magnets = False
+                w4 = (self.width - 2) / 4.0
+                w2 = (self.width - 2) / 2.0
+                h2 = (self.height - 2) / 2.0
+
+                self._magnets = [(-w2, -h2),
+                    (-w4, -h2),
+                    (0, -h2),
+                    (w4, -h2),
+                    (w2, -h2),
+                    (-w2, 0),
+                    (w2, 0),
+                    (-w2, h2),
+                    (-w4, h2),
+                    (0, h2),
+                    (w4, h2),
+                    (w2, h2)]
+
             x1, y1, z1 = self.get_current_position()
-            x2, y2 = self._bottom_right_magnet
+            x2, y2 = self._magnets[n]
             return x1 + x2, y1 + y2, z1
         else:
             return self.get_current_position()
@@ -591,7 +582,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         else:
             ctrl.select(self)
 
-    def click(self, event=None):
+    def select(self, event=None):
         """ Scene has decided that this node has been clicked
         :param event:
         """

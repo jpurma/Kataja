@@ -108,7 +108,8 @@ class BalancedTree(BaseVisualization):
         self.forest.vis_data['rotation'] = rotation
 
         def _get_gride_size(node):
-            top, node_width, node_height, left = node.magnets
+            node_width = node.width
+            node_height = node.height
             width = height = 1
             while node_width > edge_width:
                 width += 2

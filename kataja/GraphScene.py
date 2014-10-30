@@ -186,20 +186,12 @@ class GraphScene(QtWidgets.QGraphicsScene):
         bottoms = []
         for item in self.items():
             if isinstance(item, ConstituentNode) and not item.is_fading_away():
-                # if item.uses_scope_area:
-                # br = item.scope_rect
-                # x, y, z = item.get_current_position()
-                # lefts.append(x + br.left())
-                # rights.append(x + br.right())
-                # tops.append(y + br.top())
-                # bottoms.append(y + br.bottom())
-                # else:
-                top, right, bottom, left = item.magnets
-                x, y, z = item.get_current_position()  # try using final position here
-                lefts.append(x + left)
-                rights.append(x + right)
-                tops.append(y + top)
-                bottoms.append(y + bottom)
+                top_left_x, top_left_y, top_left_z = item.magnet(0)
+                bottom_right_x, bottom_right_y, bottom_right_z = item.magnet(11)
+                lefts.append(top_left_x)
+                rights.append(bottom_right_x)
+                tops.append(top_left_y)
+                bottoms.append(bottom_right_y)
             elif isinstance(item, Movable) and not item.is_fading_away():
                 br = item.boundingRect()
                 x, y, z = item.get_current_position()  # try using final position here
@@ -469,9 +461,12 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 continue
             sx, sy = to_tuple(sbr.center())
             dist = abs(sx - x) + abs(sy - y)
-
             # isObscured doesn't work with semi-transparent items, use zValues instead
-            if dist < min_d and (not closest_item) or (not item.zValue() < closest_item.zValue()):
+            if closest_item:
+                if dist < min_d and item.zValue() >= closest_item.zValue():
+                    closest_item = item
+                    min_d = dist
+            else:
                 closest_item = item
                 min_d = dist
         return closest_item
@@ -491,6 +486,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         # Check if any UI items can receive this press
         items = self.items(event.scenePos())
         clickables = [i for i in items if getattr(i, 'clickable', False)]
+        #print('clickables: ', clickables)
         if clickables:
             closest_item = self.get_closest_item(x, y, clickables)
             if closest_item:
@@ -499,20 +495,23 @@ class GraphScene(QtWidgets.QGraphicsScene):
                     self.graph_view.setDragMode(QtWidgets.QGraphicsView.NoDrag)
             return QtWidgets.QGraphicsScene.mousePressEvent(self, event)  # None
         # It wasn't consumed, continue with other selectables:
+        draggables = [i for i in items if getattr(i, 'draggable', False)]
+        #print('draggables: ', draggables)
+        if draggables:
+            closest_item = self.get_closest_item(x, y, draggables)
+            if closest_item:
+                ctrl.pressed = closest_item
+                self.graph_view.setDragMode(QtWidgets.QGraphicsView.NoDrag)
+            return QtWidgets.QGraphicsScene.mousePressEvent(self, event)  # None
+
         selectables = [i for i in items if getattr(i, 'selectable', False)]
+        #print('selectables: ', selectables)
         if selectables:
             closest_item = self.get_closest_item(x, y, selectables)
             if closest_item:
                 ctrl.pressed = closest_item
                 if closest_item.draggable:
                     self.graph_view.setDragMode(QtWidgets.QGraphicsView.NoDrag)
-            return QtWidgets.QGraphicsScene.mousePressEvent(self, event)  # None
-        draggables = [i for i in items if getattr(i, 'draggable', False)]
-        if draggables:
-            closest_item = self.get_closest_item(x, y, draggables)
-            if closest_item:
-                ctrl.pressed = closest_item
-                self.graph_view.setDragMode(QtWidgets.QGraphicsView.NoDrag)
             return QtWidgets.QGraphicsScene.mousePressEvent(self, event)  # None
 
         else:
@@ -601,6 +600,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
             else:
                 if pressed.clickable:
                     success = pressed.click(event)
+                if pressed.selectable:
+                    success = pressed.select(event)
                 pressed.update()
             ctrl.pressed = None
             if success:

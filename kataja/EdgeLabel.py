@@ -68,7 +68,7 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         if p and ctrl.is_selected(p):
             ctrl.ui.start_edge_label_editing(self.parentItem())
         else:
-            ctrl.select(p)
+            p.select(event)
 
     def update_text(self, value):
         self.setPlainText(value)
