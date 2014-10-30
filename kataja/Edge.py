@@ -580,6 +580,8 @@ class Edge(QtWidgets.QGraphicsItem):
             self._fat_path = self._fat_path.united(self._arrowhead_end_path)
         self.update_label_pos()
         ctrl.ui.update_control_point_positions()
+        if ctrl.is_selected(self):
+            ctrl.ui.update_edge_button_positions(self)
 
     def shape(self):
         """ Override of the QGraphicsItem method. Should returns the real shape of item to allow exact hit detection.
@@ -797,6 +799,9 @@ class Edge(QtWidgets.QGraphicsItem):
         else:
             self._visible = visible
 
+    def can_be_disconnected(self):
+        return True
+
     def refresh_selection_status(self, selected):
         """
 
@@ -810,6 +815,7 @@ class Edge(QtWidgets.QGraphicsItem):
                     self._label_item = EdgeLabel('', self, placeholder=True)
                     self.update_label_pos()
                 self._label_item.selected = True
+            ui.add_buttons_for_edge(self)
         else:
             ui.remove_control_points(self)
             if self._label_item:
@@ -820,6 +826,7 @@ class Edge(QtWidgets.QGraphicsItem):
                     self._label_item = None
                 else:
                     self._label_item.selected = False
+            ui.remove_buttons_for_edge(self)
         self.update()
 
     def boundingRect(self):
@@ -882,6 +889,7 @@ class Edge(QtWidgets.QGraphicsItem):
 
     def select(self, event=None):
         """ Scene has decided that this node has been selected
+        (update
         :param event:
         """
         self.set_hovering(False)

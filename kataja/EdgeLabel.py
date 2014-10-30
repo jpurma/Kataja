@@ -70,6 +70,9 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         else:
             p.select(event)
 
+    def select(self, event):
+        self.click(event)
+
     def update_text(self, value):
         self.setPlainText(value)
         self._size = self.boundingRect().size()

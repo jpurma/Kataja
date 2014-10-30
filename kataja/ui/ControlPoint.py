@@ -32,6 +32,7 @@ class ControlPoint(QtWidgets.QGraphicsItem):
         self.draggable = True
         self.pressed = False
         self.clickable = False
+        self.selectable = False
         self._hovering = False
         self.setAcceptHoverEvents(True)
         self.setZValue(52)

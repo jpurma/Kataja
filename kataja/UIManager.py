@@ -54,6 +54,7 @@ from kataja.ui.panels.LineOptionsPanel import LineOptionsPanel
 from kataja.ui.embeds.NewElementEmbed import NewElementEmbed, NewElementMarker
 from kataja.ui.embeds.EdgeLabelEmbed import EdgeLabelEmbed
 from kataja.ui.panels import UIPanel
+from kataja.ui.OverlayButton import OverlayButton
 
 
 NOTHING = 0
@@ -117,6 +118,7 @@ class UIManager:
         self._new_element_embed = None
         self._new_element_marker = None
         self._edge_label_embed = None
+        self._overlay_buttons = {}
 
         self._timer_id = 0
         self._ui_panels = {}
@@ -1001,6 +1003,46 @@ class UIManager:
             self.begin_merge_hint(node, edge)
         return edge
 
+    # ### Edge buttons ############################
+    def add_buttons_for_edge(self, edge):
+        adjust = QtCore.QPointF(19, 12)
+
+        if edge.start:
+            button = OverlayButton(qt_prefs.cut_icon, edge, 'Disconnect from node', parent=self.main.graph_view)
+            p = self.main.graph_view.mapFromScene(QtCore.QPointF(edge.start_point[0], edge.start_point[1])) - adjust
+            button.move(p.toPoint())
+            button.show()
+            key = edge.save_key + "_cut_start"
+            self._overlay_buttons[key] = button
+
+        if edge.end:
+            button = OverlayButton(qt_prefs.cut_icon, edge, 'Disconnect from node', parent=self.main.graph_view)
+            p = self.main.graph_view.mapFromScene(QtCore.QPointF(edge.end_point[0], edge.end_point[1])) - adjust
+            button.move(p.toPoint())
+            button.show()
+            key = edge.save_key + "_cut_end"
+            self._overlay_buttons[key] = button
+
+    def remove_buttons_for_edge(self, edge):
+        for end in ["_cut_start", "_cut_end"]:
+            key = edge.save_key + end
+            if key in self._overlay_buttons:
+                button = self._overlay_buttons[key]
+                button.close()
+                button.hide()
+                del self._overlay_buttons[key]
+
+    def update_edge_button_positions(self, edge):
+        start = self._overlay_buttons.get(edge.save_key + "_cut_start", None)
+        adjust = QtCore.QPointF(19, 12)
+        if start:
+            p = self.main.graph_view.mapFromScene(QtCore.QPoint(edge.start_point[0], edge.start_point[1])) - adjust
+            start.move(p.toPoint())
+        end = self._overlay_buttons.get(edge.save_key + "_cut_end", None)
+        if end:
+            p = self.main.graph_view.mapFromScene(QtCore.QPoint(edge.end_point[0], edge.end_point[1])) - adjust
+            end.move(p.toPoint())
+
 
     # ### Control points ####################################################################
 
@@ -1043,8 +1085,6 @@ class UIManager:
                 self._control_points.remove(item)
                 del item
 
-
-
     def remove_control_points(self, edge):
         """ Removes control points from this edge
         :param edge:
@@ -1064,90 +1104,6 @@ class UIManager:
         self.remove_control_points(edge)
         if ctrl.is_selected(edge):
             self.add_control_points(edge)
-
-    # ######### MOUSE ########################################################
-
-    # def mouse_press_event(self, item, event):
-    #     """ UIManager is interested in setting focus and sending clicks to UI elements. GraphScene should send an item here and depending on what kind of object it is, we take focus or
-    #         redelegate click to child object.
-    #     :param item:
-    #     :param event:
-    #         """
-    #     debug.mouse('mouse_press_event at UIManager')
-    #     drag = getattr(item, 'draggable', False)
-    #     focus = getattr(item, 'focusable', False)
-    #     if drag or focus:
-    #         if isinstance(item, RadialMenu):
-    #             debug.mouse('clicked child item of RadialMenu')
-    #             for child in item.childItems():
-    #                 if child.sceneBoundingRect().contains(event.scenePos()):
-    #                     child.pressed = True
-    #                     ctrl.ui_pressed = child
-    #                     if child.focusable and not ctrl.has_focus(child):
-    #                         ctrl.take_focus(child)
-    #                     return True
-    #         if focus and not ctrl.has_focus(item):
-    #             ctrl.take_focus(item)
-    #         item.pressed = True
-    #         ctrl.ui_pressed = item
-    #         return True
-    #     return False
-
-
-    # def mouse_move_event(self, event):
-    #     """
-
-    #     :param event:
-    #     :return:
-    #     """
-    #     ui_pressed = ctrl.ui_pressed
-    #     if not ctrl.has_focus(ui_pressed):
-    #         return False
-    #     else:
-    #         if getattr(ui_pressed, 'draggable', False):
-    #             print('dragging ui, eating mouse move event.')
-    #             ui_pressed.drag(event)
-    #             return True
-
-    # def mouse_release_event(self, event):
-    #     """ This reacts only when ui_pressed -flag is on.
-
-    #     :param event:
-    #         """
-    #     debug.mouse('ui mouseReleaseEvent', ctrl.watch_for_drag_end)
-    #     if ctrl.watch_for_drag_end:
-    #         debug.mouse("ending drag at UIManager. shouldn't be done here")
-    #         x, y = to_tuple(event.scenePos())
-    #         pressed = ctrl.pressed
-    #         if pressed:
-    #             pressed.drop_to(x, y)
-    #         self.main.graph_scene.kill_dragging()
-    #         print('ui kill dragging')
-    #         return True
-    #     elif ctrl.ui_pressed:
-    #         item = ctrl.ui_pressed
-    #         print('release on ui item ', item)
-    #         if ctrl.has_focus(item):
-    #             item.pressed = False
-    #             consume = item.click(event)
-    #             print('click on ', item)
-    #             item.update()
-    #             ctrl.ui_pressed = None
-    #             ctrl.dragged = set()
-    #             ctrl.dragged_positions = set()
-    #             return consume
-    #     return False
-
-    # def drag_over(self, event):
-    #     """
-
-    #     :param event:
-    #     """
-    #     pos = event.scenePos()
-    #     for ta in self.touch_areas:
-    #         ta.set_hovering(ta.sensitive_area().contains(pos))
-
-
 
 
     #### Timer ########################################################

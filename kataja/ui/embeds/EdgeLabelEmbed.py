@@ -2,6 +2,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from kataja.ui.embeds.UIEmbed import UIEmbed
 from kataja.singletons import qt_prefs, ctrl
 import kataja.globals as g
+from ui.OverlayButton import OverlayButton
 
 __author__ = 'purma'
 
@@ -25,6 +26,9 @@ class EdgeLabelEmbed(UIEmbed):
         ui_manager.connect_element_to_action(self.enter_button, 'edit_edge_label_enter_text')
 
         hlayout.addWidget(self.enter_button)
+        self.unlock_button = OverlayButton(qt_prefs.lock_icon, 'unlock', self)
+        hlayout.addWidget(self.unlock_button)
+
         layout.addLayout(hlayout)
         self.setLayout(layout)
         self.assumed_width = 200

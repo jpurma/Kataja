@@ -371,6 +371,7 @@ class QtPreferences:
         self.no_brush = QtGui.QBrush()
         self.no_brush.setStyle(QtCore.Qt.NoBrush)
         self.lock_icon = QtGui.QPixmap(preferences.resources_path+'icons/lock.png').scaledToWidth(16)
+        self.cut_icon = QtGui.QPixmap(preferences.resources_path+'icons/cut_icon48.png').scaledToWidth(24)
         self.left_arrow = extract_bitmaps(preferences.resources_path+'icons/left_2c.gif')
         self.right_arrow = extract_bitmaps(preferences.resources_path+'icons/right_2c.gif')
         #self.gear_icon = extract_bitmaps(preferences.resources_path+'icons/gear2_16.gif')
