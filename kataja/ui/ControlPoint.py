@@ -15,16 +15,17 @@ class ControlPoint(QtWidgets.QGraphicsItem):
     """
 
     def __init__(self, edge=None, index=-1, role=''):
+        QtWidgets.QGraphicsItem.__init__(self)
         if prefs.touch:
             self._wh = 12
             self._xy = -6
             self.round = True
+            self.setCursor(Qt.PointingHandCursor)
         else:
             self._wh = 4
             self._xy = -2
             self.round = True
-        QtWidgets.QGraphicsItem.__init__(self)
-        self.setCursor(Qt.CrossCursor)
+            self.setCursor(Qt.CrossCursor)
         self.role = role
         self.host_edge = edge
         self._index = index
@@ -37,6 +38,16 @@ class ControlPoint(QtWidgets.QGraphicsItem):
         self.setAcceptHoverEvents(True)
         self.setZValue(52)
         self._compute_position()
+        self.status_tip = ""
+        if self.role == g.START_POINT:
+            self.status_tip = "Drag to move the starting point"
+        elif self.role == g.END_POINT:
+            self.status_tip = "Drag to move the ending point"
+        elif self._index > -1:
+            self.status_tip = "Drag to adjust the curvature of this line"
+        elif self.role == g.LABEL_START:
+            self.status_tip = "Drag along the line to adjust the anchor point of label"
+        self.setToolTip(self.status_tip)
 
     def _compute_position(self):
         """
@@ -129,6 +140,7 @@ class ControlPoint(QtWidgets.QGraphicsItem):
         :param event:
         """
         self._hovering = True
+        ctrl.set_status(self.status_tip)
         QtWidgets.QGraphicsItem.hoverEnterEvent(self, event)
 
     def hoverLeaveEvent(self, event):
@@ -137,6 +149,7 @@ class ControlPoint(QtWidgets.QGraphicsItem):
         :param event:
         """
         self._hovering = False
+        ctrl.remove_status(self.status_tip)
         QtWidgets.QGraphicsItem.hoverLeaveEvent(self, event)
 
     def paint(self, painter, option, widget=None):

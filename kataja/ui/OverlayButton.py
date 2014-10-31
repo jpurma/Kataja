@@ -32,27 +32,38 @@ class OverlayButton(QtWidgets.QPushButton):
         but let's keep this in case we need to deliver palette updates to icon engines.
      """
 
-    def __init__(self, pixmap, host, text=None, parent=None):
+    def __init__(self, pixmap, host, role, text=None, parent=None):
         QtWidgets.QPushButton.__init__(self, parent)
         if text:
             self.setToolTip(text)
             self.setStatusTip(text)
         self.host = host
+        self.role = role
         self.setContentsMargins(0, 0, 0, 0)
-        self.setIconSize(QtCore.QSize(24, 24))
+        self.setIconSize(QtCore.QSize(16, 16))
         self.setFlat(True)
         self.setIcon(QtGui.QIcon(pixmap))
         self.effect = QtWidgets.QGraphicsColorizeEffect(self)
         self.effect.setColor(ctrl.cm.ui())
-        self.effect.setStrength(1.0)
+        self.effect.setStrength(0.5)
         self.setGraphicsEffect(self.effect)
+        #self.setCursor(Qt.PointingHandCursor)
 
     def update_color(self):
         self.effect.colorChanged(ctrl.cm.ui())
 
+    def update_position(self):
+        if self.role == 'start_cut':
+            adjust = QtCore.QPointF(19, 12)
+            p = self.parent().mapFromScene(QtCore.QPoint(self.host.start_point[0], self.host.start_point[1])) - adjust
+            self.move(p.toPoint())
+        if self.role == 'end_cut':
+            adjust = QtCore.QPointF(19, 12)
+            p = self.parent().mapFromScene(QtCore.QPoint(self.host.end_point[0], self.host.end_point[1])) - adjust
+            self.move(p.toPoint())
 
     def enterEvent(self, event):
-        print('entering button')
+        self.effect.setStrength(1.0)
 
     def leaveEvent(self, event):
-        print('leaving button')
+        self.effect.setStrength(0.5)

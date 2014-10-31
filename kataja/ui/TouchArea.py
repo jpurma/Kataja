@@ -78,7 +78,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
         self.drag_mode = drag_mode
         self.key = TouchArea.create_key(host, type)
         self.update_end_points()
-        self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.setCursor(QtCore.Qt.ArrowCursor)
         self.setAcceptHoverEvents(True)
         self._fill_path = False
         if self.type == g.LEFT_ADD_ROOT:
@@ -91,6 +91,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
             self.status_tip = "Add new sibling to right of %s" % self.host.end
         else:
             self.status_tip = "Unknown touch area???"
+        self.setToolTip(self.status_tip)
 
 
     def is_visible(self):

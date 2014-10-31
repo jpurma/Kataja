@@ -361,6 +361,8 @@ class UIManager:
             cp.update_position()
         for symbol in self.symbols:
             symbol.update_position()
+        for button in self._overlay_buttons.values():
+            button.update_position()
         if self._new_element_marker:
             self._new_element_marker.update_position()
 
@@ -1008,7 +1010,7 @@ class UIManager:
         adjust = QtCore.QPointF(19, 12)
 
         if edge.start:
-            button = OverlayButton(qt_prefs.cut_icon, edge, 'Disconnect from node', parent=self.main.graph_view)
+            button = OverlayButton(qt_prefs.cut_icon, edge, 'start_cut', 'Disconnect from node', parent=self.main.graph_view)
             p = self.main.graph_view.mapFromScene(QtCore.QPointF(edge.start_point[0], edge.start_point[1])) - adjust
             button.move(p.toPoint())
             button.show()
@@ -1016,7 +1018,7 @@ class UIManager:
             self._overlay_buttons[key] = button
 
         if edge.end:
-            button = OverlayButton(qt_prefs.cut_icon, edge, 'Disconnect from node', parent=self.main.graph_view)
+            button = OverlayButton(qt_prefs.cut_icon, edge, 'end_cut', 'Disconnect from node', parent=self.main.graph_view)
             p = self.main.graph_view.mapFromScene(QtCore.QPointF(edge.end_point[0], edge.end_point[1])) - adjust
             button.move(p.toPoint())
             button.show()
@@ -1034,14 +1036,11 @@ class UIManager:
 
     def update_edge_button_positions(self, edge):
         start = self._overlay_buttons.get(edge.save_key + "_cut_start", None)
-        adjust = QtCore.QPointF(19, 12)
         if start:
-            p = self.main.graph_view.mapFromScene(QtCore.QPoint(edge.start_point[0], edge.start_point[1])) - adjust
-            start.move(p.toPoint())
+            start.update_position()
         end = self._overlay_buttons.get(edge.save_key + "_cut_end", None)
         if end:
-            p = self.main.graph_view.mapFromScene(QtCore.QPoint(edge.end_point[0], edge.end_point[1])) - adjust
-            end.move(p.toPoint())
+            end.update_position()
 
 
     # ### Control points ####################################################################
