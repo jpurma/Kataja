@@ -548,7 +548,10 @@ class UIManager:
             # there are still possibility that e.g. two panels that read enter or esc are visible.
             # button_shortcut_filter should decide between these.
             element.installEventFilter(self.button_shortcut_filter)
-        if isinstance(element, QtWidgets.QAbstractButton):
+        if isinstance(element, OverlayButton):
+            element.connect_to_action(action)
+            element.setFocusPolicy(QtCore.Qt.TabFocus)
+        elif isinstance(element, QtWidgets.QAbstractButton):
             element.clicked.connect(action.trigger)
             element.setFocusPolicy(QtCore.Qt.TabFocus)
         elif isinstance(element, QtWidgets.QComboBox):
@@ -653,8 +656,6 @@ class UIManager:
         if self._edge_label_embed and self._edge_label_embed.isVisible():
             self._edge_label_embed.close()
             self._edge_label_embed.hide()
-
-
 
     #### Creation dialog #########################################################
 
@@ -1013,6 +1014,7 @@ class UIManager:
             button = OverlayButton(qt_prefs.cut_icon, edge, 'start_cut', 'Disconnect from node', parent=self.main.graph_view)
             p = self.main.graph_view.mapFromScene(QtCore.QPointF(edge.start_point[0], edge.start_point[1])) - adjust
             button.move(p.toPoint())
+            self.connect_element_to_action(button, 'disconnect_edge')
             button.show()
             key = edge.save_key + "_cut_start"
             self._overlay_buttons[key] = button
@@ -1021,6 +1023,7 @@ class UIManager:
             button = OverlayButton(qt_prefs.cut_icon, edge, 'end_cut', 'Disconnect from node', parent=self.main.graph_view)
             p = self.main.graph_view.mapFromScene(QtCore.QPointF(edge.end_point[0], edge.end_point[1])) - adjust
             button.move(p.toPoint())
+            self.connect_element_to_action(button, 'disconnect_edge')
             button.show()
             key = edge.save_key + "_cut_end"
             self._overlay_buttons[key] = button
@@ -1042,6 +1045,20 @@ class UIManager:
         if end:
             end.update_position()
 
+    def edge_disconnect(self):
+        edge = None
+        role = None
+        for item in self._overlay_buttons.values():
+            if item.just_triggered:
+                item.just_triggered = False
+                edge = item.host
+                role = item.role
+        if not edge:
+            return
+        if role == 'start_cut' and edge.edge_type is g.CONSTITUENT_EDGE:
+            ctrl.forest.disconnect_node_from_tree(edge.end)
+        elif role == 'end_cut' and edge.edge_type is g.CONSTITUENT_EDGE:
+            ctrl.forest.disconnect_node_from_tree(edge.end)
 
     # ### Control points ####################################################################
 

@@ -291,6 +291,11 @@ actions = {
         'context': 'ui',
         'shortcut_context': 'parent_and_children'
     },
+    'disconnect_edge': {
+        'command': 'Disconnect',
+        'method': 'edge_disconnect',
+        'context': 'ui'
+    },
 
     # Generic keys ####
     # 'key_esc': {

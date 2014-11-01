@@ -39,6 +39,7 @@ class OverlayButton(QtWidgets.QPushButton):
             self.setStatusTip(text)
         self.host = host
         self.role = role
+        self._action = None
         self.setContentsMargins(0, 0, 0, 0)
         self.setIconSize(QtCore.QSize(size, size))
         self.setFlat(True)
@@ -47,6 +48,7 @@ class OverlayButton(QtWidgets.QPushButton):
         self.effect.setColor(ctrl.cm.ui())
         self.effect.setStrength(0.6)
         self.setGraphicsEffect(self.effect)
+        self.just_triggered = False
         #self.setCursor(Qt.PointingHandCursor)
 
     def update_color(self):
@@ -76,3 +78,12 @@ class OverlayButton(QtWidgets.QPushButton):
 
     def leaveEvent(self, event):
         self.effect.setStrength(0.5)
+
+    def connect_to_action(self, action):
+        self._action = action
+        self.clicked.connect(self.click_delegate)
+
+    def click_delegate(self):
+        print('in click delegate')
+        self.just_triggered = True
+        self._action.trigger()
