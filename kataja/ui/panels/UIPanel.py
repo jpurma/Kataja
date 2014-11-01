@@ -37,8 +37,9 @@ from PyQt5 import QtCore, QtWidgets, QtGui
 #         print('using twocoloricon painter')
 #         return QtGui.QIcon.paint(self, painter, kwargs)
 import kataja.debug as debug
-from kataja.singletons import ctrl
+from kataja.singletons import ctrl, qt_prefs
 import kataja.globals as g
+from kataja.ui.OverlayButton import OverlayButton
 
 
 class PanelTitle(QtWidgets.QWidget):
@@ -62,16 +63,15 @@ class PanelTitle(QtWidgets.QWidget):
         layout.setContentsMargins(0, 2, 0, 2)
         layout.setSpacing(0)
         layout.minimumSize = self.sizeHint
-        close_button = QtWidgets.QPushButton("x")
+        close_button = OverlayButton(qt_prefs.close_icon, None, 'panel', text='Close panel', parent=self, size=12)
         close_button.setMaximumWidth(16)
         self.panel.ui_manager.connect_element_to_action(close_button, panel.get_visibility_action())
         layout.addWidget(close_button)
         self.setMinimumSize(self.preferred_size)
-        self.folded = False
-        self.fold_button = QtWidgets.QPushButton("-")
+        self.fold_button = OverlayButton(qt_prefs.fold_icon, None, 'panel', text='Minimize this panel', parent=self, size=12)
         self.fold_button.setMaximumWidth(16)
         self.panel.ui_manager.connect_element_to_action(self.fold_button, panel.get_fold_action())
-        self.pin_button = QtWidgets.QPushButton("p")
+        self.pin_button = OverlayButton(qt_prefs.pin_drop_icon, None, 'panel', text='Dock this panell', parent=self, size=12)
         self.pin_button.setMaximumWidth(16)
         self.panel.ui_manager.connect_element_to_action(self.pin_button, panel.get_pin_action())
         layout.addWidget(self.pin_button)
@@ -82,15 +82,14 @@ class PanelTitle(QtWidgets.QWidget):
         layout.addWidget(QtWidgets.QLabel(name))
         self.setLayout(layout)
 
-    def toggle_fold(self, caller):
-        self.folded = not self.folded
-        self.panel.set_folded(self.folded)
-        if self.folded:
-            self.fold_button.setText('+')
+    def update_fold(self, folded):
+        if folded:
+            print('folding')
+            self.fold_button.setIcon(QtGui.QIcon(qt_prefs.more_icon))
             self.fold_button.setStatusTip("Expand this panel")
-
         else:
-            self.fold_button.setText('-')
+            print('expanding')
+            self.fold_button.setIcon(QtGui.QIcon(qt_prefs.fold_icon))
             self.fold_button.setStatusTip("Minimize this panel")
 
     def sizeHint(self):
@@ -159,6 +158,7 @@ class UIPanel(QtWidgets.QDockWidget):
 
     def set_folded(self, folded):
         self.folded = folded
+        self.titleBarWidget().update_fold(folded)
         if folded:
             self.widget().hide()
         else:
