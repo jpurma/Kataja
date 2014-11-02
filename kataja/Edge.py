@@ -540,12 +540,11 @@ class Edge(QtWidgets.QGraphicsItem):
 
 
     # ### Derivative features ############################################
-
+    #@time_me
     def make_path(self):
         """ Draws the shape as a path """
         if not self._shape_method:
             self.update_shape()
-        self.shape_name()
         c = self._cached_shape_args
         c['start_point'] = self.start_point
         c['end_point'] = self.end_point
@@ -555,7 +554,6 @@ class Edge(QtWidgets.QGraphicsItem):
         c['end'] = self.end
         self._path, self._true_path, self.control_points = self._shape_method(**c)
         #if not self.is_filled():  # expensive with filled shapes
-        combined = self._path
         if self.ending('start'):
             self._arrowhead_start_path = self.make_arrowhead_path('start')
         else:
@@ -564,7 +562,11 @@ class Edge(QtWidgets.QGraphicsItem):
             self._arrowhead_end_path = self.make_arrowhead_path('end')
         else:
             self._arrowhead_end_path = None
-        if c.get('thickness', 0):
+
+        sn = self.shape_name()
+        if sn == 'blob' or sn == 'directional_blob':
+            self._fat_path = self._path
+        elif c.get('thickness', 0):
             if self.ending('start'):
                 self._path = self.clip_ending('start', self._path)
             if self.ending('end'):

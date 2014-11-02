@@ -1056,9 +1056,9 @@ class UIManager:
         if not edge:
             return
         if role == 'start_cut' and edge.edge_type is g.CONSTITUENT_EDGE:
-            ctrl.forest.disconnect_node_from_tree(edge.end)
+            ctrl.forest.disconnect_edge_start(edge)
         elif role == 'end_cut' and edge.edge_type is g.CONSTITUENT_EDGE:
-            ctrl.forest.disconnect_node_from_tree(edge.end)
+            ctrl.forest.disconnect_edge_end(edge)
 
     # ### Control points ####################################################################
 

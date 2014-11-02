@@ -315,7 +315,7 @@ def linear_icon(painter, rect, color=None):
     painter.drawPath(path)
 
 
-
+@time_me
 def blob_path(start_point=None, end_point=None, adjust=None, align=LEFT, thickness=4, start=None, end=None, **kwargs):
     """ Surround the node with circular shape that stretches to other node """
     if start:
@@ -408,7 +408,7 @@ def blob_icon(painter, rect, color=None, thickness=3):
     path = path.subtracted(path2neg)
     painter.fillPath(path, color)
 
-
+@time_me
 def directional_blob_path(start_point=None, end_point=None, adjust=None, align=LEFT,  thickness=4, start=None, end=None, **kwargs):
     """ Surround the node with circular shape that stretches to other node """
     if start:
@@ -565,13 +565,13 @@ SHAPE_PRESETS = OrderedDict([
         'fill': True,
         'icon': blob_icon,
         'control_points': 1,
-        'thickness': 2}),
+        'thickness': 0}),
     ('directional_blob', {
         'method': directional_blob_path,
         'fill': True,
         'icon': directional_blob_icon,
         'control_points': 1,
-        'thickness': 3}),
+        'thickness': 0}),
     ('no draw', {
         'method': linear_path,
         'fill': False,

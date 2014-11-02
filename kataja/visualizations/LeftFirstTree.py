@@ -194,13 +194,10 @@ class LeftFirstTree(BaseVisualization):
                 self._fill_grid(grid, root, self._indentation, 0)
                 merged_grid = self._merge_grids(grid, merged_grid)
 
-        tree_width = merged_grid._width * edge_width
-        tree_height = merged_grid._height * edge_height
         offset_x = 0  # tree_w/-2
         y = 0
 
         # Actual drawing: set nodes to their places in scene
-        extra_height = 0
         if merged_grid:
             # merged_grid.ascii_dump()
             extra_width = [0] * merged_grid._width
@@ -214,7 +211,6 @@ class LeftFirstTree(BaseVisualization):
         for y_i, row in enumerate(merged_grid):
             extra_height = 0
             prev_width = 0
-            prev_rect = None
             x = offset_x
             for x_i, node in enumerate(row):
                 if node and isinstance(node, ConstituentNode):
@@ -228,7 +224,6 @@ class LeftFirstTree(BaseVisualization):
                     x += extra_width[x_i]
                     node.set_computed_position((x, y, 0))
                     prev_width = node.width
-                    prev_rect = node.inner_rect
                     all_nodes.remove(node)
                 else:
                     x += extra_width[x_i]

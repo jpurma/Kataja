@@ -886,7 +886,28 @@ class Forest:
         edge.update_end_points()
         new_end.edges_up.append(edge)
 
+    def disconnect_edge_start(self, edge):
+        #if edge.end:
+        #    edge.end.edges_up.remove(edge)
+        if edge.start:
+            edge.start.edges_down.remove(edge)
+        edge.start = None
+        edge.make_relative_vector()
+        edge.update_end_points()
+        ctrl.ui.reset_control_points(self)
+        edge.update_shape()
 
+
+    def disconnect_edge_end(self, edge):
+        if edge.end:
+            edge.end.edges_up.remove(edge)
+        #if edge.start:
+        #    edge.start.edges_down.remove(edge)
+        edge.end = None
+        edge.make_relative_vector()
+        edge.update_end_points()
+        ctrl.ui.reset_control_points(self)
+        edge.update_shape()
 
 
     # ## order markers are special nodes added to nodes to signal the order when the node was merged/added to forest

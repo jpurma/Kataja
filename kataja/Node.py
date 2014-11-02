@@ -152,14 +152,14 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             if edge_type is None:
                 edge_type = self.__class__.default_edge_type
             if only_visible:
-                return [edge.end for edge in self.edges_down if edge.edge_type == edge_type and edge.end.is_visible()]
+                return [edge.end for edge in self.edges_down if edge.edge_type == edge_type and edge.end and edge.end.is_visible()]
             else:
-                return [edge.end for edge in self.edges_down if edge.edge_type == edge_type]
+                return [edge.end for edge in self.edges_down if edge.edge_type == edge_type and edge.end]
         else:
             if only_visible:
-                return [edge.end for edge in self.edges_down if edge.end.is_visible()]
+                return [edge.end for edge in self.edges_down if edge.end and edge.end.is_visible()]
             else:
-                return [edge.end for edge in self.edges_down]
+                return [edge.end for edge in self.edges_down if edge.end]
 
     def get_parents(self, only_similar=True, only_visible=False, edge_type=None):
         """
@@ -173,14 +173,14 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             if edge_type is None:
                 edge_type = self.__class__.default_edge_type
             if only_visible:
-                return [edge.start for edge in self.edges_up if edge.edge_type == edge_type and edge.start.is_visible()]
+                return [edge.start for edge in self.edges_up if edge.edge_type == edge_type and edge.start and edge.start.is_visible()]
             else:
-                return [edge.start for edge in self.edges_up if edge.edge_type == edge_type]
+                return [edge.start for edge in self.edges_up if edge.edge_type == edge_type and edge.start]
         else:
             if only_visible:
-                return [edge.start for edge in self.edges_up if edge.start.is_visible()]
+                return [edge.start for edge in self.edges_up if edge.start and edge.start.is_visible()]
             else:
-                return [edge.start for edge in self.edges_up]
+                return [edge.start for edge in self.edges_up if edge.start]
 
     def left(self, only_visible=True):
         """
@@ -190,8 +190,10 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """
         for edge in self.edges_down:
             if edge.edge_type == self.__class__.default_edge_type and edge.align == 1:
-                if (only_visible and edge.end.is_visible()) or not only_visible:
-                    return edge.end
+                if edge.end:
+                    if (only_visible and edge.end.is_visible()) or not only_visible:
+                        return edge.end
+                return None
 
     def right(self, only_visible=True):
         """
@@ -201,8 +203,10 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """
         for edge in self.edges_down:
             if edge.edge_type == self.__class__.default_edge_type and edge.align == 2:
-                if (only_visible and edge.end.is_visible()) or not only_visible:
-                    return edge.end
+                if edge.end:
+                    if (only_visible and edge.end.is_visible()) or not only_visible:
+                        return edge.end
+                return None
 
     def is_leaf_node(self, only_similar=True, only_visible=True):
         """
