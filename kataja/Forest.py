@@ -67,7 +67,7 @@ def restore_forest(key):
     print('restore forest? who is calling this and is it doable?')
     obj = None
     for forest in ctrl.forest_keeper:
-        if forest.key == key:
+        if forest.key is key:
             obj = forest
             break
     if not obj:
@@ -75,60 +75,6 @@ def restore_forest(key):
         obj._revived = True
     # ctrl.undo.repair_later(obj)
     return obj
-
-
-# class Iterator:
-# """ Iterates through binary tree """
-# def __init__(self, host):
-# """ Iterator is given one node 'host' to begin with """
-# self._host = host
-# self._iter_stack = [host]
-# self._count = 0
-
-# def __iter__(self):
-# """ This is iterator by itself """
-# return self
-
-# def next(self):
-# """ Implements left-first -iteration through the tree. """
-# if self._iter_stack:
-# next = self._iter_stack.pop(0)
-# self._iter_stack = next.get_children() + self._iter_stack
-# self._count += 1
-# return next
-# else:
-# raise StopIteration
-
-# class IterateOnce:
-# """ Iterator that returns each node only once """
-# def __init__(self, host):
-# """ Iterator is given one node 'host' to begin with """
-# self._host = host
-# self._iter_stack = [host]
-# self._count = 0
-# self._done = set()
-
-# def __iter__(self):
-# """ This is iterator by itself """
-# return self
-
-# def next(self):
-# """ Implements left-first -iteration through the tree. """
-# if self._iter_stack:
-# next = None
-# while self._iter_stack and not next:
-# l = self._iter_stack.pop(0)
-# if l not in self._done:
-# next = l
-# self._done.add(next)
-# if next:
-#                 self._iter_stack = next.get_children() + self._iter_stack
-#                 self._count += 1
-#                 return next
-#             else:
-#                 raise StopIteration
-#         else:
-#             raise StopIteration
 
 class Forest:
     """ Forest is a group of trees that together form one view.
@@ -226,22 +172,6 @@ class Forest:
 
         _iterate(first)
         return res
-
-        # from ConstituentNode.py
-        # fix me
-
-    #     def linearized(self, gaps = False):
-    #         l = []
-    #         for node in linearize(self, []):
-    #             if node.is_leaf():
-    #                 if node.is_trace:
-    #                     if gaps:
-    #                         l.append(u'_')
-    #                     else:
-    #                         continue
-    #                 else:
-    #                     l.append(to_unicode(self.alias or node.syntactic_object))
-    #         return u' '.join(l)
 
     def info_dump(self):
         """
@@ -349,12 +279,9 @@ class Forest:
             else:
                 print('F trying to store broken type:', item.__class__.__name__)
 
-
     def get_all_objects(self):
-        """
-
-
-        :return:
+        """ Just return all objects governed by Forest -- not all scene objects 
+        :return: list of objects
         """
         return list(self.nodes.values()) + list(self.edges.values()) + list(
             self.others.values()) + self.bracket_manager.get_brackets()
@@ -403,42 +330,28 @@ class Forest:
         self.draw_gloss_text()
 
 
-    def update_colors(self, adjusting=False):
-        """
-
-        :param adjusting:
-        """
+    def update_colors(self):
+        """ Update colors to those specified for this Forest."""
         cm = ctrl.cm
         old_gradient_base = cm.paper()
-        self.main.color_manager.update_colors(prefs, self.settings, adjusting=adjusting)
-        #colors.update_colors(prefs, self.settings, adjusting=adjusting)
+        self.main.color_manager.update_colors(prefs, self.settings)
         self.main.app.setPalette(cm.get_qt_palette())
         if old_gradient_base != cm.paper() and cm.gradient:
             self.main.graph_scene.fade_background_gradient(old_gradient_base, cm.paper())
         else:
             self.main.graph_scene.setBackgroundBrush(qt_prefs.no_brush)
-        #for node in self.nodes.values():
-        #    node.update_colors()
-        #for edge in self.edges.values():
-        #    edge.update_colors()
         for other in self.others.values():
             other.update_colors()
-        #self.bracket_manager.update_colors()
         if self.gloss:
             self.gloss.setDefaultTextColor(cm.drawing())
         self.main.ui_manager.update_colors()
 
 
     def visible_nodes(self):
-        """
+        """ Return all visible nodes of this forest
             :rtype kataja.Node
          """
         return list(self.nodes.values())
-        # for n in self.nodes.values():
-        #     if n and n.is_visible():
-        #         yield n
-        #     else:
-        #         print 'skipping hidden node', n
 
     def get_node(self, constituent):
         """
@@ -450,101 +363,83 @@ class Forest:
         return self.nodes.get('CN%s' % constituent.uid, None)
 
     def get_constituent_edges(self):
-        """
-
-
-        :return:
+        """ Return list of constituent edges
+        :return: list
         """
         return [x for x in self.edges.values() if x.edge_type == 'constituent_edge' and x.is_visible()]
 
     def get_constituent_nodes(self):
-        """
-
-
-        :return:
+        """ Return list of constituent nodes
+        :return: list
         """
         return [x for x in self.nodes.values() if isinstance(x, ConstituentNode) and x.isVisible()]
 
     def get_feature_nodes(self):
-        """
-
-
-        :return:
+        """ Return list of feature nodes
+        :return: list
         """
         return [x for x in self.nodes.values() if isinstance(x, FeatureNode)]
 
     def get_attribute_nodes(self):
-        """
-
-
-        :return:
+        """ Return list of attribute nodes
+        :return: list
         """
         return [x for x in self.nodes.values() if isinstance(x, AttributeNode)]
 
     def add_comment(self, comment):
-        """
-
-        :param comment:
+        """ Add comment item to forest
+        :param comment: comment item
         """
         self._comments.append(comment)
 
+    def remove_comment(self, comment):
+        """ Remove comment item from forest
+        :param comment: comment item
+        :return:
+        """
+        if comment in self._comments:
+            self._comments.remove(comment)
+
     #@time_me
     def update_roots(self):
-        """
-
-
-        """
+        """ Make sure that list of roots is up to date """
         self.roots = []
         for node in self.nodes.values():
-            if not node.edges_up:
+            if isinstance(node, ConstituentNode) and not node.edges_up:
                 self.roots.append(node)
-                # print '*** updating roots ***: ', len(self.roots)
 
 
-    # refactor this, implementation is not good
+    # not used
     def is_higher_in_tree(self, node_A, node_B):
-        """
-
+        """ Compare two nodes, if node_A is higher, return True. Return False if not.
+            Return None if nodes are not in the same tree -- cannot compare. (Be careful with the result,
+            handle None and False differently.)
         :param node_A:
         :param node_B:
         :return:
         """
-        node_A_root = node_A_index = node_B_root = node_B_index = 999
-        found_A = False
-        found_B = False
         for root_index, root in enumerate(self.roots):
-            for index, node in enumerate(self.list_nodes_once(root)):
-                if (not found_A) and node == node_A:
-                    node_A_root = root_index
-                    node_A_index = index
-                elif (not found_B) and node == node_B:
-                    node_B_root = root_index
-                    node_B_index = index
-                if found_A and found_B:
-                    break
-            if found_A and found_B:
-                break
-        if node_A_root != node_B_root:
-            return -1
-        return int(node_A_index < node_B_index)
+            nodes = self.list_nodes_once(root)
+            if node_A in nodes and node_B in nodes:
+                return nodes.index(node_A) < nodes.index(node_B)
+        return None
 
+    # not used
     def index_in_tree(self, node):
-        """
-
-        :param node:
-        :return:
+        """ Find the index of first usage in tree.
+        :param node: node to look for
+        :return: index
         """
         for root in self.roots:
-            for i, n in enumerate(self.list_nodes_once(root)):
-                if n is node:
-                    return i
-        return -1
+            nodes = self.list_nodes_once(root)
+            if node in nodes:
+                return nodes.index(node)
+        return None
 
     def get_first_free_constituent_name(self):
-        """
-
-
-        :return:
+        """ Generate a name for constituent, ABCDEF... and then abcdef..., then AA, AB, AC...
+         until a free (not used in this forest) is found.
+        :return: String
         """
         names = [node.syntactic_object.get_label() for node in self.nodes.values() if
                  isinstance(node, ConstituentNode) and node.syntactic_object]
@@ -757,6 +652,19 @@ class Forest:
         C = ctrl.Constituent(label)
         node = self.create_node_from_constituent(C, pos, result_of_select=True)
         return node
+
+    def create_placeholder_node(self, pos):
+        node = ConstituentNode(constituent=None, forest=self)
+        node.set_original_position(pos)
+        self.add_to_scene(node)
+        node.update_visibility()
+        # for key, feature in C.get_features().items():
+        #    self.create_feature_node(node, feature)
+        if self.visualization:
+            self.visualization.reset_node(node)
+        return node
+
+
 
     def create_arrow(self, p1, p2, text=None):
         """ Create an arrow (Edge) using the default arrow style
@@ -1353,140 +1261,6 @@ class Forest:
 
     ############ Complex node operations ##############################
 
-
-    # @time_me
-    def merge_nodes(self, node_A, node_B):
-        """
-
-        :param node_A:
-        :param node_B:
-        :return:
-        """
-        if node_B in node_A:
-            self.main.add_message('Cannot Merge into itself')
-            return
-        if node_B.is_root_node():
-            merger = self._merge(node_A, node_B)
-        else:
-            merger = self._merge_and_tuck(node_A, node_B)
-        self.undo_manager.record("Merge %s with %s" % (str(node_A), str(node_B)))
-        self.main.add_message("Merge %s with %s" % (str(node_A), str(node_B)))
-        return merger
-
-    def _merge(self, node_A, node_B):
-        """ Merge between two roots.
-        If using multidomination, then merge itself is simple, but we still need to create a trace constituent to be used when switched to trace view.
-        If using trace view, create a trace and merge it to node_B.
-        """
-        print("who is using this??? _merge(A,B)")
-        assert False
-
-        if not node_A.parents:
-            external_merge = True
-        else:
-            external_merge = False
-            # old_parents=list(node_A.parents)
-        index = node_A.get_index()
-        if external_merge:
-            if index:
-                # this is a strange case, but needs to be covered. there is no reason for singular constituent to have an index
-                if index in self._chains:
-                    index = next_free_index(list(self._chains.keys()))
-                    node_A.set_index(index)
-                self.add_to_chain(index, node_A)  # now we have a chain with single node in it.
-            else:
-                pass
-                # simplest case, just do a merge, no traces or indexes
-        else:  # internal merges always involve chains
-            if not index:
-                # need to create a new trace index for merged constituent and a matching trace
-                index = next_free_index(list(self._chains.keys()))
-                node_A.set_index(index)
-                self.add_to_chain(index, node_A)
-            # needs to create a trace for trace view
-            trace = self.create_trace_for(node_A)
-            self._insert_into_chain(index, trace)
-            if not self.settings.uses_multidomination():
-                self._replace_node(node_A, trace)
-
-        merger_const = ctrl.UG.Merge(node_A.syntactic_object, node_B.syntactic_object)
-        merger_node = self.create_node_from_constituent(merger_const, pos=node_A.get_current_position(),
-                                                        result_of_merge=True)
-        merger_node._connect_node(child=node_A)
-        merger_node._connect_node(child=node_B)
-        # needs to check if trees should be removed or merger node set as a root node
-        self.update_roots()
-        if self.visualization:
-            self.visualization.reset_node(merger_node)
-        return merger_node
-
-    # this won't work
-    def _merge_and_tuck(self, node_A, node_B):
-        """ Merge becomes a bit more complicated if node_B already has parents. Then the merger is tugged between parents and merged item."""
-
-        merger_const = ctrl.UG.Merge(node_A.syntactic_object, node_B.syntactic_object)
-        merger_node = self.create_node_from_constituent(merger_const, pos=node_A.get_current_position(),
-                                                        result_of_merge=True)
-        # does it matter which one is the active partner here?
-        # in a simple merge, node_A is active -- it is moving --, but it already may have parents. these are not affected.
-        # node_B is a root node of some root and becomes the right side node of merger.
-        # in this case node_B has parents too, and for them node_B should be replaced with the new merged node
-        # ReplaceConstituentNode works only with nodes, it doesn't change constituent structure. How to do that nicely?
-        # In principle, UG doesn't have to support that. Modified ConstituentNode.
-        self._replace_node(node_B, merger_node)
-        self.update_roots()
-        if self.visualization:
-            self.visualization.reset_node(merger_node)
-        return merger_node
-
-        # def merge_to_host(self, merged_node):
-
-    #     ctrl.on_cancel_delete = []
-    #     x, y, z = self.host.get_current_position()
-    #     f = self.host.forest
-    #     if not merged_node:
-    #         merged_node = f.create_empty_node(pos = (x, y, z), root = False)
-    #         ctrl.on_cancel_delete.append(merged_node)
-    #     if self.top:
-    #         top_node = f.create_empty_node(pos = (x, y - prefs.edge_height, z), root = False)
-    #         ctrl.on_cancel_delete.append(top_node)
-    #         if self.left:
-    #             # merge top left
-    #             left_node = merged_node
-    #             right_node = self.host
-    #             merged_node.set_computed_position((x - 2 * prefs.edge_width, y, z))
-
-    #         else:
-    #             # merge top right
-    #             left_node = self.host
-    #             right_node = merged_node
-    #             merged_node.set_computed_position((x + 2 * prefs.edge_width, y, z))
-    #     else:
-    #         sister_node = f.create_empty_node(pos = (x, y + prefs.edge_height, z), root = False)
-    #         ctrl.on_cancel_delete.append(sister_node)
-    #         top_node = self.host
-    #         if self.left:
-    #             # merge bottom left
-    #             left_node = merged_node
-    #             right_node = sister_node
-    #         else:
-    #             # merge bottom right
-    #             left_node = sister_node
-    #             right_node = merged_node
-    #         left_node.set_computed_position((x - prefs.edge_width, y + prefs.edge_height, z))
-    #         right_node.set_computed_position((x + prefs.edge_width, y + prefs.edge_height, z))
-
-
-    #     top_node._connect_node(child = left_node, direction = 'left', mirror_in_syntax = True)
-    #     top_node._connect_node(child = right_node, direction = 'right', mirror_in_syntax = True)
-    #     if self.top:
-    #         f.add_root(top_node)
-    #     left_node._hovering = False
-    #     right_node._hovering = False
-    #     ctrl.select(merged_node)
-    #     return top_node, left_node, right_node
-
-
     def replace_node_with_merged_empty_node(self, N, R, merge_to_left, new_node_pos, merger_node_pos):
         """
 
@@ -1498,6 +1272,20 @@ class Forest:
         """
         ex, ey = new_node_pos
         empty_node = self.create_empty_node(pos=(ex, ey, N.z))
+        self.replace_node_with_merged_node(N, empty_node, R, merge_to_left, merger_node_pos)
+
+
+    def replace_node_with_merged_placeholder_node(self, N, R, merge_to_left, new_node_pos, merger_node_pos):
+        """
+
+        :param N:
+        :param R:
+        :param merge_to_left:
+        :param new_node_pos:
+        :param merger_node_pos:
+        """
+        ex, ey = new_node_pos
+        empty_node = self.create_placeholder_node(pos=(ex, ey, N.z))
         self.replace_node_with_merged_node(N, empty_node, R, merge_to_left, merger_node_pos)
 
 
@@ -1551,47 +1339,14 @@ class Forest:
 
 
     # @time_me
-    def cut_and_merge(self, node_A, node_B):
-        """
-
-        :param node_A:
-        :param node_B:
-        :return:
-        """
-        if node_B in node_A:
-            self.main.add_message('Cannot move into itself')
-            return
-        self._cut_and_merge(node_A, node_B)
-        self.undo_manager.record("Moved %s on %s" % (node_A, node_B))
-        self.main.add_message("Moved %s on %s" % (node_A, node_B))
-
-    def _cut_and_merge(self, node_A, node_B):
-        """ First remove all connections between node_A and its parents and then merge it to node_B """
-        parents = node_A.get_parents()
-        if parents:
-            for parent in set(parents):
-                parent._disconnect_node(node_A)
-        if node_B.is_root_node():
-            self._merge(node_A, node_B)
-        else:
-            self._merge_and_tuck(node_A, node_B)
-        self.update_roots()
-
-
-    def _copy_node(self, node):
-        new_c = node.syntactic_object.copy()
-        new_node = self.create_node_from_constituent(new_c, pos=node.get_current_position(), result_of_select=True)
-        return new_node
-
-
-    # @time_me
     def copy_node(self, node):
         """ Copy a node and make a new tree out of it
         :param node:
         """
         if not node:
             return
-        new_node = self._copy_node(node)
+        new_c = node.syntactic_object.copy()
+        new_node = self.create_node_from_constituent(new_c, pos=node.get_current_position(), result_of_select=True)
         self.update_roots()
         self.undo_manager.record("Copied %s" % node)
         self.main.add_message("Copied %s" % node)

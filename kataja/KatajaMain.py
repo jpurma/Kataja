@@ -465,9 +465,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         :param hsv:
         """
         self.forest.settings.hsv(hsv)
-        self.forest.update_colors(adjusting=True)
-        # adjust_colorsself.activateWindow()
-        # self.action_finished('adjust colors')
+        self.forest.update_colors()
 
     def change_color_mode(self, mode):
         """
@@ -480,13 +478,8 @@ class KatajaMain(QtWidgets.QMainWindow):
             prefs.color_mode = mode
             self.forest.update_colors()
 
-            # Show traces -action (t)
-
     def toggle_traces(self):
-        """
-
-
-        """
+        """ Show traces -action (t) """
         if self.forest.settings.traces_are_grouped_together() and not self.forest.settings.uses_multidomination():
             self.forest.settings.uses_multidomination(True)
             self.forest.settings.traces_are_grouped_together(False)
@@ -504,12 +497,8 @@ class KatajaMain(QtWidgets.QMainWindow):
             self.add_message('(t) use traces, show constituents in their base merge positions')
             self.forest.multidomination_to_traces()
 
-    # Brackets are visible always for non-leaves, never or for important parts
     def toggle_brackets(self):
-        """
-
-
-        """
+        """ Brackets are visible always for non-leaves, never or for important parts """
         bs = self.forest.settings.bracket_style()
         bs += 1
         if bs == 3:
@@ -523,12 +512,8 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.forest.settings.bracket_style(bs)
         self.forest.bracket_manager.update_brackets()
 
-    # Show order-feature
     def show_merge_order(self):
-        """
-
-
-        """
+        """ Use merge order-features """
         if self.forest.settings.shows_merge_order():
             self.add_message('(o) Hide merge order')
             self.forest.settings.shows_merge_order(False)
@@ -539,10 +524,7 @@ class KatajaMain(QtWidgets.QMainWindow):
             self.forest.add_order_features('M')
 
     def show_select_order(self):
-        """
-
-
-        """
+        """ Use select order-features """
         if self.forest.settings.shows_select_order():
             self.add_message('(O) Hide select order')
             self.forest.settings.shows_select_order(False)
@@ -553,11 +535,8 @@ class KatajaMain(QtWidgets.QMainWindow):
             self.forest.add_order_features('S')
 
 
-    # Lines connect to margins -action (b)
     def toggle_magnets(self):
-        """
-
-
+        """ Toggle lines to connect to margins or to centre of node (b)
         """
         if self.forest.settings.uses_magnets():
             self.add_message('(c) 0: Lines connect to node margins')
@@ -568,6 +547,10 @@ class KatajaMain(QtWidgets.QMainWindow):
 
 
     def change_edge_panel_scope(self, selection):
+        """ Change drawing panel to work on selection, constituent edges or other available edges
+        :param selection: int scope identifier, from globals
+        :return:
+        """
         p = self.ui_manager.get_panel(g.DRAWING)
         p.change_scope(selection)
         p.update_panel()
@@ -1119,30 +1102,6 @@ class KatajaMain(QtWidgets.QMainWindow):
         """
         node_a = ctrl.pointing_data['target']
         self.forest.merge_nodes(node_a, node_b)
-        node_a.release()
-        # node_A.state =SELECTED # deselect doesn't have effect unless node is selected
-        self.end_pointing_mode(event)
-        self.action_finished()
-        return True
-
-    def begin_move_to(self, event):
-        """
-        Moving a branch or node -activity starts.
-        :param event: mouseevent that triggered the action, if available
-        :return:
-        """
-        self.start_pointing_mode(event, method=self.end_move_to, data={'start': ctrl.get_selected()})
-        return False
-
-    def end_move_to(self, event):
-        """
-        Moving a branch or node -activity ends.
-        :param event: mouseevent that triggered the end, if available
-        :return:
-        """
-        node_a = ctrl.pointing_data['start']
-        node_b = ctrl.pointing_data['target']
-        self.forest.cut_and_merge(node_a, node_b)
         node_a.release()
         # node_A.state =SELECTED # deselect doesn't have effect unless node is selected
         self.end_pointing_mode(event)

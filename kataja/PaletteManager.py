@@ -294,7 +294,7 @@ class PaletteManager:
         """
         return self.d[key]
 
-    def update_colors(self, prefs, settings, refresh=False, adjusting=False):
+    def update_colors(self, prefs, settings, refresh=False):
         """ Create/get root color and build palette around it
         :param prefs:
         :param settings:
