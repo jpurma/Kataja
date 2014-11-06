@@ -69,7 +69,10 @@ class ConstituentNode(Node):
     def __init__(self, constituent=None, forest=None, restoring=''):
         """ Most of the initiation is inherited from Node """
         Node.__init__(self, forest=forest, syntactic_object=constituent, restoring=restoring)
-        self.save_key = 'CN%s' % self.syntactic_object.uid
+        if constituent:
+            self.save_key = 'CN%s' % constituent.uid
+        else:
+            self.save_key = 'CN%s' % id(self)
         self.level = 3
         # ------ Bracket drawing -------
         self.has_visible_brackets = False
@@ -126,19 +129,22 @@ class ConstituentNode(Node):
 
 
     def update_status_tip(self):
-        if self.alias:
-            alias = '"%s" ' % self.alias
+        if self.syntactic_object:
+            if self.alias:
+                alias = '"%s" ' % self.alias
+            else:
+                alias = ''
+            if self.is_trace:
+                name = "Trace"
+            if self.is_leaf_node():
+                name = "Leaf constituent"
+            elif self.is_root_node():
+                name = "Root constituent"
+            else:
+                name = "Inner constituent"
+            self.status_tip = "%s %s%s" % (name, alias, self.syntactic_object.label)
         else:
-            alias = ''
-        if self.is_trace:
-            name = "Trace"
-        if self.is_leaf_node():
-            name = "Leaf constituent"
-        elif self.is_root_node():
-            name = "Root constituent"
-        else:
-            name = "Inner constituent"
-        self.status_tip = "%s %s%s" % (name, alias, self.syntactic_object.label)
+            self.status_tip = "Empty, but mandatory constituent position"
 
 
     def boundingRect(self, update=False):
@@ -157,6 +163,8 @@ class ConstituentNode(Node):
             return Node.boundingRect(self, update)
 
     def __str__(self):
+        if not self.syntactic_object:
+            return 'Placeholder node'
         alias = self.alias
         label = self.syntactic_object.label
         if alias and label:
@@ -167,6 +175,8 @@ class ConstituentNode(Node):
 
     def as_bracket_string(self):
         """ returns a simple bracket string representation """
+        if not self.syntactic_object:
+            return '0'
         children = self.get_children()
         if children:
             if self.alias:
@@ -198,8 +208,11 @@ class ConstituentNode(Node):
         print('| index: %s' % self.index)
         print('| edges up:', self.edges_up)
         print('| edges down:', self.edges_down)
-        print('| syntactic_object:_________________')
-        print(self.syntactic_object.__repr__())
+        if self.syntactic_object:
+            print('| syntactic_object:_________________')
+            print(self.syntactic_object.__repr__())
+        else:
+            print('Empty placeholder')
         print('----------------------------------')
 
 
@@ -331,6 +344,7 @@ class ConstituentNode(Node):
         :param value:
         :param string:
         """
+        assert(self.syntactic_object)
         if syntactic_feature:
             if self.forest.settings.draw_features():
                 self.forest.create_feature_node(self, syntactic_feature)
@@ -352,6 +366,7 @@ class ConstituentNode(Node):
 
         :param gloss:
         """
+        assert(self.syntactic_object)
         self.syntactic_object.set_gloss(gloss)
         self.update_gloss()
 
@@ -371,6 +386,8 @@ class ConstituentNode(Node):
 
 
         """
+        if not self.syntactic_object:
+            return
         syn_gloss = self.syntactic_object.get_gloss()
         gloss_node = self.get_gloss()
         if gloss_node and not syn_gloss:
@@ -390,6 +407,8 @@ class ConstituentNode(Node):
 
 
         """
+        if not self.syntactic_object:
+            return
         current_features = set([x.syntactic_object.get() for x in self.get_features()])
         correct_features = self.syntactic_object.get_features()
         for key, item in correct_features.items():
@@ -417,6 +436,8 @@ class ConstituentNode(Node):
 
     def get_text_for_label(self):
         """ Build html string to be displayed in label_complex """
+        if not self.syntactic_object:
+            return ''
         alias = self.alias
         label = self.syntactic_object.label
 
@@ -454,11 +475,11 @@ class ConstituentNode(Node):
 
     def get_plain_text_label(self):
         """ Label that can be displayed in e.g. tooltip """
-        return str(self.syntactic_object.label)
+        str(self.get_syntactic_label())
 
     def get_editable_label(self):
         """ """
-        return str(self.syntactic_object.label)
+        str(self.get_syntactic_label())
 
     def has_label(self):
         """
@@ -466,7 +487,12 @@ class ConstituentNode(Node):
 
         :return:
         """
-        return self.syntactic_object.label
+        return bool(self.get_syntactic_label())
+
+    def get_syntactic_label(self):
+        if self.syntactic_object:
+            return self.syntactic_object.label
+        return ''
 
     def get_features_as_string(self):
         """
@@ -500,7 +526,8 @@ class ConstituentNode(Node):
 
         :return:
         """
-        return self.syntactic_object.get_gloss()
+        if self.syntactic_object:
+            return self.syntactic_object.get_gloss()
 
     # ## Indexes and chains ###################################
 
@@ -510,13 +537,15 @@ class ConstituentNode(Node):
 
         :return:
         """
-        return self.syntactic_object.get_index()
+        if self.syntactic_object:
+            return self.syntactic_object.get_index()
 
     def set_index(self, i):
         """
 
         :param i:
         """
+        assert(self.syntactic_object)
         self.syntactic_object.set_index(i)
         self.update_identity()
 
@@ -525,6 +554,7 @@ class ConstituentNode(Node):
 
 
         """
+        assert(self.syntactic_object)
         self.syntactic_object.set_index('')
         self.update_identity()
 
@@ -535,7 +565,7 @@ class ConstituentNode(Node):
         :return:
         """
         if self.get_index():
-            return not (self.is_leaf_node() and self.syntactic_object.get_label() == 't')
+            return not (self.is_leaf_node() and self.get_syntactic_label() == 't')
         return False
 
     # ### Folding / Triangles #################################
@@ -837,6 +867,7 @@ class ConstituentNode(Node):
         :param caller:
         :param event:
         """
+        assert(self.syntactic_object)
         label = caller.get_value()
         self.syntactic_object.label = label
         self.update_label()

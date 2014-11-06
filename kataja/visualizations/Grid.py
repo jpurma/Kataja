@@ -40,7 +40,7 @@ class Grid:
             collist = []
             for item in column:
                 if isinstance(item, ConstituentNode):
-                    collist.append(item.syntactic_object.get_label())
+                    collist.append(item.get_syntactic_label() or 'Placeholder')
                 else:
                     collist.append(str(item))
             rowlist.append(', '.join(collist))

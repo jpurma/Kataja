@@ -76,6 +76,12 @@ def restore_forest(key):
     # ctrl.undo.repair_later(obj)
     return obj
 
+class ForestError(Exception):
+    def __init__(self, value):
+        self.value = value
+    def __str__(self):
+        return repr(self.value)
+
 class Forest:
     """ Forest is a group of trees that together form one view.
     Often there needs to be more than one tree visible at same time,
@@ -506,6 +512,18 @@ class Forest:
             self.visualization.reset_node(node)
         return node
 
+    def create_placeholder_node(self, pos):
+        node = ConstituentNode(constituent=None, forest=self)
+        node.set_original_position(pos)
+        self.add_to_scene(node)
+        node.update_visibility()
+        # for key, feature in C.get_features().items():
+        #    self.create_feature_node(node, feature)
+        if self.visualization:
+            self.visualization.reset_node(node)
+        return node
+
+
     def create_feature_node(self, host, syntactic_feature):
         """
 
@@ -652,18 +670,6 @@ class Forest:
         C = ctrl.Constituent(label)
         node = self.create_node_from_constituent(C, pos, result_of_select=True)
         return node
-
-    def create_placeholder_node(self, pos):
-        node = ConstituentNode(constituent=None, forest=self)
-        node.set_original_position(pos)
-        self.add_to_scene(node)
-        node.update_visibility()
-        # for key, feature in C.get_features().items():
-        #    self.create_feature_node(node, feature)
-        if self.visualization:
-            self.visualization.reset_node(node)
-        return node
-
 
 
     def create_arrow(self, p1, p2, text=None):

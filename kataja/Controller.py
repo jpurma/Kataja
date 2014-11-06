@@ -117,6 +117,15 @@ class Controller:
         """ Shortcut to active forest's settings """
         return self.main.forest.settings
 
+    @property
+    def graph_scene(self):
+        return self.main.graph_scene
+
+    @property
+    def graph_view(self):
+        return self.main.graph_view
+
+
     def add_message(self, msg):
         """
 
@@ -229,8 +238,8 @@ class Controller:
 
         :param obj:
         """
-        if hasattr(obj, 'info_dump'):
-            obj.info_dump()
+        #if hasattr(obj, 'info_dump'):
+        #    obj.info_dump()
         if self.selected:
             self.deselect_objects(update_ui=False)
         self.selected = [obj]

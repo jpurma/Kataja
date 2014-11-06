@@ -30,19 +30,15 @@
 
 import gc
 #import gzip
-import json
 import os.path
-import shlex
-import subprocess
 import sys
 import time
 import pickle
-import pprint
 
-from PyQt5.QtCore import Qt
 import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
+from kataja.ActionMethods import ActionMethods
 from kataja.KeyPressManager import KeyPressManager
 
 from kataja.singletons import ctrl, prefs, qt_prefs
@@ -56,7 +52,6 @@ from kataja.UIManager import UIManager
 from kataja.PaletteManager import PaletteManager
 import kataja.globals as g
 from kataja.ui.MenuItem import MenuItem
-from kataja.ui.PreferencesDialog import PreferencesDialog
 from kataja.utils import time_me, save_object
 from kataja.visualizations.available import VISUALIZATIONS
 import kataja.debug as debug
@@ -109,6 +104,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.graph_view = GraphView(main=self, graph_scene=self.graph_scene)
         print('---- view init ... ', time.time() - t)
         self.graph_scene.graph_view = self.graph_view
+        self.action_launcher = ActionMethods(self)
         self.ui_manager = UIManager(self)
         self.key_manager = KeyPressManager(self)
         print('---- ui init ... ', time.time() - t)
@@ -203,14 +199,6 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.change_forest(forest)
         return i
 
-    def action_finished(self, m='', undoable=True):
-        """
-
-        :param m:
-        """
-        if undoable:
-            self.forest.undo_manager.record(m)
-        self.graph_scene.draw_forest(self.forest)
 
     def redraw(self):
         """
@@ -243,16 +231,6 @@ class KatajaMain(QtWidgets.QMainWindow):
         #if not self.key_manager.receive_key_press(event):
         return QtWidgets.QMainWindow.keyPressEvent(self, event)
 
-
-    def undo(self):
-        """ Undo -command triggered """
-        self.forest.undo_manager.undo()
-        # self.action_finished()
-
-    def redo(self):
-        """ Redo -command triggered """
-        self.forest.undo_manager.redo()
-        # self.action_finished()
 
 
 
@@ -381,19 +359,8 @@ class KatajaMain(QtWidgets.QMainWindow):
         args = []
         args += data.get('args', [])
         args += self.ui_manager.get_element_value(data.get('ui_element', None))
-        context = data.get('context', 'main')
-        if context == 'main':
-            c = self
-        elif context == 'selected':
-            c = ctrl.selected
-        elif context == 'ui':
-            c = self.ui_manager
-        elif context == 'app':
-            c = self.app
-        else:
-            c = self
-        print('Doing action %s, args: %s' % (key, str(args)))
-        method = getattr(c, data['method'])
+        print("Doing action '%s' with method '%s' and with args: %s" % (key, data['method'], str(args)))
+        method = getattr(self.action_launcher, data['method'])
         if args:
             method(*args)
         else:
@@ -403,6 +370,15 @@ class KatajaMain(QtWidgets.QMainWindow):
         else:
             undoable = True
         self.action_finished(undoable=undoable)
+
+    def action_finished(self, m='', undoable=True):
+        """
+
+        :param m:
+        """
+        if undoable:
+            ctrl.forest.undo_manager.record(m)
+        ctrl.graph_scene.draw_forest(ctrl.forest)
 
 
     def enable_actions(self):
@@ -416,47 +392,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         for action in self.ui_manager.qt_actions.values():
             action.setDisabled(True)
 
-    # ## Menu actions ##########################################################
 
-    def toggle_label_visibility(self):
-        """
-        toggle label visibility -action (l)
-
-
-        """
-        new_value = self.forest.settings.label_style() + 1
-        if new_value == 3:
-            new_value = 0
-        if new_value == ONLY_LEAF_LABELS:
-            self.add_message('(l) 0: show only leaf labels')
-        elif new_value == ALL_LABELS:
-            self.add_message('(l) 1: show all labels')
-        elif new_value == ALIASES:
-            self.add_message('(l) 2: show leaf labels and aliases')
-        # testing how to change labels
-        # ConstituentNode.font = prefs.sc_font
-        self.forest.settings.label_style(new_value)
-
-        for node in self.forest.nodes.values():
-            node.update_visibility(label=new_value)
-            # change = node.update_label()
-        self.action_finished('toggle label visibility')
-
-    def change_colors(self):
-        """
-        change colors -action (shift-c)
-
-
-        """
-        color_panel = self.ui_manager._ui_panels['Colors']
-        if not color_panel.isVisible():
-            color_panel.show()
-        else:
-            self.forest.settings._hsv = None
-            self.forest.update_colors()
-            self.activateWindow()
-            # self.ui.add_message('Color seed: H: %.2f S: %.2f L: %.2f' % ( h, s, l))
-            self.action_finished()
 
     def adjust_colors(self, hsv):
         """
@@ -478,61 +414,7 @@ class KatajaMain(QtWidgets.QMainWindow):
             prefs.color_mode = mode
             self.forest.update_colors()
 
-    def toggle_traces(self):
-        """ Show traces -action (t) """
-        if self.forest.settings.traces_are_grouped_together() and not self.forest.settings.uses_multidomination():
-            self.forest.settings.uses_multidomination(True)
-            self.forest.settings.traces_are_grouped_together(False)
-            self.add_message('(t) use multidominance')
-            self.forest.traces_to_multidomination()
-        elif (
-                not self.forest.settings.traces_are_grouped_together()) and not self.forest.settings.uses_multidomination():
-            self.forest.settings.uses_multidomination(False)
-            self.forest.settings.traces_are_grouped_together(True)
-            self.add_message('(t) use traces, group them to one spot')
-            self.forest.group_traces_to_chain_head()
-        elif self.forest.settings.uses_multidomination():
-            self.forest.settings.uses_multidomination(False)
-            self.forest.settings.traces_are_grouped_together(False)
-            self.add_message('(t) use traces, show constituents in their base merge positions')
-            self.forest.multidomination_to_traces()
 
-    def toggle_brackets(self):
-        """ Brackets are visible always for non-leaves, never or for important parts """
-        bs = self.forest.settings.bracket_style()
-        bs += 1
-        if bs == 3:
-            bs = 0
-        if bs == 0:
-            self.add_message('(b) 0: No brackets')
-        elif bs == 1:
-            self.add_message('(b) 1: Use brackets for embedded structures')
-        elif bs == 2:
-            self.add_message('(b) 2: Always use brackets')
-        self.forest.settings.bracket_style(bs)
-        self.forest.bracket_manager.update_brackets()
-
-    def show_merge_order(self):
-        """ Use merge order-features """
-        if self.forest.settings.shows_merge_order():
-            self.add_message('(o) Hide merge order')
-            self.forest.settings.shows_merge_order(False)
-            self.forest.remove_order_features('M')
-        else:
-            self.add_message('(o) Show merge order')
-            self.forest.settings.shows_merge_order(True)
-            self.forest.add_order_features('M')
-
-    def show_select_order(self):
-        """ Use select order-features """
-        if self.forest.settings.shows_select_order():
-            self.add_message('(O) Hide select order')
-            self.forest.settings.shows_select_order(False)
-            self.forest.remove_order_features('S')
-        else:
-            self.add_message('(O) Show select order')
-            self.forest.settings.shows_select_order(True)
-            self.forest.add_order_features('S')
 
 
     def toggle_magnets(self):
@@ -546,59 +428,7 @@ class KatajaMain(QtWidgets.QMainWindow):
             self.forest.settings.uses_magnets(True)
 
 
-    def change_edge_panel_scope(self, selection):
-        """ Change drawing panel to work on selection, constituent edges or other available edges
-        :param selection: int scope identifier, from globals
-        :return:
-        """
-        p = self.ui_manager.get_panel(g.DRAWING)
-        p.change_scope(selection)
-        p.update_panel()
-        p = self.ui_manager.get_panel(g.LINE_OPTIONS)
-        p.update_panel()
 
-
-    def key_backspace(self):
-        print('Backspace pressed')
-        for item in ctrl.get_all_selected():
-            ctrl.forest.delete_item(item)
-
-    def change_edge_shape(self, shape):
-        if shape is g.AMBIGUOUS_VALUES:
-            return
-        scope = self.ui_manager.get_panel(g.DRAWING).scope
-        if scope == g.SELECTION:
-            for edge in ctrl.get_all_selected():
-                if isinstance(edge, Edge):
-                    edge.shape_name(shape)
-                    edge.update_shape()
-        elif scope:
-            self.forest.settings.edge_type_settings(scope, 'shape_name', shape)
-            ctrl.announce(g.EDGE_SHAPES_CHANGED, scope, shape)
-        line_options = self.ui_manager.get_panel(g.LINE_OPTIONS)
-        if line_options:
-            line_options.update_panel()
-        self.add_message('(s) Changed relation shape to: %s' % shape)
-
-    def change_edge_color(self, color):
-        if color is g.AMBIGUOUS_VALUES:
-            return
-        panel = self.ui_manager.get_panel(g.DRAWING)
-        if not color:
-            self.ui_manager.start_color_dialog(panel, 'color_changed')
-            return
-        if panel.scope == g.SELECTION:
-            for edge in ctrl.get_all_selected():
-                if isinstance(edge, Edge):
-                    edge.color(color)
-                    #edge.update_shape()
-                    edge.update()
-        elif panel.scope:
-            self.forest.settings.edge_type_settings(panel.scope, 'color', color)
-            #ctrl.announce(g.EDGE_SHAPES_CHANGED, scope, color)
-        panel.update_color(color)
-        panel.update_panel()
-        self.add_message('(s) Changed relation color to: %s' % ctrl.cm.get_color_name(color))
 
 
     def change_edge_ending(self, which_end, value):
@@ -618,180 +448,9 @@ class KatajaMain(QtWidgets.QMainWindow):
             else:
                 print('Invalid place for edge ending: ', which_end)
 
-    # Change node edge shapes -action (s)
-    def change_node_edge_shape(self, shape=''):
-        """
-
-        :param shape:
-        """
-        if shape and shape in SHAPE_PRESETS:
-            self.forest.settings.edge_type_settings(g.CONSTITUENT_EDGE, 'shape_name', shape)
-            i = list(SHAPE_PRESETS.keys()).index(shape)
-        else:
-            shape = self.forest.settings.edge_type_settings(g.CONSTITUENT_EDGE, 'shape_name')
-            i = list(SHAPE_PRESETS.keys()).index(shape)
-            i += 1
-            if i == len(SHAPE_PRESETS):
-                i = 0
-            shape = list(SHAPE_PRESETS.keys())[i]
-            self.forest.settings.edge_type_settings(g.CONSTITUENT_EDGE, 'shape_name', shape)
-        self.add_message('(s) Change constituent edge shape: %s-%s' % (i, shape))
-        ctrl.announce(g.EDGE_SHAPES_CHANGED, g.CONSTITUENT_EDGE, i)
-
-    # Change feature edge shapes -action (S)
-    def change_feature_edge_shape(self, shape):
-        """
-
-
-        """
-        if shape and shape in SHAPE_PRESETS:
-            self.forest.settings.edge_shape_name(g.CONSTITUENT_EDGE, shape)
-            i = list(SHAPE_PRESETS.keys()).index(shape)
-        else:
-            i = list(SHAPE_PRESETS.keys()).index(self.forest.settings.edge_shape_name(g.FEATURE_EDGE))
-            if i == len(SHAPE_PRESETS):
-                i = 0
-            shape = list(SHAPE_PRESETS.keys())[i]
-            self.forest.settings.edge_shape_name(g.FEATURE_EDGE, shape)
-        self.ui_manager.ui_buttons['feature_line_type'].setCurrentIndex(i)
-        self.add_message('(s) Change feature edge shape: %s-%s' % (i, shape))
-
-    def adjust_control_point(self, cp_index, dim, value=0):
-        """ Adjusting control point can be done only for selected edges, not for an edge type. So this method is
-        simpler than other adjustments, as it doesn't have to handle both cases.
-        :param cp_index: 1 or 2
-        :param dim: 'x', 'y' or 'r' for reset
-        :param value: new value for given dimension, doesn't matter for reset.
-        :return:
-        """
-        cp_index -= 1
-        for edge in ctrl.get_all_selected():
-            if isinstance(edge, Edge):
-                if dim == 'r':
-                    edge.reset_control_point(cp_index)
-                else:
-                    edge.adjust_control_point_xy(cp_index, dim, value)
-
-    def change_edge_asymmetry(self, value):
-        print('changing asymmetry: ', value)
-
-    def change_curvature(self, dim, value=0):
-        panel = self.ui_manager.get_panel(g.DRAWING)
-        if panel.scope == g.SELECTION:
-            for edge in ctrl.get_all_selected():
-                if isinstance(edge, Edge):
-                    edge.change_curvature(dim, value)
-            if dim == 'r' or dim == 's':
-                options_panel = self.ui_manager.get_panel(g.LINE_OPTIONS)
-                options_panel.update_panel()
-        elif panel.scope:
-            options_panel = self.ui_manager.get_panel(g.LINE_OPTIONS)
-            relative = options_panel.relative_curvature()
-
-            if dim == 'x':
-                if relative:
-                    self.forest.settings.edge_shape_settings(panel.scope, 'rel_dx', value * .01)
-                else:
-                    self.forest.settings.edge_shape_settings(panel.scope, 'fixed_dx', value)
-            elif dim == 'y':
-                if relative:
-                    self.forest.settings.edge_shape_settings(panel.scope, 'rel_dy', value * .01)
-                else:
-                    self.forest.settings.edge_shape_settings(panel.scope, 'fixed_dy', value)
-            elif dim == 'r':
-                self.forest.settings.edge_shape_settings(panel.scope, 'rel_dx', g.DELETE)
-                self.forest.settings.edge_shape_settings(panel.scope, 'rel_dy', g.DELETE)
-                self.forest.settings.edge_shape_settings(panel.scope, 'fixed_dx', g.DELETE)
-                self.forest.settings.edge_shape_settings(panel.scope, 'fixed_dy', g.DELETE)
-                self.forest.settings.edge_shape_settings(panel.scope, 'relative', g.DELETE)
-                options_panel.update_panel()
-            elif dim == 's':
-                self.forest.settings.edge_shape_settings(panel.scope, 'relative', value == 'relative')
-                options_panel.update_panel()
-            else:
-                raise ValueError
-            ctrl.announce(g.EDGE_SHAPES_CHANGED, panel.scope, value)
-
-    def change_leaf_shape(self, dim, value=0):
-        #if value is g.AMBIGUOUS_VALUES:
-        #  if we need this, we'll need to find some impossible ambiguous value to avoid weird, rare incidents
-        #    return
-        panel = self.ui_manager.get_panel(g.DRAWING)
-        if panel.scope == g.SELECTION:
-            for edge in ctrl.get_all_selected():
-                if isinstance(edge, Edge):
-                    edge.change_leaf_shape(dim, value)
-        elif panel.scope:
-            if dim == 'w':
-                self.forest.settings.edge_shape_settings(panel.scope, 'leaf_x', value)
-            elif dim == 'h':
-                self.forest.settings.edge_shape_settings(panel.scope, 'leaf_y', value)
-            elif dim == 'r':
-                self.forest.settings.edge_shape_settings(panel.scope, 'leaf_x', g.DELETE)
-                self.forest.settings.edge_shape_settings(panel.scope, 'leaf_y', g.DELETE)
-                options_panel = self.ui_manager.get_panel(g.LINE_OPTIONS)
-                options_panel.update_panel()
-            else:
-                raise ValueError
-            ctrl.announce(g.EDGE_SHAPES_CHANGED, panel.scope, value)
-        #panel.update_color(color)
-        #panel.update_panel()
-        #self.add_message('(s) Changed relation color to: %s' % ctrl.cm.get_color_name(color))
-
-    def change_edge_thickness(self, dim, value=0):
-        panel = self.ui_manager.get_panel(g.DRAWING)
-        if panel.scope == g.SELECTION:
-            for edge in ctrl.get_all_selected():
-                if isinstance(edge, Edge):
-                    edge.change_thickness(dim, value)
-        elif panel.scope:
-            if dim == 'r':
-                self.forest.settings.edge_shape_settings(panel.scope, 'thickness', g.DELETE)
-                options_panel = self.ui_manager.get_panel(g.LINE_OPTIONS)
-                options_panel.update_panel()
-            else:
-                self.forest.settings.edge_shape_settings(panel.scope, 'thickness', value)
-            ctrl.announce(g.EDGE_SHAPES_CHANGED, panel.scope, value)
-
     #
-    def create_new_arrow(self):
-        print("New arrow called")
-        p1, p2 = self.ui_manager.get_new_element_embed_points()
-        text = self.ui_manager.get_new_element_text()
-        self.forest.create_arrow(p1, p2, text)
-        self.ui_manager.close_new_element_embed()
-
-    def create_new_divider(self):
-        print("New divider called")
-        p1, p2 = self.ui_manager.get_new_element_embed_points()
-        self.ui_manager.close_new_element_embed()
-
-    # Next structure -action (.)
-    def next_structure(self):
-        """
 
 
-        """
-        i = self.switch_to_next_forest()
-        self.ui_manager.clear_items()
-        self.add_message('(.) tree %s: %s' % (i + 1, self.forest.textual_form()))
-
-    # Prev structure -action (,)
-    def previous_structure(self):
-        """
-
-
-        """
-        i = self.switch_to_previous_forest()
-        self.ui_manager.clear_items()
-        self.add_message('(,) tree %s: %s' % (i + 1, self.forest.textual_form()))
-
-    def change_visualization(self, i):
-        """
-        :param i: index of selected visualization in relevant panel
-        :return:
-        """
-        pass
 
     # Change visualization style -action (1...9)
     def change_visualization_command(self):
@@ -804,59 +463,6 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.forest.change_visualization(visualization_key)
         self.add_message(visualization_key)
 
-    def toggle_full_screen(self):
-        """ Full screen -action (f) """
-        if self.isFullScreen():
-            self.showNormal()
-            self.add_message('(f) windowed')
-            self.ui_manager.restore_panel_positions()
-        else:
-            self.ui_manager.store_panel_positions()
-            self.showFullScreen()
-            self.add_message('(f) fullscreen')
-        self.graph_scene.fit_to_window()
-
-    def fit_to_window(self):
-        """ Fit graph to current window. Usually happens automatically, but also available as user action
-        :return: None
-        """
-        self.graph_scene.fit_to_window()
-
-    # Blender export -action (Command-r)
-    def render_in_blender(self):
-        """
-        Try to export as a blender file and run blender render.
-        """
-        self.graph_scene.export_3d(prefs.blender_env_path + '/temptree.json', self.forest)
-        self.add_message('Command-r  - render in blender')
-        command = '%s -b %s/puutausta.blend -P %s/treeloader.py -o //blenderkataja -F JPEG -x 1 -f 1' % (
-            prefs.blender_app_path, prefs.blender_env_path, prefs.blender_env_path)
-        args = shlex.split(command)
-        subprocess.Popen(args)  # , cwd =prefs.blender_env_path)
-
-    # print as pdf -action (Command-p)
-    def print_to_file(self):
-        # hide unwanted components
-        """
-
-
-        """
-        debug.keys("Print to file called")
-        sc = self.graph_scene
-        no_brush = QtGui.QBrush(Qt.NoBrush)
-        sc.setBackgroundBrush(no_brush)
-        gloss = prefs.include_gloss_to_print
-        if gloss:
-            self.graph_scene.photo_frame = self.graph_scene.addRect(sc.visible_rect_and_gloss().adjusted(-1, -1, 2, 2),
-                                                                    self.color_manager.drawing())
-        else:
-            if self.forest.gloss and self.forest.gloss.isVisible():
-                self.forest.gloss.hide()
-            self.graph_scene.photo_frame = self.graph_scene.addRect(sc.visible_rect().adjusted(-1, -1, 2, 2),
-                                                                    self.color_manager.selection())
-        self.graph_scene.update()
-        self.graph_view.repaint()
-        self.startTimer(50)
 
     def timerEvent(self, event):
         """ Timer event only for printing, for 'snapshot' effect
@@ -907,17 +513,6 @@ class KatajaMain(QtWidgets.QMainWindow):
             self.forest.gloss.show()
         # hide unwanted components
 
-    def animation_step_forward(self):
-        """ User action "step forward (>)", Move to next derivation step """
-        self.forest.derivation_steps.next_derivation_step()
-        self.add_message('Step forward')
-
-
-    def animation_step_backward(self):
-        """ User action "step backward (<)" , Move backward in derivation steps """
-        self.forest.derivation_steps.previous_derivation_step()
-        self.add_message('Step backward')
-
     # Not called from anywhere yet, but useful
     def release_selected(self, **kw):
         """
@@ -930,49 +525,6 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.action_finished()
         return True
 
-    # help -action (h)
-    def show_help_message(self):
-        """
-
-
-        """
-        m = ""
-
-        # m ="""(h):------- KatajaMain commands ----------
-        # (left arrow/,):previous structure   (right arrow/.):next structure
-        # (1-5):change or refresh visualization of the tree
-        # (f):fullscreen/windowed mode
-        # (p):print tree to file
-        # (b):show/hide labels in middle of edges
-        # (c):curved/straight edges
-        # (q):quit"""
-        self.add_message(m)
-
-    def open_preferences(self):
-        """
-
-
-        """
-        if not self.ui_manager.preferences_dialog:
-            self.ui_manager.preferences_dialog = PreferencesDialog(self)
-        self.ui_manager.preferences_dialog.open()
-
-        # open -action (Command-o)
-
-    def open_kataja_file(self):
-        """ Open file browser to load kataja data file"""
-        # fileName  = QtGui.QFileDialog.getOpenFileName(self,
-        # self.tr("Open File"),
-        # QtCore.QDir.currentPath())
-        file_help = "KatajaMain files (*.kataja *.zkataja);;Text files containing bracket trees (*.txt, *.tex)"
-
-        # inspection doesn't recognize that getOpenFileName is static, switch it off:
-        # noinspection PyTypeChecker,PyCallByClass
-        filename, filetypes = QtWidgets.QFileDialog.getOpenFileName(self, "Open KatajaMain tree", "", file_help)
-        # filename = 'savetest.kataja'
-        if filename:
-            self.load_state_from_file(filename)
-            self.add_message("Loaded '%s'." % filename)
 
 
     def load_state_from_file(self, filename=''):
@@ -997,51 +549,6 @@ class KatajaMain(QtWidgets.QMainWindow):
         ctrl.loading = False
         ctrl.change_forest(self.forest_keeper.forest)
         ctrl.update_colors()
-
-    # save -action (Command-s)
-    def save_kataja_file(self):
-        """ Save kataja data with an existing file name. """
-        # action  = self.sender()
-        self.action_finished()
-        filename = prefs.file_name
-        all_data = self.create_save_data()
-        t=time.time()
-        pickle_format = 4
-        if filename.endswith('.zkataja'):
-            #f = gzip.open(filename, 'wb')
-            f = open(filename, 'wb')
-        else:
-            f = open(filename, 'wb')
-        pickle_worker = pickle.Pickler(f, protocol=pickle_format)
-        pickle_worker.dump(all_data)
-        f.close()
-        self.add_message("Saved to '%s'. Took %s seconds." % (filename, time.time()-t))
-        t=time.time()
-        filename = prefs.file_name + '.dict'
-        f = open(filename, 'w')
-        pp = pprint.PrettyPrinter(indent=1, stream=f)
-        print('is readable: ', pprint.isreadable(all_data))
-        pp.pprint(all_data)
-        f.close()
-        self.add_message("Saved to '%s'. Took %s seconds." % (filename, time.time()-t))
-
-        filename = prefs.file_name + '.json'
-        f = open(filename, 'w')
-        json.dump(all_data, f, indent="\t", sort_keys=False)
-        f.close()
-        self.add_message("Saved to '%s'. Took %s seconds." % (filename, time.time()-t))
-        # fileFormat  = action.data().toByteArray()
-        # self.saveFile(fileFormat)
-
-    def save_as(self):
-        """ Save kataja data to file set by file dialog """
-        self.action_finished()
-        # noinspection PyCallByClass,PyTypeChecker
-        filename = QtWidgets.QFileDialog.getSaveFileName(self, "Save KatajaMain tree", "",
-                                                         "KatajaMain files (*.kataja *.zkataja)")
-        prefs.file_name = filename
-        ctrl.save_state_to_file(filename)
-        self.add_message("Saved to '%s'." % filename)
 
     def clear_all(self):
         """ Empty everything - maybe necessary before loading new data. """

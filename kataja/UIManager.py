@@ -26,6 +26,7 @@ from collections import OrderedDict
 from PyQt5 import QtCore, QtWidgets, QtGui
 from kataja.KeyPressManager import ShortcutSolver, ButtonShortcutFilter
 import kataja.debug as debug
+from kataja.Forest import ForestError
 
 from kataja.ConstituentNode import ConstituentNode
 from kataja.singletons import ctrl, prefs, qt_prefs
@@ -62,7 +63,7 @@ SELECTING_AREA = 1
 DRAGGING = 2
 POINTING = 3
 
-panels = {g.LOG: {'name': 'Log', 'position': 'bottom'},
+PANELS = {g.LOG: {'name': 'Log', 'position': 'bottom'},
           g.TEST: {'name': 'Test', 'position': 'right'},
           g.NAVIGATION: {'name': 'Trees', 'position': 'right'},
           g.VISUALIZATION: {'name': 'Visualization', 'position': 'right'},
@@ -86,6 +87,7 @@ menu_structure = OrderedDict([
     ('panels_menu', ('&Panels', ['$panels', '---', 'toggle_all_panels'])),
     ('help_menu', ('&Help', ['help']))
 ])
+
 
 
 
@@ -422,7 +424,7 @@ class UIManager:
             self._dynamic_action_groups['visualizations'].append(key)
 
         self._dynamic_action_groups['panels'] = []
-        for panel_key, panel_data in panels.items():
+        for panel_key, panel_data in PANELS.items():
             key = 'toggle_panel_%s' % panel_key
             self.actions[key] = {'command': panel_data['name'], 'method': 'toggle_panel', 'checkable': True,
                             'action_group': 'Panels', 'args': [panel_key], 'context': 'ui', 'no_undo': True,
@@ -516,7 +518,7 @@ class UIManager:
         """
         self._ui_panels = {}
         for panel_key in panel_order:
-            data = panels[panel_key]
+            data = PANELS[panel_key]
             if not data.get('closed', False):
                 self.create_panel(panel_key, **data)
 
@@ -579,18 +581,6 @@ class UIManager:
         return args
 
 
-    def toggle_line_options(self):
-        print('toggle line options')
-        lo = self.get_panel(g.LINE_OPTIONS)
-        if lo:
-            if lo.isVisible():
-                lo.close()
-            else:
-                lo.show()
-        else:
-            self.create_panel(g.LINE_OPTIONS, **panels[g.LINE_OPTIONS])
-            lo = self.get_panel(g.LINE_OPTIONS)
-            lo.show()
 
 
     def get_selector_value(self, selector):
@@ -600,24 +590,6 @@ class UIManager:
 
     #### Embedded menus ################################
 
-    def close_embeds(self):
-        self.close_new_element_embed()
-        self.close_edge_label_editing()
-
-    def new_element_accept(self):
-        type = self.get_new_element_type_selection()
-        if type == g.GUESS_FROM_INPUT:
-            print("Guessing input type")
-            text = self.get_new_element_text()
-            p1, p2 = self.get_new_element_embed_points()
-            # we can add a test if line p1 - p2 crosses several edges, then it can be a divider
-            if (p1 - p2).manhattanLength() > 20 and not text.startswith('['):
-                # It's an Arrow!
-                self.main.create_new_arrow()
-                return
-            else:
-                print('do ', type)
-        self.close_new_element_embed()
 
     def get_new_element_embed_points(self):
         p1 = self._new_element_marker.pos()
@@ -635,8 +607,13 @@ class UIManager:
             self._new_element_embed.close()
             self._new_element_marker.hide()
 
+    def get_overlay_buttons(self):
+        yield self._overlay_buttons.values()
 
     #### Label edge editin dialog #########################################################
+
+    def get_edge_label_embed(self):
+        return self._edge_label_embed
 
     def start_edge_label_editing(self, edge):
         lp = edge.get_label_item().pos()
@@ -645,12 +622,6 @@ class UIManager:
         self._edge_label_embed.update_embed(scenePos=lp, edge=edge)
         self._edge_label_embed.wake_up()
 
-    def edge_label_accept(self, **args):
-        print('edge label accept, ', args)
-        e = self._edge_label_embed
-        if e:
-            e.edge.label_text(e.input_line_edit.text())
-        self.close_edge_label_editing()
 
     def close_edge_label_editing(self):
         if self._edge_label_embed and self._edge_label_embed.isVisible():
@@ -1045,20 +1016,6 @@ class UIManager:
         if end:
             end.update_position()
 
-    def edge_disconnect(self):
-        edge = None
-        role = None
-        for item in self._overlay_buttons.values():
-            if item.just_triggered:
-                item.just_triggered = False
-                edge = item.host
-                role = item.role
-        if not edge:
-            return
-        if role == 'start_cut' and edge.edge_type is g.CONSTITUENT_EDGE:
-            ctrl.forest.disconnect_edge_start(edge)
-        elif role == 'end_cut' and edge.edge_type is g.CONSTITUENT_EDGE:
-            ctrl.forest.disconnect_edge_end(edge)
 
     # ### Control points ####################################################################
 

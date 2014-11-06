@@ -31,11 +31,10 @@ actions = {
         'shortcut': 'Ctrl+r'},
     'preferences': {
         'command': '&Preferences',
-        'method': 'main.open_preferences'},
+        'method': 'open_preferences'},
     'quit': {
         'command': '&Quit',
-        'method': 'closeAllWindows',
-        'context': 'app',
+        'method': 'close_all_windows',
         'shortcut': 'Ctrl+q'},
     # ### Build ######
     'next_forest': {
@@ -114,10 +113,9 @@ actions = {
     'toggle_all_panels': {
         'command': 'Hide all panels',
         'command_alt': 'Show all panels',
-        'method': 'toggle_all_panels',
+        'method': 'toggle_all_panels', # missing!
         'toggleable': True,
         'condition': 'are_panels_visible',
-        'context': 'ui'
     },
     # Lines panel
     'edge_shape_scope': {
@@ -145,7 +143,6 @@ actions = {
         'method': 'toggle_line_options',
         'toggleable': True,
         'condition': 'are_line_options_visible',
-        'context': 'ui',
         'tooltip': 'Show/hide advanced options for line drawing'
     },
     # More line options -panel
@@ -262,14 +259,12 @@ actions = {
         'command': 'Cancel',
         'method': 'close_embeds',
         'shortcut': 'Escape',
-        'context': 'ui',
         'shortcut_context': 'parent_and_children'
     },
     'new_element_enter_text': {
         'command': 'Enter',
         'method': 'new_element_accept',
         'shortcut': 'Return',
-        'context': 'ui',
         'shortcut_context': 'parent_and_children'
     },
     'new_arrow': {
@@ -288,13 +283,11 @@ actions = {
         'command': 'Enter',
         'method': 'edge_label_accept',
         'shortcut': 'Return',
-        'context': 'ui',
         'shortcut_context': 'parent_and_children'
     },
     'disconnect_edge': {
         'command': 'Disconnect',
         'method': 'edge_disconnect',
-        'context': 'ui'
     },
 
     # Generic keys ####
