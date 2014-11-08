@@ -109,6 +109,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self.fade_in()
         # # Remember to call update_identity in subclassed __init__s!
         self.effect = create_shadow_effect(ctrl.cm.selection())
+        self._update_magnets = True
         self.setGraphicsEffect(self.effect)
 
     def __repr__(self):
@@ -136,6 +137,13 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         for touch_area in list(self.touch_areas.values()):
             ctrl.ui.remove_touch_area(touch_area)
 
+
+    def is_placeholder(self):
+        """ Constituent structure may assume a constituent to be somewhere, before the user has intentionally created
+        one there. These are shown as placeholders, which are nodes, but with limited presence.
+        :return: boolean
+        """
+        return False
 
     # ### Children and parents ####################################################
 
@@ -295,6 +303,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         return [rel for rel in self.edges_down if
                 ((not similar) or rel.edge_type == self.__class__.default_edge_type) and (
                     (not visible) or rel.is_visible())]
+
 
 
     ### Font #####################################################################

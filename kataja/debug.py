@@ -3,11 +3,12 @@ import traceback
 __author__ = 'purma'
 
 DEBUG_TIME_ME = False
-DEBUG_PRINT_MOUSE_EVENTS = True
+DEBUG_SYNTAX = False
+DEBUG_PRINT_MOUSE_EVENTS = False
 DEBUG_PRINT_PARSER_EVENTS = False
-DEBUG_FOREST_OPERATION = False
+DEBUG_FOREST_OPERATION = True
 DEBUG_VISUALIZATION = False
-DEBUG_KEYPRESS = True
+DEBUG_KEYPRESS = False
 DEBUG_UNDO = False
 DEBUG_UI = False
 
@@ -18,6 +19,13 @@ def mouse(*args):
     """
     if DEBUG_PRINT_MOUSE_EVENTS:
         _debug_print('MOU', *args)
+
+def syntax(*args):
+    """ More helpful print, can be toggled on/off through var at the beginning of this file.
+    :param args: arguments for print
+    """
+    if DEBUG_SYNTAX:
+        _debug_print('SYN', *args)
 
 
 def parser(*args):

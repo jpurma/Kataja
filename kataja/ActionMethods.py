@@ -27,6 +27,19 @@ class ActionMethods:
     def __init__(self, main):
         self.main = main
 
+
+    # Change visualization style -action (1...9)
+    def change_visualization_command(self):
+        """
+
+
+        """
+        visualization_key = str(self.sender().text())
+        self.ui_manager.update_field('visualization_selector', visualization_key)
+        self.forest.change_visualization(visualization_key)
+        self.add_message(visualization_key)
+
+
     def open_kataja_file(self):
         """ Open file browser to load kataja data file"""
         # fileName  = QtGui.QFileDialog.getOpenFileName(self,
@@ -557,6 +570,7 @@ class ActionMethods:
         edge = None
         role = None
         for item in ctrl.ui.get_overlay_buttons():
+            print(item)
             if item.just_triggered:
                 item.just_triggered = False
                 edge = item.host
@@ -566,13 +580,13 @@ class ActionMethods:
         # Then do the cutting
         if role == 'start_cut' and edge.edge_type is g.CONSTITUENT_EDGE:
             ctrl.forest.disconnect_edge_start(edge)
-            ctrl.forest.add_placeholder(edge)
+            ctrl.forest.add_placeholder_to_edge_start(edge)
         elif role == 'end_cut' and edge.edge_type is g.CONSTITUENT_EDGE:
             ctrl.forest.disconnect_edge_end(edge)
-            ctrl.forest.add_placeholder(edge)
+            ctrl.forest.add_placeholder_to_edge_end(edge)
         else:
             raise ForestError('Trying to disconnect node from unknown edge or unhandled cutting position')
-
+        ctrl.deselect_objects()
 
     def key_backspace(self):
         print('Backspace pressed')

@@ -452,16 +452,6 @@ class KatajaMain(QtWidgets.QMainWindow):
 
 
 
-    # Change visualization style -action (1...9)
-    def change_visualization_command(self):
-        """
-
-
-        """
-        visualization_key = str(self.sender().text())
-        self.ui_manager.update_field('visualization_selector', visualization_key)
-        self.forest.change_visualization(visualization_key)
-        self.add_message(visualization_key)
 
 
     def timerEvent(self, event):

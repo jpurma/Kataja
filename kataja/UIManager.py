@@ -608,7 +608,7 @@ class UIManager:
             self._new_element_marker.hide()
 
     def get_overlay_buttons(self):
-        yield self._overlay_buttons.values()
+        return self._overlay_buttons.values()
 
     #### Label edge editin dialog #########################################################
 
@@ -981,7 +981,7 @@ class UIManager:
     def add_buttons_for_edge(self, edge):
         adjust = QtCore.QPointF(19, 12)
 
-        if edge.start:
+        if edge.start and not edge.start.is_placeholder():
             button = OverlayButton(qt_prefs.cut_icon, edge, 'start_cut', 'Disconnect from node', parent=self.main.graph_view)
             p = self.main.graph_view.mapFromScene(QtCore.QPointF(edge.start_point[0], edge.start_point[1])) - adjust
             button.move(p.toPoint())
@@ -990,7 +990,7 @@ class UIManager:
             key = edge.save_key + "_cut_start"
             self._overlay_buttons[key] = button
 
-        if edge.end:
+        if edge.end and not edge.end.is_placeholder():
             button = OverlayButton(qt_prefs.cut_icon, edge, 'end_cut', 'Disconnect from node', parent=self.main.graph_view)
             p = self.main.graph_view.mapFromScene(QtCore.QPointF(edge.end_point[0], edge.end_point[1])) - adjust
             button.move(p.toPoint())
@@ -1028,12 +1028,12 @@ class UIManager:
             self.add_ui(cp)
             self._control_points.append(cp)
             cp.update_position()
-        if not edge.start:
+        if (not edge.start) or edge.start.is_placeholder():
             cp = ControlPoint(edge, role=g.START_POINT)
             self.add_ui(cp)
             self._control_points.append(cp)
             cp.update_position()
-        if not edge.end:
+        if (not edge.end) or edge.end.is_placeholder():
             cp = ControlPoint(edge, role=g.END_POINT)
             self.add_ui(cp)
             self._control_points.append(cp)

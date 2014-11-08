@@ -189,6 +189,13 @@ class ConstituentNode(Node):
             return self.alias or self.syntactic_object
 
 
+    def is_placeholder(self):
+        """ Constituent structure may assume a constituent to be somewhere, before the user has intentionally created
+        one there. These are shown as placeholders, which are nodes, but with limited presence.
+        :return: boolean
+        """
+        return not self.syntactic_object
+
     def info_dump(self):
         """
 
@@ -335,6 +342,10 @@ class ConstituentNode(Node):
 
     # ### Features #########################################
 
+
+    # !!!! Shouldn't be done this way. In forest, create a feature, then connect it to ConstituentNode and let Forest's
+    # methods to take care that syntactic parts are reflected properly. ConstituentNode shouldn't be modifying its
+    # syntactic component.
     def set_feature(self, syntactic_feature=None, key=None, value=None, string=''):
         """ Convenience method for assigning a new feature node related to this constituent.
         can take syntactic feature, which is assumed to be already assigned for the syntactic constituent.

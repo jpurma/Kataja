@@ -608,15 +608,6 @@ class Edge(QtWidgets.QGraphicsItem):
         ctrl.ui.update_control_point_positions()
         self.update()
 
-
-    def is_structural(self):
-        """
-
-
-        :return:
-        """
-        return self.edge_type == self.start.default_edge_type
-
     def adjust_control_point(self, index, points, cp=True):
         """ Called from UI, when dragging
         :param index:
