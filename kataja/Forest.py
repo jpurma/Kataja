@@ -1316,59 +1316,65 @@ class Forest:
 
     ############ Complex node operations ##############################
 
-    def replace_node_with_merged_empty_node(self, N, R, merge_to_left, new_node_pos, merger_node_pos):
-        """
+    def replace_node_with_merged_empty_node(self, node, edge, merge_to_left, new_node_pos, merger_node_pos):
+        """ examples:
+        If we have [A [B C]] ...
+        and we do this for A, we get: [0 [A [B C]]]
+        if we do this for B, we get: [A [[0 B] C]]
 
-        :param N:
-        :param R:
+        :param node:
+        :param edge:
         :param merge_to_left:
         :param new_node_pos:
         :param merger_node_pos:
         """
-        forest('replace_node_with_merged_empty_node %s %s %s %s %s' % (N, R, merge_to_left, new_node_pos, merger_node_pos))
+        forest('replace_node_with_merged_empty_node %s %s %s %s %s' % (node, edge, merge_to_left, new_node_pos, merger_node_pos))
         ex, ey = new_node_pos
-        empty_node = self.create_empty_node(pos=(ex, ey, N.z))
-        self.replace_node_with_merged_node(N, empty_node, R, merge_to_left, merger_node_pos)
+        empty_node = self.create_empty_node(pos=(ex, ey, node.z))
+        self.replace_node_with_merged_node(node, empty_node, edge, merge_to_left, merger_node_pos)
 
 
-    def replace_node_with_merged_placeholder_node(self, N, R, merge_to_left, new_node_pos, merger_node_pos):
+    # I'm not sure if this is right... simpler replace should do.
+    def replace_node_with_merged_placeholder_node(self, node, edge, merge_to_left, new_node_pos, merger_node_pos):
         """
 
-        :param N:
-        :param R:
+        :param node:
+        :param edge:
         :param merge_to_left:
         :param new_node_pos:
         :param merger_node_pos:
         """
-        forest('replace_node_with_merged_placeholder_node %s %s %s %s %s' % (N, R, merge_to_left, new_node_pos, merger_node_pos))
+        forest('replace_node_with_merged_placeholder_node %s %s %s %s %s' % (node, edge, merge_to_left, new_node_pos, merger_node_pos))
         ex, ey = new_node_pos
-        empty_node = self.create_placeholder_node(pos=(ex, ey, N.z))
-        self.replace_node_with_merged_node(N, empty_node, R, merge_to_left, merger_node_pos)
+        empty_node = self.create_placeholder_node(pos=(ex, ey, node.z))
+        self.replace_node_with_merged_node(node, empty_node, edge, merge_to_left, merger_node_pos)
 
 
-    def replace_node_with_merged_node(self, N, new_node, edge, merge_to_left, merger_node_pos):
+    def replace_node_with_merged_node(self, old_node, new_node, edge, merge_to_left, merger_node_pos):
         """ This happens when touch area in edge going up from node N is clicked.
         [N B] -> [[x N] B] (left == True) or
         [N B] -> [[N x] B] (left == False)
-        :param N:
+        :param old_node:
         :param new_node:
         :param edge:
         :param merge_to_left:
         :param merger_node_pos:
         """
-        forest('replace_node_with_merged_empty_node %s %s %s %s %s' % (N, new_node, edge, merge_to_left, merger_node_pos))
+        forest('replace_node_with_merged_empty_node %s %s %s %s %s' % (old_node, new_node, edge, merge_to_left, merger_node_pos))
         start_node = None
         align = None
-        if edge:
+        if edge: # ???? can't we take all parents
             start_node = edge.start
             align = edge.align
             self._disconnect_node(edge=edge)
 
         mx, my = merger_node_pos
+        left = old_node
+        right = new_node
         if merge_to_left:
-            merger_node = self.create_merger_node(left=new_node, right=N, pos=(mx, my, N.z))
-        else:
-            merger_node = self.create_merger_node(left=N, right=new_node, pos=(mx, my, N.z))
+            left = new_node
+            right = old_node
+        merger_node = self.create_merger_node(left=left, right=right, pos=(mx, my, old_node.z))
         if edge:
             forest('connecting merger to parent')
             self._connect_node(start_node, merger_node, direction=align)

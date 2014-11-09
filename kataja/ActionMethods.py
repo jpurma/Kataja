@@ -28,16 +28,40 @@ class ActionMethods:
         self.main = main
 
 
+    ### Programmatically created actions ###############################################
+
     # Change visualization style -action (1...9)
     def change_visualization_command(self):
         """
 
 
         """
-        visualization_key = str(self.sender().text())
-        self.ui_manager.update_field('visualization_selector', visualization_key)
-        self.forest.change_visualization(visualization_key)
-        self.add_message(visualization_key)
+        visualization_key = str(ctrl.main.sender().text())
+        ctrl.ui.update_field('visualization_selector', visualization_key)
+        ctrl.forest.change_visualization(visualization_key)
+        ctrl.add_message(visualization_key)
+
+    def toggle_panel(self, panel_id):
+        """
+        UI action.
+        :return:
+        """
+        panel = ctrl.ui.get_panel(panel_id)
+        if panel.isVisible():
+            panel.close()
+        else:
+            panel.setVisible(True)
+            panel.set_folded(False)
+
+    def toggle_fold_panel(self, panel_id):
+        panel = ctrl.ui.get_panel(panel_id)
+        panel.set_folded(not panel.folded)
+
+    def pin_panel(self, panel_id):
+        panel = ctrl.ui.get_panel(panel_id)
+        panel.pin_to_dock()
+
+    #### Actions from actions.py ######################################################
 
 
     def open_kataja_file(self):
@@ -578,10 +602,10 @@ class ActionMethods:
         if not edge:
             return
         # Then do the cutting
-        if role == 'start_cut' and edge.edge_type is g.CONSTITUENT_EDGE:
+        if role is 'start_cut' and edge.edge_type is g.CONSTITUENT_EDGE:
             ctrl.forest.disconnect_edge_start(edge)
             ctrl.forest.add_placeholder_to_edge_start(edge)
-        elif role == 'end_cut' and edge.edge_type is g.CONSTITUENT_EDGE:
+        elif role is 'end_cut' and edge.edge_type is g.CONSTITUENT_EDGE:
             ctrl.forest.disconnect_edge_end(edge)
             ctrl.forest.add_placeholder_to_edge_end(edge)
         else:

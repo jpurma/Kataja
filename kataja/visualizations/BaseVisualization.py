@@ -299,13 +299,14 @@ class BaseVisualization:
         # rows = rotation
         # * = use this node
 
-        # 2 3 7  9 13 15 16
-        # i j i  i k   j  k
-        #       x     x  x
-        # * *      *
-        #  * *    *
-        #    *    *   *
-        #       * *   *
+        # 2 3 7 9 13 15 16
+        # i j i i k  j  k
+        #       x    x  x
+        # * *     *
+        #   * *   *
+        #     *   *  *
+        #       * *  *
+        #       *    *  *
 
         trace_dict = {}
         sorted_parents = []

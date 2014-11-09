@@ -526,6 +526,12 @@ class PaletteManager:
         else:
             return color.darker()
 
+    def broken(self, color):
+        if self.light_on_dark():
+            return color.darker()
+        else:
+            return color.lighter()
+
     def get_color_name(self, color):
         """
 

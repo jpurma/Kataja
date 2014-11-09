@@ -539,18 +539,19 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     # ### Merge options ########################################################
 
     def add_merge_options(self):
+        """ Node has selected and if it is placeholder or otherwise lacking, it may suggest an
+         option to add a proper node here.
         """
-
-
-        """
-        pass
+        if self.is_placeholder():
+            self.add_touch_area('add_constituent')
 
     def remove_merge_options(self):
         """
 
 
         """
-        pass
+        if 'add_constituent' in self.touch_areas:
+            self.remove_touch_area()
 
     def get_touch_area(self, place):
         """
@@ -566,7 +567,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :param touch_area:
         :return: :raise:
         """
-        if touch_area.type in self.touch_areas:
+        if touch_area.type in self.touch_areas.values():
             print('Touch area exists already. Someone is confused')
             raise Exception("Touch area exists already")
         self.touch_areas[touch_area.type] = touch_area

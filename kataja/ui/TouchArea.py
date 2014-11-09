@@ -28,7 +28,6 @@ from PyQt5 import QtCore
 from PyQt5.QtCore import QPointF as Pf
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
-
 from kataja.Edge import Edge
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.utils import to_tuple
@@ -66,8 +65,28 @@ class TouchArea(QtWidgets.QGraphicsItem):
         self.end_point = 0, 0
         self.setZValue(20)
         self.type = type
-        self.left = (type == g.LEFT_ADD_ROOT or type == g.LEFT_ADD_SIBLING)
-        self._shape_is_arc = (type == g.LEFT_ADD_ROOT or type == g.RIGHT_ADD_ROOT)
+        # Drawing flags defaults
+        self._align_left = False
+        self._has_tail = True
+        self._shape_has_joint = False
+        # Drawing flags for each touch area type
+        if self.type is g.LEFT_ADD_ROOT:
+            self.status_tip = "Add new constituent to left of %s" % self.host
+            self._align_left = True
+            self._shape_has_joint = True
+        elif self.type is g.RIGHT_ADD_ROOT:
+            self.status_tip = "Add new constituent to right of %s" % self.host
+            self._shape_has_joint = True
+        elif self.type is g.LEFT_ADD_SIBLING:
+            self.status_tip = "Add new sibling to left of %s" % self.host.end
+            self._align_left = True
+        elif self.type is g.RIGHT_ADD_SIBLING:
+            self.status_tip = "Add new sibling to right of %s" % self.host.end
+        elif self.type is g.TOUCH_ADD_CONSTITUENT:
+            self.status_tip = "Add a constituent here"
+            self._has_tail = False
+        else:
+            self.status_tip = "Unknown touch area???"
         self.selectable = False
         self.focusable = True
         self.draggable = False
@@ -81,16 +100,6 @@ class TouchArea(QtWidgets.QGraphicsItem):
         self.setCursor(QtCore.Qt.ArrowCursor)
         self.setAcceptHoverEvents(True)
         self._fill_path = False
-        if self.type == g.LEFT_ADD_ROOT:
-            self.status_tip = "Add new constituent to left of %s" % self.host
-        elif self.type == g.RIGHT_ADD_ROOT:
-            self.status_tip = "Add new constituent to right of %s" % self.host
-        elif self.type == g.LEFT_ADD_SIBLING:
-            self.status_tip = "Add new sibling to left of %s" % self.host.end
-        elif self.type == g.RIGHT_ADD_SIBLING:
-            self.status_tip = "Add new sibling to right of %s" % self.host.end
-        else:
-            self.status_tip = "Unknown touch area???"
         self.setToolTip(self.status_tip)
 
 
@@ -108,26 +117,32 @@ class TouchArea(QtWidgets.QGraphicsItem):
 
         :return:
         """
-        ex, ey = self.end_point
-        sx, sy = self.start_point
-        e2 = end_spot_size * 2
-        if sx < ex:
-            w = max((ex - sx + end_spot_size, e2))
-            x = min((sx, ex - end_spot_size))
+        if self._has_tail:
+            # Bounding rect that includes the tail and end spot ellipse
+            ex, ey = self.end_point
+            sx, sy = self.start_point
+            e2 = end_spot_size * 2
+            if sx < ex:
+                w = max((ex - sx + end_spot_size, e2))
+                x = min((sx, ex - end_spot_size))
+            else:
+                w = max((sx - ex + end_spot_size, e2))
+                x = ex - end_spot_size
+            if sy < ey:
+                h = max((ey - sy + end_spot_size, e2))
+                y = min((sy, ey - end_spot_size))
+            else:
+                h = max((sy - ey + end_spot_size, e2))
+                y = ey - end_spot_size
+            r = QtCore.QRectF(x, y, w, h)
+            if self._shape_has_joint:
+                return r.united(self._path.controlPointRect())
+            else:
+                return r
         else:
-            w = max((sx - ex + end_spot_size, e2))
-            x = ex - end_spot_size
-        if sy < ey:
-            h = max((ey - sy + end_spot_size, e2))
-            y = min((sy, ey - end_spot_size))
-        else:
-            h = max((sy - ey + end_spot_size, e2))
-            y = ey - end_spot_size
-        r = QtCore.QRectF(x, y, w, h)
-        if self._shape_is_arc:
-            return r.united(self._path.controlPointRect())
-        else:
-            return r
+            # Just the bounding rect of end spot ellipse
+            ex, ey = self.end_point
+            return QtCore.QRectF(ex - end_spot_size, ey - end_spot_size, end_spot_size + end_spot_size, end_spot_size + end_spot_size)
 
     def sensitive_area(self):
         """
@@ -151,19 +166,24 @@ class TouchArea(QtWidgets.QGraphicsItem):
 
 
         """
+        if not self._has_tail:
+            if isinstance(self.host, Edge):
+                self.end_point = (self.host.end_point[0], self.host.end_point[1])
+            elif hasattr(self.host, 'get_current_position'):
+                self.end_point = (self.host.get_current_position()[0], self.host.get_current_position()[1])
+            self.start_point = self.end_point
+            self._path = None
+            return
         use_middle_point = False
         line_middle_point = None
-        line_end_point = None
-        plus_point = None
         path_settings = None
         if isinstance(self.host, Edge): # Touch area starts from relation between nodes
             rel = self.host
             path_settings = ctrl.forest.settings.edge_shape_settings(rel.edge_type)
-            # rel.get_path()
             sx, sy = to_tuple(rel.get_point_at(0.5))
             self.start_point = sx, sy
             d = rel.get_angle_at(0.5)
-            if self.left:
+            if self._align_left:
                 d -= 75
             else:
                 d += 75
@@ -174,21 +194,15 @@ class TouchArea(QtWidgets.QGraphicsItem):
             x = sx + dx * l
             y = sy + dy * l
             self.end_point = x, y
-            line_end_point = sx + dx * (l - 4), sy + dy * (l - 4)
-            plus_point = x + dx * 2, y + dy * 2
             use_middle_point = False
-        elif self._shape_is_arc:
+        elif self._shape_has_joint:
             path_settings = ctrl.forest.settings.edge_shape_settings(g.CONSTITUENT_EDGE)
             sx, sy, dummy = self.host.magnet(2)
             self.start_point = sx, sy
-            if self.left:
+            if self._align_left:
                 self.end_point = sx - max((prefs.edge_width * 2, self.host.width)), sy
-                line_end_point = self.end_point[0] + 5, sy - 2
-                plus_point = self.end_point[0] - 2, self.end_point[1]
             else:
                 self.end_point = sx + max((prefs.edge_width * 2, self.host.width)), sy
-                line_end_point = self.end_point[0] - 5, sy - 2
-                plus_point = self.end_point[0] + 2, self.end_point[1]
             use_middle_point = True
             line_middle_point = sx - (0.5 * (sx - self.end_point[0])), sy - 10
         else:
@@ -199,7 +213,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
         if use_middle_point:
             mp = line_middle_point[0], line_middle_point[1], 0
             adjust = []
-            if self.left:
+            if self._align_left:
                 sp = self.start_point[0], self.start_point[1], 0
                 ep = self.end_point[0], self.end_point[1], 0
             else:
@@ -215,7 +229,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
             sp = self.start_point[0], self.start_point[1], 0
             ep = self.end_point[0], self.end_point[1], 0
             adjust = []
-            if self.left:
+            if self._align_left:
                 align = g.LEFT
             else:
                 align = g.RIGHT
@@ -244,12 +258,13 @@ class TouchArea(QtWidgets.QGraphicsItem):
         # if not isinstance(dropped_node, ConstituentNode):
         # return False
         f.undo_manager.record('re-merge constituent')
-        if self.host.__class__.__name__ == 'Edge':
+        if isinstance(self.host, Edge):
             print('calling replace_node_with_merged_node from edge')
-            f.replace_node_with_merged_node(self.host.end, dropped_node, left=self.left)
+            f.replace_node_with_merged_node(self.host.end, dropped_node, edge=self._align_left, merge_to_left=null,
+                                            merger_node_pos=null)
         else:
             print('calling replace_node_with_merged_node')
-            f.replace_node_with_merged_node(self.host, dropped_node, None, merge_to_left=self.left,
+            f.replace_node_with_merged_node(self.host, dropped_node, None, merge_to_left=self._align_left,
                                             merger_node_pos=self.start_point)
 
 
@@ -263,20 +278,17 @@ class TouchArea(QtWidgets.QGraphicsItem):
         if self._drag_hint:
             return False
         f.undo_manager.record('add constituent')
-        if event:
-            x, y = to_tuple(event.scenePos())
+        edge = None
+        node = self.host
+        if hasattr(self.host, 'end'):
+            edge = self.host
+            node = self.host.end
+        if self.type is g.TOUCH_ADD_CONSTITUENT:
+            node.start_editing()
         else:
-            x, y = to_tuple(self.boundingRect().center())
-            ox, oy = to_tuple(self.pos())
-            x, y = x + ox, y + oy
-        if self.host.__class__.__name__ == 'Edge':
-            print('click on edge %s, end node: %s' % (self.host, self.host.end))
-            f.replace_node_with_merged_empty_node(N=self.host.end, R=self.host, merge_to_left=self.left,
-                                                  new_node_pos=self.end_point, merger_node_pos=self.start_point)
-        else:
-            f.replace_node_with_merged_empty_node(N=self.host, R=None, merge_to_left=self.left,
-                                                  new_node_pos=self.end_point, merger_node_pos=self.start_point)
-        ctrl.deselect_objects()
+            f.replace_node_with_merged_empty_node(node=node, edge=edge, merge_to_left=self._align_left,
+                                              new_node_pos=self.end_point, merger_node_pos=self.start_point)
+            ctrl.deselect_objects()
         return True
 
     # self, N, R, merge_to_left, new_node_pos, merger_node_pos):

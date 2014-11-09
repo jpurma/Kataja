@@ -171,26 +171,6 @@ class UIManager:
         """
         return self._ui_panels.get(panel_id, None)
 
-    def toggle_panel(self, panel_id):
-        """
-        UI action.
-        :return:
-        """
-        panel = self.get_panel(panel_id)
-        if panel.isVisible():
-            panel.close()
-        else:
-            panel.setVisible(True)
-            panel.set_folded(False)
-
-    def toggle_fold_panel(self, panel_id):
-        panel = self.get_panel(panel_id)
-        panel.set_folded(not panel.folded)
-
-    def pin_panel(self, panel_id):
-        panel = self.get_panel(panel_id)
-        panel.pin_to_dock()
-
 
     def start_color_dialog(self, receiver, slot_name):
         if not self.color_dialog:

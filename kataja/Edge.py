@@ -336,6 +336,13 @@ class Edge(QtWidgets.QGraphicsItem):
             self.update_label_pos()
         return self._cached_label_start
 
+    def is_broken(self):
+        if self.edge_type == g.ARROW:
+            return False
+        if not (self.start and self.end):
+            return True
+        return self.start.is_placeholder() or self.end.is_placeholder()
+
     # ### Color ############################################################
 
     def color(self, value=None):
@@ -374,10 +381,8 @@ class Edge(QtWidgets.QGraphicsItem):
             return ctrl.cm.active(ctrl.cm.selection())
         elif self._hovering:
             return ctrl.cm.hovering(ctrl.cm.selection())
-        elif ctrl.is_selected(self):
-            #return ctrl.cm.selection()
-            return self.color()
-            #return ctrl.cm.selected(self.color())
+        elif self.is_broken():
+            return ctrl.cm.broken(self.color())
         else:
             return self.color()
 
