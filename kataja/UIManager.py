@@ -36,7 +36,6 @@ from kataja.ui.ControlPoint import ControlPoint
 from kataja.ui.FadingSymbol import FadingSymbol
 from kataja.ui.MergeHintLine import MergeHintLine
 from kataja.ui.MessageItem import MessageItem
-from kataja.ui.RadialMenu import RadialMenu
 from kataja.ui.StretchLine import StretchLine
 from kataja.ui.TargetReticle import TargetReticle
 from kataja.actions import actions
@@ -56,6 +55,7 @@ from kataja.ui.embeds.NewElementEmbed import NewElementEmbed, NewElementMarker
 from kataja.ui.embeds.EdgeLabelEmbed import EdgeLabelEmbed
 from kataja.ui.panels import UIPanel
 from kataja.ui.OverlayButton import OverlayButton
+from kataja.ui.embeds.ConstituentEditEmbed import ConstituentEditEmbed
 
 
 NOTHING = 0
@@ -112,12 +112,12 @@ class UIManager:
         self._merge_hint = None
         self._stretchline = None
         self._message = None
-        self._radial_menus = []
         self._control_points = []
         self._target_reticle = None
         self._rubber_band = None
         self._rubber_band_origin = None
         self._new_element_embed = None
+        self._constituent_edit_embed = None
         self._new_element_marker = None
         self._edge_label_embed = None
         self._overlay_buttons = {}
@@ -321,8 +321,6 @@ class UIManager:
 
 
         """
-        for menu in self._radial_menus:
-            menu.close(immediately=True)
         if self._target_reticle:
             self._target_reticle.hide()
         for item in self.symbols:
@@ -337,8 +335,6 @@ class UIManager:
         UI has to update its elements too."""
         if self._target_reticle:
             self._target_reticle.update_position()
-        for menu in self._radial_menus:
-            menu.update_position()
         for cp in self._control_points:
             cp.update_position()
         for symbol in self.symbols:
@@ -347,6 +343,8 @@ class UIManager:
             button.update_position()
         if self._new_element_marker:
             self._new_element_marker.update_position()
+        if self._constituent_edit_embed:
+            self._constituent_edit_embed.update_position()
 
     def delete_ui_elements_for(self, item):
         """
@@ -357,28 +355,6 @@ class UIManager:
             for touch_area in list(item.touch_areas.values()):
                 self.delete_touch_area(touch_area)
         self.remove_control_points(item)
-
-
-
-    def filter_active_items_from(self, items, x, y):
-        """
-
-        :param items:
-        :param x:
-        :param y:
-        :return:
-        """
-        candidates = []
-        for item in items:
-            if isinstance(item, RadialMenu):
-                for nitem in item.menu_items:
-                    if nitem.enabled and nitem.sceneBoundingRect().contains(x, y):
-                        candidates.append(nitem)
-            elif item in self._items:
-                candidates.append(item)
-        return candidates
-
-
 
 
     # ### Actions, Menus and Panels ####################################################
@@ -622,6 +598,23 @@ class UIManager:
         self._new_element_marker.show()
         self._new_element_embed.wake_up()
 
+    #### Constituent editing #########################################################
+
+    def get_constituent_edit_embed(self):
+        return self._constituent_edit_embed
+
+    def start_constituent_editing(self, node):
+        np = node.pos()
+        if not self._constituent_edit_embed:
+            self._constituent_edit_embed = ConstituentEditEmbed(self.main.graph_view, self, np)
+        self._constituent_edit_embed.update_embed(scenePos=np, node=node)
+        self._constituent_edit_embed.wake_up()
+
+
+    def close_constituent_editing(self):
+        if self._constituent_edit_embed and self._constituent_edit_embed.isVisible():
+            self._constituent_edit_embed.close()
+            self._constituent_edit_embed.hide()
 
 
     # ### Touch areas #####################################################################
@@ -693,66 +686,6 @@ class UIManager:
         self.add_ui(item)
         self.symbols.add(item)
         item.fade_out('slow')
-
-    # ### Radial menus ####################################################################
-
-    def remove_menu(self, menu):
-        """
-
-        :param menu:
-        """
-        if menu in self._radial_menus:
-            self._radial_menus.remove(menu)
-        self.remove_ui(menu)
-
-    def create_menu(self, host, actions=None, shape='ring', radius=100):
-        """
-
-        :param host:
-        :param actions:
-        :param shape:
-        :param radius:
-        :return:
-        """
-        if not actions:
-            actions = []
-        menu = RadialMenu(host, actions, shape, radius)
-        self.add_ui(menu)
-        self._radial_menus.append(menu)
-        return menu
-
-    def trigger_menu(self):
-        """
-
-
-        """
-        assert False
-
-    def get_menus(self):
-        """
-
-
-        :return:
-        """
-        return [menu for menu in self._radial_menus if menu.isVisible()]
-
-    def close_menus(self):
-        """
-
-
-        """
-        for menu in self._radial_menus:
-            menu.close()
-
-            # ctrl.ui.creation_menu=RadialMenu(ctrl.ui, 'creation', [
-            # self.action('Text', ctrl.ui.trigger_menu, menu_type= 'TextArea'),
-            # self.action('Add new comment box', self.add_text_box, local_shortcut= 'a',menu_type= 'RadioButton'),
-            # self.action('Add new Constituent', self.add_new_constituent, local_shortcut= 'c',menu_type= 'RadioButton',checked=True),
-            # self.action('Add new Tree', self.add_new_tree, local_shortcut= 't',menu_type= 'RadioButton')
-            # ])
-            # ctrl.ui.rename_menu=RadialMenu(ctrl.ui, 'rename', [
-            # self.action('Text', ctrl.ui.trigger_menu, menu_type= 'TextArea'),
-            # ])
 
 
     # ### Stretchlines ####################################################################

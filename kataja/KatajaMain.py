@@ -51,7 +51,6 @@ from kataja.Edge import SHAPE_PRESETS, Edge
 from kataja.UIManager import UIManager
 from kataja.PaletteManager import PaletteManager
 import kataja.globals as g
-from kataja.ui.MenuItem import MenuItem
 from kataja.utils import time_me, save_object
 from kataja.visualizations.available import VISUALIZATIONS
 import kataja.debug as debug
@@ -236,6 +235,7 @@ class KatajaMain(QtWidgets.QMainWindow):
 
     # ### ConstituentNode's radial menu commands ################################
 
+    # radial menu only
     def do_merge(self, caller, event):
         """
 
@@ -243,8 +243,8 @@ class KatajaMain(QtWidgets.QMainWindow):
         :param event:
         :return:
         """
-        if isinstance(caller, MenuItem):
-            caller = caller.host_node
+        #if isinstance(caller, MenuItem):
+        #    caller = caller.host_node
         node_A = caller
         node_B = caller.get_root_node()
         assert (node_A is not node_B)
@@ -254,6 +254,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         merged.take_focus()
         return True
 
+    # radial menu only
     def do_delete_node(self, caller, event):
         """
 
@@ -261,13 +262,14 @@ class KatajaMain(QtWidgets.QMainWindow):
         :param event:
         :return:
         """
-        if isinstance(caller, MenuItem):
-            caller = caller.host_node
+        #if isinstance(caller, MenuItem):
+        #    caller = caller.host_node
         self.forest.command_delete(caller)
         self.action_finished()
         ctrl.focus = None
         return True
 
+    # radial menu only
     def toggle_fold_node(self, caller, event):
         """
 
@@ -275,8 +277,8 @@ class KatajaMain(QtWidgets.QMainWindow):
         :param event:
         :return:
         """
-        if isinstance(caller, MenuItem):
-            caller = caller.host_node
+        #if isinstance(caller, MenuItem):
+        #    caller = caller.host_node
         if caller.is_folded_away():
             self.add_message('Unfolding %s to %s' % (caller.linearized(), str(caller)))
             caller.unfold_triangle()
@@ -286,6 +288,7 @@ class KatajaMain(QtWidgets.QMainWindow):
             caller.fold()
         return True
 
+    # radial menu only
     def disconnect_node(self, caller=None, event=None):
         """
 
@@ -293,13 +296,14 @@ class KatajaMain(QtWidgets.QMainWindow):
         :param event:
         :return:
         """
-        if isinstance(caller, MenuItem):
-            caller = caller.host_node
+        #if isinstance(caller, MenuItem):
+        #    caller = caller.host_node
         self.forest.disconnect_node_from_tree(caller)
         self.action_finished()
         ctrl.focus = None
         return True
 
+    # radial menu only
     def copy_selected(self, **kw):
         """ Make a copy of element and put it beside the original
         :param kw:
@@ -598,6 +602,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         :return:
         """
         node_a = ctrl.pointing_data['target']
+        node_b = None
         self.forest.merge_nodes(node_a, node_b)
         node_a.release()
         # node_A.state =SELECTED # deselect doesn't have effect unless node is selected

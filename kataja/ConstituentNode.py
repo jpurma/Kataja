@@ -745,8 +745,8 @@ class ConstituentNode(Node):
         :param value:
         when node moves """
         if change == QtWidgets.QGraphicsItem.ItemPositionHasChanged:
-            if self.ui_menu and self.ui_menu.isVisible():
-                self.ui_menu.update_position(drag=True)
+            #if self.ui_menu and self.ui_menu.isVisible():
+            #    self.ui_menu.update_position(drag=True)
             if self._hovering or ctrl.focus == self:
                 pass
                 # print 'ctrl.ui problem here!'
@@ -758,60 +758,8 @@ class ConstituentNode(Node):
 
     # ########## SAVING AND LOADING #######################################################
 
-    #### Qt menus ###################################################
-
-    def open_qt_menu(self):
-        """
 
 
-        """
-        if not self.qt_menu:
-            self.create_qt_menu()
-        else:
-            self.qt_menu.focus()
-
-    def create_qt_menu(self, scene):
-        """
-
-        :param scene:
-        :return:
-        """
-
-        def label_edited(self):
-            """
-
-            :param self:
-            :return:
-            """
-            return
-
-        widget = QtWidgets.QDialog(self.forest.main)  # QGroupBox
-        layout = QtWidgets.QFormLayout(widget)
-        widget.setLayout(layout)
-        widget.show()
-        label_editor = QtWidgets.QTextEdit('editable label', parent=widget)
-        label_editor.setFixedSize(200, 20)
-        label_editor.setTabChangesFocus(True)
-        label_editor.editingFinished = label_edited
-        if not self.label_document:
-            self.label_document = QtGui.QTextDocument(self.get_label())
-        label_editor.setDocument(self.label_document)
-        layout.addRow('&Label:', label_editor)
-        index_editor = QtWidgets.QLineEdit(self.get_index(), parent=widget)
-        index_editor.editingFinished = label_edited
-        index_editor.textChanged = label_edited
-        layout.addRow('&Index:', index_editor)
-        gloss_editor = QtWidgets.QLineEdit(self.get_gloss_text(), parent=widget)
-        layout.addRow('&Gloss:', gloss_editor)
-        self.qt_menu = widget
-
-    def close_qt_menu(self):
-        """
-
-
-        """
-        self.qt_menu.hide()
-        self.qt_menu = None
 
     #### Selection ########################################################
 
@@ -820,8 +768,6 @@ class ConstituentNode(Node):
 
         :param selected:
         """
-        if (not selected) and self.ui_menu and self.ui_menu.is_open():
-            self.close_menus()
         self.update()
 
     #### Radial menu #########################################################
@@ -854,21 +800,9 @@ class ConstituentNode(Node):
              'get_method': self.get_gloss_text, 'tab_index': 3}, ])
         return menu
 
-    def open_menus(self):
-        """ Activates menus """
-        # only one menu is open at time
-        ui = self.forest.main.ui_manager
-        ui.close_menus()
-        # create menus only when necessary
-        if not self.ui_menu:
-            self.ui_menu = self.create_menu()
-        # it takes a while to open the menu, ignore open-commands if it is still opening
-        if not self.ui_menu.moving():
-            if self.is_leaf_node():
-                focus = 'Label'
-            else:
-                focus = 'Alias'
-            self.ui_menu.open(focus=focus)
+    def open_embed(self):
+        ctrl.ui.start_constituent_editing(self)
+
 
     #### Menu commands and related behaviour #############################################
 

@@ -612,6 +612,12 @@ class ActionMethods:
             raise ForestError('Trying to disconnect node from unknown edge or unhandled cutting position')
         ctrl.deselect_objects()
 
+    ###### Constituent editing #################
+    def finish_constituent_edit(self):
+        print('Edited constituent!')
+
+
+    ###### Keys #################
     def key_backspace(self):
         print('Backspace pressed')
         for item in ctrl.get_all_selected():

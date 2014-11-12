@@ -74,7 +74,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self.label_rect = None
 
         self.folded_away = False
-        self.ui_menu = None
 
         self.folding_towards = None
         self._color = None
@@ -583,16 +582,16 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
     # ### MOUSE - kataja ########################################################
 
+    def open_embed(self):
+        pass # tell ui to open a menu relevant for this node type
+
     def double_click(self, event=None):
         """ Scene has decided that this node has been clicked
         :param event:
         """
         self.set_hovering(False)
         if ctrl.is_selected(self):
-            if (not self.ui_menu) or (not self.ui_menu.is_open()):
-                self.open_menus()
-            else:
-                self.close_menus()
+            self.open_embed()
         else:
             ctrl.select(self)
 
@@ -611,10 +610,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
                 ctrl.add_to_selection(self)
             return
         if ctrl.is_selected(self):
-            if (not self.ui_menu) or (not self.ui_menu.is_open()):
-                self.open_menus()
-            else:
-                self.close_menus()
+            self.open_embed()
         else:
             ctrl.select(self)
             self.add_merge_options()

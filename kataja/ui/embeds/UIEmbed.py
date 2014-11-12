@@ -40,6 +40,7 @@ class UIEmbed(QtWidgets.QWidget):
 
         # Remember Johnny fucking Marr
 
+
     def update_embed(self, scenePos=None):
 
         self.setPalette(ctrl.cm.get_qt_palette_for_ui())

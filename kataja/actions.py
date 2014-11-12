@@ -289,6 +289,11 @@ actions = {
         'command': 'Disconnect',
         'method': 'edge_disconnect',
     },
+    # Edit constituent
+    'edit_constituent_finished': {
+        'command': 'Apply changes',
+        'method': 'finish_constituent_edit'
+    },
 
     # Generic keys ####
     # 'key_esc': {
