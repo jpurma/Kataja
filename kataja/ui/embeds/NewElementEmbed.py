@@ -179,7 +179,8 @@ class NewElementEmbed(UIEmbed):
 
     def mouseMoveEvent(self, event):
         self.move(self.mapToParent(event.pos()) - self._drag_diff)
-        self.marker.update_position()
+        if self.marker:
+            self.marker.update_position()
 
     def focus_to_main(self):
         self.input_line_edit.setFocus()
@@ -187,6 +188,11 @@ class NewElementEmbed(UIEmbed):
     def close(self):
         self.input_line_edit.setText('')
         UIEmbed.close(self)
+
+    def finished_effect_animation(self):
+        UIEmbed.finished_effect_animation(self)
+        if self._timeline.direction() == QtCore.QTimeLine.Backward and self.marker:
+            ctrl.ui.clean_up_creation_dialog()
 
 
 # line = new QFrame(w);

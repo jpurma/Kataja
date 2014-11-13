@@ -30,7 +30,11 @@ class ConstituentEditEmbed(UIEmbed):
         self.assumed_height = 117
 
     def update_position(self):
-        self.move(self.node.pos().x(), self.node.pos().y())
+        sx,sy,sz = self.node.get_current_position()
+        p = self.parent().mapFromScene(sx, sy)
+        px, py = p.x(), p.y()
+        py -= self.assumed_height/2
+        self.move(px, py)
 
     def update_embed(self, scenePos=None, node=None):
         if node:
@@ -43,6 +47,7 @@ class ConstituentEditEmbed(UIEmbed):
             f.setPointSize(f.pointSize() * 2)
             self.input_line_edit.setFont(f)
             self.input_line_edit.setText(str(self.node))
+            self.update_position()
 
     def mouseMoveEvent(self, event):
         self.move(self.mapToParent(event.pos()) - self._drag_diff)

@@ -560,8 +560,7 @@ class UIManager:
 
     def close_new_element_embed(self):
         if self._new_element_embed and self._new_element_embed.isVisible():
-            self._new_element_embed.close()
-            self._new_element_marker.hide()
+            self._new_element_embed.blur_away()
 
     def get_overlay_buttons(self):
         return self._overlay_buttons.values()
@@ -581,8 +580,7 @@ class UIManager:
 
     def close_edge_label_editing(self):
         if self._edge_label_embed and self._edge_label_embed.isVisible():
-            self._edge_label_embed.close()
-            self._edge_label_embed.hide()
+            self._edge_label_embed.blur_away()
 
     #### Creation dialog #########################################################
 
@@ -595,8 +593,16 @@ class UIManager:
             self._new_element_embed.marker = self._new_element_marker
         self._new_element_embed.update_embed(scenePos=scenePos)
         self._new_element_marker.update_position(scenePos=scenePos)
-        self._new_element_marker.show()
         self._new_element_embed.wake_up()
+
+    def clean_up_creation_dialog(self):
+        """ Not sure if the items should be removed or is it enough to hide them.
+        :return:
+        """
+        if self._new_element_marker:
+            self.remove_ui(self._new_element_marker)
+            self._new_element_marker.hide()
+            self._new_element_marker = None
 
     #### Constituent editing #########################################################
 
@@ -613,8 +619,7 @@ class UIManager:
 
     def close_constituent_editing(self):
         if self._constituent_edit_embed and self._constituent_edit_embed.isVisible():
-            self._constituent_edit_embed.close()
-            self._constituent_edit_embed.hide()
+            self._constituent_edit_embed.blur_away()
 
 
     # ### Touch areas #####################################################################

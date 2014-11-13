@@ -548,6 +548,7 @@ class ActionMethods:
     def close_embeds(self):
         ctrl.ui.close_new_element_embed()
         ctrl.ui.close_edge_label_editing()
+        ctrl.ui.close_constituent_editing()
 
     # ui
     def new_element_accept(self):
@@ -559,7 +560,7 @@ class ActionMethods:
             # we can add a test if line p1 - p2 crosses several edges, then it can be a divider
             if (p1 - p2).manhattanLength() > 20 and not text.startswith('['):
                 # It's an Arrow!
-                ctrl.main.create_new_arrow()
+                self.create_new_arrow()
                 return
             else:
                 print('do ', type)

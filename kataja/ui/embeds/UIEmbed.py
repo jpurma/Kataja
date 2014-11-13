@@ -35,6 +35,13 @@ class UIEmbed(QtWidgets.QWidget):
         self.assumed_width = 200
         self.assumed_height = 100
         self._magnet = QtCore.QPoint(0, 0), 1
+        self._effect = QtWidgets.QGraphicsBlurEffect(self)
+        self._effect.setBlurHints(QtWidgets.QGraphicsBlurEffect.AnimationHint)
+        self._timeline = QtCore.QTimeLine(150, self)
+        self._timeline.setFrameRange(50, 0)
+        self._timeline.frameChanged[int].connect(self.update_frame)
+        self._timeline.finished.connect(self.finished_effect_animation)
+        self.setGraphicsEffect(self._effect)
 
         # Remember to add top_row_layout to your layout
 
@@ -84,13 +91,35 @@ class UIEmbed(QtWidgets.QWidget):
     def magnet(self):
         return self._magnet
 
+    def update_frame(self, frame):
+        self._effect.setBlurRadius(frame)
+        self.update()
+
+    def finished_effect_animation(self):
+        self._effect.setEnabled(False)
+        if self._timeline.direction() == QtCore.QTimeLine.Backward:
+            self.hide()
+            self.close()
+
     def update_color(self):
         self.setPalette(ctrl.cm.get_qt_palette_for_ui())
 
     def wake_up(self):
-        self.show()
+        if not self.isVisible():
+            self._effect.setBlurRadius(self._timeline.startFrame())
+            self._effect.setEnabled(True)
+            self._timeline.setDirection(QtCore.QTimeLine.Forward)
+            self._timeline.start()
+            self.show()
         self.raise_()
         self.focus_to_main()
+
+    def blur_away(self):
+        if self.isVisible():
+            self._effect.setBlurRadius(self._timeline.endFrame())
+            self._effect.setEnabled(True)
+            self._timeline.setDirection(QtCore.QTimeLine.Backward)
+            self._timeline.start()
 
     def focus_to_main(self):
         pass
