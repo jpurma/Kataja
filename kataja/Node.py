@@ -88,7 +88,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
         self._magnets = []
         self.force = 72
-        self.touch_areas = {}
         self.status_tip = ""
 
 
@@ -133,8 +132,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         print("Resetting node ", self)
         Movable.reset(self)
         self.boundingRect(update=True)
-        for touch_area in list(self.touch_areas.values()):
-            ctrl.ui.remove_touch_area(touch_area)
+        ctrl.ui.remove_touch_areas_for(self)
 
 
     def is_placeholder(self):
@@ -529,61 +527,34 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :param selected:
         """
         if not selected:
-            self.remove_merge_options()
+            self.remove_completion_suggestions()
             self.setZValue(10)
         else:
             self.setZValue(200)
         self.update()
 
-    # ### Merge options ########################################################
+    # ### Suggestions for completing missing aspects (active for selected nodes) ######################################
 
-    def add_merge_options(self):
-        """ Node has selected and if it is placeholder or otherwise lacking, it may suggest an
+    def add_completion_suggestions(self):
+        """ Node has selected and if it is a placeholder or otherwise lacking, it may suggest an
          option to add a proper node here.
         """
-        if self.is_placeholder():
-            self.add_touch_area('add_constituent')
+        pass
 
-    def remove_merge_options(self):
+    def remove_completion_suggestions(self):
         """
 
 
         """
-        if 'add_constituent' in self.touch_areas:
-            self.remove_touch_area()
-
-    def get_touch_area(self, place):
-        """
-
-        :param place:
-        :return:
-        """
-        return self.touch_areas.get(place, None)
-
-    def add_touch_area(self, touch_area):
-        """
-
-        :param touch_area:
-        :return: :raise:
-        """
-        if touch_area.type in self.touch_areas.values():
-            print('Touch area exists already. Someone is confused')
-            raise Exception("Touch area exists already")
-        self.touch_areas[touch_area.type] = touch_area
-        return touch_area
-
-    def remove_touch_area(self, touch_area):
-        """
-        Forget about given TouchArea. Does not do anything about its scene presence, only cuts the association between
-        node and TouchArea.
-        :param touch_area: TouchArea
-        """
-        del self.touch_areas[touch_area.type]
+        ctrl.ui.remove_touch_areas_for(self)
 
     # ### MOUSE - kataja ########################################################
 
     def open_embed(self):
-        pass # tell ui to open a menu relevant for this node type
+        """ Tell ui to open a menu relevant for this node type -- overloaded by specialized nodes
+        :return: None
+        """
+        pass
 
     def double_click(self, event=None):
         """ Scene has decided that this node has been clicked
@@ -613,7 +584,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             self.open_embed()
         else:
             ctrl.select(self)
-            self.add_merge_options()
+            self.add_completion_suggestions()
 
     # def drag(self, event):
     # """ Drags also elements that are counted to be involved: features, children etc """
@@ -627,7 +598,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
     #         [b.update() for b in item.get_children() + item.edges_up + item.edges_down]
     #     ctrl.scene.item_moved()
-
 
     def start_dragging(self, mx, my):
         """
@@ -644,7 +614,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self._position_before_dragging = self.get_current_position()
         self._adjustment_before_dragging = self.get_adjustment()
         self.forest.prepare_touch_areas_for_dragging(excluded=ctrl.dragged)
-
 
     def drag(self, event):
         """
@@ -669,9 +638,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         else:
             self.set_computed_position((now_x, now_y, pz))
 
-
-    #### Mouse - Qt events ##################################################
-
     def set_hovering(self, value):
         """ Toggle hovering effects and internal bookkeeping
         :param value: bool
@@ -695,6 +661,23 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             self.update()
             ctrl.remove_status(self.status_tip)
 
+    def dragged_over_by(self, dragged):
+        if not self._hovering and self.accepts_drops(dragged):
+            if ctrl.latest_hover and not ctrl.latest_hover is self:
+                ctrl.latest_hover.set_hovering(False)
+            ctrl.latest_hover = self
+            self.set_hovering(True)
+
+    def accepts_drops(self, dragged):
+        if isinstance(dragged, ControlPoint):
+            if dragged.role == g.START_POINT or dragged.role == g.END_POINT:
+                return True
+        #elif isinstance(dragged, TouchArea):
+        #    return True
+        return False
+
+    #### Mouse - Qt events ##################################################
+
     def hoverEnterEvent(self, event):
         """ Hovering has some visual effects, usually handled in paint-method
         :param event:
@@ -709,22 +692,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self.set_hovering(False)
         QtWidgets.QGraphicsItem.hoverLeaveEvent(self, event)
 
-
-    def dragged_over_by(self, dragged):
-        if not self._hovering and self.accepts_drops(dragged):
-            if ctrl.latest_hover and not ctrl.latest_hover is self:
-                ctrl.latest_hover.set_hovering(False)
-            ctrl.latest_hover = self
-            self.set_hovering(True)
-
-
-    def accepts_drops(self, dragged):
-        if isinstance(dragged, ControlPoint):
-            if dragged.role == g.START_POINT or dragged.role == g.END_POINT:
-                return True
-        #elif isinstance(dragged, TouchArea):
-        #    return True
-        return False
 
     #### Restoring after load / undo #########################################
 

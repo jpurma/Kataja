@@ -1434,6 +1434,9 @@ class Forest:
                 continue
             um.create_touch_area(edge, g.LEFT_ADD_SIBLING, for_dragging=True)
             um.create_touch_area(edge, g.RIGHT_ADD_SIBLING, for_dragging=True)
+        for node in self.get_constituent_nodes():
+            if node.is_placeholder():
+                um.create_touch_area(node, g.TOUCH_ADD_CONSTITUENT, for_dragging=True)
 
 
     ######### Utility functions ###############################

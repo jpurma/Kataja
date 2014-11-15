@@ -633,9 +633,7 @@ class UIManager:
         :param for_dragging:
         :return:
         """
-        assert (not host.get_touch_area(type))
         ta = TouchArea(host, type, for_dragging)
-        host.add_touch_area(ta)
         self.touch_areas.add(ta)
         self.add_ui(ta)
         return ta
@@ -645,7 +643,6 @@ class UIManager:
         """ remove from scene and remove references from nodes
         :param touch_area:
         """
-        touch_area.host.remove_touch_area(touch_area)
         self.touch_areas.remove(touch_area)
         self.remove_ui(touch_area)
 
@@ -656,6 +653,11 @@ class UIManager:
 
         """
         for ta in list(self.touch_areas):
+            self.delete_touch_area(ta)
+
+    def remove_touch_areas_for(self, host):
+        my_areas = [x for x in self.touch_areas if x.host is host]
+        for ta in my_areas:
             self.delete_touch_area(ta)
 
     def update_touch_areas(self):
@@ -673,8 +675,15 @@ class UIManager:
                     self.create_touch_area(edge, g.LEFT_ADD_SIBLING)
                     self.create_touch_area(edge, g.RIGHT_ADD_SIBLING)
             elif isinstance(item, Edge) and item.edge_type == g.CONSTITUENT_EDGE:
-                self.create_touch_area(item, g.LEFT_ADD_SIBLING)
-                self.create_touch_area(item, g.RIGHT_ADD_SIBLING)
+                if item.has_orphan_ends():
+                    if item.end and (item.end.is_placeholder()):
+                        item.end.add_completion_suggestions()
+                    if item.start and (item.start.is_placeholder()):
+                        item.start.add_completion_suggestions()
+                else:
+                    self.create_touch_area(item, g.LEFT_ADD_SIBLING)
+                    self.create_touch_area(item, g.RIGHT_ADD_SIBLING)
+
 
 
     # ### Flashing symbols ################################################################

@@ -7,7 +7,15 @@ from kataja.utils import print_transform
 from kataja.ui.DrawnIconEngine import DrawnIconEngine
 import kataja.globals as g
 
-
+def make_label(text, parent=None, layout=None, tooltip='', buddy=None, palette=None):
+    label = QtWidgets.QLabel(text, parent=parent)
+    label.setPalette(palette)
+    label.setFont(qt_prefs.font(g.UI_FONT))
+    label.setBuddy(buddy)
+    label.setStatusTip(tooltip)
+    label.setToolTip(tooltip)
+    layout.addWidget(label)
+    return label
 
 class ConstituentEditEmbed(UIEmbed):
 
@@ -17,14 +25,50 @@ class ConstituentEditEmbed(UIEmbed):
         layout.addLayout(self.top_row_layout)
         layout.addSpacing(12)
         self.node = None
-        self.input_line_edit = QtWidgets.QLineEdit(self)
+        hlayout = QtWidgets.QHBoxLayout()
+        ui_p = QtGui.QPalette()
+        ui_p.setColor(QtGui.QPalette.Text, ctrl.cm.ui())
+
+        self.alias_edit = QtWidgets.QLineEdit(self)
         f = QtGui.QFont(qt_prefs.font(g.MAIN_FONT))
         f.setPointSize(f.pointSize() * 2)
+        tt = "non-functional readable label of the constituent"
+        self.alias_edit.setFont(f)
+        self.alias_edit.setToolTip(tt)
+        self.alias_edit.setStatusTip(tt)
+        hlayout.addWidget(self.alias_edit)
+        self.alias_label = make_label('Alias', self, hlayout, tt, self.alias_edit, ui_p)
+        layout.addLayout(hlayout)
+
+        hlayout = QtWidgets.QHBoxLayout()
+        self.input_line_edit = QtWidgets.QLineEdit(self)
         self.input_line_edit.setFont(f)
-        layout.addWidget(self.input_line_edit)
+        tt = "Label of the constituent (functional identifier)"
+        self.input_line_edit.setToolTip(tt)
+        self.input_line_edit.setStatusTip(tt)
+        hlayout.addWidget(self.input_line_edit)
+        self.label_label = make_label('Label', self, hlayout, tt, self.input_line_edit, ui_p)
+        layout.addLayout(hlayout)
+
+        fg = QtGui.QFont(qt_prefs.font(g.ITALIC_FONT))
+        fg.setPointSize(f.pointSize() * 2)
+
+        hlayout = QtWidgets.QHBoxLayout()
+        self.gloss_edit = QtWidgets.QLineEdit(self)
+        self.gloss_edit.setFont(fg)
+        tt = "A translation of the word"
+        self.gloss_edit.setToolTip(tt)
+        self.gloss_edit.setStatusTip(tt)
+        hlayout.addWidget(self.gloss_edit)
+        self.gloss_label = make_label('Gloss', self, hlayout, tt, self.gloss_edit, ui_p)
+        layout.addLayout(hlayout)
+
+
+
         self.enter_button = QtWidgets.QPushButton("↩") # U+21A9 &#8617;
         self.enter_button.setMaximumWidth(20)
         ui_manager.connect_element_to_action(self.enter_button, 'edit_constituent_finished')
+        layout.addWidget(self.enter_button)
         self.setLayout(layout)
         self.assumed_width = 200
         self.assumed_height = 117
@@ -40,14 +84,41 @@ class ConstituentEditEmbed(UIEmbed):
         if node:
             self.node = node
         if self.node:
+            scene_pos = self.node.pos()
+            UIEmbed.update_embed(self, scenePos=scene_pos)
             p = QtGui.QPalette()
             p.setColor(QtGui.QPalette.Text, self.node.color())
-            self.input_line_edit.setPalette(p)
+            ui_p = QtGui.QPalette()
+            ui_p.setColor(QtGui.QPalette.Text, ctrl.cm.ui())
             f = QtGui.QFont(self.node.font())
             f.setPointSize(f.pointSize() * 2)
+            fg = QtGui.QFont(qt_prefs.font(g.ITALIC_FONT))
+            fg.setPointSize(fg.pointSize() * 2)
+            pg = QtGui.QPalette()
+            gpc = ctrl.forest.settings.node_settings(g.GLOSS_NODE, 'color')
+            pg.setColor(QtGui.QPalette.Text, ctrl.cm.get(gpc))
+
+            self.alias_edit.setFont(f)
+            self.alias_edit.setPalette(p)
+            self.alias_edit.setText(self.node.alias)
+            self.alias_label.setFont(qt_prefs.font(g.UI_FONT))
+            self.alias_label.setPalette(ui_p)
             self.input_line_edit.setFont(f)
-            self.input_line_edit.setText(str(self.node))
-            self.update_position()
+            self.input_line_edit.setPalette(p)
+            self.label_label.setFont(qt_prefs.font(g.UI_FONT))
+            self.label_label.setPalette(ui_p)
+            if self.node.syntactic_object:
+                label = self.node.syntactic_object.label
+            else:
+                label = ''
+            self.input_line_edit.setText(label)
+            self.gloss_edit.setFont(fg)
+            self.gloss_edit.setPalette(pg)
+            self.gloss_edit.setText(self.node.get_gloss_text())
+            self.gloss_label.setFont(qt_prefs.font(g.UI_FONT))
+            self.gloss_label.setPalette(ui_p)
+
+
 
     def mouseMoveEvent(self, event):
         self.move(self.mapToParent(event.pos()) - self._drag_diff)

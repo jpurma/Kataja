@@ -292,7 +292,9 @@ actions = {
     # Edit constituent
     'edit_constituent_finished': {
         'command': 'Apply changes',
-        'method': 'finish_constituent_edit'
+        'method': 'finish_constituent_edit',
+        'shortcut': 'Return',
+        'shortcut_context': 'parent_and_children'
     },
 
     # Generic keys ####

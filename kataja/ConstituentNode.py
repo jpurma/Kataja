@@ -1012,3 +1012,13 @@ class ConstituentNode(Node):
         Node.after_restore(self, changes)
         
 
+    # ### Suggestions for completing missing aspects (active for selected nodes) ######################################
+
+    def add_completion_suggestions(self):
+        """ Node has selected and if it is a placeholder or otherwise lacking, it may suggest an
+         option to add a proper node here.
+        """
+        if self.is_placeholder():
+            ctrl.ui.create_touch_area(self, g.TOUCH_ADD_CONSTITUENT)
+
+

@@ -260,8 +260,8 @@ class TouchArea(QtWidgets.QGraphicsItem):
         f.undo_manager.record('re-merge constituent')
         if isinstance(self.host, Edge):
             print('calling replace_node_with_merged_node from edge')
-            f.replace_node_with_merged_node(self.host.end, dropped_node, edge=self._align_left, merge_to_left=null,
-                                            merger_node_pos=null)
+            f.replace_node_with_merged_node(self.host.end, dropped_node, edge=self.host, merge_to_left=self._align_left,
+                                            merger_node_pos=None)
         else:
             print('calling replace_node_with_merged_node')
             f.replace_node_with_merged_node(self.host, dropped_node, None, merge_to_left=self._align_left,
@@ -284,7 +284,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
             edge = self.host
             node = self.host.end
         if self.type is g.TOUCH_ADD_CONSTITUENT:
-            node.start_editing()
+            node.open_embed()
         else:
             f.replace_node_with_merged_empty_node(node=node, edge=edge, merge_to_left=self._align_left,
                                               new_node_pos=self.end_point, merger_node_pos=self.start_point)
@@ -335,6 +335,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
         elif (not value) and self._hovering:
             self._hovering = False
             ctrl.remove_status(self.status_tip)
+        self.update()
 
     def hoverEnterEvent(self, event):
         """
@@ -375,16 +376,22 @@ class TouchArea(QtWidgets.QGraphicsItem):
             c = ctrl.cm.ui_tr()
         self.update_end_points()
         painter.setPen(c)
-
-        if self._fill_path:
-            painter.fillPath(self._path, c)
+        if self._has_tail:
+            if self._fill_path:
+                painter.fillPath(self._path, c)
+            else:
+                painter.drawPath(self._path)
+            if self._hovering:
+                painter.setBrush(ctrl.cm.paper())
+                painter.drawEllipse(self.end_point[0] - end_spot_size + 1, self.end_point[1] - end_spot_size + 1,
+                                    2 * end_spot_size, 2 * end_spot_size)
+                painter.drawLine(self.end_point[0] - 1, self.end_point[1] + 1, self.end_point[0] + 3, self.end_point[1] + 1)
+                painter.drawLine(self.end_point[0] + 1, self.end_point[1] - 1, self.end_point[0] + 1, self.end_point[1] + 3)
         else:
-            painter.drawPath(self._path)
-        if self._hovering:
-            #painter.setBrush(qt_prefs.no_brush)
             painter.setBrush(ctrl.cm.paper())
             painter.drawEllipse(self.end_point[0] - end_spot_size + 1, self.end_point[1] - end_spot_size + 1,
                                 2 * end_spot_size, 2 * end_spot_size)
-            painter.drawLine(self.end_point[0] - 1, self.end_point[1] + 1, self.end_point[0] + 3, self.end_point[1] + 1)
-            painter.drawLine(self.end_point[0] + 1, self.end_point[1] - 1, self.end_point[0] + 1, self.end_point[1] + 3)
+            if self._hovering:
+                painter.drawLine(self.end_point[0] - 1, self.end_point[1] + 1, self.end_point[0] + 3, self.end_point[1] + 1)
+                painter.drawLine(self.end_point[0] + 1, self.end_point[1] - 1, self.end_point[0] + 1, self.end_point[1] + 3)
 

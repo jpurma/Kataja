@@ -616,6 +616,7 @@ class ActionMethods:
     ###### Constituent editing #################
     def finish_constituent_edit(self):
         print('Edited constituent!')
+        ctrl.ui.close_constituent_editing()
 
 
     ###### Keys #################

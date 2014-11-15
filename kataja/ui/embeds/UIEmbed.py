@@ -64,6 +64,14 @@ class UIEmbed(QtWidgets.QWidget):
             x = view_pos.x()
             y = view_pos.y()
             p = 0
+
+            # Magnet placement:
+            # 1---2---3
+            # |       |
+            # 4       5
+            # |       |
+            # 6---7---8
+            #
             if x + w > vw:
                 if y + h > vh:
                     magnet = QtCore.QPoint(w, h), 8

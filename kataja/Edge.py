@@ -111,7 +111,6 @@ class Edge(QtWidgets.QGraphicsItem):
         self.draggable = not (self.start or self.end)
         self.clickable = False
         self._hovering = False
-        self.touch_areas = {}
         self.setZValue(10)
         self.status_tip = ""
         self.connect_end_points(start, end)
@@ -150,13 +149,6 @@ class Edge(QtWidgets.QGraphicsItem):
             if (args and args[0] == self.edge_type) or not args:
                 self.update_shape()
 
-    def get_touch_area(self, place):
-        """
-
-        :param place:
-        :return:
-        """
-        return self.touch_areas.get(place, None)
 
     def is_filled(self):
         return self._cached_shape_args['fill']
@@ -243,26 +235,6 @@ class Edge(QtWidgets.QGraphicsItem):
             self.end_point = (p.x(), p.y(), self.end_point[2])
         self.make_relative_vector()
 
-
-    def add_touch_area(self, touch_area):
-        """
-
-        :param touch_area:
-        :return: :raise:
-        """
-        if touch_area.type in self.touch_areas:
-            print('Touch area already exists. Someone is confused.')
-            raise Exception("Touch area exists already")
-        self.touch_areas[touch_area.type] = touch_area
-        return touch_area
-
-    def remove_touch_area(self, touch_area):
-        """
-        Forget about given TouchArea. Does not do anything about its scene presence, only cuts the association between
-        edge and TouchArea.
-        :param touch_area: TouchArea
-        """
-        del self.touch_areas[touch_area.type]
 
     #### Label for arrow etc. ##############################################
 
@@ -785,20 +757,22 @@ class Edge(QtWidgets.QGraphicsItem):
             self._visible = False
             self.hide()
             ctrl.main.ui_manager.remove_control_points(self)
-            for touch_area in self.touch_areas.values():
-                touch_area.hide()
         elif (not v) and visible:
             self._visible = True
             self.show()
             if ctrl.is_selected(self):
                 ctrl.main.ui_manager.add_control_points(self)
-            for touch_area in self.touch_areas.values():
-                touch_area.show()
         else:
             self._visible = visible
 
     def can_be_disconnected(self):
         return True
+
+    def allow_orphan_ends(self):
+        return self.edge_type is g.ARROW or self.edge_type is g.DIVIDER
+
+    def has_orphan_ends(self):
+        return (self.end and (self.end.is_placeholder())) or (self.start and (self.start.is_placeholder()))
 
     def refresh_selection_status(self, selected):
         """
@@ -807,12 +781,13 @@ class Edge(QtWidgets.QGraphicsItem):
         """
         ui = ctrl.main.ui_manager  # @UndefinedVariable
         if selected:
-            ui.add_control_points(self)
-            if self.use_labels():
-                if not self._label_item:
-                    self._label_item = EdgeLabel('', self, placeholder=True)
-                    self.update_label_pos()
-                self._label_item.selected = True
+            if self.allow_orphan_ends() or not self.has_orphan_ends():
+                ui.add_control_points(self)
+                if self.use_labels():
+                    if not self._label_item:
+                        self._label_item = EdgeLabel('', self, placeholder=True)
+                        self.update_label_pos()
+                    self._label_item.selected = True
             ui.add_buttons_for_edge(self)
         else:
             ui.remove_control_points(self)
