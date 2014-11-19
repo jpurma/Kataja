@@ -527,26 +527,10 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :param selected:
         """
         if not selected:
-            self.remove_completion_suggestions()
             self.setZValue(10)
         else:
             self.setZValue(200)
         self.update()
-
-    # ### Suggestions for completing missing aspects (active for selected nodes) ######################################
-
-    def add_completion_suggestions(self):
-        """ Node has selected and if it is a placeholder or otherwise lacking, it may suggest an
-         option to add a proper node here.
-        """
-        pass
-
-    def remove_completion_suggestions(self):
-        """
-
-
-        """
-        ctrl.ui.remove_touch_areas_for(self)
 
     # ### MOUSE - kataja ########################################################
 
@@ -584,7 +568,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             self.open_embed()
         else:
             ctrl.select(self)
-            self.add_completion_suggestions()
+            ctrl.ui.add_completion_suggestions(self)
 
     # def drag(self, event):
     # """ Drags also elements that are counted to be involved: features, children etc """

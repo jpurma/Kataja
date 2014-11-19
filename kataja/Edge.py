@@ -779,18 +779,14 @@ class Edge(QtWidgets.QGraphicsItem):
 
         :param selected:
         """
-        ui = ctrl.main.ui_manager  # @UndefinedVariable
         if selected:
             if self.allow_orphan_ends() or not self.has_orphan_ends():
-                ui.add_control_points(self)
                 if self.use_labels():
                     if not self._label_item:
                         self._label_item = EdgeLabel('', self, placeholder=True)
                         self.update_label_pos()
                     self._label_item.selected = True
-            ui.add_buttons_for_edge(self)
         else:
-            ui.remove_control_points(self)
             if self._label_item:
                 if self._label_item.placeholder:
                     scene = self.scene()
@@ -799,7 +795,6 @@ class Edge(QtWidgets.QGraphicsItem):
                     self._label_item = None
                 else:
                     self._label_item.selected = False
-            ui.remove_buttons_for_edge(self)
         self.update()
 
     def boundingRect(self):

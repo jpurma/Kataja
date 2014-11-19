@@ -63,7 +63,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
         self._path = None
         self.start_point = 0, 0
         self.end_point = 0, 0
-        self.setZValue(20)
+        self.setZValue(200)
         self.type = type
         # Drawing flags defaults
         self._align_left = False

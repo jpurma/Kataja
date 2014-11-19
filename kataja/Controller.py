@@ -231,7 +231,7 @@ class Controller:
         for obj in olds:
             obj.refresh_selection_status(False)
         if update_ui:
-            self.main.ui_manager.update_selections(self.selected)
+            self.main.ui_manager.update_selections(self.selected, olds)
 
     def select(self, obj):
         """
@@ -240,12 +240,13 @@ class Controller:
         """
         #if hasattr(obj, 'info_dump'):
         #    obj.info_dump()
+        old_selected = list(self.selected)
         if self.selected:
             self.deselect_objects(update_ui=False)
         self.selected = [obj]
         self.add_message('selected %s' % str(obj))
         obj.refresh_selection_status(True)
-        self.main.ui_manager.update_selections(self.selected)
+        self.main.ui_manager.update_selections(self.selected, old_selected)
 
     def add_to_selection(self, obj):
         """
@@ -266,7 +267,7 @@ class Controller:
         if obj in self.selected:
             self.selected.remove(obj)
             obj.refresh_selection_status(False)
-            self.main.ui_manager.update_selections(self.selected)
+            self.main.ui_manager.update_selections(self.selected, [obj])
 
     # ******** /selection *******
 

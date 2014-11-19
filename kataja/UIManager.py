@@ -289,7 +289,7 @@ class UIManager:
         if self._new_element_embed:
             self._new_element_embed.update_color()
 
-    def update_selections(self, selection):
+    def update_selections(self, selected, deselected=None):
         """ Many UI elements change mode depending on if object of specific type is selected
 
 
@@ -302,6 +302,15 @@ class UIManager:
         if lop:
             lop.update_panel()
 
+        if deselected:
+            for item in deselected:
+                self.update_touch_areas_for(item, False)
+                self.update_control_points_for(item, False)
+                self.update_overlay_buttons_for(item, False)
+        for item in selected:
+            self.update_touch_areas_for(item, True)
+            self.update_control_points_for(item, True)
+            self.update_overlay_buttons_for(item, True)
         self.update_touch_areas()
 
 
@@ -667,6 +676,16 @@ class UIManager:
         """
         self.remove_touch_areas()
         for item in ctrl.get_all_selected():
+            self.update_touch_areas_for(item, True)
+
+
+    def update_touch_areas_for(self, item, selected=True):
+        """
+
+        :param item: object to update
+        :param selected: is item being selected or deselected
+        """
+        if selected:
             if isinstance(item, ConstituentNode):
                 if item.is_root_node():
                     self.create_touch_area(item, g.LEFT_ADD_ROOT)
@@ -677,12 +696,33 @@ class UIManager:
             elif isinstance(item, Edge) and item.edge_type == g.CONSTITUENT_EDGE:
                 if item.has_orphan_ends():
                     if item.end and (item.end.is_placeholder()):
-                        item.end.add_completion_suggestions()
+                        self.add_completion_suggestions(item.end)
                     if item.start and (item.start.is_placeholder()):
-                        item.start.add_completion_suggestions()
+                        self.add_completion_suggestions(item.start)
                 else:
                     self.create_touch_area(item, g.LEFT_ADD_SIBLING)
                     self.create_touch_area(item, g.RIGHT_ADD_SIBLING)
+        else:
+            self.remove_touch_areas_for(item)
+
+
+
+    def add_completion_suggestions(self, node):
+        """ Node has selected and if it is a placeholder or otherwise lacking, it may suggest an
+         option to add a proper node here.
+        :param node: any node
+        :return:
+        """
+        if node.is_placeholder():
+            self.create_touch_area(node, g.TOUCH_ADD_CONSTITUENT)
+
+    def remove_completion_suggestins(self, node):
+        """ Completion suggestions may be there even if the node is complete, as it can be completed
+        after it has been selected.
+        :param node: any node
+        :return:
+        """
+        self.remove_touch_areas_for(node)
 
 
 
@@ -907,24 +947,25 @@ class UIManager:
     # ### Edge buttons ############################
     def add_buttons_for_edge(self, edge):
         adjust = QtCore.QPointF(19, 12)
-
         if edge.start and not edge.start.is_placeholder():
-            button = OverlayButton(qt_prefs.cut_icon, edge, 'start_cut', 'Disconnect from node', parent=self.main.graph_view)
-            p = self.main.graph_view.mapFromScene(QtCore.QPointF(edge.start_point[0], edge.start_point[1])) - adjust
-            button.move(p.toPoint())
-            self.connect_element_to_action(button, 'disconnect_edge')
-            button.show()
             key = edge.save_key + "_cut_start"
-            self._overlay_buttons[key] = button
+            if key not in self._overlay_buttons:
+                button = OverlayButton(qt_prefs.cut_icon, edge, 'start_cut', 'Disconnect from node', parent=self.main.graph_view)
+                p = self.main.graph_view.mapFromScene(QtCore.QPointF(edge.start_point[0], edge.start_point[1])) - adjust
+                button.move(p.toPoint())
+                self.connect_element_to_action(button, 'disconnect_edge')
+                button.show()
+                self._overlay_buttons[key] = button
 
         if edge.end and not edge.end.is_placeholder():
-            button = OverlayButton(qt_prefs.cut_icon, edge, 'end_cut', 'Disconnect from node', parent=self.main.graph_view)
-            p = self.main.graph_view.mapFromScene(QtCore.QPointF(edge.end_point[0], edge.end_point[1])) - adjust
-            button.move(p.toPoint())
-            self.connect_element_to_action(button, 'disconnect_edge')
-            button.show()
             key = edge.save_key + "_cut_end"
-            self._overlay_buttons[key] = button
+            if key not in self._overlay_buttons:
+                button = OverlayButton(qt_prefs.cut_icon, edge, 'end_cut', 'Disconnect from node', parent=self.main.graph_view)
+                p = self.main.graph_view.mapFromScene(QtCore.QPointF(edge.end_point[0], edge.end_point[1])) - adjust
+                button.move(p.toPoint())
+                self.connect_element_to_action(button, 'disconnect_edge')
+                button.show()
+                self._overlay_buttons[key] = button
 
     def remove_buttons_for_edge(self, edge):
         for end in ["_cut_start", "_cut_end"]:
@@ -943,6 +984,16 @@ class UIManager:
         if end:
             end.update_position()
 
+    def update_overlay_buttons_for(self, item, selected):
+        if isinstance(item, Edge):
+            if selected:
+                self.add_buttons_for_edge(item)
+            else:
+                self.remove_buttons_for_edge(item)
+
+
+
+
 
     # ### Control points ####################################################################
 
@@ -955,12 +1006,12 @@ class UIManager:
             self.add_ui(cp)
             self._control_points.append(cp)
             cp.update_position()
-        if (not edge.start) or edge.start.is_placeholder():
+        if (not edge.start): # or edge.start.is_placeholder():
             cp = ControlPoint(edge, role=g.START_POINT)
             self.add_ui(cp)
             self._control_points.append(cp)
             cp.update_position()
-        if (not edge.end) or edge.end.is_placeholder():
+        if (not edge.end): # or edge.end.is_placeholder():
             cp = ControlPoint(edge, role=g.END_POINT)
             self.add_ui(cp)
             self._control_points.append(cp)
@@ -969,10 +1020,15 @@ class UIManager:
             cp = ControlPoint(edge, role=g.LABEL_START)
             self.add_ui(cp)
             self._control_points.append(cp)
-            #cp = ControlPoint(edge, role='label_end')
-            #self.add_ui(cp)
-            #self._control_points.append(cp)
 
+
+    def update_control_points_for(self, item, selected=True):
+        if not isinstance(item, Edge):
+            return
+        if selected:
+            self.add_control_points(item)
+        else:
+            self.remove_control_points(item)
 
     def update_control_point_positions(self):
         """ Update positions for all control points without doing any checks to see if they are legit or used.
@@ -999,8 +1055,6 @@ class UIManager:
         """
         :param edge:
         """
-        #edges = [x.host_edge for x in self._control_points]
-        #if edge in edges:
         self.remove_control_points(edge)
         if ctrl.is_selected(edge):
             self.add_control_points(edge)
