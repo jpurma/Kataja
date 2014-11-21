@@ -867,10 +867,7 @@ class Edge(QtWidgets.QGraphicsItem):
             else:
                 ctrl.add_to_selection(self)
             return
-        if ctrl.is_selected(self):
-            pass
-            # ctrl.deselect_objects()
-        else:
+        if not ctrl.is_selected(self):
             ctrl.select(self)
 
     def asymmetric(self):

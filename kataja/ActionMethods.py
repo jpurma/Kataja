@@ -603,15 +603,22 @@ class ActionMethods:
         if not edge:
             return
         # Then do the cutting
-        if role is 'start_cut' and edge.edge_type is g.CONSTITUENT_EDGE:
-            ctrl.forest.disconnect_edge_start(edge)
-            ctrl.forest.add_placeholder_to_edge_start(edge)
-        elif role is 'end_cut' and edge.edge_type is g.CONSTITUENT_EDGE:
+        if role is 'start_cut':
+            if edge.edge_type is g.CONSTITUENT_EDGE:
+                old_start = edge.start
+                ctrl.forest.disconnect_edge_start(edge)
+                ctrl.forest.fix_stubs_for(old_start)
+                ctrl.forest.add_placeholder_to_edge_start(edge)
+            else:
+                ctrl.forest.disconnect_edge_start(edge)
+
+        elif role is 'end_cut':
             ctrl.forest.disconnect_edge_end(edge)
-            ctrl.forest.add_placeholder_to_edge_end(edge)
+            if edge.edge_type is g.CONSTITUENT_EDGE:
+                ctrl.forest.add_placeholder_to_edge_end(edge)
         else:
             raise ForestError('Trying to disconnect node from unknown edge or unhandled cutting position')
-        ctrl.deselect_objects()
+        ctrl.ui.update_selections()
 
     ###### Constituent editing #################
     def finish_constituent_edit(self):

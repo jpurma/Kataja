@@ -687,10 +687,3 @@ class KatajaMain(QtWidgets.QMainWindow):
 # return False
 #        else:
 #            return self.scribbleArea.saveImage(fileName, fileFormat)
-
-if __name__ == "__main__":
-    app = QtWidgets.QApplication(sys.argv)
-    window = KatajaMain(app, sys.argv)
-    window.show()
-
-    sys.exit(app.exec_())

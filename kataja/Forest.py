@@ -885,6 +885,39 @@ class Forest:
         ctrl.ui.reset_control_points(self)
         edge.update_shape()
 
+    def fix_stubs_for(self, node):
+        """ Make sure that node (ConstituentNode) has binary children. Creates stubs if needed, and removes stubs if
+        node has two empty stubs.
+        :param node: node to be fixed (ignore anything but constituent nodes)
+        :return: None
+        """
+        if not isinstance(node, ConstituentNode):
+            return
+        left = node.left()
+        right = node.right()
+
+        if not (left or right):
+            # nothing to do, doesn't have children
+            return
+        elif not left:
+            # we are missing the stub to left here
+            placeholder = self.create_placeholder_node(node.get_current_position())
+            self._connect_node(node, placeholder, direction=LEFT)
+
+        elif not right:
+            # we are missing the stub to right here
+            placeholder = self.create_placeholder_node(node.get_current_position())
+            self._connect_node(node, placeholder, direction=RIGHT)
+
+        elif left.is_placeholder() and right.is_placeholder():
+            # both are placeholders, so this node doesn't need to have children at all. remove stubs.
+            left_edge = node.get_edge_to(left)
+            self.delete_edge(left_edge)
+            self.delete_node(left)
+            right_edge = node.get_edge_to(right)
+            self.delete_edge(right_edge)
+            self.delete_node(right)
+
 
     def add_placeholder_to_edge_start(self, edge):
         forest()
@@ -1189,7 +1222,7 @@ class Forest:
         self.delete_node(node)
         return
 
-    def undoable_delete_edge(self, R):
+    def undoable_delete_edge(self, edge):
         # add things to undo stack
         """
 
@@ -1199,24 +1232,24 @@ class Forest:
         forest()
         self.undo_manager.record('delete edge')
         #########
-        if R.start:
-            R.start.edges_down.remove(R)
-            if R.start.is_empty_node():
-                self.delete_node(R.start)
+        if edge.start:
+            edge.start.edges_down.remove(edge)
+            if edge.start.is_empty_node():
+                self.delete_node(edge.start)
             elif prefs.default_binary_branching:
-                if not R.start.left():
-                    stub = self.create_empty_node(pos=to_tuple(R.start.pos()), root=False)
-                    R.start._connect_node(child=stub, direction='left')
-                elif not R.start.right():
-                    stub = self.create_empty_node(pos=to_tuple(R.start.pos()), root=False)
-                    R.start._connect_node(child=stub, direction='right')
-        if R.end:
-            R.end.edges_up.remove(R)
-            if not R.end.edges_up:
-                if R.end.is_empty_node():
-                    self.delete_node(R.end)
-        ctrl.remove_from_selection(R)
-        self.delete_edge(R)
+                if not edge.start.left():
+                    stub = self.create_empty_node(pos=to_tuple(edge.start.pos()), root=False)
+                    edge.start._connect_node(child=stub, direction='left')
+                elif not edge.start.right():
+                    stub = self.create_empty_node(pos=to_tuple(edge.start.pos()), root=False)
+                    edge.start._connect_node(child=stub, direction='right')
+        if edge.end:
+            edge.end.edges_up.remove(edge)
+            if not edge.end.edges_up:
+                if edge.end.is_empty_node():
+                    self.delete_node(edge.end)
+        ctrl.remove_from_selection(edge)
+        self.delete_edge(edge)
         return
 
 
@@ -1427,16 +1460,16 @@ class Forest:
         for root in self.roots:
             if excluded and root in excluded:
                 continue
-            um.create_touch_area(root, g.LEFT_ADD_ROOT, for_dragging=True)
-            um.create_touch_area(root, g.RIGHT_ADD_ROOT, for_dragging=True)
+            um.create_touch_area(root, g.LEFT_ADD_ROOT)
+            um.create_touch_area(root, g.RIGHT_ADD_ROOT)
         for edge in self.get_constituent_edges():
             if excluded and (edge.start in excluded or edge.end in excluded):
                 continue
-            um.create_touch_area(edge, g.LEFT_ADD_SIBLING, for_dragging=True)
-            um.create_touch_area(edge, g.RIGHT_ADD_SIBLING, for_dragging=True)
+            um.create_touch_area(edge, g.LEFT_ADD_SIBLING)
+            um.create_touch_area(edge, g.RIGHT_ADD_SIBLING)
         for node in self.get_constituent_nodes():
             if node.is_placeholder():
-                um.create_touch_area(node, g.TOUCH_ADD_CONSTITUENT, for_dragging=True)
+                um.create_touch_area(node, g.TOUCH_ADD_CONSTITUENT)
 
 
     ######### Utility functions ###############################

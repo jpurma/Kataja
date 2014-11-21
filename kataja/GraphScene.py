@@ -597,6 +597,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 recipient = self.get_drop_recipient(pressed, event)  # @UndefinedVariable
                 pressed.drop_to(x, y, recipient=recipient)
                 self.kill_dragging()
+                ctrl.ui.update_selections() # drag operation may have changed visible affordances
             else:
                 if pressed.clickable:
                     success = pressed.click(event)

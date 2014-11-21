@@ -50,7 +50,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
         """
         return 'touch_area_%s_%s' % (type, host.save_key)
 
-    def __init__(self, host, type, drag_mode=False):
+    def __init__(self, host, type):
         """
 
         :param ConstituentNode host:
@@ -59,10 +59,11 @@ class TouchArea(QtWidgets.QGraphicsItem):
         """
 
         QtWidgets.QGraphicsItem.__init__(self)
+        self._dragging = False
         self.host = host
         self._path = None
-        self.start_point = 0, 0
-        self.end_point = 0, 0
+        self.start_point = None
+        self.end_point = None
         self.setZValue(200)
         self.type = type
         # Drawing flags defaults
@@ -89,15 +90,14 @@ class TouchArea(QtWidgets.QGraphicsItem):
             self.status_tip = "Unknown touch area???"
         self.selectable = False
         self.focusable = True
-        self.draggable = False
+        self.draggable = True
         self.clickable = True
         self._visible = True
         self._hovering = False
         self._drag_hint = False
-        self.drag_mode = drag_mode
         self.key = TouchArea.create_key(host, type)
         self.update_end_points()
-        self.setCursor(QtCore.Qt.ArrowCursor)
+        self.setCursor(QtCore.Qt.PointingHandCursor)
         self.setAcceptHoverEvents(True)
         self._fill_path = False
         self.setToolTip(self.status_tip)
@@ -157,17 +157,29 @@ class TouchArea(QtWidgets.QGraphicsItem):
 
 
         """
-        self.update_end_points()
+        pass
+        #if not self in ctrl.dragged:
+        #    self.update_end_points()
+
+    def drag(self, event):
+        self._dragging = True
+        self.update_end_points(end_point=to_tuple(event.scenePos()))
+
+    def drop_to(self, x, y, recipient=None):
+        self._dragging = False
+        pass
 
     # edge.py
-    def update_end_points(self):
+    def update_end_points(self, end_point=None):
         # start
         """
 
-
+        :param end_point: End point can be given or it can be calculated.
         """
         if not self._has_tail:
-            if isinstance(self.host, Edge):
+            if end_point:
+                self.end_point = end_point
+            elif isinstance(self.host, Edge):
                 self.end_point = (self.host.end_point[0], self.host.end_point[1])
             elif hasattr(self.host, 'get_current_position'):
                 self.end_point = (self.host.get_current_position()[0], self.host.get_current_position()[1])
@@ -182,27 +194,32 @@ class TouchArea(QtWidgets.QGraphicsItem):
             path_settings = ctrl.forest.settings.edge_shape_settings(rel.edge_type)
             sx, sy = to_tuple(rel.get_point_at(0.5))
             self.start_point = sx, sy
-            d = rel.get_angle_at(0.5)
-            if self._align_left:
-                d -= 75
+            if end_point:
+                self.end_point = end_point
             else:
-                d += 75
-            angle = math.radians(-d)
-            dx = math.cos(angle)
-            dy = math.sin(angle)
-            l = 30
-            x = sx + dx * l
-            y = sy + dy * l
-            self.end_point = x, y
-            use_middle_point = False
+                d = rel.get_angle_at(0.5)
+                if self._align_left:
+                    d -= 75
+                else:
+                    d += 75
+                angle = math.radians(-d)
+                dx = math.cos(angle)
+                dy = math.sin(angle)
+                l = 30
+                x = sx + dx * l
+                y = sy + dy * l
+                self.end_point = x, y
         elif self._shape_has_joint:
             path_settings = ctrl.forest.settings.edge_shape_settings(g.CONSTITUENT_EDGE)
             sx, sy, dummy = self.host.magnet(2)
             self.start_point = sx, sy
-            if self._align_left:
-                self.end_point = sx - max((prefs.edge_width * 2, self.host.width)), sy
+            if end_point:
+                self.end_point = end_point
             else:
-                self.end_point = sx + max((prefs.edge_width * 2, self.host.width)), sy
+                if self._align_left:
+                    self.end_point = sx - max((prefs.edge_width * 2, self.host.width)), sy
+                else:
+                    self.end_point = sx + max((prefs.edge_width * 2, self.host.width)), sy
             use_middle_point = True
             line_middle_point = sx - (0.5 * (sx - self.end_point[0])), sy - 10
         else:
@@ -275,6 +292,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
         Creates a new node, edge to host depends on which merge area was clicked
          """
         f = self.host.forest
+        self._dragging = False
         if self._drag_hint:
             return False
         f.undo_manager.record('add constituent')
@@ -374,7 +392,6 @@ class TouchArea(QtWidgets.QGraphicsItem):
             c = ctrl.cm.selection()
         else:
             c = ctrl.cm.ui_tr()
-        self.update_end_points()
         painter.setPen(c)
         if self._has_tail:
             if self._fill_path:

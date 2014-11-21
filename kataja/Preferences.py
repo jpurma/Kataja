@@ -141,8 +141,9 @@ class Preferences(object):
 
         my_path = Path(__file__).parts
         if sys.platform == 'darwin' and 'Kataja.app' in my_path:
+            print(my_path)
             i = my_path.index('Kataja.app')
-            self.resources_path = str(Path(*list(my_path[:i]) + ['Contents', 'Resources', 'resources', '']))
+            self.resources_path = str(Path(*list(my_path[:i + 1]) + ['Contents', 'Resources', 'resources', ''])) + '/'
             self.default_userspace_path = '~/'
             self.preferences_path = '~/Library/Preferences/Kataja.plist'
             self.in_app = True

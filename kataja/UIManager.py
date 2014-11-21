@@ -289,11 +289,13 @@ class UIManager:
         if self._new_element_embed:
             self._new_element_embed.update_color()
 
-    def update_selections(self, selected, deselected=None):
+    def update_selections(self, selected=None, deselected=None):
         """ Many UI elements change mode depending on if object of specific type is selected
 
 
         """
+        if selected is None:
+            selected = ctrl.get_all_selected()
         lp = self.get_panel(g.DRAWING)
         if lp:
             lp.selected_objects_changed()
@@ -350,6 +352,8 @@ class UIManager:
             symbol.update_position()
         for button in self._overlay_buttons.values():
             button.update_position()
+        for touch_area in self.touch_areas:
+            touch_area.update_position()
         if self._new_element_marker:
             self._new_element_marker.update_position()
         if self._constituent_edit_embed:
@@ -360,9 +364,7 @@ class UIManager:
 
         :param item:
         """
-        if hasattr(item, 'touch_areas'):
-            for touch_area in list(item.touch_areas.values()):
-                self.delete_touch_area(touch_area)
+        self.remove_touch_areas_for(item)
         self.remove_control_points(item)
 
 
@@ -634,7 +636,7 @@ class UIManager:
     # ### Touch areas #####################################################################
 
 
-    def create_touch_area(self, host=None, type='', for_dragging=False):
+    def create_touch_area(self, host=None, type=''):
         """
 
         :param host:
@@ -642,7 +644,7 @@ class UIManager:
         :param for_dragging:
         :return:
         """
-        ta = TouchArea(host, type, for_dragging)
+        ta = TouchArea(host, type)
         self.touch_areas.add(ta)
         self.add_ui(ta)
         return ta
@@ -947,8 +949,8 @@ class UIManager:
     # ### Edge buttons ############################
     def add_buttons_for_edge(self, edge):
         adjust = QtCore.QPointF(19, 12)
+        key = edge.save_key + "_cut_start"
         if edge.start and not edge.start.is_placeholder():
-            key = edge.save_key + "_cut_start"
             if key not in self._overlay_buttons:
                 button = OverlayButton(qt_prefs.cut_icon, edge, 'start_cut', 'Disconnect from node', parent=self.main.graph_view)
                 p = self.main.graph_view.mapFromScene(QtCore.QPointF(edge.start_point[0], edge.start_point[1])) - adjust
@@ -956,9 +958,14 @@ class UIManager:
                 self.connect_element_to_action(button, 'disconnect_edge')
                 button.show()
                 self._overlay_buttons[key] = button
-
+        else:
+            if key in self._overlay_buttons:
+                button = self._overlay_buttons[key]
+                button.close()
+                button.hide()
+                del self._overlay_buttons[key]
+        key = edge.save_key + "_cut_end"
         if edge.end and not edge.end.is_placeholder():
-            key = edge.save_key + "_cut_end"
             if key not in self._overlay_buttons:
                 button = OverlayButton(qt_prefs.cut_icon, edge, 'end_cut', 'Disconnect from node', parent=self.main.graph_view)
                 p = self.main.graph_view.mapFromScene(QtCore.QPointF(edge.end_point[0], edge.end_point[1])) - adjust
@@ -966,6 +973,12 @@ class UIManager:
                 self.connect_element_to_action(button, 'disconnect_edge')
                 button.show()
                 self._overlay_buttons[key] = button
+        else:
+            if key in self._overlay_buttons:
+                button = self._overlay_buttons[key]
+                button.close()
+                button.hide()
+                del self._overlay_buttons[key]
 
     def remove_buttons_for_edge(self, edge):
         for end in ["_cut_start", "_cut_end"]:
