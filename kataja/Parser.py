@@ -214,10 +214,10 @@ class Parser:
         node = self.forest.create_node_from_constituent(constituent, result_of_merge=True)
         return node
 
-
-    def _merge_trees(self, node, left, right):
-        if self.forest:
-            self.forest.update_roots()
+    # not used
+    #def _merge_trees(self, node, left, right):
+    #    if self.forest:
+    #        self.forest.update_roots()
 
     # ## Bottom-up Parser, does not handle trees, but strings of words
 
@@ -292,9 +292,9 @@ class Parser:
                     topmost_node.alias = tid
                 left = self.forest.get_node(topmost_C.left)
                 right = self.forest.get_node(topmost_C.right)
+                # These are not implemented anymore:
                 self.forest.mirror_syntactic_edges(topmost_node, left)
                 self.forest.mirror_syntactic_edges(topmost_node, right)
-                self.forest.update_roots()
                 # self._merge_trees(node, left, right)
             else:
                 topmost_C = C
@@ -944,9 +944,7 @@ class BottomUpParser(Parser):
             return s, constituent
 
         remainder, constituent = bottom_up_bracket_parser(list(stream))
-        parser(string)
-        parser(constituent)
-        parser(self._definitions)
+        return remainder, constituent
 
     def after_restore(self, values=None):
         """

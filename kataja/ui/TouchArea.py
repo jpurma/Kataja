@@ -167,7 +167,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
 
     def drop_to(self, x, y, recipient=None):
         self._dragging = False
-        pass
+        print(x,y, recipient)
 
     # edge.py
     def update_end_points(self, end_point=None):

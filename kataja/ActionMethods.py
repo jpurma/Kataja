@@ -558,12 +558,15 @@ class ActionMethods:
             text = ctrl.ui.get_new_element_text()
             p1, p2 = ctrl.ui.get_new_element_embed_points()
             # we can add a test if line p1 - p2 crosses several edges, then it can be a divider
+            #Fixme Use screen coordinates instead, as if zoomed out, the default line can already be long enough. oops.
             if (p1 - p2).manhattanLength() > 20 and not text.startswith('['):
                 # It's an Arrow!
                 self.create_new_arrow()
                 return
             else:
-                print('do ', type)
+                print('trying to parse ', text)
+                node = ctrl.forest.create_node_from_string(text)
+                print(node)
         ctrl.ui.close_new_element_embed()
 
     def create_new_arrow(self):
@@ -605,17 +608,17 @@ class ActionMethods:
         # Then do the cutting
         if role is 'start_cut':
             if edge.edge_type is g.CONSTITUENT_EDGE:
-                old_start = edge.start
-                ctrl.forest.disconnect_edge_start(edge)
-                ctrl.forest.fix_stubs_for(old_start)
-                ctrl.forest.add_placeholder_to_edge_start(edge)
+                raise ForestError("Trying edge disconnect at the start of constituent edge")
             else:
                 ctrl.forest.disconnect_edge_start(edge)
 
         elif role is 'end_cut':
-            ctrl.forest.disconnect_edge_end(edge)
             if edge.edge_type is g.CONSTITUENT_EDGE:
-                ctrl.forest.add_placeholder_to_edge_end(edge)
+                old_start = edge.start
+                ctrl.forest._disconnect_node(first=old_start, second=edge.end, edge=edge)
+                ctrl.forest.fix_stubs_for(old_start)
+            else:
+                ctrl.forest.disconnect_edge_end(edge)
         else:
             raise ForestError('Trying to disconnect node from unknown edge or unhandled cutting position')
         ctrl.ui.update_selections()

@@ -343,7 +343,6 @@ class Forest:
         that every edge of every type that should exist is there too.
         Then check that there isn't any objects that shouldn't be there """
         forest()
-        self.update_roots()
         for root in self.roots:
             root.update_visibility()
         self.bracket_manager.update_brackets()
@@ -429,15 +428,38 @@ class Forest:
         if comment in self._comments:
             self._comments.remove(comment)
 
-    #@time_me
-    def update_roots(self):
-        """ Make sure that list of roots is up to date """
-        forest()
-        self.roots = []
-        for node in self.nodes.values():
-            if isinstance(node, ConstituentNode) and not node.edges_up:
-                self.roots.append(node)
 
+    def remove_intertree_relations(self):
+        """ After disconnections there may be multidominated nodes whose parents are in different trees.
+        In most of syntaxes these shouldn't happen: there is no disconnection activity to create such things.
+
+        When user disconnects a node, it is to work with branches separately: a multidominated node should get its own
+        copy.
+
+        However there is a remote possibility for creating them by merging non-root node from another tree to
+        construction, so the option should be there.
+
+        :return:
+        """
+
+    #@time_me
+
+    def update_root_status(self, node):
+        """ Check if a node should be listed as root nodes. Tries to maintain the order of trees:
+        new roots are appended to right. This is called by operations that may change the root status, but
+        there is no global way for updating all of the roots, as then the order of root list is lost.
+        :param node: root to check. Only ConstituentNodes can be roots
+        :return:
+        """
+        if not isinstance(node, ConstituentNode):
+            return
+        has_parents = bool([x for x in node.edges_up if x.edge_type is g.CONSTITUENT_EDGE])
+        if node in self.roots:
+            if has_parents:
+                self.roots.remove(node)
+        elif not has_parents:
+            self.roots.append(node)
+        print(self.roots)
 
     # not used
     def is_higher_in_tree(self, node_A, node_B):
@@ -538,6 +560,7 @@ class Forest:
         #    self.create_feature_node(node, feature)
         if self.visualization:
             self.visualization.reset_node(node)
+        self.update_root_status(node)
         return node
 
     def create_placeholder_node(self, pos):
@@ -646,9 +669,10 @@ class Forest:
         :param pos:
         """
         forest()
-        root_node = self._parser.parse(text)
-        self.add_to_scene(root_node)
-        self.update_roots()
+        node = self._parser.parse(text)
+        return node
+        #self.add_to_scene(root_node)
+        #self.update_root_status(root_node)
 
     # @time_me
     def create_tree_from_string(self, text, replace=False):
@@ -664,7 +688,6 @@ class Forest:
             self._gloss_text = text[5:].strip('{} ')
         parser_method = self._parser.detect_suitable_parser(text)
         parser_method(text)
-        self.update_roots()
         if self.settings.uses_multidomination():
             self.traces_to_multidomination()
         else:
@@ -756,7 +779,8 @@ class Forest:
         self.bracket_manager.remove_brackets(node)
         # -- dictionaries --
         del self.nodes[node.save_key]
-        self.update_roots()
+        if node in self.roots:
+            self.roots.remove(node)
         # -- scene --
         sc = node.scene()
         if sc:
@@ -768,19 +792,23 @@ class Forest:
         :param edge:
         """
         forest()
+        print("Deleting edge: ", edge)
         # -- connections to host nodes --
         start_node = edge.start
         end_node = edge.end
+        ctrl.remove_from_selection(edge)
         if start_node:
             if edge in start_node.edges_down:
                 start_node.edges_down.remove(edge)
             if edge in start_node.edges_up:  # shouldn't happen
                 start_node.edges_up.remove(edge)
+                self.update_root_status(start_node)
         if end_node:
             if edge in end_node.edges_down:  # shouldn't happen
                 end_node.edges_down.remove(edge)
             if edge in end_node.edges_up:
                 end_node.edges_up.remove(edge)
+                self.update_root_status(end_node)
         # -- ui elements --
         self.main.ui_manager.delete_ui_elements_for(edge)
         # -- dictionaries --
@@ -794,7 +822,10 @@ class Forest:
     def delete_item(self, item):
         forest()
         if isinstance(item, Edge):
+            start = item.start
             self.delete_edge(item)
+            if start:
+                self.fix_stubs_for(item.start)
         elif isinstance(item, Node):
             self.delete_node(item)
         # def remove_stored(self, item):
@@ -843,6 +874,7 @@ class Forest:
         if edge.end:
             ForestSyntax.disconnect_edge(edge)
             edge.end.edges_up.remove(edge)
+            self.update_root_status(edge.end)
         edge.connect_end_points(edge.start, new_end)
         edge.update_end_points()
         ForestSyntax.connect_edge(edge)
@@ -856,14 +888,20 @@ class Forest:
         if edge.end:
             ForestSyntax.disconnect_edge(edge)
             edge.end.edges_up.remove(edge)
+            self.update_root_status(edge.end)
         edge.connect_end_points(new_start, new_end)
         edge.update_end_points()
         ForestSyntax.connect_edge(edge)
         new_end.edges_up.append(edge)
+        self.update_root_status(new_end)
         new_start.edges_down.append(edge)
 
 
     def disconnect_edge_start(self, edge):
+        """ This shouldn't be done for ConstituentEdges. It leaves a problematic stub going up (nice rhyme)
+        :param edge:
+        :return:
+        """
         forest()
         if edge.start:
             ForestSyntax.disconnect_edge(edge)
@@ -879,6 +917,7 @@ class Forest:
         if edge.end:
             ForestSyntax.disconnect_edge(edge)
             edge.end.edges_up.remove(edge)
+            self.update_root_status(edge.end)
         edge.end = None
         edge.make_relative_vector()
         edge.update_end_points()
@@ -895,20 +934,31 @@ class Forest:
             return
         left = node.left()
         right = node.right()
+        print("Fixing stubs for ", node, left, right)
 
         if not (left or right):
             # nothing to do, doesn't have children
             return
         elif not left:
-            # we are missing the stub to left here
-            placeholder = self.create_placeholder_node(node.get_current_position())
-            self._connect_node(node, placeholder, direction=LEFT)
-
+            if right.is_placeholder():
+                right_edge = node.get_edge_to(right)
+                self.delete_edge(right_edge)
+                self.delete_node(right)
+            else:
+                # we are missing the stub to left here
+                print("Creating placeholder to LEFT")
+                placeholder = self.create_placeholder_node(node.get_current_position())
+                self._connect_node(node, placeholder, direction=LEFT)
         elif not right:
-            # we are missing the stub to right here
-            placeholder = self.create_placeholder_node(node.get_current_position())
-            self._connect_node(node, placeholder, direction=RIGHT)
-
+            if left.is_placeholder():
+                left_edge = node.get_edge_to(left)
+                self.delete_edge(left_edge)
+                self.delete_node(left)
+            else:
+                # we are missing the stub to right here
+                print("Creating placeholder to RIGHT")
+                placeholder = self.create_placeholder_node(node.get_current_position())
+                self._connect_node(node, placeholder, direction=RIGHT)
         elif left.is_placeholder() and right.is_placeholder():
             # both are placeholders, so this node doesn't need to have children at all. remove stubs.
             left_edge = node.get_edge_to(left)
@@ -1128,7 +1178,6 @@ class Forest:
                     self.delete_node(l)
             else:
                 self.delete_node(node)
-            self.update_roots()
             self.chain_manager.rebuild_chains()
             # self._fix_chains()
             self.traces_to_multidomination()
@@ -1296,8 +1345,8 @@ class Forest:
                 parent.right_bracket = self.create_bracket(host=parent, left=False)
         parent.update_label()
         child.update_label()
+        self.update_root_status(child)
         return new_edge
-
 
     def _disconnect_node(self, first=None, second=None, edge_type='', edge=None):
         """ Removes and deletes a edge between two nodes """
@@ -1308,9 +1357,11 @@ class Forest:
             if edge.start == first:
                 first.edges_down.remove(edge)
                 second.edges_up.remove(edge)
+                self.update_root_status(second)
             elif edge.end == first:
                 second.edges_down.remove(edge)
                 first.edges_up.remove(edge)
+                self.update_root_status(first)
             ForestSyntax.disconnect_edge(edge)
             self.delete_edge(edge)
         else:
@@ -1389,7 +1440,8 @@ class Forest:
         [N B] -> [[N x] B] (left == False)
         :param old_node:
         :param new_node:
-        :param edge:
+        :param edge: Give the edge from node to specific parent, if the replacement is supposed to happen in one place
+            only. Edge is the unique identifier for a node with multiple parents.
         :param merge_to_left:
         :param merger_node_pos:
         """
@@ -1411,7 +1463,6 @@ class Forest:
         if edge:
             forest('connecting merger to parent')
             self._connect_node(start_node, merger_node, direction=align)
-        self.update_roots()
 
     def create_merger_node(self, left=None, right=None, pos=None):
         """ Gives a merger node of two nodes. Doesn't try to fix their edges upwards
@@ -1427,7 +1478,6 @@ class Forest:
         merger_node = self.create_node_from_constituent(merger_const, pos=pos, result_of_merge=True, inherits_from=selecting_node)
         self._connect_node(parent=merger_node, child=left, direction=g.LEFT)
         self._connect_node(parent=merger_node, child=right, direction=g.RIGHT)
-        self.update_roots()
         return merger_node
 
 
@@ -1441,7 +1491,6 @@ class Forest:
             return
         new_c = ForestSyntax.constituent_copy(node)
         new_node = self.create_node_from_constituent(new_c, pos=node.get_current_position(), result_of_select=True)
-        self.update_roots()
         self.undo_manager.record("Copied %s" % node)
         self.main.add_message("Copied %s" % node)
         return new_node

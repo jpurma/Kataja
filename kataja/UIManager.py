@@ -949,21 +949,22 @@ class UIManager:
     # ### Edge buttons ############################
     def add_buttons_for_edge(self, edge):
         adjust = QtCore.QPointF(19, 12)
-        key = edge.save_key + "_cut_start"
-        if edge.start and not edge.start.is_placeholder():
-            if key not in self._overlay_buttons:
-                button = OverlayButton(qt_prefs.cut_icon, edge, 'start_cut', 'Disconnect from node', parent=self.main.graph_view)
-                p = self.main.graph_view.mapFromScene(QtCore.QPointF(edge.start_point[0], edge.start_point[1])) - adjust
-                button.move(p.toPoint())
-                self.connect_element_to_action(button, 'disconnect_edge')
-                button.show()
-                self._overlay_buttons[key] = button
-        else:
-            if key in self._overlay_buttons:
-                button = self._overlay_buttons[key]
-                button.close()
-                button.hide()
-                del self._overlay_buttons[key]
+        if edge.edge_type is not g.CONSTITUENT_EDGE:
+            key = edge.save_key + "_cut_start"
+            if edge.start and not edge.start.is_placeholder():
+                if key not in self._overlay_buttons:
+                    button = OverlayButton(qt_prefs.cut_icon, edge, 'start_cut', 'Disconnect from node', parent=self.main.graph_view)
+                    p = self.main.graph_view.mapFromScene(QtCore.QPointF(edge.start_point[0], edge.start_point[1])) - adjust
+                    button.move(p.toPoint())
+                    self.connect_element_to_action(button, 'disconnect_edge')
+                    button.show()
+                    self._overlay_buttons[key] = button
+            else:
+                if key in self._overlay_buttons:
+                    button = self._overlay_buttons[key]
+                    button.close()
+                    button.hide()
+                    del self._overlay_buttons[key]
         key = edge.save_key + "_cut_end"
         if edge.end and not edge.end.is_placeholder():
             if key not in self._overlay_buttons:

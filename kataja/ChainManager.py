@@ -221,7 +221,7 @@ class ChainManager:
         order_dict = {}
         for t, root in enumerate(self.forest.roots):
             for i, node in enumerate(self.forest.list_nodes(root)):
-                if node.get_index():
+                if hasattr(node, 'get_index') and node.get_index():
                     order_dict[node.save_key] = (t, i, node)
         ordered = list(order_dict.values())
         ordered.sort(reverse=True)
@@ -234,7 +234,6 @@ class ChainManager:
                 original = self.get_chain_head(node.get_index())
                 self.forest._replace_node(node, original)
                 self.forest.delete_node(node)
-        self.forest.update_roots()
 
     @time_me
     def multidomination_to_traces(self):
@@ -251,7 +250,6 @@ class ChainManager:
                 if node != head:
                     self.forest._replace_node(head, node, only_for_parent=parent)
         self.rebuild_chains()
-        self.forest.update_roots()
 
     def next_free_index(self):
         """

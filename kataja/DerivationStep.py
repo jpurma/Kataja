@@ -23,7 +23,7 @@
 # ############################################################################
 
 
-
+from kataja.singletons import ctrl
 
 # Thinking about undo system. It should be a common class Undoable inherited by everyone. It contains few methods: start_undoable_operation, add_undoable_field, finish_undoable_operation.
 # these all should operate on global dict, where each add_undoable_field would announce the item and the field.
@@ -73,13 +73,16 @@ class DerivationStep:
          them """
         snapshot = []
         done = set()
-        for node in root_node:
+        for node in ctrl.forest.list_nodes_once(root_node):
             if node not in done:
                 data = {'node': node}
                 # these are the undoable changes, add data when necessary
                 data['edges_up'] = list(node.edges_up)
                 data['edges_down'] = list(node.edges_down)
-                data['index'] = node.get_index()
+                if hasattr(node, 'get_index'):
+                    data['index'] = node.get_index()
+                else:
+                    data['index'] = None
                 snapshot.append(data)
                 done.add(node)
         return {'root': snapshot}
@@ -106,15 +109,15 @@ class DerivationStep:
             forest.store(node)
         return root
 
-    def restore_from_snapshot(self, forest):
+    def restore_from_snapshot(self):
         """ Puts the given forest back to state described in this derivation step
         :param forest:
         """
-        forest._roots = []
+        ctrl.forest.roots = []
         for root_data in self._roots:
-            root = self.rebuild_tree_from_snapshot(root_data, forest)
-            forest._roots.append(root)
-        forest._chains = self._chains
+            root = self.rebuild_tree_from_snapshot(root_data, ctrl.forest)
+            ctrl.forest.roots.append(root)
+        ctrl.forest._chains = self._chains
 
 
     def after_restore(self, values=None):
@@ -161,7 +164,7 @@ class DerivationStepManager:
 
         :param derivation_step:
         """
-        derivation_step.restore_from_snapshot(self.forest)
+        derivation_step.restore_from_snapshot()
 
     def next_derivation_step(self):
         """
