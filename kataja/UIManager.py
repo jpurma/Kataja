@@ -949,9 +949,21 @@ class UIManager:
     # ### Edge buttons ############################
     def add_buttons_for_edge(self, edge):
         adjust = QtCore.QPointF(19, 12)
-        if edge.edge_type is not g.CONSTITUENT_EDGE:
+        # Constituent edges have a button to remove the edge and the node in between.
+        if edge.edge_type is g.CONSTITUENT_EDGE:
+            if edge.end and edge.end.is_placeholder():
+                key = edge.save_key + "_remove_merger"
+                if key not in self._overlay_buttons:
+                    button = OverlayButton(qt_prefs.delete_icon, edge, 'remove_merger', 'Remove non-merging node', parent=self.main.graph_view)
+                    p = self.main.graph_view.mapFromScene(QtCore.QPointF(edge.start_point[0], edge.start_point[1])) - adjust
+                    button.move(p.toPoint())
+                    self.connect_element_to_action(button, 'remove_merger')
+                    button.show()
+                    self._overlay_buttons[key] = button
+        # Constituent edges don't have cut-button at the start
+        else:
             key = edge.save_key + "_cut_start"
-            if edge.start and not edge.start.is_placeholder():
+            if edge.start:
                 if key not in self._overlay_buttons:
                     button = OverlayButton(qt_prefs.cut_icon, edge, 'start_cut', 'Disconnect from node', parent=self.main.graph_view)
                     p = self.main.graph_view.mapFromScene(QtCore.QPointF(edge.start_point[0], edge.start_point[1])) - adjust
@@ -982,7 +994,7 @@ class UIManager:
                 del self._overlay_buttons[key]
 
     def remove_buttons_for_edge(self, edge):
-        for end in ["_cut_start", "_cut_end"]:
+        for end in ["_cut_start", "_cut_end", "_remove_merger"]:
             key = edge.save_key + end
             if key in self._overlay_buttons:
                 button = self._overlay_buttons[key]

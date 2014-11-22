@@ -87,7 +87,7 @@ class DerivationStep:
                 done.add(node)
         return {'root': snapshot}
 
-    def rebuild_tree_from_snapshot(self, snapshot, forest):
+    def rebuild_tree_from_snapshot(self, snapshot):
         """ Restores each node to use those connections it had when stored. Notice that this is rebuilding in a very limited sense. Probably we'll need something deeper soon.
         :param snapshot:
         :param forest:
@@ -106,7 +106,7 @@ class DerivationStep:
                 parent = edge_up.start
                 node._connect_node(parent=parent, edge_type=edge_up.edge_type)
             node.set_index(data['index'])
-            forest.store(node)
+            ctrl.forest.store(node)
         return root
 
     def restore_from_snapshot(self):
@@ -115,7 +115,7 @@ class DerivationStep:
         """
         ctrl.forest.roots = []
         for root_data in self._roots:
-            root = self.rebuild_tree_from_snapshot(root_data, ctrl.forest)
+            root = self.rebuild_tree_from_snapshot(root_data)
             ctrl.forest.roots.append(root)
         ctrl.forest._chains = self._chains
 

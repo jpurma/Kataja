@@ -289,6 +289,10 @@ actions = {
         'command': 'Disconnect',
         'method': 'edge_disconnect',
     },
+    'remove_merger': {
+        'command': 'Remove merger',
+        'method': 'remove_merger',
+    },
     # Edit constituent
     'edit_constituent_finished': {
         'command': 'Apply changes',

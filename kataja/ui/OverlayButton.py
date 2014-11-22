@@ -64,7 +64,7 @@ class OverlayButton(QtWidgets.QPushButton):
     #    QtWidgets.QPushButton.paintEvent(self, *args, **kwargs)
 
     def update_position(self):
-        if self.role == 'start_cut':
+        if self.role == 'start_cut' or self.role == 'remove_merger':
             adjust = QtCore.QPointF(19, 12)
             p = self.parent().mapFromScene(QtCore.QPoint(self.host.start_point[0], self.host.start_point[1])) - adjust
             self.move(p.toPoint())

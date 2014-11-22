@@ -269,6 +269,12 @@ class Forest:
                 roots.append(_tree_as_text(root, ' '))
             return '/ '.join(roots)
 
+    def syntax_trees_as_string(self):
+        s = []
+        for root in self.roots:
+            s.append(root.syntactic_object.print_tree())
+        return '\n'.join(s)
+
     def store(self, item):
         """ Confirm that item is stored in some dictionary or other storage in forest
         :param item:
@@ -347,6 +353,7 @@ class Forest:
             root.update_visibility()
         self.bracket_manager.update_brackets()
         self.draw_gloss_text()
+        ctrl.add_message(self.syntax_trees_as_string())
 
 
     def update_colors(self):
@@ -1417,21 +1424,26 @@ class Forest:
         empty_node = self.create_empty_node(pos=(ex, ey, node.z))
         self.replace_node_with_merged_node(node, empty_node, edge, merge_to_left, merger_node_pos)
 
-
-    # I'm not sure if this is right... simpler replace should do.
-    def replace_node_with_merged_placeholder_node(self, node, edge, merge_to_left, new_node_pos, merger_node_pos):
-        """
-
-        :param node:
-        :param edge:
-        :param merge_to_left:
-        :param new_node_pos:
-        :param merger_node_pos:
-        """
-        forest('replace_node_with_merged_placeholder_node %s %s %s %s %s' % (node, edge, merge_to_left, new_node_pos, merger_node_pos))
-        ex, ey = new_node_pos
-        empty_node = self.create_placeholder_node(pos=(ex, ey, node.z))
-        self.replace_node_with_merged_node(node, empty_node, edge, merge_to_left, merger_node_pos)
+    def delete_unnecessary_merger(self, node):
+        if not isinstance(node, ConstituentNode):
+            raise ForestError("Trying to treat wrong kind of node as ConstituentNode and forcing it to binary merge")
+        i = node.get_index()
+        left = node.left()
+        right = node.right()
+        child = None
+        if left.is_placeholder():
+            child = right
+        elif right.is_placeholder():
+            child = left
+        # fixme: do same in ForestSyntax!
+        parents = node.get_parents()
+        self._disconnect_node(first=node, second=child)
+        for parent in parents:
+            self._disconnect_node(first=parent, second=node)
+            self._connect_node(parent=parent, child=child)
+        if i:
+            child.set_index(i)
+        self.delete_node(node)
 
 
     def replace_node_with_merged_node(self, old_node, new_node, edge, merge_to_left, merger_node_pos):

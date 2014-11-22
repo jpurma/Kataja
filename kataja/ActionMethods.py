@@ -598,7 +598,6 @@ class ActionMethods:
         edge = None
         role = None
         for item in ctrl.ui.get_overlay_buttons():
-            print(item)
             if item.just_triggered:
                 item.just_triggered = False
                 edge = item.host
@@ -622,6 +621,19 @@ class ActionMethods:
         else:
             raise ForestError('Trying to disconnect node from unknown edge or unhandled cutting position')
         ctrl.ui.update_selections()
+
+    def remove_merger(self):
+        edge = None
+        for item in ctrl.ui.get_overlay_buttons():
+            if item.just_triggered:
+                item.just_triggered = False
+                edge = item.host
+        if not edge:
+            return
+        ctrl.remove_from_selection(edge)
+        ctrl.remove_from_selection(edge.start)
+        ctrl.forest.delete_unnecessary_merger(edge.start)
+
 
     ###### Constituent editing #################
     def finish_constituent_edit(self):

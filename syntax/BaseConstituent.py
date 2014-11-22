@@ -95,6 +95,29 @@ class BaseConstituent(object):
         else:
             return False
 
+
+    def print_tree(self):
+        if self.is_leaf():
+            if self.index:
+                return '%s_%s' % (self.label, self.index)
+            else:
+                return self.label
+        else:
+            if self.left:
+                l = self.left.print_tree()
+            else:
+                l = '*0*'
+            if self.right:
+                r = self.right.print_tree()
+            else:
+                r = '*0*'
+            if self.index:
+                i = '.%s' % self.index
+            else:
+                i = ''
+            return "[%s %s %s ]" % (i, l, r)
+
+
     def get_label(self):
         """
 

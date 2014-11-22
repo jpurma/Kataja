@@ -373,6 +373,7 @@ class QtPreferences:
         self.no_brush.setStyle(QtCore.Qt.NoBrush)
         self.lock_icon = QtGui.QPixmap(preferences.resources_path+'icons/lock.png').scaledToWidth(16)
         self.cut_icon = QtGui.QPixmap(preferences.resources_path+'icons/cut_icon48.png').scaledToWidth(24)
+        self.delete_icon = QtGui.QPixmap(preferences.resources_path+'icons/backspace48.png').scaledToWidth(24)
         self.close_icon = QtGui.QPixmap(preferences.resources_path+'icons/close24.png') #.scaledToWidth(24)
         self.fold_icon = QtGui.QPixmap(preferences.resources_path+'icons/less24.png') #.scaledToWidth(24)
         self.more_icon = QtGui.QPixmap(preferences.resources_path+'icons/more24.png') #.scaledToWidth(24)
