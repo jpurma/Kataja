@@ -44,7 +44,7 @@ from kataja.Parser import BottomUpParser
 from kataja.Presentation import TextArea, Image
 from kataja.Edge import Edge
 from kataja.UndoManager import UndoManager
-from kataja.utils import next_free_index, to_tuple
+from kataja.utils import next_free_index, to_tuple, caller
 from kataja.FeatureNode import FeatureNode
 import kataja.globals as g
 
@@ -449,8 +449,6 @@ class Forest:
         :return:
         """
 
-    #@time_me
-
     def update_root_status(self, node):
         """ Check if a node should be listed as root nodes. Tries to maintain the order of trees:
         new roots are appended to right. This is called by operations that may change the root status, but
@@ -458,7 +456,7 @@ class Forest:
         :param node: root to check. Only ConstituentNodes can be roots
         :return:
         """
-        if not isinstance(node, ConstituentNode):
+        if (not isinstance(node, ConstituentNode)) or node.is_placeholder():
             return
         has_parents = bool([x for x in node.edges_up if x.edge_type is g.CONSTITUENT_EDGE])
         if node in self.roots:
@@ -466,7 +464,6 @@ class Forest:
                 self.roots.remove(node)
         elif not has_parents:
             self.roots.append(node)
-        print(self.roots)
 
     # not used
     def is_higher_in_tree(self, node_A, node_B):
@@ -573,6 +570,7 @@ class Forest:
     def create_placeholder_node(self, pos):
         forest()
         node = ConstituentNode(constituent=None, forest=self)
+        print("Created placeholder: ", [node])
         node.set_original_position(pos)
         self.add_to_scene(node)
         node.update_visibility()
@@ -799,10 +797,10 @@ class Forest:
         :param edge:
         """
         forest()
-        print("Deleting edge: ", edge)
         # -- connections to host nodes --
         start_node = edge.start
         end_node = edge.end
+        # -- selections --
         ctrl.remove_from_selection(edge)
         if start_node:
             if edge in start_node.edges_down:
@@ -886,6 +884,8 @@ class Forest:
         edge.update_end_points()
         ForestSyntax.connect_edge(edge)
         new_end.edges_up.append(edge)
+        self.update_root_status(new_end)
+        self.update_root_status(edge.start)
 
     def set_edge_ends(self, edge, new_start, new_end):
         forest()
@@ -900,8 +900,9 @@ class Forest:
         edge.update_end_points()
         ForestSyntax.connect_edge(edge)
         new_end.edges_up.append(edge)
-        self.update_root_status(new_end)
         new_start.edges_down.append(edge)
+        self.update_root_status(new_start)
+        self.update_root_status(new_end)
 
 
     def disconnect_edge_start(self, edge):
@@ -1342,6 +1343,19 @@ class Forest:
                         raise ForestError('Identical edge exists already')
                     elif old_edge.start == child and old_edge.end == parent:
                         raise ForestError('Connection is circular')
+        # Guess direction
+        if (not direction) and edge_type is g.CONSTITUENT_EDGE:
+            left = parent.left()
+            right = parent.right()
+            if left and right:
+                raise ForestError("Trying to add child to ConstituentNode that already has 2")
+            elif left:
+                direction = g.RIGHT
+            elif right:
+                direction = g.LEFT
+            else:
+                direction = g.RIGHT
+        # Create edge and make connections
         new_edge = self.create_edge(edge_type=edge_type, direction=direction)
         self.set_edge_ends(new_edge, parent, child)
         if parent.left():
@@ -1355,7 +1369,7 @@ class Forest:
         self.update_root_status(child)
         return new_edge
 
-    def _disconnect_node(self, first=None, second=None, edge_type='', edge=None):
+    def _disconnect_node(self, first=None, second=None, edge_type='', edge=None, ignore_missing=False):
         """ Removes and deletes a edge between two nodes """
         forest('_disconnect_node %s %s %s %s' % (first, second, edge_type, edge))
         if not edge:
@@ -1371,7 +1385,7 @@ class Forest:
                 self.update_root_status(first)
             ForestSyntax.disconnect_edge(edge)
             self.delete_edge(edge)
-        else:
+        elif not ignore_missing:
             raise ForestError("Disconnecting nodes, but cannot find the edge between them")
 
     def _replace_node(self, old_node, new_node, only_for_parent=None, replace_children=False):
@@ -1437,13 +1451,35 @@ class Forest:
             child = left
         # fixme: do same in ForestSyntax!
         parents = node.get_parents()
-        self._disconnect_node(first=node, second=child)
+        parents_children = set()
+        bad_parents = []
+        good_parents = []
         for parent in parents:
-            self._disconnect_node(first=parent, second=node)
-            self._connect_node(parent=parent, child=child)
+            if child in parent.get_children():
+                bad_parents.append(parent)
+            else:
+                good_parents.append(parent)
+        if bad_parents:
+            # more complex case
+            ctrl.add_message("Removing node would make parent to have same node as both left and right child. Removing parent too.")
+            self._disconnect_node(first=node, second=child)
+            for parent in bad_parents:
+                for grandparent in parent.get_parents():
+                    self._disconnect_node(first=grandparent, second=parent)
+                    self._disconnect_node(first=parent, second=child)
+                    self._connect_node(parent=grandparent, child=child)
+
+        if good_parents:
+            # normal case
+            self._disconnect_node(first=node, second=child, ignore_missing=True)
+            for parent in good_parents:
+                self._disconnect_node(first=parent, second=node)
+                self._connect_node(parent=parent, child=child)
         if i:
             child.set_index(i)
         self.delete_node(node)
+        for parent in bad_parents:
+            self.delete_node(parent)
 
 
     def replace_node_with_merged_node(self, old_node, new_node, edge, merge_to_left, merger_node_pos):

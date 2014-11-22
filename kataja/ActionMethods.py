@@ -623,16 +623,15 @@ class ActionMethods:
         ctrl.ui.update_selections()
 
     def remove_merger(self):
-        edge = None
+        node = None
         for item in ctrl.ui.get_overlay_buttons():
             if item.just_triggered:
                 item.just_triggered = False
-                edge = item.host
-        if not edge:
+                node = item.host
+        if not node:
             return
-        ctrl.remove_from_selection(edge)
-        ctrl.remove_from_selection(edge.start)
-        ctrl.forest.delete_unnecessary_merger(edge.start)
+        ctrl.remove_from_selection(node)
+        ctrl.forest.delete_unnecessary_merger(node)
 
 
     ###### Constituent editing #################
