@@ -73,7 +73,6 @@ class ConstituentNode(Node):
             self.save_key = 'CN%s' % constituent.uid
         else:
             self.save_key = 'CN%s' % id(self)
-        self.level = 3
         # ------ Bracket drawing -------
         self.has_visible_brackets = False
         self.left_bracket = None

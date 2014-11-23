@@ -50,7 +50,6 @@ class GlossNode(Node):
             raise Exception("Forest is missing")
         Node.__init__(self, forest=forest)
         self.host = host
-        self.level = 2
         self.save_key = 'GlN%s' % host.syntactic_object.uid
         # self.color = colors.drawing2
         if not restoring:

@@ -82,7 +82,6 @@ class AttributeNode(Node):
         if not forest:
             raise Exception("Forest is missing")
         Node.__init__(self, syntactic_object=None, forest=forest)
-        self.level = 2
         self.save_key = 'AN%s' % id(self)
         self.host = host
         self.attribute_label = attribute_label or attribute_id

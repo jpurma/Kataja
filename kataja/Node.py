@@ -62,7 +62,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         # QtWidgets.QGraphicsItem.__init__(self, parent = None)
         Movable.__init__(self, forest=forest)
         self.save_key = "Undefined Node"
-        self.level = 1
         self.syntactic_object = syntactic_object
 
         self.edges_up = []

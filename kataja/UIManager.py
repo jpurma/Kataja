@@ -952,16 +952,7 @@ class UIManager:
     def add_remove_merger_button(self, node, edge=None):
         key = node.save_key + "_remove_merger"
         if key not in self._overlay_buttons:
-            adjust = QtCore.QPointF(19, node.height/2)
             button = OverlayButton(qt_prefs.delete_icon, node, 'remove_merger', 'Remove this non-merging node', parent=self.main.graph_view)
-            if not edge:
-                edges = [x for x in node.edges_down if x.edge_type is g.CONSTITUENT_EDGE and x.end.is_placeholder()]
-                if not edges:
-                    raise ForestError("How did I get here? Remove merger suggested for merger with no children")
-                else:
-                    edge = edges[0]
-            p = self.main.graph_view.mapFromScene(QtCore.QPointF(edge.start_point[0], edge.start_point[1])) - adjust
-            button.move(p.toPoint())
             self.connect_element_to_action(button, 'remove_merger')
             button.show()
             self._overlay_buttons[key] = button
@@ -976,10 +967,7 @@ class UIManager:
             key = edge.save_key + "_cut_start"
             if edge.start:
                 if key not in self._overlay_buttons:
-                    adjust = QtCore.QPointF(19, 12)
                     button = OverlayButton(qt_prefs.cut_icon, edge, 'start_cut', 'Disconnect from node', parent=self.main.graph_view)
-                    p = self.main.graph_view.mapFromScene(QtCore.QPointF(edge.start_point[0], edge.start_point[1])) - adjust
-                    button.move(p.toPoint())
                     self.connect_element_to_action(button, 'disconnect_edge')
                     button.show()
                     self._overlay_buttons[key] = button
@@ -992,10 +980,8 @@ class UIManager:
         key = edge.save_key + "_cut_end"
         if edge.end and not edge.end.is_placeholder():
             if key not in self._overlay_buttons:
-                adjust = QtCore.QPointF(19, 12)
                 button = OverlayButton(qt_prefs.cut_icon, edge, 'end_cut', 'Disconnect from node', parent=self.main.graph_view)
-                p = self.main.graph_view.mapFromScene(QtCore.QPointF(edge.end_point[0], edge.end_point[1])) - adjust
-                button.move(p.toPoint())
+                button.update_position()
                 self.connect_element_to_action(button, 'disconnect_edge')
                 button.show()
                 self._overlay_buttons[key] = button
@@ -1015,12 +1001,10 @@ class UIManager:
                 del self._overlay_buttons[key]
 
     def update_edge_button_positions(self, edge):
-        start = self._overlay_buttons.get(edge.save_key + "_cut_start", None)
-        if start:
-            start.update_position()
-        end = self._overlay_buttons.get(edge.save_key + "_cut_end", None)
-        if end:
-            end.update_position()
+        for key in [edge.save_key + "_cut_start", edge.save_key + "_cut_end", edge.start.save_key + "_remove_merger"]:
+            if key in self._overlay_buttons:
+                button = self._overlay_buttons[key]
+                button.update_position()
 
     def update_overlay_buttons_for(self, item, selected):
         if isinstance(item, Edge):

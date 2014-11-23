@@ -47,7 +47,6 @@ class FeatureNode(Node):
         if not forest:
             raise Exception("Forest is missing")
         Node.__init__(self, syntactic_object=feature, forest=forest)
-        self.level = 2
         self.save_key = 'FN%s' % self.syntactic_object.uid
         # if feature.get_value() in color_map:
         # self.color = colors.feature_palette[color_map[feature.get_value()]]
