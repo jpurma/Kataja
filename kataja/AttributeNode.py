@@ -67,7 +67,7 @@ class AttributeNode(Node):
     node_type = ATTRIBUTE_NODE
 
 
-    def __init__(self, host, attribute_id, attribute_label='', show_label=False, forest=None, restoring=False):
+    def __init__(self, host, attribute_id, attribute_label='', show_label=False, restoring=False):
         """
 
         :param host: 
@@ -78,13 +78,10 @@ class AttributeNode(Node):
         :param restoring: 
         :raise: 
         """
-        if not forest:
-            raise Exception("Forest is missing")
-        Node.__init__(self, syntactic_object=None, forest=forest)
-        self.save_key = 'AN%s' % id(self)
-        self.host = host
-        self.attribute_label = attribute_label or attribute_id
-        self.attribute_id = attribute_id
+        Node.__init__(self, syntactic_object=None)
+        self.saved.host = host
+        self.saved.attribute_label = attribute_label or attribute_id
+        self.saved.attribute_id = attribute_id
         self._show_label = show_label
         self.force = 72
         self.help_text = ""
@@ -109,6 +106,31 @@ class AttributeNode(Node):
             self.update_label()
             self.boundingRect(update=True)
             self.update_visibility()
+
+    @property
+    def host(self):
+        return self.saved.host
+
+    @host.setter
+    def host(self, value):
+        self.saved.host = value
+
+    @property
+    def attribute_label(self):
+        return self.saved.attribute_label
+
+    @attribute_label.setter
+    def attribute_label(self, value):
+        self.saved.attribute_label = value
+
+    @property
+    def attribute_id(self):
+        return self.saved.attribute_id
+
+    @attribute_id.setter
+    def attribute_id(self, value):
+        self.saved.attribute_id = value
+
 
 
     def update_help_text(self):

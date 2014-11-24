@@ -122,6 +122,8 @@ class ConstituentNode(Node):
         # self.qt_menu = None
         self.update_status_tip()
 
+    # Saved properties
+
     @property
     def alias(self):
         """:return:  """
@@ -132,6 +134,7 @@ class ConstituentNode(Node):
         """
         :param value:  """
         self.saved.alias = value
+        self.update_identity()
 
     @property
     def is_trace(self):
@@ -176,6 +179,29 @@ class ConstituentNode(Node):
         """
         :param value:  """
         self.saved.select_order = value
+
+    # Other properties
+
+    @property
+    def index(self):
+        if self.syntactic_object:
+            return self.syntactic_object.get_index()
+
+    @index.setter
+    def index(self, value):
+        self.syntactic_object.set_index(value)
+        self.update_identity()
+
+    @property
+    def gloss(self):
+        if self.syntactic_object:
+            return self.syntactic_object.get_gloss()
+
+    @gloss.setter
+    def gloss(self, value):
+        if self.syntactic_object:
+            return self.syntactic_object.set_gloss(value)
+        self.update_gloss()
 
     def update_status_tip(self):
         if self.syntactic_object:
@@ -414,21 +440,13 @@ class ConstituentNode(Node):
         elif string:
             features = ctrl.forest.parse_features(string, self)
             if 'gloss' in features:
-                self.set_gloss_text(features['gloss'])
+                self.gloss = features['gloss']
                 del features['gloss']
             for feature in features.values():
                 self.set_feature(syntactic_feature=feature)
             self.update_features()
 
 
-    def set_gloss_text(self, gloss):
-        """
-
-        :param gloss:
-        """
-        assert(self.syntactic_object)
-        self.syntactic_object.set_gloss(gloss)
-        self.update_gloss()
 
     def get_gloss(self):
         """
@@ -492,7 +510,7 @@ class ConstituentNode(Node):
 
     def is_empty_node(self):
         """ Empty nodes can be used as placeholders and deleted or replaced without structural worries """
-        return (not (self.alias or self.get_editable_label() or self.get_index())) and self.is_leaf_node()
+        return (not (self.alias or self.get_editable_label() or self.index)) and self.is_leaf_node()
 
     def get_text_for_label(self):
         """ Build html string to be displayed in label_complex """
@@ -501,7 +519,7 @@ class ConstituentNode(Node):
         alias = self.alias
         label = self.syntactic_object.label
 
-        index = self.get_index()
+        index = self.index
         if index:
             i_string = '<sub><i>%s</i></sub>' % index
         else:
@@ -524,9 +542,8 @@ class ConstituentNode(Node):
         else:
             s = label + i_string
         if not prefs.hanging_gloss:
-            gloss = self.get_gloss_text()
-            if gloss:
-                s += '<br/><i>%s</i>' % gloss
+            if self.gloss:
+                s += '<br/><i>%s</i>' % self.gloss
         if s:
             return s
             # return '<center>%s</center>' % s
@@ -564,59 +581,8 @@ class ConstituentNode(Node):
         feature_strings = [str(f) for f in features]
         return ', '.join(feature_strings)
 
-    def get_alias(self):
-        """
-
-
-        :return:
-        """
-        return self.alias
-
-    def set_alias(self, alias):
-        """
-
-        :param alias:
-        """
-        self.alias = alias
-        self.update_identity()
-
-    def get_gloss_text(self):
-        """
-
-
-        :return:
-        """
-        if self.syntactic_object:
-            return self.syntactic_object.get_gloss()
 
     # ## Indexes and chains ###################################
-
-    def get_index(self):
-        """
-
-
-        :return:
-        """
-        if self.syntactic_object:
-            return self.syntactic_object.get_index()
-
-    def set_index(self, i):
-        """
-
-        :param i:
-        """
-        assert(self.syntactic_object)
-        self.syntactic_object.set_index(i)
-        self.update_identity()
-
-    def remove_index(self):
-        """
-
-
-        """
-        assert(self.syntactic_object)
-        self.syntactic_object.set_index('')
-        self.update_identity()
 
     def is_chain_head(self):
         """
@@ -624,7 +590,7 @@ class ConstituentNode(Node):
 
         :return:
         """
-        if self.get_index():
+        if self.index:
             return not (self.is_leaf_node() and self.get_syntactic_label() == 't')
         return False
 
@@ -839,18 +805,17 @@ class ConstituentNode(Node):
              'get_method': self.get_editable_label, 'font': qt_prefs.font(g.BIG_FONT),  # @UndefinedVariable
              'tab_index': 0},
             {'name': 'Alias', 'method': self.change_alias, 'menu_type': 'TextArea', 'pos': ('top', 'Label'),
-             'get_method': self.get_alias, 'tab_index': 1},
+             'get_method': self.alias, 'tab_index': 1},
             {'name': 'Index', 'method': self.change_index, 'menu_type': 'TextArea', 'pos': ('bottom-right', 'Label'),
-             'get_method': self.get_index, 'tab_index': 2},
+             'get_method': self.index, 'tab_index': 2},
             {'name': 'Features', 'method': self.change_features_string, 'menu_type': 'TextArea',
              'pos': ('bottom', 'Label'), 'get_method': self.get_features_as_string, 'tab_index': 4},
             {'name': 'Gloss', 'method': self.change_gloss_text, 'menu_type': 'TextArea', 'pos': ('bottom', 'Features'),
-             'get_method': self.get_gloss_text, 'tab_index': 3}, ])
+             'get_method': self.gloss, 'tab_index': 3}, ])
         return menu
 
     def open_embed(self):
         ctrl.ui.start_constituent_editing(self)
-
 
     #### Menu commands and related behaviour #############################################
 
@@ -879,7 +844,7 @@ class ConstituentNode(Node):
         :param event:
         """
         index = caller.get_value()
-        self.set_index(index)
+        self.index = index
         ctrl.main.action_finished('edit node index')
 
     def change_gloss_text(self, caller=None, event=None):
@@ -888,8 +853,7 @@ class ConstituentNode(Node):
         :param caller:
         :param event:
         """
-        gloss = caller.get_value()
-        self.set_gloss_text(gloss)
+        self.gloss = caller.get_value()
         ctrl.main.action_finished('edit node gloss text')
 
     def change_alias(self, caller=None, event=None):
@@ -898,8 +862,7 @@ class ConstituentNode(Node):
         :param caller:
         :param event:
         """
-        alias = caller.get_value()
-        self.set_alias(alias)
+        self.alias = caller.get_value()
         ctrl.main.action_finished('edit node label')
 
     def change_features_string(self, caller=None, event=None):

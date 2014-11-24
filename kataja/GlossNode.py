@@ -69,8 +69,8 @@ class GlossNode(Node):
         #    self._label_complex.setDefaultTextColor(colors.drawing2)
 
     def __str__(self):
-        return '%s, gloss for %s' % (self.host.get_gloss_text(), self.host)
+        return '%s, gloss for %s' % (self.host.gloss, self.host)
 
     def get_text_for_label(self):
         """ This should be overridden if there are alternative displays for label """
-        return self.host.get_gloss_text()
+        return self.host.gloss

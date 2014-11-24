@@ -59,7 +59,6 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         :param string direction:
         :param string restoring:
         """
-        print(direction)
         Savable.__init__(self)
         QtWidgets.QGraphicsItem.__init__(self)
         self.saved.start_point = (0, 0, 0)

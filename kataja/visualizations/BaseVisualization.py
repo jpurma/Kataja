@@ -284,7 +284,7 @@ class BaseVisualization:
         :return:
         """
         if len(node.get_parents()) > 1:
-            key = node.get_index()
+            key = node.index
             if key in self.traces_to_draw:
                 if parent.save_key != self.traces_to_draw[key]:
                     return False
@@ -317,7 +317,7 @@ class BaseVisualization:
             for node in ltree:
                 parents = node.get_parents()
                 if len(parents) > 1:
-                    index_key = node.get_index()
+                    index_key = node.index
                     required_keys.add(index_key)
                     my_parents = []
                     for parent in parents:

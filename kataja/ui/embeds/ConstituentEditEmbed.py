@@ -114,7 +114,7 @@ class ConstituentEditEmbed(UIEmbed):
             self.input_line_edit.setText(label)
             self.gloss_edit.setFont(fg)
             self.gloss_edit.setPalette(pg)
-            self.gloss_edit.setText(self.node.get_gloss_text())
+            self.gloss_edit.setText(self.node.gloss)
             self.gloss_label.setFont(qt_prefs.font(g.UI_FONT))
             self.gloss_label.setPalette(ui_p)
 

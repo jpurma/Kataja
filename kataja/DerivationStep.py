@@ -80,7 +80,7 @@ class DerivationStep:
                 data['edges_up'] = list(node.edges_up)
                 data['edges_down'] = list(node.edges_down)
                 if hasattr(node, 'get_index'):
-                    data['index'] = node.get_index()
+                    data['index'] = node.index
                 else:
                     data['index'] = None
                 snapshot.append(data)
@@ -105,7 +105,7 @@ class DerivationStep:
             for edge_up in data['edges_up']:
                 parent = edge_up.start
                 node._connect_node(parent=parent, edge_type=edge_up.edge_type)
-            node.set_index(data['index'])
+            node.index = data['index']
             ctrl.forest.store(node)
         return root
 
@@ -154,7 +154,7 @@ class DerivationStepManager:
         :param msg:
         """
         roots = self.forest.roots
-        chains = self.forest.chain_manager.get_chains()
+        chains = self.forest.chain_manager.chains
         derivation_step = DerivationStep(msg, roots, chains)
         self._derivation_step_index += 1
         self._derivation_steps.append(derivation_step)

@@ -270,11 +270,11 @@ class Parser:
             else:
                 external_merge = False
                 node = self.forest.get_node(C)
-                index = node.get_index()
+                index = node.index
                 if not index:
                     index = next_free_index(self.indexes)
                     self.indexes.append(index)
-                    node.set_index(index)
+                    node.index = index
                 node = self.forest.create_trace_for(node)
             if topmost_C:
                 if external_merge and topmost_C.label:
@@ -364,7 +364,7 @@ class LayeredParser(Parser):
             constituent = children[0]
             node = self.forest.get_node(constituent)
         if alias:
-            node.set_alias(alias)
+            node.alias = alias
         if left:
             self.forest._connect_node(parent=node, child=f.get_node(left), direction=g.LEFT)
         if right:
@@ -753,9 +753,9 @@ class BottomUpParser(Parser):
             else:
                 node = self._new_node_from_constituent(constituent)
             if index:
-                node.set_index(index)
+                node.index = index
             if dot_alias:
-                node.set_alias(dot_alias)
+                node.alias = dot_alias
             self.add_local_lexicon(constituent)
             return node
 
@@ -775,9 +775,9 @@ class BottomUpParser(Parser):
             if dot_alias:
                 dot_alias, index = find_index(dot_alias)
                 if index:
-                    node.set_index(index)
+                    node.index = index
                 if dot_alias:
-                    node.set_alias(dot_alias)
+                    node.alias = dot_alias
             if left:
                 self.forest._connect_node(parent=node, child=left, direction=g.LEFT)
             if right:
@@ -903,9 +903,9 @@ class BottomUpParser(Parser):
                 if dot_alias:
                     dot_alias, index = find_index(dot_alias)
                     if index:
-                        C.set_index(index)
+                        C.index = index
                     if dot_alias:
-                        C.set_alias(dot_alias)
+                        C.alias = dot_alias
                 return C
 
         def bottom_up_bracket_parser(s):

@@ -1,6 +1,7 @@
 # coding=utf-8
 from collections import Counter
 import string
+from Saved import Savable
 from kataja.debug import forest
 
 from kataja.utils import time_me
@@ -15,107 +16,31 @@ from kataja.ConstituentNode import ConstituentNode
 # # chains should hold tuples of (node, parent), where node can be either real node or trace, and the parent provides the reliable/restorable identity/location for the trace.
 
 
-class ChainManager:
+class ChainManager(Savable):
     """
 
     """
-    saved_fields = "all"
 
     def __init__(self, forest):
-        self.save_key = forest.save_key + '_chain_manager'
-        self._chains = {}
-        self.forest = forest
+        Savable.__init__(self, unique=True)
+        self.saved.chains = {}
+        self.saved.forest = forest
 
-    def get_chains(self):
-        """
+    @property
+    def chains(self):
+        return self.saved.chains
 
+    @chains.setter
+    def chains(self, value):
+        self.saved.chains = value
 
-        :return:
-        """
-        return self._chains
+    @property
+    def forest(self):
+        return self.saved.forest
 
-    def get_chain(self, key):
-        """
-
-        :param key:
-        :return:
-        """
-        return self._chains[key]
-
-    def set_chain(self, key, chain):
-        """
-
-        :param key:
-        :param chain:
-        """
-        self._chains[key] = chain
-
-    def remove_chain(self, key, delete_traces=True):
-        """
-
-        :param key:
-        :param delete_traces:
-        """
-        if delete_traces:
-            for item in self._chains[key][1:]:
-                self.forest.delete_node(item)  # <<<<<<-------
-        del self._chains[key]
-
-    def remove_from_chain(self, node):
-        """
-
-        :param node:
-        """
-        chain = self._chains[node.save_key]
-        for i, np in enumerate(list(chain)):
-            n, p = np
-            if n == node:
-                chain.pop(i)
-        self._chains[node.save_key] = chain
-
-
-    def number_of_chains(self):
-        """
-
-
-        :return:
-        """
-        return len(self._chains)
-
-    def items_in_chains(self):
-        """
-
-
-        """
-        for chain in self._chains.values():
-            for item in chain:
-                yield item
-
-    def chain_counter(self):
-        """ Returns a counter object where values of dict are lengths of each chain """
-        c = Counter()
-        for key, item in self._chains.items():
-            c[key] = len(item)
-        return c
-
-    def add_to_chain(self, key, node, parent):
-        # print 'adding %r to chain %s' % (node, key)
-        """
-
-        :param key:
-        :param node:
-        :param parent:
-        """
-        if key in self._chains:
-            self._chains[key].append((node, parent))
-        else:
-            self._chains[key] = [(node, parent)]
-
-    def _insert_into_chain(self, key, trace, parent):
-        if key in self._chains:
-            self._chains[key].insert(1, (trace, parent))
-        else:
-            self._chains[key] = [trace]
+    @forest.setter
+    def forest(self, value):
+        self.saved.forest = value
 
     def get_chain_head(self, chain_key):
         """
@@ -123,7 +48,7 @@ class ChainManager:
         :param chain_key:
         :return: :raise 'F broken chain':
         """
-        chain = self._chains[chain_key]
+        chain = self.chains[chain_key]
         # assert chain[0].is_chain_head()
         for node, parent in chain:
             if node.is_chain_head():
@@ -137,7 +62,7 @@ class ChainManager:
         """
         r = []
         forest('---- chains -----')
-        for key, chain in self._chains.items():
+        for key, chain in self.chains.items():
             forest('%s :' % key)
             for (item, parent) in chain:
                 if item.is_trace:
@@ -149,16 +74,16 @@ class ChainManager:
     # @time_me
     def rebuild_chains(self):
         """ Strategy for rebuilding chains depends on if the tree was saved in multidomination or with traces enabled. """
-        self._chains = {}
+        self.chains = {}
         f = self.forest
         multidomination = False
         # decide if there is multidomination present and build dictionary of nodes with index.
         for node in list(f.nodes.values()):
             if isinstance(node, ConstituentNode):
-                index = node.get_index()
+                index = node.index
                 if index:
-                    if index in self._chains:
-                        chain = self._chains[index]
+                    if index in self.chains:
+                        chain = self.chains[index]
                     else:
                         chain = []
                     parents = node.get_parents()
@@ -172,7 +97,7 @@ class ChainManager:
                     else:
                         chain.append((node, parents[0]))
 
-                    self._chains[index] = chain
+                    self.chains[index] = chain
 
     @time_me
     def group_traces_to_chain_head(self):
@@ -184,11 +109,11 @@ class ChainManager:
         # ## Move traces to their multidominant originals, purely visual thing ###
         self.rebuild_chains()
         y_adjust = {}
-        for key, chain in self._chains.items():
+        for key, chain in self.chains.items():
             head = self.get_chain_head(key)
             for node, parent in chain:
                 if node != head:
-                    if not key in y_adjust:
+                    if key not in y_adjust:
                         y_adjust[key] = head.boundingRect().height(), head.boundingRect().height()
                     dx, dy = y_adjust[key]
                     if head.bind_x and head.bind_y:
@@ -221,7 +146,7 @@ class ChainManager:
         order_dict = {}
         for t, root in enumerate(self.forest.roots):
             for i, node in enumerate(self.forest.list_nodes(root)):
-                if hasattr(node, 'get_index') and node.get_index():
+                if hasattr(node, 'index') and node.index:
                     order_dict[node.save_key] = (t, i, node)
         ordered = list(order_dict.values())
         ordered.sort(reverse=True)
@@ -231,7 +156,7 @@ class ChainManager:
         for t, i, node in ordered:
             if node.is_trace:
                 forest('replacing trace ', node)
-                original = self.get_chain_head(node.get_index())
+                original = self.get_chain_head(node.index)
                 self.forest._replace_node(node, original)
                 self.forest.delete_node(node)
 
@@ -244,7 +169,7 @@ class ChainManager:
         """
         forest('multidomination to traces')
         self.rebuild_chains()
-        for key, chain in self._chains.items():
+        for key, chain in self.chains.items():
             head = self.get_chain_head(key)
             for node, parent in chain:
                 if node != head:
@@ -259,7 +184,7 @@ class ChainManager:
         """
         max_found = 7  # 'h'
         for node in self.forest.nodes.values():
-            index = node.get_index()
+            index = node.index
             if index and len(index) == 1 and index[0].isalpha():
                 pos = string.ascii_letters.find(index[0])
                 if pos > max_found:

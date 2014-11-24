@@ -543,11 +543,11 @@ class Forest:
         self.add_to_scene(node)
         node.update_visibility()
         if inherits_from:
-            alias = inherits_from.get_alias()
+            alias = inherits_from.alias
             if alias:
                 if (not alias.endswith("'")) and True: # add here prefs for how to label merged nodes
-                    alias+="'"
-                node.set_alias(alias)
+                    alias += "'"
+                node.alias = alias
 
         if result_of_merge:
             self.add_merge_counter(node)
@@ -707,11 +707,11 @@ class Forest:
         :return:
         """
         forest()
-        index = node.get_index()
+        index = node.index
         new_chain = False
         if not index:
             index = self.chain_manager.next_free_index()
-            node.set_index(index)
+            node.index = index
             new_chain = True
         assert index
         constituent = ForestSyntax.new_constituent('t', source='t_' + index)
@@ -1183,8 +1183,8 @@ class Forest:
         self.main.add_message("Disconnecting node %s" % node)
         if self.settings.uses_multidomination():
             self.multidomination_to_traces()
-            if node.get_index():
-                chain = self.get_chain(node.get_index())
+            if node.index:
+                chain = self.chain_manager.chains.get(node.index, None)
                 for l in chain:
                     self.delete_node(l)
             else:
@@ -1207,8 +1207,8 @@ class Forest:
         self.main.add_message("Deleting node %s" % node)
         if self.settings.uses_multidomination():
             self.multidomination_to_traces()
-            if node.get_index():
-                chain = self._chains[node.get_index()]
+            if node.index:
+                chain = self.chain_manager.chains[node.index]
                 for l in chain:
                     self.delete_node(l)
             else:
@@ -1237,10 +1237,10 @@ class Forest:
         is_root = node.is_root_node()
         if not self.settings.uses_multidomination():
             if node.is_chain_head():
-                key = node.get_index()
-                chain = self.get_chain(key)
+                key = node.index
+                chain = self.chain_manager.chains.get(key, None)
                 stub = None
-                if len(chain) > 1:
+                if chain and len(chain) > 1:
                     next_node, dummy_next_parent = chain[1]
                     for edge in node.edges_up:
                         if edge.edge_type == node.__class__.default_edge_type:
@@ -1257,10 +1257,10 @@ class Forest:
                     if stub:
                         ctrl.select(stub)
                     return
-                else:
-                    self.remove_chain(node.get_index, delete_traces=False)
+                elif chain:
+                    self.chain_manager.remove_chain(node.index, delete_traces=False)
             elif node.is_trace:
-                self.remove_from_chain(node)
+                self.chain_manager.remove_from_chain(node)
         for edge in list(node.edges_up):
             start = edge.start
             self._disconnect_node(node, edge.start, edge.edge_type)
@@ -1444,7 +1444,7 @@ class Forest:
     def delete_unnecessary_merger(self, node):
         if not isinstance(node, ConstituentNode):
             raise ForestError("Trying to treat wrong kind of node as ConstituentNode and forcing it to binary merge")
-        i = node.get_index()
+        i = node.index
         left = node.left()
         right = node.right()
         child = None
