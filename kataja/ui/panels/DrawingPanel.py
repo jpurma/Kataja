@@ -302,12 +302,12 @@ class DrawingPanel(UIPanel):
             for edge in ctrl.get_all_selected():
                 if isinstance(edge, Edge):
                     if not edge_shape:
-                        edge_shape = edge.shape_name()
-                    elif edge.shape_name() != edge_shape:
+                        edge_shape = edge.shape_name
+                    elif edge.shape_name != edge_shape:
                         ambiguous_edge = True
                     if not edge_color:
-                        edge_color = edge.color_id()
-                    elif edge.color_id() != edge_color:
+                        edge_color = edge.color_id
+                    elif edge.color_id != edge_color:
                         ambiguous_color = True
             ### Color selector - show
             if edge_color:

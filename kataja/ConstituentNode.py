@@ -56,8 +56,7 @@ class ConstituentNode(Node):
     width = 20
     height = 20
     default_edge_type = g.CONSTITUENT_EDGE
-    saved_fields = ['has_visible_brackets', 'alias', 'is_trace', 'triangle', 'merge_order', 'select_order']
-    saved_fields = list(set(Node.saved_fields + saved_fields))
+    saved_fields = ['alias', 'is_trace', 'triangle', 'merge_order', 'select_order']
     receives_signals = []
     node_type = g.CONSTITUENT_NODE
 
@@ -69,18 +68,17 @@ class ConstituentNode(Node):
     def __init__(self, constituent=None, forest=None, restoring=''):
         """ Most of the initiation is inherited from Node """
         Node.__init__(self, forest=forest, syntactic_object=constituent, restoring=restoring)
-        if constituent:
-            self.save_key = 'CN%s' % constituent.uid
-        else:
-            self.save_key = 'CN%s' % id(self)
+        self.saved.alias = ""
+        self.saved.is_trace = False
+        self.saved.triangle = False
+        self.saved.merge_order = 0
+        self.saved.select_order = 0
+
         # ------ Bracket drawing -------
         self.has_visible_brackets = False
         self.left_bracket = None
         self.right_bracket = None
         # ###
-        self.alias = ""
-        self.is_trace = False
-        self.triangle = False
         self.selectable = True
 
         # ### Projection -- see also preferences that govern if these are used
@@ -90,19 +88,17 @@ class ConstituentNode(Node):
 
         # ### Cycle index stores the order when node was originally merged to structure.
         # going up in tree, cycle index should go up too
-        self.merge_order = 0
-        self.select_order = 0
 
         # ## use update_visibility to change these: visibility of particular elements
         # depends on many factors
-        if forest:
+        if ctrl.forest:
             self._visibility_folded = False
             self._visibility_active = True
-            self._visibility_label = forest.settings.label_style()
-            self._visibility_index = not forest.settings.uses_multidomination()
-            self._visibility_edges = forest.settings.shows_constituent_edges()
-            self._visibility_features = forest.settings.draw_features()
-            self._visibility_brackets = forest.settings.bracket_style()
+            self._visibility_label = ctrl.forest.settings.label_style()
+            self._visibility_index = not ctrl.forest.settings.uses_multidomination()
+            self._visibility_edges = ctrl.forest.settings.shows_constituent_edges()
+            self._visibility_features = ctrl.forest.settings.draw_features()
+            self._visibility_brackets = ctrl.forest.settings.bracket_style()
         else:
             self._visibility_folded = False
             self._visibility_active = True
@@ -126,6 +122,60 @@ class ConstituentNode(Node):
         # self.qt_menu = None
         self.update_status_tip()
 
+    @property
+    def alias(self):
+        """:return:  """
+        return self.saved.alias
+
+    @alias.setter
+    def alias(self, value):
+        """
+        :param value:  """
+        self.saved.alias = value
+
+    @property
+    def is_trace(self):
+        """:return:  """
+        return self.saved.is_trace
+
+    @is_trace.setter
+    def is_trace(self, value):
+        """
+        :param value:  """
+        self.saved.is_trace = value
+
+    @property
+    def triangle(self):
+        """:return:  """
+        return self.saved.triangle
+
+    @triangle.setter
+    def triangle(self, value):
+        """
+        :param value:  """
+        self.saved.triangle = value
+
+    @property
+    def merge_order(self):
+        """:return:  """
+        return self.saved.merge_order
+
+    @merge_order.setter
+    def merge_order(self, value):
+        """
+        :param value:  """
+        self.saved.merge_order = value
+
+    @property
+    def select_order(self):
+        """:return:  """
+        return self.saved.select_order
+
+    @select_order.setter
+    def select_order(self, value):
+        """
+        :param value:  """
+        self.saved.select_order = value
 
     def update_status_tip(self):
         if self.syntactic_object:
@@ -204,10 +254,10 @@ class ConstituentNode(Node):
         print('| scene: %s' % self.scene())
         print('| isVisible: %s' % self.isVisible())
         print('| print: %s ' % self)
-        print('| x: %s y: %s z: %s' % self.get_current_position())
-        print('| adjustment: x: %s y: %s z: %s ' % self.get_adjustment())
-        print('| computed x: %s y: %s z: %s' % self.get_computed_position())
-        print('| final: x: %s y: %s z: %s ' % self.get_final_position())
+        print('| x: %s y: %s z: %s' % self.current_position)
+        print('| adjustment: x: %s y: %s z: %s ' % self.adjustment)
+        print('| computed x: %s y: %s z: %s' % self.computed_position)
+        print('| final: x: %s y: %s z: %s ' % self.final_position)
         print('| bind x: %s y: %s z: %s' % (self.bind_x, self.bind_y, self.bind_z))
         print('| locked_to_position: %s ' % self.locked_to_position)
         print('| label rect: ', self.label_rect)
@@ -330,12 +380,12 @@ class ConstituentNode(Node):
         """
         if self.left():
             if not self.left_bracket:
-                self.left_bracket = self.forest.create_bracket(host=self, left=True)
+                self.left_bracket = ctrl.forest.create_bracket(host=self, left=True)
         else:
             self.left_bracket = None
         if self.right():
             if not self.right_bracket:
-                self.right_bracket = self.forest.create_bracket(host=self, left=False)
+                self.right_bracket = ctrl.forest.create_bracket(host=self, left=False)
         else:
             self.right_bracket = None
 
@@ -356,13 +406,13 @@ class ConstituentNode(Node):
         """
         assert(self.syntactic_object)
         if syntactic_feature:
-            if self.forest.settings.draw_features():
-                self.forest.create_feature_node(self, syntactic_feature)
+            if ctrl.forest.settings.draw_features():
+                ctrl.forest.create_feature_node(self, syntactic_feature)
         elif key:
             sf = self.syntactic_object.set_feature(key, value)
             self.set_feature(syntactic_feature=sf)
         elif string:
-            features = self.forest.parse_features(string, self)
+            features = ctrl.forest.parse_features(string, self)
             if 'gloss' in features:
                 self.set_gloss_text(features['gloss'])
                 del features['gloss']
@@ -401,9 +451,9 @@ class ConstituentNode(Node):
         syn_gloss = self.syntactic_object.get_gloss()
         gloss_node = self.get_gloss()
         if gloss_node and not syn_gloss:
-            self.forest.delete_node(gloss_node)
+            ctrl.forest.delete_node(gloss_node)
         elif syn_gloss and not gloss_node:
-            self.forest.create_gloss_node(self)
+            ctrl.forest.create_gloss_node(self)
         elif syn_gloss and gloss_node:
             gloss_node.update_label()
 
@@ -456,7 +506,7 @@ class ConstituentNode(Node):
             i_string = '<sub><i>%s</i></sub>' % index
         else:
             i_string = ''
-        if self.forest.settings.label_style() != 0:
+        if ctrl.forest.settings.label_style() != 0:
             if alias and label:
                 padding = len(label) - len(alias)
                 if padding > 0:
@@ -600,7 +650,7 @@ class ConstituentNode(Node):
 
         folded = set()
         questionable = set()
-        for node in self.forest.list_nodes(
+        for node in ctrl.forest.list_nodes(
                 self):  # don't fold multidominated nodes unless all of their parents are in fold
             can_be_folded = True
             for parent in node.parents():
@@ -631,7 +681,7 @@ class ConstituentNode(Node):
         """ Restore elements from a triangle """
         self.triangle = False
         self._label_complex.unfold_label()
-        for n, node in enumerate(self.forest.list_nodes(self)):
+        for n, node in enumerate(ctrl.forest.list_nodes(self)):
             node.unfold(self, n)
 
     def prepare_to_be_folded(self, triangle):
@@ -641,11 +691,11 @@ class ConstituentNode(Node):
         # print u'node %s preparing to collapse to %s at %s' % (self, triangle, triangle.target_position )
         self.folding_towards = triangle  # folding_towards should override other kinds of movements
         self.after_move_function = self.finish_folding
-        tx, ty, tz = triangle.get_computed_position()
-        self.set_adjustment(triangle.get_adjustment())
-        self.set_computed_position((tx, ty + 30, tz))  # , fast = True)
-        for feature in self.features:
-            feature.fade_out()
+        tx, ty, tz = triangle.computed_position
+        self.adjustment = triangle.adjustment
+        self.computed_position = (tx, ty + 30, tz)  # , fast = True)
+        #for feature in self.features:
+        #    feature.fade_out()
 
     def finish_folding(self):
         """ Hide, and remember why this is hidden """
@@ -660,15 +710,15 @@ class ConstituentNode(Node):
         """
         self.folded_away = False
         self.folding_towards = None
-        x, y, z = from_node.get_computed_position()
-        self.set_adjustment(from_node.get_adjustment())
-        self.set_computed_position((x + n, y + n, z))
+        x, y, z = from_node.computed_position
+        self.adjustment = from_node.adjustment
+        self.computed_position = (x + n, y + n, z)
         self.update_visibility()
         for edge in self.edges_down:
             edge.update_visibility()
         self.boundingRect(update=True)
-        for feature in self.features:
-            feature.fade_in()
+        #for feature in self.features:
+        #    feature.fade_in()
 
     def paint_triangle(self, painter, draw_rect):
         """ Drawing the triangle, called from paint-method
@@ -750,7 +800,6 @@ class ConstituentNode(Node):
                 pass
                 # print 'ctrl.ui problem here!'
                 # assert(False)
-                # if self.forest.main.ui.is_target_reticle_over(self):
                 # if ctrl.ui.is_target_reticle_over(self):
                 # ctrl.ui.update_target_reticle_position()
         return QtWidgets.QGraphicsItem.itemChange(self, change, value)
@@ -777,7 +826,7 @@ class ConstituentNode(Node):
 
         :return:
         """
-        main = self.forest.main
+        main = ctrl.main
         menu = main.ui_manager.create_menu(self, actions=[
             {'name': 'Root Merge', 'method': main.do_merge, 'local_shortcut': 'r', 'condition': 'can_root_merge',
              'menu_type': 'Button'},
@@ -819,9 +868,9 @@ class ConstituentNode(Node):
         if self in ctrl.on_cancel_delete:
             if not label:
                 for item in ctrl.on_cancel_delete:
-                    self.forest.delete_item(item)
+                    ctrl.forest.delete_item(item)
         ctrl.on_cancel_delete = []
-        self.forest.main.action_finished('edit node text')
+        ctrl.main.action_finished('edit node text')
 
     def change_index(self, caller=None, event=None):
         """
@@ -831,7 +880,7 @@ class ConstituentNode(Node):
         """
         index = caller.get_value()
         self.set_index(index)
-        self.forest.main.action_finished('edit node index')
+        ctrl.main.action_finished('edit node index')
 
     def change_gloss_text(self, caller=None, event=None):
         """
@@ -841,7 +890,7 @@ class ConstituentNode(Node):
         """
         gloss = caller.get_value()
         self.set_gloss_text(gloss)
-        self.forest.main.action_finished('edit node gloss text')
+        ctrl.main.action_finished('edit node gloss text')
 
     def change_alias(self, caller=None, event=None):
         """
@@ -851,7 +900,7 @@ class ConstituentNode(Node):
         """
         alias = caller.get_value()
         self.set_alias(alias)
-        self.forest.main.action_finished('edit node label')
+        ctrl.main.action_finished('edit node label')
 
     def change_features_string(self, caller=None, event=None):
         """
@@ -861,7 +910,7 @@ class ConstituentNode(Node):
         """
         featurestring = caller.get_value()
         self.set_feature(string=featurestring)
-        self.forest.main.action_finished('edit node feature text')
+        ctrl.main.action_finished('edit node feature text')
 
     #### Checks for callable actions ####
 
@@ -909,18 +958,18 @@ class ConstituentNode(Node):
         # there if node is both above and below the dragged node, it shouldn't move
         for drag_host in drag_hosts:
             root = drag_host.get_root_node()
-            nodes = self.forest.list_nodes_once(root)
+            nodes = ctrl.forest.list_nodes_once(root)
             drag_host_index = nodes.index(drag_host)
-            dx, dy, dummy_z = drag_host.get_current_position()
-            for node in self.forest.list_nodes_once(drag_host):
+            dx, dy, dummy_z = drag_host.current_position
+            for node in ctrl.forest.list_nodes_once(drag_host):
                 if nodes.index(node) >= drag_host_index:
                     ctrl.dragged.add(node)
-                    x, y, dummy_z = node.get_current_position()
-                    node._position_before_dragging = node.get_current_position()
-                    node._adjustment_before_dragging = node.get_adjustment()
+                    x, y, dummy_z = node.current_position
+                    node._position_before_dragging = node.current_position
+                    node._adjustment_before_dragging = node.adjustment
                     node._distance_from_dragged = (x - dx, y - dy)
         if len(drag_hosts) == 1:  # don't allow merge if this is multidrag-situation
-            self.forest.prepare_touch_areas_for_dragging(excluded=ctrl.dragged)
+            ctrl.forest.prepare_touch_areas_for_dragging(excluded=ctrl.dragged)
 
     def drag(self, event):
         """ Drags also elements that are counted to be involved: features, children etc
@@ -939,15 +988,15 @@ class ConstituentNode(Node):
                 ax, ay, az = node._adjustment_before_dragging
                 diff_x = now_x + dx - px - ax
                 diff_y = now_y + dy - py - ay
-                node.set_adjustment((diff_x, diff_y, az))
+                node.adjustment = (diff_x, diff_y, az)
             else:
-                node.set_computed_position((now_x + dx, now_y + dy, pz))
+                node.computed_position = (now_x + dx, now_y + dy, pz)
             # try:
             #    assert (int(px - ax) == int(node._computed_position[0])) # position without adjustment
             # except AssertionError:
             #    print 'Assertion error:'
             #    print px - ax, py - ay, node._computed_position
-            node.set_current_position((now_x + dx, now_y + dy, pz))
+            node.current_position = (now_x + dx, now_y + dy, pz)
 
     def drop_to(self, x, y, recipient=None):
         """
@@ -970,7 +1019,7 @@ class ConstituentNode(Node):
         del self._distance_from_dragged
         ctrl.dragged = set()
         ctrl.dragged_positions = set()
-        self.forest.main.action_finished('moved node %s' % self)
+        ctrl.main.action_finished('moved node %s' % self)
         # ctrl.scene.fit_to_window()
 
     def cancel_dragging(self):
@@ -980,11 +1029,11 @@ class ConstituentNode(Node):
         """
         assert False
         sx, sy = self._before_drag_position
-        z = self.get_current_position()[2]
-        self.set_computed_position((sx, sy, z))
+        z = self.current_position[2]
+        self.computed_position = (sx, sy, z)
         for node, x, y in ctrl.dragged_positions:
-            z = node.get_current_position()[2]
-            node.set_computed_position((sx + x, sy + y, z))
+            z = node.current_position[2]
+            node.computed_position = (sx + x, sy + y, z)
         del self.before_drag_position
         ctrl.dragged = set()
         ctrl.dragged_positions = set()

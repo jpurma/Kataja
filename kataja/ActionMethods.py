@@ -378,7 +378,7 @@ class ActionMethods:
         if scope == g.SELECTION:
             for edge in ctrl.get_all_selected():
                 if isinstance(edge, Edge):
-                    edge.shape_name(shape)
+                    edge.shape_name = shape
                     edge.update_shape()
         elif scope:
             ctrl.forest.settings.edge_type_settings(scope, 'shape_name', shape)

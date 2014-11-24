@@ -29,6 +29,7 @@ from kataja.debug import parser
 from kataja.singletons import ctrl
 from kataja.Presentation import TextArea, Image
 from kataja.utils import next_free_index
+import kataja.globals as g
 
 
 latex_symbols_to_unicode = {'bar': '\u00AF', 'abar': '\u0100',  # small greek alphabet
@@ -58,14 +59,11 @@ cases = ['NOM', 'ACC', 'PRT', 'GEN', 'DAT', 'ILL']
 
 class Parser:
     """ Methods to translate strings to trees or other objects. Base class Parser has general methods, subclasses have specific parsers. Parsers are created on fly and they generally shouldn't hold anything that needs long term storing or saving. (If they do, e.g. lexicons those should be moved to a more suitable place.) """
-    saved_fields = ['save_key', 'local_lexicon', '_definitions', '_gloss', 'forest']
 
 
     def __init__(self, forest):
         """ Parsers have own lexicons to allow referencing to parsed objects """
-        self.save_key = forest.save_key + '_parser'
         self.local_lexicon = {}
-        # ## Layered parsing uses these:
         self._definitions = {}
         self._gloss = ''
         self.forest = forest
@@ -368,9 +366,9 @@ class LayeredParser(Parser):
         if alias:
             node.set_alias(alias)
         if left:
-            self.forest._connect_node(parent=node, child=f.get_node(left), direction='left')
+            self.forest._connect_node(parent=node, child=f.get_node(left), direction=g.LEFT)
         if right:
-            self.forest._connect_node(parent=node, child=f.get_node(right), direction='right')
+            self.forest._connect_node(parent=node, child=f.get_node(right), direction=g.RIGHT)
         node.update_label()
         f.derivation_steps.save_and_create_derivation_step()
         return constituent
@@ -781,9 +779,9 @@ class BottomUpParser(Parser):
                 if dot_alias:
                     node.set_alias(dot_alias)
             if left:
-                self.forest._connect_node(parent=node, child=left, direction='left')
+                self.forest._connect_node(parent=node, child=left, direction=g.LEFT)
             if right:
-                self.forest._connect_node(parent=node, child=right, direction='right')
+                self.forest._connect_node(parent=node, child=right, direction=g.RIGHT)
             node.update_label()
             f.derivation_steps.save_and_create_derivation_step()
             return node

@@ -319,11 +319,11 @@ def linear_icon(painter, rect, color=None):
 def blob_path(start_point=None, end_point=None, adjust=None, align=LEFT, thickness=4, start=None, end=None, **kwargs):
     """ Surround the node with circular shape that stretches to other node """
     if start:
-        scx, scy, scz = start.get_current_position()
+        scx, scy, scz = start.current_position
     else:
         scx, scy, scz = start_point
     if end:
-        ecx, ecy, ecz = end.get_current_position()
+        ecx, ecy, ecz = end.current_position
     else:
         ecx, ecy, ecz = end_point
     t2 = thickness*2
@@ -412,11 +412,11 @@ def blob_icon(painter, rect, color=None, thickness=3):
 def directional_blob_path(start_point=None, end_point=None, adjust=None, align=LEFT,  thickness=4, start=None, end=None, **kwargs):
     """ Surround the node with circular shape that stretches to other node """
     if start:
-        scx, scy, scz = start.get_current_position()
+        scx, scy, scz = start.current_position
     else:
         scx, scy, scz = start_point
     if end:
-        ecx, ecy, ecz = end.get_current_position()
+        ecx, ecy, ecz = end.current_position
     else:
         ecx, ecy, ecz = end_point
     t2 = thickness*2

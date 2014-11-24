@@ -107,14 +107,14 @@ class DynamicWidthTree(BaseVisualization):
         if not isinstance(node, ConstituentNode):
             return BaseVisualization.calculate_movement(self, node)
         xvel = 0.0
-        node_x, node_y, node_z = node.get_current_position()
+        node_x, node_y, node_z = node.current_position
         # linear = self.forest.list_nodes_once(node.get_root_node())
         node_index = self._linear.index(node)
         for other_index, other in enumerate(self._linear):
             if other is node:
                 continue
             leaf = other.is_leaf_node()
-            other_x, other_y, other_z = other.get_current_position()
+            other_x, other_y, other_z = other.current_position
             width = (node.width + other.width) * .5  # / 2
             dist_y = other_y - node_y
 
@@ -150,18 +150,18 @@ class DynamicWidthTree(BaseVisualization):
             edge_length_x = edge.start_point[0] - edge.end_point[0]
             if edge_length_x > prefs.edge_width:
                 edge_length_x -= prefs.edge_width
-                xvel += edge_length_x * edge.pull() / self.push
+                xvel += edge_length_x * edge.pull / self.push
             elif edge_length_x < -prefs.edge_width:
                 edge_length_x += prefs.edge_width
-                xvel += edge_length_x * edge.pull() / self.push
+                xvel += edge_length_x * edge.pull / self.push
         for edge in node.get_edges_down():
             edge_length_x = edge.end_point[0] - edge.start_point[0]
             if edge_length_x > prefs.edge_width:
                 edge_length_x -= prefs.edge_width
-                xvel += edge_length_x * edge.pull() / self.push
+                xvel += edge_length_x * edge.pull / self.push
             elif edge_length_x < -prefs.edge_width:
                 edge_length_x += prefs.edge_width
-                xvel += edge_length_x * edge.pull() / self.push
+                xvel += edge_length_x * edge.pull / self.push
         return xvel, 0, 0
 
     def draw(self):
@@ -177,7 +177,7 @@ class DynamicWidthTree(BaseVisualization):
             for n, x, width in rows[row]:
                 x_pos += width
             rows[row].append((node, x_pos, node.width))
-            node.set_computed_position((x_pos + node.width, row * edge_height * 2, 0))
+            node.computed_position = (x_pos + node.width, row * edge_height * 2, 0)
             left = node.left()
             if left:
                 _fill_grid(left, row + 1)

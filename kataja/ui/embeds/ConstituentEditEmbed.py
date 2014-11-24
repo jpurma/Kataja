@@ -74,7 +74,7 @@ class ConstituentEditEmbed(UIEmbed):
         self.assumed_height = 117
 
     def update_position(self):
-        sx,sy,sz = self.node.get_current_position()
+        sx,sy,sz = self.node.current_position
         p = self.parent().mapFromScene(sx, sy)
         px, py = p.x(), p.y()
         py -= self.assumed_height/2

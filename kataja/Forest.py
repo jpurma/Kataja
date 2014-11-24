@@ -97,6 +97,7 @@ class Forest:
 
     def __init__(self, main, restoring=''):
         """ Create an empty forest """
+        self.nodes_by_uid = {}
         self.save_key = 'forest_%s' % id(self)
         self.main = main
         self.roots = []  # the current line of trees
@@ -286,6 +287,8 @@ class Forest:
         #    self.features[item.key] = item
         if isinstance(item, Node):
             self.nodes[item.save_key] = item
+            if item.syntactic_object:
+                self.nodes_by_uid[item.syntactic_object.uid] = item
         elif isinstance(item, Edge):
             self.edges[item.save_key] = item
         elif isinstance(item, TextArea):
@@ -389,7 +392,7 @@ class Forest:
         :rtype kataja.ConstituentNode
         """
         forest()
-        return self.nodes.get('CN%s' % constituent.uid, None)
+        return self.nodes_by_uid.get(constituent.uid, None)
 
     def get_constituent_edges(self):
         """ Return list of constituent edges
@@ -569,8 +572,7 @@ class Forest:
 
     def create_placeholder_node(self, pos):
         forest()
-        node = ConstituentNode(constituent=None, forest=self)
-        print("Created placeholder: ", [node])
+        node = ConstituentNode(constituent=None)
         node.set_original_position(pos)
         self.add_to_scene(node)
         node.update_visibility()
@@ -623,7 +625,7 @@ class Forest:
         :return:
         """
         forest()
-        rel = Edge(self, start=start, end=end, edge_type=edge_type, direction=direction)
+        rel = Edge(start=start, end=end, edge_type=edge_type, direction=direction)
         if ctrl.loading:
             pass
         else:
@@ -784,6 +786,7 @@ class Forest:
         self.bracket_manager.remove_brackets(node)
         # -- dictionaries --
         del self.nodes[node.save_key]
+        del self.nodes_by_uid[node.syntactic_object.uid]
         if node in self.roots:
             self.roots.remove(node)
         # -- scene --
@@ -955,7 +958,7 @@ class Forest:
             else:
                 # we are missing the stub to left here
                 print("Creating placeholder to LEFT")
-                placeholder = self.create_placeholder_node(node.get_current_position())
+                placeholder = self.create_placeholder_node(node.current_position)
                 self._connect_node(node, placeholder, direction=LEFT)
         elif not right:
             if left.is_placeholder():
@@ -965,7 +968,7 @@ class Forest:
             else:
                 # we are missing the stub to right here
                 print("Creating placeholder to RIGHT")
-                placeholder = self.create_placeholder_node(node.get_current_position())
+                placeholder = self.create_placeholder_node(node.current_position)
                 self._connect_node(node, placeholder, direction=RIGHT)
         elif left.is_placeholder() and right.is_placeholder():
             # both are placeholders, so this node doesn't need to have children at all. remove stubs.
@@ -1146,7 +1149,7 @@ class Forest:
         # print 'f.settings.use_multidomination:', f.settings.use_multidomination
         # if not f.settings.use_multidomination:
         #     new_trace = f.create_trace_for(dropped_node)
-        #     new_trace.set_original_position(dropped_node.get_current_position())
+        #     new_trace.set_original_position(dropped_node.current_position)
         #     chain = f.get_chain(dropped_node.get_index())
         #     traces_first = f.traces_go_first()
         #     if traces_first:
@@ -1393,9 +1396,9 @@ class Forest:
         forest('_replace_node %s %s %s %s' % (old_node, new_node, only_for_parent, replace_children))
 
         assert (old_node != new_node)  # if this can happen, we'll probably have infinite loop somewhere
-        new_node.set_current_position(old_node.get_current_position())
-        new_node.set_adjustment(old_node.get_adjustment())
-        new_node.set_computed_position(old_node.get_computed_position())
+        new_node.current_position = old_node.current_position
+        new_node.adjustment = old_node.adjustment
+        new_node.computed_position = tuple(old_node.computed_position)
         new_node.update_visibility(active=True, fade=True)
 
         for edge in list(old_node.edges_up):
@@ -1538,7 +1541,7 @@ class Forest:
         if not node:
             return
         new_c = ForestSyntax.constituent_copy(node)
-        new_node = self.create_node_from_constituent(new_c, pos=node.get_current_position(), result_of_select=True)
+        new_node = self.create_node_from_constituent(new_c, pos=node.current_position, result_of_select=True)
         self.undo_manager.record("Copied %s" % node)
         self.main.add_message("Copied %s" % node)
         return new_node

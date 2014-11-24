@@ -40,23 +40,24 @@ class GlossNode(Node):
     width = 20
     height = 20
     default_edge_type = GLOSS_EDGE
-    saved_fields = ['host']
-    saved_fields = list(set(Node.saved_fields + saved_fields))
     node_type = GLOSS_NODE
 
     def __init__(self, host=None, restoring=False):
-        forest = host.forest
-        if not forest:
-            raise Exception("Forest is missing")
-        Node.__init__(self, forest=forest)
-        self.host = host
-        self.save_key = 'GlN%s' % host.syntactic_object.uid
-        # self.color = colors.drawing2
+        Node.__init__(self)
+        self.saved.host = host
         if not restoring:
             self.update_identity()
             self.update_label()
             self.boundingRect(update=True)
             self.update_visibility()
+
+    @property
+    def host(self):
+        return self.saved.host
+
+    @host.setter
+    def host(self, value):
+        self.saved.host = value
 
     def update_colors(self):
         """

@@ -64,7 +64,6 @@ class AttributeNode(Node):
     height = 20
     default_edge_type = ATTRIBUTE_EDGE
     saved_fields = ['host']
-    saved_fields = list(set(Node.saved_fields + saved_fields))
     node_type = ATTRIBUTE_NODE
 
 
@@ -96,7 +95,7 @@ class AttributeNode(Node):
         if not restoring:
             # compute start position -- similar to FeatureNode, but happens on init
             # because host is given
-            x, y, z = self.host.get_current_position()
+            x, y, z = self.host.current_position
             k = self.attribute_label
             if k in color_map:
                 x += color_map[k]

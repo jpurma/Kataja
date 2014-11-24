@@ -38,14 +38,10 @@ class PropertyNode(Node):
     width = 20
     height = 20
     default_edge_type = PROPERTY_EDGE
-    saved_fields = []
-    saved_fields = list(set(Node.saved_fields + saved_fields))
     node_type = PROPERTY_NODE
 
 
     def __init__(self, property=None, forest=None):
         Node.__init__(self, syntactic_object=property, forest=forest)
-        self.save_key = 'PN%s' % id(self)
-        sys.intern(self.save_key)
         # self.color = colors.text
         self.update_identity()

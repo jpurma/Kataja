@@ -194,16 +194,16 @@ class ChainManager:
                     if head.bind_x and head.bind_y:
                         node.bind_x = True
                         node.bind_y = True
-                        x, y, z = head.get_computed_position()
-                        node.set_adjustment(head.get_adjustment())
+                        x, y, z = head.computed_position
+                        node.adjustment = head.adjustment
                         y += dy
                         x -= dx
-                        node.set_computed_position((x, y, z))
+                        node.computed_position = (x, y, z)
                     else:
-                        x, y, z = head.get_current_position()
+                        x, y, z = head.current_position
                         y += dy
                         x -= dx
-                        node.set_current_position((x, y, z))
+                        node.current_position = (x, y, z)
                     y_adjust[key] = (dx + node.boundingRect().width(), dy + node.boundingRect().height())
 
     @time_me

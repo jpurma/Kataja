@@ -210,5 +210,5 @@ class BalancedTree(BaseVisualization):
             for x, node in enumerate(row):
                 if node and isinstance(node, Movable):
                     node.release()
-                    node.set_computed_position((x * edge_width + offset_x, height_now, 0))
+                    node.computed_position = (x * edge_width + offset_x, height_now, 0)
 

@@ -182,7 +182,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
             elif isinstance(self.host, Edge):
                 self.end_point = (self.host.end_point[0], self.host.end_point[1])
             elif hasattr(self.host, 'get_current_position'):
-                self.end_point = (self.host.get_current_position()[0], self.host.get_current_position()[1])
+                self.end_point = (self.host.current_position[0], self.host.current_position[1])
             self.start_point = self.end_point
             self._path = None
             return
@@ -270,18 +270,17 @@ class TouchArea(QtWidgets.QGraphicsItem):
         top left, top right, left, right
         :param dropped_node:
         """
-        f = self.host.forest
         print('---- dropped node to touch area -----')
         # if not isinstance(dropped_node, ConstituentNode):
         # return False
-        f.undo_manager.record('re-merge constituent')
+        ctrl.forest.undo_manager.record('re-merge constituent')
         if isinstance(self.host, Edge):
             print('calling replace_node_with_merged_node from edge')
-            f.replace_node_with_merged_node(self.host.end, dropped_node, edge=self.host, merge_to_left=self._align_left,
+            ctrl.forest.replace_node_with_merged_node(self.host.end, dropped_node, edge=self.host, merge_to_left=self._align_left,
                                             merger_node_pos=None)
         else:
             print('calling replace_node_with_merged_node')
-            f.replace_node_with_merged_node(self.host, dropped_node, None, merge_to_left=self._align_left,
+            ctrl.forest.replace_node_with_merged_node(self.host, dropped_node, None, merge_to_left=self._align_left,
                                             merger_node_pos=self.start_point)
 
 
@@ -291,11 +290,10 @@ class TouchArea(QtWidgets.QGraphicsItem):
         :type forest: Forest
         Creates a new node, edge to host depends on which merge area was clicked
          """
-        f = self.host.forest
         self._dragging = False
         if self._drag_hint:
             return False
-        f.undo_manager.record('add constituent')
+        ctrl.forest.undo_manager.record('add constituent')
         edge = None
         node = self.host
         if hasattr(self.host, 'end'):
@@ -304,7 +302,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
         if self.type is g.TOUCH_ADD_CONSTITUENT:
             node.open_embed()
         else:
-            f.replace_node_with_merged_empty_node(node=node, edge=edge, merge_to_left=self._align_left,
+            ctrl.forest.replace_node_with_merged_empty_node(node=node, edge=edge, merge_to_left=self._align_left,
                                               new_node_pos=self.end_point, merger_node_pos=self.start_point)
             ctrl.deselect_objects()
         return True

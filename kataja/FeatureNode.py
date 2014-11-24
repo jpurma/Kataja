@@ -40,7 +40,6 @@ class FeatureNode(Node):
     height = 20
     default_edge_type = FEATURE_EDGE
     saved_fields = []
-    saved_fields = list(set(Node.saved_fields + saved_fields))
     node_type = FEATURE_NODE
 
     def __init__(self, feature=None, forest=None, restoring=False):
@@ -65,7 +64,7 @@ class FeatureNode(Node):
         If not, then some random noise is added to prevent features sticking together
         :param host:
         """
-        x, y, z = host.get_current_position()
+        x, y, z = host.current_position
         k = self.syntactic_object.key
         if k in color_map:
             x += color_map[k]

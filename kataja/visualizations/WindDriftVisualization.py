@@ -99,21 +99,21 @@ class WindDriftTree(BaseVisualization):
                 if not (left or right):  # bottom level nodes
                     x, y = self._last_pos
                     if self._leftmost:  # this isn't bottom right node
-                        lx, y, z = self._leftmost.get_current_position()
+                        lx, y, z = self._leftmost.current_position
                         x = lx - self._leftmost.width / 2 - node.width / 2
                     self._leftmost = node
                     self._last_pos = (x, y)
-                    node.set_computed_position((x, y, 0))
+                    node.computed_position = (x, y, 0)
                 else:
                     x, y = self._last_pos
                     left_right_node = left.right()
                     if left_right_node:
-                        y = min((y - self._grid_height, left_right_node.get_current_position()[1] - self._grid_height))
+                        y = min((y - self._grid_height, left_right_node.current_position[1] - self._grid_height))
                     else:
                         y -= self._grid_height
                     x += self._grid_height
                     self._last_pos = (x, y)
-                    node.set_computed_position((x, y, 0))
+                    node.computed_position = (x, y, 0)
 
         draw_node(topmost_node, None)
 

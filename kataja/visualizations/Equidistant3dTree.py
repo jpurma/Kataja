@@ -78,8 +78,8 @@ class Equidistant3dTree(BaseVisualization):
         node.bind_y = False
         node.bind_x = False
         node.bind_z = False
-        x, y, z = node.get_current_position()
-        node.set_current_position((x, y, z + (random.random() * 10) - 5))
+        x, y, z = node.current_position
+        node.current_position = (x, y, z + (random.random() * 10) - 5)
 
 
     def calculate_movement_o(self, node):
@@ -93,9 +93,9 @@ class Equidistant3dTree(BaseVisualization):
         xvel = 0.0
         yvel = 0.0
 
-        node_x, node_y, node_z = node.get_current_position()
+        node_x, node_y, node_z = node.current_position
         for other in self.forest.visible_nodes():
-            other_x, other_y, other_z = other.get_current_position()
+            other_x, other_y, other_z = other.current_position
             if other is node:
                 continue
             dist_x = int(node_x - other_x)
@@ -119,8 +119,8 @@ class Equidistant3dTree(BaseVisualization):
                 d_y = end_y - start_y
                 rd_x = target_d_x - d_x
                 rd_y = target_d_y - d_y
-                xvel += rd_x * edge.pull() / ((i + 1) * (i + 1))  # first branch has strongest pull
-                yvel += rd_y * edge.pull()  # / ((i + 1) * (i + 1))
+                xvel += rd_x * edge.pull / ((i + 1) * (i + 1))  # first branch has strongest pull
+                yvel += rd_y * edge.pull  # / ((i + 1) * (i + 1))
             else:
                 print('hidden edge ', edge)
 
@@ -138,9 +138,9 @@ class Equidistant3dTree(BaseVisualization):
         xvel = 0.0
         yvel = 0.0
         zvel = 0.0
-        node_x, node_y, node_z = node.get_current_position()
+        node_x, node_y, node_z = node.current_position
         for other in self.forest.visible_nodes():
-            other_x, other_y, other_z = other.get_current_position()
+            other_x, other_y, other_z = other.current_position
             if other is node:
                 continue
             dist_x = int(node_x - other_x)

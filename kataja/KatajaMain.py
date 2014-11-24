@@ -324,7 +324,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         if hasattr(caller, 'get_text_input'):
             text = caller.get_text_input()
             text_area = TextArea(text)
-            text_area.set_original_position(caller.get_current_position())
+            text_area.set_original_position(caller.current_position)
             self.forest.store(text_area)
         self.action_finished()
 

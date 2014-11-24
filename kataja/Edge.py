@@ -22,9 +22,10 @@
 #
 # ############################################################################
 
+import math
+
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QPointF as Pf, Qt
-import math
 
 from kataja.singletons import ctrl, qt_prefs
 import kataja.globals as g
@@ -32,71 +33,58 @@ from kataja.globals import LEFT, RIGHT, NO_ALIGN
 from kataja.shapes import SHAPE_PRESETS, to_Pf, outline_stroker
 from kataja.EdgeLabel import EdgeLabel
 import kataja.utils as utils
-
+from kataja.Saved import Savable
 
 # ('shaped_relative_linear',{'method':shapedRelativeLinearPath,'fill':True,'pen':'thin'}),
-from kataja.utils import time_me
 
-angle_magnet_map = {
-    0: 6, 1: 6, 2: 4, 3: 3, 4: 2, 5: 1, 6: 0, 7: 5, 8: 5, 9: 5, 10: 7, 11: 8, 12: 9, 13: 10, 14: 11, 15: 6, 16: 6
-}
+angle_magnet_map = {0: 6, 1: 6, 2: 4, 3: 3, 4: 2, 5: 1, 6: 0, 7: 5, 8: 5, 9: 5, 10: 7, 11: 8, 12: 9, 13: 10, 14: 11,
+                    15: 6, 16: 6}
 
-atan_magnet_map = {
-    -8: 5, -7: 5, -6: 0, -5: 1, -4: 2, -3: 3, -2: 4, -1: 6, 0: 6, 1: 6, 2: 11, 3: 10, 4: 9, 5: 8, 6: 7, 7: 5, 8: 5
-}
+atan_magnet_map = {-8: 5, -7: 5, -6: 0, -5: 1, -4: 2, -3: 3, -2: 4, -1: 6, 0: 6, 1: 6, 2: 11, 3: 10, 4: 9, 5: 8, 6: 7,
+                   7: 5, 8: 5}
 
 
-class Edge(QtWidgets.QGraphicsItem):
+class Edge(Savable, QtWidgets.QGraphicsItem):
     """ Any connection between nodes: can be represented as curves, branches or arrows """
 
     z_value = 10
-    saved_fields = ['forest', 'edge_type', 'adjust', 'start', 'end', '_color', '_shape_name', '_pull', '_shape_visible',
-                    '_visible']
 
     receives_signals = [g.EDGE_SHAPES_CHANGED]
 
-    def __init__(self, forest, start=None, end=None, edge_type='', direction=''):
+    def __init__(self, start=None, end=None, edge_type='', direction=''):
         """
-
-        :param Forest forest:
         :param Node start:
         :param Node end:
         :param string edge_type:
         :param string direction:
         :param string restoring:
         """
+        print(direction)
+        Savable.__init__(self)
         QtWidgets.QGraphicsItem.__init__(self)
-        self.forest = forest
-        self.save_key = 'R%s' % id(self)
+        self.saved.start_point = (0, 0, 0)
+        self.saved.end_point = (0, 0, 0)
+        self.saved.edge_type = edge_type
+        self.saved.adjust = []
+        self.saved.align = direction #or NO_ALIGN
+        self.saved.start = start
+        self.saved.end = end
+        self.saved.use_arrowheads = None
+        self.saved.label_data = {}
+        self.saved.local_shape_args = {}
+        self.saved.edge_color = None
+        self.saved.shape_name = None
+        self.saved.pull = None
+        self.saved.visible = None
 
-        self.start_point = (0, 0, 0)
-        self.end_point = (0, 0, 0)
+
         self.setZValue(-1)
-        self.edge_type = edge_type
         self.control_points = []
-        self.adjust = []
-
-        if isinstance(direction, str):
-            if direction == 'left':
-                self.align = LEFT
-            elif direction == 'right':
-                self.align = RIGHT
-            else:
-                self.align = NO_ALIGN
-        elif isinstance(direction, int):
-            self.align = direction
-        self.start = start
-        self.end = end
         self._local_drag_handle_position = None
         self._arrowhead_at_start = None
         self._arrowhead_at_end = None
 
         # ## Adjustable values, defaults to ForestSettings if None for this element
-        self._color = None
-        self._shape_name = None
-        self._pull = None
-        self._shape_visible = None
-        self._local_shape_args = {} # should include only those arguments that are explicitly changed by user, rest are
         # based on the relation style
 
         # self.center_point = (0, 0, 0)
@@ -104,15 +92,15 @@ class Edge(QtWidgets.QGraphicsItem):
         # ## Derivative elements
         self._shape_method = None
         self._path = None
-        self._true_path = None # inner arc or line without the leaf effect
+        self._true_path = None  # inner arc or line without the leaf effect
         self._fat_path = None
-        self._visible = None
         self.selectable = True
         self.draggable = not (self.start or self.end)
         self.clickable = False
         self._hovering = False
         self.setZValue(10)
         self.status_tip = ""
+        self._cached_shape_args = {}
         self.connect_end_points(start, end)
         self.arrowhead_size_at_start = 6
         self.arrowhead_size_at_end = 6
@@ -129,7 +117,7 @@ class Edge(QtWidgets.QGraphicsItem):
         self._label_angle = 90
         self._label_dist = 12
         self._relative_vector = None
-        self._label_font = None # inherited from settings
+        self._label_font = None  # inherited from settings
         self._cached_label_start = None
         # self.setAcceptedMouseButtons(QtCore.Qt.NoButton)
         # self.setFlag(QtGui.QGraphicsItem.ItemIsMovable)
@@ -138,6 +126,240 @@ class Edge(QtWidgets.QGraphicsItem):
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.effect = utils.create_shadow_effect(ctrl.cm.selection())
         self.setGraphicsEffect(self.effect)
+
+    @property
+    def start_point(self):
+        """
+        :return:
+        """
+        return self.saved.start_point
+
+    @start_point.setter
+    def start_point(self, value):
+        """
+        :param value:
+        """
+        self.saved.start_point = value
+
+    @property
+    def end_point(self):
+        """
+        :return:
+        """
+        return self.saved.end_point
+
+    @end_point.setter
+    def end_point(self, value):
+        """
+        :param value:
+        """
+        self.saved.end_point = value
+
+    @property
+    def edge_type(self):
+        """
+        :return:
+        """
+        return self.saved.edge_type
+
+    @edge_type.setter
+    def edge_type(self, value):
+        """
+        :param value:
+        """
+        self.saved.edge_type = value
+
+    @property
+    def adjust(self):
+        """
+        :return:
+        """
+        return self.saved.adjust
+
+    @adjust.setter
+    def adjust(self, value):
+        """
+        :param value:
+        """
+        self.saved.adjust = value
+
+    @property
+    def align(self):
+        """
+        :return:
+        """
+        return self.saved.align
+
+    @align.setter
+    def align(self, value):
+        """
+        :param value:
+        """
+        self.saved.align = value
+
+    @property
+    def start(self):
+        """
+        :return:
+        """
+        return self.saved.start
+
+    @start.setter
+    def start(self, value):
+        """
+        :param value:
+        """
+        self.saved.start = value
+
+    @property
+    def end(self):
+        """
+        :return:
+        """
+        return self.saved.end
+
+    @end.setter
+    def end(self, value):
+        """
+        :param value:
+        """
+        self.saved.end = value
+
+    @property
+    def use_arrowheads(self):
+        """
+        :return:
+        """
+        return self.saved.use_arrowheads
+
+    @use_arrowheads.setter
+    def use_arrowheads(self, value):
+        """
+        :param value:
+        """
+        self.saved.use_arrowheads = value
+
+    @property
+    def label_data(self):
+        """
+        :return:
+        """
+        return self.saved.label_data
+
+    @label_data.setter
+    def label_data(self, value):
+        """
+        :param value:
+        """
+        self.saved.label_data = value
+
+    @property
+    def local_shape_args(self):
+        """
+        :return:
+        """
+        return self.saved.local_shape_args
+
+    @local_shape_args.setter
+    def local_shape_args(self, value):
+        """
+        :param value:
+        """
+        self.saved.local_shape_args = value
+
+    @property
+    def edge_color(self):
+        """
+        :return:
+        """
+        return self.saved.edge_color
+
+    @edge_color.setter
+    def edge_color(self, value):
+        """
+        :param value:
+        """
+        self.saved.edge_color = value
+
+    @property
+    def edge_color(self):
+        """
+        :return:
+        """
+        if self.saved.edge_color is None:
+            c = ctrl.forest.settings.edge_type_settings(self.edge_type, 'color')
+            return ctrl.cm.get(c)
+        else:
+            return ctrl.cm.get(self.saved.edge_color)
+
+    @edge_color.setter
+    def edge_color(self, value):
+        """
+        :param value:
+        """
+        self.saved.edge_color = value
+        if self._label_item:
+            self._label_item.setDefaultTextColor(ctrl.cm.get(value))
+
+    @property
+    def color_id(self):
+        """  get palette id of the edge color.
+        :return: str
+        """
+        if self.saved.edge_color is None:
+            return ctrl.forest.settings.edge_type_settings(self.edge_type, 'color')
+        else:
+            return self.saved.edge_color
+
+    @property
+    def shape_name(self):
+        """
+        :return:
+        """
+        if self.saved.shape_name is None:
+            return ctrl.forest.settings.edge_type_settings(self.edge_type, 'shape_name')
+        else:
+            return self.saved.shape_name
+
+    @shape_name.setter
+    def shape_name(self, value):
+        """
+        :param value:
+        """
+        self.saved.shape_name = value
+        self._shape_method = SHAPE_PRESETS[value]['method']
+
+    @property
+    def pull(self):
+        """
+        :return:
+        """
+        if self.saved.pull is None:
+            return ctrl.forest.settings.edge_type_settings(self.edge_type, 'pull')
+        else:
+            return self.saved.pull
+
+    @pull.setter
+    def pull(self, value):
+        """
+        :param value:
+        """
+        self.saved.pull = value
+
+    @property
+    def visible(self):
+        """
+        :return:
+        """
+        return self.saved.visible
+
+    @visible.setter
+    def visible(self, value):
+        """
+        :param value:
+        """
+        self.saved.visible = value
+
 
     def receive_signal(self, signal, *args):
         """
@@ -149,56 +371,72 @@ class Edge(QtWidgets.QGraphicsItem):
             if (args and args[0] == self.edge_type) or not args:
                 self.update_shape()
 
-
     def is_filled(self):
-        return self._cached_shape_args['fill']
-
-
-    def has_outline(self):
-        return self._cached_shape_args.get('thickness', 0)
-
-
-    def is_visible(self):
-        # assert (self._visible == self.isVisible())
-        # print 'edge is_visible asked, ', self._visible
         """
 
 
         :return:
         """
-        return self._visible
+        return self._cached_shape_args['fill']
+
+    def has_outline(self):
+        """
+
+
+        :return:
+        """
+        return self._cached_shape_args.get('thickness', 0)
+
+    def is_visible(self):
+        """
+
+
+        :return:
+        """
+        return self.visible
 
     def make_relative_vector(self):
+        """
+
+        :return:
+        """
         if self.start and not self.end:
-            sx, sy, sz = self.start.get_current_position()
+            sx, sy, sz = self.start.current_position
             ex, ey, ez = self.end_point
-            self._relative_vector =  ex - sx, ey - sy, ez - sz
+            self._relative_vector = ex - sx, ey - sy, ez - sz
         elif self.end and not self.start:
             sx, sy, sz = self.start_point
-            ex, ey, ez = self.end.get_current_position()
+            ex, ey, ez = self.end.current_position
             self._relative_vector = ex - sx, ey - sy, ez - sz
 
-
     def connect_start_to(self, node):
+        """
+
+        :param node:
+        """
         print('Connecting %s to be start point of %s ' % (node, self))
         ctrl.forest.set_edge_start(self, node)
         self.make_relative_vector()
         ctrl.ui.reset_control_points(self)
         self.update_shape()
-        #self.update()
+        # self.update()
 
     def connect_end_to(self, node):
+        """
+
+        :param node:
+        """
         print('Connecting %s to be end point of %s ' % (node, self))
         ctrl.forest.set_edge_end(self, node)
         self.make_relative_vector()
         ctrl.ui.reset_control_points(self)
         self.update_shape()
 
-
     def set_start_point(self, p, y=None, z=None):
         """ Convenience method for setting start point: accepts QPoint(F)s, tuples and x,y coords.
         :param p: first argument, either QPoint, tuple or x coordinate if y is also given
         :param y: y coordinate
+        :param z: z coordinate
         :return:
         """
         if y is not None:
@@ -219,6 +457,7 @@ class Edge(QtWidgets.QGraphicsItem):
         """ Convenience method for setting end point: accepts QPoint(F)s, tuples and x,y coords.
         :param p: first argument, either QPoint, tuple or x coordinate if y is also given
         :param y: y coordinate
+        :param z: z coordinate
         :return:
         """
         if y is not None:
@@ -235,16 +474,29 @@ class Edge(QtWidgets.QGraphicsItem):
             self.end_point = (p.x(), p.y(), self.end_point[2])
         self.make_relative_vector()
 
-
-    #### Label for arrow etc. ##############################################
+    # Label for arrow etc. ##############################################
 
     def has_label(self):
+        """
+
+        :return:
+        """
         return self._label_item
 
     def get_label_item(self):
+        """
+
+
+        :return:
+        """
         return self._label_item
 
     def label_text(self, value=None):
+        """
+
+        :param value:
+        :return:
+        """
         if value is None:
             return self._label_text
         else:
@@ -254,24 +506,38 @@ class Edge(QtWidgets.QGraphicsItem):
             else:
                 self._label_item.update_text(self._label_text)
 
-
     def font(self, value=None):
+        """
+
+        :param value:
+        :return:
+        """
         if value is None:
             if self._label_font:
                 return qt_prefs.font(self._label_font)
             else:
-                return qt_prefs.font(self.forest.settings.edge_type_settings(self.edge_type, 'font'))
+                return qt_prefs.font(ctrl.forest.settings.edge_type_settings(self.edge_type, 'font'))
         else:
             if isinstance(value, QtGui.QFont):
                 self._label_font = qt_prefs.get_key_for_font(value)
             else:
                 self._label_font = value
 
-
     def get_label_position(self):
+        """
+
+
+        :return:
+        """
         return self._label_start_at, self._label_angle, self._label_dist
 
     def set_label_position(self, start=None, angle=None, dist=None):
+        """
+
+        :param start:
+        :param angle:
+        :param dist:
+        """
         if start is not None:
             self._label_start_at = start
         if angle is not None:
@@ -281,6 +547,11 @@ class Edge(QtWidgets.QGraphicsItem):
         self.update_label_pos()
 
     def get_label_line_positions(self):
+        """
+
+
+        :return:
+        """
         start = self.get_point_at(self._label_start_at)
         angle = (360 - self.get_angle_at(self._label_start_at)) + self._label_angle
         if angle > 360:
@@ -294,21 +565,36 @@ class Edge(QtWidgets.QGraphicsItem):
         return start, end
 
     def update_label_pos(self):
+        """
+
+
+        :return:
+        """
         if not self._label_item:
             return
         start, end = self.get_label_line_positions()
         mx, my = self._label_item.find_suitable_magnet(start, end)
-        #mx, my = self._label_item.find_closest_magnet(start, end)
+        # mx, my = self._label_item.find_closest_magnet(start, end)
         label_pos = end - QtCore.QPointF(mx, my)
         self._cached_label_start = start
         self._label_item.setPos(label_pos)
 
     def get_cached_label_start(self):
+        """
+
+
+        :return:
+        """
         if not self._cached_label_start:
             self.update_label_pos()
         return self._cached_label_start
 
     def is_broken(self):
+        """
+
+
+        :return:
+        """
         if self.edge_type == g.ARROW:
             return False
         if not (self.start and self.end):
@@ -316,34 +602,6 @@ class Edge(QtWidgets.QGraphicsItem):
         return self.start.is_placeholder() or self.end.is_placeholder()
 
     # ### Color ############################################################
-
-    def color(self, value=None):
-        """
-        get color of the edge, or set it.
-        :param value: QColor
-        :return: QColor
-        """
-        if value is None:
-            if self._color is None:
-                c = self.forest.settings.edge_type_settings(self.edge_type, 'color')
-                return ctrl.cm.get(c)
-            else:
-                return ctrl.cm.get(self._color)
-        else:
-            self._color = value
-            if self._label_item:
-                self._label_item.setDefaultTextColor(ctrl.cm.get(value))
-
-    def color_id(self):
-        """
-        get palette id of the edge color.
-        :return: str
-        """
-        if self._color is None:
-            return self.forest.settings.edge_type_settings(self.edge_type, 'color')
-        else:
-            return self._color
-
 
     def contextual_color(self):
         """ Drawing color that is sensitive to node's state
@@ -354,34 +612,22 @@ class Edge(QtWidgets.QGraphicsItem):
         elif self._hovering:
             return ctrl.cm.hovering(ctrl.cm.selection())
         elif self.is_broken():
-            return ctrl.cm.broken(self.color())
+            return ctrl.cm.broken(self.edge_color)
         else:
-            return self.color()
-
+            return self.edge_color
 
     def use_labels(self):
+        """
+
+
+        :return:
+        """
         if self._use_labels is None:
-            return self.forest.settings.edge_type_settings(self.edge_type, 'labeled')
+            return ctrl.forest.settings.edge_type_settings(self.edge_type, 'labeled')
         else:
             return self._use_labels
 
-
     # ### Shape / pull / visibility ###############################################################
-
-    def shape_name(self, value=None):
-        """
-
-        :param value:
-        :return:
-        """
-        if value is None:
-            if self._shape_name is None:
-                return self.forest.settings.edge_type_settings(self.edge_type, 'shape_name')
-            else:
-                return self._shape_name
-        else:
-            self._shape_name = value
-            self._shape_method = SHAPE_PRESETS[value]['method']
 
     def shape_method(self):
         """
@@ -389,7 +635,7 @@ class Edge(QtWidgets.QGraphicsItem):
 
         :return:
         """
-        return SHAPE_PRESETS[self.shape_name()]['method']
+        return SHAPE_PRESETS[self.shape_name]['method']
 
     def shape_control_point_support(self):
         """
@@ -397,23 +643,13 @@ class Edge(QtWidgets.QGraphicsItem):
 
         :return:
         """
-        return SHAPE_PRESETS[self.shape_name()]['control_points']
-
-    def pull(self, value=None):
-        """
-
-        :param value:
-        :return:
-        """
-        if value is None:
-            if self._pull is None:
-                return self.forest.settings.edge_type_settings(self.edge_type, 'pull')
-            else:
-                return self._pull
-        else:
-            self._pull = value
+        return SHAPE_PRESETS[self.shape_name]['control_points']
 
     def drag(self, event):
+        """
+
+        :param event:
+        """
         sx, sy, z = self.start_point
         dx, dy = self.end_point[0] - sx, self.end_point[1] - sy
         if not self._local_drag_handle_position:
@@ -428,21 +664,12 @@ class Edge(QtWidgets.QGraphicsItem):
         if not self.end:
             self.set_end_point(sx + dx, sy + dy)
 
-    def shape_visibility(self, value=None):
-        """
-
-        :param value:
-        :return:
-        """
-        if value is None:
-            if self._shape_visible is None:
-                return self.forest.settings.edge_type_settings(self.edge_type, 'visible')
-            else:
-                return self._shape_visible
-        else:
-            self._shape_visible = value
-
     def change_leaf_shape(self, dim, value):
+        """
+
+        :param dim:
+        :param value:
+        """
         if dim == 'w':
             self.shape_args('leaf_x', value)
         elif dim == 'h':
@@ -453,6 +680,11 @@ class Edge(QtWidgets.QGraphicsItem):
         self.update_shape()
 
     def change_curvature(self, dim, value):
+        """
+
+        :param dim:
+        :param value:
+        """
         relative = self.shape_args('relative')
         if dim == 'x':
             if relative:
@@ -478,12 +710,16 @@ class Edge(QtWidgets.QGraphicsItem):
         self.update_shape()
 
     def change_thickness(self, dim, value):
+        """
+
+        :param dim:
+        :param value:
+        """
         if dim == 'r':
             self.shape_args('thickness', g.DELETE)
         else:
             self.shape_args('thickness', value)
         self.update_shape()
-
 
     def shape_args(self, key=None, value=None):
         """ Without key, return a dict of shape drawing arguments that should be used with shape drawing method.
@@ -494,30 +730,29 @@ class Edge(QtWidgets.QGraphicsItem):
         :return:
         """
         if key is None:
-            #print('getting shape_args for edge ', self)
-            shape_args = self.forest.settings.edge_shape_settings(self.edge_type, shape_name=self._shape_name)
-            if self._local_shape_args:
+            # print('getting shape_args for edge ', self)
+            shape_args = ctrl.forest.settings.edge_shape_settings(self.edge_type, shape_name=self.shape_name)
+            if self.local_shape_args:
                 sa = shape_args.copy()
-                sa.update(self._local_shape_args)
+                sa.update(self.local_shape_args)
                 return sa
             else:
                 return shape_args.copy()
         else:
             if value is None:
-                local = self._local_shape_args.get(key, None)
+                local = self.local_shape_args.get(key, None)
                 if local is not None:
                     return local
                 else:
-                    self.forest.settings.edge_shape_settings(self.edge_type, key=key, shape_name=self._shape_name)
+                    ctrl.forest.settings.edge_shape_settings(self.edge_type, key=key, shape_name=self.shape_name)
             elif value == g.DELETE:
-                if key in self._local_shape_args:
-                    del self._local_shape_args[key]
+                if key in self.local_shape_args:
+                    del self.local_shape_args[key]
             else:
-                self._local_shape_args[key] = value
-
+                self.local_shape_args[key] = value
 
     # ### Derivative features ############################################
-    #@time_me
+    # @time_me
     def make_path(self):
         """ Draws the shape as a path """
         if not self._shape_method:
@@ -530,7 +765,6 @@ class Edge(QtWidgets.QGraphicsItem):
         c['start'] = self.start
         c['end'] = self.end
         self._path, self._true_path, self.control_points = self._shape_method(**c)
-        #if not self.is_filled():  # expensive with filled shapes
         if self.ending('start'):
             self._arrowhead_start_path = self.make_arrowhead_path('start')
         else:
@@ -540,7 +774,7 @@ class Edge(QtWidgets.QGraphicsItem):
         else:
             self._arrowhead_end_path = None
 
-        sn = self.shape_name()
+        sn = self.shape_name
         if sn == 'blob' or sn == 'directional_blob':
             self._fat_path = self._path
         elif c.get('thickness', 0):
@@ -571,10 +805,9 @@ class Edge(QtWidgets.QGraphicsItem):
             self.make_path()
         return self._fat_path
 
-
     def update_shape(self):
         """ Reload shape and shape settings """
-        self._shape_method = SHAPE_PRESETS[self.shape_name()]['method']
+        self._shape_method = SHAPE_PRESETS[self.shape_name]['method']
         self._cached_shape_args = self.shape_args()
         cpl = len(self.control_points)
         self.make_path()
@@ -589,6 +822,7 @@ class Edge(QtWidgets.QGraphicsItem):
         """ Called from UI, when dragging
         :param index:
         :param points:
+        :param cp:
         """
         x, y = points
         z = self.adjust[index][2]
@@ -631,20 +865,17 @@ class Edge(QtWidgets.QGraphicsItem):
         panel = ctrl.ui.get_panel(g.LINE_OPTIONS)
         panel.update_control_point_spinboxes()
 
-
-
     def update_end_points(self):
         """
 
-
+        :return:
         """
-
         if self.start and not self.end:
-            sp_x, sp_y, sp_z = self.start.get_current_position()
+            sp_x, sp_y, sp_z = self.start.current_position
             r_x, r_y, r_z = self._relative_vector
             self.end_point = sp_x + r_x, sp_y + r_y, sp_z + r_z
         elif self.end and not self.start:
-            ep_x, ep_y, ep_z = self.end.get_current_position()
+            ep_x, ep_y, ep_z = self.end.current_position
             r_x, r_y, r_z = self._relative_vector
             self.start_point = ep_x - r_x, ep_y - r_y, ep_z - r_z
 
@@ -654,8 +885,6 @@ class Edge(QtWidgets.QGraphicsItem):
                 if self._true_path:
                     a = self.get_angle_at(0)
                     i = round(a / 22.5)
-                    print(a, i)
-                    #self.end_point = self.end.get_current_position()
                     self.start_point = self.start.magnet(angle_magnet_map[i])
                 else:
                     sx, sy, sz = self.start_point
@@ -693,9 +922,6 @@ class Edge(QtWidgets.QGraphicsItem):
                     self.start_point = self.start.magnet(9)
             if self.end:
                 self.end_point = self.end.magnet(2)
-            # sx, sy, sz = self.start_point
-            # ex, ey, ez = self.end_point
-            # self.center_point = sx + ((ex - sx) / 2), sy + ((ey - sy) / 2)
 
     def connect_end_points(self, start, end):
         """
@@ -704,12 +930,12 @@ class Edge(QtWidgets.QGraphicsItem):
         :param end:
         """
         if start:
-            self.start_point = start.get_current_position()
+            self.start_point = start.current_position
             self.start = start
         else:
             self.start = None
         if end:
-            self.end_point = end.get_current_position()
+            self.end_point = end.current_position
             self.end = end
         else:
             self.end = None
@@ -717,11 +943,18 @@ class Edge(QtWidgets.QGraphicsItem):
         self.update_status_tip()
 
     def update_status_tip(self):
-        if self.edge_type == g.CONSTITUENT_EDGE:
-            self.status_tip = 'Constituent relation: %s is part of %s' % (self.end, self.start)        
+        """
 
+        :return:
+        """
+        if self.edge_type == g.CONSTITUENT_EDGE:
+            self.status_tip = 'Constituent relation: %s is part of %s' % (self.end, self.start)
 
     def description(self):
+        """
+
+        :return:
+        """
         if self.edge_type == g.ARROW:
             label = 'Arrow'
         else:
@@ -736,7 +969,6 @@ class Edge(QtWidgets.QGraphicsItem):
             s2 = '(%s, %s)' % (int(self.end_point[0]), int(self.end_point[1]))
         return '%s from %s to %s' % (label, s1, s2)
 
-
     def __repr__(self):
         return self.description()
 
@@ -745,33 +977,46 @@ class Edge(QtWidgets.QGraphicsItem):
          drag attempt will take new handle.
         :param x: not used
         :param y: not used
+        :param recipient: not used
         """
         self._local_drag_handle_position = None
 
     def set_visible(self, visible):
-        """ Hide or show, and also manage related UI objects. Note that the shape itself may be visible or not independent of this. It has to be visible in this level so that UI elements can be used.
+        """ Hide or show, and also manage related UI objects. Note that the shape itself may be visible or
+        not independent of this. It has to be visible in this level so that UI elements can be used.
         :param visible:
         """
         v = self.isVisible()
         if v and not visible:
-            self._visible = False
+            self.visible = False
             self.hide()
             ctrl.main.ui_manager.remove_control_points(self)
         elif (not v) and visible:
-            self._visible = True
+            self.visible = True
             self.show()
             if ctrl.is_selected(self):
                 ctrl.main.ui_manager.add_control_points(self)
         else:
-            self._visible = visible
+            self.visible = visible
 
     def can_be_disconnected(self):
+        """
+        :return:
+        """
         return True
 
     def allow_orphan_ends(self):
+        """
+
+        :return:
+        """
         return self.edge_type is g.ARROW or self.edge_type is g.DIVIDER
 
     def has_orphan_ends(self):
+        """
+
+        :return:
+        """
         return (self.end and (self.end.is_placeholder())) or (self.start and (self.start.is_placeholder()))
 
     def refresh_selection_status(self, selected):
@@ -800,10 +1045,9 @@ class Edge(QtWidgets.QGraphicsItem):
     def boundingRect(self):
         """
 
-
         :return:
         """
-        if self._shape_name == 'linear':
+        if self.shape_name == 'linear':
             return QtCore.QRectF(to_Pf(self.start_point), to_Pf(self.end_point))
         else:  # include curve adjustments
             if not self._path:
@@ -871,6 +1115,10 @@ class Edge(QtWidgets.QGraphicsItem):
             ctrl.select(self)
 
     def asymmetric(self):
+        """
+
+        :return:
+        """
         return True
 
     # ## Qt paint method override
@@ -910,18 +1158,17 @@ class Edge(QtWidgets.QGraphicsItem):
             painter.setPen(p)
             painter.drawPath(self._true_path)
 
-        #painter.setPen(ctrl.cm.d['accent6'])
-        #painter.drawPath(self._fat_path)
-        #painter.fillPath(self._fat_path, ctrl.cm.d['accent7'])
+            # painter.setPen(ctrl.cm.d['accent6'])
+            # painter.drawPath(self._fat_path)
+            # painter.fillPath(self._fat_path, ctrl.cm.d['accent7'])
 
-
-    def get_path(self)-> QtGui.QPainterPath:
+    def get_path(self) -> QtGui.QPainterPath:
         """ Get drawing path of this edge
         :return: QPath
         """
         return self._path
 
-    def get_point_at(self, d: float)-> Pf:
+    def get_point_at(self, d: float) -> Pf:
         """ Get coordinates at the percentage of the length of the path.
         :param d: int
         :return: QPoint
@@ -941,8 +1188,12 @@ class Edge(QtWidgets.QGraphicsItem):
             self.make_path()
         return self._true_path.angleAtPercent(d)
 
-    #@time_me
     def get_closest_path_point(self, pos):
+        """
+
+        :param pos:
+        :return:
+        """
         if not self._true_path:
             self.update_end_points()
             self.make_path()
@@ -950,14 +1201,13 @@ class Edge(QtWidgets.QGraphicsItem):
         min_i = -1
         min_pos = None
         for i in range(0, 100, 2):
-            p2 = self._true_path.pointAtPercent(i/100.0)
-            d = (pos-p2).manhattanLength()
+            p2 = self._true_path.pointAtPercent(i / 100.0)
+            d = (pos - p2).manhattanLength()
             if d < min_d:
                 min_d = d
                 min_i = i
                 min_pos = p2
-        return min_i/100.0, min_pos
-
+        return min_i / 100.0, min_pos
 
     # ### Event filter - be sensitive to changes in settings  ########################################################
 
@@ -972,24 +1222,24 @@ class Edge(QtWidgets.QGraphicsItem):
         :param changes:
         """
         self.update_end_points()
-        self.set_visible(self._visible)
-
+        self.set_visible(self.visible)
 
     def ending(self, which_end, value=None):
         """
         get ending to be used in the edge, or set it.
+        :param which_end:
         :param value: string or boolean
         :return: string or boolean
         """
         if value is None:
             if which_end == 'start':
                 if self._arrowhead_at_start is None:
-                    return self.forest.settings.edge_type_settings(self.edge_type, 'arrowhead_at_start')
+                    return ctrl.forest.settings.edge_type_settings(self.edge_type, 'arrowhead_at_start')
                 else:
                     return self._arrowhead_at_start
             elif which_end == 'end':
                 if self._arrowhead_at_end is None:
-                    return self.forest.settings.edge_type_settings(self.edge_type, 'arrowhead_at_end')
+                    return ctrl.forest.settings.edge_type_settings(self.edge_type, 'arrowhead_at_end')
                 else:
                     return self._arrowhead_at_end
 
@@ -1000,6 +1250,12 @@ class Edge(QtWidgets.QGraphicsItem):
                 self._arrowhead_at_end = value
 
     def clip_ending(self, which_end, path):
+        """
+
+        :param which_end:
+        :param path:
+        :return:
+        """
         if which_end == 'start':
             i = 0
             if self._arrow_cut_point_start:
@@ -1007,7 +1263,7 @@ class Edge(QtWidgets.QGraphicsItem):
             else:
                 return path
         else:
-            i = path.elementCount()-1
+            i = path.elementCount() - 1
             if self._arrow_cut_point_end:
                 x, y = self._arrow_cut_point_end
             else:
@@ -1018,21 +1274,20 @@ class Edge(QtWidgets.QGraphicsItem):
     def make_arrowhead_path(self, pos='end'):
         """
 
-        :param painter:
-        :param c:
         :param pos:
         """
         ad = 0.5
+        x = y = size = a = 0
         t = self._cached_shape_args.get('thickness', 0)
         if pos == 'start':
             size = self.arrowhead_size_at_start
-            if (t):
+            if t:
                 size *= t
             x, y, z = self.start_point
             a = math.radians(-self.get_angle_at(0) + 180)
         elif pos == 'end':
             size = self.arrowhead_size_at_end
-            if (t):
+            if t:
                 size *= t
             x, y, z = self.end_point
             a = math.radians(-self.get_angle_at(.95))

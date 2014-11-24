@@ -32,6 +32,7 @@ import types
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QPointF, QPoint
+from kataja.Saved import Savable
 
 from kataja.debug import DEBUG_TIME_ME
 
@@ -560,28 +561,22 @@ def save_object(obj, saved_objs, open_refs, ignore=None):
             print("simplifying unknown data type:", data, type(data))
             return str(data)
 
-
-    key = getattr(obj.__class__, 'singleton_key', None) or getattr(obj, 'save_key', None)
-    if not key:
+    if not isinstance(obj, Savable):
+        return
+    keys = dir(obj.saved)
+    save_key = obj.saved.key
+    if not save_key:
         print("trying to save object that doesn't support our save protocol:", obj)
         raise Exception("Trying to save object that doesn't support save protocol")
-    if key in saved_objs:
+    if save_key in saved_objs:
         return
-    field_names = obj.__class__.saved_fields
-    if isinstance(field_names, str) and field_names == 'all':
-        field_names = list(vars(obj).keys())
-        if 'save_key' in field_names:
-            field_names.remove('save_key')
     obj_data = {}
-    #print 'working on object %s of type %s' % (obj, type(obj))
-    for fname in field_names:
-        if fname in ignore:
-            continue
+    for fname in keys:
         obj_data[fname] = _simplify(getattr(obj, fname))
 
-    saved_objs[key] = obj_data
-    if key in open_refs:
-        del open_refs[key]
+    saved_objs[save_key] = obj_data
+    if save_key in open_refs:
+        del open_refs[save_key]
 
 
 def quit():

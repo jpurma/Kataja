@@ -112,7 +112,7 @@ class BracketedLinearization(BaseVisualization):
                 # we want to tile the words after each other and for that reason left and right edges
                 # are more useful than the center.
                 left_edge += self.forest.bracket_manager.count_bracket_space(node, left=True)
-                node.set_computed_position((left_edge + node.width / 2, 0, 0))
+                node.computed_position = (left_edge + node.width / 2, 0, 0)
                 if node.is_visible() and (not node.has_empty_label()):
                     left_edge += node.width
                 if left:

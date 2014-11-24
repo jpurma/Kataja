@@ -196,7 +196,6 @@ class LeftFirstTree(BaseVisualization):
 
         offset_x = 0  # tree_w/-2
         y = 0
-
         # Actual drawing: set nodes to their places in scene
         if merged_grid:
             # merged_grid.ascii_dump()
@@ -207,7 +206,6 @@ class LeftFirstTree(BaseVisualization):
         # same for extra tall nodes. move everything down after that row
 
         all_nodes = set([x for x in self.forest.visible_nodes() if isinstance(x, ConstituentNode)])
-
         for y_i, row in enumerate(merged_grid):
             extra_height = 0
             prev_width = 0
@@ -222,7 +220,7 @@ class LeftFirstTree(BaseVisualization):
                     if width_spillover > extra_width[x_i]:
                         extra_width[x_i] = math.ceil(width_spillover / float(edge_width)) * edge_width
                     x += extra_width[x_i]
-                    node.set_computed_position((x, y, 0))
+                    node.computed_position = (x, y, 0)
                     prev_width = node.width
                     all_nodes.remove(node)
                 else:

@@ -109,8 +109,8 @@ class LinearizedDynamicTree(BaseVisualization):
                 if node == root:
                     node.bind_x = False
                     node.bind_y = True
-                    rx, ry, rz = node.get_current_position()
-                    node.set_computed_position((rx, 0, rz))
+                    rx, ry, rz = node.current_position
+                    node.computed_position = (rx, 0, rz)
                 elif node.is_leaf_node():
                     if node:
                         node.bind_x = True
@@ -135,5 +135,5 @@ class LinearizedDynamicTree(BaseVisualization):
                 x += nw / 2
                 node.bind_x = True
                 node.bind_y = True
-                node.set_computed_position((x, start_height, node.z))
+                node.computed_position = (x, start_height, node.z)
                 x += (nw / 2) + 10

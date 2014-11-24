@@ -151,10 +151,10 @@ class BaseVisualization:
     #     xvel = 0.0
     #     yvel = 0.0
     #     pull=.24
-    #     node_x,node_y,node_z=feat.get_current_position()
-    #     sx,sy,sz=node.get_current_position()
+    #     node_x,node_y,node_z=feat.current_position
+    #     sx,sy,sz=node.current_position
     #     for item in ctrl.scene.visible_nodes(self.forest):
-    #         item_x,item_y,iz=item.get_current_position()
+    #         item_x,item_y,iz=item.current_position
     #         dist_x=int(node_x-item_x)
     #         dist_y=int(node_y-item_y)
     #         dist=math.hypot(dist_x,dist_y)
@@ -165,7 +165,7 @@ class BaseVisualization:
 
     #     for item in node.features:
     #         if item is feat: continue
-    #         item_x,item_y,iz=item.get_current_position()
+    #         item_x,item_y,iz=item.current_position
     #         dist_x=int(node_x-item_x)
     #         dist_y=int(node_y-item_y)
     #         dist=math.hypot(dist_x,dist_y)
@@ -187,7 +187,7 @@ class BaseVisualization:
     #         yvel+=fy*pull
 
     #     for b in feat.targets:
-    #         bbx,bby,bbz=b.get_current_position()
+    #         bbx,bby,bbz=b.current_position
     #         edge_length_x,edge_length_y=bbx-node_x, bby-node_y
     #         xvel+=edge_length_x*pull*.2
     #         yvel+=edge_length_y*pull*.4
@@ -202,11 +202,11 @@ class BaseVisualization:
         """
         xvel = 0.0
         yvel = 0.0
-        node_x, node_y, node_z = node.get_current_position()  # @UnusedVariable
+        node_x, node_y, node_z = node.current_position  # @UnusedVariable
         for other in self.forest.visible_nodes():
             if other is node:
                 continue
-            other_x, other_y, other_z = other.get_current_position()  # @UnusedVariable
+            other_x, other_y, other_z = other.current_position  # @UnusedVariable
             #print 'others: ', other_x, other_y, other_z
             dist_x, dist_y = int(node_x - other_x), int(node_y - other_y)
             dist2 = (dist_x * dist_x) + (dist_y * dist_y)
@@ -234,8 +234,8 @@ class BaseVisualization:
                 d_y = start_y - end_y
                 rd_x = target_d_x - d_x
                 rd_y = target_d_y - d_y
-                xvel += rd_x * edge.pull()
-                yvel += rd_y * edge.pull()
+                xvel += rd_x * edge.pull
+                yvel += rd_y * edge.pull
 
             for i, edge in enumerate(edges_up):
                 if not edge.is_visible():
@@ -251,19 +251,19 @@ class BaseVisualization:
                 d_y = end_y - start_y
                 rd_x = target_d_x - d_x
                 rd_y = target_d_y - d_y
-                xvel += rd_x * edge.pull() / ((i + 1) * (i + 1))  # first branch has strongest pull
-                yvel += rd_y * edge.pull()  # / ((i + 1) * (i + 1))
+                xvel += rd_x * edge.pull / ((i + 1) * (i + 1))  # first branch has strongest pull
+                yvel += rd_y * edge.pull  # / ((i + 1) * (i + 1))
 
         else:
             for edge in edges_down:
-                pull = edge.pull() / rtotal
+                pull = edge.pull / rtotal
                 other_x, other_y, other_z = edge.end_point  # @UnusedVariable
                 edge_length_x, edge_length_y = (other_x - node_x, other_y - node_y)
                 xvel += edge_length_x * pull
                 yvel += edge_length_y * pull
 
             for edge in edges_up:
-                pull = edge.pull() / rtotal
+                pull = edge.pull / rtotal
                 other_x, other_y, other_z = edge.start_point  # @UnusedVariable
                 edge_length_x, edge_length_y = (node_x - other_x, node_y - other_y)
                 xvel -= edge_length_x * pull

@@ -414,9 +414,9 @@ class LineOptionsPanel(UIPanel):
                 if not d:
                     d = e.copy()
                 if not shape_name:
-                    shape_name = item.shape_name()
+                    shape_name = item.shape_name
                     d['shape_name'] = shape_name
-                elif shape_name != item.shape_name():
+                elif shape_name != item.shape_name:
                     d['shape_name_conflict'] = True
                 for key in keys:
                     old = d.get(key, None)

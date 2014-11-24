@@ -143,7 +143,7 @@ class LeftFirstHexTree(BaseVisualization):
             else:
                 self.areas[node.save_key] = d['rect']
                 allow_crossing = True
-            node.set_computed_position((d['x'], d['y'], 0))
+            node.computed_position = (d['x'], d['y'], 0)
             left = node.left()
             if left:
                 draw_node(left, node, is_left=True, allow_crossing=allow_crossing)
@@ -201,7 +201,7 @@ class LeftFirstHexTree(BaseVisualization):
                     x = self.start_x
                     translated_rect = node.inner_rect.translated(x, y)
                 angle = math.pi / 2
-            node.set_computed_position((x, y, 0))
+            node.computed_position = (x, y, 0)
             self.areas[node.save_key] = translated_rect
             self.drawn[node.save_key] = {'node': node, 'rect': translated_rect, 'x': x, 'y': y, 'angle': angle,
                                          'is_left': is_left, 'size': 1, 'parent': parent}
@@ -275,7 +275,7 @@ class LeftFirstHexTree(BaseVisualization):
             d['y'] = data['y'] + dy
             d['placed'] = True
             d['rect'] = node.inner_rect.translated(d['x'], d['y'])
-            node.set_computed_position((d['x'], d['y'], 0))
+            node.computed_position = (d['x'], d['y'], 0)
             return True
 
 
@@ -347,7 +347,7 @@ class LeftFirstHexTree(BaseVisualization):
             else:
                 self.areas[node.save_key] = d['rect']
                 allow_crossing = True
-            node.set_computed_position((d['x'], d['y'], 0))
+            node.computed_position = (d['x'], d['y'], 0)
             left = node.left()
             if left:
                 draw_node(left, node, is_left=True, allow_crossing=allow_crossing)
@@ -398,7 +398,7 @@ class LeftFirstHexTree(BaseVisualization):
                     x = self.start_x
                     translated_rect = node.inner_rect.translated(x, y)
                 angle = math.pi / 2
-            node.set_computed_position((x, y, 0))
+            node.computed_position = (x, y, 0)
             self.areas[node.save_key] = translated_rect
             self.drawn[node.save_key] = {'node': node, 'rect': translated_rect, 'x': x, 'y': y, 'angle': angle,
                                          'is_left': is_left, 'size': 1, 'parent': parent}

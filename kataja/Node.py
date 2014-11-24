@@ -26,7 +26,6 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import Qt
 
 from kataja.ui.ControlPoint import ControlPoint
-from kataja.ui.TouchArea import TouchArea
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.Label import Label
 from kataja.Movable import Movable
@@ -43,15 +42,13 @@ LEFT = 1
 RIGHT = 2
 
 
+
 class Node(Movable, QtWidgets.QGraphicsItem):
     """ Basic class for syntactic elements that have graphic representation """
     z_value = 10
     width = 20
     height = 20
     default_edge_type = g.ABSTRACT_EDGE
-    saved_fields = ['level', 'syntactic_object', 'edges_up', 'edges_down', 'folded_away', 'folding_towards', 'index',
-                    '_color']
-    saved_fields = list(set(Movable.saved_fields + saved_fields))
     node_type = g.ABSTRACT_NODE
 
     def __init__(self, syntactic_object=None, forest=None, restoring=None):
@@ -59,27 +56,23 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         it should contain all methods to make it work. Inherit and modify this for
         Constituents, Features etc. """
         QtWidgets.QGraphicsItem.__init__(self)
-        # QtWidgets.QGraphicsItem.__init__(self, parent = None)
-        Movable.__init__(self, forest=forest)
-        self.save_key = "Undefined Node"
-        self.syntactic_object = syntactic_object
-
-        self.edges_up = []
-        self.edges_down = []
+        Movable.__init__(self)
+        # Saved attributes (can be reached through @properties without .save.)
+        self.saved.syntactic_object = syntactic_object
+        self.saved.edges_up = []
+        self.saved.edges_down = []
+        self.saved.folded_away = False
+        self.saved.folding_towards = None
+        self.saved.color = None
+        self.saved.index = None
 
         self._label_complex = None
         self._label_visible = True
         self._label_font = None  # @UndefinedVariable
         self.label_rect = None
 
-        self.folded_away = False
-
-        self.folding_towards = None
-        self._color = None
-
         self._index_label = None
         self._index_visible = True
-        self.index = None
 
         self.clickable = False
         self.selectable = True
@@ -88,7 +81,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self._magnets = []
         self.force = 72
         self.status_tip = ""
-
 
         self.width = 0
         self.height = 0
@@ -109,9 +101,66 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self._update_magnets = True
         self.setGraphicsEffect(self.effect)
 
+    @property
+    def syntactic_object(self):
+        return self.saved.syntactic_object
+
+    @syntactic_object.setter
+    def syntactic_object(self, value):
+        self.saved.syntactic_object = value
+
+    @property
+    def edges_up(self):
+        return self.saved.edges_up
+
+    @edges_up.setter
+    def edges_up(self, value):
+        self.saved.edges_up = value
+
+    @property
+    def edges_down(self):
+        return self.saved.edges_down
+
+    @edges_down.setter
+    def edges_down(self, value):
+        self.saved.edges_down = value
+
+    @property
+    def folded_away(self):
+        return self.saved.folded_away
+
+    @folded_away.setter
+    def folded_away(self, value):
+        self.saved.folded_away = value
+
+    @property
+    def folding_towards(self):
+        return self.saved.folding_towards
+
+    @folding_towards.setter
+    def folding_towards(self, value):
+        self.saved.folding_towards = value
+
+    @property
+    def node_color(self):
+        return self.saved.color
+
+    @node_color.setter
+    def node_color(self, value):
+        self.saved.node_color = value
+
+    @property
+    def index(self):
+        return self.saved.index
+
+    @index.setter
+    def index(self, value):
+        self.saved.index = value
+
+
     def __repr__(self):
         """ This is a node and this represents this UG item """
-        return '%s-%s-%s' % (self.__class__.__name__, self.syntactic_object, self.save_key)
+        return '%s-%s' % (self.saved.syntactic_object, self.saved.key)
 
 
     # Let's not have nodes be able to iterate through tree --
@@ -122,7 +171,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
     def calculate_movement(self):
         """ Let a dynamic visualization algorithm work its magic """
-        return self.forest.visualization.calculate_movement(self)
+        return ctrl.forest.visualization.calculate_movement(self)
 
     def reset(self):
         """
@@ -156,14 +205,14 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             if edge_type is None:
                 edge_type = self.__class__.default_edge_type
             if only_visible:
-                return [edge.end for edge in self.edges_down if edge.edge_type == edge_type and edge.end and edge.end.is_visible()]
+                return [edge.end for edge in self.saved.edges_down if edge.edge_type == edge_type and edge.end and edge.end.is_visible()]
             else:
-                return [edge.end for edge in self.edges_down if edge.edge_type == edge_type and edge.end]
+                return [edge.end for edge in self.saved.edges_down if edge.edge_type == edge_type and edge.end]
         else:
             if only_visible:
-                return [edge.end for edge in self.edges_down if edge.end and edge.end.is_visible()]
+                return [edge.end for edge in self.saved.edges_down if edge.end and edge.end.is_visible()]
             else:
-                return [edge.end for edge in self.edges_down if edge.end]
+                return [edge.end for edge in self.saved.edges_down if edge.end]
 
     def get_parents(self, only_similar=True, only_visible=False, edge_type=None):
         """
@@ -177,12 +226,12 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             if edge_type is None:
                 edge_type = self.__class__.default_edge_type
             if only_visible:
-                return [edge.start for edge in self.edges_up if edge.edge_type == edge_type and edge.start and edge.start.is_visible()]
+                return [edge.start for edge in self.saved.edges_up if edge.edge_type == edge_type and edge.start and edge.start.is_visible()]
             else:
-                return [edge.start for edge in self.edges_up if edge.edge_type == edge_type and edge.start]
+                return [edge.start for edge in self.saved.edges_up if edge.edge_type == edge_type and edge.start]
         else:
             if only_visible:
-                return [edge.start for edge in self.edges_up if edge.start and edge.start.is_visible()]
+                return [edge.start for edge in self.saved.edges_up if edge.start and edge.start.is_visible()]
             else:
                 return [edge.start for edge in self.edges_up if edge.start]
 
@@ -193,7 +242,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :return:
         """
         for edge in self.edges_down:
-            if edge.edge_type == self.__class__.default_edge_type and edge.align == 1:
+            if edge.edge_type == self.__class__.default_edge_type and edge.align == g.LEFT:
                 if edge.end:
                     if (only_visible and edge.end.is_visible()) or not only_visible:
                         return edge.end
@@ -206,7 +255,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :return:
         """
         for edge in self.edges_down:
-            if edge.edge_type == self.__class__.default_edge_type and edge.align == 2:
+            if edge.edge_type == self.__class__.default_edge_type and edge.align == g.RIGHT:
                 if edge.end:
                     if (only_visible and edge.end.is_visible()) or not only_visible:
                         return edge.end
@@ -309,7 +358,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             if self._label_font:
                 return qt_prefs.font(self._label_font)
             else:
-                return qt_prefs.font(self.forest.settings.node_settings(self.node_type, 'font'))
+                return qt_prefs.font(ctrl.forest.settings.node_settings(self.node_type, 'font'))
         else:
             if isinstance(value, QtGui.QFont):
                 self._label_font = qt_prefs.get_key_for_font(value)
@@ -337,12 +386,12 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :return:
         """
         if value is None:
-            if self._color is None:
-                return ctrl.cm.get(self.forest.settings.node_settings(self.__class__.node_type, 'color'))
+            if self.node_color is None:
+                return ctrl.cm.get(ctrl.forest.settings.node_settings(self.__class__.node_type, 'color'))
             else:
-                return ctrl.cm.get(self._color)
+                return ctrl.cm.get(self.node_color)
         else:
-            self._color = value
+            self.node_color = value
             # if self._label_complex:
             # self._label_complex.setDefaultTextColor(self._color)
 
@@ -364,7 +413,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     def update_identity(self):
         """ Make sure that the node reflects its syntactic_object and that node exists in the world"""
         if not ctrl.loading:
-            self.forest.store(self)
+            ctrl.forest.store(self)
         self.update_label()
 
     def update_label(self):
@@ -481,11 +530,11 @@ class Node(Movable, QtWidgets.QGraphicsItem):
                     (w4, h2),
                     (w2, h2)]
 
-            x1, y1, z1 = self.get_current_position()
+            x1, y1, z1 = self.current_position
             x2, y2 = self._magnets[n]
             return x1 + x2, y1 + y2, z1
         else:
-            return self.get_current_position()
+            return self.current_position
 
     # ### Menus #########################################
 
@@ -496,9 +545,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
     def open_menus(self):
         """ Activates menus """
-        ui = self.forest.main.ui_manager
         # only one menu is open at time
-        ui.close_menus()
+        ctrl.ui.close_menus()
         # create menus only when necessary
         if not self.ui_menu:
             self.ui_menu = self.create_menu()
@@ -515,9 +563,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """ Tries to remove a menu associated with this node
         :param menu:
         """
-        ui = ctrl.main.ui_manager  # @UndefinedVariable
         if menu is self.ui_menu:
-            ui.remove_menu(menu)
+            ctrl.ui.remove_menu(menu)
             self.ui_menu = None
 
     def refresh_selection_status(self, selected):
@@ -575,7 +622,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     #     if not getattr(ctrl, 'dragged', None):
     #         self.start_dragging(mx, my)
     #     for item, ox, oy in ctrl.dragged_positions:
-    #         x, y, z = item.get_current_position()
+    #         x, y, z = item.current_position
     #         item.set_adjustment(dx, dy, 0)
     #         item.update_position()
 
@@ -593,10 +640,10 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
         # there if node is both above and below the dragged node, it shouldn't move
         ctrl.dragged.add(self)
-        x, y, dummy_z = self.get_current_position()
-        self._position_before_dragging = self.get_current_position()
-        self._adjustment_before_dragging = self.get_adjustment()
-        self.forest.prepare_touch_areas_for_dragging(excluded=ctrl.dragged)
+        x, y, z = self.current_position
+        self._position_before_dragging = x, y, z
+        self._adjustment_before_dragging = self.adjustment
+        ctrl.forest.prepare_touch_areas_for_dragging(excluded=ctrl.dragged)
 
     def drag(self, event):
         """
@@ -609,17 +656,17 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             self.start_dragging(now_x, now_y)
 
         mx, my = to_tuple(event.scenePos())
-        z = self.get_current_position()[2]
-        self.set_current_position((mx, my, z))
+        z = self.current_position[2]
+        self.current_position = (mx, my, z)
         # scene.item_moved()
         px, py, pz = self._position_before_dragging
         if self.can_adjust_position:
             ax, ay, az = self._adjustment_before_dragging
             diff_x = now_x - px - ax
             diff_y = now_y - py - ay
-            self.set_adjustment((diff_x, diff_y, az))
+            self.adjustment = (diff_x, diff_y, az)
         else:
-            self.set_computed_position((now_x, now_y, pz))
+            self.computed_position = (now_x, now_y, pz)
 
     def set_hovering(self, value):
         """ Toggle hovering effects and internal bookkeeping

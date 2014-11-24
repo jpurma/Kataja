@@ -194,7 +194,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 bottoms.append(bottom_right_y)
             elif isinstance(item, Movable) and not item.is_fading_away():
                 br = item.boundingRect()
-                x, y, z = item.get_current_position()  # try using final position here
+                x, y, z = item.current_position  # try using final position here
                 lefts.append(x + br.left())
                 rights.append(x + br.right())
                 tops.append(y + br.top())
@@ -725,7 +725,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         f = self.main.forest
         if f.gloss and f.roots:
-            pt = f.roots[0].get_current_position()
+            pt = f.roots[0].current_position
             f.gloss.setPos(pt[0] - 20, pt[1] - 40)
 
         for e in f.edges.values():
@@ -736,8 +736,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
         for n, node in enumerate(f.visible_nodes()):
             node.adjust_opacity()
             if node.folding_towards and node.folding_towards is not node:
-                x, y, z = node.folding_towards.get_computed_position()
-                node.set_computed_position((x, y + 30, z))
+                x, y, z = node.folding_towards.computed_position
+                node.computed_position = (x, y + 30, z)
             if node in ctrl.dragged:
                 items_have_moved = True
                 continue
@@ -776,11 +776,11 @@ class GraphScene(QtWidgets.QGraphicsScene):
                     yvel -= avg_y
                     zvel -= avg_z
                     if abs(xvel) > 0.25 or abs(yvel) > 0.25 or abs(zvel) > 0.25:
-                        x, y, z = node.get_current_position()
+                        x, y, z = node.current_position
                         x += xvel
                         y += yvel
                         z += zvel
-                        node.set_current_position((x, y, z))
+                        node.current_position = (x, y, z)
                         items_have_moved = True
 
                         # if x < self._left_border:
@@ -799,15 +799,15 @@ class GraphScene(QtWidgets.QGraphicsScene):
             else:
                 for xvel, yvel, zvel, node in moved_nodes:
                     if abs(xvel) > 0.25 or abs(yvel) > 0.25 or abs(zvel) > 0.25:
-                        x, y, z = node.get_current_position()
+                        x, y, z = node.current_position
                         x += xvel
                         y += yvel
                         z += zvel
-                        node.set_current_position((x, y, z))
+                        node.current_position = (x, y, z)
                         items_have_moved = True
 
                         # for xvel,yvel,zvel, node in moved_nodes:
-                        # x, y, z = node.get_current_position()
+                        # x, y, z = node.current_position
                         # if x < self._left_border:
                         # self._left_border = x
                         #         resize_required = True
