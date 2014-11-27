@@ -313,7 +313,6 @@ class Movable(Savable):
         use when first adding items to scene to prevent them wandering from afar
         :param pos: tuple (x, y, z)
         """
-        print('setting original position ', pos)
         self.computed_position = tuple(pos)
         self.final_position = tuple(pos)
         self.adjustment = (0, 0, 0)

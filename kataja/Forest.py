@@ -46,6 +46,7 @@ from kataja.Edge import Edge
 from kataja.UndoManager import UndoManager
 from kataja.utils import next_free_index, to_tuple, caller
 from kataja.FeatureNode import FeatureNode
+from kataja.Saved import Savable
 import kataja.globals as g
 
 
@@ -58,32 +59,13 @@ NO_ALIGN = 0
 LEFT = 1
 RIGHT = 2
 
-
-def restore_forest(key):
-    """
-
-    :param key:
-    :return:
-    """
-    print('restore forest? who is calling this and is it doable?')
-    obj = None
-    for forest in ctrl.forest_keeper:
-        if forest.key is key:
-            obj = forest
-            break
-    if not obj:
-        obj = Forest(main=ctrl.main)
-        obj._revived = True
-    # ctrl.undo.repair_later(obj)
-    return obj
-
 class ForestError(Exception):
     def __init__(self, value):
         self.value = value
     def __str__(self):
         return repr(self.value)
 
-class Forest:
+class Forest(Savable):
     """ Forest is a group of trees that together form one view.
     Often there needs to be more than one tree visible at same time,
      so that they can be compared or to show states of construction
@@ -91,36 +73,145 @@ class Forest:
       Forest is the container for these.
       Forest also takes care of the operations manipulating, creating and
       removing trees. """
-    saved_fields = ['roots', 'nodes', 'edges', 'others', 'chain_manager', 'settings', 'derivation_steps',
-                    'merge_counter', 'select_counter', '_comments', '_parser', '_gloss_text', '_buildstring',
-                    'undo_manager', 'vis_data']
 
-    def __init__(self, main, restoring=''):
+    def __init__(self, restoring=''):
         """ Create an empty forest """
+        Savable.__init__(self)
         self.nodes_by_uid = {}
-        self.save_key = 'forest_%s' % id(self)
-        self.main = main
-        self.roots = []  # the current line of trees
-        self.nodes = {}
-        # self.features = {}
-        self.edges = {}
-        self.bracket_manager = BracketManager(self)
-        self.others = {}
-        self.chain_manager = ChainManager(self)
-        self.gloss = None
-        self.settings = ForestSettings(self, prefs)
-        self.rules = ForestRules(self, prefs)
+        self.main = ctrl.main
         self.visualization = None  # BalancedTree()
-        self.vis_data = {}
-        self.derivation_steps = DerivationStepManager(self)
-        self.merge_counter = 0
-        self.select_counter = 0
-        self._comments = []
-        self._parser = BottomUpParser(self)
-        # self._parser = Parser(self)
-        self._gloss_text = ''
-        self._buildstring = ''
+        self.gloss = None
+        self.bracket_manager = BracketManager(self)
+        self.parser = BottomUpParser(self)
         self.undo_manager = UndoManager(self)
+
+        self.saved.roots = []  # the current line of trees
+        self.saved.nodes = {}
+        self.saved.edges = {}
+        self.saved.others = {}
+        self.saved.chain_manager = ChainManager(self)
+        self.saved.settings = ForestSettings(self, prefs)
+        self.saved.rules = ForestRules()
+        self.saved.vis_data = {}
+        self.saved.derivation_steps = DerivationStepManager(self)
+        self.saved.merge_counter = 0
+        self.saved.select_counter = 0
+        self.saved.comments = []
+        self.saved.gloss_text = ''
+        self.saved.buildstring = ''
+
+    @property
+    def roots(self):
+        return self.saved.roots
+
+    @roots.setter
+    def roots(self, value):
+        self.saved.roots = value
+
+    @property
+    def nodes(self):
+        return self.saved.nodes
+
+    @nodes.setter
+    def nodes(self, value):
+        self.saved.nodes = value
+
+    @property
+    def edges(self):
+        return self.saved.edges
+
+    @edges.setter
+    def edges(self, value):
+        self.saved.edges = value
+
+    @property
+    def others(self):
+        return self.saved.others
+
+    @others.setter
+    def others(self, value):
+        self.saved.others = value
+
+    @property
+    def chain_manager(self):
+        return self.saved.chain_manager
+
+    @chain_manager.setter
+    def chain_manager(self, value):
+        self.saved.chain_manager = value
+
+    @property
+    def settings(self):
+        return self.saved.settings
+
+    @settings.setter
+    def settings(self, value):
+        self.saved.settings = value
+
+    @property
+    def rules(self):
+        return self.saved.rules
+
+    @rules.setter
+    def rules(self, value):
+        self.saved.rules = value
+
+    @property
+    def vis_data(self):
+        return self.saved.vis_data
+
+    @vis_data.setter
+    def vis_data(self, value):
+        self.saved.vis_data = value
+
+    @property
+    def derivation_steps(self):
+        return self.saved.derivation_steps
+
+    @derivation_steps.setter
+    def derivation_steps(self, value):
+        self.saved.derivation_steps = value
+
+    @property
+    def merge_counter(self):
+        return self.saved.merge_counter
+
+    @merge_counter.setter
+    def merge_counter(self, value):
+        self.saved.merge_counter = value
+
+    @property
+    def select_counter(self):
+        return self.saved.select_counter
+
+    @select_counter.setter
+    def select_counter(self, value):
+        self.saved.select_counter = value
+
+    @property
+    def comments(self):
+        return self.saved.comments
+
+    @comments.setter
+    def comments(self, value):
+        self.saved.comments = value
+
+    @property
+    def gloss_text(self):
+        return self.saved.gloss_text
+
+    @gloss_text.setter
+    def gloss_text(self, value):
+        self.saved.gloss_text = value
+
+    @property
+    def buildstring(self):
+        return self.saved.buildstring
+
+    @buildstring.setter
+    def buildstring(self, value):
+        self.saved.buildstring = value
+
 
     def after_restore(self, changes):
         """ Changes in some fields may cause need for manual fixes or running methods to update derived variables
@@ -140,11 +231,11 @@ class Forest:
                 self.visualization = self.main.visualizations[new_vis['name']]
                 self.visualization.set_forest(self)
 
-    def get_scene(self):
+    @property
+    def scene(self):
         """ Return the graphics scene where objects are stored and drawn.
         :return: GraphScene instance
         """
-        forest()
         return self.main.graph_scene
 
 
@@ -206,18 +297,10 @@ class Forest:
         self._buildstring = buildstring
         self.create_tree_from_string(buildstring)
 
-    def set_gloss_text(self, gloss):
-        """
-        Set the special gloss text for the whole tree/trees on display. It will be drawn later.
-        :param gloss:
-        """
-        forest()
-        self._gloss_text = gloss
-
     def draw_gloss_text(self):
         """ Draw the gloss text on screen, if it exists. """
         forest()
-        if self._gloss_text:
+        if self.gloss_text:
             if not self.gloss:
                 # noinspection PyArgumentList
                 self.gloss = QtWidgets.QGraphicsTextItem(parent=None)
@@ -225,11 +308,11 @@ class Forest:
                 self.gloss.setDefaultTextColor(ctrl.cm.drawing())
                 self.gloss.setFont(qt_prefs.font(g.MAIN_FONT))  # @UndefinedVariable
                 # self.gloss.setFlag(QtGui.QGraphicsItem.ItemIsMovable)
-            self.gloss.setPlainText("‘" + self._gloss_text + "’")
+            self.gloss.setPlainText("‘" + self.gloss_text + "’")
             self.gloss.show()
         else:
             if self.gloss:
-                self.get_scene().removeItem(self.gloss)
+                self.scene.removeItem(self.gloss)
                 self.gloss = None
 
     def change_visualization(self, key):
@@ -288,7 +371,7 @@ class Forest:
         if isinstance(item, Node):
             self.nodes[item.save_key] = item
             if item.syntactic_object:
-                self.nodes_by_uid[item.syntactic_object.uid] = item
+                self.nodes_by_uid[item.syntactic_object.save_key] = item
         elif isinstance(item, Edge):
             self.edges[item.save_key] = item
         elif isinstance(item, TextArea):
@@ -314,7 +397,7 @@ class Forest:
     def clear_scene(self):
         """ Disconnect related graphic items from GraphScene """
         forest()
-        scene = self.get_scene()
+        scene = self.scene
         if scene.displayed_forest != self.main.forest:
             return
         if self.gloss:
@@ -328,11 +411,10 @@ class Forest:
         forest()
         if ctrl.loading:
             return
-        scene = self.get_scene()
-        if scene.displayed_forest != self.main.forest:
+        if self.scene.displayed_forest != self.main.forest:
             return
         for item in self.get_all_objects():
-            scene.addItem(item)
+            self.scene.addItem(item)
 
     def add_to_scene(self, item):
         """ Put items belonging to this forest to scene
@@ -341,10 +423,9 @@ class Forest:
         forest()
         if ctrl.loading:
             return
-        scene = self.get_scene()
-        if scene.displayed_forest != self.main.forest:
+        if self.scene.displayed_forest != self.main.forest:
             return
-        scene.addItem(item)
+        self.scene.addItem(item)
 
 
     def update_all(self):
@@ -392,7 +473,7 @@ class Forest:
         :rtype kataja.ConstituentNode
         """
         forest()
-        return self.nodes_by_uid.get(constituent.uid, None)
+        return self.nodes_by_uid.get(constituent.save_key, None)
 
     def get_constituent_edges(self):
         """ Return list of constituent edges
@@ -427,7 +508,7 @@ class Forest:
         :param comment: comment item
         """
         forest()
-        self._comments.append(comment)
+        self.comments.append(comment)
 
     def remove_comment(self, comment):
         """ Remove comment item from forest
@@ -435,8 +516,8 @@ class Forest:
         :return:
         """
         forest()
-        if comment in self._comments:
-            self._comments.remove(comment)
+        if comment in self.comments:
+            self.comments.remove(comment)
 
 
     def remove_intertree_relations(self):
@@ -503,7 +584,7 @@ class Forest:
         :return: String
         """
         forest()
-        names = [node.syntactic_object.get_label() for node in self.nodes.values() if
+        names = [node.syntactic_object.label for node in self.nodes.values() if
                  isinstance(node, ConstituentNode) and node.syntactic_object]
         # I'm not trying to be efficient here.
         for letter in string.ascii_uppercase:
@@ -676,7 +757,7 @@ class Forest:
         :param pos:
         """
         forest()
-        node = self._parser.parse(text)
+        node = self.parser.parse(text)
         return node
         #self.add_to_scene(root_node)
         #self.update_root_status(root_node)
@@ -693,7 +774,7 @@ class Forest:
         text = text.strip()
         if text.startswith('\gll'):
             self._gloss_text = text[5:].strip('{} ')
-        parser_method = self._parser.detect_suitable_parser(text)
+        parser_method = self.parser.detect_suitable_parser(text)
         parser_method(text)
         if self.settings.uses_multidomination():
             self.traces_to_multidomination()
@@ -786,7 +867,7 @@ class Forest:
         self.bracket_manager.remove_brackets(node)
         # -- dictionaries --
         del self.nodes[node.save_key]
-        del self.nodes_by_uid[node.syntactic_object.uid]
+        del self.nodes_by_uid[node.syntactic_object.save_key]
         if node in self.roots:
             self.roots.remove(node)
         # -- scene --
@@ -1088,7 +1169,7 @@ class Forest:
         :param node:
         """
         forest()
-        new_node = self._parser.parse(text)
+        new_node = self.parser.parse(text)
         self._replace_node(node, new_node)
 
     # not used
@@ -1112,7 +1193,7 @@ class Forest:
         :param text:
         """
         forest()
-        new_node = self._parser.parse(text, forest=self)
+        new_node = self.parser.parse(text, forest=self)
         self._replace_node(node, new_node)
 
     #### Switching between multidomination and traces ######################################
@@ -1581,5 +1662,5 @@ class Forest:
         :param node:
         :return:
         """
-        return self._parser.parse_definition(string, node)
+        return self.parser.parse_definition(string, node)
 

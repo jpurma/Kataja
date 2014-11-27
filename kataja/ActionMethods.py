@@ -97,6 +97,7 @@ class ActionMethods:
         pickle_worker.dump(all_data)
         f.close()
         ctrl.main.add_message("Saved to '%s'. Took %s seconds." % (filename, time.time()-t))
+        return
         t = time.time()
         filename = prefs.file_name + '.dict'
         f = open(filename, 'w')

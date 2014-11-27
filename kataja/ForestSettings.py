@@ -24,13 +24,14 @@
 
 from kataja.globals import *
 from kataja.shapes import SHAPE_PRESETS
+from kataja.Saved import Savable
 
 ONLY_LEAF_LABELS = 0
 ALL_LABELS = 1
 ALIASES = 2
 
 
-class ForestSettings:
+class ForestSettings(Savable):
     """
 
     """
@@ -41,6 +42,7 @@ class ForestSettings:
     """ Settings that affect trees in one forest in a form that can be easily pickled """
 
     def __init__(self, host, prefs):
+        Savable.__init__(self)
         self.prefs = prefs
         if host:
             self.save_key = host.save_key + '_settings'
@@ -341,90 +343,92 @@ class ForestSettings:
                 e[key] = value
 
 
-class ForestRules:
-    """
-
-    """
-    saved_fields = 'all'
-    saved_fields_ignore = 'prefs'
-    # saved_fields_ignore_None = True
-
+class ForestRules(Savable):
     """ Rules that affect trees in one forest in a form that can be easily pickled """
 
-    def __init__(self, host, prefs):
-        self.prefs = prefs
-        if host:
-            self.save_key = host.save_key + '_rules'
-        self._allow_multidomination = None
-        self._only_binary_branching = None
-        self._projection = None
-        self._projected_inherits_labels = None
+    def __init__(self):
+        Savable.__init__(self)
+        self.saved.allow_multidomination = None
+        self.saved.only_binary_branching = None
+        self.saved.projection = None
+        self.saved.projected_inherits_labels = None
 
-
+    @property
     def allow_multidomination(self, value=None):
         """
-
         :param value:
         :return:
         """
-        if value is None:
-            if self._allow_multidomination is None:
-                return self.prefs.rules_allow_multidomination
-            else:
-                return self._allow_multidomination
+        if self.saved.allow_multidomination is None:
+            return self.prefs.rules_allow_multidomination
         else:
-            self._allow_multidomination = value
+            return self.saved.allow_multidomination
 
+    @allow_multidomination.setter
+    def allow_multidomination(self, value=None):
+        """
+        :param value:
+        :return:
+        """
+        self.saved.allow_multidomination = value
+
+
+    @property
+    def only_binary_branching(self, value=None):
+        """
+        :param value:
+        :return:
+        """
+        if self.saved.only_binary_branching is None:
+            return self.prefs.rules_only_binary_branching
+        else:
+            return self.saved.only_binary_branching
+
+    @only_binary_branching.setter
     def only_binary_branching(self, value=None):
         """
 
         :param value:
         :return:
         """
-        if value is None:
-            if self._only_binary_branching is None:
-                return self.prefs.rules_only_binary_branching
-            else:
-                return self._only_binary_branching
-        else:
-            self._only_binary_branching = value
+        self.saved.only_binary_branching = value
 
+    @property
     def projection(self, value=None):
         """
-
         :param value:
         :return:
         """
-        if value is None:
-            if self._projection is None:
-                return self.prefs.rules_projection
-            else:
-                return self._projection
+        if self.saved.projection is None:
+            return self.prefs.rules_projection
         else:
-            self._projection = value
+            return self.saved.projection
 
+    @projection.setter
+    def projection(self, value=None):
+        """
+        :param value:
+        :return:
+        """
+        self.saved.projection = value
+
+
+    @property
+    def projected_inherits_labels(self):
+        """
+        :param value:
+        :return:
+        """
+        if self.saved.projected_inherits_labels is None:
+            return self.prefs.rules_projected_inherits_labels
+        else:
+            return self.saved.projected_inherits_labels
+
+    @projected_inherits_labels.setter
     def projected_inherits_labels(self, value=None):
         """
-
         :param value:
         :return:
         """
-        if value is None:
-            if self._projected_inherits_labels is None:
-                return self.prefs.rules_projected_inherits_labels
-            else:
-                return self._projected_inherits_labels
-        else:
-            self._projected_inherits_labels = value
-
-
-    def after_restore(self, values=None):
-        """
-
-        :param values:
-        :return:
-        """
-        if not values:
-            values = {}
-        return
+        self.saved.projected_inherits_labels = value
 

@@ -24,7 +24,7 @@
 #
 # ############################################################################
 from kataja.debug import undo
-from kataja.utils import time_me, save_object, load_objects
+from kataja.utils import time_me
 from kataja.singletons import ctrl
 
 
@@ -34,7 +34,6 @@ class UndoManager:
     """
 
     """
-    saved_fields = ['forest']
 
     def __init__(self, forest):
         self.save_key = forest.save_key + '_undo_manager'
@@ -61,13 +60,13 @@ class UndoManager:
         """
         saved_objects = {}
         open_refs = {}
-        save_object(self.forest, saved_objects, open_refs, ignore=['undo_manager'])
+        self.forest.save_object(saved_objects, open_refs)
         saved_objects['start_key'] = self.forest.save_key
         c = 0
         while open_refs and c < 10:
             c += 1
             for obj in list(open_refs.values()):
-                save_object(obj, saved_objects, open_refs)
+                obj.save_object(saved_objects, open_refs)
         undo('total savedata: %s chars.' % len(str(saved_objects)))
         return saved_objects
 
@@ -202,7 +201,7 @@ class UndoManager:
         undo('current stack index and state: %s' % self._current)
         undo('to be deleted: ', to_be_deleted)
         # forest_data = self.full_state[self.full_state['start_key']]
-        load_objects(self.forest, self.full_state)
+        self.forest.load_objects(self.full_state)
         self.forest.main.graph_scene.draw_forest(self.forest)
 
 

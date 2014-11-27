@@ -32,8 +32,6 @@ from syntax.ConfigurableFeature import Feature
 class BareConstituent(BaseConstituent):
     """ BareConstituents are version of BaseConstituent that stores features as trees.
     This may have significance at some point. They are primary objects and need to support saving and loading. """
-    saved_fields = ['feature_tree']
-    saved_fields = list(set(BaseConstituent.saved_fields + saved_fields))
 
     def __init__(self, cid='', left=None, right=None, source='', data=None):
         if not data:

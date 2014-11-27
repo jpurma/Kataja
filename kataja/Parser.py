@@ -283,7 +283,7 @@ class Parser:
                     tid = C.label
                 topmost_C = ctrl.UG.Merge(C, topmost_C)
                 topmost_C.label = C.label
-                topmost_node = self._new_merger_node_from_constituent(topmost_C)
+                topmost_node = self.forest.create_node_from_constituent(topmost_C, result_of_merge=True)
                 if dotlabel:
                     topmost_node.alias = dotlabel
                 elif external_merge:
@@ -343,7 +343,7 @@ class LayeredParser(Parser):
                 for item in arg:
                     if isinstance(item, tuple):
                         if item[0] == 'index':
-                            constituent.set_index(item[1])
+                            constituent.index = item[1]
                         elif item[0] == 'alias':
                             alias = item[1]
 
@@ -351,7 +351,7 @@ class LayeredParser(Parser):
                 children.append(arg)
             if isinstance(arg, tuple):
                 if arg[0] == 'index':
-                    constituent.set_index(arg[1])
+                    constituent.index = arg[1]
                 elif arg[0] == 'alias':
                     alias = arg[1]
         if len(children) == 2:
@@ -359,7 +359,7 @@ class LayeredParser(Parser):
             right = children[1]
             constituent.left = left
             constituent.right = right
-            node = self._new_merger_node_from_constituent(constituent)
+            node = self.forest.create_node_from_constituent(constituent, result_of_merge=True)
         elif len(children) == 1:
             constituent = children[0]
             node = self.forest.get_node(constituent)
@@ -384,7 +384,7 @@ class LayeredParser(Parser):
             if isinstance(arg, ctrl.Feature):
                 constituent.set_feature(arg.save_key, arg)
             elif isinstance(arg, tuple) and arg[0] == 'index':
-                constituent.set_index(arg[1])
+                constituent.index = arg[1]
         if label in self._definitions:
             features = self.parse_definition(self._definitions[label])
             if 'gloss' in features:
@@ -745,9 +745,9 @@ class BottomUpParser(Parser):
             if label in self._definitions:
                 features = self.parse_definition(self._definitions[label])
                 if 'gloss' in features:
-                    constituent.set_gloss(features['gloss'])
+                    constituent.gloss = features['gloss']
                     del features['gloss']
-                constituent.set_features(features)
+                constituent.features = features
             if label == 't' and index:
                 node = self._new_trace_from_constituent(constituent)
             else:
@@ -771,7 +771,7 @@ class BottomUpParser(Parser):
             constituent = ctrl.Constituent()
             constituent.left = left.syntactic_object
             constituent.right = right.syntactic_object
-            node = self._new_merger_node_from_constituent(constituent)
+            node = self.forest.create_node_from_constituent(constituent, result_of_merge=True)
             if dot_alias:
                 dot_alias, index = find_index(dot_alias)
                 if index:

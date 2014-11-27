@@ -27,75 +27,66 @@ import pickle
 
 from kataja.singletons import ctrl
 from kataja.Forest import Forest
+from kataja.Saved import Savable
 
 
-class ForestKeeper:
-    """
-
-    """
-    saved_fields = ['main', '_forests', '_forests_dict', '_i', 'forest']
-    singleton_key = 'ForestKeeper'
-
-    def __init__(self, main, treelist=None, file_name=None):
+class ForestKeeper(Savable):
+    """ Container and loader for Forest objects """
+    def __init__(self, treelist=None, file_name=None):
         """
 
-        :param MainWindow main:
         :param List treelist:
         :param StringType file_name:
         """
-        if not treelist:
+        Savable.__init__(self, unique=True)
+        self.saved.forests = []
+        self.saved.current_index = 0
+        self.saved.forest = None
+        if treelist is None:
             treelist = []
-        self.main = main
-        self._forests = []
-        self._forests_dict = {}
-        self._i = 0
-        self.forest = None
         if treelist:
             self.create_forests(treelist)
         elif file_name:
             self.create_forests_from_file(file_name)
 
-    def get_forest(self, key):
-        """
-        Return one forest
-        :param key:
-        :param str key:
-        """
-        if key in self._forests_dict:
-            return self._forests_dict[key]
-        else:
-            return None
+    @property
+    def forests(self):
+        return self.saved.forests
 
-    def all(self):
-        """
+    @forests.setter
+    def forests(self, value):
+        self.saved.forests = value
 
+    @property
+    def current_index(self):
+        return self.saved.current_index
 
-        :return:
-        """
-        return self._forests
+    @current_index.setter
+    def current_index(self, value):
+        self.saved.current_index = value
 
-    def get_forests(self):
-        """
+    @property
+    def forest(self):
+        return self.saved.forest
 
+    @forest.setter
+    def forest(self, value):
+        self.saved.forest = value
 
-        :return:
-        """
-        return self._forests
 
     def next_forest(self):
         """
 
-
         :return:
         """
-        if not self._forests:
+        if not self.forests:
             return None
-        if self._i < len(self._forests) - 1:
-            self._i += 1
+        if self.current_index < len(self.forests) - 1:
+            self.current_index += 1
         else:
-            self._i = 0
-        self.forest = self._forests[self._i]
-        return self._i, self.forest
+            self.current_index = 0
+        self.forest = self.forests[self.current_index]
+        return self.current_index, self.forest
 
     def prev_forest(self):
         """
@@ -103,30 +94,15 @@ class ForestKeeper:
 
         :return:
         """
-        if not self._forests:
+        if not self.forests:
             return None
-        if self._i > 0:
-            self._i -= 1
+        if self.current_index > 0:
+            self.current_index -= 1
         else:
-            self._i = len(self._forests) - 1
-        self.forest = self._forests[self._i]
-        return self._i, self.forest
+            self.current_index = len(self.forests) - 1
+        self.forest = self.forests[self.current_index]
+        return self.current_index, self.forest
 
-    def size(self):
-        """
-
-
-        :return:
-        """
-        return len(self._forests)
-
-    def current_index(self):
-        """
-
-
-        :return:
-        """
-        return self._i
 
     def load(self, data):
         """
@@ -135,25 +111,25 @@ class ForestKeeper:
         :param data:
         :param dict data:
         """
-        self._i = data['_i']
-        self._forests = data['_forests']
-        self._forests_dict = dict([(f.save_key, f) for f in self._forests])
+        self.current_index = data['current_index']
+        self.forests = data['forests']
+        forests_dict = dict([(f.save_key, f) for f in self.forests])
         for key, item in ctrl.unassigned_objects.items():
-            forest = self.get_forest(item.forest_key)
+            forest = forests_dict.get(item.forest_key, None)
             if not forest:
                 assert False
             forest.store(item)
             item._finalize()
             del ctrl.unassigned_objects[key]
         # ## Second round, creating secondary items like brackets and chains
-        for forest in self._forests:
-            self.main.set_forest(forest)
+        for forest in self.forests:
+            self.main.forest = forest
             forest.rebuild_brackets()
             if not forest.settings.uses_multidomination():
                 forest.rebuild_chains()
         for key, item in ctrl.unassigned_objects.items():
             # print 'storing %s to %s' % (key, item.forest_key)
-            forest = self.get_forest(item.forest_key)
+            forest = forests_dict.get(item.forest_key, None)
             if not forest:
                 assert False
             forest.store(item)
@@ -166,28 +142,9 @@ class ForestKeeper:
         #         if not node._label_complex:
         #             print 'missing label for ', node, node.save_key
         #     #pass # finalize forest
-        self.forest = self._forests[self._i]
-        self.main.set_forest(self.forest)
+        self.forest = self.forests[self.current_index]
+        ctrl.main.forest = self.forest
 
-    def save(self):
-        """
-
-
-        :return:
-        """
-        data = {'_i': self._i, '_forests': self._forests}
-        return data
-
-    def save_safe(self):
-        """
-
-
-        """
-        savedata = {'_i': self._i, '_forests_pickled': []}
-        for forest in self._forests:
-            self.main.set_forest(forest)
-            dump = pickle.dumps(forest, 0)
-            savedata['forest_keeper'].append(dump)
 
 
     def create_forests_from_file(self, filename):
@@ -214,8 +171,7 @@ class ForestKeeper:
         :param treelist:
         :param list treelist:
         """
-        self._forests = []
-        self._forests_dict = {}
+        self.forests = []
         forest = None
         buildstring = ''
         for line in treelist:
@@ -229,36 +185,34 @@ class ForestKeeper:
                     pass
             elif len(parts) > 1:
                 if not forest:
-                    forest = Forest(self.main)
-                    self.main.set_forest(forest)
+                    forest = Forest()
+                    ctrl.main.set_forest(forest)
                 word = parts[0].strip()
                 values = parts[1]
-                forest._parser.add_definition(word, values)
+                forest.parser.add_definition(word, values)
                 # if key== '\gll':
                 # forest.setGloss(line)
             elif line.startswith("'"):
                 if forest:
                     if line.endswith("'"):
                         line = line[:-1]
-                    forest.set_gloss_text(line[1:])
+                    forest.gloss_text = line[1:]
             elif forest and not line:  # finalize this forest
                 forest.build(buildstring)
-                self._forests.append(forest)
-                self._forests_dict[forest.save_key] = forest
+                self.forests.append(forest)
                 forest = None
             elif line and not forest:  # start a new forest
                 buildstring = line
-                forest = Forest(self.main)
-                self.main.set_forest(forest)
+                forest = Forest()
+                ctrl.main.forest = forest
         if forest:  # make sure that the last forest is also added
             forest.build(buildstring)
-            self._forests.append(forest)
-            self._forests_dict[forest.save_key] = forest
-        self._i = 0
-        if self._forests:
+            self.forests.append(forest)
+        self.current_index = 0
+        if self.forests:
             if self.forest:
                 self.forest.clear_scene()
-            self.forest = self._forests[0]
+            self.forest = self.forests[0]
             self.forest.undo_manager.init_if_empty()
             # self.save()
 

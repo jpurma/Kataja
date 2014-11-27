@@ -49,7 +49,7 @@ def connect_edge(edge):
             if not constituent_end:
                 # setting a placeholder constituent doesn't have a syntactic effect
                 return
-            left, right = constituent_start.get_left(), constituent_start.get_right()
+            left, right = constituent_start.left, constituent_start.right
             if left and right:
                 if constituent_end is left:
                     syntax("Set child: This relation already exists: %s .left = %s" % (constituent_start, constituent_end))
@@ -61,14 +61,14 @@ def connect_edge(edge):
                     raise ForestSyntaxError("Trying to put child node %s, but parent node %s already has two children: (%s, %s)" % (constituent_end, constituent_start, left, right))
             elif left and not right:
                 syntax("%s Set right:  %s " % (constituent_start, constituent_end))
-                constituent_start.set_right(constituent_end)
+                constituent_start.right = constituent_end
             elif right and not left:
                 syntax("%s Set left:  %s " % (constituent_start, constituent_end))
-                constituent_start.set_left(constituent_end)
+                constituent_start.left = constituent_end
             else:
                 # Default, but unjustified: connect right child first
                 syntax("%s Set right:  %s " % (constituent_start, constituent_end))
-                constituent_start.set_right(constituent_end)
+                constituent_start.right = constituent_end
         else:
             raise ForestSyntaxError("Cannot make a constituent edge connection if "
                               "one of the ends is not a constituent node")
@@ -81,7 +81,7 @@ def connect_edge(edge):
             if not feature:
                 # setting a placeholder feature doesn't have a syntactic effect
                 return
-            if feature in constituent.get_features():
+            if feature in constituent.features:
                 raise ForestSyntaxError("Constituent %s already has feature %s")
             else:
                 constituent.add_feature(feature)
@@ -115,11 +115,11 @@ def disconnect_edge(edge):
                 # placeholder constituent doesn't have syntactic presence
                 return
             ### Obey the syntax API ###
-            left, right = start_constituent.get_left(), start_constituent.get_right()
+            left, right = start_constituent.left, start_constituent.right
             if left is end_constituent:
-                start_constituent.set_left(None)
+                start_constituent.left = None
             elif right is end_constituent:
-                start_constituent.set_right(None)
+                start_constituent.right = None
     elif etype is g.FEATURE_EDGE:
         if isinstance(edge.start, ConstituentNode) and edge.end:
             # Remove feature (edge.end) from constituent
@@ -159,4 +159,4 @@ def new_constituent(label, source=None):
     return ctrl.Constituent(label, source=source)
 
 def set_constituent_index(constituent, index):
-    constituent.set_index(index)
+    constituent.index = index

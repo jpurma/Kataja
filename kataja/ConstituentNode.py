@@ -185,23 +185,33 @@ class ConstituentNode(Node):
     @property
     def index(self):
         if self.syntactic_object:
-            return self.syntactic_object.get_index()
+            return self.syntactic_object.index
 
     @index.setter
     def index(self, value):
-        self.syntactic_object.set_index(value)
+        self.syntactic_object.index = value
         self.update_identity()
 
     @property
     def gloss(self):
         if self.syntactic_object:
-            return self.syntactic_object.get_gloss()
+            return self.syntactic_object.gloss
 
     @gloss.setter
     def gloss(self, value):
         if self.syntactic_object:
-            return self.syntactic_object.set_gloss(value)
+            self.syntactic_object.gloss = value
         self.update_gloss()
+
+    @property
+    def gloss_node(self):
+        """
+        :return:
+        """
+        gl = self.get_children(edge_type='gloss_edge')
+        if gl:
+            return gl[0]
+
 
     def update_status_tip(self):
         if self.syntactic_object:
@@ -446,19 +456,6 @@ class ConstituentNode(Node):
                 self.set_feature(syntactic_feature=feature)
             self.update_features()
 
-
-
-    def get_gloss(self):
-        """
-
-
-        :return:
-        """
-        gl = self.get_children(edge_type='gloss_edge')
-        if gl:
-            return gl[0]
-
-
     def update_gloss(self):
         """
 
@@ -466,8 +463,8 @@ class ConstituentNode(Node):
         """
         if not self.syntactic_object:
             return
-        syn_gloss = self.syntactic_object.get_gloss()
-        gloss_node = self.get_gloss()
+        syn_gloss = self.syntactic_object.gloss
+        gloss_node = self.gloss_node
         if gloss_node and not syn_gloss:
             ctrl.forest.delete_node(gloss_node)
         elif syn_gloss and not gloss_node:
@@ -488,7 +485,7 @@ class ConstituentNode(Node):
         if not self.syntactic_object:
             return
         current_features = set([x.syntactic_object.get() for x in self.get_features()])
-        correct_features = self.syntactic_object.get_features()
+        correct_features = self.syntactic_object.features
         for key, item in correct_features.items():
             if key not in current_features:
                 self.set_feature(syntactic_feature=item, key=key)

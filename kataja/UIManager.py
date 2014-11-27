@@ -214,7 +214,7 @@ class UIManager:
 
         """
         self.update_field('treeset_counter',
-                          '%s/%s' % (self.main.forest_keeper.current_index() + 1, self.main.forest_keeper.size()))
+                          '%s/%s' % (self.main.forest_keeper.current_index + 1, len(self.main.forest_keeper.forests)))
         self.update_field('visualization_selector', self.main.forest.visualization.name)
 
 

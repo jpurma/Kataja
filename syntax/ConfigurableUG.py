@@ -825,7 +825,7 @@ class ConfigurableUG:
         :param bottom:
         :param structure:
         """
-        matching_nodes = [n for n in structure if n.get_features() == bottom.get_features() and n is not bottom]
+        matching_nodes = [n for n in structure if n.features == bottom.features and n is not bottom]
         path = [bottom]
         found = True
         while found:
@@ -851,7 +851,7 @@ class ConfigurableUG:
         :param structure:
         :param top:
         """
-        matching_nodes = [n for n in structure if n.get_features() == top.get_features() and n is not top]
+        matching_nodes = [n for n in structure if n.features == top.features and n is not top]
         path = [top]
         found = True
         while found:

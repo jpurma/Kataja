@@ -23,9 +23,9 @@
 #
 # ############################################################################
 
+from kataja.Saved import Savable
 
-
-class Feature:
+class Feature(Savable):
     """
     >>> a=Feature('nom','case','deletable')
     >>> a.get()
@@ -56,20 +56,38 @@ class Feature:
     True
     """
 
-    saved_fields = ['uid', 'key', 'values']
+    def __init__(self, key, *args, data=None):
+        Savable.__init__(self, restore=data)
+        if not data:
+            if (not args) and key:
+                args = key.split(':')
+                key = args.pop(0)
+            elif not key:
+                key = "AnonymousFeature"
+            self.saved.fkey = key
+            self.saved.values = []
+            for value in args:
+                self.values.append(value)
 
-    def __init__(self, key, *args):
-        self.uid = id(self)
-        self.save_key = self.uid
-        if (not args) and key:
-            args = key.split(':')
-            key = args.pop(0)
-        elif not key:
-            key = "AnonymousFeature"
-        self.key = key
-        self.values = []
-        for value in args:
-            self.values.append(value)
+
+    @property
+    def key(self):
+        return self.saved.fkey
+
+    @key.setter
+    def key(self, value):
+        self.saved.fkey = value
+
+    @property
+    def values(self):
+        return self.saved.values
+
+    @values.setter
+    def values(self, value):
+        if isinstance(value, list):
+            self.saved.values = value
+        else:
+            self.saved.values = [value]
 
     def get(self):
         """
@@ -106,15 +124,6 @@ class Feature:
         if not prop in self.values:
             self.values.append(prop)
 
-    def set(self, values):
-        """
-
-        :param values:
-        """
-        if isinstance(values, list):
-            self.values = values
-        else:
-            self.values = [values]
 
     def iss(self, prop):
         """
