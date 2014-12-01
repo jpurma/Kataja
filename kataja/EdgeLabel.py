@@ -40,8 +40,8 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         self.selected = False
         self._size = self.boundingRect().size()
         self._local_drag_handle_position = None
-        self.setFont(self.parentItem().font())
-        self.setDefaultTextColor(self.parentItem().color())
+        self.setFont(self.parentItem().font)
+        self.setDefaultTextColor(self.parentItem().color)
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
 
     def magnet_positions(self):

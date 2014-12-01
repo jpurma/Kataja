@@ -66,7 +66,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
             self.setBackgroundBrush(qt_prefs.no_brush)
         # else:
         # self.setBackgroundBrush(QtGui.QBrush(colors.paper))
-        self.displayed_forest = None
         self._timer_id = 0
         self._dblclick = False
         self._dragging = False
@@ -153,8 +152,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
 
         """
-        if self.displayed_forest:
-            for e in self.displayed_forest.edges.values():
+        if ctrl.forest:
+            for e in ctrl.forest.edges.values():
                 e.update_shape_method()
                 e.update()
         print('received signal')
@@ -824,7 +823,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             self.fit_to_window()
 
         if items_have_moved:
-            if f.settings.bracket_style():
+            if f.settings.bracket_style:
                 f.bracket_manager.update_positions()
                 # for area in f.touch_areas:
                 # area.update_position()

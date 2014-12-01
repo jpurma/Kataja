@@ -56,18 +56,20 @@ class Feature(Savable):
     True
     """
 
-    def __init__(self, key, *args, data=None):
-        Savable.__init__(self, restore=data)
-        if not data:
-            if (not args) and key:
-                args = key.split(':')
-                key = args.pop(0)
-            elif not key:
-                key = "AnonymousFeature"
-            self.saved.fkey = key
-            self.saved.values = []
-            for value in args:
-                self.values.append(value)
+    def __init__(self, key=None, value=None, values=None):
+        Savable.__init__(self)
+        if key and not (value or values): # e.g. 'nom:case:deletable'
+            values = key.split(':')
+            key = values.pop(0)
+        elif not key:
+            key = "AnonymousFeature"
+        self.saved.fkey = key
+        if values:
+            self.saved.values = values
+        elif value:
+            self.saved.values = [value]
+        else:
+            self.values = []
 
 
     @property
@@ -77,6 +79,17 @@ class Feature(Savable):
     @key.setter
     def key(self, value):
         self.saved.fkey = value
+
+    @property
+    def value(self):
+        if self.saved.values:
+            return self.saved.values[0]
+        else:
+            return None
+
+    @value.setter
+    def value(self, value):
+        self.saved.values = [value]
 
     @property
     def values(self):
@@ -96,17 +109,6 @@ class Feature(Savable):
         :return:
         """
         return self.key
-
-    def get_value(self):
-        """
-
-
-        :return:
-        """
-        if self.values:
-            return self.values[0]
-        else:
-            return ''
 
     def get_value_string(self):
         """

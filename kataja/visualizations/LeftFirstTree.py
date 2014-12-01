@@ -57,7 +57,8 @@ class LeftFirstTree(BaseVisualization):
         self.forest = forest
         self._hits = {}
         self._max_hits = {}
-        self.forest.settings.bracket_style(0)
+        print(forest, forest.settings)
+        self.forest.settings.bracket_style = 0
         self.forest.settings.show_constituent_edges = True
         if not loading:
             self.forest.vis_data = {'name': self.__class__.name, 'rotation': 0}
@@ -76,7 +77,7 @@ class LeftFirstTree(BaseVisualization):
         if isinstance(node, ConstituentNode):
             node.bind_x = True
             node.bind_y = True
-            node.update_visibility(show_edges=True, scope=0, brackets=self.forest.settings.bracket_style())
+            node.update_visibility(show_edges=True, scope=0, brackets=self.forest.settings.bracket_style)
         elif isinstance(node, FeatureNode) or isinstance(node, GlossNode):
             node.bind_x = False
             node.bind_y = False

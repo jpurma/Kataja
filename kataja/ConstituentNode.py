@@ -65,9 +65,9 @@ class ConstituentNode(Node):
     # ConstituentNode position points to the _center_ of the node.
     # boundingRect should be (w/-2, h/-2, w, h)
 
-    def __init__(self, constituent=None, forest=None, restoring=''):
+    def __init__(self, constituent=None, restoring=''):
         """ Most of the initiation is inherited from Node """
-        Node.__init__(self, forest=forest, syntactic_object=constituent, restoring=restoring)
+        Node.__init__(self, syntactic_object=constituent, restoring=restoring)
         self.saved.alias = ""
         self.saved.is_trace = False
         self.saved.triangle = False
@@ -94,11 +94,11 @@ class ConstituentNode(Node):
         if ctrl.forest:
             self._visibility_folded = False
             self._visibility_active = True
-            self._visibility_label = ctrl.forest.settings.label_style()
-            self._visibility_index = not ctrl.forest.settings.uses_multidomination()
-            self._visibility_edges = ctrl.forest.settings.shows_constituent_edges()
-            self._visibility_features = ctrl.forest.settings.draw_features()
-            self._visibility_brackets = ctrl.forest.settings.bracket_style()
+            self._visibility_label = ctrl.forest.settings.label_style
+            self._visibility_index = not ctrl.forest.settings.uses_multidomination
+            self._visibility_edges = ctrl.forest.settings.shows_constituent_edges
+            self._visibility_features = ctrl.forest.settings.draw_features
+            self._visibility_brackets = ctrl.forest.settings.bracket_style
         else:
             self._visibility_folded = False
             self._visibility_active = True
@@ -367,9 +367,9 @@ class ConstituentNode(Node):
             self._index_label.setVisible(self._visibility_index)
         for edge in self.edges_down:
             if edge.edge_type == self.__class__.default_edge_type:
-                edge.set_visible(visible and self._visibility_edges)
+                edge.visible = visible and self._visibility_edges
             else:
-                edge.set_visible(visible)
+                edge.visible = visible
         for feature in self.get_features():
             feature.setVisible(visible and self._visibility_features)
         if self._visibility_brackets:
@@ -442,7 +442,7 @@ class ConstituentNode(Node):
         """
         assert(self.syntactic_object)
         if syntactic_feature:
-            if ctrl.forest.settings.draw_features():
+            if ctrl.forest.settings.draw_features:
                 ctrl.forest.create_feature_node(self, syntactic_feature)
         elif key:
             sf = self.syntactic_object.set_feature(key, value)
@@ -521,7 +521,7 @@ class ConstituentNode(Node):
             i_string = '<sub><i>%s</i></sub>' % index
         else:
             i_string = ''
-        if ctrl.forest.settings.label_style() != 0:
+        if ctrl.forest.settings.label_style != 0:
             if alias and label:
                 padding = len(label) - len(alias)
                 if padding > 0:
@@ -823,7 +823,7 @@ class ConstituentNode(Node):
         :param event:
         """
         assert(self.syntactic_object)
-        label = caller.get_value()
+        label = caller.value
         self.syntactic_object.label = label
         self.update_label()
         # # Delete node if just created and saved as empty.
@@ -840,7 +840,7 @@ class ConstituentNode(Node):
         :param caller:
         :param event:
         """
-        index = caller.get_value()
+        index = caller.value
         self.index = index
         ctrl.main.action_finished('edit node index')
 
@@ -850,7 +850,7 @@ class ConstituentNode(Node):
         :param caller:
         :param event:
         """
-        self.gloss = caller.get_value()
+        self.gloss = caller.value
         ctrl.main.action_finished('edit node gloss text')
 
     def change_alias(self, caller=None, event=None):
@@ -859,7 +859,7 @@ class ConstituentNode(Node):
         :param caller:
         :param event:
         """
-        self.alias = caller.get_value()
+        self.alias = caller.value
         ctrl.main.action_finished('edit node label')
 
     def change_features_string(self, caller=None, event=None):
@@ -868,7 +868,7 @@ class ConstituentNode(Node):
         :param caller:
         :param event:
         """
-        featurestring = caller.get_value()
+        featurestring = caller.value
         self.set_feature(string=featurestring)
         ctrl.main.action_finished('edit node feature text')
 
@@ -1016,9 +1016,9 @@ class ConstituentNode(Node):
         """ Check what needs to be done
         :param changes:
         """
-        self.update_visibility()
-        Node.after_restore(self, changes)
-        
+        pass
+        #self.update_visibility()
+
 
     # ### Suggestions for completing missing aspects (active for selected nodes) ######################################
 

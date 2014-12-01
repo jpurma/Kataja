@@ -33,10 +33,8 @@ class BareConstituent(BaseConstituent):
     """ BareConstituents are version of BaseConstituent that stores features as trees.
     This may have significance at some point. They are primary objects and need to support saving and loading. """
 
-    def __init__(self, cid='', left=None, right=None, source='', data=None):
-        if not data:
-            data = {}
-        BaseConstituent.__init__(self, cid, left, right, source, data)
+    def __init__(self, cid='', left=None, right=None, source=''):
+        BaseConstituent.__init__(self, cid, left, right, source)
         self.feature_tree = None
 
     def get_feature(self, key):
@@ -73,7 +71,7 @@ class BareConstituent(BaseConstituent):
         :param feature:
         """
         if self.feature_tree:
-            merged = Feature('')
+            merged = Feature()
             merged.left = feature
             merged.right = self.feature_tree
             self.feature_tree = merged
@@ -93,12 +91,3 @@ class BareConstituent(BaseConstituent):
             else:
                 return "[ %s %s ]" % (self.left.__repr__(), self.right.__repr__())
 
-    def after_restore(self, values=None):
-        """
-
-        :param values:
-        :return:
-        """
-        if not values:
-            values = {}
-        return

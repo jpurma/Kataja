@@ -187,13 +187,13 @@ class PaletteManager:
                      'accent1tr', 'accent2tr', 'accent3tr', 'accent4tr', 'accent5tr', 'accent6tr', 'accent7tr',
                      'accent8tr']
 
-    def current_color_mode(self, value=None):
+    @property
+    def current_color_mode(self):
         """
-
         :param value:
         :return:
         """
-        return ctrl.fs.color_mode(value)
+        return ctrl.fs.color_mode
 
     def activate_color_mode(self, mode, refresh=False, cold_start=False):
         """
@@ -301,7 +301,7 @@ class PaletteManager:
         :param refresh:
         :param adjusting:
         """
-        self.activate_color_mode(self.current_color_mode(), refresh=refresh)
+        self.activate_color_mode(self.current_color_mode, refresh=refresh)
 
 
     def build_solarized(self, light=True):

@@ -354,10 +354,22 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
 
     @visible.setter
     def visible(self, value):
+        """ Hide or show, and also manage related UI objects. Note that the shape itself may be visible or
+        not independent of this. It has to be visible in this level so that UI elements can be used.
+        :param visible:
         """
-        :param value:
-        """
-        self.saved.visible = value
+        v = self.isVisible()
+        if v and not value:
+            self.saved.visible = False
+            self.hide()
+            ctrl.main.ui_manager.remove_control_points(self)
+        elif (not v) and value:
+            self.saved.visible = True
+            self.show()
+            if ctrl.is_selected(self):
+                ctrl.main.ui_manager.add_control_points(self)
+        else:
+            self.saved.visible = value
 
 
     def receive_signal(self, signal, *args):
@@ -980,23 +992,6 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         """
         self._local_drag_handle_position = None
 
-    def set_visible(self, visible):
-        """ Hide or show, and also manage related UI objects. Note that the shape itself may be visible or
-        not independent of this. It has to be visible in this level so that UI elements can be used.
-        :param visible:
-        """
-        v = self.isVisible()
-        if v and not visible:
-            self.visible = False
-            self.hide()
-            ctrl.main.ui_manager.remove_control_points(self)
-        elif (not v) and visible:
-            self.visible = True
-            self.show()
-            if ctrl.is_selected(self):
-                ctrl.main.ui_manager.add_control_points(self)
-        else:
-            self.visible = visible
 
     def can_be_disconnected(self):
         """
@@ -1221,7 +1216,6 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         :param changes:
         """
         self.update_end_points()
-        self.set_visible(self.visible)
 
     def ending(self, which_end, value=None):
         """

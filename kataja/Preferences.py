@@ -113,9 +113,9 @@ class Preferences(object):
         self.default_label_style = 2
         self.default_uses_multidomination = True
         self.default_traces_are_grouped_together = 0
-        self.default_show_constituent_edges = True
-        self.default_show_merge_order = False
-        self.default_show_select_order = False
+        self.default_shows_constituent_edges = True
+        self.default_shows_merge_order = False
+        self.default_shows_select_order = False
         self.default_draw_features = True
         self.default_draw_width = 2
         self.my_palettes = {}

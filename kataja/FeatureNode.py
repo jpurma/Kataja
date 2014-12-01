@@ -42,10 +42,8 @@ class FeatureNode(Node):
     saved_fields = []
     node_type = FEATURE_NODE
 
-    def __init__(self, feature=None, forest=None, restoring=False):
-        if not forest:
-            raise Exception("Forest is missing")
-        Node.__init__(self, syntactic_object=feature, forest=forest)
+    def __init__(self, feature=None, restoring=False):
+        Node.__init__(self, syntactic_object=feature)
         # if feature.get_value() in color_map:
         # self.color = colors.feature_palette[color_map[feature.get_value()]]
         # else:
@@ -76,6 +74,8 @@ class FeatureNode(Node):
     def get_text_for_label(self):
         """ This should be overridden if there are alternative displays for label """
         f = self.syntactic_object
+        if not f:
+            return 'orphaned feature node'
         if f.key in color_map:
             return str(f.get_value_string())
         else:

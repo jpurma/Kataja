@@ -171,7 +171,7 @@ class DerivationStepManager(Savable):
     saved_fields = ['_derivation_steps', '_derivation_step_index', 'forest', 'save_key']
 
 
-    def __init__(self, forest):
+    def __init__(self, forest=None):
         Savable.__init__(self, unique=False)
         self.saved.derivation_steps = []
         self.saved.derivation_step_index = 0

@@ -417,12 +417,3 @@ class Movable(Savable):
 
     #### Restoring after load / undo #########################################
 
-    def after_restore(self, changes):
-        """ Fix derived attributes. In dict 'changes' each changed attribute has tuple w. (old, new) values
-        :param changes: dict
-        """
-        print(changes)
-        if 'current_position' in changes:
-            self.current_position = changes['current_position'][1]
-        if 'computed_position' in changes:
-            self.computed_position = changes['computed_position'][1]

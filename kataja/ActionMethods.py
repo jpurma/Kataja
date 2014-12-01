@@ -73,8 +73,8 @@ class ActionMethods:
 
         # inspection doesn't recognize that getOpenFileName is static, switch it off:
         # noinspection PyTypeChecker,PyCallByClass
-        filename, filetypes = QtWidgets.QFileDialog.getOpenFileName(self.main, "Open KatajaMain tree", "", file_help)
-        # filename = 'savetest.kataja'
+        #filename, filetypes = QtWidgets.QFileDialog.getOpenFileName(self.main, "Open KatajaMain tree", "", file_help)
+        filename = 'savetest.kataja'
         if filename:
             self.main.load_state_from_file(filename)
             self.main.add_message("Loaded '%s'." % filename)

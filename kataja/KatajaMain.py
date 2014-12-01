@@ -50,6 +50,7 @@ from kataja.Presentation import TextArea
 from kataja.Edge import SHAPE_PRESETS, Edge
 from kataja.UIManager import UIManager
 from kataja.PaletteManager import PaletteManager
+from kataja.ObjectFactory import ObjectFactory
 import kataja.globals as g
 from kataja.utils import time_me
 from kataja.visualizations.available import VISUALIZATIONS
@@ -108,6 +109,7 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
         self.action_launcher = ActionMethods(self)
         self.ui_manager = UIManager(self)
         self.key_manager = KeyPressManager(self)
+        self.object_factory = ObjectFactory()
         print('---- ui init ... ', time.time() - t)
         self.saved.forest_keeper = ForestKeeper()
         print('---- forest_keeper init ... ', time.time() - t)
@@ -142,12 +144,14 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
         """ Loads and initializes a new set of trees. Has to be done before the program can do anything sane.
         :param treeset_list:
         """
+        ctrl.initializing = True
         if not treeset_list:
             treeset_list = []
         if treeset_list:
             self.forest_keeper = ForestKeeper(treelist=treeset_list)
         else:
             self.forest_keeper = ForestKeeper(file_name=prefs.debug_treeset)
+        ctrl.initializing = False
         self.change_forest(self.forest_keeper.forest)
 
     # ### Visualization #############################################################
@@ -186,7 +190,6 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
         self.forest.update_colors()
         if debug.DEBUG_FOREST_OPERATION:
             self.forest.info_dump()
-        self.graph_scene.displayed_forest = forest
         self.forest.add_all_to_scene()
         self.graph_scene.reset_zoom()
         self.ui_manager.update_all_fields()
@@ -541,7 +544,6 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
         :param filename: string
         """
         self.clear_all()
-        self.graph_scene.displayed_forest = None
         if filename.endswith('.zkataja'):
             #f = gzip.open(filename, 'r')
             f = open(filename, 'r')
@@ -554,10 +556,10 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
         f.close()
         #prefs.update(data['preferences'].__dict__)
         #qt_prefs.update(prefs)
-        self.load_objects(data)
+        ctrl.loading = True
+        self.load_objects(data, self)
         ctrl.loading = False
-        ctrl.change_forest(self.forest_keeper.forest)
-        ctrl.update_colors()
+        self.change_forest(self.forest_keeper.forest)
 
     def clear_all(self):
         """ Empty everything - maybe necessary before loading new data. """
@@ -565,6 +567,11 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
             self.forest.clear_scene()
         self.ui_manager.clear_items()
         self.forest_keeper = ForestKeeper()
+        print('garbage stats:', gc.get_count())
+        gc.collect()
+        print('after collection:', gc.get_count())
+        if gc.garbage:
+            print('garbage:', gc.garbage)
 
     # ### Action preconditions ##################################################
 
@@ -662,12 +669,7 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
             for obj in list(open_references.values()):
                 obj.save_object(savedata, open_references)
 
-        # savedata['forest_keeper'] = self.forest_keeper.save()
-        # savedata['ui_manager'] = self.ui_manager.save()
-        # savedata['graph_scene'] = self.graph_scene.save()
-        # savedata['graph_view'] = self.graph_view.save()
-        # print savedata
-        print('total savedata: %s chars.' % len(str(savedata)))
+        print('total savedata: %s chars in %s items.' % (len(str(savedata)), len(savedata)))
         #print(savedata)
         return savedata
 

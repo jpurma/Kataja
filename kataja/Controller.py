@@ -77,6 +77,7 @@ class Controller:
         self.print_garbage = True
         self.focus = None
         self.loading = False  # flag that affects if pickle.load assumes
+        self.initializing = False
         # an empty workspace (loading new) or if it tries to compare changes (undo).
         self.unassigned_objects = {}
         self.on_cancel_delete = []

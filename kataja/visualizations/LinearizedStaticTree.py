@@ -51,7 +51,7 @@ class LinearizedStaticTree(BalancedTree):
         """
         self.forest = forest
         self._directed = True
-        self.forest.settings.bracket_style(0)
+        self.forest.settings.bracket_style = 0
         self.forest.settings.show_constituent_edges = True
         if not loading:
             self.forest.vis_data = {'name': self.__class__.name, 'rotation': 0}

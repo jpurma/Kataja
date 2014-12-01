@@ -183,7 +183,7 @@ class Parser:
         """ Uses parsed dict of features """
         label = features['label']
         if isinstance(label, ctrl.Feature):
-            label = features['label'].get_value()
+            label = features['label'].value
         else:
             raise Exception("Label is not a proper Feature")
         lexicon_entry = ctrl.UG.lexicon.get(label, None)
@@ -253,7 +253,7 @@ class Parser:
                 features['label'] = word_string
                 const_id = word_string
             else:
-                const_id = features['label'].get_value()
+                const_id = features['label'].value
             dotlabel = features.get('dotlabel', None)
             if dotlabel:
                 dotlabel = dotlabel.get_value()

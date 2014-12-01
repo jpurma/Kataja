@@ -51,7 +51,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     default_edge_type = g.ABSTRACT_EDGE
     node_type = g.ABSTRACT_NODE
 
-    def __init__(self, syntactic_object=None, forest=None, restoring=None):
+    def __init__(self, syntactic_object=None, restoring=None):
         """ Node is an abstract class that shouldn't be used by itself, though
         it should contain all methods to make it work. Inherit and modify this for
         Constituents, Features etc. """
@@ -160,7 +160,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
     def __repr__(self):
         """ This is a node and this represents this UG item """
-        return '%s-%s' % (self.saved.syntactic_object, self.saved.key)
+        return '%s-%s' % (self.saved.syntactic_object, self.saved.save_key)
 
 
     # Let's not have nodes be able to iterate through tree --
@@ -725,10 +725,5 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
     #### Restoring after load / undo #########################################
 
-    def after_restore(self, changes):
-        """ Fix derived attributes
-        :param changes:
-        """
-        Movable.after_restore(self, changes)
 
 

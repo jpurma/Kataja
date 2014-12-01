@@ -36,22 +36,21 @@ class BaseConstituent(Savable):
     It is a primary datatype, needs to support saving and loading. """
 
 
-    def __init__(self, cid='', left=None, right=None, source='', data=None):
+    def __init__(self, cid='', left=None, right=None, source=''):
         """ BaseConstituent is a default constituent used in syntax.
         It is Savable, which means that the actual values are stored in separate object that is easily dumped to file.
         Extending this needs to take account if new fields should also be treated as savable, e.g. put them into
         .saved. and make necessary property and setter.
          """
-        Savable.__init__(self, restore=data)
-        if not data:
-            self.saved.features = {}
-            self.saved.sourcestring = source or cid
-            self.saved.label = cid
-            self.saved.alias = ''
-            self.saved.left = left
-            self.saved.right = right
-            self.saved.gloss = ''
-            self.saved.index = ''
+        Savable.__init__(self)
+        self.saved.features = {}
+        self.saved.sourcestring = source or cid
+        self.saved.label = cid
+        self.saved.alias = ''
+        self.saved.left = left
+        self.saved.right = right
+        self.saved.gloss = ''
+        self.saved.index = ''
 
     def __str__(self):
         if self.index:
@@ -70,9 +69,9 @@ class BaseConstituent(Savable):
         """
         for key, feature in value.items():
             if key == 'label':
-                self.label = feature.get_value()
+                self.label = feature.value
             elif key == 'index':
-                self.index = feature.get_value()
+                self.index = feature.value
             else:
                 self.saved.features[key] = feature
 

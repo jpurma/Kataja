@@ -6,28 +6,34 @@ from kataja.utils import to_tuple
 
 __author__ = 'purma'
 
+class SaveError(Exception):
+    pass
+    #def __init__(self, value):
+    #    self.value = value
+    #def __str__(self):
+    #    return repr(self.value)
 
 class Savable:
     """ Make the object to have internal .saved -object where saved data should go.
     Also makes it neater to check if item is Savable.
     """
 
-    def __init__(self, unique=False, restore=None):
+    def __init__(self, unique=False):
         if unique:
             key = self.__class__.__name__
         else:
             key = str(id(self)) + '|' + self.__class__.__name__
         self.saved = Saved()
-        self.saved.key = key
-        sys.intern(self.saved.key)
+        self.saved.save_key = key
+        sys.intern(self.saved.save_key)
 
     @property
     def save_key(self):
-        return self.saved.key
+        return self.saved.save_key
 
     @save_key.setter
     def save_key(self, value):
-        self.saved.key = value
+        self.saved.save_key = value
 
 
     def save_object(self, saved_objs, open_refs):
@@ -74,8 +80,7 @@ class Savable:
             elif isinstance(data, types.FunctionType):
                 # if functions are stored in the dict, there should be some original version of the same dict, where these
                 # are in their original form.
-                print('saving function in undo, at object ', self)
-                return None
+                raise SaveError('trying to save a function at object ', self)
             elif data is None:
                 return data
             elif isinstance(data, QPointF):
@@ -91,8 +96,7 @@ class Savable:
             elif isinstance(data, QtCore.QRect):
                 return 'QRect', data.x(), data.y(), data.width(), data.height()
             elif isinstance(data, QtGui.QFont):
-                print("We shouldn't save QFonts!: ", data)
-                return 'QFont', data.toString()
+                raise SaveError("We shouldn't save QFonts!: ", data)
             elif hasattr(data, 'save_key'):
                 key = getattr(data, 'save_key')
                 if key not in saved_objs and key not in open_refs:
@@ -104,28 +108,30 @@ class Savable:
                     open_refs[key] = data
                 return '|'.join(('*r*', str(key)))
             else:
-                print("simplifying unknown data type:", data, type(data))
+                raise SaveError("simplifying unknown data type:", data, type(data))
 
         if self.save_key in saved_objs:
             return
         obj_data = {}
         for key, item in vars(self.saved).items():
-            obj_data[key] = _simplify(item)
+            if item:
+                obj_data[key] = _simplify(item)
 
         saved_objs[self.save_key] = obj_data
         if self.save_key in open_refs:
             del open_refs[self.save_key]
 
-    def load_objects(self, data):
+    def load_objects(self, data, kataja_main):
         """ Load and restore objects starting from given obj (probably Forest or KatajaMain instance)
         :param self:
         :param full_data:
         """
 
-        global full_map, restored, full_data
+        global full_map, restored, full_data, main
         full_map = {}
         restored = {}
         full_data = data
+        main = kataja_main
 
         # First we need a full index of objects that already exist within the existing objects.
         # This is to avoid recreating those objects. We just want to modify them
@@ -163,33 +169,35 @@ class Savable:
         :param class_key:
         :return:
         """
-        global full_map, restored, full_data
+        global full_map, restored, full_data, main
+        #print('restoring %s , %s ' % (obj_key, class_key))
         if obj_key in restored:
             return restored[obj_key]
         obj = full_map.get(obj_key, None)
-        restored[obj_key] = obj
         if not obj:
-            # needs to create a stub object
-            # how can we reach the constructor?
-            pass
+            #print('creeating new ', class_key)
+            obj = main.object_factory.create(class_key)
+
+        restored[obj_key] = obj
         obj_data = full_data[obj_key]
-        changes = {}
-        for key, value in obj_data.items():
-            new_value = obj.inflate(value)
-            old_value = getattr(obj, key)
-            if new_value != old_value:
-                changes[key] = (old_value, new_value)
-                setattr(obj, key, new_value)
-                #print '  in %s set %s to %s, was %s' % (obj_key, key, new_value, old_value)
-                #else:
-                #    print 'in %s keep %s value %s' % (obj_key, key, old_value)
+        if obj:
+            changes = {}
+            for key, value in obj_data.items():
+                new_value = obj.inflate(value)
+                old_value = getattr(obj, key, None)
+                if new_value != old_value:
+                    #changes[key] = (old_value, new_value)
+                    #print('set: %s.%s = %s' % (obj, key, new_value))
+                    setattr(obj, key, new_value)
+                    #print '  in %s set %s to %s, was %s' % (obj_key, key, new_value, old_value)
+                    #else:
+                    #    print 'in %s keep %s value %s' % (obj_key, key, old_value)
         #  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         # !!! object needs to be finalized after this !!!
         #  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         if hasattr(obj, 'after_restore'):
+            print('running after_restore for ', type(obj))
             obj.after_restore(changes)
-        else:
-            print(' *obj %s (%s) after_restore -method missing *' % (obj, type(obj)))
         return obj
 
 
@@ -199,7 +207,8 @@ class Savable:
         :param self:
         :return:
         """
-        if isinstance(data, (int, float, str)):
+        #print('inflating %s in %s' % (str(data), self))
+        if isinstance(data, (int, float)):
             return data
         elif isinstance(data, dict):
             result = {}
@@ -214,8 +223,13 @@ class Savable:
             return result
         elif isinstance(data, str):
             if data.startswith('*r*'):
-                ref, key, class_name = tuple(data.split('|'))
-                return self.restore(key+'|'+class_name, class_name)
+                parts = data.split('|')
+                if len(parts) > 2:
+                    return self.restore(parts[1]+'|'+parts[2], parts[2])
+                else:
+                    return self.restore(parts[1], parts[1])
+            else:
+                return data
         elif isinstance(data, tuple):
             if data and isinstance(data[0], str) and data[0].startswith('Q'):
                 data_type = data[0]
@@ -234,7 +248,7 @@ class Savable:
                     f.fromString(data[1])
                     return f
                 else:
-                    print('unknown QObject: ', data)
+                    raise SaveError('unknown QObject: %s' % data)
             else:
                 result = []
                 for item in data:

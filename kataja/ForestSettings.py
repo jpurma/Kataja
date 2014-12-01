@@ -25,6 +25,7 @@
 from kataja.globals import *
 from kataja.shapes import SHAPE_PRESETS
 from kataja.Saved import Savable
+from singletons import prefs
 
 ONLY_LEAF_LABELS = 0
 ALL_LABELS = 1
@@ -32,190 +33,177 @@ ALIASES = 2
 
 
 class ForestSettings(Savable):
-    """
-
-    """
+    """ Settings specific for this forest -- a level between global preferences and settings specific for object. """
     saved_fields = 'all'
     saved_fields_ignore = 'prefs'
     # saved_fields_ignore_None = True
 
     """ Settings that affect trees in one forest in a form that can be easily pickled """
 
-    def __init__(self, host, prefs):
+    def __init__(self):
         Savable.__init__(self)
-        self.prefs = prefs
-        if host:
-            self.save_key = host.save_key + '_settings'
         # ## General settings for Forest
-        self._label_style = None
-        self._uses_multidomination = None
-        self._traces_are_grouped_together = None
-        self._show_constituent_edges = None
-        self._show_merge_order = None
-        self._show_select_order = None
-        self._draw_features = None
-        self._draw_width = None
-        self._hsv = None
-        self._color_mode = None
-        self._last_key_colors = {}
-        self._bracket_style = None
+        self.saved.label_style = None
+        self.saved.uses_multidomination = None
+        self.saved.traces_are_grouped_together = None
+        self.saved.shows_constituent_edges = None
+        self.saved.shows_merge_order = None
+        self.saved.shows_select_order = None
+        self.saved.draw_features = None
+        self.saved.hsv = None
+        self.saved.color_mode = None
+        self.saved.last_key_colors = {}
+        self.saved.bracket_style = None
         # ## Edges - take edge type as argument ###########################
-        self._edge_types = {CONSTITUENT_EDGE: {}, FEATURE_EDGE: {}, GLOSS_EDGE: {}, ARROW: {}, PROPERTY_EDGE: {},
-                            ABSTRACT_EDGE: {}, ATTRIBUTE_EDGE: {}}
+        self.saved.edge_types = {}
         # ## Nodes - take node type as argument ###########################
-        self._node_types = {ABSTRACT_NODE: {}, CONSTITUENT_NODE: {}, FEATURE_NODE: {}, ATTRIBUTE_NODE: {},
-                            PROPERTY_NODE: {}, GLOSS_NODE: {}}
+        self.saved.node_types = {}
 
-    def after_restore(self, values=None):
+
+    @property
+    def label_style(self):
         """
-
-        :param values:
         :return:
         """
-        if not values:
-            values = {}
-        return
-
-
-    def label_style(self, value=None):
-        """
-
-        :param value:
-        :return:
-        """
-        if value is None:
-            if self._label_style is None:
-                return self.prefs.default_label_style
-            else:
-                return self._label_style
+        if self.saved.label_style is None:
+            return prefs.default_label_style
         else:
-            self._label_style = value
+            return self.saved.label_style
 
-    def uses_multidomination(self, value=None):
+    @label_style.setter
+    def label_style(self, value):
         """
+        :param value: """
+        self.saved.label_style = value
 
-        :param value:
+
+    @property
+    def uses_multidomination(self):
+        """
         :return:
         """
-        if value is None:
-            if self._uses_multidomination is None:
-                return self.prefs.default_use_multidomination
-            else:
-                return self._uses_multidomination
+        if self.saved.uses_multidomination is None:
+            return prefs.default_use_multidomination
         else:
-            self._uses_multidomination = value
+            return self.saved.uses_multidomination
 
-    def traces_are_grouped_together(self, value=None):
+    @uses_multidomination.setter
+    def uses_multidomination(self, value):
         """
+        :param value: """
+        self.saved.uses_multidomination = value
 
-        :param value:
+
+    @property
+    def traces_are_grouped_together(self):
+        """
         :return:
         """
-        if value is None:
-            if self._traces_are_grouped_together is None:
-                return self.prefs.default_traces_are_grouped_together
-            else:
-                return self._traces_are_grouped_together
+        if self.saved.traces_are_grouped_together is None:
+            return prefs.default_traces_are_grouped_together
         else:
-            self._traces_are_grouped_together = value
+            return self.saved.traces_are_grouped_together
 
-    def shows_constituent_edges(self, value=None):
+    @traces_are_grouped_together.setter
+    def traces_are_grouped_together(self, value):
         """
+        :param value: """
+        self.saved.traces_are_grouped_together = value
 
-        :param value:
+
+    @property
+    def shows_constituent_edges(self):
+        """
         :return:
         """
-        if value is None:
-            if self._show_constituent_edges is None:
-                return self.prefs.default_show_constituent_edges
-            else:
-                return self._show_constituent_edges
+        if self.saved.shows_constituent_edges is None:
+            return prefs.default_shows_constituent_edges
         else:
-            self._show_constituent_edges = value
+            return self.saved.shows_constituent_edges
 
-    def shows_merge_order(self, value=None):
+    @shows_constituent_edges.setter
+    def shows_constituent_edges(self, value):
         """
+        :param value: """
+        self.saved.shows_constituent_edges = value
 
-        :param value:
+    @property
+    def shows_merge_order(self):
+        """
         :return:
         """
-        if value is None:
-            if self._show_merge_order is None:
-                return self.prefs.default_show_merge_order
-            else:
-                return self._show_merge_order
+        if self.saved.shows_merge_order is None:
+            return prefs.default_shows_merge_order
         else:
-            self._show_merge_order = value
+            return self.saved.shows_merge_order
 
-    def shows_select_order(self, value=None):
+    @shows_merge_order.setter
+    def shows_merge_order(self, value):
         """
+        :param value: """
+        self.saved.shows_merge_order = value
 
-        :param value:
+    @property
+    def shows_select_order(self):
+        """
         :return:
         """
-        if value is None:
-            if self._show_select_order is None:
-                return self.prefs.default_show_select_order
-            else:
-                return self._show_select_order
+        if self.saved.shows_select_order is None:
+            return prefs.default_shows_select_order
         else:
-            self._show_select_order = value
+            return self.saved.shows_select_order
 
-    def draw_features(self, value=None):
+    @shows_select_order.setter
+    def shows_select_order(self, value):
         """
+        :param value: """
+        self.saved.shows_select_order = value
 
-        :param value:
+    @property
+    def draw_features(self):
+        """
         :return:
         """
-        if value is None:
-            if self._draw_features is None:
-                return self.prefs.default_draw_features
-            else:
-                return self._draw_features
+        if self.saved.draw_features is None:
+            return prefs.default_draw_features
         else:
-            self._draw_features = value
+            return self.saved.draw_features
 
-    def draw_width(self, value=None):
+    @draw_features.setter
+    def draw_features(self, value):
         """
+        :param value: """
+        self.saved.draw_features = value
 
-        :param value:
+    @property
+    def hsv(self):
+        """
         :return:
         """
-        if value is None:
-            if self._draw_width is None:
-                return self.prefs.default_draw_width
-            else:
-                return self._draw_width
+        if self.saved.hsv is None:
+            return prefs.default_hsv
         else:
-            self._draw_width = value
+            return self.saved.hsv
 
-    def hsv(self, value=None):
+    @hsv.setter
+    def hsv(self, value):
         """
+        :param value: """
+        self.saved.hsv = value
 
-        :param value:
-        :return:
-        """
-        if value is None:
-            if self._hsv is None:
-                return self.prefs.default_hsv
-            else:
-                return self._hsv
+    @property
+    def bracket_style(self):
+        """ :return: """
+        if self.saved.bracket_style is None:
+            return prefs.default_bracket_style
         else:
-            self._hsv = value
+            return self.saved.bracket_style
 
-    def bracket_style(self, value=None):
+    @bracket_style.setter
+    def bracket_style(self, value):
         """
-
-        :param value:
-        :return:
-        """
-        if value is None:
-            if self._bracket_style is None:
-                return self.prefs.default_bracket_style
-            else:
-                return self._bracket_style
-        else:
-            self._bracket_style = value
+        :param value:  """
+        self.saved.bracket_style = value
 
     def last_key_color_for_mode(self, mode_key, value=None):
         """
@@ -225,24 +213,24 @@ class ForestSettings(Savable):
         :return:
         """
         if value is None:
-            return self._last_key_colors.get(mode_key, None)
+            return self.saved.last_key_colors.get(mode_key, None)
         else:
-            self._last_key_colors[mode_key] = value
+            self.saved.last_key_colors[mode_key] = value
 
+    @property
+    def color_mode(self):
+        """ :return: """
+        if self.saved.color_mode is None:
+            return prefs.color_mode
+        else:
+            return self.saved.color_mode
 
+    @color_mode.setter
     def color_mode(self, value=None):
         """
+        :param value:"""
+        self.saved.color_mode = value
 
-        :param value:
-        :return:
-        """
-        if value is None:
-            if self._color_mode is None:
-                return self.prefs.color_mode
-            else:
-                return self._color_mode
-        else:
-            self._color_mode = value
 
     # ## Edges - all require edge type as argument, value is stored in dict ###########
 
@@ -255,17 +243,19 @@ class ForestSettings(Savable):
         :param key:
         :param value:
         """
-        e = self._edge_types.get(edge_type)
+        if not edge_type:
+            return
+        local_edge_settings = self.saved.edge_types.get(edge_type)
         if value is None:
-            if e is None or e.get(key, None) is None:
-                return self.prefs.edges[edge_type].get(key, None)
+            if local_edge_settings is None or local_edge_settings.get(key, None) is None:
+                return prefs.edges[edge_type].get(key, None)
             else:
-                return e[key]
+                return local_edge_settings[key]
         else:
-            if e is None:
-                self._edge_types[edge_type] = {key: value}
+            if local_edge_settings is None:
+                self.saved.edge_types[edge_type] = {key: value}
             else:
-                e[key] = value
+                local_edge_settings[key] = value
 
     def edge_shape_settings(self, edge_type, key=None, value=None, shape_name=None):
         """ Return the settings dict for certain edge type: often this defaults to edge_shape settings, but it can be
@@ -276,10 +266,16 @@ class ForestSettings(Savable):
         :param value:
         :return:
         """
+        if not edge_type:
+            return
         if not shape_name:
             shape_name = self.edge_type_settings(edge_type, 'shape_name')
 
-        shape_args = self._edge_types.get(edge_type).get('shape_args', None)
+        local_edge_type = self.saved.edge_types.get(edge_type, None)
+        if local_edge_type:
+            shape_args = local_edge_type.get('shape_args', None)
+        else:
+            shape_args = None
 
         if shape_args is None:
             shape_defaults = SHAPE_PRESETS[shape_name]
@@ -290,8 +286,11 @@ class ForestSettings(Savable):
             elif value == DELETE:
                 pass
             else:# set single setting
-                self._edge_types[edge_type]['shape_args'] = shape_defaults.copy()
-                self._edge_types[edge_type]['shape_args'][key] = value
+                if not local_edge_type:
+                    local_edge_type = {}
+                    self.saved.edge_types[edge_type] = local_edge_type
+                local_edge_type['shape_args'] = shape_defaults.copy()
+                local_edge_type['shape_args'][key] = value
         else:
             if key is None:  # the whole dict is asked
                 return shape_args
@@ -330,17 +329,17 @@ class ForestSettings(Savable):
         :param key:
         :param value:
         """
-        e = self._node_types[node_type]
+        local_node_settings = self.saved.node_types.get(node_type, None)
         if value is None:
-            if e is None or e.get(key) is None:
-                return self.prefs.nodes[node_type][key]
+            if local_node_settings is None or local_node_settings.get(key) is None:
+                return prefs.nodes[node_type][key]
             else:
-                return e[key]
+                return local_node_settings[key]
         else:
-            if e is None:
-                self._node_types[node_type] = {key: value}
+            if local_node_settings is None:
+                self.saved.node_types[node_type] = {key: value}
             else:
-                e[key] = value
+                local_node_settings[key] = value
 
 
 class ForestRules(Savable):
@@ -360,7 +359,7 @@ class ForestRules(Savable):
         :return:
         """
         if self.saved.allow_multidomination is None:
-            return self.prefs.rules_allow_multidomination
+            return prefs.rules_allow_multidomination
         else:
             return self.saved.allow_multidomination
 
@@ -380,7 +379,7 @@ class ForestRules(Savable):
         :return:
         """
         if self.saved.only_binary_branching is None:
-            return self.prefs.rules_only_binary_branching
+            return prefs.rules_only_binary_branching
         else:
             return self.saved.only_binary_branching
 
@@ -400,7 +399,7 @@ class ForestRules(Savable):
         :return:
         """
         if self.saved.projection is None:
-            return self.prefs.rules_projection
+            return prefs.rules_projection
         else:
             return self.saved.projection
 
@@ -420,7 +419,7 @@ class ForestRules(Savable):
         :return:
         """
         if self.saved.projected_inherits_labels is None:
-            return self.prefs.rules_projected_inherits_labels
+            return prefs.rules_projected_inherits_labels
         else:
             return self.saved.projected_inherits_labels
 

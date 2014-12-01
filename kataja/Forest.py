@@ -74,7 +74,7 @@ class Forest(Savable):
       Forest also takes care of the operations manipulating, creating and
       removing trees. """
 
-    def __init__(self, restoring=''):
+    def __init__(self, data=None):
         """ Create an empty forest """
         Savable.__init__(self)
         self.nodes_by_uid = {}
@@ -90,7 +90,7 @@ class Forest(Savable):
         self.saved.edges = {}
         self.saved.others = {}
         self.saved.chain_manager = ChainManager(self)
-        self.saved.settings = ForestSettings(self, prefs)
+        self.saved.settings = ForestSettings()
         self.saved.rules = ForestRules()
         self.saved.vis_data = {}
         self.saved.derivation_steps = DerivationStepManager(self)
@@ -218,16 +218,14 @@ class Forest(Savable):
         :param changes: dictionary of changes
         """
         forest()
-        print('changes in forest: ', list(changes.keys()))
+        #print('changes in forest: ', list(changes.keys()))
         if 'vis_data' in changes:
-
             old_vis, new_vis = changes['vis_data']
             # if visualization keeps the same, it can use vis_data directly, it doesn't need to 
-            # prepare again. 
-            if old_vis['name'] != new_vis['name']:
+            # prepare again.
+            if old_vis.get('name', '') != new_vis.get('name', ''):
                 # if visualization is changed, then it should change the visualization object and
                 # not let it to use the new_vis_data.
-                print('changing visualization to: ', new_vis['name'])
                 self.visualization = self.main.visualizations[new_vis['name']]
                 self.visualization.set_forest(self)
 
@@ -396,14 +394,12 @@ class Forest(Savable):
 
     def clear_scene(self):
         """ Disconnect related graphic items from GraphScene """
-        forest()
         scene = self.scene
-        if scene.displayed_forest != self.main.forest:
-            return
         if self.gloss:
             scene.removeItem(self.gloss)
         for item in self.get_all_objects():
-            scene.removeItem(item)
+            if item.scene() is scene:
+                scene.removeItem(item)
         self.gloss = None
 
     def add_all_to_scene(self):
@@ -411,7 +407,7 @@ class Forest(Savable):
         forest()
         if ctrl.loading:
             return
-        if self.scene.displayed_forest != self.main.forest:
+        if ctrl.initializing:
             return
         for item in self.get_all_objects():
             self.scene.addItem(item)
@@ -421,9 +417,7 @@ class Forest(Savable):
         :param item:
         """
         forest()
-        if ctrl.loading:
-            return
-        if self.scene.displayed_forest != self.main.forest:
+        if ctrl.loading or ctrl.initializing:
             return
         self.scene.addItem(item)
 
@@ -616,7 +610,7 @@ class Forest(Savable):
         forest()
         node = self.get_node(C)
         if not node:
-            node = ConstituentNode(constituent=C, forest=self)
+            node = ConstituentNode(constituent=C)
         else:
             assert False
         if pos:
@@ -776,7 +770,7 @@ class Forest(Savable):
             self._gloss_text = text[5:].strip('{} ')
         parser_method = self.parser.detect_suitable_parser(text)
         parser_method(text)
-        if self.settings.uses_multidomination():
+        if self.settings.uses_multidomination:
             self.traces_to_multidomination()
         else:
             self.chain_manager.rebuild_chains()
@@ -1121,13 +1115,13 @@ class Forest(Savable):
         forest()
         M = node.get_attribute_nodes('M')
         S = node.get_attribute_nodes('S')
-        if M and not self.settings.shows_merge_order():
+        if M and not self.settings.shows_merge_order:
             self.delete_node(M)
-        elif self.settings.shows_merge_order() and (not M) and node.merge_order:
+        elif self.settings.shows_merge_order and (not M) and node.merge_order:
             self.create_attribute_node(node, 'merge_order', attribute_label='M', show_label=True)
         if S and not self.settings.show_select_order:
             self.delete_node(S)
-        elif self.settings.shows_select_order() and (not S) and node.select_order:
+        elif self.settings.shows_select_order and (not S) and node.select_order:
             self.create_attribute_node(node, 'select_order', attribute_label='S', show_label=False)
 
     def add_select_counter(self, node, replace=0):

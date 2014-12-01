@@ -1,7 +1,7 @@
 # coding=utf-8
 from collections import Counter
 import string
-from Saved import Savable
+from kataja.Saved import Savable
 from kataja.debug import forest
 
 from kataja.utils import time_me

@@ -201,7 +201,7 @@ class UndoManager:
         undo('current stack index and state: %s' % self._current)
         undo('to be deleted: ', to_be_deleted)
         # forest_data = self.full_state[self.full_state['start_key']]
-        self.forest.load_objects(self.full_state)
+        self.forest.load_objects(self.full_state, ctrl.main)
         self.forest.main.graph_scene.draw_forest(self.forest)
 
 
