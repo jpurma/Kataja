@@ -102,11 +102,6 @@ class Savable:
                 if key not in saved_objs and key not in open_refs:
                     open_refs[key] = data
                 return '|'.join(('*r*', str(key)))
-            elif hasattr(data.__class__, 'singleton_key'):
-                key = getattr(data.__class__, 'singleton_key')
-                if key not in saved_objs and key not in open_refs:
-                    open_refs[key] = data
-                return '|'.join(('*r*', str(key)))
             else:
                 raise SaveError("simplifying unknown data type:", data, type(data))
 
@@ -151,7 +146,7 @@ class Savable:
                     map_existing(item)
                 return
             # objects that support saving
-            key = getattr(obj, 'save_key', '') or getattr(obj.__class__, 'singleton_key', '')
+            key = getattr(obj, 'save_key', '')
             if key and key not in full_map:
                 full_map[key] = obj
                 for item in vars(obj.saved).values():
@@ -170,6 +165,69 @@ class Savable:
         :return:
         """
         global full_map, restored, full_data, main
+        def inflate(data):
+            """ Recursively turn QObject descriptions back into actual objects and object references back into real objects
+            :param data:
+            :param self:
+            :return:
+            """
+            #print('inflating %s in %s' % (str(data), self))
+            if data is None:
+                return data
+            elif isinstance(data, (int, float)):
+                return data
+            elif isinstance(data, dict):
+                result = {}
+                for key, value in data.items():
+                    value = inflate(value)
+                    result[key] = value
+                return result
+            elif isinstance(data, list):
+                result = []
+                for item in data:
+                    result.append(inflate(item))
+                return result
+            elif isinstance(data, str):
+                if data.startswith('*r*'):
+                    parts = data.split('|')
+                    if len(parts) > 2:
+                        return self.restore(parts[1]+'|'+parts[2], parts[2])
+                    else:
+                        return self.restore(parts[1], parts[1])
+                else:
+                    return data
+            elif isinstance(data, tuple):
+                if data and isinstance(data[0], str) and data[0].startswith('Q'):
+                    data_type = data[0]
+                    if data_type == 'QPointF':
+                        return QPointF(data[1], data[2])
+                    elif data_type == 'QPoint':
+                        return QPoint(data[1], data[2])
+                    elif data_type == 'QRectF':
+                        return QtCore.QRectF(data[1], data[2], data[3], data[4])
+                    elif data_type == 'QRect':
+                        return QtCore.QRect(data[1], data[2], data[3], data[4])
+                    elif data_type == 'QColor':
+                        return QtGui.QColor(data[1], data[2], data[3], data[4])
+                    elif data_type == 'QFont':
+                        f = QtGui.QFont()
+                        f.fromString(data[1])
+                        return f
+                    else:
+                        raise SaveError('unknown QObject: %s' % data)
+                else:
+                    result = []
+                    for item in data:
+                        result.append(inflate(item))
+                    result = tuple(result)
+                    return result
+            elif isinstance(data, set):
+                result = set()
+                for item in data:
+                    result.add(inflate(item))
+                return result
+            return data
+
         #print('restoring %s , %s ' % (obj_key, class_key))
         if obj_key in restored:
             return restored[obj_key]
@@ -177,92 +235,27 @@ class Savable:
         if not obj:
             #print('creeating new ', class_key)
             obj = main.object_factory.create(class_key)
-
+        if class_key == 'Forest':
+            main.forest = obj
         restored[obj_key] = obj
         obj_data = full_data[obj_key]
-        if obj:
-            changes = {}
-            for key, value in obj_data.items():
-                new_value = obj.inflate(value)
-                old_value = getattr(obj, key, None)
-                if new_value != old_value:
-                    #changes[key] = (old_value, new_value)
-                    #print('set: %s.%s = %s' % (obj, key, new_value))
-                    setattr(obj, key, new_value)
-                    #print '  in %s set %s to %s, was %s' % (obj_key, key, new_value, old_value)
-                    #else:
-                    #    print 'in %s keep %s value %s' % (obj_key, key, old_value)
-        #  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        for key, old_value in vars(obj.saved).items():
+            new_value = obj_data.get(key, None)
+            if new_value is not None:
+                new_value = inflate(new_value)
+            if new_value != old_value and (bool(new_value) or bool(old_value)):
+                #changes[key] = (old_value, new_value)
+                #print('set: %s.%s = %s (old value: %s)' % (obj, key, new_value, old_value))
+                setattr(obj, key, new_value)
+                #print '  in %s set %s to %s, was %s' % (obj_key, key, new_value, old_value)
+                #else:
+                #    print 'in %s keep %s value %s' % (obj_key, key, old_value)
         # !!! object needs to be finalized after this !!!
-        #  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        if hasattr(obj, 'after_restore'):
-            print('running after_restore for ', type(obj))
-            obj.after_restore(changes)
+        if hasattr(obj, 'after_init'):
+            obj.after_init()
         return obj
 
 
-    def inflate(self, data):
-        """ Recursively turn QObject descriptions back into actual objects and object references back into real objects
-        :param data:
-        :param self:
-        :return:
-        """
-        #print('inflating %s in %s' % (str(data), self))
-        if isinstance(data, (int, float)):
-            return data
-        elif isinstance(data, dict):
-            result = {}
-            for key, value in data.items():
-                value = self.inflate(value)
-                result[key] = value
-            return result
-        elif isinstance(data, list):
-            result = []
-            for item in data:
-                result.append(self.inflate(item))
-            return result
-        elif isinstance(data, str):
-            if data.startswith('*r*'):
-                parts = data.split('|')
-                if len(parts) > 2:
-                    return self.restore(parts[1]+'|'+parts[2], parts[2])
-                else:
-                    return self.restore(parts[1], parts[1])
-            else:
-                return data
-        elif isinstance(data, tuple):
-            if data and isinstance(data[0], str) and data[0].startswith('Q'):
-                data_type = data[0]
-                if data_type == 'QPointF':
-                    return QPointF(data[1], data[2])
-                elif data_type == 'QPoint':
-                    return QPoint(data[1], data[2])
-                elif data_type == 'QRectF':
-                    return QtCore.QRectF(data[1], data[2], data[3], data[4])
-                elif data_type == 'QRect':
-                    return QtCore.QRect(data[1], data[2], data[3], data[4])
-                elif data_type == 'QColor':
-                    return QtGui.QColor(data[1], data[2], data[3], data[4])
-                elif data_type == 'QFont':
-                    f = QtGui.QFont()
-                    f.fromString(data[1])
-                    return f
-                else:
-                    raise SaveError('unknown QObject: %s' % data)
-            else:
-                result = []
-                for item in data:
-                    result.append(self.inflate(item))
-                result = tuple(result)
-                return result
-        elif isinstance(data, set):
-            result = set()
-            for item in data:
-                result.add(self.inflate(item))
-            return result
-        elif data is None:
-            return data
-        return data
 
 
 

@@ -32,31 +32,12 @@ import kataja.globals as g
 
 # ctrl = Controller object, gives accessa to other modules
 
-def restore_me(key, forest):
-    """
-
-    :param key:
-    :param forest:
-    :return:
-    """
-    if key in forest.nodes:
-        obj = forest.nodes[key]
-    else:
-        obj = ConstituentNode(restoring=key)
-        obj._revived = True
-        if not ctrl.loading:
-            forest.add_to_scene(obj)
-    # if not ctrl.loading:
-    forest.undo_manager.repair_later(obj)
-    return obj
-
 
 class ConstituentNode(Node):
     """ ConstituentNodes are graphical representations of constituents. They are primary objects and need to support saving and loading."""
     width = 20
     height = 20
     default_edge_type = g.CONSTITUENT_EDGE
-    saved_fields = ['alias', 'is_trace', 'triangle', 'merge_order', 'select_order']
     receives_signals = []
     node_type = g.CONSTITUENT_NODE
 
@@ -65,9 +46,9 @@ class ConstituentNode(Node):
     # ConstituentNode position points to the _center_ of the node.
     # boundingRect should be (w/-2, h/-2, w, h)
 
-    def __init__(self, constituent=None, restoring=''):
+    def __init__(self, constituent=None):
         """ Most of the initiation is inherited from Node """
-        Node.__init__(self, syntactic_object=constituent, restoring=restoring)
+        Node.__init__(self, syntactic_object=constituent)
         self.saved.alias = ""
         self.saved.is_trace = False
         self.saved.triangle = False
@@ -91,36 +72,35 @@ class ConstituentNode(Node):
 
         # ## use update_visibility to change these: visibility of particular elements
         # depends on many factors
+        self._visibility_folded = False
+        self._visibility_active = True
         if ctrl.forest:
-            self._visibility_folded = False
-            self._visibility_active = True
             self._visibility_label = ctrl.forest.settings.label_style
             self._visibility_index = not ctrl.forest.settings.uses_multidomination
             self._visibility_edges = ctrl.forest.settings.shows_constituent_edges
             self._visibility_features = ctrl.forest.settings.draw_features
             self._visibility_brackets = ctrl.forest.settings.bracket_style
         else:
-            self._visibility_folded = False
-            self._visibility_active = True
             self._visibility_label = 0
             self._visibility_index = False
             self._visibility_edges = True
             self._visibility_features = 1
             self._visibility_brackets = 0
 
-        # these are dangerous to call with empty Node. Let __setstate__ restore values
-        # before calling these.
-        if not restoring:
-            self.update_features()
-            self.update_gloss()
-            self.update_identity()
-            self.boundingRect(update=True)
-            self.update_visibility()
-
         self._revived = False
-        # ## Crude qt-menus for prototyping
-        # self.qt_menu = None
         self.update_status_tip()
+
+    def after_init(self):
+        """ Call after putting values in place
+        :return:
+        """
+        self.update_features()
+        self.update_gloss()
+        self.update_identity()
+        self.boundingRect(update=True)
+        self.update_visibility()
+        self.update_status_tip()
+
 
     # Saved properties
 
@@ -133,6 +113,8 @@ class ConstituentNode(Node):
     def alias(self, value):
         """
         :param value:  """
+        if value is None:
+            value = ""
         self.saved.alias = value
         self.update_identity()
 
@@ -145,6 +127,8 @@ class ConstituentNode(Node):
     def is_trace(self, value):
         """
         :param value:  """
+        if value is None:
+            value = False
         self.saved.is_trace = value
 
     @property
@@ -156,6 +140,8 @@ class ConstituentNode(Node):
     def triangle(self, value):
         """
         :param value:  """
+        if value is None:
+            value = False
         self.saved.triangle = value
 
     @property
@@ -167,6 +153,8 @@ class ConstituentNode(Node):
     def merge_order(self, value):
         """
         :param value:  """
+        if value is None:
+            value = 0
         self.saved.merge_order = value
 
     @property
@@ -178,6 +166,8 @@ class ConstituentNode(Node):
     def select_order(self, value):
         """
         :param value:  """
+        if value is None:
+            value = 0
         self.saved.select_order = value
 
     # Other properties
@@ -189,6 +179,8 @@ class ConstituentNode(Node):
 
     @index.setter
     def index(self, value):
+        if value is None:
+            value = ""
         self.syntactic_object.index = value
         self.update_identity()
 
@@ -199,6 +191,8 @@ class ConstituentNode(Node):
 
     @gloss.setter
     def gloss(self, value):
+        if value is None:
+            value = ""
         if self.syntactic_object:
             self.syntactic_object.gloss = value
         self.update_gloss()
@@ -365,11 +359,12 @@ class ConstituentNode(Node):
         self._label_complex.setVisible(label_visible)
         if self._index_label:
             self._index_label.setVisible(self._visibility_index)
-        for edge in self.edges_down:
-            if edge.edge_type == self.__class__.default_edge_type:
-                edge.visible = visible and self._visibility_edges
-            else:
-                edge.visible = visible
+        if self.edges_down:
+            for edge in self.edges_down:
+                if edge.edge_type == self.__class__.default_edge_type:
+                    edge.visible = visible and self._visibility_edges
+                else:
+                    edge.visible = visible
         for feature in self.get_features():
             feature.setVisible(visible and self._visibility_features)
         if self._visibility_brackets:
@@ -482,17 +477,19 @@ class ConstituentNode(Node):
 
 
         """
-        if not self.syntactic_object:
-            return
-        current_features = set([x.syntactic_object.get() for x in self.get_features()])
-        correct_features = self.syntactic_object.features
-        for key, item in correct_features.items():
-            if key not in current_features:
-                self.set_feature(syntactic_feature=item, key=key)
-            else:
-                current_features.remove(key)
-        if current_features:
-            print('leftover features:', current_features)
+        pass
+        # if not self.syntactic_object:
+        #     return
+        # current_features = set([x.syntactic_object.get() for x in self.get_features()])
+        # correct_features = self.syntactic_object.features
+        # print(current_features, correct_features)
+        # for key, item in correct_features.items():
+        #     if key not in current_features:
+        #         self.set_feature(syntactic_feature=item, key=key)
+        #     else:
+        #         current_features.remove(key)
+        # if current_features:
+        #     print('leftover features:', current_features)
 
 
     # ### Labels #############################################
@@ -1012,14 +1009,6 @@ class ConstituentNode(Node):
             self.right_bracket.set_hovering(value)
         Node.set_hovering(self, value)
 
-    def after_restore(self, changes):
-        """ Check what needs to be done
-        :param changes:
-        """
-        pass
-        #self.update_visibility()
-
-
     # ### Suggestions for completing missing aspects (active for selected nodes) ######################################
 
     def add_completion_suggestions(self):
@@ -1028,5 +1017,6 @@ class ConstituentNode(Node):
         """
         if self.is_placeholder():
             ctrl.ui.create_touch_area(self, g.TOUCH_ADD_CONSTITUENT)
+
 
 

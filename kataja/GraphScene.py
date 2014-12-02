@@ -48,8 +48,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
     """
 
     """
-    saved_fields = ['main', 'graph_view', 'displayed_forest']
-    singleton_key = 'GraphScene'
 
     def __init__(self, main=None, graph_view=None, graph_scene=None):
         """ GraphicsScene contains graph elements.

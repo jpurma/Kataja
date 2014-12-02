@@ -57,7 +57,6 @@ class LeftFirstTree(BaseVisualization):
         self.forest = forest
         self._hits = {}
         self._max_hits = {}
-        print(forest, forest.settings)
         self.forest.settings.bracket_style = 0
         self.forest.settings.show_constituent_edges = True
         if not loading:

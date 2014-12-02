@@ -80,9 +80,6 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
     inside this, in scene objects with view widgets. This window also manages
     keypresses and menus. """
 
-    singleton_key = 'KatajaMain'
-    saved_fields = ['graph_scene', 'graph_view', 'ui_manager', 'forest_keeper', 'forest']
-
     @time_me
     def __init__(self, kataja_app, args):
         """ KatajaMain initializes all its children and connects itself to
@@ -537,7 +534,7 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
         return True
 
 
-
+    @time_me
     def load_state_from_file(self, filename=''):
         """
         Perform the loading of kataja state from a file.
@@ -563,15 +560,18 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
 
     def clear_all(self):
         """ Empty everything - maybe necessary before loading new data. """
+        self.ui_manager.clear_items()
         if self.forest:
             self.forest.clear_scene()
-        self.ui_manager.clear_items()
-        self.forest_keeper = ForestKeeper()
+            self.forest.burn_forest()
+            self.forest = None
+        self.forest_keeper = None
         print('garbage stats:', gc.get_count())
         gc.collect()
         print('after collection:', gc.get_count())
         if gc.garbage:
             print('garbage:', gc.garbage)
+        self.forest_keeper = ForestKeeper()
 
     # ### Action preconditions ##################################################
 

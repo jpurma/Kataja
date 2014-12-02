@@ -95,8 +95,6 @@ class UIManager:
     """
     UIManager Keeps track of all UI-related widgets and tries to do the most work to keep KatajaMain as simple as possible.
     """
-    saved_fields = ['main', 'scene']
-    singleton_key = 'UIManager'
 
     def __init__(self, main=None):
         self.main = main

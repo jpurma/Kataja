@@ -42,17 +42,17 @@ class FeatureNode(Node):
     saved_fields = []
     node_type = FEATURE_NODE
 
-    def __init__(self, feature=None, restoring=False):
+    def __init__(self, feature=None):
         Node.__init__(self, syntactic_object=feature)
-        # if feature.get_value() in color_map:
-        # self.color = colors.feature_palette[color_map[feature.get_value()]]
-        # else:
-        #    self.color = colors.feature
-        if not restoring:
-            self.update_identity()
-            self.update_label()
-            self.boundingRect(update=True)
-            self.update_visibility()
+
+    def after_init(self):
+        """ Call after putting values in place
+        :return:
+        """
+        self.update_identity()
+        self.update_label()
+        self.boundingRect(update=True)
+        self.update_visibility()
 
     # implement color() to map one of the d['rainbow_%'] colors here. Or if bw mode is on, then something else.
 

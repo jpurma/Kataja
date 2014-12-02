@@ -67,13 +67,16 @@ class BaseConstituent(Savable):
         """
         :param value:
         """
-        for key, feature in value.items():
-            if key == 'label':
-                self.label = feature.value
-            elif key == 'index':
-                self.index = feature.value
-            else:
-                self.saved.features[key] = feature
+        if value:
+            for key, feature in value.items():
+                if key == 'label':
+                    self.label = feature.value
+                elif key == 'index':
+                    self.index = feature.value
+                else:
+                    self.saved.features[key] = feature
+        else:
+            self.saved.features = {}
 
     @property
     def sourcestring(self):
@@ -89,7 +92,10 @@ class BaseConstituent(Savable):
 
     @label.setter
     def label(self, value):
-        self.saved.label = value
+        if value is None:
+            self.saved.label = ''
+        else:
+            self.saved.label = value
 
     @property
     def alias(self):
@@ -97,7 +103,10 @@ class BaseConstituent(Savable):
 
     @alias.setter
     def alias(self, value):
-        self.saved.alias = value
+        if value is None:
+            self.saved.alias = ''
+        else:
+            self.saved.alias = value
 
     @property
     def left(self):
@@ -121,7 +130,10 @@ class BaseConstituent(Savable):
 
     @gloss.setter
     def gloss(self, value):
-        self.saved.gloss = value
+        if value is None:
+            self.saved.gloss = ''
+        else:
+            self.saved.gloss = value
 
     @property
     def index(self):
@@ -129,7 +141,10 @@ class BaseConstituent(Savable):
 
     @index.setter
     def index(self, value):
-        self.saved.index = value
+        if value is None:
+            self.saved.index = ''
+        else:
+            self.saved.index = value
 
 
     def __repr__(self):
@@ -209,6 +224,7 @@ class BaseConstituent(Savable):
         :param key:
         :param value:
         """
+        print('set_feature called in constituent')
         if isinstance(value, Feature):
             self.features[key] = value
         else:

@@ -115,6 +115,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
     @edges_up.setter
     def edges_up(self, value):
+        if value is None:
+            value = []
         self.saved.edges_up = value
 
     @property
@@ -123,6 +125,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
     @edges_down.setter
     def edges_down(self, value):
+        if value is None:
+            value = []
         self.saved.edges_down = value
 
     @property
@@ -131,6 +135,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
     @folded_away.setter
     def folded_away(self, value):
+        if value is None:
+            value = False
         self.saved.folded_away = value
 
     @property
@@ -155,6 +161,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
     @index.setter
     def index(self, value):
+        if value is None:
+            value = ''
         self.saved.index = value
 
 
@@ -201,6 +209,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :param edge_type: int, only return Edges of certain subclass.
         :return: list of Nodes
         """
+        if not self.saved.edges_down:
+            return []
         if only_similar or edge_type is not None:
             if edge_type is None:
                 edge_type = self.__class__.default_edge_type
@@ -222,6 +232,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :param edge_type: int, only return Edges of certain subclass.
         :return: list of Nodes
         """
+        if not self.saved.edges_up:
+            return []
         if only_similar or edge_type is not None:
             if edge_type is None:
                 edge_type = self.__class__.default_edge_type

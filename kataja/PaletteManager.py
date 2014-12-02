@@ -203,7 +203,6 @@ class PaletteManager:
         :param cold_start: bool -- use this if some color palette is required, but ctrl-infrastructure
             is not yet available
         """
-        print('Activating color mode ', mode)
         store_last_hsv = True
 
         if mode == 'solarized_lt':

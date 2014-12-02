@@ -41,7 +41,7 @@ class BracketManager:
         :param left:
         :return:
         """
-        br = Bracket(self.forest, host=host, left=left)
+        br = Bracket(host=host, left=left)
         self.brackets[br.key] = br
         return br
 

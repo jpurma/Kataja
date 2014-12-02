@@ -34,20 +34,9 @@ class Bracket(Movable, QtWidgets.QGraphicsSimpleTextItem):
 
     z_value = 10
 
-    @staticmethod
-    def create_key(host, left=True):
-        """
 
 
-
-        :param host:
-        :param left:
-        :param Movable host:
-        :param boolean left:
-        """
-
-
-    def __init__(self, forest, host=None, left=True):
+    def __init__(self, host=None, left=True):
         """
 
         :param Forest forest:

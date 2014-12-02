@@ -153,16 +153,6 @@ class DerivationStep(Savable):
         ctrl.forest.chain_manager.chains = self.chains
 
 
-    def after_restore(self, values=None):
-        """
-
-        :param values:
-        :return:
-        """
-        if not values:
-            values = {}
-        return
-
 
 class DerivationStepManager(Savable):
     """
@@ -171,11 +161,11 @@ class DerivationStepManager(Savable):
     saved_fields = ['_derivation_steps', '_derivation_step_index', 'forest', 'save_key']
 
 
-    def __init__(self, forest=None):
+    def __init__(self):
         Savable.__init__(self, unique=False)
         self.saved.derivation_steps = []
         self.saved.derivation_step_index = 0
-        self.saved.forest = forest
+        self.saved.forest = ctrl.forest
 
     @property
     def derivation_steps(self):
@@ -249,13 +239,4 @@ class DerivationStepManager(Savable):
         self.restore_derivation_step(ds)
         self.forest.main.add_message(ds.msg)
 
-    def after_restore(self, values=None):
-        """
-
-        :param values:
-        :return:
-        """
-        if not values:
-            values = {}
-        return
 

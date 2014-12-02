@@ -80,7 +80,6 @@ class Preferences(object):
     """
     # Prefs are not saved in save command, but changes here are undoable, so this must support the save protocol.
     saved_fields = 'all'
-    singleton_key = 'Preferences'
     not_saved = ['resources_path', 'default_userspace_path', 'preferences_path', 'in_app']
 
 

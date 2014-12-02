@@ -74,11 +74,12 @@ class Forest(Savable):
       Forest also takes care of the operations manipulating, creating and
       removing trees. """
 
-    def __init__(self, data=None):
+    def __init__(self):
         """ Create an empty forest """
         Savable.__init__(self)
         self.nodes_by_uid = {}
         self.main = ctrl.main
+        self.main.forest = self # assign self to be the active forest while creating the managers.
         self.visualization = None  # BalancedTree()
         self.gloss = None
         self.bracket_manager = BracketManager(self)
@@ -89,11 +90,11 @@ class Forest(Savable):
         self.saved.nodes = {}
         self.saved.edges = {}
         self.saved.others = {}
-        self.saved.chain_manager = ChainManager(self)
+        self.saved.chain_manager = ChainManager()
         self.saved.settings = ForestSettings()
         self.saved.rules = ForestRules()
         self.saved.vis_data = {}
-        self.saved.derivation_steps = DerivationStepManager(self)
+        self.saved.derivation_steps = DerivationStepManager()
         self.saved.merge_counter = 0
         self.saved.select_counter = 0
         self.saved.comments = []
@@ -106,6 +107,8 @@ class Forest(Savable):
 
     @roots.setter
     def roots(self, value):
+        if value is None:
+            value = []
         self.saved.roots = value
 
     @property
@@ -114,6 +117,8 @@ class Forest(Savable):
 
     @nodes.setter
     def nodes(self, value):
+        if value is None:
+            value = {}
         self.saved.nodes = value
 
     @property
@@ -122,6 +127,8 @@ class Forest(Savable):
 
     @edges.setter
     def edges(self, value):
+        if value is None:
+            value = {}
         self.saved.edges = value
 
     @property
@@ -130,6 +137,8 @@ class Forest(Savable):
 
     @others.setter
     def others(self, value):
+        if value is None:
+            value = {}
         self.saved.others = value
 
     @property
@@ -162,6 +171,8 @@ class Forest(Savable):
 
     @vis_data.setter
     def vis_data(self, value):
+        if value is None:
+            value = {}
         self.saved.vis_data = value
 
     @property
@@ -212,23 +223,6 @@ class Forest(Savable):
     def buildstring(self, value):
         self.saved.buildstring = value
 
-
-    def after_restore(self, changes):
-        """ Changes in some fields may cause need for manual fixes or running methods to update derived variables
-        :param changes: dictionary of changes
-        """
-        forest()
-        #print('changes in forest: ', list(changes.keys()))
-        if 'vis_data' in changes:
-            old_vis, new_vis = changes['vis_data']
-            # if visualization keeps the same, it can use vis_data directly, it doesn't need to 
-            # prepare again.
-            if old_vis.get('name', '') != new_vis.get('name', ''):
-                # if visualization is changed, then it should change the visualization object and
-                # not let it to use the new_vis_data.
-                self.visualization = self.main.visualizations[new_vis['name']]
-                self.visualization.set_forest(self)
-
     @property
     def scene(self):
         """ Return the graphics scene where objects are stored and drawn.
@@ -244,7 +238,6 @@ class Forest(Savable):
         :param first: Node, can be started from a certain point in structure
         :return: list of nodes
         """
-        forest()
         res = []
         def _iterate(node):
             res.append(node)
@@ -261,7 +254,6 @@ class Forest(Savable):
         :param first: Node, can be started from a certain point in structure
         :return: list of nodes
         """
-        forest()
         res = []
         def _iterate(node):
             if not node in res:
@@ -276,7 +268,6 @@ class Forest(Savable):
         """
         Show debug info about forest in console
         """
-        forest()
         if hasattr(self, 'save_key'):
             print('----- Forest %s ------' % self.save_key)
             print('| Nodes: %s' % len(self.nodes))
@@ -287,17 +278,22 @@ class Forest(Savable):
         else:
             print('odd forest, not initialized.')
 
+    def visible_nodes(self):
+        """ Any node that is visible. Ignore the type.
+
+        :return:
+        """
+        return [x for x in self.nodes.values() if x.is_visible]
+
     def build(self, buildstring):
         """ Populate forest from a buildstring, store buildstring for reference
         :param buildstring:
         """
-        forest()
         self._buildstring = buildstring
         self.create_tree_from_string(buildstring)
 
     def draw_gloss_text(self):
         """ Draw the gloss text on screen, if it exists. """
-        forest()
         if self.gloss_text:
             if not self.gloss:
                 # noinspection PyArgumentList
@@ -317,7 +313,6 @@ class Forest(Savable):
         """ Switches the active visualization to visualization with given key
         :param key: string
         """
-        forest()
         if self.visualization and self.visualization.__class__.name == key:
             self.visualization.reselect()
         else:
@@ -335,7 +330,6 @@ class Forest(Savable):
             as close to original sentences as possible. If root is given, return linearization of only that.
         :param root:
         """
-        forest()
         def _tree_as_text(root_node, gap):
             """ Cheapo linearization algorithm for Node structures."""
             l = []
@@ -361,7 +355,6 @@ class Forest(Savable):
         """ Confirm that item is stored in some dictionary or other storage in forest
         :param item:
         """
-        forest()
         # if isinstance(item, ConstituentNode):
         #    self.nodes[item.key] = item
         # elif isinstance(item, FeatureNode):
@@ -388,7 +381,6 @@ class Forest(Savable):
         """ Just return all objects governed by Forest -- not all scene objects 
         :return: list of objects
         """
-        forest()
         return list(self.nodes.values()) + list(self.edges.values()) + list(
             self.others.values()) + self.bracket_manager.get_brackets()
 
@@ -400,11 +392,17 @@ class Forest(Savable):
         for item in self.get_all_objects():
             if item.scene() is scene:
                 scene.removeItem(item)
+
+    def burn_forest(self):
         self.gloss = None
+        self.nodes = {}
+        self.edges = {}
+        self.others = {}
+        self.bracket_manager.brackets = {}
+        self.chain_manager.chains = {}
 
     def add_all_to_scene(self):
         """ Put items belonging to this forest to scene """
-        forest()
         if ctrl.loading:
             return
         if ctrl.initializing:
@@ -416,7 +414,6 @@ class Forest(Savable):
         """ Put items belonging to this forest to scene
         :param item:
         """
-        forest()
         if ctrl.loading or ctrl.initializing:
             return
         self.scene.addItem(item)
@@ -426,7 +423,6 @@ class Forest(Savable):
         """ Go through the visible tree and check that every node that should exist exists and
         that every edge of every type that should exist is there too.
         Then check that there isn't any objects that shouldn't be there """
-        forest()
         for root in self.roots:
             root.update_visibility()
         self.bracket_manager.update_brackets()
@@ -436,7 +432,6 @@ class Forest(Savable):
 
     def update_colors(self):
         """ Update colors to those specified for this Forest."""
-        forest()
         cm = ctrl.cm
         old_gradient_base = cm.paper()
         self.main.color_manager.update_colors(prefs, self.settings)
@@ -452,13 +447,6 @@ class Forest(Savable):
         self.main.ui_manager.update_colors()
 
 
-    def visible_nodes(self):
-        """ Return all visible nodes of this forest
-            :rtype kataja.Node
-         """
-        #forest()
-        return list(self.nodes.values())
-
     def get_node(self, constituent):
         """
         Returns a node corresponding to a constituent
@@ -466,42 +454,36 @@ class Forest(Savable):
         :param syntax.BaseConstituent constituent:
         :rtype kataja.ConstituentNode
         """
-        forest()
         return self.nodes_by_uid.get(constituent.save_key, None)
 
     def get_constituent_edges(self):
         """ Return list of constituent edges
         :return: list
         """
-        forest()
         return [x for x in self.edges.values() if x.edge_type == g.CONSTITUENT_EDGE and x.is_visible()]
 
     def get_constituent_nodes(self):
         """ Return list of constituent nodes
         :return: list
         """
-        forest()
         return [x for x in self.nodes.values() if isinstance(x, ConstituentNode) and x.isVisible()]
 
     def get_feature_nodes(self):
         """ Return list of feature nodes
         :return: list
         """
-        forest()
         return [x for x in self.nodes.values() if isinstance(x, FeatureNode)]
 
     def get_attribute_nodes(self):
         """ Return list of attribute nodes
         :return: list
         """
-        forest()
         return [x for x in self.nodes.values() if isinstance(x, AttributeNode)]
 
     def add_comment(self, comment):
         """ Add comment item to forest
         :param comment: comment item
         """
-        forest()
         self.comments.append(comment)
 
     def remove_comment(self, comment):
@@ -509,7 +491,6 @@ class Forest(Savable):
         :param comment: comment item
         :return:
         """
-        forest()
         if comment in self.comments:
             self.comments.remove(comment)
 
@@ -552,7 +533,6 @@ class Forest(Savable):
         :param node_B:
         :return:
         """
-        forest()
         for root_index, root in enumerate(self.roots):
             nodes = self.list_nodes_once(root)
             if node_A in nodes and node_B in nodes:
@@ -565,7 +545,6 @@ class Forest(Savable):
         :param node: node to look for
         :return: index
         """
-        forest()
         for root in self.roots:
             nodes = self.list_nodes_once(root)
             if node in nodes:
@@ -577,7 +556,6 @@ class Forest(Savable):
          until a free (not used in this forest) is found.
         :return: String
         """
-        forest()
         names = [node.syntactic_object.label for node in self.nodes.values() if
                  isinstance(node, ConstituentNode) and node.syntactic_object]
         # I'm not trying to be efficient here.
@@ -607,16 +585,15 @@ class Forest(Savable):
         :param silent:
         :param inherits_from:
         """
-        forest()
         node = self.get_node(C)
         if not node:
             node = ConstituentNode(constituent=C)
+            node.after_init()
         else:
             assert False
         if pos:
             node.set_original_position(pos)
         self.add_to_scene(node)
-        node.update_visibility()
         if inherits_from:
             alias = inherits_from.alias
             if alias:
@@ -646,11 +623,10 @@ class Forest(Savable):
         return node
 
     def create_placeholder_node(self, pos):
-        forest()
         node = ConstituentNode(constituent=None)
         node.set_original_position(pos)
+        node.after_init()
         self.add_to_scene(node)
-        node.update_visibility()
         # for key, feature in C.get_features().items():
         #    self.create_feature_node(node, feature)
         if self.visualization:
@@ -665,8 +641,8 @@ class Forest(Savable):
         :param syntactic_feature:
         :return:
         """
-        forest()
-        FN = FeatureNode(syntactic_feature, self)
+        FN = FeatureNode(syntactic_feature)
+        FN.after_init()
         FN.compute_start_position(host)
         self._connect_node(host, child=FN, edge_type=FeatureNode.default_edge_type)
         self.add_to_scene(FN)
@@ -682,7 +658,6 @@ class Forest(Savable):
         :param show_label:
         :return:
         """
-        forest()
         AN = AttributeNode(host, attribute_id, attribute_label, show_label=show_label, forest=self)
         self._connect_node(host, child=AN, edge_type=AttributeNode.default_edge_type)
         self.add_to_scene(AN)
@@ -699,12 +674,10 @@ class Forest(Savable):
         :param direction:
         :return:
         """
-        forest()
         rel = Edge(start=start, end=end, edge_type=edge_type, direction=direction)
-        if ctrl.loading:
-            pass
-        else:
-            self.store(rel)
+        rel.after_init()
+        self.store(rel)
+        if not ctrl.loading:
             self.add_to_scene(rel)
         return rel
 
@@ -715,9 +688,9 @@ class Forest(Savable):
         :param left:
         :return:
         """
-        forest()
         br = self.bracket_manager.create_bracket(host, left)
-        self.add_to_scene(br)
+        if not ctrl.loading:
+            self.add_to_scene(br)
         return br
 
 
@@ -725,7 +698,6 @@ class Forest(Savable):
         """ Creates the gloss node for existing constituent node and necessary connection Doesn't do any checks
         :param host_node:
         """
-        forest()
         gn = GlossNode(host_node)
         self._connect_node(child=gn, parent=host_node, edge_type=GlossNode.default_edge_type)
         self.add_to_scene(gn)
@@ -738,7 +710,6 @@ class Forest(Savable):
         :param image_path:
         :return:
         """
-        forest()
         im = Image(image_path)
         self.others[im.save_key] = im
         self.add_to_scene(im)
@@ -750,7 +721,6 @@ class Forest(Savable):
         :param text:
         :param pos:
         """
-        forest()
         node = self.parser.parse(text)
         return node
         #self.add_to_scene(root_node)
@@ -762,7 +732,6 @@ class Forest(Savable):
         :param text:
         :param replace:
         """
-        forest()
         if replace:
             self.roots = []
         text = text.strip()
@@ -781,7 +750,6 @@ class Forest(Savable):
         :param node:
         :return:
         """
-        forest()
         index = node.index
         new_chain = False
         if not index:
@@ -806,7 +774,6 @@ class Forest(Savable):
         :param give_label:
         :return:
         """
-        forest()
         if give_label:
             label = self.get_first_free_constituent_name()
         else:
@@ -824,7 +791,6 @@ class Forest(Savable):
         :param text: explanatory text associated with the arrow
         :return:
         """
-        forest()
         edge = self.create_edge(start=None, end=None, edge_type=g.ARROW)
         edge.set_start_point(p1)
         edge.set_end_point(p2)
@@ -846,7 +812,6 @@ class Forest(Savable):
         with traces. Each node can have only one parent. This makes calculation easier, just remember to call multidomination_to_traces
         and traces_to_multidomination after deletions.
         """
-        forest()
         # -- connections to other nodes --
         for edge in node.edges_up:
             self._disconnect_node(edge=edge)
@@ -874,7 +839,6 @@ class Forest(Savable):
         """ remove from scene and remove references from nodes
         :param edge:
         """
-        forest()
         # -- connections to host nodes --
         start_node = edge.start
         end_node = edge.end
@@ -903,7 +867,6 @@ class Forest(Savable):
 
 
     def delete_item(self, item):
-        forest()
         if isinstance(item, Edge):
             start = item.start
             self.delete_edge(item)
@@ -943,7 +906,6 @@ class Forest(Savable):
     # start and end points separately
 
     def set_edge_start(self, edge, new_start):
-        forest()
         if edge.start:
             ForestSyntax.disconnect_edge(edge)
             edge.start.edges_down.remove(edge)
@@ -953,7 +915,6 @@ class Forest(Savable):
         new_start.edges_down.append(edge)
 
     def set_edge_end(self, edge, new_end):
-        forest()
         if edge.end:
             ForestSyntax.disconnect_edge(edge)
             edge.end.edges_up.remove(edge)
@@ -966,7 +927,6 @@ class Forest(Savable):
         self.update_root_status(edge.start)
 
     def set_edge_ends(self, edge, new_start, new_end):
-        forest()
         if edge.start:
             ForestSyntax.disconnect_edge(edge)
             edge.start.edges_down.remove(edge)
@@ -988,7 +948,6 @@ class Forest(Savable):
         :param edge:
         :return:
         """
-        forest()
         if edge.start:
             ForestSyntax.disconnect_edge(edge)
             edge.start.edges_down.remove(edge)
@@ -999,7 +958,6 @@ class Forest(Savable):
         edge.update_shape()
 
     def disconnect_edge_end(self, edge):
-        forest()
         if edge.end:
             ForestSyntax.disconnect_edge(edge)
             edge.end.edges_up.remove(edge)
@@ -1056,14 +1014,12 @@ class Forest(Savable):
 
 
     def add_placeholder_to_edge_start(self, edge):
-        forest()
         assert(not edge.start)
         pos = edge.start_point
         placeholder = self.create_placeholder_node(pos)
         self.set_edge_start(edge, placeholder)
 
     def add_placeholder_to_edge_end(self, edge):
-        forest()
         assert(not edge.end)
         pos = edge.end_point
         placeholder = self.create_placeholder_node(pos)
@@ -1078,7 +1034,6 @@ class Forest(Savable):
 
         :param key:
         """
-        forest()
         help_text = ''
         if key == 'M':
             attr_id = 'merge_order'
@@ -1101,7 +1056,6 @@ class Forest(Savable):
 
         :param key:
         """
-        forest()
         for node in self.get_attribute_nodes():
             if node.attribute_label == key:
                 self.delete_node(node)
@@ -1112,7 +1066,6 @@ class Forest(Savable):
 
         :param node:
         """
-        forest()
         M = node.get_attribute_nodes('M')
         S = node.get_attribute_nodes('S')
         if M and not self.settings.shows_merge_order:
@@ -1130,7 +1083,6 @@ class Forest(Savable):
         :param node:
         :param replace:
         """
-        forest()
         if replace:
             node.select_order = replace
         else:
@@ -1144,7 +1096,6 @@ class Forest(Savable):
         :param node:
         :param replace:
         """
-        forest()
         if replace:
             node.select_order = replace
         else:
@@ -1162,7 +1113,6 @@ class Forest(Savable):
         :param text:
         :param node:
         """
-        forest()
         new_node = self.parser.parse(text)
         self._replace_node(node, new_node)
 
@@ -1174,7 +1124,6 @@ class Forest(Savable):
         :param node:
         :param text:
         """
-        forest()
         assert False
         node.alias = text
 
@@ -1186,7 +1135,6 @@ class Forest(Savable):
         :param node:
         :param text:
         """
-        forest()
         new_node = self.parser.parse(text, forest=self)
         self._replace_node(node, new_node)
 
@@ -1197,7 +1145,6 @@ class Forest(Savable):
 
 
         """
-        forest()
         self.chain_manager.group_traces_to_chain_head()
 
     def traces_to_multidomination(self):
@@ -1205,7 +1152,6 @@ class Forest(Savable):
 
 
         """
-        forest()
         self.chain_manager.traces_to_multidomination()
 
     def multidomination_to_traces(self):
@@ -1213,7 +1159,6 @@ class Forest(Savable):
 
 
         """
-        forest()
         self.chain_manager.multidomination_to_traces()
 
 
@@ -1254,7 +1199,6 @@ class Forest(Savable):
         """ Delete node from tree and make a new tree out of it
         :param node:
         """
-        forest()
         self.main.add_message("Disconnecting node %s" % node)
         if self.settings.uses_multidomination():
             self.multidomination_to_traces()
@@ -1278,7 +1222,6 @@ class Forest(Savable):
         """ Undoable UI interface for deletion
         :param node:
         """
-        forest()
         self.main.add_message("Deleting node %s" % node)
         if self.settings.uses_multidomination():
             self.multidomination_to_traces()
@@ -1307,7 +1250,6 @@ class Forest(Savable):
         :param node:
         :return:
         """
-        forest()
         self.undo_manager.record('delete constituent')
         is_root = node.is_root_node()
         if not self.settings.uses_multidomination():
@@ -1364,7 +1306,6 @@ class Forest(Savable):
         :param R:
         :return:
         """
-        forest()
         self.undo_manager.record('delete edge')
         #########
         if edge.start:

@@ -39,9 +39,6 @@ class GraphView(QtWidgets.QGraphicsView):
     UI-elements are kept in separate scene and separate view.
     """
 
-    saved_fields = ['_scale_factor', '_target_rect']
-    singleton_key = 'GraphView'
-
     def __init__(self, main=None, graph_view=None, graph_scene=None):
         QtWidgets.QGraphicsView.__init__(self)
         self.main = main

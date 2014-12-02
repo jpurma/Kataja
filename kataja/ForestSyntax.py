@@ -73,7 +73,8 @@ def connect_edge(edge):
             raise ForestSyntaxError("Cannot make a constituent edge connection if "
                               "one of the ends is not a constituent node")
     elif etype is g.FEATURE_EDGE:
-        if isinstance(edge.start, FeatureNode) and isinstance(edge.end, FeatureNode):
+        if isinstance(edge.start, ConstituentNode) and isinstance(edge.end, FeatureNode):
+            print('Connecting a feature')
             constituent = edge.start.syntactic_object
             feature = edge.end.syntactic_object
             if not constituent:
@@ -84,7 +85,7 @@ def connect_edge(edge):
             if feature in constituent.features:
                 raise ForestSyntaxError("Constituent %s already has feature %s")
             else:
-                constituent.add_feature(feature)
+                constituent.set_feature(feature.key, feature)
 
 
 def disconnect_edge(edge):
@@ -149,6 +150,19 @@ def which_selects(left_node, right_node):
         return right_node
     else:
         return None
+
+def set_constituent_features(node):
+    c = node.syntactic_object
+    new_features = ctrl.forest.get_feature_nodes(node)
+    old_features = c.features
+    remainders = set(old_features)
+    for feature in new_features:
+        if feature.syntactic_object not in old_features:
+            c.add_feature(feature.syntactic_object.key, feature.syntactic_object)
+        else:
+            remainders.remove(feature.syntactic_object)
+    for feature in remainders:
+        c.del_feature(feature.syntactic_object.key)
 
 def constituent_copy(node):
     if not node or not node.syntactic_object:

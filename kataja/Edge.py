@@ -126,6 +126,10 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         self.effect = utils.create_shadow_effect(ctrl.cm.selection())
         self.setGraphicsEffect(self.effect)
 
+    def after_init(self):
+        self.update_end_points()
+
+
     @property
     def start_point(self):
         """
@@ -1210,12 +1214,6 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
     # return QtWidgets.QGraphicsItem.sceneEvent(self, event)
 
     # ### Restoring after load / undo #########################################
-
-    def after_restore(self, changes):
-        """ Fix derived attributes
-        :param changes:
-        """
-        self.update_end_points()
 
     def ending(self, which_end, value=None):
         """

@@ -307,16 +307,6 @@ class Parser:
         root = self.forest.get_node(topmost_C)
         return root
 
-    def after_restore(self, values=None):
-        """
-
-        :param values:
-        :return:
-        """
-        if not values:
-            values = {}
-        return
-
 
 class LayeredParser(Parser):
     # ### Layered parser ########################################################
@@ -679,16 +669,6 @@ class LayeredParser(Parser):
     # p=Parser()
     # out= p.parse(tree)
 
-    def after_restore(self, values=None):
-        """
-
-        :param values:
-        :return:
-        """
-        if not values:
-            values = {}
-        return
-
 
 class BottomUpParser(Parser):
     # ### Layered parser 2 -- start from right ########################################################
@@ -943,16 +923,5 @@ class BottomUpParser(Parser):
 
         remainder, constituent = bottom_up_bracket_parser(list(stream))
         return remainder, constituent
-
-    def after_restore(self, values=None):
-        """
-
-        :param values:
-        :return:
-        """
-        if not values:
-            values = {}
-        return
-
 
 

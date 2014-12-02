@@ -6,6 +6,7 @@ from kataja.debug import forest
 
 from kataja.utils import time_me
 from kataja.ConstituentNode import ConstituentNode
+from kataja.singletons import ctrl
 
 
 
@@ -21,10 +22,10 @@ class ChainManager(Savable):
 
     """
 
-    def __init__(self, forest):
+    def __init__(self):
         Savable.__init__(self, unique=True)
         self.saved.chains = {}
-        self.saved.forest = forest
+        self.saved.forest = ctrl.forest
 
     @property
     def chains(self):
@@ -193,14 +194,4 @@ class ChainManager(Savable):
         if max_found == len(string.ascii_letters):
             assert False
         return string.ascii_letters[max_found]
-
-    def after_restore(self, values=None):
-        """
-
-        :param values:
-        :return:
-        """
-        if not values:
-            values = {}
-        return
 
