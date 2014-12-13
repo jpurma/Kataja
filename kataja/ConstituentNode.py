@@ -87,7 +87,6 @@ class ConstituentNode(Node):
             self._visibility_features = 1
             self._visibility_brackets = 0
 
-        self._revived = False
         self.update_status_tip()
 
     def after_init(self):
@@ -100,6 +99,7 @@ class ConstituentNode(Node):
         self.boundingRect(update=True)
         self.update_visibility()
         self.update_status_tip()
+        ctrl.forest.store(self)
 
 
     # Saved properties
@@ -923,7 +923,7 @@ class ConstituentNode(Node):
                     ctrl.dragged.add(node)
                     x, y, dummy_z = node.current_position
                     node._position_before_dragging = node.current_position
-                    node._adjustment_before_dragging = node.adjustment
+                    node._adjustment_before_dragging = node.adjustment or (0, 0, 0)
                     node._distance_from_dragged = (x - dx, y - dy)
         if len(drag_hosts) == 1:  # don't allow merge if this is multidrag-situation
             ctrl.forest.prepare_touch_areas_for_dragging(excluded=ctrl.dragged)

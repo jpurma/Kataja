@@ -24,7 +24,7 @@
 
 import random
 
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 
 from kataja.singletons import prefs, qt_prefs, ctrl
 from kataja.Saved import Savable
@@ -43,10 +43,10 @@ class Movable(Savable):
     def __init__(self):
         """ Basic properties for any scene objects
             positioning can be a bit difficult. There are:
-            ._computed_position = visualization algorithm provided position
-            ._adjustment = dragged somewhere
-            ._final_position = computed position + adjustment
-            ._current_position = real screen position, can be moving towards final position
+            saved.computed_position = visualization algorithm provided position
+            saved.adjustment = dragged somewhere
+            .final_position = computed position + adjustment
+            .current_position = real screen position, can be moving towards final position
             don't adjust final position directly, only change computed position and change
             adjustment to zero if necessary.
             always return adjustment to zero when dealing with dynamic nodes.
@@ -54,9 +54,7 @@ class Movable(Savable):
         super().__init__()
         self.z = 0
         self.saved.computed_position = (0, 0, 0)
-        self.saved.adjustment = (0, 0, 0)
-        self.saved.final_position = (0, 0, 0)
-        self.saved.current_position = (0, 0, 0)
+        self.saved.adjustment = None
         self.saved.visible = True # avoid isVisible for detecting if something is folded away
         self.saved.bind_x = False
         self.saved.bind_y = False
@@ -64,7 +62,9 @@ class Movable(Savable):
         self.saved.locked_to_position = False
 
         self._x_step, self._y_step, self._z_step = 0, 0, 0
-        self.current_position = ((random.random() * 150) - 75, (random.random() * 150) - 75, 0)
+        self._current_position = ((random.random() * 150) - 75, (random.random() * 150) - 75, 0)
+        self.final_position = (0, 0, 0) # Return computed final position, which is computed position based on visualization algorithm
+        #+ user-made adjustments
         self._move_counter = 0
         self._use_easing = True
         self._fade_in_counter = 0
@@ -91,12 +91,12 @@ class Movable(Savable):
         """
         x, y, z = value
         self.saved.computed_position = value
-        if self.can_adjust_position():
+        if self.can_adjust_position() and self.saved.adjustment:
             ax, ay, az = self.saved.adjustment
-            self.saved.final_position = (x + ax, y + ay, z + az)
+            self.final_position = (x + ax, y + ay, z + az)
         else:
             # print 'dont use adjustment'
-            self.saved.final_position = tuple(self.saved.computed_position)
+            self.final_position = tuple(self.saved.computed_position)
         if self.should_move():  # (not self.moving()) and
             self.start_moving()
 
@@ -113,41 +113,10 @@ class Movable(Savable):
         :param adj_pos: tuple (dx, dy, dz):
         """
         self.saved.adjustment = value
-        if self.can_adjust_position():
+        if self.can_adjust_position() and value:
             ax, ay, az = value
             x, y, z = self.computed_position
-            self.saved.final_position = (x + ax, y + ay, z + az)
-
-    @property
-    def final_position(self):
-        """
-        Return computed final position, which is computed position based on visualization algorithm
-        + user-made adjustments
-        :return: tuple (x, y, z)
-        """
-        return self.saved.final_position
-
-    @final_position.setter
-    def final_position(self, value):
-        self.saved.final_position = value
-
-    @property
-    def current_position(self):
-        """ Returns Qt position as a triplet with z-dimension
-        :return: tuple (x, y, z)"""
-        return self.saved.current_position
-
-    @current_position.setter
-    def current_position(self, value):
-        """ Sets the QtObjects coordinates, and saves the z-dimension to separate variable
-        :rtype : None
-        :param value: tuple(x, y, z)
-        """
-        assert (len(value) == 3)
-        self.saved.current_position = value
-        self.z = value[2]
-        if isinstance(self, QtWidgets.QGraphicsItem):
-            QtWidgets.QGraphicsItem.setPos(self, value[0], value[1])
+            self.final_position = (x + ax, y + ay, z + az)
 
     @property
     def visible(self):
@@ -188,6 +157,26 @@ class Movable(Savable):
     @locked_to_position.setter
     def locked_to_position(self, value):
         self.saved.locked_to_position = value
+
+    ### Not saved properties, but otherwise interesting
+
+    @property
+    def current_position(self):
+        """ Returns Qt position as a triplet with z-dimension
+        :return: tuple (x, y, z)"""
+        return self._current_position
+
+    @current_position.setter
+    def current_position(self, value):
+        """ Sets the QtObjects coordinates, and saves the z-dimension to separate variable
+        :rtype : None
+        :param value: tuple(x, y, z)
+        """
+        assert (len(value) == 3)
+        self._current_position = value
+        self.z = value[2]
+        if isinstance(self, QtWidgets.QGraphicsItem):
+            QtWidgets.QGraphicsItem.setPos(self, value[0], value[1])
 
 
     def reset(self):
@@ -313,9 +302,11 @@ class Movable(Savable):
         use when first adding items to scene to prevent them wandering from afar
         :param pos: tuple (x, y, z)
         """
+        if isinstance(pos, (QtCore.QPoint, QtCore.QPointF)):
+            pos = pos.x(), pos.y(), 0
         self.computed_position = tuple(pos)
         self.final_position = tuple(pos)
-        self.adjustment = (0, 0, 0)
+        self.adjustment = None
         self.current_position = tuple(pos)
 
 
@@ -351,7 +342,7 @@ class Movable(Savable):
         """
         Remove adjustments from this object.
         """
-        self.adjustment = (0, 0, 0)
+        self.adjustment = None
         self.final_position = tuple(self.computed_position)
 
 

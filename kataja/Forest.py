@@ -101,6 +101,11 @@ class Forest(Savable):
         self.saved.gloss_text = ''
         self.saved.buildstring = ''
 
+    #def after_init(self):
+    #    for node in self.nodes.values():
+    #        if node.syntactic_object:
+    #            self.nodes_by_uid[node.syntactic_object.save_key] = node
+
     @property
     def roots(self):
         return self.saved.roots
@@ -593,6 +598,8 @@ class Forest(Savable):
             assert False
         if pos:
             node.set_original_position(pos)
+        elif ctrl.focus_point:
+            node.set_original_position(ctrl.focus_point)
         self.add_to_scene(node)
         if inherits_from:
             alias = inherits_from.alias
@@ -721,7 +728,7 @@ class Forest(Savable):
         :param text:
         :param pos:
         """
-        node = self.parser.parse(text)
+        remainder, node = self.parser.parse(text)
         return node
         #self.add_to_scene(root_node)
         #self.update_root_status(root_node)
@@ -859,7 +866,10 @@ class Forest(Savable):
         # -- ui elements --
         self.main.ui_manager.delete_ui_elements_for(edge)
         # -- dictionaries --
-        del self.edges[edge.save_key]
+        if edge.save_key in self.edges:
+            del self.edges[edge.save_key]
+        else:
+            print('from some reason %s is not in edge keys: %s.' % (edge.save_key, self.edges.keys()))
         # -- scene --
         sc = edge.scene()
         if sc:
@@ -911,7 +921,7 @@ class Forest(Savable):
             edge.start.edges_down.remove(edge)
         edge.connect_end_points(new_start, edge.end)
         edge.update_end_points()
-        ForestSyntax.connect_edge(edge)
+        ForestSyntax.connect_according_to_edge(edge)
         new_start.edges_down.append(edge)
 
     def set_edge_end(self, edge, new_end):
@@ -921,7 +931,7 @@ class Forest(Savable):
             self.update_root_status(edge.end)
         edge.connect_end_points(edge.start, new_end)
         edge.update_end_points()
-        ForestSyntax.connect_edge(edge)
+        ForestSyntax.connect_according_to_edge(edge)
         new_end.edges_up.append(edge)
         self.update_root_status(new_end)
         self.update_root_status(edge.start)
@@ -936,7 +946,7 @@ class Forest(Savable):
             self.update_root_status(edge.end)
         edge.connect_end_points(new_start, new_end)
         edge.update_end_points()
-        ForestSyntax.connect_edge(edge)
+        ForestSyntax.connect_according_to_edge(edge)
         new_end.edges_up.append(edge)
         new_start.edges_down.append(edge)
         self.update_root_status(new_start)

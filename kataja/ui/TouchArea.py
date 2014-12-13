@@ -117,6 +117,8 @@ class TouchArea(QtWidgets.QGraphicsItem):
 
         :return:
         """
+        if not self.end_point:
+            self.update_end_points()
         if self._has_tail:
             # Bounding rect that includes the tail and end spot ellipse
             ex, ey = self.end_point
@@ -176,13 +178,16 @@ class TouchArea(QtWidgets.QGraphicsItem):
 
         :param end_point: End point can be given or it can be calculated.
         """
+
+        if end_point:
+            self.end_point = end_point
+
         if not self._has_tail:
-            if end_point:
-                self.end_point = end_point
-            elif isinstance(self.host, Edge):
-                self.end_point = (self.host.end_point[0], self.host.end_point[1])
-            elif hasattr(self.host, 'get_current_position'):
-                self.end_point = (self.host.current_position[0], self.host.current_position[1])
+            if not end_point:
+                if isinstance(self.host, Edge):
+                    self.end_point = (self.host.end_point[0], self.host.end_point[1])
+                elif hasattr(self.host, 'get_current_position'):
+                    self.end_point = (self.host.current_position[0], self.host.current_position[1])
             self.start_point = self.end_point
             self._path = None
             return
@@ -194,9 +199,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
             path_settings = ctrl.forest.settings.edge_shape_settings(rel.edge_type)
             sx, sy = to_tuple(rel.get_point_at(0.5))
             self.start_point = sx, sy
-            if end_point:
-                self.end_point = end_point
-            else:
+            if not end_point:
                 d = rel.get_angle_at(0.5)
                 if self._align_left:
                     d -= 75
@@ -213,9 +216,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
             path_settings = ctrl.forest.settings.edge_shape_settings(g.CONSTITUENT_EDGE)
             sx, sy, dummy = self.host.magnet(2)
             self.start_point = sx, sy
-            if end_point:
-                self.end_point = end_point
-            else:
+            if not end_point:
                 if self._align_left:
                     self.end_point = sx - max((prefs.edge_width * 2, self.host.width)), sy
                 else:
@@ -224,6 +225,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
             line_middle_point = sx - (0.5 * (sx - self.end_point[0])), sy - 10
         else:
             print("What is this toucharea?", self, " connected to ", self.host)
+            raise TypeError("Touch area couldn't create end point")
         shape_method = path_settings['method']
         self._fill_path = path_settings.get('fill', False)
 

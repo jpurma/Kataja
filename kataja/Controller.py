@@ -70,6 +70,7 @@ class Controller:
         self.dragged_positions = set()
         self.latest_hover = None # used only while dragging, because standard hovering doesn't work while dragging
         self.ui_focus = None
+        self.focus_point = None
         self.selection_tool = False
         self.move_tool = False
         self.references_to_fix = []

@@ -27,6 +27,7 @@ from kataja.singletons import prefs
 from kataja.visualizations.BaseVisualization import BaseVisualization
 from kataja.FeatureNode import FeatureNode
 from kataja.GlossNode import GlossNode
+import kataja.globals as g
 
 
 class WindDriftTree(BaseVisualization):
@@ -56,7 +57,7 @@ class WindDriftTree(BaseVisualization):
         self._leftmost = None
         self._hits = {}
         self._max_hits = {}
-        self.forest.settings.bracket_style(0)
+        self.forest.settings.bracket_style = g.NO_BRACKETS
         self.forest.settings.show_constituent_edges = False
         if not loading:
             self.forest.vis_data = {'name': self.__class__.name}
@@ -71,7 +72,7 @@ class WindDriftTree(BaseVisualization):
         node.locked_to_position = False
         node.reset_adjustment()
         if isinstance(node, ConstituentNode):
-            node.update_visibility(brackets=self.forest.settings.bracket_style(), show_edges=False)
+            node.update_visibility(brackets=self.forest.settings.bracket_style, show_edges=False)
             node.bind_x = True
             node.bind_y = True
         elif isinstance(node, FeatureNode) or isinstance(node, GlossNode):

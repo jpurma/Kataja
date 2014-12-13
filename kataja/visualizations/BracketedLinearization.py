@@ -28,6 +28,7 @@ from kataja.singletons import prefs, ctrl
 from kataja.visualizations.BaseVisualization import BaseVisualization
 from kataja.FeatureNode import FeatureNode
 from kataja.GlossNode import GlossNode
+import kataja.globals as g
 
 
 class BracketedLinearization(BaseVisualization):
@@ -54,7 +55,7 @@ class BracketedLinearization(BaseVisualization):
         self.forest = forest
         self._hits = {}
         self._max_hits = {}
-        self.forest.settings.bracket_style(0)
+        self.forest.settings.bracket_style = g.NO_BRACKETS
         self.forest.settings.show_constituent_edges = False
         if not loading:
             self.forest.vis_data = {'name': self.__class__.name}
@@ -69,7 +70,7 @@ class BracketedLinearization(BaseVisualization):
         node.locked_to_position = False
         node.reset_adjustment()
         if isinstance(node, ConstituentNode):
-            node.update_visibility(brackets=self.forest.settings.bracket_style(), show_edges=False)
+            node.update_visibility(brackets=self.forest.settings.bracket_style, show_edges=False)
             node.bind_x = True
             node.bind_y = True
         elif isinstance(node, FeatureNode) or isinstance(node, GlossNode):
@@ -80,14 +81,14 @@ class BracketedLinearization(BaseVisualization):
 
     def reselect(self):
         """ if there are different modes for one visualization, rotating between different modes is triggered here. """
-        if self.forest.settings.bracket_style() == 0:
-            self.forest.settings.bracket_style(1)
+        if self.forest.settings.bracket_style == g.NO_BRACKETS:
+            self.forest.settings.bracket_style = g.MAJOR_BRACKETS
             ctrl.add_message('major brackets')
-        elif self.forest.settings.bracket_style() == 1:
-            self.forest.settings.bracket_style(2)
+        elif self.forest.settings.bracket_style() == g.MAJOR_BRACKETS:
+            self.forest.settings.bracket_style = g.ALL_BRACKETS
             ctrl.add_message('all brackets')
-        elif self.forest.settings.bracket_style() == 2:
-            self.forest.settings.bracket_style(0)
+        elif self.forest.settings.bracket_style() == g.ALL_BRACKETS:
+            self.forest.settings.bracket_style = g.NO_BRACKETS
             ctrl.add_message('no brackets')
         for node in self.forest.visible_nodes():
             self.reset_node(node)

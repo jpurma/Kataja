@@ -27,6 +27,7 @@ from kataja.singletons import prefs
 from kataja.visualizations.BaseVisualization import BaseVisualization
 from kataja.FeatureNode import FeatureNode
 from kataja.GlossNode import GlossNode
+import kataja.globals as g
 
 
 class LinearizedDynamicTree(BaseVisualization):
@@ -48,7 +49,7 @@ class LinearizedDynamicTree(BaseVisualization):
         """
         self.forest = forest
         self.forest.settings.show_constituent_edges = True
-        self.forest.settings.bracket_style(0)
+        self.forest.settings.bracket_style = g.NO_BRACKETS
         if not loading:
             _max_height_steps = max([len(self.forest.list_nodes_once(root)) for root in self.forest])
             self.forest.vis_data = {'name': self.__class__.name, '_max_height_steps': _max_height_steps,
@@ -66,7 +67,7 @@ class LinearizedDynamicTree(BaseVisualization):
         node.reset_adjustment()
         node.update_label()
         if isinstance(node, ConstituentNode):
-            node.update_visibility(show_edges=True, scope=0, brackets=self.forest.settings.bracket_style())
+            node.update_visibility(show_edges=True, scope=0, brackets=self.forest.settings.bracket_style)
             if node.is_leaf_node():
                 node.bind_x = True
                 node.bind_y = True

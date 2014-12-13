@@ -215,7 +215,7 @@ class ActionMethods:
 
 
         """
-        new_value = ctrl.forest.settings.label_style() + 1
+        new_value = ctrl.forest.settings.label_style + 1
         if new_value == 3:
             new_value = 0
         if new_value == g.ONLY_LEAF_LABELS:
@@ -226,7 +226,7 @@ class ActionMethods:
             ctrl.main.add_message('(l) 2: show leaf labels and aliases')
         # testing how to change labels
         # ConstituentNode.font = prefs.sc_font
-        ctrl.forest.settings.label_style(new_value)
+        ctrl.forest.settings.label_style = new_value
 
         for node in ctrl.forest.nodes.values():
             node.update_visibility(label=new_value)
@@ -234,7 +234,7 @@ class ActionMethods:
 
     def toggle_brackets(self):
         """ Brackets are visible always for non-leaves, never or for important parts """
-        bs = ctrl.forest.settings.bracket_style()
+        bs = ctrl.forest.settings.bracket_style
         bs += 1
         if bs == 3:
             bs = 0
@@ -244,7 +244,7 @@ class ActionMethods:
             ctrl.main.add_message('(b) 1: Use brackets for embedded structures')
         elif bs == 2:
             ctrl.main.add_message('(b) 2: Always use brackets')
-        ctrl.forest.settings.bracket_style(bs)
+        ctrl.forest.settings.bracket_style = bs
         ctrl.forest.bracket_manager.update_brackets()
 
     def toggle_traces(self):
@@ -554,10 +554,12 @@ class ActionMethods:
     # ui
     def new_element_accept(self):
         type = ctrl.ui.get_new_element_type_selection()
+        text = ctrl.ui.get_new_element_text()
+        p1, p2 = ctrl.ui.get_new_element_embed_points()
+        ctrl.focus_point = p2
+
         if type == g.GUESS_FROM_INPUT:
             print("Guessing input type")
-            text = ctrl.ui.get_new_element_text()
-            p1, p2 = ctrl.ui.get_new_element_embed_points()
             # we can add a test if line p1 - p2 crosses several edges, then it can be a divider
             #Fixme Use screen coordinates instead, as if zoomed out, the default line can already be long enough. oops.
             if (p1 - p2).manhattanLength() > 20 and not text.startswith('['):

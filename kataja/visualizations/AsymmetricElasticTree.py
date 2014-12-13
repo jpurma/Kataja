@@ -25,6 +25,7 @@
 
 from kataja.visualizations.BaseVisualization import BaseVisualization
 from kataja.ConstituentNode import ConstituentNode
+import kataja.globals as g
 
 
 class AsymmetricElasticTree(BaseVisualization):
@@ -45,7 +46,7 @@ class AsymmetricElasticTree(BaseVisualization):
         :param loading:
         """
         self.forest = forest
-        self.forest.settings.bracket_style(0)
+        self.forest.settings.bracket_style = g.NO_BRACKETS
         self.forest.settings.show_constituent_edges = True
         if not loading:
             self.forest.vis_data = {'name': self.__class__.name}
@@ -62,6 +63,6 @@ class AsymmetricElasticTree(BaseVisualization):
         node.reset_adjustment()
         node.update_label()
         if isinstance(node, ConstituentNode):
-            node.update_visibility(show_edges=True, scope=0, brackets=self.forest.settings.bracket_style())
+            node.update_visibility(show_edges=True, scope=0, brackets=self.forest.settings.bracket_style)
         node.bind_y = False
         node.bind_x = False

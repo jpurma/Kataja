@@ -23,7 +23,10 @@ def adjusted_control_point_list(control_points, adjust):
     :return: list
     """
     l = []
-    la = len(adjust)
+    if not adjust:
+        la = 0
+    else:
+        la = len(adjust)
     for i, cp in enumerate(control_points):
         if la <= i:
             l.append(cp[0])

@@ -61,10 +61,10 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         """
         Savable.__init__(self)
         QtWidgets.QGraphicsItem.__init__(self)
-        self.saved.start_point = (0, 0, 0)
-        self.saved.end_point = (0, 0, 0)
+        self.saved.fixed_start_point = None
+        self.saved.fixed_end_point = None
         self.saved.edge_type = edge_type
-        self.saved.adjust = []
+        self.saved.adjust = None
         self.saved.align = direction #or NO_ALIGN
         self.saved.start = start
         self.saved.end = end
@@ -76,6 +76,8 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         self.saved.pull = None
         self.saved.visible = None
 
+        self._computed_start_point = None
+        self._computed_end_point = None
 
         self.setZValue(-1)
         self.control_points = []
@@ -127,7 +129,36 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         self.setGraphicsEffect(self.effect)
 
     def after_init(self):
+        #print("after-initing edge ", self)
         self.update_end_points()
+
+    @property
+    def fixed_start_point(self):
+        """
+        :return:
+        """
+        return self.saved.fixed_start_point
+
+    @fixed_start_point.setter
+    def fixed_start_point(self, value):
+        """
+        :param value:
+        """
+        self.saved.fixed_start_point = value
+
+    @property
+    def fixed_end_point(self):
+        """
+        :return:
+        """
+        return self.saved.fixed_end_point
+
+    @fixed_end_point.setter
+    def fixed_end_point(self, value):
+        """
+        :param value:
+        """
+        self.saved.fixed_end_point = value
 
 
     @property
@@ -135,28 +166,20 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         """
         :return:
         """
-        return self.saved.start_point
-
-    @start_point.setter
-    def start_point(self, value):
-        """
-        :param value:
-        """
-        self.saved.start_point = value
+        if self.saved.start:
+            return self._computed_start_point
+        else:
+            return self.saved.fixed_start_point
 
     @property
     def end_point(self):
         """
         :return:
         """
-        return self.saved.end_point
-
-    @end_point.setter
-    def end_point(self, value):
-        """
-        :param value:
-        """
-        self.saved.end_point = value
+        if self.saved.end:
+            return self._computed_end_point
+        else:
+            return self.saved.fixed_end_point
 
     @property
     def edge_type(self):
@@ -212,6 +235,7 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         """
         :param value:
         """
+        print("setting edge start for %s to %s " % (self, value))
         self.saved.start = value
 
     @property
@@ -226,6 +250,7 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         """
         :param value:
         """
+        print("setting edge end for %s to %s " % (self, value))
         self.saved.end = value
 
     @property
@@ -254,6 +279,8 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         """
         :param value:
         """
+        if value is None:
+            value = {}
         self.saved.label_data = value
 
     @property
@@ -268,6 +295,8 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         """
         :param value:
         """
+        if value is None:
+            value = {}
         self.saved.local_shape_args = value
 
     @property
@@ -454,18 +483,21 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         :param z: z coordinate
         :return:
         """
-        if y is not None:
-            if z is not None:
-                self.start_point = p, y, z
+        if z is None:
+            if self.start_point:
+                z = self.start_point[2]
             else:
-                self.start_point = p, y, self.start_point[2]
+                z = 0
+
+        if y is not None:
+            self.fixed_start_point = p, y, z
         elif isinstance(p, tuple):
             if len(p) == 3:
-                self.start_point = p
+                self.fixed_start_point = p
             else:
-                self.start_point = (p[0], p[1], self.start_point[2])
+                self.fixed_start_point = (p[0], p[1], z)
         if isinstance(p, (QtCore.QPoint, QtCore.QPointF)):
-            self.start_point = (p.x(), p.y(), self.start_point[2])
+            self.fixed_start_point = (p.x(), p.y(), z)
         self.make_relative_vector()
 
     def set_end_point(self, p, y=None, z=None):
@@ -475,18 +507,21 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         :param z: z coordinate
         :return:
         """
-        if y is not None:
-            if z is not None:
-                self.end_point = p, y, z
+        if z is None:
+            if self.end_point:
+                z = self.end_point[2]
             else:
-                self.end_point = p, y, self.end_point[2]
+                z = 0
+
+        if y is not None:
+            self.fixed_end_point = p, y, z
         elif isinstance(p, tuple):
             if len(p) == 3:
-                self.end_point = p
+                self.fixed_end_point = p
             else:
-                self.end_point = (p[0], p[1], self.end_point[2])
+                self.fixed_end_point = (p[0], p[1], z)
         if isinstance(p, (QtCore.QPoint, QtCore.QPointF)):
-            self.end_point = (p.x(), p.y(), self.end_point[2])
+            self.fixed_end_point = (p.x(), p.y(), z)
         self.make_relative_vector()
 
     # Label for arrow etc. ##############################################
@@ -826,12 +861,19 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         self._cached_shape_args = self.shape_args()
         cpl = len(self.control_points)
         self.make_path()
-        while len(self.adjust) < len(self.control_points):
-            self.adjust.append((0, 0, 0))
+        #while len(self.adjust) < len(self.control_points):
+        #    self.adjust.append((0, 0, 0))
         if cpl != len(self.control_points):
             ctrl.ui.reset_control_points(self)
         ctrl.ui.update_control_point_positions()
         self.update()
+
+    def prepare_adjust_array(self, index):
+        if self.adjust is None:
+            self.adjust = [(0, 0, 0)] * (index + 1)
+        elif index >= len(self.adjust):
+            self.adjust += [(0, 0, 0)] * (index - len(self.adjust) + 1)
+
 
     def adjust_control_point(self, index, points, cp=True):
         """ Called from UI, when dragging
@@ -840,6 +882,7 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         :param cp:
         """
         x, y = points
+        self.prepare_adjust_array(index)
         z = self.adjust[index][2]
         self.adjust[index] = (x, y, z)
         self.make_path()
@@ -856,6 +899,7 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         :param value:
         :return:
         """
+        self.prepare_adjust_array(index)
         x, y, z = self.adjust[index]
         if dim == 'x':
             self.adjust[index] = value, y, z
@@ -873,7 +917,14 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         :param index:
         :return:
         """
-        self.adjust[index] = (0, 0, 0)
+        if self.adjust and len(self.adjust) > index:
+            self.adjust[index] = (0, 0, 0)
+        can_delete = True
+        for (x, y, z) in self.adjust:
+            if x != 0 or y != 0:
+                can_delete = False
+        if can_delete:
+            self.adjust = None
         self.make_path()
         ctrl.ui.update_control_point_positions()
         self.update()
@@ -888,11 +939,11 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         if self.start and not self.end:
             sp_x, sp_y, sp_z = self.start.current_position
             r_x, r_y, r_z = self._relative_vector
-            self.end_point = sp_x + r_x, sp_y + r_y, sp_z + r_z
+            self._computed_end_point = sp_x + r_x, sp_y + r_y, sp_z + r_z
         elif self.end and not self.start:
             ep_x, ep_y, ep_z = self.end.current_position
             r_x, r_y, r_z = self._relative_vector
-            self.start_point = ep_x - r_x, ep_y - r_y, ep_z - r_z
+            self._computed_start_point = ep_x - r_x, ep_y - r_y, ep_z - r_z
 
         if self.edge_type == g.ARROW:
 
@@ -900,14 +951,14 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
                 if self._true_path:
                     a = self.get_angle_at(0)
                     i = round(a / 22.5)
-                    self.start_point = self.start.magnet(angle_magnet_map[i])
+                    self._computed_start_point  = self.start.magnet(angle_magnet_map[i])
                 else:
                     sx, sy, sz = self.start_point
                     ex, ey, ez = self.end_point
                     dx = ex - sx
                     dy = ey - sy
                     i = round(math.degrees(math.atan2(dy, dx)) / 22.5)
-                    self.start_point = self.start.magnet(atan_magnet_map[i])
+                    self._computed_start_point = self.start.magnet(atan_magnet_map[i])
             if self.end:
                 if self._true_path:
                     a = self.get_angle_at(1.0)
@@ -916,27 +967,27 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
                     elif a < 180:
                         a += 180
                     i = round(a / 22.5)
-                    self.end_point = self.end.magnet(angle_magnet_map[i])
+                    self._computed_end_point  = self.end.magnet(angle_magnet_map[i])
                 else:
                     sx, sy, sz = self.start_point
                     ex, ey, ez = self.end_point
                     dx = sx - ex
                     dy = sy - ey
                     i = round(math.degrees(math.atan2(dy, dx)) / 22.5)
-                    self.end_point = self.end.magnet(atan_magnet_map[i])
+                    self._computed_end_point = self.end.magnet(atan_magnet_map[i])
         elif self.edge_type == g.DIVIDER:
             pass
 
         else:
             if self.start:
                 if self.align == LEFT:
-                    self.start_point = self.start.magnet(8)
+                    self._computed_start_point = self.start.magnet(8)
                 elif self.align == RIGHT:
-                    self.start_point = self.start.magnet(10)
+                    self._computed_start_point = self.start.magnet(10)
                 else:
-                    self.start_point = self.start.magnet(9)
+                    self._computed_start_point = self.start.magnet(9)
             if self.end:
-                self.end_point = self.end.magnet(2)
+                self._computed_end_point = self.end.magnet(2)
 
     def connect_end_points(self, start, end):
         """
@@ -945,12 +996,12 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         :param end:
         """
         if start:
-            self.start_point = start.current_position
+            self._computed_start_point = start.current_position
             self.start = start
         else:
             self.start = None
         if end:
-            self.end_point = end.current_position
+            self._computed_end_point = end.current_position
             self.end = end
         else:
             self.end = None
@@ -976,12 +1027,16 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
             label = 'Edge'
         if self.start:
             s1 = self.start
-        else:
+        elif self.fixed_start_point:
             s1 = '(%s, %s)' % (int(self.start_point[0]), int(self.start_point[1]))
+        else:
+            s1 = 'undefined'
         if self.end:
             s2 = self.end
-        else:
+        elif self.fixed_end_point:
             s2 = '(%s, %s)' % (int(self.end_point[0]), int(self.end_point[1]))
+        else:
+            s2 = 'undefined'
         return '%s from %s to %s' % (label, s1, s2)
 
     def __repr__(self):
@@ -1045,13 +1100,10 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
 
         :return:
         """
-        if self.shape_name == 'linear':
-            return QtCore.QRectF(to_Pf(self.start_point), to_Pf(self.end_point))
-        else:  # include curve adjustments
-            if not self._path:
-                self.update_end_points()
-                self.make_path()
-            return self._path.controlPointRect()
+        if not self._path:
+            self.update_end_points()
+            self.make_path()
+        return self._path.controlPointRect()
 
     # ### Mouse - Qt events ##################################################
 

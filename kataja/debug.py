@@ -2,14 +2,14 @@ import traceback
 
 __author__ = 'purma'
 
-DEBUG_TIME_ME = False
+DEBUG_TIME_ME = True
 DEBUG_SYNTAX = False
 DEBUG_PRINT_MOUSE_EVENTS = False
 DEBUG_PRINT_PARSER_EVENTS = False
 DEBUG_FOREST_OPERATION = False
 DEBUG_VISUALIZATION = False
 DEBUG_KEYPRESS = False
-DEBUG_UNDO = False
+DEBUG_UNDO = True
 DEBUG_UI = False
 
 

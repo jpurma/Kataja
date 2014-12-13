@@ -155,6 +155,7 @@ class Savable:
         # Restore either takes existing object or creates a new 'stub' object and then loads it with given data
 
         map_existing(self)
+        print('full_map:', full_map)
         self.restore(self.save_key)
 
     def restore(self, obj_key, class_key=''):

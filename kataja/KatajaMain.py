@@ -31,7 +31,6 @@
 import gc
 #import gzip
 import os.path
-import sys
 import time
 import pickle
 
@@ -47,7 +46,7 @@ from kataja.ForestKeeper import ForestKeeper
 from kataja.GraphScene import GraphScene
 from kataja.GraphView import GraphView
 from kataja.Presentation import TextArea
-from kataja.Edge import SHAPE_PRESETS, Edge
+from kataja.Edge import Edge
 from kataja.UIManager import UIManager
 from kataja.PaletteManager import PaletteManager
 from kataja.ObjectFactory import ObjectFactory

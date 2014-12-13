@@ -26,6 +26,7 @@
 from kataja.debug import undo
 from kataja.utils import time_me
 from kataja.singletons import ctrl
+import pprint
 
 
 class UndoManager:
@@ -93,8 +94,11 @@ class UndoManager:
         if self.full_state:
             diff = self.compare_saved_dicts(self.full_state, saved_objects)
             undo('diff size: ', len(str(diff)))
+            undo('diff: ', str(diff))
             self._stack.append(diff)
             self._msg_stack.append(msg)
+            self.dump_dict_to_file(diff)
+
         self._current = len(self._stack)
         saved_objects['stack_index'] = self._current
         self.full_state = saved_objects
@@ -142,6 +146,11 @@ class UndoManager:
         to_be_deleted = {}
 
         def _restore_older(state, diff):
+            """ undo
+            :param state:
+            :param diff:
+            :return:
+            """
             for key, item in diff.items():
                 if isinstance(item, dict) and len(item) == 2 and 'old' in item and 'new' in item:
                     # restore older value 
@@ -165,6 +174,11 @@ class UndoManager:
                     _restore_older(state[key], item)
 
         def _restore_newer(state, diff):
+            """ redo
+            :param state:
+            :param diff:
+            :return:
+            """
             for key, item in diff.items():
                 if isinstance(item, dict) and len(item) == 2 and 'old' in item and 'new' in item:
                     # restore older value 
@@ -201,6 +215,7 @@ class UndoManager:
         undo('current stack index and state: %s' % self._current)
         undo('to be deleted: ', to_be_deleted)
         # forest_data = self.full_state[self.full_state['start_key']]
+        print("launching load_objects")
         self.forest.load_objects(self.full_state, ctrl.main)
         self.forest.main.graph_scene.draw_forest(self.forest)
 
@@ -236,3 +251,10 @@ class UndoManager:
 
             # def repair_later(self, item):
             # self._repair_list.append(item)
+
+    def dump_dict_to_file(self, dict, filename='undo_dump'):
+
+        f = open(filename, 'w')
+        pp = pprint.PrettyPrinter(indent=4, stream=f)
+        pp.pprint(dict)
+        f.close()

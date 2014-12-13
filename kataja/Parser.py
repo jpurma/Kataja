@@ -691,11 +691,12 @@ class BottomUpParser(Parser):
 
         """
         self.layers = 0
-
+        string = string.strip()
+        if not string.startswith('['):
+            string = '[' + string + ']'
         splitter = re.compile(r'(\\|\[|\]|{|}| +)')
 
         stream = [x for x in re.split(splitter, string) if x]
-
 
         def find_index(label):
             """

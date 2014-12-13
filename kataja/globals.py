@@ -87,3 +87,8 @@ SYMBOL_FONT = 'symbol_font'
 START_POINT = 'start'
 END_POINT = 'end'
 LABEL_START = 'label_start'
+
+# Bracket styles:
+NO_BRACKETS = 0
+MAJOR_BRACKETS = 1
+ALL_BRACKETS = 2

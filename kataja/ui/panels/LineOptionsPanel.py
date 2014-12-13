@@ -350,23 +350,43 @@ class LineOptionsPanel(UIPanel):
         cp2_y = None
         for item in ctrl.get_all_selected():
             if isinstance(item, Edge):
-                if len(item.adjust) > 1:
+                if len(item.control_points) > 1:
                     if cp2_x is None:
-                        cp2_x = item.adjust[1][0]
-                        cp2_y = item.adjust[1][1]
+                        if item.adjust and len(item.adjust) > 1:
+                            cp2_x = item.adjust[1][0]
+                            cp2_y = item.adjust[1][1]
+                        else:
+                            cp2_x = 0
+                            cp2_y = 0
                     else:
-                        if cp2_x != item.adjust[1][0]:
+                        if item.adjust and len(item.adjust) > 1:
+                            ax = item.adjust[1][0]
+                            ay = item.adjust[1][1]
+                        else:
+                            ax = 0
+                            ay = 0
+                        if cp2_x != ax:
                             cp2_x_conflict = True
-                        if cp2_y != item.adjust[1][1]:
+                        if cp2_y != ay:
                             cp2_y_conflict = True
-                if len(item.adjust) > 0:
+                if len(item.control_points) > 0:
                     if cp1_x is None:
-                        cp1_x = item.adjust[0][0]
-                        cp1_y = item.adjust[0][1]
+                        if item.adjust:
+                            cp1_x = item.adjust[0][0]
+                            cp1_y = item.adjust[0][1]
+                        else:
+                            cp1_x = 0
+                            cp1_y = 0
                     else:
-                        if cp1_x != item.adjust[0][0]:
+                        if item.adjust:
+                            ax = item.adjust[0][0]
+                            ay = item.adjust[0][1]
+                        else:
+                            ax = 0
+                            ay = 0
+                        if cp1_x != ax:
                             cp1_x_conflict = True
-                        if cp1_y != item.adjust[0][1]:
+                        if cp1_y != ay:
                             cp1_y_conflict = True
         self.cp1_x_spinbox.blockSignals(True)
         self.cp1_y_spinbox.blockSignals(True)

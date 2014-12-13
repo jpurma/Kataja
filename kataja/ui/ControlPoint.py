@@ -55,8 +55,11 @@ class ControlPoint(QtWidgets.QGraphicsItem):
         """
         if -1 < self._index < len(self.host_edge.control_points):
             p = self.host_edge.control_points[self._index]
-            a = self.host_edge.adjust[self._index]
-            p = Pf(p[0] + a[0], p[1] + a[1])
+            if self.host_edge.adjust and len(self.host_edge.adjust) > self._index:
+                a = self.host_edge.adjust[self._index]
+                p = Pf(p[0] + a[0], p[1] + a[1])
+            else:
+                p = Pf(p[0], p[1])
         elif self.role == g.START_POINT:
             p = Pf(self.host_edge.start_point[0], self.host_edge.start_point[1])
         elif self.role == g.END_POINT:

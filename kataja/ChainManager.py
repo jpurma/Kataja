@@ -106,7 +106,6 @@ class ChainManager(Savable):
 
 
         """
-        forest('group traces to chain head')
         # ## Move traces to their multidominant originals, purely visual thing ###
         self.rebuild_chains()
         y_adjust = {}
@@ -139,7 +138,7 @@ class ChainManager(Savable):
 
 
         """
-        forest('traces to multidomination')
+        print('traces to multidomination called')
         # if not self._chains:
         self.rebuild_chains()
         self.dump_chains()
@@ -159,6 +158,7 @@ class ChainManager(Savable):
                 forest('replacing trace ', node)
                 original = self.get_chain_head(node.index)
                 self.forest._replace_node(node, original)
+                print('deleting trace ', node)
                 self.forest.delete_node(node)
 
     @time_me
@@ -168,7 +168,6 @@ class ChainManager(Savable):
 
 
         """
-        forest('multidomination to traces')
         self.rebuild_chains()
         for key, chain in self.chains.items():
             head = self.get_chain_head(key)

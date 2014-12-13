@@ -28,6 +28,7 @@ from kataja.visualizations.BaseVisualization import BaseVisualization
 from kataja.FeatureNode import FeatureNode
 from kataja.GlossNode import GlossNode
 from kataja.AttributeNode import AttributeNode
+import kataja.globals as g
 
 
 class DynamicWidthTree(BaseVisualization):
@@ -53,14 +54,13 @@ class DynamicWidthTree(BaseVisualization):
         self.forest = forest
         self._directed = True
         self.forest.settings.show_constituent_edges = True
-        self.forest.settings.bracket_style(0)
+        self.forest.settings.bracket_style = g.NO_BRACKETS
         if not loading:
             self.forest.vis_data = {'name': self.__class__.name, 'push': 20}
         self.push = self.forest.vis_data['push']
-        l = []
+        self._linear = []
         for root in self.forest.roots:
-            l += self.forest.list_nodes_once(root)
-        self._linear = l
+            self._linear += self.forest.list_nodes_once(root)
         for node in self.forest.visible_nodes():
             self.reset_node(node)
 
@@ -73,7 +73,7 @@ class DynamicWidthTree(BaseVisualization):
         node.reset_adjustment()
         node.update_label()
         if isinstance(node, ConstituentNode):
-            node.update_visibility(show_edges=True, scope=0, brackets=self.forest.settings.bracket_style())
+            node.update_visibility(show_edges=True, scope=0, brackets=self.forest.settings.bracket_style)
             node.bind_y = True
             node.bind_x = False
         elif isinstance(node, (FeatureNode, GlossNode, AttributeNode)):

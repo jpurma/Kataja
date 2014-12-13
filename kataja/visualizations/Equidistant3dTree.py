@@ -30,6 +30,7 @@ from kataja.visualizations.BaseVisualization import BaseVisualization
 from kataja.ConstituentNode import ConstituentNode
 from kataja.FeatureNode import FeatureNode
 from kataja.GlossNode import GlossNode
+import kataja.globals as g
 
 
 NO_ALIGN = 0
@@ -56,7 +57,7 @@ class Equidistant3dTree(BaseVisualization):
         :param loading:
         """
         self.forest = forest
-        self.forest.settings.bracket_style(0)
+        self.forest.settings.bracket_style = g.NO_BRACKETS
         self.forest.settings.show_constituent_edges = True
         if not loading:
             self.forest.vis_data = {'name': self.__class__.name}
@@ -72,7 +73,7 @@ class Equidistant3dTree(BaseVisualization):
         node.reset_adjustment()
         node.update_label()
         if isinstance(node, ConstituentNode):
-            node.update_visibility(show_edges=True, scope=0, brackets=self.forest.settings.bracket_style())
+            node.update_visibility(show_edges=True, scope=0, brackets=self.forest.settings.bracket_style)
         elif isinstance(node, FeatureNode) or isinstance(node, GlossNode):
             pass
         node.bind_y = False

@@ -19,7 +19,7 @@ All changes to syntactic objects need to use methods offered here  -- the purpos
 and to avoid overlapping changes to UG.
 """
 
-def connect_edge(edge):
+def connect_according_to_edge(edge):
     """ A special case where a stub edge (edge where other end is not connected anywhere) gets connected.
     For this to have a syntactic reflection edge types and end point types must match, and other conditions
     also need to apply.
