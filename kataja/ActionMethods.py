@@ -7,7 +7,7 @@ from PyQt5.QtCore import Qt
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 import subprocess
-from kataja.Forest import ForestError
+from errors import ForestError
 import kataja.debug as debug
 from kataja.ui.PreferencesDialog import PreferencesDialog
 from kataja.Edge import SHAPE_PRESETS, Edge
@@ -251,19 +251,19 @@ class ActionMethods:
         """ Show traces -action (t) """
         fs = ctrl.fs
 
-        if fs.traces_are_grouped_together() and not fs.uses_multidomination():
-            fs.uses_multidomination(True)
-            fs.traces_are_grouped_together(False)
+        if fs.traces_are_grouped_together and not fs.uses_multidomination:
+            fs.uses_multidomination = True
+            fs.traces_are_grouped_together = False
             ctrl.main.add_message('(t) use multidominance')
             ctrl.forest.traces_to_multidomination()
-        elif (not fs.traces_are_grouped_together()) and not fs.uses_multidomination():
-            fs.uses_multidomination(False)
-            fs.traces_are_grouped_together(True)
+        elif (not fs.traces_are_grouped_together) and not fs.uses_multidomination:
+            fs.uses_multidomination = False
+            fs.traces_are_grouped_together = True
             ctrl.main.add_message('(t) use traces, group them to one spot')
             ctrl.forest.group_traces_to_chain_head()
-        elif fs.uses_multidomination():
-            fs.uses_multidomination(False)
-            fs.traces_are_grouped_together(False)
+        elif fs.uses_multidomination:
+            fs.uses_multidomination = False
+            fs.traces_are_grouped_together = False
             ctrl.main.add_message('(t) use traces, show constituents in their base merge positions')
             ctrl.forest.multidomination_to_traces()
 

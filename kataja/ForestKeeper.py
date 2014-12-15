@@ -125,7 +125,7 @@ class ForestKeeper(Savable):
         for forest in self.forests:
             self.main.forest = forest
             forest.rebuild_brackets()
-            if not forest.settings.uses_multidomination():
+            if not forest.settings.uses_multidomination:
                 forest.rebuild_chains()
         for key, item in ctrl.unassigned_objects.items():
             # print 'storing %s to %s' % (key, item.forest_key)

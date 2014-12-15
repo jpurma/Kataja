@@ -36,7 +36,6 @@ import kataja.globals as g
 
 end_spot_size = 7
 
-
 class TouchArea(QtWidgets.QGraphicsItem):
     """ Mouse sensitive areas connected to either nodes or edges between them. """
 
@@ -119,6 +118,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
         """
         if not self.end_point:
             self.update_end_points()
+            assert self.end_point
         if self._has_tail:
             # Bounding rect that includes the tail and end spot ellipse
             ex, ey = self.end_point
@@ -186,8 +186,11 @@ class TouchArea(QtWidgets.QGraphicsItem):
             if not end_point:
                 if isinstance(self.host, Edge):
                     self.end_point = (self.host.end_point[0], self.host.end_point[1])
-                elif hasattr(self.host, 'get_current_position'):
+                elif hasattr(self.host, 'current_position'):
                     self.end_point = (self.host.current_position[0], self.host.current_position[1])
+                else:
+                    raise TouchAreaError("Cannot set end point from %s " % self.host)
+
             self.start_point = self.end_point
             self._path = None
             return
@@ -332,16 +335,21 @@ class TouchArea(QtWidgets.QGraphicsItem):
     def dragged_over_by(self, dragged):
         if not self._hovering and self.accepts_drops(dragged):
             if ctrl.latest_hover and not ctrl.latest_hover is self:
-                ctrl.latest_hover.set_hovering(False)
+                ctrl.latest_hover.hovering = False
             ctrl.latest_hover = self
-            self.set_hovering(True)
+            self.hovering = True
 
 
     def accepts_drops(self, dragged):
         return self.calculate_if_can_merge(dragged, None, None)
 
 
-    def set_hovering(self, value):
+    @property
+    def hovering(self):
+        return self._hovering
+
+    @hovering.setter
+    def hovering(self, value):
         """
 
         :param value:
@@ -361,7 +369,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
         :param event:
         """
         if (not self._hovering) and not ctrl.pressed:
-            self.set_hovering(True)
+            self.hovering = True
         QtWidgets.QGraphicsItem.hoverEnterEvent(self, event)
 
     def hoverLeaveEvent(self, event):
@@ -370,7 +378,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
         :param event:
         """
         if self._hovering:
-            self.set_hovering(False)
+            self.hovering = False
         QtWidgets.QGraphicsItem.hoverLeaveEvent(self, event)
 
 

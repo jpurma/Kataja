@@ -24,10 +24,8 @@
 from collections import OrderedDict
 
 from PyQt5 import QtCore, QtWidgets, QtGui
-from kataja.KeyPressManager import ShortcutSolver, ButtonShortcutFilter
-import kataja.debug as debug
-from kataja.Forest import ForestError
 
+from kataja.KeyPressManager import ShortcutSolver, ButtonShortcutFilter
 from kataja.ConstituentNode import ConstituentNode
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.Edge import Edge
@@ -40,7 +38,6 @@ from kataja.ui.StretchLine import StretchLine
 from kataja.ui.TargetReticle import TargetReticle
 from kataja.actions import actions
 import kataja.globals as g
-from kataja.utils import to_tuple
 from kataja.ui.TouchArea import TouchArea
 from kataja.ui.panels.ColorThemePanel import ColorPanel
 from kataja.ui.panels.ColorWheelPanel import ColorWheelPanel
@@ -87,8 +84,6 @@ menu_structure = OrderedDict([
     ('panels_menu', ('&Panels', ['$panels', '---', 'toggle_all_panels'])),
     ('help_menu', ('&Help', ['help']))
 ])
-
-
 
 
 class UIManager:
@@ -950,7 +945,8 @@ class UIManager:
     def add_remove_merger_button(self, node, edge=None):
         key = node.save_key + "_remove_merger"
         if key not in self._overlay_buttons:
-            button = OverlayButton(qt_prefs.delete_icon, node, 'remove_merger', 'Remove this non-merging node', parent=self.main.graph_view)
+            button = OverlayButton(qt_prefs.delete_icon, node, g.REMOVE_MERGER, 'Remove this non-merging node', parent=self.main.graph_view)
+            button.update_position()
             self.connect_element_to_action(button, 'remove_merger')
             button.show()
             self._overlay_buttons[key] = button
@@ -965,7 +961,7 @@ class UIManager:
             key = edge.save_key + "_cut_start"
             if edge.start:
                 if key not in self._overlay_buttons:
-                    button = OverlayButton(qt_prefs.cut_icon, edge, 'start_cut', 'Disconnect from node', parent=self.main.graph_view)
+                    button = OverlayButton(qt_prefs.cut_icon, edge, g.START_CUT, 'Disconnect from node', parent=self.main.graph_view)
                     self.connect_element_to_action(button, 'disconnect_edge')
                     button.show()
                     self._overlay_buttons[key] = button
@@ -978,7 +974,7 @@ class UIManager:
         key = edge.save_key + "_cut_end"
         if edge.end and not edge.end.is_placeholder():
             if key not in self._overlay_buttons:
-                button = OverlayButton(qt_prefs.cut_icon, edge, 'end_cut', 'Disconnect from node', parent=self.main.graph_view)
+                button = OverlayButton(qt_prefs.cut_icon, edge, g.END_CUT, 'Disconnect from node', parent=self.main.graph_view)
                 button.update_position()
                 self.connect_element_to_action(button, 'disconnect_edge')
                 button.show()

@@ -97,7 +97,12 @@ class Bracket(Movable, QtWidgets.QGraphicsSimpleTextItem):
     def __repr__(self):
         return '<bracket %s>' % self.key
 
-    def set_hovering(self, value):
+    @property
+    def hovering(self):
+        return self._hovering
+
+    @hovering.setter
+    def hovering(self, value):
         """ Toggle hovering effects and internal bookkeeping
         :param value: bool
         :return:
@@ -117,14 +122,14 @@ class Bracket(Movable, QtWidgets.QGraphicsSimpleTextItem):
         """ Hovering over a bracket is same as hovering over the host constituent
         :param event: mouse event
         """
-        self.host.set_hovering(True)
+        self.host.hovering = True
         QtWidgets.QGraphicsSimpleTextItem.hoverEnterEvent(self, event)
 
     def hoverLeaveEvent(self, event):
         """ Hovering over a bracket is same as hovering over the host constituent
         :param event: mouse event
         """
-        self.host.set_hovering(False)
+        self.host.hovering = False
         QtWidgets.QGraphicsSimpleTextItem.hoverLeaveEvent(self, event)
 
     def select(self, event=None):
@@ -150,7 +155,7 @@ class Bracket(Movable, QtWidgets.QGraphicsSimpleTextItem):
         """
         c = self.host.contextual_color()
         painter.setBrush(c)
-        if self._hovering:
+        if self.hovering:
             painter.setPen(c)
             painter.drawRect(self.boundingRect())
             painter.setPen(Qt.NoPen)

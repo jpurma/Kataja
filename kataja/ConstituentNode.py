@@ -997,17 +997,22 @@ class ConstituentNode(Node):
 
     #################################
 
-    def set_hovering(self, value):
+    @property
+    def hovering(self):
+        return self._hovering
+
+    @hovering.setter
+    def hovering(self, value):
         """ Toggle hovering effects
         Overrides Node.set_hovering.
         :param value: bool
         :return:
         """
         if self.left_bracket:
-            self.left_bracket.set_hovering(value)
+            self.left_bracket.hovering = value
         if self.right_bracket:
-            self.right_bracket.set_hovering(value)
-        Node.set_hovering(self, value)
+            self.right_bracket.hovering = value
+        self._set_hovering(value)
 
     # ### Suggestions for completing missing aspects (active for selected nodes) ######################################
 

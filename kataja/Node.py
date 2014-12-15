@@ -166,6 +166,42 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self.saved.index = value
 
 
+    @property
+    def hovering(self):
+        return self._hovering
+
+    @hovering.setter
+    def hovering(self, value):
+        """ Toggle hovering effects and internal bookkeeping
+        :param value: bool
+        :return:
+        """
+        self._set_hovering(value)
+
+    def _set_hovering(self, value):
+        """ Toggle hovering effects and internal bookkeeping
+        :param value: bool
+        :return:
+        """
+        if value and not self._hovering:
+            self._hovering = True
+            if ctrl.cm.use_glow():
+                self.effect.setColor(ctrl.cm.selection())
+                self.effect.setEnabled(True)
+            self.prepareGeometryChange()
+            self.update()
+            self.setZValue(150)
+            ctrl.set_status(self.status_tip)
+        elif (not value) and self._hovering:
+            if ctrl.cm.use_glow():
+                self.effect.setEnabled(False)
+            self._hovering = False
+            self.prepareGeometryChange()
+            self.setZValue(self.__class__.z_value)
+            self.update()
+            ctrl.remove_status(self.status_tip)
+
+
     def __repr__(self):
         """ This is a node and this represents this UG item """
         return '%s-%s' % (self.saved.syntactic_object, self.saved.save_key)
@@ -602,7 +638,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """ Scene has decided that this node has been clicked
         :param event:
         """
-        self.set_hovering(False)
+        self.hovering = False
         if ctrl.is_selected(self):
             self.open_embed()
         else:
@@ -612,7 +648,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """ Scene has decided that this node has been clicked
         :param event:
         """
-        self.set_hovering(False)
+        self.hovering = False
         if event and event.modifiers() == Qt.ShiftModifier:  # multiple selection
             for node in ctrl.get_all_selected():
                 if hasattr(node, 'remove_merge_options'):
@@ -680,35 +716,13 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         else:
             self.computed_position = (now_x, now_y, pz)
 
-    def set_hovering(self, value):
-        """ Toggle hovering effects and internal bookkeeping
-        :param value: bool
-        :return:
-        """
-        if value and not self._hovering:
-            self._hovering = True
-            if ctrl.cm.use_glow():
-                self.effect.setColor(ctrl.cm.selection())
-                self.effect.setEnabled(True)
-            self.prepareGeometryChange()
-            self.update()
-            self.setZValue(150)
-            ctrl.set_status(self.status_tip)
-        elif (not value) and self._hovering:
-            if ctrl.cm.use_glow():
-                self.effect.setEnabled(False)
-            self._hovering = False
-            self.prepareGeometryChange()
-            self.setZValue(self.__class__.z_value)
-            self.update()
-            ctrl.remove_status(self.status_tip)
 
     def dragged_over_by(self, dragged):
         if not self._hovering and self.accepts_drops(dragged):
             if ctrl.latest_hover and not ctrl.latest_hover is self:
-                ctrl.latest_hover.set_hovering(False)
+                ctrl.latest_hover.hovering = False
             ctrl.latest_hover = self
-            self.set_hovering(True)
+            self.hovering = True
 
     def accepts_drops(self, dragged):
         if isinstance(dragged, ControlPoint):
@@ -724,14 +738,14 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """ Hovering has some visual effects, usually handled in paint-method
         :param event:
         """
-        self.set_hovering(True)
+        self.hovering = True
         QtWidgets.QGraphicsItem.hoverEnterEvent(self, event)
 
     def hoverLeaveEvent(self, event):
         """ Object needs to be updated
         :param event:
         """
-        self.set_hovering(False)
+        self.hovering = False
         QtWidgets.QGraphicsItem.hoverLeaveEvent(self, event)
 
 

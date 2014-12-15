@@ -92,3 +92,8 @@ LABEL_START = 'label_start'
 NO_BRACKETS = 0
 MAJOR_BRACKETS = 1
 ALL_BRACKETS = 2
+
+# Overlay buttons
+REMOVE_MERGER = 'remove_merger'
+START_CUT = 'start_cut'
+END_CUT = 'end_cut'

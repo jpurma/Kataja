@@ -1107,7 +1107,13 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
 
     # ### Mouse - Qt events ##################################################
 
-    def set_hovering(self, value):
+
+    @property
+    def hovering(self):
+        return self._hovering
+
+    @hovering.setter
+    def hovering(self, value):
         """ Toggle hovering effects and internal bookkeeping
         :param value: bool
         :return:
@@ -1136,7 +1142,7 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         Toggles hovering state and necessary graphical effects.
         :param event:
         """
-        self.set_hovering(True)
+        self.hovering = True
         QtWidgets.QGraphicsItem.hoverEnterEvent(self, event)
 
     def hoverLeaveEvent(self, event):
@@ -1144,7 +1150,7 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
 
         :param event:
         """
-        self.set_hovering(False)
+        self.hovering = False
         QtWidgets.QGraphicsItem.hoverLeaveEvent(self, event)
 
     # ## Scene-managed call
@@ -1154,7 +1160,7 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         (update
         :param event:
         """
-        self.set_hovering(False)
+        self.hovering = False
         if event and event.modifiers() == Qt.ShiftModifier:  # multiple selection
             if ctrl.is_selected(self):
                 ctrl.remove_from_selection(self)

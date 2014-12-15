@@ -540,7 +540,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         self._dragging = False
         f = self.main.forest
         if ctrl.latest_hover:
-            ctrl.latest_hover.set_hovering(False)
+            ctrl.latest_hover.hovering = False
             ctrl.latest_hover = None
 
         ctrl.main.ui_manager.remove_touch_areas()  # @UndefinedVariable
@@ -562,7 +562,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                     for item in items:
                         item.dragged_over_by(ctrl.pressed)
                 elif ctrl.latest_hover:
-                    ctrl.latest_hover.set_hovering(False)
+                    ctrl.latest_hover.hovering = False
                     ctrl.latest_hover = None
                 self.main.ui_manager.update_positions()
             else:

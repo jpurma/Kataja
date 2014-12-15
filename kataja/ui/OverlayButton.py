@@ -23,7 +23,8 @@
 # ############################################################################
 
 from PyQt5 import QtWidgets, QtGui, QtCore
-from kataja.Forest import ForestError
+from kataja.errors import UIError
+from errors import ForestError
 from kataja.singletons import ctrl
 import kataja.globals as g
 
@@ -67,31 +68,39 @@ class OverlayButton(QtWidgets.QPushButton):
     #    QtWidgets.QPushButton.paintEvent(self, *args, **kwargs)
 
     def update_position(self):
-        if self.role == 'remove_merger':
-            adjust = QtCore.QPointF(19, self.host.height/2)
+        print(self.role)
+        if self.role == g.REMOVE_MERGER:
+            adjust = QtCore.QPointF(19, -self.host.height / 2)
             if not self.edge:
                 edges = [x for x in self.host.edges_down if x.edge_type is g.CONSTITUENT_EDGE and x.end.is_placeholder()]
                 if not edges:
-                    raise ForestError("How did I get here? Remove merger suggested for merger with no children")
+                    raise UIError("How did I get here? Remove merger suggested for merger with no children")
                 else:
                     self.edge = edges[0]
-            p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(self.edge.start_point[0], self.edge.start_point[1])) - adjust
+            p = QtCore.QPointF(self.edge.start_point[0], self.edge.start_point[1])
+            p = ctrl.main.graph_view.mapFromScene(p) + adjust
             p = p.toPoint()
-        elif self.role == 'start_cut':
-            adjust = QtCore.QPointF(self.host.end.width/2, self.host.end.height/2)
+        elif self.role == g.START_CUT:
+            adjust = QtCore.QPointF(self.host.end.width / 2, self.host.end.height / 2)
             p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(self.host.start_point[0], self.host.start_point[1]) + adjust)
-        elif self.role == 'end_cut':
+        elif self.role == g.END_CUT:
             if self.host.align == g.LEFT:
-                adjust = QtCore.QPointF(-self.host.end.width/2, -self.host.end.height/2)
+                adjust = QtCore.QPointF(-self.host.end.width / 2, -self.host.end.height / 2)
             else:
-                adjust = QtCore.QPointF(self.host.end.width/2, -self.host.end.height/2)
+                adjust = QtCore.QPointF(self.host.end.width / 2, -self.host.end.height / 2)
             p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(self.host.start_point[0], self.host.start_point[1]) + adjust)
+        else:
+            raise UIError("Unknown role for OverlayButton, don't know where to put it.")
         self.move(p)
 
     def enterEvent(self, event):
+        if self.role == g.REMOVE_MERGER:
+            self.host.hovering = True
         self.effect.setStrength(1.0)
 
     def leaveEvent(self, event):
+        if self.role == g.REMOVE_MERGER:
+            self.host.hovering = False
         self.effect.setStrength(0.5)
 
     def connect_to_action(self, action):
@@ -99,6 +108,6 @@ class OverlayButton(QtWidgets.QPushButton):
         self.clicked.connect(self.click_delegate)
 
     def click_delegate(self):
-        print('in click delegate')
+        print('in click delegate, role=', self.role)
         self.just_triggered = True
         self._action.trigger()

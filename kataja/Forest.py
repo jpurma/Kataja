@@ -27,9 +27,10 @@ import string
 import collections
 
 from PyQt5 import QtWidgets
-import kataja.ForestSyntax as ForestSyntax
-from kataja.debug import forest, syntax
 
+from kataja.errors import ForestError
+import kataja.ForestSyntax as ForestSyntax
+from kataja.debug import forest
 from kataja.ForestSettings import ForestSettings, ForestRules
 from kataja.Bracket import Bracket
 from kataja.BracketManager import BracketManager
@@ -44,7 +45,7 @@ from kataja.Parser import BottomUpParser
 from kataja.Presentation import TextArea, Image
 from kataja.Edge import Edge
 from kataja.UndoManager import UndoManager
-from kataja.utils import next_free_index, to_tuple, caller
+from kataja.utils import to_tuple
 from kataja.FeatureNode import FeatureNode
 from kataja.Saved import Savable
 import kataja.globals as g
@@ -59,11 +60,6 @@ NO_ALIGN = 0
 LEFT = 1
 RIGHT = 2
 
-class ForestError(Exception):
-    def __init__(self, value):
-        self.value = value
-    def __str__(self):
-        return repr(self.value)
 
 class Forest(Savable):
     """ Forest is a group of trees that together form one view.
@@ -770,7 +766,7 @@ class Forest(Savable):
         trace.is_trace = True
         if new_chain:
             self.chain_manager.rebuild_chains()
-        if self.settings.uses_multidomination():
+        if self.settings.uses_multidomination:
             trace.hide()
         return trace
 
@@ -833,7 +829,8 @@ class Forest(Savable):
         self.bracket_manager.remove_brackets(node)
         # -- dictionaries --
         del self.nodes[node.save_key]
-        del self.nodes_by_uid[node.syntactic_object.save_key]
+        if node.syntactic_object:
+            del self.nodes_by_uid[node.syntactic_object.save_key]
         if node in self.roots:
             self.roots.remove(node)
         # -- scene --
