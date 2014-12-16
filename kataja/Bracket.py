@@ -61,7 +61,7 @@ class Bracket(Movable, QtWidgets.QGraphicsSimpleTextItem):
         else:
             self.key = 'rb_%s' % host.save_key
 
-        self.setBrush(self.host.color())
+        self.setBrush(self.host.color)
         self.update_position()
         self.setAcceptHoverEvents(True)
         self.setVisible(self.host.has_visible_brackets)

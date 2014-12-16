@@ -209,8 +209,6 @@ class KeyPressManager:
         if ctrl.ui_focus:
             ui_focus = ctrl.ui_focus  # : :type ui_focus = MovableUI
             ui_focus.cancel()
-        for item in ctrl.on_cancel_delete:
-            self.forest.delete_item(item)
 
     def key_tab(self):
         """ Tab pressed, move focus to next whatever"""

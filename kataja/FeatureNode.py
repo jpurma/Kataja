@@ -51,7 +51,7 @@ class FeatureNode(Node):
         """
         self.update_identity()
         self.update_label()
-        self.boundingRect(update=True)
+        self.update_bounding_rect()
         self.update_visibility()
 
     # implement color() to map one of the d['rainbow_%'] colors here. Or if bw mode is on, then something else.
@@ -71,7 +71,7 @@ class FeatureNode(Node):
             y += random.uniform(-4, 4)
         self.set_original_position((x, y, z))
 
-    def get_text_for_label(self):
+    def get_html_for_label(self):
         """ This should be overridden if there are alternative displays for label """
         f = self.syntactic_object
         if not f:

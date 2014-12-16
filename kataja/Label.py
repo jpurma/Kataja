@@ -49,11 +49,27 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.draggable = False
         self.clickable = False
 
-    def set_get_method(self, getter):
+    @property
+    def get_method(self):
+        return self._get_host_text
+
+    @get_method.setter
+    def get_method(self, getter):
         """ Assign method that is used to get text for label
         :param getter:
         """
         self._get_host_text = getter
+
+    @property
+    def set_method(self):
+        return self._set_host_text
+
+    @set_method.setter
+    def set_method(self, getter):
+        """ Assign method that is used to get text for label
+        :param getter:
+        """
+        self._set_host_text = getter
 
     def get_plaintext(self):
         """
@@ -62,12 +78,6 @@ class Label(QtWidgets.QGraphicsTextItem):
         :return:
         """
         return self._doc.toPlainText()
-
-    def set_set_method(self, setter):
-        """ Assign method that is called when label is edited
-        :param setter:
-        """
-        self._set_host_text = setter
 
     def is_empty(self):
         """
@@ -80,9 +90,9 @@ class Label(QtWidgets.QGraphicsTextItem):
     def update_label(self):
         """ Asks for node/host to give text and update if changed """
         #self.setDefaultTextColor(self._host.color())
-        self.setFont(self._host.font())
-        if self._get_host_text:
-            new_source_text = self._get_host_text()
+        self.setFont(self._host.font)
+        if self.get_method:
+            new_source_text = self.get_method()
             if new_source_text == self._source_text:
                 return False
             self._source_text = str(new_source_text)
@@ -92,7 +102,7 @@ class Label(QtWidgets.QGraphicsTextItem):
             else:
                 self._doc = QtGui.QTextDocument()
                 # self._doc.setUseDesignMetrics(True)
-                self._doc.contentsChanged = self._set_host_text
+                self._doc.contentsChanged = self.set_method
                 self.setDocument(self._doc)
             self._doc.setHtml(self._source_text)
             brect = self.boundingRect()

@@ -48,7 +48,7 @@ class GlossNode(Node):
         if not restoring:
             self.update_identity()
             self.update_label()
-            self.boundingRect(update=True)
+            self.update_bounding_rect()
             self.update_visibility()
 
     @property
@@ -74,7 +74,7 @@ class GlossNode(Node):
         else:
             return 'orphaned gloss node'
 
-    def get_text_for_label(self):
+    def get_html_for_label(self):
         """ This should be overridden if there are alternative displays for label """
 
         if self.host:

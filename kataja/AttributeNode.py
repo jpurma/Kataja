@@ -104,7 +104,7 @@ class AttributeNode(Node):
             self.update_help_text()
             self.update_identity()
             self.update_label()
-            self.boundingRect(update=True)
+            self.update_bounding_rect()
             self.update_visibility()
 
     @property
@@ -148,9 +148,9 @@ class AttributeNode(Node):
         if self.help_text:
             self.status_tip = self.help_text.format(host=self.host, value=self.value, value_ordinal=ordinal(self.value), label=self.attribute_label)
         else:
-            self.status_tip = "Attribute %s for %s" % (self.get_text_for_label(), self.host)
+            self.status_tip = "Attribute %s for %s" % (self.get_html_for_label(), self.host)
 
-    def get_text_for_label(self):
+    def get_html_for_label(self):
         """ This should be overridden if there are alternative displays for label 
         :returns : str 
         """

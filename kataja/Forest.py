@@ -704,6 +704,12 @@ class Forest(Savable):
         gn = GlossNode(host_node)
         self._connect_node(child=gn, parent=host_node, edge_type=GlossNode.default_edge_type)
         self.add_to_scene(gn)
+        ee = ctrl.ui.get_constituent_edit_embed()
+        if ee and ee.isVisible():
+            pos = ee.gloss_edit.pos()
+            scene_pos = ctrl.graph_view.mapToScene(ee.mapToParent(pos))
+            gn.set_original_position(scene_pos)
+
         return gn
 
     # not used
@@ -1485,27 +1491,34 @@ class Forest(Savable):
                 bad_parents.append(parent)
             else:
                 good_parents.append(parent)
-        if bad_parents:
-            # more complex case
-            ctrl.add_message("Removing node would make parent to have same node as both left and right child. Removing parent too.")
+        if not (bad_parents or good_parents):
             self._disconnect_node(first=node, second=child)
-            for parent in bad_parents:
-                for grandparent in parent.get_parents():
-                    self._disconnect_node(first=grandparent, second=parent)
-                    self._disconnect_node(first=parent, second=child)
-                    self._connect_node(parent=grandparent, child=child)
+        else:
+            if bad_parents:
+                # more complex case
+                ctrl.add_message("Removing node would make parent to have same node as both left and right child. Removing parent too.")
+                self._disconnect_node(first=node, second=child)
+                for parent in bad_parents:
+                    for grandparent in parent.get_parents():
+                        self._disconnect_node(first=grandparent, second=parent)
+                        self._disconnect_node(first=parent, second=child)
+                        self._connect_node(parent=grandparent, child=child)
 
-        if good_parents:
-            # normal case
-            self._disconnect_node(first=node, second=child, ignore_missing=True)
-            for parent in good_parents:
-                self._disconnect_node(first=parent, second=node)
-                self._connect_node(parent=parent, child=child)
+            if good_parents:
+                # normal case
+                self._disconnect_node(first=node, second=child, ignore_missing=True)
+                for parent in good_parents:
+                    self._disconnect_node(first=parent, second=node)
+                    self._connect_node(parent=parent, child=child)
         if i:
             child.set_index(i)
         self.delete_node(node)
         for parent in bad_parents:
             self.delete_node(parent)
+        #if right.is_placeholder():
+        #    self.delete_node(right)
+        #if left.is_placeholder():
+        #    self.delete_node(left)
 
 
     def replace_node_with_merged_node(self, old_node, new_node, edge, merge_to_left, merger_node_pos):

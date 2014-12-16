@@ -128,6 +128,10 @@ def disconnect_edge(edge):
             end_feature = edge.end.syntactic_object
             ### Obey the syntax API ###
             start_constituent.remove_feature(end_feature)
+    elif etype is g.GLOSS_EDGE:
+        if isinstance(edge.start, ConstituentNode):
+            if edge.start.syntactic_object.gloss:
+                edge.start.syntactic_object.gloss = ''
     else:
         raise ForestSyntaxError("Not implemented: What to do syntactically when disconnecting edge: %s" % edge)
 

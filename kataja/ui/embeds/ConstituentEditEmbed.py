@@ -63,8 +63,6 @@ class ConstituentEditEmbed(UIEmbed):
         self.gloss_label = make_label('Gloss', self, hlayout, tt, self.gloss_edit, ui_p)
         layout.addLayout(hlayout)
 
-
-
         self.enter_button = QtWidgets.QPushButton("↩") # U+21A9 &#8617;
         self.enter_button.setMaximumWidth(20)
         ui_manager.connect_element_to_action(self.enter_button, 'edit_constituent_finished')
@@ -87,10 +85,10 @@ class ConstituentEditEmbed(UIEmbed):
             scene_pos = self.node.pos()
             UIEmbed.update_embed(self, scenePos=scene_pos)
             p = QtGui.QPalette()
-            p.setColor(QtGui.QPalette.Text, self.node.color())
+            p.setColor(QtGui.QPalette.Text, self.node.color)
             ui_p = QtGui.QPalette()
             ui_p.setColor(QtGui.QPalette.Text, ctrl.cm.ui())
-            f = QtGui.QFont(self.node.font())
+            f = QtGui.QFont(self.node.font)
             f.setPointSize(f.pointSize() * 2)
             fg = QtGui.QFont(qt_prefs.font(g.ITALIC_FONT))
             fg.setPointSize(fg.pointSize() * 2)

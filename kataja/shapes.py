@@ -48,7 +48,7 @@ def draw_arrow_shape(self, painter):
     """
     l = self.line()
     painter.setPen(self._pen)
-    painter.setBrush(self._pen.color())
+    painter.setBrush(self._pen.color)
     painter.drawLine(l)
     l2x = l.p2().x()
     l2 = l.p2()

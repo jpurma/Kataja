@@ -96,27 +96,55 @@ class ConstituentNode(Node):
         self.update_features()
         self.update_gloss()
         self.update_identity()
-        self.boundingRect(update=True)
+        self.update_bounding_rect()
         self.update_visibility()
         self.update_status_tip()
         ctrl.forest.store(self)
 
-
-    # Saved properties
+    # properties implemented by syntactic node
 
     @property
     def alias(self):
         """:return:  """
-        return self.saved.alias
+        if self.syntactic_object:
+            return self.syntactic_object.alias
 
     @alias.setter
     def alias(self, value):
         """
         :param value:  """
+        if self.syntactic_object:
+            self.syntactic_object.alias = value
+            self.update_identity()
+
+    @property
+    def index(self):
+        if self.syntactic_object:
+            return self.syntactic_object.index
+
+    @index.setter
+    def index(self, value):
         if value is None:
             value = ""
-        self.saved.alias = value
+        self.syntactic_object.index = value
         self.update_identity()
+
+    @property
+    def gloss(self):
+        if self.syntactic_object:
+            return self.syntactic_object.gloss
+
+    @gloss.setter
+    def gloss(self, value):
+        if value is None:
+            value = ""
+        if self.syntactic_object:
+            self.syntactic_object.gloss = value
+        self.update_gloss()
+
+
+
+    # Saved properties
 
     @property
     def is_trace(self):
@@ -173,36 +201,11 @@ class ConstituentNode(Node):
     # Other properties
 
     @property
-    def index(self):
-        if self.syntactic_object:
-            return self.syntactic_object.index
-
-    @index.setter
-    def index(self, value):
-        if value is None:
-            value = ""
-        self.syntactic_object.index = value
-        self.update_identity()
-
-    @property
-    def gloss(self):
-        if self.syntactic_object:
-            return self.syntactic_object.gloss
-
-    @gloss.setter
-    def gloss(self, value):
-        if value is None:
-            value = ""
-        if self.syntactic_object:
-            self.syntactic_object.gloss = value
-        self.update_gloss()
-
-    @property
     def gloss_node(self):
         """
         :return:
         """
-        gl = self.get_children(edge_type='gloss_edge')
+        gl = self.get_children(edge_type=g.GLOSS_EDGE)
         if gl:
             return gl[0]
 
@@ -221,31 +224,30 @@ class ConstituentNode(Node):
                 name = "Root constituent"
             else:
                 name = "Inner constituent"
-            self.status_tip = "%s %s%s" % (name, alias, self.syntactic_object.label)
+            self.status_tip = "%s %s%s" % (name, alias, self.label)
         else:
             self.status_tip = "Empty, but mandatory constituent position"
 
-
-    def boundingRect(self, update=False):
-        """ In addition to Node boundingRect, we need to take account the scope boxes
-        :param update:
-        """
-        if update and self.triangle:
+    def update_bounding_rect(self):
+        if self.triangle:
             lbr = self._label_complex.boundingRect()
             lbh = lbr.height()
             lbw = lbr.width()
             self.label_rect = QtCore.QRectF(self._label_complex.x(), self._label_complex.y(), lbw, lbh)
             self.width = max((lbw, self.__class__.width))
             self.height = max((lbh * 1.5, self.__class__.height))
-            return Node.boundingRect(self, update, pass_size_calculation=True)
+            self.inner_rect = QtCore.QRectF(self.width / -2, self.height / -2, self.width, self.height)
+            self._update_magnets = True
+            # print 'updating bounding rect ', self
+            return self.inner_rect
         else:
-            return Node.boundingRect(self, update)
+            return Node.update_bounding_rect(self)
 
     def __str__(self):
         if not self.syntactic_object:
             return 'Placeholder node'
         alias = self.alias
-        label = self.syntactic_object.label
+        label = self.label
         if alias and label:
             return ' '.join((alias, label))
         else:
@@ -350,7 +352,7 @@ class ConstituentNode(Node):
             self.setVisible(visible)
         label_visible = self._visibility_label == g.ALL_LABELS
         label_visible = label_visible or (self._visibility_label == g.ALIASES and self.alias)
-        label_visible = bool(label_visible or self.triangle or (self.has_label() and self.is_leaf_node()))
+        label_visible = bool(label_visible or self.triangle or (self.label and self.is_leaf_node()))
         self._label_visible = label_visible
         if not self._label_complex:
             self.update_label()
@@ -458,7 +460,7 @@ class ConstituentNode(Node):
         """
         if not self.syntactic_object:
             return
-        syn_gloss = self.syntactic_object.gloss
+        syn_gloss = self.gloss
         gloss_node = self.gloss_node
         if gloss_node and not syn_gloss:
             ctrl.forest.delete_node(gloss_node)
@@ -504,14 +506,14 @@ class ConstituentNode(Node):
 
     def is_empty_node(self):
         """ Empty nodes can be used as placeholders and deleted or replaced without structural worries """
-        return (not (self.alias or self.get_editable_label() or self.index)) and self.is_leaf_node()
+        return (not (self.alias or self.label or self.index)) and self.is_leaf_node()
 
-    def get_text_for_label(self):
+    def get_html_for_label(self):
         """ Build html string to be displayed in label_complex """
         if not self.syntactic_object:
             return ''
         alias = self.alias
-        label = self.syntactic_object.label
+        label = self.label
 
         index = self.index
         if index:
@@ -544,27 +546,6 @@ class ConstituentNode(Node):
         else:
             return ''
 
-    def get_plain_text_label(self):
-        """ Label that can be displayed in e.g. tooltip """
-        str(self.get_syntactic_label())
-
-    def get_editable_label(self):
-        """ """
-        str(self.get_syntactic_label())
-
-    def has_label(self):
-        """
-
-
-        :return:
-        """
-        return bool(self.get_syntactic_label())
-
-    def get_syntactic_label(self):
-        if self.syntactic_object:
-            return self.syntactic_object.label
-        return ''
-
     def get_features_as_string(self):
         """
 
@@ -585,7 +566,7 @@ class ConstituentNode(Node):
         :return:
         """
         if self.index:
-            return not (self.is_leaf_node() and self.get_syntactic_label() == 't')
+            return not (self.is_leaf_node() and self.label == 't')
         return False
 
     # ### Folding / Triangles #################################
@@ -764,9 +745,10 @@ class ConstituentNode(Node):
                 # ctrl.ui.update_target_reticle_position()
         return QtWidgets.QGraphicsItem.itemChange(self, change, value)
 
-    # ########## SAVING AND LOADING #######################################################
 
 
+    def open_embed(self):
+        ctrl.ui.start_constituent_editing(self)
 
 
     #### Selection ########################################################
@@ -778,96 +760,6 @@ class ConstituentNode(Node):
         """
         self.update()
 
-    #### Radial menu #########################################################
-
-    def create_menu(self):
-        """
-
-
-        :return:
-        """
-        main = ctrl.main
-        menu = main.ui_manager.create_menu(self, actions=[
-            {'name': 'Root Merge', 'method': main.do_merge, 'local_shortcut': 'r', 'condition': 'can_root_merge',
-             'menu_type': 'Button'},
-            {'name': 'Delete', 'method': main.do_delete_node, 'local_shortcut': 'd', 'menu_type': 'Button'},
-            {'name': 'Fold', 'method': main.toggle_fold_node, 'checkable': True, 'local_shortcut': 'f',
-             'condition': 'canFold', 'menu_type': 'Button'},
-            {'name': 'Disconnect', 'method': main.disconnect_node, 'local_shortcut': 'x', 'menu_type': 'Button'},
-            {'name': 'Copy', 'method': main.copy_selected, 'local_shortcut': 'c', 'menu_type': 'Button'},
-            {'name': 'Label', 'method': self.change_label, 'menu_type': 'TextArea', 'pos': (-10, 0),
-             'get_method': self.get_editable_label, 'font': qt_prefs.font(g.BIG_FONT),  # @UndefinedVariable
-             'tab_index': 0},
-            {'name': 'Alias', 'method': self.change_alias, 'menu_type': 'TextArea', 'pos': ('top', 'Label'),
-             'get_method': self.alias, 'tab_index': 1},
-            {'name': 'Index', 'method': self.change_index, 'menu_type': 'TextArea', 'pos': ('bottom-right', 'Label'),
-             'get_method': self.index, 'tab_index': 2},
-            {'name': 'Features', 'method': self.change_features_string, 'menu_type': 'TextArea',
-             'pos': ('bottom', 'Label'), 'get_method': self.get_features_as_string, 'tab_index': 4},
-            {'name': 'Gloss', 'method': self.change_gloss_text, 'menu_type': 'TextArea', 'pos': ('bottom', 'Features'),
-             'get_method': self.gloss, 'tab_index': 3}, ])
-        return menu
-
-    def open_embed(self):
-        ctrl.ui.start_constituent_editing(self)
-
-    #### Menu commands and related behaviour #############################################
-
-    def change_label(self, caller=None, event=None):
-        """
-
-        :param caller:
-        :param event:
-        """
-        assert(self.syntactic_object)
-        label = caller.value
-        self.syntactic_object.label = label
-        self.update_label()
-        # # Delete node if just created and saved as empty.
-        if self in ctrl.on_cancel_delete:
-            if not label:
-                for item in ctrl.on_cancel_delete:
-                    ctrl.forest.delete_item(item)
-        ctrl.on_cancel_delete = []
-        ctrl.main.action_finished('edit node text')
-
-    def change_index(self, caller=None, event=None):
-        """
-
-        :param caller:
-        :param event:
-        """
-        index = caller.value
-        self.index = index
-        ctrl.main.action_finished('edit node index')
-
-    def change_gloss_text(self, caller=None, event=None):
-        """
-
-        :param caller:
-        :param event:
-        """
-        self.gloss = caller.value
-        ctrl.main.action_finished('edit node gloss text')
-
-    def change_alias(self, caller=None, event=None):
-        """
-
-        :param caller:
-        :param event:
-        """
-        self.alias = caller.value
-        ctrl.main.action_finished('edit node label')
-
-    def change_features_string(self, caller=None, event=None):
-        """
-
-        :param caller:
-        :param event:
-        """
-        featurestring = caller.value
-        self.set_feature(string=featurestring)
-        ctrl.main.action_finished('edit node feature text')
 
     #### Checks for callable actions ####
 

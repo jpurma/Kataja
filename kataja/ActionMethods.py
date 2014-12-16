@@ -640,6 +640,14 @@ class ActionMethods:
     ###### Constituent editing #################
     def finish_constituent_edit(self):
         print('Edited constituent!')
+        embed = ctrl.ui.get_constituent_edit_embed()
+        if not embed.node:
+            ctrl.ui.close_constituent_editing()
+            return
+        node = embed.node
+        node.alias = embed.alias_edit.text()
+        node.label = embed.input_line_edit.text()
+        node.gloss = embed.gloss_edit.text()
         ctrl.ui.close_constituent_editing()
 
 

@@ -42,9 +42,9 @@ class EdgeLabelEmbed(UIEmbed):
             self.edge = edge
         if self.edge:
             p = QtGui.QPalette()
-            p.setColor(QtGui.QPalette.Text, self.edge.color())
+            p.setColor(QtGui.QPalette.Text, self.edge.color)
             self.input_line_edit.setPalette(p)
-            f = QtGui.QFont(self.edge.font())
+            f = QtGui.QFont(self.edge.font)
             f.setPointSize(f.pointSize() * 2)
             self.input_line_edit.setFont(f)
             self.input_line_edit.setText(self.edge.label_text())

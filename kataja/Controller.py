@@ -81,7 +81,6 @@ class Controller:
         self.initializing = False
         # an empty workspace (loading new) or if it tries to compare changes (undo).
         self.unassigned_objects = {}
-        self.on_cancel_delete = []
         self.watch_for_drag_end = False
         self.items_moving = False
 

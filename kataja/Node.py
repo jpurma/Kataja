@@ -110,6 +110,18 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self.saved.syntactic_object = value
 
     @property
+    def label(self):
+        if self.syntactic_object:
+            return self.syntactic_object.label
+
+    @label.setter
+    def label(self, value):
+        if self.syntactic_object:
+            self.syntactic_object.label = value
+            self.update_label()
+
+
+    @property
     def edges_up(self):
         return self.saved.edges_up
 
@@ -223,7 +235,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """
         print("Resetting node ", self)
         Movable.reset(self)
-        self.boundingRect(update=True)
+        self.update_bounding_rect()
         ctrl.ui.remove_touch_areas_for(self)
 
 
@@ -401,47 +413,39 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
     ### Font #####################################################################
 
-    def font(self, value=None):
-        if value is None:
-            if self._label_font:
-                return qt_prefs.font(self._label_font)
-            else:
-                return qt_prefs.font(ctrl.forest.settings.node_settings(self.node_type, 'font'))
+    @property
+    def font(self):
+        if self._label_font:
+            return qt_prefs.font(self._label_font)
         else:
-            if isinstance(value, QtGui.QFont):
-                self._label_font = qt_prefs.get_key_for_font(value)
-            else:
-                self._label_font = value
+            return qt_prefs.font(ctrl.forest.settings.node_settings(self.node_type, 'font'))
+
+    @font.setter
+    def font(self, value):
+        if isinstance(value, QtGui.QFont):
+            self._label_font = qt_prefs.get_key_for_font(value)
+        else:
+            self._label_font = value
 
     # ### Colors and drawing settings ############################################################
 
-    # is this necessary anymore? Does label_complex use pen color?
-    def update_colors(self):
-        """
+    @property
+    def color(self):
+        if self.node_color is None:
+            return ctrl.cm.get(ctrl.forest.settings.node_settings(self.__class__.node_type, 'color'))
+        else:
+            return ctrl.cm.get(self.node_color)
 
-
-        """
-        pass
-        # self._color = colors.drawing
-        # if self._label_complex:
-        # self._label_complex.setDefaultTextColor(self._color)
-
-
+    @color.setter
     def color(self, value=None):
         """
 
         :param value:
         :return:
         """
-        if value is None:
-            if self.node_color is None:
-                return ctrl.cm.get(ctrl.forest.settings.node_settings(self.__class__.node_type, 'color'))
-            else:
-                return ctrl.cm.get(self.node_color)
-        else:
-            self.node_color = value
-            # if self._label_complex:
-            # self._label_complex.setDefaultTextColor(self._color)
+        self.node_color = value
+        # if self._label_complex:
+        # self._label_complex.setDefaultTextColor(self._color)
 
 
     def contextual_color(self):
@@ -454,7 +458,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             return ctrl.cm.selection()
             #return ctrl.cm.selected(ctrl.cm.selection())
         else:
-            return self.color()
+            return self.color
 
     # ### Labels and identity ###############################################################
 
@@ -472,10 +476,10 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """
         if not self._label_complex:
             self._label_complex = Label(parent=self)
-            self._label_complex.set_get_method(self.get_text_for_label)
-            self._label_complex.set_set_method(self.label_edited)
+            self._label_complex.get_method = self.get_html_for_label
+            self._label_complex.set_method = self.label_edited
         a = self._label_complex.update_label()
-        self.boundingRect(update=True)
+        self.update_bounding_rect()
         self.update_status_tip()
         return a
 
@@ -486,9 +490,9 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self.status_tip = str(self)
 
 
-    def get_text_for_label(self):
+    def get_html_for_label(self):
         """ This should be overridden if there are alternative displays for label """
-        return str(self.syntactic_object)
+        return self.label
 
     def has_empty_label(self):
         """
@@ -499,8 +503,9 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         return self._label_complex.is_empty()
 
     def label_edited(self):
-        """ Label has been modified, update this and the syntactic object """
-        new_value = self._label_complex.get_plaintext()
+        """ implement if label can be modified by editing it directly """
+        pass
+
 
     # ## Qt overrides ######################################################################
 
@@ -514,18 +519,9 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         if ctrl.pressed == self or self._hovering or ctrl.is_selected(self):
             painter.drawRoundedRect(self.inner_rect, 5, 5)
 
-    def boundingRect(self, update=False, pass_size_calculation=False):
-        """ BoundingRects are used often and cost of this method affects performance.
-        inner_rect is used as a cached bounding rect and returned fast if there is no explicit
-        :param update:
-        :param pass_size_calculation:
-        update asked. """
-        if self.inner_rect and not update:
-            return self.inner_rect
+    def update_bounding_rect(self):
         my_class = self.__class__
-        if pass_size_calculation:
-            pass
-        elif self._label_visible:
+        if self._label_visible:
             if not self._label_complex:
                 ctrl.quit()
             lbr = self._label_complex.boundingRect()
@@ -543,6 +539,17 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self._update_magnets = True
         # print 'updating bounding rect ', self
         return self.inner_rect
+
+    def boundingRect(self):
+        """ BoundingRects are used often and cost of this method affects performance.
+        inner_rect is used as a cached bounding rect and returned fast if there is no explicit
+        :param update:
+        :param pass_size_calculation:
+        update asked. """
+        if self.inner_rect:
+            return self.inner_rect
+        else:
+            return self.update_bounding_rect()
 
 
     # ## Magnets ######################################################################
