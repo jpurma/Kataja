@@ -987,7 +987,10 @@ class UIManager:
                 del self._overlay_buttons[key]
 
     def remove_buttons_for_edge(self, edge):
-        for key in [edge.save_key + "_cut_start", edge.save_key + "_cut_end", edge.start.save_key + "_remove_merger"]:
+        keys = [edge.save_key + "_cut_start", edge.save_key + "_cut_end"]
+        if edge.start:
+            keys.append(edge.start.save_key + "_remove_merger")
+        for key in keys:
             if key in self._overlay_buttons:
                 button = self._overlay_buttons[key]
                 button.close()
@@ -995,7 +998,10 @@ class UIManager:
                 del self._overlay_buttons[key]
 
     def update_edge_button_positions(self, edge):
-        for key in [edge.save_key + "_cut_start", edge.save_key + "_cut_end", edge.start.save_key + "_remove_merger"]:
+        keys = [edge.save_key + "_cut_start", edge.save_key + "_cut_end"]
+        if edge.start:
+            keys.append(edge.start.save_key + "_remove_merger")
+        for key in keys:
             if key in self._overlay_buttons:
                 button = self._overlay_buttons[key]
                 button.update_position()

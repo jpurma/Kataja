@@ -45,7 +45,6 @@ RIGHT = 2
 
 class Node(Movable, QtWidgets.QGraphicsItem):
     """ Basic class for syntactic elements that have graphic representation """
-    z_value = 10
     width = 20
     height = 20
     default_edge_type = g.ABSTRACT_EDGE
@@ -209,7 +208,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
                 self.effect.setEnabled(False)
             self._hovering = False
             self.prepareGeometryChange()
-            self.setZValue(self.__class__.z_value)
+            self.setZValue(10)
             self.update()
             ctrl.remove_status(self.status_tip)
 

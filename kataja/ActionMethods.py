@@ -589,7 +589,7 @@ class ActionMethods:
         print('edge label accept, ', args)
         e = ctrl.ui.get_edge_label_embed()
         if e:
-            e.edge.label_text(e.input_line_edit.text())
+            e.edge.label_text = e.input_line_edit.text()
         ctrl.ui.close_edge_label_editing()
 
     #ui

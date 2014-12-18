@@ -804,7 +804,7 @@ class Forest(Savable):
         edge.set_start_point(p1)
         edge.set_end_point(p2)
         if text:
-            edge.label_text(text)
+            edge.label_text = text
         edge.show()
         ctrl.select(edge)
         return edge

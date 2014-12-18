@@ -150,7 +150,7 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         line_x = event_pos.x() - start_pos.x()
         line_y = event_pos.y() - start_pos.y()
         rad = math.atan2(line_y, line_x)
-        edge_angle = (360 - edge.get_angle_at(edge._label_start_at))
+        edge_angle = (360 - edge.get_angle_at(edge.label_start))
         my_angle = math.degrees(rad)
         if my_angle < 0:
             my_angle += 360
@@ -160,7 +160,8 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
             new_angle = a1
         else:
             new_angle = a2
-        edge.set_label_position(angle=new_angle, dist=math.hypot(line_x, line_y))
+        edge.label_angle = new_angle
+        edge.label_dist = math.hypot(line_x, line_y)
         ctrl.ui.update_control_point_positions()
 
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget):

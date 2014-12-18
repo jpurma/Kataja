@@ -47,8 +47,6 @@ atan_magnet_map = {-8: 5, -7: 5, -6: 0, -5: 1, -4: 2, -3: 3, -2: 4, -1: 6, 0: 6,
 class Edge(Savable, QtWidgets.QGraphicsItem):
     """ Any connection between nodes: can be represented as curves, branches or arrows """
 
-    z_value = 10
-
     receives_signals = [g.EDGE_SHAPES_CHANGED]
 
     def __init__(self, start=None, end=None, edge_type='', direction=''):
@@ -71,7 +69,7 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         self.saved.use_arrowheads = None
         self.saved.label_data = {}
         self.saved.local_shape_args = {}
-        self.saved.edge_color = None
+        self.saved.color = None
         self.saved.shape_name = None
         self.saved.pull = None
         self.saved.visible = None
@@ -79,7 +77,6 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         self._computed_start_point = None
         self._computed_end_point = None
 
-        self.setZValue(-1)
         self.control_points = []
         self._local_drag_handle_position = None
         self._arrowhead_at_start = None
@@ -114,9 +111,6 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         self._label_text = None
         self._label_item = None
         self._label_rect = None
-        self._label_start_at = 0.2
-        self._label_angle = 90
-        self._label_dist = 12
         self._relative_vector = None
         self._label_font = None  # inherited from settings
         self._cached_label_start = None
@@ -235,7 +229,6 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         """
         :param value:
         """
-        print("setting edge start for %s to %s " % (self, value))
         self.saved.start = value
 
     @property
@@ -250,7 +243,6 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         """
         :param value:
         """
-        print("setting edge end for %s to %s " % (self, value))
         self.saved.end = value
 
     @property
@@ -284,6 +276,47 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         self.saved.label_data = value
 
     @property
+    def label_text(self):
+        """
+        :return:
+        """
+        return self.saved.label_data.get('text', '')
+
+    @label_text.setter
+    def label_text(self, value=None):
+        """
+        :param value:
+        :return:
+        """
+        self.saved.label_data['text'] = value
+        if not self._label_item:
+            self._label_item = EdgeLabel(value, parent=self)
+        else:
+            self._label_item.update_text(value)
+
+    @property
+    def font(self):
+        """
+        :return:
+        """
+        f_name = self.saved.label_data.get('font', None)
+        if f_name:
+            return qt_prefs.font(f_name)
+        else:
+            return qt_prefs.font(ctrl.forest.settings.edge_type_settings(self.edge_type, 'font'))
+
+    @font.setter
+    def font(self, value=None):
+        """
+        :param value:
+        :return:
+        """
+        if isinstance(value, QtGui.QFont):
+            self.saved.label_data['font'] = qt_prefs.get_key_for_font(value)
+        else:
+            self.saved.label_data['font'] = value
+
+    @property
     def local_shape_args(self):
         """
         :return:
@@ -300,36 +333,22 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         self.saved.local_shape_args = value
 
     @property
-    def edge_color(self):
+    def color(self):
         """
         :return:
         """
-        return self.saved.edge_color
-
-    @edge_color.setter
-    def edge_color(self, value):
-        """
-        :param value:
-        """
-        self.saved.edge_color = value
-
-    @property
-    def edge_color(self):
-        """
-        :return:
-        """
-        if self.saved.edge_color is None:
+        if self.saved.color is None:
             c = ctrl.forest.settings.edge_type_settings(self.edge_type, 'color')
             return ctrl.cm.get(c)
         else:
-            return ctrl.cm.get(self.saved.edge_color)
+            return ctrl.cm.get(self.saved.color)
 
-    @edge_color.setter
-    def edge_color(self, value):
+    @color.setter
+    def color(self, value):
         """
         :param value:
         """
-        self.saved.edge_color = value
+        self.saved.color = value
         if self._label_item:
             self._label_item.setDefaultTextColor(ctrl.cm.get(value))
 
@@ -338,10 +357,10 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         """  get palette id of the edge color.
         :return: str
         """
-        if self.saved.edge_color is None:
+        if self.saved.color is None:
             return ctrl.forest.settings.edge_type_settings(self.edge_type, 'color')
         else:
-            return self.saved.edge_color
+            return self.saved.color
 
     @property
     def shape_name(self):
@@ -404,6 +423,54 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         else:
             self.saved.visible = value
 
+    @property
+    def label_start(self):
+        """
+        label's startpoint in length of an edge (from 0 to 1.0)
+        """
+        return self.label_data.get('start_at', 0.2)
+
+    @label_start.setter
+    def label_start(self, value):
+        """
+        :param value:
+        """
+        self.label_data['start_at'] = value
+        self.update_label_pos()
+
+
+    @property
+    def label_angle(self):
+        """
+        label's angle relative to edge where it is attached
+        """
+        return self.label_data.get('angle', 90)
+
+    @label_angle.setter
+    def label_angle(self, value):
+        """
+        :param value:
+        """
+        self.label_data['angle'] = value
+        self.update_label_pos()
+
+    @property
+    def label_dist(self):
+        """
+        label's distance from edge
+        """
+        return self.label_data.get('dist', 12)
+
+    @label_dist.setter
+    def label_dist(self, value):
+        """
+        :param value:
+        """
+        self.label_data['dist'] = value
+        self.update_label_pos()
+
+
+
 
     def receive_signal(self, signal, *args):
         """
@@ -458,7 +525,6 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
 
         :param node:
         """
-        print('Connecting %s to be start point of %s ' % (node, self))
         ctrl.forest.set_edge_start(self, node)
         self.make_relative_vector()
         ctrl.ui.reset_control_points(self)
@@ -470,7 +536,6 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
 
         :param node:
         """
-        print('Connecting %s to be end point of %s ' % (node, self))
         ctrl.forest.set_edge_end(self, node)
         self.make_relative_vector()
         ctrl.ui.reset_control_points(self)
@@ -541,60 +606,9 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         """
         return self._label_item
 
-    def label_text(self, value=None):
-        """
-
-        :param value:
-        :return:
-        """
-        if value is None:
-            return self._label_text
-        else:
-            self._label_text = value
-            if not self._label_item:
-                self._label_item = EdgeLabel(self._label_text, parent=self)
-            else:
-                self._label_item.update_text(self._label_text)
-
-    def font(self, value=None):
-        """
-
-        :param value:
-        :return:
-        """
-        if value is None:
-            if self._label_font:
-                return qt_prefs.font(self._label_font)
-            else:
-                return qt_prefs.font(ctrl.forest.settings.edge_type_settings(self.edge_type, 'font'))
-        else:
-            if isinstance(value, QtGui.QFont):
-                self._label_font = qt_prefs.get_key_for_font(value)
-            else:
-                self._label_font = value
-
-    def get_label_position(self):
-        """
 
 
-        :return:
-        """
-        return self._label_start_at, self._label_angle, self._label_dist
 
-    def set_label_position(self, start=None, angle=None, dist=None):
-        """
-
-        :param start:
-        :param angle:
-        :param dist:
-        """
-        if start is not None:
-            self._label_start_at = start
-        if angle is not None:
-            self._label_angle = angle
-        if dist is not None:
-            self._label_dist = dist
-        self.update_label_pos()
 
     def get_label_line_positions(self):
         """
@@ -602,15 +616,15 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
 
         :return:
         """
-        start = self.get_point_at(self._label_start_at)
-        angle = (360 - self.get_angle_at(self._label_start_at)) + self._label_angle
+        start = self.get_point_at(self.label_start)
+        angle = (360 - self.get_angle_at(self.label_start)) + self.label_angle
         if angle > 360:
             angle -= 360
         if angle < 0:
             angle += 360
         angle = math.radians(angle)
-        end_x = start.x() + (self._label_dist * math.cos(angle))
-        end_y = start.y() + (self._label_dist * math.sin(angle))
+        end_x = start.x() + (self.label_dist * math.cos(angle))
+        end_y = start.y() + (self.label_dist * math.sin(angle))
         end = QtCore.QPointF(end_x, end_y)
         return start, end
 
@@ -662,9 +676,9 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         elif self._hovering:
             return ctrl.cm.hovering(ctrl.cm.selection())
         elif self.is_broken():
-            return ctrl.cm.broken(self.edge_color)
+            return ctrl.cm.broken(self.color)
         else:
-            return self.edge_color
+            return self.color
 
     def use_labels(self):
         """
@@ -1132,7 +1146,7 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
                 self.effect.setEnabled(False)
             self._hovering = False
             self.prepareGeometryChange()
-            self.setZValue(self.__class__.z_value)
+            self.setZValue(10)
             self.update()
             ctrl.remove_status(self.status_tip)
 

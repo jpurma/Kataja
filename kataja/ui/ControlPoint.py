@@ -112,7 +112,7 @@ class ControlPoint(QtWidgets.QGraphicsItem):
         if self.role == g.LABEL_START:
             d, point = self.host_edge.get_closest_path_point(event.scenePos())
             #self.setPos(point)
-            self.host_edge.set_label_position(start=d)
+            self.host_edge.label_start = d
             ctrl.ui.update_control_point_positions()
             #self.update()
         else:

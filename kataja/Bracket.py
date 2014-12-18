@@ -32,9 +32,6 @@ from kataja.Movable import Movable
 class Bracket(Movable, QtWidgets.QGraphicsSimpleTextItem):
     """ Brackets are added as separate characters next to nodes. They are created dynamically and shouldn't be saved or loaded. """
 
-    z_value = 10
-
-
 
     def __init__(self, host=None, left=True):
         """
@@ -46,7 +43,7 @@ class Bracket(Movable, QtWidgets.QGraphicsSimpleTextItem):
         QtWidgets.QGraphicsSimpleTextItem.__init__(self)
         Movable.__init__(self)
         self.host = host
-        self.setZValue(3)
+        self.setZValue(10)
         self.left = left
         if left:
             self.setText('[')
@@ -115,7 +112,7 @@ class Bracket(Movable, QtWidgets.QGraphicsSimpleTextItem):
         elif (not value) and self._hovering:
             self._hovering = False
             self.prepareGeometryChange()
-            self.setZValue(self.__class__.z_value)
+            self.setZValue(10)
             self.update()
 
     def hoverEnterEvent(self, event):

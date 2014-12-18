@@ -47,6 +47,6 @@ class EdgeLabelEmbed(UIEmbed):
             f = QtGui.QFont(self.edge.font)
             f.setPointSize(f.pointSize() * 2)
             self.input_line_edit.setFont(f)
-            self.input_line_edit.setText(self.edge.label_text())
+            self.input_line_edit.setText(self.edge.label_text)
 
         UIEmbed.update_embed(self, scenePos=scenePos)
