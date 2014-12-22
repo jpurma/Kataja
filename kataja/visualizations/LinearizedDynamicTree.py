@@ -41,16 +41,15 @@ class LinearizedDynamicTree(BaseVisualization):
         self.forest = None
         self._directed = True
 
-    def prepare(self, forest, loading=False):
-        """
-
-        :param forest:
-        :param loading:
+    def prepare(self, forest, reset=True):
+        """ If loading a state, don't reset.
+        :param forest:Forest
+        :param reset:boolean
         """
         self.forest = forest
-        self.forest.settings.show_constituent_edges = True
-        self.forest.settings.bracket_style = g.NO_BRACKETS
-        if not loading:
+        if reset:
+            self.forest.settings.show_constituent_edges = True
+            self.forest.settings.bracket_style = g.NO_BRACKETS
             _max_height_steps = max([len(self.forest.list_nodes_once(root)) for root in self.forest])
             self.forest.vis_data = {'name': self.__class__.name, '_max_height_steps': _max_height_steps,
                                     '_height_steps': _max_height_steps / 2}

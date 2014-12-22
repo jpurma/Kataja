@@ -45,24 +45,23 @@ class DynamicWidthTree(BaseVisualization):
         self._linear = []
         self.push = 0
 
-    def prepare(self, forest, loading=False):
-        """
-
-        :param forest:
-        :param loading:
+    def prepare(self, forest, reset=True):
+        """ If loading a state, don't reset.
+        :param forest:Forest
+        :param reset:boolean
         """
         self.forest = forest
         self._directed = True
-        self.forest.settings.show_constituent_edges = True
-        self.forest.settings.bracket_style = g.NO_BRACKETS
-        if not loading:
+        if reset:
             self.forest.vis_data = {'name': self.__class__.name, 'push': 20}
+            self.forest.settings.show_constituent_edges = True
+            self.forest.settings.bracket_style = g.NO_BRACKETS
+            for node in self.forest.visible_nodes():
+                self.reset_node(node)
         self.push = self.forest.vis_data['push']
         self._linear = []
         for root in self.forest.roots:
             self._linear += self.forest.list_nodes_once(root)
-        for node in self.forest.visible_nodes():
-            self.reset_node(node)
 
     def reset_node(self, node):
         """

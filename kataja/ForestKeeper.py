@@ -104,46 +104,6 @@ class ForestKeeper(Savable):
         return self.current_index, self.forest
 
 
-    def load(self, data):
-        """
-
-
-        :param data:
-        :param dict data:
-        """
-        self.current_index = data['current_index']
-        self.forests = data['forests']
-        forests_dict = dict([(f.save_key, f) for f in self.forests])
-        for key, item in ctrl.unassigned_objects.items():
-            forest = forests_dict.get(item.forest_key, None)
-            if not forest:
-                assert False
-            forest.store(item)
-            item._finalize()
-            del ctrl.unassigned_objects[key]
-        # ## Second round, creating secondary items like brackets and chains
-        for forest in self.forests:
-            self.main.forest = forest
-            forest.rebuild_brackets()
-            if not forest.settings.uses_multidomination:
-                forest.rebuild_chains()
-        for key, item in ctrl.unassigned_objects.items():
-            # print 'storing %s to %s' % (key, item.forest_key)
-            forest = forests_dict.get(item.forest_key, None)
-            if not forest:
-                assert False
-            forest.store(item)
-            del ctrl.unassigned_objects[key]
-
-        # ctrl.set_forest(forest)
-        #     print forest.info_dump()
-        #     forest.undo_manager.finalize_objects()
-        #     for node in forest.nodes.values():
-        #         if not node._label_complex:
-        #             print 'missing label for ', node, node.save_key
-        #     #pass # finalize forest
-        self.forest = self.forests[self.current_index]
-        ctrl.main.forest = self.forest
 
 
 

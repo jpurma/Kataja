@@ -45,7 +45,7 @@ from kataja.Parser import BottomUpParser
 from kataja.Presentation import TextArea, Image
 from kataja.Edge import Edge
 from kataja.UndoManager import UndoManager
-from kataja.utils import to_tuple
+from kataja.utils import to_tuple, caller
 from kataja.FeatureNode import FeatureNode
 from kataja.Saved import Savable
 import kataja.globals as g
@@ -97,10 +97,13 @@ class Forest(Savable):
         self.saved.gloss_text = ''
         self.saved.buildstring = ''
 
-    #def after_init(self):
-    #    for node in self.nodes.values():
-    #        if node.syntactic_object:
-    #            self.nodes_by_uid[node.syntactic_object.save_key] = node
+    def after_init(self):
+        print('forest after init called')
+        print(self.vis_data)
+        self.update_visualization()
+        #for node in self.nodes.values():
+        #    if node.syntactic_object:
+        #        self.nodes_by_uid[node.syntactic_object.save_key] = node
 
     @property
     def roots(self):
@@ -320,6 +323,16 @@ class Forest(Savable):
             self.visualization = self.main.visualizations[key]
             self.visualization.prepare(self)
         self.main.graph_scene.reset_zoom()
+
+
+    def update_visualization(self):
+        """ Verify that the active visualization is the same as defined in the vis_data (saved visualization state)
+        :return: None
+        """
+        key = self.vis_data['name']
+        if key != self.visualization.__class__.name:
+            self.visualization = self.main.visualizations[key]
+            self.visualization.prepare(self, reset=False)
 
     #### Maintenance and support methods ################################################
 

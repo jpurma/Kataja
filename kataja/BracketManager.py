@@ -68,7 +68,7 @@ class BracketManager:
         if f.settings.bracket_style:
             for tree in f:
                 for node in f.list_nodes_once(tree):  # not sure if this should use 'once'
-                    node.update_visibility(brackets=f.settings.bracket_style())
+                    node.update_visibility(brackets=f.settings.bracket_style)
                     if node.has_visible_brackets:
                         this_left = node
                         next_left = node.left()

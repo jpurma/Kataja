@@ -45,22 +45,20 @@ class BracketedLinearization(BaseVisualization):
         self._directed = True
 
 
-    def prepare(self, forest, loading=False):
-        """ This is called when switching to this visualization
-
-        :param forest:
-        :param loading:
-        :param Forest forest:
+    def prepare(self, forest, reset=True):
+        """ If loading a state, don't reset.
+        :param forest:Forest
+        :param reset:boolean
         """
         self.forest = forest
         self._hits = {}
         self._max_hits = {}
-        self.forest.settings.bracket_style = g.NO_BRACKETS
-        self.forest.settings.show_constituent_edges = False
-        if not loading:
+        if reset:
             self.forest.vis_data = {'name': self.__class__.name}
-        for node in self.forest.visible_nodes():
-            self.reset_node(node)
+            self.forest.settings.bracket_style = g.NO_BRACKETS
+            self.forest.settings.show_constituent_edges = False
+            for node in self.forest.visible_nodes():
+                self.reset_node(node)
 
     def reset_node(self, node):
         """
@@ -84,10 +82,10 @@ class BracketedLinearization(BaseVisualization):
         if self.forest.settings.bracket_style == g.NO_BRACKETS:
             self.forest.settings.bracket_style = g.MAJOR_BRACKETS
             ctrl.add_message('major brackets')
-        elif self.forest.settings.bracket_style() == g.MAJOR_BRACKETS:
+        elif self.forest.settings.bracket_style == g.MAJOR_BRACKETS:
             self.forest.settings.bracket_style = g.ALL_BRACKETS
             ctrl.add_message('all brackets')
-        elif self.forest.settings.bracket_style() == g.ALL_BRACKETS:
+        elif self.forest.settings.bracket_style == g.ALL_BRACKETS:
             self.forest.settings.bracket_style = g.NO_BRACKETS
             ctrl.add_message('no brackets')
         for node in self.forest.visible_nodes():

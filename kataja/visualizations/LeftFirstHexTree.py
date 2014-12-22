@@ -48,23 +48,22 @@ class LeftFirstHexTree(BaseVisualization):
         self._directed = True
         self._indentation = 0
 
-    def prepare(self, forest, loading=False):
-        """
-
-        :param forest:
-        :param loading:
+    def prepare(self, forest, reset=True):
+        """ If loading a state, don't reset.
+        :param forest:Forest
+        :param reset:boolean
         """
         print('preparing LeftFirstHexTree')
         self.forest = forest
         self._hits = {}
         self._max_hits = {}
-        self.forest.settings.bracket_style = g.NO_BRACKETS
-        self.forest.settings.show_constituent_edges = True
-        if not loading:
-            self.forest.vis_data = {'name': self.__class__.name, 'rotation': 0}
         self._indentation = 0
-        for node in self.forest.visible_nodes():
-            self.reset_node(node)
+        if reset:
+            self.forest.settings.bracket_style = g.NO_BRACKETS
+            self.forest.settings.show_constituent_edges = True
+            self.forest.vis_data = {'name': self.__class__.name, 'rotation': 0}
+            for node in self.forest.visible_nodes():
+                self.reset_node(node)
 
     def reset_node(self, node):
         """

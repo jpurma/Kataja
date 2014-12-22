@@ -187,6 +187,7 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
         if debug.DEBUG_FOREST_OPERATION:
             self.forest.info_dump()
         self.forest.add_all_to_scene()
+        self.forest.update_visualization()
         self.graph_scene.reset_zoom()
         self.ui_manager.update_all_fields()
         self.forest.undo_manager.init_if_empty()

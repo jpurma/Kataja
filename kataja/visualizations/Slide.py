@@ -37,11 +37,10 @@ class Slide(BaseVisualization):
         self._directed = False
 
 
-    def prepare(self, forest, loading=False):
-        """
-
-        :param forest:
-        :param loading:
+    def prepare(self, forest, reset=True):
+        """ If loading a state, don't reset.
+        :param forest:Forest
+        :param reset:boolean
         """
         self.forest = forest
 

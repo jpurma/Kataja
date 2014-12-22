@@ -46,11 +46,10 @@ class BaseVisualization:
         self._hits = {}
         self._max_hits = {}
 
-    def prepare(self, forest, loading=False):
-        """
-
-        :param forest:
-        :param loading:
+    def prepare(self, forest, reset=True):
+        """ If loading a state, don't reset.
+        :param forest:Forest
+        :param reset:boolean
         """
         self.forest = forest
         self._directed = False
@@ -58,17 +57,10 @@ class BaseVisualization:
         self._max_hits = {}
         self.forest.settings.bracket_style = g.NO_BRACKETS
         self.forest.settings.show_constituent_edges = True
-        if not loading:
+        if reset:
             self.forest.vis_data = {'name': self.__class__.name}
-        for node in self.forest.visible_nodes():
-            self.reset_node(node)
-
-    def set_forest(self, forest):
-        """
-
-        :param forest:
-        """
-        self.forest = forest
+            for node in self.forest.visible_nodes():
+                self.reset_node(node)
 
     def reset_node(self, node):
         """
@@ -89,20 +81,6 @@ class BaseVisualization:
     def draw(self):
         """ Subclasses implement this """
         pass
-
-    def get_scene(self):
-        """
-        :rtype GraphScene'
-        """
-        return self.forest.main.graph_scene
-
-    def get_ui_manager(self):
-        """
-
-
-        :return:
-        """
-        return self.forest.main.graph_scene
 
 
     # def reset(self):

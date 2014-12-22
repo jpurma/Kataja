@@ -46,23 +46,22 @@ class WindDriftTree(BaseVisualization):
         self._hits = {}
         self._max_hits = {}
 
-    def prepare(self, forest, loading=False):
-        """
-
-        :param forest:
-        :param loading:
+    def prepare(self, forest, reset=True):
+        """ If loading a state, don't reset.
+        :param forest:Forest
+        :param reset:boolean
         """
         self.forest = forest
         self._last_pos = (0, 0)
         self._leftmost = None
         self._hits = {}
         self._max_hits = {}
-        self.forest.settings.bracket_style = g.NO_BRACKETS
-        self.forest.settings.show_constituent_edges = False
-        if not loading:
+        if reset:
+            self.forest.settings.bracket_style = g.NO_BRACKETS
+            self.forest.settings.show_constituent_edges = False
             self.forest.vis_data = {'name': self.__class__.name}
-        for node in self.forest.visible_nodes():
-            self.reset_node(node)
+            for node in self.forest.visible_nodes():
+                self.reset_node(node)
 
     def reset_node(self, node):
         """
