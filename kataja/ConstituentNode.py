@@ -54,6 +54,7 @@ class ConstituentNode(Node):
         self.saved.triangle = False
         self.saved.merge_order = 0
         self.saved.select_order = 0
+        self.saved.original_parent = None
 
         # ------ Bracket drawing -------
         self.has_visible_brackets = False
@@ -100,6 +101,8 @@ class ConstituentNode(Node):
         self.update_visibility()
         self.update_status_tip()
         ctrl.forest.store(self)
+        if self.is_trace:
+            print('restored trace ', self, self.visible, self.isVisible())
 
     # properties implemented by syntactic node
 
@@ -158,6 +161,22 @@ class ConstituentNode(Node):
         if value is None:
             value = False
         self.saved.is_trace = value
+
+    @property
+    def original_parent(self):
+        """ When switching between multidomination and traces, original parent may be needed.
+        :return:
+        """
+        return self.saved.original_parent
+
+
+    @original_parent.setter
+    def original_parent(self, value):
+        """
+        :param value:
+        :return:
+        """
+        self.saved.original_parent = value
 
     @property
     def triangle(self):

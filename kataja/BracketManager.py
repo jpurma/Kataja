@@ -41,8 +41,17 @@ class BracketManager:
         :param left:
         :return:
         """
+        print('creating bracket ...')
+        if left:
+            key = 'lb_%s' % host.save_key
+        else:
+            key = 'rb_%s' % host.save_key
+        if key in self.brackets:
+            print('bracket exists already')
+            return self.brackets[key]
         br = Bracket(host=host, left=left)
-        self.brackets[br.key] = br
+        assert(br.key == key) # don't modify the key creation in Bracket...
+        self.brackets[key] = br
         return br
 
     # ### Scope rectangles and bracket notation ###########################################
@@ -52,8 +61,10 @@ class BracketManager:
 
 
         """
+        self.brackets = {}
         for node in self.forest.nodes.values():
-            node.rebuild_brackets()
+            if hasattr(node, 'rebuild_brackets'):
+                node.rebuild_brackets()
 
     def update_brackets(self):
         """ Update the dict that tells how many brackets each node needs
@@ -63,12 +74,17 @@ class BracketManager:
             created only when using brackets and
             not saved with the tree.
         """
+        print('updating brackets')
         self._bracket_slots = {}
         f = self.forest
-        if f.settings.bracket_style:
+        bs = f.settings.bracket_style
+        print('bracket style: %s' % bs)
+        if bs:
+            if not self.brackets:
+                self.rebuild_brackets()
             for tree in f:
                 for node in f.list_nodes_once(tree):  # not sure if this should use 'once'
-                    node.update_visibility(brackets=f.settings.bracket_style)
+                    node.update_visibility(brackets=bs)
                     if node.has_visible_brackets:
                         this_left = node
                         next_left = node.left()
@@ -96,7 +112,9 @@ class BracketManager:
                             self._bracket_slots[key] = ([], [node])
         else:
             for node in f.nodes.values():
-                node.update_visibility(brackets=f.settings.bracket_style)
+                node.update_visibility(brackets=bs)
+        print(self._bracket_slots)
+        print(self.brackets)
         for bracket in self.brackets.values():
             bracket.update_position()
 

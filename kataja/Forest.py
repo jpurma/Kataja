@@ -101,6 +101,8 @@ class Forest(Savable):
         print('forest after init called')
         print(self.vis_data)
         self.update_visualization()
+
+        #self.bracket_manager.rebuild_brackets()
         #for node in self.nodes.values():
         #    if node.syntactic_object:
         #        self.nodes_by_uid[node.syntactic_object.save_key] = node
@@ -430,7 +432,8 @@ class Forest(Savable):
         """
         if ctrl.loading or ctrl.initializing:
             return
-        self.scene.addItem(item)
+        if item.scene() != self.scene:
+            self.scene.addItem(item)
 
 
     def update_all(self):
@@ -693,8 +696,7 @@ class Forest(Savable):
         rel = Edge(start=start, end=end, edge_type=edge_type, direction=direction)
         rel.after_init()
         self.store(rel)
-        if not ctrl.loading:
-            self.add_to_scene(rel)
+        self.add_to_scene(rel)
         return rel
 
     def create_bracket(self, host=None, left=True):
@@ -705,8 +707,7 @@ class Forest(Savable):
         :return:
         """
         br = self.bracket_manager.create_bracket(host, left)
-        if not ctrl.loading:
-            self.add_to_scene(br)
+        self.add_to_scene(br)
         return br
 
 
@@ -772,6 +773,7 @@ class Forest(Savable):
         :param node:
         :return:
         """
+        print("Creating trace for ", node)
         index = node.index
         new_chain = False
         if not index:
@@ -783,10 +785,10 @@ class Forest(Savable):
         ForestSyntax.set_constituent_index(constituent, index)
         trace = self.create_node_from_constituent(constituent, silent=True)
         trace.is_trace = True
-        if new_chain:
-            self.chain_manager.rebuild_chains()
-        if self.settings.uses_multidomination:
-            trace.hide()
+        #if new_chain:
+        #    self.chain_manager.rebuild_chains()
+        #if self.settings.uses_multidomination:
+        #    trace.hide()
         return trace
 
     def create_empty_node(self, pos, give_label=True):
@@ -847,8 +849,9 @@ class Forest(Savable):
         # -- brackets --
         self.bracket_manager.remove_brackets(node)
         # -- dictionaries --
-        del self.nodes[node.save_key]
-        if node.syntactic_object:
+        if node.save_key in self.nodes:
+            del self.nodes[node.save_key]
+        if node.syntactic_object and node.syntactic_object.save_key in self.nodes_by_uid:
             del self.nodes_by_uid[node.syntactic_object.save_key]
         if node in self.roots:
             self.roots.remove(node)
@@ -1461,7 +1464,8 @@ class Forest(Savable):
                     self._connect_node(new_node, child, edge_type=edge.edge_type, direction=align)
 
         if not old_node.edges_up:
-            old_node.update_visibility(active=False, fade=True)
+            #old_node.update_visibility(active=False, fade=True)
+            self.delete_node(old_node)
 
 
     ############ Complex node operations ##############################

@@ -575,7 +575,7 @@ class UIManager:
         return self._edge_label_embed
 
     def start_edge_label_editing(self, edge):
-        lp = edge.get_label_item().pos()
+        lp = edge.label_item.pos()
         if not self._edge_label_embed:
             self._edge_label_embed = EdgeLabelEmbed(self.main.graph_view, self, lp)
         self._edge_label_embed.update_embed(scenePos=lp, edge=edge)
@@ -1056,7 +1056,7 @@ class UIManager:
             self.add_ui(cp)
             self._control_points.append(cp)
             cp.update_position()
-        if edge.has_label():
+        if edge.label_item:
             cp = ControlPoint(edge, role=g.LABEL_START)
             self.add_ui(cp)
             self._control_points.append(cp)

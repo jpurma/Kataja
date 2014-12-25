@@ -109,7 +109,7 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
 
         self._use_labels = None
         self._label_text = None
-        self._label_item = None
+        self.label_item = None
         self._label_rect = None
         self._relative_vector = None
         self._label_font = None  # inherited from settings
@@ -289,10 +289,10 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         :return:
         """
         self.saved.label_data['text'] = value
-        if not self._label_item:
-            self._label_item = EdgeLabel(value, parent=self)
+        if not self.label_item:
+            self.label_item = EdgeLabel(value, parent=self)
         else:
-            self._label_item.update_text(value)
+            self.label_item.update_text(value)
 
     @property
     def font(self):
@@ -349,8 +349,8 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         :param value:
         """
         self.saved.color = value
-        if self._label_item:
-            self._label_item.setDefaultTextColor(ctrl.cm.get(value))
+        if self.label_item:
+            self.label_item.setDefaultTextColor(ctrl.cm.get(value))
 
     @property
     def color_id(self):
@@ -591,24 +591,6 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
 
     # Label for arrow etc. ##############################################
 
-    def has_label(self):
-        """
-
-        :return:
-        """
-        return self._label_item
-
-    def get_label_item(self):
-        """
-
-
-        :return:
-        """
-        return self._label_item
-
-
-
-
 
     def get_label_line_positions(self):
         """
@@ -634,14 +616,14 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
 
         :return:
         """
-        if not self._label_item:
+        if not self.label_item:
             return
         start, end = self.get_label_line_positions()
-        mx, my = self._label_item.find_suitable_magnet(start, end)
+        mx, my = self.label_item.find_suitable_magnet(start, end)
         # mx, my = self._label_item.find_closest_magnet(start, end)
         label_pos = end - QtCore.QPointF(mx, my)
         self._cached_label_start = start
-        self._label_item.setPos(label_pos)
+        self.label_item.setPos(label_pos)
 
     def get_cached_label_start(self):
         """
@@ -1094,19 +1076,19 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         if selected:
             if self.allow_orphan_ends() or not self.has_orphan_ends():
                 if self.use_labels():
-                    if not self._label_item:
-                        self._label_item = EdgeLabel('', self, placeholder=True)
+                    if not self.label_item:
+                        self.label_item = EdgeLabel('', self, placeholder=True)
                         self.update_label_pos()
-                    self._label_item.selected = True
+                    self.label_item.selected = True
         else:
-            if self._label_item:
-                if self._label_item.placeholder:
+            if self.label_item:
+                if self.label_item.placeholder:
                     scene = self.scene()
                     if scene:
-                        scene.removeItem(self._label_item)
-                    self._label_item = None
+                        scene.removeItem(self.label_item)
+                    self.label_item = None
                 else:
-                    self._label_item.selected = False
+                    self.label_item.selected = False
         self.update()
 
     def boundingRect(self):

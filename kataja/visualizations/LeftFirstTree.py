@@ -222,7 +222,10 @@ class LeftFirstTree(BaseVisualization):
                     x += extra_width[x_i]
                     node.computed_position = (x, y, 0)
                     prev_width = node.width
-                    all_nodes.remove(node)
+                    if not node in all_nodes:
+                        print('non-visible node included in visualization grid: ', node)
+                    else:
+                        all_nodes.remove(node)
                 else:
                     x += extra_width[x_i]
                 x += edge_width
