@@ -276,17 +276,18 @@ class TouchArea(QtWidgets.QGraphicsItem):
         :param dropped_node:
         """
         print('---- dropped node to touch area -----')
-        # if not isinstance(dropped_node, ConstituentNode):
-        # return False
         ctrl.forest.undo_manager.record('re-merge constituent')
         if isinstance(self.host, Edge):
+            replaced = self.host.end
+            edge = self.host
             print('calling replace_node_with_merged_node from edge')
-            ctrl.forest.replace_node_with_merged_node(self.host.end, dropped_node, edge=self.host, merge_to_left=self._align_left,
-                                            merger_node_pos=None)
         else:
+            replaced = self.host
+            edge = None
             print('calling replace_node_with_merged_node')
-            ctrl.forest.replace_node_with_merged_node(self.host, dropped_node, None, merge_to_left=self._align_left,
-                                            merger_node_pos=self.start_point)
+
+        ctrl.forest.replace_node_with_merged_node(replaced, dropped_node, edge=edge, merge_to_left=self._align_left,
+                                        merger_node_pos=self.start_point)
 
 
     def click(self, event=None):

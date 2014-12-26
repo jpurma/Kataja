@@ -91,7 +91,6 @@ class Movable(Savable):
         """
         x, y, z = value
         self.saved.computed_position = value
-        print('computed position: ', value)
         if self.can_adjust_position() and self.saved.adjustment:
             ax, ay, az = self.saved.adjustment
             self.final_position = (x + ax, y + ay, z + az)

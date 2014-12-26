@@ -877,7 +877,10 @@ class ConstituentNode(Node):
         self.release()
         self.update()
         if recipient and recipient.accepts_drops(self):
-            pass
+            print('dropped on recipient: ', recipient)
+            print(self.adjustment, self.computed_position, self.current_position)
+            self.adjustment = (0, 0, 0)
+            recipient.drop(self)
         else:
             for node in ctrl.dragged:
                 node.lock()

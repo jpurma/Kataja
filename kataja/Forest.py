@@ -272,7 +272,7 @@ class Forest(Savable):
             print('| Edges: %s' % len(self.edges))
             print('| Others: %s' % len(self.others))
             print('| Visualization: ', self.visualization)
-            print('| Color scheme: ', self.settings.hsv())
+            print('| Color scheme: ', self.settings.hsv)
         else:
             print('odd forest, not initialized.')
 
@@ -542,9 +542,11 @@ class Forest(Savable):
         :param node_B:
         :return:
         """
-        for root_index, root in enumerate(self.roots):
+        for root in self.roots:
+            print('in root ', root)
             nodes = self.list_nodes_once(root)
             if node_A in nodes and node_B in nodes:
+                print('found both in root')
                 return nodes.index(node_A) < nodes.index(node_B)
         return None
 
@@ -1426,12 +1428,13 @@ class Forest(Savable):
         elif not ignore_missing:
             raise ForestError("Disconnecting nodes, but cannot find the edge between them")
 
-    def replace_node(self, old_node, new_node, only_for_parent=None, replace_children=False):
+    def replace_node(self, old_node, new_node, only_for_parent=None, replace_children=False, can_delete=True):
         """  When replacing a node we should make sure that edges get fixed too.
         :param old_node: node to be replaced -- if it gets orphaned, delete it
         :param new_node: replacement node
         :param only_for_parent: replace only one parent connection
         :param replace_children: new node also gains parenthood for old node's children
+        :param can_delete: replaced node can be deleted
         :return:
         """
         forest('replace_node %s %s %s %s' % (old_node, new_node, only_for_parent, replace_children))
@@ -1459,7 +1462,7 @@ class Forest(Savable):
                     self._disconnect_node(old_node, child, edge.edge_type)
                     self._connect_node(new_node, child, edge_type=edge.edge_type, direction=align)
 
-        if not old_node.edges_up:
+        if (not old_node.edges_up) and can_delete:
             #old_node.update_visibility(active=False, fade=True)
             self.delete_node(old_node)
 
@@ -1551,18 +1554,43 @@ class Forest(Savable):
         if edge: # ???? can't we take all parents
             start_node = edge.start
             align = edge.align
-            self._disconnect_node(edge=edge)
 
         mx, my = merger_node_pos
-        left = old_node
-        right = new_node
+        print(mx, my)
+        # if new_node and old_node belong to same tree, this is a Move / Internal merge situation and we need to give
+        # the new_node an index so it can be reconstructed as a trace structure
+        new_higher = self.is_higher_in_tree(new_node, old_node)
+        # returns None if they are not in same tree
+        if new_higher is not None:
+            if not new_node.index:
+                new_node.index = self.chain_manager.next_free_index()
+            # replace either the moving node or leftover node with trace if we are using traces
+            if not self.settings.uses_multidomination:
+                if new_higher:
+                    new_node = self.create_trace_for(new_node)
+                else:
+                    t = self.create_trace_for(new_node)
+                    self.replace_node(new_node, t, can_delete=False)
+        else:
+            pass
+            print('Nodes in different trees.')
+
+        if edge:
+            self._disconnect_node(edge=edge)
+
         if merge_to_left:
             left = new_node
             right = old_node
+        else:
+            left = old_node
+            right = new_node
+
         merger_node = self.create_merger_node(left=left, right=right, pos=(mx, my, old_node.z))
         if edge:
             forest('connecting merger to parent')
             self._connect_node(start_node, merger_node, direction=align)
+
+        self.chain_manager.rebuild_chains()
 
     def create_merger_node(self, left=None, right=None, pos=None):
         """ Gives a merger node of two nodes. Doesn't try to fix their edges upwards

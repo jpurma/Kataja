@@ -41,13 +41,13 @@ class BracketManager:
         :param left:
         :return:
         """
-        print('creating bracket ...')
+        #print('creating bracket ...')
         if left:
             key = 'lb_%s' % host.save_key
         else:
             key = 'rb_%s' % host.save_key
         if key in self.brackets:
-            print('bracket exists already')
+            #print('bracket exists already')
             return self.brackets[key]
         br = Bracket(host=host, left=left)
         assert(br.key == key) # don't modify the key creation in Bracket...
@@ -74,11 +74,11 @@ class BracketManager:
             created only when using brackets and
             not saved with the tree.
         """
-        print('updating brackets')
+        #print('updating brackets')
         self._bracket_slots = {}
         f = self.forest
         bs = f.settings.bracket_style
-        print('bracket style: %s' % bs)
+        #print('bracket style: %s' % bs)
         if bs:
             if not self.brackets:
                 self.rebuild_brackets()
@@ -113,8 +113,8 @@ class BracketManager:
         else:
             for node in f.nodes.values():
                 node.update_visibility(brackets=bs)
-        print(self._bracket_slots)
-        print(self.brackets)
+        #print(self._bracket_slots)
+        #print(self.brackets)
         for bracket in self.brackets.values():
             bracket.update_position()
 
