@@ -1,11 +1,7 @@
 # coding=utf-8
-from collections import Counter
 import string
-from kataja.Saved import Savable
-from kataja.debug import forest
 
 from kataja.utils import time_me
-from kataja.ConstituentNode import ConstituentNode
 from kataja.singletons import ctrl
 
 from collections import namedtuple
@@ -19,31 +15,18 @@ from collections import namedtuple
 ChainItem = namedtuple('ChainItem', ['node', 'parent', 'is_head'])
 
 
-class ChainManager(Savable):
+class ChainManager:
+    """ Manages switching between trace views and multidomination views, and handles side-effect when forest operation
+    should behave differently between the cases.
+
+    Chain manager doesn't save its state, its structures are purely derivative from information already existing in
+    the tree.
     """
 
-    """
-
-    def __init__(self):
-        Savable.__init__(self, unique=True)
-        self.saved.chains = {}
-        self.saved.forest = ctrl.forest
-
-    @property
-    def chains(self):
-        return self.saved.chains
-
-    @chains.setter
-    def chains(self, value):
-        self.saved.chains = value
-
-    @property
-    def forest(self):
-        return self.saved.forest
-
-    @forest.setter
-    def forest(self, value):
-        self.saved.forest = value
+    def __init__(self, forest):
+        self.chains = {}
+        self.forest = forest
+        self.traces_from_bottom = []
 
     def get_chain_head(self, chain_key):
         """
@@ -57,30 +40,33 @@ class ChainManager(Savable):
                 return node
         raise Exception('F broken chain')
 
-    def dump_chains(self):
+
+    @time_me
+    def rebuild_chains(self):
+        """ Process for building chains depends on if the tree currently is using multidomination or not.
+        Chains shouldn't include elements that are not really in the tree right now.
+        :return:
         """
-
-
-        """
-        r = []
-        forest('---- chains -----')
-        for key, chain in self.chains.items():
-            forest('%s :' % key)
-            for (item, parent, is_head) in chain:
-                if is_head:
-                    forest('head ')
-                else:
-                    forest('trace ')
-            forest('')
-
+        if ctrl.forest.settings.uses_multidomination:
+            self.rebuild_chains_from_multidomination()
+        else:
+            self.rebuild_chains_from_traces()
+        # Verify that each chain has one head
+        for chain in self.chains.values():
+            heads = [chain_item for chain_item in chain if chain_item.is_head]
+            assert(len(heads) == 1)
 
     def rebuild_chains_from_traces(self):
-        """ Strategy for rebuilding chains depends on if the tree was saved in multidomination or with traces enabled. """
+        """ When building chains from traces, usually the first member is the head, but the tree may be given in a
+         form where this isn't the case.
+        :return:
+        """
 
         f = self.forest
         self.chains = {}
         self.traces_from_bottom = []
 
+        # recursive method for collecting usage of a trace/node, counted from bottom up.
         def _bottom_right_count_traces(node, parent):
             r = node.right()
             if r:
@@ -98,25 +84,22 @@ class ChainManager(Savable):
                 self.chains[node.index] = chain
 
         for r in f.roots:
-            print('building chains from traces')
-            # building chains from traces
             _bottom_right_count_traces(r, None)
-        # Verify that each chain has one head
-        for chain in self.chains.values():
-            heads = [chain_item for chain_item in chain if chain_item.is_head]
-            if len(heads) != 1:
-                print('chain has %s heads, why so? ' % len(heads))
-                print(chain)
-            assert(len(heads) == 1)
 
+        for key, values in self.chains.items():
+            values.reverse()
+            self.chains[key] = values
 
     def rebuild_chains_from_multidomination(self):
-        """ Strategy for rebuilding chains depends on if the tree was saved in multidomination or with traces enabled. """
+        """ When building chains from multidomination, the end result should consist of list of
+        (node, parent, is_head)-tuples, where the first element is the head, and topmost instance in tree,
+        and the rest are other appearances top down. The node remains the same, parent is different. """
 
         f = self.forest
         self.chains = {}
         self.traces_from_bottom = []
 
+        # recursive method for collecting usage of a node, counted from bottom up.
         def _bottom_right_count_parents(node, parent, c):
             r = node.right()
             if r:
@@ -131,44 +114,31 @@ class ChainManager(Savable):
                 else:
                     chain = []
                 for d, item in chain:
-                    if item.parent == parent:
+                    if item.parent is parent:
                         return c
                 chain.append((c, ChainItem(node, parent, not node.is_trace)))
                 self.traces_from_bottom.append(node)
                 self.chains[node.index] = chain
             return c
 
-        c = 0
-        for r in f.roots:
-            print('building chains from multidominated nodes')
-            # building chains from multidominated nodes
-            c = _bottom_right_count_parents(r, None, c)
+        count = 0
+        for root in f.roots:
+            count = _bottom_right_count_parents(root, None, count)
 
-        # If chains are built from multidomination, they need to be sorted and indexes removed
+        # If chains are built from multidomination, they need to be sorted and sorting indexes removed
         for key, values in list(self.chains.items()):
             values.sort(reverse=True)
             values = [v for i, v in values]
             new_values = [values.pop(0)]
             for node, parent, is_trace in values:
-                new_values.append(ChainItem(node=f.create_trace_for(node), parent=parent, is_head=False))
+                new_values.append(ChainItem(node=node, parent=parent, is_head=False))
             self.chains[key] = new_values
-        # Verify that each chain has one head
-        for chain in self.chains.values():
-            heads = [chain_item for chain_item in chain if chain_item.is_head]
-            if len(heads) != 1:
-                print('chain has %s heads, why so? ' % len(heads))
-                print(chain)
-            assert(len(heads) == 1)
 
 
     @time_me
     def group_traces_to_chain_head(self):
-        """
-
-
-        """
-        # ## Move traces to their multidominant originals, purely visual thing ###
-        self.rebuild_chains_from_traces()
+        """ Move traces to their multidominant originals, purely didactic thing """
+        self.rebuild_chains()
         y_adjust = {}
         for key, chain in self.chains.items():
             head = self.get_chain_head(key)
@@ -191,38 +161,41 @@ class ChainManager(Savable):
                         x -= dx
                         node.current_position = (x, y, z)
                     y_adjust[key] = (dx + node.boundingRect().width(), dy + node.boundingRect().height())
+        self.forest.settings.traces_are_grouped_together = True
+        self.forest.settings.uses_multidomination = False
+
 
     @time_me
     def traces_to_multidomination(self):
-        # ## Switch traces to multidominant originals, also mirror changes in syntax ###
-        """
-
-
-        """
-        print('traces to multidomination called')
-        self.rebuild_chains_from_traces()
+        """Switch traces to multidominant originals, also mirror changes in syntax  """
+        self.rebuild_chains()
         for trace in self.traces_from_bottom:
             if trace.is_trace:
                 original = self.get_chain_head(trace.index)
-                self.forest._replace_node(trace, original)
+                self.forest.replace_node(trace, original)
+        self.forest.settings.uses_multidomination = True
+
 
     @time_me
     def multidomination_to_traces(self):
         """ Switch multidominated elements to use traces instead  """
-        self.rebuild_chains_from_multidomination()
+        self.rebuild_chains()
         # each instance in chain that is not in head position is replaced with a trace
-        print(self.forest.roots)
         for key, chain in self.chains.items():
             head = self.get_chain_head(key)
-            for trace, parent, is_head in chain:
+            for node, parent, is_head in chain:
                 if not is_head:
-                    self.forest._replace_node(head, trace, only_for_parent=parent)
-        print(self.forest.roots)
+                    if node.is_trace:
+                        trace = node
+                    else:
+                        trace = self.forest.create_trace_for(node)
+                    self.forest.replace_node(head, trace, only_for_parent=parent)
+        self.forest.settings.uses_multidomination = False
+        self.forest.settings.traces_are_grouped_together = False
+
 
     def next_free_index(self):
-        """
-
-
+        """ Return the next available letter suitable for indexes (i, j, k, l...)
         :return:
         """
         max_found = 7  # 'h'

@@ -41,14 +41,12 @@ actions = {
         'command': 'Next forest',
         'method': 'next_structure',
         'shortcut': '.',
-        'tooltip': 'Switch to next forest',
-        'no_undo': True},
+        'tooltip': 'Switch to next forest'},
     'prev_forest': {
         'command': 'Previous forest',
         'method': 'previous_structure',
         'shortcut': ',',
-        'tooltip': 'Switch to previous forest',
-        'no_undo': True},
+        'tooltip': 'Switch to previous forest'},
     'next_derivation_step': {
         'command': 'Animation step forward',
         'method': 'animation_step_forward',
@@ -123,7 +121,6 @@ actions = {
         'method': 'change_edge_panel_scope',
         'selection': 'line_type_target',
         'tooltip': 'Which relations are affected?',
-        'no_undo': True
     },
     'change_edge_shape': {
         'command': 'Change relation shape',

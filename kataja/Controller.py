@@ -83,6 +83,14 @@ class Controller:
         self.unassigned_objects = {}
         self.watch_for_drag_end = False
         self.items_moving = False
+        # -- After user action, should the visualization be redrawn and should it make an undo savepoint
+        #   these are True by default, but action method may toggle them off temporarily. The next action will
+        #   set these back on.
+        self.action_redraw = True
+        self.action_undo = True
+        # ---------------------------
+
+
 
     def late_init(self, main):
         """

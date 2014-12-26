@@ -81,12 +81,12 @@ class Forest(Savable):
         self.bracket_manager = BracketManager(self)
         self.parser = BottomUpParser(self)
         self.undo_manager = UndoManager(self)
+        self.chain_manager = ChainManager(self)
 
         self.saved.roots = []  # the current line of trees
         self.saved.nodes = {}
         self.saved.edges = {}
         self.saved.others = {}
-        self.saved.chain_manager = ChainManager()
         self.saved.settings = ForestSettings()
         self.saved.rules = ForestRules()
         self.saved.vis_data = {}
@@ -146,14 +146,6 @@ class Forest(Savable):
         if value is None:
             value = {}
         self.saved.others = value
-
-    @property
-    def chain_manager(self):
-        return self.saved.chain_manager
-
-    @chain_manager.setter
-    def chain_manager(self, value):
-        self.saved.chain_manager = value
 
     @property
     def settings(self):
@@ -762,10 +754,8 @@ class Forest(Savable):
             self._gloss_text = text[5:].strip('{} ')
         parser_method = self.parser.detect_suitable_parser(text)
         parser_method(text)
-        if self.settings.uses_multidomination:
-            self.traces_to_multidomination()
-        else:
-            self.chain_manager.rebuild_chains()
+        self.settings.uses_multidomination = False
+        self.traces_to_multidomination()
 
     def create_trace_for(self, node):
         """
@@ -1143,7 +1133,7 @@ class Forest(Savable):
         :param node:
         """
         new_node = self.parser.parse(text)
-        self._replace_node(node, new_node)
+        self.replace_node(node, new_node)
 
     # not used
     def edit_node_alias(self, node, text):
@@ -1165,7 +1155,7 @@ class Forest(Savable):
         :param text:
         """
         new_node = self.parser.parse(text, forest=self)
-        self._replace_node(node, new_node)
+        self.replace_node(node, new_node)
 
     #### Switching between multidomination and traces ######################################
 
@@ -1206,11 +1196,11 @@ class Forest(Savable):
         #             new_node = new_trace
         #         else:
         #             new_node = dropped_node
-        #             dropped_node._replace_node(new_trace)
+        #             dropped_node.replace_node(new_trace)
         #     else:
         #         if f.is_higher_in_tree(self.host, dropped_node):
         #             new_node = dropped_node
-        #             dropped_node._replace_node(new_trace)
+        #             dropped_node.replace_node(new_trace)
         #         else:
         #             new_node = new_trace
         # else:
@@ -1298,7 +1288,7 @@ class Forest(Savable):
                             elif not start.right():
                                 stub = self.create_empty_node(pos=to_tuple(start.pos()))
                                 self._connect_node(start, child=stub, direction='right')
-                    self._replace_node(next_node, node)
+                    self.replace_node(next_node, node)
                     self.delete_node(next_node)
                     if stub:
                         ctrl.select(stub)
@@ -1436,9 +1426,15 @@ class Forest(Savable):
         elif not ignore_missing:
             raise ForestError("Disconnecting nodes, but cannot find the edge between them")
 
-    def _replace_node(self, old_node, new_node, only_for_parent=None, replace_children=False):
-        """ When replacing a node we should make sure that edges get fixed too. """
-        forest('_replace_node %s %s %s %s' % (old_node, new_node, only_for_parent, replace_children))
+    def replace_node(self, old_node, new_node, only_for_parent=None, replace_children=False):
+        """  When replacing a node we should make sure that edges get fixed too.
+        :param old_node: node to be replaced -- if it gets orphaned, delete it
+        :param new_node: replacement node
+        :param only_for_parent: replace only one parent connection
+        :param replace_children: new node also gains parenthood for old node's children
+        :return:
+        """
+        forest('replace_node %s %s %s %s' % (old_node, new_node, only_for_parent, replace_children))
 
         assert (old_node != new_node)  # if this can happen, we'll probably have infinite loop somewhere
         new_node.current_position = old_node.current_position

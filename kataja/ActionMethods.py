@@ -182,6 +182,7 @@ class ActionMethods:
 
 
         """
+        ctrl.action_undo = False
         i = ctrl.main.switch_to_next_forest()
         ctrl.ui.clear_items()
         ctrl.main.add_message('(.) tree %s: %s' % (i + 1, ctrl.forest.textual_form()))
@@ -192,6 +193,7 @@ class ActionMethods:
 
 
         """
+        ctrl.action_undo = False
         i = ctrl.main.switch_to_previous_forest()
         ctrl.ui.clear_items()
         ctrl.main.add_message('(,) tree %s: %s' % (i + 1, ctrl.forest.textual_form()))
@@ -252,18 +254,13 @@ class ActionMethods:
         fs = ctrl.fs
 
         if fs.traces_are_grouped_together and not fs.uses_multidomination:
-            fs.uses_multidomination = True
-            fs.traces_are_grouped_together = False
-            ctrl.main.add_message('(t) use multidominance')
             ctrl.forest.traces_to_multidomination()
+            ctrl.main.add_message('(t) use multidominance')
         elif (not fs.traces_are_grouped_together) and not fs.uses_multidomination:
-            fs.uses_multidomination = False
-            fs.traces_are_grouped_together = True
             ctrl.main.add_message('(t) use traces, group them to one spot')
             ctrl.forest.group_traces_to_chain_head()
+            ctrl.action_redraw = False
         elif fs.uses_multidomination:
-            fs.uses_multidomination = False
-            fs.traces_are_grouped_together = False
             ctrl.main.add_message('(t) use traces, show constituents in their base merge positions')
             ctrl.forest.multidomination_to_traces()
 
@@ -366,6 +363,7 @@ class ActionMethods:
         :param selection: int scope identifier, from globals
         :return:
         """
+        ctrl.action_undo = False
         p = ctrl.ui.get_panel(g.DRAWING)
         p.change_scope(selection)
         p.update_panel()

@@ -371,6 +371,13 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
     # ## Menu management #######################################################
 
     def action_triggered(self):
+        """ Trigger action with parameters received from action data object and designated UI element
+        :return: None
+        """
+        # -- Redraw and undo flags: these are on by default, can be switched off by action method
+        ctrl.action_redraw = True
+        ctrl.action_undo = True
+        # ---------------------------
         sender = self.sender()
         key = sender.data()
         data = self.ui_manager.actions[key]
@@ -383,20 +390,20 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
             method(*args)
         else:
             method()
-        if 'no_undo' in data:
-            undoable = False
-        else:
-            undoable = True
-        self.action_finished(undoable=undoable)
+        self.action_finished()
 
-    def action_finished(self, m='', undoable=True):
+    def action_finished(self, m=''):
         """
 
         :param m:
         """
-        if undoable:
+        if ctrl.action_undo:
             ctrl.forest.undo_manager.record(m)
-        ctrl.graph_scene.draw_forest(ctrl.forest)
+        if ctrl.action_redraw:
+            ctrl.graph_scene.draw_forest(ctrl.forest)
+        else:
+            ctrl.graph_scene.item_moved()
+        print('--- action finished ---')
 
 
     def enable_actions(self):
