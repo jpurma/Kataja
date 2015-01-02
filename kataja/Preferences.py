@@ -35,7 +35,7 @@ from kataja.globals import *
 from kataja.utils import time_me
 
 
-fonts = {MAIN_FONT: ('Palatino', 'Normal', 12),
+mac_fonts = {MAIN_FONT: ('Palatino', 'Normal', 12),
          BIG_FONT: ('Palatino', 'Normal', 24),
          MENU_FONT: ('Monaco', 'Normal', 10),
          UI_FONT: ('Helvetica', 'Normal', 10),
@@ -44,6 +44,21 @@ fonts = {MAIN_FONT: ('Palatino', 'Normal', 12),
          SMALL_CAPS: ('Lao MN', 'Normal', 9),
          SMALL_FEATURE: ('Lao MN', 'Normal', 7),
          SYMBOL_FONT: ('Menlo', 'Normal', 14)}
+
+linux_fonts = {MAIN_FONT: ('URW Palladio L', 'Normal', 12),
+         BIG_FONT: ('URW Palladio L', 'Normal', 24),
+         MENU_FONT: ('Courier', 'Normal', 10),
+         UI_FONT: ('Droid Sans', 'Normal', 10),
+         PHRASE_LABEL_FONT: ('Droid Sans', 'Normal', 10),
+         ITALIC_FONT: ('Century', 'Normal', 10),
+         SMALL_CAPS: ('Lao MN', 'Normal', 9),
+         SMALL_FEATURE: ('Lao MN', 'Normal', 7),
+         SYMBOL_FONT: ('Monospace', 'Normal', 14)}
+
+if sys.platform == 'darwin':
+    fonts = mac_fonts
+else:
+    fonts = linux_fonts
 
 color_modes = OrderedDict([
         ('solarized_dk', {'name': 'Solarized dark', 'fixed': True, 'hsv': (0, 0, 0)}),
@@ -54,16 +69,6 @@ color_modes = OrderedDict([
                            ('random-light', {'name': 'Random on a light background', 'fixed': False, 'hsv': (0, 0, 0)}),
                            ('random-dark', {'name': 'Against a dark background', 'fixed': False, 'hsv': (0, 0, 0)})])
 
-
-# fonts = {'font': ('Palatino', 12),
-# 'big_font': ('Palatino', 24),
-# 'menu_font': ('Palatino', 10),
-# 'phrase_label_font': ('Palatino', 10),
-# 'italic_font': ('Palatino', 10),
-# 'sc_font': ('Palatino', 9),
-# 'feature_small': ('Palatino', 7),
-# 'symbol_font': ('Palatino', 14)
-# }
 
 
 class Preferences(object):
@@ -363,6 +368,7 @@ class QtPreferences:
         :param fontdb:
         """
         t = time.time()
+        print("font families:", QtGui.QFontDatabase().families())
         self.easing_curve = []
         self.prepare_fonts(preferences.fonts, fontdb)
         self.prepare_easing_curve(preferences._curve, preferences.move_frames)

@@ -1639,7 +1639,7 @@ class Forest(Savable):
             can_fold = True
             if folded in node:
                 can_fold = False
-            if
+
             if folded is not node and not folded.is_multidominated():
                 folded.folding_towards = node
 
