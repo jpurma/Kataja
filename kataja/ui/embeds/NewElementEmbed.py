@@ -1,57 +1,10 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 from kataja.ui.embeds.UIEmbed import UIEmbed
+from kataja.ui.DrawnIcons import ArrowIcon, DividerIcon
 from kataja.singletons import qt_prefs, ctrl, prefs
-from kataja.utils import print_transform
-from kataja.ui.DrawnIconEngine import DrawnIconEngine
 import kataja.globals as g
 
 __author__ = 'purma'
-
-
-class ArrowIcon(QtGui.QIcon):
-    def __init__(self):
-        QtGui.QIcon.__init__(self, DrawnIconEngine(self.paint_method, self))
-
-    @staticmethod
-    def paint_method(painter, rect, color=None):
-        w = rect.width()
-        h = rect.height()
-        path = QtGui.QPainterPath(QtCore.QPointF(0, h - 4))
-        path.lineTo(w, 4)
-        p = painter.pen()
-        p.setWidthF(1.5)
-        painter.setPen(p)
-        painter.drawPath(path)
-        d = (h - 8.0) / w
-        path = QtGui.QPainterPath(QtCore.QPointF(w, 4))
-        path.lineTo(w - 10,  8 + (10 * d))
-        path.lineTo(w - 8,  4 + (8 * d))
-        path.lineTo(w - 12,  12 * d)
-        painter.fillPath(path, color)
-
-    def paint_settings(self):
-        return {'color':ctrl.cm.d['accent4']}
-
-
-class DividerIcon(QtGui.QIcon):
-    def __init__(self):
-        QtGui.QIcon.__init__(self, DrawnIconEngine(self.paint_method, self))
-
-    @staticmethod
-    def paint_method(painter, rect, color=None):
-        w = rect.width()
-        h = rect.height()
-        path = QtGui.QPainterPath(QtCore.QPointF(0, h - 4))
-        path.cubicTo(10, h - 10 , w - 10, 10, w, 4)
-        p = painter.pen()
-        p.setWidthF(2)
-        p.setStyle(QtCore.Qt.DashLine)
-        painter.setPen(p)
-        painter.drawPath(path)
-
-    def paint_settings(self):
-        return {'color':ctrl.cm.d['accent5']}
-
 
 
 class MarkerStartPoint(QtWidgets.QGraphicsItem):

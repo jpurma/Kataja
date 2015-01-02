@@ -105,8 +105,11 @@ class LinearizedStaticTree(BalancedTree):
         .L.........                
         
         """
+        print('doing LinearizedStaticTree')
         edge_height = prefs.edge_height
-        edge_width = prefs.edge_width
+        edge_width = prefs.edge_width / 2
+        edge_width = 10
+        print(prefs.edge_width, edge_width)
         merged_grid = Grid()
 
         self.forest.vis_data['rotation'], self.traces_to_draw = self._compute_traces_to_draw(
@@ -207,6 +210,8 @@ class LinearizedStaticTree(BalancedTree):
         height_now = offset_y
 
         # Actual drawing: set nodes to their places in scene
+        print(merged_grid)
+        merged_grid.ascii_dump()
 
         for y, row in enumerate(merged_grid):
             height_now += edge_height
@@ -214,5 +219,5 @@ class LinearizedStaticTree(BalancedTree):
             for x, node in enumerate(row):
                 if node and isinstance(node, Movable):
                     node.release()
-                    node.computed_position = (x * edge_width + offset_x, height_now, 0)
+                    node.computed_position = ((x * edge_width) + offset_x, height_now, 0)
 

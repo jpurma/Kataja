@@ -100,8 +100,9 @@ class BalancedTree(BaseVisualization):
         .L.........                
         
         """
+        print('using balanced tree')
         edge_height = prefs.edge_height
-        edge_width = prefs.edge_width
+        edge_width = prefs.edge_width / 2
         merged_grid = Grid()
 
         rotation, self.traces_to_draw = self._compute_traces_to_draw(self.forest.vis_data['rotation'])

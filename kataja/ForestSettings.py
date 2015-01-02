@@ -25,7 +25,7 @@
 from kataja.globals import *
 from kataja.shapes import SHAPE_PRESETS
 from kataja.Saved import Savable
-from singletons import prefs
+from kataja.singletons import prefs
 
 ONLY_LEAF_LABELS = 0
 ALL_LABELS = 1

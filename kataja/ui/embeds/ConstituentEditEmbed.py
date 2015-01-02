@@ -48,6 +48,16 @@ class ConstituentEditEmbed(UIEmbed):
         self.input_line_edit.setStatusTip(tt)
         hlayout.addWidget(self.input_line_edit)
         self.label_label = make_label('Label', self, hlayout, tt, self.input_line_edit, ui_p)
+
+        self.index_edit = QtWidgets.QLineEdit(self)
+        self.index_edit.setFont(f)
+        tt = "Index to recognize multiple occurences"
+        self.index_edit.setToolTip(tt)
+        self.index_edit.setStatusTip(tt)
+        self.index_edit.setFixedWidth(20)
+        hlayout.addWidget(self.index_edit)
+        self.index_label = make_label('Index', self, hlayout, tt, self.index_edit, ui_p)
+
         layout.addLayout(hlayout)
 
         fg = QtGui.QFont(qt_prefs.font(g.ITALIC_FONT))
@@ -110,6 +120,12 @@ class ConstituentEditEmbed(UIEmbed):
             else:
                 label = ''
             self.input_line_edit.setText(label)
+            self.index_edit.setFont(fg)
+            self.index_edit.setPalette(p)
+            self.index_edit.setText(self.node.index)
+            self.index_label.setFont(qt_prefs.font(g.UI_FONT))
+            self.index_label.setPalette(ui_p)
+
             self.gloss_edit.setFont(fg)
             self.gloss_edit.setPalette(pg)
             self.gloss_edit.setText(self.node.gloss)

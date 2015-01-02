@@ -23,8 +23,7 @@
 # ############################################################################
 
 from PyQt5 import QtWidgets, QtGui, QtCore
-from kataja.errors import UIError
-from errors import ForestError
+from kataja.errors import UIError, ForestError
 from kataja.singletons import ctrl
 import kataja.globals as g
 
@@ -44,22 +43,33 @@ class OverlayButton(QtWidgets.QPushButton):
         self.role = role
         self._action = None
         self.setContentsMargins(0, 0, 0, 0)
-        self.setIconSize(QtCore.QSize(size, size))
+        if isinstance(size, tuple):
+            width = size[0]
+            height = size[1]
+        else:
+            width = size
+            height = size
+        self.setIconSize(QtCore.QSize(width, height))
         self.setFlat(True)
-        self.setIcon(QtGui.QIcon(pixmap))
-        self.effect = QtWidgets.QGraphicsColorizeEffect(self)
-        self.effect.setColor(ctrl.cm.ui())
-        self.effect.setStrength(0.6)
-        self.setGraphicsEffect(self.effect)
+        self.effect = None
+        if isinstance(pixmap, QtGui.QIcon):
+            self.setIcon(pixmap)
+        else:
+            self.setIcon(QtGui.QIcon(pixmap))
+            self.effect = QtWidgets.QGraphicsColorizeEffect(self)
+            self.effect.setColor(ctrl.cm.ui())
+            self.effect.setStrength(0.6)
+            self.setGraphicsEffect(self.effect)
         self.just_triggered = False
         self.edge = None # kind of secondary host, required for some buttons that apply both to node (=host) and edge
         #self.setCursor(Qt.PointingHandCursor)
 
     def update_color(self):
-        self.effect.colorChanged(ctrl.cm.ui())
+        if self.effect:
+            self.effect.colorChanged(ctrl.cm.ui())
 
     def event(self, e):
-        if e.type() == QtCore.QEvent.PaletteChange:
+        if e.type() == QtCore.QEvent.PaletteChange and self.effect:
             self.effect.setColor(ctrl.cm.ui())
         return QtWidgets.QPushButton.event(self, e)
 
@@ -68,7 +78,6 @@ class OverlayButton(QtWidgets.QPushButton):
     #    QtWidgets.QPushButton.paintEvent(self, *args, **kwargs)
 
     def update_position(self):
-        print(self.role)
         if self.role == g.REMOVE_MERGER:
             adjust = QtCore.QPointF(19, -self.host.height / 2)
             if not self.edge:
@@ -89,6 +98,12 @@ class OverlayButton(QtWidgets.QPushButton):
             else:
                 adjust = QtCore.QPointF(self.host.end.width / 2, -self.host.end.height / 2)
             p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(self.host.start_point[0], self.host.start_point[1]) + adjust)
+        elif self.role == g.ADD_TRIANGLE:
+            p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(self.host.x(), self.host.y() + self.host.height / 2))
+            p -= QtCore.QPoint(self.iconSize().width()/2, 0)
+        elif self.role == g.REMOVE_TRIANGLE:
+            p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(self.host.x(), self.host.y() + self.host.height / 2))
+            p -= QtCore.QPoint(self.iconSize().width()/2, 0)
         else:
             raise UIError("Unknown role for OverlayButton, don't know where to put it.")
         self.move(p)
@@ -96,12 +111,14 @@ class OverlayButton(QtWidgets.QPushButton):
     def enterEvent(self, event):
         if self.role == g.REMOVE_MERGER:
             self.host.hovering = True
-        self.effect.setStrength(1.0)
+        if self.effect:
+            self.effect.setStrength(1.0)
 
     def leaveEvent(self, event):
         if self.role == g.REMOVE_MERGER:
             self.host.hovering = False
-        self.effect.setStrength(0.5)
+        if self.effect:
+            self.effect.setStrength(0.5)
 
     def connect_to_action(self, action):
         self._action = action

@@ -37,6 +37,7 @@ from kataja.ui.MessageItem import MessageItem
 from kataja.ui.StretchLine import StretchLine
 from kataja.ui.TargetReticle import TargetReticle
 from kataja.actions import actions
+from kataja.ui.DrawnIcons import TriangleIcon
 import kataja.globals as g
 from kataja.ui.TouchArea import TouchArea
 from kataja.ui.panels.ColorThemePanel import ColorPanel
@@ -943,13 +944,32 @@ class UIManager:
     # ### Edge buttons ############################
 
     def add_remove_merger_button(self, node, edge=None):
-        key = node.save_key + "_remove_merger"
+        key = node.save_key + g.REMOVE_MERGER
         if key not in self._overlay_buttons:
             button = OverlayButton(qt_prefs.delete_icon, node, g.REMOVE_MERGER, 'Remove this non-merging node', parent=self.main.graph_view)
             button.update_position()
             self.connect_element_to_action(button, 'remove_merger')
             button.show()
             self._overlay_buttons[key] = button
+
+    def add_unfold_triangle_button(self, node):
+        key = node.save_key + g.REMOVE_TRIANGLE
+        if key not in self._overlay_buttons:
+            button = OverlayButton(TriangleIcon(), node, g.REMOVE_TRIANGLE, 'Reveal nodes inside the triangle', parent=self.main.graph_view, size=(32, 16))
+            button.update_position()
+            self.connect_element_to_action(button, 'remove_triangle')
+            button.show()
+            self._overlay_buttons[key] = button
+
+    def add_fold_triangle_button(self, node):
+        key = node.save_key + g.ADD_TRIANGLE
+        if key not in self._overlay_buttons:
+            button = OverlayButton(TriangleIcon(), node, g.ADD_TRIANGLE, 'Turn into a triangle', parent=self.main.graph_view, size=(32, 16))
+            button.update_position()
+            self.connect_element_to_action(button, 'add_triangle')
+            button.show()
+            self._overlay_buttons[key] = button
+
 
     def add_buttons_for_edge(self, edge):
         # Constituent edges have a button to remove the edge and the node in between.
@@ -989,7 +1009,7 @@ class UIManager:
     def remove_buttons_for_edge(self, edge):
         keys = [edge.save_key + "_cut_start", edge.save_key + "_cut_end"]
         if edge.start:
-            keys.append(edge.start.save_key + "_remove_merger")
+            keys.append(edge.start.save_key + g.REMOVE_MERGER)
         for key in keys:
             if key in self._overlay_buttons:
                 button = self._overlay_buttons[key]
@@ -1000,7 +1020,7 @@ class UIManager:
     def update_edge_button_positions(self, edge):
         keys = [edge.save_key + "_cut_start", edge.save_key + "_cut_end"]
         if edge.start:
-            keys.append(edge.start.save_key + "_remove_merger")
+            keys.append(edge.start.save_key + g.REMOVE_MERGER)
         for key in keys:
             if key in self._overlay_buttons:
                 button = self._overlay_buttons[key]
@@ -1024,9 +1044,14 @@ class UIManager:
         right = node.right()
         if (left and left.is_placeholder()) or (right and right.is_placeholder()):
             self.add_remove_merger_button(node)
+        if node.triangle:
+            self.add_unfold_triangle_button(node)
+        elif ctrl.forest.can_fold(node):
+            self.add_fold_triangle_button(node)
 
     def remove_buttons_for_constituent_node(self, node):
-        for key in [node.save_key + "_remove_merger"]:
+        for key_part in [g.REMOVE_MERGER, g.REMOVE_TRIANGLE, g.ADD_TRIANGLE]:
+            key = node.save_key + key_part
             if key in self._overlay_buttons:
                 button = self._overlay_buttons[key]
                 button.close()

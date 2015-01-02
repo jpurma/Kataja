@@ -239,8 +239,12 @@ class Forest(Savable):
         res = []
         def _iterate(node):
             res.append(node)
-            for child in node.get_children():
-                _iterate(child)
+            l = node.left()
+            if l:
+                _iterate(l)
+            r = node.right()
+            if r:
+                _iterate(r)
 
         _iterate(first)
         return res
@@ -256,9 +260,12 @@ class Forest(Savable):
         def _iterate(node):
             if not node in res:
                 res.append(node)
-                for child in node.get_children():
-                    _iterate(child)
-
+                l = node.left()
+                if l:
+                    _iterate(l)
+                r = node.right()
+                if r:
+                    _iterate(r)
         _iterate(first)
         return res
 
@@ -543,10 +550,9 @@ class Forest(Savable):
         :return:
         """
         for root in self.roots:
-            print('in root ', root)
             nodes = self.list_nodes_once(root)
             if node_A in nodes and node_B in nodes:
-                print('found both in root')
+                print('node A: ', nodes.index(node_A), ' node B: ', nodes.index(node_B))
                 return nodes.index(node_A) < nodes.index(node_B)
         return None
 
@@ -1537,7 +1543,7 @@ class Forest(Savable):
         #    self.delete_node(left)
 
 
-    def replace_node_with_merged_node(self, old_node, new_node, edge, merge_to_left, merger_node_pos):
+    def replace_node_with_merged_node(self, replaced, new_node, edge, merge_to_left, merger_node_pos):
         """ This happens when touch area in edge going up from node N is clicked.
         [N B] -> [[x N] B] (left == True) or
         [N B] -> [[N x] B] (left == False)
@@ -1548,7 +1554,7 @@ class Forest(Savable):
         :param merge_to_left:
         :param merger_node_pos:
         """
-        forest('replace_node_with_merged_empty_node %s %s %s %s %s' % (old_node, new_node, edge, merge_to_left, merger_node_pos))
+        forest('replace_node_with_merged_empty_node %s %s %s %s %s' % (replaced, new_node, edge, merge_to_left, merger_node_pos))
         start_node = None
         align = None
         if edge: # ???? can't we take all parents
@@ -1556,17 +1562,17 @@ class Forest(Savable):
             align = edge.align
 
         mx, my = merger_node_pos
-        print(mx, my)
         # if new_node and old_node belong to same tree, this is a Move / Internal merge situation and we need to give
         # the new_node an index so it can be reconstructed as a trace structure
-        new_higher = self.is_higher_in_tree(new_node, old_node)
+        moving_was_higher = self.is_higher_in_tree(new_node, replaced)
         # returns None if they are not in same tree
-        if new_higher is not None:
+        print('moving_was_higher:', moving_was_higher, new_node, replaced)
+        if moving_was_higher is not None:
             if not new_node.index:
                 new_node.index = self.chain_manager.next_free_index()
             # replace either the moving node or leftover node with trace if we are using traces
             if not self.settings.uses_multidomination:
-                if new_higher:
+                if moving_was_higher:
                     new_node = self.create_trace_for(new_node)
                 else:
                     t = self.create_trace_for(new_node)
@@ -1580,15 +1586,16 @@ class Forest(Savable):
 
         if merge_to_left:
             left = new_node
-            right = old_node
+            right = replaced
         else:
-            left = old_node
+            left = replaced
             right = new_node
 
-        merger_node = self.create_merger_node(left=left, right=right, pos=(mx, my, old_node.z))
+        merger_node = self.create_merger_node(left=left, right=right, pos=(mx, my, replaced.z))
         if edge:
             forest('connecting merger to parent')
             self._connect_node(start_node, merger_node, direction=align)
+        print(merger_node, merger_node.left(), merger_node.right())
 
         self.chain_manager.rebuild_chains()
 
@@ -1622,6 +1629,27 @@ class Forest(Savable):
         self.undo_manager.record("Copied %s" % node)
         self.main.add_message("Copied %s" % node)
         return new_node
+
+    #### Triangles ##############################################
+
+    def add_triangle_to(self, node):
+        print("adding triangle to ", node)
+        node.triangle = True
+        for folded in self.list_nodes_once(node):
+            can_fold = True
+            if folded in node:
+                can_fold = False
+            if
+            if folded is not node and not folded.is_multidominated():
+                folded.folding_towards = node
+
+
+    def remove_triangle_from(self, node):
+        pass
+        node.triangle = False
+
+    def can_fold(self, node):
+        return True
 
 
     ##### Dragging ##############################################

@@ -418,6 +418,7 @@ class ConstituentNode(Node):
 
     # ### Parents & Children ####################################################
 
+
     def is_projecting_to(self, other):
         """
 
@@ -743,9 +744,8 @@ class ConstituentNode(Node):
         if self.triangle:
             self.paint_triangle(painter, rect)
         elif rect:
-            pass
-            # painter.drawRect(self.inner_rect)
-            # elif self.uses_scope_area:
+            painter.drawRect(self.inner_rect)
+            #if self.uses_scope_area:
             #    self.paint_scope_rect(painter, rect)
 
     def itemChange(self, change, value):

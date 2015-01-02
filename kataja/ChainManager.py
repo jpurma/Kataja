@@ -42,9 +42,10 @@ class ChainManager:
 
 
     @time_me
-    def rebuild_chains(self):
+    def rebuild_chains(self, stop_count=0):
         """ Process for building chains depends on if the tree currently is using multidomination or not.
         Chains shouldn't include elements that are not really in the tree right now.
+        :param stop_count: to avoid infinite recursion if the tree is seriously broken
         :return:
         """
         if ctrl.forest.settings.uses_multidomination:
@@ -52,9 +53,19 @@ class ChainManager:
         else:
             self.rebuild_chains_from_traces()
         # Verify that each chain has one head
-        for chain in self.chains.values():
+        for key, chain in self.chains.items():
             heads = [chain_item for chain_item in chain if chain_item.is_head]
-            assert(len(heads) == 1)
+            if len(heads) > 1:
+                for item in heads[1:]:
+                    item.node.is_trace = True
+                if stop_count < 5:
+                    stop_count += 1
+                    self.rebuild_chains(stop_count=stop_count)
+            elif len(heads) == 0:
+                chain[0].node.is_trace = False
+                if stop_count < 5:
+                    stop_count += 1
+                    self.rebuild_chains(stop_count=stop_count)
 
     def rebuild_chains_from_traces(self):
         """ When building chains from traces, usually the first member is the head, but the tree may be given in a
@@ -89,6 +100,9 @@ class ChainManager:
         for key, values in self.chains.items():
             values.reverse()
             self.chains[key] = values
+        print('used trace-based rebuild, received chains: ', self.chains)
+        print(self.traces_from_bottom)
+
 
     def rebuild_chains_from_multidomination(self):
         """ When building chains from multidomination, the end result should consist of list of
@@ -128,11 +142,13 @@ class ChainManager:
         # If chains are built from multidomination, they need to be sorted and sorting indexes removed
         for key, values in list(self.chains.items()):
             values.sort(reverse=True)
+            print('after sorting:' ,values)
             values = [v for i, v in values]
             new_values = [values.pop(0)]
             for node, parent, is_trace in values:
                 new_values.append(ChainItem(node=node, parent=parent, is_head=False))
             self.chains[key] = new_values
+        print('used multidomination-based rebuild, received chains: ', self.chains)
 
 
     @time_me

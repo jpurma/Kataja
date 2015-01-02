@@ -97,3 +97,5 @@ ALL_BRACKETS = 2
 REMOVE_MERGER = 'remove_merger'
 START_CUT = 'start_cut'
 END_CUT = 'end_cut'
+ADD_TRIANGLE = 'add_triangle'
+REMOVE_TRIANGLE = 'remove_triangle'

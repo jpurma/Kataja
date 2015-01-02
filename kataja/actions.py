@@ -290,6 +290,15 @@ actions = {
         'command': 'Remove merger',
         'method': 'remove_merger',
     },
+    'add_triangle': {
+        'command': 'Add triangle',
+        'method': 'add_triangle',
+    },
+    'remove_triangle': {
+        'command': 'Remove triangle',
+        'method': 'remove_triangle',
+    },
+
     # Edit constituent
     'edit_constituent_finished': {
         'command': 'Apply changes',

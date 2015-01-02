@@ -7,7 +7,7 @@ from PyQt5.QtCore import Qt
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
 import subprocess
-from errors import ForestError
+from kataja.errors import ForestError
 import kataja.debug as debug
 from kataja.ui.PreferencesDialog import PreferencesDialog
 from kataja.Edge import SHAPE_PRESETS, Edge
@@ -18,6 +18,13 @@ __author__ = 'purma'
 from kataja.singletons import ctrl, prefs, qt_prefs
 import kataja.globals as g
 
+def _get_triggered_host():
+    host = None
+    for item in ctrl.ui.get_overlay_buttons():
+        if item.just_triggered:
+            item.just_triggered = False
+            host = item.host
+    return host
 
 class ActionMethods:
     """ These are the methods that are triggered by actions defined in actions.py. Try to keep them in same order as in
@@ -624,16 +631,23 @@ class ActionMethods:
         ctrl.ui.update_selections()
 
     def remove_merger(self):
-        node = None
-        for item in ctrl.ui.get_overlay_buttons():
-            if item.just_triggered:
-                item.just_triggered = False
-                node = item.host
+        node = _get_triggered_host()
         if not node:
             return
         ctrl.remove_from_selection(node)
         ctrl.forest.delete_unnecessary_merger(node)
 
+    def add_triangle(self):
+        node = _get_triggered_host()
+        if not node:
+            return
+        ctrl.forest.add_triangle_to(node)
+
+    def remove_triangle(self):
+        node = _get_triggered_host()
+        if not node:
+            return
+        ctrl.forest.remove_triangle_from(node)
 
     ###### Constituent editing #################
     def finish_constituent_edit(self):
@@ -645,6 +659,7 @@ class ActionMethods:
         node = embed.node
         node.alias = embed.alias_edit.text()
         node.label = embed.input_line_edit.text()
+        node.index = embed.index_edit.text()
         node.gloss = embed.gloss_edit.text()
         ctrl.ui.close_constituent_editing()
 
