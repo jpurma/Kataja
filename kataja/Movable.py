@@ -248,7 +248,7 @@ class Movable(Savable):
 
     # ## Movement ##############################################################
 
-    def move_towards_target_position(self):
+    def move_towards_target_position(self, bind_all=False):
         """ Takes one step in movement trajectory or finishes movement. Returns true if the movement is still
         continuing, false if it has stopped.
         :return: boolean """
@@ -263,19 +263,29 @@ class Movable(Savable):
             return False
         x_step, y_step, z_step = 0, 0, 0
         if self._use_easing:
-            if self.bind_x:
+            if bind_all:
                 x_step = self._x_step * qt_prefs.easing_curve[self._move_counter - 1]
-            if self.bind_y:
                 y_step = self._y_step * qt_prefs.easing_curve[self._move_counter - 1]
-            if self.bind_z:
                 z_step = self._z_step * qt_prefs.easing_curve[self._move_counter - 1]
+            else:
+                if self.bind_x:
+                    x_step = self._x_step * qt_prefs.easing_curve[self._move_counter - 1]
+                if self.bind_y:
+                    y_step = self._y_step * qt_prefs.easing_curve[self._move_counter - 1]
+                if self.bind_z:
+                    z_step = self._z_step * qt_prefs.easing_curve[self._move_counter - 1]
         else:
-            if self.bind_x:
+            if bind_all:
                 x_step = (px - tx) / self._move_counter
-            if self.bind_y:
                 y_step = (py - ty) / self._move_counter
-            if self.bind_z:
                 z_step = (pz - tz) / self._move_counter
+            else:
+                if self.bind_x:
+                    x_step = (px - tx) / self._move_counter
+                if self.bind_y:
+                    y_step = (py - ty) / self._move_counter
+                if self.bind_z:
+                    z_step = (pz - tz) / self._move_counter
         self._move_counter -= 1
         self.current_position = (px - x_step, py - y_step, pz - z_step)
         if not self._move_counter:

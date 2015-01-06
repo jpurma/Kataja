@@ -732,17 +732,22 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         for n, node in enumerate(f.visible_nodes()):
             node.adjust_opacity()
-            if node.folding_towards and node.folding_towards is not node:
+            # Computed movement
+            if node.folding_towards:
                 x, y, z = node.folding_towards.computed_position
                 node.computed_position = (x, y + 10, z)
-            if node in ctrl.dragged:
+                if node.move_towards_target_position(bind_all=True):
+                    items_have_moved = True
+                normalize = False
+                moved_nodes.append((0, 0, 0, node))
+                continue
+            elif node in ctrl.dragged:
                 items_have_moved = True
                 continue
             elif node.locked_to_position:
                 normalize = False
                 moved_nodes.append((0, 0, 0, node))
                 continue
-            # Computed movement
             elif node.bind_x and node.bind_y:
                 if node.move_towards_target_position():
                     items_have_moved = True
