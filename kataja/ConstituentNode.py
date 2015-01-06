@@ -31,7 +31,7 @@ import kataja.globals as g
 
 
 # ctrl = Controller object, gives accessa to other modules
-
+TRIANGLE_HEIGHT = 10
 
 class ConstituentNode(Node):
     """ ConstituentNodes are graphical representations of constituents. They are primary objects and need to support saving and loading."""
@@ -190,6 +190,15 @@ class ConstituentNode(Node):
         if value is None:
             value = False
         self.saved.triangle = value
+        # update label positioning here so that offset doesn't need to be stored in save files and it
+        # still will be updated correctly
+        if self._label_complex:
+            print("Updating label complex y_offset")
+            if value:
+                self._label_complex.y_offset = TRIANGLE_HEIGHT - 4
+            else:
+                self._label_complex.y_offset = 0
+            self.update_label()
 
     @property
     def merge_order(self):
@@ -246,21 +255,6 @@ class ConstituentNode(Node):
             self.status_tip = "%s %s%s" % (name, alias, self.label)
         else:
             self.status_tip = "Empty, but mandatory constituent position"
-
-    def update_bounding_rect(self):
-        if self.triangle:
-            lbr = self._label_complex.boundingRect()
-            lbh = lbr.height()
-            lbw = lbr.width()
-            self.label_rect = QtCore.QRectF(self._label_complex.x(), self._label_complex.y(), lbw, lbh)
-            self.width = max((lbw, self.__class__.width))
-            self.height = max((lbh * 1.5, self.__class__.height))
-            self.inner_rect = QtCore.QRectF(self.width / -2, self.height / -2, self.width, self.height)
-            self._update_magnets = True
-            # print 'updating bounding rect ', self
-            return self.inner_rect
-        else:
-            return Node.update_bounding_rect(self)
 
     def __str__(self):
         if not self.syntactic_object:
@@ -532,6 +526,12 @@ class ConstituentNode(Node):
         """ Build html string to be displayed in label_complex """
         if not self.syntactic_object:
             return ''
+        if self.triangle:
+            s = []
+            for node in ctrl.forest.list_nodes_once(self):
+                if node.is_leaf_node():
+                    s.append(node.alias or node.label)
+            return ' '.join(s)
         alias = self.alias
         label = self.label
 
@@ -591,55 +591,11 @@ class ConstituentNode(Node):
 
     # ### Folding / Triangles #################################
 
-    def is_folded_away(self):
-        """
 
-
-        :return:
-        """
-        if self.folding_towards:
-            return True
-        else:
-            return False
-
-    def fold(self):
-        """ Form a triangle """
-        self.folding_towards = self
-        self.triangle = True
-        self._label_complex.fold_label()
-        self.update_visibility()
-
-        folded = set()
-        questionable = set()
-        for node in ctrl.forest.list_nodes(
-                self):  # don't fold multidominated nodes unless all of their parents are in fold
-            can_be_folded = True
-            for parent in node.parents():
-                if not parent.folding_towards:
-                    can_be_folded = False
-                    questionable.add(node)
-            if can_be_folded:
-                folded.add(node)
-                node.prepare_to_be_folded(self)
-        # criss-crossing parenthood edges make it difficult to recognize which elements are fully
-        # dominated by another node.
-        # for questionable elements, iterate through set until iteration round doesn't change it anymore
-        prev_size = len(questionable) + 1
-        while prev_size > len(questionable):
-            prev_size = len(questionable)
-            for item in list(questionable):
-                keep = True
-                for node in item.parents:
-                    if node not in folded:
-                        keep = False
-                if keep:
-                    folded.add(item)
-                    questionable.remove(item)
-                    item.prepare_to_be_folded(self)
-        self.finish_folding()
 
     def unfold_triangle(self):
         """ Restore elements from a triangle """
+        print("Unfold called in ConstituentNode")
         self.triangle = False
         self._label_complex.unfold_label()
         for n, node in enumerate(ctrl.forest.list_nodes(self)):
@@ -662,7 +618,7 @@ class ConstituentNode(Node):
         """ Hide, and remember why this is hidden """
         self.folded_away = True
         self.update_visibility(folded=True, show_edges=False)
-        self.boundingRect(update=True)
+        self.update_bounding_rect()
 
     def unfold(self, from_node, n=0):
         """ Restore folded elements, add some variance (n) to node positions so visualization algorithms won't get stuck
@@ -681,18 +637,17 @@ class ConstituentNode(Node):
         #for feature in self.features:
         #    feature.fade_in()
 
-    def paint_triangle(self, painter, draw_rect):
+    def paint_triangle(self, painter):
         """ Drawing the triangle, called from paint-method
         :param painter:
         :param draw_rect:
         """
-        br = self.label_rect
-        w2 = br.width() / 2
+        br = self.boundingRect()
         left = br.x()
-        center = left + w2
-        right = center + w2
-        bottom = br.y()
-        top = br.y() - br.height() / 2
+        center = left + self.width / 2
+        right = left + self.width
+        top = br.y()
+        bottom = br.y() + TRIANGLE_HEIGHT
 
         triangle = QtGui.QPainterPath()
         triangle.moveTo(center, top)
@@ -700,8 +655,6 @@ class ConstituentNode(Node):
         triangle.lineTo(left, bottom)
         triangle.lineTo(center, top)
         painter.drawPath(triangle)
-        if draw_rect:
-            painter.drawRoundedRect(self.label_rect, 5, 5)
 
 
     # ## Multidomination #############################################
@@ -742,7 +695,7 @@ class ConstituentNode(Node):
         else:
             rect = False
         if self.triangle:
-            self.paint_triangle(painter, rect)
+            self.paint_triangle(painter)
         elif rect:
             painter.drawRect(self.inner_rect)
             #if self.uses_scope_area:

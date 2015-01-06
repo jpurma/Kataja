@@ -317,8 +317,11 @@ class Movable(Savable):
         x, y, z = self.final_position
         sx, sy, sz = self.current_position
         # print 'item %s starts moving from (%s %s %s) to (%s %s %s)' % (self, sx,sy,sz,x,y,z)
-        self._use_easing = True
-        self._move_counter = prefs.move_frames or 20
+        if self._move_counter: # don't force animation to start again, redirect it instead
+            self._use_easing = False
+        else:
+            self._use_easing = True
+            self._move_counter = prefs.move_frames or 20
         self._x_step, self._y_step, self._z_step = sx - x, sy - y, sz - z
 
     def stop_moving(self):

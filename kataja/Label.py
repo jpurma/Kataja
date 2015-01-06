@@ -45,6 +45,7 @@ class Label(QtWidgets.QGraphicsTextItem):
         self._ellipse = None
         self._doc = None
         self._hovering = False
+        self.y_offset = 0
         self.selectable = False
         self.draggable = False
         self.clickable = False
@@ -93,32 +94,23 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.setFont(self._host.font)
         if self.get_method:
             new_source_text = self.get_method()
-            if new_source_text == self._source_text:
-                return False
-            self._source_text = str(new_source_text)
-            self.prepareGeometryChange()
-            if self._doc:
-                self._doc.clear()
-            else:
-                self._doc = QtGui.QTextDocument()
-                # self._doc.setUseDesignMetrics(True)
-                self._doc.contentsChanged = self.set_method
-                self.setDocument(self._doc)
-            self._doc.setHtml(self._source_text)
+            if new_source_text != self._source_text:
+                self._source_text = str(new_source_text)
+                self.prepareGeometryChange()
+                if self._doc:
+                    self._doc.clear()
+                else:
+                    self._doc = QtGui.QTextDocument()
+                    # self._doc.setUseDesignMetrics(True)
+                    self._doc.contentsChanged = self.set_method
+                    self.setDocument(self._doc)
+                self._doc.setHtml(self._source_text)
             brect = self.boundingRect()
-            self.setPos(brect.width() / -2.0, brect.height() / -2.0)
+            self.total_height = brect.height() + self.y_offset
+            self.setPos(brect.width() / -2.0, (self.total_height / -2.0) + self.y_offset)
             self._ellipse = QtGui.QPainterPath()
-            self._ellipse.addEllipse(Pf(0, 0), brect.width() / 2, brect.height() / 2)
-            return True
-        return False
+            self._ellipse.addEllipse(Pf(0, self.y_offset), brect.width() / 2, brect.height() / 2)
 
-    def update_position(self, br=None):
-        """
-
-        :param br:
-        """
-        brect = br or self.boundingRect()
-        self.setPos(brect.width() / -2.0, brect.height() / -2.0)
 
     def paint(self, painter, option, widget):
         """ Painting is sensitive to mouse/selection issues, but usually with

@@ -284,25 +284,6 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
         return True
 
     # radial menu only
-    def toggle_fold_node(self, caller, event):
-        """
-
-        :param caller:
-        :param event:
-        :return:
-        """
-        #if isinstance(caller, MenuItem):
-        #    caller = caller.host_node
-        if caller.is_folded_away():
-            self.add_message('Unfolding %s to %s' % (caller.linearized(), str(caller)))
-            caller.unfold_triangle()
-            self.action_finished()  # recalculate their positions
-        else:
-            self.add_message('Folding %s to %s' % (str(caller), caller.linearized()))
-            caller.fold()
-        return True
-
-    # radial menu only
     def disconnect_node(self, caller=None, event=None):
         """
 

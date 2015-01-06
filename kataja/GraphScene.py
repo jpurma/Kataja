@@ -734,7 +734,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             node.adjust_opacity()
             if node.folding_towards and node.folding_towards is not node:
                 x, y, z = node.folding_towards.computed_position
-                node.computed_position = (x, y + 30, z)
+                node.computed_position = (x, y + 10, z)
             if node in ctrl.dragged:
                 items_have_moved = True
                 continue

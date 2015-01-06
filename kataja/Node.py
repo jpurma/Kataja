@@ -470,17 +470,15 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     def update_label(self):
         """
 
-
         :return:
         """
         if not self._label_complex:
             self._label_complex = Label(parent=self)
             self._label_complex.get_method = self.get_html_for_label
             self._label_complex.set_method = self.label_edited
-        a = self._label_complex.update_label()
+        self._label_complex.update_label()
         self.update_bounding_rect()
         self.update_status_tip()
-        return a
 
     def update_status_tip(self):
         """ implement properly in subclasses, let tooltip tell about the node
@@ -520,23 +518,28 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
     def update_bounding_rect(self):
         my_class = self.__class__
-        if self._label_visible:
-            if not self._label_complex:
-                ctrl.quit()
+        if self._label_visible and self._label_complex:
             lbr = self._label_complex.boundingRect()
-            self._label_complex.update_position(lbr)
             lbh = lbr.height()
             lbw = lbr.width()
             self.label_rect = QtCore.QRectF(self._label_complex.x(), self._label_complex.y(), lbw, lbh)
             self.width = max((lbw, my_class.width))
-            self.height = max((lbh, my_class.height))
+            self.height = max((lbh + self._label_complex.y_offset, my_class.height))
+            y = self.height / -2
+            x = self.width / -2
+            print('lbr:', lbr)
+            print('label pos:', self._label_complex.pos())
         else:
             self.label_rect = QtCore.QRectF(0, 0, 0, 0)
             self.width = my_class.width
             self.height = my_class.height
-        self.inner_rect = QtCore.QRectF(self.width / -2, self.height / -2, self.width, self.height)
+            y = self.height / -2
+            x = self.width / -2
+        print('height:', self.height)
+        self.inner_rect = QtCore.QRectF(x, y, self.width, self.height)
+        print('label_rect', self.label_rect)
+        print('inner_rect:', self.inner_rect)
         self._update_magnets = True
-        # print 'updating bounding rect ', self
         return self.inner_rect
 
     def boundingRect(self):

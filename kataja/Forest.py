@@ -1633,19 +1633,33 @@ class Forest(Savable):
     #### Triangles ##############################################
 
     def add_triangle_to(self, node):
-        print("adding triangle to ", node)
+        print("Before trianglifying:", node.label_rect, node.boundingRect())
         node.triangle = True
-        for folded in self.list_nodes_once(node):
-            can_fold = True
-            if folded in node:
-                can_fold = False
+        print("After trianglefying:", node.label_rect, node.boundingRect())
+        fold_scope = set(self.list_nodes_once(node))
+        # fixme: children of elements that cannot be folded are still folded
+        for folded in fold_scope:
+            if folded is node:
+                continue
+            # allow recursive triangles -- don't overwrite existing fold
+            elif folded.folding_towards:
+                continue
+            # multidominated nodes can be folded if all parents are in scope of fold
+            elif folded.is_multidominated():
+                can_fold = True
+                for parent in folded.get_parents():
+                    if parent not in fold_scope:
+                        can_fold = False
+                        break
+                if can_fold:
+                    folded.folding_towards = node
+                    folded.after_move_function = folded.finish_folding
 
-            if folded is not node and not folded.is_multidominated():
+            else:
                 folded.folding_towards = node
-
+                folded.after_move_function = folded.finish_folding
 
     def remove_triangle_from(self, node):
-        pass
         node.triangle = False
 
     def can_fold(self, node):
