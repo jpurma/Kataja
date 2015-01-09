@@ -527,18 +527,13 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             self.height = max((lbh + self._label_complex.y_offset, my_class.height))
             y = self.height / -2
             x = self.width / -2
-            print('lbr:', lbr)
-            print('label pos:', self._label_complex.pos())
         else:
             self.label_rect = QtCore.QRectF(0, 0, 0, 0)
             self.width = my_class.width
             self.height = my_class.height
             y = self.height / -2
             x = self.width / -2
-        print('height:', self.height)
         self.inner_rect = QtCore.QRectF(x, y, self.width, self.height)
-        print('label_rect', self.label_rect)
-        print('inner_rect:', self.inner_rect)
         self._update_magnets = True
         return self.inner_rect
 
@@ -692,7 +687,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :param mx:
         :param my:
         """
-        print('start dragging with node ', self)
         ctrl.dragged = set()
 
         # there if node is both above and below the dragged node, it shouldn't move

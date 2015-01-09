@@ -161,7 +161,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
         """
         pass
         #if not self in ctrl.dragged:
-        #    self.update_end_points()
+        self.update_end_points()
 
     def drag(self, event):
         self._dragging = True

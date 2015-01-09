@@ -43,6 +43,9 @@ class LinearizedStaticTree(BalancedTree):
         BalancedTree.__init__(self)
         self.forest = None
         self._directed = True
+        self.grid_lines_y = {}
+        self.grid_lines_x = {}
+
 
     def prepare(self, forest, reset=True):
         """ If loading a state, don't reset.
@@ -66,8 +69,8 @@ class LinearizedStaticTree(BalancedTree):
         node.locked_to_position = False
         node.reset_adjustment()
         node.update_label()
+        node.update_visibility()
         if isinstance(node, ConstituentNode):
-            node.update_visibility(show_edges=True, scope=0, brackets=self.forest.settings.bracket_style)
             node.bind_x = True
             node.bind_y = True
         elif isinstance(node, FeatureNode) or isinstance(node, GlossNode):
@@ -108,8 +111,6 @@ class LinearizedStaticTree(BalancedTree):
         print('doing LinearizedStaticTree')
         edge_height = prefs.edge_height
         edge_width = prefs.edge_width / 2
-        edge_width = 10
-        print(prefs.edge_width, edge_width)
         merged_grid = Grid()
 
         self.forest.vis_data['rotation'], self.traces_to_draw = self._compute_traces_to_draw(
@@ -150,7 +151,7 @@ class LinearizedStaticTree(BalancedTree):
             else:
                 return Grid()
 
-        def _merge_grids(left_grid=None, right_grid=None, combining_node=None, extra_padding=1):
+        def _merge_grids(left_grid=None, right_grid=None, combining_node=None, extra_padding=0):
             paddings = []
             # actual merging of grids begins with calculating the closest fit for two grids
 
@@ -194,13 +195,14 @@ class LinearizedStaticTree(BalancedTree):
 
             combined_grid.insert_row()
             combined_grid.insert_row()
+            combined_grid.insert_row()
             nw, nh = _get_gride_size(combining_node)
             combined_grid.set(x, 0, combining_node, nw, nh)
             return combined_grid
 
         for root_node in self.forest:
             new_grid = _build_grid(node=root_node)
-            merged_grid = _merge_grids(left_grid=merged_grid, right_grid=new_grid, extra_padding=3)
+            merged_grid = _merge_grids(left_grid=merged_grid, right_grid=new_grid, extra_padding=2)
 
         tree_width = merged_grid._width * edge_width
         tree_height = merged_grid._height * edge_height
@@ -210,14 +212,34 @@ class LinearizedStaticTree(BalancedTree):
         height_now = offset_y
 
         # Actual drawing: set nodes to their places in scene
-        print(merged_grid)
         merged_grid.ascii_dump()
+
 
         for y, row in enumerate(merged_grid):
             height_now += edge_height
             edge_height -= height_reduction
+            width_now = offset_x
             for x, node in enumerate(row):
                 if node and isinstance(node, Movable):
                     node.release()
-                    node.computed_position = ((x * edge_width) + offset_x, height_now, 0)
+                    node.computed_position = (width_now, height_now, 0)
+                width_now += edge_width
 
+        draw_grid_lines = False
+        if draw_grid_lines:
+            height_now = offset_y
+            for y, row in enumerate(merged_grid):
+                if y in self.grid_lines_y:
+                    self.grid_lines_y[y].setLine(offset_x, height_now, offset_x + tree_width, height_now)
+                else:
+                    self.grid_lines_y[y] = self.forest.scene.addLine(offset_x, height_now, offset_x + tree_width, height_now)
+                height_now += edge_height
+                edge_height -= height_reduction
+            max_height = height_now
+            width_now = offset_x
+            for x, column in enumerate(merged_grid.row(0)):
+                if x in self.grid_lines_x:
+                    self.grid_lines_x[x].setLine(width_now, offset_y, width_now, max_height)
+                else:
+                    self.grid_lines_x[x] = self.forest.scene.addLine(width_now, offset_y, width_now, max_height)
+                width_now += edge_width

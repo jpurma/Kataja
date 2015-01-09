@@ -61,7 +61,6 @@ class AsymmetricElasticTree(BaseVisualization):
         node.locked_to_position = False
         node.reset_adjustment()
         node.update_label()
-        if isinstance(node, ConstituentNode):
-            node.update_visibility(show_edges=True, scope=0, brackets=self.forest.settings.bracket_style)
+        node.update_visibility()
         node.bind_y = False
         node.bind_x = False

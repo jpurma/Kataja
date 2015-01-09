@@ -284,10 +284,7 @@ class UIManager:
             self._new_element_embed.update_color()
 
     def update_selections(self, selected=None, deselected=None):
-        """ Many UI elements change mode depending on if object of specific type is selected
-
-
-        """
+        """ Many UI elements change mode depending on if object of specific type is selected """
         if selected is None:
             selected = ctrl.get_all_selected()
         lp = self.get_panel(g.DRAWING)
@@ -681,13 +678,13 @@ class UIManager:
         :param item: object to update
         :param selected: is item being selected or deselected
         """
-        if selected:
+        if selected and item.visible:
             if isinstance(item, ConstituentNode):
                 if item.is_root_node():
                     self.create_touch_area(item, g.LEFT_ADD_ROOT)
                     self.create_touch_area(item, g.RIGHT_ADD_ROOT)
                 if not item.is_placeholder():
-                    for edge in item.get_edges_up():
+                    for edge in item.get_edges_up(visible=True):
                         self.create_touch_area(edge, g.LEFT_ADD_SIBLING)
                         self.create_touch_area(edge, g.RIGHT_ADD_SIBLING)
             elif isinstance(item, Edge) and item.edge_type == g.CONSTITUENT_EDGE:
@@ -1034,6 +1031,7 @@ class UIManager:
                 self.remove_buttons_for_edge(item)
         elif isinstance(item, ConstituentNode):
             if selected:
+                self.remove_buttons_for_constituent_node(item)
                 self.add_buttons_for_constituent_node(item)
             else:
                 self.remove_buttons_for_constituent_node(item)

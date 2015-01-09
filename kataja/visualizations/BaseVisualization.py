@@ -71,7 +71,7 @@ class BaseVisualization:
         node.reset_adjustment()
         node.update_label()
         if isinstance(node, ConstituentNode):
-            node.update_visibility(show_edges=True, scope=0, brackets=self.forest.settings.bracket_style)
+            node.update_visibility()
         elif isinstance(node, FeatureNode) or isinstance(node, GlossNode):
             pass
         node.bind_y = False
@@ -269,6 +269,12 @@ class BaseVisualization:
                     return False
         return True
 
+    def show_edges_for(self, node):
+        """ Allow visualizations to override edge visibility. Edges are downward constituent edges of given node.
+        :param node: Node to check -- don't need to be used if the result is always the same.
+        :return:
+        """
+        return True
 
     def _compute_traces_to_draw(self, rotator):
         """ This is complicated, but returns a dictionary that tells for each index key (used by chains) in which position at tree to draw the node. Positions are identified by key of their immediate parent: {'i': ConstituentNode394293, ...} """

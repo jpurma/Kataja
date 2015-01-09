@@ -238,7 +238,7 @@ class ActionMethods:
         ctrl.forest.settings.label_style = new_value
 
         for node in ctrl.forest.nodes.values():
-            node.update_visibility(label=new_value)
+            node.update_visibility()
             # change = node.update_label()
 
     def toggle_brackets(self):
@@ -642,12 +642,14 @@ class ActionMethods:
         if not node:
             return
         ctrl.forest.add_triangle_to(node)
+        ctrl.ui.update_selections()
 
     def remove_triangle(self):
         node = _get_triggered_host()
         if not node:
             return
         ctrl.forest.remove_triangle_from(node)
+        ctrl.ui.update_selections()
 
     ###### Constituent editing #################
     def finish_constituent_edit(self):

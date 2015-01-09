@@ -70,8 +70,8 @@ class WindDriftTree(BaseVisualization):
         """
         node.locked_to_position = False
         node.reset_adjustment()
+        node.update_visibility()
         if isinstance(node, ConstituentNode):
-            node.update_visibility(brackets=self.forest.settings.bracket_style, show_edges=False)
             node.bind_x = True
             node.bind_y = True
         elif isinstance(node, FeatureNode) or isinstance(node, GlossNode):

@@ -60,8 +60,8 @@ class SymmetricElasticTree(BaseVisualization):
         :param node:
         """
         node.update_label()
+        node.update_visibility()
         if isinstance(node, ConstituentNode):
-            node.update_visibility(show_edges=True, scope=0, brackets=self.forest.settings.bracket_style)
             node.bind_y = False
             node.bind_x = False
         elif isinstance(node, FeatureNode) or isinstance(node, GlossNode):

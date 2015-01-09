@@ -66,8 +66,8 @@ class BalancedTree(BaseVisualization):
         node.locked_to_position = False
         node.reset_adjustment()
         node.update_label()
+        node.update_visibility()
         if isinstance(node, ConstituentNode):
-            node.update_visibility(show_edges=True, scope=0, brackets=self.forest.settings.bracket_style)
             node.bind_x = True
             node.bind_y = True
         elif isinstance(node, FeatureNode) or isinstance(node, GlossNode):
@@ -142,7 +142,7 @@ class BalancedTree(BaseVisualization):
             else:
                 return Grid()
 
-        def _merge_grids(left_grid=None, right_grid=None, combining_node=None, extra_padding=1):
+        def _merge_grids(left_grid=None, right_grid=None, combining_node=None, extra_padding=0):
             paddings = []
             # actual merging of grids begins with calculating the closest fit for two grids
             combined_grid = None
@@ -193,7 +193,7 @@ class BalancedTree(BaseVisualization):
 
         for root_node in self.forest:
             new_grid = _build_grid(node=root_node)
-            merged_grid = _merge_grids(left_grid=merged_grid, right_grid=new_grid, extra_padding=3)
+            merged_grid = _merge_grids(left_grid=merged_grid, right_grid=new_grid, extra_padding=2)
 
         tree_width = merged_grid._width * edge_width
         tree_height = merged_grid._height * edge_height
@@ -202,7 +202,7 @@ class BalancedTree(BaseVisualization):
         height_reduction = (edge_height / 3.0) / (merged_grid._height or 1)
         height_now = offset_y
 
-        # merged_grid.ascii_dump()
+        merged_grid.ascii_dump()
         # Actual drawing: set nodes to their places in scene
 
         for y, row in enumerate(merged_grid):

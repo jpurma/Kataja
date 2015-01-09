@@ -73,19 +73,11 @@ class ConstituentNode(Node):
 
         # ## use update_visibility to change these: visibility of particular elements
         # depends on many factors
-        self._visibility_folded = False
-        self._visibility_active = True
         if ctrl.forest:
             self._visibility_label = ctrl.forest.settings.label_style
-            self._visibility_index = not ctrl.forest.settings.uses_multidomination
-            self._visibility_edges = ctrl.forest.settings.shows_constituent_edges
-            self._visibility_features = ctrl.forest.settings.draw_features
             self._visibility_brackets = ctrl.forest.settings.bracket_style
         else:
             self._visibility_label = 0
-            self._visibility_index = False
-            self._visibility_edges = True
-            self._visibility_features = 1
             self._visibility_brackets = 0
 
         self.update_status_tip()
@@ -101,8 +93,6 @@ class ConstituentNode(Node):
         self.update_visibility()
         self.update_status_tip()
         ctrl.forest.store(self)
-        if self.is_trace:
-            print('restored trace ', self, self.visible, self.isVisible())
 
     # properties implemented by syntactic node
 
@@ -193,7 +183,6 @@ class ConstituentNode(Node):
         # update label positioning here so that offset doesn't need to be stored in save files and it
         # still will be updated correctly
         if self._label_complex:
-            print("Updating label complex y_offset")
             if value:
                 self._label_complex.y_offset = TRIANGLE_HEIGHT - 4
             else:
@@ -336,26 +325,16 @@ class ConstituentNode(Node):
 
         :param kw:
         """
-        if 'folded' in kw:
-            self._visibility_folded = kw['folded']
-        if 'active' in kw:
-            self._visibility_active = kw['active']
-        if 'label' in kw:
-            self._visibility_label = kw['label']
-            self.update_label()
-        if 'show_index' in kw:
-            self._visibility_index = kw['show_index']
-        if 'show_edges' in kw:
-            self._visibility_edges = kw['show_edges']
-        if 'features' in kw:
-            self._visibility_features = kw['features']
-        if 'brackets' in kw:
-            self._visibility_brackets = kw['brackets']
-        if 'fade' in kw:
-            fade = kw['fade']
-        else:
-            fade = False
-        visible = self._visibility_active and not self._visibility_folded
+        print("For node %s: %s" % (self, str(kw)))
+        folded_away = self.folding_towards
+        self._visibility_brackets = kw.get('brackets', self._visibility_brackets)
+        was_visible = self.visible
+        visible = not folded_away
+        self.visible = visible
+
+
+        ### Fade in / out
+        fade = kw.get('fade', False)
         if fade:
             if visible:
                 self.fade_in()
@@ -363,25 +342,38 @@ class ConstituentNode(Node):
                 self.fade_out()
         else:
             self.setVisible(visible)
-        label_visible = self._visibility_label == g.ALL_LABELS
-        label_visible = label_visible or (self._visibility_label == g.ALIASES and self.alias)
-        label_visible = bool(label_visible or self.triangle or (self.label and self.is_leaf_node()))
-        self._label_visible = label_visible
+        ### Label
+
+        label_mode = ctrl.forest.settings.label_style
+        if label_mode == g.ALL_LABELS:
+            self._label_visible = True
+        elif label_mode == g.ALIASES and self.alias:
+            self._label_visible = True
+        elif self.triangle:
+            self._label_visible = True
+        elif self.label and self.is_leaf_node():
+            self._label_visible = True
+        else:
+            self._label_visible = False
         if not self._label_complex:
             self.update_label()
-        if label_visible and not self._label_complex.isVisible():
-            self.update_label()
-        self._label_complex.setVisible(label_visible)
-        if self._index_label:
-            self._index_label.setVisible(self._visibility_index)
-        if self.edges_down:
-            for edge in self.edges_down:
-                if edge.edge_type == self.__class__.default_edge_type:
-                    edge.visible = visible and self._visibility_edges
-                else:
-                    edge.visible = visible
-        for feature in self.get_features():
-            feature.setVisible(visible and self._visibility_features)
+        self._label_complex.setVisible(self._label_visible)
+
+        ### Edges
+        ctrl.forest.adjust_edge_visibility_for_node(self, visible)
+
+        ### FeatureNodes
+        # ctrl.forest.settings.draw_features
+        feat_visible = visible and ctrl.forest.settings.draw_features
+
+        if (feat_visible and not was_visible):
+            for feature in self.get_features():
+                feature.setVisible(True)
+        elif (was_visible and not feat_visible):
+            for feature in self.get_features():
+                feature.setVisible(False)
+
+        ### Brackets
         if self._visibility_brackets:
             if self._visibility_brackets == 2:
                 self.has_visible_brackets = not self.is_leaf_node()
@@ -595,7 +587,6 @@ class ConstituentNode(Node):
 
     def unfold_triangle(self):
         """ Restore elements from a triangle """
-        print("Unfold called in ConstituentNode")
         self.triangle = False
         self._label_complex.unfold_label()
         for n, node in enumerate(ctrl.forest.list_nodes(self)):
@@ -616,8 +607,7 @@ class ConstituentNode(Node):
 
     def finish_folding(self):
         """ Hide, and remember why this is hidden """
-        self.folded_away = True
-        self.update_visibility(folded=True, show_edges=False)
+        self.update_visibility()
         self.update_bounding_rect()
 
     def unfold(self, from_node, n=0):
@@ -625,7 +615,6 @@ class ConstituentNode(Node):
         :param from_node:
         :param n:
         """
-        self.folded_away = False
         self.folding_towards = None
         x, y, z = from_node.computed_position
         self.adjustment = from_node.adjustment
@@ -696,26 +685,26 @@ class ConstituentNode(Node):
             rect = False
         if self.triangle:
             self.paint_triangle(painter)
-        elif rect:
+        if rect:
             painter.drawRect(self.inner_rect)
             #if self.uses_scope_area:
             #    self.paint_scope_rect(painter, rect)
 
-    def itemChange(self, change, value):
-        """ Whatever menus or UI objects are associated with object, they move
-        :param change:
-        :param value:
-        when node moves """
-        if change == QtWidgets.QGraphicsItem.ItemPositionHasChanged:
-            #if self.ui_menu and self.ui_menu.isVisible():
-            #    self.ui_menu.update_position(drag=True)
-            if self._hovering or ctrl.focus == self:
-                pass
-                # print 'ctrl.ui problem here!'
-                # assert(False)
-                # if ctrl.ui.is_target_reticle_over(self):
-                # ctrl.ui.update_target_reticle_position()
-        return QtWidgets.QGraphicsItem.itemChange(self, change, value)
+    # def itemChange(self, change, value):
+    #     """ Whatever menus or UI objects are associated with object, they move
+    #     :param change:
+    #     :param value:
+    #     when node moves """
+    #     if change == QtWidgets.QGraphicsItem.ItemPositionHasChanged:
+    #         #if self.ui_menu and self.ui_menu.isVisible():
+    #         #    self.ui_menu.update_position(drag=True)
+    #         if self._hovering or ctrl.focus == self:
+    #             pass
+    #             # print 'ctrl.ui problem here!'
+    #             # assert(False)
+    #             # if ctrl.ui.is_target_reticle_over(self):
+    #             # ctrl.ui.update_target_reticle_position()
+    #     return QtWidgets.QGraphicsItem.itemChange(self, change, value)
 
 
 
@@ -782,7 +771,7 @@ class ConstituentNode(Node):
             nodes = ctrl.forest.list_nodes_once(root)
             drag_host_index = nodes.index(drag_host)
             dx, dy, dummy_z = drag_host.current_position
-            for node in ctrl.forest.list_nodes_once(drag_host):
+            for node in ctrl.forest.list_nodes_once(drag_host, only_visible=True):
                 if nodes.index(node) >= drag_host_index:
                     ctrl.dragged.add(node)
                     x, y, dummy_z = node.current_position
@@ -830,8 +819,6 @@ class ConstituentNode(Node):
         self.release()
         self.update()
         if recipient and recipient.accepts_drops(self):
-            print('dropped on recipient: ', recipient)
-            print(self.adjustment, self.computed_position, self.current_position)
             self.adjustment = (0, 0, 0)
             recipient.drop(self)
         else:

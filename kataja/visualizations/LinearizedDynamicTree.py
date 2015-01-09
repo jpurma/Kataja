@@ -65,8 +65,8 @@ class LinearizedDynamicTree(BaseVisualization):
         node.locked_to_position = False
         node.reset_adjustment()
         node.update_label()
+        node.update_visibility()
         if isinstance(node, ConstituentNode):
-            node.update_visibility(show_edges=True, scope=0, brackets=self.forest.settings.bracket_style)
             if node.is_leaf_node():
                 node.bind_x = True
                 node.bind_y = True

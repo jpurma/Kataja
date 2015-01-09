@@ -73,10 +73,10 @@ class LeftFirstTree(BaseVisualization):
         node.locked_to_position = False
         node.reset_adjustment()
         node.update_label()
+        node.update_visibility()
         if isinstance(node, ConstituentNode):
             node.bind_x = True
             node.bind_y = True
-            node.update_visibility(show_edges=True, scope=0, brackets=self.forest.settings.bracket_style)
         elif isinstance(node, FeatureNode) or isinstance(node, GlossNode):
             node.bind_x = False
             node.bind_y = False

@@ -98,8 +98,6 @@ class Forest(Savable):
         self.saved.buildstring = ''
 
     def after_init(self):
-        print('forest after init called')
-        print(self.vis_data)
         self.update_visualization()
 
         #self.bracket_manager.rebuild_brackets()
@@ -250,7 +248,7 @@ class Forest(Savable):
         return res
 
     #@time_me
-    def list_nodes_once(self, first):
+    def list_nodes_once(self, first, only_visible=True):
         """
         Do left-first iteration through all nodes and return a list where only first instance of each node is present.
         :param first: Node, can be started from a certain point in structure
@@ -260,10 +258,10 @@ class Forest(Savable):
         def _iterate(node):
             if not node in res:
                 res.append(node)
-                l = node.left()
+                l = node.left(only_visible=only_visible)
                 if l:
                     _iterate(l)
-                r = node.right()
+                r = node.right(only_visible=only_visible)
                 if r:
                     _iterate(r)
         _iterate(first)
@@ -552,7 +550,6 @@ class Forest(Savable):
         for root in self.roots:
             nodes = self.list_nodes_once(root)
             if node_A in nodes and node_B in nodes:
-                print('node A: ', nodes.index(node_A), ' node B: ', nodes.index(node_B))
                 return nodes.index(node_A) < nodes.index(node_B)
         return None
 
@@ -771,7 +768,6 @@ class Forest(Savable):
         :param node:
         :return:
         """
-        print("Creating trace for ", node)
         index = node.index
         new_chain = False
         if not index:
@@ -1051,6 +1047,19 @@ class Forest(Savable):
         pos = edge.end_point
         placeholder = self.create_placeholder_node(pos)
         self.set_edge_end(edge, placeholder)
+
+    def adjust_edge_visibility_for_node(self, node, visible):
+        if isinstance(node, ConstituentNode):
+            constituent_edges_visible = visible and self.visualization.show_edges_for(node) and self.settings.shows_constituent_edges and not node.triangle
+            for edge in node.edges_down:
+                v = edge.visible
+                if edge.edge_type == g.CONSTITUENT_EDGE:
+                    edge.visible = constituent_edges_visible and edge.end.visible
+                else:
+                    edge.visible = visible
+                if v and not edge.visible:
+                    ctrl.ui.remove_touch_areas_for(edge)
+
 
 
     # ## order markers are special nodes added to nodes to signal the order when the node was merged/added to forest
@@ -1566,7 +1575,6 @@ class Forest(Savable):
         # the new_node an index so it can be reconstructed as a trace structure
         moving_was_higher = self.is_higher_in_tree(new_node, replaced)
         # returns None if they are not in same tree
-        print('moving_was_higher:', moving_was_higher, new_node, replaced)
         if moving_was_higher is not None:
             if not new_node.index:
                 new_node.index = self.chain_manager.next_free_index()
@@ -1633,12 +1641,11 @@ class Forest(Savable):
     #### Triangles ##############################################
 
     def add_triangle_to(self, node):
-        print("Before trianglifying:", node.label_rect, node.boundingRect())
         node.triangle = True
-        print("After trianglefying:", node.label_rect, node.boundingRect())
-        fold_scope = set(self.list_nodes_once(node))
-        # fixme: children of elements that cannot be folded are still folded
+        fold_scope = self.list_nodes_once(node)
+        not_my_children = set()
         for folded in fold_scope:
+            parents = folded.get_parents()
             if folded is node:
                 continue
             # allow recursive triangles -- don't overwrite existing fold
@@ -1647,20 +1654,34 @@ class Forest(Savable):
             # multidominated nodes can be folded if all parents are in scope of fold
             elif folded.is_multidominated():
                 can_fold = True
-                for parent in folded.get_parents():
+                for parent in parents:
                     if parent not in fold_scope:
+                        print('Node %s cannot be folded' % folded)
+                        not_my_children.add(folded)
                         can_fold = False
                         break
                 if can_fold:
+                    print('Folding multidominated node %s' % folded)
                     folded.folding_towards = node
                     folded.after_move_function = folded.finish_folding
-
+            elif parents and parents[0] in not_my_children:
+                not_my_children.add(folded)
+                continue
             else:
                 folded.folding_towards = node
                 folded.after_move_function = folded.finish_folding
 
     def remove_triangle_from(self, node):
         node.triangle = False
+        fold_scope = self.list_nodes_once(node, only_visible=False)
+        print(fold_scope)
+        for folded in fold_scope:
+            if folded.folding_towards is node:
+                folded.folding_towards = None
+                folded.adjustment = node.adjustment
+                folded.update_visibility(show_edges=True)
+                folded.update_bounding_rect()
+
 
     def can_fold(self, node):
         return True
