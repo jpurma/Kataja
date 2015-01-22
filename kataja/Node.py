@@ -24,12 +24,13 @@
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import Qt
+from kataja.parser import LatexToINode
 
 from kataja.ui.ControlPoint import ControlPoint
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.Label import Label
 from kataja.Movable import Movable
-from kataja.utils import to_tuple, create_shadow_effect
+from kataja.utils import to_tuple, create_shadow_effect, latex2html
 import kataja.globals as g
 
 
@@ -68,6 +69,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self._label_complex = None
         self._label_visible = True
         self._label_font = None  # @UndefinedVariable
+        self._label_qdocument = None
+        self._label_raw = None
         self.label_rect = None
 
         self._index_label = None
@@ -119,6 +122,9 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             self.syntactic_object.label = value
             self.update_label()
 
+    @property
+    def label_as_html(self):
+        return latex2html(self.label)
 
     @property
     def edges_up(self):
@@ -474,11 +480,32 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """
         if not self._label_complex:
             self._label_complex = Label(parent=self)
-            self._label_complex.get_method = self.get_html_for_label
-            self._label_complex.set_method = self.label_edited
+            #self._label_complex.get = self.get_label_qdocument
+            #self._label_complex.get_raw = self.get_label_raw
+            #self._label_complex.set = self.label_edited
         self._label_complex.update_label()
         self.update_bounding_rect()
         self.update_status_tip()
+
+    @property
+    def raw_label_text(self):
+        """ Get the unparsed raw version of label (str)
+        :return:
+        """
+        return self.label
+
+    @property
+    def label_inodes(self):
+        """
+        :return: INodes or str or tuple of them
+        """
+        return LatexToINode.parse(self.raw_label_text)
+
+    def get_label_raw(self):
+        """ Get the unparsed raw version of label (str)
+        :return:
+        """
+        return self.label
 
     def update_status_tip(self):
         """ implement properly in subclasses, let tooltip tell about the node

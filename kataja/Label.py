@@ -25,8 +25,75 @@
 from PyQt5.QtCore import QPointF as Pf
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
+from kataja.parser.LatexToINode import ITextNode, ICommandNode
 
 # ctrl = Controller object, gives accessa to other modules
+
+class LabelDocument(QtGui.QTextDocument):
+    """ This extends QTextDocument with ability to read INodes (intermediary nodes) and turn them into QTextDocuments
+     RTF presentation """
+
+    def __init__(self):
+        QtGui.QTextDocument.__init__(self)
+
+    def run_command(self, command, cursor):
+        """
+        :param command: latex command that may be translated to rtf formatting commands.
+        :param cursor: here we write.
+        :param doc: document, required for fetching e.g. font info.
+        :return:
+        """
+        if command == 'emph':
+            c = QtGui.QTextCharFormat()
+            c.setFontItalic(True)
+            cursor.mergeCharFormat(c)
+        elif command == '^':
+            #c = QtGui.QTextCharFormat()
+            c = QtGui.QTextCharFormat()
+            c.setVerticalAlignment(QtGui.QTextCharFormat.AlignSuperScript)
+            cursor.mergeCharFormat(c)
+        elif command == '_':
+            c = QtGui.QTextCharFormat()
+            c.setVerticalAlignment(QtGui.QTextCharFormat.AlignSubScript)
+            c.setFontItalic(True)
+            cursor.mergeCharFormat(c)
+
+        #print('got command: %s' % command)
+
+
+    def write_node_to_document(self, n, cursor):
+        """ Recursive node writer. Stores the current charformat, so when the end of formatting scope is reached,
+        we can return to previous format.
+        :param n: node
+        :param cursor: cursor in document, this is the point where we write
+        :return:
+        """
+        if not n:
+            return
+        old_format = None
+        if isinstance(n, ICommandNode) and n.command:
+            old_format = QtGui.QTextCharFormat(cursor.charFormat())
+            self.run_command(n.command, cursor)
+        for part in n.parts:
+            if isinstance(part, ITextNode): # ITextNode includes also ICommandNodes and IConstituentNodes
+                self.write_node_to_document(part, cursor)
+            else:
+                cursor.insertText(part)
+        if old_format:
+            cursor.setCharFormat(old_format)
+
+
+    def parse_inodes(self, inodes):
+        """ Does what it says.
+        :param inodes: Node or nodes to be translated. If there are several, linebreak is added between them """
+        self.clear()
+        cursor = QtGui.QTextCursor(self)
+        if isinstance(inodes, tuple) or isinstance(inodes, list):
+            for node in inodes:
+                self.write_node_to_document(node, cursor)
+                cursor.insertText('\n')
+        else:
+            self.write_node_to_document(inodes, cursor)
 
 
 class Label(QtWidgets.QGraphicsTextItem):
@@ -39,8 +106,6 @@ class Label(QtWidgets.QGraphicsTextItem):
         QtWidgets.QGraphicsTextItem.__init__(self, parent)
         # self.setTextInteractionFlags(Qt.TextEditable) # .TextInteractionFlag.
         self._source_text = ''
-        self._get_host_text = None
-        self._set_host_text = None
         self._host = parent
         self._ellipse = None
         self._doc = None
@@ -49,28 +114,14 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.selectable = False
         self.draggable = False
         self.clickable = False
+        self.total_height = 0
+        self.setDocument(LabelDocument())
 
-    @property
-    def get_method(self):
-        return self._get_host_text
+    def get_raw(self):
+        return self._host.raw_label_text
 
-    @get_method.setter
-    def get_method(self, getter):
-        """ Assign method that is used to get text for label
-        :param getter:
-        """
-        self._get_host_text = getter
-
-    @property
-    def set_method(self):
-        return self._set_host_text
-
-    @set_method.setter
-    def set_method(self, getter):
-        """ Assign method that is used to get text for label
-        :param getter:
-        """
-        self._set_host_text = getter
+    def get_inodes(self):
+        return self._host.label_inodes
 
     def get_plaintext(self):
         """
@@ -90,27 +141,17 @@ class Label(QtWidgets.QGraphicsTextItem):
 
     def update_label(self):
         """ Asks for node/host to give text and update if changed """
-        #self.setDefaultTextColor(self._host.color())
         self.setFont(self._host.font)
-        if self.get_method:
-            new_source_text = self.get_method()
-            if new_source_text != self._source_text:
-                self._source_text = str(new_source_text)
+        raw = self.get_raw()
+        if raw:
+            if raw != self._source_text:
+                self.document().parse_inodes(self.get_inodes())
                 self.prepareGeometryChange()
-                if self._doc:
-                    self._doc.clear()
-                else:
-                    self._doc = QtGui.QTextDocument()
-                    # self._doc.setUseDesignMetrics(True)
-                    self._doc.contentsChanged = self.set_method
-                    self.setDocument(self._doc)
-                self._doc.setHtml(self._source_text)
-            brect = self.boundingRect()
-            self.total_height = brect.height() + self.y_offset
-            self.setPos(brect.width() / -2.0, (self.total_height / -2.0) + self.y_offset)
-            self._ellipse = QtGui.QPainterPath()
-            self._ellipse.addEllipse(Pf(0, self.y_offset), brect.width() / 2, brect.height() / 2)
-
+        brect = self.boundingRect()
+        self.total_height = brect.height() + self.y_offset
+        self.setPos(brect.width() / -2.0, (self.total_height / -2.0) + self.y_offset)
+        self._ellipse = QtGui.QPainterPath()
+        self._ellipse.addEllipse(Pf(0, self.y_offset), brect.width() / 2, brect.height() / 2)
 
     def paint(self, painter, option, widget):
         """ Painting is sensitive to mouse/selection issues, but usually with

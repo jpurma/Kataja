@@ -26,11 +26,12 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.Node import Node
-from kataja.utils import to_tuple
+from kataja.utils import to_tuple, latex2html
 import kataja.globals as g
 
-
 # ctrl = Controller object, gives accessa to other modules
+from kataja.parser import LatexToINode
+
 TRIANGLE_HEIGHT = 10
 
 class ConstituentNode(Node):
@@ -49,7 +50,6 @@ class ConstituentNode(Node):
     def __init__(self, constituent=None):
         """ Most of the initiation is inherited from Node """
         Node.__init__(self, syntactic_object=constituent)
-        self.saved.alias = ""
         self.saved.is_trace = False
         self.saved.triangle = False
         self.saved.merge_order = 0
@@ -66,7 +66,6 @@ class ConstituentNode(Node):
         # ### Projection -- see also preferences that govern if these are used
         self.can_project = True
         self.projecting_to = set()
-
 
         # ### Cycle index stores the order when node was originally merged to structure.
         # going up in tree, cycle index should go up too
@@ -109,6 +108,11 @@ class ConstituentNode(Node):
         if self.syntactic_object:
             self.syntactic_object.alias = value
             self.update_identity()
+
+    @property
+    def alias_as_html(self):
+        return latex2html(self.alias)
+
 
     @property
     def index(self):
@@ -227,6 +231,39 @@ class ConstituentNode(Node):
             return gl[0]
 
 
+    @property
+    def raw_label_text(self):
+        """ Get the unparsed raw version of label (str)
+        :return:
+        """
+        a = self.alias
+        l = self.label
+        if a and l:
+            return a + ' ' + l
+        elif a:
+            return a
+        elif l:
+            return l
+        return ''
+
+    @property
+    def label_inodes(self):
+        """
+        :return: INodes or str or tuple of them
+        """
+        a = self.alias
+        l = self.label
+        if a and l:
+            return LatexToINode.parse(a), LatexToINode.parse(l)
+        elif a:
+            return LatexToINode.parse(a)
+        elif l:
+            return LatexToINode.parse(l)
+        else:
+            return None
+
+
+
     def update_status_tip(self):
         if self.syntactic_object:
             if self.alias:
@@ -325,7 +362,7 @@ class ConstituentNode(Node):
 
         :param kw:
         """
-        print("For node %s: %s" % (self, str(kw)))
+        #print("For node %s: %s" % (self, str(kw)))
         folded_away = self.folding_towards
         self._visibility_brackets = kw.get('brackets', self._visibility_brackets)
         was_visible = self.visible
@@ -524,8 +561,8 @@ class ConstituentNode(Node):
                 if node.is_leaf_node():
                     s.append(node.alias or node.label)
             return ' '.join(s)
-        alias = self.alias
-        label = self.label
+        alias = self.alias_as_html
+        label = self.label_as_html
 
         index = self.index
         if index:

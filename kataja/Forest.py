@@ -41,11 +41,11 @@ from kataja.ChainManager import ChainManager
 from kataja.DerivationStep import DerivationStepManager
 from kataja.GlossNode import GlossNode
 from kataja.Node import Node
-from kataja.Parser import BottomUpParser
+from kataja.parser.INodeToKatajaConstituent import INodeToKatajaConstituent
 from kataja.Presentation import TextArea, Image
 from kataja.Edge import Edge
 from kataja.UndoManager import UndoManager
-from kataja.utils import to_tuple, caller
+from kataja.utils import to_tuple, caller, time_me
 from kataja.FeatureNode import FeatureNode
 from kataja.Saved import Savable
 import kataja.globals as g
@@ -79,7 +79,7 @@ class Forest(Savable):
         self.visualization = None  # BalancedTree()
         self.gloss = None
         self.bracket_manager = BracketManager(self)
-        self.parser = BottomUpParser(self)
+        self.parser = INodeToKatajaConstituent(self)
         self.undo_manager = UndoManager(self)
         self.chain_manager = ChainManager(self)
 
@@ -586,9 +586,8 @@ class Forest(Savable):
 
     #### Primitive creation of forest objects ###################################
 
-    #@time_me
     def create_node_from_constituent(self, C, pos=None, result_of_merge=False, result_of_select=False,
-                                     replacing_merge=0, replacing_select=0, silent=False, inherits_from = None):
+                                     replacing_merge=0, replacing_select=0, silent=False, inherits_from=None):
         """ All of the node creation should go through this!
         :param C:
         :param pos:
@@ -741,7 +740,7 @@ class Forest(Savable):
         :param text:
         :param pos:
         """
-        remainder, node = self.parser.parse(text)
+        node = self.parser.parse_into_forest(text)
         return node
         #self.add_to_scene(root_node)
         #self.update_root_status(root_node)
@@ -757,8 +756,7 @@ class Forest(Savable):
         text = text.strip()
         if text.startswith('\gll'):
             self._gloss_text = text[5:].strip('{} ')
-        parser_method = self.parser.detect_suitable_parser(text)
-        parser_method(text)
+        nodes = self.parser.parse_into_forest(text)
         self.settings.uses_multidomination = False
         self.traces_to_multidomination()
 
@@ -1149,8 +1147,9 @@ class Forest(Savable):
         :param text:
         :param node:
         """
-        new_node = self.parser.parse(text)
-        self.replace_node(node, new_node)
+        new_nodes = self.parser.parse_into_forest(text)
+        if new_nodes:
+            self.replace_node(node, new_nodes[0])
 
     # not used
     def edit_node_alias(self, node, text):
@@ -1162,17 +1161,6 @@ class Forest(Savable):
         """
         assert False
         node.alias = text
-
-    # not used
-    def rebuild_constituent_node(self, node, text):
-        # I think this has to be done by removing the old node and replacing it with a new one.
-        """
-
-        :param node:
-        :param text:
-        """
-        new_node = self.parser.parse(text, forest=self)
-        self.replace_node(node, new_node)
 
     #### Switching between multidomination and traces ######################################
 

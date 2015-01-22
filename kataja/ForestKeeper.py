@@ -133,7 +133,7 @@ class ForestKeeper(Savable):
         """
         self.forests = []
         forest = None
-        buildstring = ''
+        buildstring_lines = []
         for line in treelist:
             line = line.strip()
             line.split('=', 1)
@@ -143,7 +143,7 @@ class ForestKeeper(Savable):
                     forest.add_comment(line[1:])
                 else:
                     pass
-            elif len(parts) > 1:
+            elif len(parts) > 1 and not line.startswith('['): # Definition line
                 if not forest:
                     forest = Forest()
                     ctrl.main.set_forest(forest)
@@ -152,21 +152,24 @@ class ForestKeeper(Savable):
                 forest.parser.add_definition(word, values)
                 # if key== '\gll':
                 # forest.setGloss(line)
-            elif line.startswith("'"):
+            elif line.startswith("'"): # Gloss text
                 if forest:
                     if line.endswith("'"):
                         line = line[:-1]
                     forest.gloss_text = line[1:]
             elif forest and not line:  # finalize this forest
-                forest.build(buildstring)
+                print('building forest: ', '\n'.join(buildstring_lines))
+                forest.build('\n'.join(buildstring_lines))
                 self.forests.append(forest)
                 forest = None
             elif line and not forest:  # start a new forest
-                buildstring = line
+                buildstring_lines = [line]
                 forest = Forest()
                 ctrl.main.forest = forest
+            elif line and forest:
+                buildstring_lines.append(line)
         if forest:  # make sure that the last forest is also added
-            forest.build(buildstring)
+            forest.build('\n'.join(buildstring_lines))
             self.forests.append(forest)
         self.current_index = 0
         if self.forests:

@@ -21,6 +21,7 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
+import re
 
 from types import FrameType
 import gc
@@ -375,7 +376,16 @@ def print_transform(transform):
     print('isRotating:%s isScaling:%s isTranslating:%s' % (t.isRotating(), t.isScaling(), t.isTranslating()))
 
 
+def latex2html(string):
+    if not string:
+        return string
+    splitter = '([\\\[\]\{\} +_\^\$])'  #
 
+    items = re.split(splitter, string)
+
+    print(items)
+    s = string
+    return s
 
 
 

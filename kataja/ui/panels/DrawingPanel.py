@@ -268,7 +268,7 @@ class DrawingPanel(UIPanel):
         self.update_scope_selector()
         self.update_fields()
 
-    @time_me
+    #@time_me
     def update_scope_selector_options(self):
         """ Redraw scope selector, show only scopes that are used in this forest """
         used_scopes = {self.scope}

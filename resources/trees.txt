@@ -7,9 +7,9 @@
 #%demo/nodeforms.png
 #%demo/features.png
 
-#Siviä oli jo todella jättänyt Lahdenperän, joka vasta tavallisen kursastelun ja säädyllisen estelemisen jälkeen viimeinkin oli suostunut ottamaan toisenkin palasen sokeria astiasta, pistämättä sitä kuitenkaan kokonaisena kahvinsa sekaan, vaan puraisemalla siitä puolikkaan ja pistämällä sen takaisin astiaan. 
+#Siviä oli jo todella jättänyt Lahdenperän, joka vasta tavallisen kursastelun ja säädyllisen estelemisen jälkeen viimeinkin oli suostunut ottamaan toisenkin palasen sokeria astiasta, pistämättä sitä kuitenkaan kokonaisena kahvinsa sekaan, vaan puraisemalla siitä puolikkaan ja pistämällä sen takaisin astiaan.
 
-#[.{EvidP} Part-Evid [.{EvidP} [.{NegP} Part-Neg [.{NegP_j} [.{vP_i} Args-Verb ] [.{Neg} Neg0 t_i ]]]] [.{Evid} Evid0 t_j ]]]
+[.{EvidP} Part-Evid^0 [.{EvidP} [.{NegP} Part-Neg [.{NegP_j} [.{vP_i} Args Verb] [.{Neg} Neg^0 t_i ]]] [.{Evid} Evid0 t_j ]]]
 
 [.{EvidP} Part-Evid [.{EvidP} [.{NegP_j} Part-Neg [.{NegP} [.{vP_i} Args Verb] [.{Neg} Neg^0 t_i]]] [.{Evid} Evid^0 t_j]]]
 
@@ -33,6 +33,24 @@ ang tubig = 'ANG water'
 
 [.{FP} t_i [.{F'} t_j [.{TP} t_i [.{T'} t_j [.{AuxP} on_j [.{PrtP} t_k [.{VP} {Graham Greene_i} [.{V'} kirjoittanut_k [.{DP} tämän kirjan ] ] ] ] ] ] ] ] ]
 #kirjoittanut = 3rd:person, perf:tense
+
+
+[.TP
+[.AdvP [.Adv\\usually ] ]
+          [.TP
+             [.DP [.D\\{\O} ] [.NP\\John ] ]
+             [.T\1
+               [.T\\\emph{PRESENT} ]
+               [.VP [.VP
+                 [.V\\goes ] [.PP [.P\\to ]
+                                  [.DP [.D\\the ] [.NP\\park ] ]
+] ]
+                     [.PP [.P\\on ]
+                          [.DP [.D\\{\O} ] [.NP\\Tuesdays ] ]
+] ]
+] ]
+]
+
 
 [.{FP} {Graham Greene_i} [.{F'} on_j [.{TP} t_i [.{T'} t_j [.{AuxP} t_j [.{PrtP} kirjoittanut_k [.{VP} t_i [.{V'} t_k [.{DP} tämän kirjan ] ] ] ] ] ] ] ] ]
 
