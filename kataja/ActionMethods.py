@@ -54,11 +54,18 @@ class ActionMethods:
         :return:
         """
         panel = ctrl.ui.get_panel(panel_id)
-        if panel.isVisible():
-            panel.close()
+        if panel:
+            if panel.isVisible():
+                panel.close()
+            else:
+                panel.setVisible(True)
+                panel.set_folded(False)
         else:
+            data = PANELS[panel_id]
+            panel = ctrl.ui.create_panel(panel_id, **data)
             panel.setVisible(True)
             panel.set_folded(False)
+
 
     def toggle_fold_panel(self, panel_id):
         panel = ctrl.ui.get_panel(panel_id)

@@ -232,7 +232,7 @@ def parse(text):
         print(node.raw_string)
         print('---- input was ----')
         print(text)
-        quit()
+        #quit()
     return node
 
 

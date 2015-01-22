@@ -34,9 +34,10 @@ import sys
 from kataja.globals import *
 from kataja.utils import time_me
 
+# Alternatives: Cambria Math, Asana Math, XITS Math
 
-mac_fonts = {MAIN_FONT: ('Palatino', 'Normal', 12),
-         BIG_FONT: ('Palatino', 'Normal', 24),
+mac_fonts = {MAIN_FONT: ('Asana Math', 'Normal', 12),
+         BIG_FONT: ('Asana Math', 'Normal', 20),
          MENU_FONT: ('Monaco', 'Normal', 10),
          UI_FONT: ('Helvetica', 'Normal', 10),
          PHRASE_LABEL_FONT: ('Helvetica', 'Normal', 10),
@@ -370,7 +371,7 @@ class QtPreferences:
         t = time.time()
         print("font families:", QtGui.QFontDatabase().families())
         self.easing_curve = []
-        self.prepare_fonts(preferences.fonts, fontdb)
+        self.prepare_fonts(preferences.fonts, fontdb, preferences)
         self.prepare_easing_curve(preferences._curve, preferences.move_frames)
         self.no_pen = QtGui.QPen()
         self.no_pen.setStyle(QtCore.Qt.NoPen)
@@ -421,7 +422,7 @@ class QtPreferences:
         s = sum(self.easing_curve)
         self.easing_curve = [x / s for x in self.easing_curve]
 
-    def prepare_fonts(self, fonts_dict, fontdb):
+    def prepare_fonts(self, fonts_dict, fontdb, preferences):
         """
 
         :param fonts_dict:
@@ -429,7 +430,13 @@ class QtPreferences:
         """
         self.fonts = {}
         for key, font_tuple in fonts_dict.items():
-            self.fonts[key] = fontdb.font(font_tuple[0], font_tuple[1], font_tuple[2])
+            name, style, size = font_tuple
+            font = fontdb.font(name, style, size)
+            if name == 'Asana Math' and not font.exactMatch():
+                print('Loading Asana Math locally')
+                fontdb.addApplicationFont(preferences.resources_path + "Asana-Math.otf")
+                font = fontdb.font(name, style, size)
+            self.fonts[key] = font
         font = QtGui.QFontMetrics(self.fonts[MAIN_FONT])  # it takes 2 seconds to get FontMetrics
         self.font_space_width = font.width(' ')
         self.font_bracket_width = font.width(']')

@@ -63,6 +63,7 @@ COLOR_THEME = 'color_theme'
 COLOR_WHEEL = 'color_wheel'
 DRAWING = 'drawing'
 LINE_OPTIONS = 'line_options'
+SYMBOLS = 'symbols'
 
 # Alignment of edges
 NO_ALIGN = 0

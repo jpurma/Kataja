@@ -41,6 +41,14 @@ May 2015: Beta1 -- Presenation features, step-by-step derivation and improvement
 September 2015: Beta2 -- Crafting features: API for making derivation rules, interface for feature and lexicon creation and running derivations for given input files.
 
 
+3rd party resources
+-------------------
 
+There are few things that make Kataja so much better:
 
+Apostolos Syropoulos: Asana Math Font.
+http://www.ctan.org/pkg/asana-math
+
+Ethan Schoonover: Solarized colors 
+http://ethanschoonover.com/solarized
 
