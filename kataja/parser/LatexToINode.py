@@ -6,39 +6,6 @@
 # This module can be run and tested as it is,
 #from kataja.utils import time_me
 
-latex_to_unicode = {
-    'bar': '\u00AF', 
-    'abar': '\u0100',  
-    # small greek alphabet
-    'alpha': '\u03b1', 
-    'beta': '\u03b2', 
-    'gamma': '\u03b3', 
-    'delta': '\u03b4',
-    'epsilon': '\u03b5', 
-    'zeta': '\u03b6', 
-    'eta': '\u03b7', 
-    'theta': '\u03b8', 
-    'iota': '\u03b9',
-    'kappa': '\u03ba', 
-    'lambda': '\u03bb', 
-    'mu': '\u03bc', 
-    'nu': '\u03bd', 
-    'xi': '\u03be',
-    'omicron': '\u03bf', 
-    'pi': '\u03c0', 
-    'rho': '\u03c1', 
-    'varsigma': '\u03c2',
-    'sigma': '\u03c3', 
-    'tau': '\u03c4', 
-    'upsilon': '\u03c5', 
-    'phi': '\u03c6', 
-    'chi': '\u03c7',
-    'psi': '\u03c8', 
-    'omega': '\u03c9', 
-    'leftarrow': '\u2190', 
-    'rightarrow': '\u2192',
-    'righthookarrow': '\u21aa'
-}
 
 latex_to_rtf = {
     'sup': 'sup', 
@@ -261,8 +228,11 @@ def parse(text):
         assert(node.raw_string == text)
     except AssertionError:
         print('raw string different from given input:')
+        print('---- raw string ----')
         print(node.raw_string)
+        print('---- input was ----')
         print(text)
+        quit()
     return node
 
 
