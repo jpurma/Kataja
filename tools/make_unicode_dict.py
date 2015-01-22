@@ -1,10 +1,11 @@
 from xml.dom.minidom import parse, parseString
+import pprint
 
 MAKE = 1
 PREVIEW = 0
 
-#operation = MAKE 
-operation = PREVIEW
+operation = MAKE 
+#operation = PREVIEW
 
 dom1 = parse('../temp/unicode.xml') # parse an XML file by name
 
@@ -46,9 +47,10 @@ find_characters(dom1)
 if operation == MAKE:
     w = open('../kataja/parser/latex_to_unicode.py', 'w')
     w.write("""# This file is created with tools/make_unicode_dict.py from unicode.xml, downloaded from
-    # http://www.w3.org/TR/unicode-xml/  
-    """)
-    w.write('latex_to_unicode = ' + str(charmap))
+# http://www.w3.org/TR/unicode-xml/  
+""")
+    w.write('latex_to_unicode = ')
+    pprint.pprint(charmap, stream=w)
     w.write('\n')
     w.close()
 else:
