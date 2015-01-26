@@ -10,6 +10,8 @@ operation = MAKE
 dom1 = parse('../temp/unicode.xml') # parse an XML file by name
 
 charmap = {}
+prep_tables = ['greek', 'latin', 'combining', 'arrows', 'rest']
+tables = ['cyrchar', 'ding', 'ElsevierGlyph', 'mathbb', 'mathbf', 'mathbit', 'mathfrak', 'mathmit', 'mathscr', 'mathsfbfsl', 'mathsfbf', 'mathsfsl', 'mathsf', 'mathslbb', 'mathsl', 'mathtt']
 
 def getText(nodelist):
     rc = []
@@ -37,11 +39,28 @@ def find_characters(dom):
                 else:
                     uchars =  char_code.split('-')
                     unicode_char = ''.join([chr(int(c)) for c in uchars]) 
-
-                charmap[latex[1:]] = (unicode_char, description)
+                category = choose_category(latex[1:], description)
+                charmap[latex[1:]] = (unicode_char, description, category)
                 b += 1
             c += 1 
     print("Found %s characters, where %s latex command and %s had slash-command" % (d, c, b))
+
+def choose_category(key, description):
+    if 'greek' in description:
+        return 'greek'
+    elif description.startswith('latin'):
+        return 'latin'
+    elif description.startswith('combining'):
+        return 'combining'
+    elif 'left' in description or 'right' in description or 'arrow' in description:
+        return 'arrows'
+    else:
+        for tname in tables:
+            if key.startswith(tname):
+                return tname
+        return 'rest'
+
+
 find_characters(dom1)
 
 if operation == MAKE:

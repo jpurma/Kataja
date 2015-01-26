@@ -1,7 +1,7 @@
 __author__ = 'purma'
 
 from PyQt5 import QtWidgets, QtGui, QtCore
-from kataja.ui.embeds.UIEmbed import UIEmbed
+from kataja.ui.embeds.UIEmbed import UIEmbed, EmbeddedLineEdit
 from kataja.singletons import qt_prefs, ctrl, prefs
 from kataja.utils import print_transform
 from kataja.ui.DrawnIconEngine import DrawnIconEngine
@@ -17,6 +17,9 @@ def make_label(text, parent=None, layout=None, tooltip='', buddy=None, palette=N
     layout.addWidget(label)
     return label
 
+
+
+
 class ConstituentEditEmbed(UIEmbed):
 
     def __init__(self, parent, ui_manager, scenePos):
@@ -29,31 +32,22 @@ class ConstituentEditEmbed(UIEmbed):
         ui_p = QtGui.QPalette()
         ui_p.setColor(QtGui.QPalette.Text, ctrl.cm.ui())
 
-        self.alias_edit = QtWidgets.QLineEdit(self)
         f = QtGui.QFont(qt_prefs.font(g.MAIN_FONT))
         f.setPointSize(f.pointSize() * 2)
         tt = "non-functional readable label of the constituent"
-        self.alias_edit.setFont(f)
-        self.alias_edit.setToolTip(tt)
-        self.alias_edit.setStatusTip(tt)
+        self.alias_edit = EmbeddedLineEdit(self, tip=tt, font=f)
         hlayout.addWidget(self.alias_edit)
         self.alias_label = make_label('Alias', self, hlayout, tt, self.alias_edit, ui_p)
         layout.addLayout(hlayout)
 
         hlayout = QtWidgets.QHBoxLayout()
-        self.input_line_edit = QtWidgets.QLineEdit(self)
-        self.input_line_edit.setFont(f)
         tt = "Label of the constituent (functional identifier)"
-        self.input_line_edit.setToolTip(tt)
-        self.input_line_edit.setStatusTip(tt)
+        self.input_line_edit = EmbeddedLineEdit(self, tip=tt, font=f)
         hlayout.addWidget(self.input_line_edit)
         self.label_label = make_label('Label', self, hlayout, tt, self.input_line_edit, ui_p)
 
-        self.index_edit = QtWidgets.QLineEdit(self)
-        self.index_edit.setFont(f)
         tt = "Index to recognize multiple occurences"
-        self.index_edit.setToolTip(tt)
-        self.index_edit.setStatusTip(tt)
+        self.index_edit = EmbeddedLineEdit(self, tip=tt, font=f)
         self.index_edit.setFixedWidth(20)
         hlayout.addWidget(self.index_edit)
         self.index_label = make_label('Index', self, hlayout, tt, self.index_edit, ui_p)
@@ -62,13 +56,9 @@ class ConstituentEditEmbed(UIEmbed):
 
         fg = QtGui.QFont(qt_prefs.font(g.ITALIC_FONT))
         fg.setPointSize(f.pointSize() * 2)
-
         hlayout = QtWidgets.QHBoxLayout()
-        self.gloss_edit = QtWidgets.QLineEdit(self)
-        self.gloss_edit.setFont(fg)
         tt = "A translation of the word"
-        self.gloss_edit.setToolTip(tt)
-        self.gloss_edit.setStatusTip(tt)
+        self.gloss_edit = EmbeddedLineEdit(self, tip=tt, font=fg)
         hlayout.addWidget(self.gloss_edit)
         self.gloss_label = make_label('Gloss', self, hlayout, tt, self.gloss_edit, ui_p)
         layout.addLayout(hlayout)
@@ -80,6 +70,7 @@ class ConstituentEditEmbed(UIEmbed):
         self.setLayout(layout)
         self.assumed_width = 200
         self.assumed_height = 117
+
 
     def update_position(self):
         sx,sy,sz = self.node.current_position
@@ -106,29 +97,22 @@ class ConstituentEditEmbed(UIEmbed):
             gpc = ctrl.forest.settings.node_settings(g.GLOSS_NODE, 'color')
             pg.setColor(QtGui.QPalette.Text, ctrl.cm.get(gpc))
 
-            self.alias_edit.setFont(f)
-            self.alias_edit.setPalette(p)
-            self.alias_edit.setText(self.node.alias)
+            self.alias_edit.update_visual(palette=p, font=f, text=self.node.alias)
             self.alias_label.setFont(qt_prefs.font(g.UI_FONT))
             self.alias_label.setPalette(ui_p)
-            self.input_line_edit.setFont(f)
-            self.input_line_edit.setPalette(p)
             self.label_label.setFont(qt_prefs.font(g.UI_FONT))
             self.label_label.setPalette(ui_p)
             if self.node.syntactic_object:
                 label = self.node.syntactic_object.label
             else:
                 label = ''
-            self.input_line_edit.setText(label)
-            self.index_edit.setFont(fg)
-            self.index_edit.setPalette(p)
-            self.index_edit.setText(self.node.index)
+            self.input_line_edit.update_visual(palette=p, font=f, text=label)
+            self.index_edit.update_visual(palette=p, font=fg, text=self.node.index)
+
             self.index_label.setFont(qt_prefs.font(g.UI_FONT))
             self.index_label.setPalette(ui_p)
 
-            self.gloss_edit.setFont(fg)
-            self.gloss_edit.setPalette(pg)
-            self.gloss_edit.setText(self.node.gloss)
+            self.gloss_edit.update_visual(palette=pg, font=fg, text=self.node.gloss)
             self.gloss_label.setFont(qt_prefs.font(g.UI_FONT))
             self.gloss_label.setPalette(ui_p)
 

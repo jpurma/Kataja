@@ -82,6 +82,7 @@ panel_classes = {g.LOG: LogPanel, g.TEST: TestPanel, g.NAVIGATION: NavigationPan
 
 menu_structure = OrderedDict([
     ('file_menu', ('&File', ['open', 'save', 'save_as', '---', 'print_pdf', 'blender_render', '---', 'preferences', '---', 'quit'])),
+    ('edit_menu', ('&Edit', ['undo', 'redo'])),
     ('build_menu', ('&Build', ['next_forest', 'prev_forest', 'next_derivation_step', 'prev_derivation_step'])),
     ('rules_menu', ('&Rules', ['label_visibility', 'bracket_mode', 'trace_mode', 'merge_edge_shape', 'feature_edge_shape', 'merge_order_attribute', 'select_order_attribute'])),
     ('view_menu', ('&View', ['$visualizations', '---', 'change_colors', 'adjust_colors', 'zoom_to_fit', '---', 'fullscreen_mode'])),
@@ -333,7 +334,6 @@ class UIManager:
 
         self.symbols = set()
         ctrl.deselect_objects()
-        ctrl.release_focus()
 
     def update_positions(self):
         """ UI has elements that point to graph scene elements, and when something moves there

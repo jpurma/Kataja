@@ -623,14 +623,15 @@ class GraphScene(QtWidgets.QGraphicsScene):
         return ctrl.latest_hover
 
     def dropEvent(self, event):
-         """ Not used at the moment! May be handy when we e.g. drop text snippets on Kataja,
-         but then again this may be better done in graph_view or in MainWindow
+        """ Not used at the moment! May be handy when we e.g. drop text snippets on Kataja,
+        but then again this may be better done in graph_view or in MainWindow
 
          :param event:
-         """
-         ctrl.pressed=None
-         self.kill_dragging()
-         QtWidgets.QGraphicsScene.dropEvent(self, event)
+        """
+        print("dropEvent at GraphScene")
+        ctrl.pressed=None
+        self.kill_dragging()
+        QtWidgets.QGraphicsScene.dropEvent(self, event)
 
     def drag_exact_start_point(self):
         return self._drag_start_point

@@ -52,3 +52,5 @@ http://www.ctan.org/pkg/asana-math
 Ethan Schoonover: Solarized colors 
 http://ethanschoonover.com/solarized
 
+W3C: Unicode characters to LaTeX -mapping
+http://www.w3.org/TR/unicode-xml/ 

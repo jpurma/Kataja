@@ -79,6 +79,7 @@ class ConstituentNode(Node):
             self._visibility_label = 0
             self._visibility_brackets = 0
 
+        self.setAcceptDrops(True)
         self.update_status_tip()
 
     def after_init(self):
@@ -914,5 +915,8 @@ class ConstituentNode(Node):
         if self.is_placeholder():
             ctrl.ui.create_touch_area(self, g.TOUCH_ADD_CONSTITUENT)
 
+
+    def dropEvent(self, event):
+        print("CN dropEvent")
 
 

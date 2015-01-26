@@ -1,7 +1,53 @@
 from PyQt5 import QtWidgets, QtCore
 from kataja.singletons import ctrl
+from kataja.ui.panels.SymbolPanel import open_symbol_data
 
 __author__ = 'purma'
+
+
+class EmbeddedLineEdit(QtWidgets.QLineEdit):
+
+    def __init__(self, parent, tip='', font=None):
+        QtWidgets.QLineEdit.__init__(self, parent)
+        if tip:
+            self.setToolTip(tip)
+            self.setStatusTip(tip)
+        if font:
+            self.setFont(font)
+        self.setAcceptDrops(True)
+        self.setDragEnabled(True)
+
+
+    def dragEnterEvent(self, event):
+        """ Announce support for regular ascii drops and drops of characters from symbolpanel.
+        :param event: QDragEnterEvent
+        :return:
+        """
+        if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist"):
+            event.acceptProposedAction()
+        else:
+            return QtWidgets.QLineEdit.dragEnterEvent(self, event)
+
+    def dropEvent(self, event):
+        """ Support regular ascii drops and drops of characters from symbolpanel.
+        :param event: QDropEvent
+        :return:
+        """
+        if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist"):
+            data = open_symbol_data(event.mimeData())
+            if data and 'char' in data:
+                self.insert(data['char'])
+                event.acceptProposedAction()
+        else:
+            return QtWidgets.QLineEdit.dropEvent(self, event)
+
+    def update_visual(self, **kw):
+        if 'palette' in kw:
+            self.setPalette(kw['palette'])
+        if 'font' in kw:
+            self.setFont(kw['font'])
+        if 'text' in kw:
+            self.setText(kw['text'])
 
 
 class UIEmbed(QtWidgets.QWidget):

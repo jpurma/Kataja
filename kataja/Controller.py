@@ -289,43 +289,7 @@ class Controller:
 
         :return:
         """
-        return self.ui_focus
-
-    def has_focus(self, ui_obj) -> bool:
-        """
-
-        :param ui_obj:
-        :return:
-        """
-        return self.ui_focus == ui_obj
-
-    def hosts_focus(self, ui_obj) -> bool:
-        """
-
-        :param ui_obj:
-        :return:
-        """
-        return self.ui_focus and self.ui_focus.host == ui_obj
-
-    def take_focus(self, ui_obj):
-        """
-
-        :param ui_obj:
-        """
-        if self.ui_focus:
-            self.release_focus()
-        self.ui_focus = ui_obj
-        ui_obj.update()
-
-    def release_focus(self):
-        """
-
-
-        """
-        old = self.ui_focus
-        self.ui_focus = None
-        if old:
-            old.update()
+        return self.main.app.focusWidget()
 
     # ******** /focus *******
     #

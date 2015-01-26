@@ -62,7 +62,9 @@ class GraphView(QtWidgets.QGraphicsView):
         # self.setViewportUpdateMode(QtWidgets.QGraphicsView.BoundingRectViewportUpdate)
         self.setViewportUpdateMode(QtWidgets.QGraphicsView.FullViewportUpdate)
         # self.setViewportUpdateMode(QtWidgets.QGraphicsView.NoViewportUpdate)
+        self.setFocusPolicy(QtCore.Qt.NoFocus)
         self.setMouseTracking(False)
+        self.setAcceptDrops(True)
         # self.setTransformationAnchor(QtWidgets.QGraphicsView.NoAnchor)
         self.target_scale = 0
         self._scale_factor = 1.0
@@ -122,6 +124,7 @@ class GraphView(QtWidgets.QGraphicsView):
 
         :param event:
         """
+        print("mouseReleaseEvent")
         QtWidgets.QGraphicsView.mouseReleaseEvent(self, event)
 
     def mouseMoveEvent(self, event):
@@ -192,7 +195,10 @@ class GraphView(QtWidgets.QGraphicsView):
 
         :param event:
         """
-        QtWidgets.QGraphicsView.dragEnterEvent(self, event)
+        if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist"):
+            event.acceptProposedAction()
+        else:
+            QtWidgets.QGraphicsView.dragEnterEvent(self, event)
 
     def dragLeaveEvent(self, event):
         """
@@ -206,14 +212,21 @@ class GraphView(QtWidgets.QGraphicsView):
 
         :param event:
         """
+        print("dropEvent to GraphView")
+        event.acceptProposedAction()
         QtWidgets.QGraphicsView.dropEvent(self, event)
+
+
 
     def dragMoveEvent(self, event):
         """
 
         :param event:
         """
-        QtWidgets.QGraphicsView.dragMoveEvent(self, event)
+        if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist"):
+            event.acceptProposedAction()
+        else:
+            QtWidgets.QGraphicsView.dragMoveEvent(self, event)
 
 
         # def mousePressEvent(self, event):
