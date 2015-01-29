@@ -60,6 +60,7 @@ class ConstituentNode(Node):
         self.has_visible_brackets = False
         self.left_bracket = None
         self.right_bracket = None
+        self.alias_inodes = LatexToINode.parse(self.raw_alias)
         # ###
         self.selectable = True
 
@@ -231,38 +232,19 @@ class ConstituentNode(Node):
         if gl:
             return gl[0]
 
-
     @property
-    def raw_label_text(self):
+    def raw_alias(self):
         """ Get the unparsed raw version of label (str)
         :return:
         """
-        a = self.alias
-        l = self.label
-        if a and l:
-            return a + ' ' + l
-        elif a:
-            return a
-        elif l:
-            return l
-        return ''
+        return self.alias
 
     @property
-    def label_inodes(self):
+    def label_complex_inodes(self):
         """
         :return: INodes or str or tuple of them
         """
-        a = self.alias
-        l = self.label
-        if a and l:
-            return LatexToINode.parse(a), LatexToINode.parse(l)
-        elif a:
-            return LatexToINode.parse(a)
-        elif l:
-            return LatexToINode.parse(l)
-        else:
-            return None
-
+        return self.alias_inodes, self.label_inodes
 
 
     def update_status_tip(self):
@@ -392,6 +374,7 @@ class ConstituentNode(Node):
         elif self.label and self.is_leaf_node():
             self._label_visible = True
         else:
+            print('hide label')
             self._label_visible = False
         if not self._label_complex:
             self.update_label()

@@ -6,6 +6,7 @@ from kataja.parser.BaseParser import BaseParser
 from kataja.parser.LatexToINode import parse
 from kataja.parser.LatexToINode import IConstituentNode, ITextNode, ICommandNode
 from kataja.singletons import ctrl
+from kataja.ConstituentNode import ConstituentNode
 import kataja.globals as g
 
 
@@ -23,6 +24,8 @@ class INodeToKatajaConstituent(BaseParser):
 
         :param string:
         """
+        if not string:
+            return None
         old_should_add = self.should_add_to_scene
         self.should_add_to_scene = True
         trans_nodes = parse(string)
@@ -47,15 +50,25 @@ class INodeToKatajaConstituent(BaseParser):
                 right_first.reverse()
                 for nnode in right_first:
                     child = self.node_to_constituentnodes(nnode)
-                    if child:
+                    if child and isinstance(child, ConstituentNode):
                         children.append(child)
-
-            label = node.label
-            if isinstance(label, ITextNode):
-                label = label.raw_string
-            alias = node.alias
-            if isinstance(alias, ITextNode):
-                alias = alias.raw_string
+            alias = ''
+            label = ''
+            gloss = ''
+            if isinstance(node.label, ITextNode):
+                label_lines = node.label.split_lines()
+                if len(label_lines) == 1:
+                    if node.parts:
+                        alias = label_lines[0].raw_string
+                    else:
+                        label = label_lines[0].raw_string
+                elif len(label_lines) == 2:
+                    alias = label_lines[0].raw_string
+                    label = label_lines[1].raw_string
+                elif len(label_lines) == 3:
+                    alias = label_lines[0].raw_string
+                    label = label_lines[1].raw_string
+                    gloss = label_lines[2].raw_string
             index = node.index
             constituent = ctrl.Constituent(label)
             if index:

@@ -67,6 +67,8 @@ def connect_according_to_edge(edge):
                 constituent_start.left = constituent_end
             else:
                 # Default, but unjustified: connect right child first
+                print(constituent_start)
+                print(constituent_end)
                 syntax("%s Set right:  %s " % (constituent_start, constituent_end))
                 constituent_start.right = constituent_end
         else:

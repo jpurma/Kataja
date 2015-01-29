@@ -23,11 +23,12 @@
 # ############################################################################
 
 from PyQt5.QtCore import QPointF as Pf
-import PyQt5.QtGui as QtGui
-import PyQt5.QtWidgets as QtWidgets
+from PyQt5 import QtGui, QtWidgets, QtCore
 from kataja.parser.LatexToINode import ITextNode, ICommandNode
 
 # ctrl = Controller object, gives accessa to other modules
+from kataja.parser.latex_to_unicode import latex_to_unicode
+
 
 class LabelDocument(QtGui.QTextDocument):
     """ This extends QTextDocument with ability to read INodes (intermediary nodes) and turn them into QTextDocuments
@@ -35,6 +36,8 @@ class LabelDocument(QtGui.QTextDocument):
 
     def __init__(self):
         QtGui.QTextDocument.__init__(self)
+        self.setDefaultTextOption(QtGui.QTextOption(QtCore.Qt.AlignHCenter))
+        self.block_mapping = {0:'alias', 1: 'label', 2: 'index', 3: 'gloss', 4: 'features'}
 
     def run_command(self, command, cursor):
         """
@@ -57,7 +60,8 @@ class LabelDocument(QtGui.QTextDocument):
             c.setVerticalAlignment(QtGui.QTextCharFormat.AlignSubScript)
             c.setFontItalic(True)
             cursor.mergeCharFormat(c)
-
+        elif command in latex_to_unicode:
+            cursor.insertText(latex_to_unicode[command][0])
         #print('got command: %s' % command)
 
 
@@ -82,6 +86,19 @@ class LabelDocument(QtGui.QTextDocument):
         if old_format:
             cursor.setCharFormat(old_format)
 
+    def blocks_to_fields(self):
+        """ Parse LabelDocument back to alias, label, index, gloss and features
+        :return:
+        """
+        c = self.blockCount()
+        #print("blockCount = ", c)
+        #print("document = ", self.toPlainText())
+        for i in range(0, c):
+            block = self.findBlockByNumber(i)
+            #print(i, block, block.layout(), block.layout().boundingRect())
+            #print(self.documentLayout(), self.documentLayout().blockBoundingRect(block))
+
+
 
     def parse_inodes(self, inodes):
         """ Does what it says.
@@ -89,9 +106,14 @@ class LabelDocument(QtGui.QTextDocument):
         self.clear()
         cursor = QtGui.QTextCursor(self)
         if isinstance(inodes, tuple) or isinstance(inodes, list):
+            first = True
             for node in inodes:
+                if (not node) or node.is_empty():
+                    continue
+                if not first:
+                    cursor.insertText('\n')
                 self.write_node_to_document(node, cursor)
-                cursor.insertText('\n')
+                first = False
         else:
             self.write_node_to_document(inodes, cursor)
 
@@ -118,10 +140,10 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.setDocument(LabelDocument())
 
     def get_raw(self):
-        return self._host.raw_label_text
+        return self._host.raw_label
 
     def get_inodes(self):
-        return self._host.label_inodes
+        return self._host.label_complex_inodes
 
     def get_plaintext(self):
         """
@@ -142,11 +164,9 @@ class Label(QtWidgets.QGraphicsTextItem):
     def update_label(self):
         """ Asks for node/host to give text and update if changed """
         self.setFont(self._host.font)
-        raw = self.get_raw()
-        if raw:
-            if raw != self._source_text:
-                self.document().parse_inodes(self.get_inodes())
-                self.prepareGeometryChange()
+        self.prepareGeometryChange()
+        self.document().parse_inodes(self.get_inodes())
+        self.setTextWidth(self.document().idealWidth())
         brect = self.boundingRect()
         self.total_height = brect.height() + self.y_offset
         self.setPos(brect.width() / -2.0, (self.total_height / -2.0) + self.y_offset)

@@ -1,4 +1,6 @@
 
+[.TP [.AdvP [.Adv\\usually ] ] [.TP [.DP [.D\\{\O} ] [.NP\\John ] ] [.T\1 [.T\\\emph{PRESENT} ] [.VP [.VP [.V\\goes ] [.PP [.P\\to ] [.DP [.D\\the ] [.NP\\park ] ] ] ] [.PP [.P\\on ] [.DP [.D\\{\O} ] [.NP\\Tuesdays ] ] ] ] ] ] ]
+
 #%demo/kielitiede_valkotaulu.jpg
 #%demo/examples.png
 #%demo/hemoglobin.png
@@ -29,10 +31,10 @@ ang tubig = 'ANG water'
 'Maria's grandmother's servant drank the water'
 
 [.{CP} [.{YP_k} [.{XP_j} [.{whP_i} kenen nimmaria ] [ ilman t_i ] ]  [ jäätyään t_j ] ] [.{CP} [.{C} {} ] [.{TP} {Merja palasi suruissaan kotiin} t_k ] ] ]
-#kenen = Q:force
+kenen = Q:force
 
 [.{FP} t_i [.{F'} t_j [.{TP} t_i [.{T'} t_j [.{AuxP} on_j [.{PrtP} t_k [.{VP} {Graham Greene_i} [.{V'} kirjoittanut_k [.{DP} tämän kirjan ] ] ] ] ] ] ] ] ]
-#kirjoittanut = 3rd:person, perf:tense
+kirjoittanut = 3rd:person, perf:tense
 
 
 [.TP

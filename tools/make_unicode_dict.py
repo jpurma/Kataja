@@ -31,6 +31,7 @@ def find_characters(dom):
         #print(latex)
         if latex_element:
             latex = getText(latex_element[0].childNodes)
+            latex = latex.strip()
             description = getText(character.getElementsByTagName("description")[0].childNodes).lower()
             if len(latex) > 1:
                 char_code = character.getAttribute("dec")

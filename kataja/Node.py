@@ -72,6 +72,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self._label_qdocument = None
         self._label_raw = None
         self.label_rect = None
+        self.label_inodes = LatexToINode.parse(self.raw_label)
 
         self._index_label = None
         self._index_visible = True
@@ -488,24 +489,18 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self.update_status_tip()
 
     @property
-    def raw_label_text(self):
+    def raw_label(self):
         """ Get the unparsed raw version of label (str)
         :return:
         """
         return self.label
 
     @property
-    def label_inodes(self):
+    def label_complex_inodes(self):
         """
         :return: INodes or str or tuple of them
         """
-        return LatexToINode.parse(self.raw_label_text)
-
-    def get_label_raw(self):
-        """ Get the unparsed raw version of label (str)
-        :return:
-        """
-        return self.label
+        return self.label_inodes
 
     def update_status_tip(self):
         """ implement properly in subclasses, let tooltip tell about the node
@@ -524,6 +519,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
         :return:
         """
+        print('has_empty_label: ', self._label_complex.is_empty())
         return self._label_complex.is_empty()
 
     def label_edited(self):
@@ -555,6 +551,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             y = self.height / -2
             x = self.width / -2
         else:
+            print('no label visible')
             self.label_rect = QtCore.QRectF(0, 0, 0, 0)
             self.width = my_class.width
             self.height = my_class.height
@@ -777,6 +774,26 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """
         self.hovering = False
         QtWidgets.QGraphicsItem.hoverLeaveEvent(self, event)
+
+
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist"):
+            event.acceptProposedAction()
+            self.hovering = True
+        else:
+            QtWidgets.QGraphicsItem.dragEnterEvent(self, event)
+
+    def dragLeaveEvent(self, event):
+        if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist"):
+            event.acceptProposedAction()
+            self.hovering = False
+        else:
+            QtWidgets.QGraphicsItem.dragLeaveEvent(self, event)
+
+    #def dragMoveEvent(self, event):
+    #    if
+    #    pass
+        #print("Drag move event for Movable")
 
 
     #### Restoring after load / undo #########################################

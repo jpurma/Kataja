@@ -61,6 +61,7 @@ class SymbolPanel(UIPanel):
 
         layout.addWidget(self.selector)
         self.symlist = QtWidgets.QListWidget()
+        self.symlist.setFixedWidth(200)
         self.symlist.setSpacing(8)
         self.symlist.setMouseTracking(True)
         self.symlist.setFocusPolicy(QtCore.Qt.NoFocus)

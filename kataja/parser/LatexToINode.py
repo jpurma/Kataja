@@ -7,12 +7,6 @@
 #from kataja.utils import time_me
 
 
-latex_to_rtf = {
-    'sup': 'sup', 
-    'emph': 'i', 
-    'textbf': 'b'    
-}
-
 class ParseError(Exception):
     pass
 
@@ -45,14 +39,33 @@ class ITextNode:
         :param node: any kind of INode or string)
         """
         self.parts.append(node)
-        self.raw += node.raw
+        if isinstance(node, ITextNode):
+            self.raw += node.raw
+        else:
+            self.raw += node
 
+    def split_lines(self):
+        lines = []
+        line = ITextNode()
+        max_splits = 2
+        splits = 0
+        for part in self.parts:
+            if splits <= max_splits and isinstance(part, ICommandNode) and part.command == '\\':
+                lines.append(line)
+                line = ITextNode()
+            else:
+                line.add_part(part)
+        lines.append(line)
+        return lines
 
     def parts_as_string(self):
         """ Parts flattened into string, recursively stringifies parts if they contain other INodes
         :return:
         """
         return ''.join([str(x) for x in self.parts])
+
+    def is_empty(self):
+        return not self.parts
 
     def __str__(self):
         return self.parts_as_string()
@@ -114,6 +127,9 @@ class ICommandNode(ITextNode):
                 s += item
         print(s)
 
+    def is_empty(self):
+        return not (self.command or self.parts)
+
 
 class IConstituentNode(ITextNode):
     """ Intermediary Node that contains basic information required for building a linguistic constituent.
@@ -124,16 +140,7 @@ class IConstituentNode(ITextNode):
     def __init__(self):
         ITextNode.__init__(self)
         self.label = ''
-        self.alias = ''
         self.index = ''
-
-    def add_alias(self, node):
-        """
-
-        :param node:
-        """
-        self.alias = node
-        self.raw += node.raw
 
     def add_label(self, node):
         """
@@ -157,29 +164,23 @@ class IConstituentNode(ITextNode):
                 return node.parts_as_string()
             elif isinstance(node, ITextNode):
                 for part in node.parts:
-                    index = find_index(part)
-                    if index:
-                        return index
-        index = find_index(self.alias)
+                    i = find_index(part)
+                    if i:
+                        return i
+        index = find_index(self.label)
         if index:
             self.index = index
         else:
-            index = find_index(self.label)
-            if index:
-                self.index = index
-            else:
-                self.index = ''
+            self.index = ''
         if index:
             print ('found index for %s: %s' % (self, self.index))
 
 
     def __str__(self):
-        if self.parts and self.alias:
-            return '[.%s %s]' % (self.alias, self.parts_as_string())
+        if self.parts and self.label:
+            return '[.%s %s]' % (self.label, self.parts_as_string())
         elif self.parts:
             return '[%s]' % self.parts_as_string()
-        elif self.alias:
-            return '.{%s}%s' % (self.alias, self.label)
         else:
             return str(self.label)
 
@@ -189,16 +190,17 @@ class IConstituentNode(ITextNode):
         :return:
         """
         s = depth * ' '
-        if self.alias:
-            s += '(.%s)' % self.alias
         if self.label:
-            s += '(L:%s)' % self.label
+            s += '(.%s)' % self.label
         for item in self.parts:
             if isinstance(item, ITextNode):
                 item.structure(depth + 1)
             else:
                 s += item
         print(s)
+
+    def is_empty(self):
+        return not (self.label or self.parts)
 
 
 one_character_commands = ['&', '~', '#', '%', '$', '^', '_']
@@ -211,29 +213,41 @@ def parse(text):
     (=text that was given to parser).
         :param text: string to parse.
     """
+    if not text:
+        return None
     text = text.strip()
     if not text:
         return None
     feed = list(text)
-    node = None
+    nodes = []
     while feed:
         c = feed[0]
         if c == '[':
             feed, node = parse_brackets(feed)
+            if not node.is_empty():
+                nodes.append(node)
         elif c == ']':
             feed.pop(0)
         else:
             feed, node = parse_word(feed)
+            if not node.is_empty():
+                nodes.append(node)
+            else:
+                feed.pop(0)
     try:
-        assert(node.raw_string == text)
+        if len(nodes) == 1:
+            assert(nodes[0].raw_string == text)
     except AssertionError:
         print('raw string different from given input:')
         print('---- raw string ----')
-        print(node.raw_string)
+        print(nodes[0].raw_string)
         print('---- input was ----')
         print(text)
         #quit()
-    return node
+    if len(nodes) == 1:
+        return nodes[0]
+    else:
+        return nodes
 
 
 def parse_word(feed):
@@ -252,13 +266,11 @@ def parse_word(feed):
     while feed:
         c = feed[0]
         if c == '{':
-            eat_char()
             feed, new_node = parse_curlies(feed)
             node.add_part(new_node)
         elif c == '}':
             return feed, node
         elif c == '\\':
-            eat_char()
             feed, new_node = parse_command(feed)
             node.add_part(new_node)
         elif c in one_character_commands:
@@ -270,6 +282,9 @@ def parse_word(feed):
             return feed, node
         elif c == ']':
             return feed, node
+        elif c == '[':
+            return feed, node
+
         else:
             eat_char()
             node.add_char(c)
@@ -288,17 +303,17 @@ def parse_curlies(feed):
         If everything goes right, sum of nodes' raw forms should be the original string"""
         node.add_raw_char(feed.pop(0))
 
+    eat_char()
+
     while feed:
         c = feed[0]
         if c == '{':
-            eat_char()
             feed, new_node = parse_curlies(feed)
             node.add_part(new_node)
         elif c == '}':
             eat_char()
             return feed, node
         elif c == '\\':
-            eat_char()
             feed, new_node = parse_command(feed)
             node.add_part(new_node)
         elif c in one_character_commands:
@@ -308,7 +323,6 @@ def parse_curlies(feed):
         else:
             eat_char()
             node.add_char(c)
-    print('CurlyBuilder finished')
     raise ParseError
 
 
@@ -330,7 +344,6 @@ def parse_one_character_command(feed, command):
     while feed:
         c = feed[0]
         if c == '{':
-            eat_char()
             feed, new_node = parse_curlies(feed)
             node.add_part(new_node)
             return feed, node
@@ -366,18 +379,18 @@ def parse_command(feed):
         :param feed: list of chars (strings of length 1)
     """
     node = ICommandNode()
-    orig = ''.join(feed)
-    #print('in command, parsing "%s"' % orig)
 
     def eat_char():
         """ Remove char from the feed and remember it in raw form.
         If everything goes right, sum of nodes' raw forms should be the original string"""
         node.add_raw_char(feed.pop(0))
 
+    eat_char() # this is the beginning "\"
+
     while feed:
         c = feed[0]
         if c == '{':
-            eat_char()
+            include_space = False
             feed, new_node = parse_curlies(feed)
             node.add_part(new_node)
         elif c == '}':
@@ -391,7 +404,7 @@ def parse_command(feed):
                 return feed, node
             else:
                 return feed, node
-        elif c.isspace():
+        elif c == ' ':
             eat_char()
             return feed, node
         elif c == ']':
@@ -400,8 +413,6 @@ def parse_command(feed):
             eat_char()
             node.add_command_char(c)
     return feed, node
-    print('word ended: ', node, orig, node.command)
-    raise ParseError(orig)
 
 
 def parse_brackets(feed):
@@ -427,6 +438,11 @@ def parse_brackets(feed):
         elif c == ']':
             # Finalize merger
             eat_char()
+            # if closing bracket continues with . ( "[ ... ].NP " ) it is treated as label
+            if feed and feed[0] == '.':
+                eat_char()
+                feed, new_node = parse_word(feed)
+                node.add_label(new_node)
             node.prepare_index()
             return feed, node
         elif c.isspace():
@@ -434,29 +450,29 @@ def parse_brackets(feed):
         elif c == '.':
             eat_char()
             feed, new_node = parse_word(feed)
-            node.add_alias(new_node)
+            node.add_label(new_node)
         else:
-            feed, new_node = parse_word(feed) # Read simple constituent e.g. A or B in [ A B ]
             # Make a new constituent
             new_cnode = IConstituentNode()
+            feed, new_node = parse_word(feed) # Read simple constituent e.g. A or B in [ A B ]
             # What we just read was label for that constituent
             new_cnode.add_label(new_node)
             node.add_part(new_cnode)
-            #node.add_label(new_node)
     node.prepare_index()
     return feed, node
 
 # ### Test cases
 if __name__ == "__main__":
-    i = r"""[.{AspP} [.{Asp} Ininom] [.{vP} [.{KP} [.{K} ng] [.{DP} [.{D´} [.{D} {} ] [.{NP} lola ]] [.{KP} [.{K} ng] [.{DP} [.{D´} [.{D} {} ] [.{NP} alila] ] [.{KP} {ni Maria} ]]]]] [.{v´} [.{v} {} ] [.{VP} [.{V} {} ] [.{KP} {ang tubig}]]]]]"""
 
-    i = r"""[ [.{Acc_i} B [.{Nom} A [.{DP} the grass ] ] ] [ S–Acc [ … [ [.{GenP_j} C t_i ] [ S–Gen [.{vP\rightarrow\emph{load}} … [.{v´} v^0 [.{VP} V [.{PP} [.{InsP} E [.{DatP} D t_j ] ] [.{P´} P [.{NP*} the truck ] ] ] ] ] ] ] ] ] ] ]"""
+    s = r"""[.{AspP} [.{Asp} Ininom] [.{vP} [.{KP} [.{K} ng] [.{DP} [.{D´} [.{D} {} ] [.{NP} lola ]] [.{KP} [.{K} ng] [.{DP} [.{D´} [.{D} {} ] [.{NP} alila] ] [.{KP} {ni Maria} ]]]]] [.{v´} [.{v} {} ] [.{VP} [.{V} {} ] [.{KP} {ang tubig}]]]]]"""
 
-    i = r"""[.{EvidP} Part-Evid^0 [.{EvidP} [.{NegP} Part-Neg [.{NegP_j} [.{vP_i} Args Verb] [.{Neg} Neg^0 t_i ]]] [.{Evid} Evid0 t_k ]]]
+    s = r"""[ [.{Acc_i} B [.{Nom} A [.{DP} the grass ] ] ] [ S–Acc [ … [ [.{GenP_j} C t_i ] [ S–Gen [.{vP\rightarrow\emph{load}} … [.{v´} v^0 [.{VP} V [.{PP} [.{InsP} E [.{DatP} D t_j ] ] [.{P´} P [.{NP*} the truck ] ] ] ] ] ] ] ] ] ] ]"""
+
+    s = r"""[.{EvidP} Part-Evid^0 [.{EvidP} [.{NegP} Part-Neg [.{NegP_j} [.{vP_i} Args Verb] [.{Neg} Neg^0 t_i ]]] [.{Evid} Evid0 t_k ]]]
     """
 
 
-    i = r"""[.TP
+    s = r"""[.TP
 [.AdvP [.Adv\\usually ] ]
           [.TP
              [.DP [.D\\{\O} ] [.NP\\John ] ]
@@ -473,10 +489,13 @@ if __name__ == "__main__":
 ]
 """
 
-    n = parse(i)
+    s = r"""[.TP [.AdvP [.Adv\\usually ] ] [.TP [.DP [.D\\{\O} ] [.NP\\John ] ] [.T\1 [.T\\\emph{PRESENT} ] [.VP [.VP [.V\\goes ] [.PP [.P\\to ] [.DP [.D\\the ] [.NP\\park ] ] ] ] [.PP [.P\\on ] [.DP [.D\\{\O} ] [.NP\\Tuesdays ] ] ] ] ] ] ] ]"""
 
 
-    print(i)
+
+    n = parse(s)
+
+
     print(n)
     #print(n.raw_string)
 

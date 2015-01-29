@@ -635,6 +635,7 @@ class Forest(Savable):
         if self.visualization:
             self.visualization.reset_node(node)
         self.update_root_status(node)
+        print('created node ', node.alias, node.label)
         return node
 
     def create_placeholder_node(self, pos):

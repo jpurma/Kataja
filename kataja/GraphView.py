@@ -213,8 +213,12 @@ class GraphView(QtWidgets.QGraphicsView):
         :param event:
         """
         print("dropEvent to GraphView")
-        event.acceptProposedAction()
-        QtWidgets.QGraphicsView.dropEvent(self, event)
+        if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist"):
+            event.acceptProposedAction()
+            items = self.itemAt(event.pos())
+            print(items)
+        else:
+            QtWidgets.QGraphicsView.dropEvent(self, event)
 
 
 
@@ -223,7 +227,7 @@ class GraphView(QtWidgets.QGraphicsView):
 
         :param event:
         """
-        if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist"):
+        if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist") and not self.itemAt(event.pos()):
             event.acceptProposedAction()
         else:
             QtWidgets.QGraphicsView.dragMoveEvent(self, event)

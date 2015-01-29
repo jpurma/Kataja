@@ -631,7 +631,10 @@ class GraphScene(QtWidgets.QGraphicsScene):
         print("dropEvent at GraphScene")
         ctrl.pressed=None
         self.kill_dragging()
-        QtWidgets.QGraphicsScene.dropEvent(self, event)
+        if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist"):
+            event.acceptProposedAction()
+        else:
+            QtWidgets.QGraphicsScene.dropEvent(self, event)
 
     def drag_exact_start_point(self):
         return self._drag_start_point

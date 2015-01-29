@@ -70,7 +70,7 @@ PANELS = {g.LOG: {'name': 'Log', 'position': 'bottom'},
           g.COLOR_WHEEL: {'name': 'Color theme wheel', 'position': 'right', 'folded': True, 'closed': True},
           g.LINE_OPTIONS: {'name': 'More line options', 'position': 'float', 'closed': True},
           g.DRAWING: {'name': 'Drawing', 'position': 'right'},
-          g.SYMBOLS: {'name': 'Symbols', 'position': 'float', 'closed': True}
+          g.SYMBOLS: {'name': 'Symbols', 'position': 'right'}
 }
 
 panel_order = [g.LOG, g.SYMBOLS, g.NAVIGATION, g.VISUALIZATION, g.COLOR_THEME, g.COLOR_WHEEL, g.LINE_OPTIONS, g.DRAWING]
@@ -618,7 +618,7 @@ class UIManager:
     def start_constituent_editing(self, node):
         np = node.pos()
         if not self._constituent_edit_embed:
-            self._constituent_edit_embed = ConstituentEditEmbed(self.main.graph_view, self, np)
+            self._constituent_edit_embed = ConstituentEditEmbed(self.main.graph_view, self, node, np)
         self._constituent_edit_embed.update_embed(scenePos=np, node=node)
         self._constituent_edit_embed.wake_up()
 

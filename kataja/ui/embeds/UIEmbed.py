@@ -5,6 +5,29 @@ from kataja.ui.panels.SymbolPanel import open_symbol_data
 __author__ = 'purma'
 
 
+class EmbeddedTextEdit(QtWidgets.QTextEdit):
+
+    def __init__(self, parent):
+        QtWidgets.QTextEdit.__init__(self, parent)
+        self.setAcceptDrops(True)
+
+    def canInsertFromMimeData(self, mimedata):
+        if mimedata.hasFormat("application/x-qabstractitemmodeldatalist"):
+            return True
+        else:
+            return QtWidgets.QTextEdit.canInsertFromMimeData(self, mimedata)
+
+    def insertFromMimeData(self, mimedata):
+        if mimedata.hasFormat("application/x-qabstractitemmodeldatalist"):
+            data = open_symbol_data(mimedata)
+            self.textCursor().insertText(data['char'])
+        else:
+            QtWidgets.QTextEdit.canInsertFromMimeData(self, mimedata)
+
+    def paintEvent(self, event):
+        #print("ete paintevent")
+        QtWidgets.QTextEdit.paintEvent(self, event)
+
 class EmbeddedLineEdit(QtWidgets.QLineEdit):
 
     def __init__(self, parent, tip='', font=None):

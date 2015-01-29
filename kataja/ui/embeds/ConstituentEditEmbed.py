@@ -1,10 +1,8 @@
 __author__ = 'purma'
 
 from PyQt5 import QtWidgets, QtGui, QtCore
-from kataja.ui.embeds.UIEmbed import UIEmbed, EmbeddedLineEdit
+from kataja.ui.embeds.UIEmbed import UIEmbed, EmbeddedLineEdit, EmbeddedTextEdit
 from kataja.singletons import qt_prefs, ctrl, prefs
-from kataja.utils import print_transform
-from kataja.ui.DrawnIconEngine import DrawnIconEngine
 import kataja.globals as g
 
 def make_label(text, parent=None, layout=None, tooltip='', buddy=None, palette=None):
@@ -22,18 +20,23 @@ def make_label(text, parent=None, layout=None, tooltip='', buddy=None, palette=N
 
 class ConstituentEditEmbed(UIEmbed):
 
-    def __init__(self, parent, ui_manager, scenePos):
+    def __init__(self, parent, ui_manager, node, scenePos):
         UIEmbed.__init__(self, parent, ui_manager, scenePos)
         layout = QtWidgets.QVBoxLayout()
         layout.addLayout(self.top_row_layout)
         layout.addSpacing(12)
-        self.node = None
+        self.node = node
         hlayout = QtWidgets.QHBoxLayout()
         ui_p = QtGui.QPalette()
         ui_p.setColor(QtGui.QPalette.Text, ctrl.cm.ui())
 
         f = QtGui.QFont(qt_prefs.font(g.MAIN_FONT))
         f.setPointSize(f.pointSize() * 2)
+        self.master_edit = EmbeddedTextEdit(self)
+        self.update_document()
+        layout.addWidget(self.master_edit)
+
+
         tt = "non-functional readable label of the constituent"
         self.alias_edit = EmbeddedLineEdit(self, tip=tt, font=f)
         hlayout.addWidget(self.alias_edit)
@@ -71,6 +74,11 @@ class ConstituentEditEmbed(UIEmbed):
         self.assumed_width = 200
         self.assumed_height = 117
 
+    def update_document(self):
+        doc = self.node._label_complex.document()
+        self.master_edit.setDocument(doc)
+        doc.blocks_to_fields()
+
 
     def update_position(self):
         sx,sy,sz = self.node.current_position
@@ -83,6 +91,7 @@ class ConstituentEditEmbed(UIEmbed):
         if node:
             self.node = node
         if self.node:
+            self.update_document()
             scene_pos = self.node.pos()
             UIEmbed.update_embed(self, scenePos=scene_pos)
             p = QtGui.QPalette()
