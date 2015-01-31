@@ -374,7 +374,6 @@ class ConstituentNode(Node):
         elif self.label and self.is_leaf_node():
             self._label_visible = True
         else:
-            print('hide label')
             self._label_visible = False
         if not self._label_complex:
             self.update_label()

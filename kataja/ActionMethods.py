@@ -666,10 +666,11 @@ class ActionMethods:
             ctrl.ui.close_constituent_editing()
             return
         node = embed.node
-        node.alias = embed.alias_edit.text()
-        node.label = embed.input_line_edit.text()
-        node.index = embed.index_edit.text()
-        node.gloss = embed.gloss_edit.text()
+        embed.push_values_back()
+        #node.alias = embed.alias_edit.text()
+        #node.label = embed.input_line_edit.text()
+        #node.index = embed.index_edit.text()
+        #node.gloss = embed.gloss_edit.text()
         ctrl.ui.close_constituent_editing()
 
 

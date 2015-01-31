@@ -635,7 +635,6 @@ class Forest(Savable):
         if self.visualization:
             self.visualization.reset_node(node)
         self.update_root_status(node)
-        print('created node ', node.alias, node.label)
         return node
 
     def create_placeholder_node(self, pos):
@@ -1592,7 +1591,6 @@ class Forest(Savable):
         if edge:
             forest('connecting merger to parent')
             self._connect_node(start_node, merger_node, direction=align)
-        print(merger_node, merger_node.left(), merger_node.right())
 
         self.chain_manager.rebuild_chains()
 

@@ -551,7 +551,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             y = self.height / -2
             x = self.width / -2
         else:
-            print('no label visible')
             self.label_rect = QtCore.QRectF(0, 0, 0, 0)
             self.width = my_class.width
             self.height = my_class.height

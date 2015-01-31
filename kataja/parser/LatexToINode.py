@@ -172,8 +172,6 @@ class IConstituentNode(ITextNode):
             self.index = index
         else:
             self.index = ''
-        if index:
-            print ('found index for %s: %s' % (self, self.index))
 
 
     def __str__(self):

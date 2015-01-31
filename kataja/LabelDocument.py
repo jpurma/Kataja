@@ -1,32 +1,8 @@
-# coding=utf-8
-# ############################################################################
-#
-# *** Kataja - Biolinguistic Visualization tool ***
-#
-# Copyright 2013 Jukka Purma
-#
-# This file is part of Kataja.
-#
-# Kataja is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Kataja is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
-#
-# ############################################################################
+__author__ = 'purma'
 
-from PyQt5.QtCore import QPointF as Pf
-from PyQt5 import QtGui, QtWidgets, QtCore
+from PyQt5 import QtGui, QtCore
 from kataja.parser.LatexToINode import ITextNode, ICommandNode
 
-# ctrl = Controller object, gives accessa to other modules
 from kataja.parser.latex_to_unicode import latex_to_unicode
 
 
@@ -34,10 +10,11 @@ class LabelDocument(QtGui.QTextDocument):
     """ This extends QTextDocument with ability to read INodes (intermediary nodes) and turn them into QTextDocuments
      RTF presentation """
 
-    def __init__(self):
+    def __init__(self, edit=True):
         QtGui.QTextDocument.__init__(self)
         self.setDefaultTextOption(QtGui.QTextOption(QtCore.Qt.AlignHCenter))
         self.block_mapping = {0:'alias', 1: 'label', 2: 'index', 3: 'gloss', 4: 'features'}
+        self.edit_mode = edit
 
     def run_command(self, command, cursor):
         """
@@ -86,18 +63,23 @@ class LabelDocument(QtGui.QTextDocument):
         if old_format:
             cursor.setCharFormat(old_format)
 
-    def blocks_to_fields(self):
+    def blocks_to_strings(self):
         """ Parse LabelDocument back to alias, label, index, gloss and features
         :return:
         """
         c = self.blockCount()
         #print("blockCount = ", c)
         #print("document = ", self.toPlainText())
+        r = []
         for i in range(0, c):
             block = self.findBlockByNumber(i)
+            print('---- block %s ----' % block.blockNumber())
+            print(block.text())
+            print(block.textFormats())
+            r.append(block.text())
             #print(i, block, block.layout(), block.layout().boundingRect())
             #print(self.documentLayout(), self.documentLayout().blockBoundingRect(block))
-
+        return r
 
 
     def parse_inodes(self, inodes):
@@ -108,7 +90,7 @@ class LabelDocument(QtGui.QTextDocument):
         if isinstance(inodes, tuple) or isinstance(inodes, list):
             first = True
             for node in inodes:
-                if (not node) or node.is_empty():
+                if (not self.edit_mode) and ((not node) or node.is_empty()):
                     continue
                 if not first:
                     cursor.insertText('\n')
@@ -117,67 +99,6 @@ class LabelDocument(QtGui.QTextDocument):
         else:
             self.write_node_to_document(inodes, cursor)
 
+    def push_values_to(self, node):
+        values = self.blocks_to_strings()
 
-class Label(QtWidgets.QGraphicsTextItem):
-    """ Labels are names of nodes. Node itself handles all the logic of
-    deciding what to show in label, label only calls nodes method to ask for
-    text. """
-
-    def __init__(self, parent=None, scene=None):
-        """ Give node as parent. Label asks it to produce text to show here """
-        QtWidgets.QGraphicsTextItem.__init__(self, parent)
-        # self.setTextInteractionFlags(Qt.TextEditable) # .TextInteractionFlag.
-        self._source_text = ''
-        self._host = parent
-        self._ellipse = None
-        self._doc = None
-        self._hovering = False
-        self.y_offset = 0
-        self.selectable = False
-        self.draggable = False
-        self.clickable = False
-        self.total_height = 0
-        self.setDocument(LabelDocument())
-
-    def get_raw(self):
-        return self._host.raw_label
-
-    def get_inodes(self):
-        return self._host.label_complex_inodes
-
-    def get_plaintext(self):
-        """
-
-
-        :return:
-        """
-        return self._doc.toPlainText()
-
-    def is_empty(self):
-        """
-
-
-        :return:
-        """
-        return not bool(self._source_text)
-
-    def update_label(self):
-        """ Asks for node/host to give text and update if changed """
-        self.setFont(self._host.font)
-        self.prepareGeometryChange()
-        self.document().parse_inodes(self.get_inodes())
-        self.setTextWidth(self.document().idealWidth())
-        brect = self.boundingRect()
-        self.total_height = brect.height() + self.y_offset
-        self.setPos(brect.width() / -2.0, (self.total_height / -2.0) + self.y_offset)
-        self._ellipse = QtGui.QPainterPath()
-        self._ellipse.addEllipse(Pf(0, self.y_offset), brect.width() / 2, brect.height() / 2)
-
-    def paint(self, painter, option, widget):
-        """ Painting is sensitive to mouse/selection issues, but usually with
-        :param painter:
-        :param option:
-        :param widget:
-        nodes it is the label of the node that needs complex painting """
-        self.setDefaultTextColor(self._host.contextual_color())
-        QtWidgets.QGraphicsTextItem.paint(self, painter, option, widget)
