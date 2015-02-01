@@ -28,6 +28,7 @@ from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.Node import Node
 from kataja.utils import to_tuple, latex2html
 import kataja.globals as g
+from kataja.parser import KatajaNodeToINode
 
 # ctrl = Controller object, gives accessa to other modules
 from kataja.parser import LatexToINode
@@ -60,7 +61,6 @@ class ConstituentNode(Node):
         self.has_visible_brackets = False
         self.left_bracket = None
         self.right_bracket = None
-        self.alias_inodes = LatexToINode.parse(self.raw_alias)
         # ###
         self.selectable = True
 
@@ -244,7 +244,9 @@ class ConstituentNode(Node):
         """
         :return: INodes or str or tuple of them
         """
-        return self.alias_inodes, self.label_inodes
+        if self._inode_changed:
+            self._inode = KatajaNodeToINode.constituentnode_to_iconstituentnode(self, children=False)
+        return self._inode
 
 
     def update_status_tip(self):

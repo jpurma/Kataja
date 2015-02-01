@@ -24,13 +24,13 @@
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import Qt
-from kataja.parser import LatexToINode
+from kataja.parser import KatajaNodeToINode
 
 from kataja.ui.ControlPoint import ControlPoint
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.Label import Label
 from kataja.Movable import Movable
-from kataja.utils import to_tuple, create_shadow_effect, latex2html
+from kataja.utils import to_tuple, create_shadow_effect
 import kataja.globals as g
 
 
@@ -70,9 +70,9 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self._label_visible = True
         self._label_font = None  # @UndefinedVariable
         self._label_qdocument = None
-        self._label_raw = None
         self.label_rect = None
-        self.label_inodes = LatexToINode.parse(self.raw_label)
+        self._inode = None
+        self._inode_changed = False
 
         self._index_label = None
         self._index_visible = True
@@ -121,11 +121,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     def label(self, value):
         if self.syntactic_object:
             self.syntactic_object.label = value
-            self.update_label()
-
-    @property
-    def label_as_html(self):
-        return latex2html(self.label)
+            self._inode_changed = True
 
     @property
     def edges_up(self):
@@ -182,6 +178,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         if value is None:
             value = ''
         self.saved.index = value
+        self._inode_changed = True
 
 
     @property
@@ -481,9 +478,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """
         if not self._label_complex:
             self._label_complex = Label(parent=self)
-            #self._label_complex.get = self.get_label_qdocument
-            #self._label_complex.get_raw = self.get_label_raw
-            #self._label_complex.set = self.label_edited
         self._label_complex.update_label()
         self.update_bounding_rect()
         self.update_status_tip()
@@ -500,7 +494,9 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """
         :return: INodes or str or tuple of them
         """
-        return self.label_inodes
+        if self._inode_changed:
+            self._inode = KatajaNodeToINode.node_to_inode(self, children=False)
+        return self._inode
 
     def update_status_tip(self):
         """ implement properly in subclasses, let tooltip tell about the node

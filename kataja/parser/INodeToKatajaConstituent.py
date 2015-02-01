@@ -4,7 +4,7 @@ __author__ = 'purma'
 
 from kataja.parser.BaseParser import BaseParser
 from kataja.parser.LatexToINode import parse
-from kataja.parser.LatexToINode import IConstituentNode, ITextNode, ICommandNode
+from kataja.parser.INodes import IConstituentNode, ITextNode, ICommandNode
 from kataja.singletons import ctrl
 from kataja.ConstituentNode import ConstituentNode
 import kataja.globals as g
@@ -28,7 +28,9 @@ class INodeToKatajaConstituent(BaseParser):
             return None
         old_should_add = self.should_add_to_scene
         self.should_add_to_scene = True
+        # the heavy work is done in LatexToINode ###
         trans_nodes = parse(string)
+        # done.
         if isinstance(trans_nodes, list):
             result = [self.node_to_constituentnodes(x) for x in trans_nodes]
         else:
@@ -52,29 +54,24 @@ class INodeToKatajaConstituent(BaseParser):
                     child = self.node_to_constituentnodes(nnode)
                     if child and isinstance(child, ConstituentNode):
                         children.append(child)
-            alias = ''
-            label = ''
-            gloss = ''
             if isinstance(node.label, ITextNode):
-                label_lines = node.label.split_lines()
-                if len(label_lines) == 1:
-                    if node.parts:
-                        alias = label_lines[0].raw_string
-                    else:
-                        label = label_lines[0].raw_string
-                elif len(label_lines) == 2:
-                    alias = label_lines[0].raw_string
-                    label = label_lines[1].raw_string
-                elif len(label_lines) == 3:
-                    alias = label_lines[0].raw_string
-                    label = label_lines[1].raw_string
-                    gloss = label_lines[2].raw_string
+                label = node.label.raw_string
+            else:
+                label = node.label
+            if isinstance(node.alias, ITextNode):
+                alias = node.alias.raw_string
+            else:
+                alias = node.alias
+            if isinstance(node.gloss, ITextNode):
+                gloss = node.gloss.raw_string
+            else:
+                gloss = node.gloss
+            if node.features:
+                print('Needs to create features from:', node.features)
             index = node.index
             constituent = ctrl.Constituent(label)
-            if index:
-                constituent.index = index
-            if alias:
-                constituent.alias = alias
+            constituent.index = index
+            constituent.alias = alias
             if node.parts:
                 result_of_merge = True
                 result_of_select = False
@@ -84,6 +81,8 @@ class INodeToKatajaConstituent(BaseParser):
             cn = self.forest.create_node_from_constituent(constituent,
                                                           result_of_merge=result_of_merge,
                                                           result_of_select=result_of_select)
+            cn.gloss = gloss
+
             if len(children) == 2:
                 left = children[1]
                 right = children[0]
