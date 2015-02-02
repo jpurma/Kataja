@@ -25,8 +25,8 @@
 from PyQt5.QtCore import QPointF as Pf
 from PyQt5 import QtGui, QtWidgets
 from kataja.LabelDocument import LabelDocument
+from kataja.parser import INodeToLabelDocument
 # ctrl = Controller object, gives accessa to other modules
-
 
 
 class Label(QtWidgets.QGraphicsTextItem):
@@ -50,33 +50,11 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.total_height = 0
         self.setDocument(LabelDocument())
 
-    def get_raw(self):
-        return self._host.raw_label
-
-    def get_inodes(self):
-        return self._host.label_complex_inodes
-
-    def get_plaintext(self):
-        """
-
-
-        :return:
-        """
-        return self._doc.toPlainText()
-
-    def is_empty(self):
-        """
-
-
-        :return:
-        """
-        return not bool(self._source_text)
-
     def update_label(self):
         """ Asks for node/host to give text and update if changed """
         self.setFont(self._host.font)
         self.prepareGeometryChange()
-        self.document().parse_inodes(self.get_inodes())
+        INodeToLabelDocument.parse_inode(self._host.as_inode, self.document())
         self.setTextWidth(self.document().idealWidth())
         brect = self.boundingRect()
         self.total_height = brect.height() + self.y_offset
@@ -86,9 +64,10 @@ class Label(QtWidgets.QGraphicsTextItem):
 
     def paint(self, painter, option, widget):
         """ Painting is sensitive to mouse/selection issues, but usually with
+        nodes it is the label of the node that needs complex painting
         :param painter:
         :param option:
         :param widget:
-        nodes it is the label of the node that needs complex painting """
+        """
         self.setDefaultTextColor(self._host.contextual_color())
         QtWidgets.QGraphicsTextItem.paint(self, painter, option, widget)

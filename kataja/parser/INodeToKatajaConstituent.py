@@ -5,6 +5,7 @@ __author__ = 'purma'
 from kataja.parser.BaseParser import BaseParser
 from kataja.parser.LatexToINode import parse
 from kataja.parser.INodes import IConstituentNode, ITextNode, ICommandNode
+from kataja.parser import INodeToLatex
 from kataja.singletons import ctrl
 from kataja.ConstituentNode import ConstituentNode
 import kataja.globals as g
@@ -29,76 +30,90 @@ class INodeToKatajaConstituent(BaseParser):
         old_should_add = self.should_add_to_scene
         self.should_add_to_scene = True
         # the heavy work is done in LatexToINode ###
-        trans_nodes = parse(string)
+        inodes = parse(string)
         # done.
-        if isinstance(trans_nodes, list):
-            result = [self.node_to_constituentnodes(x) for x in trans_nodes]
+        if isinstance(inodes, list):
+            result = [inode_to_constituentnodes(x, self.forest) for x in inodes]
         else:
-            result = self.node_to_constituentnodes(trans_nodes)
+            result = inode_to_constituentnodes(inodes, self.forest)
         self.should_add_to_scene = old_should_add
         return result
 
-    #@time_me
-    def node_to_constituentnodes(self, node):
-        """ Recursively turn IConstituentNodes into Constituents supported by syntax and further into
-         Kataja's ConstituentNodes.
-        :param node: should be IConstituentNode.
-        :return: the root ConstituentNode
-        """
-        if isinstance(node, IConstituentNode):
-            children = []
-            if node.parts:
-                right_first = list(node.parts)
-                right_first.reverse()
-                for nnode in right_first:
-                    child = self.node_to_constituentnodes(nnode)
-                    if child and isinstance(child, ConstituentNode):
-                        children.append(child)
-            if isinstance(node.label, ITextNode):
-                label = node.label.raw_string
-            else:
-                label = node.label
-            if isinstance(node.alias, ITextNode):
-                alias = node.alias.raw_string
-            else:
-                alias = node.alias
-            if isinstance(node.gloss, ITextNode):
-                gloss = node.gloss.raw_string
-            else:
-                gloss = node.gloss
-            if node.features:
-                print('Needs to create features from:', node.features)
-            index = node.index
-            constituent = ctrl.Constituent(label)
-            constituent.index = index
-            constituent.alias = alias
-            if node.parts:
-                result_of_merge = True
-                result_of_select = False
-            else:
-                result_of_merge = False
-                result_of_select = True
-            cn = self.forest.create_node_from_constituent(constituent,
-                                                          result_of_merge=result_of_merge,
-                                                          result_of_select=result_of_select)
-            cn.gloss = gloss
+#@time_me
+def inode_to_constituentnodes(node, forest):
+    """ Recursively turn IConstituentNodes into Constituents supported by syntax and further into
+     Kataja's ConstituentNodes.
+    :param node: should be IConstituentNode.
+    :param forest: forest where ConstituentNodes will be added
+    :return: the root ConstituentNode
+    """
+    if isinstance(node, IConstituentNode):
+        children = []
+        if node.parts:
+            right_first = list(node.parts)
+            right_first.reverse()
+            for nnode in right_first:
+                child = inode_to_constituentnodes(nnode, forest)
+                if child and isinstance(child, ConstituentNode):
+                    children.append(child)
+        if isinstance(node.label, ITextNode):
+            label = node.label.raw_string
+        else:
+            label = node.label
+        if isinstance(node.alias, ITextNode):
+            alias = node.alias.raw_string
+        else:
+            alias = node.alias
+        if isinstance(node.gloss, ITextNode):
+            gloss = node.gloss.raw_string
+        else:
+            gloss = node.gloss
+        if node.features:
+            print('Needs to create features from:', node.features)
+        index = node.index
+        constituent = ctrl.Constituent(label)
+        constituent.index = index
+        constituent.alias = alias
+        if node.parts:
+            result_of_merge = True
+            result_of_select = False
+        else:
+            result_of_merge = False
+            result_of_select = True
+        cn = forest.create_node_from_constituent(constituent,
+                                                      result_of_merge=result_of_merge,
+                                                      result_of_select=result_of_select)
+        cn.gloss = gloss
 
-            if len(children) == 2:
-                left = children[1]
-                right = children[0]
-                self.forest._connect_node(parent=cn, child=left, direction=g.LEFT)
-                self.forest._connect_node(parent=cn, child=right, direction=g.RIGHT)
+        if len(children) == 2:
+            left = children[1]
+            right = children[0]
+            forest._connect_node(parent=cn, child=left, direction=g.LEFT)
+            forest._connect_node(parent=cn, child=right, direction=g.RIGHT)
 
-            elif len(children) == 1:
-                self.forest._connect_node(parent=cn, child=children[0], direction=g.LEFT)
+        elif len(children) == 1:
+            forest._connect_node(parent=cn, child=children[0], direction=g.LEFT)
 
-            cn.update_label()
-            self.forest.derivation_steps.save_and_create_derivation_step()
+        cn.update_label()
+        forest.derivation_steps.save_and_create_derivation_step()
 
-            return cn
+        return cn
 
 
-
+def update_constituentnode_fields(constituentnode, inode):
+    if not inode:
+        print("Updating constituent node %s, but no inode to update with" % constituentnode)
+        return
+    alias_latex = INodeToLatex.parse_inode_for_field(inode.alias)
+    label_latex = INodeToLatex.parse_inode_for_field(inode.label)
+    gloss_latex = INodeToLatex.parse_inode_for_field(inode.gloss)
+    if constituentnode.alias != alias_latex:
+        constituentnode.alias = alias_latex
+    if constituentnode.label != label_latex:
+        constituentnode.label = label_latex
+    if constituentnode.gloss != gloss_latex:
+        constituentnode.gloss = gloss_latex
+    #todo: handling of features
 
 
 

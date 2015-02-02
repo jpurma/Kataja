@@ -44,4 +44,3 @@ class PropertyNode(Node):
     def __init__(self, property=None, forest=None):
         Node.__init__(self, syntactic_object=property, forest=forest)
         # self.color = colors.text
-        self.update_identity()

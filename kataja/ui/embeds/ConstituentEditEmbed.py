@@ -6,6 +6,10 @@ from kataja.ui.embeds.UIEmbed import UIEmbed
 from kataja.singletons import qt_prefs, ctrl, prefs
 from kataja.LabelDocument import LabelDocument
 from kataja.ui.panels.SymbolPanel import open_symbol_data
+from kataja.parser import INodeToLabelDocument
+from kataja.parser import LabelDocumentToINode
+from kataja.parser import INodeToKatajaConstituent
+
 import kataja.globals as g
 
 def make_label(text, parent=None, layout=None, tooltip='', buddy=None, palette=None):
@@ -62,6 +66,7 @@ class EmbeddedTextEdit(QtWidgets.QTextEdit):
             self.updateGeometry()
             self.parent().resize(self.parent().sizeHint())
 
+# todo: show latex source -button
 class ConstituentEditEmbed(UIEmbed):
 
     def __init__(self, parent, ui_manager, node, scenePos):
@@ -76,7 +81,7 @@ class ConstituentEditEmbed(UIEmbed):
         ui_p.setColor(QtGui.QPalette.Text, ctrl.cm.ui())
 
         f = QtGui.QFont(qt_prefs.font(g.MAIN_FONT))
-        #f.setPointSize(f.pointSize() * 2)
+        f.setPointSize(f.pointSize() * 2)
         self.master_edit = EmbeddedTextEdit(self)
         self.master_edit.setDocument(LabelDocument(edit=True))
         self.master_edit.setFont(f)
@@ -123,10 +128,12 @@ class ConstituentEditEmbed(UIEmbed):
 
 
     def update_document(self):
-        self.master_edit.document().parse_inodes(self.node.label_complex_inodes)
-        self.master_edit.document().blocks_to_strings()
+        d = self.master_edit.document()
+        INodeToLabelDocument.parse_inode(self.node.as_inode, d)
+        #d.blocks_to_strings()
         self.master_edit.setMinimumSize(self.master_edit.sizeHint())
         self.master_edit.updateGeometry()
+        self.master_edit.update()
 
     def sizeHint(self):
         base = QtWidgets.QWidget.sizeHint(self)
@@ -141,8 +148,8 @@ class ConstituentEditEmbed(UIEmbed):
         self.move(px, py)
 
     def push_values_back(self):
-        print('as html: ', self.master_edit.toHtml())
-        self.master_edit.document().push_values_to(self.node)
+        inode = LabelDocumentToINode.parse_labeldocument(self.master_edit.document())
+        INodeToKatajaConstituent.update_constituentnode_fields(self.node, inode)
 
     def update_embed(self, scenePos=None, node=None):
         if node:

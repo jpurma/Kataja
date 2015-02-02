@@ -99,7 +99,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
         self.setZValue(10)
         self.fade_in()
-        # # Remember to call update_identity in subclassed __init__s!
         self.effect = create_shadow_effect(ctrl.cm.selection())
         self._update_magnets = True
         self.setGraphicsEffect(self.effect)
@@ -465,12 +464,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
     # ### Labels and identity ###############################################################
 
-    def update_identity(self):
-        """ Make sure that the node reflects its syntactic_object and that node exists in the world"""
-        if not ctrl.loading:
-            ctrl.forest.store(self)
-        self.update_label()
-
     def update_label(self):
         """
 
@@ -490,7 +483,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         return self.label
 
     @property
-    def label_complex_inodes(self):
+    def as_inode(self):
         """
         :return: INodes or str or tuple of them
         """

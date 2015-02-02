@@ -1,6 +1,6 @@
 __author__ = 'purma'
 
-
+#todo: check if raw strings are of any use anymore in inodes
 
 class ITextNode:
     """ Node to represent text that may contain other kinds of nodes. e.g.
@@ -85,7 +85,7 @@ class ICommandNode(ITextNode):
 
     def __str__(self):
         if self.parts:
-            return '(%s)%s(/%s)' % (self.label, self.parts_as_string(), self.label)
+            return '(%s)%s(/%s)' % (self.command, self.parts_as_string(), self.command)
         else:
             return '(%s/)' % self.command
 
@@ -140,27 +140,31 @@ class IConstituentNode(ITextNode):
         :param node:
         """
         self.label = node
-        self.raw += node.raw
+        if node:
+            self.raw += node.raw
 
     def add_feature(self, node):
         self.features.append(node)
-        self.raw += node.raw
+        if node:
+            self.raw += node.raw
 
-    def add_index(self, node):
-        self.index = node
-        self.raw += node.raw
+    def add_index(self, index):
+        self.index = index
 
     def add_alias(self, node):
         self.alias = node
-        self.raw += node.raw
+        if node:
+            self.raw += node.raw
 
     def add_gloss(self, node):
         self.gloss = node
-        self.raw += node.raw
+        if node:
+            self.raw += node.raw
 
     def add_label_complex(self, node):
         self._label_complex.append(node)
-        self.raw += node.raw
+        if node:
+            self.raw += node.raw
 
     def sort_out_label_complex(self):
         """ Go through label complex and fill alias, label, index, gloss and features if provided.

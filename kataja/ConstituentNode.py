@@ -89,7 +89,6 @@ class ConstituentNode(Node):
         """
         self.update_features()
         self.update_gloss()
-        self.update_identity()
         self.update_bounding_rect()
         self.update_visibility()
         self.update_status_tip()
@@ -109,12 +108,7 @@ class ConstituentNode(Node):
         :param value:  """
         if self.syntactic_object:
             self.syntactic_object.alias = value
-            self.update_identity()
-
-    @property
-    def alias_as_html(self):
-        return latex2html(self.alias)
-
+            self._inode_changed = True
 
     @property
     def index(self):
@@ -126,7 +120,7 @@ class ConstituentNode(Node):
         if value is None:
             value = ""
         self.syntactic_object.index = value
-        self.update_identity()
+        self._inode_changed = True
 
     @property
     def gloss(self):
@@ -139,6 +133,7 @@ class ConstituentNode(Node):
             value = ""
         if self.syntactic_object:
             self.syntactic_object.gloss = value
+        self._inode_changed = True
         self.update_gloss()
 
 
@@ -240,7 +235,7 @@ class ConstituentNode(Node):
         return self.alias
 
     @property
-    def label_complex_inodes(self):
+    def as_inode(self):
         """
         :return: INodes or str or tuple of them
         """

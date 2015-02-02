@@ -49,7 +49,6 @@ class FeatureNode(Node):
         """ Call after putting values in place
         :return:
         """
-        self.update_identity()
         self.update_label()
         self.update_bounding_rect()
         self.update_visibility()

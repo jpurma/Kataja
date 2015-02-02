@@ -59,6 +59,29 @@ def parse(text):
     else:
         return nodes
 
+#@time_me
+def parse_field(text):
+    """ Simpler version of parse, turns values of text fields into INodes (intermediary nodes).
+    Results are ITextNodes that may contain more ITextNodes and ICommandNodes.
+        :param text: string to parse.
+    """
+    if not text:
+        return None
+    text = text.strip()
+    if not text:
+        return None
+    feed = list(text)
+    while feed:
+        feed, node = parse_word(feed)
+    try:
+        assert(node.raw_string == text)
+    except AssertionError:
+        print('parsing field, raw differs from imput:')
+        print('---- raw string ----')
+        print(node.raw_string)
+        print('---- input was ----')
+        print(text)
+    return node
 
 def parse_word(feed):
     """ Turn text into ITextNodes. If something special (commands, curlybraces, brackets is found, deal with them by
@@ -269,7 +292,7 @@ def parse_brackets(feed):
             new_cnode.add_label_complex(new_node)
             new_cnode.sort_out_label_complex()
             node.add_part(new_cnode)
-    node.prepare_index()
+    node.sort_out_label_complex()
     return feed, node
 
 # ### Test cases

@@ -46,7 +46,6 @@ class GlossNode(Node):
         Node.__init__(self)
         self.saved.host = host
         if not restoring:
-            self.update_identity()
             self.update_label()
             self.update_bounding_rect()
             self.update_visibility()
