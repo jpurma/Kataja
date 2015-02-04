@@ -87,7 +87,16 @@ class BareConstituent(BaseConstituent):
                 return 'Constituent(id=%s)' % self.label
         else:
             if self.index:
-                return "[.%s %s %s ]" % (self.index, self.left.__repr__(), self.right.__repr__())
+                ir = '.' + self.index
             else:
-                return "[ %s %s ]" % (self.left.__repr__(), self.right.__repr__())
+                ir = ''
+            if self.left:
+                lr = self.left.__repr__()
+            else:
+                lr = ''
+            if self.right:
+                rr = self.right.__repr__()
+            else:
+                rr = ''
+            return "[%s %s %s ]" % (ir, lr, rr)
 

@@ -57,18 +57,19 @@ def inode_to_constituentnodes(node, forest):
                 if child and isinstance(child, ConstituentNode):
                     children.append(child)
         if isinstance(node.label, ITextNode):
-            label = node.label.raw_string
+            label = INodeToLatex.parse_inode_for_field(node.label)
         else:
             label = node.label
         if isinstance(node.alias, ITextNode):
-            alias = node.alias.raw_string
+            alias = INodeToLatex.parse_inode_for_field(node.alias)
         else:
             alias = node.alias
         if isinstance(node.gloss, ITextNode):
-            gloss = node.gloss.raw_string
+            gloss = INodeToLatex.parse_inode_for_field(node.gloss)
         else:
             gloss = node.gloss
         if node.features:
+            # todo: features here
             print('Needs to create features from:', node.features)
         index = node.index
         constituent = ctrl.Constituent(label)
@@ -88,15 +89,20 @@ def inode_to_constituentnodes(node, forest):
         if len(children) == 2:
             left = children[1]
             right = children[0]
+            constituent.left = left.syntactic_object
+            constituent.right = right.syntactic_object
             forest._connect_node(parent=cn, child=left, direction=g.LEFT)
             forest._connect_node(parent=cn, child=right, direction=g.RIGHT)
 
+        # fixme: monochild
         elif len(children) == 1:
-            forest._connect_node(parent=cn, child=children[0], direction=g.LEFT)
+            left = children[0]
+            constituent.left = left.syntactic_object
+            forest._connect_node(parent=cn, child=left, direction=g.LEFT)
 
         cn.update_label()
         forest.derivation_steps.save_and_create_derivation_step()
-
+        print([constituent])
         return cn
 
 

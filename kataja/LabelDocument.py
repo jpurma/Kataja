@@ -13,7 +13,12 @@ class LabelDocument(QtGui.QTextDocument):
     def __init__(self, edit=False):
         QtGui.QTextDocument.__init__(self)
         self.setDefaultTextOption(QtGui.QTextOption(QtCore.Qt.AlignHCenter))
-        self.block_mapping = {0:'alias', 1: 'label', 2: 'index', 3: 'gloss', 4: 'features'}
         self.edit_mode = edit
+        self.block_order = []
 
+    def default_block_order(self):
+        return ['alias', 'label', 'index', 'gloss', 'features']
 
+    def clear(self):
+        self.block_order = self.default_block_order()
+        QtGui.QTextDocument.clear(self)

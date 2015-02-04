@@ -1,8 +1,9 @@
+
 __author__ = 'purma'
 
 from PyQt5 import QtGui, QtCore
 from kataja.parser.LatexToINode import ITextNode, ICommandNode, IConstituentNode
-
+from kataja.LabelDocument import LabelDocument
 from kataja.parser.latex_to_unicode import latex_to_unicode
 
 
@@ -11,29 +12,81 @@ def parse_inode(inode, document):
     :param inode: Node or nodes to be translated. If there are several, linebreak is added between them
     :param document: LabelDocument where to write
     """
+    assert(isinstance(document, LabelDocument))
     document.clear()
-    edit = getattr(document, 'edit_mode', False) # now it is compatible with QTextDocument too
-    cursor = QtGui.QTextCursor(document)
-    if isinstance(inode, IConstituentNode):
-        if inode.alias:
-            write_node_to_document(inode.alias, cursor)
-        if inode.label:
-            cursor.insertText('\n')
-            write_node_to_document(inode.label, cursor)
-        elif edit:
-            cursor.insertText('\n')
-        if inode.index:
-            cursor.insertText('\n')
-            cursor.insertText(inode.index)
-        elif edit:
-            cursor.insertText('\n')
-        if inode.gloss:
-            cursor.insertText('\n')
-            write_node_to_document(inode.gloss, cursor)
-        elif edit:
-            cursor.insertText('\n')
-        #todo:implement features
+    if not inode:
+        return
 
+    edit = document.edit_mode
+    cursor = QtGui.QTextCursor(document)
+    first = document.block_order[0]
+    if edit:
+        for block_id in document.block_order:
+            if block_id == 'alias':
+                if block_id != first:
+                    cursor.insertBlock()
+                if inode.alias:
+                    write_node_to_document(inode.alias, cursor)
+            elif block_id == 'label':
+                if block_id != first:
+                    cursor.insertBlock()
+                if inode.label:
+                    write_node_to_document(inode.label, cursor)
+            elif block_id == 'index':
+                if block_id != first:
+                    cursor.insertBlock()
+                if inode.index:
+                    cursor.insertText(inode.index)
+            elif block_id == 'gloss':
+                if block_id != first:
+                    cursor.insertBlock()
+                if inode.gloss:
+                    write_node_to_document(inode.gloss, cursor)
+            elif block_id == 'features':
+                if block_id != first:
+                    cursor.insertBlock()
+                if inode.features:
+                    write_node_to_document(inode.features, cursor)
+    else:
+        actual_block_order = []
+        first = True
+        for block_id in document.block_order:
+            if block_id == 'alias':
+                if inode.alias:
+                    if not first:
+                        cursor.insertBlock()
+                    write_node_to_document(inode.alias, cursor)
+                    actual_block_order.append(block_id)
+                    first = False
+            elif block_id == 'label':
+                if inode.label:
+                    if not first:
+                        cursor.insertBlock()
+                    write_node_to_document(inode.label, cursor)
+                    actual_block_order.append(block_id)
+                    first = False
+            elif block_id == 'index':
+                if inode.index:
+                    if not first:
+                        cursor.insertBlock()
+                    cursor.insertText(inode.index)
+                    actual_block_order.append(block_id)
+                    first = False
+            elif block_id == 'gloss':
+                if inode.gloss:
+                    if not first:
+                        cursor.insertBlock()
+                    write_node_to_document(inode.gloss, cursor)
+                    actual_block_order.append(block_id)
+                    first = False
+            elif block_id == 'features':
+                if inode.features:
+                    if not first:
+                        cursor.insertBlock()
+                    write_node_to_document(inode.features, cursor)
+                    actual_block_order.append(block_id)
+                    first = False
+        document.block_order = actual_block_order
 
 def run_command(command, cursor):
     """

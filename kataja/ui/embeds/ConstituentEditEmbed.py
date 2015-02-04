@@ -34,6 +34,7 @@ class EmbeddedTextEdit(QtWidgets.QTextEdit):
         self.setLineWrapMode(QtWidgets.QTextEdit.NoWrap)
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.setAutoFillBackground(True)
         self.textChanged.connect(self.resize_as_needed)
 
     def canInsertFromMimeData(self, mimedata):
@@ -133,11 +134,20 @@ class ConstituentEditEmbed(UIEmbed):
         #d.blocks_to_strings()
         self.master_edit.setMinimumSize(self.master_edit.sizeHint())
         self.master_edit.updateGeometry()
-        self.master_edit.update()
+        cursor = self.master_edit.textCursor()
+        cursor.movePosition(QtGui.QTextCursor.Start)
+        cursor.movePosition(QtGui.QTextCursor.EndOfBlock)
+        self.master_edit.setTextCursor(cursor)
 
     def sizeHint(self):
         base = QtWidgets.QWidget.sizeHint(self)
         return base + QtCore.QSize(40, 0)
+
+    def after_appear(self):
+        """ Customizable calls for refreshing widgets that have drawing problems recovering from blur effect.
+        :return:
+        """
+        self.master_edit.viewport().update()
 
 
     def update_position(self):
@@ -205,7 +215,11 @@ class ConstituentEditEmbed(UIEmbed):
             h2 = r.height()/2
             painter.drawLine(tr_x, tr_y, tr_x, tr_y + h)
             painter.drawLine(tr_x, tr_y + h2, tr_x + 20, tr_y + h2)
-            painter.drawText(tr_x + 24, tr_y + h2, d.block_mapping.get(i, d.block_mapping[4]))
+            if i < len(d.block_order):
+                text = d.block_order[i]
+            else:
+                text = d.block_order[-1]
+            painter.drawText(tr_x + 24, tr_y + h2, text)
         UIEmbed.paintEvent(self, event)
 
 

@@ -253,7 +253,12 @@ class Controller:
         if self.selected:
             self.deselect_objects(update_ui=False)
         self.selected = [obj]
-        self.add_message('selected %s' % str(obj))
+        if hasattr(obj, 'syntactic_object'):
+            # here is room for constituent specific print information
+            self.add_message('selected %s' % str(obj))
+        else:
+            self.add_message('selected %s' % str(obj))
+
         obj.refresh_selection_status(True)
         self.main.ui_manager.update_selections(self.selected, old_selected)
 

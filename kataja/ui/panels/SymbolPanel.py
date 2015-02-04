@@ -4,7 +4,7 @@ from kataja.ui.panels.UIPanel import UIPanel
 from kataja.parser.latex_to_unicode import latex_to_unicode
 from kataja.singletons import qt_prefs, ctrl
 import kataja.globals as g
-from utils import time_me
+from kataja.utils import time_me
 
 __author__ = 'purma'
 

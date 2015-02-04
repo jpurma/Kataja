@@ -224,7 +224,7 @@ class DerivationStepManager(Savable):
         self.derivation_step_index += 1
         ds = self.derivation_steps[self.derivation_step_index]
         self.restore_derivation_step(ds)
-        self.forest.main.add_message(ds.msg)
+        self.forest.main.add_message('Derivation step %s: %s' % (self.derivation_step_index, ds.msg))
 
     def previous_derivation_step(self):
         """
@@ -237,6 +237,6 @@ class DerivationStepManager(Savable):
         self.derivation_step_index -= 1
         ds = self.derivation_steps[self.derivation_step_index]
         self.restore_derivation_step(ds)
-        self.forest.main.add_message(ds.msg)
+        self.forest.main.add_message('Derivation step %s: %s' % (self.derivation_step_index, ds.msg))
 
 

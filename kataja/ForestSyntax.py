@@ -39,6 +39,8 @@ def connect_according_to_edge(edge):
     if not (edge.start and edge.end):
         raise ForestSyntaxError("Cannot make a connection based on edge, is the other end of edge is empty: %s" % edge)
 
+    # fixme: monochild? not sure, can handle them already
+
     if etype is g.CONSTITUENT_EDGE:
         if isinstance(edge.start, ConstituentNode) and isinstance(edge.end, ConstituentNode):
             constituent_start = edge.start.syntactic_object

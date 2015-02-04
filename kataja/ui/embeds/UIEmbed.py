@@ -142,6 +142,7 @@ class UIEmbed(QtWidgets.QWidget):
                 magnet = QtCore.QPoint(0, h/2), 4
             self._magnet = magnet
             self.move(view_pos - magnet[0])
+            self.updateGeometry()
 
     def magnet(self):
         return self._magnet
@@ -155,6 +156,15 @@ class UIEmbed(QtWidgets.QWidget):
         if self._timeline.direction() == QtCore.QTimeLine.Backward:
             self.hide()
             self.close()
+        else:
+            print('finished appearing, calling update')
+            self.after_appear()
+
+    def after_appear(self):
+        """ Customizable calls for refreshing widgets that have drawing problems recovering from blur effect.
+        :return:
+        """
+        pass
 
     def update_color(self):
         self.setPalette(ctrl.cm.get_qt_palette_for_ui())

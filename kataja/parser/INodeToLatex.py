@@ -9,24 +9,26 @@ def parse_inode_for_field(inode):
     :param inode:
     :return:
     """
-    s = []
-    def parse(inode):
-        if isinstance(inode, ICommandNode):
-            s.append(inode.command)
-            if not inode.parts:
-                return
-            s.append('{')
-            for part in inode.parts:
-                parse(part)
-            s.append('}')
-        elif isinstance(inode, ITextNode):
-            for part in inode.parts:
-                parse(part)
+    def parse(jnode):
+        r = []
+        if isinstance(jnode, ICommandNode):
+            r.append(jnode.prefix)
+            r.append(jnode.command)
+            if not jnode.parts:
+                return ''.join(r)
+            r.append('{')
+            for part in jnode.parts:
+                r.append(parse(part))
+            r.append('}')
+        elif isinstance(jnode, ITextNode):
+            for part in jnode.parts:
+                r.append(parse(part))
         else:
-            s.append(inode)
+            r.append(jnode)
+        return ''.join(r)
 
-    parse(inode)
-    return ''.join(s)
+    s = parse(inode)
+    return s
 
 def parse_inode(inode):
     """ General INode parser, parses IConstituentNodes all the way to LaTeX QTrees

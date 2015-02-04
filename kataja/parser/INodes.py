@@ -11,13 +11,6 @@ class ITextNode:
 
     def __init__(self):
         self.parts = []
-        self.raw = []
-
-    def add_raw_char(self, c):
-        """
-        :param c: char (string of length 1)
-        """
-        self.raw.append(c)
 
     def add_char(self, c):
         """
@@ -30,10 +23,6 @@ class ITextNode:
         :param node: any kind of INode or string)
         """
         self.parts.append(node)
-        if isinstance(node, ITextNode):
-            self.raw += node.raw
-        else:
-            self.raw += node
 
     def split_lines(self):
         lines = []
@@ -61,12 +50,6 @@ class ITextNode:
     def __str__(self):
         return self.parts_as_string()
 
-    @property
-    def raw_string(self):
-        """
-        :return:
-        """
-        return ''.join(self.raw)
 
 class ICommandNode(ITextNode):
     """ Node that contains command (like a html tag or a LaTeX command) as a string and where
@@ -76,6 +59,7 @@ class ICommandNode(ITextNode):
         """ Command is stored as a string in self.command. self.parts are the TextNodes in the scope of command. """
         ITextNode.__init__(self)
         self.command = ''
+        self.prefix = '\\'
 
     def add_command_char(self, c):
         """
@@ -107,7 +91,6 @@ class INode(ITextNode):
         :param node:
         """
         self.label = node
-        self.raw += node.raw
 
     def __str__(self):
         if self.parts:
@@ -140,31 +123,21 @@ class IConstituentNode(ITextNode):
         :param node:
         """
         self.label = node
-        if node:
-            self.raw += node.raw
 
     def add_feature(self, node):
         self.features.append(node)
-        if node:
-            self.raw += node.raw
 
     def add_index(self, index):
         self.index = index
 
     def add_alias(self, node):
         self.alias = node
-        if node:
-            self.raw += node.raw
 
     def add_gloss(self, node):
         self.gloss = node
-        if node:
-            self.raw += node.raw
 
     def add_label_complex(self, node):
         self._label_complex.append(node)
-        if node:
-            self.raw += node.raw
 
     def sort_out_label_complex(self):
         """ Go through label complex and fill alias, label, index, gloss and features if provided.

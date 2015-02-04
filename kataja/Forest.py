@@ -716,7 +716,7 @@ class Forest(Savable):
         self.add_to_scene(gn)
         ee = ctrl.ui.get_constituent_edit_embed()
         if ee and ee.isVisible():
-            pos = ee.gloss_edit.pos()
+            pos = ee.master_edit.pos()
             scene_pos = ctrl.graph_view.mapToScene(ee.mapToParent(pos))
             gn.set_original_position(scene_pos)
 

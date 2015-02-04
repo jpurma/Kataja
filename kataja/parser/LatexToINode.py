@@ -44,16 +44,6 @@ def parse(text):
                 nodes.append(node)
             else:
                 feed.pop(0)
-    try:
-        if len(nodes) == 1:
-            assert(nodes[0].raw_string == text)
-    except AssertionError:
-        print('raw string different from given input:')
-        print('---- raw string ----')
-        print(nodes[0].raw_string)
-        print('---- input was ----')
-        print(text)
-        #quit()
     if len(nodes) == 1:
         return nodes[0]
     else:
@@ -73,14 +63,6 @@ def parse_field(text):
     feed = list(text)
     while feed:
         feed, node = parse_word(feed)
-    try:
-        assert(node.raw_string == text)
-    except AssertionError:
-        print('parsing field, raw differs from imput:')
-        print('---- raw string ----')
-        print(node.raw_string)
-        print('---- input was ----')
-        print(text)
     return node
 
 def parse_word(feed):
@@ -92,9 +74,7 @@ def parse_word(feed):
     node = ITextNode()
 
     def eat_char():
-        """ Remove char from the feed and remember it in raw form.
-        If everything goes right, sum of nodes' raw forms should be the original string"""
-        node.add_raw_char(feed.pop(0))
+        feed.pop(0)
 
     while feed:
         c = feed[0]
@@ -132,9 +112,7 @@ def parse_curlies(feed):
     node = ITextNode()
 
     def eat_char():
-        """ Remove char from the feed and remember it in raw form.
-        If everything goes right, sum of nodes' raw forms should be the original string"""
-        node.add_raw_char(feed.pop(0))
+        feed.pop(0)
 
     eat_char()
 
@@ -167,12 +145,10 @@ def parse_one_character_command(feed, command):
     """
     node = ICommandNode()
     node.add_command_char(command)
-    node.add_raw_char(command)
+    node.prefix = '' # now it doesn't start with \
 
     def eat_char():
-        """ Remove char from the feed and remember it in raw form.
-        If everything goes right, sum of nodes' raw forms should be the original string"""
-        node.add_raw_char(feed.pop(0))
+        feed.pop(0)
 
     while feed:
         c = feed[0]
@@ -214,9 +190,7 @@ def parse_command(feed):
     node = ICommandNode()
 
     def eat_char():
-        """ Remove char from the feed and remember it in raw form.
-        If everything goes right, sum of nodes' raw forms should be the original string"""
-        node.add_raw_char(feed.pop(0))
+        feed.pop(0)
 
     eat_char() # this is the beginning "\"
 
@@ -257,9 +231,7 @@ def parse_brackets(feed):
     assert(feed[0] == '[')
 
     def eat_char():
-        """ Remove char from the feed and remember it in raw form.
-        If everything goes right, sum of nodes' raw forms should be the original string"""
-        node.add_raw_char(feed.pop(0))
+        feed.pop(0)
 
     eat_char()
 
@@ -331,5 +303,4 @@ if __name__ == "__main__":
 
 
     print(n)
-    #print(n.raw_string)
 
