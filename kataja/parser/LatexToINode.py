@@ -61,11 +61,18 @@ def parse_field(text):
     if not text:
         return None
     feed = list(text)
+    nodes = []
     while feed:
         feed, node = parse_word(feed)
-    return node
+        nodes.append(node)
+    if len(nodes) == 1:
+        return nodes[0]
+    else:
+        tnode = ITextNode()
+        tnode.parts = nodes
+        return tnode
 
-def parse_word(feed):
+def parse_word(feed, end_on_space=False):
     """ Turn text into ITextNodes. If something special (commands, curlybraces, brackets is found, deal with them by
     creating new Nodes of specific types
         :param feed: list of chars (strings of length 1)
@@ -90,7 +97,7 @@ def parse_word(feed):
             feed.pop(0)
             feed, new_node = parse_one_character_command(feed, c)
             node.add_part(new_node)
-        elif c.isspace():
+        elif c.isspace() and end_on_space:
             eat_char()
             return feed, node
         elif c == ']':
@@ -134,7 +141,7 @@ def parse_curlies(feed):
         else:
             eat_char()
             node.add_char(c)
-    raise ParseError
+    return feed, node
 
 
 def parse_one_character_command(feed, command):
@@ -212,7 +219,7 @@ def parse_command(feed):
             else:
                 return feed, node
         elif c == ' ':
-            eat_char()
+            #eat_char()
             return feed, node
         elif c == ']':
             return feed, node
@@ -254,12 +261,12 @@ def parse_brackets(feed):
             eat_char()
         elif c == '.':
             eat_char()
-            feed, new_node = parse_word(feed)
+            feed, new_node = parse_word(feed, end_on_space=True)
             node.add_label_complex(new_node)
         else:
             # Make a new constituent
             new_cnode = IConstituentNode()
-            feed, new_node = parse_word(feed) # Read simple constituent e.g. A or B in [ A B ]
+            feed, new_node = parse_word(feed, end_on_space=True) # Read simple constituent e.g. A or B in [ A B ]
             # What we just read was label for that constituent
             new_cnode.add_label_complex(new_node)
             new_cnode.sort_out_label_complex()

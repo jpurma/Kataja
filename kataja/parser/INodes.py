@@ -50,6 +50,8 @@ class ITextNode:
     def __str__(self):
         return self.parts_as_string()
 
+    def __repr__(self):
+        return 'ITextNode(%s)' % ', '.join([x.__repr__() for x in self.parts])
 
 class ICommandNode(ITextNode):
     """ Node that contains command (like a html tag or a LaTeX command) as a string and where
@@ -76,6 +78,9 @@ class ICommandNode(ITextNode):
     def is_empty(self):
         return not (self.command or self.parts)
 
+    def __repr__(self):
+        return 'ICommandNode(%s)' % ', '.join([x.__repr__() for x in self.parts])
+
 
 class INode(ITextNode):
     """ INode that contains Node (feature or other Kataja node) with "label" as the field for displayable value. """
@@ -100,6 +105,9 @@ class INode(ITextNode):
 
     def is_empty(self):
         return not (self.label or self.parts)
+
+    def __repr__(self):
+        return 'INode(%s)' % ', '.join([x.__repr__() for x in self.parts])
 
 
 class IConstituentNode(ITextNode):
@@ -199,3 +207,10 @@ class IConstituentNode(ITextNode):
 
     def is_empty(self):
         return not (self.label or self.parts or self.index or self.alias or self.features)
+
+    def __repr__(self):
+        return 'IConstituentNode(alias=%s, label=%s, index=%s, gloss=%s, parts=[%s])' % (self.alias.__repr__(),
+            self.label.__repr__(),
+            self.index.__repr__(),
+            self.gloss.__repr__(),
+            ', '.join([x.__repr__() for x in self.parts]))

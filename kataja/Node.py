@@ -489,6 +489,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """
         if self._inode_changed:
             self._inode = KatajaNodeToINode.node_to_inode(self, children=False)
+            self._inode_changed = False
         return self._inode
 
     def update_status_tip(self):

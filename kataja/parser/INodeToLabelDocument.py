@@ -14,9 +14,9 @@ def parse_inode(inode, document):
     """
     assert(isinstance(document, LabelDocument))
     document.clear()
-    if not inode:
+    if not inode or not isinstance(inode, IConstituentNode):
         return
-
+    print('parsing INode to LabelDocument')
     edit = document.edit_mode
     cursor = QtGui.QTextCursor(document)
     first = document.block_order[0]
@@ -87,6 +87,7 @@ def parse_inode(inode, document):
                     actual_block_order.append(block_id)
                     first = False
         document.block_order = actual_block_order
+    print(document.toPlainText())
 
 def run_command(command, cursor):
     """
@@ -135,22 +136,4 @@ def write_node_to_document(n, cursor):
     if old_format:
         cursor.setCharFormat(old_format)
 
-
-def blocks_to_strings(self):
-    """ Parse LabelDocument back to alias, label, index, gloss and features
-    :return:
-    """
-    c = self.blockCount()
-    #print("blockCount = ", c)
-    #print("document = ", self.toPlainText())
-    r = []
-    for i in range(0, c):
-        block = self.findBlockByNumber(i)
-        print('---- block %s ----' % block.blockNumber())
-        print(block.text())
-        print(block.textFormats())
-        r.append(block.text())
-        #print(i, block, block.layout(), block.layout().boundingRect())
-        #print(self.documentLayout(), self.documentLayout().blockBoundingRect(block))
-    return r
 

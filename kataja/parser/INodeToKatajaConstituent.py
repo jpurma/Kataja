@@ -119,6 +119,7 @@ def update_constituentnode_fields(constituentnode, inode):
         constituentnode.label = label_latex
     if constituentnode.gloss != gloss_latex:
         constituentnode.gloss = gloss_latex
+    constituentnode.update_label()
     #todo: handling of features
 
 
