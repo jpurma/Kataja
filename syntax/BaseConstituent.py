@@ -54,9 +54,9 @@ class BaseConstituent(Savable):
 
     def __str__(self):
         if self.index:
-            return '_'.join((self.label, self.index))
+            return '%s_%s' % (self.label, self.index)
         else:
-            return self.label
+            return str(self.label)
 
     @property
     def features(self):

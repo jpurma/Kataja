@@ -3,6 +3,9 @@ import sys
 import types
 from PyQt5.QtCore import QPointF, QPoint
 from kataja.utils import to_tuple
+from kataja.parser.INodes import ITextNode
+from kataja.parser.INodeToLatex import parse_inode_for_field
+from kataja.parser.LatexToINode import parse_field
 
 __author__ = 'purma'
 
@@ -55,6 +58,9 @@ class Savable:
 
             if isinstance(data, (int, float, str)):
                 return data
+            elif isinstance(data, ITextNode):
+                return 'INode', parse_inode_for_field(data)
+
             elif isinstance(data, dict):
                 result = {}
                 for key, value in data.items():
@@ -200,7 +206,9 @@ class Savable:
             elif isinstance(data, tuple):
                 if data and isinstance(data[0], str) and data[0].startswith('Q'):
                     data_type = data[0]
-                    if data_type == 'QPointF':
+                    if data_type == 'INode':
+                        return parse_field(data[1])
+                    elif data_type == 'QPointF':
                         return QPointF(data[1], data[2])
                     elif data_type == 'QPoint':
                         return QPoint(data[1], data[2])

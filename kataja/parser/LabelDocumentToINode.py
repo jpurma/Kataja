@@ -54,12 +54,12 @@ def parse_fragment(frag, old_format, node_stack, open_tags):
             open_tags.append((command, new_value))
             nnode = ICommandNode()
             nnode.command = command
-            current_node.add_part(nnode)
+            current_node.append(nnode)
             node_stack.append(nnode)
             current_node = nnode
     text = frag.text().strip()
     if text:
-        current_node.add_part(text)
+        current_node.append(text)
     return node_stack
 
 

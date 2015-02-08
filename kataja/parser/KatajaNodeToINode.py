@@ -1,4 +1,4 @@
-from kataja.parser.INodes import INode, IConstituentNode
+from kataja.parser.INodes import IFeatureNode, IConstituentNode
 from kataja.parser.LatexToINode import parse_field
 import kataja.globals as g
 
@@ -6,21 +6,20 @@ __author__ = 'purma'
 
 
 def node_to_inode(node, children=False):
-    """ Turn Kataja Node into INodes, including Label
+    """ Turn Kataja Node (generic Node, not ConstituentNode) into INodes, including Label
     :param node: Node to turned into INodes
     :param children: recursively turn children too (don't overdo this)
     :return: INode
     """
-    inode = INode()
-    label = parse_field(node.label)
-    inode.add_label(label)
+    inode = IFeatureNode(label=node.label)
     if children:
         for child in node.children():
             if child.__class__.type == g.CONSTITUENT_NODE:
+                # well this shouldn't happen, but let's be agnostic here
                 ichild = constituentnode_to_iconstituentnode(child, children=True)
             else:
                 ichild = node_to_inode(child, children=True)
-            inode.add_part(ichild)
+            inode.append(ichild)
     return inode
 
 
@@ -30,14 +29,11 @@ def constituentnode_to_iconstituentnode(node, children=False):
     :param children: recursively turn children too (don't overdo this)
     :return: IConstituentNode
     """
-    inode = IConstituentNode()
-    alias = parse_field(node.alias)
-    inode.add_alias(alias)
-    label = parse_field(node.label)
-    inode.add_label(label)
-    inode.add_index(node.index)
-    gloss = parse_field(node.gloss)
-    inode.add_gloss(gloss)
+    inode = IConstituentNode(alias=node.alias,
+                             label=node.label,
+                             index=node.index,
+                             gloss=node.gloss,
+                             features=node.features)
     # todo: features need to be reimplemented / thought out
     if children:
         for child in node.children():
@@ -45,5 +41,5 @@ def constituentnode_to_iconstituentnode(node, children=False):
                 ichild = constituentnode_to_iconstituentnode(child, children=True)
             else:
                 ichild = node_to_inode(child, children=True)
-            inode.add_part(ichild)
+            inode.append(ichild)
     return inode

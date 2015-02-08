@@ -91,11 +91,11 @@ class BareConstituent(BaseConstituent):
             else:
                 ir = ''
             if self.left:
-                lr = self.left.__repr__()
+                lr = repr(self.left)
             else:
                 lr = ''
             if self.right:
-                rr = self.right.__repr__()
+                rr = repr(self.right)
             else:
                 rr = ''
             return "[%s %s %s ]" % (ir, lr, rr)

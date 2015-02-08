@@ -136,7 +136,19 @@ class ConstituentNode(Node):
         self._inode_changed = True
         self.update_gloss()
 
+    @property
+    def features(self):
+        if self.syntactic_object:
+            return self.syntactic_object.features
 
+    @features.setter
+    def features(self, value):
+        if value is None:
+            value = []
+        if self.syntactic_object:
+            self.syntactic_object.features = value
+        self._inode_changed = True
+        self.update_features()
 
     # Saved properties
 
@@ -265,8 +277,8 @@ class ConstituentNode(Node):
     def __str__(self):
         if not self.syntactic_object:
             return 'Placeholder node'
-        alias = self.alias
-        label = self.label
+        alias = str(self.alias)
+        label = str(self.label)
         if alias and label:
             return ' '.join((alias, label))
         else:

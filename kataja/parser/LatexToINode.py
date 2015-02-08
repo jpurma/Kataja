@@ -34,13 +34,13 @@ def parse(text):
         c = feed[0]
         if c == '[':
             feed, node = parse_brackets(feed)
-            if not node.is_empty():
+            if node:
                 nodes.append(node)
         elif c == ']':
             feed.pop(0)
         else:
             feed, node = parse_word(feed)
-            if not node.is_empty():
+            if node:
                 nodes.append(node)
             else:
                 feed.pop(0)
@@ -68,9 +68,7 @@ def parse_field(text):
     if len(nodes) == 1:
         return nodes[0]
     else:
-        tnode = ITextNode()
-        tnode.parts = nodes
-        return tnode
+        return ITextNode(parts=nodes)
 
 def parse_word(feed, end_on_space=False):
     """ Turn text into ITextNodes. If something special (commands, curlybraces, brackets is found, deal with them by
@@ -87,31 +85,25 @@ def parse_word(feed, end_on_space=False):
         c = feed[0]
         if c == '{':
             feed, new_node = parse_curlies(feed)
-            node.add_part(new_node)
+            node.append(new_node)
         elif c == '}':
-            node.tidy()
-            return feed, node
+            break
         elif c == '\\':
             feed, new_node = parse_command(feed)
-            node.add_part(new_node)
+            node.append(new_node)
         elif c in one_character_commands:
-            feed.pop(0)
-            feed, new_node = parse_one_character_command(feed, c)
-            node.add_part(new_node)
+            feed, new_node = parse_one_character_command(feed)
+            node.append(new_node)
         elif c.isspace() and end_on_space:
-            eat_char()
-            node.tidy()
-            return feed, node
+            feed.pop(0)
+            break
         elif c == ']':
-            node.tidy()
-            return feed, node
+            break
         elif c == '[':
-            node.tidy()
-            return feed, node
-
+            break
         else:
-            eat_char()
-            node.add_char(c)
+            feed.pop(0)
+            node.append(c)
     node.tidy()
     return feed, node
 
@@ -123,83 +115,66 @@ def parse_curlies(feed):
     """
     node = ITextNode()
 
-    def eat_char():
-        feed.pop(0)
-
-    eat_char()
+    feed.pop(0) # eat first "{"
 
     while feed:
         c = feed[0]
         if c == '{':
             feed, new_node = parse_curlies(feed)
-            node.add_part(new_node)
+            node.append(new_node)
         elif c == '}':
-            eat_char()
-            node.tidy()
-            return feed, node
+            feed.pop(0)
+            break
         elif c == '\\':
             feed, new_node = parse_command(feed)
-            node.add_part(new_node)
+            node.append(new_node)
         elif c in one_character_commands:
-            feed.pop(0)
-            feed, new_node = parse_one_character_command(feed, c)
-            node.add_part(new_node)
+            feed, new_node = parse_one_character_command(feed)
+            node.append(new_node)
         else:
-            eat_char()
-            node.add_char(c)
+            feed.pop(0)
+            node.append(c)
     node.tidy()
     return feed, node
 
 
-def parse_one_character_command(feed, command):
+def parse_one_character_command(feed):
     """ Start a new command node, where the command is just one character and already given as a param.
         e.g. _{subscripted text} or ^{superscript}
         :param feed: list of chars (strings of length 1)
         :param command: one character command recognized by parent parser
     """
-    node = ICommandNode()
-    node.add_command_char(command)
-    node.prefix = '' # now it doesn't start with \
-
-    def eat_char():
-        feed.pop(0)
+    node = ICommandNode(command=feed.pop(0), prefix='')
 
     while feed:
         c = feed[0]
         if c == '{':
             feed, new_node = parse_curlies(feed)
-            node.add_part(new_node)
-            node.tidy()
-            return feed, node
+            node.append(new_node)
+            break
         elif c == '}':
             # weird situation
             print(" plain '}' after one char command. what to do? ")
-            node.tidy()
-            return feed, node
+            break
         elif c == '\\':
             if len(node.command) == 1:
                 # _\something -- is it possible?
-                eat_char()
-                node.add_char(c)
+                feed.pop(0)
+                node.append(c)
                 print('backslash after one character command, what to do?')
-                node.tidy()
-                return feed, node
+                break
             else:
-                node.tidy()
-                return feed, node
+                break
         elif c.isspace():
-            eat_char()
-            node.tidy()
-            return feed, node
+            break
         elif c == ']':
             print(" plain ']' after one char command. what to do? ")
-            node.tidy()
-            return feed, node
+            break
         else:
-            eat_char()
-            node.add_char(c)
-            node.tidy()
-            return feed, node
+            feed.pop(0)
+            node.append(c)
+    node.tidy()
+    return feed, node
 
 
 def parse_command(feed):
@@ -210,40 +185,30 @@ def parse_command(feed):
     """
     node = ICommandNode()
 
-    def eat_char():
-        feed.pop(0)
-
-    eat_char() # this is the beginning "\"
+    feed.pop(0) # this is the beginning "\"
 
     while feed:
         c = feed[0]
         if c == '{':
-            include_space = False
             feed, new_node = parse_curlies(feed)
-            node.add_part(new_node)
+            node.append(new_node)
         elif c == '}':
-            node.tidy()
-            return feed, node
+            break
         elif c == '\\':
             if not node.command:
                 # this is an line break in latex, '\\'', two backslashes in row --
                 # not two command words
-                eat_char()
+                feed.pop(0)
                 node.add_command_char(c)
-                node.tidy()
-                return feed, node
+                break
             else:
-                node.tidy()
-                return feed, node
+                break
         elif c == ' ':
-            #eat_char()
-            node.tidy()
-            return feed, node
+            break
         elif c == ']':
-            node.tidy()
-            return feed, node
+            break
         else:
-            eat_char()
+            feed.pop(0)
             node.add_command_char(c)
     node.tidy()
     return feed, node
@@ -257,31 +222,26 @@ def parse_brackets(feed):
     node = IConstituentNode()
     assert(feed[0] == '[')
 
-    def eat_char():
-        feed.pop(0)
-
-    eat_char()
+    feed.pop(0)
 
     while feed:
         c = feed[0]
         if c == '[':
             feed, new_cnode = parse_brackets(feed)
-            node.add_part(new_cnode)
+            node.append(new_cnode)
         elif c == ']':
             # Finalize merger
-            eat_char()
+            feed.pop(0)
             # if closing bracket continues with . ( "[ ... ].NP " ) it is treated as label
             if feed and feed[0] == '.':
-                eat_char()
+                feed.pop(0)
                 feed, new_node = parse_word(feed)
                 node.add_label_complex(new_node)
-            node.sort_out_label_complex()
-            node.tidy()
-            return feed, node
+            break
         elif c.isspace():
-            eat_char()
+            feed.pop(0)
         elif c == '.':
-            eat_char()
+            feed.pop(0)
             feed, new_node = parse_word(feed, end_on_space=True)
             node.add_label_complex(new_node)
         else:
@@ -291,7 +251,7 @@ def parse_brackets(feed):
             # What we just read was label for that constituent
             new_cnode.add_label_complex(new_node)
             new_cnode.sort_out_label_complex()
-            node.add_part(new_cnode)
+            node.append(new_cnode)
     node.sort_out_label_complex()
     node.tidy()
     return feed, node

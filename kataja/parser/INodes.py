@@ -1,4 +1,8 @@
 __author__ = 'purma'
+""" INodes can be used to represent strings that have formatting commands and to represent constituent structures
+They can replace strings for simple comparisons, but common string methods don't work with them: use str(inode)
+instead.
+"""
 
 
 class ITextNode:
@@ -14,31 +18,55 @@ class ITextNode:
         else:
             self.parts = []
 
-    def add_char(self, c):
-        """
-        :param c: char (string of length 1)
-        """
-        self.parts.append(c)
+    def __eq__(self, other):
+        return str(self) == str(other)
 
-    def add_part(self, node):
-        """
-        :param node: any kind of INode or string)
-        """
+    def __ne__(self, other):
+        return str(self) != str(other)
+
+    def __hash__(self):
+        return hash(str(self))
+
+    def __getitem__(self, item):
+        return self.parts[item]
+
+    def __setitem__(self, item, value):
+        self.parts[item] = value
+
+    def __delitem__(self, item):
+        del self.parts[item]
+
+    def __iter__(self):
+        return iter(self.parts)
+
+    def __contains__(self, item):
+        return item in self.parts
+
+    def __len__(self):
+        return len(self.parts)
+
+    def __reversed__(self):
+        return reversed(self.parts)
+
+    def __add__(self, other):
+        if isinstance(other, (ITextNode, str)):
+            return ITextNode(parts=[self, other])
+
+    def __radd__(self, other):
+        if isinstance(other, ITextNode):
+            return ITextNode(parts=[other, self])
+        elif isinstance(other, str):
+            return other + str(self)
+
+    def __iadd__(self, other):
+        if isinstance(other, (ITextNode, str)):
+            self.append(other)
+
+    def append(self, node):
         self.parts.append(node)
 
-    def split_lines(self):
-        lines = []
-        line = ITextNode()
-        max_splits = 2
-        splits = 0
-        for part in self.parts:
-            if splits <= max_splits and isinstance(part, ICommandNode) and part.command == '\\':
-                lines.append(line)
-                line = ITextNode()
-            else:
-                line.add_part(part)
-        lines.append(line)
-        return lines
+    def remove(self, node):
+        self.parts.remove(node)
 
     def parts_as_string(self):
         """ Parts flattened into string, recursively stringifies parts if they contain other INodes
@@ -73,6 +101,15 @@ class ITextNode:
             if isinstance(part, ITextNode) and not part.is_plain_string():
                 return False
         return True
+
+    def simplified(self):
+        """ If ITextNode can be presented as a string without losing anything, give that str, else return ITextNode
+        :return: str or self
+        """
+        if self.is_plain_string():
+            return str(self)
+        else:
+            return self
 
     def is_empty(self):
         return not self.parts
@@ -114,14 +151,19 @@ class ICommandNode(ITextNode):
         else:
             return '(%s/)' % self.command
 
+    def __bool__(self):
+        return bool(self.parts or self.command)
+
     def is_empty(self):
         return not (self.command or self.parts)
 
     def __repr__(self):
-        return 'ICommandNode(command=%s, prefix=%s, parts=%s)' % (repr(self.command), repr(self.prefix), repr(self.parts))
+        return 'ICommandNode(command=%s, prefix=%s, parts=%s)' % (repr(self.command),
+                                                                  repr(self.prefix),
+                                                                  repr(self.parts))
 
 
-class INode(ITextNode):
+class IFeatureNode(ITextNode):
     """ INode that contains Node (feature or other Kataja node) with "label" as the field for displayable value. """
 
     def __init__(self, label='', parts=None):
@@ -129,18 +171,14 @@ class INode(ITextNode):
         ITextNode.__init__(self, parts=parts)
         self.label = label
 
-    def add_label(self, node):
-        """
-
-        :param node:
-        """
-        self.label = node
-
     def is_plain_string(self):
         """ Cannot be represented with just a string.
         :return: bool
         """
         return False
+
+    def __bool__(self):
+        return bool(self.parts or self.label)
 
     def __str__(self):
         if self.parts:
@@ -152,7 +190,8 @@ class INode(ITextNode):
         return not (self.label or self.parts)
 
     def __repr__(self):
-        return 'INode(label=%s, parts=%s)' % (repr(self.label), repr(self.parts))
+        return 'INode(label=%s, parts=%s)' % (repr(self.label),
+                                              repr(self.parts))
 
 
 class IConstituentNode(ITextNode):
@@ -173,24 +212,12 @@ class IConstituentNode(ITextNode):
         self.gloss = gloss
         self._label_complex = []
 
-    def add_label(self, node):
-        """
+    def __bool__(self):
+        return bool(self.parts or self.label or self.index or self.features or self.alias or self.gloss)
 
-        :param node:
-        """
-        self.label = node
 
     def add_feature(self, node):
         self.features.append(node)
-
-    def add_index(self, index):
-        self.index = index
-
-    def add_alias(self, node):
-        self.alias = node
-
-    def add_gloss(self, node):
-        self.gloss = node
 
     def add_label_complex(self, node):
         self._label_complex.append(node)
@@ -205,51 +232,75 @@ class IConstituentNode(ITextNode):
         """ Go through label complex and fill alias, label, index, gloss and features if provided.
         :return: None
         """
+        def find_index(node):
+            if isinstance(node, ICommandNode) and node.command == '_':
+                return ITextNode(parts=node.parts).simplified(), node
+            elif isinstance(node, ITextNode):
+                for n in reversed(node):
+                    found = find_index(n)
+                    if found:
+                        if isinstance(found, tuple):
+                            index, icommand = found
+                            print(node.parts, icommand, icommand in node.parts)
+                            node.remove(icommand)
+                            return index
+                        else:
+                            return found
+
         row_i = 0
         rows = []
         if not self._label_complex:
             return
         container = ITextNode()
-        is_leaf = not bool(self.parts)
+
         index_found = False
         for node in self._label_complex:
-            #print(type(node), node)
-            #print('--------------')
-            for part in node.parts:
-                #print(type(part), part)
+            if not index_found:
+                index_found = find_index(node)
+        if index_found:
+            if isinstance(index_found, tuple):
+                self.index, icommand = index_found
+                self.remove(icommand)
+            else:
+                self.index = index_found
+
+        for node in self._label_complex:
+            for part in node:
                 if isinstance(part, ICommandNode):
                     # Linebreak --
                     if part.command == '\\':
-                        rows.append(container)
+                        rows.append(container.simplified())
                         container = ITextNode()
                         row_i += 1
-                    # Index --
-                    elif part.command == '_' and not index_found:
-                        self.index = part.parts_as_string()
-                        index_found = True
                     # Anything else --
                     else:
-                        container.add_part(part)
+                        container.append(part)
                 else:
-                    container.add_part(part)
-        rows.append(container)
+                    container.append(part)
+
+        final_row = container.simplified()
         row_i += 1
         if row_i == 1:
-            if is_leaf:
-                self.add_label(container)
+            if self.parts:
+                self.alias = final_row
             else:
-                self.add_alias(container)
+                self.label = final_row
         else:
+            rows.append(final_row)
             for i, node in enumerate(rows):
                 if i == 0:
-                    self.add_alias(node)
+                    self.alias = node
                 elif i == 1:
-                    self.add_label(node)
+                    self.label = node
                 elif i == 2:
-                    self.add_gloss(node)
+                    self.gloss = node
                 elif i > 2:
                     self.add_feature(node)
-        print('Guessed about constituent: alias: %s, label: %s, index: %s, gloss: %s, features: %s ' % (self.alias, self.label, self.index, self.gloss, self.features))
+        print('Guessed about constituent: alias: %s, label: %s, index: %s, gloss: %s, features: %s ' % (self.alias,
+                                                                                                        self.label,
+                                                                                                        self.index,
+                                                                                                        self.gloss,
+                                                                                                        self.features))
 
     def __str__(self):
         if self.parts and self.label:
@@ -264,8 +315,12 @@ class IConstituentNode(ITextNode):
 
     def __repr__(self):
         return 'IConstituentNode(alias=%s, label=%s, index=%s, gloss=%s, features=%s, parts=%s)' % (repr(self.alias),
-            repr(self.label),
-            repr(self.index),
-            repr(self.gloss),
-            repr(self.features),
-            repr(self.parts))
+                                                                                                    repr(self.label),
+                                                                                                    repr(self.index),
+                                                                                                    repr(self.gloss),
+                                                                                                    repr(self.features),
+                                                                                                    repr(self.parts))
+
+
+a = ITextNode(parts=['jaa', ' ei'])
+print('kumma ' + a)

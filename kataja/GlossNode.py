@@ -28,6 +28,7 @@ GlossNode is a Node to display translation or explanation of a constituent
 from kataja.singletons import qt_prefs
 from kataja.Node import Node
 from kataja.globals import GLOSS_EDGE, GLOSS_NODE
+from kataja.parser import KatajaNodeToINode
 
 
 color_map = {'tense': 0, 'person': 2, 'number': 4, 'case': 6, 'unknown': 3}
@@ -58,6 +59,14 @@ class GlossNode(Node):
     def host(self, value):
         self.saved.host = value
 
+    @property
+    def as_inode(self):
+        """
+        :return: INodes or str or tuple of them
+        """
+        return self.host.as_inode.gloss
+
+
     def update_colors(self):
         """
         Deprecated for now? Does nothing, overrides, but doesn't call Node's update_colors.
@@ -73,10 +82,3 @@ class GlossNode(Node):
         else:
             return 'orphaned gloss node'
 
-    def get_html_for_label(self):
-        """ This should be overridden if there are alternative displays for label """
-
-        if self.host:
-            return self.host.gloss
-        else:
-            return ''
