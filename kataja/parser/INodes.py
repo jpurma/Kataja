@@ -1,6 +1,5 @@
 __author__ = 'purma'
 
-#todo: check if raw strings are of any use anymore in inodes
 
 class ITextNode:
     """ Node to represent text that may contain other kinds of nodes. e.g.
@@ -9,8 +8,11 @@ class ITextNode:
     self.raw will always contain the original text to be parsed for scope of the node
     """
 
-    def __init__(self):
-        self.parts = []
+    def __init__(self, parts=None):
+        if parts is not None:
+            self.parts = parts
+        else:
+            self.parts = []
 
     def add_char(self, c):
         """
@@ -44,6 +46,34 @@ class ITextNode:
         """
         return ''.join([str(x) for x in self.parts])
 
+    def tidy(self):
+        """ Join string parts into continuous strings when possible, just to help readability
+        :return:
+        """
+        new_part = []
+        new_parts = []
+        for part in self.parts:
+            if isinstance(part, ITextNode):
+                if new_part:
+                    new_parts.append(''.join(new_part))
+                    new_part = []
+                new_parts.append(part)
+            else:
+                new_part.append(part)
+        if new_part:
+            new_parts.append(''.join(new_part))
+        self.parts = new_parts
+
+    def is_plain_string(self):
+        """ Check if this ITextNode contains only strings or ITextNodes that can be represented as plain strings
+        if so, it would be easier to replace ITextNode with just a string.
+        :return: bool
+        """
+        for part in self.parts:
+            if isinstance(part, ITextNode) and not part.is_plain_string():
+                return False
+        return True
+
     def is_empty(self):
         return not self.parts
 
@@ -51,23 +81,32 @@ class ITextNode:
         return self.parts_as_string()
 
     def __repr__(self):
-        return 'ITextNode(%s)' % ', '.join([x.__repr__() for x in self.parts])
+        if self.is_plain_string():
+            return repr(self.parts_as_string())
+        else:
+            return 'ITextNode(parts=%s)' % repr(self.parts)
 
 class ICommandNode(ITextNode):
     """ Node that contains command (like a html tag or a LaTeX command) as a string and where
     the scope of the command is the parts of the node. """
 
-    def __init__(self):
+    def __init__(self, command='', prefix='\\', parts=None):
         """ Command is stored as a string in self.command. self.parts are the TextNodes in the scope of command. """
-        ITextNode.__init__(self)
-        self.command = ''
-        self.prefix = '\\'
+        ITextNode.__init__(self, parts=parts)
+        self.command = command
+        self.prefix = prefix
 
     def add_command_char(self, c):
         """
         :param c: char (string of length 1)
         """
         self.command += c
+
+    def is_plain_string(self):
+        """ Cannot be represented with just a string.
+        :return: bool
+        """
+        return False
 
     def __str__(self):
         if self.parts:
@@ -79,16 +118,16 @@ class ICommandNode(ITextNode):
         return not (self.command or self.parts)
 
     def __repr__(self):
-        return 'ICommandNode(%s)' % ', '.join([x.__repr__() for x in self.parts])
+        return 'ICommandNode(command=%s, prefix=%s, parts=%s)' % (repr(self.command), repr(self.prefix), repr(self.parts))
 
 
 class INode(ITextNode):
     """ INode that contains Node (feature or other Kataja node) with "label" as the field for displayable value. """
 
-    def __init__(self):
+    def __init__(self, label='', parts=None):
         """ Command is stored as a string in self.command. self.parts are the TextNodes in the scope of command. """
-        ITextNode.__init__(self)
-        self.label = ''
+        ITextNode.__init__(self, parts=parts)
+        self.label = label
 
     def add_label(self, node):
         """
@@ -96,6 +135,12 @@ class INode(ITextNode):
         :param node:
         """
         self.label = node
+
+    def is_plain_string(self):
+        """ Cannot be represented with just a string.
+        :return: bool
+        """
+        return False
 
     def __str__(self):
         if self.parts:
@@ -107,7 +152,7 @@ class INode(ITextNode):
         return not (self.label or self.parts)
 
     def __repr__(self):
-        return 'INode(%s)' % ', '.join([x.__repr__() for x in self.parts])
+        return 'INode(label=%s, parts=%s)' % (repr(self.label), repr(self.parts))
 
 
 class IConstituentNode(ITextNode):
@@ -116,13 +161,16 @@ class IConstituentNode(ITextNode):
     IConstituentNode has label, alias, index and parts, where parts are IConstituentNodes and other are ITextNodes
     """
 
-    def __init__(self):
-        ITextNode.__init__(self)
-        self.label = ''
-        self.index = ''
-        self.features = []
-        self.alias = ''
-        self.gloss = ''
+    def __init__(self, label='', index='', features=None, alias='', gloss='', parts=None):
+        ITextNode.__init__(self, parts=parts)
+        self.label = label
+        self.index = index
+        if features is not None:
+            self.features = features
+        else:
+            self.features = []
+        self.alias = alias
+        self.gloss = gloss
         self._label_complex = []
 
     def add_label(self, node):
@@ -146,6 +194,12 @@ class IConstituentNode(ITextNode):
 
     def add_label_complex(self, node):
         self._label_complex.append(node)
+
+    def is_plain_string(self):
+        """ Cannot be represented with just a string.
+        :return: bool
+        """
+        return False
 
     def sort_out_label_complex(self):
         """ Go through label complex and fill alias, label, index, gloss and features if provided.
@@ -209,8 +263,9 @@ class IConstituentNode(ITextNode):
         return not (self.label or self.parts or self.index or self.alias or self.features)
 
     def __repr__(self):
-        return 'IConstituentNode(alias=%s, label=%s, index=%s, gloss=%s, parts=[%s])' % (self.alias.__repr__(),
-            self.label.__repr__(),
-            self.index.__repr__(),
-            self.gloss.__repr__(),
-            ', '.join([x.__repr__() for x in self.parts]))
+        return 'IConstituentNode(alias=%s, label=%s, index=%s, gloss=%s, features=%s, parts=%s)' % (repr(self.alias),
+            repr(self.label),
+            repr(self.index),
+            repr(self.gloss),
+            repr(self.features),
+            repr(self.parts))

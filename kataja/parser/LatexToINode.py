@@ -89,6 +89,7 @@ def parse_word(feed, end_on_space=False):
             feed, new_node = parse_curlies(feed)
             node.add_part(new_node)
         elif c == '}':
+            node.tidy()
             return feed, node
         elif c == '\\':
             feed, new_node = parse_command(feed)
@@ -99,15 +100,19 @@ def parse_word(feed, end_on_space=False):
             node.add_part(new_node)
         elif c.isspace() and end_on_space:
             eat_char()
+            node.tidy()
             return feed, node
         elif c == ']':
+            node.tidy()
             return feed, node
         elif c == '[':
+            node.tidy()
             return feed, node
 
         else:
             eat_char()
             node.add_char(c)
+    node.tidy()
     return feed, node
 
 
@@ -130,6 +135,7 @@ def parse_curlies(feed):
             node.add_part(new_node)
         elif c == '}':
             eat_char()
+            node.tidy()
             return feed, node
         elif c == '\\':
             feed, new_node = parse_command(feed)
@@ -141,6 +147,7 @@ def parse_curlies(feed):
         else:
             eat_char()
             node.add_char(c)
+    node.tidy()
     return feed, node
 
 
@@ -162,10 +169,12 @@ def parse_one_character_command(feed, command):
         if c == '{':
             feed, new_node = parse_curlies(feed)
             node.add_part(new_node)
+            node.tidy()
             return feed, node
         elif c == '}':
             # weird situation
             print(" plain '}' after one char command. what to do? ")
+            node.tidy()
             return feed, node
         elif c == '\\':
             if len(node.command) == 1:
@@ -173,18 +182,23 @@ def parse_one_character_command(feed, command):
                 eat_char()
                 node.add_char(c)
                 print('backslash after one character command, what to do?')
+                node.tidy()
                 return feed, node
             else:
+                node.tidy()
                 return feed, node
         elif c.isspace():
             eat_char()
+            node.tidy()
             return feed, node
         elif c == ']':
             print(" plain ']' after one char command. what to do? ")
+            node.tidy()
             return feed, node
         else:
             eat_char()
             node.add_char(c)
+            node.tidy()
             return feed, node
 
 
@@ -208,6 +222,7 @@ def parse_command(feed):
             feed, new_node = parse_curlies(feed)
             node.add_part(new_node)
         elif c == '}':
+            node.tidy()
             return feed, node
         elif c == '\\':
             if not node.command:
@@ -215,17 +230,22 @@ def parse_command(feed):
                 # not two command words
                 eat_char()
                 node.add_command_char(c)
+                node.tidy()
                 return feed, node
             else:
+                node.tidy()
                 return feed, node
         elif c == ' ':
             #eat_char()
+            node.tidy()
             return feed, node
         elif c == ']':
+            node.tidy()
             return feed, node
         else:
             eat_char()
             node.add_command_char(c)
+    node.tidy()
     return feed, node
 
 
@@ -256,6 +276,7 @@ def parse_brackets(feed):
                 feed, new_node = parse_word(feed)
                 node.add_label_complex(new_node)
             node.sort_out_label_complex()
+            node.tidy()
             return feed, node
         elif c.isspace():
             eat_char()
@@ -272,6 +293,7 @@ def parse_brackets(feed):
             new_cnode.sort_out_label_complex()
             node.add_part(new_cnode)
     node.sort_out_label_complex()
+    node.tidy()
     return feed, node
 
 # ### Test cases
