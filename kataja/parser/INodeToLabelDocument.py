@@ -95,6 +95,10 @@ def parse_iconstituentnode_for_editing(inode, document):
     :param document: LabelDocument
     :return:
     """
+    #o = QtGui.QTextOption()
+    #o.setFlags(QtGui.QTextOption.ShowLineAndParagraphSeparators |
+    #           QtGui.QTextOption.AddSpaceForLineAndParagraphSeparators)
+    #document.setDefaultTextOption(o)
     cursor = QtGui.QTextCursor(document)
     first = document.block_order[0]
     for block_id in document.block_order:
