@@ -97,7 +97,7 @@ class UndoManager:
             undo('diff: ', str(diff))
             self._stack.append(diff)
             self._msg_stack.append(msg)
-            self.dump_dict_to_file(diff)
+            #self.dump_dict_to_file(diff)
 
         self._current = len(self._stack)
         saved_objects['stack_index'] = self._current

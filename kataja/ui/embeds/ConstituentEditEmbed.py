@@ -67,7 +67,6 @@ class EmbeddedTextEdit(QtWidgets.QTextEdit):
             self.updateGeometry()
             self.parent().resize(self.parent().sizeHint())
 
-# todo: show latex source -button
 class ConstituentEditEmbed(UIEmbed):
 
     def __init__(self, parent, ui_manager, node, scenePos):
@@ -134,9 +133,16 @@ class ConstituentEditEmbed(UIEmbed):
 
     def toggle_raw_edit(self, value):
         d = self.master_edit.document()
+        block_n = self.master_edit.textCursor().blockNumber()
         inode = LabelDocumentToINode.parse_labeldocument(d)
         d.raw_mode = value
         INodeToLabelDocument.parse_inode(inode, d)
+        # move cursor back to where it was
+        cursor = self.master_edit.textCursor()
+        cursor.movePosition(QtGui.QTextCursor.Start)
+        cursor.movePosition(QtGui.QTextCursor.Down, n=block_n)
+        cursor.movePosition(QtGui.QTextCursor.EndOfBlock)
+        self.master_edit.setTextCursor(cursor)
         self.master_edit.setMinimumSize(self.master_edit.sizeHint())
         self.master_edit.updateGeometry()
 

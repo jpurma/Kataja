@@ -92,7 +92,10 @@ def parse_labeldocument(doc):
         line_parser = rtf_line_to_textnode
 
     for i, line in enumerate(lines):
-        key = bl[i]
+        if i < len(bl):
+            key = bl[i]
+        else:
+            key = bl[-1]
         if key == 'feature':
             d['features'].append(line_parser(line, doc))
         else:

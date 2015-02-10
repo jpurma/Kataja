@@ -678,8 +678,11 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         if ctrl.is_selected(self):
             self.open_embed()
         else:
+            editor = ctrl.ui.get_constituent_edit_embed()
             ctrl.select(self)
             ctrl.ui.add_completion_suggestions(self)
+            if editor and editor.isVisible():
+                self.open_embed()
 
     # def drag(self, event):
     # """ Drags also elements that are counted to be involved: features, children etc """
