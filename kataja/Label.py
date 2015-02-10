@@ -52,15 +52,17 @@ class Label(QtWidgets.QGraphicsTextItem):
 
     def update_label(self):
         """ Asks for node/host to give text and update if changed """
+        doc = self.document()
         self.setFont(self._host.font)
         self.prepareGeometryChange()
-        INodeToLabelDocument.parse_inode(self._host.as_inode, self.document())
-        self.setTextWidth(self.document().idealWidth())
+        self.setTextWidth(-1)
+        INodeToLabelDocument.parse_inode(self._host.as_inode, doc)
+        self.setTextWidth(doc.idealWidth())
         brect = self.boundingRect()
         self.total_height = brect.height() + self.y_offset
         self.setPos(brect.width() / -2.0, (self.total_height / -2.0) + self.y_offset)
-        self._ellipse = QtGui.QPainterPath()
-        self._ellipse.addEllipse(Pf(0, self.y_offset), brect.width() / 2, brect.height() / 2)
+        #self._ellipse = QtGui.QPainterPath()
+        #self._ellipse.addEllipse(Pf(0, self.y_offset), brect.width() / 2, brect.height() / 2)
 
     def paint(self, painter, option, widget):
         """ Painting is sensitive to mouse/selection issues, but usually with
