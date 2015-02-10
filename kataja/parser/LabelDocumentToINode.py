@@ -1,61 +1,75 @@
 from kataja.parser.INodes import ITextNode, IConstituentNode, ICommandNode
 from PyQt5 import QtGui
+from kataja.parser.LatexToINode import parse_field
 
 __author__ = 'purma'
 
-formats = {'underline': 'fontUnderline',
-           'emph': 'fontItalic',
-           'textbf': 'fontWeight',
-           'overline': 'fontOverline',
-           'valign': 'verticalAlignment',
-           'strikeout': 'fontStrikeOut',
-           'font': 'fontFamily',
-           'textsc': 'fontCapitalization'}
 
+def find_command(cf, old_format, text):
 
-def find_command(new_format, old_format, text):
-    inner = None
+    def add_command(inner, command, prefix='\\'):
+        outer = ICommandNode(command=command, prefix=prefix)
+        if inner:
+            outer.append(inner)
+        else:
+            outer.append(text)
+        return outer
+
     outer = None
-    for command, qmethod in formats.items():
-        new = getattr(new_format, qmethod)()
-        old = getattr(old_format, qmethod)()
-        if new != old:
-            outer = ICommandNode(command=command)
-            if inner:
-                outer.append(inner)
-            else:
-                outer.append(text)
-            inner = outer
+    if cf.fontUnderline():
+        outer = add_command(outer, 'underline')
+    if cf.fontItalic():
+        outer = add_command(outer, 'emph')
+    if cf.fontWeight() == QtGui.QFont.Bold:
+        outer = add_command(outer, 'textbf')
+    if cf.fontStrikeOut():
+        outer = add_command(outer, 'strikeout')
+    if cf.fontCapitalization() == QtGui.QFont.SmallCaps:
+        outer = add_command(outer, 'textsc')
+    if cf.verticalAlignment() == QtGui.QTextCharFormat.AlignSubScript:
+        outer = add_command(outer, '_', '')
+    if cf.verticalAlignment() == QtGui.QTextCharFormat.AlignSuperScript:
+        outer = add_command(outer, '^', '')
+    if cf.fontOverline():
+        outer = add_command(outer, 'overline')
     return outer
 
 
-def line_to_textnode(line, doc):
+def rtf_line_to_textnode(line, doc):
     def charFormat(n):
         return doc.allFormats()[n].toCharFormat()
     node = ITextNode()
     for (style, text) in line:
         if style != 0:
             icommandnode = find_command(charFormat(style), charFormat(0), text)
-            print(repr(icommandnode))
             if icommandnode:
                 node.append(icommandnode)
         else:
             node.append(text)
     return node
 
+def latex_line_to_textnode(line, doc):
+    return parse_field(''.join([text for cformat, text in line]))
+
 
 def parse_labeldocument(doc):
 
     block = doc.begin()
     lines = []
-    while block != doc.end():
+    for i in range(0, doc.blockCount()):
+        block = doc.findBlockByNumber(i)
         it = block.begin()
         block_finished = False
         line = []
         while not block_finished:
             frag = it.fragment()
+            if not frag.isValid():
+                print('invalid fragment')
+                break
             format = frag.charFormatIndex()
             frags = frag.text().splitlines()
+            # linebreaks create new blocks but they also extend the current fragment. So same piece of text can be
+            # read several times. This can be avoided if we take only the first line of each fragment.
             f = frags[0].strip()
             if f:
                 line.append((format, f))
@@ -64,7 +78,6 @@ def parse_labeldocument(doc):
                 lines.append(line)
             else:
                 it += 1
-        block = block.next()
 
     bl = doc.block_order
     d = {'alias': '',
@@ -73,12 +86,17 @@ def parse_labeldocument(doc):
          'gloss': '',
          'features': []}
 
+    if doc.raw_mode:
+        line_parser = latex_line_to_textnode
+    else:
+        line_parser = rtf_line_to_textnode
+
     for i, line in enumerate(lines):
         key = bl[i]
         if key == 'feature':
-            d['features'].append(line_to_textnode(line, doc))
+            d['features'].append(line_parser(line, doc))
         else:
-            d[key] = line_to_textnode(line, doc)
+            d[key] = line_parser(line, doc)
 
     node = IConstituentNode(**d)
 

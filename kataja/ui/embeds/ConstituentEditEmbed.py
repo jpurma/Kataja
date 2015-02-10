@@ -48,13 +48,13 @@ class EmbeddedTextEdit(QtWidgets.QTextEdit):
             data = open_symbol_data(mimedata)
             self.textCursor().insertText(data['char'])
         else:
-            QtWidgets.QTextEdit.canInsertFromMimeData(self, mimedata)
+            QtWidgets.QTextEdit.insertFromMimeData(self, mimedata)
 
     def sizeHint(self):
         return self._old_size
 
     def new_size_hint(self):
-        w = max((50, self.document().idealWidth()))
+        w = max((100, self.document().idealWidth()))
         h = self.document().size().height()
         return QtCore.QSize(w, h)
 
@@ -74,6 +74,11 @@ class ConstituentEditEmbed(UIEmbed):
         UIEmbed.__init__(self, parent, ui_manager, scenePos)
         layout = QtWidgets.QVBoxLayout()
         self.setLayout(layout)
+        self.raw_button = QtWidgets.QPushButton('LaTeX')
+        self.raw_button.setCheckable(True)
+        self.raw_button.setMaximumWidth(40)
+        ui_manager.connect_element_to_action(self.raw_button, 'raw_editing_toggle')
+        self.top_row_layout.addWidget(self.raw_button, 0, QtCore.Qt.AlignRight)
 
         layout.addLayout(self.top_row_layout)
         layout.addSpacing(4)
@@ -127,6 +132,13 @@ class ConstituentEditEmbed(UIEmbed):
 
         layout.addWidget(self.enter_button)
 
+    def toggle_raw_edit(self, value):
+        d = self.master_edit.document()
+        inode = LabelDocumentToINode.parse_labeldocument(d)
+        d.raw_mode = value
+        INodeToLabelDocument.parse_inode(inode, d)
+        self.master_edit.setMinimumSize(self.master_edit.sizeHint())
+        self.master_edit.updateGeometry()
 
     def update_document(self):
         d = self.master_edit.document()

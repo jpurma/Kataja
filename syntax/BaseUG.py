@@ -84,9 +84,9 @@ class UG:
         new_id = selected.label
         print("Merging with label from left constituent:", new_id)
         # remove index (_i, _j ...) from Merged id so that indexing won't get broken
-        res = re.search(r'[^\\]_\{(.*)\}', new_id) or re.search(r'[^\\]_(.)', new_id)
-        if res:
-            new_id = new_id[:new_id.rindex('_')]
+        #res = re.search(r'[^\\]_\{(.*)\}', new_id) or re.search(r'[^\\]_(.)', new_id)
+        #if res:
+        #    new_id = new_id[:new_id.rindex('_')]
         new = self.Constituent(new_id, left, right)
 
         if not (left and right):

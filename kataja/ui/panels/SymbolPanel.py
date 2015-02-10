@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore, QtGui
 
 from kataja.ui.panels.UIPanel import UIPanel
 from kataja.parser.latex_to_unicode import latex_to_unicode
@@ -66,7 +66,9 @@ class SymbolPanel(UIPanel):
         self.symlist.setMouseTracking(True)
         self.symlist.setFocusPolicy(QtCore.Qt.NoFocus)
         self.symlist.setViewMode(QtWidgets.QListWidget.IconMode)
-        self.symlist.setFont(qt_prefs.fonts[g.BIG_FONT])
+        f = QtGui.QFont(qt_prefs.fonts[g.MAIN_FONT])
+        f.setPointSize(20)
+        self.symlist.setFont(f)
         self.symlist.itemEntered.connect(self.item_entered)
         self.symlist.itemClicked.connect(self.item_clicked)
         layout.addWidget(self.symlist)

@@ -37,24 +37,20 @@ from kataja.utils import time_me
 # Alternatives: Cambria Math, Asana Math, XITS Math
 
 mac_fonts = {MAIN_FONT: ('Asana Math', 'Normal', 12),
-         BIG_FONT: ('Asana Math', 'Normal', 20),
-         MENU_FONT: ('Monaco', 'Normal', 10),
+         CONSOLE_FONT: ('Monaco', 'Normal', 10),
          UI_FONT: ('Helvetica', 'Normal', 10),
-         PHRASE_LABEL_FONT: ('Helvetica', 'Normal', 10),
-         ITALIC_FONT: ('Century', 'Normal', 10),
-         SMALL_CAPS: ('Lao MN', 'Normal', 9),
-         SMALL_FEATURE: ('Lao MN', 'Normal', 7),
-         SYMBOL_FONT: ('Menlo', 'Normal', 14)}
+         BOLD_FONT: ('STIX', 'Bold', 12),
+         ITALIC_FONT: ('Asana Math', 'Italic', 12),
+         SMALL_CAPS: ('Lao MN', 'Normal', 10),
+         SMALL_FEATURE: ('Lao MN', 'Normal', 7)}
 
-linux_fonts = {MAIN_FONT: ('URW Palladio L', 'Normal', 12),
-         BIG_FONT: ('URW Palladio L', 'Normal', 24),
-         MENU_FONT: ('Courier', 'Normal', 10),
+linux_fonts = {MAIN_FONT: ('Asana Math', 'Normal', 12),
+         CONSOLE_FONT: ('Courier', 'Normal', 10),
          UI_FONT: ('Droid Sans', 'Normal', 10),
-         PHRASE_LABEL_FONT: ('Droid Sans', 'Normal', 10),
-         ITALIC_FONT: ('Century', 'Normal', 10),
+         ITALIC_FONT: ('Asana Math', 'Italic', 12),
+         BOLD_FONT: ('STIX', 'Bold', 12),
          SMALL_CAPS: ('Lao MN', 'Normal', 9),
-         SMALL_FEATURE: ('Lao MN', 'Normal', 7),
-         SYMBOL_FONT: ('Monospace', 'Normal', 14)}
+         SMALL_FEATURE: ('Lao MN', 'Normal', 7)}
 
 if sys.platform == 'darwin':
     fonts = mac_fonts
@@ -368,7 +364,6 @@ class QtPreferences:
         :param preferences:
         :param fontdb:
         """
-        t = time.time()
         print("font families:", QtGui.QFontDatabase().families())
         self.easing_curve = []
         self.prepare_fonts(preferences.fonts, fontdb, preferences)
@@ -443,7 +438,6 @@ class QtPreferences:
         self.font_bracket_height = font.height()
         #print(self.font_space_width, self.font_bracket_width, self.font_bracket_height)
         self.fonts[SMALL_CAPS].setCapitalization(QtGui.QFont.SmallCaps)
-        self.fonts[ITALIC_FONT].setItalic(True)
 
     ### Font helper ###
 

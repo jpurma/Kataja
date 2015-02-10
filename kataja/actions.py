@@ -306,6 +306,10 @@ actions = {
         'shortcut': 'Return',
         'shortcut_context': 'parent_and_children'
     },
+    'raw_editing_toggle': {
+        'command': 'Toggle edit mode',
+        'method': 'toggle_raw_editing'
+    },
 
     # Generic keys ####
     # 'key_esc': {

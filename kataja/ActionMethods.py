@@ -665,13 +665,12 @@ class ActionMethods:
         if not embed.node:
             ctrl.ui.close_constituent_editing()
             return
-        node = embed.node
         embed.push_values_back()
-        #node.alias = embed.alias_edit.text()
-        #node.label = embed.input_line_edit.text()
-        #node.index = embed.index_edit.text()
-        #node.gloss = embed.gloss_edit.text()
         ctrl.ui.close_constituent_editing()
+
+    def toggle_raw_editing(self):
+        embed = ctrl.ui.get_constituent_edit_embed()
+        embed.toggle_raw_edit(embed.raw_button.isChecked())
 
 
     ###### Keys #################

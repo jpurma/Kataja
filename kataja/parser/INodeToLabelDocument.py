@@ -4,7 +4,10 @@ __author__ = 'purma'
 from PyQt5 import QtGui, QtCore
 from kataja.parser.INodes import ITextNode, ICommandNode, IConstituentNode, IFeatureNode
 from kataja.LabelDocument import LabelDocument
+import kataja.globals as g
+from kataja.singletons import qt_prefs
 from kataja.parser.latex_to_unicode import latex_to_unicode
+from kataja.parser.INodeToLatex import parse_inode_for_field
 
 
 def parse_inode(inode, document, gloss_in_view=True, features_in_view=True):
@@ -101,32 +104,33 @@ def parse_iconstituentnode_for_editing(inode, document):
     #document.setDefaultTextOption(o)
     cursor = QtGui.QTextCursor(document)
     first = document.block_order[0]
+    raw = document.raw_mode
     for block_id in document.block_order:
         if block_id == 'alias':
             if block_id != first:
                 cursor.insertBlock()
             if inode.alias:
-                write_node_to_document(inode.alias, cursor)
+                write_node_to_document(inode.alias, cursor, raw)
         elif block_id == 'label':
             if block_id != first:
                 cursor.insertBlock()
             if inode.label:
-                write_node_to_document(inode.label, cursor)
+                write_node_to_document(inode.label, cursor, raw)
         elif block_id == 'index':
             if block_id != first:
                 cursor.insertBlock()
             if inode.index:
-                write_node_to_document(inode.index, cursor)
+                write_node_to_document(inode.index, cursor, raw)
         elif block_id == 'gloss':
             if block_id != first:
                 cursor.insertBlock()
             if inode.gloss:
-                write_node_to_document(inode.gloss, cursor)
+                write_node_to_document(inode.gloss, cursor, raw)
         elif block_id == 'features':
             if block_id != first:
                 cursor.insertBlock()
             if inode.features:
-                write_node_to_document(inode.features, cursor)
+                write_node_to_document(inode.features, cursor, raw)
 
 
 def parse_ifeaturenode(inode, document):
@@ -146,33 +150,47 @@ def run_command(command, cursor):
     :param doc: document, required for fetching e.g. font info.
     :return:
     """
-    if command == 'emph':
-        c = QtGui.QTextCharFormat()
+    c = QtGui.QTextCharFormat()
+    merge_format = True
+    if command == 'emph' or command == 'textit':
         c.setFontItalic(True)
-        cursor.mergeCharFormat(c)
+    elif command == 'textbf':
+        c.setFont(qt_prefs.fonts[g.BOLD_FONT])
+        c.setFontWeight(QtGui.QFont.Bold)
     elif command == '^':
-        #c = QtGui.QTextCharFormat()
-        c = QtGui.QTextCharFormat()
         c.setVerticalAlignment(QtGui.QTextCharFormat.AlignSuperScript)
-        cursor.mergeCharFormat(c)
     elif command == '_':
-        c = QtGui.QTextCharFormat()
         c.setVerticalAlignment(QtGui.QTextCharFormat.AlignSubScript)
         c.setFontItalic(True)
-        cursor.mergeCharFormat(c)
+    elif command == '$':
+        merge_format = False
+    elif command == 'underline':
+        c.setFontUnderline(True)
+    elif command == 'strikeout':
+        c.setFontStrikeOut(True)
+    elif command == 'textsc':
+        c.setFontCapitalization(QtGui.QFont.SmallCaps)
+    elif command == 'overline':
+        c.setFontOverline(True)
     elif command in latex_to_unicode:
         cursor.insertText(latex_to_unicode[command][0])
-    # print('got command: %s' % command)
+        merge_format = False
+    if merge_format:
+        cursor.mergeCharFormat(c)
 
 
-def write_node_to_document(n, cursor):
+def write_node_to_document(n, cursor, raw=False):
     """ Recursive node writer. Stores the current charformat, so when the end of formatting scope is reached,
     we can return to previous format.
     :param n: node or string
     :param cursor: cursor in document, this is the point where we write
+    :param raw: write as latex instead of RTF
     :return:
     """
     if not n:
+        return
+    if raw:
+        cursor.insertText(parse_inode_for_field(n))
         return
     if isinstance(n, ITextNode):
         old_format = None
