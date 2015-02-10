@@ -355,10 +355,9 @@ class ConstituentNode(Node):
         :param kw:
         """
         #print("For node %s: %s" % (self, str(kw)))
-        folded_away = self.folding_towards
         self._visibility_brackets = kw.get('brackets', self._visibility_brackets)
         was_visible = self.visible
-        visible = not folded_away
+        visible = not self.folded_away
         self.visible = visible
 
 
@@ -570,14 +569,6 @@ class ConstituentNode(Node):
     # ### Folding / Triangles #################################
 
 
-
-    def unfold_triangle(self):
-        """ Restore elements from a triangle """
-        self.triangle = False
-        self._label_complex.unfold_label()
-        for n, node in enumerate(ctrl.forest.list_nodes(self)):
-            node.unfold(self, n)
-
     def prepare_to_be_folded(self, triangle):
         """ Initialize move to triangle's position and make sure that move is not
         :param triangle:
@@ -593,24 +584,10 @@ class ConstituentNode(Node):
 
     def finish_folding(self):
         """ Hide, and remember why this is hidden """
+        self.folded_away = True
         self.update_visibility()
         self.update_bounding_rect()
 
-    def unfold(self, from_node, n=0):
-        """ Restore folded elements, add some variance (n) to node positions so visualization algorithms won't get stuck
-        :param from_node:
-        :param n:
-        """
-        self.folding_towards = None
-        x, y, z = from_node.computed_position
-        self.adjustment = from_node.adjustment
-        self.computed_position = (x + n, y + n, z)
-        self.update_visibility()
-        for edge in self.edges_down:
-            edge.update_visibility()
-        self.boundingRect(update=True)
-        #for feature in self.features:
-        #    feature.fade_in()
 
     def paint_triangle(self, painter):
         """ Drawing the triangle, called from paint-method
@@ -719,21 +696,6 @@ class ConstituentNode(Node):
         root = self.get_root_node()
         return self is not root and self is not root.left(only_visible=False)
 
-    def can_fold(self):
-        """
-
-
-        :return:
-        """
-        return not self.triangle
-
-    def can_unfold(self):
-        """
-
-
-        :return:
-        """
-        return self.triangle
 
     #### Dragging #####################################################################
 

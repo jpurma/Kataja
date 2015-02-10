@@ -1661,10 +1661,10 @@ class Forest(Savable):
     def remove_triangle_from(self, node):
         node.triangle = False
         fold_scope = self.list_nodes_once(node, only_visible=False)
-        print(fold_scope)
         for folded in fold_scope:
             if folded.folding_towards is node:
                 folded.folding_towards = None
+                folded.folded_away = False
                 folded.adjustment = node.adjustment
                 folded.update_visibility(show_edges=True)
                 folded.update_bounding_rect()
