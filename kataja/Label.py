@@ -22,11 +22,9 @@
 #
 # ############################################################################
 
-from PyQt5.QtCore import QPointF as Pf
-from PyQt5 import QtGui, QtWidgets
+from PyQt5 import QtWidgets
 from kataja.LabelDocument import LabelDocument
 from kataja.parser import INodeToLabelDocument
-# ctrl = Controller object, gives accessa to other modules
 
 
 class Label(QtWidgets.QGraphicsTextItem):
@@ -34,19 +32,11 @@ class Label(QtWidgets.QGraphicsTextItem):
     deciding what to show in label, label only calls nodes method to ask for
     text. """
 
-    def __init__(self, parent=None, scene=None):
+    def __init__(self, parent=None):
         """ Give node as parent. Label asks it to produce text to show here """
         QtWidgets.QGraphicsTextItem.__init__(self, parent)
-        # self.setTextInteractionFlags(Qt.TextEditable) # .TextInteractionFlag.
-        self._source_text = ''
         self._host = parent
-        self._ellipse = None
-        self._doc = None
-        self._hovering = False
         self.y_offset = 0
-        self.selectable = False
-        self.draggable = False
-        self.clickable = False
         self.total_height = 0
         self.setDocument(LabelDocument())
 
@@ -61,8 +51,6 @@ class Label(QtWidgets.QGraphicsTextItem):
         brect = self.boundingRect()
         self.total_height = brect.height() + self.y_offset
         self.setPos(brect.width() / -2.0, (self.total_height / -2.0) + self.y_offset)
-        #self._ellipse = QtGui.QPainterPath()
-        #self._ellipse.addEllipse(Pf(0, self.y_offset), brect.width() / 2, brect.height() / 2)
 
     def paint(self, painter, option, widget):
         """ Painting is sensitive to mouse/selection issues, but usually with

@@ -956,7 +956,12 @@ class UIManager:
     def add_unfold_triangle_button(self, node):
         key = node.save_key + g.REMOVE_TRIANGLE
         if key not in self._overlay_buttons:
-            button = OverlayButton(TriangleIcon(), node, g.REMOVE_TRIANGLE, 'Reveal nodes inside the triangle', parent=self.main.graph_view, size=(32, 16))
+            button = OverlayButton(qt_prefs.triangle_close_icon,
+                                   node,
+                                   g.REMOVE_TRIANGLE,
+                                   'Reveal nodes inside the triangle',
+                                   parent=self.main.graph_view,
+                                   size=(48, 24))
             button.update_position()
             self.connect_element_to_action(button, 'remove_triangle')
             button.show()
@@ -965,7 +970,12 @@ class UIManager:
     def add_fold_triangle_button(self, node):
         key = node.save_key + g.ADD_TRIANGLE
         if key not in self._overlay_buttons:
-            button = OverlayButton(TriangleIcon(), node, g.ADD_TRIANGLE, 'Turn into a triangle', parent=self.main.graph_view, size=(32, 16))
+            button = OverlayButton(qt_prefs.triangle_icon,
+                                   node,
+                                   g.ADD_TRIANGLE,
+                                   'Turn into a triangle',
+                                   parent=self.main.graph_view,
+                                   size=(48, 24))
             button.update_position()
             self.connect_element_to_action(button, 'add_triangle')
             button.show()

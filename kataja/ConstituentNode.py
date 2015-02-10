@@ -197,7 +197,7 @@ class ConstituentNode(Node):
         # still will be updated correctly
         if self._label_complex:
             if value:
-                self._label_complex.y_offset = TRIANGLE_HEIGHT - 4
+                self._label_complex.y_offset = TRIANGLE_HEIGHT
             else:
                 self._label_complex.y_offset = 0
             self.update_label()
@@ -543,49 +543,6 @@ class ConstituentNode(Node):
         """ Empty nodes can be used as placeholders and deleted or replaced without structural worries """
         return (not (self.alias or self.label or self.index)) and self.is_leaf_node()
 
-    def get_html_for_label(self):
-        """ Build html string to be displayed in label_complex """
-        if not self.syntactic_object:
-            return ''
-        if self.triangle:
-            s = []
-            for node in ctrl.forest.list_nodes_once(self):
-                if node.is_leaf_node():
-                    s.append(node.alias or node.label)
-            return ' '.join(s)
-        alias = self.alias_as_html
-        label = self.label_as_html
-
-        index = self.index
-        if index:
-            i_string = '<sub><i>%s</i></sub>' % index
-        else:
-            i_string = ''
-        if ctrl.forest.settings.label_style != 0:
-            if alias and label:
-                padding = len(label) - len(alias)
-                if padding > 0:
-                    padding = int(padding / 2)
-                    s = '%s<b>%s</b>%s<br/>%s' % (padding * "&nbsp;", alias, i_string, label)
-                elif padding < 0:
-                    padding = int(padding / -2)
-                    s = '<b>%s</b>%s<br/>%s%s' % (alias, i_string, padding * "&nbsp;", label)
-                else:
-                    s = '<b>%s</b>%s<br/>%s' % (alias, i_string, label)
-            elif alias:
-                s = '<b>%s</b>%s' % (alias, i_string)
-            else:
-                s = label + i_string
-        else:
-            s = label + i_string
-        if not prefs.hanging_gloss:
-            if self.gloss:
-                s += '<br/><i>%s</i>' % self.gloss
-        if s:
-            return s
-            # return '<center>%s</center>' % s
-        else:
-            return ''
 
     def get_features_as_string(self):
         """
@@ -714,7 +671,7 @@ class ConstituentNode(Node):
             rect = False
         if self.triangle:
             self.paint_triangle(painter)
-        if rect:
+        elif rect:
             painter.drawRect(self.inner_rect)
             #if self.uses_scope_area:
             #    self.paint_scope_rect(painter, rect)
