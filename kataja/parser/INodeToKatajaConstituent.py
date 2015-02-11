@@ -89,7 +89,6 @@ def inode_to_constituentnodes(inode, forest):
 
         cn.update_label()
         forest.derivation_steps.save_and_create_derivation_step()
-        print([constituent])
         return cn
 
 
@@ -103,6 +102,8 @@ def update_constituentnode_fields(constituentnode, inode):
         constituentnode.label = inode.label
     if constituentnode.gloss != inode.gloss:
         constituentnode.gloss = inode.gloss
+    if constituentnode.index != inode.index:
+        constituentnode.index = inode.index
     constituentnode.update_label()
     #todo: handling of features
 

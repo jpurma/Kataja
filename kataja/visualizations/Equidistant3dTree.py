@@ -162,8 +162,9 @@ class Equidistant3dTree(BaseVisualization):
                     bx, by, bz = bsx - bdx, bsy - bdy, bsz - bdz
                 dist = math.sqrt(bx * bx + by * by + bz * bz)
                 if dist > 300:
-                    print(dist, edge)
+                    #print(dist, edge)
                     # raise hell
+                    pass
                 if dist > 15:
                     fx = (bx / dist) * (dist - 30) * 0.2
                     fy = (by / dist) * (dist - 30) * 0.2

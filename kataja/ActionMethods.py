@@ -581,7 +581,6 @@ class ActionMethods:
             else:
                 print('trying to parse ', text)
                 node = ctrl.forest.create_node_from_string(text)
-                print(node)
         ctrl.ui.close_new_element_embed()
 
     def create_new_arrow(self):
@@ -648,6 +647,7 @@ class ActionMethods:
         node = _get_triggered_host()
         if not node:
             return
+        ctrl.add_message('folding in %s' % node.as_bracket_string())
         ctrl.forest.add_triangle_to(node)
         ctrl.ui.update_selections()
 
@@ -655,6 +655,7 @@ class ActionMethods:
         node = _get_triggered_host()
         if not node:
             return
+        ctrl.add_message('unfolding from %s' % node.as_bracket_string())
         ctrl.forest.remove_triangle_from(node)
         ctrl.ui.update_selections()
 

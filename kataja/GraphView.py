@@ -216,7 +216,6 @@ class GraphView(QtWidgets.QGraphicsView):
         if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist"):
             event.acceptProposedAction()
             items = self.itemAt(event.pos())
-            print(items)
         else:
             QtWidgets.QGraphicsView.dropEvent(self, event)
 

@@ -441,7 +441,6 @@ class Forest(Savable):
             root.update_visibility()
         self.bracket_manager.update_brackets()
         self.draw_gloss_text()
-        ctrl.add_message(self.syntax_trees_as_string())
 
 
     def update_colors(self):

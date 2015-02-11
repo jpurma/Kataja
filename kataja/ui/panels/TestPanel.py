@@ -31,7 +31,6 @@ class TestPanel(UIPanel):
         #layout.setSizeConstraint(QtWidgets.QLayout.SetMinimumSize)
         #layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
         inner.setLayout(layout)
-        print(layout.sizeConstraint(), layout.sizeHint(), layout.contentsRect())
         self.setWidget(inner)
         self.finish_init()
 

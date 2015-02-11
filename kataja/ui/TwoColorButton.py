@@ -39,4 +39,3 @@ class TwoColorButton(QtWidgets.QPushButton):
         e = TwoColorIconEngine(bitmaps)
         i = QtGui.QIcon(e)
         self.setIcon(i)
-        print(self.iconSize())

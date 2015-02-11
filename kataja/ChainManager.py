@@ -100,8 +100,8 @@ class ChainManager:
         for key, values in self.chains.items():
             values.reverse()
             self.chains[key] = values
-        print('used trace-based rebuild, received chains: ', self.chains)
-        print(self.traces_from_bottom)
+        #print('used trace-based rebuild, received chains: ', self.chains)
+        #print(self.traces_from_bottom)
 
 
     def rebuild_chains_from_multidomination(self):
@@ -142,13 +142,13 @@ class ChainManager:
         # If chains are built from multidomination, they need to be sorted and sorting indexes removed
         for key, values in list(self.chains.items()):
             values.sort(reverse=True)
-            print('after sorting:' ,values)
+            #print('after sorting:' ,values)
             values = [v for i, v in values]
             new_values = [values.pop(0)]
             for node, parent, is_trace in values:
                 new_values.append(ChainItem(node=node, parent=parent, is_head=False))
             self.chains[key] = new_values
-        print('used multidomination-based rebuild, received chains: ', self.chains)
+        #print('used multidomination-based rebuild, received chains: ', self.chains)
 
 
     @time_me

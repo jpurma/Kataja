@@ -158,7 +158,6 @@ class ForestKeeper(Savable):
                         line = line[:-1]
                     forest.gloss_text = line[1:]
             elif forest and not line:  # finalize this forest
-                print('building forest: ', '\n'.join(buildstring_lines))
                 forest.build('\n'.join(buildstring_lines))
                 self.forests.append(forest)
                 forest = None

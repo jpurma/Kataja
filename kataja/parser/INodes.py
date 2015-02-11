@@ -241,7 +241,6 @@ class IConstituentNode(ITextNode):
                     if found:
                         if isinstance(found, tuple):
                             index, icommand = found
-                            print(node.parts, icommand, icommand in node.parts)
                             node.remove(icommand)
                             return index
                         else:
@@ -296,11 +295,6 @@ class IConstituentNode(ITextNode):
                     self.gloss = node
                 elif i > 2:
                     self.add_feature(node)
-        print('Guessed about constituent: alias: %s, label: %s, index: %s, gloss: %s, features: %s ' % (self.alias,
-                                                                                                        self.label,
-                                                                                                        self.index,
-                                                                                                        self.gloss,
-                                                                                                        self.features))
 
     def __str__(self):
         if self.parts and self.label:

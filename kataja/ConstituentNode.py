@@ -26,7 +26,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.Node import Node
-from kataja.utils import to_tuple, latex2html
+from kataja.utils import to_tuple
 import kataja.globals as g
 from kataja.parser import KatajaNodeToINode
 
