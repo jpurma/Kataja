@@ -1,3 +1,5 @@
+from collections import OrderedDict
+import pprint
 from PyQt5 import QtWidgets, QtCore, QtGui
 
 from kataja.ui.panels.UIPanel import UIPanel
@@ -17,6 +19,9 @@ table_dict = {
                'mathbit': 'mathbit', 'mathfrak': 'mathfrak', 'mathmit': 'mathmit', 'mathscr': 'mathscr', 'mathsfbfsl': 'mathsfbfsl', 'mathsfbf': 'mathsfbf', 'mathsfsl': 'mathsfsl', 'mathsf': 'mathsf',
                'mathslbb': 'mathslbb', 'mathsl': 'mathsl', 'mathtt': 'mathtt'
 }
+
+
+greek_letters = [ 'Alpha', 'alpha', 'Beta', 'beta', 'Gamma', 'gamma', 'Delta', 'delta', 'Epsilon', 'epsilon', 'Zeta', 'zeta', 'Eta', 'eta', 'Theta', 'theta', 'Iota', 'iota', 'Kappa', 'kappa', 'Lambda', 'lambda', 'Mu', 'mu', 'Nu', 'nu', 'Xi', 'xi', 'Omicron', 'omicron', 'Pi', 'pi', 'Rho', 'rho', 'Sigma', 'sigma', 'Tau', 'tau', 'Upsilon', 'upsilon', 'Phi', 'phi', 'Chi', 'chi', 'Psi', 'psi', 'Omega', 'omega', "'{$\\alpha$}", "'{A}", "'{E}","'{H}", "'{o}", "'{}O", "'{}{I}", 'Digamma', 'ElsevierGlyph{2129}', 'Koppa', 'Pisymbol{ppi022}{87}', 'Sampi', 'Stigma', 'acute{\\ddot{\\iota}}', 'acute{\\ddot{\\upsilon}}', 'acute{\\epsilon}', 'acute{\\eta}', 'acute{\\iota}', 'acute{\\omega}', 'acute{\\upsilon}', 'backepsilon', 'ddot{\\iota}', 'ddot{\\upsilon}', 'digamma', "mathrm{'Y}", "mathrm{'\\Omega}", 'mathrm{\\ddot{I}}', 'mathrm{\\ddot{Y}}', 'textTheta', 'texttheta', 'textvartheta', 'varkappa', 'varphi', 'varpi', 'varrho', 'varsigma']
 
 
 def open_symbol_data(mimedata):
@@ -83,19 +88,25 @@ class SymbolPanel(UIPanel):
         for key in keys:
             char, description, table_key = latex_to_unicode[key]
             self.tables[table_key].append(key)
+        self.tables['greek'] = greek_letters
+
         self.prepare_symbols('greek')
         self.setWidget(inner)
         self.finish_init()
 
     def prepare_symbols(self, key):
         self.symlist.clear()
+        debug_dict = OrderedDict()
         for key in self.tables[key]:
             char, description, table = latex_to_unicode[key]
+            debug_dict[key] = (char, description)
             command = '\\'+ key
             item = QtWidgets.QListWidgetItem(char)
             item.setToolTip(command)
             item.setData(55, {'char': char, 'description': description, 'command': command})
             self.symlist.addItem(item)
+        pp = pprint.PrettyPrinter(indent=4)
+        pp.pprint(debug_dict)
 
     def item_entered(self, item):
         self.info.setText(item.data(55)['description'])

@@ -24,56 +24,154 @@ in very specific manner. Configuration is stored in UG-instance.config -dict and
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
-
+from kataja.Saved import Savable
 
 from syntax.ConfigurableFeature import Feature
-# from copy import deepcopy
 
-class ConfigurableConstituent:
-    """
-
-    :param cid:
-    :param left:
-    :param right:
-    :param source:
-    :param data:
-    """
-    Feature = Feature
-    saved_fields = ['features', 'sourcestring', 'label', 'left', 'right', 'index', 'gloss', 'uid']
-
-    def __init__(self, cid='', left=None, right=None, source='', data=None):
-        """ ConfigurableConstituent tries to be theory-editable constituent, whose behaviour can be adjusted
-        in very specific manner. Configuration is stored in UG-instance.config -dict and can be changed from outside.
+class ConfigurableConstituent(Savable):
+    def __init__(self, cid='', config=None):
+        """ BaseConstituent is a default constituent used in syntax.
+        It is Savable, which means that the actual values are stored in separate object that is easily dumped to file.
+        Extending this needs to take account if new fields should also be treated as savable, e.g. put them into
+        .saved. and make necessary property and setter.
          """
-        if not data:
-            data = {}
-        if data:
-            self.features = {}
-            self.sourcestring = ''
-            self.label = ''
-            self.alias = ''
-            self.left = None
-            self.right = None
-            self.index = ''
-            self.gloss = ''
-            self.uid = id(self)
-            self.save_key = self.uid
-            self.load(data)
-        else:
-            self.features = {}
-            self.sourcestring = source or cid
-            self.label = cid
-            self.gloss = ''
-            self.alias = ''
-            self.left = left
-            self.right = right
-            self.index = ''
-            self.gloss = ''
-            self.uid = id(self)
-            self.save_key = self.uid
+        Savable.__init__(self)
+        self.config = config
+        self.implicit_order = False
+        if config:
+            if 'implicit_order' in config:
+                self.implicit_order = config['implicit_order']
+
+        self.saved.features = {}
+        self.saved.sourcestring = source or cid
+        self.saved.label = cid
+        self.saved.alias = ''
+        self.saved.parts = []
+        self.saved.gloss = ''
+        self.saved.index = ''
 
     def __str__(self):
-        return str(self.label)
+        if self.index:
+            return '%s_%s' % (self.label, self.index)
+        else:
+            return str(self.label)
+
+    @property
+    def features(self):
+        return self.saved.features
+
+    @features.setter
+    def features(self, value):
+        """
+        :param value:
+        """
+        if value:
+            for key, feature in value.items():
+                if key == 'label':
+                    self.label = feature.value
+                elif key == 'index':
+                    self.index = feature.value
+                else:
+                    self.saved.features[key] = feature
+        else:
+            self.saved.features = {}
+
+    @property
+    def sourcestring(self):
+        return self.saved.sourcestring
+
+    @sourcestring.setter
+    def sourcestring(self, value):
+        self.saved.sourcestring = value
+
+    @property
+    def label(self):
+        return self.saved.label
+
+    @label.setter
+    def label(self, value):
+        if value is None:
+            self.saved.label = ''
+        else:
+            self.saved.label = value
+
+    @property
+    def alias(self):
+        return self.saved.alias
+
+    @alias.setter
+    def alias(self, value):
+        if value is None:
+            self.saved.alias = ''
+        else:
+            self.saved.alias = value
+
+    @property
+    def left(self):
+        if self.saved.parts:
+            return self.saved.parts[0]
+        else:
+            return None
+
+    @left.setter
+    def left(self, value):
+        if not self.saved.parts:
+            self.saved.parts = [value]
+        else:
+            self.saved.parts[0] = value
+
+    @property
+    def right(self):
+        if self.saved.parts and len(self.saved.parts) > 1:
+            return self.saved.parts[1]
+        else:
+            return None
+
+    @right.setter
+    def right(self, value):
+        if self.saved.parts:
+            if len(self.saved.parts) > 1:
+                self.saved.parts[1] = value
+            else:
+                self.saved.parts.append(value)
+        else:
+            self.saved.parts = [None, value]
+
+    @property
+    def gloss(self):
+        return self.saved.gloss
+
+    @gloss.setter
+    def gloss(self, value):
+        if value is None:
+            self.saved.gloss = ''
+        else:
+            self.saved.gloss = value
+
+    @property
+    def index(self):
+        return self.saved.index
+
+    @index.setter
+    def index(self, value):
+        if value is None:
+            self.saved.index = ''
+        else:
+            self.saved.index = value
+
+
+    def __repr__(self):
+        if self.is_leaf():
+            if self.index:
+                return 'Constituent(id=%s, index=%s)' % (self.label, self.index)
+            else:
+                return 'Constituent(id=%s)' % self.label
+        else:
+            if self.index:
+                return "[.%s %s %s ]" % (self.index, self.left, self.right)
+            else:
+                return "[ %s %s ]" % (self.left, self.right)
+
 
     def __contains__(self, C):
         if self == C:
@@ -87,28 +185,31 @@ class ConfigurableConstituent:
         else:
             return False
 
-    def get_label(self):
-        """
+
+    def print_tree(self):
+        return self.__repr__()
+        #
+        # if self.is_leaf():
+        #     if self.index:
+        #         return '%s_%s' % (self.label, self.index)
+        #     else:
+        #         return self.label
+        # else:
+        #     if self.left:
+        #         l = self.left.print_tree()
+        #     else:
+        #         l = '*0*'
+        #     if self.right:
+        #         r = self.right.print_tree()
+        #     else:
+        #         r = '*0*'
+        #     if self.index:
+        #         i = '.%s' % self.index
+        #     else:
+        #         i = ''
+        #     return "[%s %s %s ]" % (i, l, r)
 
 
-        :return:
-        """
-        return self.label
-
-    def get_index(self):
-        """
-
-
-        :return:
-        """
-        return self.index
-
-    def set_index(self, index):
-        """
-
-        :param index:
-        """
-        self.index = index
 
     def get_feature(self, key):
         """
@@ -121,13 +222,16 @@ class ConfigurableConstituent:
             return f.get()
         return None
 
-    def get_features(self):
+    def has_feature(self, key):
         """
 
-
+        :param key:
         :return:
         """
-        return self.features
+        if isinstance(key, Feature):
+            return key in list(self.features.values())
+        return key in list(self.features.keys())
+
 
     def set_feature(self, key, value):
         """
@@ -135,36 +239,26 @@ class ConfigurableConstituent:
         :param key:
         :param value:
         """
-        if isinstance(value, ConfigurableConstituent.Feature):
+        print('set_feature called in constituent')
+        if isinstance(value, Feature):
             self.features[key] = value
         else:
             f = self.features.get(key, None)
             if f:
                 f.set(value)
             else:
-                f = self.__class__.Feature(key, value)
+                f = Feature(key, value)
             self.features[key] = f
 
-    def set_features(self, my_dict):
-        """
-
-        :param my_dict:
-        """
-        for key, feat in my_dict.items():
-            if key == 'label':
-                self.label = feat
-            elif key == 'index':
-                self.set_index(feat)
-            else:
-                self.features[key] = feat
 
     def del_feature(self, key):
         """
 
         :param key:
         """
-        f = self.features.get(key, None)
-        if f and f.isDeletable():
+        if isinstance(key, Feature):
+            key = key.key
+        if hasattr(self.features, key):
             del self.features[key]
 
     def is_leaf(self):
@@ -193,26 +287,3 @@ class ConfigurableConstituent:
         for key, value in self.features.items():
             new.set_feature(key, value)
         return new
-
-    def set_gloss(self, gloss):
-        """
-
-        :param gloss:
-        """
-        self.gloss = gloss
-
-    def get_gloss(self):
-        """
-
-
-        :return:
-        """
-        return self.gloss
-
-    def __repr__(self):
-        print('BC __repr__ called')
-
-        if self.is_leaf():
-            return self.label
-        else:
-            return "[%s %s %s ]" % (self.index, self.left, self.right)

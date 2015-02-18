@@ -47,8 +47,7 @@ class BaseConstituent(Savable):
         self.saved.sourcestring = source or cid
         self.saved.label = cid
         self.saved.alias = ''
-        self.saved.left = left
-        self.saved.right = right
+        self.saved.parts = []
         self.saved.gloss = ''
         self.saved.index = ''
 
@@ -110,20 +109,34 @@ class BaseConstituent(Savable):
 
     @property
     def left(self):
-        return self.saved.left
+        if self.saved.parts:
+            return self.saved.parts[0]
+        else:
+            return None
 
     @left.setter
     def left(self, value):
-        self.saved.left = value
+        if not self.saved.parts:
+            self.saved.parts = [value]
+        else:
+            self.saved.parts[0] = value
 
     @property
     def right(self):
-        return self.saved.right
+        if self.saved.parts and len(self.saved.parts) > 1:
+            return self.saved.parts[1]
+        else:
+            return None
 
     @right.setter
     def right(self, value):
-        self.saved.right = value
-
+        if self.saved.parts:
+            if len(self.saved.parts) > 1:
+                self.saved.parts[1] = value
+            else:
+                self.saved.parts.append(value)
+        else:
+            self.saved.parts = [None, value]
     @property
     def gloss(self):
         return self.saved.gloss

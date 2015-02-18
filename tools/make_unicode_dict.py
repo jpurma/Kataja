@@ -13,6 +13,15 @@ charmap = {}
 prep_tables = ['greek', 'latin', 'combining', 'arrows', 'rest']
 tables = ['cyrchar', 'ding', 'ElsevierGlyph', 'mathbb', 'mathbf', 'mathbit', 'mathfrak', 'mathmit', 'mathscr', 'mathsfbfsl', 'mathsfbf', 'mathsfsl', 'mathsf', 'mathslbb', 'mathsl', 'mathtt']
 
+
+manual_additions = {
+    "theta": ('θ', 'greek letter theta', 'greek'),
+    "Nu": ('N', 'greek capital letter nu', 'greek'),
+    "Mu": ('M', 'greek capital letter mu', 'greek'),
+    "Omicron": ('O', 'greek capital letter omicron', 'greek'),
+    "omicron": ('o', 'greek letter omicron', 'greek'),
+}
+
 def getText(nodelist):
     rc = []
     for node in nodelist:
@@ -63,6 +72,7 @@ def choose_category(key, description):
 
 
 find_characters(dom1)
+charmap.update(manual_additions)
 
 if operation == MAKE:
     w = open('../kataja/parser/latex_to_unicode.py', 'w')

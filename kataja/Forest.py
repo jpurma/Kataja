@@ -1648,6 +1648,7 @@ class Forest(Savable):
                         break
                 if can_fold:
                     print('Folding multidominated node %s' % folded)
+                    folded.fade_out()
                     folded.folding_towards = node
                     folded.after_move_function = folded.finish_folding
             elif parents and parents[0] in not_my_children:
@@ -1664,6 +1665,7 @@ class Forest(Savable):
             if folded.folding_towards is node:
                 folded.folding_towards = None
                 folded.folded_away = False
+                folded.fade_in()
                 folded.adjustment = node.adjustment
                 folded.update_visibility(show_edges=True)
                 folded.update_bounding_rect()
