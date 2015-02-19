@@ -29,9 +29,10 @@ class VisualizationPanel(UIPanel):
 
         selector = QtWidgets.QComboBox(self)
         ui_manager.ui_buttons['visualization_selector'] = selector
-        selector.addItems(['%s (%s)' % (key, item.shortcut) for key, item in VISUALIZATIONS.items()])
+        for key, item in VISUALIZATIONS.items():
+            selector.addItem('%s (%s)' % (key, item.shortcut), key)
+
         ui_manager.connect_element_to_action(selector, 'change_visualization')
-        #selector.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)
         layout.addWidget(selector)
         inner.setLayout(layout)
         self.preferred_size = inner.preferred_size

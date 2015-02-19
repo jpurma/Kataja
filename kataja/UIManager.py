@@ -47,7 +47,7 @@ from kataja.ui.panels.LogPanel import LogPanel
 from kataja.ui.panels.NavigationPanel import NavigationPanel
 from kataja.ui.panels.TestPanel import TestPanel
 from kataja.ui.panels.VisualizationPanel import VisualizationPanel
-from kataja.visualizations.available import VISUALIZATIONS
+from kataja.visualizations.available import VISUALIZATIONS, action_key
 from kataja.ui.panels.LineOptionsPanel import LineOptionsPanel
 from kataja.ui.embeds.NewElementEmbed import NewElementEmbed, NewElementMarker
 from kataja.ui.embeds.EdgeLabelEmbed import EdgeLabelEmbed
@@ -383,10 +383,9 @@ class UIManager:
         i = 0
         self._dynamic_action_groups['visualizations'] = []
         for name, vis in VISUALIZATIONS.items():
-            i += 1
-            key = 'vis_%s' % i
-            self.actions[key] = {'command': name, 'method': 'change_visualization_command', 'shortcut': vis.shortcut,
-                      'checkable': True, 'action_group': 'visualizations'}
+            key = action_key(name)
+            self.actions[key] = {'command': name, 'method': 'change_visualization', 'shortcut': vis.shortcut,
+                      'checkable': True, 'viewgroup': 'visualizations'}
             self._dynamic_action_groups['visualizations'].append(key)
 
         self._dynamic_action_groups['panels'] = []
@@ -540,7 +539,7 @@ class UIManager:
             i = element.view().currentIndex()
             args.append(element.model().itemFromIndex(i).data())
         elif isinstance(element, QtWidgets.QComboBox):
-            args.append(element.itemData(element.currentIndex()))
+            args.append((element.currentIndex(), element.itemData(element.currentIndex())))
         elif isinstance(element, QtWidgets.QCheckBox):
             args.append(element.checkState())
         elif isinstance(element, QtWidgets.QAbstractSpinBox):

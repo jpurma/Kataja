@@ -12,6 +12,7 @@ import kataja.debug as debug
 from kataja.ui.PreferencesDialog import PreferencesDialog
 from kataja.Edge import SHAPE_PRESETS, Edge
 from kataja.UIManager import PANELS
+from kataja.visualizations.available import action_key
 
 __author__ = 'purma'
 
@@ -36,17 +37,6 @@ class ActionMethods:
 
 
     ### Programmatically created actions ###############################################
-
-    # Change visualization style -action (1...9)
-    def change_visualization_command(self):
-        """
-
-
-        """
-        visualization_key = str(ctrl.main.sender().text())
-        ctrl.ui.update_field('visualization_selector', visualization_key)
-        ctrl.forest.change_visualization(visualization_key)
-        ctrl.add_message(visualization_key)
 
     def toggle_panel(self, panel_id):
         """
@@ -532,12 +522,24 @@ class ActionMethods:
     def change_edge_asymmetry(self, value):
         print('changing asymmetry: ', value)
 
-    def change_visualization(self, i):
+    def change_visualization(self, i=None):
         """
-        :param i: index of selected visualization in relevant panel
+        :param i: (index, name) of selected visualization in relevant panel
         :return:
         """
-        pass
+        visualization_key = None
+        if i is None:
+            visualization_key = str(ctrl.main.sender().text())
+            ctrl.ui.update_field('visualization_selector', visualization_key)
+        elif isinstance(i, tuple):
+            i, visualization_key = i
+            action = ctrl.ui.qt_actions[action_key(visualization_key)]
+            action.setChecked(True)
+        if visualization_key:
+            ctrl.forest.change_visualization(visualization_key)
+            ctrl.add_message(visualization_key)
+
+
 
     # help -action (h)
     def show_help_message(self):

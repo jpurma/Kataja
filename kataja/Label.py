@@ -52,6 +52,9 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.total_height = brect.height() + self.y_offset
         self.setPos(brect.width() / -2.0, (self.total_height / -2.0) + self.y_offset)
 
+    def is_empty(self):
+        return self._host.as_inode
+
     def paint(self, painter, option, widget):
         """ Painting is sensitive to mouse/selection issues, but usually with
         nodes it is the label of the node that needs complex painting
