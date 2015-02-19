@@ -1,10 +1,12 @@
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 
 from kataja.singletons import qt_prefs, ctrl
 from kataja.ui.TwoColorButton import TwoColorButton
 from kataja.ui.panels.UIPanel import UIPanel
 import kataja.globals as g
 from collections import OrderedDict
+from kataja.ui.OverlayButton import OverlayButton
+
 __author__ = 'purma'
 
 nodes_table = OrderedDict([(g.ABSTRACT_NODE, {'name': 'Abstract Node', 'show':False}),
@@ -32,6 +34,21 @@ class NodesPanel(UIPanel):
         layout = QtWidgets.QVBoxLayout()
         if ctrl.forest:
             print(ctrl.fs.node_settings())
+        for key, item in nodes_table.items():
+            if not item['show']:
+                continue
+            hlayout = QtWidgets.QHBoxLayout()
+            add_button = OverlayButton(qt_prefs.add_icon, None, 'panel', text='Add '+item['name'], parent=self, size=24)
+            add_button.setFixedSize(26, 26)
+
+            hlayout.addWidget(add_button)
+            label = QtWidgets.QLabel(item['name'])
+            hlayout.addWidget(label)
+            conf_button = OverlayButton(qt_prefs.settings_icon, None, 'panel', text='Modify %s behaviour' % item['name'], parent=self, size=16)
+            conf_button.setFixedSize(26, 26)
+            hlayout.addWidget(conf_button, 1, QtCore.Qt.AlignRight)
+            layout.addLayout(hlayout)
+
         inner.setLayout(layout)
         self.setWidget(inner)
         self.widget().setAutoFillBackground(True)

@@ -441,7 +441,7 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
     def change_edge_ending(self, which_end, value):
         if value is g.AMBIGUOUS_VALUES:
             return
-        panel = self.ui_manager.get_panel(g.DRAWING)
+        panel = self.ui_manager.get_panel(g.EDGES)
         if panel.scope == g.SELECTION:
             for edge in ctrl.get_all_selected():
                 if isinstance(edge, Edge):

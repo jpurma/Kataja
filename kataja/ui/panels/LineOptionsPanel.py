@@ -215,7 +215,7 @@ class LineOptionsPanel(UIPanel):
         """ Choose which selectors to show and update their values
         :return: None
         """
-        scope = ctrl.ui.get_panel(g.DRAWING).scope
+        scope = ctrl.ui.get_panel(g.EDGES).scope
         shape_dict = None
         if scope == g.SELECTION:
             shape_dict = self.build_shape_dict_for_selection()
@@ -317,7 +317,7 @@ class LineOptionsPanel(UIPanel):
         self.update()
 
     def initial_position(self):
-        dp = self.ui_manager.get_panel(g.DRAWING)
+        dp = self.ui_manager.get_panel(g.EDGES)
         if dp:
             p = dp.mapToGlobal(dp.pos())
             return QtCore.QPoint(p.x() / dp.devicePixelRatio() + dp.width(), p.y() / dp.devicePixelRatio())
@@ -448,13 +448,13 @@ class LineOptionsPanel(UIPanel):
         return d
 
     def close(self):
-        dp = self.ui_manager.get_panel(g.DRAWING)
+        dp = self.ui_manager.get_panel(g.EDGES)
         if dp:
             dp.edge_options.setChecked(False)
         UIPanel.close(self)
 
     def show(self):
-        dp = self.ui_manager.get_panel(g.DRAWING)
+        dp = self.ui_manager.get_panel(g.EDGES)
         if dp:
             dp.edge_options.setChecked(True)
         UIPanel.show(self)

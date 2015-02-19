@@ -42,6 +42,8 @@ import kataja.globals as g
 from kataja.ui.OverlayButton import OverlayButton
 
 
+# Hey! This is only the top row title, not the actual UIPanel(DockWidget)! It is down below.
+
 class PanelTitle(QtWidgets.QWidget):
     """ Widget for displaying panel title and control buttons in a concise form """
 
@@ -163,7 +165,8 @@ class UIPanel(QtWidgets.QDockWidget):
             self.widget().hide()
         else:
             self.widget().show()
-        self.setFixedSize(self.sizeHint())
+        self.resize(self.sizeHint())
+        #self.setFixedSize(self.sizeHint())
         self.updateGeometry()
 
     def pin_to_dock(self):

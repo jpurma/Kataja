@@ -378,7 +378,7 @@ class ActionMethods:
         :return:
         """
         ctrl.action_undo = False
-        p = ctrl.ui.get_panel(g.DRAWING)
+        p = ctrl.ui.get_panel(g.EDGES)
         p.change_scope(selection)
         p.update_panel()
         p = ctrl.ui.get_panel(g.LINE_OPTIONS)
@@ -387,7 +387,7 @@ class ActionMethods:
     def change_edge_shape(self, shape):
         if shape is g.AMBIGUOUS_VALUES:
             return
-        scope = ctrl.ui.get_panel(g.DRAWING).scope
+        scope = ctrl.ui.get_panel(g.EDGES).scope
         if scope == g.SELECTION:
             for edge in ctrl.get_all_selected():
                 if isinstance(edge, Edge):
@@ -404,7 +404,7 @@ class ActionMethods:
     def change_edge_color(self, color):
         if color is g.AMBIGUOUS_VALUES:
             return
-        panel = ctrl.ui.get_panel(g.DRAWING)
+        panel = ctrl.ui.get_panel(g.EDGES)
         if not color:
             ctrl.ui.start_color_dialog(panel, 'color_changed')
             return
@@ -454,7 +454,7 @@ class ActionMethods:
         #if value is g.AMBIGUOUS_VALUES:
         #  if we need this, we'll need to find some impossible ambiguous value to avoid weird, rare incidents
         #    return
-        panel = ctrl.ui.get_panel(g.DRAWING)
+        panel = ctrl.ui.get_panel(g.EDGES)
         if panel.scope == g.SELECTION:
             for edge in ctrl.get_all_selected():
                 if isinstance(edge, Edge):
@@ -477,7 +477,7 @@ class ActionMethods:
         #ctrl.main.add_message('(s) Changed relation color to: %s' % ctrl.cm.get_color_name(color))
 
     def change_edge_thickness(self, dim, value=0):
-        panel = ctrl.ui.get_panel(g.DRAWING)
+        panel = ctrl.ui.get_panel(g.EDGES)
         if panel.scope == g.SELECTION:
             for edge in ctrl.get_all_selected():
                 if isinstance(edge, Edge):
@@ -493,7 +493,7 @@ class ActionMethods:
 
 
     def change_curvature(self, dim, value=0):
-        panel = ctrl.ui.get_panel(g.DRAWING)
+        panel = ctrl.ui.get_panel(g.EDGES)
         if panel.scope == g.SELECTION:
             for edge in ctrl.get_all_selected():
                 if isinstance(edge, Edge):

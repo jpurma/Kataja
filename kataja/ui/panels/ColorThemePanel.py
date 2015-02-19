@@ -26,13 +26,8 @@ class ColorPanel(UIPanel):
         :param ui_buttons: pass a dictionary where buttons from this panel will be added
         """
         UIPanel.__init__(self, name, key, default_position, parent, ui_manager, folded)
-        # ### Color wheel
         layout = QtWidgets.QVBoxLayout()
         widget = QtWidgets.QWidget(self)
-        # color_wheel_layout.setContentsMargins(4, 4, 4, 4)
-
-        label_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
-        button_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.MinimumExpanding)
         selector = QtWidgets.QComboBox(self)
         ui_manager.ui_buttons['color_mode'] = selector
 
@@ -40,7 +35,7 @@ class ColorPanel(UIPanel):
         selector.activated.connect(self.change_color_mode)
         self.mode_select = selector
         layout.addWidget(selector)
-        layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
+        #layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
         widget.setLayout(layout)
 
         self.setWidget(widget)

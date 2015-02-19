@@ -117,10 +117,10 @@ class SymbolPanel(UIPanel):
             self.selector.addItem(table_dict[item], item)
         self.selector.activated.connect(self.change_symbol_set)
         self.selector.setFocusPolicy(QtCore.Qt.TabFocus)
-
         layout.addWidget(self.selector)
         self.symlist = QtWidgets.QListWidget()
-        self.symlist.setFixedWidth(200)
+        self.symlist.setMinimumWidth(200)
+        self.symlist.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
         self.symlist.setSpacing(8)
         self.symlist.setMouseTracking(True)
         self.symlist.setFocusPolicy(QtCore.Qt.NoFocus)

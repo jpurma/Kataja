@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 
 from kataja.singletons import qt_prefs
 from kataja.ui.TwoColorButton import TwoColorButton
@@ -22,6 +22,9 @@ class NavigationPanel(UIPanel):
         label_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
         button_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.MinimumExpanding)
         inner = QtWidgets.QWidget()
+        inner.setMinimumHeight(48)
+        inner.preferred_size = QtCore.QSize(220, 64)
+
         layout = QtWidgets.QGridLayout()
 
         label = QtWidgets.QLabel('Tree set', self)

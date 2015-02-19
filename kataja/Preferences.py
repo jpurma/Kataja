@@ -364,8 +364,12 @@ class QtPreferences:
         :param preferences:
         :param fontdb:
         """
-        pm = QtGui.QPixmap
         iconpath = preferences.resources_path+'icons/'
+        def pixmap(path, width=0):
+            p = QtGui.QPixmap(iconpath + path)
+            if width:
+                p.scaledToWidth(width)
+            return p
         print("font families:", QtGui.QFontDatabase().families())
         self.easing_curve = []
         self.prepare_fonts(preferences.fonts, fontdb, preferences)
@@ -374,17 +378,20 @@ class QtPreferences:
         self.no_pen.setStyle(QtCore.Qt.NoPen)
         self.no_brush = QtGui.QBrush()
         self.no_brush.setStyle(QtCore.Qt.NoBrush)
-        self.lock_icon = pm(iconpath + 'lock.png').scaledToWidth(16)
-        self.cut_icon = pm(iconpath + 'cut_icon48.png').scaledToWidth(24)
-        self.delete_icon = pm(iconpath + 'backspace48.png').scaledToWidth(24)
-        self.close_icon = pm(iconpath + 'close24.png') #.scaledToWidth(24)
-        self.fold_icon = pm(iconpath + 'less24.png') #.scaledToWidth(24)
-        self.more_icon = pm(iconpath + 'more24.png') #.scaledToWidth(24)
-        self.pin_drop_icon = pm(iconpath + 'pin_drop24.png') #.scaledToWidth(24)
+        self.lock_icon = pixmap('lock.png', 16)
+        self.cut_icon = pixmap('cut_icon48.png', 24)
+        self.delete_icon = pixmap('backspace48.png', 24)
+        self.close_icon = pixmap('close24.png')
+        self.fold_icon = pixmap('less24.png')
+        self.more_icon = pixmap('more24.png')
+        self.pin_drop_icon = pixmap('pin_drop24.png')
         self.left_arrow = extract_bitmaps(iconpath + 'left_2c.gif')
         self.right_arrow = extract_bitmaps(iconpath + 'right_2c.gif')
-        self.triangle_icon = pm(iconpath + 'triangle48.png')
-        self.triangle_close_icon = pm(iconpath + 'triangle_close48.png')
+        self.add_icon = pixmap('add24.png')
+        self.add_box_icon = pixmap('add_box24.png')
+        self.settings_icon = pixmap('settings24.png')
+        self.triangle_icon = pixmap('triangle48.png')
+        self.triangle_close_icon = pixmap('triangle_close48.png')
         #self.gear_icon = extract_bitmaps(preferences.resources_path+'icons/gear2_16.gif')
 
     def update(self, preferences):

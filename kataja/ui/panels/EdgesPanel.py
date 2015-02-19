@@ -10,6 +10,7 @@ from kataja.utils import time_me
 from kataja.ui.DrawnIconEngine import DrawnIconEngine
 from kataja.ui.ColorSwatchIconEngine import ColorSwatchIconEngine
 from kataja.ui.TwoColorButton import TwoColorButton
+from kataja.ui.OverlayButton import OverlayButton
 
 
 __author__ = 'purma'
@@ -167,7 +168,7 @@ class ShapeSelector(TableModelComboBox):
 
 
 
-class DrawingPanel(UIPanel):
+class EdgesPanel(UIPanel):
     """ Panel for editing how edges and nodes are drawn. """
 
     def __init__(self, name, key, default_position='right', parent=None, ui_manager=None, folded=False):
@@ -207,16 +208,11 @@ class DrawingPanel(UIPanel):
         ui_manager.connect_element_to_action(self.color_selector, 'change_edge_color')
         hlayout.addWidget(self.color_selector)
 
-        self.edge_options = QtWidgets.QPushButton('more...', self)
+        self.edge_options = OverlayButton(qt_prefs.settings_icon, None, 'panel', text='More line options', parent=self, size=16)
         self.edge_options.setCheckable(True)
-        self.edge_options.setMinimumSize(QSize(40, 24))
-        self.edge_options.setMaximumSize(QSize(40, 24))
-        #self.edge_options.setMinimumWidth(40)
-        #self.edge_options.setMaximumWidth(40)
         ui_manager.ui_buttons['line_options'] = self.edge_options
         ui_manager.connect_element_to_action(self.edge_options, 'toggle_line_options')
-        #self.edge_options.setFlat(True)
-        hlayout.addWidget(self.edge_options)
+        hlayout.addWidget(self.edge_options, 1, QtCore.Qt.AlignRight)
         layout.addLayout(hlayout)
 
 

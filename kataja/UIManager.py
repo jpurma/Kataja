@@ -42,7 +42,7 @@ import kataja.globals as g
 from kataja.ui.TouchArea import TouchArea
 from kataja.ui.panels.ColorThemePanel import ColorPanel
 from kataja.ui.panels.ColorWheelPanel import ColorWheelPanel
-from kataja.ui.panels.DrawingPanel import DrawingPanel, TableModelComboBox
+from kataja.ui.panels.EdgesPanel import EdgesPanel, TableModelComboBox
 from kataja.ui.panels.LogPanel import LogPanel
 from kataja.ui.panels.NavigationPanel import NavigationPanel
 from kataja.ui.panels.TestPanel import TestPanel
@@ -70,15 +70,15 @@ PANELS = {g.LOG: {'name': 'Log', 'position': 'bottom'},
           g.COLOR_THEME: {'name': 'Color theme', 'position': 'right'},
           g.COLOR_WHEEL: {'name': 'Color theme wheel', 'position': 'right', 'folded': True, 'closed': True},
           g.LINE_OPTIONS: {'name': 'More line options', 'position': 'float', 'closed': True},
-          g.DRAWING: {'name': 'Drawing', 'position': 'right'},
+          g.EDGES: {'name': 'Edge drawing', 'position': 'right'},
           g.SYMBOLS: {'name': 'Symbols', 'position': 'right'},
           g.NODES: {'name': 'Nodes', 'position': 'right'}
 }
 
-panel_order = [g.LOG, g.NAVIGATION, g.SYMBOLS, g.NODES, g.VISUALIZATION, g.COLOR_THEME, g.COLOR_WHEEL, g.LINE_OPTIONS, g.DRAWING]
+panel_order = [g.LOG, g.NAVIGATION, g.SYMBOLS, g.NODES, g.VISUALIZATION, g.COLOR_THEME, g.COLOR_WHEEL, g.LINE_OPTIONS, g.EDGES]
 
 panel_classes = {g.LOG: LogPanel, g.TEST: TestPanel, g.NAVIGATION: NavigationPanel, g.VISUALIZATION: VisualizationPanel,
-                 g.COLOR_THEME: ColorPanel, g.COLOR_WHEEL: ColorWheelPanel, g.DRAWING: DrawingPanel,
+                 g.COLOR_THEME: ColorPanel, g.COLOR_WHEEL: ColorWheelPanel, g.EDGES: EdgesPanel,
                  g.LINE_OPTIONS: LineOptionsPanel, g.SYMBOLS: SymbolPanel, g.NODES: NodesPanel}
 
 
@@ -293,7 +293,7 @@ class UIManager:
         """ Many UI elements change mode depending on if object of specific type is selected """
         if selected is None:
             selected = ctrl.get_all_selected()
-        lp = self.get_panel(g.DRAWING)
+        lp = self.get_panel(g.EDGES)
         if lp:
             lp.selected_objects_changed()
             lp.update_panel()
