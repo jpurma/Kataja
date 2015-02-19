@@ -320,7 +320,7 @@ class ForestSettings(Savable):
     # GLOSS_NODE = 4
     # PROPERTY_NODE = 5
 
-    def node_settings(self, node_type, key, value=None):
+    def node_settings(self, node_type=None, key=None, value=None):
         """ Getter/setter for settings related to various types of nodes. 
         If not found here, value is searched from preferences. 
         If called with value, the value is set here and it overrides 
@@ -329,6 +329,18 @@ class ForestSettings(Savable):
         :param key:
         :param value:
         """
+        if not node_type:
+            # Return settings for all node types
+            settings = {}
+            settings.update(prefs.nodes)
+            settings.update(self.saved.node_types)
+            return settings
+        elif not key:
+            # Return all settings of certain node type
+            settings = {}
+            settings.update(prefs.nodes[node_type])
+            settings.update(self.saved.node_types.get(node_type, {}))
+            return settings
         local_node_settings = self.saved.node_types.get(node_type, None)
         if value is None:
             if local_node_settings is None or local_node_settings.get(key) is None:

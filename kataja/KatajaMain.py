@@ -88,6 +88,7 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
         Savable.__init__(self, unique=True)
         print('---- initialized MainWindow base class ... ', time.time() - t)
         self.app = kataja_app
+        self.forest = None
         self.fontdb = QtGui.QFontDatabase()
         print('---- set up font db ... ', time.time() - t)
         self.color_manager = PaletteManager()

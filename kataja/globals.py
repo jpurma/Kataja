@@ -32,6 +32,7 @@ FEATURE_NODE = 2
 ATTRIBUTE_NODE = 3
 GLOSS_NODE = 4
 PROPERTY_NODE = 5
+COMMENT_NODE = 6
 
 # Touch area types
 LEFT_ADD_ROOT = 0
@@ -64,6 +65,7 @@ COLOR_WHEEL = 'color_wheel'
 DRAWING = 'drawing'
 LINE_OPTIONS = 'line_options'
 SYMBOLS = 'symbols'
+NODES = 'nodes'
 
 # Alignment of edges
 NO_ALIGN = 0

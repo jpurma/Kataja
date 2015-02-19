@@ -6,6 +6,7 @@
 #     "Mu": ('M', 'greek capital letter mu', 'greek'),
 #     "Omicron": ('O', 'greek capital letter omicron', 'greek'),
 #     "omicron": ('o', 'greek letter omicron', 'greek'),
+#     "bar": ("\u0304", 'combining omicron', 'combining'),
 
 latex_to_unicode = {
     "theta": ('θ', 'greek letter theta', 'greek'),
@@ -13,6 +14,8 @@ latex_to_unicode = {
     "Mu": ('M', 'greek capital letter mu', 'greek'),
     "Omicron": ('O', 'greek capital letter omicron', 'greek'),
     "omicron": ('o', 'greek letter omicron', 'greek'),
+    "bar": ("\u0304", 'combining macron', 'combining'),
+    "obar": ("\u0305", 'combining overline', 'combining'),
     '"': ('̈', 'combining diaeresis', 'combining'),
     '"{A}': ('Ä', 'latin capital letter a with diaeresis', 'latin'),
     '"{E}': ('Ë', 'latin capital letter e with diaeresis', 'latin'),

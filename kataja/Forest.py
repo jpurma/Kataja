@@ -611,8 +611,6 @@ class Forest(Savable):
         if inherits_from:
             alias = inherits_from.alias
             if alias:
-                if (not alias.endswith("'")) and True: # add here prefs for how to label merged nodes
-                    alias += "'"
                 node.alias = alias
 
         if result_of_merge:

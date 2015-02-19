@@ -55,6 +55,7 @@ from kataja.ui.panels import UIPanel
 from kataja.ui.OverlayButton import OverlayButton
 from kataja.ui.embeds.ConstituentEditEmbed import ConstituentEditEmbed
 from kataja.ui.panels.SymbolPanel import SymbolPanel
+from kataja.ui.panels.NodesPanel import NodesPanel
 
 
 NOTHING = 0
@@ -70,14 +71,15 @@ PANELS = {g.LOG: {'name': 'Log', 'position': 'bottom'},
           g.COLOR_WHEEL: {'name': 'Color theme wheel', 'position': 'right', 'folded': True, 'closed': True},
           g.LINE_OPTIONS: {'name': 'More line options', 'position': 'float', 'closed': True},
           g.DRAWING: {'name': 'Drawing', 'position': 'right'},
-          g.SYMBOLS: {'name': 'Symbols', 'position': 'right'}
+          g.SYMBOLS: {'name': 'Symbols', 'position': 'right'},
+          g.NODES: {'name': 'Nodes', 'position': 'right'}
 }
 
-panel_order = [g.LOG, g.SYMBOLS, g.NAVIGATION, g.VISUALIZATION, g.COLOR_THEME, g.COLOR_WHEEL, g.LINE_OPTIONS, g.DRAWING]
+panel_order = [g.LOG, g.NAVIGATION, g.SYMBOLS, g.NODES, g.VISUALIZATION, g.COLOR_THEME, g.COLOR_WHEEL, g.LINE_OPTIONS, g.DRAWING]
 
 panel_classes = {g.LOG: LogPanel, g.TEST: TestPanel, g.NAVIGATION: NavigationPanel, g.VISUALIZATION: VisualizationPanel,
                  g.COLOR_THEME: ColorPanel, g.COLOR_WHEEL: ColorWheelPanel, g.DRAWING: DrawingPanel,
-                 g.LINE_OPTIONS: LineOptionsPanel, g.SYMBOLS: SymbolPanel}
+                 g.LINE_OPTIONS: LineOptionsPanel, g.SYMBOLS: SymbolPanel, g.NODES: NodesPanel}
 
 
 menu_structure = OrderedDict([
@@ -298,6 +300,9 @@ class UIManager:
         lop = self.get_panel(g.LINE_OPTIONS)
         if lop:
             lop.update_panel()
+        np = self.get_panel(g.NODES)
+        if np:
+            np.update_panel()
 
         if deselected:
             for item in deselected:
