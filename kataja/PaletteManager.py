@@ -178,6 +178,8 @@ class PaletteManager:
         self.d['white'] = c(255, 255, 255)
         self.d['black'] = c(0, 0, 0)
         self.custom_colors = []
+        self._ui_palette = None
+        self._palette = None
         self.transparent = Qt.transparent
         self.gradient = QtGui.QRadialGradient(0, 0, 300)
         self.gradient.setSpread(QtGui.QGradient.PadSpread)
@@ -301,6 +303,8 @@ class PaletteManager:
         :param adjusting:
         """
         self.activate_color_mode(self.current_color_mode, refresh=refresh)
+        self.get_qt_palette(cached=False)
+        self.get_qt_palette_for_ui(cached=False)
 
 
     def build_solarized(self, light=True):
@@ -559,6 +563,17 @@ class PaletteManager:
                 best = key
         return self.color_map[best]['name']
 
+    def palette_from_key(self, key, ui=False):
+        if ui:
+            palette = QtGui.QPalette(self.get_qt_palette_for_ui())
+        else:
+            palette = QtGui.QPalette(self.get_qt_palette())
+
+        palette.setColor(QtGui.QPalette.WindowText, self.d[key])
+        palette.setColor(QtGui.QPalette.Text, self.d[key])
+        return palette
+
+
     def light_on_dark(self):
         return self.d['background1'].value() < 100
 
@@ -568,137 +583,41 @@ class PaletteManager:
         """
         return self.light_on_dark()
 
-    def get_qt_palette(self):
+    def get_qt_palette(self, cached=True):
         """
 
 
         :return:
         """
+        if cached and self._palette:
+            return self._palette
         p = {'windowText': QtGui.QBrush(self.d['content1']), 'button': QtGui.QBrush(self.d['background1']),
              'light': QtGui.QBrush(self.d['content3']), 'dark': QtGui.QBrush(self.d['content2']),
              'mid': QtGui.QBrush(self.hovering(self.d['content1'])), 'text': QtGui.QBrush(self.d['content1']),
              'bright_text': QtGui.QBrush(self.d['accent1']), 'base': QtGui.QBrush(self.d['background2']),
              'window': QtGui.QBrush(self.d['background1'])}
 
-        # p = {'windowText': QtGui.QBrush(self.d['key']), 'button': QtGui.QBrush(self.paper()),
-        #      'light': QtGui.QBrush(self.active(self.d['complement'])), 'dark': QtGui.QBrush(self.d['complement 0.7']),
-        #      'mid': QtGui.QBrush(self.hovering(self.d['complement'])), 'text': QtGui.QBrush(self.d['secondary']),
-        #      'bright_text': QtGui.QBrush(self.d['secondary'].lighter()), 'base': QtGui.QBrush(self.paper2()),
-        #      'window': QtGui.QBrush(self.paper())}
-
-        return QtGui.QPalette(p['windowText'], p['button'], p['light'], p['dark'], p['mid'], p['text'],
+        self._palette = QtGui.QPalette(p['windowText'], p['button'], p['light'], p['dark'], p['mid'], p['text'],
                               p['bright_text'], p['base'], p['window'])
+        return self._palette
 
 
 
-    def get_qt_palette_for_ui(self):
+    def get_qt_palette_for_ui(self, cached=True):
         """
 
 
         :return:
         """
+        if cached and self._ui_palette:
+            return self._ui_palette
+
         p = {'windowText': QtGui.QBrush(self.d['accent1']), 'button': QtGui.QBrush(self.d['background1']),
              'light': QtGui.QBrush(self.d['accent1'].lighter()), 'dark': QtGui.QBrush(self.d['accent1'].darker()),
              'mid': QtGui.QBrush(self.hovering(self.d['accent1'])), 'text': QtGui.QBrush(self.d['accent1']),
              'bright_text': QtGui.QBrush(self.d['accent2']), 'base': QtGui.QBrush(self.d['background2']),
              'window': QtGui.QBrush(self.d['background1'])}
 
-        # p = {'windowText': QtGui.QBrush(self.d['key']), 'button': QtGui.QBrush(self.paper()),
-        #      'light': QtGui.QBrush(self.active(self.d['complement'])), 'dark': QtGui.QBrush(self.d['complement 0.7']),
-        #      'mid': QtGui.QBrush(self.hovering(self.d['complement'])), 'text': QtGui.QBrush(self.d['secondary']),
-        #      'bright_text': QtGui.QBrush(self.d['secondary'].lighter()), 'base': QtGui.QBrush(self.paper2()),
-        #      'window': QtGui.QBrush(self.paper())}
-
-        return QtGui.QPalette(p['windowText'], p['button'], p['light'], p['dark'], p['mid'], p['text'],
+        self._ui_palette = QtGui.QPalette(p['windowText'], p['button'], p['light'], p['dark'], p['mid'], p['text'],
                               p['bright_text'], p['base'], p['window'])
-
-
-
-   # def compute_palette(self, hsv):
-   #      """ Create/get root color and build palette around it.
-   #      :param hsv:
-   #      Leaves custom colors as they are. """
-   #      self.hsv = hsv
-   #      h, s, v = hsv
-   #      # # This is the base color ##
-   #      key = c()
-   #      # in_range(h, s, v)
-   #      key.setHsvF(h, s, v)
-   #      light_bg = v < 0.5 or (s > 0.7 and 0.62 < h < 0.95)
-   #      self.d['key'] = key
-   #      key05 = c(key)
-   #      key05.setAlphaF(0.5)
-   #      self.d['key 0.5'] = key05
-   #      key07 = c(key)
-   #      key07.setAlphaF(0.7)
-   #      self.d['key 0.7'] = key07
-   #
-   #      analog1 = c()
-   #      h1, s1, v1 = colorize(rotating_add(h, -0.1), s, v)
-   #      # in_range(h1, s1, v1)
-   #      analog1.setHsvF(h1, s1, v1)
-   #      self.d['analog1'] = analog1
-   #
-   #      analog2 = c()
-   #      h2, s2, v2 = colorize(rotating_add(h, 0.1), s, v)
-   #      # in_range(h2, s2, v2)
-   #      analog2.setHsvF(h2, s2, v2)
-   #      self.d['analog2'] = analog2
-   #
-   #      paper = c()
-   #      hp = h  # -0.1
-   #      sp = s / 4
-   #      vp = (1 - v)
-   #      if light_bg and vp < 0.6:
-   #          vp += 0.3
-   #      if abs(v - vp) <= 0.35:
-   #          if light_bg:
-   #              vp = limited_add(vp, 0.35)
-   #          else:
-   #              vp = limited_add(vp, -0.35)
-   #      # in_range(hp, sp, vp)
-   #      paper.setHsvF(hp, sp, vp)
-   #      self.d['paper'] = paper
-   #      paper08 = c(paper)
-   #      paper08.setAlphaF(0.8)
-   #      self.d['paper 0.8'] = paper08
-   #      self.d['paper lighter'] = paper.lighter()
-   #      if vp < 0.7:
-   #          self.d['paper2'] = paper.darker(107)
-   #      else:
-   #          self.d['paper2'] = paper.lighter(107)
-   #
-   #      complement = c()
-   #      hc = rotating_add(h, -0.5)
-   #      sv = s
-   #      if sv < 0.5:
-   #          sv += 0.2
-   #      # in_range(hc, sv, v)
-   #      complement.setHsvF(hc, sv, v)
-   #      self.d['complement'] = complement
-   #      complement05 = c(complement)
-   #      complement05.setAlphaF(0.5)
-   #      self.d['complement 0.5'] = complement05
-   #      complement07 = c(complement)
-   #      complement07.setAlphaF(0.7)
-   #      self.d['complement 0.7'] = complement07
-   #
-   #      secondary = c()
-   #      secondary.setHsvF(abs(h - 0.2), s / 2, limited_add(v, 0.2))
-   #      self.d['secondary'] = secondary
-   #
-   #      # ## Set of marker colors available for features ###
-   #      if s < 0.5:
-   #          ps = s + 0.4
-   #      else:
-   #          ps = s
-   #      if v < 0.5:
-   #          pv = v + 0.4
-   #      else:
-   #          pv = v
-   #      for i in range(0, 10):
-   #          self.d['rainbow_%s' % (i + 1)] = c().fromHsvF(i / 10.0, ps, pv)
-   #
-   #          # ## Gradient ###
-   #      self.gradient.setColorAt(1, self.d['paper'])
-   #      self.gradient.setColorAt(0, self.d['paper'].lighter())
+        return self._ui_palette

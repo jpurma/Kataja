@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets, QtCore
 
-from kataja.singletons import qt_prefs, ctrl
+from kataja.singletons import qt_prefs, ctrl, prefs
 from kataja.ui.TwoColorButton import TwoColorButton
 from kataja.ui.panels.UIPanel import UIPanel
 import kataja.globals as g
@@ -32,22 +32,30 @@ class NodesPanel(UIPanel):
         UIPanel.__init__(self, name, key, default_position, parent, ui_manager, folded)
         inner = QtWidgets.QWidget()
         layout = QtWidgets.QVBoxLayout()
+        self.node_type_labels = {}
         if ctrl.forest:
             print(ctrl.fs.node_settings())
+            settings = ctrl.fs.node_settings()
+        else:
+            settings = prefs.nodes
+
         for key, item in nodes_table.items():
             if not item['show']:
                 continue
             hlayout = QtWidgets.QHBoxLayout()
             add_button = OverlayButton(qt_prefs.add_icon, None, 'panel', text='Add '+item['name'], parent=self, size=24)
             add_button.setFixedSize(26, 26)
-
             hlayout.addWidget(add_button)
             label = QtWidgets.QLabel(item['name'])
+            label.setPalette(ctrl.cm.palette_from_key(settings[key]['color']))
+            label.setFont(qt_prefs.font(settings[key]['font']))
+            label.setBuddy(add_button)
             hlayout.addWidget(label)
             conf_button = OverlayButton(qt_prefs.settings_icon, None, 'panel', text='Modify %s behaviour' % item['name'], parent=self, size=16)
             conf_button.setFixedSize(26, 26)
             hlayout.addWidget(conf_button, 1, QtCore.Qt.AlignRight)
             layout.addLayout(hlayout)
+            self.node_type_labels[key] = label
 
         inner.setLayout(layout)
         self.setWidget(inner)
@@ -58,5 +66,14 @@ class NodesPanel(UIPanel):
         """ Panel update should be necessary when changing ctrl.selection or after the tree has otherwise changed.
         :return:
         """
-        print(ctrl.fs.node_settings())
+        pass
+
+    def update_colors(self):
+        """
+        :return: update node type labels with current palette
+        """
+        settings = ctrl.fs.node_settings()
+        for key, label in self.node_type_labels.items():
+            label.setPalette(ctrl.cm.palette_from_key(settings[key]['color']))
+            label.setFont(qt_prefs.font(settings[key]['font']))
 

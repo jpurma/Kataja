@@ -34,6 +34,8 @@ import sys
 from kataja.globals import *
 from kataja.utils import time_me
 
+
+disable_saving_preferences = True
 # Alternatives: Cambria Math, Asana Math, XITS Math
 
 mac_fonts = {MAIN_FONT: ('Asana Math', 'Normal', 12),
@@ -202,11 +204,11 @@ class Preferences(object):
         # PROPERTY_NODE = 5
         self.nodes = {ABSTRACT_NODE: {'color': 'content1', 'font': MAIN_FONT, 'font-size': 10},
                       CONSTITUENT_NODE: {'color': 'content1', 'font': MAIN_FONT, 'font-size': 10},
-                      FEATURE_NODE: {'color': 'accent2', 'font': ITALIC_FONT, 'font-size': 10},
+                      FEATURE_NODE: {'color': 'accent2', 'font': SMALL_CAPS, 'font-size': 9},
                       ATTRIBUTE_NODE: {'color': 'accent4', 'font': SMALL_CAPS, 'font-size': 10},
                       GLOSS_NODE: {'color': 'accent5', 'font': ITALIC_FONT, 'font-size': 10},
                       PROPERTY_NODE: {'color': 'accent6', 'font': SMALL_CAPS, 'font-size': 10},
-
+                      COMMENT_NODE: {'color': 'accent4', 'font': MAIN_FONT, 'font-size': 14}
         }
         self.custom_colors = {}
         if not self.load_preferences():
@@ -274,6 +276,9 @@ class Preferences(object):
                     item = int_keys_to_str(item)
                 nl[key] = item
             return nl
+
+        if disable_saving_preferences:
+            return
 
         if not path:
             path = self.preferences_path
@@ -442,6 +447,8 @@ class QtPreferences:
                 print('Loading Asana Math locally')
                 fontdb.addApplicationFont(preferences.resources_path + "Asana-Math.otf")
                 font = fontdb.font(name, style, size)
+            if style == 'Italic':
+                font.setItalic(True)
             self.fonts[key] = font
         font = QtGui.QFontMetrics(self.fonts[MAIN_FONT])  # it takes 2 seconds to get FontMetrics
         self.font_space_width = font.width(' ')
@@ -453,7 +460,9 @@ class QtPreferences:
     ### Font helper ###
 
     def font(self, name):
-        return self.fonts.get(name, self.fonts[MAIN_FONT])
+        return self.fonts[name]
+
+        #return self.fonts.get(name, self.fonts[MAIN_FONT])
 
     def get_key_for_font(self, font):
         """ Find the key for given QFont. Keys are cheaper to store than actual fonts.

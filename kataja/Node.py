@@ -449,6 +449,12 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         # if self._label_complex:
         # self._label_complex.setDefaultTextColor(self._color)
 
+    def palette(self):
+        palette = QtGui.QPalette(ctrl.cm.get_qt_palette())
+        palette.setColor(QtGui.QPalette.WindowText, self.color)
+        palette.setColor(QtGui.QPalette.Text, self.color)
+        return palette
+
 
     def contextual_color(self):
         """ Drawing color that is sensitive to node's state """

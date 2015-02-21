@@ -280,14 +280,14 @@ class UIManager:
             self._message.update_color()
         if self.hud:
             self.hud.update_color()
-        panel = self.get_panel(g.COLOR_THEME)
-        if panel:
-            panel.update_colors()
-        panel = self.get_panel(g.COLOR_WHEEL)
-        if panel:
-            panel.update_colors()
         if self._new_element_embed:
             self._new_element_embed.update_color()
+
+        for panel_key in [g.COLOR_THEME, g.COLOR_WHEEL, g.NODES]:
+            panel = self.get_panel(panel_key)
+            if panel:
+                panel.update_colors()
+
 
     def update_selections(self, selected=None, deselected=None):
         """ Many UI elements change mode depending on if object of specific type is selected """
