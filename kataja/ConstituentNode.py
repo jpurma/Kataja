@@ -89,9 +89,8 @@ class ConstituentNode(Node):
         """
         self.update_features()
         self.update_gloss()
-        self.update_bounding_rect()
+        self.update_label()
         self.update_visibility()
-        self.update_status_tip()
         ctrl.forest.store(self)
 
     # properties implemented by syntactic node

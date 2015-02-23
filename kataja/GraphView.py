@@ -195,10 +195,13 @@ class GraphView(QtWidgets.QGraphicsView):
 
         :param event:
         """
-        if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist"):
+        data = event.mimeData()
+        if data.hasFormat("application/x-qabstractitemmodeldatalist"):
             event.acceptProposedAction()
-        else:
-            QtWidgets.QGraphicsView.dragEnterEvent(self, event)
+        elif data.hasFormat("text/plain"):
+            print("will accept drop")
+            event.acceptProposedAction()
+        QtWidgets.QGraphicsView.dragEnterEvent(self, event)
 
     def dragLeaveEvent(self, event):
         """
@@ -213,10 +216,26 @@ class GraphView(QtWidgets.QGraphicsView):
         :param event:
         """
         print("dropEvent to GraphView")
-        if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist"):
+        data = event.mimeData()
+        if data.hasFormat("application/x-qabstractitemmodeldatalist"):
             event.acceptProposedAction()
             items = self.itemAt(event.pos())
+            print('adding symbol as a what kind of a node?')
+        elif data.hasFormat("text/plain"):
+            event.acceptProposedAction()
+            command_identifier, *args = data.text().split(':')
+            if command_identifier == 'kataja' and args:
+                command, *args = args
+                if command == "new_node":
+                    node_type = args[0]
+                    print('adding node of type ', node_type)
+                    ctrl.forest.create_empty_node(pos=event.pos())
+                else:
+                    print('received unknown command:', command, args)
+            else:
+                print('adding plain text, what to do?')
         else:
+            print('(else)')
             QtWidgets.QGraphicsView.dropEvent(self, event)
 
 
@@ -226,7 +245,10 @@ class GraphView(QtWidgets.QGraphicsView):
 
         :param event:
         """
-        if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist") and not self.itemAt(event.pos()):
+        data = event.mimeData()
+        if data.hasFormat("application/x-qabstractitemmodeldatalist") and not self.itemAt(event.pos()):
+            event.acceptProposedAction()
+        elif data.hasFormat("text/plain"):
             event.acceptProposedAction()
         else:
             QtWidgets.QGraphicsView.dragMoveEvent(self, event)

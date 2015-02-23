@@ -56,6 +56,16 @@ class DraggableNodeFrame(QtWidgets.QFrame):
         self.setPalette(ctrl.cm.palette_from_key(settings['color']))
         self.setFont(qt_prefs.font(settings['font']))
 
+    def mousePressEvent(self, event):
+        self.add_button.setDown(True)
+        data = QtCore.QMimeData()
+        data.setText('kataja:new_node:%s' % self.key)
+        drag = QtGui.QDrag(self)
+        drag.setMimeData(data)
+        drag.exec_(QtCore.Qt.CopyAction)
+        self.add_button.setDown(False)
+        QtWidgets.QFrame.mousePressEvent(self, event)
+
 
 class NodesPanel(UIPanel):
     """ Switch between trees or derivation steps """
@@ -113,4 +123,3 @@ class NodesPanel(UIPanel):
         """
         for frame in self.node_frames.values():
             frame.update_colors()
-

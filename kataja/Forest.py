@@ -787,6 +787,7 @@ class Forest(Savable):
         :param give_label:
         :return:
         """
+        print('creating empty node, ', pos)
         if give_label:
             label = self.get_first_free_constituent_name()
         else:

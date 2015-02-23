@@ -209,18 +209,18 @@ class PaletteManager:
 
         if mode == 'solarized_lt':
             base = sol[3]
-            self.hsv = base.hueF(), base.saturationF(), base.valueF()
+            self.hsv = [base.hueF(), base.saturationF(), base.valueF()]
             self.build_solarized(light=True)
         elif mode == 'solarized_dk':
             base = sol[4]
-            self.hsv = base.hueF(), base.saturationF(), base.valueF()
+            self.hsv = [base.hueF(), base.saturationF(), base.valueF()]
             self.build_solarized(light=False)
         elif mode == 'random':
             if not cold_start:
                 remembered_value = ctrl.fs.last_key_color_for_mode(mode)
                 if remembered_value and not refresh:
+                    self.hsv = list(remembered_value)
                     print('Using remembered value ', self.hsv, ' for color mode ', mode)
-                    self.hsv = remembered_value
                     self.compute_palette(self.hsv)
                     return
 
@@ -229,7 +229,7 @@ class PaletteManager:
             value_low_limit = int(0.38 * 255)
             value_high_limit = int(0.7 * 255)
             v = random.randint(value_low_limit, value_high_limit) / 255.0  # *0.2+0.8
-            self.hsv = h, s, v
+            self.hsv = [h, s, v]
             self.compute_palette(self.hsv)
 
         elif mode == 'random-light':
@@ -237,7 +237,7 @@ class PaletteManager:
                 remembered_value = ctrl.fs.last_key_color_for_mode(mode)
                 if remembered_value and not refresh:
                     print('Using remembered value ', self.hsv, ' for color mode ', mode)
-                    self.hsv = remembered_value
+                    self.hsv = list(remembered_value)
                     self.compute_palette(self.hsv)
                     return
             h = random.random()
@@ -245,7 +245,7 @@ class PaletteManager:
             value_low_limit = int(0.12 * 255)
             value_high_limit = int(0.5 * 255)
             v = random.randint(value_low_limit, value_high_limit) / 255.0  # *0.2+0.8
-            self.hsv = h, s, v
+            self.hsv = [h, s, v]
             self.compute_palette(self.hsv)
 
         elif mode == 'random-dark':
@@ -261,11 +261,11 @@ class PaletteManager:
             value_low_limit = int(0.6 * 255)
             value_high_limit = int(0.8 * 255)
             v = random.randint(value_low_limit, value_high_limit) / 255.0  # *0.2+0.8
-            self.hsv = h, s, v
+            self.hsv = [h, s, v]
             self.compute_palette(self.hsv)
 
         else:
-            self.hsv = self.get_color_mode_data(mode)['hsv']
+            self.hsv = list(self.get_color_mode_data(mode)['hsv'])
             self.compute_palette(self.hsv)
             store_last_hsv = False
 

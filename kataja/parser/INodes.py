@@ -314,7 +314,3 @@ class IConstituentNode(ITextNode):
                                                                                                     repr(self.gloss),
                                                                                                     repr(self.features),
                                                                                                     repr(self.parts))
-
-
-a = ITextNode(parts=['jaa', ' ei'])
-print('kumma ' + a)

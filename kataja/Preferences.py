@@ -25,49 +25,41 @@
 import os
 from pathlib import Path
 import plistlib
-import time
 from collections import OrderedDict
+import sys
 
 from PyQt5 import QtGui, QtCore
-import sys
 
 from kataja.globals import *
 from kataja.utils import time_me
 
 
-disable_saving_preferences = True
+disable_saving_preferences = False
 # Alternatives: Cambria Math, Asana Math, XITS Math
 
-mac_fonts = {MAIN_FONT: ('Asana Math', 'Normal', 12),
-         CONSOLE_FONT: ('Monaco', 'Normal', 10),
-         UI_FONT: ('Helvetica', 'Normal', 10),
-         BOLD_FONT: ('STIX', 'Bold', 12),
-         ITALIC_FONT: ('Asana Math', 'Italic', 12),
-         SMALL_CAPS: ('Lao MN', 'Normal', 10),
-         SMALL_FEATURE: ('Lao MN', 'Normal', 7)}
+mac_fonts = {MAIN_FONT: ['Asana Math', 'Normal', 12], CONSOLE_FONT: ['Monaco', 'Normal', 10],
+             UI_FONT: ['Helvetica', 'Normal', 10], BOLD_FONT: ['STIX', 'Bold', 12],
+             ITALIC_FONT: ['Asana Math', 'Italic', 12], SMALL_CAPS: ['Lao MN', 'Normal', 10],
+             SMALL_FEATURE: ['Lao MN', 'Normal', 7]}
 
-linux_fonts = {MAIN_FONT: ('Asana Math', 'Normal', 12),
-         CONSOLE_FONT: ('Courier', 'Normal', 10),
-         UI_FONT: ('Droid Sans', 'Normal', 10),
-         ITALIC_FONT: ('Asana Math', 'Italic', 12),
-         BOLD_FONT: ('STIX', 'Bold', 12),
-         SMALL_CAPS: ('Lao MN', 'Normal', 9),
-         SMALL_FEATURE: ('Lao MN', 'Normal', 7)}
+linux_fonts = {MAIN_FONT: ['Asana Math', 'Normal', 12], CONSOLE_FONT: ['Courier', 'Normal', 10],
+               UI_FONT: ['Droid Sans', 'Normal', 10], ITALIC_FONT: ['Asana Math', 'Italic', 12],
+               BOLD_FONT: ['STIX', 'Bold', 12], SMALL_CAPS: ['Lao MN', 'Normal', 9],
+               SMALL_FEATURE: ['Lao MN', 'Normal', 7]}
 
+print('platform:', sys.platform)
 if sys.platform == 'darwin':
     fonts = mac_fonts
 else:
     fonts = linux_fonts
 
-color_modes = OrderedDict([
-        ('solarized_dk', {'name': 'Solarized dark', 'fixed': True, 'hsv': (0, 0, 0)}),
-        ('solarized_lt', {'name': 'Solarized light', 'fixed': True, 'hsv': (0, 0, 0)}),
-        ('random', {'name': 'Random for each treeset', 'fixed': False, 'hsv': (0, 0, 0)}),
-                           ('print', {'name': 'Print-friendly', 'fixed': True, 'hsv': (0.2, 0.2, 0.2)}),
-                           ('bw', {'name': 'Black and white', 'fixed': True, 'hsv': (0, 0, 0)}),
-                           ('random-light', {'name': 'Random on a light background', 'fixed': False, 'hsv': (0, 0, 0)}),
-                           ('random-dark', {'name': 'Against a dark background', 'fixed': False, 'hsv': (0, 0, 0)})])
-
+color_modes = OrderedDict([('solarized_dk', {'name': 'Solarized dark', 'fixed': True, 'hsv': [0, 0, 0]}),
+                           ('solarized_lt', {'name': 'Solarized light', 'fixed': True, 'hsv': [0, 0, 0]}),
+                           ('random', {'name': 'Random for each treeset', 'fixed': False, 'hsv': [0, 0, 0]}),
+                           ('print', {'name': 'Print-friendly', 'fixed': True, 'hsv': [0.2, 0.2, 0.2]}),
+                           ('bw', {'name': 'Black and white', 'fixed': True, 'hsv': [0, 0, 0]}),
+                           ('random-light', {'name': 'Random on a light background', 'fixed': False, 'hsv': [0, 0, 0]}),
+                           ('random-dark', {'name': 'Against a dark background', 'fixed': False, 'hsv': [0, 0, 0]})])
 
 
 class Preferences(object):
@@ -83,8 +75,7 @@ class Preferences(object):
 
     """
     # Prefs are not saved in save command, but changes here are undoable, so this must support the save protocol.
-    saved_fields = 'all'
-    not_saved = ['resources_path', 'default_userspace_path', 'preferences_path', 'in_app']
+    not_saved = ['resources_path', 'default_userspace_path', 'in_app']
 
 
     def __init__(self):
@@ -148,16 +139,13 @@ class Preferences(object):
             i = my_path.index('Kataja.app')
             self.resources_path = str(Path(*list(my_path[:i + 1]) + ['Contents', 'Resources', 'resources', ''])) + '/'
             self.default_userspace_path = '~/'
-            self.preferences_path = '~/Library/Preferences/Kataja.plist'
             self.in_app = True
         else:
             self.resources_path = './resources/'
             self.default_userspace_path = './'
-            self.preferences_path = './Kataja.plist'
             self.in_app = False
         print("resources_path: ", self.resources_path)
         print("default_userspace_path: ", self.default_userspace_path)
-        print("preferences_path: ", self.preferences_path)
         self.userspace_path = ''
         self.debug_treeset = self.resources_path + 'trees.txt'
         self.file_name = 'savetest.kataja'
@@ -182,17 +170,17 @@ class Preferences(object):
                            'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False},
             GLOSS_EDGE: {'shape_name': 'cubic', 'color': 'accent4', 'pull': .40, 'visible': True,
                          'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False},
-            ARROW: {'shape_name': 'linear', 'color': 'accent4', 'pull': 0, 'visible': True,
-                    'arrowhead_at_start': False, 'arrowhead_at_end': True, 'font': SMALL_CAPS, 'labeled': True},
+            ARROW: {'shape_name': 'linear', 'color': 'accent4', 'pull': 0, 'visible': True, 'arrowhead_at_start': False,
+                    'arrowhead_at_end': True, 'font': SMALL_CAPS, 'labeled': True},
             DIVIDER: {'shape_name': 'linear', 'color': 'accent6', 'pull': 0, 'visible': True,
-                    'arrowhead_at_start': False, 'arrowhead_at_end': False, 'font': SMALL_CAPS, 'labeled': True, 'style':'dashed'},
+                      'arrowhead_at_start': False, 'arrowhead_at_end': False, 'font': SMALL_CAPS, 'labeled': True,
+                      'style': 'dashed'},
             PROPERTY_EDGE: {'shape_name': 'linear', 'color': 'accent5', 'pull': .40, 'visible': True,
                             'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False},
             ABSTRACT_EDGE: {'shape_name': 'linear', 'color': 'content1', 'pull': .40, 'visible': True,
                             'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False},
             ATTRIBUTE_EDGE: {'shape_name': 'linear', 'color': 'content1', 'pull': .50, 'visible': True,
-                             'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False},
-        }
+                             'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False}, }
 
         ### Default node settings
         # Node types
@@ -208,12 +196,8 @@ class Preferences(object):
                       ATTRIBUTE_NODE: {'color': 'accent4', 'font': SMALL_CAPS, 'font-size': 10},
                       GLOSS_NODE: {'color': 'accent5', 'font': ITALIC_FONT, 'font-size': 10},
                       PROPERTY_NODE: {'color': 'accent6', 'font': SMALL_CAPS, 'font-size': 10},
-                      COMMENT_NODE: {'color': 'accent4', 'font': MAIN_FONT, 'font-size': 14}
-        }
+                      COMMENT_NODE: {'color': 'accent4', 'font': MAIN_FONT, 'font-size': 14}}
         self.custom_colors = {}
-        if not self.load_preferences():
-            print("Didn't find any settings plist -file, trying to write one.")
-            self.save_preferences(path=self.resources_path+'default.plist')
 
 
     def update(self, update_dict):
@@ -237,108 +221,47 @@ class Preferences(object):
 
     # ##### Save & Load ########################################
 
-    def save(self):
-        """ Dumps the preferences as a dict """
-        dump = vars(self)
-        print('written preferences, %s chars.' % len(str(dump)))
-        return dump
 
-    def load(self, data):
+    def save_preferences(self):
+        """ Save preferences uses QSettings, which is Qt:s abstraction over platform-dependant ini/preferences files.
+        It doesn't need any parameters,
         """
-
-        :param data:
-        """
-        for key, value in data:
-            setattr(self, key, value)
-
-    def save_preferences(self, path=None):
-        """ Save preferences as a plist file. Since plists can only have string keys, all int keys are turned into
-        _ikey_%s - form, and restored when loaded.
-        If argument path is given, save preferences there, otherwise save to environment's default preference location.
-        :param path: (optional) string for location and filename where to save.
-        :return: None
-        """
-        # some 'preferences' are set based on environment where we are running and shouldn't be saved
-        # or loaded from file.
-
-        def int_keys_to_str(dd):
-            """ Recursively turn int keys to strings
-            :param dd: dict
-            :return: new dict where int keys are turned to strings
-            """
-            nl = {}
-            for key, item in dd.items():
-                if item is None:
-                    item = '_None'
-                if isinstance(key, int):
-                    key = '_ikey_%s' % key
-                if isinstance(item, dict):
-                    item = int_keys_to_str(item)
-                nl[key] = item
-            return nl
 
         if disable_saving_preferences:
             return
 
-        if not path:
-            path = self.preferences_path
-        d = dict(vars(self))
-        for k in Preferences.not_saved:
-            del d[k]
-        d = int_keys_to_str(d)
+        settings = QtCore.QSettings()
+        settings.clear()
+        d = vars(self)
+        for key, value in d.items():
+            if key in Preferences.not_saved:
+                continue
+            if isinstance(value, dict):
+                settings.beginGroup(key)
+                for dkey, dvalue in value.items():
+                    settings.setValue(str(dkey), dvalue)
+                settings.endGroup()
+            else:
+                settings.setValue(key, value)
 
-        f = open(path, 'wb')
-        plistlib.dump(d, f)
-        f.close()
-        print("Wrote settings to: " + path)
 
-
-    @time_me
     def load_preferences(self):
-        """ Tries to load preferences from plist and overwrite values in this object.
-        Looks to preferences path (~/Library/Preferences/Kataja.plist) and
-        if not there, takes default preferences from resources/default.plist.
-        If even that fails, takes the current preferences and makes a
-        resources/default.plist out of that.
-        :return: None
-        """
 
-        def str_keys_to_int(dd):
-            """ Recursively turn encoded (_ikey_%) string keys back to ints and None -values replaced with '_None'
-            :param dd: dict
-            :return: new dict where string keys are turned back to ints
-            """
-            nl = {}
-            for key, item in dd.items():
-                if key.startswith('_ikey_'):
-                    key = int(key[6:])
-                if isinstance(item, str) and item == '_None':
-                    item = None
-                if isinstance(item, dict):
-                    item = str_keys_to_int(item)
-                nl[key] = item
-            return nl
+        if disable_saving_preferences:
+            return
 
-        paths = [self.preferences_path, self.resources_path+'default.plist']
-        found = False
-        for path in paths:
-            if os.path.exists(path):
-                f = open(path, 'rb')
-                d = plistlib.load(f)
-                d = str_keys_to_int(d)
-
-                writables = dict(vars(self))
-                for k in Preferences.not_saved:
-                    del writables[k]
-                good_keys = list(writables.keys())
-
-                for key, value in d.items():
-                    if key in good_keys:
-                        setattr(self, key, value)
-                print('loaded settings: ', d)
-                found = True
-                break
-        return found
+        settings = QtCore.QSettings()
+        for key, default_value in vars(self).items():
+            if key in Preferences.not_saved:
+                continue
+            if isinstance(default_value, dict):
+                settings.beginGroup(key)
+                d = getattr(self, key)
+                for dkey in settings.childKeys():
+                    d[dkey] = settings.value(dkey, None)
+                setattr(self, key, d)
+            else:
+                setattr(self, key, settings.value(key, default_value))
 
 
 def extract_bitmaps(filename):
@@ -369,12 +292,14 @@ class QtPreferences:
         :param preferences:
         :param fontdb:
         """
-        iconpath = preferences.resources_path+'icons/'
+        iconpath = preferences.resources_path + 'icons/'
+
         def pixmap(path, width=0):
             p = QtGui.QPixmap(iconpath + path)
             if width:
                 p.scaledToWidth(width)
             return p
+
         print("font families:", QtGui.QFontDatabase().families())
         self.easing_curve = []
         self.prepare_fonts(preferences.fonts, fontdb, preferences)
@@ -397,7 +322,8 @@ class QtPreferences:
         self.settings_icon = pixmap('settings24.png')
         self.triangle_icon = pixmap('triangle48.png')
         self.triangle_close_icon = pixmap('triangle_close48.png')
-        #self.gear_icon = extract_bitmaps(preferences.resources_path+'icons/gear2_16.gif')
+        self.kataja_icon = pixmap('kataja.png')
+        # self.gear_icon = extract_bitmaps(preferences.resources_path+'icons/gear2_16.gif')
 
     def update(self, preferences):
         """
@@ -454,7 +380,7 @@ class QtPreferences:
         self.font_space_width = font.width(' ')
         self.font_bracket_width = font.width(']')
         self.font_bracket_height = font.height()
-        #print(self.font_space_width, self.font_bracket_width, self.font_bracket_height)
+        # print(self.font_space_width, self.font_bracket_width, self.font_bracket_height)
         self.fonts[SMALL_CAPS].setCapitalization(QtGui.QFont.SmallCaps)
 
     ### Font helper ###
@@ -462,7 +388,7 @@ class QtPreferences:
     def font(self, name):
         return self.fonts[name]
 
-        #return self.fonts.get(name, self.fonts[MAIN_FONT])
+        # return self.fonts.get(name, self.fonts[MAIN_FONT])
 
     def get_key_for_font(self, font):
         """ Find the key for given QFont. Keys are cheaper to store than actual fonts.

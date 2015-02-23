@@ -14,10 +14,15 @@ import sys
 # PyInstaller-2.1/pyinstaller.py Kataja.py --clean -n Kataja -i kataja.icns --windowed
 
 # noinspection PyCallByClass,PyTypeChecker
-QtWidgets.QApplication.setStyle('Fusion')
+#QtWidgets.QApplication.setStyle('Fusion')
 
 app = QtWidgets.QApplication(sys.argv)
+app.setApplicationName('Kataja')
+app.setOrganizationName('JPurma-Aalto')
+app.setOrganizationDomain('jpurma.aalto.fi')
+app.setStyle('Fusion')
 print("Launching Kataja with Python %s.%s" % (sys.version_info.major, sys.version_info.minor))
+print(app.applicationFilePath())
 window = KatajaMain(app, sys.argv)
 window.show()
 app.exec_()
