@@ -238,6 +238,13 @@ actions = {
         'method': 'change_edge_asymmetry',
         'tooltip': 'Set left and right to differ significantly'
     },
+    # Nodes panel
+    'add_node': {
+        'command': 'Add node',
+        'method': 'add_node',
+        'tooltip': 'Add %s',
+    },
+
 
     # Visualizations panel
     'change_visualization': {

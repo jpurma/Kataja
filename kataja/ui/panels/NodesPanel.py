@@ -1,21 +1,60 @@
-from PyQt5 import QtWidgets, QtCore
+from collections import OrderedDict
+
+from PyQt5 import QtWidgets, QtCore, QtGui
 
 from kataja.singletons import qt_prefs, ctrl, prefs
-from kataja.ui.TwoColorButton import TwoColorButton
 from kataja.ui.panels.UIPanel import UIPanel
 import kataja.globals as g
-from collections import OrderedDict
 from kataja.ui.OverlayButton import OverlayButton
 
 __author__ = 'purma'
 
-nodes_table = OrderedDict([(g.ABSTRACT_NODE, {'name': 'Abstract Node', 'show':False}),
+nodes_table = OrderedDict([(g.ABSTRACT_NODE, {'name': 'Abstract Node', 'show': False}),
                            (g.CONSTITUENT_NODE, {'name': 'Constituent', 'show': True}),
                            (g.FEATURE_NODE, {'name': 'Feature', 'show': True}),
                            (g.GLOSS_NODE, {'name': 'Gloss', 'show': True}),
                            (g.COMMENT_NODE, {'name': 'Comment', 'show': True}),
                            (g.ATTRIBUTE_NODE, {'name': 'Attribute', 'show': False}),
                            (g.PROPERTY_NODE, {'name': 'Property', 'show': False})])
+
+
+
+class DraggableNodeFrame(QtWidgets.QFrame):
+
+    def __init__(self, key, name, parent=None):
+        QtWidgets.QFrame.__init__(self, parent)
+        self.setBackgroundRole(QtGui.QPalette.AlternateBase)
+        self.setAutoFillBackground(True)
+
+        if ctrl.forest:
+            settings = ctrl.fs.node_settings()
+        else:
+            settings = prefs.nodes
+        hlayout = QtWidgets.QHBoxLayout()
+        hlayout.setContentsMargins(0,0,0,0)
+        color_key = settings[key]['color']
+        self.key = key
+        self.setPalette(ctrl.cm.palette_from_key(color_key))
+        self.setFont(qt_prefs.font(settings[key]['font']))
+
+        self.add_button = OverlayButton(qt_prefs.add_icon, None, 'panel', text='Add ' + name, parent=self,
+                                   size=24, color_key=color_key)
+        self.add_button.setFixedSize(26, 26)
+        ctrl.ui.connect_element_to_action(self.add_button, 'add_node', tooltip_suffix=name)
+        hlayout.addWidget(self.add_button)
+        self.label = QtWidgets.QLabel(name)
+        self.label.setBuddy(self.add_button)
+        hlayout.addWidget(self.label)
+        self.conf_button = OverlayButton(qt_prefs.settings_icon, None, 'panel',
+                                    text='Modify %s behaviour' % name, parent=self, size=16)
+        self.conf_button.setFixedSize(26, 26)
+        hlayout.addWidget(self.conf_button, 1, QtCore.Qt.AlignRight)
+        self.setLayout(hlayout)
+
+    def update_colors(self):
+        settings = ctrl.fs.node_settings(self.key)
+        self.setPalette(ctrl.cm.palette_from_key(settings['color']))
+        self.setFont(qt_prefs.font(settings['font']))
 
 
 class NodesPanel(UIPanel):
@@ -32,30 +71,16 @@ class NodesPanel(UIPanel):
         UIPanel.__init__(self, name, key, default_position, parent, ui_manager, folded)
         inner = QtWidgets.QWidget()
         layout = QtWidgets.QVBoxLayout()
-        self.node_type_labels = {}
-        if ctrl.forest:
-            print(ctrl.fs.node_settings())
-            settings = ctrl.fs.node_settings()
-        else:
-            settings = prefs.nodes
+        self.node_frames = {}
 
         for key, item in nodes_table.items():
             if not item['show']:
                 continue
-            hlayout = QtWidgets.QHBoxLayout()
-            add_button = OverlayButton(qt_prefs.add_icon, None, 'panel', text='Add '+item['name'], parent=self, size=24)
-            add_button.setFixedSize(26, 26)
-            hlayout.addWidget(add_button)
-            label = QtWidgets.QLabel(item['name'])
-            label.setPalette(ctrl.cm.palette_from_key(settings[key]['color']))
-            label.setFont(qt_prefs.font(settings[key]['font']))
-            label.setBuddy(add_button)
-            hlayout.addWidget(label)
-            conf_button = OverlayButton(qt_prefs.settings_icon, None, 'panel', text='Modify %s behaviour' % item['name'], parent=self, size=16)
-            conf_button.setFixedSize(26, 26)
-            hlayout.addWidget(conf_button, 1, QtCore.Qt.AlignRight)
-            layout.addLayout(hlayout)
-            self.node_type_labels[key] = label
+            frame = DraggableNodeFrame(key, item['name'], parent=inner)
+            self.node_frames[key] = frame
+            layout.addWidget(frame)
+
+        layout.setContentsMargins(2, 4, 6, 2)
 
         inner.setLayout(layout)
         self.setWidget(inner)
@@ -68,12 +93,24 @@ class NodesPanel(UIPanel):
         """
         pass
 
+    def which_add_button_was_clicked(self):
+        for key, frame in self.node_frames.items():
+            if frame.add_button.just_triggered:
+                frame.add_button.just_triggered = False
+                return key, frame.add_button
+        return None
+
+    def which_settings_button_was_clicked(self):
+        for key, frame in self.node_frames.items():
+            if frame.conf_button.just_triggered:
+                frame.conf_button.just_triggered = False
+                return key, frame.conf_button
+        return None
+
     def update_colors(self):
         """
         :return: update node type labels with current palette
         """
-        settings = ctrl.fs.node_settings()
-        for key, label in self.node_type_labels.items():
-            label.setPalette(ctrl.cm.palette_from_key(settings[key]['color']))
-            label.setFont(qt_prefs.font(settings[key]['font']))
+        for frame in self.node_frames.values():
+            frame.update_colors()
 

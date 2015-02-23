@@ -539,6 +539,16 @@ class ActionMethods:
             ctrl.forest.change_visualization(visualization_key)
             ctrl.add_message(visualization_key)
 
+    ##### Node panel
+
+    def add_node(self, ntype=None):
+        if ntype is None:
+            panel = ctrl.ui.get_panel(g.NODES)
+            clicked = panel.which_add_button_was_clicked()
+            if clicked:
+                key, button = clicked
+                print(key, button)
+
 
 
     # help -action (h)

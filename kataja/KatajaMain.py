@@ -105,6 +105,7 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
         self.graph_scene.graph_view = self.graph_view
         self.action_launcher = ActionMethods(self)
         self.ui_manager = UIManager(self)
+        self.ui_manager.populate_ui_elements()
         self.key_manager = KeyPressManager(self)
         self.object_factory = ObjectFactory()
         print('---- ui init ... ', time.time() - t)

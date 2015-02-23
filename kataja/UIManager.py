@@ -131,7 +131,20 @@ class UIManager:
         self.shortcut_solver = ShortcutSolver(self)
         self.button_shortcut_filter = ButtonShortcutFilter()
 
+        self.activity_marker = None
+        self.ui_activity_marker = None
+        self.preferences_dialog = None
+        self.hud = None
+        self.color_dialog = None
 
+        # self.hud = HUD(self)
+        # self.info('free drawing')
+
+    def populate_ui_elements(self):
+        """ These cannot be created in __init__, as individual panels etc. may refer to ctrl.ui, which doesn't exist
+        until the __init__  is completed.
+        :return:
+        """
         ## Create actions based on actions.py and menus based on
         self.create_actions()
         ## Create top menus, requires actions to exist
@@ -147,12 +160,7 @@ class UIManager:
         self.add_ui(self.ui_activity_marker)
         self.ui_activity_marker.setPos(15, 5)
         self.ui_activity_marker.hide()
-        self.preferences_dialog = None
-        self.hud = None
-        self.color_dialog = None
 
-        # self.hud = HUD(self)
-        # self.info('free drawing')
 
 
     # def parseConstituentNodebox(self, escaped=False, finish=False):
@@ -495,7 +503,7 @@ class UIManager:
         return new_panel
 
 
-    def connect_element_to_action(self, element, action):
+    def connect_element_to_action(self, element, action, tooltip_suffix=''):
 
         if isinstance(action, str):
             action_key = action
@@ -506,8 +514,12 @@ class UIManager:
         tooltip = action_data.get('tooltip', None)
         action_data['ui_element'] = element
         if tooltip:
-            element.setStatusTip(tooltip)
-            element.setToolTip(tooltip)
+            if tooltip_suffix:
+                element.setStatusTip(tooltip % tooltip_suffix)
+                element.setToolTip(tooltip % tooltip_suffix)
+            else:
+                element.setStatusTip(tooltip)
+                element.setToolTip(tooltip)
         shortcut = action_data.get('shortcut', None)
         shortcut_context = action_data.get('shortcut_context', None)
         if shortcut and shortcut_context:

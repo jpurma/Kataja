@@ -34,13 +34,14 @@ class OverlayButton(QtWidgets.QPushButton):
         but let's keep this in case we need to deliver palette updates to icon engines.
      """
 
-    def __init__(self, pixmap, host, role, text=None, parent=None, size=16):
+    def __init__(self, pixmap, host, role, text=None, parent=None, size=16, color_key='accent1'):
         QtWidgets.QPushButton.__init__(self, parent)
         if text:
             self.setToolTip(text)
             self.setStatusTip(text)
         self.host = host
         self.role = role
+        self.color_key = color_key
         self._action = None
         self.setContentsMargins(0, 0, 0, 0)
         if isinstance(size, tuple):
@@ -57,7 +58,7 @@ class OverlayButton(QtWidgets.QPushButton):
         else:
             self.setIcon(QtGui.QIcon(pixmap))
             self.effect = QtWidgets.QGraphicsColorizeEffect(self)
-            self.effect.setColor(ctrl.cm.ui())
+            self.effect.setColor(ctrl.cm.get(self.color_key))
             self.effect.setStrength(0.6)
             self.setGraphicsEffect(self.effect)
         self.just_triggered = False
@@ -66,11 +67,11 @@ class OverlayButton(QtWidgets.QPushButton):
 
     def update_color(self):
         if self.effect:
-            self.effect.colorChanged(ctrl.cm.ui())
+            self.effect.colorChanged(ctrl.cm.get(self.color_key))
 
     def event(self, e):
         if e.type() == QtCore.QEvent.PaletteChange and self.effect:
-            self.effect.setColor(ctrl.cm.ui())
+            self.effect.setColor(ctrl.cm.get(self.color_key))
         return QtWidgets.QPushButton.event(self, e)
 
     #def paintEvent(self, *args, **kwargs):
