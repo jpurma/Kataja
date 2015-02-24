@@ -46,6 +46,7 @@ class GraphView(QtWidgets.QGraphicsView):
         self.setScene(graph_scene)
         #self.setCacheMode(QtWidgets.QGraphicsView.CacheBackground)
         self.setRenderHint(QtGui.QPainter.Antialiasing)
+        self.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
         # self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
         # self.setResizeAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
         # self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorViewCenter)

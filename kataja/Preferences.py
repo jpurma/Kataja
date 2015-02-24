@@ -34,7 +34,7 @@ from kataja.globals import *
 from kataja.utils import time_me
 
 
-disable_saving_preferences = False
+disable_saving_preferences = True
 # Alternatives: Cambria Math, Asana Math, XITS Math
 
 mac_fonts = {MAIN_FONT: ['Asana Math', 'Normal', 12], CONSOLE_FONT: ['Monaco', 'Normal', 10],
@@ -47,9 +47,17 @@ linux_fonts = {MAIN_FONT: ['Asana Math', 'Normal', 12], CONSOLE_FONT: ['Courier'
                BOLD_FONT: ['STIX', 'Bold', 12], SMALL_CAPS: ['Lao MN', 'Normal', 9],
                SMALL_FEATURE: ['Lao MN', 'Normal', 7]}
 
+wfont = 'Cambria'
+windows_fonts = {MAIN_FONT: ['Cambria', 'Normal', 10], CONSOLE_FONT: ['Consolas', 'Normal', 10],
+                 UI_FONT: ['Droid Sans', 'Normal', 10], ITALIC_FONT: ['Cambria', 'Italic', 10],
+                 BOLD_FONT: ['Cambria', 'Bold', 10], SMALL_CAPS: ['Lao MN', 'Normal', 8],
+                 SMALL_FEATURE: ['Lao MN', 'Normal', 7]}
+
 print('platform:', sys.platform)
 if sys.platform == 'darwin':
     fonts = mac_fonts
+elif sys.platform == 'win32':
+    fonts = windows_fonts
 else:
     fonts = linux_fonts
 
@@ -365,11 +373,13 @@ class QtPreferences:
         :param fonts_dict:
         :param fontdb:
         """
+        print('preparing fonts...')
         self.fonts = {}
         for key, font_tuple in fonts_dict.items():
             name, style, size = font_tuple
             font = fontdb.font(name, style, size)
-            if name == 'Asana Math' and not font.exactMatch():
+            print(name, font.exactMatch())
+            if name == 'Asana Math':  # and not font.exactMatch():
                 print('Loading Asana Math locally')
                 fontdb.addApplicationFont(preferences.resources_path + "Asana-Math.otf")
                 font = fontdb.font(name, style, size)
@@ -377,9 +387,13 @@ class QtPreferences:
                 font.setItalic(True)
             self.fonts[key] = font
         font = QtGui.QFontMetrics(self.fonts[MAIN_FONT])  # it takes 2 seconds to get FontMetrics
+        print('font leading: %s font height: %s ' % (font.leading(), font.height()))
+        main = self.fonts[MAIN_FONT]
+        main.setHintingPreference(QtGui.QFont.PreferNoHinting)
         self.font_space_width = font.width(' ')
         self.font_bracket_width = font.width(']')
         self.font_bracket_height = font.height()
+        print('font metrics: ', font)
         # print(self.font_space_width, self.font_bracket_width, self.font_bracket_height)
         self.fonts[SMALL_CAPS].setCapitalization(QtGui.QFont.SmallCaps)
 

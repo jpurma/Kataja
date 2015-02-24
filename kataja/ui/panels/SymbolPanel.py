@@ -126,7 +126,7 @@ class SymbolPanel(UIPanel):
         self.symlist.setFocusPolicy(QtCore.Qt.NoFocus)
         self.symlist.setViewMode(QtWidgets.QListWidget.IconMode)
         f = QtGui.QFont(qt_prefs.fonts[g.MAIN_FONT])
-        f.setPointSize(20)
+        f.setPointSize(f.pointSize()*1.5)
         self.symlist.setFont(f)
         self.symlist.itemEntered.connect(self.item_entered)
         self.symlist.itemClicked.connect(self.item_clicked)
