@@ -219,6 +219,14 @@ pip-log.txt
 .idea/
 *.idea
 
-# print tests
+# kataja tests
 kataja_print*.pdf
+savetest*
+temp/
+resources/icons/temp/
 
+# SVN
+.svn
+
+# sublime edit
+*.sublime-workspace
