@@ -1,5 +1,4 @@
 from kataja.parser.INodes import IFeatureNode, IConstituentNode
-from kataja.parser.LatexToINode import parse_field
 import kataja.globals as g
 
 __author__ = 'purma'

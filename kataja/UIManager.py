@@ -32,12 +32,9 @@ from kataja.Edge import Edge
 from kataja.ui.ActivityMarker import ActivityMarker
 from kataja.ui.ControlPoint import ControlPoint
 from kataja.ui.FadingSymbol import FadingSymbol
-from kataja.ui.MergeHintLine import MergeHintLine
 from kataja.ui.MessageItem import MessageItem
 from kataja.ui.StretchLine import StretchLine
-from kataja.ui.TargetReticle import TargetReticle
 from kataja.actions import actions
-from kataja.ui.DrawnIcons import TriangleIcon
 import kataja.globals as g
 from kataja.ui.TouchArea import TouchArea
 from kataja.ui.panels.ColorThemePanel import ColorPanel
@@ -75,19 +72,23 @@ PANELS = {g.LOG: {'name': 'Log', 'position': 'bottom'},
           g.NODES: {'name': 'Nodes', 'position': 'right'}
 }
 
-panel_order = [g.LOG, g.NAVIGATION, g.SYMBOLS, g.NODES, g.VISUALIZATION, g.COLOR_THEME, g.COLOR_WHEEL, g.LINE_OPTIONS, g.EDGES]
+panel_order = [g.LOG, g.NAVIGATION, g.SYMBOLS, g.NODES, g.VISUALIZATION, g.COLOR_THEME, g.COLOR_WHEEL, g.LINE_OPTIONS,
+               g.EDGES]
 
 panel_classes = {g.LOG: LogPanel, g.TEST: TestPanel, g.NAVIGATION: NavigationPanel, g.VISUALIZATION: VisualizationPanel,
                  g.COLOR_THEME: ColorPanel, g.COLOR_WHEEL: ColorWheelPanel, g.EDGES: EdgesPanel,
                  g.LINE_OPTIONS: LineOptionsPanel, g.SYMBOLS: SymbolPanel, g.NODES: NodesPanel}
 
-
 menu_structure = OrderedDict([
-    ('file_menu', ('&File', ['open', 'save', 'save_as', '---', 'print_pdf', 'blender_render', '---', 'preferences', '---', 'quit'])),
+    ('file_menu',
+     ('&File', ['open', 'save', 'save_as', '---', 'print_pdf', 'blender_render', '---', 'preferences', '---', 'quit'])),
     ('edit_menu', ('&Edit', ['undo', 'redo'])),
     ('build_menu', ('&Build', ['next_forest', 'prev_forest', 'next_derivation_step', 'prev_derivation_step'])),
-    ('rules_menu', ('&Rules', ['label_visibility', 'bracket_mode', 'trace_mode', 'merge_edge_shape', 'feature_edge_shape', 'merge_order_attribute', 'select_order_attribute'])),
-    ('view_menu', ('&View', ['$visualizations', '---', 'change_colors', 'adjust_colors', 'zoom_to_fit', '---', 'fullscreen_mode'])),
+    ('rules_menu', ('&Rules',
+                    ['label_visibility', 'bracket_mode', 'trace_mode', 'merge_edge_shape', 'feature_edge_shape',
+                     'merge_order_attribute', 'select_order_attribute'])),
+    ('view_menu',
+     ('&View', ['$visualizations', '---', 'change_colors', 'adjust_colors', 'zoom_to_fit', '---', 'fullscreen_mode'])),
     ('panels_menu', ('&Panels', ['$panels', '---', 'toggle_all_panels'])),
     ('help_menu', ('&Help', ['help']))
 ])
@@ -109,11 +110,9 @@ class UIManager:
 
         self._items = set()
         # self.setSceneRect(view.parent.geometry())
-        self._merge_hint = None
         self._stretchline = None
         self._message = None
         self._control_points = []
-        self._target_reticle = None
         self._rubber_band = None
         self._rubber_band_origin = None
         self._new_element_embed = None
@@ -160,7 +159,6 @@ class UIManager:
         self.add_ui(self.ui_activity_marker)
         self.ui_activity_marker.setPos(15, 5)
         self.ui_activity_marker.hide()
-
 
 
     # def parseConstituentNodebox(self, escaped=False, finish=False):
@@ -257,6 +255,10 @@ class UIManager:
 
 
     def update_panel(self, panel_id):
+        """
+
+        :param panel_id:
+        """
         self._ui_panels[panel_id].update_fields()
 
     def restore_panel_positions(self):
@@ -298,7 +300,10 @@ class UIManager:
 
 
     def update_selections(self, selected=None, deselected=None):
-        """ Many UI elements change mode depending on if object of specific type is selected """
+        """ Many UI elements change mode depending on if object of specific type is selected
+        :param selected:
+        :param deselected:
+        """
         if selected is None:
             selected = ctrl.get_all_selected()
         lp = self.get_panel(g.EDGES)
@@ -331,7 +336,7 @@ class UIManager:
 
         """
         for e in self._items:
-            if getattr(e.focusable) and e.isVisible():
+            if getattr(e, 'focusable', False) and e.isVisible():
                 yield e
 
 
@@ -340,8 +345,6 @@ class UIManager:
 
 
         """
-        if self._target_reticle:
-            self._target_reticle.hide()
         for item in self.symbols:
             self.remove_ui(item)
 
@@ -351,8 +354,6 @@ class UIManager:
     def update_positions(self):
         """ UI has elements that point to graph scene elements, and when something moves there
         UI has to update its elements too."""
-        if self._target_reticle:
-            self._target_reticle.update_position()
         for cp in self._control_points:
             cp.update_position()
         for symbol in self.symbols:
@@ -393,24 +394,25 @@ class UIManager:
         for name, vis in VISUALIZATIONS.items():
             key = action_key(name)
             self.actions[key] = {'command': name, 'method': 'change_visualization', 'shortcut': vis.shortcut,
-                      'checkable': True, 'viewgroup': 'visualizations'}
+                                 'checkable': True, 'viewgroup': 'visualizations'}
             self._dynamic_action_groups['visualizations'].append(key)
 
         self._dynamic_action_groups['panels'] = []
         for panel_key, panel_data in PANELS.items():
             key = 'toggle_panel_%s' % panel_key
             self.actions[key] = {'command': panel_data['name'], 'method': 'toggle_panel', 'checkable': True,
-                            'action_group': 'Panels', 'args': [panel_key], 'context': 'ui', 'no_undo': True,
-                            'tooltip': "Close this panel"}
+                                 'action_group': 'Panels', 'args': [panel_key], 'context': 'ui', 'no_undo': True,
+                                 'tooltip': "Close this panel"}
             self._dynamic_action_groups['panels'].append(key)
             key = 'toggle_fold_panel_%s' % panel_key
-            self.actions[key] = {'command': 'Fold %s' % panel_data['name'], 'method': 'toggle_fold_panel', 'checkable': True,
-                            'action_group': 'Panels', 'args': [panel_key], 'context': 'ui', 'no_undo': True,
-                            'tooltip': "Minimize this panel"}
+            self.actions[key] = {'command': 'Fold %s' % panel_data['name'], 'method': 'toggle_fold_panel',
+                                 'checkable': True,
+                                 'action_group': 'Panels', 'args': [panel_key], 'context': 'ui', 'no_undo': True,
+                                 'tooltip': "Minimize this panel"}
             key = 'pin_panel_%s' % panel_key
             self.actions[key] = {'command': 'Pin to dock %s' % panel_data['name'], 'method': 'pin_panel',
-                            'action_group': 'Panels', 'args': [panel_key], 'context': 'ui', 'no_undo': True,
-                            'tooltip': "Pin to dock"}
+                                 'action_group': 'Panels', 'args': [panel_key], 'context': 'ui', 'no_undo': True,
+                                 'tooltip': "Pin to dock"}
 
 
         # ## Create actions
@@ -449,7 +451,14 @@ class UIManager:
         """ Put actions to menus. Menu structure is defined at the top of this file.
         :return: None
         """
+
         def add_menu(parent, data):
+            """
+
+            :param parent:
+            :param data:
+            :return:
+            """
             menu_label, menu_items = data
             menu = QtWidgets.QMenu(menu_label, self.main)
             for item in menu_items:
@@ -463,6 +472,11 @@ class UIManager:
             return menu
 
         def expand_list(data):
+            """
+
+            :param data:
+            :return:
+            """
             label, items = data
             exp_items = []
             for item in items:
@@ -496,8 +510,17 @@ class UIManager:
                 self.create_panel(panel_key, **data)
 
     def create_panel(self, id, name='', position=None, folded=False, closed=False):
+        """
+
+        :param id:
+        :param name:
+        :param position:
+        :param folded:
+        :param closed:
+        :return:
+        """
         constructor = panel_classes[id]
-        new_panel = constructor(name, id,  default_position=position, parent=self.main, ui_manager=self,
+        new_panel = constructor(name, id, default_position=position, parent=self.main, ui_manager=self,
                                 folded=folded)
         self._ui_panels[id] = new_panel
         return new_panel
@@ -505,6 +528,12 @@ class UIManager:
 
     def connect_element_to_action(self, element, action, tooltip_suffix=''):
 
+        """
+
+        :param element:
+        :param action:
+        :param tooltip_suffix:
+        """
         if isinstance(action, str):
             action_key = action
             action = self.qt_actions[action_key]
@@ -544,6 +573,11 @@ class UIManager:
         self.actions[action_key] = action_data
 
     def get_element_value(self, element):
+        """
+
+        :param element:
+        :return:
+        """
         if not element:
             return []
         args = []
@@ -559,9 +593,12 @@ class UIManager:
         return args
 
 
-
-
     def get_selector_value(self, selector):
+        """
+
+        :param selector:
+        :return:
+        """
         i = selector.currentIndex()
         return selector.itemData(i)
 
@@ -570,29 +607,63 @@ class UIManager:
 
 
     def get_new_element_embed_points(self):
+        """
+
+
+        :return:
+        """
         p1 = self._new_element_marker.pos()
         p2 = self._new_element_marker.mapToScene(self._new_element_marker.end_point)
         return p1, p2
 
     def get_new_element_text(self):
+        """
+
+
+        :return:
+        """
         return self._new_element_embed.input_line_edit.text()
 
     def get_new_element_type_selection(self):
-        return self._new_element_embed.input_action_selector.itemData(self._new_element_embed.input_action_selector.currentIndex())
+        """
+
+
+        :return:
+        """
+        return self._new_element_embed.input_action_selector.itemData(
+            self._new_element_embed.input_action_selector.currentIndex())
 
     def close_new_element_embed(self):
+        """
+
+
+        """
         if self._new_element_embed and self._new_element_embed.isVisible():
             self._new_element_embed.blur_away()
 
     def get_overlay_buttons(self):
+        """
+
+
+        :return:
+        """
         return self._overlay_buttons.values()
 
     #### Label edge editin dialog #########################################################
 
     def get_edge_label_embed(self):
+        """
+
+
+        :return:
+        """
         return self._edge_label_embed
 
     def start_edge_label_editing(self, edge):
+        """
+
+        :param edge:
+        """
         lp = edge.label_item.pos()
         if not self._edge_label_embed:
             self._edge_label_embed = EdgeLabelEmbed(self.main.graph_view, self, lp)
@@ -601,12 +672,20 @@ class UIManager:
 
 
     def close_edge_label_editing(self):
+        """
+
+
+        """
         if self._edge_label_embed and self._edge_label_embed.isVisible():
             self._edge_label_embed.blur_away()
 
     #### Creation dialog #########################################################
 
     def create_creation_dialog(self, scenePos):
+        """
+
+        :param scenePos:
+        """
         if not self._new_element_embed:
             self._new_element_embed = NewElementEmbed(self.main.graph_view, self, scenePos)
         if not self._new_element_marker:
@@ -629,9 +708,18 @@ class UIManager:
     #### Constituent editing #########################################################
 
     def get_constituent_edit_embed(self):
+        """
+
+
+        :return:
+        """
         return self._constituent_edit_embed
 
     def start_constituent_editing(self, node):
+        """
+
+        :param node:
+        """
         np = node.pos()
         if not self._constituent_edit_embed:
             self._constituent_edit_embed = ConstituentEditEmbed(self.main.graph_view, self, node, np)
@@ -640,6 +728,10 @@ class UIManager:
 
 
     def close_constituent_editing(self):
+        """
+
+
+        """
         if self._constituent_edit_embed and self._constituent_edit_embed.isVisible():
             self._constituent_edit_embed.blur_away()
 
@@ -650,9 +742,9 @@ class UIManager:
     def create_touch_area(self, host=None, type=''):
         """
 
+
+        :param type:
         :param host:
-        :param place:
-        :param for_dragging:
         :return:
         """
         ta = TouchArea(host, type)
@@ -678,6 +770,10 @@ class UIManager:
             self.delete_touch_area(ta)
 
     def remove_touch_areas_for(self, host):
+        """
+
+        :param host:
+        """
         my_areas = [x for x in self.touch_areas if x.host is host]
         for ta in my_areas:
             self.delete_touch_area(ta)
@@ -720,7 +816,6 @@ class UIManager:
             self.remove_touch_areas_for(item)
 
 
-
     def add_completion_suggestions(self, node):
         """ Node has selected and if it is a placeholder or otherwise lacking, it may suggest an
          option to add a proper node here.
@@ -737,7 +832,6 @@ class UIManager:
         :return:
         """
         self.remove_touch_areas_for(node)
-
 
 
     # ### Flashing symbols ################################################################
@@ -815,8 +909,10 @@ class UIManager:
         :param msg:
         """
         if not self._message:
-            self._message = MessageItem('>>>' + msg)
-            self.add_ui(self._message)
+            log = self.get_panel(g.LOG)
+            if log:
+                self._message = MessageItem('>>>' + msg, log.widget(), self)
+                self.add_ui(self._message)
         else:
             self._message.add_feedback_from_command(msg)
 
@@ -854,122 +950,28 @@ class UIManager:
         """
         self.hud.setText(msg)
 
-    # ### Target reticle ####################################################################
-
-    def is_target_reticle_over(self, node):
-        """
-
-        :param node:
-        :return:
-        """
-        return self._target_reticle and self._target_reticle.is_over(node)
-
-    def update_target_reticle_position(self):
-        """
-
-
-        """
-        self._target_reticle.update_position()
-
-    def draw_target_reticle(self, node):
-        """
-
-        :param node:
-        """
-        if not self._target_reticle:
-            self._target_reticle = TargetReticle(node)
-            self.add_ui(self._target_reticle)
-        else:
-            self._target_reticle.update_host(node)
-            self._target_reticle.update_position()
-            self._target_reticle.show()
-
-    def hide_target_reticle(self, node):
-        """
-
-        :param node:
-        """
-        if self.is_target_reticle_over(node):
-            self._target_reticle.hide()
-
-
-    # ### Merge hint ####################################################################
-
-    def begin_merge_hint(self, start_node, end_item):
-        """
-
-        :param start_node:
-        :param end_item:
-        """
-        self._merge_hint = MergeHintLine(start_node, end_item)
-        self.add_ui(self._merge_hint)
-        self._merge_hint.show()
-
-    def end_merge_hint(self):
-        """
-
-
-        :return:
-        """
-        if not self._merge_hint:
-            return
-        self._merge_hint.hide()
-        self.remove_ui(self._merge_hint)
-        self._merge_hint = None
-
-    def dragging_node_over_position(self, node, scenepos, scene):
-        # calculate closest edge under mouse pointer
-        """
-
-        :param node:
-        :param scenepos:
-        :param scene:
-        :return:
-        """
-        edge = None
-        if self._merge_hint:
-            min_d = 100
-        else:
-            min_d = 20
-        if self._merge_hint:
-            item = self._merge_hint.end
-            pos = getattr(item, 'middle_point', item.pos())
-            d = (pos - scenepos).manhattanLength()
-            if d < min_d:
-                min_d = d
-                edge = item
-        for item in scene.items(scenepos):
-            if isinstance(item, Edge) and (item.role == 'left_merge' or item.role == 'right_merge'):
-                if item.source == node or item.dest == node:
-                    continue
-                d = (item.middle_point - scenepos).manhattanLength()
-                if d < min_d:
-                    min_d = d
-                    edge = item
-            elif isinstance(item, ConstituentNode) and item is not node and item.is_root_node():
-                d = (item.pos() - scenepos).manhattanLength()
-                if d < min_d:
-                    min_d = d
-                    edge = item
-        if not edge:
-            self.end_merge_hint()
-            return
-        if not self._merge_hint:
-            self.begin_merge_hint(node, edge)
-        return edge
-
     # ### Edge buttons ############################
 
     def add_remove_merger_button(self, node, edge=None):
+        """
+
+        :param node:
+        :param edge:
+        """
         key = node.save_key + g.REMOVE_MERGER
         if key not in self._overlay_buttons:
-            button = OverlayButton(qt_prefs.delete_icon, node, g.REMOVE_MERGER, 'Remove this non-merging node', parent=self.main.graph_view)
+            button = OverlayButton(qt_prefs.delete_icon, node, g.REMOVE_MERGER, 'Remove this non-merging node',
+                                   parent=self.main.graph_view)
             button.update_position()
             self.connect_element_to_action(button, 'remove_merger')
             button.show()
             self._overlay_buttons[key] = button
 
     def add_unfold_triangle_button(self, node):
+        """
+
+        :param node:
+        """
         key = node.save_key + g.REMOVE_TRIANGLE
         if key not in self._overlay_buttons:
             button = OverlayButton(qt_prefs.triangle_close_icon,
@@ -984,6 +986,10 @@ class UIManager:
             self._overlay_buttons[key] = button
 
     def add_fold_triangle_button(self, node):
+        """
+
+        :param node:
+        """
         key = node.save_key + g.ADD_TRIANGLE
         if key not in self._overlay_buttons:
             button = OverlayButton(qt_prefs.triangle_icon,
@@ -1000,6 +1006,10 @@ class UIManager:
 
     def add_buttons_for_edge(self, edge):
         # Constituent edges have a button to remove the edge and the node in between.
+        """
+
+        :param edge:
+        """
         if edge.edge_type is g.CONSTITUENT_EDGE:
             if edge.end and edge.end.is_placeholder():
                 self.add_remove_merger_button(edge.start, edge)
@@ -1008,7 +1018,8 @@ class UIManager:
             key = edge.save_key + "_cut_start"
             if edge.start:
                 if key not in self._overlay_buttons:
-                    button = OverlayButton(qt_prefs.cut_icon, edge, g.START_CUT, 'Disconnect from node', parent=self.main.graph_view)
+                    button = OverlayButton(qt_prefs.cut_icon, edge, g.START_CUT, 'Disconnect from node',
+                                           parent=self.main.graph_view)
                     self.connect_element_to_action(button, 'disconnect_edge')
                     button.show()
                     self._overlay_buttons[key] = button
@@ -1021,7 +1032,8 @@ class UIManager:
         key = edge.save_key + "_cut_end"
         if edge.end and not edge.end.is_placeholder():
             if key not in self._overlay_buttons:
-                button = OverlayButton(qt_prefs.cut_icon, edge, g.END_CUT, 'Disconnect from node', parent=self.main.graph_view)
+                button = OverlayButton(qt_prefs.cut_icon, edge, g.END_CUT, 'Disconnect from node',
+                                       parent=self.main.graph_view)
                 button.update_position()
                 self.connect_element_to_action(button, 'disconnect_edge')
                 button.show()
@@ -1034,6 +1046,10 @@ class UIManager:
                 del self._overlay_buttons[key]
 
     def remove_buttons_for_edge(self, edge):
+        """
+
+        :param edge:
+        """
         keys = [edge.save_key + "_cut_start", edge.save_key + "_cut_end"]
         if edge.start:
             keys.append(edge.start.save_key + g.REMOVE_MERGER)
@@ -1045,6 +1061,10 @@ class UIManager:
                 del self._overlay_buttons[key]
 
     def update_edge_button_positions(self, edge):
+        """
+
+        :param edge:
+        """
         keys = [edge.save_key + "_cut_start", edge.save_key + "_cut_end"]
         if edge.start:
             keys.append(edge.start.save_key + g.REMOVE_MERGER)
@@ -1054,6 +1074,11 @@ class UIManager:
                 button.update_position()
 
     def update_overlay_buttons_for(self, item, selected):
+        """
+
+        :param item:
+        :param selected:
+        """
         if isinstance(item, Edge):
             if selected:
                 self.add_buttons_for_edge(item)
@@ -1068,6 +1093,10 @@ class UIManager:
 
 
     def add_buttons_for_constituent_node(self, node):
+        """
+
+        :param node:
+        """
         left = node.left()
         right = node.right()
         if (left and left.is_placeholder()) or (right and right.is_placeholder()):
@@ -1078,6 +1107,10 @@ class UIManager:
             self.add_fold_triangle_button(node)
 
     def remove_buttons_for_constituent_node(self, node):
+        """
+
+        :param node:
+        """
         for key_part in [g.REMOVE_MERGER, g.REMOVE_TRIANGLE, g.ADD_TRIANGLE]:
             key = node.save_key + key_part
             if key in self._overlay_buttons:
@@ -1085,7 +1118,6 @@ class UIManager:
                 button.close()
                 button.hide()
                 del self._overlay_buttons[key]
-
 
 
     # ### Control points ####################################################################
@@ -1099,12 +1131,12 @@ class UIManager:
             self.add_ui(cp)
             self._control_points.append(cp)
             cp.update_position()
-        if (not edge.start): # or edge.start.is_placeholder():
+        if (not edge.start):  # or edge.start.is_placeholder():
             cp = ControlPoint(edge, role=g.START_POINT)
             self.add_ui(cp)
             self._control_points.append(cp)
             cp.update_position()
-        if (not edge.end): # or edge.end.is_placeholder():
+        if (not edge.end):  # or edge.end.is_placeholder():
             cp = ControlPoint(edge, role=g.END_POINT)
             self.add_ui(cp)
             self._control_points.append(cp)
@@ -1116,6 +1148,12 @@ class UIManager:
 
 
     def update_control_points_for(self, item, selected=True):
+        """
+
+        :param item:
+        :param selected:
+        :return:
+        """
         if not isinstance(item, Edge):
             return
         if selected:

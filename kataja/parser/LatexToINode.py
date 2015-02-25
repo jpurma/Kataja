@@ -1,21 +1,19 @@
-
-
 # This module has functions for parsing LaTeX QTree structures to generic node-based representations.
 # These representations can then be converted to other structures, e.g. Kataja Constituents and ConstituentNodes.
 
 # This module can be run and tested as it is,
-#from kataja.utils import time_me
+# from kataja.utils import time_me
 
 from kataja.parser.INodes import ICommandNode, IConstituentNode, ITextNode
+
 
 class ParseError(Exception):
     pass
 
 
-
 one_character_commands = ['&', '~', '#', '%', '$', '^', '_']
 
-#@time_me
+# @time_me
 def parse(text):
     """ Turn text into INodes (intermediary nodes). These can be IConstituentNodes, ICommandNodes or ITextNodes.
     INodes are then, dependent on purpose of parsing turned into Kataja's ConstituentNodes, rich text format
@@ -49,7 +47,8 @@ def parse(text):
     else:
         return nodes
 
-#@time_me
+
+# @time_me
 def parse_field(text):
     """ Simpler version of parse, turns values of text fields into INodes (intermediary nodes).
     Results are ITextNodes that may contain more ITextNodes and ICommandNodes.
@@ -69,6 +68,7 @@ def parse_field(text):
         return nodes[0]
     else:
         return ITextNode(parts=nodes)
+
 
 def parse_word(feed, end_on_space=False):
     """ Turn text into ITextNodes. If something special (commands, curlybraces, brackets is found, deal with them by
@@ -115,7 +115,7 @@ def parse_curlies(feed):
     """
     node = ITextNode()
 
-    feed.pop(0) # eat first "{"
+    feed.pop(0)  # eat first "{"
 
     while feed:
         c = feed[0]
@@ -185,7 +185,7 @@ def parse_command(feed):
     """
     node = ICommandNode()
 
-    feed.pop(0) # this is the beginning "\"
+    feed.pop(0)  # this is the beginning "\"
 
     while feed:
         c = feed[0]
@@ -220,7 +220,7 @@ def parse_brackets(feed):
         :param feed: list of chars (strings of length 1)
     """
     node = IConstituentNode()
-    assert(feed[0] == '[')
+    assert (feed[0] == '[')
 
     feed.pop(0)
 
@@ -247,7 +247,7 @@ def parse_brackets(feed):
         else:
             # Make a new constituent
             new_cnode = IConstituentNode()
-            feed, new_node = parse_word(feed, end_on_space=True) # Read simple constituent e.g. A or B in [ A B ]
+            feed, new_node = parse_word(feed, end_on_space=True)  # Read simple constituent e.g. A or B in [ A B ]
             # What we just read was label for that constituent
             new_cnode.add_label_complex(new_node)
             new_cnode.sort_out_label_complex()
@@ -258,14 +258,12 @@ def parse_brackets(feed):
 
 # ### Test cases
 if __name__ == "__main__":
-
     s = r"""[.{AspP} [.{Asp} Ininom] [.{vP} [.{KP} [.{K} ng] [.{DP} [.{D´} [.{D} {} ] [.{NP} lola ]] [.{KP} [.{K} ng] [.{DP} [.{D´} [.{D} {} ] [.{NP} alila] ] [.{KP} {ni Maria} ]]]]] [.{v´} [.{v} {} ] [.{VP} [.{V} {} ] [.{KP} {ang tubig}]]]]]"""
 
     s = r"""[ [.{Acc_i} B [.{Nom} A [.{DP} the grass ] ] ] [ S–Acc [ … [ [.{GenP_j} C t_i ] [ S–Gen [.{vP\rightarrow\emph{load}} … [.{v´} v^0 [.{VP} V [.{PP} [.{InsP} E [.{DatP} D t_j ] ] [.{P´} P [.{NP*} the truck ] ] ] ] ] ] ] ] ] ] ]"""
 
     s = r"""[.{EvidP} Part-Evid^0 [.{EvidP} [.{NegP} Part-Neg [.{NegP_j} [.{vP_i} Args Verb] [.{Neg} Neg^0 t_i ]]] [.{Evid} Evid0 t_k ]]]
     """
-
 
     s = r"""[.TP
 [.AdvP [.Adv\\usually ] ]
@@ -286,10 +284,7 @@ if __name__ == "__main__":
 
     s = r"""[.TP [.AdvP [.Adv\\usually ] ] [.TP [.DP [.D\\{\O} ] [.NP\\John ] ] [.T\1 [.T\\\emph{PRESENT} ] [.VP [.VP [.V\\goes ] [.PP [.P\\to ] [.DP [.D\\the ] [.NP\\park ] ] ] ] [.PP [.P\\on ] [.DP [.D\\{\O} ] [.NP\\Tuesdays ] ] ] ] ] ] ] ]"""
 
-
-
     n = parse(s)
-
 
     print(n)
 

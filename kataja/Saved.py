@@ -1,20 +1,25 @@
-from PyQt5 import QtGui, QtCore, QtWidgets
 import sys
 import types
+
+from PyQt5 import QtGui, QtCore
+
 from PyQt5.QtCore import QPointF, QPoint
 from kataja.utils import to_tuple
 from kataja.parser.INodes import ITextNode
 from kataja.parser.INodeToLatex import parse_inode_for_field
 from kataja.parser.LatexToINode import parse_field
 
+
 __author__ = 'purma'
+
 
 class SaveError(Exception):
     pass
-    #def __init__(self, value):
-    #    self.value = value
-    #def __str__(self):
-    #    return repr(self.value)
+    # def __init__(self, value):
+    # self.value = value
+    # def __str__(self):
+    # return repr(self.value)
+
 
 class Savable:
     """ Make the object to have internal .saved -object where saved data should go.
@@ -32,10 +37,19 @@ class Savable:
 
     @property
     def save_key(self):
+        """
+
+
+        :return:
+        """
         return self.saved.save_key
 
     @save_key.setter
     def save_key(self, value):
+        """
+
+        :param value:
+        """
         self.saved.save_key = value
 
 
@@ -45,7 +59,6 @@ class Savable:
         :param self:
         :param saved_objs:
         :param open_refs:
-        :param ignore:
         :return: :raise:
         """
 
@@ -124,8 +137,9 @@ class Savable:
 
     def load_objects(self, data, kataja_main):
         """ Load and restore objects starting from given obj (probably Forest or KatajaMain instance)
+        :param data:
+        :param kataja_main:
         :param self:
-        :param full_data:
         """
 
         global full_map, restored, full_data, main
@@ -172,13 +186,13 @@ class Savable:
         :return:
         """
         global full_map, restored, full_data, main
+
         def inflate(data):
             """ Recursively turn QObject descriptions back into actual objects and object references back into real objects
             :param data:
-            :param self:
             :return:
             """
-            #print('inflating %s in %s' % (str(data), self))
+            # print('inflating %s in %s' % (str(data), self))
             if data is None:
                 return data
             elif isinstance(data, (int, float)):
@@ -198,7 +212,7 @@ class Savable:
                 if data.startswith('*r*'):
                     parts = data.split('|')
                     if len(parts) > 2:
-                        return self.restore(parts[1]+'|'+parts[2], parts[2])
+                        return self.restore(parts[1] + '|' + parts[2], parts[2])
                     else:
                         return self.restore(parts[1], parts[1])
                 else:
@@ -237,12 +251,12 @@ class Savable:
                 return result
             return data
 
-        #print('restoring %s , %s ' % (obj_key, class_key))
+        # print('restoring %s , %s ' % (obj_key, class_key))
         if obj_key in restored:
             return restored[obj_key]
         obj = full_map.get(obj_key, None)
         if not obj:
-            #print('creeating new ', class_key)
+            # print('creeating new ', class_key)
             obj = main.object_factory.create(class_key)
         if class_key == 'Forest':
             main.forest = obj
@@ -253,19 +267,16 @@ class Savable:
             if new_value is not None:
                 new_value = inflate(new_value)
             if new_value != old_value and (bool(new_value) or bool(old_value)):
-                #changes[key] = (old_value, new_value)
-                #print('set: %s.%s = %s (old value: %s)' % (obj, key, new_value, old_value))
+                # changes[key] = (old_value, new_value)
+                # print('set: %s.%s = %s (old value: %s)' % (obj, key, new_value, old_value))
                 setattr(obj, key, new_value)
-                #print '  in %s set %s to %s, was %s' % (obj_key, key, new_value, old_value)
-                #else:
-                #    print 'in %s keep %s value %s' % (obj_key, key, old_value)
+                # print '  in %s set %s to %s, was %s' % (obj_key, key, new_value, old_value)
+                # else:
+                # print 'in %s keep %s value %s' % (obj_key, key, old_value)
         # !!! object needs to be finalized after this !!!
         if hasattr(obj, 'after_init'):
             obj.after_init()
         return obj
-
-
-
 
 
 class Saved:

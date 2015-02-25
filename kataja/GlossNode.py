@@ -25,10 +25,8 @@ GlossNode is a Node to display translation or explanation of a constituent
 #
 #############################################################################
 
-from kataja.singletons import qt_prefs
 from kataja.Node import Node
 from kataja.globals import GLOSS_EDGE, GLOSS_NODE
-from kataja.parser import KatajaNodeToINode
 
 
 color_map = {'tense': 0, 'person': 2, 'number': 4, 'case': 6, 'unknown': 3}
@@ -53,10 +51,19 @@ class GlossNode(Node):
 
     @property
     def host(self):
+        """
+
+
+        :return:
+        """
         return self.saved.host
 
     @host.setter
     def host(self, value):
+        """
+
+        :param value:
+        """
         self.saved.host = value
 
     @property
@@ -74,7 +81,7 @@ class GlossNode(Node):
         pass
         # self.color = colors.drawing2
         # if self._label_complex:
-        #    self._label_complex.setDefaultTextColor(colors.drawing2)
+        # self._label_complex.setDefaultTextColor(colors.drawing2)
 
     def __str__(self):
         if self.host:

@@ -28,7 +28,6 @@ from PyQt5.QtCore import QPointF as Pf, Qt
 import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
-from kataja.debug import mouse
 from kataja.Edge import Edge
 from kataja.ConstituentNode import ConstituentNode
 from kataja.singletons import ctrl, prefs, qt_prefs
@@ -476,14 +475,14 @@ class GraphScene(QtWidgets.QGraphicsScene):
         :return:
         """
         x, y = to_tuple(event.scenePos())
-        #um = self.main.ui_manager
+        # um = self.main.ui_manager
         assert (not ctrl.pressed)
         assert (not ctrl.ui_pressed)
 
         # Check if any UI items can receive this press
         items = self.items(event.scenePos())
         clickables = [i for i in items if getattr(i, 'clickable', False)]
-        #print('clickables: ', clickables)
+        # print('clickables: ', clickables)
         if clickables:
             closest_item = self.get_closest_item(x, y, clickables)
             if closest_item:
@@ -493,7 +492,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             return QtWidgets.QGraphicsScene.mousePressEvent(self, event)  # None
         # It wasn't consumed, continue with other selectables:
         draggables = [i for i in items if getattr(i, 'draggable', False)]
-        #print('draggables: ', draggables)
+        # print('draggables: ', draggables)
         if draggables:
             closest_item = self.get_closest_item(x, y, draggables)
             if closest_item:
@@ -502,7 +501,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             return QtWidgets.QGraphicsScene.mousePressEvent(self, event)  # None
 
         selectables = [i for i in items if getattr(i, 'selectable', False)]
-        #print('selectables: ', selectables)
+        # print('selectables: ', selectables)
         if selectables:
             closest_item = self.get_closest_item(x, y, selectables)
             if closest_item:
@@ -557,7 +556,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
             if self._dragging:
                 ctrl.pressed.drag(event)
                 self.item_moved()
-                items = [x for x in self.items(event.scenePos()) if hasattr(x, 'dragged_over_by') and x is not ctrl.pressed]
+                items = [x for x in self.items(event.scenePos()) if
+                         hasattr(x, 'dragged_over_by') and x is not ctrl.pressed]
                 if items:
                     for item in items:
                         item.dragged_over_by(ctrl.pressed)
@@ -594,7 +594,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 recipient = self.get_drop_recipient(pressed, event)  # @UndefinedVariable
                 pressed.drop_to(x, y, recipient=recipient)
                 self.kill_dragging()
-                ctrl.ui.update_selections() # drag operation may have changed visible affordances
+                ctrl.ui.update_selections()  # drag operation may have changed visible affordances
             else:
                 if pressed.clickable:
                     success = pressed.click(event)
@@ -611,7 +611,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 pass
             else:
                 ctrl.deselect_objects()
-        assert(not self._dragging or ctrl.pressed)
+        assert (not self._dragging or ctrl.pressed)
         return QtWidgets.QGraphicsScene.mouseReleaseEvent(self, event)
 
     def get_drop_recipient(self, pressed, event):
@@ -629,7 +629,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
          :param event:
         """
         print("dropEvent at GraphScene")
-        ctrl.pressed=None
+        ctrl.pressed = None
         self.kill_dragging()
         if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist"):
             event.acceptProposedAction()
@@ -637,6 +637,11 @@ class GraphScene(QtWidgets.QGraphicsScene):
             QtWidgets.QGraphicsScene.dropEvent(self, event)
 
     def drag_exact_start_point(self):
+        """
+
+
+        :return:
+        """
         return self._drag_start_point
 
     def mouseDoubleClickEvent(self, event):
@@ -794,13 +799,13 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         # resize_required = True
                         # elif x > self._right_border:
                         # self._right_border = x
-                        #     resize_required = True
+                        # resize_required = True
                         # if y < self._top_border:
-                        #     self._top_border = y
-                        #     resize_required = True
+                        # self._top_border = y
+                        # resize_required = True
                         # elif y > self._bottom_border:
-                        #     self._bottom_border = y
-                        #     resize_required = True
+                        # self._bottom_border = y
+                        # resize_required = True
 
             else:
                 for xvel, yvel, zvel, node in moved_nodes:
@@ -816,16 +821,16 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         # x, y, z = node.current_position
                         # if x < self._left_border:
                         # self._left_border = x
-                        #         resize_required = True
-                        #     elif x > self._right_border:
-                        #         self._right_border = x
-                        #         resize_required = True
-                        #     if y < self._top_border:
-                        #         self._top_border = y
-                        #         resize_required = True
-                        #     elif y > self._bottom_border:
-                        #         self._bottom_border = y
-                        #         resize_required = True
+                        # resize_required = True
+                        # elif x > self._right_border:
+                        # self._right_border = x
+                        # resize_required = True
+                        # if y < self._top_border:
+                        # self._top_border = y
+                        # resize_required = True
+                        # elif y > self._bottom_border:
+                        # self._bottom_border = y
+                        # resize_required = True
         if resize_required and (not self._manual_zoom) and (not ctrl.dragged):
             self.fit_to_window()
 

@@ -22,9 +22,6 @@
 #
 # ############################################################################
 
-import sys
-
-from kataja.singletons import qt_prefs
 from kataja.Node import Node
 from kataja.globals import PROPERTY_EDGE, PROPERTY_NODE
 
@@ -42,5 +39,5 @@ class PropertyNode(Node):
 
 
     def __init__(self, property=None, forest=None):
-        Node.__init__(self, syntactic_object=property, forest=forest)
+        Node.__init__(self, syntactic_object=property)
         # self.color = colors.text

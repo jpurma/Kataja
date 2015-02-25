@@ -22,16 +22,13 @@
 #
 # ############################################################################
 
-import os
 from pathlib import Path
-import plistlib
 from collections import OrderedDict
 import sys
 
 from PyQt5 import QtGui, QtCore
 
 from kataja.globals import *
-from kataja.utils import time_me
 
 
 disable_saving_preferences = True
@@ -303,6 +300,12 @@ class QtPreferences:
         iconpath = preferences.resources_path + 'icons/'
 
         def pixmap(path, width=0):
+            """
+
+            :param path:
+            :param width:
+            :return:
+            """
             p = QtGui.QPixmap(iconpath + path)
             if width:
                 p.scaledToWidth(width)
@@ -310,7 +313,8 @@ class QtPreferences:
 
         print("font families:", QtGui.QFontDatabase().families())
         self.easing_curve = []
-        self.prepare_fonts(preferences.fonts, fontdb, preferences)
+        self.fontdb = fontdb
+        self.prepare_fonts(preferences.fonts, preferences)
         self.prepare_easing_curve(preferences._curve, preferences.move_frames)
         self.no_pen = QtGui.QPen()
         self.no_pen.setStyle(QtCore.Qt.NoPen)
@@ -338,7 +342,7 @@ class QtPreferences:
 
         :param preferences:
         """
-        self.prepare_fonts(preferences.fonts)
+        self.prepare_fonts(preferences.fonts, preferences)
         self.prepare_easing_curve(preferences._curve, preferences.move_frames)
 
 
@@ -367,9 +371,11 @@ class QtPreferences:
         s = sum(self.easing_curve)
         self.easing_curve = [x / s for x in self.easing_curve]
 
-    def prepare_fonts(self, fonts_dict, fontdb, preferences):
+    def prepare_fonts(self, fonts_dict, preferences):
         """
 
+
+        :param preferences:
         :param fonts_dict:
         :param fontdb:
         """
@@ -377,12 +383,12 @@ class QtPreferences:
         self.fonts = {}
         for key, font_tuple in fonts_dict.items():
             name, style, size = font_tuple
-            font = fontdb.font(name, style, size)
+            font = self.fontdb.font(name, style, size)
             print(name, font.exactMatch())
             if name == 'Asana Math':  # and not font.exactMatch():
                 print('Loading Asana Math locally')
-                fontdb.addApplicationFont(preferences.resources_path + "Asana-Math.otf")
-                font = fontdb.font(name, style, size)
+                self.fontdb.addApplicationFont(preferences.resources_path + "Asana-Math.otf")
+                font = self.fontdb.font(name, style, size)
             if style == 'Italic':
                 font.setItalic(True)
             self.fonts[key] = font
@@ -400,6 +406,11 @@ class QtPreferences:
     ### Font helper ###
 
     def font(self, name):
+        """
+
+        :param name:
+        :return:
+        """
         return self.fonts[name]
 
         # return self.fonts.get(name, self.fonts[MAIN_FONT])

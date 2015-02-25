@@ -34,7 +34,7 @@ class TextArea(Movable, QtWidgets.QGraphicsTextItem):
 
     def __init__(self, text='', box=QtCore.QRectF(0, 0, 480, 400), forest=None):
         QtWidgets.QGraphicsTextItem.__init__(self)
-        Movable.__init__(self, forest=forest)
+        Movable.__init__(self)
         self.setFlag(QtWidgets.QGraphicsRectItem.ItemIsMovable)
         # self.setFlag(QtGui.QGraphicsRectItem.ItemIsSelectable)
         self.setTextInteractionFlags(QtCore.Qt.TextEditorInteraction)

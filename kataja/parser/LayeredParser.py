@@ -56,9 +56,9 @@ class LayeredParser(BaseParser):
         if alias:
             node.alias = alias
         if left:
-            self.forest._connect_node(parent=node, child=f.get_node(left), direction=g.LEFT)
+            self.forest.connect_node(parent=node, child=f.get_node(left), direction=g.LEFT)
         if right:
-            self.forest._connect_node(parent=node, child=f.get_node(right), direction=g.RIGHT)
+            self.forest.connect_node(parent=node, child=f.get_node(right), direction=g.RIGHT)
         node.update_label()
         f.derivation_steps.save_and_create_derivation_step()
         return constituent
@@ -365,9 +365,9 @@ class LayeredParser(BaseParser):
         # self.forest.
         # print self._layers
 
-    # tree= r'''[ {Hei} [ sana\komento{parametri} {pitempi kokonaisuus_{toinen kokonaisuus}}]]'''
-    # tree= r''' [ Jukka [ {Salla vai}{muuta ei} ] ]'''
+        # tree= r'''[ {Hei} [ sana\komento{parametri} {pitempi kokonaisuus_{toinen kokonaisuus}}]]'''
+        # tree= r''' [ Jukka [ {Salla vai}{muuta ei} ] ]'''
 
-    # p=Parser()
-    # out= p.parse(tree)
+        # p=Parser()
+        # out= p.parse(tree)
 

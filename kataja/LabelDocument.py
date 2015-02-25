@@ -1,9 +1,6 @@
 __author__ = 'purma'
 
 from PyQt5 import QtGui, QtCore
-from kataja.parser.LatexToINode import ITextNode, ICommandNode
-
-from kataja.parser.latex_to_unicode import latex_to_unicode
 
 
 class LabelDocument(QtGui.QTextDocument):

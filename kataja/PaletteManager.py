@@ -21,7 +21,6 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
-import os
 
 import random
 import json
@@ -31,8 +30,8 @@ from PyQt5.QtGui import QColor as c
 from PyQt5.QtGui import QColor
 from PyQt5.QtCore import Qt
 import PyQt5.QtGui as QtGui
-
 from kataja.singletons import ctrl, prefs
+
 
 
 # Solarized colors from http://ethanschoonover.com/solarized  (Ethan Schoonover)
@@ -107,6 +106,12 @@ def colorize(h, s, v):
 
 
 def matching_hue(hue, color_list):
+    """
+
+    :param hue:
+    :param color_list:
+    :return:
+    """
     min_d = 1.0
     best = 0
     optimal = 0.39166
@@ -119,8 +124,6 @@ def matching_hue(hue, color_list):
             min_d = d
             best = i
     return best
-
-
 
 
 def in_range(h, s, v):
@@ -165,7 +168,7 @@ class PaletteManager:
         print("*** Creating PaletteManager")
         try:
             f = open(prefs.resources_path + 'colors.json', 'r', encoding='UTF-8')
-            self.color_map = json.load(f) # json.load(f, 'utf-8')
+            self.color_map = json.load(f)  # json.load(f, 'utf-8')
 
             f.close()
         except FileNotFoundError:
@@ -185,14 +188,13 @@ class PaletteManager:
         self.gradient.setSpread(QtGui.QGradient.PadSpread)
         self.activate_color_mode('solarized_lt', cold_start=True)
         self.color_keys = ['content1', 'content2', 'content3', 'background1', 'background2',
-                     'accent1', 'accent2', 'accent3', 'accent4', 'accent5', 'accent6', 'accent7', 'accent8',
-                     'accent1tr', 'accent2tr', 'accent3tr', 'accent4tr', 'accent5tr', 'accent6tr', 'accent7tr',
-                     'accent8tr']
+                           'accent1', 'accent2', 'accent3', 'accent4', 'accent5', 'accent6', 'accent7', 'accent8',
+                           'accent1tr', 'accent2tr', 'accent3tr', 'accent4tr', 'accent5tr', 'accent6tr', 'accent7tr',
+                           'accent8tr']
 
     @property
     def current_color_mode(self):
         """
-        :param value:
         :return:
         """
         return ctrl.fs.color_mode
@@ -201,6 +203,7 @@ class PaletteManager:
         """
         Prepare root color (self.hsv), depending on what kind of color settings are active
 
+        :param mode:
         :param refresh:
         :param cold_start: bool -- use this if some color palette is required, but ctrl-infrastructure
             is not yet available
@@ -300,7 +303,6 @@ class PaletteManager:
         :param prefs:
         :param settings:
         :param refresh:
-        :param adjusting:
         """
         self.activate_color_mode(self.current_color_mode, refresh=refresh)
         self.get_qt_palette(cached=False)
@@ -308,6 +310,10 @@ class PaletteManager:
 
 
     def build_solarized(self, light=True):
+        """
+
+        :param light:
+        """
         if light:
             # Solarized light
             # base3     #fdf6e3 15/7 brwhite  230 #ffffd7 97  00  10 253 246 227  44  10  99
@@ -330,18 +336,17 @@ class PaletteManager:
         self.d['accents'] = accents
 
         for i, accent in enumerate(accents):
-            self.d['accent%s' % (i+1)] = accent
+            self.d['accent%s' % (i + 1)] = accent
             tr = c(accent)
             tr.setAlphaF(0.5)
             tr9 = c(accent)
             tr9.setAlphaF(0.9)
-            self.d['accent%str' % (i+1)] = tr
-            self.d['accent%str9' % (i+1)] = tr9
+            self.d['accent%str' % (i + 1)] = tr
+            self.d['accent%str9' % (i + 1)] = tr9
         self.d['accents'] = accents
 
         self.gradient.setColorAt(1, self.d['background1'])
         self.gradient.setColorAt(0, self.d['background2'])
-
 
 
     def compute_palette(self, hsv):
@@ -364,13 +369,13 @@ class PaletteManager:
         start_index = matching_hue(h, accents)
         rotated_accents = accents[start_index:] + accents[:start_index]
         for i, accent in enumerate(rotated_accents):
-            self.d['accent%s' % (i+1)] = accent
+            self.d['accent%s' % (i + 1)] = accent
             tr = c(accent)
             tr.setAlphaF(0.5)
             tr9 = c(accent)
             tr9.setAlphaF(0.9)
-            self.d['accent%str' % (i+1)] = tr
-            self.d['accent%str9' % (i+1)] = tr9
+            self.d['accent%str' % (i + 1)] = tr
+            self.d['accent%str9' % (i + 1)] = tr9
         self.d['accents'] = rotated_accents
 
         background1 = c()
@@ -512,10 +517,10 @@ class PaletteManager:
             return color.lighter(120)
         else:
             return color.darker(120)
-        #if color.value() > 230:
-        #    return color.darker(120)
-        #else:
-        #    return color.lighter(120)
+            # if color.value() > 230:
+            # return color.darker(120)
+            # else:
+            # return color.lighter(120)
 
 
     def selected(self, color):
@@ -530,6 +535,11 @@ class PaletteManager:
             return color.darker()
 
     def broken(self, color):
+        """
+
+        :param color:
+        :return:
+        """
         if self.light_on_dark():
             return color.darker()
         else:
@@ -538,7 +548,8 @@ class PaletteManager:
     def get_color_name(self, color):
         """
 
-        :param hsv:
+
+        :param color:
         :return:
         """
         if not self.color_map:
@@ -564,6 +575,12 @@ class PaletteManager:
         return self.color_map[best]['name']
 
     def palette_from_key(self, key, ui=False):
+        """
+
+        :param key:
+        :param ui:
+        :return:
+        """
         if ui:
             palette = QtGui.QPalette(self.get_qt_palette_for_ui())
         else:
@@ -575,6 +592,11 @@ class PaletteManager:
 
 
     def light_on_dark(self):
+        """
+
+
+        :return:
+        """
         return self.d['background1'].value() < 100
 
     def use_glow(self):
@@ -587,6 +609,8 @@ class PaletteManager:
         """
 
 
+
+        :param cached:
         :return:
         """
         if cached and self._palette:
@@ -598,15 +622,16 @@ class PaletteManager:
              'window': QtGui.QBrush(self.d['background1'])}
 
         self._palette = QtGui.QPalette(p['windowText'], p['button'], p['light'], p['dark'], p['mid'], p['text'],
-                              p['bright_text'], p['base'], p['window'])
+                                       p['bright_text'], p['base'], p['window'])
         return self._palette
-
 
 
     def get_qt_palette_for_ui(self, cached=True):
         """
 
 
+
+        :param cached:
         :return:
         """
         if cached and self._ui_palette:
@@ -619,5 +644,5 @@ class PaletteManager:
              'window': QtGui.QBrush(self.d['background1'])}
 
         self._ui_palette = QtGui.QPalette(p['windowText'], p['button'], p['light'], p['dark'], p['mid'], p['text'],
-                              p['bright_text'], p['base'], p['window'])
+                                          p['bright_text'], p['base'], p['window'])
         return self._ui_palette

@@ -123,6 +123,7 @@ class ITextNode:
         else:
             return 'ITextNode(parts=%s)' % repr(self.parts)
 
+
 class ICommandNode(ITextNode):
     """ Node that contains command (like a html tag or a LaTeX command) as a string and where
     the scope of the command is the parts of the node. """
@@ -232,6 +233,7 @@ class IConstituentNode(ITextNode):
         """ Go through label complex and fill alias, label, index, gloss and features if provided.
         :return: None
         """
+
         def find_index(node):
             if isinstance(node, ICommandNode) and node.command == '_':
                 return ITextNode(parts=node.parts).simplified(), node
@@ -305,6 +307,11 @@ class IConstituentNode(ITextNode):
             return str(self.label)
 
     def is_empty(self):
+        """
+
+
+        :return:
+        """
         return not (self.label or self.parts or self.index or self.alias or self.features)
 
     def __repr__(self):

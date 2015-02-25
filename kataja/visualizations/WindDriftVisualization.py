@@ -37,6 +37,7 @@ class WindDriftTree(BaseVisualization):
     name = 'Wind drift linearization'
 
     def __init__(self):
+        super().__init__()
         self.forest = None
         self._directed = True
         self._last_pos = (0, 0)

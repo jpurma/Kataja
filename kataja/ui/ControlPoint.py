@@ -1,10 +1,10 @@
 # coding=utf-8
 # #######################################################
 from PyQt5 import QtCore, QtWidgets, QtGui
+
 from PyQt5.QtCore import QPointF as Pf
 from PyQt5.QtCore import Qt
-
-from kataja.singletons import prefs, ctrl, qt_prefs
+from kataja.singletons import prefs, ctrl
 from kataja.utils import to_tuple
 import kataja.globals as g
 
@@ -90,7 +90,7 @@ class ControlPoint(QtWidgets.QGraphicsItem):
 
     def _compute_adjust(self):
         x, y = to_tuple(self.pos())
-        assert(self._index != -1)
+        assert (self._index != -1)
         p = self.host_edge.control_points[self._index]
         return int(x - p[0]), int(y - p[1])
         # print 'computed adjust:', self.adjust
@@ -111,10 +111,10 @@ class ControlPoint(QtWidgets.QGraphicsItem):
         """
         if self.role == g.LABEL_START:
             d, point = self.host_edge.get_closest_path_point(event.scenePos())
-            #self.setPos(point)
+            # self.setPos(point)
             self.host_edge.label_start = d
             ctrl.ui.update_control_point_positions()
-            #self.update()
+            # self.update()
         else:
             self.setPos(event.scenePos())
         if self._index > -1:
@@ -130,7 +130,7 @@ class ControlPoint(QtWidgets.QGraphicsItem):
 
     def drop_to(self, x, y, recipient=None):
         if recipient:
-            #recipient.accept_drop(self)
+            # recipient.accept_drop(self)
             if self.role == g.START_POINT:
                 self.host_edge.connect_start_to(recipient)
             elif self.role == g.END_POINT:
@@ -175,11 +175,11 @@ class ControlPoint(QtWidgets.QGraphicsItem):
             painter.drawEllipse(self._xy, self._xy, self._wh, self._wh)
             #
             # if self.pressed:
-            #     painter.setBrush(cm.active(cm.ui_tr()))
+            # painter.setBrush(cm.active(cm.ui_tr()))
             # elif self._hovering:
-            #      painter.setBrush(cm.hovering(cm.ui_tr()))
+            # painter.setBrush(cm.hovering(cm.ui_tr()))
             # else:
-            #     painter.setBrush(cm.ui_tr())
+            # painter.setBrush(cm.ui_tr())
             # painter.setPen(qt_prefs.no_pen)
             # painter.drawEllipse(self._xy, self._xy, self._wh, self._wh)
         else:

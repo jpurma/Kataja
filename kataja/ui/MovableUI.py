@@ -11,7 +11,6 @@ from kataja.utils import to_tuple
 
 
 class MovableUI(object):
-
     """
     Animation and movement of UI elements should be based on individual timers.
     This way UI and actual animation are easier to keep separated and UI can be kept responsive.
@@ -22,7 +21,7 @@ class MovableUI(object):
 
     def __init__(self):
         # position
-        assert(hasattr(self, "pos"))
+        assert (hasattr(self, "pos"))
         self._target_position = to_tuple(self.pos())
         # timer related stuff
         self._timer = None

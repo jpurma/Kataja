@@ -25,16 +25,16 @@
 import math
 
 from PyQt5 import QtCore
-from PyQt5.QtCore import QPointF as Pf
-import PyQt5.QtGui as QtGui
+
 import PyQt5.QtWidgets as QtWidgets
 from kataja.Edge import Edge
-from kataja.singletons import ctrl, prefs, qt_prefs
+from kataja.singletons import ctrl, prefs
 from kataja.utils import to_tuple
 import kataja.globals as g
 
 
 end_spot_size = 7
+
 
 class TouchArea(QtWidgets.QGraphicsItem):
     """ Mouse sensitive areas connected to either nodes or edges between them. """
@@ -144,7 +144,8 @@ class TouchArea(QtWidgets.QGraphicsItem):
         else:
             # Just the bounding rect of end spot ellipse
             ex, ey = self.end_point
-            return QtCore.QRectF(ex - end_spot_size, ey - end_spot_size, end_spot_size + end_spot_size, end_spot_size + end_spot_size)
+            return QtCore.QRectF(ex - end_spot_size, ey - end_spot_size, end_spot_size + end_spot_size,
+                                 end_spot_size + end_spot_size)
 
     def sensitive_area(self):
         """
@@ -160,7 +161,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
 
         """
         pass
-        #if not self in ctrl.dragged:
+        # if not self in ctrl.dragged:
         self.update_end_points()
 
     def drag(self, event):
@@ -169,7 +170,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
 
     def drop_to(self, x, y, recipient=None):
         self._dragging = False
-        print(x,y, recipient)
+        print(x, y, recipient)
 
     # edge.py
     def update_end_points(self, end_point=None):
@@ -197,7 +198,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
         use_middle_point = False
         line_middle_point = None
         path_settings = None
-        if isinstance(self.host, Edge): # Touch area starts from relation between nodes
+        if isinstance(self.host, Edge):  # Touch area starts from relation between nodes
             rel = self.host
             path_settings = ctrl.forest.settings.edge_shape_settings(rel.edge_type)
             sx, sy = to_tuple(rel.get_point_at(0.5))
@@ -287,14 +288,12 @@ class TouchArea(QtWidgets.QGraphicsItem):
             print('calling replace_node_with_merged_node')
 
         ctrl.forest.replace_node_with_merged_node(replaced, dropped_node, edge=edge, merge_to_left=self._align_left,
-                                        merger_node_pos=self.start_point)
+                                                  merger_node_pos=self.start_point)
 
 
     def click(self, event=None):
         """
         :type event: QMouseEvent
-        :type forest: Forest
-        Creates a new node, edge to host depends on which merge area was clicked
          """
         self._dragging = False
         if self._drag_hint:
@@ -309,7 +308,8 @@ class TouchArea(QtWidgets.QGraphicsItem):
             node.open_embed()
         else:
             ctrl.forest.replace_node_with_merged_empty_node(node=node, edge=edge, merge_to_left=self._align_left,
-                                              new_node_pos=self.end_point, merger_node_pos=self.start_point)
+                                                            new_node_pos=self.end_point,
+                                                            merger_node_pos=self.start_point)
             ctrl.deselect_objects()
         return True
 
@@ -334,6 +334,10 @@ class TouchArea(QtWidgets.QGraphicsItem):
 
 
     def dragged_over_by(self, dragged):
+        """
+
+        :param dragged:
+        """
         if not self._hovering and self.accepts_drops(dragged):
             if ctrl.latest_hover and not ctrl.latest_hover is self:
                 ctrl.latest_hover.hovering = False
@@ -342,11 +346,21 @@ class TouchArea(QtWidgets.QGraphicsItem):
 
 
     def accepts_drops(self, dragged):
+        """
+
+        :param dragged:
+        :return:
+        """
         return self.calculate_if_can_merge(dragged, None, None)
 
 
     @property
     def hovering(self):
+        """
+
+
+        :return:
+        """
         return self._hovering
 
     @hovering.setter
@@ -411,13 +425,17 @@ class TouchArea(QtWidgets.QGraphicsItem):
                 painter.setBrush(ctrl.cm.paper())
                 painter.drawEllipse(self.end_point[0] - end_spot_size + 1, self.end_point[1] - end_spot_size + 1,
                                     2 * end_spot_size, 2 * end_spot_size)
-                painter.drawLine(self.end_point[0] - 1, self.end_point[1] + 1, self.end_point[0] + 3, self.end_point[1] + 1)
-                painter.drawLine(self.end_point[0] + 1, self.end_point[1] - 1, self.end_point[0] + 1, self.end_point[1] + 3)
+                painter.drawLine(self.end_point[0] - 1, self.end_point[1] + 1, self.end_point[0] + 3,
+                                 self.end_point[1] + 1)
+                painter.drawLine(self.end_point[0] + 1, self.end_point[1] - 1, self.end_point[0] + 1,
+                                 self.end_point[1] + 3)
         else:
             painter.setBrush(ctrl.cm.paper())
             painter.drawEllipse(self.end_point[0] - end_spot_size + 1, self.end_point[1] - end_spot_size + 1,
                                 2 * end_spot_size, 2 * end_spot_size)
             if self._hovering:
-                painter.drawLine(self.end_point[0] - 1, self.end_point[1] + 1, self.end_point[0] + 3, self.end_point[1] + 1)
-                painter.drawLine(self.end_point[0] + 1, self.end_point[1] - 1, self.end_point[0] + 1, self.end_point[1] + 3)
+                painter.drawLine(self.end_point[0] - 1, self.end_point[1] + 1, self.end_point[0] + 3,
+                                 self.end_point[1] + 1)
+                painter.drawLine(self.end_point[0] + 1, self.end_point[1] - 1, self.end_point[0] + 1,
+                                 self.end_point[1] + 3)
 

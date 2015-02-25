@@ -204,16 +204,15 @@ class LinearizedStaticTree(BalancedTree):
             new_grid = _build_grid(node=root_node)
             merged_grid = _merge_grids(left_grid=merged_grid, right_grid=new_grid, extra_padding=2)
 
-        tree_width = merged_grid._width * edge_width
-        tree_height = merged_grid._height * edge_height
+        tree_width = merged_grid.width * edge_width
+        tree_height = merged_grid.height * edge_height
         offset_x = tree_width / -2
         offset_y = tree_height / -2
-        height_reduction = (edge_height / 3.0) / (merged_grid._height or 1)
+        height_reduction = (edge_height / 3.0) / (merged_grid.height or 1)
         height_now = offset_y
 
         # Actual drawing: set nodes to their places in scene
         merged_grid.ascii_dump()
-
 
         for y, row in enumerate(merged_grid):
             height_now += edge_height
@@ -232,7 +231,8 @@ class LinearizedStaticTree(BalancedTree):
                 if y in self.grid_lines_y:
                     self.grid_lines_y[y].setLine(offset_x, height_now, offset_x + tree_width, height_now)
                 else:
-                    self.grid_lines_y[y] = self.forest.scene.addLine(offset_x, height_now, offset_x + tree_width, height_now)
+                    self.grid_lines_y[y] = self.forest.scene.addLine(offset_x, height_now, offset_x + tree_width,
+                                                                     height_now)
                 height_now += edge_height
                 edge_height -= height_reduction
             max_height = height_now

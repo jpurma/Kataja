@@ -23,8 +23,6 @@
 # ############################################################################
 
 
-import pickle
-
 from kataja.singletons import ctrl
 from kataja.Forest import Forest
 from kataja.Saved import Savable
@@ -32,6 +30,7 @@ from kataja.Saved import Savable
 
 class ForestKeeper(Savable):
     """ Container and loader for Forest objects """
+
     def __init__(self, treelist=None, file_name=None):
         """
 
@@ -104,9 +103,6 @@ class ForestKeeper(Savable):
         return self.current_index, self.forest
 
 
-
-
-
     def create_forests_from_file(self, filename):
         """
 
@@ -143,7 +139,7 @@ class ForestKeeper(Savable):
                     forest.add_comment(line[1:])
                 else:
                     pass
-            elif len(parts) > 1 and not line.startswith('['): # Definition line
+            elif len(parts) > 1 and not line.startswith('['):  # Definition line
                 if not forest:
                     forest = Forest()
                     ctrl.main.set_forest(forest)
@@ -152,7 +148,7 @@ class ForestKeeper(Savable):
                 forest.parser.add_definition(word, values)
                 # if key== '\gll':
                 # forest.setGloss(line)
-            elif line.startswith("'"): # Gloss text
+            elif line.startswith("'"):  # Gloss text
                 if forest:
                     if line.endswith("'"):
                         line = line[:-1]

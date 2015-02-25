@@ -25,18 +25,17 @@
 from PyQt5 import QtCore, QtWidgets, QtGui
 
 # class TwoColorIcon(QtGui.QIcon):
-#     """ Icons that change their color according to widget where they are """
+# """ Icons that change their color according to widget where they are """
 #
-#     def paint(self, painter, **kwargs):
-#         """
+# def paint(self, painter, **kwargs):
+# """
 #
-#         :param painter:
-#         :param kwargs:
-#         :return:
-#         """
-#         print('using twocoloricon painter')
-#         return QtGui.QIcon.paint(self, painter, kwargs)
-import kataja.debug as debug
+# :param painter:
+# :param kwargs:
+# :return:
+# """
+# print('using twocoloricon painter')
+# return QtGui.QIcon.paint(self, painter, kwargs)
 from kataja.singletons import ctrl, qt_prefs
 import kataja.globals as g
 from kataja.ui.OverlayButton import OverlayButton
@@ -56,7 +55,7 @@ class PanelTitle(QtWidgets.QWidget):
         :return:
         """
         QtWidgets.QWidget.__init__(self, parent=panel)
-        #self.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum))
+        # self.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum))
         self.panel = panel
         self.preferred_size = QtCore.QSize(220, 22)
         self.setBackgroundRole(QtGui.QPalette.Base)
@@ -70,10 +69,12 @@ class PanelTitle(QtWidgets.QWidget):
         self.panel.ui_manager.connect_element_to_action(close_button, panel.get_visibility_action())
         layout.addWidget(close_button)
         self.setMinimumSize(self.preferred_size)
-        self.fold_button = OverlayButton(qt_prefs.fold_icon, None, 'panel', text='Minimize this panel', parent=self, size=12)
+        self.fold_button = OverlayButton(qt_prefs.fold_icon, None, 'panel', text='Minimize this panel', parent=self,
+                                         size=12)
         self.fold_button.setMaximumWidth(16)
         self.panel.ui_manager.connect_element_to_action(self.fold_button, panel.get_fold_action())
-        self.pin_button = OverlayButton(qt_prefs.pin_drop_icon, None, 'panel', text='Dock this panell', parent=self, size=12)
+        self.pin_button = OverlayButton(qt_prefs.pin_drop_icon, None, 'panel', text='Dock this panell', parent=self,
+                                        size=12)
         self.pin_button.setMaximumWidth(16)
         self.panel.ui_manager.connect_element_to_action(self.pin_button, panel.get_pin_action())
         layout.addWidget(self.pin_button)
@@ -113,7 +114,7 @@ class UIPanel(QtWidgets.QDockWidget):
         :param parent:
         """
         QtWidgets.QDockWidget.__init__(self, name, parent=parent)
-        #self.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed))
+        # self.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed))
         self.folded = folded
         self.name = name
         self._id = key
@@ -142,6 +143,7 @@ class UIPanel(QtWidgets.QDockWidget):
 
     def finish_init(self):
         self.set_folded(self.folded)
+
     # def dockLocationChanged(self, area):
     # print 'UIPanel %s docked: %s' % (self, area)
 
@@ -166,7 +168,7 @@ class UIPanel(QtWidgets.QDockWidget):
         else:
             self.widget().show()
         self.resize(self.sizeHint())
-        #self.setFixedSize(self.sizeHint())
+        # self.setFixedSize(self.sizeHint())
         self.updateGeometry()
 
     def pin_to_dock(self):
@@ -243,7 +245,6 @@ class UIPanel(QtWidgets.QDockWidget):
             element.setSuffix(' (?)')
 
 
-
     @staticmethod
     def remove_ambiguous_marker(element):
         if isinstance(element, QtWidgets.QComboBox):
@@ -254,34 +255,48 @@ class UIPanel(QtWidgets.QDockWidget):
             element.setSuffix('')
 
 
-
-
     def minimumSizeHint(self):
         if self.folded:
             return self.titleBarWidget().sizeHint()
         else:
             ws = self.widget().sizeHint()
             ts = self.titleBarWidget().sizeHint()
-            return QtCore.QSize(max((ws.width(), ts.width())), ws.height()+ts.height())
+            return QtCore.QSize(max((ws.width(), ts.width())), ws.height() + ts.height())
 
     def sizeHint(self):
+        """
+
+
+        :return:
+        """
         if self.folded:
             return self.titleBarWidget().sizeHint()
         elif self.widget():
             ws = self.widget().sizeHint()
             ts = self.titleBarWidget().sizeHint()
-            return QtCore.QSize(max((ws.width(), ts.width())), ws.height()+ts.height())
+            return QtCore.QSize(max((ws.width(), ts.width())), ws.height() + ts.height())
         else:
             return QtCore.QSize(100, 100)
 
 
     def initial_position(self):
-        return QtCore.QPoint(ctrl.main.x() / ctrl.main.devicePixelRatio() + ctrl.main.width(), ctrl.main.y() / ctrl.main.devicePixelRatio())
+        """
+
+
+        :return:
+        """
+        return QtCore.QPoint(ctrl.main.x() / ctrl.main.devicePixelRatio() + ctrl.main.width(),
+                             ctrl.main.y() / ctrl.main.devicePixelRatio())
 
     def showEvent(self, QShowEvent):
+        """
+
+        :param QShowEvent:
+        """
         if self.isFloating():
             self.move(self.initial_position())
         QtWidgets.QDockWidget.showEvent(self, QShowEvent)
+
 
 NONE = 0
 FLAG = 1

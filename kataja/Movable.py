@@ -55,7 +55,7 @@ class Movable(Savable):
         self.z = 0
         self.saved.computed_position = (0, 0, 0)
         self.saved.adjustment = None
-        self.saved.visible = True # avoid isVisible for detecting if something is folded away
+        self.saved.visible = True  # avoid isVisible for detecting if something is folded away
         self.saved.bind_x = False
         self.saved.bind_y = False
         self.saved.bind_z = False
@@ -63,8 +63,9 @@ class Movable(Savable):
 
         self._x_step, self._y_step, self._z_step = 0, 0, 0
         self._current_position = ((random.random() * 150) - 75, (random.random() * 150) - 75, 0)
-        self.final_position = (0, 0, 0) # Return computed final position, which is computed position based on visualization algorithm
-        #+ user-made adjustments
+        self.final_position = (
+            0, 0, 0)  # Return computed final position, which is computed position based on visualization algorithm
+        # + user-made adjustments
         self._move_counter = 0
         self._use_easing = True
         self._fade_in_counter = 0
@@ -327,7 +328,7 @@ class Movable(Savable):
         x, y, z = self.final_position
         sx, sy, sz = self.current_position
         # print 'item %s starts moving from (%s %s %s) to (%s %s %s)' % (self, sx,sy,sz,x,y,z)
-        if self._move_counter: # don't force animation to start again, redirect it instead
+        if self._move_counter:  # don't force animation to start again, redirect it instead
             self._use_easing = False
         else:
             self._use_easing = True
@@ -381,13 +382,13 @@ class Movable(Savable):
         print('movable drop to')
         # closest_ma = None
         # for ma in ctrl.main.ui_manager.touch_areas:  # @UndefinedVariable
-        #     if ma.sceneBoundingRect().contains(x, y):
-        #         closest_ma = ma
-        #         break
+        # if ma.sceneBoundingRect().contains(x, y):
+        # closest_ma = ma
+        # break
         # if closest_ma:
-        #     closest_ma.drop(self)
-        #     print('dropped to:', closest_ma)
-        #     # ctrl.scene.fit_to_window()
+        # closest_ma.drop(self)
+        # print('dropped to:', closest_ma)
+        # # ctrl.scene.fit_to_window()
 
     ### Existence ############################################################
 
@@ -419,6 +420,6 @@ class Movable(Savable):
         """
         return self.locked_to_position
 
-    #### Restoring after load / undo #########################################
+        #### Restoring after load / undo #########################################
 
 

@@ -23,6 +23,11 @@ manual_additions = {
 }
 
 def getText(nodelist):
+    """
+
+    :param nodelist:
+    :return:
+    """
     rc = []
     for node in nodelist:
         if node.nodeType == node.TEXT_NODE:
@@ -30,6 +35,10 @@ def getText(nodelist):
     return ''.join(rc)
 
 def find_characters(dom):
+    """
+
+    :param dom:
+    """
     b = 0
     c = 0
     d = 0
@@ -56,6 +65,12 @@ def find_characters(dom):
     print("Found %s characters, where %s latex command and %s had slash-command" % (d, c, b))
 
 def choose_category(key, description):
+    """
+
+    :param key:
+    :param description:
+    :return:
+    """
     if 'greek' in description:
         return 'greek'
     elif description.startswith('latin'):

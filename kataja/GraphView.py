@@ -44,7 +44,7 @@ class GraphView(QtWidgets.QGraphicsView):
         self.main = main
         self.graph_scene = graph_scene
         self.setScene(graph_scene)
-        #self.setCacheMode(QtWidgets.QGraphicsView.CacheBackground)
+        # self.setCacheMode(QtWidgets.QGraphicsView.CacheBackground)
         self.setRenderHint(QtGui.QPainter.Antialiasing)
         self.setRenderHint(QtGui.QPainter.SmoothPixmapTransform)
         # self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorUnderMouse)
@@ -136,10 +136,8 @@ class GraphView(QtWidgets.QGraphicsView):
         QtWidgets.QGraphicsView.mouseMoveEvent(self, event)
 
 
-
     def timerEvent(self, event):
         self.zoom_timer.stop()
-
 
 
     def wheelEvent(self, event):
@@ -162,11 +160,11 @@ class GraphView(QtWidgets.QGraphicsView):
 
         # QtWidgets.QGraphicsView.wheelEvent(self, event)
 
-    #     def event(self, ev):
-    #         if ev.type() == QtCore.QEvent.Gesture:
-    #             print ev, ev.type()
-    #         elif ev.type() == QtCore.QEvent.Wheel:
-    #             print 'wheel!'
+    # def event(self, ev):
+    # if ev.type() == QtCore.QEvent.Gesture:
+    # print ev, ev.type()
+    # elif ev.type() == QtCore.QEvent.Wheel:
+    # print 'wheel!'
     #             print ev.pixelDelta().y()
     #             wel = QtGui.QWheelEvent(ev) #.QWheelEvent(ev)
     #             print wel.angleDelta().y()
@@ -240,7 +238,6 @@ class GraphView(QtWidgets.QGraphicsView):
             QtWidgets.QGraphicsView.dropEvent(self, event)
 
 
-
     def dragMoveEvent(self, event):
         """
 
@@ -255,5 +252,5 @@ class GraphView(QtWidgets.QGraphicsView):
             QtWidgets.QGraphicsView.dragMoveEvent(self, event)
 
 
-        # def mousePressEvent(self, event):
-        #    QtGui.QGraphicsView.mousePressEvent(self, event)
+            # def mousePressEvent(self, event):
+            #    QtGui.QGraphicsView.mousePressEvent(self, event)

@@ -23,6 +23,7 @@
 # ############################################################################
 
 from PyQt5 import QtWidgets
+
 from kataja.LabelDocument import LabelDocument
 from kataja.parser import INodeToLabelDocument
 
@@ -53,6 +54,11 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.setPos(brect.width() / -2.0, (self.total_height / -2.0) + self.y_offset)
 
     def is_empty(self):
+        """
+
+
+        :return:
+        """
         return self._host.as_inode
 
     def paint(self, painter, option, widget):

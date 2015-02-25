@@ -23,10 +23,11 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
+import pprint
+
 from kataja.debug import undo
 from kataja.utils import time_me
 from kataja.singletons import ctrl
-import pprint
 
 
 class UndoManager:
@@ -97,7 +98,7 @@ class UndoManager:
             undo('diff: ', str(diff))
             self._stack.append(diff)
             self._msg_stack.append(msg)
-            #self.dump_dict_to_file(diff)
+            # self.dump_dict_to_file(diff)
 
         self._current = len(self._stack)
         saved_objects['stack_index'] = self._current
@@ -254,6 +255,11 @@ class UndoManager:
 
     def dump_dict_to_file(self, dict, filename='undo_dump'):
 
+        """
+
+        :param dict:
+        :param filename:
+        """
         f = open(filename, 'w')
         pp = pprint.PrettyPrinter(indent=4, stream=f)
         pp.pprint(dict)

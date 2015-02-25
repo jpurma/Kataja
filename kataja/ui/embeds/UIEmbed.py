@@ -1,13 +1,13 @@
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtWidgets, QtCore
+
 from kataja.singletons import ctrl
 from kataja.ui.panels.SymbolPanel import open_symbol_data
+
 
 __author__ = 'purma'
 
 
-
 class EmbeddedLineEdit(QtWidgets.QLineEdit):
-
     def __init__(self, parent, tip='', font=None):
         QtWidgets.QLineEdit.__init__(self, parent)
         if tip:
@@ -124,22 +124,22 @@ class UIEmbed(QtWidgets.QWidget):
                     magnet = QtCore.QPoint(w, h), 8
                 else:
                     magnet = QtCore.QPoint(w, 0), 3
-            elif y + (h/2) > vh:
-                if x + (w/2) > vw:
+            elif y + (h / 2) > vh:
+                if x + (w / 2) > vw:
                     magnet = QtCore.QPoint(w, h), 8
-                elif x - (w/2) < 0:
+                elif x - (w / 2) < 0:
                     magnet = QtCore.QPoint(0, h), 6
                 else:
-                    magnet = QtCore.QPoint(w/2, h), 7
-            elif y - (h/2) < 0:
-                if x + (w/2) > vw:
+                    magnet = QtCore.QPoint(w / 2, h), 7
+            elif y - (h / 2) < 0:
+                if x + (w / 2) > vw:
                     magnet = QtCore.QPoint(w, 0), 3
-                elif x - (w/2) < 0:
+                elif x - (w / 2) < 0:
                     magnet = QtCore.QPoint(0, 0), 1
                 else:
-                    magnet = QtCore.QPoint(w/2, 0), 2
+                    magnet = QtCore.QPoint(w / 2, 0), 2
             else:
-                magnet = QtCore.QPoint(0, h/2), 4
+                magnet = QtCore.QPoint(0, h / 2), 4
             self._magnet = magnet
             self.move(view_pos - magnet[0])
             self.updateGeometry()

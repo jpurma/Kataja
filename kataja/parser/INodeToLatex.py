@@ -2,13 +2,15 @@ from kataja.parser.INodes import ICommandNode, ITextNode
 
 __author__ = 'purma'
 
-#todo: special characters, escapes and one character commands
+# todo: special characters, escapes and one character commands
+
 
 def parse_inode_for_field(inode):
     """ Turn INodes into LaTeX strings. This method is limited to handle only ITextNodes and ICommandNodes.
     :param inode:
     :return:
     """
+
     def parse(jnode):
         r = []
         if isinstance(jnode, ICommandNode):
@@ -29,6 +31,7 @@ def parse_inode_for_field(inode):
 
     s = parse(inode)
     return s
+
 
 def parse_inode(inode):
     """ General INode parser, parses IConstituentNodes all the way to LaTeX QTrees

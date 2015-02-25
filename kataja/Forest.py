@@ -45,7 +45,7 @@ from kataja.parser.INodeToKatajaConstituent import INodeToKatajaConstituent
 from kataja.Presentation import TextArea, Image
 from kataja.Edge import Edge
 from kataja.UndoManager import UndoManager
-from kataja.utils import to_tuple, caller, time_me
+from kataja.utils import to_tuple
 from kataja.FeatureNode import FeatureNode
 from kataja.Saved import Savable
 import kataja.globals as g
@@ -75,7 +75,7 @@ class Forest(Savable):
         Savable.__init__(self)
         self.nodes_by_uid = {}
         self.main = ctrl.main
-        self.main.forest = self # assign self to be the active forest while creating the managers.
+        self.main.forest = self  # assign self to be the active forest while creating the managers.
         self.visualization = None  # BalancedTree()
         self.gloss = None
         self.bracket_manager = BracketManager(self)
@@ -100,10 +100,10 @@ class Forest(Savable):
     def after_init(self):
         self.update_visualization()
 
-        #self.bracket_manager.rebuild_brackets()
-        #for node in self.nodes.values():
-        #    if node.syntactic_object:
-        #        self.nodes_by_uid[node.syntactic_object.save_key] = node
+        # self.bracket_manager.rebuild_brackets()
+        # for node in self.nodes.values():
+        # if node.syntactic_object:
+        # self.nodes_by_uid[node.syntactic_object.save_key] = node
 
     @property
     def roots(self):
@@ -227,7 +227,7 @@ class Forest(Savable):
         return self.main.graph_scene
 
 
-    #@time_me
+    # @time_me
     def list_nodes(self, first):
         """
         Do left-first iteration through all nodes. Can become quite large if there is lots of multidomination.
@@ -235,6 +235,7 @@ class Forest(Savable):
         :return: list of nodes
         """
         res = []
+
         def _iterate(node):
             res.append(node)
             l = node.left()
@@ -247,7 +248,7 @@ class Forest(Savable):
         _iterate(first)
         return res
 
-    #@time_me
+    # @time_me
     def list_nodes_once(self, first, only_visible=True):
         """
         Do left-first iteration through all nodes and return a list where only first instance of each node is present.
@@ -255,6 +256,7 @@ class Forest(Savable):
         :return: list of nodes
         """
         res = []
+
         def _iterate(node):
             if not node in res:
                 res.append(node)
@@ -264,6 +266,7 @@ class Forest(Savable):
                 r = node.right(only_visible=only_visible)
                 if r:
                     _iterate(r)
+
         _iterate(first)
         return res
 
@@ -343,6 +346,7 @@ class Forest(Savable):
             as close to original sentences as possible. If root is given, return linearization of only that.
         :param root:
         """
+
         def _tree_as_text(root_node, gap):
             """ Cheapo linearization algorithm for Node structures."""
             l = []
@@ -359,6 +363,11 @@ class Forest(Savable):
             return '/ '.join(roots)
 
     def syntax_trees_as_string(self):
+        """
+
+
+        :return:
+        """
         s = []
         for root in self.roots:
             s.append(root.syntactic_object.print_tree())
@@ -369,9 +378,9 @@ class Forest(Savable):
         :param item:
         """
         # if isinstance(item, ConstituentNode):
-        #    self.nodes[item.key] = item
+        # self.nodes[item.key] = item
         # elif isinstance(item, FeatureNode):
-        #    self.features[item.key] = item
+        # self.features[item.key] = item
         if isinstance(item, Node):
             self.nodes[item.save_key] = item
             if item.syntactic_object:
@@ -407,6 +416,10 @@ class Forest(Savable):
                 scene.removeItem(item)
 
     def burn_forest(self):
+        """
+
+
+        """
         self.gloss = None
         self.nodes = {}
         self.edges = {}
@@ -628,19 +641,24 @@ class Forest(Savable):
             raise KeyError
 
         # for key, feature in C.get_features().items():
-        #    self.create_feature_node(node, feature)
+        # self.create_feature_node(node, feature)
         if self.visualization:
             self.visualization.reset_node(node)
         self.update_root_status(node)
         return node
 
     def create_placeholder_node(self, pos):
+        """
+
+        :param pos:
+        :return:
+        """
         node = ConstituentNode(constituent=None)
         node.set_original_position(pos)
         node.after_init()
         self.add_to_scene(node)
         # for key, feature in C.get_features().items():
-        #    self.create_feature_node(node, feature)
+        # self.create_feature_node(node, feature)
         if self.visualization:
             self.visualization.reset_node(node)
         return node
@@ -656,7 +674,7 @@ class Forest(Savable):
         FN = FeatureNode(syntactic_feature)
         FN.after_init()
         FN.compute_start_position(host)
-        self._connect_node(host, child=FN, edge_type=FeatureNode.default_edge_type)
+        self.connect_node(host, child=FN, edge_type=FeatureNode.default_edge_type)
         self.add_to_scene(FN)
         FN.update_visibility()
         return FN
@@ -670,14 +688,14 @@ class Forest(Savable):
         :param show_label:
         :return:
         """
-        AN = AttributeNode(host, attribute_id, attribute_label, show_label=show_label, forest=self)
-        self._connect_node(host, child=AN, edge_type=AttributeNode.default_edge_type)
+        AN = AttributeNode(host, attribute_id, attribute_label, show_label=show_label)
+        self.connect_node(host, child=AN, edge_type=AttributeNode.default_edge_type)
         self.add_to_scene(AN)
         AN.update_visibility()
         return AN
 
     def create_edge(self, start=None, end=None, edge_type='', direction=''):
-        #print 'creating edge ', start, end, edge_type
+        # print 'creating edge ', start, end, edge_type
         """
 
         :param start:
@@ -709,7 +727,7 @@ class Forest(Savable):
         :param host_node:
         """
         gn = GlossNode(host_node)
-        self._connect_node(child=gn, parent=host_node, edge_type=GlossNode.default_edge_type)
+        self.connect_node(child=gn, parent=host_node, edge_type=GlossNode.default_edge_type)
         self.add_to_scene(gn)
         ee = ctrl.ui.get_constituent_edit_embed()
         if ee and ee.isVisible():
@@ -739,8 +757,8 @@ class Forest(Savable):
         """
         node = self.parser.parse_into_forest(text)
         return node
-        #self.add_to_scene(root_node)
-        #self.update_root_status(root_node)
+        # self.add_to_scene(root_node)
+        # self.update_root_status(root_node)
 
     # @time_me
     def create_tree_from_string(self, text, replace=False):
@@ -774,10 +792,10 @@ class Forest(Savable):
         ForestSyntax.set_constituent_index(constituent, index)
         trace = self.create_node_from_constituent(constituent, silent=True)
         trace.is_trace = True
-        #if new_chain:
-        #    self.chain_manager.rebuild_chains()
-        #if self.settings.uses_multidomination:
-        #    trace.hide()
+        # if new_chain:
+        # self.chain_manager.rebuild_chains()
+        # if self.settings.uses_multidomination:
+        # trace.hide()
         return trace
 
     def create_empty_node(self, pos, give_label=True):
@@ -886,6 +904,10 @@ class Forest(Savable):
 
 
     def delete_item(self, item):
+        """
+
+        :param item:
+        """
         if isinstance(item, Edge):
             start = item.start
             self.delete_edge(item)
@@ -894,25 +916,25 @@ class Forest(Savable):
         elif isinstance(item, Node):
             self.delete_node(item)
         # def remove_stored(self, item):
-        #     """ Remove item from various storages """
-        #     if isinstance(item, Node):
-        #         if item.key in self.nodes:
-        #             del self.nodes[item.key]
-        #     elif isinstance(item, Edge):
-        #         if item.key in self.edges:
-        #             del self.edges[item.key]
-        #     elif isinstance(item, TextArea):
-        #         if item.key in self.others:
-        #             del self.others[item.key]
-        #     elif isinstance(item, Bracket):
-        #         if item.key in self.brackets:
-        #             del self.brackets[item.key]
-        #     else:
-        #         key = getattr(item, 'key', '')
-        #         if key and key in self.others:
-        #             del self.others[item.key]
-        #         else:
-        #             print 'F trying to remove broken item:', item.__class__.__name__
+        # """ Remove item from various storages """
+        # if isinstance(item, Node):
+        # if item.key in self.nodes:
+        # del self.nodes[item.key]
+        # elif isinstance(item, Edge):
+        # if item.key in self.edges:
+        # del self.edges[item.key]
+        # elif isinstance(item, TextArea):
+        # if item.key in self.others:
+        # del self.others[item.key]
+        # elif isinstance(item, Bracket):
+        # if item.key in self.brackets:
+        # del self.brackets[item.key]
+        # else:
+        # key = getattr(item, 'key', '')
+        # if key and key in self.others:
+        # del self.others[item.key]
+        # else:
+        # print 'F trying to remove broken item:', item.__class__.__name__
         """
 
         :param item:
@@ -925,6 +947,11 @@ class Forest(Savable):
     # start and end points separately
 
     def set_edge_start(self, edge, new_start):
+        """
+
+        :param edge:
+        :param new_start:
+        """
         if edge.start:
             ForestSyntax.disconnect_edge(edge)
             edge.start.edges_down.remove(edge)
@@ -934,6 +961,11 @@ class Forest(Savable):
         new_start.edges_down.append(edge)
 
     def set_edge_end(self, edge, new_end):
+        """
+
+        :param edge:
+        :param new_end:
+        """
         if edge.end:
             ForestSyntax.disconnect_edge(edge)
             edge.end.edges_up.remove(edge)
@@ -946,6 +978,12 @@ class Forest(Savable):
         self.update_root_status(edge.start)
 
     def set_edge_ends(self, edge, new_start, new_end):
+        """
+
+        :param edge:
+        :param new_start:
+        :param new_end:
+        """
         if edge.start:
             ForestSyntax.disconnect_edge(edge)
             edge.start.edges_down.remove(edge)
@@ -977,6 +1015,10 @@ class Forest(Savable):
         edge.update_shape()
 
     def disconnect_edge_end(self, edge):
+        """
+
+        :param edge:
+        """
         if edge.end:
             ForestSyntax.disconnect_edge(edge)
             edge.end.edges_up.remove(edge)
@@ -1011,7 +1053,7 @@ class Forest(Savable):
                 # we are missing the stub to left here
                 print("Creating placeholder to LEFT")
                 placeholder = self.create_placeholder_node(node.current_position)
-                self._connect_node(node, placeholder, direction=LEFT)
+                self.connect_node(node, placeholder, direction=LEFT)
         elif not right:
             if left.is_placeholder():
                 left_edge = node.get_edge_to(left)
@@ -1021,7 +1063,7 @@ class Forest(Savable):
                 # we are missing the stub to right here
                 print("Creating placeholder to RIGHT")
                 placeholder = self.create_placeholder_node(node.current_position)
-                self._connect_node(node, placeholder, direction=RIGHT)
+                self.connect_node(node, placeholder, direction=RIGHT)
         elif left.is_placeholder() and right.is_placeholder():
             # both are placeholders, so this node doesn't need to have children at all. remove stubs.
             left_edge = node.get_edge_to(left)
@@ -1033,20 +1075,34 @@ class Forest(Savable):
 
 
     def add_placeholder_to_edge_start(self, edge):
-        assert(not edge.start)
+        """
+
+        :param edge:
+        """
+        assert (not edge.start)
         pos = edge.start_point
         placeholder = self.create_placeholder_node(pos)
         self.set_edge_start(edge, placeholder)
 
     def add_placeholder_to_edge_end(self, edge):
-        assert(not edge.end)
+        """
+
+        :param edge:
+        """
+        assert (not edge.end)
         pos = edge.end_point
         placeholder = self.create_placeholder_node(pos)
         self.set_edge_end(edge, placeholder)
 
     def adjust_edge_visibility_for_node(self, node, visible):
+        """
+
+        :param node:
+        :param visible:
+        """
         if isinstance(node, ConstituentNode):
-            constituent_edges_visible = visible and self.visualization.show_edges_for(node) and self.settings.shows_constituent_edges and not node.triangle
+            constituent_edges_visible = visible and self.visualization.show_edges_for(
+                node) and self.settings.shows_constituent_edges and not node.triangle
             for edge in node.edges_down:
                 v = edge.visible
                 if edge.edge_type == g.CONSTITUENT_EDGE:
@@ -1055,7 +1111,6 @@ class Forest(Savable):
                     edge.visible = visible
                 if v and not edge.visible:
                     ctrl.ui.remove_touch_areas_for(edge)
-
 
 
     # ## order markers are special nodes added to nodes to signal the order when the node was merged/added to forest
@@ -1190,24 +1245,24 @@ class Forest(Savable):
 
         # print 'f.settings.use_multidomination:', f.settings.use_multidomination
         # if not f.settings.use_multidomination:
-        #     new_trace = f.create_trace_for(dropped_node)
-        #     new_trace.set_original_position(dropped_node.current_position)
-        #     chain = f.get_chain(dropped_node.get_index())
-        #     traces_first = f.traces_go_first()
-        #     if traces_first:
-        #         if f.is_higher_in_tree(self.host, dropped_node):
-        #             new_node = new_trace
-        #         else:
-        #             new_node = dropped_node
-        #             dropped_node.replace_node(new_trace)
-        #     else:
-        #         if f.is_higher_in_tree(self.host, dropped_node):
-        #             new_node = dropped_node
-        #             dropped_node.replace_node(new_trace)
-        #         else:
-        #             new_node = new_trace
+        # new_trace = f.create_trace_for(dropped_node)
+        # new_trace.set_original_position(dropped_node.current_position)
+        # chain = f.get_chain(dropped_node.get_index())
+        # traces_first = f.traces_go_first()
+        # if traces_first:
+        # if f.is_higher_in_tree(self.host, dropped_node):
+        # new_node = new_trace
         # else:
-        #     new_node = dropped_node
+        # new_node = dropped_node
+        # dropped_node.replace_node(new_trace)
+        # else:
+        # if f.is_higher_in_tree(self.host, dropped_node):
+        # new_node = dropped_node
+        # dropped_node.replace_node(new_trace)
+        # else:
+        # new_node = new_trace
+        # else:
+        # new_node = dropped_node
         # top_node, left_node, right_node = self.merge_to_host(new_node)
         # ctrl.on_cancel_delete = []
         # left_node._hovering = False
@@ -1287,10 +1342,10 @@ class Forest(Savable):
                             self._disconnect_node(node, edge.start, edge.edge_type)
                             if not start.left():
                                 stub = self.create_empty_node(pos=to_tuple(start.pos()))
-                                self._connect_node(start, child=stub, direction='left')
+                                self.connect_node(start, child=stub, direction='left')
                             elif not start.right():
                                 stub = self.create_empty_node(pos=to_tuple(start.pos()))
-                                self._connect_node(start, child=stub, direction='right')
+                                self.connect_node(start, child=stub, direction='right')
                     self.replace_node(next_node, node)
                     self.delete_node(next_node)
                     if stub:
@@ -1308,10 +1363,10 @@ class Forest(Savable):
             elif prefs.default_binary_branching:
                 if not start.left():
                     stub = self.create_empty_node(pos=edge.start_point)
-                    self._connect_node(start, child=stub, direction='left')
+                    self.connect_node(start, child=stub, direction='left')
                 elif not start.right():
                     stub = self.create_empty_node(pos=edge.start_point)
-                    self._connect_node(start, child=stub, direction='right')
+                    self.connect_node(start, child=stub, direction='right')
         for edge in list(node.edges_down):
             end = edge.end
             self._disconnect_node(node, edge.end, edge.edge_type)
@@ -1325,7 +1380,8 @@ class Forest(Savable):
         # add things to undo stack
         """
 
-        :param R:
+
+        :param edge:
         :return:
         """
         self.undo_manager.record('delete edge')
@@ -1336,11 +1392,11 @@ class Forest(Savable):
                 self.delete_node(edge.start)
             elif prefs.default_binary_branching:
                 if not edge.start.left():
-                    stub = self.create_empty_node(pos=to_tuple(edge.start.pos()), root=False)
-                    edge.start._connect_node(child=stub, direction='left')
+                    stub = self.create_empty_node(pos=to_tuple(edge.start.pos()))
+                    edge.start.connect_node(child=stub, direction='left')
                 elif not edge.start.right():
-                    stub = self.create_empty_node(pos=to_tuple(edge.start.pos()), root=False)
-                    edge.start._connect_node(child=stub, direction='right')
+                    stub = self.create_empty_node(pos=to_tuple(edge.start.pos()))
+                    edge.start.connect_node(child=stub, direction='right')
         if edge.end:
             edge.end.edges_up.remove(edge)
             if not edge.end.edges_up:
@@ -1362,14 +1418,14 @@ class Forest(Savable):
     # by forest's higher level methods.
     #
 
-    def _connect_node(self, parent=None, child=None, edge_type='', direction=''):
+    def connect_node(self, parent=None, child=None, edge_type='', direction=''):
         """ This is for connecting nodes with a certain edge. Calling this once will create the necessary links for both partners.
             Sanity checks:
             - Immediate circular links (child becomes immediate parent of its immediate parent) are not allowed.
             - If items are already linked with this edge type, error is raised.
             - Cannot link to itself.
           """
-        forest('_connect_node %s %s %s %s' % (parent, child, edge_type, direction))
+        forest('connect_node %s %s %s %s' % (parent, child, edge_type, direction))
 
         if parent == child:
             raise ForestError('Connecting to self')
@@ -1453,7 +1509,7 @@ class Forest(Savable):
                 if only_for_parent and parent != only_for_parent:
                     continue
                 self._disconnect_node(parent, old_node, edge.edge_type)
-                self._connect_node(parent, child=new_node, edge_type=edge.edge_type, direction=align)
+                self.connect_node(parent, child=new_node, edge_type=edge.edge_type, direction=align)
 
         if replace_children and not only_for_parent:
             for edge in list(old_node.edges_down):
@@ -1461,10 +1517,10 @@ class Forest(Savable):
                 if child:
                     align = edge.align
                     self._disconnect_node(old_node, child, edge.edge_type)
-                    self._connect_node(new_node, child, edge_type=edge.edge_type, direction=align)
+                    self.connect_node(new_node, child, edge_type=edge.edge_type, direction=align)
 
         if (not old_node.edges_up) and can_delete:
-            #old_node.update_visibility(active=False, fade=True)
+            # old_node.update_visibility(active=False, fade=True)
             self.delete_node(old_node)
 
 
@@ -1482,12 +1538,18 @@ class Forest(Savable):
         :param new_node_pos:
         :param merger_node_pos:
         """
-        forest('replace_node_with_merged_empty_node %s %s %s %s %s' % (node, edge, merge_to_left, new_node_pos, merger_node_pos))
+        forest('replace_node_with_merged_empty_node %s %s %s %s %s' % (
+            node, edge, merge_to_left, new_node_pos, merger_node_pos))
         ex, ey = new_node_pos
         empty_node = self.create_empty_node(pos=(ex, ey, node.z))
         self.replace_node_with_merged_node(node, empty_node, edge, merge_to_left, merger_node_pos)
 
     def delete_unnecessary_merger(self, node):
+        """
+
+        :param node:
+        :raise ForestError:
+        """
         if not isinstance(node, ConstituentNode):
             raise ForestError("Trying to treat wrong kind of node as ConstituentNode and forcing it to binary merge")
         i = node.index
@@ -1513,46 +1575,48 @@ class Forest(Savable):
         else:
             if bad_parents:
                 # more complex case
-                ctrl.add_message("Removing node would make parent to have same node as both left and right child. Removing parent too.")
+                ctrl.add_message(
+                    "Removing node would make parent to have same node as both left and right child. Removing parent too.")
                 self._disconnect_node(first=node, second=child)
                 for parent in bad_parents:
                     for grandparent in parent.get_parents():
                         self._disconnect_node(first=grandparent, second=parent)
                         self._disconnect_node(first=parent, second=child)
-                        self._connect_node(parent=grandparent, child=child)
+                        self.connect_node(parent=grandparent, child=child)
 
             if good_parents:
                 # normal case
                 self._disconnect_node(first=node, second=child, ignore_missing=True)
                 for parent in good_parents:
                     self._disconnect_node(first=parent, second=node)
-                    self._connect_node(parent=parent, child=child)
+                    self.connect_node(parent=parent, child=child)
         if i:
             child.set_index(i)
         self.delete_node(node)
         for parent in bad_parents:
             self.delete_node(parent)
-        #if right.is_placeholder():
-        #    self.delete_node(right)
-        #if left.is_placeholder():
-        #    self.delete_node(left)
+            # if right.is_placeholder():
+            # self.delete_node(right)
+            # if left.is_placeholder():
+            # self.delete_node(left)
 
 
     def replace_node_with_merged_node(self, replaced, new_node, edge, merge_to_left, merger_node_pos):
         """ This happens when touch area in edge going up from node N is clicked.
         [N B] -> [[x N] B] (left == True) or
         [N B] -> [[N x] B] (left == False)
-        :param old_node:
+        :param replaced:
         :param new_node:
         :param edge: Give the edge from node to specific parent, if the replacement is supposed to happen in one place
             only. Edge is the unique identifier for a node with multiple parents.
         :param merge_to_left:
         :param merger_node_pos:
         """
-        forest('replace_node_with_merged_empty_node %s %s %s %s %s' % (replaced, new_node, edge, merge_to_left, merger_node_pos))
+        forest('replace_node_with_merged_empty_node %s %s %s %s %s' % (
+            replaced, new_node, edge, merge_to_left, merger_node_pos))
         start_node = None
         align = None
-        if edge: # ???? can't we take all parents
+        if edge:  # ???? can't we take all parents
             start_node = edge.start
             align = edge.align
 
@@ -1588,7 +1652,7 @@ class Forest(Savable):
         merger_node = self.create_merger_node(left=left, right=right, pos=(mx, my, replaced.z))
         if edge:
             forest('connecting merger to parent')
-            self._connect_node(start_node, merger_node, direction=align)
+            self.connect_node(start_node, merger_node, direction=align)
 
         self.chain_manager.rebuild_chains()
 
@@ -1603,9 +1667,10 @@ class Forest(Savable):
             pos = (0, 0, 0)
         merger_const = ForestSyntax.constituent_merge(left, right)
         selecting_node = ForestSyntax.which_selects(left, right)
-        merger_node = self.create_node_from_constituent(merger_const, pos=pos, result_of_merge=True, inherits_from=selecting_node)
-        self._connect_node(parent=merger_node, child=left, direction=g.LEFT)
-        self._connect_node(parent=merger_node, child=right, direction=g.RIGHT)
+        merger_node = self.create_node_from_constituent(merger_const, pos=pos, result_of_merge=True,
+                                                        inherits_from=selecting_node)
+        self.connect_node(parent=merger_node, child=left, direction=g.LEFT)
+        self.connect_node(parent=merger_node, child=right, direction=g.RIGHT)
         return merger_node
 
 
@@ -1626,6 +1691,10 @@ class Forest(Savable):
     #### Triangles ##############################################
 
     def add_triangle_to(self, node):
+        """
+
+        :param node:
+        """
         node.triangle = True
         fold_scope = self.list_nodes_once(node)
         not_my_children = set()
@@ -1658,6 +1727,10 @@ class Forest(Savable):
                 folded.after_move_function = folded.finish_folding
 
     def remove_triangle_from(self, node):
+        """
+
+        :param node:
+        """
         node.triangle = False
         fold_scope = self.list_nodes_once(node, only_visible=False)
         for folded in fold_scope:
@@ -1671,6 +1744,11 @@ class Forest(Savable):
 
 
     def can_fold(self, node):
+        """
+
+        :param node:
+        :return:
+        """
         return True
 
 

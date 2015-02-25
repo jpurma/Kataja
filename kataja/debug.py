@@ -20,6 +20,7 @@ def mouse(*args):
     if DEBUG_PRINT_MOUSE_EVENTS:
         _debug_print('MOU', *args)
 
+
 def syntax(*args):
     """ More helpful print, can be toggled on/off through var at the beginning of this file.
     :param args: arguments for print

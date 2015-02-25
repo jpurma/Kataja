@@ -1,7 +1,9 @@
 import re
+
 from kataja.parser.BaseParser import BaseParser
 from kataja.singletons import ctrl
 import kataja.globals as g
+
 
 __author__ = 'purma'
 
@@ -98,9 +100,9 @@ class BottomUpParser(BaseParser):
                 if dot_alias:
                     node.alias = dot_alias
             if left:
-                self.forest._connect_node(parent=node, child=left, direction=g.LEFT)
+                self.forest.connect_node(parent=node, child=left, direction=g.LEFT)
             if right:
-                self.forest._connect_node(parent=node, child=right, direction=g.RIGHT)
+                self.forest.connect_node(parent=node, child=right, direction=g.RIGHT)
             node.update_label()
             f.derivation_steps.save_and_create_derivation_step()
             return node

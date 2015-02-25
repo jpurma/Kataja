@@ -1,11 +1,8 @@
-from kataja.utils import time_me
-
 __author__ = 'purma'
 
 from kataja.parser.BaseParser import BaseParser
 from kataja.parser.LatexToINode import parse
-from kataja.parser.INodes import IConstituentNode, ITextNode, ICommandNode
-from kataja.parser import INodeToLatex
+from kataja.parser.INodes import IConstituentNode
 from kataja.singletons import ctrl
 from kataja.ConstituentNode import ConstituentNode
 import kataja.globals as g
@@ -19,7 +16,7 @@ class INodeToKatajaConstituent(BaseParser):
     require parsing LaTeX to Rich Text Format or HTML. If the raw strings are stored with nodes, INodes can be easily
     recreated and translated when required.
     """
-    #@time_me
+    # @time_me
     def parse_into_forest(self, string):
         """ Parse the text as new nodes in the current forest.
 
@@ -39,7 +36,8 @@ class INodeToKatajaConstituent(BaseParser):
         self.should_add_to_scene = old_should_add
         return result
 
-#@time_me
+
+# @time_me
 def inode_to_constituentnodes(inode, forest):
     """ Recursively turn IConstituentNodes into Constituents supported by syntax and further into
      Kataja's ConstituentNodes.
@@ -68,8 +66,8 @@ def inode_to_constituentnodes(inode, forest):
             result_of_merge = False
             result_of_select = True
         cn = forest.create_node_from_constituent(constituent,
-                                                      result_of_merge=result_of_merge,
-                                                      result_of_select=result_of_select)
+                                                 result_of_merge=result_of_merge,
+                                                 result_of_select=result_of_select)
         cn.gloss = inode.gloss
         cn.features = inode.features
 
@@ -78,14 +76,14 @@ def inode_to_constituentnodes(inode, forest):
             right = children[0]
             constituent.left = left.syntactic_object
             constituent.right = right.syntactic_object
-            forest._connect_node(parent=cn, child=left, direction=g.LEFT)
-            forest._connect_node(parent=cn, child=right, direction=g.RIGHT)
+            forest.connect_node(parent=cn, child=left, direction=g.LEFT)
+            forest.connect_node(parent=cn, child=right, direction=g.RIGHT)
 
         # fixme: monochild
         elif len(children) == 1:
             left = children[0]
             constituent.left = left.syntactic_object
-            forest._connect_node(parent=cn, child=left, direction=g.LEFT)
+            forest.connect_node(parent=cn, child=left, direction=g.LEFT)
 
         cn.update_label()
         forest.derivation_steps.save_and_create_derivation_step()
@@ -105,7 +103,7 @@ def update_constituentnode_fields(constituentnode, inode):
     if constituentnode.index != inode.index:
         constituentnode.index = inode.index
     constituentnode.update_label()
-    #todo: handling of features
+    # todo: handling of features
 
 
 

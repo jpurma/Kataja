@@ -92,10 +92,10 @@ class BaseVisualization:
     # for node in ctrl.scene.visible_nodes(self.forest):
     # node.reset()
     # node.update_label()
-    #         vis = node.is_visible()
-    #         node.update_visibility(show_edges = True, scope = 0)
-    #         if node.is_visible() != vis:
-    #             print 'V node hidden: ', node
+    # vis = node.is_visible()
+    # node.update_visibility(show_edges = True, scope = 0)
+    # if node.is_visible() != vis:
+    # print 'V node hidden: ', node
 
     @caller
     def reselect(self):
@@ -126,10 +126,10 @@ class BaseVisualization:
 
 
     # def calculateFeatureMovement(self, feat, node):
-    #     """ Create a cloud of features around the node """
-    #     xvel = 0.0
-    #     yvel = 0.0
-    #     pull=.24
+    # """ Create a cloud of features around the node """
+    # xvel = 0.0
+    # yvel = 0.0
+    # pull=.24
     #     node_x,node_y,node_z=feat.current_position
     #     sx,sy,sz=node.current_position
     #     for item in ctrl.scene.visible_nodes(self.forest):

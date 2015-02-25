@@ -1,6 +1,7 @@
 __author__ = 'purma'
 
 from PyQt5 import QtGui, QtCore
+
 from kataja.ui.DrawnIconEngine import DrawnIconEngine
 from kataja.singletons import ctrl
 
@@ -21,13 +22,13 @@ class ArrowIcon(QtGui.QIcon):
         painter.drawPath(path)
         d = (h - 8.0) / w
         path = QtGui.QPainterPath(QtCore.QPointF(w, 4))
-        path.lineTo(w - 10,  8 + (10 * d))
-        path.lineTo(w - 8,  4 + (8 * d))
-        path.lineTo(w - 12,  12 * d)
+        path.lineTo(w - 10, 8 + (10 * d))
+        path.lineTo(w - 8, 4 + (8 * d))
+        path.lineTo(w - 12, 12 * d)
         painter.fillPath(path, color)
 
     def paint_settings(self):
-        return {'color':ctrl.cm.d['accent4']}
+        return {'color': ctrl.cm.d['accent4']}
 
 
 class DividerIcon(QtGui.QIcon):
@@ -39,7 +40,7 @@ class DividerIcon(QtGui.QIcon):
         w = rect.width()
         h = rect.height()
         path = QtGui.QPainterPath(QtCore.QPointF(0, h - 4))
-        path.cubicTo(10, h - 10 , w - 10, 10, w, 4)
+        path.cubicTo(10, h - 10, w - 10, 10, w, 4)
         p = painter.pen()
         p.setWidthF(2)
         p.setStyle(QtCore.Qt.DashLine)
@@ -47,11 +48,10 @@ class DividerIcon(QtGui.QIcon):
         painter.drawPath(path)
 
     def paint_settings(self):
-        return {'color':ctrl.cm.d['accent5']}
+        return {'color': ctrl.cm.d['accent5']}
 
 
 class TriangleIcon(QtGui.QIcon):
-
     def __init__(self):
         QtGui.QIcon.__init__(self, DrawnIconEngine(self.paint_method, self))
 
@@ -63,11 +63,11 @@ class TriangleIcon(QtGui.QIcon):
         path.lineTo(w2 + w2 - 1, h2)
         path.lineTo(1, h2)
         path.lineTo(w2, 1)
-        #p = painter.pen()
-        #p.setWidthF(2)
-        #painter.setPen(p)
+        # p = painter.pen()
+        # p.setWidthF(2)
+        # painter.setPen(p)
         painter.drawPath(path)
 
     def paint_settings(self):
-        return {'color':ctrl.cm.ui()}
+        return {'color': ctrl.cm.ui()}
 

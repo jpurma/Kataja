@@ -1,12 +1,13 @@
-from kataja.parser.INodes import ITextNode, IConstituentNode, ICommandNode
 from PyQt5 import QtGui
+
+from kataja.parser.INodes import ITextNode, IConstituentNode, ICommandNode
 from kataja.parser.LatexToINode import parse_field
+
 
 __author__ = 'purma'
 
 
 def find_command(cf, old_format, text):
-
     def add_command(inner, command, prefix='\\'):
         outer = ICommandNode(command=command, prefix=prefix)
         if inner:
@@ -38,6 +39,7 @@ def find_command(cf, old_format, text):
 def rtf_line_to_textnode(line, doc):
     def charFormat(n):
         return doc.allFormats()[n].toCharFormat()
+
     node = ITextNode()
     for (style, text) in line:
         if style != 0:
@@ -48,12 +50,12 @@ def rtf_line_to_textnode(line, doc):
             node.append(text)
     return node
 
+
 def latex_line_to_textnode(line, doc):
     return parse_field(''.join([text for cformat, text in line]))
 
 
 def parse_labeldocument(doc):
-
     block = doc.begin()
     lines = []
     for i in range(0, doc.blockCount()):

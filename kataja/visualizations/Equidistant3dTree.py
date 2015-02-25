@@ -27,9 +27,6 @@ import math
 import random
 
 from kataja.visualizations.BaseVisualization import BaseVisualization
-from kataja.ConstituentNode import ConstituentNode
-from kataja.FeatureNode import FeatureNode
-from kataja.GlossNode import GlossNode
 import kataja.globals as g
 
 
@@ -162,7 +159,7 @@ class Equidistant3dTree(BaseVisualization):
                     bx, by, bz = bsx - bdx, bsy - bdy, bsz - bdz
                 dist = math.sqrt(bx * bx + by * by + bz * bz)
                 if dist > 300:
-                    #print(dist, edge)
+                    # print(dist, edge)
                     # raise hell
                     pass
                 if dist > 15:

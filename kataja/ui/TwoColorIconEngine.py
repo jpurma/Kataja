@@ -26,6 +26,7 @@ from PyQt5 import QtGui, QtCore
 
 from kataja.singletons import ctrl
 
+
 class TwoColorIconEngine(QtGui.QIconEngine):
     """ An icon that is drawn from two binary pixmaps with colors provided by the app environment.
         The benefit is that the icons can adjust their colors based on the environment and with two colors
@@ -72,7 +73,7 @@ class TwoColorIconEngine(QtGui.QIconEngine):
             self.mask = self.bitmap.mask()
 
 
-    #@caller
+    # @caller
     def paint(self, painter, rect, mode, state):
         """
 
@@ -81,7 +82,7 @@ class TwoColorIconEngine(QtGui.QIconEngine):
         :param mode:
         :param state:
         """
-        #painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        # painter.setRenderHint(QtGui.QPainter.Antialiasing)
         c = ctrl.cm.ui()
         if mode == 0:  # normal
             painter.setPen(c)
@@ -95,7 +96,7 @@ class TwoColorIconEngine(QtGui.QIconEngine):
             painter.setPen(c)
             print('Weird button mode: ', mode)
         #
-        #print(painter.backgroundMode(), painter.background(), QtCore.Qt.OpaqueMode, QtCore.Qt.TransparentMode)
+        # print(painter.backgroundMode(), painter.background(), QtCore.Qt.OpaqueMode, QtCore.Qt.TransparentMode)
         #
 
         if self.mono:

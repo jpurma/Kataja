@@ -21,7 +21,6 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
-import re
 
 from types import FrameType
 import gc
@@ -29,12 +28,12 @@ import string
 import sys
 import time
 import traceback
-import types
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtWidgets
+
 from PyQt5.QtCore import QPointF, QPoint
-
 from kataja.debug import DEBUG_TIME_ME
+
 
 def print_rect(rect):
     """
@@ -240,7 +239,7 @@ def save_lexicon(lexicon, filename):
 # for n in node:
 # if n not in res:
 # res.append(n)
-#    return res
+# return res
 
 def next_free_index(indexes):
     """
@@ -345,8 +344,6 @@ def print_derivation_steps(objects=gc.garbage, outstream=sys.stdout, show_progre
         recurse(obj, obj, {}, [])
 
 
-
-
 def quit():
     """
 
@@ -358,8 +355,8 @@ def quit():
 def create_shadow_effect(color):
     """
 
-    :param obj:
-    :param ctrl:
+
+    :param color:
     :return:
     """
     effect = QtWidgets.QGraphicsDropShadowEffect()
@@ -369,10 +366,16 @@ def create_shadow_effect(color):
     effect.setEnabled(False)
     return effect
 
+
 def print_transform(transform):
+    """
+
+    :param transform:
+    """
     t = transform
 
-    print('m11:%s m12:%s m13:%s | m21:%s m22:%s m23:%s | m31:%s m32:%s m33:%s | dx:%s dy:%s' % (t.m11(), t.m12(), t.m13(), t.m21(), t.m22(), t.m23(), t.m31(), t.m32(), t.m33(), t.dx(), t.dy()))
+    print('m11:%s m12:%s m13:%s | m21:%s m22:%s m23:%s | m31:%s m32:%s m33:%s | dx:%s dy:%s' % (
+        t.m11(), t.m12(), t.m13(), t.m21(), t.m22(), t.m23(), t.m31(), t.m32(), t.m33(), t.dx(), t.dy()))
     print('isRotating:%s isScaling:%s isTranslating:%s' % (t.isRotating(), t.isScaling(), t.isTranslating()))
 
 

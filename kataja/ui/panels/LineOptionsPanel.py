@@ -1,15 +1,13 @@
 from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtCore import QRect, QSize
-from PyQt5.QtGui import QIcon, QColor, QPixmap, QStandardItem
 
-from kataja.Edge import SHAPE_PRESETS, Edge
-from kataja.singletons import ctrl, qt_prefs
+from PyQt5.QtCore import QSize
+from kataja.Edge import Edge
+from kataja.singletons import ctrl
 import kataja.globals as g
 from kataja.ui.panels.UIPanel import UIPanel
 
 
 __author__ = 'purma'
-
 
 
 class LineOptionsPanel(UIPanel):
@@ -150,8 +148,8 @@ class LineOptionsPanel(UIPanel):
         ui_manager.connect_element_to_action(self.arc_dy_spinbox, 'edge_curvature_y')
         arc_dy_label.setBuddy(self.arc_dy_spinbox)
         self.arc_reset_button = QtWidgets.QPushButton('Reset curvature')
-        #self.arc_reset_button.setMinimumSize(QSize(40, 20))
-        #self.arc_reset_button.setMaximumSize(QSize(40, 20))
+        # self.arc_reset_button.setMinimumSize(QSize(40, 20))
+        # self.arc_reset_button.setMaximumSize(QSize(40, 20))
         ui_manager.connect_element_to_action(self.arc_reset_button, 'edge_curvature_reset')
 
         l1_layout.addWidget(arc_label)
@@ -221,9 +219,9 @@ class LineOptionsPanel(UIPanel):
             shape_dict = self.build_shape_dict_for_selection()
             self.update_control_point_spinboxes()
             selection = True
-        else: # Adjusting how this relation type is drawn
+        else:  # Adjusting how this relation type is drawn
             shape_dict = ctrl.forest.settings.edge_shape_settings(scope)
-            #print('shape settings: ', shape_dict)
+            # print('shape settings: ', shape_dict)
             selection = False
         if shape_dict:
             cps = shape_dict['control_points']
@@ -306,17 +304,22 @@ class LineOptionsPanel(UIPanel):
                     self.remove_ambiguous_marker(self.thickness_spinbox)
 
                 self.thickness_spinbox.blockSignals(False)
-        else: # This shouldn't happen
+        else:  # This shouldn't happen
             assert False
-            #self.cp1_box.setVisible(False)
-            #self.cp2_box.setVisible(False)
-            #self.leaf_layout.setEnabled(False)
+            # self.cp1_box.setVisible(False)
+            # self.cp2_box.setVisible(False)
+            # self.leaf_layout.setEnabled(False)
         self.widget().updateGeometry()
         self.widget().update()
         self.updateGeometry()
         self.update()
 
     def initial_position(self):
+        """
+
+
+        :return:
+        """
         dp = self.ui_manager.get_panel(g.EDGES)
         if dp:
             p = dp.mapToGlobal(dp.pos())
@@ -325,12 +328,18 @@ class LineOptionsPanel(UIPanel):
             return UIPanel.initial_position(self)
 
     def relative_curvature(self):
+        """
+
+
+        :return:
+        """
         return self.arc_type_selector.currentData() == 'relative'
 
 
     def show_conflict(self, spinbox):
         """ Put '---' instead of value to show that there is no unambiguous value that can be put here
         (this happens when modifying several different items)
+        :param spinbox:
         :return: None
         """
         spinbox.setSpecialValueText('---')
@@ -422,8 +431,12 @@ class LineOptionsPanel(UIPanel):
         self.cp2_y_spinbox.blockSignals(False)
 
 
-
     def build_shape_dict_for_selection(self):
+        """
+
+
+        :return:
+        """
         d = {}
         # check if selection has conflicting values: these cannot be shown then
         shape_name = None
@@ -448,12 +461,20 @@ class LineOptionsPanel(UIPanel):
         return d
 
     def close(self):
+        """
+
+
+        """
         dp = self.ui_manager.get_panel(g.EDGES)
         if dp:
             dp.edge_options.setChecked(False)
         UIPanel.close(self)
 
     def show(self):
+        """
+
+
+        """
         dp = self.ui_manager.get_panel(g.EDGES)
         if dp:
             dp.edge_options.setChecked(True)

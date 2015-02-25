@@ -26,6 +26,7 @@ from PyQt5 import QtGui
 
 from kataja.singletons import ctrl
 
+
 class DrawnIconEngine(QtGui.QIconEngine):
     """ An icon which you can provide a method to draw on the icon """
 
@@ -39,7 +40,7 @@ class DrawnIconEngine(QtGui.QIconEngine):
         self.paint_method = paint_method
         self.owner = owner
 
-    #@caller
+    # @caller
     def paint(self, painter, rect, mode, state):
         """
 

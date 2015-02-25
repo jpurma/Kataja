@@ -37,24 +37,24 @@ class NavigationPanel(UIPanel):
         ui_manager.ui_buttons['treeset_counter'] = treeset_counter
 
         prev_tree = TwoColorButton(qt_prefs.left_arrow, '', self)
-        #prev_tree.setIconSize(QtCore.QSize(24,24))
+        # prev_tree.setIconSize(QtCore.QSize(24,24))
         prev_tree.setSizePolicy(button_policy)
         prev_tree.setMinimumWidth(72)
-        #prev_tree.setMinimumHeight(32)
+        # prev_tree.setMinimumHeight(32)
         layout.addWidget(prev_tree, 1, 0, 1, 1)
         ui_manager.ui_buttons['prev_forest'] = prev_tree
         ui_manager.connect_element_to_action(prev_tree, ui_manager.qt_actions['prev_forest'])
-        #prev_tree.setDefaultAction(ui_manager.qt_actions['prev_forest'])
+        # prev_tree.setDefaultAction(ui_manager.qt_actions['prev_forest'])
 
         next_tree = TwoColorButton(qt_prefs.right_arrow, '', self)
-        #next_tree.setIconSize(QtCore.QSize(24,24))
+        # next_tree.setIconSize(QtCore.QSize(24,24))
         next_tree.setSizePolicy(button_policy)
         next_tree.setMinimumWidth(72)
-        #next_tree.setMinimumHeight(32)
+        # next_tree.setMinimumHeight(32)
         layout.addWidget(next_tree, 1, 1, 1, 1)
         ui_manager.ui_buttons['next_forest'] = next_tree
         ui_manager.connect_element_to_action(next_tree, ui_manager.qt_actions['next_forest'])
-        #next_tree.setDefaultAction(ui_manager.qt_actions['next_forest'])
+        # next_tree.setDefaultAction(ui_manager.qt_actions['next_forest'])
 
 
         label = QtWidgets.QLabel('Derivation step', self)

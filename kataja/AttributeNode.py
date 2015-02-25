@@ -25,7 +25,6 @@
 import random
 import collections
 
-from kataja.singletons import qt_prefs
 from kataja.globals import ATTRIBUTE_EDGE, ATTRIBUTE_NODE
 from kataja.Node import Node
 
@@ -34,6 +33,11 @@ color_map = {'S': 0, 'order': 1, 'M': 2, 'unknown': 3}
 
 
 def ordinal(value):
+    """
+
+    :param value:
+    :return:
+    """
     if isinstance(value, int):
         val = value
     elif isinstance(value, str) and value.isdigit():
@@ -53,7 +57,7 @@ def ordinal(value):
         suffix = 'rd'
     else:
         suffix = 'th'
-    return val_str+suffix
+    return val_str + suffix
 
 
 class AttributeNode(Node):
@@ -87,8 +91,8 @@ class AttributeNode(Node):
         self.help_text = ""
         # if self.attribute_label in color_map:
         # self.color = colors.feature_palette[color_map[self.attribute_label]]
-        #else:
-        #    self.color = colors.feature
+        # else:
+        # self.color = colors.feature
         if not restoring:
             # compute start position -- similar to FeatureNode, but happens on init
             # because host is given
@@ -108,31 +112,61 @@ class AttributeNode(Node):
 
     @property
     def host(self):
+        """
+
+
+        :return:
+        """
         return self.saved.host
 
     @host.setter
     def host(self, value):
+        """
+
+        :param value:
+        """
         self.saved.host = value
 
     @property
     def attribute_label(self):
+        """
+
+
+        :return:
+        """
         return self.saved.attribute_label
 
     @attribute_label.setter
     def attribute_label(self, value):
+        """
+
+        :param value:
+        """
         self.saved.attribute_label = value
 
     @property
     def attribute_id(self):
+        """
+
+
+        :return:
+        """
         return self.saved.attribute_id
 
     @attribute_id.setter
     def attribute_id(self, value):
+        """
+
+        :param value:
+        """
         self.saved.attribute_id = value
 
 
-
     def update_help_text(self):
+        """
+
+
+        """
         if self.attribute_id == 'select_order':
             self.help_text = "'{host}' was Selected {value_ordinal} when constructing the tree."
         elif self.attribute_id == 'merge_order':
@@ -140,12 +174,21 @@ class AttributeNode(Node):
 
 
     def set_help_text(self, text):
+        """
+
+        :param text:
+        """
         self.help_text = text
         self.update_status_tip()
 
     def update_status_tip(self):
+        """
+
+
+        """
         if self.help_text:
-            self.status_tip = self.help_text.format(host=self.host, value=self.value, value_ordinal=ordinal(self.value), label=self.attribute_label)
+            self.status_tip = self.help_text.format(host=self.host, value=self.value, value_ordinal=ordinal(self.value),
+                                                    label=self.attribute_label)
         else:
             self.status_tip = "Attribute %s for %s" % (self.get_html_for_label(), self.host)
 
@@ -162,6 +205,11 @@ class AttributeNode(Node):
 
     @property
     def value(self):
+        """
+
+
+        :return:
+        """
         val = getattr(self.host, self.attribute_id, '')
         if isinstance(val, collections.Callable):
             return val()

@@ -52,8 +52,8 @@ ADD_FEATURE = 'Feature'
 ADD_GLOSS = 'Gloss'
 ADD_TEXT_BOX = 'Text box'
 
-#EDGE_SHAPES_CHANGED = QtCore.QEvent.registerEventType()
-#print 'EDGE_SHAPES_CHANGED: ', EDGE_SHAPES_CHANGED
+# EDGE_SHAPES_CHANGED = QtCore.QEvent.registerEventType()
+# print 'EDGE_SHAPES_CHANGED: ', EDGE_SHAPES_CHANGED
 
 # UI_PANELS
 LOG = 'log'

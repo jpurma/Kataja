@@ -1,21 +1,20 @@
 from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtCore import QRect, QSize
-from PyQt5.QtGui import QIcon, QColor, QPixmap, QStandardItem
 
+from PyQt5.QtCore import QSize
+from PyQt5.QtGui import QIcon, QColor, QStandardItem
 from kataja.Edge import SHAPE_PRESETS, Edge
 from kataja.singletons import ctrl, qt_prefs
 import kataja.globals as g
 from kataja.ui.panels.UIPanel import UIPanel
-from kataja.utils import time_me
 from kataja.ui.DrawnIconEngine import DrawnIconEngine
 from kataja.ui.ColorSwatchIconEngine import ColorSwatchIconEngine
-from kataja.ui.TwoColorButton import TwoColorButton
 from kataja.ui.OverlayButton import OverlayButton
 
 
 __author__ = 'purma'
 
-scope_display_order = [g.SELECTION, g.CONSTITUENT_EDGE, g.FEATURE_EDGE, g.GLOSS_EDGE, g.ARROW, g.PROPERTY_EDGE, g.ATTRIBUTE_EDGE, g.ABSTRACT_EDGE]
+scope_display_order = [g.SELECTION, g.CONSTITUENT_EDGE, g.FEATURE_EDGE, g.GLOSS_EDGE, g.ARROW, g.PROPERTY_EDGE,
+                       g.ATTRIBUTE_EDGE, g.ABSTRACT_EDGE]
 
 scope_display_items = {
     g.SELECTION: 'Current selection',
@@ -39,9 +38,9 @@ class LineStyleIcon(QIcon):
         self.engine = DrawnIconEngine(SHAPE_PRESETS[shape_key]['icon'], owner=self)
         QIcon.__init__(self, self.engine)
         self.panel = panel
-        #pixmap = QPixmap(60, 20)
-        #pixmap.fill(ctrl.cm.ui())
-        #self.addPixmap(pixmap)
+        # pixmap = QPixmap(60, 20)
+        # pixmap.fill(ctrl.cm.ui())
+        # self.addPixmap(pixmap)
 
 
     def paint_settings(self):
@@ -50,17 +49,16 @@ class LineStyleIcon(QIcon):
         if not isinstance(pen, QColor):
             pen = ctrl.cm.get(pen)
 
-        d = {'color':pen}
+        d = {'color': pen}
         return d
+
 
 class LineColorIcon(QIcon):
     def __init__(self, color_id):
         QIcon.__init__(self, ColorSwatchIconEngine(color_id))
 
 
-
 class TableModelComboBox(QtWidgets.QComboBox):
-
     def find_item(self, data):
         """ Return the item corresponding to this data
         :param data: data to match
@@ -98,17 +96,16 @@ class TableModelComboBox(QtWidgets.QComboBox):
 
     def select_data(self, data):
         item = self.find_item(data)
-        assert(item)
+        assert (item)
         self.setCurrentIndex(item.row())
         self.setModelColumn(item.column())
 
 
 class ColorSelector(TableModelComboBox):
-
     def __init__(self, parent):
         QtWidgets.QComboBox.__init__(self, parent)
         self.setIconSize(QSize(16, 16))
-        #self.color_selector.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        # self.color_selector.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         model = self.model()
         model.setRowCount(8)
         model.setColumnCount(4)
@@ -123,7 +120,7 @@ class ColorSelector(TableModelComboBox):
         add_icon.fromTheme("list-add")
         add_item = QStandardItem('+')
         add_item.setTextAlignment(QtCore.Qt.AlignCenter)
-        add_item.setSizeHint(QSize(22,20))
+        add_item.setSizeHint(QSize(22, 20))
         table = [items[0:3], items[5:13], items[13:21], [add_item]]
         for c, column in enumerate(table):
             for r, item in enumerate(column):
@@ -139,11 +136,10 @@ class ColorSelector(TableModelComboBox):
 
 
 class ShapeSelector(TableModelComboBox):
-
     def __init__(self, parent):
         QtWidgets.QComboBox.__init__(self, parent)
         self.setIconSize(QSize(64, 16))
-        #self.shape_selector.setView(view)
+        # self.shape_selector.setView(view)
         items = []
 
         for lt in SHAPE_PRESETS.keys():
@@ -167,7 +163,6 @@ class ShapeSelector(TableModelComboBox):
         # self.setView(new_view)
 
 
-
 class EdgesPanel(UIPanel):
     """ Panel for editing how edges and nodes are drawn. """
 
@@ -183,7 +178,7 @@ class EdgesPanel(UIPanel):
         inner = QtWidgets.QWidget(self)
         layout = QtWidgets.QVBoxLayout()
         layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
-        #layout.setContentsMargins(4, 4, 4, 4)
+        # layout.setContentsMargins(4, 4, 4, 4)
         self.scope = g.CONSTITUENT_EDGE
         self._old_scope = g.CONSTITUENT_EDGE
         self.scope_selector = QtWidgets.QComboBox(self)
@@ -208,21 +203,17 @@ class EdgesPanel(UIPanel):
         ui_manager.connect_element_to_action(self.color_selector, 'change_edge_color')
         hlayout.addWidget(self.color_selector)
 
-        self.edge_options = OverlayButton(qt_prefs.settings_icon, None, 'panel', text='More line options', parent=self, size=16)
+        self.edge_options = OverlayButton(qt_prefs.settings_icon, None, 'panel', text='More line options', parent=self,
+                                          size=16)
         self.edge_options.setCheckable(True)
         ui_manager.ui_buttons['line_options'] = self.edge_options
         ui_manager.connect_element_to_action(self.edge_options, 'toggle_line_options')
         hlayout.addWidget(self.edge_options, 1, QtCore.Qt.AlignRight)
         layout.addLayout(hlayout)
 
-
-
-
         inner.setLayout(layout)
         self.setWidget(inner)
         self.finish_init()
-
-
 
 
     def selected_objects_changed(self):
@@ -264,7 +255,7 @@ class EdgesPanel(UIPanel):
         self.update_scope_selector()
         self.update_fields()
 
-    #@time_me
+    # @time_me
     def update_scope_selector_options(self):
         """ Redraw scope selector, show only scopes that are used in this forest """
         used_scopes = {self.scope}

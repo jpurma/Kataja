@@ -195,11 +195,11 @@ class BalancedTree(BaseVisualization):
             new_grid = _build_grid(node=root_node)
             merged_grid = _merge_grids(left_grid=merged_grid, right_grid=new_grid, extra_padding=2)
 
-        tree_width = merged_grid._width * edge_width
-        tree_height = merged_grid._height * edge_height
+        tree_width = merged_grid.width * edge_width
+        tree_height = merged_grid.height * edge_height
         offset_x = tree_width / -2
         offset_y = tree_height / -2
-        height_reduction = (edge_height / 3.0) / (merged_grid._height or 1)
+        height_reduction = (edge_height / 3.0) / (merged_grid.height or 1)
         height_now = offset_y
 
         merged_grid.ascii_dump()

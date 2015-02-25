@@ -35,12 +35,11 @@ class ColorPanel(UIPanel):
         selector.activated.connect(self.change_color_mode)
         self.mode_select = selector
         layout.addWidget(selector)
-        #layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
+        # layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
         widget.setLayout(layout)
 
         self.setWidget(widget)
         self.finish_init()
-
 
 
     def change_color_mode(self, mode):

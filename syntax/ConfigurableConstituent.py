@@ -29,6 +29,12 @@ from kataja.Saved import Savable
 from syntax.ConfigurableFeature import Feature
 
 class ConfigurableConstituent(Savable):
+    """
+
+    :param cid:
+    :param config:
+    """
+
     def __init__(self, cid='', config=None):
         """ BaseConstituent is a default constituent used in syntax.
         It is Savable, which means that the actual values are stored in separate object that is easily dumped to file.
@@ -58,6 +64,11 @@ class ConfigurableConstituent(Savable):
 
     @property
     def features(self):
+        """
+
+
+        :return:
+        """
         return self.saved.features
 
     @features.setter
@@ -78,18 +89,36 @@ class ConfigurableConstituent(Savable):
 
     @property
     def sourcestring(self):
+        """
+
+
+        :return:
+        """
         return self.saved.sourcestring
 
     @sourcestring.setter
     def sourcestring(self, value):
+        """
+
+        :param value:
+        """
         self.saved.sourcestring = value
 
     @property
     def label(self):
+        """
+
+
+        :return:
+        """
         return self.saved.label
 
     @label.setter
     def label(self, value):
+        """
+
+        :param value:
+        """
         if value is None:
             self.saved.label = ''
         else:
@@ -97,10 +126,19 @@ class ConfigurableConstituent(Savable):
 
     @property
     def alias(self):
+        """
+
+
+        :return:
+        """
         return self.saved.alias
 
     @alias.setter
     def alias(self, value):
+        """
+
+        :param value:
+        """
         if value is None:
             self.saved.alias = ''
         else:
@@ -108,6 +146,11 @@ class ConfigurableConstituent(Savable):
 
     @property
     def left(self):
+        """
+
+
+        :return:
+        """
         if self.saved.parts:
             return self.saved.parts[0]
         else:
@@ -115,6 +158,10 @@ class ConfigurableConstituent(Savable):
 
     @left.setter
     def left(self, value):
+        """
+
+        :param value:
+        """
         if not self.saved.parts:
             self.saved.parts = [value]
         else:
@@ -122,6 +169,11 @@ class ConfigurableConstituent(Savable):
 
     @property
     def right(self):
+        """
+
+
+        :return:
+        """
         if self.saved.parts and len(self.saved.parts) > 1:
             return self.saved.parts[1]
         else:
@@ -129,6 +181,10 @@ class ConfigurableConstituent(Savable):
 
     @right.setter
     def right(self, value):
+        """
+
+        :param value:
+        """
         if self.saved.parts:
             if len(self.saved.parts) > 1:
                 self.saved.parts[1] = value
@@ -139,10 +195,19 @@ class ConfigurableConstituent(Savable):
 
     @property
     def gloss(self):
+        """
+
+
+        :return:
+        """
         return self.saved.gloss
 
     @gloss.setter
     def gloss(self, value):
+        """
+
+        :param value:
+        """
         if value is None:
             self.saved.gloss = ''
         else:
@@ -150,10 +215,19 @@ class ConfigurableConstituent(Savable):
 
     @property
     def index(self):
+        """
+
+
+        :return:
+        """
         return self.saved.index
 
     @index.setter
     def index(self, value):
+        """
+
+        :param value:
+        """
         if value is None:
             self.saved.index = ''
         else:
@@ -187,6 +261,11 @@ class ConfigurableConstituent(Savable):
 
 
     def print_tree(self):
+        """
+
+
+        :return:
+        """
         return self.__repr__()
         #
         # if self.is_leaf():

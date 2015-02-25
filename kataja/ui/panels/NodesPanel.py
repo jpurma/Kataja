@@ -18,9 +18,7 @@ nodes_table = OrderedDict([(g.ABSTRACT_NODE, {'name': 'Abstract Node', 'show': F
                            (g.PROPERTY_NODE, {'name': 'Property', 'show': False})])
 
 
-
 class DraggableNodeFrame(QtWidgets.QFrame):
-
     def __init__(self, key, name, parent=None):
         QtWidgets.QFrame.__init__(self, parent)
         self.setBackgroundRole(QtGui.QPalette.AlternateBase)
@@ -31,14 +29,14 @@ class DraggableNodeFrame(QtWidgets.QFrame):
         else:
             settings = prefs.nodes
         hlayout = QtWidgets.QHBoxLayout()
-        hlayout.setContentsMargins(0,0,0,0)
+        hlayout.setContentsMargins(0, 0, 0, 0)
         color_key = settings[key]['color']
         self.key = key
         self.setPalette(ctrl.cm.palette_from_key(color_key))
         self.setFont(qt_prefs.font(settings[key]['font']))
 
         self.add_button = OverlayButton(qt_prefs.add_icon, None, 'panel', text='Add ' + name, parent=self,
-                                   size=24, color_key=color_key)
+                                        size=24, color_key=color_key)
         self.add_button.setFixedSize(26, 26)
         ctrl.ui.connect_element_to_action(self.add_button, 'add_node', tooltip_suffix=name)
         hlayout.addWidget(self.add_button)
@@ -46,7 +44,7 @@ class DraggableNodeFrame(QtWidgets.QFrame):
         self.label.setBuddy(self.add_button)
         hlayout.addWidget(self.label)
         self.conf_button = OverlayButton(qt_prefs.settings_icon, None, 'panel',
-                                    text='Modify %s behaviour' % name, parent=self, size=16)
+                                         text='Modify %s behaviour' % name, parent=self, size=16)
         self.conf_button.setFixedSize(26, 26)
         hlayout.addWidget(self.conf_button, 1, QtCore.Qt.AlignRight)
         self.setLayout(hlayout)

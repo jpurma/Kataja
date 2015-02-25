@@ -2,13 +2,12 @@ from collections import OrderedDict
 from math import sin, cos, pi, acos
 
 from PyQt5 import QtCore, QtGui
+
 from PyQt5.QtCore import QPointF as Pf
-from kataja.globals import LEFT, RIGHT, NO_ALIGN
-from kataja.utils import time_me
+from kataja.globals import LEFT, RIGHT
+
 
 __author__ = 'purma'
-
-
 
 pipi = pi * 2.0
 
@@ -16,10 +15,11 @@ outline_stroker = QtGui.QPainterPathStroker()
 outline_stroker.setWidth(4)
 
 
-
 def adjusted_control_point_list(control_points, adjust):
     """ List where control points and their adjustments are added up, and (x,y) tuples
     are break down into one big list x1, y1, x2, y2,... to be used in path construction
+    :param adjust:
+    :param control_points:
     :return: list
     """
     l = []
@@ -107,6 +107,8 @@ def to_Pf(triple):
 def shaped_cubic_path(start_point=None, end_point=None, adjust=None, align=LEFT, relative=True, rel_dx=0.2, rel_dy=0.2,
                       fixed_dx=20, fixed_dy=15, leaf_x=1, leaf_y=3, **kwargs):
     """ Two point leaf-shaped curve
+    :param end_point:
+    :param start_point:
     :param kwargs: relative=True, rel_dx=0.2, rel_dy=0.2, fixed_dx=20, fixed_dy=15, leaf_x=1, leaf_y=3
     """
     sx, sy, sz = start_point
@@ -145,12 +147,13 @@ def shaped_cubic_icon(painter, rect, color=None, rel_dx=0.4, rel_dy=0.8, leaf_x=
     dx = rel_dx * (ex - sx)
     dy = rel_dy * (ey - sy)
     path = QtGui.QPainterPath(Pf(sx, sy))
-    path.cubicTo(sx + dx - leaf_x, sy + dy , ex, ey - dy + leaf_y, ex, ey)
+    path.cubicTo(sx + dx - leaf_x, sy + dy, ex, ey - dy + leaf_y, ex, ey)
     path.cubicTo(ex, ey - dy - leaf_y, sx + dx + leaf_x, sy + dy, sx, sy)
     painter.fillPath(path, color)
 
 
-def cubic_path(start_point=None, end_point=None, adjust=None, align=LEFT, relative=True, rel_dx=0.2, rel_dy=0.2, fixed_dx=20, fixed_dy=15, **kwargs):
+def cubic_path(start_point=None, end_point=None, adjust=None, align=LEFT, relative=True, rel_dx=0.2, rel_dy=0.2,
+               fixed_dx=20, fixed_dy=15, **kwargs):
     """ Two point narrow curve
     :param kwargs:
     """
@@ -191,7 +194,8 @@ def cubic_icon(painter, rect, color=None, rel_dx=0.2, rel_dy=0.8):
     painter.drawPath(path)
 
 
-def shaped_quadratic_path(start_point=None, end_point=None, adjust=None, align=LEFT, relative=True, rel_dx=0.2, rel_dy=0, fixed_dx=20, fixed_dy=0, leaf_x=3, leaf_y=3, **kwargs):
+def shaped_quadratic_path(start_point=None, end_point=None, adjust=None, align=LEFT, relative=True, rel_dx=0.2,
+                          rel_dy=0, fixed_dx=20, fixed_dy=0, leaf_x=3, leaf_y=3, **kwargs):
     """ One point leaf-shaped curve with curvature relative to line length
     :param kwargs:
     """
@@ -222,6 +226,7 @@ def shaped_quadratic_path(start_point=None, end_point=None, adjust=None, align=L
     inner_path.quadTo(c[0], c[1], ex, ey)
     return path, inner_path, control_points
 
+
 def shaped_quadratic_icon(painter, rect, color=None, rel_dx=0.4, rel_dy=0, leaf_x=1, leaf_y=3):
     sx, sy = 0, 4
     w = rect.width()
@@ -234,7 +239,9 @@ def shaped_quadratic_icon(painter, rect, color=None, rel_dx=0.4, rel_dy=0, leaf_
     path.quadTo(sx + dx + leaf_x, sy + dy + leaf_y, sx, sy)
     painter.fillPath(path, color)
 
-def quadratic_path(start_point=None, end_point=None, adjust=None, align=LEFT, relative=True, rel_dx=0.2, rel_dy=0, fixed_dx=20, fixed_dy=0, **kwargs):
+
+def quadratic_path(start_point=None, end_point=None, adjust=None, align=LEFT, relative=True, rel_dx=0.2, rel_dy=0,
+                   fixed_dx=20, fixed_dy=0, **kwargs):
     """ One point curve with curvature relative to line length """
     sx, sy, sz = start_point
     ex, ey, ez = end_point
@@ -261,6 +268,14 @@ def quadratic_path(start_point=None, end_point=None, adjust=None, align=LEFT, re
 
 
 def quadratic_icon(painter, rect, color=None, rel_dx=0.4, rel_dy=0):
+    """
+
+    :param painter:
+    :param rect:
+    :param color:
+    :param rel_dx:
+    :param rel_dy:
+    """
     sx, sy = 0, 4
     w = rect.width()
     h = rect.height()
@@ -273,7 +288,15 @@ def quadratic_icon(painter, rect, color=None, rel_dx=0.4, rel_dy=0):
 
 
 def shaped_linear_path(start_point=None, end_point=None, adjust=None, align=LEFT, leaf_x=2, leaf_y=2, **kwargs):
-    """ A straight line with a slight leaf shape """
+    """ A straight line with a slight leaf shape
+    :param start_point:
+    :param end_point:
+    :param adjust:
+    :param align:
+    :param leaf_x:
+    :param leaf_y:
+    :param kwargs:
+    """
     sx, sy, sz = start_point
     dx, dy, dummy = end_point
     control_points = []
@@ -288,7 +311,16 @@ def shaped_linear_path(start_point=None, end_point=None, adjust=None, align=LEFT
     inner_path.lineTo(dx, dy)
     return path, inner_path, control_points
 
+
 def shaped_linear_icon(painter, rect, color=None, leaf_x=4, leaf_y=4):
+    """
+
+    :param painter:
+    :param rect:
+    :param color:
+    :param leaf_x:
+    :param leaf_y:
+    """
     sx, sy = 0, 0
     w = rect.width()
     h = rect.height()
@@ -299,8 +331,14 @@ def shaped_linear_icon(painter, rect, color=None, leaf_x=4, leaf_y=4):
     painter.fillPath(path, color)
 
 
-def linear_path(start_point=None, end_point=None, adjust=None, align=LEFT,  **kwargs):
-    """ Just a straight line """
+def linear_path(start_point=None, end_point=None, adjust=None, align=LEFT, **kwargs):
+    """ Just a straight line
+    :param start_point:
+    :param end_point:
+    :param adjust:
+    :param align:
+    :param kwargs:
+    """
     sx, sy, dummy = start_point
     dx, dy, dummy = end_point
     control_points = []
@@ -308,7 +346,14 @@ def linear_path(start_point=None, end_point=None, adjust=None, align=LEFT,  **kw
     path.lineTo(dx, dy)
     return path, path, control_points
 
+
 def linear_icon(painter, rect, color=None):
+    """
+
+    :param painter:
+    :param rect:
+    :param color:
+    """
     sx, sy = 0, 0
     w = rect.width()
     h = rect.height()
@@ -318,9 +363,18 @@ def linear_icon(painter, rect, color=None):
     painter.drawPath(path)
 
 
-#@time_me
+# @time_me
 def blob_path(start_point=None, end_point=None, adjust=None, align=LEFT, thickness=4, start=None, end=None, **kwargs):
-    """ Surround the node with circular shape that stretches to other node """
+    """ Surround the node with circular shape that stretches to other node
+    :param start_point:
+    :param end_point:
+    :param adjust:
+    :param align:
+    :param thickness:
+    :param start:
+    :param end:
+    :param kwargs:
+    """
     if start:
         scx, scy, scz = start.current_position
     else:
@@ -329,7 +383,7 @@ def blob_path(start_point=None, end_point=None, adjust=None, align=LEFT, thickne
         ecx, ecy, ecz = end.current_position
     else:
         ecx, ecy, ecz = end_point
-    t2 = thickness*2
+    t2 = thickness * 2
 
     sx, sy, sz = start_point
     ex, ey, dummy = end_point
@@ -376,16 +430,24 @@ def blob_path(start_point=None, end_point=None, adjust=None, align=LEFT, thickne
     inner_path.lineTo(ex, ey)
     return path.simplified(), inner_path, []
 
+
 def blob_icon(painter, rect, color=None, thickness=3):
+    """
+
+    :param painter:
+    :param rect:
+    :param color:
+    :param thickness:
+    """
     sx, sy = 0, 0
     t2 = thickness * 2
     w = rect.width()
     h = rect.height()
     ex, ey = w, h
-    rl = w/8.0
-    ru = h/6.0
-    rw = w/6.0
-    rh = rw/2
+    rl = w / 8.0
+    ru = h / 6.0
+    rw = w / 6.0
+    rh = rw / 2
     el = w - rl - rw
     eu = h - ru - rh
     c1x = (el - rl) / 2
@@ -403,17 +465,28 @@ def blob_icon(painter, rect, color=None, thickness=3):
     path3 = QtGui.QPainterPath()
     path3.moveTo(rl, ru)
     path3.quadTo(c1x, c1y, el, eu)
-    path3.lineTo(el + rw, eu+rh)
-    path3.quadTo(c1x, c1y, rl + rw, ru+rh)
+    path3.lineTo(el + rw, eu + rh)
+    path3.quadTo(c1x, c1y, rl + rw, ru + rh)
     path = path1.united(path2)
     path = path.united(path3)
     path = path.subtracted(path1neg)
     path = path.subtracted(path2neg)
     painter.fillPath(path, color)
 
-#@time_me
-def directional_blob_path(start_point=None, end_point=None, adjust=None, align=LEFT,  thickness=4, start=None, end=None, **kwargs):
-    """ Surround the node with circular shape that stretches to other node """
+
+# @time_me
+def directional_blob_path(start_point=None, end_point=None, adjust=None, align=LEFT, thickness=4, start=None, end=None,
+                          **kwargs):
+    """ Surround the node with circular shape that stretches to other node
+    :param start_point:
+    :param end_point:
+    :param adjust:
+    :param align:
+    :param thickness:
+    :param start:
+    :param end:
+    :param kwargs:
+    """
     if start:
         scx, scy, scz = start.current_position
     else:
@@ -422,7 +495,7 @@ def directional_blob_path(start_point=None, end_point=None, adjust=None, align=L
         ecx, ecy, ecz = end.current_position
     else:
         ecx, ecy, ecz = end_point
-    t2 = thickness*2
+    t2 = thickness * 2
     if align is LEFT:
         sx, sy, sz = start_point
         if end:
@@ -491,7 +564,14 @@ def directional_blob_path(start_point=None, end_point=None, adjust=None, align=L
     inner_path.lineTo(ecx, ecy)
     return path.simplified(), inner_path, []
 
+
 def directional_blob_icon(painter, rect, color=None):
+    """
+
+    :param painter:
+    :param rect:
+    :param color:
+    """
     sx, sy = 0, 0
     w = rect.width()
     h = rect.height()
@@ -500,8 +580,16 @@ def directional_blob_icon(painter, rect, color=None):
     path.lineTo(ex, ey)
     painter.drawPath(path)
 
+
 def no_path_icon(painter, rect, color=None):
+    """
+
+    :param painter:
+    :param rect:
+    :param color:
+    """
     pass
+
 
 SHAPE_PRESETS = OrderedDict([
     ('shaped_cubic', {

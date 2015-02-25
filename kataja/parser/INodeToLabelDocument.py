@@ -1,4 +1,3 @@
-
 __author__ = 'purma'
 
 from PyQt5 import QtGui, QtCore
@@ -17,7 +16,7 @@ def parse_inode(inode, document, gloss_in_view=True, features_in_view=True):
     :param gloss_in_view:
     :param features_in_view:
     """
-    assert(isinstance(document, LabelDocument))
+    assert (isinstance(document, LabelDocument))
     document.clear()
     if isinstance(inode, IFeatureNode):
         parse_ifeaturenode(inode, document)
@@ -36,6 +35,7 @@ def parse_iconstituentnode_for_viewing(inode, document, gloss_in_view=True, feat
     :param features_in_view: include features in label complex (alternative is to have them as free floating nodes)
     :return:
     """
+
     def write_index(index, cursor):
         old_format = QtGui.QTextCharFormat(cursor.charFormat())
         c = QtGui.QTextCharFormat()
@@ -91,16 +91,15 @@ def parse_iconstituentnode_for_viewing(inode, document, gloss_in_view=True, feat
     document.block_order = actual_block_order
 
 
-
 def parse_iconstituentnode_for_editing(inode, document):
     """ Write all fields into one document for easier editing -- if field is empty, leave a blank row as a placeholder
     :param inode: IConstituentNode
     :param document: LabelDocument
     :return:
     """
-    #o = QtGui.QTextOption()
-    #o.setFlags(QtGui.QTextOption.ShowLineAndParagraphSeparators |
-    #           QtGui.QTextOption.AddSpaceForLineAndParagraphSeparators)
+    # o = QtGui.QTextOption()
+    # o.setFlags(QtGui.QTextOption.ShowLineAndParagraphSeparators |
+    # QtGui.QTextOption.AddSpaceForLineAndParagraphSeparators)
     #document.setDefaultTextOption(o)
     cursor = QtGui.QTextCursor(document)
     first = document.block_order[0]
@@ -140,7 +139,6 @@ def parse_ifeaturenode(inode, document):
     """
     cursor = QtGui.QTextCursor(document)
     write_node_to_document(inode.label, cursor)
-
 
 
 def run_command(command, cursor):
@@ -198,7 +196,7 @@ def write_node_to_document(n, cursor, raw=False):
             old_format = QtGui.QTextCharFormat(cursor.charFormat())
             run_command(n.command, cursor)
         for part in n.parts:
-            if isinstance(part, ITextNode): # ITextNode includes also ICommandNodes and IConstituentNodes
+            if isinstance(part, ITextNode):  # ITextNode includes also ICommandNodes and IConstituentNodes
                 write_node_to_document(part, cursor)
             else:
                 cursor.insertText(part)

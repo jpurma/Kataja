@@ -22,18 +22,18 @@
 #
 # ############################################################################
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtGui
 
-from kataja.singletons import ctrl, prefs, qt_prefs
+from kataja.singletons import ctrl
 from kataja.Node import Node
 from kataja.utils import to_tuple
 import kataja.globals as g
 from kataja.parser import KatajaNodeToINode
 
 # ctrl = Controller object, gives accessa to other modules
-from kataja.parser import LatexToINode
 
 TRIANGLE_HEIGHT = 10
+
 
 class ConstituentNode(Node):
     """ ConstituentNodes are graphical representations of constituents. They are primary objects and need to support saving and loading."""
@@ -353,7 +353,7 @@ class ConstituentNode(Node):
 
         :param kw:
         """
-        #print("For node %s: %s" % (self, str(kw)))
+        # print("For node %s: %s" % (self, str(kw)))
         self._visibility_brackets = kw.get('brackets', self._visibility_brackets)
         was_visible = self.visible
         visible = not self.folded_away
@@ -470,7 +470,7 @@ class ConstituentNode(Node):
         :param value:
         :param string:
         """
-        assert(self.syntactic_object)
+        assert (self.syntactic_object)
         if syntactic_feature:
             if ctrl.forest.settings.draw_features:
                 ctrl.forest.create_feature_node(self, syntactic_feature)
@@ -514,17 +514,17 @@ class ConstituentNode(Node):
         """
         pass
         # if not self.syntactic_object:
-        #     return
+        # return
         # current_features = set([x.syntactic_object.get() for x in self.get_features()])
         # correct_features = self.syntactic_object.features
         # print(current_features, correct_features)
         # for key, item in correct_features.items():
-        #     if key not in current_features:
-        #         self.set_feature(syntactic_feature=item, key=key)
-        #     else:
-        #         current_features.remove(key)
+        # if key not in current_features:
+        # self.set_feature(syntactic_feature=item, key=key)
+        # else:
+        # current_features.remove(key)
         # if current_features:
-        #     print('leftover features:', current_features)
+        # print('leftover features:', current_features)
 
 
     # ### Labels #############################################
@@ -578,8 +578,8 @@ class ConstituentNode(Node):
         tx, ty, tz = triangle.computed_position
         self.adjustment = triangle.adjustment
         self.computed_position = (tx, ty + 30, tz)  # , fast = True)
-        #for feature in self.features:
-        #    feature.fade_out()
+        # for feature in self.features:
+        # feature.fade_out()
 
     def finish_folding(self):
         """ Hide, and remember why this is hidden """
@@ -591,7 +591,6 @@ class ConstituentNode(Node):
     def paint_triangle(self, painter):
         """ Drawing the triangle, called from paint-method
         :param painter:
-        :param draw_rect:
         """
         br = self.boundingRect()
         left = br.x()
@@ -649,28 +648,32 @@ class ConstituentNode(Node):
             self.paint_triangle(painter)
         elif rect:
             painter.drawRect(self.inner_rect)
-            #if self.uses_scope_area:
-            #    self.paint_scope_rect(painter, rect)
+            # if self.uses_scope_area:
+            # self.paint_scope_rect(painter, rect)
 
     # def itemChange(self, change, value):
-    #     """ Whatever menus or UI objects are associated with object, they move
-    #     :param change:
-    #     :param value:
-    #     when node moves """
-    #     if change == QtWidgets.QGraphicsItem.ItemPositionHasChanged:
-    #         #if self.ui_menu and self.ui_menu.isVisible():
-    #         #    self.ui_menu.update_position(drag=True)
-    #         if self._hovering or ctrl.focus == self:
-    #             pass
-    #             # print 'ctrl.ui problem here!'
-    #             # assert(False)
-    #             # if ctrl.ui.is_target_reticle_over(self):
-    #             # ctrl.ui.update_target_reticle_position()
-    #     return QtWidgets.QGraphicsItem.itemChange(self, change, value)
+    # """ Whatever menus or UI objects are associated with object, they move
+    # :param change:
+    # :param value:
+    # when node moves """
+    # if change == QtWidgets.QGraphicsItem.ItemPositionHasChanged:
+    # #if self.ui_menu and self.ui_menu.isVisible():
+    # #    self.ui_menu.update_position(drag=True)
+    # if self._hovering or ctrl.focus == self:
+    # pass
+    # # print 'ctrl.ui problem here!'
+    # # assert(False)
+    # # if ctrl.ui.is_target_reticle_over(self):
+    # # ctrl.ui.update_target_reticle_position()
+    # return QtWidgets.QGraphicsItem.itemChange(self, change, value)
 
 
 
     def open_embed(self):
+        """
+
+
+        """
         ctrl.ui.start_constituent_editing(self)
 
 
@@ -749,10 +752,10 @@ class ConstituentNode(Node):
             else:
                 node.computed_position = (now_x + dx, now_y + dy, pz)
             # try:
-            #    assert (int(px - ax) == int(node._computed_position[0])) # position without adjustment
+            # assert (int(px - ax) == int(node._computed_position[0])) # position without adjustment
             # except AssertionError:
-            #    print 'Assertion error:'
-            #    print px - ax, py - ay, node._computed_position
+            # print 'Assertion error:'
+            # print px - ax, py - ay, node._computed_position
             node.current_position = (now_x + dx, now_y + dy, pz)
 
     def drop_to(self, x, y, recipient=None):
@@ -800,6 +803,11 @@ class ConstituentNode(Node):
 
     @property
     def hovering(self):
+        """
+
+
+        :return:
+        """
         return self._hovering
 
     @hovering.setter
@@ -826,6 +834,10 @@ class ConstituentNode(Node):
 
 
     def dropEvent(self, event):
+        """
+
+        :param event:
+        """
         print("CN dropEvent")
 
 

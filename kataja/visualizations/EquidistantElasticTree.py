@@ -26,9 +26,6 @@
 import math
 
 from kataja.visualizations.BaseVisualization import BaseVisualization
-from kataja.ConstituentNode import ConstituentNode
-from kataja.FeatureNode import FeatureNode
-from kataja.GlossNode import GlossNode
 import kataja.globals as g
 
 
@@ -112,8 +109,8 @@ class EquidistantElasticTree(BaseVisualization):
                     yvel += dist_y * push
                 else:
                     pass
-            #else:
-            #print('hidden edges up')
+                    # else:
+                    # print('hidden edges up')
         for edge in node.edges_down:
             if edge.is_visible():
                 start_x, start_y, start_z = edge.start_point
@@ -136,8 +133,8 @@ class EquidistantElasticTree(BaseVisualization):
                     yvel += dist_y * push
                 else:
                     pass
-            #else:
-            #print('hidden edges down')
+                    # else:
+                    # print('hidden edges down')
         if node.bind_x:
             xvel = 0
         if node.bind_y:

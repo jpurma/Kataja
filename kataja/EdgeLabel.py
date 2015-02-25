@@ -22,10 +22,11 @@
 #
 # ############################################################################
 
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import QPointF as Pf, Qt
 import math
 
+from PyQt5 import QtCore, QtGui, QtWidgets
+
+from PyQt5.QtCore import QPointF as Pf, Qt
 from kataja.singletons import ctrl
 import kataja.utils as utils
 
@@ -54,7 +55,7 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
             return
         if not self._local_drag_handle_position:
             self._local_drag_handle_position = self.mapFromScene(event.buttonDownScenePos(Qt.LeftButton))
-        self.compute_angle_for_pos(event.scenePos(),  self._local_drag_handle_position)
+        self.compute_angle_for_pos(event.scenePos(), self._local_drag_handle_position)
         self.update()
 
     def being_dragged(self):
@@ -88,7 +89,7 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         tlx, tly = top_left.x(), top_left.y()
         smallest_d = 10000
         closest_magnet = None
-        for x,y in self.magnet_positions():
+        for x, y in self.magnet_positions():
             d = abs((tlx + x) - spx) + abs((tly + y) - spy)
             if d < smallest_d:
                 smallest_d = d
@@ -102,13 +103,13 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         dy = spy - epy
         angle = math.degrees(math.atan2(dy, dx)) + 180
         if angle < 22.5 or angle >= 327.5:
-            i = 3 # left middle
+            i = 3  # left middle
         elif 22.5 <= angle < 67.5:
-            i = 0 # left top
+            i = 0  # left top
         elif 67.5 <= angle < 112.5:
-            i = 1 # center top
+            i = 1  # center top
         elif 112.5 <= angle < 147.5:
-            i = 2 #
+            i = 2  #
         elif 147.5 <= angle < 202.5:
             i = 4
         elif 202.5 <= angle < 247.5:
@@ -126,16 +127,16 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         angle = math.degrees(rad_angle)
         if angle > 315 or angle <= 45:
             # left middle
-            return Pf(0, s.height()/2)
+            return Pf(0, s.height() / 2)
         elif 45 < angle <= 135:
             # center top
-            return Pf(s.width()/2, 0)
+            return Pf(s.width() / 2, 0)
         elif 135 < angle <= 225:
             # right middle
-            return Pf(s.width(), s.height()/2)
+            return Pf(s.width(), s.height() / 2)
         elif 225 < angle <= 315:
-            #center bottom
-            return Pf(s.width()/2, s.height())
+            # center bottom
+            return Pf(s.width() / 2, s.height())
 
     def compute_angle_for_pos(self, event_pos, adjustment):
         """
@@ -144,9 +145,9 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         """
         edge = self.parentItem()
         start_pos, end_point = edge.get_label_line_positions()
-        #closest_magnet = self.find_closest_magnet(top_left, start_pos)
-        #line_x = top_left.x() + closest_magnet[0] - start_pos.x()
-        #line_y = top_left.y() + closest_magnet[1] - start_pos.y()
+        # closest_magnet = self.find_closest_magnet(top_left, start_pos)
+        # line_x = top_left.x() + closest_magnet[0] - start_pos.x()
+        # line_y = top_left.y() + closest_magnet[1] - start_pos.y()
         line_x = event_pos.x() - start_pos.x()
         line_y = event_pos.y() - start_pos.y()
         rad = math.atan2(line_y, line_x)
@@ -166,16 +167,16 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
 
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget):
         if self.being_dragged():
-            #p = QtGui.QPen(ctrl.cm.ui_tr())
-            #p.setWidthF(0.5)
-            #QPainter.setPen(p)
+            # p = QtGui.QPen(ctrl.cm.ui_tr())
+            # p.setWidthF(0.5)
+            # QPainter.setPen(p)
             pos = self.pos()
             sp, end_point = self.parentItem().get_label_line_positions()
             ex, ey = utils.to_tuple(self.mapFromScene(pos))
             epx, epy = utils.to_tuple(self.mapFromScene(end_point))
             sx, sy = utils.to_tuple(self.mapFromScene(sp))
-            #for mx, my in self.magnet_positions():
-            #    QPainter.drawLine(sx, sy, ex + mx, ey + my)
+            # for mx, my in self.magnet_positions():
+            # QPainter.drawLine(sx, sy, ex + mx, ey + my)
             mx, my = self.find_closest_magnet(pos, sp)
             p = QtGui.QPen(ctrl.cm.ui_tr())
             p.setWidthF(0.5)
@@ -186,7 +187,6 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
             p.setWidthF(2.0)
             QPainter.setPen(p)
             QPainter.drawEllipse(self.mapFromScene(end_point), 4, 4)
-
 
         if self.selected:
             p = QtGui.QPen(ctrl.cm.ui_tr())

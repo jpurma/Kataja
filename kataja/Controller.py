@@ -68,7 +68,7 @@ class Controller:
         self.ui_pressed = None  # set() # different coordinates to pressed set
         self.dragged = set()
         self.dragged_positions = set()
-        self.latest_hover = None # used only while dragging, because standard hovering doesn't work while dragging
+        self.latest_hover = None  # used only while dragging, because standard hovering doesn't work while dragging
         self.ui_focus = None
         self.focus_point = None
         self.selection_tool = False
@@ -84,12 +84,11 @@ class Controller:
         self.watch_for_drag_end = False
         self.items_moving = False
         # -- After user action, should the visualization be redrawn and should it make an undo savepoint
-        #   these are True by default, but action method may toggle them off temporarily. The next action will
-        #   set these back on.
+        # these are True by default, but action method may toggle them off temporarily. The next action will
+        # set these back on.
         self.action_redraw = True
         self.action_undo = True
         # ---------------------------
-
 
 
     def late_init(self, main):
@@ -247,8 +246,8 @@ class Controller:
 
         :param obj:
         """
-        #if hasattr(obj, 'info_dump'):
-        #    obj.info_dump()
+        # if hasattr(obj, 'info_dump'):
+        # obj.info_dump()
         old_selected = list(self.selected)
         if self.selected:
             self.deselect_objects(update_ui=False)

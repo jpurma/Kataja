@@ -1,6 +1,3 @@
-from collections import OrderedDict
-import pprint
-
 from PyQt5 import QtWidgets, QtCore, QtGui
 
 from kataja.ui.panels.UIPanel import UIPanel
@@ -126,7 +123,7 @@ class SymbolPanel(UIPanel):
         self.symlist.setFocusPolicy(QtCore.Qt.NoFocus)
         self.symlist.setViewMode(QtWidgets.QListWidget.IconMode)
         f = QtGui.QFont(qt_prefs.fonts[g.MAIN_FONT])
-        f.setPointSize(f.pointSize()*1.5)
+        f.setPointSize(f.pointSize() * 1.5)
         self.symlist.setFont(f)
         self.symlist.itemEntered.connect(self.item_entered)
         self.symlist.itemClicked.connect(self.item_clicked)
@@ -154,17 +151,17 @@ class SymbolPanel(UIPanel):
 
     def prepare_symbols(self, key):
         self.symlist.clear()
-        #debug_dict = OrderedDict()
+        # debug_dict = OrderedDict()
         for key in self.tables[key]:
             char, description, table = latex_to_unicode[key]
-            #debug_dict[key] = (char, description)
+            # debug_dict[key] = (char, description)
             command = '\\' + key
             item = QtWidgets.QListWidgetItem(char)
             item.setToolTip(command)
             item.setData(55, {'char': char, 'description': description, 'command': command})
             self.symlist.addItem(item)
-        #pp = pprint.PrettyPrinter(indent=4)
-        #pp.pprint(list(debug_dict.keys()))
+            # pp = pprint.PrettyPrinter(indent=4)
+            # pp.pprint(list(debug_dict.keys()))
 
     def item_entered(self, item):
         self.info.setText(item.data(55)['description'])

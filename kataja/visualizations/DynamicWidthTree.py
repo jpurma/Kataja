@@ -131,7 +131,7 @@ class DynamicWidthTree(BaseVisualization):
                         dx = max((-1, -1.0 / d1))
                     else:  # |NOOTDHEER| node is overlapping with the other node
                         dx = -3  # abs(other.force / (dist_x + width))
-                elif leaf and d1 < 0:  #  is: OTHER | NODE
+                elif leaf and d1 < 0:  # is: OTHER | NODE
                     dx = -.7
             else:  # should be: OTHER | NODE
                 if abs(dist_y) < 20:  # nodes in same row

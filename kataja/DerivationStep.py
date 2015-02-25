@@ -108,10 +108,8 @@ class DerivationStep(Savable):
         done = set()
         for node in ctrl.forest.list_nodes_once(root_node):
             if node not in done:
-                data = {'node': node}
+                data = {'node': node, 'edges_up': list(node.edges_up), 'edges_down': list(node.edges_down)}
                 # these are the undoable changes, add data when necessary
-                data['edges_up'] = list(node.edges_up)
-                data['edges_down'] = list(node.edges_down)
                 if hasattr(node, 'index'):
                     data['index'] = node.index
                 else:
@@ -133,11 +131,11 @@ class DerivationStep(Savable):
             node.edges_down = []
             for edge_down in data['edges_down']:
                 child = edge_down.end
-                ctrl.forest._connect_node(parent=node, child=child, edge_type=edge_down.edge_type)
+                ctrl.forest.connect_node(parent=node, child=child, edge_type=edge_down.edge_type)
             node.edges_up = []
             for edge_up in data['edges_up']:
                 parent = edge_up.start
-                ctrl.forest._connect_node(parent=parent, child=node, edge_type=edge_up.edge_type)
+                ctrl.forest.connect_node(parent=parent, child=node, edge_type=edge_up.edge_type)
             node.index = data['index']
             ctrl.forest.store(node)
         return root
@@ -151,7 +149,6 @@ class DerivationStep(Savable):
             root = self.rebuild_tree_from_snapshot(root_data)
             ctrl.forest.update_root_status(root)
         ctrl.forest.chain_manager.chains = self.chains
-
 
 
 class DerivationStepManager(Savable):

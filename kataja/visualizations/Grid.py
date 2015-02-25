@@ -31,8 +31,8 @@ class Grid:
 
     def __init__(self):
         self._rows = []
-        self._width = 0
-        self._height = 0
+        self.width = 0
+        self.height = 0
 
     def __str__(self):
         rowlist = []
@@ -66,9 +66,9 @@ class Grid:
         :param x: int
         :param y: int
         """
-        assert(x >= 0)
-        assert(y >= 0)
-        if x > self._width - 1 or y > self._height - 1:
+        assert (x >= 0)
+        assert (y >= 0)
+        if x > self.width - 1 or y > self.height - 1:
             return None
         else:
             return self._rows[y][x]
@@ -84,10 +84,10 @@ class Grid:
         :param h: int
         """
         try:
-            assert(isinstance(x, int))
-            assert(isinstance(y, int))
-            assert(x >= 0)
-            assert(y >= 0)
+            assert (isinstance(x, int))
+            assert (isinstance(y, int))
+            assert (x >= 0)
+            assert (y >= 0)
         except AssertionError:
             print('Bad coordinates in grid: ', x, y)
         if w > 1 or h > 1:
@@ -108,21 +108,21 @@ class Grid:
                     self.set(nx, ny, 1)
             self.set(x, y, item)
         else:
-            while x > self._width - 1:
+            while x > self.width - 1:
                 for row in self._rows:
                     row.append(0)
-                self._width += 1
-            while y > self._height - 1:
-                new_row = [0] * self._width
+                self.width += 1
+            while y > self.height - 1:
+                new_row = [0] * self.width
                 self._rows.append(new_row)
-                self._height += 1
+                self.height += 1
             try:
                 self._rows[y][x] = item
             except IndexError:
                 print('catched index error')
                 print(self._rows, len(self._rows), y, x)
-            assert len(self._rows[y]) == self._width
-            assert len(self._rows) == self._height
+            assert len(self._rows[y]) == self.width
+            assert len(self._rows) == self.height
 
     def row(self, y):
         """
@@ -130,7 +130,7 @@ class Grid:
         :param y:
         :return:
         """
-        if y < self._height:
+        if y < self.height:
             return self._rows[y]
         else:
             return []
@@ -176,8 +176,8 @@ class Grid:
         """
         Add one row to the grid.
         """
-        row = self._width * [0]
-        self._height += 1
+        row = self.width * [0]
+        self.height += 1
         self._rows.insert(0, row)
 
     def __iter__(self):
@@ -186,7 +186,7 @@ class Grid:
 # def _closestDistance(nodeA, nodeB,Ax,Ay):
 # nodeAx=Ax or nodeA.pos_tuple[0]
 # nodeAy=Ay or nodeA.pos_tuple[1]
-#    nodeBx=nodeB.pos_tuple[0]
+# nodeBx=nodeB.pos_tuple[0]
 #    nodeBy=nodeB.pos_tuple[1]
 #    dist_x=nodeAx-nodeBx
 #    dist_y=nodeAy-nodeBy

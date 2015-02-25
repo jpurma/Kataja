@@ -28,16 +28,16 @@ class TestPanel(UIPanel):
         for box_base, box_text in boxes:
             color_button = ColorBox(box_base, box_text)
             layout.addWidget(color_button)
-        #layout.setSizeConstraint(QtWidgets.QLayout.SetMinimumSize)
-        #layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
+        # layout.setSizeConstraint(QtWidgets.QLayout.SetMinimumSize)
+        # layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
         inner.setLayout(layout)
         self.setWidget(inner)
         self.finish_init()
 
 
 
-   # def secondary(self):
-   #  def selection(self):
-   #  def ui_hover(self):
-   #  def ui_active(self):
-   #  def ui_selected(self):
+        # def secondary(self):
+        # def selection(self):
+        # def ui_hover(self):
+        #  def ui_active(self):
+        #  def ui_selected(self):

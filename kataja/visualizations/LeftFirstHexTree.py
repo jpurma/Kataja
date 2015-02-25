@@ -146,10 +146,10 @@ class LeftFirstHexTree(BaseVisualization):
             node.computed_position = (d['x'], d['y'], 0)
             left = node.left()
             if left:
-                draw_node(left, node, is_left=True, allow_crossing=allow_crossing)
+                draw_node(left, node)
             right = node.right()
             if right:
-                draw_node(right, node, is_left=False, allow_crossing=allow_crossing)
+                draw_node(right, node)
 
         def draw_node_old(node, parent, is_left=False, allow_crossing=False):
             """
@@ -165,10 +165,10 @@ class LeftFirstHexTree(BaseVisualization):
 
             right = node.right()
             if right and self.should_we_draw(right, node):
-                draw_node(right, node, is_left=False, allow_crossing=allow_crossing)
+                draw_node(right, node)
             left = node.left()
             if left and self.should_we_draw(left, node):
-                draw_node(left, node, is_left=True, allow_crossing=allow_crossing)
+                draw_node(left, node)
 
             if self.iterations > 100:
                 print(self.iterations)

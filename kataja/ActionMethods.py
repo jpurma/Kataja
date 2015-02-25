@@ -3,10 +3,12 @@ import pickle
 import pprint
 import shlex
 import time
-from PyQt5.QtCore import Qt
+import subprocess
+
 from PyQt5 import QtGui
 from PyQt5 import QtWidgets
-import subprocess
+
+from PyQt5.QtCore import Qt
 from kataja.errors import ForestError
 import kataja.debug as debug
 from kataja.ui.PreferencesDialog import PreferencesDialog
@@ -14,10 +16,12 @@ from kataja.Edge import SHAPE_PRESETS, Edge
 from kataja.UIManager import PANELS
 from kataja.visualizations.available import action_key
 
+
 __author__ = 'purma'
 
-from kataja.singletons import ctrl, prefs, qt_prefs
+from kataja.singletons import ctrl, prefs
 import kataja.globals as g
+
 
 def _get_triggered_host():
     host = None
@@ -26,6 +30,7 @@ def _get_triggered_host():
             item.just_triggered = False
             host = item.host
     return host
+
 
 class ActionMethods:
     """ These are the methods that are triggered by actions defined in actions.py. Try to keep them in same order as in
@@ -77,7 +82,7 @@ class ActionMethods:
 
         # inspection doesn't recognize that getOpenFileName is static, switch it off:
         # noinspection PyTypeChecker,PyCallByClass
-        #filename, filetypes = QtWidgets.QFileDialog.getOpenFileName(self.main, "Open KatajaMain tree", "", file_help)
+        # filename, filetypes = QtWidgets.QFileDialog.getOpenFileName(self.main, "Open KatajaMain tree", "", file_help)
         filename = 'savetest.kataja'
         if filename:
             self.main.load_state_from_file(filename)
@@ -93,14 +98,14 @@ class ActionMethods:
         t = time.time()
         pickle_format = 4
         if filename.endswith('.zkataja'):
-            #f = gzip.open(filename, 'wb')
+            # f = gzip.open(filename, 'wb')
             f = open(filename, 'wb')
         else:
             f = open(filename, 'wb')
         pickle_worker = pickle.Pickler(f, protocol=pickle_format)
         pickle_worker.dump(all_data)
         f.close()
-        ctrl.main.add_message("Saved to '%s'. Took %s seconds." % (filename, time.time()-t))
+        ctrl.main.add_message("Saved to '%s'. Took %s seconds." % (filename, time.time() - t))
         return
         t = time.time()
         filename = prefs.file_name + '.dict'
@@ -109,13 +114,13 @@ class ActionMethods:
         print('is readable: ', pprint.isreadable(all_data))
         pp.pprint(all_data)
         f.close()
-        ctrl.main.add_message("Saved to '%s'. Took %s seconds." % (filename, time.time()-t))
+        ctrl.main.add_message("Saved to '%s'. Took %s seconds." % (filename, time.time() - t))
 
         filename = prefs.file_name + '.json'
         f = open(filename, 'w')
         json.dump(all_data, f, indent="\t", sort_keys=False)
         f.close()
-        ctrl.main.add_message("Saved to '%s'. Took %s seconds." % (filename, time.time()-t))
+        ctrl.main.add_message("Saved to '%s'. Took %s seconds." % (filename, time.time() - t))
         # fileFormat  = action.data().toByteArray()
         # self.saveFile(fileFormat)
 
@@ -143,12 +148,12 @@ class ActionMethods:
         gloss = prefs.include_gloss_to_print
         if gloss:
             sc.photo_frame = sc.addRect(sc.visible_rect_and_gloss().adjusted(-1, -1, 2, 2),
-                                                                    ctrl.cm.drawing())
+                                        ctrl.cm.drawing())
         else:
             if ctrl.forest.gloss and ctrl.forest.gloss.isVisible():
                 ctrl.forest.gloss.hide()
             sc.photo_frame = sc.addRect(sc.visible_rect().adjusted(-1, -1, 2, 2),
-                                                                    ctrl.cm.selection())
+                                        ctrl.cm.selection())
         sc.update()
         ctrl.graph_view.repaint()
         ctrl.main.startTimer(50)
@@ -293,6 +298,8 @@ class ActionMethods:
         """
 
 
+
+        :param shape:
         """
         if shape and shape in SHAPE_PRESETS:
             ctrl.forest.settings.edge_shape_name(g.CONSTITUENT_EDGE, shape)
@@ -375,6 +382,11 @@ class ActionMethods:
         p.update_panel()
 
     def change_edge_shape(self, shape):
+        """
+
+        :param shape:
+        :return:
+        """
         if shape is g.AMBIGUOUS_VALUES:
             return
         scope = ctrl.ui.get_panel(g.EDGES).scope
@@ -392,6 +404,11 @@ class ActionMethods:
         ctrl.main.add_message('(s) Changed relation shape to: %s' % shape)
 
     def change_edge_color(self, color):
+        """
+
+        :param color:
+        :return:
+        """
         if color is g.AMBIGUOUS_VALUES:
             return
         panel = ctrl.ui.get_panel(g.EDGES)
@@ -402,16 +419,20 @@ class ActionMethods:
             for edge in ctrl.get_all_selected():
                 if isinstance(edge, Edge):
                     edge.color(color)
-                    #edge.update_shape()
+                    # edge.update_shape()
                     edge.update()
         elif panel.scope:
             ctrl.forest.settings.edge_type_settings(panel.scope, 'color', color)
-            #ctrl.announce(g.EDGE_SHAPES_CHANGED, scope, color)
+            # ctrl.announce(g.EDGE_SHAPES_CHANGED, scope, color)
         panel.update_color(color)
         panel.update_panel()
         ctrl.main.add_message('(s) Changed relation color to: %s' % ctrl.cm.get_color_name(color))
 
     def toggle_line_options(self):
+        """
+
+
+        """
         print('toggle line options')
         lo = ctrl.ui.get_panel(g.LINE_OPTIONS)
         if lo:
@@ -441,9 +462,15 @@ class ActionMethods:
                     edge.adjust_control_point_xy(cp_index, dim, value)
 
     def change_leaf_shape(self, dim, value=0):
-        #if value is g.AMBIGUOUS_VALUES:
-        #  if we need this, we'll need to find some impossible ambiguous value to avoid weird, rare incidents
-        #    return
+        # if value is g.AMBIGUOUS_VALUES:
+        # if we need this, we'll need to find some impossible ambiguous value to avoid weird, rare incidents
+        # return
+        """
+
+        :param dim:
+        :param value:
+        :raise ValueError:
+        """
         panel = ctrl.ui.get_panel(g.EDGES)
         if panel.scope == g.SELECTION:
             for edge in ctrl.get_all_selected():
@@ -462,11 +489,16 @@ class ActionMethods:
             else:
                 raise ValueError
             ctrl.announce(g.EDGE_SHAPES_CHANGED, panel.scope, value)
-        #panel.update_color(color)
-        #panel.update_panel()
-        #ctrl.main.add_message('(s) Changed relation color to: %s' % ctrl.cm.get_color_name(color))
+            # panel.update_color(color)
+            # panel.update_panel()
+            # ctrl.main.add_message('(s) Changed relation color to: %s' % ctrl.cm.get_color_name(color))
 
     def change_edge_thickness(self, dim, value=0):
+        """
+
+        :param dim:
+        :param value:
+        """
         panel = ctrl.ui.get_panel(g.EDGES)
         if panel.scope == g.SELECTION:
             for edge in ctrl.get_all_selected():
@@ -483,6 +515,12 @@ class ActionMethods:
 
 
     def change_curvature(self, dim, value=0):
+        """
+
+        :param dim:
+        :param value:
+        :raise ValueError:
+        """
         panel = ctrl.ui.get_panel(g.EDGES)
         if panel.scope == g.SELECTION:
             for edge in ctrl.get_all_selected():
@@ -520,6 +558,10 @@ class ActionMethods:
             ctrl.announce(g.EDGE_SHAPES_CHANGED, panel.scope, value)
 
     def change_edge_asymmetry(self, value):
+        """
+
+        :param value:
+        """
         print('changing asymmetry: ', value)
 
     def change_visualization(self, i=None):
@@ -542,13 +584,16 @@ class ActionMethods:
     ##### Node panel
 
     def add_node(self, ntype=None):
+        """
+
+        :param ntype:
+        """
         if ntype is None:
             panel = ctrl.ui.get_panel(g.NODES)
             clicked = panel.which_add_button_was_clicked()
             if clicked:
                 key, button = clicked
                 print(key, button)
-
 
 
     # help -action (h)
@@ -571,12 +616,21 @@ class ActionMethods:
 
     # ui
     def close_embeds(self):
+        """
+
+
+        """
         ctrl.ui.close_new_element_embed()
         ctrl.ui.close_edge_label_editing()
         ctrl.ui.close_constituent_editing()
 
     # ui
     def new_element_accept(self):
+        """
+
+
+        :return:
+        """
         type = ctrl.ui.get_new_element_type_selection()
         text = ctrl.ui.get_new_element_text()
         p1, p2 = ctrl.ui.get_new_element_embed_points()
@@ -585,7 +639,7 @@ class ActionMethods:
         if type == g.GUESS_FROM_INPUT:
             print("Guessing input type")
             # we can add a test if line p1 - p2 crosses several edges, then it can be a divider
-            #Fixme Use screen coordinates instead, as if zoomed out, the default line can already be long enough. oops.
+            # Fixme Use screen coordinates instead, as if zoomed out, the default line can already be long enough. oops.
             if (p1 - p2).manhattanLength() > 20 and not text.startswith('['):
                 # It's an Arrow!
                 self.create_new_arrow()
@@ -596,6 +650,10 @@ class ActionMethods:
         ctrl.ui.close_new_element_embed()
 
     def create_new_arrow(self):
+        """
+
+
+        """
         print("New arrow called")
         p1, p2 = ctrl.ui.get_new_element_embed_points()
         text = ctrl.ui.get_new_element_text()
@@ -603,19 +661,27 @@ class ActionMethods:
         ctrl.ui.close_new_element_embed()
 
     def create_new_divider(self):
+        """
+
+
+        """
         print("New divider called")
         p1, p2 = ctrl.ui.get_new_element_embed_points()
         ctrl.ui.close_new_element_embed()
 
-    #ui
+    # ui
     def edge_label_accept(self, **args):
+        """
+
+        :param args:
+        """
         print('edge label accept, ', args)
         e = ctrl.ui.get_edge_label_embed()
         if e:
             e.edge.label_text = e.input_line_edit.text()
         ctrl.ui.close_edge_label_editing()
 
-    #ui
+    # ui
     def edge_disconnect(self):
         """
         :return:
@@ -649,6 +715,11 @@ class ActionMethods:
         ctrl.ui.update_selections()
 
     def remove_merger(self):
+        """
+
+
+        :return:
+        """
         node = _get_triggered_host()
         if not node:
             return
@@ -656,6 +727,11 @@ class ActionMethods:
         ctrl.forest.delete_unnecessary_merger(node)
 
     def add_triangle(self):
+        """
+
+
+        :return:
+        """
         node = _get_triggered_host()
         if not node:
             return
@@ -664,6 +740,11 @@ class ActionMethods:
         ctrl.ui.update_selections()
 
     def remove_triangle(self):
+        """
+
+
+        :return:
+        """
         node = _get_triggered_host()
         if not node:
             return
@@ -673,6 +754,11 @@ class ActionMethods:
 
     ###### Constituent editing #################
     def finish_constituent_edit(self):
+        """
+
+
+        :return:
+        """
         print('Edited constituent!')
         embed = ctrl.ui.get_constituent_edit_embed()
         if not embed.node:
@@ -682,12 +768,20 @@ class ActionMethods:
         ctrl.ui.close_constituent_editing()
 
     def toggle_raw_editing(self):
+        """
+
+
+        """
         embed = ctrl.ui.get_constituent_edit_embed()
         embed.toggle_raw_edit(embed.raw_button.isChecked())
 
 
     ###### Keys #################
     def key_backspace(self):
+        """
+
+
+        """
         print('Backspace pressed')
         for item in ctrl.get_all_selected():
             ctrl.forest.delete_item(item)

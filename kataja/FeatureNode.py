@@ -24,7 +24,6 @@
 
 import random
 
-from kataja.singletons import qt_prefs
 from kataja.globals import FEATURE_EDGE, FEATURE_NODE
 from kataja.Node import Node
 

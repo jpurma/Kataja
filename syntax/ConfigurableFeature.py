@@ -74,14 +74,28 @@ class Feature(Savable):
 
     @property
     def key(self):
+        """
+
+
+        :return:
+        """
         return self.saved.fkey
 
     @key.setter
     def key(self, value):
+        """
+
+        :param value:
+        """
         self.saved.fkey = value
 
     @property
     def value(self):
+        """
+
+
+        :return:
+        """
         if self.saved.values:
             return self.saved.values[0]
         else:
@@ -89,14 +103,27 @@ class Feature(Savable):
 
     @value.setter
     def value(self, value):
+        """
+
+        :param value:
+        """
         self.saved.values = [value]
 
     @property
     def values(self):
+        """
+
+
+        :return:
+        """
         return self.saved.values
 
     @values.setter
     def values(self, value):
+        """
+
+        :param value:
+        """
         if isinstance(value, list):
             self.saved.values = value
         else:

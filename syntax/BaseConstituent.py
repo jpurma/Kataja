@@ -59,6 +59,11 @@ class BaseConstituent(Savable):
 
     @property
     def features(self):
+        """
+
+
+        :return:
+        """
         return self.saved.features
 
     @features.setter
@@ -79,18 +84,36 @@ class BaseConstituent(Savable):
 
     @property
     def sourcestring(self):
+        """
+
+
+        :return:
+        """
         return self.saved.sourcestring
 
     @sourcestring.setter
     def sourcestring(self, value):
+        """
+
+        :param value:
+        """
         self.saved.sourcestring = value
 
     @property
     def label(self):
+        """
+
+
+        :return:
+        """
         return self.saved.label
 
     @label.setter
     def label(self, value):
+        """
+
+        :param value:
+        """
         if value is None:
             self.saved.label = ''
         else:
@@ -98,10 +121,19 @@ class BaseConstituent(Savable):
 
     @property
     def alias(self):
+        """
+
+
+        :return:
+        """
         return self.saved.alias
 
     @alias.setter
     def alias(self, value):
+        """
+
+        :param value:
+        """
         if value is None:
             self.saved.alias = ''
         else:
@@ -109,6 +141,11 @@ class BaseConstituent(Savable):
 
     @property
     def left(self):
+        """
+
+
+        :return:
+        """
         if self.saved.parts:
             return self.saved.parts[0]
         else:
@@ -116,6 +153,10 @@ class BaseConstituent(Savable):
 
     @left.setter
     def left(self, value):
+        """
+
+        :param value:
+        """
         if not self.saved.parts:
             self.saved.parts = [value]
         else:
@@ -123,6 +164,11 @@ class BaseConstituent(Savable):
 
     @property
     def right(self):
+        """
+
+
+        :return:
+        """
         if self.saved.parts and len(self.saved.parts) > 1:
             return self.saved.parts[1]
         else:
@@ -130,6 +176,10 @@ class BaseConstituent(Savable):
 
     @right.setter
     def right(self, value):
+        """
+
+        :param value:
+        """
         if self.saved.parts:
             if len(self.saved.parts) > 1:
                 self.saved.parts[1] = value
@@ -139,10 +189,19 @@ class BaseConstituent(Savable):
             self.saved.parts = [None, value]
     @property
     def gloss(self):
+        """
+
+
+        :return:
+        """
         return self.saved.gloss
 
     @gloss.setter
     def gloss(self, value):
+        """
+
+        :param value:
+        """
         if value is None:
             self.saved.gloss = ''
         else:
@@ -150,10 +209,19 @@ class BaseConstituent(Savable):
 
     @property
     def index(self):
+        """
+
+
+        :return:
+        """
         return self.saved.index
 
     @index.setter
     def index(self, value):
+        """
+
+        :param value:
+        """
         if value is None:
             self.saved.index = ''
         else:
@@ -187,6 +255,11 @@ class BaseConstituent(Savable):
 
 
     def print_tree(self):
+        """
+
+
+        :return:
+        """
         return self.__repr__()
         #
         # if self.is_leaf():

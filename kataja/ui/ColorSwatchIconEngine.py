@@ -26,6 +26,7 @@ from PyQt5 import QtGui
 
 from kataja.singletons import ctrl
 
+
 class ColorSwatchIconEngine(QtGui.QIconEngine):
     """ An icon which you can provide a method to draw on the icon """
 
@@ -38,7 +39,7 @@ class ColorSwatchIconEngine(QtGui.QIconEngine):
         QtGui.QIconEngine.__init__(self)
         self.color_key = color_key
 
-    #@caller
+    # @caller
     def paint(self, painter, rect, mode, state):
         """
 
@@ -53,6 +54,6 @@ class ColorSwatchIconEngine(QtGui.QIconEngine):
         painter.setPen(c.darker())
         painter.setBrush(c)
         painter.drawRoundedRect(rect, 2, 2)
-        #painter.fillRect(rect, ctrl.cm.get(self.color_key))
+        # painter.fillRect(rect, ctrl.cm.get(self.color_key))
 
 

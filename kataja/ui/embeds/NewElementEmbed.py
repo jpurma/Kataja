@@ -1,8 +1,10 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
+
 from kataja.ui.embeds.UIEmbed import UIEmbed
 from kataja.ui.DrawnIcons import ArrowIcon, DividerIcon
 from kataja.singletons import qt_prefs, ctrl, prefs
 import kataja.globals as g
+
 
 __author__ = 'purma'
 
@@ -43,6 +45,7 @@ class MarkerStartPoint(QtWidgets.QGraphicsItem):
     def drop_to(self, x, y, recipient=None):
         pass
 
+
 class NewElementMarker(QtWidgets.QGraphicsItem):
     """ Element marker is line drawn to graphics scene pointing from place where new element should go to
     embedded widget.
@@ -60,7 +63,7 @@ class NewElementMarker(QtWidgets.QGraphicsItem):
         self.update_position(scenePos=scenePos)
         self.start_point_cp = MarkerStartPoint(self)
         self.start_point_cp.show()
-        self.draggable = False # MarkerStartPoint is draggable, not this
+        self.draggable = False  # MarkerStartPoint is draggable, not this
         self.clickable = False
 
 
@@ -91,9 +94,7 @@ class NewElementMarker(QtWidgets.QGraphicsItem):
         self.end_point = self.mapFromScene(v.mapToScene(end_pos)).toPoint()
 
 
-
 class NewElementEmbed(UIEmbed):
-
     def __init__(self, parent, ui_manager, scenePos):
         UIEmbed.__init__(self, parent, ui_manager, scenePos)
         self.marker = None
@@ -118,9 +119,9 @@ class NewElementEmbed(UIEmbed):
         hlayout = QtWidgets.QHBoxLayout()
         self.input_action_selector = QtWidgets.QComboBox(self)
         for item in [g.GUESS_FROM_INPUT, g.ADD_CONSTITUENT, g.ADD_FEATURE, g.ADD_GLOSS, g.ADD_TEXT_BOX]:
-            self.input_action_selector.addItem(item, userData=item) # first item here can be translated
+            self.input_action_selector.addItem(item, userData=item)  # first item here can be translated
         hlayout.addWidget(self.input_action_selector)
-        self.enter_button = QtWidgets.QPushButton("↩") # U+21A9 &#8617;
+        self.enter_button = QtWidgets.QPushButton("↩")  # U+21A9 &#8617;
         self.enter_button.setMaximumWidth(20)
         ui_manager.connect_element_to_action(self.enter_button, 'new_element_enter_text')
 
@@ -149,7 +150,7 @@ class NewElementEmbed(UIEmbed):
 
 
 # line = new QFrame(w);
-#     line->setObjectName(QString::fromUtf8("line"));
-#     line->setGeometry(QRect(320, 150, 118, 3));
-#     line->setFrameShape(QFrame::HLine);
-#     line->setFrameShadow(QFrame::Sunken);
+# line->setObjectName(QString::fromUtf8("line"));
+# line->setGeometry(QRect(320, 150, 118, 3));
+# line->setFrameShape(QFrame::HLine);
+# line->setFrameShadow(QFrame::Sunken);

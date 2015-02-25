@@ -5,6 +5,7 @@ from kataja.singletons import ctrl
 
 __author__ = 'purma'
 
+
 class ShortcutSolver(QtCore.QObject):
     """ I want to have Shortcuts available in Menus and also to have 'button clicked' effect in panels when the
     relevant shortcut is pressed. Qt doesn't like ambiguous shortcuts, so we interrupt those and only pseudo-click
@@ -23,7 +24,7 @@ class ShortcutSolver(QtCore.QObject):
             act_data = self.ui_manager.actions[action.data()]
             element = act_data.get('ui_element', None)
             if element and isinstance(element, QtWidgets.QAbstractButton):
-                assert(element.isVisible())
+                assert (element.isVisible())
                 print('Coming from element, ', element, element.isVisible())
                 if element.isVisible():
                     element.animateClick()
@@ -31,6 +32,7 @@ class ShortcutSolver(QtCore.QObject):
             else:
                 print("Don't know how to handle this ambiguous shortcut in ", action)
         return False
+
 
 class ButtonShortcutFilter(QtCore.QObject):
     """ For some reason button shortcut sometimes focuses instead of clicks.
@@ -42,25 +44,23 @@ class ButtonShortcutFilter(QtCore.QObject):
             button.animateClick()
             return True
         return False
-    # events:
-    # paint: 12
-    # WindowActivate: 24
-    # WindowDeactivate: 25
-    # StatusTip: 112
-    # HoverLeave: 127
-    # HoverEnter: 128
-    # Enter: 10
-    # Leave: 11
-    # Timer: 1
-    # Shortcut: 117
-    # ShortcutOerride: 51
-    # Move: 13
-    #
-
+        # events:
+        # paint: 12
+        # WindowActivate: 24
+        # WindowDeactivate: 25
+        # StatusTip: 112
+        # HoverLeave: 127
+        # HoverEnter: 128
+        # Enter: 10
+        # Leave: 11
+        # Timer: 1
+        # Shortcut: 117
+        # ShortcutOerride: 51
+        # Move: 13
+        #
 
 
 class KeyPressManager:
-
     def __init__(self, main):
         self.main = main
         self.ui_manager = main.ui_manager
@@ -88,10 +88,10 @@ class KeyPressManager:
         ks = event.text()
         debug.keys('received key press: ', ks)
         self.ui_manager.add_feedback_from_command(ks)
-        #if ctrl.selected and all([item.can_take_keyevent(event) for item in ctrl.selected]):
-        #    for item in ctrl.selected:
-        #        item.take_keyevent(event)
-        #    return True
+        # if ctrl.selected and all([item.can_take_keyevent(event) for item in ctrl.selected]):
+        # for item in ctrl.selected:
+        # item.take_keyevent(event)
+        # return True
 
         act = self._shortcuts.get(ks)
         if act:

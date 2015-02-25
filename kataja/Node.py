@@ -23,15 +23,16 @@
 # ############################################################################
 
 from PyQt5 import QtWidgets, QtGui, QtCore
+
 from PyQt5.QtCore import Qt
 from kataja.parser import KatajaNodeToINode
-
 from kataja.ui.ControlPoint import ControlPoint
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.Label import Label
 from kataja.Movable import Movable
 from kataja.utils import to_tuple, create_shadow_effect
 import kataja.globals as g
+
 
 
 # ctrl = Controller object, gives accessa to other modules
@@ -41,7 +42,6 @@ import kataja.globals as g
 NO_ALIGN = 0
 LEFT = 1
 RIGHT = 2
-
 
 
 class Node(Movable, QtWidgets.QGraphicsItem):
@@ -90,9 +90,9 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
         self.inner_rect = None
         self.setAcceptHoverEvents(True)
-        #self.setAcceptDrops(True)
+        # self.setAcceptDrops(True)
         self.setFlag(QtWidgets.QGraphicsItem.ItemSendsGeometryChanges)
-        #self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable)
+        # self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable)
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable)
 
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
@@ -265,7 +265,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             if edge_type is None:
                 edge_type = self.__class__.default_edge_type
             if only_visible:
-                return [edge.end for edge in self.saved.edges_down if edge.edge_type == edge_type and edge.end and edge.end.is_visible()]
+                return [edge.end for edge in self.saved.edges_down if
+                        edge.edge_type == edge_type and edge.end and edge.end.is_visible()]
             else:
                 return [edge.end for edge in self.saved.edges_down if edge.edge_type == edge_type and edge.end]
         else:
@@ -288,7 +289,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             if edge_type is None:
                 edge_type = self.__class__.default_edge_type
             if only_visible:
-                return [edge.start for edge in self.saved.edges_up if edge.edge_type == edge_type and edge.start and edge.start.is_visible()]
+                return [edge.start for edge in self.saved.edges_up if
+                        edge.edge_type == edge_type and edge.start and edge.start.is_visible()]
             else:
                 return [edge.start for edge in self.saved.edges_up if edge.edge_type == edge_type and edge.start]
         else:
@@ -412,11 +414,15 @@ class Node(Movable, QtWidgets.QGraphicsItem):
                     (not visible) or rel.is_visible())]
 
 
-
     ### Font #####################################################################
 
     @property
     def font(self):
+        """
+
+
+        :return:
+        """
         if self._label_font:
             return qt_prefs.font(self._label_font)
         else:
@@ -424,6 +430,10 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
     @font.setter
     def font(self, value):
+        """
+
+        :param value:
+        """
         if isinstance(value, QtGui.QFont):
             self._label_font = qt_prefs.get_key_for_font(value)
         else:
@@ -433,6 +443,11 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
     @property
     def color(self):
+        """
+
+
+        :return:
+        """
         if self.node_color is None:
             return ctrl.cm.get(ctrl.forest.settings.node_settings(self.__class__.node_type, 'color'))
         else:
@@ -450,6 +465,11 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         # self._label_complex.setDefaultTextColor(self._color)
 
     def palette(self):
+        """
+
+
+        :return:
+        """
         palette = QtGui.QPalette(ctrl.cm.get_qt_palette())
         palette.setColor(QtGui.QPalette.WindowText, self.color)
         palette.setColor(QtGui.QPalette.Text, self.color)
@@ -464,7 +484,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             return ctrl.cm.hovering(ctrl.cm.selection())
         elif ctrl.is_selected(self):
             return ctrl.cm.selection()
-            #return ctrl.cm.selected(ctrl.cm.selection())
+            # return ctrl.cm.selected(ctrl.cm.selection())
         else:
             return self.color
 
@@ -536,6 +556,11 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             painter.drawRoundedRect(self.inner_rect, 5, 5)
 
     def update_bounding_rect(self):
+        """
+
+
+        :return:
+        """
         my_class = self.__class__
         if self._label_visible and self._label_complex:
             lbr = self._label_complex.boundingRect()
@@ -559,8 +584,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     def boundingRect(self):
         """ BoundingRects are used often and cost of this method affects performance.
         inner_rect is used as a cached bounding rect and returned fast if there is no explicit
-        :param update:
-        :param pass_size_calculation:
         update asked. """
         if self.inner_rect:
             return self.inner_rect
@@ -589,17 +612,17 @@ class Node(Movable, QtWidgets.QGraphicsItem):
                 h2 = (self.height - 2) / 2.0
 
                 self._magnets = [(-w2, -h2),
-                    (-w4, -h2),
-                    (0, -h2),
-                    (w4, -h2),
-                    (w2, -h2),
-                    (-w2, 0),
-                    (w2, 0),
-                    (-w2, h2),
-                    (-w4, h2),
-                    (0, h2),
-                    (w4, h2),
-                    (w2, h2)]
+                                 (-w4, -h2),
+                                 (0, -h2),
+                                 (w4, -h2),
+                                 (w2, -h2),
+                                 (-w2, 0),
+                                 (w2, 0),
+                                 (-w2, h2),
+                                 (-w4, h2),
+                                 (0, h2),
+                                 (w4, h2),
+                                 (w2, h2)]
 
             x1, y1, z1 = self.current_position
             x2, y2 = self._magnets[n]
@@ -693,15 +716,15 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     # def drag(self, event):
     # """ Drags also elements that are counted to be involved: features, children etc """
     # mx, my = to_tuple(event.scenePos())
-    #     if not getattr(ctrl, 'dragged', None):
-    #         self.start_dragging(mx, my)
-    #     for item, ox, oy in ctrl.dragged_positions:
-    #         x, y, z = item.current_position
-    #         item.set_adjustment(dx, dy, 0)
-    #         item.update_position()
+    # if not getattr(ctrl, 'dragged', None):
+    # self.start_dragging(mx, my)
+    # for item, ox, oy in ctrl.dragged_positions:
+    # x, y, z = item.current_position
+    # item.set_adjustment(dx, dy, 0)
+    # item.update_position()
 
-    #         [b.update() for b in item.get_children() + item.edges_up + item.edges_down]
-    #     ctrl.scene.item_moved()
+    # [b.update() for b in item.get_children() + item.edges_up + item.edges_down]
+    # ctrl.scene.item_moved()
 
     def start_dragging(self, mx, my):
         """
@@ -743,6 +766,10 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
 
     def dragged_over_by(self, dragged):
+        """
+
+        :param dragged:
+        """
         if not self._hovering and self.accepts_drops(dragged):
             if ctrl.latest_hover and not ctrl.latest_hover is self:
                 ctrl.latest_hover.hovering = False
@@ -750,11 +777,16 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             self.hovering = True
 
     def accepts_drops(self, dragged):
+        """
+
+        :param dragged:
+        :return:
+        """
         if isinstance(dragged, ControlPoint):
             if dragged.role == g.START_POINT or dragged.role == g.END_POINT:
                 return True
-        #elif isinstance(dragged, TouchArea):
-        #    return True
+        # elif isinstance(dragged, TouchArea):
+        # return True
         return False
 
     #### Mouse - Qt events ##################################################
@@ -775,6 +807,10 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
 
     def dragEnterEvent(self, event):
+        """
+
+        :param event:
+        """
         if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist"):
             event.acceptProposedAction()
             self.hovering = True
@@ -782,19 +818,23 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             QtWidgets.QGraphicsItem.dragEnterEvent(self, event)
 
     def dragLeaveEvent(self, event):
+        """
+
+        :param event:
+        """
         if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist"):
             event.acceptProposedAction()
             self.hovering = False
         else:
             QtWidgets.QGraphicsItem.dragLeaveEvent(self, event)
 
-    #def dragMoveEvent(self, event):
-    #    if
-    #    pass
-        #print("Drag move event for Movable")
+            # def dragMoveEvent(self, event):
+            # if
+            # pass
+            # print("Drag move event for Movable")
 
 
-    #### Restoring after load / undo #########################################
+            #### Restoring after load / undo #########################################
 
 
 

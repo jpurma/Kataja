@@ -280,12 +280,12 @@ class ForestSettings(Savable):
         if shape_args is None:
             shape_defaults = SHAPE_PRESETS[shape_name]
             if key is None:  # the whole dict is asked
-                return shape_defaults #.copy()
+                return shape_defaults  # .copy()
             elif value is None:  # get single setting
                 return shape_defaults.get(key, None)
             elif value == DELETE:
                 pass
-            else:# set single setting
+            else:  # set single setting
                 if not local_edge_type:
                     local_edge_type = {}
                     self.saved.edge_types[edge_type] = local_edge_type
@@ -307,7 +307,7 @@ class ForestSettings(Savable):
                         shape_args[key] = shape_defaults[key]
                     else:
                         del shape_args[key]
-            else:# set single setting
+            else:  # set single setting
                 shape_args[key] = value
 
     # ## Nodes - all require edge type as argument, value is stored in dict ###########
@@ -427,7 +427,6 @@ class ForestRules(Savable):
     @property
     def projected_inherits_labels(self):
         """
-        :param value:
         :return:
         """
         if self.saved.projected_inherits_labels is None:

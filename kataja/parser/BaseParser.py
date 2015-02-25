@@ -25,6 +25,7 @@
 
 
 import re
+
 from kataja.debug import parser
 from kataja.singletons import ctrl
 from kataja.Presentation import TextArea, Image
@@ -213,101 +214,101 @@ class BaseParser:
         node = self.forest.create_node_from_constituent(constituent, result_of_merge=True)
         return node
 
-    # not used
-    #def _merge_trees(self, node, left, right):
-    #    if self.forest:
-    #        self.forest.update_roots()
+        # not used
+        # def _merge_trees(self, node, left, right):
+        # if self.forest:
+        # self.forest.update_roots()
 
-    ### Bottom-up Parser, does not handle trees, but strings of words
+        ### Bottom-up Parser, does not handle trees, but strings of words
 
-    # def bottom_up_parser(self, buildstring):
-    #     """ stringToBottomUp
-    #     :param buildstring:
-    #     """
-    #     print("Using bottom_up_parser")
-    #     topmost_C = None
-    #     self.indexes = []
-    #     if buildstring.startswith('>>'):
-    #         buildstring = buildstring[2:]
-    #     self.tree_object = None
-    #
-    #     def _find_in_tree(const_id):
-    #         def _find(const_id, X):
-    #             if not X:
-    #                 return None
-    #             if X.label == const_id:
-    #                 return X
-    #             else:
-    #                 found = None
-    #                 if X.left:
-    #                     found = _find(const_id, X.left)
-    #                     if found:
-    #                         return found
-    #                 if X.right:
-    #                     found = _find(const_id, X.right)
-    #                 return found
-    #
-    #         return _find(const_id, topmost_C)
-    #
-    #     def _merge_up(word_string, topmost_C):
-    #         features = self.parse_definition(definition=word_string)
-    #         if 'label' not in features:
-    #             features['label'] = word_string
-    #             const_id = word_string
-    #         else:
-    #             const_id = features['label'].value
-    #         dotlabel = features.get('dotlabel', None)
-    #         if dotlabel:
-    #             dotlabel = dotlabel.get_value()
-    #             if not dotlabel:
-    #                 assert False
-    #         C = _find_in_tree(const_id)
-    #         if not C:
-    #             C = self._create_constituent(features=features)
-    #             # index=utils.next_free_index(self.indexes)
-    #             # self.indexes.append(index)
-    #             # C.set_index(index)
-    #             node = self._new_node_from_constituent(C)
-    #             external_merge = True
-    #         else:
-    #             external_merge = False
-    #             node = self.forest.get_node(C)
-    #             index = node.index
-    #             if not index:
-    #                 index = next_free_index(self.indexes)
-    #                 self.indexes.append(index)
-    #                 node.index = index
-    #             node = self.forest.create_trace_for(node)
-    #         if topmost_C:
-    #             if external_merge and topmost_C.label:
-    #                 tid = topmost_C.label
-    #             else:
-    #                 tid = C.label
-    #             topmost_C = ctrl.UG.Merge(C, topmost_C)
-    #             topmost_C.label = C.label
-    #             topmost_node = self.forest.create_node_from_constituent(topmost_C, result_of_merge=True)
-    #             if dotlabel:
-    #                 topmost_node.alias = dotlabel
-    #             elif external_merge:
-    #                 topmost_node.alias = tid
-    #             left = self.forest.get_node(topmost_C.left)
-    #             right = self.forest.get_node(topmost_C.right)
-    #             # These are not implemented anymore:
-    #             self.forest.mirror_syntactic_edges(topmost_node, left)
-    #             self.forest.mirror_syntactic_edges(topmost_node, right)
-    #             # self._merge_trees(node, left, right)
-    #         else:
-    #             topmost_C = C
-    #         return topmost_C
-    #
-    #     count = 0
-    #     word = []
-    #     words = buildstring.strip().split()
-    #     for word in words:
-    #         topmost_C = _merge_up(word, topmost_C)
-    #         count += 1
-    #     root = self.forest.get_node(topmost_C)
-    #     return root
-    #
-    #
+        # def bottom_up_parser(self, buildstring):
+        # """ stringToBottomUp
+        # :param buildstring:
+        # """
+        #     print("Using bottom_up_parser")
+        #     topmost_C = None
+        #     self.indexes = []
+        #     if buildstring.startswith('>>'):
+        #         buildstring = buildstring[2:]
+        #     self.tree_object = None
+        #
+        #     def _find_in_tree(const_id):
+        #         def _find(const_id, X):
+        #             if not X:
+        #                 return None
+        #             if X.label == const_id:
+        #                 return X
+        #             else:
+        #                 found = None
+        #                 if X.left:
+        #                     found = _find(const_id, X.left)
+        #                     if found:
+        #                         return found
+        #                 if X.right:
+        #                     found = _find(const_id, X.right)
+        #                 return found
+        #
+        #         return _find(const_id, topmost_C)
+        #
+        #     def _merge_up(word_string, topmost_C):
+        #         features = self.parse_definition(definition=word_string)
+        #         if 'label' not in features:
+        #             features['label'] = word_string
+        #             const_id = word_string
+        #         else:
+        #             const_id = features['label'].value
+        #         dotlabel = features.get('dotlabel', None)
+        #         if dotlabel:
+        #             dotlabel = dotlabel.get_value()
+        #             if not dotlabel:
+        #                 assert False
+        #         C = _find_in_tree(const_id)
+        #         if not C:
+        #             C = self._create_constituent(features=features)
+        #             # index=utils.next_free_index(self.indexes)
+        #             # self.indexes.append(index)
+        #             # C.set_index(index)
+        #             node = self._new_node_from_constituent(C)
+        #             external_merge = True
+        #         else:
+        #             external_merge = False
+        #             node = self.forest.get_node(C)
+        #             index = node.index
+        #             if not index:
+        #                 index = next_free_index(self.indexes)
+        #                 self.indexes.append(index)
+        #                 node.index = index
+        #             node = self.forest.create_trace_for(node)
+        #         if topmost_C:
+        #             if external_merge and topmost_C.label:
+        #                 tid = topmost_C.label
+        #             else:
+        #                 tid = C.label
+        #             topmost_C = ctrl.UG.Merge(C, topmost_C)
+        #             topmost_C.label = C.label
+        #             topmost_node = self.forest.create_node_from_constituent(topmost_C, result_of_merge=True)
+        #             if dotlabel:
+        #                 topmost_node.alias = dotlabel
+        #             elif external_merge:
+        #                 topmost_node.alias = tid
+        #             left = self.forest.get_node(topmost_C.left)
+        #             right = self.forest.get_node(topmost_C.right)
+        #             # These are not implemented anymore:
+        #             self.forest.mirror_syntactic_edges(topmost_node, left)
+        #             self.forest.mirror_syntactic_edges(topmost_node, right)
+        #             # self._merge_trees(node, left, right)
+        #         else:
+        #             topmost_C = C
+        #         return topmost_C
+        #
+        #     count = 0
+        #     word = []
+        #     words = buildstring.strip().split()
+        #     for word in words:
+        #         topmost_C = _merge_up(word, topmost_C)
+        #         count += 1
+        #     root = self.forest.get_node(topmost_C)
+        #     return root
+        #
+        #
 

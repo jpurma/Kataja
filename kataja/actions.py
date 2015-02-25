@@ -6,7 +6,7 @@ __author__ = 'purma'
 # method : method that is called when the action is activated
 # shortcut : keyboard shortcut to activate the action
 # context : where the method is called 'main' is default, referring to KatajaMain
-#           other values: 'app', 'selected', 'node'...
+# other values: 'app', 'selected', 'node'...
 # checkable : True/False -- as a menu item, does the action have two states
 actions = {
     # ### File ######
@@ -111,7 +111,7 @@ actions = {
     'toggle_all_panels': {
         'command': 'Hide all panels',
         'command_alt': 'Show all panels',
-        'method': 'toggle_all_panels', # missing!
+        'method': 'toggle_all_panels',  # missing!
         'toggleable': True,
         'condition': 'are_panels_visible',
     },
@@ -323,10 +323,10 @@ actions = {
     #     'command': 'key_esc',
     #     'method': 'key_esc',
     #     'shortcut': 'Escape'},
-     'key_backspace': {
-         'command': 'key_backspace',
-         'method': 'key_backspace',
-         'shortcut': 'Backspace'},
+    'key_backspace': {
+        'command': 'key_backspace',
+        'method': 'key_backspace',
+        'shortcut': 'Backspace'},
     # 'key_return': {
     #     'command': 'key_return',
     #     'method': 'key_return',

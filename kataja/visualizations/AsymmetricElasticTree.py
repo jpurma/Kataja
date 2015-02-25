@@ -24,7 +24,6 @@
 
 
 from kataja.visualizations.BaseVisualization import BaseVisualization
-from kataja.ConstituentNode import ConstituentNode
 import kataja.globals as g
 
 

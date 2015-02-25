@@ -29,7 +29,7 @@
 # Classnames are in camelcase.
 
 import gc
-#import gzip
+# import gzip
 import os.path
 import time
 import pickle
@@ -131,9 +131,9 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
         self.setCorner(QtCore.Qt.TopRightCorner, QtCore.Qt.RightDockWidgetArea)
         self.setCorner(QtCore.Qt.BottomLeftCorner, QtCore.Qt.LeftDockWidgetArea)
         self.setCorner(QtCore.Qt.BottomRightCorner, QtCore.Qt.RightDockWidgetArea)
-        #toolbar = QtWidgets.QToolBar()
-        #toolbar.setFixedSize(480, 40)
-        #self.addToolBar(toolbar)
+        # toolbar = QtWidgets.QToolBar()
+        # toolbar.setFixedSize(480, 40)
+        # self.addToolBar(toolbar)
         self.status_bar = self.statusBar()
         self.setGeometry(x, y, w, h)
         self.add_message('Welcome to Kataja! (h) for help')
@@ -158,11 +158,18 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
 
     @property
     def forest(self):
+        """
+
+
+        :return:
+        """
         return self.saved.forest
 
     @forest.setter
     def forest(self, value):
-        """ :param forest:"""
+        """ :param forest:
+        :param value:
+        """
         self.saved.forest = value
         if hasattr(value, 'visualization'):
             if not value.visualization:
@@ -172,10 +179,19 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
 
     @property
     def forest_keeper(self):
+        """
+
+
+        :return:
+        """
         return self.saved.forest_keeper
 
     @forest_keeper.setter
     def forest_keeper(self, value):
+        """
+
+        :param value:
+        """
         self.saved.forest_keeper = value
 
 
@@ -245,10 +261,13 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
         QtWidgets.QMainWindow.mousePressEvent(self, event)
 
     def keyPressEvent(self, event):
-        #if not self.key_manager.receive_key_press(event):
+        # if not self.key_manager.receive_key_press(event):
+        """
+
+        :param event:
+        :return:
+        """
         return QtWidgets.QMainWindow.keyPressEvent(self, event)
-
-
 
 
     # ### ConstituentNode's radial menu commands ################################
@@ -261,8 +280,8 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
         :param event:
         :return:
         """
-        #if isinstance(caller, MenuItem):
-        #    caller = caller.host_node
+        # if isinstance(caller, MenuItem):
+        # caller = caller.host_node
         node_A = caller
         node_B = caller.get_root_node()
         assert (node_A is not node_B)
@@ -280,8 +299,8 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
         :param event:
         :return:
         """
-        #if isinstance(caller, MenuItem):
-        #    caller = caller.host_node
+        # if isinstance(caller, MenuItem):
+        # caller = caller.host_node
         self.forest.command_delete(caller)
         self.action_finished()
         ctrl.focus = None
@@ -295,8 +314,8 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
         :param event:
         :return:
         """
-        #if isinstance(caller, MenuItem):
-        #    caller = caller.host_node
+        # if isinstance(caller, MenuItem):
+        # caller = caller.host_node
         self.forest.disconnect_node_from_tree(caller)
         self.action_finished()
         ctrl.focus = None
@@ -349,7 +368,7 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
         text = ''
         if hasattr(caller, 'get_text_input'):
             text = caller.get_text_input()
-        #pos = caller.pos()
+        # pos = caller.pos()
         self.forest.create_tree_from_string(text)  # , pos=pos)
         self.action_finished()
 
@@ -408,7 +427,6 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
             action.setDisabled(True)
 
 
-
     def adjust_colors(self, hsv):
         """
         adjust colors -action (shift-alt-c)
@@ -430,8 +448,6 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
             self.forest.update_colors()
 
 
-
-
     def toggle_magnets(self):
         """ Toggle lines to connect to margins or to centre of node (b)
         """
@@ -443,10 +459,13 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
             self.forest.settings.uses_magnets(True)
 
 
-
-
-
     def change_edge_ending(self, which_end, value):
+        """
+
+        :param which_end:
+        :param value:
+        :return:
+        """
         if value is g.AMBIGUOUS_VALUES:
             return
         panel = self.ui_manager.get_panel(g.EDGES)
@@ -497,7 +516,7 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
             source = self.graph_scene.visible_rect()
         self.graph_scene.removeItem(self.graph_scene.photo_frame)
         self.graph_scene.photo_frame = None
-        target = QtCore.QRectF(0, 0, source.width()/2.0, source.height()/2.0)
+        target = QtCore.QRectF(0, 0, source.width() / 2.0, source.height() / 2.0)
         dpi = 25.4
         # Prepare printer
         writer = QtGui.QPdfWriter(full_path)
@@ -516,7 +535,7 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
         self.graph_scene.setBackgroundBrush(self.color_manager.gradient)
         if self.forest.gloss:
             self.forest.gloss.show()
-        # hide unwanted components
+            # hide unwanted components
 
     # Not called from anywhere yet, but useful
     def release_selected(self, **kw):
@@ -539,17 +558,17 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
         """
         self.clear_all()
         if filename.endswith('.zkataja'):
-            #f = gzip.open(filename, 'r')
+            # f = gzip.open(filename, 'r')
             f = open(filename, 'r')
         else:
             f = open(filename, 'rb')
-            #import codecs
-            #f = codecs.open(filename, 'rb', encoding = 'utf-8')
+            # import codecs
+            # f = codecs.open(filename, 'rb', encoding = 'utf-8')
         pickle_worker = pickle.Unpickler(f)
         data = pickle_worker.load()
         f.close()
-        #prefs.update(data['preferences'].__dict__)
-        #qt_prefs.update(prefs)
+        # prefs.update(data['preferences'].__dict__)
+        # qt_prefs.update(prefs)
         ctrl.loading = True
         self.load_objects(data, self)
         ctrl.loading = False
@@ -600,7 +619,9 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
 
     # noinspection PyUnusedLocal
     def end_pointing_mode(self, event):
-        """ End pointing mode and return to normal """
+        """ End pointing mode and return to normal
+        :param event:
+        """
         ctrl.pointing_mode = False
         ctrl.pointing_data = {}
         self.ui_manager.end_stretchline()
@@ -667,7 +688,7 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
                 obj.save_object(savedata, open_references)
 
         print('total savedata: %s chars in %s items.' % (len(str(savedata)), len(savedata)))
-        #print(savedata)
+        # print(savedata)
         return savedata
 
         # f = open('kataja_default.cfg', 'w')
@@ -699,5 +720,5 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
 # .arg(QtCore.QString(fileFormat)))
 # if fileName.isEmpty():
 # return False
-#        else:
-#            return self.scribbleArea.saveImage(fileName, fileFormat)
+# else:
+# return self.scribbleArea.saveImage(fileName, fileFormat)

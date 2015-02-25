@@ -24,8 +24,8 @@
 
 
 import math
-from kataja.debug import vis
 
+from kataja.debug import vis
 from kataja.ConstituentNode import ConstituentNode
 from kataja.singletons import prefs
 from kataja.FeatureNode import FeatureNode
@@ -131,10 +131,10 @@ class LeftFirstTree(BaseVisualization):
 
         # if isinstance(right, FeatureNode):
         # block_size = 1
-        #             else:
-        #                 block_size = 2
-        #             nx = x + block_size
-        #             ny = y + block_size
+        # else:
+        # block_size = 2
+        # nx = x + block_size
+        # ny = y + block_size
         #             filler = block_size - 1
         #             while filler:
         #                 grid.set(nx - filler, ny - filler, 1)
@@ -199,7 +199,7 @@ class LeftFirstTree(BaseVisualization):
         # Actual drawing: set nodes to their places in scene
         if merged_grid:
             # merged_grid.ascii_dump()
-            extra_width = [0] * merged_grid._width
+            extra_width = [0] * merged_grid.width
         else:
             extra_width = [0]
         # if node is extra wide, then move all columns to right from that point on

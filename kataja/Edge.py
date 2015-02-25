@@ -25,12 +25,12 @@
 import math
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import QPointF as Pf, Qt
 
+from PyQt5.QtCore import QPointF as Pf, Qt
 from kataja.singletons import ctrl, qt_prefs
 import kataja.globals as g
-from kataja.globals import LEFT, RIGHT, NO_ALIGN
-from kataja.shapes import SHAPE_PRESETS, to_Pf, outline_stroker
+from kataja.globals import LEFT, RIGHT
+from kataja.shapes import SHAPE_PRESETS, outline_stroker
 from kataja.EdgeLabel import EdgeLabel
 import kataja.utils as utils
 from kataja.Saved import Savable
@@ -63,7 +63,7 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         self.saved.fixed_end_point = None
         self.saved.edge_type = edge_type
         self.saved.adjust = None
-        self.saved.align = direction #or NO_ALIGN
+        self.saved.align = direction  # or NO_ALIGN
         self.saved.start = start
         self.saved.end = end
         self.saved.use_arrowheads = None
@@ -123,7 +123,11 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         self.setGraphicsEffect(self.effect)
 
     def after_init(self):
-        #print("after-initing edge ", self)
+        # print("after-initing edge ", self)
+        """
+
+
+        """
         self.update_end_points()
 
     @property
@@ -408,7 +412,7 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
     def visible(self, value):
         """ Hide or show, and also manage related UI objects. Note that the shape itself may be visible or
         not independent of this. It has to be visible in this level so that UI elements can be used.
-        :param visible:
+        :param value:
         """
         v = self.isVisible()
         if v and not value:
@@ -468,8 +472,6 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         """
         self.label_data['dist'] = value
         self.update_label_pos()
-
-
 
 
     def receive_signal(self, signal, *args):
@@ -857,14 +859,18 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         self._cached_shape_args = self.shape_args()
         cpl = len(self.control_points)
         self.make_path()
-        #while len(self.adjust) < len(self.control_points):
-        #    self.adjust.append((0, 0, 0))
+        # while len(self.adjust) < len(self.control_points):
+        # self.adjust.append((0, 0, 0))
         if cpl != len(self.control_points):
             ctrl.ui.reset_control_points(self)
         ctrl.ui.update_control_point_positions()
         self.update()
 
     def prepare_adjust_array(self, index):
+        """
+
+        :param index:
+        """
         if self.adjust is None:
             self.adjust = [(0, 0, 0)] * (index + 1)
         elif index >= len(self.adjust):
@@ -947,7 +953,7 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
                 if self._true_path:
                     a = self.get_angle_at(0)
                     i = round(a / 22.5)
-                    self._computed_start_point  = self.start.magnet(angle_magnet_map[i])
+                    self._computed_start_point = self.start.magnet(angle_magnet_map[i])
                 else:
                     sx, sy, sz = self.start_point
                     ex, ey, ez = self.end_point
@@ -963,7 +969,7 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
                     elif a < 180:
                         a += 180
                     i = round(a / 22.5)
-                    self._computed_end_point  = self.end.magnet(angle_magnet_map[i])
+                    self._computed_end_point = self.end.magnet(angle_magnet_map[i])
                 else:
                     sx, sy, sz = self.start_point
                     ex, ey, ez = self.end_point
@@ -1106,6 +1112,11 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
 
     @property
     def hovering(self):
+        """
+
+
+        :return:
+        """
         return self._hovering
 
     @hovering.setter

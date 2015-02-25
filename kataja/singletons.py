@@ -3,7 +3,6 @@ from kataja.Controller import Controller
 
 __author__ = 'purma'
 
-
 prefs = Preferences()
 qt_prefs = QtPreferences()
 ctrl = Controller()  # Controller()

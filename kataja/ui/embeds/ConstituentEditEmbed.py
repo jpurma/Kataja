@@ -1,16 +1,15 @@
-
 __author__ = 'purma'
 
 from PyQt5 import QtWidgets, QtGui, QtCore
+
 from kataja.ui.embeds.UIEmbed import UIEmbed
-from kataja.singletons import qt_prefs, ctrl, prefs
-from kataja.LabelDocument import LabelDocument
+from kataja.singletons import qt_prefs, ctrl
 from kataja.ui.panels.SymbolPanel import open_symbol_data
 from kataja.parser import INodeToLabelDocument
 from kataja.parser import LabelDocumentToINode
 from kataja.parser import INodeToKatajaConstituent
-
 import kataja.globals as g
+
 
 def make_label(text, parent=None, layout=None, tooltip='', buddy=None, palette=None):
     label = QtWidgets.QLabel(text, parent=parent)
@@ -23,9 +22,7 @@ def make_label(text, parent=None, layout=None, tooltip='', buddy=None, palette=N
     return label
 
 
-
 class EmbeddedTextEdit(QtWidgets.QTextEdit):
-
     def __init__(self, parent):
         QtWidgets.QTextEdit.__init__(self, parent)
         self._old_size = self.new_size_hint()
@@ -67,8 +64,8 @@ class EmbeddedTextEdit(QtWidgets.QTextEdit):
             self.updateGeometry()
             self.parent().resize(self.parent().sizeHint())
 
-class ConstituentEditEmbed(UIEmbed):
 
+class ConstituentEditEmbed(UIEmbed):
     def __init__(self, parent, ui_manager, node, scenePos):
         UIEmbed.__init__(self, parent, ui_manager, scenePos)
         layout = QtWidgets.QVBoxLayout()
@@ -124,7 +121,7 @@ class ConstituentEditEmbed(UIEmbed):
         # self.gloss_label = make_label('Gloss', self, hlayout, tt, self.gloss_edit, ui_p)
         # layout.addLayout(hlayout)
 
-        self.enter_button = QtWidgets.QPushButton("↩") # U+21A9 &#8617;
+        self.enter_button = QtWidgets.QPushButton("↩")  # U+21A9 &#8617;
         self.enter_button.setMaximumWidth(20)
         self.enter_button.setParent(self)
         ui_manager.connect_element_to_action(self.enter_button, 'edit_constituent_finished')
@@ -149,7 +146,7 @@ class ConstituentEditEmbed(UIEmbed):
     def update_document(self):
         d = self.master_edit.document()
         INodeToLabelDocument.parse_inode(self.node.as_inode, d)
-        #d.blocks_to_strings()
+        # d.blocks_to_strings()
         self.master_edit.setMinimumSize(self.master_edit.sizeHint())
         self.master_edit.updateGeometry()
         cursor = self.master_edit.textCursor()
@@ -172,7 +169,7 @@ class ConstituentEditEmbed(UIEmbed):
         sx, sy, sz = self.node.current_position
         p = self.parent().mapFromScene(sx, sy)
         px, py = p.x(), p.y()
-        py -= self.assumed_height/2
+        py -= self.assumed_height / 2
         self.move(px, py)
 
     def push_values_back(self):
@@ -204,9 +201,9 @@ class ConstituentEditEmbed(UIEmbed):
             # self.label_label.setFont(qt_prefs.font(g.UI_FONT))
             # self.label_label.setPalette(ui_p)
             # if self.node.syntactic_object:
-            #     label = self.node.syntactic_object.label
+            # label = self.node.syntactic_object.label
             # else:
-            #     label = ''
+            # label = ''
             # self.input_line_edit.update_visual(palette=p, font=f, text=label)
             # self.index_edit.update_visual(palette=p, font=fg, text=self.node.index)
             #
@@ -230,7 +227,7 @@ class ConstituentEditEmbed(UIEmbed):
             tr = self.master_edit.mapToParent(r.topRight().toPoint())
             tr_x, tr_y = tr.x(), tr.y()
             h = r.height()
-            h2 = r.height()/2
+            h2 = r.height() / 2
             painter.drawLine(tr_x, tr_y, tr_x, tr_y + h)
             painter.drawLine(tr_x, tr_y + h2, tr_x + 20, tr_y + h2)
             if i < len(d.block_order):
@@ -249,5 +246,5 @@ class ConstituentEditEmbed(UIEmbed):
         pass
 
     def close(self):
-        #self.input_line_edit.setText('')
+        # self.input_line_edit.setText('')
         UIEmbed.close(self)

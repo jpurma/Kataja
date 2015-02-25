@@ -23,7 +23,8 @@
 # ############################################################################
 
 from PyQt5 import QtWidgets, QtGui, QtCore
-from kataja.errors import UIError, ForestError
+
+from kataja.errors import UIError
 from kataja.singletons import ctrl
 import kataja.globals as g
 
@@ -62,8 +63,8 @@ class OverlayButton(QtWidgets.QPushButton):
             self.effect.setStrength(0.6)
             self.setGraphicsEffect(self.effect)
         self.just_triggered = False
-        self.edge = None # kind of secondary host, required for some buttons that apply both to node (=host) and edge
-        #self.setCursor(Qt.PointingHandCursor)
+        self.edge = None  # kind of secondary host, required for some buttons that apply both to node (=host) and edge
+        # self.setCursor(Qt.PointingHandCursor)
 
     def update_color(self):
         if self.effect:
@@ -74,15 +75,16 @@ class OverlayButton(QtWidgets.QPushButton):
             self.effect.setColor(ctrl.cm.get(self.color_key))
         return QtWidgets.QPushButton.event(self, e)
 
-    #def paintEvent(self, *args, **kwargs):
-    #    self.effect.colorChanged(ctrl.cm.ui())
+    # def paintEvent(self, *args, **kwargs):
+    # self.effect.colorChanged(ctrl.cm.ui())
     #    QtWidgets.QPushButton.paintEvent(self, *args, **kwargs)
 
     def update_position(self):
         if self.role == g.REMOVE_MERGER:
             adjust = QtCore.QPointF(19, -self.host.height / 2)
             if not self.edge:
-                edges = [x for x in self.host.edges_down if x.edge_type is g.CONSTITUENT_EDGE and x.end.is_placeholder()]
+                edges = [x for x in self.host.edges_down if
+                         x.edge_type is g.CONSTITUENT_EDGE and x.end.is_placeholder()]
                 if not edges:
                     raise UIError("How did I get here? Remove merger suggested for merger with no children")
                 else:
@@ -92,13 +94,15 @@ class OverlayButton(QtWidgets.QPushButton):
             p = p.toPoint()
         elif self.role == g.START_CUT:
             adjust = QtCore.QPointF(self.host.end.width / 2, self.host.end.height / 2)
-            p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(self.host.start_point[0], self.host.start_point[1]) + adjust)
+            p = ctrl.main.graph_view.mapFromScene(
+                QtCore.QPointF(self.host.start_point[0], self.host.start_point[1]) + adjust)
         elif self.role == g.END_CUT:
             if self.host.align == g.LEFT:
                 adjust = QtCore.QPointF(-self.host.end.width / 2, -self.host.end.height / 2)
             else:
                 adjust = QtCore.QPointF(self.host.end.width / 2, -self.host.end.height / 2)
-            p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(self.host.start_point[0], self.host.start_point[1]) + adjust)
+            p = ctrl.main.graph_view.mapFromScene(
+                QtCore.QPointF(self.host.start_point[0], self.host.start_point[1]) + adjust)
         elif self.role == g.ADD_TRIANGLE:
             p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(self.host.x(), self.host.y() + self.host.height / 2))
             p -= QtCore.QPoint((self.iconSize().width() / 2) + 4, 0)
