@@ -69,6 +69,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
         self._align_left = False
         self._has_tail = True
         self._shape_has_joint = False
+        self._fill_path = False
         # Drawing flags for each touch area type
         if self.type is g.LEFT_ADD_ROOT:
             self.status_tip = "Add new constituent to left of %s" % self.host
@@ -98,7 +99,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
         self.update_end_points()
         self.setCursor(QtCore.Qt.PointingHandCursor)
         self.setAcceptHoverEvents(True)
-        self._fill_path = False
+
         self.setToolTip(self.status_tip)
 
 
@@ -170,7 +171,6 @@ class TouchArea(QtWidgets.QGraphicsItem):
 
     def drop_to(self, x, y, recipient=None):
         self._dragging = False
-        print(x, y, recipient)
 
     # edge.py
     def update_end_points(self, end_point=None):
@@ -228,7 +228,6 @@ class TouchArea(QtWidgets.QGraphicsItem):
             use_middle_point = True
             line_middle_point = sx - (0.5 * (sx - self.end_point[0])), sy - 10
         else:
-            print("What is this toucharea?", self, " connected to ", self.host)
             raise TypeError("Touch area couldn't create end point")
         shape_method = path_settings['method']
         self._fill_path = path_settings.get('fill', False)

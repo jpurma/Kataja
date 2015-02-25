@@ -747,6 +747,10 @@ class UIManager:
         :param host:
         :return:
         """
+        for ta in self.touch_areas:
+            if ta.host == host and ta.type == type:
+                print('skip ta creation: it already exists')
+                return ta
         ta = TouchArea(host, type)
         self.touch_areas.add(ta)
         self.add_ui(ta)

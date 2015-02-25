@@ -153,8 +153,6 @@ def parse_one_character_command(feed):
             node.append(new_node)
             break
         elif c == '}':
-            # weird situation
-            print(" plain '}' after one char command. what to do? ")
             break
         elif c == '\\':
             if len(node.command) == 1:
