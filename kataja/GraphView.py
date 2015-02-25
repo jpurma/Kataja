@@ -228,7 +228,8 @@ class GraphView(QtWidgets.QGraphicsView):
                 if command == "new_node":
                     node_type = args[0]
                     print('adding node of type ', node_type)
-                    ctrl.forest.create_empty_node(pos=event.pos())
+                    ctrl.forest.create_empty_node(pos=self.mapToScene(event.pos()))
+                    ctrl.main.action_finished('added %s' % args[0])
                 else:
                     print('received unknown command:', command, args)
             else:

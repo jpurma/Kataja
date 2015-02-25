@@ -812,6 +812,7 @@ class Forest(Savable):
             label = ''
         C = ForestSyntax.new_constituent(label)
         node = self.create_node_from_constituent(C, pos, result_of_select=True)
+
         return node
 
 
@@ -915,26 +916,6 @@ class Forest(Savable):
                 self.fix_stubs_for(item.start)
         elif isinstance(item, Node):
             self.delete_node(item)
-        # def remove_stored(self, item):
-        # """ Remove item from various storages """
-        # if isinstance(item, Node):
-        # if item.key in self.nodes:
-        # del self.nodes[item.key]
-        # elif isinstance(item, Edge):
-        # if item.key in self.edges:
-        # del self.edges[item.key]
-        # elif isinstance(item, TextArea):
-        # if item.key in self.others:
-        # del self.others[item.key]
-        # elif isinstance(item, Bracket):
-        # if item.key in self.brackets:
-        # del self.brackets[item.key]
-        # else:
-        # key = getattr(item, 'key', '')
-        # if key and key in self.others:
-        # del self.others[item.key]
-        # else:
-        # print 'F trying to remove broken item:', item.__class__.__name__
         """
 
         :param item:

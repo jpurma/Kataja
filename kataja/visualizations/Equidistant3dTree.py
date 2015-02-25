@@ -177,6 +177,10 @@ class Equidistant3dTree(BaseVisualization):
             else:
                 print('hidden edge ', edge)
 
+        # pull to center (0, 0)
+        xvel += node_x * -0.002
+        yvel += node_y * -0.002
+
         if node.bind_x:
             xvel = 0
         if node.bind_y:

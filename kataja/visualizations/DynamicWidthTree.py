@@ -21,6 +21,8 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
+import math
+import random
 
 from kataja.ConstituentNode import ConstituentNode
 from kataja.singletons import prefs, ctrl
@@ -59,9 +61,14 @@ class DynamicWidthTree(BaseVisualization):
             for node in self.forest.visible_nodes():
                 self.reset_node(node)
         self.push = self.forest.vis_data['push']
-        self._linear = []
+        self._linear = self.linearize_all()
+
+    def linearize_all(self):
+        l = []
         for root in self.forest.roots:
-            self._linear += self.forest.list_nodes_once(root)
+            l.append(self.forest.list_nodes_once(root))
+        return l
+
 
     def reset_node(self, node):
         """
@@ -95,79 +102,94 @@ class DynamicWidthTree(BaseVisualization):
         self.push = push
         ctrl.add_message('Push: %s' % push)
 
+
     def calculate_movement(self, node):
-        # like calculate_movement in elastic net, but only count x-dimension.
+        # @time_me
         # Sum up all forces pushing this item away.
         """
 
         :param node:
         :return:
         """
-        if not isinstance(node, ConstituentNode):
-            return BaseVisualization.calculate_movement(self, node)
         xvel = 0.0
-        node_x, node_y, node_z = node.current_position
-        # linear = self.forest.list_nodes_once(node.get_root_node())
-        node_index = self._linear.index(node)
-        for other_index, other in enumerate(self._linear):
-            if other is node:
-                continue
-            leaf = other.is_leaf_node()
-            other_x, other_y, other_z = other.current_position
-            width = (node.width + other.width) * .5  # / 2
-            dist_y = other_y - node_y
+        if node.bind_x:
+            return 0, 0, 0
 
-            # --d2---------->  <-d1-----------
-            # |   -d1->     |  |   <-d2-     |
-            # [ N ]   [  O  ]  [ O ]   [  N  ]
-            d1 = int(other_x - width - node_x)  # 300 - 60 -240
-            d2 = int(other_x + width - node_x)
-            dx = 0
-            if node_index < other_index:  # should be: NODE | OTHER
-                if abs(dist_y) < 20:  # nodes in same row
-                    if d1 < 0:  # is: OTHER | NODE
-                        dx = -2  # (dist_x - width) / -10.0
-                    elif d1 > 0:  # is: NODE | OTHER
-                        dx = max((-1, -1.0 / d1))
-                    else:  # |NOOTDHEER| node is overlapping with the other node
-                        dx = -3  # abs(other.force / (dist_x + width))
-                elif leaf and d1 < 0:  # is: OTHER | NODE
-                    dx = -.7
-            else:  # should be: OTHER | NODE
-                if abs(dist_y) < 20:  # nodes in same row
-                    if d2 > 0:  # is: NODE | OTHER
-                        dx = 2  # (dist_x + width) / -10.0
-                    elif d2 < 0:  # is: OTHER | NODE
-                        dx = min((1, -1.0 / d2))
-                    else:  # |NOOTDHEER| node is overlapping with the other node
-                        dx = 3  # abs(other.force / (dist_x - width))
-                elif leaf and d2 > 0:  # leaf and is: NODE | OTHER
-                    dx = .7
-            xvel += dx
+        node_x, node_y, node_z = node.current_position
+
+        #vn = list(self.forest.visible_nodes())
+        # for tree in self._linear:
+        #     my_tree = node in tree
+        #     for other in tree:
+        #         other_x, other_y, other_z = other.current_position
+        #         if other is node:
+        #             continue
+        #         if node.is_sibling(other):
+        #
+        my_tree = None
+        for tree in self._linear:
+            if node in tree:
+                my_tree = tree
+            for other in tree:
+                if other is node:
+                    continue
+
+                other_x, other_y, other_z = other.current_position
+                dist_x = int(node_x - other_x)
+                dist_y = int(node_y - other_y)
+                safe_zone = (other.width + node.width) / 2
+                dist = math.hypot(dist_x, dist_y)
+                if dist == 0 or dist == safe_zone:
+                    continue
+                if tree is my_tree and not (other.bind_x or other.locked_to_position or ctrl.pressed): # and node.is_sibling(other):
+                    index_diff = my_tree.index(node) - my_tree.index(other)
+                    if index_diff < 0 and abs(dist_y) < 10:
+                        # node is left to other, so dist_x should be negative
+                        if dist_x > 0:
+                            # jump to other side of node
+                            print('jump left', -(dist_x + safe_zone + 5), dist_x, safe_zone, other)
+                            return -(dist_x + safe_zone + 5), 0, 0
+                    elif index_diff > 0 and abs(dist_y) < 10:
+                        # node is right to other, so dist_x should be positive
+                        if dist_x < 0:
+                            # jump to other side of node
+                            print('jump right', (-dist_x + safe_zone + 5), dist_x, safe_zone, other)
+                            return (-dist_x + safe_zone + 5), 0, 0
+
+
+                required_dist = dist - safe_zone
+                pushing_force = min(random.random()*60, (500 / (required_dist * required_dist)))
+
+                x_component = dist_x / dist
+                xvel += pushing_force * x_component
+
         # Now subtract all forces pulling items together.
-        for edge in node.get_edges_up():
-            edge_length_x = edge.start_point[0] - edge.end_point[0]
-            if edge_length_x > prefs.edge_width:
-                edge_length_x -= prefs.edge_width
-                xvel += edge_length_x * edge.pull / self.push
-            elif edge_length_x < -prefs.edge_width:
-                edge_length_x += prefs.edge_width
-                xvel += edge_length_x * edge.pull / self.push
-        for edge in node.get_edges_down():
-            edge_length_x = edge.end_point[0] - edge.start_point[0]
-            if edge_length_x > prefs.edge_width:
-                edge_length_x -= prefs.edge_width
-                xvel += edge_length_x * edge.pull / self.push
-            elif edge_length_x < -prefs.edge_width:
-                edge_length_x += prefs.edge_width
-                xvel += edge_length_x * edge.pull / self.push
+        #
+        for edge in node.edges_up:
+            if edge.is_visible():
+                other = edge.start
+                other_x, other_y, other_z = other.current_position
+                dist_x = int(node_x - other_x)
+                dist_y = int(node_y - other_y)
+                dist = math.hypot(dist_x, dist_y)
+                if dist == 0:
+                    continue
+                safe_zone = (other.width + node.width) / 2
+                pulling_force = dist - safe_zone
+                x_component = dist_x / dist
+                xvel -= x_component * pulling_force * edge.pull * 0.3
+        #
+        # pull to center (0, 0)
+        xvel += node_x * -0.004
         return xvel, 0, 0
+
 
     def draw(self):
         """ Draws the tree from bottom to top, trying to fit every horizontal row to as small as possible """
         edge_height = prefs.edge_height
         edge_width = prefs.edge_width
         rows = []
+        self._linear = []
 
         def _fill_grid(node, row):
             if not row < len(rows):
@@ -176,7 +198,7 @@ class DynamicWidthTree(BaseVisualization):
             for n, x, width in rows[row]:
                 x_pos += width
             rows[row].append((node, x_pos, node.width))
-            node.computed_position = (x_pos + node.width, row * edge_height * 2, 0)
+            node.computed_position = (x_pos + node.width / 2, row * edge_height * 2, 0)
             left = node.left()
             if left:
                 _fill_grid(left, row + 1)
@@ -186,3 +208,4 @@ class DynamicWidthTree(BaseVisualization):
 
         for root_node in self.forest:
             _fill_grid(root_node, 0)
+            self._linear.append(self.forest.list_nodes_once(root_node))

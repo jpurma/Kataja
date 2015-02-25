@@ -72,7 +72,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self._label_qdocument = None
         self.label_rect = None
         self._inode = None
-        self._inode_changed = False
+        self._inode_changed = True
 
         self._index_label = None
         self._index_visible = True
@@ -324,6 +324,29 @@ class Node(Movable, QtWidgets.QGraphicsItem):
                     if (only_visible and edge.end.is_visible()) or not only_visible:
                         return edge.end
                 return None
+
+    def is_sibling(self, other):
+        """ Nodes are siblings if they share a parent.
+        :param other: node to compared with
+        :return:
+        """
+        parents = self.get_parents()
+        other_parents = other.get_parents()
+        for parent in parents:
+            if parent in other_parents:
+                return True
+        return False
+
+    def get_siblings(self):
+        """ Return those nodes that are other children of node's parents
+        :return:
+        """
+        sibs = []
+        for parent in self.get_parents():
+            for child in parent.get_children():
+                if child is not self:
+                    sibs.append(child)
+        return sibs
 
     def is_leaf_node(self, only_similar=True, only_visible=True):
         """

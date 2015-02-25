@@ -28,16 +28,17 @@ from kataja.visualizations.BaseVisualization import BaseVisualization
 from kataja.FeatureNode import FeatureNode
 from kataja.GlossNode import GlossNode
 import kataja.globals as g
+from kataja.visualizations.AsymmetricElasticTree import AsymmetricElasticTree
 
 
-class LinearizedDynamicTree(BaseVisualization):
+class LinearizedDynamicTree(AsymmetricElasticTree):
     """
 
     """
     name = 'Linearized Dynamic'
 
     def __init__(self):
-        BaseVisualization.__init__(self)
+        AsymmetricElasticTree.__init__(self)
         self.forest = None
         self._directed = True
 

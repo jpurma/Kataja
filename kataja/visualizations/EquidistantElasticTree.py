@@ -98,11 +98,10 @@ class EquidistantElasticTree(BaseVisualization):
                 dist_y = start_y - end_y
                 dist = math.hypot(dist_x, dist_y)
                 if dist > 30:
-                    pull = edge.pull
                     fx = (dist_x / dist) * (dist - 30)
                     fy = (dist_y / dist) * (dist - 30)
-                    xvel += fx * pull
-                    yvel += fy * pull
+                    xvel += fx * edge.pull
+                    yvel += fy * edge.pull
                 elif dist < 20:
                     push = edge.pull / -2
                     xvel += dist_x * push
@@ -119,14 +118,13 @@ class EquidistantElasticTree(BaseVisualization):
                 dist_y = end_y - start_y
                 dist = math.hypot(dist_x, dist_y)
                 if dist > 30:
-                    pull = edge.pull
                     # ang=math.atan2(by,bx)
                     # fx=math.cos(ang)*(dist-30)
                     # fy=math.sin(ang)*(dist-30)
                     fx = (dist_x / dist) * (dist - 30)
                     fy = (dist_y / dist) * (dist - 30)
-                    xvel += fx * pull
-                    yvel += fy * pull
+                    xvel += fx * edge.pull
+                    yvel += fy * edge.pull
                 elif dist < 20:
                     push = edge.pull / -2
                     xvel += dist_x * push
@@ -135,6 +133,11 @@ class EquidistantElasticTree(BaseVisualization):
                     pass
                     # else:
                     # print('hidden edges down')
+
+        # pull to center (0, 0)
+        xvel += node_x * -0.002
+        yvel += node_y * -0.002
+
         if node.bind_x:
             xvel = 0
         if node.bind_y:

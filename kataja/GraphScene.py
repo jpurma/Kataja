@@ -713,6 +713,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         :param event:
         """
         items_have_moved = False
+        items_fading = False
         frame_has_moved = False
         background_fade = False
         resize_required = False
@@ -741,6 +742,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         for n, node in enumerate(f.visible_nodes()):
             node.adjust_opacity()
+            if node.is_fading():
+                items_fading = True
             # Computed movement
             if node.folding_towards:
                 x, y, z = node.folding_towards.computed_position
@@ -754,8 +757,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 items_have_moved = True
                 continue
             elif node.locked_to_position:
-                normalize = False
-                moved_nodes.append((0, 0, 0, node))
+                #normalize = False
+                #moved_nodes.append((0, 0, 0, node))
                 continue
             elif node.bind_x and node.bind_y:
                 if node.move_towards_target_position():
@@ -778,10 +781,10 @@ class GraphScene(QtWidgets.QGraphicsScene):
         if moved_nodes:
             resize_required = True
             if normalize:
-                # print 'normalizing'
                 avg_x = x_sum / len(moved_nodes)
                 avg_y = y_sum / len(moved_nodes)
                 avg_z = z_sum / len(moved_nodes)
+                #print('normalizing', avg_x, avg_y, avg_z)
                 for xvel, yvel, zvel, node in moved_nodes:
                     xvel -= avg_x
                     yvel -= avg_y
@@ -839,7 +842,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 f.bracket_manager.update_positions()
                 # for area in f.touch_areas:
                 # area.update_position()
-        if not (items_have_moved or frame_has_moved or background_fade):
+        if not (items_have_moved or items_fading or frame_has_moved or background_fade):
             self.killTimer(self._timer_id)
             self.main.ui_manager.activity_marker.hide()
             ctrl.items_moving = False

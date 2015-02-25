@@ -40,7 +40,6 @@ class ChainManager:
         raise Exception('F broken chain')
 
 
-    @time_me
     def rebuild_chains(self, stop_count=0):
         """ Process for building chains depends on if the tree currently is using multidomination or not.
         Chains shouldn't include elements that are not really in the tree right now.
@@ -150,7 +149,6 @@ class ChainManager:
             # print('used multidomination-based rebuild, received chains: ', self.chains)
 
 
-    @time_me
     def group_traces_to_chain_head(self):
         """ Move traces to their multidominant originals, purely didactic thing """
         self.rebuild_chains()
@@ -180,7 +178,6 @@ class ChainManager:
         self.forest.settings.uses_multidomination = False
 
 
-    @time_me
     def traces_to_multidomination(self):
         """Switch traces to multidominant originals, also mirror changes in syntax  """
         self.rebuild_chains()
@@ -191,7 +188,6 @@ class ChainManager:
         self.forest.settings.uses_multidomination = True
 
 
-    @time_me
     def multidomination_to_traces(self):
         """ Switch multidominated elements to use traces instead  """
         self.rebuild_chains()

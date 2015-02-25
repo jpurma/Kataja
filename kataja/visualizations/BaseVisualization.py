@@ -21,6 +21,8 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
+import math
+import random
 
 from kataja.singletons import prefs
 from kataja.utils import caller
@@ -125,6 +127,74 @@ class BaseVisualization:
         return self.hits[node.save_key] == 0
 
 
+    def calculate_movement(self, node):
+        # Sum up all forces pushing this item away.
+        """
+
+        :param node:
+        :return:
+        """
+        xvel = 0.0
+        yvel = 0.0
+        node_x, node_y, node_z = node.current_position  # @UnusedVariable
+        for other in self.forest.visible_nodes():
+            if other is node:
+                continue
+            other_x, other_y, other_z = other.current_position  # @UnusedVariable
+            dist_x, dist_y = int(node_x - other_x), int(node_y - other_y)
+            safe_zone = (other.width + node.width) / 2
+            dist = math.hypot(dist_x, dist_y)
+            if dist == 0 or dist == safe_zone:
+                continue
+            required_dist = dist - safe_zone
+            pushing_force = 500 / (required_dist * required_dist)
+            pushing_force = min(random.random()*60, pushing_force)
+
+            x_component = dist_x / dist
+            y_component = dist_y / dist
+            xvel += pushing_force * x_component
+            yvel += pushing_force * y_component
+
+        # Now subtract all forces pulling items together.
+        for edge in node.edges_down:
+            other = edge.end
+            other_x, other_y, other_z = other.current_position
+            dist_x, dist_y = int(node_x - other_x), int(node_y - other_y)
+            dist = math.hypot(dist_x, dist_y)
+            if dist == 0:
+                continue
+            safe_zone = (other.width + node.width) / 2
+            pulling_force = (dist - safe_zone) * edge.pull * 0.4
+            x_component = dist_x / dist
+            y_component = dist_y / dist
+            xvel -= x_component * pulling_force
+            yvel -= y_component * pulling_force
+
+        for edge in node.edges_up:
+            other = edge.start
+            other_x, other_y, other_z = other.current_position
+            dist_x, dist_y = (node_x - other_x, node_y - other_y)
+            dist = math.hypot(dist_x, dist_y)
+            if dist == 0:
+                continue
+            safe_zone = (other.width + node.width) / 2
+            pulling_force = (dist - safe_zone) * edge.pull * 0.4
+            x_component = dist_x / dist
+            y_component = dist_y / dist
+            xvel -= x_component * pulling_force
+            yvel -= y_component * pulling_force
+
+        # pull to center (0, 0)
+        xvel += node_x * -0.003
+        yvel += node_y * -0.003
+
+        if node.bind_x:
+            xvel = 0
+        if node.bind_y:
+            yvel = 0
+        return xvel, yvel, 0
+
+
     # def calculateFeatureMovement(self, feat, node):
     # """ Create a cloud of features around the node """
     # xvel = 0.0
@@ -172,87 +242,6 @@ class BaseVisualization:
     #         yvel+=edge_length_y*pull*.4
     #     return (xvel, yvel, 0)
 
-    def calculate_movement(self, node):
-        # Sum up all forces pushing this item away.
-        """
-
-        :param node:
-        :return:
-        """
-        xvel = 0.0
-        yvel = 0.0
-        node_x, node_y, node_z = node.current_position  # @UnusedVariable
-        for other in self.forest.visible_nodes():
-            if other is node:
-                continue
-            other_x, other_y, other_z = other.current_position  # @UnusedVariable
-            #print 'others: ', other_x, other_y, other_z
-            dist_x, dist_y = int(node_x - other_x), int(node_y - other_y)
-            dist2 = (dist_x * dist_x) + (dist_y * dist_y)
-            if dist2 > 0:
-                l = float(other.force) / dist2
-                xvel += dist_x * l
-                yvel += dist_y * l
-        # Now subtract all forces pulling items together.
-        edges_down = node.edges_down
-        edges_up = node.edges_up
-        rtotal = len(edges_down) + len(edges_up)
-        if self._directed:
-
-            for edge in edges_down:
-                if not edge.is_visible():
-                    continue
-                if edge.align == LEFT:
-                    target_d_x = prefs.edge_width
-                else:
-                    target_d_x = -prefs.edge_width
-                target_d_y = -15
-                start_x, start_y, start_z = edge.start_point  # @UnusedVariable
-                end_x, end_y, end_z = edge.end_point  # @UnusedVariable
-                d_x = start_x - end_x
-                d_y = start_y - end_y
-                rd_x = target_d_x - d_x
-                rd_y = target_d_y - d_y
-                xvel += rd_x * edge.pull
-                yvel += rd_y * edge.pull
-
-            for i, edge in enumerate(edges_up):
-                if not edge.is_visible():
-                    continue
-                if edge.align == LEFT:
-                    target_d_x = -prefs.edge_width
-                else:
-                    target_d_x = prefs.edge_width
-                target_d_y = 15
-                start_x, start_y, start_z = edge.start_point  # @UnusedVariable
-                end_x, end_y, end_z = edge.end_point  # @UnusedVariable
-                d_x = end_x - start_x
-                d_y = end_y - start_y
-                rd_x = target_d_x - d_x
-                rd_y = target_d_y - d_y
-                xvel += rd_x * edge.pull / ((i + 1) * (i + 1))  # first branch has strongest pull
-                yvel += rd_y * edge.pull  # / ((i + 1) * (i + 1))
-
-        else:
-            for edge in edges_down:
-                pull = edge.pull / rtotal
-                other_x, other_y, other_z = edge.end_point  # @UnusedVariable
-                edge_length_x, edge_length_y = (other_x - node_x, other_y - node_y)
-                xvel += edge_length_x * pull
-                yvel += edge_length_y * pull
-
-            for edge in edges_up:
-                pull = edge.pull / rtotal
-                other_x, other_y, other_z = edge.start_point  # @UnusedVariable
-                edge_length_x, edge_length_y = (node_x - other_x, node_y - other_y)
-                xvel -= edge_length_x * pull
-                yvel -= edge_length_y * pull
-
-        if node.bind_x:
-            xvel = 0
-        if node.bind_y:
-            yvel = 0
-        return xvel, yvel, 0
 
 
     def should_we_draw(self, node, parent):

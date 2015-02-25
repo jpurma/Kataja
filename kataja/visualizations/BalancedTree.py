@@ -85,131 +85,27 @@ class BalancedTree(BaseVisualization):
 
     # @time_me
     def draw(self):
-        """ Divide and conquer algorithm using a grid. Result is much like latex qtree. 
-        
-        Grid L + Grid R -> rightmost free of L, leftmost node of R,  sum     max of sums=4 + padding=1 = 5
-        .L.L..   .R.R..      +4                 - 1                    =3 
-        .L....   R.R...      +2                 - 0                    =2
-        ..L..L   ..R.R.      +6                 - 2                    =4
-        .L....               +2                                      
-        
-        so Grid R starts from coords (5,0)
-        .L.L..R.R..
-        .L...R.R...
-        ..L..L.R.R.
-        .L.........                
-        
-        """
-        print('using balanced tree')
+        """ Draws the tree from bottom to top, trying to fit every horizontal row to as small as possible """
         edge_height = prefs.edge_height
-        edge_width = prefs.edge_width / 2
-        merged_grid = Grid()
+        edge_width = prefs.edge_width
+        rows = []
+        self._linear = []
 
-        rotation, self.traces_to_draw = self._compute_traces_to_draw(self.forest.vis_data['rotation'])
-        self.forest.vis_data['rotation'] = rotation
-
-        def _get_gride_size(node):
-            node_width = node.width
-            node_height = node.height
-            width = height = 1
-            while node_width > edge_width:
-                width += 2
-                node_width -= edge_width
-            while node_height > edge_height:
-                height += 2
-                node_height -= edge_height
-            return width, height
-
-        def _build_grid(node, parent=None):
-            if self.should_we_draw(node, parent):
-                left_grid = None
-                right_grid = None
-                left_child = node.left()
-                if left_child:
-                    left_grid = _build_grid(left_child, parent=node)
-                right_child = node.right()
-                if right_child:
-                    right_grid = _build_grid(right_child, parent=node)
-
-                # Recursion base case
-                if not (left_child or right_child):
-                    grid = Grid()
-                    grid_width, grid_height = _get_gride_size(node)
-                    grid.set(0, 0, node, grid_width, grid_height)
-                    return grid
-                else:
-                    return _merge_grids(left_grid, right_grid, node)
-            else:
-                return Grid()
-
-        def _merge_grids(left_grid=None, right_grid=None, combining_node=None, extra_padding=0):
-            paddings = []
-            # actual merging of grids begins with calculating the closest fit for two grids
-            combined_grid = None
-
-            if not (right_grid or left_grid):
-                assert False
-
-            if left_grid and right_grid:
-                for row_n, right_side_row in enumerate(right_grid):
-                    # measuring where the right border of the left grid should be.
-                    rightmost_free = left_grid.last_filled_column(row_n) + 1
-                    # measuring where the left border of the right grid should be
-                    left_side_empties = right_grid.first_filled_column(row_n)
-                    paddings.append(rightmost_free - left_side_empties)
-                if paddings:
-                    padding = max(paddings) + extra_padding
-                else:
-                    padding = extra_padding
-                for row_n, right_row in enumerate(right_grid):
-                    for col_n, right_row_node in enumerate(right_row):
-                        if right_row_node:
-                            left_grid.set(col_n + padding, row_n, right_row_node)
-                combined_grid = left_grid
-            elif left_grid:
-                combined_grid = left_grid
-            elif right_grid:
-                combined_grid = right_grid
-
-            if not combining_node:  # if this was about setting two finished trees besides each others, then leave now
-                return combined_grid
-            # drawing the merger node
-            left_root = combining_node.left()
-            right_root = combining_node.right()
-            if right_root and not left_root:
-                x, y = combined_grid.find_in_grid(right_root)
-            elif left_root and not right_root:
-                x, y = combined_grid.find_in_grid(left_root)
-            elif left_root and right_root:
-                lx, ly = combined_grid.find_in_grid(left_root)
-                rx, ry = combined_grid.find_in_grid(right_root)
-                x = (lx + rx) // 2
-
-            combined_grid.insert_row()
-            combined_grid.insert_row()
-            nw, nh = _get_gride_size(combining_node)
-            combined_grid.set(x, 0, combining_node, nw, nh)
-            return combined_grid
+        def _fill_grid(node, row):
+            if not row < len(rows):
+                rows.append([])
+            x_pos = 0
+            for n, x, width in rows[row]:
+                x_pos += width
+            rows[row].append((node, x_pos, node.width))
+            node.computed_position = (x_pos + node.width / 2, row * edge_height * 2, 0)
+            left = node.left()
+            if left:
+                _fill_grid(left, row + 1)
+            right = node.right()
+            if right:
+                _fill_grid(right, row + 1)
 
         for root_node in self.forest:
-            new_grid = _build_grid(node=root_node)
-            merged_grid = _merge_grids(left_grid=merged_grid, right_grid=new_grid, extra_padding=2)
-
-        tree_width = merged_grid.width * edge_width
-        tree_height = merged_grid.height * edge_height
-        offset_x = tree_width / -2
-        offset_y = tree_height / -2
-        height_reduction = (edge_height / 3.0) / (merged_grid.height or 1)
-        height_now = offset_y
-
-        merged_grid.ascii_dump()
-        # Actual drawing: set nodes to their places in scene
-
-        for y, row in enumerate(merged_grid):
-            height_now += edge_height
-            edge_height -= height_reduction
-            for x, node in enumerate(row):
-                if node and isinstance(node, Movable):
-                    node.release()
-                    node.computed_position = (x * edge_width + offset_x, height_now, 0)
-
+            _fill_grid(root_node, 0)
+            self._linear.append(self.forest.list_nodes_once(root_node))
