@@ -74,10 +74,8 @@ class ConstituentNode(Node):
         # ## use update_visibility to change these: visibility of particular elements
         # depends on many factors
         if ctrl.forest:
-            self._visibility_label = ctrl.forest.settings.label_style
             self._visibility_brackets = ctrl.forest.settings.bracket_style
         else:
-            self._visibility_label = 0
             self._visibility_brackets = 0
 
         self.setAcceptDrops(True)
@@ -290,7 +288,7 @@ class ConstituentNode(Node):
             return '0'
         children = self.get_children()
         if children:
-            if self.alias:
+            if self.alias and len(children) == 2:
                 return '[.%s %s %s ]' % (self.alias, children[0].as_bracket_string(), children[1].as_bracket_string())
             elif len(children) == 2:
                 return '[ %s %s ]' % (children[0].as_bracket_string(), children[1].as_bracket_string())

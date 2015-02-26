@@ -673,8 +673,9 @@ class Forest(Savable):
         """
         FN = FeatureNode(syntactic_feature)
         FN.after_init()
-        FN.compute_start_position(host)
-        self.connect_node(host, child=FN, edge_type=FeatureNode.default_edge_type)
+        if host:
+            FN.compute_start_position(host)
+            self.connect_node(host, child=FN, edge_type=FeatureNode.default_edge_type)
         self.add_to_scene(FN)
         FN.update_visibility()
         return FN
@@ -798,21 +799,27 @@ class Forest(Savable):
         # trace.hide()
         return trace
 
-    def create_empty_node(self, pos, give_label=True):
+    def create_empty_node(self, pos, give_label=True, node_type='c'):
         """
 
         :param pos:
         :param give_label:
         :return:
         """
-        print('creating empty node, ', pos)
-        if give_label:
-            label = self.get_first_free_constituent_name()
-        else:
-            label = ''
-        C = ForestSyntax.new_constituent(label)
-        node = self.create_node_from_constituent(C, pos, result_of_select=True)
-
+        print('creating empty node, ', pos, node_type)
+        node = None
+        if node_type == g.CONSTITUENT_NODE:
+            if give_label:
+                label = self.get_first_free_constituent_name()
+            else:
+                label = ''
+            C = ForestSyntax.new_constituent(label)
+            node = self.create_node_from_constituent(C, pos, result_of_select=True)
+        elif node_type == g.FEATURE_NODE:
+            label = 'feature'
+            F = ForestSyntax.new_feature(label)
+            node = self.create_feature_node(None, F)
+            node.set_original_position(pos)
         return node
 
 

@@ -190,6 +190,8 @@ def constituent_copy(node):
 def new_constituent(label, source=None):
     return ctrl.Constituent(label, source=source)
 
+def new_feature(label, source=None):
+    return ctrl.Feature(label)
 
 def set_constituent_index(constituent, index):
     constituent.index = index

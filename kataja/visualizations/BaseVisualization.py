@@ -155,6 +155,9 @@ class BaseVisualization:
             xvel += pushing_force * x_component
             yvel += pushing_force * y_component
 
+        centering_a = False
+        centering_b = False
+
         # Now subtract all forces pulling items together.
         for edge in node.edges_down:
             other = edge.end
@@ -169,6 +172,8 @@ class BaseVisualization:
             y_component = dist_y / dist
             xvel -= x_component * pulling_force
             yvel -= y_component * pulling_force
+        else:
+            centering_a = True
 
         for edge in node.edges_up:
             other = edge.start
@@ -183,10 +188,17 @@ class BaseVisualization:
             y_component = dist_y / dist
             xvel -= x_component * pulling_force
             yvel -= y_component * pulling_force
+        else:
+            centering_b = True
 
-        # pull to center (0, 0)
-        xvel += node_x * -0.003
-        yvel += node_y * -0.003
+        if centering_a and centering_b:
+            # pull to center (0, 0)
+            xvel += node_x * -0.009
+            yvel += node_y * -0.009
+        else:
+            # pull to center (0, 0)
+            xvel += node_x * -0.003
+            yvel += node_y * -0.003
 
         if node.bind_x:
             xvel = 0

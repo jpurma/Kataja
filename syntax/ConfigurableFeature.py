@@ -73,6 +73,10 @@ class Feature(Savable):
 
 
     @property
+    def label(self):
+        return self.saved.fkey
+
+    @property
     def key(self):
         """
 

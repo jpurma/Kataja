@@ -1,12 +1,12 @@
 import json
 import pickle
 import pprint
+import random
 import shlex
 import time
 import subprocess
 
-from PyQt5 import QtGui
-from PyQt5 import QtWidgets
+from PyQt5 import QtGui, QtWidgets, QtCore
 
 from PyQt5.QtCore import Qt
 from kataja.errors import ForestError
@@ -594,6 +594,9 @@ class ActionMethods:
             if clicked:
                 key, button = clicked
                 print(key, button)
+                ctrl.forest.create_empty_node(pos=QtCore.QPoint(random.random()*60 - 25, random.random()*60 - 25),
+                                              give_label=True,
+                                              node_type=key)
 
 
     # help -action (h)

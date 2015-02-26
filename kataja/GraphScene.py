@@ -130,6 +130,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         :param item:
         """
+        print('adding item to scene:', item)
         self.add_to_signal_receivers(item)
         QtWidgets.QGraphicsScene.addItem(self, item)
 
@@ -140,6 +141,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         :param item:
         """
+        print('removing item from scene:', item)
         self.remove_from_signal_receivers(item)
         QtWidgets.QGraphicsScene.removeItem(self, item)
 

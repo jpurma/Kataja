@@ -26,6 +26,7 @@ import random
 
 from kataja.globals import FEATURE_EDGE, FEATURE_NODE
 from kataja.Node import Node
+from kataja.singletons import ctrl
 
 
 color_map = {'tense': 0, 'order': 1, 'person': 2, 'number': 4, 'case': 6, 'unknown': 3}
@@ -38,7 +39,6 @@ class FeatureNode(Node):
     width = 20
     height = 20
     default_edge_type = FEATURE_EDGE
-    saved_fields = []
     node_type = FEATURE_NODE
 
     def __init__(self, feature=None):
@@ -51,6 +51,7 @@ class FeatureNode(Node):
         self.update_label()
         self.update_bounding_rect()
         self.update_visibility()
+        ctrl.forest.store(self)
 
     # implement color() to map one of the d['rainbow_%'] colors here. Or if bw mode is on, then something else.
 
@@ -69,6 +70,16 @@ class FeatureNode(Node):
             y += random.uniform(-4, 4)
         self.set_original_position((x, y, z))
 
+    def update_label(self):
+        """
+
+        :return:
+        """
+        Node.update_label(self)
+        self._label_complex.show()
+        print(self.opacity())
+
+
     def get_html_for_label(self):
         """ This should be overridden if there are alternative displays for label """
         f = self.syntactic_object
@@ -79,6 +90,17 @@ class FeatureNode(Node):
         else:
             return str(f)
             # u'%s:%s' % (self.syntactic_object.key, self.syntactic_object.get_value_string())
+
+    def paint(self, painter, option, widget=None):
+        """ Painting is sensitive to mouse/selection issues, but usually with
+        :param painter:
+        :param option:
+        :param widget:
+        nodes it is the label of the node that needs complex painting """
+        painter.setPen(self.contextual_color())
+        #if ctrl.pressed == self or self._hovering or ctrl.is_selected(self):
+        #    painter.drawRoundedRect(self.inner_rect, 5, 5)
+
 
     def __str__(self):
         return 'feature %s' % self.syntactic_object
