@@ -56,7 +56,7 @@ class Feature(Savable):
     True
     """
 
-    def __init__(self, key=None, value=None, values=None):
+    def __init__(self, key=None, value=None, values=None, family=''):
         Savable.__init__(self)
         if key and not (value or values): # e.g. 'nom:case:deletable'
             values = key.split(':')
@@ -69,7 +69,8 @@ class Feature(Savable):
         elif value:
             self.saved.values = [value]
         else:
-            self.values = []
+            self.saved.values = []
+        self.saved.family = family
 
 
     @property
@@ -133,6 +134,21 @@ class Feature(Savable):
         else:
             self.saved.values = [value]
 
+    @property
+    def family(self):
+        """ e.g. feature 'number' may belong to family 'phi'. Features don't need to have a family.
+        :return:
+        """
+        return self.saved.family
+
+    @family.setter
+    def family(self, value):
+        """
+        :param value: string
+        :return:
+        """
+        self.saved.family = value
+
     def get(self):
         """
 
@@ -178,7 +194,7 @@ class Feature(Savable):
             raise KeyError
 
     def __repr__(self):
-        return ":".join([self.key] + self.values)
+        return "ConfigurableFeature(key=%s, values=%s, family=%s)" % (self.key, repr(self.values), self.family)
 
     def __str__(self):
         return ":".join([self.key] + self.values)

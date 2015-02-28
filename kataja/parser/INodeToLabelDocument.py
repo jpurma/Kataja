@@ -85,7 +85,11 @@ def parse_iconstituentnode_for_viewing(inode, document, gloss_in_view=True, feat
             if inode.features and features_in_view:
                 if not first:
                     cursor.insertBlock()
-                write_node_to_document(inode.features, cursor)
+
+                print(inode.features)
+                for item in inode.features.values():
+                    write_node_to_document(item, cursor)
+                    write_node_to_document(' ', cursor)
                 actual_block_order.append(block_id)
                 first = False
     document.block_order = actual_block_order
@@ -138,7 +142,17 @@ def parse_ifeaturenode(inode, document):
     :param document: LabelDocument
     """
     cursor = QtGui.QTextCursor(document)
-    write_node_to_document(inode.label, cursor)
+    if inode.family:
+        write_node_to_document(inode.family, cursor)
+        cursor.insertText(':')
+    write_node_to_document(inode.key, cursor)
+    if inode.value:
+        cursor.insertText('=')
+        write_node_to_document(inode.value, cursor)
+    if inode.parts:
+        cursor.insertText(' ')
+        write_node_to_document(inode.parts, cursor)
+
 
 
 def run_command(command, cursor):
@@ -202,6 +216,12 @@ def write_node_to_document(n, cursor, raw=False):
                 cursor.insertText(part)
         if old_format:
             cursor.setCharFormat(old_format)
+    elif isinstance(n, list):
+        for part in n:
+            if isinstance(part, ITextNode):  # ITextNode includes also ICommandNodes and IConstituentNodes
+                write_node_to_document(part, cursor)
+            else:
+                cursor.insertText(part)
     else:
         cursor.insertText(n)
 

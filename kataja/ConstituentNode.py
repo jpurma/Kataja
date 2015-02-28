@@ -27,8 +27,8 @@ from PyQt5 import QtGui
 from kataja.singletons import ctrl
 from kataja.Node import Node
 from kataja.utils import to_tuple
+from kataja.parser.INodes import IConstituentNode
 import kataja.globals as g
-from kataja.parser import KatajaNodeToINode
 
 # ctrl = Controller object, gives accessa to other modules
 
@@ -249,7 +249,13 @@ class ConstituentNode(Node):
         :return: INodes or str or tuple of them
         """
         if self._inode_changed:
-            self._inode = KatajaNodeToINode.constituentnode_to_iconstituentnode(self, children=False)
+            self._inode = IConstituentNode(alias=self.alias,
+                                     label=self.label,
+                                     index=self.index,
+                                     gloss=self.gloss,
+                                     features=self.features)
+            self._inode_changed = False
+
         return self._inode
 
 

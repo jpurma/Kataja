@@ -70,6 +70,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
         self._has_tail = True
         self._shape_has_joint = False
         self._fill_path = False
+        self._below_node = False
         # Drawing flags for each touch area type
         if self.type is g.LEFT_ADD_ROOT:
             self.status_tip = "Add new constituent to left of %s" % self.host
@@ -86,6 +87,10 @@ class TouchArea(QtWidgets.QGraphicsItem):
         elif self.type is g.TOUCH_ADD_CONSTITUENT:
             self.status_tip = "Add a constituent here"
             self._has_tail = False
+        elif self.type is g.TOUCH_CONNECT_FEATURE:
+            self.status_tip = "Add this feature"
+            self._has_tail = False
+            self._below_node = True
         else:
             self.status_tip = "Unknown touch area???"
         self.selectable = False
@@ -188,7 +193,10 @@ class TouchArea(QtWidgets.QGraphicsItem):
                 if isinstance(self.host, Edge):
                     self.end_point = (self.host.end_point[0], self.host.end_point[1])
                 elif hasattr(self.host, 'current_position'):
-                    self.end_point = (self.host.current_position[0], self.host.current_position[1])
+                    if self._below_node:
+                        self.end_point = (self.host.current_position[0], self.host.current_position[1] + self.host.height / 2)
+                    else:
+                        self.end_point = (self.host.current_position[0], self.host.current_position[1])
                 else:
                     raise TouchAreaError("Cannot set end point from %s " % self.host)
 
@@ -228,6 +236,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
             use_middle_point = True
             line_middle_point = sx - (0.5 * (sx - self.end_point[0])), sy - 10
         else:
+
             raise TypeError("Touch area couldn't create end point")
         shape_method = path_settings['method']
         self._fill_path = path_settings.get('fill', False)
@@ -276,18 +285,24 @@ class TouchArea(QtWidgets.QGraphicsItem):
         :param dropped_node:
         """
         print('---- dropped node to touch area -----')
-        ctrl.forest.undo_manager.record('re-merge constituent')
-        if isinstance(self.host, Edge):
-            replaced = self.host.end
-            edge = self.host
-            print('calling replace_node_with_merged_node from edge')
-        else:
-            replaced = self.host
-            edge = None
-            print('calling replace_node_with_merged_node')
+        if self.type == g.TOUCH_CONNECT_FEATURE:
+            ctrl.forest.undo_manager.record('add feature')
+            assert(dropped_node and dropped_node.node_type == g.FEATURE_NODE)
+            ctrl.forest.add_feature_to_node(dropped_node, self.host)
 
-        ctrl.forest.replace_node_with_merged_node(replaced, dropped_node, edge=edge, merge_to_left=self._align_left,
-                                                  merger_node_pos=self.start_point)
+        else:
+            ctrl.forest.undo_manager.record('re-merge constituent')
+            if isinstance(self.host, Edge):
+                replaced = self.host.end
+                edge = self.host
+                print('calling replace_node_with_merged_node from edge')
+            else:
+                replaced = self.host
+                edge = None
+                print('calling replace_node_with_merged_node')
+
+            ctrl.forest.replace_node_with_merged_node(replaced, dropped_node, edge=edge, merge_to_left=self._align_left,
+                                                      merger_node_pos=self.start_point)
 
 
     def click(self, event=None):

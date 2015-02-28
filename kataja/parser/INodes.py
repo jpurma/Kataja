@@ -167,10 +167,12 @@ class ICommandNode(ITextNode):
 class IFeatureNode(ITextNode):
     """ INode that contains Node (feature or other Kataja node) with "label" as the field for displayable value. """
 
-    def __init__(self, label='', parts=None):
+    def __init__(self, key='', value='', family='', parts=None):
         """ Command is stored as a string in self.command. self.parts are the TextNodes in the scope of command. """
         ITextNode.__init__(self, parts=parts)
-        self.label = label
+        self.key = key
+        self.value = value
+        self.family = family
 
     def is_plain_string(self):
         """ Cannot be represented with just a string.
@@ -179,21 +181,30 @@ class IFeatureNode(ITextNode):
         return False
 
     def __bool__(self):
-        return bool(self.parts or self.label)
+        return not self.is_empty()
 
     def __str__(self):
+        part_part = ''
+        family_part = ''
         if self.parts:
-            return ':%s %s' % (self.label, self.parts_as_string())
-        else:
-            return ':%s' % self.label
+            part_part = ' ' + self.parts_as_string()
+        if self.family:
+            family_part = '%s:' % self.family
+        return '%s%s:%s%s' % (family_part, self.key, self.value, part_part)
 
     def is_empty(self):
-        return not (self.label or self.parts)
+        return not (self.parts or self.key or self.value or self.family)
 
     def __repr__(self):
-        return 'INode(label=%s, parts=%s)' % (repr(self.label),
-                                              repr(self.parts))
+        return 'IFeatureNode(key=%s, value=%s, family=%s, parts=%s)' % (repr(self.key),
+                                                                        repr(self.value),
+                                                                        repr(self.family),
+                                                                        repr(self.parts))
 
+    @staticmethod
+    def create_inode_from(feature):
+        ifeature = IFeatureNode(feature.key, feature.value, feature.family)
+        return ifeature
 
 class IConstituentNode(ITextNode):
     """ Intermediary Node that contains basic information required for building a linguistic constituent.
@@ -202,11 +213,30 @@ class IConstituentNode(ITextNode):
     """
 
     def __init__(self, label='', index='', features=None, alias='', gloss='', parts=None):
+        """
+
+        :param label:
+        :param index:
+        :param features:
+        :param alias:
+        :param gloss:
+        :param parts:
+        """
         ITextNode.__init__(self, parts=parts)
         self.label = label
         self.index = index
-        if features is not None:
-            self.features = features
+        if features:
+            print('setting IConstituentNode features to', features)
+            ifeatures = []
+            if isinstance(features, dict):
+                for key, value in features.items():
+                    if hasattr(value, 'as_inode'):
+                        ifeatures.append(value.as_inode)
+                    else:
+                        IFeatureNode.create_inode_from(value)
+                self.features = ifeatures
+            elif isinstance(features, list) and isinstance(features[0], IFeatureNode):
+                self.features = features
         else:
             self.features = []
         self.alias = alias
@@ -218,6 +248,8 @@ class IConstituentNode(ITextNode):
 
 
     def add_feature(self, node):
+        if not isinstance(node, IFeatureNode):
+            node = node.as_inode
         self.features.append(node)
 
     def add_label_complex(self, node):

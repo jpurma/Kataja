@@ -201,7 +201,6 @@ class Movable(Savable):
 
     def fade_in(self):
         """ Simple fade effect. The object exists already when fade starts. """
-        print('fade in called for ', self)
         if hasattr(self, "setOpacity"):
             self.setOpacity(0)
         if hasattr(self, "show"):

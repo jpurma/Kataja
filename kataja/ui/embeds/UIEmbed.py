@@ -8,13 +8,15 @@ __author__ = 'purma'
 
 
 class EmbeddedLineEdit(QtWidgets.QLineEdit):
-    def __init__(self, parent, tip='', font=None):
+    def __init__(self, parent, tip='', font=None, prefill=''):
         QtWidgets.QLineEdit.__init__(self, parent)
         if tip:
             self.setToolTip(tip)
             self.setStatusTip(tip)
         if font:
             self.setFont(font)
+        if prefill:
+            self.setPlaceholderText(prefill)
         self.setAcceptDrops(True)
         self.setDragEnabled(True)
 

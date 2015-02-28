@@ -385,7 +385,7 @@ class QtPreferences:
             name, style, size = font_tuple
             font = self.fontdb.font(name, style, size)
             print(name, font.exactMatch())
-            if name == 'Asana Math':  # and not font.exactMatch():
+            if name == 'Asana Math' and not font.exactMatch():
                 print('Loading Asana Math locally')
                 self.fontdb.addApplicationFont(preferences.resources_path + "Asana-Math.otf")
                 font = self.fontdb.font(name, style, size)

@@ -1101,6 +1101,12 @@ class Forest(Savable):
                     ctrl.ui.remove_touch_areas_for(edge)
 
 
+    def add_feature_to_node(self, feature, node):
+        C = node.syntactic_object
+        F = feature.syntactic_object
+        C.set_feature(F.key, F)
+        self.connect_node(parent=node, child=feature, edge_type=g.FEATURE_EDGE)
+
     # ## order markers are special nodes added to nodes to signal the order when the node was merged/added to forest
     #######################################################################
 
@@ -1742,27 +1748,34 @@ class Forest(Savable):
 
     ##### Dragging ##############################################
 
-    def prepare_touch_areas_for_dragging(self, excluded=None):
+    def prepare_touch_areas_for_dragging(self, excluded=None, node_type=''):
         """
 
         :param excluded:
+        :param node_type:
         """
         forest('prepare_touch_areas_for_dragging %s' % excluded)
         um = self.main.ui_manager
         um.remove_touch_areas()
-        for root in self.roots:
-            if excluded and root in excluded:
-                continue
-            um.create_touch_area(root, g.LEFT_ADD_ROOT)
-            um.create_touch_area(root, g.RIGHT_ADD_ROOT)
-        for edge in self.get_constituent_edges():
-            if excluded and (edge.start in excluded or edge.end in excluded):
-                continue
-            um.create_touch_area(edge, g.LEFT_ADD_SIBLING)
-            um.create_touch_area(edge, g.RIGHT_ADD_SIBLING)
-        for node in self.get_constituent_nodes():
-            if node.is_placeholder():
-                um.create_touch_area(node, g.TOUCH_ADD_CONSTITUENT)
+        if node_type == g.CONSTITUENT_NODE:
+            for root in self.roots:
+                if excluded and root in excluded:
+                    continue
+                um.create_touch_area(root, g.LEFT_ADD_ROOT)
+                um.create_touch_area(root, g.RIGHT_ADD_ROOT)
+            for edge in self.get_constituent_edges():
+                if excluded and (edge.start in excluded or edge.end in excluded):
+                    continue
+                um.create_touch_area(edge, g.LEFT_ADD_SIBLING)
+                um.create_touch_area(edge, g.RIGHT_ADD_SIBLING)
+            for node in self.get_constituent_nodes():
+                if node.is_placeholder():
+                    um.create_touch_area(node, g.TOUCH_ADD_CONSTITUENT)
+        elif node_type == g.FEATURE_NODE:
+            print('dragging a feature')
+            for node in self.get_constituent_nodes():
+                if node not in excluded:
+                    um.create_touch_area(node, g.TOUCH_CONNECT_FEATURE)
 
 
     ######### Utility functions ###############################

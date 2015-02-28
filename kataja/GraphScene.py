@@ -130,7 +130,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         :param item:
         """
-        print('adding item to scene:', item)
         self.add_to_signal_receivers(item)
         QtWidgets.QGraphicsScene.addItem(self, item)
 
@@ -141,7 +140,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         :param item:
         """
-        print('removing item from scene:', item)
         self.remove_from_signal_receivers(item)
         QtWidgets.QGraphicsScene.removeItem(self, item)
 
@@ -755,12 +753,9 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 normalize = False
                 moved_nodes.append((0, 0, 0, node))
                 continue
-            elif node in ctrl.dragged:
-                items_have_moved = True
+            elif ctrl.pressed:
                 continue
             elif node.locked_to_position:
-                #normalize = False
-                #moved_nodes.append((0, 0, 0, node))
                 continue
             elif node.bind_x and node.bind_y:
                 if node.move_towards_target_position():
@@ -798,20 +793,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         z += zvel
                         node.current_position = (x, y, z)
                         items_have_moved = True
-
-                        # if x < self._left_border:
-                        # self._left_border = x
-                        # resize_required = True
-                        # elif x > self._right_border:
-                        # self._right_border = x
-                        # resize_required = True
-                        # if y < self._top_border:
-                        # self._top_border = y
-                        # resize_required = True
-                        # elif y > self._bottom_border:
-                        # self._bottom_border = y
-                        # resize_required = True
-
             else:
                 for xvel, yvel, zvel, node in moved_nodes:
                     if abs(xvel) > 0.25 or abs(yvel) > 0.25 or abs(zvel) > 0.25:
@@ -821,21 +802,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         z += zvel
                         node.current_position = (x, y, z)
                         items_have_moved = True
-
-                        # for xvel,yvel,zvel, node in moved_nodes:
-                        # x, y, z = node.current_position
-                        # if x < self._left_border:
-                        # self._left_border = x
-                        # resize_required = True
-                        # elif x > self._right_border:
-                        # self._right_border = x
-                        # resize_required = True
-                        # if y < self._top_border:
-                        # self._top_border = y
-                        # resize_required = True
-                        # elif y > self._bottom_border:
-                        # self._bottom_border = y
-                        # resize_required = True
         if resize_required and (not self._manual_zoom) and (not ctrl.dragged):
             self.fit_to_window()
 

@@ -26,7 +26,8 @@ import random
 
 from kataja.globals import FEATURE_EDGE, FEATURE_NODE
 from kataja.Node import Node
-from kataja.singletons import ctrl
+from kataja.singletons import ctrl, qt_prefs
+from kataja.parser.INodes import IFeatureNode
 
 
 color_map = {'tense': 0, 'order': 1, 'person': 2, 'number': 4, 'case': 6, 'unknown': 3}
@@ -52,6 +53,57 @@ class FeatureNode(Node):
         self.update_bounding_rect()
         self.update_visibility()
         ctrl.forest.store(self)
+
+
+    @property
+    def key(self):
+        """:return:  """
+        if self.syntactic_object:
+            return self.syntactic_object.key
+
+    @key.setter
+    def key(self, value):
+        """
+        :param value:  """
+        if self.syntactic_object:
+            self.syntactic_object.key = value
+            self._inode_changed = True
+
+    @property
+    def value(self):
+        if self.syntactic_object:
+            return self.syntactic_object.value
+
+    @value.setter
+    def value(self, value):
+        if value is None:
+            value = ""
+        self.syntactic_object.value = value
+        self._inode_changed = True
+
+    @property
+    def family(self):
+        if self.syntactic_object:
+            return self.syntactic_object.family
+
+    @family.setter
+    def family(self, value):
+        if value is None:
+            value = ""
+        if self.syntactic_object:
+            self.syntactic_object.family = value
+        self._inode_changed = True
+
+    @property
+    def as_inode(self):
+        """
+        :return: INodes or str or tuple of them
+        """
+        if self._inode_changed:
+            self._inode = IFeatureNode(key=self.key, value=self.value, family=self.family)
+            self._inode_changed = False
+        return self._inode
+
 
     # implement color() to map one of the d['rainbow_%'] colors here. Or if bw mode is on, then something else.
 
@@ -97,10 +149,60 @@ class FeatureNode(Node):
         :param option:
         :param widget:
         nodes it is the label of the node that needs complex painting """
-        painter.setPen(self.contextual_color())
-        #if ctrl.pressed == self or self._hovering or ctrl.is_selected(self):
-        #    painter.drawRoundedRect(self.inner_rect, 5, 5)
+        if ctrl.pressed == self or self._hovering or ctrl.is_selected(self):
+            painter.setPen(ctrl.cm.get('background1'))
+            painter.setBrush(self.contextual_background())
+            painter.drawRoundedRect(self.inner_rect, 5, 5)
 
+
+    def contextual_color(self):
+        """ Drawing color that is sensitive to node's state """
+        if ctrl.pressed == self:
+            return ctrl.cm.get('background1')
+        elif self._hovering:
+            return ctrl.cm.get('background1')
+        elif ctrl.is_selected(self):
+            return ctrl.cm.get('background1')
+            # return ctrl.cm.selected(ctrl.cm.selection())
+        else:
+            return self.color
+
+    def contextual_background(self):
+        """ Background color that is sensitive to node's state """
+        if ctrl.pressed == self:
+            return ctrl.cm.active(ctrl.cm.selection())
+        elif self._hovering:
+            return ctrl.cm.hovering(ctrl.cm.selection())
+        elif ctrl.is_selected(self):
+            return ctrl.cm.selection()
+            # return ctrl.cm.selected(ctrl.cm.selection())
+        else:
+            return qt_prefs.no_brush()
 
     def __str__(self):
         return 'feature %s' % self.syntactic_object
+
+
+    def drop_to(self, x, y, recipient=None):
+        """
+
+
+        :param recipient:
+        :param x:
+        :param y:
+        """
+        self.release()
+        self.update()
+        if recipient and recipient.accepts_drops(self):
+            self.adjustment = (0, 0, 0)
+            recipient.drop(self)
+        else:
+            for node in ctrl.dragged:
+                node.lock()
+                ctrl.main.ui_manager.show_anchor(node)  # @UndefinedVariable
+        del self._position_before_dragging
+        del self._adjustment_before_dragging
+        ctrl.dragged = set()
+        ctrl.dragged_positions = set()
+        ctrl.main.action_finished('moved node %s' % self)
+        # ctrl.scene.fit_to_window()

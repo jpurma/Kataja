@@ -704,7 +704,7 @@ class ActionMethods:
             if edge.edge_type is g.CONSTITUENT_EDGE:
                 raise ForestError("Trying edge disconnect at the start of constituent edge")
             else:
-                ctrl.forest.disconnect_edge_start(edge)
+                ctrl.forest.delete_edge(edge)
 
         elif role is 'end_cut':
             if edge.edge_type is g.CONSTITUENT_EDGE:
@@ -712,7 +712,7 @@ class ActionMethods:
                 ctrl.forest._disconnect_node(first=old_start, second=edge.end, edge=edge)
                 ctrl.forest.fix_stubs_for(old_start)
             else:
-                ctrl.forest.disconnect_edge_end(edge)
+                ctrl.forest.delete_edge(edge)
         else:
             raise ForestError('Trying to disconnect node from unknown edge or unhandled cutting position')
         ctrl.ui.update_selections()

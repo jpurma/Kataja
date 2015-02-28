@@ -25,7 +25,7 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from PyQt5.QtCore import Qt
-from kataja.parser import KatajaNodeToINode
+from kataja.parser.INodes import IFeatureNode
 from kataja.ui.ControlPoint import ControlPoint
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.Label import Label
@@ -537,7 +537,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :return: INodes or str or tuple of them
         """
         if self._inode_changed:
-            self._inode = KatajaNodeToINode.node_to_inode(self, children=False)
+            self._inode = IFeatureNode(label=self.label)
             self._inode_changed = False
         return self._inode
 
@@ -755,6 +755,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :param mx:
         :param my:
         """
+        print("start dragging for ", self)
         ctrl.dragged = set()
 
         # there if node is both above and below the dragged node, it shouldn't move
@@ -762,7 +763,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         x, y, z = self.current_position
         self._position_before_dragging = x, y, z
         self._adjustment_before_dragging = self.adjustment or (0, 0, 0)
-        ctrl.forest.prepare_touch_areas_for_dragging(excluded=ctrl.dragged)
+        ctrl.forest.prepare_touch_areas_for_dragging(excluded=ctrl.dragged, node_type=self.node_type)
 
     def drag(self, event):
         """

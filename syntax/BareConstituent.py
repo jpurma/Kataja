@@ -48,6 +48,10 @@ class BareConstituent(BaseConstituent):
             return f.get()
         return None
 
+    def remove_feature(self, value):
+        del self.features[value.key]
+
+
     def set_feature(self, key, value):
         """ Puts feature to feature dictionary and returns corresponding Feature object
         :param value:
