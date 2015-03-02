@@ -622,19 +622,80 @@ class GraphScene(QtWidgets.QGraphicsScene):
         # redo this to be more generic
         return ctrl.latest_hover
 
-    def dropEvent(self, event):
-        """ Not used at the moment! May be handy when we e.g. drop text snippets on Kataja,
-        but then again this may be better done in graph_view or in MainWindow
 
-         :param event:
+    def dragEnterEvent(self, event):
         """
-        print("dropEvent at GraphScene")
-        ctrl.pressed = None
-        self.kill_dragging()
-        if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist"):
+
+        :param event:
+        """
+        print("scene dragEnter")
+        data = event.mimeData()
+        if data.hasFormat("application/x-qabstractitemmodeldatalist"):
             event.acceptProposedAction()
-        else:
-            QtWidgets.QGraphicsScene.dropEvent(self, event)
+        elif data.hasFormat("text/plain"):
+            event.acceptProposedAction()
+            command_identifier, *args = data.text().split(':')
+            if command_identifier == 'kataja' and args:
+                command, *args = args
+                if command == "new_node":
+                    node_type = args[0]
+                    ctrl.ui.prepare_touch_areas_for_dragging(excluded=None, node_type=node_type)
+                else:
+                    print('received unknown command:', command, args)
+
+    def dragLeaveEvent(self, event):
+        """
+
+        :param event:
+        """
+        ctrl.ui.remove_touch_areas()
+        QtWidgets.QGraphicsScene.dragLeaveEvent(self, event)
+
+    def dropEvent(self, event):
+        """
+
+        :param event:
+        """
+        event.ignore()
+        QtWidgets.QGraphicsScene.dropEvent(self, event)
+        if not event.isAccepted():
+            data = event.mimeData()
+            event.accept()
+            if data.hasFormat("application/x-qabstractitemmodeldatalist"):
+                event.acceptProposedAction()
+                print('adding symbol as a what kind of a node?')
+            elif data.hasFormat("text/plain"):
+                event.acceptProposedAction()
+                command_identifier, *args = data.text().split(':')
+                if command_identifier == 'kataja' and args:
+                    command, *args = args
+                    if command == "new_node":
+                        node_type = args[0]
+                        print('adding node of type ', node_type)
+                        ctrl.forest.create_empty_node(pos=event.scenePos(), node_type=node_type)
+                        ctrl.main.action_finished('added %s' % args[0])
+                    else:
+                        print('received unknown command:', command, args)
+                else:
+                    print('adding plain text, what to do?')
+        ctrl.ui.remove_touch_areas()
+
+
+    def dragMoveEvent(self, event):
+        """
+
+        :param event:
+        """
+        event.ignore()
+        QtWidgets.QGraphicsScene.dragMoveEvent(self, event)
+        if not event.isAccepted():
+            data = event.mimeData()
+            event.accept()
+            if data.hasFormat("application/x-qabstractitemmodeldatalist") or data.hasFormat("text/plain"):
+                event.acceptProposedAction()
+
+
+
 
     def drag_exact_start_point(self):
         """

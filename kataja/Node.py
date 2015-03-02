@@ -763,7 +763,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         x, y, z = self.current_position
         self._position_before_dragging = x, y, z
         self._adjustment_before_dragging = self.adjustment or (0, 0, 0)
-        ctrl.forest.prepare_touch_areas_for_dragging(excluded=ctrl.dragged, node_type=self.node_type)
+        ctrl.ui.prepare_touch_areas_for_dragging(excluded=ctrl.dragged, node_type=self.node_type)
 
     def drag(self, event):
         """

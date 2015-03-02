@@ -733,7 +733,7 @@ class ConstituentNode(Node):
                     node._adjustment_before_dragging = node.adjustment or (0, 0, 0)
                     node._distance_from_dragged = (x - dx, y - dy)
         if len(drag_hosts) == 1:  # don't allow merge if this is multidrag-situation
-            ctrl.forest.prepare_touch_areas_for_dragging(excluded=ctrl.dragged)
+            ctrl.ui.prepare_touch_areas_for_dragging(excluded=ctrl.dragged)
 
     def drag(self, event):
         """ Drags also elements that are counted to be involved: features, children etc

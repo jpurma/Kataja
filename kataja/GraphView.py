@@ -29,6 +29,7 @@ import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
 from PyQt5.QtCore import Qt
 from kataja.singletons import ctrl
+import kataja.globals as g
 
 
 class GraphView(QtWidgets.QGraphicsView):
@@ -65,7 +66,7 @@ class GraphView(QtWidgets.QGraphicsView):
         # self.setViewportUpdateMode(QtWidgets.QGraphicsView.NoViewportUpdate)
         self.setFocusPolicy(QtCore.Qt.NoFocus)
         self.setMouseTracking(False)
-        self.setAcceptDrops(True)
+        #self.setAcceptDrops(True)
         # self.setTransformationAnchor(QtWidgets.QGraphicsView.NoAnchor)
         self.target_scale = 0
         self._scale_factor = 1.0
@@ -135,10 +136,8 @@ class GraphView(QtWidgets.QGraphicsView):
         """
         QtWidgets.QGraphicsView.mouseMoveEvent(self, event)
 
-
     def timerEvent(self, event):
         self.zoom_timer.stop()
-
 
     def wheelEvent(self, event):
         """
@@ -173,85 +172,19 @@ class GraphView(QtWidgets.QGraphicsView):
     #
     #         return QtWidgets.QGraphicsView.event(self, ev)
 
-    def leaveEvent(self, event):
-        # ctrl.scene.kill_dragging()
-        """
-
-        :param event:
-        """
-        QtWidgets.QGraphicsView.leaveEvent(self, event)
-
-    def enterEvent(self, event):
-        # ctrl.scene.kill_dragging()
-        """
-
-        :param event:
-        """
-        QtWidgets.QGraphicsView.enterEvent(self, event)
-
-    def dragEnterEvent(self, event):
-        """
-
-        :param event:
-        """
-        data = event.mimeData()
-        if data.hasFormat("application/x-qabstractitemmodeldatalist"):
-            event.acceptProposedAction()
-        elif data.hasFormat("text/plain"):
-            print("will accept drop")
-            event.acceptProposedAction()
-        QtWidgets.QGraphicsView.dragEnterEvent(self, event)
-
-    def dragLeaveEvent(self, event):
-        """
-
-        :param event:
-        """
-        QtWidgets.QGraphicsView.dragLeaveEvent(self, event)
-
-    def dropEvent(self, event):
-        """
-
-        :param event:
-        """
-        print("dropEvent to GraphView")
-        data = event.mimeData()
-        if data.hasFormat("application/x-qabstractitemmodeldatalist"):
-            event.acceptProposedAction()
-            items = self.itemAt(event.pos())
-            print('adding symbol as a what kind of a node?')
-        elif data.hasFormat("text/plain"):
-            event.acceptProposedAction()
-            command_identifier, *args = data.text().split(':')
-            if command_identifier == 'kataja' and args:
-                command, *args = args
-                if command == "new_node":
-                    node_type = args[0]
-                    print('adding node of type ', node_type)
-                    ctrl.forest.create_empty_node(pos=self.mapToScene(event.pos()), node_type=node_type)
-                    ctrl.main.action_finished('added %s' % args[0])
-                else:
-                    print('received unknown command:', command, args)
-            else:
-                print('adding plain text, what to do?')
-        else:
-            print('(else)')
-            QtWidgets.QGraphicsView.dropEvent(self, event)
-
-
-    def dragMoveEvent(self, event):
-        """
-
-        :param event:
-        """
-        data = event.mimeData()
-        if data.hasFormat("application/x-qabstractitemmodeldatalist") and not self.itemAt(event.pos()):
-            event.acceptProposedAction()
-        elif data.hasFormat("text/plain"):
-            event.acceptProposedAction()
-        else:
-            QtWidgets.QGraphicsView.dragMoveEvent(self, event)
-
-
-            # def mousePressEvent(self, event):
-            #    QtGui.QGraphicsView.mousePressEvent(self, event)
+    # def leaveEvent(self, event):
+    #     # ctrl.scene.kill_dragging()
+    #     """
+    #
+    #     :param event:
+    #     """
+    #     QtWidgets.QGraphicsView.leaveEvent(self, event)
+    #
+    # def enterEvent(self, event):
+    #     # ctrl.scene.kill_dragging()
+    #     """
+    #
+    #     :param event:
+    #     """
+    #     QtWidgets.QGraphicsView.enterEvent(self, event)
+    #

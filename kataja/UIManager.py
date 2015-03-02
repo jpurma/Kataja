@@ -837,6 +837,35 @@ class UIManager:
         """
         self.remove_touch_areas_for(node)
 
+    def prepare_touch_areas_for_dragging(self, excluded=None, node_type=''):
+        """
+
+        :param excluded:
+        :param node_type:
+        """
+        self.remove_touch_areas()
+        if node_type == g.CONSTITUENT_NODE:
+            for root in ctrl.forest.roots:
+                if excluded and root in excluded:
+                    continue
+                self.create_touch_area(root, g.LEFT_ADD_ROOT)
+                self.create_touch_area(root, g.RIGHT_ADD_ROOT)
+            for edge in ctrl.forest.get_constituent_edges():
+                if excluded and (edge.start in excluded or edge.end in excluded):
+                    continue
+                self.create_touch_area(edge, g.LEFT_ADD_SIBLING)
+                self.create_touch_area(edge, g.RIGHT_ADD_SIBLING)
+            for node in ctrl.forest.get_constituent_nodes():
+                if node.is_placeholder():
+                    self.create_touch_area(node, g.TOUCH_ADD_CONSTITUENT)
+        elif node_type == g.FEATURE_NODE:
+            print('dragging a feature')
+            for node in ctrl.forest.get_constituent_nodes():
+                if excluded and node in excluded:
+                    continue
+                self.create_touch_area(node, g.TOUCH_CONNECT_FEATURE)
+
+
 
     # ### Flashing symbols ################################################################
 

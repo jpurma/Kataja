@@ -27,6 +27,7 @@ import math
 from PyQt5 import QtCore
 
 import PyQt5.QtWidgets as QtWidgets
+from kataja.errors import TouchAreaError
 from kataja.Edge import Edge
 from kataja.singletons import ctrl, prefs
 from kataja.utils import to_tuple
@@ -101,9 +102,10 @@ class TouchArea(QtWidgets.QGraphicsItem):
         self._hovering = False
         self._drag_hint = False
         self.key = TouchArea.create_key(host, type)
+        self.setAcceptHoverEvents(True)
+        self.setAcceptDrops(True)
         self.update_end_points()
         self.setCursor(QtCore.Qt.PointingHandCursor)
-        self.setAcceptHoverEvents(True)
 
         self.setToolTip(self.status_tip)
 
@@ -287,8 +289,23 @@ class TouchArea(QtWidgets.QGraphicsItem):
         print('---- dropped node to touch area -----')
         if self.type == g.TOUCH_CONNECT_FEATURE:
             ctrl.forest.undo_manager.record('add feature')
-            assert(dropped_node and dropped_node.node_type == g.FEATURE_NODE)
+            if isinstance(dropped_node, str):
+                command_identifier, *args = dropped_node.split(':')
+                if command_identifier == 'kataja' and args:
+                    command, *args = args
+                    if command == "new_node":
+                        node_type = args[0]
+                        x, y, z = self.host.current_position
+                        dropped_node = ctrl.forest.create_empty_node(QtCore.QPointF(x, y + self.host.height), node_type=node_type)
+                    else:
+                        print('received unknown command:', command, args)
+                        return
+
+
             ctrl.forest.add_feature_to_node(dropped_node, self.host)
+            ctrl.forest.undo_manager.record("Added feature %s to %s" % (dropped_node, self.host))
+            #ctrl.graph_scene.draw_forest(ctrl.forest)
+            ctrl.graph_scene.item_moved()
 
         else:
             ctrl.forest.undo_manager.record('re-merge constituent')
@@ -303,6 +320,10 @@ class TouchArea(QtWidgets.QGraphicsItem):
 
             ctrl.forest.replace_node_with_merged_node(replaced, dropped_node, edge=edge, merge_to_left=self._align_left,
                                                       merger_node_pos=self.start_point)
+
+
+
+
 
 
     def click(self, event=None):
@@ -409,6 +430,25 @@ class TouchArea(QtWidgets.QGraphicsItem):
         if self._hovering:
             self.hovering = False
         QtWidgets.QGraphicsItem.hoverLeaveEvent(self, event)
+
+    def dragEnterEvent(self, event):
+        print('dragEnterEvent in TouchArea')
+        self.dragged_over_by(event.mimeData().text())
+        event.accept()
+        QtWidgets.QGraphicsItem.dragEnterEvent(self, event)
+
+    def dragLeaveEvent(self, event):
+        print('dragLeaveEvent in TouchArea')
+        self.hovering = False
+        QtWidgets.QGraphicsItem.dragLeaveEvent(self, event)
+
+
+    def dropEvent(self, event):
+        print("dropEvent")
+        self.hovering = False
+        event.accept()
+        self.drop(event.mimeData().text())
+        QtWidgets.QGraphicsItem.dropEvent(self, event)
 
 
     def paint(self, painter, option, widget):
