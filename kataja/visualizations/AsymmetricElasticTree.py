@@ -69,7 +69,7 @@ class AsymmetricElasticTree(BaseVisualization):
             dist_x, dist_y = int(node_x - other_x), int(node_y - other_y)
             dist2 = (dist_x * dist_x) + (dist_y * dist_y)
             if dist2 > 0:
-                l = float(other.force) / dist2
+                l = 72.0 / dist2
                 xvel += dist_x * l
                 yvel += dist_y * l
         # Now subtract all forces pulling items together.

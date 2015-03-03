@@ -111,6 +111,9 @@ class DynamicWidthTree(BaseVisualization):
         :param node:
         :return:
         """
+        if node.node_type != g.CONSTITUENT_NODE:
+            return BaseVisualization.calculate_movement(self, node)
+
         xvel = 0.0
         if node.bind_x:
             return 0, 0, 0

@@ -87,7 +87,6 @@ class AttributeNode(Node):
         self.saved.attribute_label = attribute_label or attribute_id
         self.saved.attribute_id = attribute_id
         self._show_label = show_label
-        self.force = 72
         self.help_text = ""
         # if self.attribute_label in color_map:
         # self.color = colors.feature_palette[color_map[self.attribute_label]]

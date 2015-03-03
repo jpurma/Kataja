@@ -77,12 +77,13 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self._index_label = None
         self._index_visible = True
 
+        self._gravity = 0
+
         self.clickable = False
         self.selectable = True
         self.draggable = True
 
         self._magnets = []
-        self.force = 72
         self.status_tip = ""
 
         self.width = 0
@@ -577,6 +578,12 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         painter.setPen(self.contextual_color())
         if ctrl.pressed == self or self._hovering or ctrl.is_selected(self):
             painter.drawRoundedRect(self.inner_rect, 5, 5)
+
+        # x,y,z = self.current_position
+        # w2 = self.width/2.0
+        # painter.setPen(self.contextual_color())
+        # painter.drawEllipse(-w2, -w2, w2 + w2, w2 + w2)
+
 
     def update_bounding_rect(self):
         """

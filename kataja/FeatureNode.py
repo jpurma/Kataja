@@ -44,6 +44,8 @@ class FeatureNode(Node):
 
     def __init__(self, feature=None):
         Node.__init__(self, syntactic_object=feature)
+        self._gravity = 1
+
 
     def after_init(self):
         """ Call after putting values in place
@@ -153,6 +155,7 @@ class FeatureNode(Node):
             painter.setPen(ctrl.cm.get('background1'))
             painter.setBrush(self.contextual_background())
             painter.drawRoundedRect(self.inner_rect, 5, 5)
+        Node.paint(self, painter, option, widget)
 
 
     def contextual_color(self):

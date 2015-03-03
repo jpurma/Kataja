@@ -85,54 +85,48 @@ class EquidistantElasticTree(BaseVisualization):
             dist_y = int(node_y - other_y)
             dist = math.hypot(dist_x, dist_y)
             if dist and dist < 100:
-                l = (other.force / (dist * dist)) * .5
+                l = (70.0 / (dist * dist)) * .5
                 xvel += dist_x * l
                 yvel += dist_y * l
 
         # Now subtract all forces pulling items together.
         for edge in node.edges_up:
-            if edge.is_visible():
-                start_x, start_y, start_z = edge.start_point
-                end_x, end_y, end_z = edge.end_point
-                dist_x = start_x - end_x
-                dist_y = start_y - end_y
-                dist = math.hypot(dist_x, dist_y)
-                if dist > 30:
-                    fx = (dist_x / dist) * (dist - 30)
-                    fy = (dist_y / dist) * (dist - 30)
-                    xvel += fx * edge.pull
-                    yvel += fy * edge.pull
-                elif dist < 20:
-                    push = edge.pull / -2
-                    xvel += dist_x * push
-                    yvel += dist_y * push
-                else:
-                    pass
-                    # else:
-                    # print('hidden edges up')
+            start_x, start_y, start_z = edge.start_point
+            end_x, end_y, end_z = edge.end_point
+            dist_x = start_x - end_x
+            dist_y = start_y - end_y
+            dist = math.hypot(dist_x, dist_y)
+            if dist > 30:
+                fx = (dist_x / dist) * (dist - 30)
+                fy = (dist_y / dist) * (dist - 30)
+                xvel += fx * edge.pull
+                yvel += fy * edge.pull
+            elif dist < 20:
+                push = edge.pull / -2
+                xvel += dist_x * push
+                yvel += dist_y * push
+            else:
+                pass
         for edge in node.edges_down:
-            if edge.is_visible():
-                start_x, start_y, start_z = edge.start_point
-                end_x, end_y, end_z = edge.end_point
-                dist_x = end_x - start_x
-                dist_y = end_y - start_y
-                dist = math.hypot(dist_x, dist_y)
-                if dist > 30:
-                    # ang=math.atan2(by,bx)
-                    # fx=math.cos(ang)*(dist-30)
-                    # fy=math.sin(ang)*(dist-30)
-                    fx = (dist_x / dist) * (dist - 30)
-                    fy = (dist_y / dist) * (dist - 30)
-                    xvel += fx * edge.pull
-                    yvel += fy * edge.pull
-                elif dist < 20:
-                    push = edge.pull / -2
-                    xvel += dist_x * push
-                    yvel += dist_y * push
-                else:
-                    pass
-                    # else:
-                    # print('hidden edges down')
+            start_x, start_y, start_z = edge.start_point
+            end_x, end_y, end_z = edge.end_point
+            dist_x = end_x - start_x
+            dist_y = end_y - start_y
+            dist = math.hypot(dist_x, dist_y)
+            if dist > 30:
+                # ang=math.atan2(by,bx)
+                # fx=math.cos(ang)*(dist-30)
+                # fy=math.sin(ang)*(dist-30)
+                fx = (dist_x / dist) * (dist - 30)
+                fy = (dist_y / dist) * (dist - 30)
+                xvel += fx * edge.pull
+                yvel += fy * edge.pull
+            elif dist < 20:
+                push = edge.pull / -2
+                xvel += dist_x * push
+                yvel += dist_y * push
+            else:
+                pass
 
         # pull to center (0, 0)
         xvel += node_x * -0.002

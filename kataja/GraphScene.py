@@ -680,7 +680,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
                     print('adding plain text, what to do?')
         ctrl.ui.remove_touch_areas()
 
-
     def dragMoveEvent(self, event):
         """
 
@@ -693,9 +692,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
             event.accept()
             if data.hasFormat("application/x-qabstractitemmodeldatalist") or data.hasFormat("text/plain"):
                 event.acceptProposedAction()
-
-
-
 
     def drag_exact_start_point(self):
         """

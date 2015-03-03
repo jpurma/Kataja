@@ -171,7 +171,7 @@ class Preferences(object):
         self.edges = {
             CONSTITUENT_EDGE: {'shape_name': 'shaped_cubic', 'color': 'content1', 'pull': .24, 'visible': True,
                                'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False},
-            FEATURE_EDGE: {'shape_name': 'cubic', 'color': 'accent2', 'pull': .32, 'visible': True,
+            FEATURE_EDGE: {'shape_name': 'cubic', 'color': 'accent2', 'pull': .40, 'visible': True,
                            'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False},
             GLOSS_EDGE: {'shape_name': 'cubic', 'color': 'accent4', 'pull': .40, 'visible': True,
                          'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False},
