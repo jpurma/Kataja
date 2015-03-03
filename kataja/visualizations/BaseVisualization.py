@@ -127,7 +127,7 @@ class BaseVisualization:
         return self.hits[node.save_key] == 0
 
 
-    def calculate_movement(self, node, alpha = 0.7):
+    def calculate_movement(self, node, alpha = 0.2):
         # Sum up all forces pushing this item away.
         """
 
@@ -136,6 +136,44 @@ class BaseVisualization:
         """
         node_x, node_y, node_z = node.current_position
         old_x, old_y, old_z = node.current_position
+
+        # attract
+        down = node.edges_down
+        for edge in down:
+            other = edge.end
+            other_x, other_y, other_z = other.current_position
+            dist_x, dist_y = node_x - other_x, node_y - other_y
+            dist = math.hypot(dist_x, dist_y)
+            radius = (other.width + node.width) / 2
+            if dist - radius > 0:
+                pulling_force = ((dist - radius) * edge.pull * alpha) / dist
+                node_x -= dist_x * pulling_force
+                node_y -= dist_y * pulling_force
+            else:
+                node_x += 1
+
+        up = node.edges_up
+        for edge in up:
+            other = edge.start
+            other_x, other_y, other_z = other.current_position
+            dist_x, dist_y = node_x - other_x, node_y - other_y
+            dist = math.hypot(dist_x, dist_y)
+            radius = (other.width + node.width) / 2
+            if dist - radius > 0:
+                pulling_force = ((dist - radius) * edge.pull * alpha) / dist
+                node_x -= dist_x * pulling_force
+                node_y -= dist_y * pulling_force
+            else:
+                node_x -= 1
+
+        if not (up or down):
+            # pull to center (0, 0)
+            node_x += node_x * -0.009
+            node_y += node_y * -0.009
+        elif not down:
+            node_y += node._gravity
+
+
         # repulse
         for other in self.forest.visible_nodes():
             if other is node:
@@ -159,46 +197,8 @@ class BaseVisualization:
 
                 node_x += pushing_force * dist_x
                 node_y += pushing_force * dist_y
-
-        # attract
-        down = node.edges_down
-        for edge in down:
-            other = edge.end
-            other_x, other_y, other_z = other.current_position
-            dist_x, dist_y = node_x - other_x, node_y - other_y
-            dist = math.hypot(dist_x, dist_y)
-            if dist == 0:
-                print("boing 2")
-                node_x += 5
-                continue
-            safe_zone = (other.width + node.width) / 2
-            required_dist = dist - safe_zone
-            pulling_force = (required_dist * edge.pull * alpha) / dist
-            node_x -= dist_x * pulling_force
-            node_y -= dist_y * pulling_force
-
-        up = node.edges_up
-        for edge in up:
-            other = edge.start
-            other_x, other_y, other_z = other.current_position
-            dist_x, dist_y = node_x - other_x, node_y - other_y
-            dist = math.hypot(dist_x, dist_y)
-            if dist == 0:
-                print("boing 3")
-                node_x += 5
-                continue
-            safe_zone = (other.width + node.width) / 2
-            required_dist = dist - safe_zone
-            pulling_force = (required_dist * edge.pull * alpha) / dist
-            node_x -= dist_x * pulling_force
-            node_y -= dist_y * pulling_force
-
-        if not (up or down):
-            # pull to center (0, 0)
-            node_x += node_x * -0.009
-            node_y += node_y * -0.009
-        elif not down:
-            node_y += node._gravity
+                if dist_x == 0:
+                    node_x -= 1
 
 
         if node.bind_x:
