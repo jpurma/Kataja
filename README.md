@@ -26,7 +26,55 @@ The software is pre-alpha, under development. Daily updates may break features, 
 Running and installing
 ----------------------
 
-The software can be run as a python program in environments where Python 3.4+, PyQt5.3+ and Qt5.3 are to be found.
+Setting up development environment for Kataja:
+
+In following the versions mentioned are the latest versions available in 8.3. 2015. Until stabilized, Kataja will be using the latest versions available in order to benefit from performance improvements and bug fixes in build stack components. If the version numbers in this document are dated, use latest PyQt5 version and see its installation guide to find out what are the required versions for SIP and Qt. Usually when a new version of Qt is available, new versions of SIP and PyQt are soon made available.    
+
+## Mac OS X ##
+
+### Install Qt ###
+
+Download Qt 5.4.1 for Mac offline installer (or the latest version available) from http://www.qt.io/download-open-source/#
+
+Run installer. Installer suggests Qt installation path of form "yourhome/Qt5.4.1"  accept that, and remember it for further use.
+
+### Install SIP ###
+
+Download SIP, sip-4.16.6.tar.gz or the latest available from http://www.riverbankcomputing.com/software/sip/download
+Unpack it to your build folder, let's assume that the resulting folder is ~/build/sip-4.16.6
+Move to folder:
+
+    cd sip-4.16.6
+    python3 configure.py 
+    make
+(this should take few seconds and result in ~40 lines of text)
+
+    sudo make install
+
+(this should take a second and result in ~7 lines of text)
+
+### Install PyQt5 ###
+Download PyQt5 source package from http://www.riverbankcomputing.com/software/pyqt/download5
+PyQt-gpl-5.4.1.tar.gz or later
+Unpack it to your build folder, let's assumet that the resulting folder is ~/build/PyQt-gpl-5.4.1
+
+    cd PyQt-gpl-5.4.1
+    python3 configure.py --qmake /Users/yourhome/Qt5.4.1/5.4/clang_64/bin/qmake 
+
+(notice that --qmake path is the Qt installation path from earlier, and qmake inside it.)
+
+    sudo make
+
+(this will take several minutes)
+
+    sudo make install
+
+(several seconds)
+
+
+
+  
+  
   
 Standalone apps for Mac OS X, Windows and Linux will be provided when the software is in stage where it is usable.
 

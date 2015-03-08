@@ -36,6 +36,7 @@ from kataja.Bracket import Bracket
 from kataja.BracketManager import BracketManager
 from kataja.ConstituentNode import ConstituentNode
 from kataja.AttributeNode import AttributeNode
+from kataja.CommentNode import CommentNode
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.ChainManager import ChainManager
 from kataja.DerivationStep import DerivationStepManager
@@ -723,20 +724,30 @@ class Forest(Savable):
         return br
 
 
-    def create_gloss_node(self, host_node):
-        """ Creates the gloss node for existing constituent node and necessary connection Doesn't do any checks
-        :param host_node:
+    def create_gloss_node(self, host_node=None, label=None):
+        """ Creates the gloss node for existing constituent node and necessary connection
+        :param host_node: if the gloss is created for some specific constituentnode. Can be None
         """
-        gn = GlossNode(host_node)
-        self.connect_node(child=gn, parent=host_node, edge_type=GlossNode.default_edge_type)
+        if host_node:
+            gn = GlossNode(text=host_node.gloss)
+            self.connect_node(child=gn, parent=host_node, edge_type=GlossNode.default_edge_type)
+        elif label:
+            gn = GlossNode(text=label)
         self.add_to_scene(gn)
-        ee = ctrl.ui.get_constituent_edit_embed()
-        if ee and ee.isVisible():
-            pos = ee.master_edit.pos()
-            scene_pos = ctrl.graph_view.mapToScene(ee.mapToParent(pos))
-            gn.set_original_position(scene_pos)
+        gn.after_init()
 
+        # Cosmetic improvemet, if gloss is created by editing the gloss text field. (not present anymore)
+        # ee = ctrl.ui.get_constituent_edit_embed()
+        # if ee and ee.isVisible():
+        #     pos = ee.master_edit.pos()
+        #     scene_pos = ctrl.graph_view.mapToScene(ee.mapToParent(pos))
+        #     gn.set_original_position(scene_pos)
         return gn
+
+    def create_comment_node(self, comment):
+        cn = CommentNode(comment)
+        self.add_to_scene(cn)
+        return cn
 
     # not used
     def create_image(self, image_path):
@@ -806,7 +817,6 @@ class Forest(Savable):
         :param give_label:
         :return:
         """
-        print('creating empty node, ', pos, node_type)
         node = None
         if node_type == g.CONSTITUENT_NODE:
             if give_label:
@@ -820,6 +830,15 @@ class Forest(Savable):
             F = ForestSyntax.new_feature(label)
             node = self.create_feature_node(None, F)
             node.set_original_position(pos)
+        elif node_type == g.GLOSS_NODE:
+            label = 'gloss'
+            node = self.create_gloss_node(None, label=label)
+            node.set_original_position(pos)
+        elif node_type == g.COMMENT_NODE:
+            label = 'comment'
+            node = self.create_comment_node(label)
+            node.set_original_position(pos)
+        print('created a new node: ', node)
         return node
 
 
@@ -1106,6 +1125,14 @@ class Forest(Savable):
         F = feature.syntactic_object
         C.set_feature(F.key, F)
         self.connect_node(parent=node, child=feature, edge_type=g.FEATURE_EDGE)
+
+    def add_comment_to_node(self, comment, node):
+        self.connect_node(parent=node, child=comment, edge_type=g.COMMENT_EDGE)
+
+    def add_gloss_to_node(self, gloss, node):
+        self.connect_node(parent=node, child=gloss, edge_type=g.GLOSS_EDGE)
+        node.gloss = gloss.label
+
 
     # ## order markers are special nodes added to nodes to signal the order when the node was merged/added to forest
     #######################################################################

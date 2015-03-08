@@ -25,13 +25,13 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from PyQt5.QtCore import Qt
-from kataja.parser.INodes import IFeatureNode
 from kataja.ui.ControlPoint import ControlPoint
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.Label import Label
 from kataja.Movable import Movable
 from kataja.utils import to_tuple, create_shadow_effect
 import kataja.globals as g
+from kataja.parser.LatexToINode import parse_field
 
 
 
@@ -51,7 +51,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     default_edge_type = g.ABSTRACT_EDGE
     node_type = g.ABSTRACT_NODE
 
-    def __init__(self, syntactic_object=None, restoring=None):
+    def __init__(self, syntactic_object=None):
         """ Node is an abstract class that shouldn't be used by itself, though
         it should contain all methods to make it work. Inherit and modify this for
         Constituents, Features etc. """
@@ -300,6 +300,21 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             else:
                 return [edge.start for edge in self.edges_up if edge.start]
 
+
+    def is_connected_to(self, other):
+        """ Generic check for having direct connection to some other node
+        :param other:
+        :return:
+        """
+        for edge in self.edges_up:
+            if edge.start == other:
+                return True
+        for edge in self.edges_down:
+            if edge.end == other:
+                return True
+        return False
+
+
     def left(self, only_visible=True):
         """
 
@@ -538,7 +553,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :return: INodes or str or tuple of them
         """
         if self._inode_changed:
-            self._inode = IFeatureNode(label=self.label)
+            self._inode = parse_field(self.label)
             self._inode_changed = False
         return self._inode
 
@@ -770,7 +785,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         x, y, z = self.current_position
         self._position_before_dragging = x, y, z
         self._adjustment_before_dragging = self.adjustment or (0, 0, 0)
-        ctrl.ui.prepare_touch_areas_for_dragging(excluded=ctrl.dragged, node_type=self.node_type)
+        ctrl.ui.prepare_touch_areas_for_dragging(drag_host=self, moving=ctrl.dragged, node_type=self.node_type)
 
     def drag(self, event):
         """

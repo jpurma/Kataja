@@ -374,12 +374,16 @@ class ActionMethods:
         :param selection: int scope identifier, from globals
         :return:
         """
+        if isinstance(selection, tuple):
+            selection = selection[1]
         ctrl.action_undo = False
         p = ctrl.ui.get_panel(g.EDGES)
-        p.change_scope(selection)
-        p.update_panel()
+        if p:
+            p.change_scope(selection)
+            p.update_panel()
         p = ctrl.ui.get_panel(g.LINE_OPTIONS)
-        p.update_panel()
+        if p:
+            p.update_panel()
 
     def change_edge_shape(self, shape):
         """
@@ -433,7 +437,6 @@ class ActionMethods:
 
 
         """
-        print('toggle line options')
         lo = ctrl.ui.get_panel(g.LINE_OPTIONS)
         if lo:
             if lo.isVisible():
@@ -593,7 +596,6 @@ class ActionMethods:
             clicked = panel.which_add_button_was_clicked()
             if clicked:
                 key, button = clicked
-                print(key, button)
                 ctrl.forest.create_empty_node(pos=QtCore.QPoint(random.random()*60 - 25, random.random()*60 - 25),
                                               give_label=True,
                                               node_type=key)

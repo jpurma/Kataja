@@ -329,7 +329,7 @@ class QtPreferences:
         self.pin_drop_icon = pixmap('pin_drop24.png')
         self.left_arrow = extract_bitmaps(iconpath + 'left_2c.gif')
         self.right_arrow = extract_bitmaps(iconpath + 'right_2c.gif')
-        self.add_icon = pixmap('add24.png')
+        self.add_icon = pixmap('add_box48.png')
         self.add_box_icon = pixmap('add_box24.png')
         self.settings_icon = pixmap('settings24.png')
         self.triangle_icon = pixmap('triangle48.png')

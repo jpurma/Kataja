@@ -25,6 +25,8 @@ def parse_inode(inode, document, gloss_in_view=True, features_in_view=True):
             parse_iconstituentnode_for_editing(inode, document)
         else:
             parse_iconstituentnode_for_viewing(inode, document, gloss_in_view, features_in_view)
+    else:
+        print('skipping parse_inode, ', inode, type(inode))
 
 
 def parse_iconstituentnode_for_viewing(inode, document, gloss_in_view=True, features_in_view=True):

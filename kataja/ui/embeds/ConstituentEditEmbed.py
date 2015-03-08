@@ -1,15 +1,12 @@
-from parser.LatexToINode import parse_field
 
 __author__ = 'purma'
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
+from kataja.parser.LatexToINode import parse_field
 from kataja.ui.embeds.UIEmbed import UIEmbed, EmbeddedLineEdit
 from kataja.singletons import qt_prefs, ctrl
-from kataja.ui.panels.SymbolPanel import open_symbol_data
 from kataja.parser import INodeToLabelDocument
-from kataja.parser import LabelDocumentToINode
-from kataja.parser import INodeToKatajaConstituent
 from kataja.parser import INodeToLatex
 import kataja.globals as g
 

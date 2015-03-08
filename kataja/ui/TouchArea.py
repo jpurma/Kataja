@@ -89,7 +89,15 @@ class TouchArea(QtWidgets.QGraphicsItem):
             self.status_tip = "Add a constituent here"
             self._has_tail = False
         elif self.type is g.TOUCH_CONNECT_FEATURE:
-            self.status_tip = "Add this feature"
+            self.status_tip = "Add feature for node"
+            self._has_tail = False
+            self._below_node = True
+        elif self.type is g.TOUCH_CONNECT_COMMENT:
+            self.status_tip = "Add comment for node"
+            self._has_tail = False
+            self._below_node = True
+        elif self.type is g.TOUCH_CONNECT_GLOSS:
+            self.status_tip = "Add gloss text for node"
             self._has_tail = False
             self._below_node = True
         else:
@@ -287,40 +295,51 @@ class TouchArea(QtWidgets.QGraphicsItem):
         :param dropped_node:
         """
         print('---- dropped node to touch area -----')
-        if self.type == g.TOUCH_CONNECT_FEATURE:
-            ctrl.forest.undo_manager.record('add feature')
-            if isinstance(dropped_node, str):
-                command_identifier, *args = dropped_node.split(':')
-                if command_identifier == 'kataja' and args:
-                    command, *args = args
-                    if command == "new_node":
-                        node_type = args[0]
+        message = ''
+        if isinstance(dropped_node, str):
+            command_identifier, *args = dropped_node.split(':')
+            if command_identifier == 'kataja' and args:
+                command, *args = args
+                if command == "new_node":
+                    node_type = args[0]
+                    if hasattr(self.host, 'current_position'):
                         x, y, z = self.host.current_position
-                        dropped_node = ctrl.forest.create_empty_node(QtCore.QPointF(x, y + self.host.height), node_type=node_type)
+                    elif hasattr(self.host, 'start_point'):
+                        x, y, z = self.host.start_point
                     else:
-                        print('received unknown command:', command, args)
                         return
-
-
-            ctrl.forest.add_feature_to_node(dropped_node, self.host)
-            ctrl.forest.undo_manager.record("Added feature %s to %s" % (dropped_node, self.host))
-            #ctrl.graph_scene.draw_forest(ctrl.forest)
-            ctrl.graph_scene.item_moved()
-
-        else:
-            ctrl.forest.undo_manager.record('re-merge constituent')
-            if isinstance(self.host, Edge):
-                replaced = self.host.end
-                edge = self.host
-                print('calling replace_node_with_merged_node from edge')
+                    if hasattr(self.host, 'height'):
+                        h = self.host.height
+                    else:
+                        h = 0
+                    dropped_node = ctrl.forest.create_empty_node(QtCore.QPointF(x, y + h), node_type=node_type)
+                else:
+                    print('received unknown command:', command, args)
+                    return
             else:
-                replaced = self.host
-                edge = None
-                print('calling replace_node_with_merged_node')
+                print('received just some string: ', dropped_node)
+        print('dropped node: ', dropped_node)
 
-            ctrl.forest.replace_node_with_merged_node(replaced, dropped_node, edge=edge, merge_to_left=self._align_left,
+        if self.type == g.TOUCH_CONNECT_FEATURE:
+            ctrl.forest.add_feature_to_node(dropped_node, self.host)
+            message = 'added feature %s to %s' % (dropped_node, self.host)
+        elif self.type == g.TOUCH_CONNECT_GLOSS:
+            ctrl.forest.add_gloss_to_node(dropped_node, self.host)
+            message = 'added feature %s to %s' % (dropped_node, self.host)
+        elif self.type == g.TOUCH_CONNECT_COMMENT:
+            ctrl.forest.add_comment_to_node(dropped_node, self.host)
+            message = 'added feature %s to %s' % (dropped_node, self.host)
+        elif self.type == g.RIGHT_ADD_SIBLING or self.type == g.LEFT_ADD_SIBLING:
+            ctrl.forest.replace_node_with_merged_node(self.host.end, dropped_node, edge=self.host,
+                                                      merge_to_left=self._align_left,
                                                       merger_node_pos=self.start_point)
-
+            message = 'moved node %s to sibling of %s' % (dropped_node, self.host)
+        elif self.type == g.RIGHT_ADD_ROOT or self.type == g.LEFT_ADD_ROOT:
+            ctrl.forest.replace_node_with_merged_node(self.host, dropped_node, edge=None,
+                                                      merge_to_left=self._align_left,
+                                                      merger_node_pos=self.start_point)
+            message = 'moved node %s to sibling of %s' % (dropped_node, self.host)
+        ctrl.main.action_finished(message)
 
 
 

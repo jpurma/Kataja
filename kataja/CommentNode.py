@@ -1,6 +1,6 @@
 # coding=utf-8
 """
-GlossNode is a Node to display translation or explanation of a constituent
+CommentNode is a non-functional node for freeform text
 """
 #############################################################################
 #
@@ -26,29 +26,28 @@ GlossNode is a Node to display translation or explanation of a constituent
 #############################################################################
 
 from kataja.Node import Node
-from kataja.globals import GLOSS_EDGE, GLOSS_NODE
-from kataja.singletons import ctrl
+from kataja.globals import COMMENT_EDGE, COMMENT_NODE
 
 
 color_map = {'tense': 0, 'person': 2, 'number': 4, 'case': 6, 'unknown': 3}
 
 
-class GlossNode(Node):
+class CommentNode(Node):
     """
     Node to display translation of a constituent
     """
     width = 20
     height = 20
-    default_edge_type = GLOSS_EDGE
-    node_type = GLOSS_NODE
+    default_edge_type = COMMENT_EDGE
+    node_type = COMMENT_NODE
 
     def __init__(self, text=''):
         Node.__init__(self)
-        self.label = text
+        self.saved.text = text
 
 
     def after_init(self):
-        print("GlossNode after_init called")
+        print("CommentNode after_init called")
         self.update_label()
         self.update_bounding_rect()
         self.update_visibility()
@@ -60,31 +59,36 @@ class GlossNode(Node):
 
         :return:
         """
-        return self.get_parents(edge_type=GLOSS_EDGE)
+        return self.get_parents(edge_type=COMMENT_EDGE)
 
 
     @property
     def label(self):
-        return self.saved.label
+        return self.saved.text
 
     @label.setter
     def label(self, value):
         for host in self.hosts:
             host.gloss = value
-        self.saved.label = value
-        self._inode_changed = True
+
+
+    @property
+    def as_inode(self):
+        """
+        :return: INodes or str or tuple of them
+        """
+        return self.label
 
 
     @property
     def text(self):
-        return self.saved.label
+        return self.saved.text
 
     @text.setter
     def text(self, value):
         for host in self.hosts:
             host.gloss = value
-        self.saved.label = value
-        self._inode_changed = True
+
 
     def update_colors(self):
         """
@@ -96,29 +100,5 @@ class GlossNode(Node):
         # self._label_complex.setDefaultTextColor(colors.drawing2)
 
     def __str__(self):
-        return 'gloss: %s' % self.text
+        return 'comment: %s' % self.text
 
-    def paint(self, painter, option, widget=None):
-        """ Painting is sensitive to mouse/selection issues, but usually with
-        :param painter:
-        :param option:
-        :param widget:
-        nodes it is the label of the node that needs complex painting """
-        painter.setPen(self.contextual_color())
-        if ctrl.pressed == self or self._hovering or ctrl.is_selected(self) or True:
-            painter.drawRoundedRect(self.inner_rect, 5, 5)
-
-        # x,y,z = self.current_position
-        # w2 = self.width/2.0
-        # painter.setPen(self.contextual_color())
-        # painter.drawEllipse(-w2, -w2, w2 + w2, w2 + w2)
-
-
-    def update_label(self):
-        """
-
-        :return:
-        """
-        Node.update_label(self)
-        self._label_complex.show()
-        print(self.opacity())

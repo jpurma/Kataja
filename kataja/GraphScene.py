@@ -639,7 +639,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 command, *args = args
                 if command == "new_node":
                     node_type = args[0]
-                    ctrl.ui.prepare_touch_areas_for_dragging(excluded=None, node_type=node_type)
+                    ctrl.ui.prepare_touch_areas_for_dragging(node_type=node_type)
                 else:
                     print('received unknown command:', command, args)
 
@@ -671,8 +671,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                     command, *args = args
                     if command == "new_node":
                         node_type = args[0]
-                        print('adding node of type ', node_type)
-                        ctrl.forest.create_empty_node(pos=event.scenePos(), node_type=node_type)
+                        node = ctrl.forest.create_empty_node(pos=event.scenePos(), node_type=node_type)
                         ctrl.main.action_finished('added %s' % args[0])
                     else:
                         print('received unknown command:', command, args)

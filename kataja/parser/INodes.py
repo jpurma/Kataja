@@ -164,6 +164,8 @@ class ICommandNode(ITextNode):
                                                                   repr(self.parts))
 
 
+
+
 class IFeatureNode(ITextNode):
     """ INode that contains Node (feature or other Kataja node) with "label" as the field for displayable value. """
 
