@@ -654,7 +654,7 @@ class ConstituentNode(Node):
             painter.drawRect(self.inner_rect)
             # if self.uses_scope_area:
             # self.paint_scope_rect(painter, rect)
-        Node.paint(self, painter, option, widget)
+        #Node.paint(self, painter, option, widget)
 
     # def itemChange(self, change, value):
     # """ Whatever menus or UI objects are associated with object, they move

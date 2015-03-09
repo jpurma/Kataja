@@ -137,6 +137,8 @@ class Preferences(object):
         self.console_visible = False
         self.ui_speed = 8
         self.touch = True
+        self.gloss_nodes = True
+        self.feature_nodes = True
 
         my_path = Path(__file__).parts
         if sys.platform == 'darwin' and 'Kataja.app' in my_path:
@@ -173,7 +175,7 @@ class Preferences(object):
                                'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False},
             FEATURE_EDGE: {'shape_name': 'cubic', 'color': 'accent2', 'pull': .40, 'visible': True,
                            'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False},
-            GLOSS_EDGE: {'shape_name': 'cubic', 'color': 'accent4', 'pull': .40, 'visible': True,
+            GLOSS_EDGE: {'shape_name': 'cubic', 'color': 'accent5', 'pull': .40, 'visible': True,
                          'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False},
             ARROW: {'shape_name': 'linear', 'color': 'accent4', 'pull': 0, 'visible': True, 'arrowhead_at_start': False,
                     'arrowhead_at_end': True, 'font': SMALL_CAPS, 'labeled': True},

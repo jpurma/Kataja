@@ -1,5 +1,4 @@
-Kataja
-======
+# Kataja
 
 Visualizing Biolinguistics
 
@@ -15,16 +14,14 @@ The features will be added to satisfy these needs, in this order.
 Kataja is designed and developed by Jukka Purma and it is published under GPL3 license. See COPYING.
 The work here is the production part for PhD (Doctor of Arts) in Aalto University School of Art, Design and Architecture, supervised by doc. Pauli Brattico (University of Helsinki) and prof. Teemu Leinonen (Aalto ARTS). 
 
-Kataja is built on Qt5.3 and Python3.4, using Riverbank Software's PyQt5 to provide Qt bridge for Python.
+Kataja is built on Qt5 and Python3.4, using Riverbank Software's PyQt5 to provide Qt bridge for Python.
 
 
-Current version
----------------
+# About current version
 
 The software is pre-alpha, under development. Daily updates may break features, and generally are not made in order to publish new features, but to help express and maintain the daily progress with the code base.  
 
-Running and installing
-----------------------
+# Running and installing
 
 Setting up development environment for Kataja:
 

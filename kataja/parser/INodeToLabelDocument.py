@@ -1,10 +1,10 @@
 __author__ = 'purma'
 
 from PyQt5 import QtGui, QtCore
-from kataja.parser.INodes import ITextNode, ICommandNode, IConstituentNode, IFeatureNode
+from kataja.parser.INodes import ITextNode, ICommandNode, IConstituentNode, IFeatureNode, IGenericNode
 from kataja.LabelDocument import LabelDocument
 import kataja.globals as g
-from kataja.singletons import qt_prefs
+from kataja.singletons import qt_prefs, prefs
 from kataja.parser.latex_to_unicode import latex_to_unicode
 from kataja.parser.INodeToLatex import parse_inode_for_field
 
@@ -25,8 +25,15 @@ def parse_inode(inode, document, gloss_in_view=True, features_in_view=True):
             parse_iconstituentnode_for_editing(inode, document)
         else:
             parse_iconstituentnode_for_viewing(inode, document, gloss_in_view, features_in_view)
+    elif isinstance(inode, ITextNode):
+        parse_itextnode(inode, document)
     else:
         print('skipping parse_inode, ', inode, type(inode))
+
+
+def parse_itextnode(inode, document):
+    cursor = QtGui.QTextCursor(document)
+    write_node_to_document(inode, cursor, document.raw_mode)
 
 
 def parse_iconstituentnode_for_viewing(inode, document, gloss_in_view=True, features_in_view=True):
@@ -76,14 +83,14 @@ def parse_iconstituentnode_for_viewing(inode, document, gloss_in_view=True, feat
                 first = False
             if index_row == 1:
                 write_index(inode.index, cursor)
-        elif block_id == 'gloss':
+        elif block_id == 'gloss' and not prefs.gloss_nodes:
             if inode.gloss and gloss_in_view:
                 if not first:
                     cursor.insertBlock()
                 write_node_to_document(inode.gloss, cursor)
                 actual_block_order.append(block_id)
                 first = False
-        elif block_id == 'features':
+        elif block_id == 'features' and not prefs.feature_nodes:
             if inode.features and features_in_view:
                 if not first:
                     cursor.insertBlock()

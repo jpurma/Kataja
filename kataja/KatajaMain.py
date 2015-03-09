@@ -385,14 +385,10 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
         sender = self.sender()
         key = sender.data()
         data = self.ui_manager.actions[key]
-        args = []
-        print(args)
-        args += data.get('args', [])
-        print(args)
+        args = list(data.get('args', []))
         element = self.ui_manager.get_element_value(data.get('ui_element', None))
         if element:
             args += element
-        print(args)
         print("Doing action '%s' with method '%s' and with args: %s" % (key, data['method'], str(args)))
         method = getattr(self.action_launcher, data['method'])
         if args:
@@ -442,7 +438,6 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
 
         :param mode:
         """
-        print(mode)
         if mode != prefs.color_mode:
             prefs.color_mode = mode
             self.forest.update_colors()

@@ -797,8 +797,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             e.update()
 
         for n, node in enumerate(f.visible_nodes()):
-            node.adjust_opacity()
-            if node.is_fading():
+            if node.adjust_opacity():
                 items_fading = True
             # Computed movement
             if node.folding_towards:

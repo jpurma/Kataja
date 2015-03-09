@@ -62,6 +62,9 @@ class ITextNode:
         if isinstance(other, (ITextNode, str)):
             self.append(other)
 
+    def __bool__(self):
+        return not self.is_empty()
+
     def append(self, node):
         self.parts.append(node)
 
@@ -152,9 +155,6 @@ class ICommandNode(ITextNode):
         else:
             return '(%s/)' % self.command
 
-    def __bool__(self):
-        return bool(self.parts or self.command)
-
     def is_empty(self):
         return not (self.command or self.parts)
 
@@ -164,10 +164,28 @@ class ICommandNode(ITextNode):
                                                                   repr(self.parts))
 
 
+class IGenericNode(ITextNode):
+    """ INode for generic Nodes that have Label. """
+    def __init__(self, label='', parts=None):
+        ITextNode.__init__(self, parts=parts)
+        self.label = label
 
+    def is_plain_string(self):
+        """ Cannot be represented with just a string.
+        :return: bool
+        """
+        return False
+
+    def is_empty(self):
+        return not (self.label or self.parts)
+
+    def __str__(self):
+        ps = self.parts_as_string()
+        if ps:
+            return '(.%s %s)'
 
 class IFeatureNode(ITextNode):
-    """ INode that contains Node (feature or other Kataja node) with "label" as the field for displayable value. """
+    """ INode that contains FeatureNode with key, value and family. """
 
     def __init__(self, key='', value='', family='', parts=None):
         """ Command is stored as a string in self.command. self.parts are the TextNodes in the scope of command. """
@@ -181,9 +199,6 @@ class IFeatureNode(ITextNode):
         :return: bool
         """
         return False
-
-    def __bool__(self):
-        return not self.is_empty()
 
     def __str__(self):
         part_part = ''
@@ -228,7 +243,6 @@ class IConstituentNode(ITextNode):
         self.label = label
         self.index = index
         if features:
-            print('setting IConstituentNode features to', features)
             ifeatures = []
             if isinstance(features, dict):
                 for key, value in features.items():
@@ -244,9 +258,6 @@ class IConstituentNode(ITextNode):
         self.alias = alias
         self.gloss = gloss
         self._label_complex = []
-
-    def __bool__(self):
-        return bool(self.parts or self.label or self.index or self.features or self.alias or self.gloss)
 
 
     def add_feature(self, node):
@@ -346,7 +357,7 @@ class IConstituentNode(ITextNode):
 
         :return:
         """
-        return not (self.label or self.parts or self.index or self.alias or self.features)
+        return not (self.label or self.parts or self.index or self.alias or self.features or self.gloss)
 
     def __repr__(self):
         return 'IConstituentNode(alias=%s, label=%s, index=%s, gloss=%s, features=%s, parts=%s)' % (repr(self.alias),

@@ -131,7 +131,6 @@ class FeatureNode(Node):
         """
         Node.update_label(self)
         self._label_complex.show()
-        print(self.opacity())
 
 
     def get_html_for_label(self):

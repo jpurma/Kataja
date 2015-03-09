@@ -28,6 +28,8 @@ GlossNode is a Node to display translation or explanation of a constituent
 from kataja.Node import Node
 from kataja.globals import GLOSS_EDGE, GLOSS_NODE
 from kataja.singletons import ctrl
+from kataja.parser.LatexToINode import parse_field
+from parser.INodes import ITextNode
 
 
 color_map = {'tense': 0, 'person': 2, 'number': 4, 'case': 6, 'unknown': 3}
@@ -52,6 +54,7 @@ class GlossNode(Node):
         self.update_label()
         self.update_bounding_rect()
         self.update_visibility()
+        ctrl.forest.store(self)
 
     @property
     def hosts(self):
@@ -98,27 +101,16 @@ class GlossNode(Node):
     def __str__(self):
         return 'gloss: %s' % self.text
 
-    def paint(self, painter, option, widget=None):
-        """ Painting is sensitive to mouse/selection issues, but usually with
-        :param painter:
-        :param option:
-        :param widget:
-        nodes it is the label of the node that needs complex painting """
-        painter.setPen(self.contextual_color())
-        if ctrl.pressed == self or self._hovering or ctrl.is_selected(self) or True:
-            painter.drawRoundedRect(self.inner_rect, 5, 5)
-
-        # x,y,z = self.current_position
-        # w2 = self.width/2.0
-        # painter.setPen(self.contextual_color())
-        # painter.drawEllipse(-w2, -w2, w2 + w2, w2 + w2)
-
-
-    def update_label(self):
+    @property
+    def as_inode(self):
         """
-
-        :return:
+        :return: INodes or str or tuple of them
         """
-        Node.update_label(self)
-        self._label_complex.show()
-        print(self.opacity())
+        if self._inode_changed:
+            if isinstance(self.label, ITextNode):
+                self._inode = self.label
+            else:
+                self._inode = parse_field(self.label)
+            print('gloss node inode is: ', self._inode)
+            self._inode_changed = False
+        return self._inode
