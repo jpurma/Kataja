@@ -133,16 +133,16 @@ class FeatureNode(Node):
         self._label_complex.show()
 
 
-    def get_html_for_label(self):
-        """ This should be overridden if there are alternative displays for label """
-        f = self.syntactic_object
-        if not f:
-            return 'orphaned feature node'
-        if f.key in color_map:
-            return str(f.get_value_string())
-        else:
-            return str(f)
-            # u'%s:%s' % (self.syntactic_object.key, self.syntactic_object.get_value_string())
+    # def get_html_for_label(self):
+    #     """ This should be overridden if there are alternative displays for label """
+    #     f = self.syntactic_object
+    #     if not f:
+    #         return 'orphaned feature node'
+    #     if f.key in color_map:
+    #         return str(f.get_value_string())
+    #     else:
+    #         return str(f)
+    #         # u'%s:%s' % (self.syntactic_object.key, self.syntactic_object.get_value_string())
 
     def paint(self, painter, option, widget=None):
         """ Painting is sensitive to mouse/selection issues, but usually with
@@ -184,27 +184,3 @@ class FeatureNode(Node):
     def __str__(self):
         return 'feature %s' % self.syntactic_object
 
-
-    def drop_to(self, x, y, recipient=None):
-        """
-
-
-        :param recipient:
-        :param x:
-        :param y:
-        """
-        self.release()
-        self.update()
-        if recipient and recipient.accepts_drops(self):
-            self.adjustment = (0, 0, 0)
-            recipient.drop(self)
-        else:
-            for node in ctrl.dragged:
-                node.lock()
-                ctrl.main.ui_manager.show_anchor(node)  # @UndefinedVariable
-        del self._position_before_dragging
-        del self._adjustment_before_dragging
-        ctrl.dragged = set()
-        ctrl.dragged_positions = set()
-        ctrl.main.action_finished('moved node %s' % self)
-        # ctrl.scene.fit_to_window()

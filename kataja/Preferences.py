@@ -187,7 +187,10 @@ class Preferences(object):
             ABSTRACT_EDGE: {'shape_name': 'linear', 'color': 'content1', 'pull': .40, 'visible': True,
                             'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False},
             ATTRIBUTE_EDGE: {'shape_name': 'linear', 'color': 'content1', 'pull': .50, 'visible': True,
-                             'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False}, }
+                             'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False},
+            COMMENT_EDGE: {'shape_name': 'linear', 'color': 'accent4', 'pull': 0, 'visible': True,
+                             'arrowhead_at_start': True, 'arrowhead_at_end': False, 'labeled': False},
+            }
 
         ### Default node settings
         # Node types

@@ -835,6 +835,31 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         # return True
         return False
 
+    def drop_to(self, x, y, recipient=None):
+        """
+
+
+        :param recipient:
+        :param x:
+        :param y:
+        """
+        self.release()
+        self.update()
+        if recipient and recipient.accepts_drops(self):
+            self.adjustment = (0, 0, 0)
+            recipient.drop(self)
+        else:
+            for node in ctrl.dragged:
+                node.lock()
+                ctrl.main.ui_manager.show_anchor(node)  # @UndefinedVariable
+        del self._position_before_dragging
+        del self._adjustment_before_dragging
+        ctrl.dragged = set()
+        ctrl.dragged_positions = set()
+        ctrl.main.action_finished('moved node %s' % self)
+        # ctrl.scene.fit_to_window()
+
+
     #### Mouse - Qt events ##################################################
 
     def hoverEnterEvent(self, event):
@@ -881,6 +906,4 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
 
             #### Restoring after load / undo #########################################
-
-
 

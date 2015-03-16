@@ -27,6 +27,9 @@ CommentNode is a non-functional node for freeform text
 
 from kataja.Node import Node
 from kataja.globals import COMMENT_EDGE, COMMENT_NODE
+from kataja.singletons import ctrl
+from kataja.parser.INodes import ITextNode
+from kataja.parser.LatexToINode import parse_field
 
 
 color_map = {'tense': 0, 'person': 2, 'number': 4, 'case': 6, 'unknown': 3}
@@ -43,7 +46,7 @@ class CommentNode(Node):
 
     def __init__(self, text=''):
         Node.__init__(self)
-        self.saved.text = text
+        self.label = text
 
 
     def after_init(self):
@@ -51,6 +54,7 @@ class CommentNode(Node):
         self.update_label()
         self.update_bounding_rect()
         self.update_visibility()
+        ctrl.forest.store(self)
 
     @property
     def hosts(self):
@@ -64,31 +68,26 @@ class CommentNode(Node):
 
     @property
     def label(self):
-        return self.saved.text
+        return self.saved.label
 
     @label.setter
     def label(self, value):
         for host in self.hosts:
             host.gloss = value
-
-
-    @property
-    def as_inode(self):
-        """
-        :return: INodes or str or tuple of them
-        """
-        return self.label
+        self.saved.label = value
+        self._inode_changed = True
 
 
     @property
     def text(self):
-        return self.saved.text
+        return self.saved.label
 
     @text.setter
     def text(self, value):
         for host in self.hosts:
             host.gloss = value
-
+        self.saved.label = value
+        self._inode_changed = True
 
     def update_colors(self):
         """
@@ -102,3 +101,16 @@ class CommentNode(Node):
     def __str__(self):
         return 'comment: %s' % self.text
 
+    @property
+    def as_inode(self):
+        """
+        :return: INodes or str or tuple of them
+        """
+        if self._inode_changed:
+            if isinstance(self.label, ITextNode):
+                self._inode = self.label
+            else:
+                self._inode = parse_field(self.label)
+            print('comment node inode is: ', self._inode)
+            self._inode_changed = False
+        return self._inode

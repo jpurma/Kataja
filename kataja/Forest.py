@@ -733,8 +733,8 @@ class Forest(Savable):
             self.connect_node(child=gn, parent=host_node, edge_type=GlossNode.default_edge_type)
         elif label:
             gn = GlossNode(text=label)
-        self.add_to_scene(gn)
         gn.after_init()
+        self.add_to_scene(gn)
 
         # Cosmetic improvemet, if gloss is created by editing the gloss text field. (not present anymore)
         # ee = ctrl.ui.get_constituent_edit_embed()
@@ -746,6 +746,7 @@ class Forest(Savable):
 
     def create_comment_node(self, comment):
         cn = CommentNode(comment)
+        cn.after_init()
         self.add_to_scene(cn)
         return cn
 
