@@ -254,9 +254,10 @@ class Savable:
         # print('restoring %s , %s ' % (obj_key, class_key))
         if obj_key in restored:
             return restored[obj_key]
+        # If the object already exists (we are doing undo), the loaded values overwrite existing values.
         obj = full_map.get(obj_key, None)
         if not obj:
-            # print('creeating new ', class_key)
+            # print('creating new ', class_key)
             obj = main.object_factory.create(class_key)
         if class_key == 'Forest':
             main.forest = obj

@@ -316,7 +316,6 @@ class EdgesPanel(UIPanel):
         else:
             ### Color selector
             self.color_selector.remove_ambiguous_marker()
-            print('color update scope: ', self.scope)
             self.current_color = ctrl.forest.settings.edge_type_settings(self.scope, 'color')
             self.color_selector.select_data(self.current_color)
 

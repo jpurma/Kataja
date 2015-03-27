@@ -128,7 +128,7 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
 
 
         """
-        self.update_end_points()
+        pass
 
     @property
     def fixed_start_point(self):
@@ -803,6 +803,7 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
     # @time_me
     def make_path(self):
         """ Draws the shape as a path """
+        self.update_end_points()
         if not self._shape_method:
             self.update_shape()
         c = self._cached_shape_args
@@ -1103,7 +1104,6 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         :return:
         """
         if not self._path:
-            self.update_end_points()
             self.make_path()
         return self._path.controlPointRect()
 
@@ -1237,7 +1237,6 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         :return: QPoint
         """
         if not self._true_path:
-            self.update_end_points()
             self.make_path()
         return self._true_path.pointAtPercent(d)
 
@@ -1247,7 +1246,6 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         :return: float
         """
         if not self._true_path:
-            self.update_end_points()
             self.make_path()
         return self._true_path.angleAtPercent(d)
 
@@ -1258,7 +1256,6 @@ class Edge(Savable, QtWidgets.QGraphicsItem):
         :return:
         """
         if not self._true_path:
-            self.update_end_points()
             self.make_path()
         min_d = 1000
         min_i = -1

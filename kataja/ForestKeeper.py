@@ -31,7 +31,7 @@ from kataja.Saved import Savable
 class ForestKeeper(Savable):
     """ Container and loader for Forest objects """
 
-    def __init__(self, treelist=None, file_name=None):
+    def __init__(self, filename=None):
         """
 
         :param List treelist:
@@ -41,12 +41,13 @@ class ForestKeeper(Savable):
         self.saved.forests = []
         self.saved.current_index = 0
         self.saved.forest = None
-        if treelist is None:
+        if filename:
+            treelist = self.load_treelist_from_file(filename)
+        else:
             treelist = []
-        if treelist:
-            self.create_forests(treelist)
-        elif file_name:
-            self.create_forests_from_file(file_name)
+        self.create_forests(treelist)
+
+
 
     @property
     def forests(self):
@@ -103,7 +104,7 @@ class ForestKeeper(Savable):
         return self.current_index, self.forest
 
 
-    def create_forests_from_file(self, filename):
+    def load_treelist_from_file(self, filename):
         """
 
 
@@ -118,58 +119,75 @@ class ForestKeeper(Savable):
             f.close()
         except FileNotFoundError:
             treelist = ['[A B]']
-        self.create_forests(treelist)
+        return treelist
 
     def create_forests(self, treelist):
-        """
+        """ This will read list of strings where each line defines a tree or an element of tree. Example:
 
+        [.AspP [.Asp\\Ininom] [.vP [.KP [.K\\ng ] [.DP [.D´ [.D ] [.NP\\lola ]] [.KP [.K\\ng] [.DP [.D´ [.D ] [.NP\\alila ] ] [.KP\\{ni Maria} ]]]]] [.v´ [.v ] [.VP [.V ] [.KP\\{ang tubig}]]]]]
+        Ininom = drank
+        ng = NG
+        ng = NG
+        lola = grandma
+        alila = servant
+        ni Maria = NG Maria
+        ang tubig = ANG water
+        'Maria's grandmother's servant drank the water'
 
-        :param treelist:
-        :param list treelist:
+        :param treelist:list of strings, where a line can be a bracket tree or definition line for element in a tree
         """
+        # Clear this screen before we start creating a mess
+        if self.forest:
+            self.forest.clear_scene()
         self.forests = []
-        forest = None
-        buildstring_lines = []
+
+        # buildstring is the bracket tree or trees.
+        buildstring = []
+        # definitions includes given definitions for constituents of this tree
+        definitions = {}
+        # gloss_text is the gloss for whole tree
+        gloss_text = ''
+        # comments are internal notes about the tree, displayed as help text or something
+        comments = []
+        started_forest = False
+
         for line in treelist:
             line = line.strip()
             line.split('=', 1)
             parts = line.split('=', 1)
+            # comment line
             if line.startswith('#'):
-                if forest:
-                    forest.add_comment(line[1:])
-                else:
-                    pass
-            elif len(parts) > 1 and not line.startswith('['):  # Definition line
-                if not forest:
-                    forest = Forest()
-                    ctrl.main.set_forest(forest)
+                if started_forest:
+                    comments.append(line[1:])
+            # Definition line
+            elif len(parts) > 1 and not line.startswith('['):
+                started_forest = True
                 word = parts[0].strip()
                 values = parts[1]
-                forest.parser.add_definition(word, values)
-                # if key== '\gll':
-                # forest.setGloss(line)
-            elif line.startswith("'"):  # Gloss text
-                if forest:
+                definitions[word] = values
+            # Gloss text:
+            elif line.startswith("'"):
+                if started_forest:
                     if line.endswith("'"):
                         line = line[:-1]
-                    forest.gloss_text = line[1:]
-            elif forest and not line:  # finalize this forest
-                forest.build('\n'.join(buildstring_lines))
-                self.forests.append(forest)
-                forest = None
-            elif line and not forest:  # start a new forest
-                buildstring_lines = [line]
-                forest = Forest()
-                ctrl.main.forest = forest
+                    gloss_text = line[1:]
+            # empty line: finalize this forest
+            elif started_forest and not line:
+                self.forests.append(Forest(buildstring=buildstring, definitions=definitions, gloss_text=gloss_text, comments=comments))
+                started_forest = False
+            # tree definition starts a new forest
+            elif line and not started_forest:
+                buildstring = line
+                definitions = {}
+                gloss_text = ''
+                comments = []
+            # another tree definition, append to previous
             elif line and forest:
-                buildstring_lines.append(line)
-        if forest:  # make sure that the last forest is also added
-            forest.build('\n'.join(buildstring_lines))
-            self.forests.append(forest)
+                buildstring += '\n' + line
+        if started_forest:  # make sure that the last forest is also added
+            self.forests.append(Forest(buildstring=buildstring, definitions=definitions, gloss_text=gloss_text, comments=comments))
         self.current_index = 0
         if self.forests:
-            if self.forest:
-                self.forest.clear_scene()
             self.forest = self.forests[0]
             self.forest.undo_manager.init_if_empty()
             # self.save()

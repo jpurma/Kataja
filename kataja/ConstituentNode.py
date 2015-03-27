@@ -734,7 +734,7 @@ class ConstituentNode(Node):
                     node._adjustment_before_dragging = node.adjustment or (0, 0, 0)
                     node._distance_from_dragged = (x - dx, y - dy)
         if len(drag_hosts) == 1:  # don't allow merge if this is multidrag-situation
-            ctrl.ui.prepare_touch_areas_for_dragging(drag_host=drag_host[0], moving=ctrl.dragged, node_type=g.CONSTITUENT_NODE)
+            ctrl.ui.prepare_touch_areas_for_dragging(drag_host=drag_hosts[0], moving=ctrl.dragged, node_type=g.CONSTITUENT_NODE)
 
     def drag(self, event):
         """ Drags also elements that are counted to be involved: features, children etc

@@ -71,7 +71,7 @@ class Forest(Savable):
       Forest also takes care of the operations manipulating, creating and
       removing trees. """
 
-    def __init__(self):
+    def __init__(self, buildstring='', definitions=None, gloss_text='', comments=None):
         """ Create an empty forest """
         Savable.__init__(self)
         self.nodes_by_uid = {}
@@ -96,7 +96,17 @@ class Forest(Savable):
         self.saved.select_counter = 0
         self.saved.comments = []
         self.saved.gloss_text = ''
-        self.saved.buildstring = ''
+        self.change_visualization(prefs.default_visualization)
+
+        if buildstring:
+            self.create_tree_from_string(buildstring)
+        if definitions:
+            self.read_definitions(definitions)
+        if gloss_text:
+            self.gloss_text = gloss_text
+        if comments:
+            self.comments = comments
+
 
     def after_init(self):
         self.update_visualization()
@@ -213,14 +223,6 @@ class Forest(Savable):
         self.saved.gloss_text = value
 
     @property
-    def buildstring(self):
-        return self.saved.buildstring
-
-    @buildstring.setter
-    def buildstring(self, value):
-        self.saved.buildstring = value
-
-    @property
     def scene(self):
         """ Return the graphics scene where objects are stored and drawn.
         :return: GraphScene instance
@@ -292,16 +294,10 @@ class Forest(Savable):
         """
         return [x for x in self.nodes.values() if x.is_visible]
 
-    def build(self, buildstring):
-        """ Populate forest from a buildstring, store buildstring for reference
-        :param buildstring:
-        """
-        self._buildstring = buildstring
-        self.create_tree_from_string(buildstring)
-
     def draw_gloss_text(self):
         """ Draw the gloss text on screen, if it exists. """
         if self.gloss_text:
+            print('adding a gloss text:', self.gloss_text)
             if not self.gloss:
                 # noinspection PyArgumentList
                 self.gloss = QtWidgets.QGraphicsTextItem(parent=None)
@@ -309,12 +305,13 @@ class Forest(Savable):
                 self.gloss.setDefaultTextColor(ctrl.cm.drawing())
                 self.gloss.setFont(qt_prefs.font(g.MAIN_FONT))  # @UndefinedVariable
                 # self.gloss.setFlag(QtGui.QGraphicsItem.ItemIsMovable)
+            if self.gloss.scene() != ctrl.graph_scene:
+                self.add_to_scene(self.gloss)
             self.gloss.setPlainText("‘" + self.gloss_text + "’")
             self.gloss.show()
-        else:
-            if self.gloss:
-                self.scene.removeItem(self.gloss)
-                self.gloss = None
+        elif self.gloss:
+            self.scene.removeItem(self.gloss)
+            self.gloss = None
 
     def change_visualization(self, key):
         """ Switches the active visualization to visualization with given key
@@ -782,11 +779,16 @@ class Forest(Savable):
         if replace:
             self.roots = []
         text = text.strip()
-        if text.startswith('\gll'):
-            self._gloss_text = text[5:].strip('{} ')
         nodes = self.parser.parse_into_forest(text)
         self.settings.uses_multidomination = False
         self.traces_to_multidomination()
+
+    def read_definitions(self, definitions):
+        """
+        :param definitions: Try to set features and glosses according to definition strings for nodes in tree.
+        :return:
+        """
+        print('we have following keys:', self.nodes_by_uid.keys())
 
     def create_trace_for(self, node):
         """
@@ -964,7 +966,6 @@ class Forest(Savable):
             ForestSyntax.disconnect_edge(edge)
             edge.start.edges_down.remove(edge)
         edge.connect_end_points(new_start, edge.end)
-        edge.update_end_points()
         ForestSyntax.connect_according_to_edge(edge)
         new_start.edges_down.append(edge)
 
@@ -979,7 +980,6 @@ class Forest(Savable):
             edge.end.edges_up.remove(edge)
             self.update_root_status(edge.end)
         edge.connect_end_points(edge.start, new_end)
-        edge.update_end_points()
         ForestSyntax.connect_according_to_edge(edge)
         new_end.edges_up.append(edge)
         self.update_root_status(new_end)
@@ -1000,7 +1000,6 @@ class Forest(Savable):
             edge.end.edges_up.remove(edge)
             self.update_root_status(edge.end)
         edge.connect_end_points(new_start, new_end)
-        edge.update_end_points()
         ForestSyntax.connect_according_to_edge(edge)
         new_end.edges_up.append(edge)
         new_start.edges_down.append(edge)
@@ -1018,7 +1017,6 @@ class Forest(Savable):
             edge.start.edges_down.remove(edge)
         edge.start = None
         edge.make_relative_vector()
-        edge.update_end_points()
         ctrl.ui.reset_control_points(self)
         edge.update_shape()
 
@@ -1033,7 +1031,6 @@ class Forest(Savable):
             self.update_root_status(edge.end)
         edge.end = None
         edge.make_relative_vector()
-        edge.update_end_points()
         ctrl.ui.reset_control_points(self)
         edge.update_shape()
 
@@ -1783,5 +1780,6 @@ class Forest(Savable):
         :param node:
         :return:
         """
+        print('parse_features called')
         return self.parser.parse_definition(string, node)
 

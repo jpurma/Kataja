@@ -29,7 +29,7 @@ from kataja.Node import Node
 from kataja.globals import GLOSS_EDGE, GLOSS_NODE
 from kataja.singletons import ctrl
 from kataja.parser.LatexToINode import parse_field
-from parser.INodes import ITextNode
+from kataja.parser.INodes import ITextNode
 
 
 color_map = {'tense': 0, 'person': 2, 'number': 4, 'case': 6, 'unknown': 3}

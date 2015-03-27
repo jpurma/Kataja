@@ -141,6 +141,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
         :param item:
         """
         self.remove_from_signal_receivers(item)
+        if item.scene() != self:
+            print('wrong scene: ', item)
         QtWidgets.QGraphicsScene.removeItem(self, item)
 
 
@@ -628,7 +630,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         :param event:
         """
-        print("scene dragEnter")
         data = event.mimeData()
         if data.hasFormat("application/x-qabstractitemmodeldatalist"):
             event.acceptProposedAction()
@@ -672,6 +673,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                     if command == "new_node":
                         node_type = args[0]
                         node = ctrl.forest.create_empty_node(pos=event.scenePos(), node_type=node_type)
+                        node.lock()
                         ctrl.main.action_finished('added %s' % args[0])
                     else:
                         print('received unknown command:', command, args)
@@ -792,7 +794,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
             f.gloss.setPos(pt[0] - 20, pt[1] - 40)
 
         for e in f.edges.values():
-            e.update_end_points()
             e.make_path()
             e.update()
 
@@ -823,6 +824,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 normalize = True
                 if node.move_towards_target_position():
                     items_have_moved = True
+            elif not node.use_physics:
+                continue
             # Dynamic movement
             xvel, yvel, zvel = node.calculate_movement()
             moved_nodes.append((xvel, yvel, zvel, node))

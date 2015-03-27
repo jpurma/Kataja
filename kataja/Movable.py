@@ -70,6 +70,7 @@ class Movable(Savable):
         self._use_easing = True
         self._fade_in_counter = 0
         self._fade_out_counter = 0
+        self.use_physics = True
         self.after_move_function = None
         self.selectable = False
         self.draggable = False

@@ -140,17 +140,12 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
         self.action_finished()
         print('---- finished start sequence... ', time.time() - t)
 
-    def load_treeset(self, treeset_list=None):
+    def load_treeset(self, filename=''):
         """ Loads and initializes a new set of trees. Has to be done before the program can do anything sane.
         :param treeset_list:
         """
         ctrl.initializing = True
-        if not treeset_list:
-            treeset_list = []
-        if treeset_list:
-            self.forest_keeper = ForestKeeper(treelist=treeset_list)
-        else:
-            self.forest_keeper = ForestKeeper(file_name=prefs.debug_treeset)
+        self.forest_keeper = ForestKeeper(filename=filename or prefs.debug_treeset)
         ctrl.initializing = False
         self.change_forest(self.forest_keeper.forest)
 
@@ -509,6 +504,7 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
             source = self.graph_scene.visible_rect_and_gloss()
         else:
             source = self.graph_scene.visible_rect()
+        source.adjust(0, 0, 5, 10)
         self.graph_scene.removeItem(self.graph_scene.photo_frame)
         self.graph_scene.photo_frame = None
         target = QtCore.QRectF(0, 0, source.width() / 2.0, source.height() / 2.0)

@@ -30,6 +30,17 @@ ni Maria = 'NG Maria'
 ang tubig = 'ANG water'
 'Maria's grandmother's servant drank the water'
 
+[.AspP [.Asp\\Ininom] [.vP [.KP [.K\\ng ] [.DP [.D´ [.D ] [.NP\\lola ]] [.KP [.K\\ng] [.DP [.D´ [.D ] [.NP\\alila ] ] [.KP\\{ni Maria} ]]]]] [.v´ [.v ] [.VP [.V ] [.KP\\{ang tubig}]]]]]
+Ininom = 'drank'
+ng = 'NG'
+ng = 'NG'
+lola = 'grandma'
+alila = 'servant'
+ni Maria = 'NG Maria'
+ang tubig = 'ANG water'
+'Maria's grandmother's servant drank the water'
+
+
 [.{CP} [.{YP_k} [.{XP_j} [.{whP_i} kenen nimmaria ] [ ilman t_i ] ]  [ jäätyään t_j ] ] [.{CP} [.{C} {} ] [.{TP} {Merja palasi suruissaan kotiin} t_k ] ] ]
 kenen = Q:force
 
@@ -60,7 +71,7 @@ kirjoittanut = 3rd:person, perf:tense
 
 [j k]
 
-#[ [.{Acc_i} B [.{Nom} A [.{DP} the grass ] ] ] [ S–Acc [ … [ [.{GenP_j} C t_i ] [ S–Gen [.{vP\rightarrow\emph{load}} … [.{v´} v^0 [.{VP} V [.{PP} [.{InsP} E [.{DatP} D t_j ] ] [.{P´} P [.{NP*} the truck ] ] ] ] ] ] ] ] ] ] ]
+[ [.{Acc_i} B [.{Nom} A [.{DP} the grass ] ] ] [ S–Acc [ … [ [.{GenP_j} C t_i ] [ S–Gen [.{vP\rightarrow\emph{load}} … [.{v´} v^0 [.{VP} V [.{PP} [.{InsP} E [.{DatP} D t_j ] ] [.{P´} P [.{NP*} the truck ] ] ] ] ] ] ] ] ] ] ]
 
 [ Odotin-1sg>acc [ ne-pl [ pitkästyttävät-acc-pl [ >nom [ kolme-nom>prt [ loputonta-prt-sg minuuttia-prt-sg ] ] ] ] ] ]
 

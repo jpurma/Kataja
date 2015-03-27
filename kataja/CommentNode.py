@@ -26,7 +26,7 @@ CommentNode is a non-functional node for freeform text
 #############################################################################
 
 from kataja.Node import Node
-from kataja.globals import COMMENT_EDGE, COMMENT_NODE
+from kataja.globals import ARROW, COMMENT_NODE
 from kataja.singletons import ctrl
 from kataja.parser.INodes import ITextNode
 from kataja.parser.LatexToINode import parse_field
@@ -41,12 +41,13 @@ class CommentNode(Node):
     """
     width = 20
     height = 20
-    default_edge_type = COMMENT_EDGE
+    default_edge_type = ARROW
     node_type = COMMENT_NODE
 
     def __init__(self, text=''):
         Node.__init__(self)
         self.label = text
+        self.use_physics = False
 
 
     def after_init(self):
@@ -63,7 +64,7 @@ class CommentNode(Node):
 
         :return:
         """
-        return self.get_parents(edge_type=COMMENT_EDGE)
+        return self.get_parents(edge_type=ARROW)
 
 
     @property

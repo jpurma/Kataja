@@ -68,9 +68,14 @@ Unpack it to your build folder, let's assumet that the resulting folder is ~/bui
 
 (several seconds)
 
+## Windows ##
 
+to be added
 
-  
+## Linux -- Ubuntu 14 at least ##
+
+to be added
+
   
   
 Standalone apps for Mac OS X, Windows and Linux will be provided when the software is in stage where it is usable.
