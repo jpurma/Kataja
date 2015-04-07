@@ -29,7 +29,7 @@ from kataja.singletons import ctrl
 
 class TwoColorIconEngine(QtGui.QIconEngine):
     """ An icon that is drawn from two binary pixmaps with colors provided by the app environment.
-        The benefit is that the icons can adjust their colors based on the environment and with two colors
+        The benefit is that the icons can adjustment their colors based on the environment and with two colors
         there are more possibilities for making the icons pretty.
     """
 

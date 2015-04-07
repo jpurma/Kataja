@@ -68,25 +68,25 @@ class GlossNode(Node):
 
     @property
     def label(self):
-        return self.saved.label
+        return self.model.label
 
     @label.setter
     def label(self, value):
         for host in self.hosts:
             host.gloss = value
-        self.saved.label = value
+        self.model.label = value
         self._inode_changed = True
 
 
     @property
     def text(self):
-        return self.saved.label
+        return self.model.label
 
     @text.setter
     def text(self, value):
         for host in self.hosts:
             host.gloss = value
-        self.saved.label = value
+        self.model.label = value
         self._inode_changed = True
 
     def update_colors(self):

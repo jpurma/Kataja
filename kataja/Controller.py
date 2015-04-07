@@ -27,9 +27,6 @@ import sys
 from PyQt5 import QtCore, QtWidgets
 
 from kataja.utils import caller
-from syntax.BareConstituent import BareConstituent
-from syntax.BaseUG import UG
-from syntax.ConfigurableFeature import Feature
 
 # gc.set_debug(gc.DEBUG_LEAK)
 
@@ -53,10 +50,11 @@ class Controller:
     def __init__(self):
         # self.set_prefs('default')
         # : :type self.main: KatajaMain
+
         self.main = None
-        self.Constituent = BareConstituent
-        self.Feature = Feature
-        self.UG = UG(constituent=self.Constituent, feature=self.Feature)
+        self.Constituent = None
+        self.Feature = None
+        self.UG = None
         self.structure = None
         self.selected = []
         self.selected_root = None
@@ -88,6 +86,7 @@ class Controller:
         # set these back on.
         self.action_redraw = True
         self.action_undo = True
+        self.undo_pile = set()
         # ---------------------------
 
 
@@ -96,6 +95,13 @@ class Controller:
 
         :param main: KatajaMain
         """
+        from syntax.BareConstituent import BareConstituent
+        from syntax.BaseUG import UG
+        from syntax.ConfigurableFeature import Feature
+        self.Constituent = BareConstituent
+        self.Feature = Feature
+        self.UG = UG(constituent=self.Constituent, feature=self.Feature)
+
         self.main = main
 
 

@@ -54,7 +54,7 @@ import kataja.globals as g
 from kataja.utils import time_me
 from kataja.visualizations.available import VISUALIZATIONS
 import kataja.debug as debug
-from kataja.Saved import Savable
+from kataja.BaseModel import BaseModel
 
 
 
@@ -73,19 +73,26 @@ ALIASES = 2
 # KatajaMain > UIView > UIManager > GraphView > GraphScene > Leaves etc.
 
 
+class KatajaMainModel(BaseModel):
+    def __init__(self, host, unique=False):
+        super().__init__(host, unique)
+        self.forest_keeper = None
+        self.forest = None
+        self._forest_keeper_touched = False
+        self._forest_touched = False
 
-class KatajaMain(QtWidgets.QMainWindow, Savable):
+
+class KatajaMain(QtWidgets.QMainWindow):
     """ Qt's main window. When this is closed, application closes. Graphics are
     inside this, in scene objects with view widgets. This window also manages
     keypresses and menus. """
 
-    @time_me
     def __init__(self, kataja_app, args):
         """ KatajaMain initializes all its children and connects itself to
         be the main window of the given application. """
         t = time.time()
-        QtWidgets.QMainWindow.__init__(self)
-        Savable.__init__(self, unique=True)
+        self.model = KatajaMainModel(self, unique=True)
+        super().__init__()
         print('---- initialized MainWindow base class ... ', time.time() - t)
         self.app = kataja_app
         self.forest = None
@@ -111,7 +118,7 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
         self.key_manager = KeyPressManager(self)
         self.object_factory = ObjectFactory()
         print('---- ui init ... ', time.time() - t)
-        self.saved.forest_keeper = ForestKeeper()
+        self.model.forest_keeper = ForestKeeper()
         print('---- forest_keeper init ... ', time.time() - t)
         kataja_app.setPalette(self.color_manager.get_qt_palette())
         self.visualizations = VISUALIZATIONS
@@ -158,14 +165,14 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
 
         :return:
         """
-        return self.saved.forest
+        return self.model.forest
 
     @forest.setter
     def forest(self, value):
         """ :param forest:
         :param value:
         """
-        self.saved.forest = value
+        self.model.forest = value
         if hasattr(value, 'visualization'):
             if not value.visualization:
                 value.change_visualization(prefs.default_visualization)
@@ -179,7 +186,7 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
 
         :return:
         """
-        return self.saved.forest_keeper
+        return self.model.forest_keeper
 
     @forest_keeper.setter
     def forest_keeper(self, value):
@@ -187,7 +194,7 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
 
         :param value:
         """
-        self.saved.forest_keeper = value
+        self.model.forest_keeper = value
 
 
     def change_forest(self, forest):
@@ -420,7 +427,7 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
 
     def adjust_colors(self, hsv):
         """
-        adjust colors -action (shift-alt-c)
+        adjustment colors -action (shift-alt-c)
 
         :param hsv:
         """
@@ -504,7 +511,7 @@ class KatajaMain(QtWidgets.QMainWindow, Savable):
             source = self.graph_scene.visible_rect_and_gloss()
         else:
             source = self.graph_scene.visible_rect()
-        source.adjust(0, 0, 5, 10)
+        source.adjustment(0, 0, 5, 10)
         self.graph_scene.removeItem(self.graph_scene.photo_frame)
         self.graph_scene.photo_frame = None
         target = QtCore.QRectF(0, 0, source.width() / 2.0, source.height() / 2.0)

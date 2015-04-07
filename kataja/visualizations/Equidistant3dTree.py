@@ -102,7 +102,7 @@ class Equidistant3dTree(BaseVisualization):
 
         for i, edge in enumerate(node.edges_up):
             if edge.is_visible():
-                if edge.align == LEFT:
+                if edge.alignment == LEFT:
                     target_d_x = -30
                 else:
                     target_d_x = 30

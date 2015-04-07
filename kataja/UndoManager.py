@@ -62,13 +62,13 @@ class UndoManager:
         """
         saved_objects = {}
         open_refs = {}
-        self.forest.save_object(saved_objects, open_refs)
+        self.forest.model.save_object(saved_objects, open_refs)
         saved_objects['start_key'] = self.forest.save_key
         c = 0
         while open_refs and c < 10:
             c += 1
             for obj in list(open_refs.values()):
-                obj.save_object(saved_objects, open_refs)
+                obj.model.save_object(saved_objects, open_refs)
         undo('total savedata: %s chars.' % len(str(saved_objects)))
         return saved_objects
 

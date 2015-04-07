@@ -97,7 +97,7 @@ class OverlayButton(QtWidgets.QPushButton):
             p = ctrl.main.graph_view.mapFromScene(
                 QtCore.QPointF(self.host.start_point[0], self.host.start_point[1]) + adjust)
         elif self.role == g.END_CUT:
-            if self.host.align == g.LEFT:
+            if self.host.alignment == g.LEFT:
                 adjust = QtCore.QPointF(-self.host.end.width / 2, -self.host.end.height / 2)
             else:
                 adjust = QtCore.QPointF(self.host.end.width / 2, -self.host.end.height / 2)

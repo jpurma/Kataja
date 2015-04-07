@@ -25,7 +25,7 @@ CommentNode is a non-functional node for freeform text
 #
 #############################################################################
 
-from kataja.Node import Node
+from kataja.Node import Node, NodeModel
 from kataja.globals import ARROW, COMMENT_NODE
 from kataja.singletons import ctrl
 from kataja.parser.INodes import ITextNode
@@ -33,6 +33,11 @@ from kataja.parser.LatexToINode import parse_field
 
 
 color_map = {'tense': 0, 'person': 2, 'number': 4, 'case': 6, 'unknown': 3}
+
+class CommentNodeModel(NodeModel):
+
+    def __init__(self, host):
+        super().__init__(host)
 
 
 class CommentNode(Node):
@@ -45,6 +50,8 @@ class CommentNode(Node):
     node_type = COMMENT_NODE
 
     def __init__(self, text=''):
+        if not hasattr(self, 'model'):
+            self.model = CommentNodeModel(self)
         Node.__init__(self)
         self.label = text
         self.use_physics = False
@@ -69,26 +76,28 @@ class CommentNode(Node):
 
     @property
     def label(self):
-        return self.saved.label
+        return self.model.label
 
     @label.setter
     def label(self, value):
         for host in self.hosts:
             host.gloss = value
-        self.saved.label = value
-        self._inode_changed = True
+        if self.model.touch('label', value):
+            self.model.label = value
+            self._inode_changed = True
 
 
     @property
     def text(self):
-        return self.saved.label
+        return self.model.label
 
     @text.setter
     def text(self, value):
         for host in self.hosts:
             host.gloss = value
-        self.saved.label = value
-        self._inode_changed = True
+        if self.model.touch('text', value):
+            self.model.label = value
+            self._inode_changed = True
 
     def update_colors(self):
         """

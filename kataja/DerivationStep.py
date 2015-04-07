@@ -22,22 +22,34 @@
 #
 # ############################################################################
 
+### NEED TO RETHINK DERIVATION STEP SYSTEM  -- PEN AND PAPER TIME ###
 
 from kataja.singletons import ctrl
-from kataja.Saved import Savable
+from kataja.BaseModel import BaseModel
 
 # Thinking about undo system. It should be a common class Undoable inherited by everyone. It contains few methods: start_undoable_operation, add_undoable_field, finish_undoable_operation.
 # these all should operate on global dict, where each add_undoable_field would announce the item and the field.
 
 
-class DerivationStep(Savable):
+class DerivationStepModel(BaseModel):
+    """ DerivationStepModel contains the permanent (saved) data of a DerivationStep instance """
+
+    def __init__(self, host):
+        super().__init__(host)
+        self.msg = ''
+        self.roots = []
+        self.chains = {}
+
+
+class DerivationStep:
     """ Packed state of forest for undo -operations and for stepwise animation of tree growth. 
 
     Needs to be checked and tested, also what to do with saving and loading.
      """
 
     def __init__(self, msg=None, roots=None, chains=None, data=None):
-        Savable.__init__(self)
+        if not hasattr(self, 'model'):
+            self.model = DerivationStepModel(self)
         if not roots:
             roots = []
         if not chains:
@@ -45,51 +57,59 @@ class DerivationStep(Savable):
         if data:
             self.load(data)
         else:
-            self.saved.msg = msg
-            self.saved.roots = [self.snapshot_of_tree(root) for root in roots]
-            self.saved.chains = self.snapshot_of_chains(chains)
+            self.msg = msg
+            self.roots = [self.snapshot_of_tree(root) for root in roots]
+            self.chains = self.snapshot_of_chains(chains)
+
+    @property
+    def save_key(self):
+        """ Return the save_key from the model. It is a property from BaseModel.
+        :return: str
+        """
+        return self.model.save_key
+
 
     @property
     def msg(self):
         """
         :return:
         """
-        return self.saved.msg
+        return self.model.msg
 
     @msg.setter
     def msg(self, value):
         """
         :param value:
         """
-        self.saved.msg = value
+        self.model.msg = value
 
     @property
     def roots(self):
         """
         :return:
         """
-        return self.saved.roots
+        return self.model.roots
 
     @roots.setter
     def roots(self, value):
         """
         :param value:
         """
-        self.saved.roots = value
+        self.model.roots = value
 
     @property
     def chains(self):
         """
         :return:
         """
-        return self.saved.chains
+        return self.model.chains
 
     @chains.setter
     def chains(self, value):
         """
         :param value:
         """
-        self.saved.chains = value
+        self.model.chains = value
 
     def snapshot_of_chains(self, chains):
         """ shallow copy of chains is not enough -- it refers to original lists -- and deepCopy is too much. 
@@ -131,11 +151,11 @@ class DerivationStep(Savable):
             node.edges_down = []
             for edge_down in data['edges_down']:
                 child = edge_down.end
-                ctrl.forest.connect_node(parent=node, child=child, edge_type=edge_down.edge_type)
+                ctrl.forest.connect_node(parent=node, child=child)
             node.edges_up = []
             for edge_up in data['edges_up']:
                 parent = edge_up.start
-                ctrl.forest.connect_node(parent=parent, child=node, edge_type=edge_up.edge_type)
+                ctrl.forest.connect_node(parent=parent, child=node)
             node.index = data['index']
             ctrl.forest.store(node)
         return root
@@ -151,42 +171,57 @@ class DerivationStep(Savable):
         ctrl.forest.chain_manager.chains = self.chains
 
 
-class DerivationStepManager(Savable):
+class DerivationStepManagerModel(BaseModel):
+    """ DerivationStepManagerModel contains the permanent (saved) data of a DerivationStepManager instance """
+
+    def __init__(self, host):
+        super().__init__(host)
+        self.derivation_steps = []
+        self.derivation_step_index = 0
+        self.forest = None
+
+
+class DerivationStepManager:
     """
 
     """
-    saved_fields = ['_derivation_steps', '_derivation_step_index', 'forest', 'save_key']
 
 
-    def __init__(self):
-        Savable.__init__(self, unique=False)
-        self.saved.derivation_steps = []
-        self.saved.derivation_step_index = 0
-        self.saved.forest = ctrl.forest
+    def __init__(self, forest):
+        if not hasattr(self, 'model'):
+            self.model = DerivationStepManagerModel(self)
+        self.forest = forest
+
+    @property
+    def save_key(self):
+        """ Return the save_key from the model. It is a property from BaseModel.
+        :return: str
+        """
+        return self.model.save_key
 
     @property
     def derivation_steps(self):
-        return self.saved.derivation_steps
+        return self.model.derivation_steps
 
     @derivation_steps.setter
     def derivation_steps(self, value):
-        self.saved.derivation_steps = value
+        self.model.derivation_steps = value
 
     @property
     def derivation_step_index(self):
-        return self.saved.derivation_step_index
+        return self.model.derivation_step_index
 
     @derivation_step_index.setter
     def derivation_step_index(self, value):
-        self.saved.derivation_step_index = value
+        self.model.derivation_step_index = value
 
     @property
     def forest(self):
-        return self.saved.forest
+        return self.model.forest
 
     @forest.setter
     def forest(self, value):
-        self.saved.forest = value
+        self.model.forest = value
 
 
     def save_and_create_derivation_step(self, msg=''):
@@ -197,11 +232,14 @@ class DerivationStepManager(Savable):
 
         :param msg:
         """
+        print('save_and_create_derivation_step called')
         roots = self.forest.roots
         chains = self.forest.chain_manager.chains
-        derivation_step = DerivationStep(msg, roots, chains)
-        self.derivation_step_index += 1
-        self.derivation_steps.append(derivation_step)
+        if chains:
+            print('saving chains into derivation step: ', chains)
+        #derivation_step = DerivationStep(msg, roots, chains)
+        #self.derivation_step_index += 1
+        #self.derivation_steps.append(derivation_step)
 
     def restore_derivation_step(self, derivation_step):
         """

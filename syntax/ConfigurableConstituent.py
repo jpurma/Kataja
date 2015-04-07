@@ -24,11 +24,11 @@ in very specific manner. Configuration is stored in UG-instance.config -dict and
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
-from kataja.Saved import Savable
+from kataja.BaseModel import BaseModel
 
 from syntax.ConfigurableFeature import Feature
 
-class ConfigurableConstituent(Savable):
+class ConfigurableConstituent(BaseModel):
     """
 
     :param cid:
@@ -39,22 +39,22 @@ class ConfigurableConstituent(Savable):
         """ BaseConstituent is a default constituent used in syntax.
         It is Savable, which means that the actual values are stored in separate object that is easily dumped to file.
         Extending this needs to take account if new fields should also be treated as savable, e.g. put them into
-        .saved. and make necessary property and setter.
+        .model. and make necessary property and setter.
          """
-        Savable.__init__(self)
+        BaseModel.__init__(self)
         self.config = config
         self.implicit_order = False
         if config:
             if 'implicit_order' in config:
                 self.implicit_order = config['implicit_order']
 
-        self.saved.features = {}
-        self.saved.sourcestring = source or cid
-        self.saved.label = cid
-        self.saved.alias = ''
-        self.saved.parts = []
-        self.saved.gloss = ''
-        self.saved.index = ''
+        self.model.features = {}
+        self.model.sourcestring = source or cid
+        self.model.label = cid
+        self.model.alias = ''
+        self.model.parts = []
+        self.model.gloss = ''
+        self.model.index = ''
 
     def __str__(self):
         if self.index:
@@ -69,7 +69,7 @@ class ConfigurableConstituent(Savable):
 
         :return:
         """
-        return self.saved.features
+        return self.model.features
 
     @features.setter
     def features(self, value):
@@ -83,9 +83,9 @@ class ConfigurableConstituent(Savable):
                 elif key == 'index':
                     self.index = feature.value
                 else:
-                    self.saved.features[key] = feature
+                    self.model.features[key] = feature
         else:
-            self.saved.features = {}
+            self.model.features = {}
 
     @property
     def sourcestring(self):
@@ -94,7 +94,7 @@ class ConfigurableConstituent(Savable):
 
         :return:
         """
-        return self.saved.sourcestring
+        return self.model.sourcestring
 
     @sourcestring.setter
     def sourcestring(self, value):
@@ -102,7 +102,7 @@ class ConfigurableConstituent(Savable):
 
         :param value:
         """
-        self.saved.sourcestring = value
+        self.model.sourcestring = value
 
     @property
     def label(self):
@@ -111,7 +111,7 @@ class ConfigurableConstituent(Savable):
 
         :return:
         """
-        return self.saved.label
+        return self.model.label
 
     @label.setter
     def label(self, value):
@@ -120,9 +120,9 @@ class ConfigurableConstituent(Savable):
         :param value:
         """
         if value is None:
-            self.saved.label = ''
+            self.model.label = ''
         else:
-            self.saved.label = value
+            self.model.label = value
 
     @property
     def alias(self):
@@ -131,7 +131,7 @@ class ConfigurableConstituent(Savable):
 
         :return:
         """
-        return self.saved.alias
+        return self.model.alias
 
     @alias.setter
     def alias(self, value):
@@ -140,9 +140,9 @@ class ConfigurableConstituent(Savable):
         :param value:
         """
         if value is None:
-            self.saved.alias = ''
+            self.model.alias = ''
         else:
-            self.saved.alias = value
+            self.model.alias = value
 
     @property
     def left(self):
@@ -151,8 +151,8 @@ class ConfigurableConstituent(Savable):
 
         :return:
         """
-        if self.saved.parts:
-            return self.saved.parts[0]
+        if self.model.parts:
+            return self.model.parts[0]
         else:
             return None
 
@@ -162,10 +162,10 @@ class ConfigurableConstituent(Savable):
 
         :param value:
         """
-        if not self.saved.parts:
-            self.saved.parts = [value]
+        if not self.model.parts:
+            self.model.parts = [value]
         else:
-            self.saved.parts[0] = value
+            self.model.parts[0] = value
 
     @property
     def right(self):
@@ -174,8 +174,8 @@ class ConfigurableConstituent(Savable):
 
         :return:
         """
-        if self.saved.parts and len(self.saved.parts) > 1:
-            return self.saved.parts[1]
+        if self.model.parts and len(self.model.parts) > 1:
+            return self.model.parts[1]
         else:
             return None
 
@@ -185,13 +185,13 @@ class ConfigurableConstituent(Savable):
 
         :param value:
         """
-        if self.saved.parts:
-            if len(self.saved.parts) > 1:
-                self.saved.parts[1] = value
+        if self.model.parts:
+            if len(self.model.parts) > 1:
+                self.model.parts[1] = value
             else:
-                self.saved.parts.append(value)
+                self.model.parts.append(value)
         else:
-            self.saved.parts = [None, value]
+            self.model.parts = [None, value]
 
     @property
     def gloss(self):
@@ -200,7 +200,7 @@ class ConfigurableConstituent(Savable):
 
         :return:
         """
-        return self.saved.gloss
+        return self.model.gloss
 
     @gloss.setter
     def gloss(self, value):
@@ -209,9 +209,9 @@ class ConfigurableConstituent(Savable):
         :param value:
         """
         if value is None:
-            self.saved.gloss = ''
+            self.model.gloss = ''
         else:
-            self.saved.gloss = value
+            self.model.gloss = value
 
     @property
     def index(self):
@@ -220,7 +220,7 @@ class ConfigurableConstituent(Savable):
 
         :return:
         """
-        return self.saved.index
+        return self.model.index
 
     @index.setter
     def index(self, value):
@@ -229,9 +229,9 @@ class ConfigurableConstituent(Savable):
         :param value:
         """
         if value is None:
-            self.saved.index = ''
+            self.model.index = ''
         else:
-            self.saved.index = value
+            self.model.index = value
 
 
     def __repr__(self):

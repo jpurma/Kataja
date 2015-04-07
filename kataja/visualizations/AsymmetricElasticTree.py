@@ -76,7 +76,7 @@ class AsymmetricElasticTree(BaseVisualization):
         for edge in node.edges_down:
             if not edge.is_visible():
                 continue
-            if edge.align == g.LEFT:
+            if edge.alignment == g.LEFT:
                 target_d_x = prefs.edge_width
             else:
                 target_d_x = -prefs.edge_width
@@ -93,7 +93,7 @@ class AsymmetricElasticTree(BaseVisualization):
         for i, edge in enumerate(node.edges_up):
             if not edge.is_visible():
                 continue
-            if edge.align == g.LEFT:
+            if edge.alignment == g.LEFT:
                 target_d_x = -prefs.edge_width
             else:
                 target_d_x = prefs.edge_width

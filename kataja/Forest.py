@@ -46,9 +46,9 @@ from kataja.parser.INodeToKatajaConstituent import INodeToKatajaConstituent
 from kataja.Presentation import TextArea, Image
 from kataja.Edge import Edge
 from kataja.UndoManager import UndoManager
-from kataja.utils import to_tuple
+from kataja.utils import to_tuple, caller
 from kataja.FeatureNode import FeatureNode
-from kataja.Saved import Savable
+from kataja.BaseModel import BaseModel
 import kataja.globals as g
 
 
@@ -61,8 +61,26 @@ NO_ALIGN = 0
 LEFT = 1
 RIGHT = 2
 
+class ForestModel(BaseModel):
 
-class Forest(Savable):
+    def __init__(self, host):
+        super().__init__(host)
+        self.roots = []  # the current line of trees
+        self.nodes = {}
+        self.edges = {}
+        self.others = {}
+        self.settings = None
+        self.rules = None
+        self.vis_data = {}
+        self.derivation_steps = None
+        self.merge_counter = 0
+        self.select_counter = 0
+        self.comments = []
+        self.gloss_text = ''
+
+
+
+class Forest:
     """ Forest is a group of trees that together form one view.
     Often there needs to be more than one tree visible at same time,
      so that they can be compared or to show states of construction
@@ -73,7 +91,8 @@ class Forest(Savable):
 
     def __init__(self, buildstring='', definitions=None, gloss_text='', comments=None):
         """ Create an empty forest """
-        Savable.__init__(self)
+        if not hasattr(self, 'model'):
+            self.model = ForestModel(self)
         self.nodes_by_uid = {}
         self.main = ctrl.main
         self.main.forest = self  # assign self to be the active forest while creating the managers.
@@ -83,19 +102,10 @@ class Forest(Savable):
         self.parser = INodeToKatajaConstituent(self)
         self.undo_manager = UndoManager(self)
         self.chain_manager = ChainManager(self)
+        self.model.settings = ForestSettings()
+        self.model.rules = ForestRules()
+        self.model.derivation_steps = DerivationStepManager(self)
 
-        self.saved.roots = []  # the current line of trees
-        self.saved.nodes = {}
-        self.saved.edges = {}
-        self.saved.others = {}
-        self.saved.settings = ForestSettings()
-        self.saved.rules = ForestRules()
-        self.saved.vis_data = {}
-        self.saved.derivation_steps = DerivationStepManager()
-        self.saved.merge_counter = 0
-        self.saved.select_counter = 0
-        self.saved.comments = []
-        self.saved.gloss_text = ''
         self.change_visualization(prefs.default_visualization)
 
         if buildstring:
@@ -107,9 +117,13 @@ class Forest(Savable):
         if comments:
             self.comments = comments
 
+    @property
+    def save_key(self):
+        return self.model.save_key
 
     def after_init(self):
         self.update_visualization()
+        print('created a forest %s , its traces should be visible: %s ' % (self, self.traces_are_visible()))
 
         # self.bracket_manager.rebuild_brackets()
         # for node in self.nodes.values():
@@ -118,109 +132,123 @@ class Forest(Savable):
 
     @property
     def roots(self):
-        return self.saved.roots
+        return self.model.roots
 
+    # oh hell. undo operation does not recognize changes inside dicts, lists, sets etc.
+    # fixed it, use 'poke', like self.model.poke(attributename) before making changes in containers attributes
     @roots.setter
     def roots(self, value):
         if value is None:
             value = []
-        self.saved.roots = value
+        if self.model.touch('roots', value):
+            self.model.roots = value
 
     @property
     def nodes(self):
-        return self.saved.nodes
+        return self.model.nodes
 
     @nodes.setter
     def nodes(self, value):
         if value is None:
             value = {}
-        self.saved.nodes = value
+        if self.model.touch('nodes', value):
+            self.model.nodes = value
 
     @property
     def edges(self):
-        return self.saved.edges
+        return self.model.edges
 
     @edges.setter
     def edges(self, value):
         if value is None:
             value = {}
-        self.saved.edges = value
+        if self.model.touch('edges', value):
+            self.model.edges = value
 
     @property
     def others(self):
-        return self.saved.others
+        return self.model.others
 
     @others.setter
     def others(self, value):
         if value is None:
             value = {}
-        self.saved.others = value
+        if self.model.touch('others', value):
+            self.model.others = value
 
     @property
     def settings(self):
-        return self.saved.settings
+        return self.model.settings
 
     @settings.setter
     def settings(self, value):
-        self.saved.settings = value
+        if self.model.touch('settings', value):
+            self.model.settings = value
 
     @property
     def rules(self):
-        return self.saved.rules
+        return self.model.rules
 
     @rules.setter
     def rules(self, value):
-        self.saved.rules = value
+        if self.model.touch('rules', value):
+            self.model.rules = value
 
     @property
     def vis_data(self):
-        return self.saved.vis_data
+        return self.model.vis_data
 
     @vis_data.setter
     def vis_data(self, value):
         if value is None:
             value = {}
-        self.saved.vis_data = value
+        if self.model.touch('vis_data', value):
+            self.model.vis_data = value
 
     @property
     def derivation_steps(self):
-        return self.saved.derivation_steps
+        return self.model.derivation_steps
 
     @derivation_steps.setter
     def derivation_steps(self, value):
-        self.saved.derivation_steps = value
+        if self.model.touch('derivation_steps', value):
+            self.model.derivation_steps = value
 
     @property
     def merge_counter(self):
-        return self.saved.merge_counter
+        return self.model.merge_counter
 
     @merge_counter.setter
     def merge_counter(self, value):
-        self.saved.merge_counter = value
+        if self.model.touch('merge_counter', value):
+            self.model.merge_counter = value
 
     @property
     def select_counter(self):
-        return self.saved.select_counter
+        return self.model.select_counter
 
     @select_counter.setter
     def select_counter(self, value):
-        self.saved.select_counter = value
+        if self.model.touch('select_counter', value):
+            self.model.select_counter = value
 
     @property
     def comments(self):
-        return self.saved.comments
+        return self.model.comments
 
     @comments.setter
     def comments(self, value):
-        self.saved.comments = value
+        if self.model.touch('comments', value):
+            self.model.comments = value
 
     @property
     def gloss_text(self):
-        return self.saved.gloss_text
+        return self.model.gloss_text
 
     @gloss_text.setter
     def gloss_text(self, value):
-        self.saved.gloss_text = value
+        if self.model.touch('gloss_text', value):
+            self.model.gloss_text = value
 
     @property
     def scene(self):
@@ -228,6 +256,13 @@ class Forest(Savable):
         :return: GraphScene instance
         """
         return self.main.graph_scene
+
+
+    def traces_are_visible(self):
+        """ Helper method for checking if we need to deal with chains
+        :return:
+        """
+        return not self.settings.uses_multidomination
 
 
     # @time_me
@@ -673,7 +708,7 @@ class Forest(Savable):
         FN.after_init()
         if host:
             FN.compute_start_position(host)
-            self.connect_node(host, child=FN, edge_type=FeatureNode.default_edge_type)
+            self.connect_node(host, child=FN)
         self.add_to_scene(FN)
         FN.update_visibility()
         return FN
@@ -688,7 +723,7 @@ class Forest(Savable):
         :return:
         """
         AN = AttributeNode(host, attribute_id, attribute_label, show_label=show_label)
-        self.connect_node(host, child=AN, edge_type=AttributeNode.default_edge_type)
+        self.connect_node(host, child=AN)
         self.add_to_scene(AN)
         AN.update_visibility()
         return AN
@@ -727,7 +762,7 @@ class Forest(Savable):
         """
         if host_node:
             gn = GlossNode(text=host_node.gloss)
-            self.connect_node(child=gn, parent=host_node, edge_type=GlossNode.default_edge_type)
+            self.connect_node(child=gn, parent=host_node)
         elif label:
             gn = GlossNode(text=label)
         gn.after_init()
@@ -788,7 +823,8 @@ class Forest(Savable):
         :param definitions: Try to set features and glosses according to definition strings for nodes in tree.
         :return:
         """
-        print('we have following keys:', self.nodes_by_uid.keys())
+        #print('we have following keys:', self.nodes_by_uid.keys())
+        pass
 
     def create_trace_for(self, node):
         """
@@ -796,12 +832,11 @@ class Forest(Savable):
         :param node:
         :return:
         """
+        print('Creating a trace for ', node)
         index = node.index
-        new_chain = False
         if not index:
             index = self.chain_manager.next_free_index()
             node.index = index
-            new_chain = True
         assert index
         constituent = ForestSyntax.new_constituent('t', source='t_' + index)
         ForestSyntax.set_constituent_index(constituent, index)
@@ -1122,13 +1157,13 @@ class Forest(Savable):
         C = node.syntactic_object
         F = feature.syntactic_object
         C.set_feature(F.key, F)
-        self.connect_node(parent=node, child=feature, edge_type=g.FEATURE_EDGE)
+        self.connect_node(parent=node, child=feature)
 
     def add_comment_to_node(self, comment, node):
-        self.connect_node(parent=node, child=comment, edge_type=g.COMMENT_EDGE)
+        self.connect_node(parent=node, child=comment)
 
     def add_gloss_to_node(self, gloss, node):
-        self.connect_node(parent=node, child=gloss, edge_type=g.GLOSS_EDGE)
+        self.connect_node(parent=node, child=gloss)
         node.gloss = gloss.label
 
 
@@ -1241,20 +1276,29 @@ class Forest(Savable):
 
 
         """
+        print('group_traces_to_chain_head called in ', self)
         self.chain_manager.group_traces_to_chain_head()
 
+    @caller
     def traces_to_multidomination(self):
         """
 
 
         """
+        print('traces_to_multidomination called in ', self)
         self.chain_manager.traces_to_multidomination()
+        for node in self.nodes.values():
+            if hasattr(node, 'is_trace') and node.is_trace:
+                print('We still have a visible trace after traces_to_multidomination')
+            #else:
+            #    print('no is_trace -property')
 
     def multidomination_to_traces(self):
         """
 
 
         """
+        print('multidomination_to_traces called in ', self)
         self.chain_manager.multidomination_to_traces()
 
 
@@ -1296,21 +1340,20 @@ class Forest(Savable):
         :param node:
         """
         self.main.add_message("Disconnecting node %s" % node)
-        if self.settings.uses_multidomination():
-            self.multidomination_to_traces()
-            if node.index:
-                chain = self.chain_manager.chains.get(node.index, None)
-                for l in chain:
-                    self.delete_node(l)
-            else:
-                self.delete_node(node)
+        # if self.settings.uses_multidomination():
+        #     self.multidomination_to_traces()
+        #     if node.index:
+        #         chain = self.chain_manager.chains.get(node.index, None)
+        #         for l in chain:
+        #             self.delete_node(l)
+        #     else:
+        #         self.delete_node(node)
+        #     self.chain_manager.rebuild_chains()
+        #     # self._fix_chains()
+        #     self.traces_to_multidomination()
+        self.delete_node(node)
+        if self.traces_are_visible():
             self.chain_manager.rebuild_chains()
-            # self._fix_chains()
-            self.traces_to_multidomination()
-        else:
-            self.delete_node(node)
-            self.chain_manager.rebuild_chains()
-            # self._fix_chains()
         self.undo_manager.record("Disconnected node %s" % node)
         return None
 
@@ -1319,21 +1362,20 @@ class Forest(Savable):
         :param node:
         """
         self.main.add_message("Deleting node %s" % node)
-        if self.settings.uses_multidomination():
-            self.multidomination_to_traces()
-            if node.index:
-                chain = self.chain_manager.chains[node.index]
-                for l in chain:
-                    self.delete_node(l)
-            else:
-                self.delete_node(node)
+        # if self.settings.uses_multidomination():
+        #     self.multidomination_to_traces()
+        #     if node.index:
+        #         chain = self.chain_manager.chains[node.index]
+        #         for l in chain:
+        #             self.delete_node(l)
+        #     else:
+        #         self.delete_node(node)
+        #     self.chain_manager.rebuild_chains()
+        #     # self._fix_chains()
+        #     self.traces_to_multidomination()
+        self.delete_node(node)
+        if self.traces_are_visible():
             self.chain_manager.rebuild_chains()
-            # self._fix_chains()
-            self.traces_to_multidomination()
-        else:
-            self.delete_node(node)
-            self.chain_manager.rebuild_chains()
-            # self._fix_chains()
         self.undo_manager.record("Delete node %s" % node)
         return None
 
@@ -1347,8 +1389,7 @@ class Forest(Savable):
         :return:
         """
         self.undo_manager.record('delete constituent')
-        is_root = node.is_root_node()
-        if not self.settings.uses_multidomination():
+        if self.traces_are_visible():
             if node.is_chain_head():
                 key = node.index
                 chain = self.chain_manager.chains.get(key, None)
@@ -1437,20 +1478,34 @@ class Forest(Savable):
     # by forest's higher level methods.
     #
 
-    def connect_node(self, parent=None, child=None, edge_type='', direction=''):
+    def connect_node(self, parent=None, child=None, direction='', revert=False):
         """ This is for connecting nodes with a certain edge. Calling this once will create the necessary links for both partners.
-            Sanity checks:
-            - Immediate circular links (child becomes immediate parent of its immediate parent) are not allowed.
-            - If items are already linked with this edge type, error is raised.
-            - Cannot link to itself.
-          """
-        forest('connect_node %s %s %s %s' % (parent, child, edge_type, direction))
+        Sanity checks:
+        - Immediate circular links (child becomes immediate parent of its immediate parent) are not allowed.
+        - If items are already linked with this edge type, error is raised.
+        - Cannot link to itself.
+        This needs to be robust.
 
+        connections are revertable: if reverted-flag is true, connect_node returns a tuple, where
+        the other part is a dict of original arguments.
+        :param parent: Node
+        :param child: Node
+        :param direction:
+        :param revert: If revert flag is on, instead of making a connection, an existing connection of this description
+         is destroyed
+
+        """
+        forest('connect_node %s %s %s %s' % (parent, child, direction, revert))
+
+        # Check for arguments:
         if parent == child:
             raise ForestError('Connecting to self')
         if not parent and child:
-            raise ForestError('Connection with missing child or parent')
-        edge_type = edge_type or parent.__class__.default_edge_type
+            raise ForestError('Trying to connect nodes, but other is missing (parent:%s, child%s)' % (parent, child))
+
+        edge_type = child.__class__.default_edge_type
+
+        # Check for circularity:
         if edge_type is not g.ARROW:
             # With arrows identical or circular edges are not a problem
             for old_edge in child.edges_up:
@@ -1459,18 +1514,11 @@ class Forest(Savable):
                         raise ForestError('Identical edge exists already')
                     elif old_edge.start == child and old_edge.end == parent:
                         raise ForestError('Connection is circular')
-        # Guess direction
-        if (not direction) and edge_type is g.CONSTITUENT_EDGE:
-            left = parent.left()
-            right = parent.right()
-            if left and right:
-                raise ForestError("Trying to add child to ConstituentNode that already has 2")
-            elif left:
-                direction = g.RIGHT
-            elif right:
-                direction = g.LEFT
-            else:
-                direction = g.RIGHT
+        # Check for directionality
+        if edge_type is g.CONSTITUENT_EDGE and not direction:
+            raise ForestError('ConstituentNode connection needs a direction argument')
+
+
         # Create edge and make connections
         new_edge = self.create_edge(edge_type=edge_type, direction=direction)
         self.set_edge_ends(new_edge, parent, child)
@@ -1523,20 +1571,20 @@ class Forest(Savable):
 
         for edge in list(old_node.edges_up):
             if edge.start:
-                align = edge.align
+                align = edge.alignment
                 parent = edge.start
                 if only_for_parent and parent != only_for_parent:
                     continue
                 self._disconnect_node(parent, old_node, edge.edge_type)
-                self.connect_node(parent, child=new_node, edge_type=edge.edge_type, direction=align)
+                self.connect_node(parent, child=new_node, direction=align)
 
         if replace_children and not only_for_parent:
             for edge in list(old_node.edges_down):
                 child = edge.end
                 if child:
-                    align = edge.align
+                    align = edge.alignment
                     self._disconnect_node(old_node, child, edge.edge_type)
-                    self.connect_node(new_node, child, edge_type=edge.edge_type, direction=align)
+                    self.connect_node(new_node, child, direction=align)
 
         if (not old_node.edges_up) and can_delete:
             # old_node.update_visibility(active=False, fade=True)
@@ -1637,7 +1685,7 @@ class Forest(Savable):
         align = None
         if edge:  # ???? can't we take all parents
             start_node = edge.start
-            align = edge.align
+            align = edge.alignment
 
         mx, my = merger_node_pos
         # if new_node and old_node belong to same tree, this is a Move / Internal merge situation and we need to give
@@ -1648,7 +1696,7 @@ class Forest(Savable):
             if not new_node.index:
                 new_node.index = self.chain_manager.next_free_index()
             # replace either the moving node or leftover node with trace if we are using traces
-            if not self.settings.uses_multidomination:
+            if self.traces_are_visible():
                 if moving_was_higher:
                     new_node = self.create_trace_for(new_node)
                 else:
@@ -1673,7 +1721,8 @@ class Forest(Savable):
             forest('connecting merger to parent')
             self.connect_node(start_node, merger_node, direction=align)
 
-        self.chain_manager.rebuild_chains()
+        if self.traces_are_visible():
+            self.chain_manager.rebuild_chains()
 
     def create_merger_node(self, left=None, right=None, pos=None):
         """ Gives a merger node of two nodes. Doesn't try to fix their edges upwards

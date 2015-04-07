@@ -331,10 +331,10 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         best = edges[0]
                         found = True
                 elif isinstance(current, Edge):
-                    if current.start and current.align == 2:
+                    if current.start and current.alignment == 2:
                         best = current.start
                         found = True
-                    elif current.end and current.align == 1:
+                    elif current.end and current.alignment == 1:
                         best = current.end
                         found = True
                 elif isinstance(current, TouchArea):
@@ -367,10 +367,10 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         best = edges[1]
                         found = True
                 elif isinstance(current, Edge):
-                    if current.end and current.align == 2:
+                    if current.end and current.alignment == 2:
                         best = current.end
                         found = True
-                    elif current.start and current.align == 1:
+                    elif current.start and current.alignment == 1:
                         best = current.start
                         found = True
                 elif isinstance(current, TouchArea):

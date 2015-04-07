@@ -8,7 +8,7 @@ __author__ = 'purma'
 
 
 class VisualizationPanel(UIPanel):
-    """ Switch visualizations and their adjust their settings """
+    """ Switch visualizations and their adjustment their settings """
 
 
     def __init__(self, name, key, default_position='right', parent=None, ui_manager=None, folded=False):
@@ -54,5 +54,5 @@ class VisualizationPanel(UIPanel):
 
 
     def sizeHint(self):
-        print("VisualizationPanel asking for sizeHint, ", self.preferred_size)
+        #print("VisualizationPanel asking for sizeHint, ", self.preferred_size)
         return self.preferred_size

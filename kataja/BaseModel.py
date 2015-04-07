@@ -1,4 +1,5 @@
 import sys
+import traceback
 import types
 
 from PyQt5 import QtGui, QtCore
@@ -8,7 +9,7 @@ from kataja.utils import to_tuple
 from kataja.parser.INodes import ITextNode
 from kataja.parser.INodeToLatex import parse_inode_for_field
 from kataja.parser.LatexToINode import parse_field
-
+from singletons import ctrl
 
 __author__ = 'purma'
 
@@ -21,36 +22,56 @@ class SaveError(Exception):
     # return repr(self.value)
 
 
-class Savable:
+class BaseModel:
     """ Make the object to have internal .saved -object where saved data should go.
     Also makes it neater to check if item is Savable.
     """
 
-    def __init__(self, unique=False):
+    def __init__(self, host, unique=False):
         if unique:
             key = self.__class__.__name__
         else:
             key = str(id(self)) + '|' + self.__class__.__name__
-        self.saved = Saved()
-        self.saved.save_key = key
-        sys.intern(self.saved.save_key)
+        self.save_key = key
+        self._host = host
+        sys.intern(self.save_key)
 
-    @property
-    def save_key(self):
+    def touch(self, attribute, value):
+        """ Prepare a permanency-supporting attribute for being changed: if the new value would change it,
+          store its current value in _x_history, raise the _x_touched -flag and announce controller to check
+          this object when the undo cycle is finished.
+
+           The idea is that modified values between undo cycles are easy to collect, and thus we can create a diff from
+           global kataja state or diff in forest.
+
+        :param attribute: string, the name of attribute being set
+        :param value: new value
+        :return: True if set operation would change the value, False if not
         """
+        old_value = getattr(self, attribute, None)
+        if old_value != value:
+            touched_name = '_' + attribute + '_touched'
+            touched = getattr(self, touched_name, False)
+            if not touched:
+                ctrl.undo_pile.add(self._host)
+                setattr(self, '_' + attribute + '_history', old_value)
+                setattr(self, touched_name, True)
+            return True
+        return False
 
-
-        :return:
+    def poke(self, attribute):
+        """ Like "touch", but this is used manually for container-type objects in the model before changing adding or
+        removing objects in them, as these operations would not be catch by setters. This doesn't do any checks, as
+        we know we are going to change the list/dict/set
+        :param attribute: string, name of the attribute
+        :return: None
         """
-        return self.saved.save_key
-
-    @save_key.setter
-    def save_key(self, value):
-        """
-
-        :param value:
-        """
-        self.saved.save_key = value
+        touched_name = '_' + attribute + '_touched'
+        touched = getattr(self, touched_name, False)
+        if not touched:
+            ctrl.undo_pile.add(self._host)
+            setattr(self, '_' + attribute + '_history', getattr(self, attribute, None))
+            setattr(self, touched_name, True)
 
 
     def save_object(self, saved_objs, open_refs):
@@ -72,29 +93,33 @@ class Savable:
             if isinstance(data, (int, float, str)):
                 return data
             elif isinstance(data, ITextNode):
-                return 'INode', parse_inode_for_field(data)
+                r = parse_inode_for_field(data)
+                if r:
+                    return 'INode', parse_inode_for_field(data)
+                else:
+                    return ''
 
             elif isinstance(data, dict):
                 result = {}
-                for key, value in data.items():
+                for k, value in data.items():
                     value = _simplify(value)
-                    result[key] = value
+                    result[k] = value
                 return result
             elif isinstance(data, list):
                 result = []
-                for item in data:
-                    result.append(_simplify(item))
+                for o in data:
+                    result.append(_simplify(o))
                 return result
             elif isinstance(data, tuple):
                 result = []
-                for item in data:
-                    result.append(_simplify(item))
+                for o in data:
+                    result.append(_simplify(o))
                 result = tuple(result)
                 return result
             elif isinstance(data, set):
                 result = set()
-                for item in data:
-                    result.add(_simplify(item))
+                for o in data:
+                    result.add(_simplify(o))
                 return result
             elif isinstance(data, types.FunctionType):
                 # if functions are stored in the dict, there should be some original version of the same dict, where these
@@ -117,18 +142,21 @@ class Savable:
             elif isinstance(data, QtGui.QFont):
                 raise SaveError("We shouldn't save QFonts!: ", data)
             elif hasattr(data, 'save_key'):
-                key = getattr(data, 'save_key')
-                if key not in saved_objs and key not in open_refs:
-                    open_refs[key] = data
-                return '|'.join(('*r*', str(key)))
+                k = getattr(data, 'save_key')
+                if k not in saved_objs and k not in open_refs:
+                    #print('in %s adding open reference %s' % (self.save_key, k))
+                    open_refs[k] = data
+                return '|'.join(('*r*', str(k)))
             else:
                 raise SaveError("simplifying unknown data type:", data, type(data))
 
+
         if self.save_key in saved_objs:
             return
+
         obj_data = {}
-        for key, item in vars(self.saved).items():
-            if item:
+        for key, item in vars(self).items():
+            if not key.startswith('_') and item and not callable(item):
                 obj_data[key] = _simplify(item)
 
         saved_objs[self.save_key] = obj_data
@@ -167,6 +195,10 @@ class Savable:
                 return
             # objects that support saving
             key = getattr(obj, 'save_key', '')
+            try:
+                print(getattr(obj, 'save_key', ''), obj.save_key)
+            except AttributeError:
+                pass
             if key and key not in full_map:
                 full_map[key] = obj
                 for item in vars(obj.saved).values():
@@ -175,8 +207,10 @@ class Savable:
         # Restore either takes existing object or creates a new 'stub' object and then loads it with given data
 
         map_existing(self)
-        print('full_map:', full_map)
+        print('full_map has %s items' % len(full_map))
         self.restore(self.save_key)
+        del full_map, restored, full_data, main
+
 
     def restore(self, obj_key, class_key=''):
         """
@@ -252,43 +286,38 @@ class Savable:
             return data
 
         # print('restoring %s , %s ' % (obj_key, class_key))
+        # Don't restore object several times, even if the object is referred in several places
         if obj_key in restored:
             return restored[obj_key]
-        # If the object already exists (we are doing undo), the loaded values overwrite existing values.
+        # If the object already exists (e.g. we are doing undo), the loaded values overwrite existing values.
         obj = full_map.get(obj_key, None)
         if not obj:
-            # print('creating new ', class_key)
+            #print('creating new ', class_key)
             obj = main.object_factory.create(class_key)
+        # when creating/modifying values inside forests, they may refer back to ctrl.forest. That has to be the current
+        # forest, or otherwise things go awry
         if class_key == 'Forest':
             main.forest = obj
+
+        # keep track of which objects have been restored
         restored[obj_key] = obj
-        obj_data = full_data[obj_key]
-        for key, old_value in vars(obj.saved).items():
-            new_value = obj_data.get(key, None)
+
+        # new data that the object should have
+        new_data = full_data[obj_key]
+        # only values that can be replaced are those defined inside the obj.model -instance.
+        for key, old_value in vars(obj.model).items():
+            new_value = new_data.get(key, None)
             if new_value is not None:
                 new_value = inflate(new_value)
-            if new_value != old_value and (bool(new_value) or bool(old_value)):
+            if new_value != old_value and (new_value or old_value):
                 # changes[key] = (old_value, new_value)
                 # print('set: %s.%s = %s (old value: %s)' % (obj, key, new_value, old_value))
                 setattr(obj, key, new_value)
-                # print '  in %s set %s to %s, was %s' % (obj_key, key, new_value, old_value)
-                # else:
-                # print 'in %s keep %s value %s' % (obj_key, key, old_value)
-        # !!! object needs to be finalized after this !!!
+        # object needs to be finalized after setting values
         if hasattr(obj, 'after_init'):
             obj.after_init()
         return obj
 
-
-class Saved:
-    """ Everything about object that needs to be saved should be put inside instance of Saved, inside the object.
-    eg. for Node instance:  self.saved.syntactic_object = ...
-
-    This class takes care of translating the data to storage format and back.
-    """
-
-    def __init__(self):
-        pass
 
 
 

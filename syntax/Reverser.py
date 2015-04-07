@@ -565,15 +565,15 @@ class Parser:
                 self.trees = self.trees_n * [None]
                 J_for_these_features += 1
 
-                # Crash has occured, now try to adjust features.
+                # Crash has occured, now try to adjustment features.
 
                 # Stupid way: randomly create a new set of features
                 # self.randomly_assign_all_features()
                 # self.results=[]
 
                 # Better way:
-                # try small improvements -- adjust only one feature
-                # later we can try adjusting features that have low confidence, but now just adjust one
+                # try small improvements -- adjustment only one feature
+                # later we can try adjusting features that have low confidence, but now just adjustment one
                 self.adjust_one_feature(involved_words)
                 self.results = []
                 pause()

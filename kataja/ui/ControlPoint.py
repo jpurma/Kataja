@@ -44,9 +44,9 @@ class ControlPoint(QtWidgets.QGraphicsItem):
         elif self.role == g.END_POINT:
             self.status_tip = "Drag to move the ending point"
         elif self._index > -1:
-            self.status_tip = "Drag to adjust the curvature of this line"
+            self.status_tip = "Drag to adjustment the curvature of this line"
         elif self.role == g.LABEL_START:
-            self.status_tip = "Drag along the line to adjust the anchor point of label"
+            self.status_tip = "Drag along the line to adjustment the anchor point of label"
         self.setToolTip(self.status_tip)
 
     def _compute_position(self):
@@ -55,8 +55,8 @@ class ControlPoint(QtWidgets.QGraphicsItem):
         """
         if -1 < self._index < len(self.host_edge.control_points):
             p = self.host_edge.control_points[self._index]
-            if self.host_edge.adjust and len(self.host_edge.adjust) > self._index:
-                a = self.host_edge.adjust[self._index]
+            if self.host_edge.adjustment and len(self.host_edge.adjustment) > self._index:
+                a = self.host_edge.adjustment[self._index]
                 p = Pf(p[0] + a[0], p[1] + a[1])
             else:
                 p = Pf(p[0], p[1])
@@ -93,7 +93,7 @@ class ControlPoint(QtWidgets.QGraphicsItem):
         assert (self._index != -1)
         p = self.host_edge.control_points[self._index]
         return int(x - p[0]), int(y - p[1])
-        # print 'computed adjust:', self.adjust
+        # print 'computed adjustment:', self.adjustment
 
     def click(self, event=None):
         """

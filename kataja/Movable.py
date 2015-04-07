@@ -27,11 +27,23 @@ import random
 from PyQt5 import QtWidgets, QtCore
 
 from kataja.singletons import prefs, qt_prefs, ctrl
-from kataja.Saved import Savable
+from kataja.BaseModel import BaseModel
+
+class MovableModel(BaseModel):
+    def __init__(self, host):
+        super().__init__(host)
+        self.computed_position = (0, 0, 0)
+        self.adjustment = None
+        self.visible = True  # avoid isVisible for detecting if something is folded away
+        self.bind_x = False
+        self.bind_y = False
+        self.bind_z = False
+        self.locked_to_position = False
+
 
 
 # Verified 8.4. 2013
-class Movable(Savable):
+class Movable:
     """ Movable objects have support for smooth movement from one point to another with
         set_target_position, and fade_in and fade_out. Once set, the animation derivation_steps are
         triggered by timerEvent in GraphScene.
@@ -47,20 +59,13 @@ class Movable(Savable):
             saved.adjustment = dragged somewhere
             .final_position = computed position + adjustment
             .current_position = real screen position, can be moving towards final position
-            don't adjust final position directly, only change computed position and change
+            don't adjustment final position directly, only change computed position and change
             adjustment to zero if necessary.
             always return adjustment to zero when dealing with dynamic nodes.
              """
-        super().__init__()
+        if not hasattr(self, 'model'):
+            self.model = MovableModel(self)
         self.z = 0
-        self.saved.computed_position = (0, 0, 0)
-        self.saved.adjustment = None
-        self.saved.visible = True  # avoid isVisible for detecting if something is folded away
-        self.saved.bind_x = False
-        self.saved.bind_y = False
-        self.saved.bind_z = False
-        self.saved.locked_to_position = False
-
         self._x_step, self._y_step, self._z_step = 0, 0, 0
         self._current_position = ((random.random() * 150) - 75, (random.random() * 150) - 75, 0)
         self.final_position = (
@@ -78,12 +83,20 @@ class Movable(Savable):
         self._hovering = False
 
     @property
+    def save_key(self):
+        """ Return the save_key from the model. It is a property from BaseModel.
+        :return: str
+        """
+        return self.model.save_key
+
+
+    @property
     def computed_position(self):
         """
         Return the computed position, which was set by visualization algorithm.
         :return: tuple (x, y, z)
         """
-        return self.saved.computed_position
+        return self.model.computed_position
 
     @computed_position.setter
     def computed_position(self, value):
@@ -91,22 +104,23 @@ class Movable(Savable):
         Set the computed position of this item. This is usually called by visualization algorithm.
         :param value: tuple (x, y, z)
         """
-        x, y, z = value
-        self.saved.computed_position = value
-        if self.can_adjust_position() and self.saved.adjustment:
-            ax, ay, az = self.saved.adjustment
-            self.final_position = (x + ax, y + ay, z + az)
-        else:
-            # print 'dont use adjustment'
-            self.final_position = tuple(self.saved.computed_position)
-        if self.should_move():  # (not self.moving()) and
-            self.start_moving()
+        if self.model.touch('computed_position', value):
+            x, y, z = value
+            self.model.computed_position = value
+            if self.can_adjust_position() and self.model.adjustment:
+                ax, ay, az = self.model.adjustment
+                self.final_position = (x + ax, y + ay, z + az)
+            else:
+                # print 'dont use adjustment'
+                self.final_position = tuple(self.model.computed_position)
+            if self.should_move():  # (not self.moving()) and
+                self.start_moving()
 
     @property
     def adjustment(self):
         """Return adjustments, which are user-made fine tuning to objects computed coordinates.
         :return: tuple (dx, dy, dz)"""
-        return self.saved.adjustment
+        return self.model.adjustment
 
     @adjustment.setter
     def adjustment(self, value):
@@ -114,51 +128,57 @@ class Movable(Savable):
         Set adjustments, which are user-made fine tuning to objects computed coordinates.
         :param adj_pos: tuple (dx, dy, dz):
         """
-        self.saved.adjustment = value
-        if self.can_adjust_position() and value:
-            ax, ay, az = value
-            x, y, z = self.computed_position
-            self.final_position = (x + ax, y + ay, z + az)
+        if self.model.touch('adjustment', value):
+            self.model.adjustment = value
+            if self.can_adjust_position() and value:
+                ax, ay, az = value
+                x, y, z = self.computed_position
+                self.final_position = (x + ax, y + ay, z + az)
 
     @property
     def visible(self):
-        return self.saved.visible
+        return self.model.visible
 
     @visible.setter
     def visible(self, value):
-        self.saved.visible = value
+        if self.model.touch('visible', value):
+            self.model.visible = value
 
     @property
     def bind_x(self):
-        return self.saved.bind_x
+        return self.model.bind_x
 
     @bind_x.setter
     def bind_x(self, value):
-        self.saved.bind_x = value
+        if self.model.touch('bind_x', value):
+            self.model.bind_x = value
 
     @property
     def bind_y(self):
-        return self.saved.bind_y
+        return self.model.bind_y
 
     @bind_y.setter
     def bind_y(self, value):
-        self.saved.bind_y = value
+        if self.model.touch('bind_y', value):
+            self.model.bind_y = value
 
     @property
     def bind_z(self):
-        return self.saved.bind_z
+        return self.model.bind_z
 
     @bind_z.setter
     def bind_z(self, value):
-        self.saved.bind_z = value
+        if self.model.touch('bind_z', value):
+            self.model.bind_z = value
 
     @property
     def locked_to_position(self):
-        return self.saved.locked_to_position
+        return self.model.locked_to_position
 
     @locked_to_position.setter
     def locked_to_position(self, value):
-        self.saved.locked_to_position = value
+        if self.model.touch('locked_to_position', value):
+            self.model.locked_to_position = value
 
     ### Not saved properties, but otherwise interesting
 

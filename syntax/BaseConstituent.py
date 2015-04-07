@@ -26,11 +26,24 @@ It is a primary datatype, needs to support saving and loading. """
 # ############################################################################
 
 
-from kataja.Saved import Savable
+from kataja.BaseModel import BaseModel
 from syntax.ConfigurableFeature import Feature
 # from copy import deepcopy
 
-class BaseConstituent(Savable):
+class BaseConstituentModel(BaseModel):
+    """ BaseConstituentModel holds the data of BaseConstituent in a form that can be saved and restored easily.
+    """
+    def __init__(self, host):
+        super().__init__(host)
+        self.features = {}
+        self.sourcestring = ''
+        self.label = ''
+        self.alias = ''
+        self.parts = []
+        self.gloss = ''
+        self.index = ''
+
+class BaseConstituent(BaseModel):
     """ BaseConstituent is a default constituent used in syntax.
     It uses getters and setters so that other compatible implementations can be built using the same interface.
     It is a primary datatype, needs to support saving and loading. """
@@ -40,16 +53,16 @@ class BaseConstituent(Savable):
         """ BaseConstituent is a default constituent used in syntax.
         It is Savable, which means that the actual values are stored in separate object that is easily dumped to file.
         Extending this needs to take account if new fields should also be treated as savable, e.g. put them into
-        .saved. and make necessary property and setter.
+        .model. and make necessary property and setter.
          """
-        Savable.__init__(self)
-        self.saved.features = {}
-        self.saved.sourcestring = source or cid
-        self.saved.label = cid
-        self.saved.alias = ''
-        self.saved.parts = []
-        self.saved.gloss = ''
-        self.saved.index = ''
+        if not hasattr(self, 'model'):
+            self.model = BaseConstituentModel(self)
+        self.model.sourcestring = source or cid
+        self.model.label = cid
+        if left:
+            self.model.parts.append(left)
+        if right:
+            self.model.parts.append(right)
 
     def __str__(self):
         if self.index:
@@ -57,175 +70,187 @@ class BaseConstituent(Savable):
         else:
             return str(self.label)
 
+
+    @property
+    def save_key(self):
+        """ Return the save_key from the model. It is a property from BaseModel.
+        :return: str
+        """
+        return self.model.save_key
+
     @property
     def features(self):
-        """
-
-
+        """ Features are a dict with probably Features as values, but values can be also simpler stuff, strings etc.
         :return:
         """
-        return self.saved.features
+        return self.model.features
 
     @features.setter
     def features(self, value):
-        """
-        :param value:
+        """ If given features include 'label' or 'index', put them to their right place, otherwise update with
+        new values. If and empty value is given, set features to empty.
+        :param value: dict of features
         """
         if value:
+            self.model.poke('features')
             for key, feature in value.items():
                 if key == 'label':
                     self.label = feature.value
                 elif key == 'index':
                     self.index = feature.value
                 else:
-                    self.saved.features[key] = feature
+                    self.model.features[key] = feature
         else:
-            self.saved.features = {}
+            if self.model.features:
+                self.model.poke('features')
+            self.model.features = {}
 
     @property
     def sourcestring(self):
-        """
-
-
+        """ Sourcestring is provided if the constituent is created by parsing some text. Maybe unnecessary.
         :return:
         """
-        return self.saved.sourcestring
+        return self.model.sourcestring
 
     @sourcestring.setter
     def sourcestring(self, value):
+        """ Sourcestring is provided if the constituent is created by parsing some text. Maybe unnecessary.
+        :param value: str
         """
-
-        :param value:
-        """
-        self.saved.sourcestring = value
+        if self.model.touch('sourcestring', value):
+            self.model.sourcestring = value
 
     @property
     def label(self):
+        """ This is the syntactic label for the Constituent. It can be used for matching/computation purposes.
+        :return: str or ITextNode
         """
-
-
-        :return:
-        """
-        return self.saved.label
+        return self.model.label
 
     @label.setter
     def label(self, value):
+        """ This is the syntactic label for the Constituent. It can be used for matching/computation purposes.
+        :param value: str or ITextNode
         """
-
-        :param value:
-        """
-        if value is None:
-            self.saved.label = ''
-        else:
-            self.saved.label = value
+        if self.model.touch('label', value):
+            if value is None:
+                self.model.label = ''
+            else:
+                self.model.label = value
 
     @property
     def alias(self):
+        """ This is an alias, a syntactically inert label used for readability (think XP, X', X^0 in Minimalism)
+        :return: str or ITextNode
         """
-
-
-        :return:
-        """
-        return self.saved.alias
+        return self.model.alias
 
     @alias.setter
     def alias(self, value):
+        """ This is an alias, a syntactically inert label used for readability (think XP, X', X^0 in Minimalism)
+        :param value: str or ITextNode
         """
-
-        :param value:
-        """
-        if value is None:
-            self.saved.alias = ''
-        else:
-            self.saved.alias = value
+        if self.model.touch('alias', value):
+            if value is None:
+                self.model.alias = ''
+            else:
+                self.model.alias = value
 
     @property
     def left(self):
+        """ This is the left child -- to be used only if syntactic theory can make such distinction locally in
+        constituent itself. Another option is to do the ordering as a result of derivation, and then you will
+        probably need to call some UG -ordering method.
+        :return: BaseConstituent instance or None
         """
-
-
-        :return:
-        """
-        if self.saved.parts:
-            return self.saved.parts[0]
+        if self.model.parts:
+            return self.model.parts[0]
         else:
             return None
 
     @left.setter
     def left(self, value):
+        """ This is the left child -- to be used only if syntactic theory can make such distinction locally in
+        constituent itself. Another option is to do the ordering as a result of derivation, and then you will
+        probably need to call some UG -ordering method.
+        :param value: BaseConstituent instance or None
         """
-
-        :param value:
-        """
-        if not self.saved.parts:
-            self.saved.parts = [value]
-        else:
-            self.saved.parts[0] = value
+        if not self.model.parts:
+            self.model.poke('parts')
+            self.model.parts = [value]
+        elif self.model.parts[0] != value:
+            self.model.poke('parts')
+            self.model.parts[0] = value
 
     @property
     def right(self):
+        """ This is the right child -- to be used only if syntactic theory can make such distinction locally in
+        constituent itself. Another option is to do the ordering as a result of derivation, and then you will
+        probably need to call some UG -ordering method.
+        :return: BaseConstituent instance or None
         """
-
-
-        :return:
-        """
-        if self.saved.parts and len(self.saved.parts) > 1:
-            return self.saved.parts[1]
+        if self.model.parts and len(self.model.parts) > 1:
+            return self.model.parts[1]
         else:
             return None
 
     @right.setter
     def right(self, value):
+        """ This is the right child -- to be used only if syntactic theory can make such distinction locally in
+        constituent itself. Another option is to do the ordering as a result of derivation, and then you will
+        probably need to call some UG -ordering method.
+        :param value: BaseConstituent instance or None
         """
-
-        :param value:
-        """
-        if self.saved.parts:
-            if len(self.saved.parts) > 1:
-                self.saved.parts[1] = value
+        if self.model.parts:
+            if len(self.model.parts) > 1:
+                if self.model.parts[1] == value:
+                    return
+                self.model.poke('parts')
+                self.model.parts[1] = value
             else:
-                self.saved.parts.append(value)
+                self.model.poke('parts')
+                self.model.parts.append(value)
         else:
-            self.saved.parts = [None, value]
+            self.model.poke('parts')
+            self.model.parts = [None, value]
+
     @property
     def gloss(self):
+        """ Gloss text is the translation for this constituent, just a syntactically inert string. Wonder what it
+        does here?
+        :return: str or ITextNode
         """
-
-
-        :return:
-        """
-        return self.saved.gloss
+        return self.model.gloss
 
     @gloss.setter
     def gloss(self, value):
-        """
-
-        :param value:
+        """ Gloss text is the translation for this constituent, just a syntactically inert string. Wonder what it
+        does here?
+        :param value: str or ITextNode
         """
         if value is None:
-            self.saved.gloss = ''
-        else:
-            self.saved.gloss = value
+            value = ''
+        if self.model.touch('gloss', value):
+            self.model.gloss = value
 
     @property
     def index(self):
+        """ Index is the small letter to indicate which constituents are the same or have some kind of historical
+        connection (e.g. X and trace of X would have the same index)
+        :return: str
         """
-
-
-        :return:
-        """
-        return self.saved.index
+        return self.model.index
 
     @index.setter
     def index(self, value):
-        """
-
-        :param value:
+        """ Index is the small letter to indicate which constituents are the same or have some kind of historical
+        connection (e.g. X and trace of X would have the same index)
+        :param value: str
         """
         if value is None:
-            self.saved.index = ''
-        else:
-            self.saved.index = value
+            value = ''
+        if self.model.touch('index', value):
+            self.model.index = value
 
 
     def __repr__(self):

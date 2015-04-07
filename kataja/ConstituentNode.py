@@ -25,7 +25,7 @@
 from PyQt5 import QtGui
 
 from kataja.singletons import ctrl
-from kataja.Node import Node
+from kataja.Node import Node, NodeModel
 from kataja.utils import to_tuple
 from kataja.parser.INodes import IConstituentNode
 import kataja.globals as g
@@ -33,6 +33,17 @@ import kataja.globals as g
 # ctrl = Controller object, gives accessa to other modules
 
 TRIANGLE_HEIGHT = 10
+
+class ConstituentNodeModel(NodeModel):
+    """ ConstituentNodeModel contains the permanent (saved) data of a ConstituentNode instance """
+
+    def __init__(self, host):
+        super().__init__(host)
+        self.is_trace = False
+        self.triangle = False
+        self.merge_order = 0
+        self.select_order = 0
+        self.original_parent = None
 
 
 class ConstituentNode(Node):
@@ -50,12 +61,10 @@ class ConstituentNode(Node):
 
     def __init__(self, constituent=None):
         """ Most of the initiation is inherited from Node """
+        if not hasattr(self, 'model'):
+            self.model = ConstituentNodeModel(self)
+
         Node.__init__(self, syntactic_object=constituent)
-        self.saved.is_trace = False
-        self.saved.triangle = False
-        self.saved.merge_order = 0
-        self.saved.select_order = 0
-        self.saved.original_parent = None
 
         # ------ Bracket drawing -------
         self.has_visible_brackets = False
@@ -103,7 +112,7 @@ class ConstituentNode(Node):
     def alias(self, value):
         """
         :param value:  """
-        if self.syntactic_object:
+        if self.model.touch_syntactic_object('alias', value):
             self.syntactic_object.alias = value
             self._inode_changed = True
 
@@ -116,8 +125,9 @@ class ConstituentNode(Node):
     def index(self, value):
         if value is None:
             value = ""
-        self.syntactic_object.index = value
-        self._inode_changed = True
+        if self.model.touch_syntactic_object('index', value):
+            self.syntactic_object.index = value
+            self._inode_changed = True
 
     @property
     def gloss(self):
@@ -128,10 +138,10 @@ class ConstituentNode(Node):
     def gloss(self, value):
         if value is None:
             value = ""
-        if self.syntactic_object:
+        if self.model.touch_syntactic_object('gloss', value):
             self.syntactic_object.gloss = value
-        self._inode_changed = True
-        self.update_gloss()
+            self._inode_changed = True
+            self.update_gloss()
 
     @property
     def features(self):
@@ -142,17 +152,17 @@ class ConstituentNode(Node):
     def features(self, value):
         if value is None:
             value = []
-        if self.syntactic_object:
+        if self.model.touch_syntactic_object('features', value):
             self.syntactic_object.features = value
-        self._inode_changed = True
-        self.update_features()
+            self._inode_changed = True
+            self.update_features()
 
     # Saved properties
 
     @property
     def is_trace(self):
         """:return:  """
-        return self.saved.is_trace
+        return self.model.is_trace
 
     @is_trace.setter
     def is_trace(self, value):
@@ -160,14 +170,15 @@ class ConstituentNode(Node):
         :param value:  """
         if value is None:
             value = False
-        self.saved.is_trace = value
+        if self.model.touch('is_trace', value):
+            self.model.is_trace = value
 
     @property
     def original_parent(self):
         """ When switching between multidomination and traces, original parent may be needed.
         :return:
         """
-        return self.saved.original_parent
+        return self.model.original_parent
 
 
     @original_parent.setter
@@ -176,12 +187,13 @@ class ConstituentNode(Node):
         :param value:
         :return:
         """
-        self.saved.original_parent = value
+        if self.model.touch('original_parent', value):
+            self.model.original_parent = value
 
     @property
     def triangle(self):
         """:return:  """
-        return self.saved.triangle
+        return self.model.triangle
 
     @triangle.setter
     def triangle(self, value):
@@ -189,20 +201,21 @@ class ConstituentNode(Node):
         :param value:  """
         if value is None:
             value = False
-        self.saved.triangle = value
-        # update label positioning here so that offset doesn't need to be stored in save files and it
-        # still will be updated correctly
-        if self._label_complex:
-            if value:
-                self._label_complex.y_offset = TRIANGLE_HEIGHT
-            else:
-                self._label_complex.y_offset = 0
-            self.update_label()
+        if self.model.touch('triangle', value):
+            self.model.triangle = value
+            # update label positioning here so that offset doesn't need to be stored in save files and it
+            # still will be updated correctly
+            if self._label_complex:
+                if value:
+                    self._label_complex.y_offset = TRIANGLE_HEIGHT
+                else:
+                    self._label_complex.y_offset = 0
+                self.update_label()
 
     @property
     def merge_order(self):
         """:return:  """
-        return self.saved.merge_order
+        return self.model.merge_order
 
     @merge_order.setter
     def merge_order(self, value):
@@ -210,12 +223,13 @@ class ConstituentNode(Node):
         :param value:  """
         if value is None:
             value = 0
-        self.saved.merge_order = value
+        if self.model.touch('merge_order', value):
+            self.model.merge_order = value
 
     @property
     def select_order(self):
         """:return:  """
-        return self.saved.select_order
+        return self.model.select_order
 
     @select_order.setter
     def select_order(self, value):
@@ -223,7 +237,8 @@ class ConstituentNode(Node):
         :param value:  """
         if value is None:
             value = 0
-        self.saved.select_order = value
+        if self.model.touch('select_order', value):
+            self.model.select_order = value
 
     # Other properties
 
@@ -411,7 +426,7 @@ class ConstituentNode(Node):
             elif self._visibility_brackets == 1:
                 is_left = False
                 for edge in self.get_edges_up():
-                    if edge.align == 1:  # LEFT
+                    if edge.alignment == 1:  # LEFT
                         is_left = True
                         break
                 self.has_visible_brackets = is_left

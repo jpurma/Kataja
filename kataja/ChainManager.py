@@ -2,7 +2,7 @@
 import string
 from collections import namedtuple
 
-from kataja.utils import time_me
+from kataja.utils import time_me, caller
 from kataja.singletons import ctrl
 
 
@@ -39,7 +39,6 @@ class ChainManager:
                 return node
         raise Exception('F broken chain')
 
-
     def rebuild_chains(self, stop_count=0):
         """ Process for building chains depends on if the tree currently is using multidomination or not.
         Chains shouldn't include elements that are not really in the tree right now.
@@ -71,6 +70,7 @@ class ChainManager:
         :return:
         """
 
+        print('rebuild chains from traces called')
         f = self.forest
         self.chains = {}
         self.traces_from_bottom = []
@@ -107,6 +107,7 @@ class ChainManager:
         (node, parent, is_head)-tuples, where the first element is the head, and topmost instance in tree,
         and the rest are other appearances top down. The node remains the same, parent is different. """
 
+        print('rebuild chains from md called')
         f = self.forest
         self.chains = {}
         self.traces_from_bottom = []

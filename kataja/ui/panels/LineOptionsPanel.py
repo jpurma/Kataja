@@ -32,7 +32,7 @@ class LineOptionsPanel(UIPanel):
         # Control point 1 adjustment
         self.cp1_box = QtWidgets.QWidget(inner)
         cp1_layout = QtWidgets.QHBoxLayout()
-        cp1_label = QtWidgets.QLabel('Arc adjust 1', self)
+        cp1_label = QtWidgets.QLabel('Arc adjustment 1', self)
         cp1_x_label = QtWidgets.QLabel('X', self)
         cp1_x_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.cp1_x_spinbox = QtWidgets.QSpinBox()
@@ -62,7 +62,7 @@ class LineOptionsPanel(UIPanel):
         # Control point 1 adjustment
         self.cp2_box = QtWidgets.QWidget(inner)
         cp2_layout = QtWidgets.QHBoxLayout()
-        cp2_label = QtWidgets.QLabel('Arc adjust 2', self)
+        cp2_label = QtWidgets.QLabel('Arc adjustment 2', self)
         cp2_x_label = QtWidgets.QLabel('X', self)
         cp2_x_label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
         self.cp2_x_spinbox = QtWidgets.QSpinBox()
@@ -361,16 +361,16 @@ class LineOptionsPanel(UIPanel):
             if isinstance(item, Edge):
                 if len(item.control_points) > 1:
                     if cp2_x is None:
-                        if item.adjust and len(item.adjust) > 1:
-                            cp2_x = item.adjust[1][0]
-                            cp2_y = item.adjust[1][1]
+                        if item.adjustment and len(item.adjustment) > 1:
+                            cp2_x = item.adjustment[1][0]
+                            cp2_y = item.adjustment[1][1]
                         else:
                             cp2_x = 0
                             cp2_y = 0
                     else:
-                        if item.adjust and len(item.adjust) > 1:
-                            ax = item.adjust[1][0]
-                            ay = item.adjust[1][1]
+                        if item.adjustment and len(item.adjustment) > 1:
+                            ax = item.adjustment[1][0]
+                            ay = item.adjustment[1][1]
                         else:
                             ax = 0
                             ay = 0
@@ -380,16 +380,16 @@ class LineOptionsPanel(UIPanel):
                             cp2_y_conflict = True
                 if len(item.control_points) > 0:
                     if cp1_x is None:
-                        if item.adjust:
-                            cp1_x = item.adjust[0][0]
-                            cp1_y = item.adjust[0][1]
+                        if item.adjustment:
+                            cp1_x = item.adjustment[0][0]
+                            cp1_y = item.adjustment[0][1]
                         else:
                             cp1_x = 0
                             cp1_y = 0
                     else:
-                        if item.adjust:
-                            ax = item.adjust[0][0]
-                            ay = item.adjust[0][1]
+                        if item.adjustment:
+                            ax = item.adjustment[0][0]
+                            ay = item.adjustment[0][1]
                         else:
                             ax = 0
                             ay = 0

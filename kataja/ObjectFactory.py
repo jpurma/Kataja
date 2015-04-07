@@ -62,5 +62,7 @@ class ObjectFactory:
             return new_object
         else:
             # print('class missing: ', object_class_name)
+            # Here we should try importing classes from probable places (plugins, kataja, syntax)
+
             raise TypeError('class missing: %s ' % object_class_name)
             # print(globals().keys())

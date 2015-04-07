@@ -26,7 +26,7 @@ import random
 import collections
 
 from kataja.globals import ATTRIBUTE_EDGE, ATTRIBUTE_NODE
-from kataja.Node import Node
+from kataja.Node import Node, NodeModel
 
 
 color_map = {'S': 0, 'order': 1, 'M': 2, 'unknown': 3}
@@ -59,6 +59,14 @@ def ordinal(value):
         suffix = 'th'
     return val_str + suffix
 
+class AttributeNodeModel(NodeModel):
+
+    def __init__(self, host):
+        super().__init__(host)
+        self.host = None
+        self.attribute_label = ''
+        self.attribute_id = ''
+
 
 class AttributeNode(Node):
     """
@@ -82,10 +90,12 @@ class AttributeNode(Node):
         :param restoring: 
         :raise: 
         """
+        if not hasattr(self, 'model'):
+            self.model = AttributeNodeModel(self)
         Node.__init__(self, syntactic_object=None)
-        self.saved.host = host
-        self.saved.attribute_label = attribute_label or attribute_id
-        self.saved.attribute_id = attribute_id
+        self.host = host
+        self.attribute_label = attribute_label or attribute_id
+        self.attribute_id = attribute_id
         self._show_label = show_label
         self.help_text = ""
         # if self.attribute_label in color_map:
@@ -116,7 +126,7 @@ class AttributeNode(Node):
 
         :return:
         """
-        return self.saved.host
+        return self.model.host
 
     @host.setter
     def host(self, value):
@@ -124,7 +134,8 @@ class AttributeNode(Node):
 
         :param value:
         """
-        self.saved.host = value
+        if self.model.touch('host', value):
+            self.model.host = value
 
     @property
     def attribute_label(self):
@@ -133,7 +144,7 @@ class AttributeNode(Node):
 
         :return:
         """
-        return self.saved.attribute_label
+        return self.model.attribute_label
 
     @attribute_label.setter
     def attribute_label(self, value):
@@ -141,7 +152,8 @@ class AttributeNode(Node):
 
         :param value:
         """
-        self.saved.attribute_label = value
+        if self.model.touch('attribute_label', value):
+            self.model.attribute_label = value
 
     @property
     def attribute_id(self):
@@ -150,7 +162,7 @@ class AttributeNode(Node):
 
         :return:
         """
-        return self.saved.attribute_id
+        return self.model.attribute_id
 
     @attribute_id.setter
     def attribute_id(self, value):
@@ -158,7 +170,8 @@ class AttributeNode(Node):
 
         :param value:
         """
-        self.saved.attribute_id = value
+        if self.model.touch('attribute_id', value):
+            self.model.attribute_id = value
 
 
     def update_help_text(self):

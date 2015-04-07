@@ -23,9 +23,9 @@
 #
 # ############################################################################
 
-from kataja.Saved import Savable
+from kataja.BaseModel import BaseModel
 
-class Feature(Savable):
+class Feature(BaseModel):
     """
     >>> a=Feature('nom','case','deletable')
     >>> a.get()
@@ -57,25 +57,25 @@ class Feature(Savable):
     """
 
     def __init__(self, key=None, value=None, values=None, family=''):
-        Savable.__init__(self)
+        BaseModel.__init__(self)
         if key and not (value or values): # e.g. 'nom:case:deletable'
             values = key.split(':')
             key = values.pop(0)
         elif not key:
             key = "AnonymousFeature"
-        self.saved.fkey = key
+        self.model.fkey = key
         if values:
-            self.saved.values = values
+            self.model.values = values
         elif value:
-            self.saved.values = [value]
+            self.model.values = [value]
         else:
-            self.saved.values = []
-        self.saved.family = family
+            self.model.values = []
+        self.model.family = family
 
 
     @property
     def label(self):
-        return self.saved.fkey
+        return self.model.fkey
 
     @property
     def key(self):
@@ -84,7 +84,7 @@ class Feature(Savable):
 
         :return:
         """
-        return self.saved.fkey
+        return self.model.fkey
 
     @key.setter
     def key(self, value):
@@ -92,7 +92,7 @@ class Feature(Savable):
 
         :param value:
         """
-        self.saved.fkey = value
+        self.model.fkey = value
 
     @property
     def value(self):
@@ -101,8 +101,8 @@ class Feature(Savable):
 
         :return:
         """
-        if self.saved.values:
-            return self.saved.values[0]
+        if self.model.values:
+            return self.model.values[0]
         else:
             return None
 
@@ -112,7 +112,7 @@ class Feature(Savable):
 
         :param value:
         """
-        self.saved.values = [value]
+        self.model.values = [value]
 
     @property
     def values(self):
@@ -121,7 +121,7 @@ class Feature(Savable):
 
         :return:
         """
-        return self.saved.values
+        return self.model.values
 
     @values.setter
     def values(self, value):
@@ -130,16 +130,16 @@ class Feature(Savable):
         :param value:
         """
         if isinstance(value, list):
-            self.saved.values = value
+            self.model.values = value
         else:
-            self.saved.values = [value]
+            self.model.values = [value]
 
     @property
     def family(self):
         """ e.g. feature 'number' may belong to family 'phi'. Features don't need to have a family.
         :return:
         """
-        return self.saved.family
+        return self.model.family
 
     @family.setter
     def family(self, value):
@@ -147,7 +147,7 @@ class Feature(Savable):
         :param value: string
         :return:
         """
-        self.saved.family = value
+        self.model.family = value
 
     def get(self):
         """

@@ -25,10 +25,17 @@
 
 from kataja.singletons import ctrl
 from kataja.Forest import Forest
-from kataja.Saved import Savable
+from kataja.BaseModel import BaseModel
+
+class ForestKeeperModel(BaseModel):
+    def __init__(self, host):
+        super().__init__(host, unique=True)
+        self.forests = []
+        self.current_index = 0
+        self.forest = None
 
 
-class ForestKeeper(Savable):
+class ForestKeeper(BaseModel):
     """ Container and loader for Forest objects """
 
     def __init__(self, filename=None):
@@ -37,10 +44,7 @@ class ForestKeeper(Savable):
         :param List treelist:
         :param StringType file_name:
         """
-        Savable.__init__(self, unique=True)
-        self.saved.forests = []
-        self.saved.current_index = 0
-        self.saved.forest = None
+        self.model = ForestKeeperModel(self)
         if filename:
             treelist = self.load_treelist_from_file(filename)
         else:
@@ -51,27 +55,27 @@ class ForestKeeper(Savable):
 
     @property
     def forests(self):
-        return self.saved.forests
+        return self.model.forests
 
     @forests.setter
     def forests(self, value):
-        self.saved.forests = value
+        self.model.forests = value
 
     @property
     def current_index(self):
-        return self.saved.current_index
+        return self.model.current_index
 
     @current_index.setter
     def current_index(self, value):
-        self.saved.current_index = value
+        self.model.current_index = value
 
     @property
     def forest(self):
-        return self.saved.forest
+        return self.model.forest
 
     @forest.setter
     def forest(self, value):
-        self.saved.forest = value
+        self.model.forest = value
 
 
     def next_forest(self):

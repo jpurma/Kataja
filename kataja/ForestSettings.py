@@ -24,15 +24,35 @@
 
 from kataja.globals import *
 from kataja.shapes import SHAPE_PRESETS
-from kataja.Saved import Savable
+from kataja.BaseModel import BaseModel
 from kataja.singletons import prefs
 
 ONLY_LEAF_LABELS = 0
 ALL_LABELS = 1
 ALIASES = 2
 
+class ForestSettingsModel(BaseModel):
 
-class ForestSettings(Savable):
+    def __init__(self, host):
+        super().__init__(host)
+        # ## General settings for Forest
+        self.label_style = None
+        self.uses_multidomination = None
+        self.traces_are_grouped_together = None
+        self.shows_constituent_edges = None
+        self.shows_merge_order = None
+        self.shows_select_order = None
+        self.draw_features = None
+        self.hsv = None
+        self.color_mode = None
+        self.last_key_colors = {}
+        self.bracket_style = None
+        # ## Edges - take edge type as argument ###########################
+        self.edge_types = {}
+        # ## Nodes - take node type as argument ###########################
+        self.node_types = {}
+
+class ForestSettings:
     """ Settings specific for this forest -- a level between global preferences and settings specific for object. """
     saved_fields = 'all'
     saved_fields_ignore = 'prefs'
@@ -41,40 +61,31 @@ class ForestSettings(Savable):
     """ Settings that affect trees in one forest in a form that can be easily pickled """
 
     def __init__(self):
-        Savable.__init__(self)
-        # ## General settings for Forest
-        self.saved.label_style = None
-        self.saved.uses_multidomination = None
-        self.saved.traces_are_grouped_together = None
-        self.saved.shows_constituent_edges = None
-        self.saved.shows_merge_order = None
-        self.saved.shows_select_order = None
-        self.saved.draw_features = None
-        self.saved.hsv = None
-        self.saved.color_mode = None
-        self.saved.last_key_colors = {}
-        self.saved.bracket_style = None
-        # ## Edges - take edge type as argument ###########################
-        self.saved.edge_types = {}
-        # ## Nodes - take node type as argument ###########################
-        self.saved.node_types = {}
+        if not hasattr(self, 'model'):
+            self.model = ForestSettingsModel(self)
 
+    @property
+    def save_key(self):
+        """ Return the save_key from the model. It is a property from BaseModel.
+        :return: str
+        """
+        return self.model.save_key
 
     @property
     def label_style(self):
         """
         :return:
         """
-        if self.saved.label_style is None:
+        if self.model.label_style is None:
             return prefs.default_label_style
         else:
-            return self.saved.label_style
+            return self.model.label_style
 
     @label_style.setter
     def label_style(self, value):
         """
         :param value: """
-        self.saved.label_style = value
+        self.model.label_style = value
 
 
     @property
@@ -82,16 +93,16 @@ class ForestSettings(Savable):
         """
         :return:
         """
-        if self.saved.uses_multidomination is None:
+        if self.model.uses_multidomination is None:
             return prefs.default_use_multidomination
         else:
-            return self.saved.uses_multidomination
+            return self.model.uses_multidomination
 
     @uses_multidomination.setter
     def uses_multidomination(self, value):
         """
         :param value: """
-        self.saved.uses_multidomination = value
+        self.model.uses_multidomination = value
 
 
     @property
@@ -99,16 +110,16 @@ class ForestSettings(Savable):
         """
         :return:
         """
-        if self.saved.traces_are_grouped_together is None:
+        if self.model.traces_are_grouped_together is None:
             return prefs.default_traces_are_grouped_together
         else:
-            return self.saved.traces_are_grouped_together
+            return self.model.traces_are_grouped_together
 
     @traces_are_grouped_together.setter
     def traces_are_grouped_together(self, value):
         """
         :param value: """
-        self.saved.traces_are_grouped_together = value
+        self.model.traces_are_grouped_together = value
 
 
     @property
@@ -116,94 +127,94 @@ class ForestSettings(Savable):
         """
         :return:
         """
-        if self.saved.shows_constituent_edges is None:
+        if self.model.shows_constituent_edges is None:
             return prefs.default_shows_constituent_edges
         else:
-            return self.saved.shows_constituent_edges
+            return self.model.shows_constituent_edges
 
     @shows_constituent_edges.setter
     def shows_constituent_edges(self, value):
         """
         :param value: """
-        self.saved.shows_constituent_edges = value
+        self.model.shows_constituent_edges = value
 
     @property
     def shows_merge_order(self):
         """
         :return:
         """
-        if self.saved.shows_merge_order is None:
+        if self.model.shows_merge_order is None:
             return prefs.default_shows_merge_order
         else:
-            return self.saved.shows_merge_order
+            return self.model.shows_merge_order
 
     @shows_merge_order.setter
     def shows_merge_order(self, value):
         """
         :param value: """
-        self.saved.shows_merge_order = value
+        self.model.shows_merge_order = value
 
     @property
     def shows_select_order(self):
         """
         :return:
         """
-        if self.saved.shows_select_order is None:
+        if self.model.shows_select_order is None:
             return prefs.default_shows_select_order
         else:
-            return self.saved.shows_select_order
+            return self.model.shows_select_order
 
     @shows_select_order.setter
     def shows_select_order(self, value):
         """
         :param value: """
-        self.saved.shows_select_order = value
+        self.model.shows_select_order = value
 
     @property
     def draw_features(self):
         """
         :return:
         """
-        if self.saved.draw_features is None:
+        if self.model.draw_features is None:
             return prefs.default_draw_features
         else:
-            return self.saved.draw_features
+            return self.model.draw_features
 
     @draw_features.setter
     def draw_features(self, value):
         """
         :param value: """
-        self.saved.draw_features = value
+        self.model.draw_features = value
 
     @property
     def hsv(self):
         """
         :return:
         """
-        if self.saved.hsv is None:
+        if self.model.hsv is None:
             return prefs.default_hsv
         else:
-            return self.saved.hsv
+            return self.model.hsv
 
     @hsv.setter
     def hsv(self, value):
         """
         :param value: """
-        self.saved.hsv = value
+        self.model.hsv = value
 
     @property
     def bracket_style(self):
         """ :return: """
-        if self.saved.bracket_style is None:
+        if self.model.bracket_style is None:
             return prefs.default_bracket_style
         else:
-            return self.saved.bracket_style
+            return self.model.bracket_style
 
     @bracket_style.setter
     def bracket_style(self, value):
         """
         :param value:  """
-        self.saved.bracket_style = value
+        self.model.bracket_style = value
 
     def last_key_color_for_mode(self, mode_key, value=None):
         """
@@ -213,23 +224,23 @@ class ForestSettings(Savable):
         :return:
         """
         if value is None:
-            return self.saved.last_key_colors.get(mode_key, None)
+            return self.model.last_key_colors.get(mode_key, None)
         else:
-            self.saved.last_key_colors[mode_key] = value
+            self.model.last_key_colors[mode_key] = value
 
     @property
     def color_mode(self):
         """ :return: """
-        if self.saved.color_mode is None:
+        if self.model.color_mode is None:
             return prefs.color_mode
         else:
-            return self.saved.color_mode
+            return self.model.color_mode
 
     @color_mode.setter
     def color_mode(self, value=None):
         """
         :param value:"""
-        self.saved.color_mode = value
+        self.model.color_mode = value
 
 
     # ## Edges - all require edge type as argument, value is stored in dict ###########
@@ -245,7 +256,7 @@ class ForestSettings(Savable):
         """
         if not edge_type:
             return
-        local_edge_settings = self.saved.edge_types.get(edge_type)
+        local_edge_settings = self.model.edge_types.get(edge_type)
         if value is None:
             if local_edge_settings is None or local_edge_settings.get(key, None) is None:
                 return prefs.edges[edge_type].get(key, None)
@@ -253,7 +264,7 @@ class ForestSettings(Savable):
                 return local_edge_settings[key]
         else:
             if local_edge_settings is None:
-                self.saved.edge_types[edge_type] = {key: value}
+                self.model.edge_types[edge_type] = {key: value}
             else:
                 local_edge_settings[key] = value
 
@@ -271,7 +282,7 @@ class ForestSettings(Savable):
         if not shape_name:
             shape_name = self.edge_type_settings(edge_type, 'shape_name')
 
-        local_edge_type = self.saved.edge_types.get(edge_type, None)
+        local_edge_type = self.model.edge_types.get(edge_type, None)
         if local_edge_type:
             shape_args = local_edge_type.get('shape_args', None)
         else:
@@ -288,7 +299,7 @@ class ForestSettings(Savable):
             else:  # set single setting
                 if not local_edge_type:
                     local_edge_type = {}
-                    self.saved.edge_types[edge_type] = local_edge_type
+                    self.model.edge_types[edge_type] = local_edge_type
                 local_edge_type['shape_args'] = shape_defaults.copy()
                 local_edge_type['shape_args'][key] = value
         else:
@@ -333,15 +344,15 @@ class ForestSettings(Savable):
             # Return settings for all node types
             settings = {}
             settings.update(prefs.nodes)
-            settings.update(self.saved.node_types)
+            settings.update(self.model.node_types)
             return settings
         elif not key:
             # Return all settings of certain node type
             settings = {}
             settings.update(prefs.nodes[node_type])
-            settings.update(self.saved.node_types.get(node_type, {}))
+            settings.update(self.model.node_types.get(node_type, {}))
             return settings
-        local_node_settings = self.saved.node_types.get(node_type, None)
+        local_node_settings = self.model.node_types.get(node_type, None)
         if value is None:
             if local_node_settings is None or local_node_settings.get(key) is None:
                 return prefs.nodes[node_type][key]
@@ -349,20 +360,34 @@ class ForestSettings(Savable):
                 return local_node_settings[key]
         else:
             if local_node_settings is None:
-                self.saved.node_types[node_type] = {key: value}
+                self.model.node_types[node_type] = {key: value}
             else:
                 local_node_settings[key] = value
 
 
-class ForestRules(Savable):
+class ForestRulesModel(BaseModel):
+
+    def __init__(self, host):
+        super().__init__(host)
+        self.allow_multidomination = None
+        self.only_binary_branching = None
+        self.projection = None
+        self.projected_inherits_labels = None
+
+
+class ForestRules(BaseModel):
     """ Rules that affect trees in one forest in a form that can be easily pickled """
 
     def __init__(self):
-        Savable.__init__(self)
-        self.saved.allow_multidomination = None
-        self.saved.only_binary_branching = None
-        self.saved.projection = None
-        self.saved.projected_inherits_labels = None
+        if not hasattr(self, 'model'):
+            self.model = ForestRulesModel(self)
+
+    @property
+    def save_key(self):
+        """ Return the save_key from the model. It is a property from BaseModel.
+        :return: str
+        """
+        return self.model.save_key
 
     @property
     def allow_multidomination(self, value=None):
@@ -370,10 +395,10 @@ class ForestRules(Savable):
         :param value:
         :return:
         """
-        if self.saved.allow_multidomination is None:
+        if self.model.allow_multidomination is None:
             return prefs.rules_allow_multidomination
         else:
-            return self.saved.allow_multidomination
+            return self.model.allow_multidomination
 
     @allow_multidomination.setter
     def allow_multidomination(self, value=None):
@@ -381,7 +406,7 @@ class ForestRules(Savable):
         :param value:
         :return:
         """
-        self.saved.allow_multidomination = value
+        self.model.allow_multidomination = value
 
 
     @property
@@ -390,10 +415,10 @@ class ForestRules(Savable):
         :param value:
         :return:
         """
-        if self.saved.only_binary_branching is None:
+        if self.model.only_binary_branching is None:
             return prefs.rules_only_binary_branching
         else:
-            return self.saved.only_binary_branching
+            return self.model.only_binary_branching
 
     @only_binary_branching.setter
     def only_binary_branching(self, value=None):
@@ -402,7 +427,7 @@ class ForestRules(Savable):
         :param value:
         :return:
         """
-        self.saved.only_binary_branching = value
+        self.model.only_binary_branching = value
 
     @property
     def projection(self, value=None):
@@ -410,10 +435,10 @@ class ForestRules(Savable):
         :param value:
         :return:
         """
-        if self.saved.projection is None:
+        if self.model.projection is None:
             return prefs.rules_projection
         else:
-            return self.saved.projection
+            return self.model.projection
 
     @projection.setter
     def projection(self, value=None):
@@ -421,7 +446,7 @@ class ForestRules(Savable):
         :param value:
         :return:
         """
-        self.saved.projection = value
+        self.model.projection = value
 
 
     @property
@@ -429,10 +454,10 @@ class ForestRules(Savable):
         """
         :return:
         """
-        if self.saved.projected_inherits_labels is None:
+        if self.model.projected_inherits_labels is None:
             return prefs.rules_projected_inherits_labels
         else:
-            return self.saved.projected_inherits_labels
+            return self.model.projected_inherits_labels
 
     @projected_inherits_labels.setter
     def projected_inherits_labels(self, value=None):
@@ -440,5 +465,5 @@ class ForestRules(Savable):
         :param value:
         :return:
         """
-        self.saved.projected_inherits_labels = value
+        self.model.projected_inherits_labels = value
 

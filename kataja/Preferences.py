@@ -316,7 +316,7 @@ class QtPreferences:
                 p.scaledToWidth(width)
             return p
 
-        print("font families:", QtGui.QFontDatabase().families())
+        #print("font families:", QtGui.QFontDatabase().families())
         self.easing_curve = []
         self.fontdb = fontdb
         self.prepare_fonts(preferences.fonts, preferences)
@@ -384,12 +384,12 @@ class QtPreferences:
         :param fonts_dict:
         :param fontdb:
         """
-        print('preparing fonts...')
+        #print('preparing fonts...')
         self.fonts = {}
         for key, font_tuple in fonts_dict.items():
             name, style, size = font_tuple
             font = self.fontdb.font(name, style, size)
-            print(name, font.exactMatch())
+            #print(name, font.exactMatch())
             if name == 'Asana Math' and not font.exactMatch():
                 print('Loading Asana Math locally')
                 self.fontdb.addApplicationFont(preferences.resources_path + "Asana-Math.otf")
@@ -398,13 +398,13 @@ class QtPreferences:
                 font.setItalic(True)
             self.fonts[key] = font
         font = QtGui.QFontMetrics(self.fonts[MAIN_FONT])  # it takes 2 seconds to get FontMetrics
-        print('font leading: %s font height: %s ' % (font.leading(), font.height()))
+        #print('font leading: %s font height: %s ' % (font.leading(), font.height()))
         main = self.fonts[MAIN_FONT]
         main.setHintingPreference(QtGui.QFont.PreferNoHinting)
         self.font_space_width = font.width(' ')
         self.font_bracket_width = font.width(']')
         self.font_bracket_height = font.height()
-        print('font metrics: ', font)
+        #print('font metrics: ', font)
         # print(self.font_space_width, self.font_bracket_width, self.font_bracket_height)
         self.fonts[SMALL_CAPS].setCapitalization(QtGui.QFont.SmallCaps)
 

@@ -50,7 +50,7 @@ def caller(function):
     :return:
     """
 
-    def wrap(*arg):
+    def wrap(*arg, **kwargs):
         """
 
         :param arg:
@@ -59,7 +59,7 @@ def caller(function):
         if len(traceback.extract_stack()) > 1:
             mod, line, fun, cmd = traceback.extract_stack()[-2]
             print("%s was called by %s l.%s at %s" % (function.__name__, cmd, line, mod))
-        return function(*arg)
+        return function(*arg, **kwargs)
 
     return wrap
 
