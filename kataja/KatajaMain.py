@@ -37,7 +37,6 @@ import pickle
 import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
-from kataja.ActionMethods import ActionMethods
 from kataja.KeyPressManager import KeyPressManager
 
 from kataja.singletons import ctrl, prefs, qt_prefs
@@ -112,7 +111,6 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.graph_view = GraphView(main=self, graph_scene=self.graph_scene)
         print('---- view init ... ', time.time() - t)
         self.graph_scene.graph_view = self.graph_view
-        self.action_launcher = ActionMethods(self)
         self.ui_manager = UIManager(self)
         self.ui_manager.populate_ui_elements()
         self.key_manager = KeyPressManager(self)
@@ -392,7 +390,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         if element:
             args += element
         print("Doing action '%s' with method '%s' and with args: %s" % (key, data['method'], str(args)))
-        method = getattr(self.action_launcher, data['method'])
+        method = data['method']
         if args:
             method(*args)
         else:
@@ -568,7 +566,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         # prefs.update(data['preferences'].__dict__)
         # qt_prefs.update(prefs)
         ctrl.loading = True
-        self.load_objects(data, self)
+        self.model.load_objects(data, self)
         ctrl.loading = False
         self.change_forest(self.forest_keeper.forest)
 

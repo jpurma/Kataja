@@ -509,16 +509,20 @@ class UIManager:
             if not data.get('closed', False):
                 self.create_panel(panel_key, **data)
 
-    def create_panel(self, id, name='', position=None, folded=False, closed=False):
+    def create_panel(self, id, name='', position=None, folded=False, default=False, **kwargs):
         """
 
         :param id:
         :param name:
         :param position:
         :param folded:
-        :param closed:
+        :param default: bool -- use the PANELS settings
         :return:
         """
+        if default:
+            data = PANELS[id]
+            position = data.get('position', None)
+            folded = data.get('folded', False)
         constructor = panel_classes[id]
         new_panel = constructor(name, id, default_position=position, parent=self.main, ui_manager=self,
                                 folded=folded)

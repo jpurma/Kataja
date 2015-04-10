@@ -9,7 +9,7 @@ from kataja.utils import to_tuple
 from kataja.parser.INodes import ITextNode
 from kataja.parser.INodeToLatex import parse_inode_for_field
 from kataja.parser.LatexToINode import parse_field
-from singletons import ctrl
+from kataja.singletons import ctrl
 
 __author__ = 'purma'
 
@@ -201,7 +201,8 @@ class BaseModel:
                 pass
             if key and key not in full_map:
                 full_map[key] = obj
-                for item in vars(obj.saved).values():
+                print(type(obj))
+                for item in vars(obj).values():
                     map_existing(item)
 
         # Restore either takes existing object or creates a new 'stub' object and then loads it with given data

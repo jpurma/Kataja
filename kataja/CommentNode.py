@@ -41,9 +41,7 @@ class CommentNodeModel(NodeModel):
 
 
 class CommentNode(Node):
-    """
-    Node to display translation of a constituent
-    """
+    """ Node to display comments, annotations etc. syntactically inert information """
     width = 20
     height = 20
     default_edge_type = ARROW
@@ -58,46 +56,41 @@ class CommentNode(Node):
 
 
     def after_init(self):
+        """ After_init is called in 2nd step in process of creating objects:
+            1st wave creates the objects and calls __init__, and then iterates through and sets the values.
+            2nd wave calls after_inits for all created objects. Now they can properly refer to each other and know their
+                values.
+        :return: None
+        """
         print("CommentNode after_init called")
         self.update_label()
         self.update_bounding_rect()
         self.update_visibility()
+        # !fixme: is there a good reason for storing the object only in after_init???
         ctrl.forest.store(self)
 
     @property
     def hosts(self):
-        """
-
-
-        :return:
+        """ A comment can be associated with nodes. The association uses the general connect/disconnect mechanism, but
+        'hosts' is a shortcut to get the nodes.
+        :return: list of Nodes
         """
         return self.get_parents(edge_type=ARROW)
 
 
     @property
-    def label(self):
-        return self.model.label
-
-    @label.setter
-    def label(self, value):
-        for host in self.hosts:
-            host.gloss = value
-        if self.model.touch('label', value):
-            self.model.label = value
-            self._inode_changed = True
-
-
-    @property
     def text(self):
+        """ The text of the comment. Uses the generic node.label as storage.
+        :return: str or ITextNode
+        """
         return self.model.label
 
     @text.setter
     def text(self, value):
-        for host in self.hosts:
-            host.gloss = value
-        if self.model.touch('text', value):
-            self.model.label = value
-            self._inode_changed = True
+        """ The text of the comment. Uses the generic node.label as storage.
+        :param value: str or ITextNode
+        """
+        self.label = value
 
     def update_colors(self):
         """
@@ -113,7 +106,7 @@ class CommentNode(Node):
 
     @property
     def as_inode(self):
-        """
+        """ INode representation of the whole CommentNode
         :return: INodes or str or tuple of them
         """
         if self._inode_changed:

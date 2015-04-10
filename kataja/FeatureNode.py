@@ -48,8 +48,11 @@ class FeatureNode(Node):
 
 
     def after_init(self):
-        """ Call after putting values in place
-        :return:
+        """ After_init is called in 2nd step in process of creating objects:
+            1st wave creates the objects and calls __init__, and then iterates through and sets the values.
+            2nd wave calls after_inits for all created objects. Now they can properly refer to each other and know their
+                values.
+        :return: None
         """
         self.update_label()
         self.update_bounding_rect()

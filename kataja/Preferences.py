@@ -68,15 +68,19 @@ color_modes = OrderedDict([('solarized_dk', {'name': 'Solarized dark', 'fixed': 
 
 
 class Preferences(object):
-    """ Settings that affect globally, these can be pickled, but QtPreferences not. Primary singleton object, needs to support saving and loading. 
+    """ Settings that affect globally, these can be pickled, but QtPreferences not. Primary singleton object, needs to
+    support saving and loading.
 
     Preferences should follow the following progression:
 
     element properties < forest settings < preferences
 
-    Preferences is the largest group. It includes global preferences and default values for forest settings. If forest settings doesn't have a value set, it is get from preferences. Similarly if element doesn't have a property set, it is get from forest settings, and ultimately from preferences.
+    Preferences is the largest group. It includes global preferences and default values for forest settings.
+    If forest settings doesn't have a value set, it is get from preferences. Similarly if element doesn't have a
+    property set, it is get from forest settings, and ultimately from preferences.
 
-    This means that the implementation for getting and setting is done mostly in elements and in forest settings. Preferences it self can be written and read directly.
+    This means that the implementation for getting and setting is done mostly in elements and in forest settings.
+    Preferences it self can be written and read directly.
 
     """
     # Prefs are not saved in save command, but changes here are undoable, so this must support the save protocol.

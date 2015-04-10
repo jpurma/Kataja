@@ -38,7 +38,7 @@ class UndoManager:
     """
 
     def __init__(self, forest):
-        self.save_key = forest.save_key + '_undo_manager'
+        #self.save_key = forest.save_key + '_undo_manager'
         self.forest = forest
         self.full_state = {}
         self._stack = []

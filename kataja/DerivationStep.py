@@ -201,26 +201,53 @@ class DerivationStepManager:
 
     @property
     def derivation_steps(self):
+        """
+
+
+        :return:
+        """
         return self.model.derivation_steps
 
     @derivation_steps.setter
     def derivation_steps(self, value):
+        """
+
+        :param value:
+        """
         self.model.derivation_steps = value
 
     @property
     def derivation_step_index(self):
+        """
+
+
+        :return:
+        """
         return self.model.derivation_step_index
 
     @derivation_step_index.setter
     def derivation_step_index(self, value):
+        """
+
+        :param value:
+        """
         self.model.derivation_step_index = value
 
     @property
     def forest(self):
+        """
+
+
+        :return:
+        """
         return self.model.forest
 
     @forest.setter
     def forest(self, value):
+        """
+
+        :param value:
+        """
         self.model.forest = value
 
 

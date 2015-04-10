@@ -42,9 +42,16 @@ assert BareConstituent
 assert BaseConstituent
 assert Feature
 
+# We could use globals but it is safer this way: you can only create objects listed here.
+factory_models = {ConstituentNode, AttributeNode, FeatureNode, GlossNode, PropertyNode, CommentNode, Edge, Forest,
+                  ChainManager, DerivationStep, DerivationStepManager, ForestSettings, ForestRules, BareConstituent,
+                  BaseConstituent, Feature}
+factory_dict = {}
+for value in factory_models:
+    factory_dict[value.__name__] = value
 
 class ObjectFactory:
-    """
+    """ When loading or saving a state, the data doesn't hold
 
     """
 
@@ -53,7 +60,7 @@ class ObjectFactory:
 
 
     def create(self, object_class_name, *args, **kwargs):
-        class_object = globals().get(object_class_name, None)
+        class_object = factory_dict.get(object_class_name, None)
         if class_object:
             # print('creating obj %s with args %s and kwargs %s ' % (object_class_name, str(args), str(kwargs)))
             new_object = class_object(*args, **kwargs)

@@ -132,7 +132,12 @@ class Edge(BaseModel, QtWidgets.QGraphicsItem):
         self.setGraphicsEffect(self.effect)
 
     def after_init(self):
-        """ What kind of preparation is needed after edge is initialized? """
+        """ After_init is called in 2nd step in process of creating objects:
+            1st wave creates the objects and calls __init__, and then iterates through and sets the values.
+            2nd wave calls after_inits for all created objects. Now they can properly refer to each other and know their
+                values.
+        :return: None
+        """
         # print("after-initing edge ", self)
         pass
 
