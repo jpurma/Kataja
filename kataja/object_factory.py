@@ -14,7 +14,7 @@ from kataja.ForestSettings import ForestSettings, ForestRules
 from kataja.ChainManager import ChainManager
 from kataja.DerivationStep import DerivationStep, DerivationStepManager
 
-from syntax.BareConstituent import BareConstituent
+from syntax.ConfigurableConstituent import ConfigurableConstituent
 from syntax.BaseConstituent import BaseConstituent
 from syntax.ConfigurableFeature import Feature
 
@@ -38,38 +38,36 @@ assert ForestSettings
 assert ForestRules
 
 # Syntax
-assert BareConstituent
+assert ConfigurableConstituent
 assert BaseConstituent
 assert Feature
 
 # We could use globals but it is safer this way: you can only create objects listed here.
 factory_models = {ConstituentNode, AttributeNode, FeatureNode, GlossNode, PropertyNode, CommentNode, Edge, Forest,
-                  ChainManager, DerivationStep, DerivationStepManager, ForestSettings, ForestRules, BareConstituent,
-                  BaseConstituent, Feature}
+                  ChainManager, DerivationStep, DerivationStepManager, ForestSettings, ForestRules,
+                  ConfigurableConstituent, BaseConstituent, Feature}
 factory_dict = {}
 for value in factory_models:
     factory_dict[value.__name__] = value
 
-class ObjectFactory:
-    """ When loading or saving a state, the data doesn't hold
 
+def create(object_class_name, *args, **kwargs):
+    """ Create empty kataja object stubs, to be loaded with correct values.
+    :param object_class_name: __name__ of the original object
+    :param args: any args delivered for the object's __init__ -method
+    :param kwargs: any kwargs delivered for the object's __init__ -method
+    :return: :raise TypeError:
     """
+    class_object = factory_dict.get(object_class_name, None)
+    if class_object and callable(class_object):
+        # print('creating obj %s with args %s and kwargs %s ' % (object_class_name, str(args), str(kwargs)))
+        new_object = class_object(*args, **kwargs)
+        # new_object = object.__new__(class_object, *args, **kwargs)
+        # print(new_object)
+        return new_object
+    else:
+        # print('class missing: ', object_class_name)
+        # Here we should try importing classes from probable places (plugins, kataja, syntax)
 
-    def __init__(self):
-        pass
-
-
-    def create(self, object_class_name, *args, **kwargs):
-        class_object = factory_dict.get(object_class_name, None)
-        if class_object:
-            # print('creating obj %s with args %s and kwargs %s ' % (object_class_name, str(args), str(kwargs)))
-            new_object = class_object(*args, **kwargs)
-            # new_object = object.__new__(class_object, *args, **kwargs)
-            # print(new_object)
-            return new_object
-        else:
-            # print('class missing: ', object_class_name)
-            # Here we should try importing classes from probable places (plugins, kataja, syntax)
-
-            raise TypeError('class missing: %s ' % object_class_name)
-            # print(globals().keys())
+        raise TypeError('class missing: %s ' % object_class_name)
+        # print(globals().keys())

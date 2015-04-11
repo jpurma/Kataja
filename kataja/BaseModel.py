@@ -294,7 +294,7 @@ class BaseModel:
         obj = full_map.get(obj_key, None)
         if not obj:
             #print('creating new ', class_key)
-            obj = main.object_factory.create(class_key)
+            obj = main.object_factory(class_key)
         # when creating/modifying values inside forests, they may refer back to ctrl.forest. That has to be the current
         # forest, or otherwise things go awry
         if class_key == 'Forest':

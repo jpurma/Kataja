@@ -95,10 +95,10 @@ class Controller:
 
         :param main: KatajaMain
         """
-        from syntax.BareConstituent import BareConstituent
+        from syntax.ConfigurableConstituent import ConfigurableConstituent
         from syntax.BaseUG import UG
         from syntax.ConfigurableFeature import Feature
-        self.Constituent = BareConstituent
+        self.Constituent = ConfigurableConstituent
         self.Feature = Feature
         self.UG = UG(constituent=self.Constituent, feature=self.Feature)
 
