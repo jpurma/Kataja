@@ -30,6 +30,7 @@ from kataja.BaseModel import BaseModel
 from syntax.ConfigurableFeature import Feature
 # from copy import deepcopy
 
+
 class BaseConstituentModel(BaseModel):
     """ BaseConstituentModel holds the data of BaseConstituent in a form that can be saved and restored easily.
     """
@@ -43,13 +44,13 @@ class BaseConstituentModel(BaseModel):
         self.gloss = ''
         self.index = ''
 
-class BaseConstituent(BaseModel):
+
+class BaseConstituent:
     """ BaseConstituent is a default constituent used in syntax.
     It uses getters and setters so that other compatible implementations can be built using the same interface.
     It is a primary datatype, needs to support saving and loading. """
 
-
-    def __init__(self, cid='', left=None, right=None, source=''):
+    def __init__(self, label='', left=None, right=None, source=''):
         """ BaseConstituent is a default constituent used in syntax.
         It is Savable, which means that the actual values are stored in separate object that is easily dumped to file.
         Extending this needs to take account if new fields should also be treated as savable, e.g. put them into
@@ -57,8 +58,8 @@ class BaseConstituent(BaseModel):
          """
         if not hasattr(self, 'model'):
             self.model = BaseConstituentModel(self)
-        self.model.sourcestring = source or cid
-        self.model.label = cid
+        self.model.sourcestring = source or label
+        self.model.label = label
         if left:
             self.model.parts.append(left)
         if right:
@@ -70,7 +71,6 @@ class BaseConstituent(BaseModel):
         else:
             return str(self.label)
 
-
     @property
     def save_key(self):
         """ Return the save_key from the model. It is a property from BaseModel.
@@ -81,7 +81,7 @@ class BaseConstituent(BaseModel):
     @property
     def features(self):
         """ Features are a dict with probably Features as values, but values can be also simpler stuff, strings etc.
-        :return:
+        :return: dict of features
         """
         return self.model.features
 
@@ -215,6 +215,28 @@ class BaseConstituent(BaseModel):
             self.model.parts = [None, value]
 
     @property
+    def parts(self):
+        """ Parts are the constituents of the constituent (its children). In some syntactic theories they may be
+        ordered, in others they are unordered set, and they may be strictly binary, or the amount of constituent may
+         be undecided. They are anyways implemented as ordered list with no limits on length. It is up to UG to treat
+          them as binary tree or empty.
+        :return: list of constituents
+        """
+        return self.model.parts
+
+    @parts.setter
+    def parts(self, value):
+        """ Parts are the constituents of the constituent (its children). In some syntactic theories they may be
+        ordered, in others they are unordered set, and they may be strictly binary, or the amount of constituent may
+         be undecided. They are anyways implemented as ordered list with no limits on length. It is up to UG to treat
+          them as binary tree or empty.
+        :param value: list of constituents
+        :return: None
+        """
+        if self.model.touch('parts', value):
+            self.model.parts = value
+
+    @property
     def gloss(self):
         """ Gloss text is the translation for this constituent, just a syntactically inert string. Wonder what it
         does here?
@@ -252,7 +274,6 @@ class BaseConstituent(BaseModel):
         if self.model.touch('index', value):
             self.model.index = value
 
-
     def __repr__(self):
         if self.is_leaf():
             if self.index:
@@ -265,80 +286,50 @@ class BaseConstituent(BaseModel):
             else:
                 return "[ %s %s ]" % (self.left, self.right)
 
-
-    def __contains__(self, C):
-        if self == C:
+    def __contains__(self, c):
+        if self == c:
             return True
         if self.left:
-            if self.left.__contains__(C):
+            if self.left.__contains__(c):
                 return True
         if self.right:
-            if self.right.__contains__(C):
+            if self.right.__contains__(c):
                 return True
         else:
             return False
 
-
     def print_tree(self):
-        """
-
-
-        :return:
+        """ Bracket tree representation of the constituent structure. Now it is same as str(self).
+        :return: str
         """
         return self.__repr__()
-        #
-        # if self.is_leaf():
-        #     if self.index:
-        #         return '%s_%s' % (self.label, self.index)
-        #     else:
-        #         return self.label
-        # else:
-        #     if self.left:
-        #         l = self.left.print_tree()
-        #     else:
-        #         l = '*0*'
-        #     if self.right:
-        #         r = self.right.print_tree()
-        #     else:
-        #         r = '*0*'
-        #     if self.index:
-        #         i = '.%s' % self.index
-        #     else:
-        #         i = ''
-        #     return "[%s %s %s ]" % (i, l, r)
-
-
 
     def get_feature(self, key):
-        """
-
-        :param key:
-        :return:
+        """ Gets the local feature (within this constituent, not of its children) with key 'key'
+        :param key: string for identifying feature type
+        :return: feature object
         """
         f = self.features.get(key, None)
-        if f:
-            return f.get()
-        return None
+        return f
 
     def has_feature(self, key):
-        """
-
-        :param key:
-        :return:
+        """ Check the existence of feature within this constituent
+        :param key: string for identifying feature type or Feature instance
+        :return: bool
         """
         if isinstance(key, Feature):
             return key in list(self.features.values())
         return key in list(self.features.keys())
 
-
-    def set_feature(self, key, value):
-        """
-
-        :param key:
+    def set_feature(self, key, value, family=''):
+        """ Set constituent to have a certain feature. If the value given is Feature instance, then it is used,
+        otherwise a new Feature is created or existing one modified.
+        :param key: str, the key for finding the feature
         :param value:
+        :param family: string, optional. If new feature belongs to a certain feature family, e.g. phi features.
         """
-        print('set_feature called in constituent')
         if isinstance(value, Feature):
+            self.model.poke('features')
             self.features[key] = value
         else:
             f = self.features.get(key, None)
@@ -346,43 +337,39 @@ class BaseConstituent(BaseModel):
                 f.set(value)
             else:
                 f = Feature(key, value)
+                self.model.poke('features')
             self.features[key] = f
 
-
     def del_feature(self, key):
-        """
-
-        :param key:
+        """ Remove feature from a constituent. It's not satisfied, it is just gone.
+        :param key: str, the key for finding the feature or for convenience, a feature instance to be removed
         """
         if isinstance(key, Feature):
             key = key.key
         if hasattr(self.features, key):
+            self.model.poke('features')
             del self.features[key]
 
     def is_leaf(self):
+        """ Check if the constituent is leaf constituent (no children) or inside a tree (has children).
+        :return: bool
         """
-
-
-        :return:
-        """
-        return not (self.left or self.right)
+        return not self.parts
 
     def copy(self):
+        """ Make a deep copy of constituent. Useful for picking constituents from Lexicon.
+        :return: BaseConstituent
         """
-
-
-        :return:
-        """
-        if self.left:
-            left = self.left.copy()
-        else:
-            left = None
-        if self.right:
-            right = self.right.copy()
-        else:
-            right = None
-        new = self.__class__(self.label, left, right)
+        new_parts = []
+        for part in self.parts:
+            new = part.copy()
+            new_parts.append(new)
+        nc = self.__class__(self.label)
+        nc.sourcestring = self.sourcestring
+        nc.alias = self.alias
+        nc.gloss = self.gloss
+        nc.index = self.index
         for key, value in self.features.items():
-            new.set_feature(key, value)
-        return new
-
+            nc.set_feature(key, value)
+        nc.parts = new_parts
+        return nc
