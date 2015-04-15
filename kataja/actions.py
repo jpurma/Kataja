@@ -181,13 +181,7 @@ def print_to_file():
     # hide unwanted components
     no_brush = QtGui.QBrush(Qt.NoBrush)
     sc.setBackgroundBrush(no_brush)
-    gloss = prefs.include_gloss_to_print
-    if gloss:
-        sc.photo_frame = sc.addRect(sc.visible_rect_and_gloss().adjusted(-1, -1, 2, 2), ctrl.cm.drawing())
-    else:
-        if ctrl.forest.gloss and ctrl.forest.gloss.isVisible():
-            ctrl.forest.gloss.hide()
-        sc.photo_frame = sc.addRect(sc.visible_rect().adjusted(-1, -1, 2, 2), ctrl.cm.selection())
+    sc.photo_frame = sc.addRect(sc.visible_rect().adjusted(-1, -1, 2, 2), ctrl.cm.selection())
     sc.update()
     ctrl.graph_view.repaint()
     ctrl.main.startTimer(50)

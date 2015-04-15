@@ -143,6 +143,7 @@ class Preferences(object):
         self.touch = True
         self.gloss_nodes = True
         self.feature_nodes = True
+        self.show_gloss_text = True  # fixme: is it global preference?
 
         my_path = Path(__file__).parts
         if sys.platform == 'darwin' and 'Kataja.app' in my_path:

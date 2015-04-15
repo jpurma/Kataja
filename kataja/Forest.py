@@ -96,7 +96,8 @@ class Forest:
         self.nodes_by_uid = {}
         self.main = ctrl.main
         self.main.forest = self  # assign self to be the active forest while creating the managers.
-        self.visualization = None  # BalancedTree()
+        self.in_display = False
+        self.visualization = None
         self.gloss = None
         self.bracket_manager = BracketManager(self)
         self.parser = INodeToKatajaConstituent(self)
@@ -105,8 +106,6 @@ class Forest:
         self.model.settings = ForestSettings()
         self.model.rules = ForestRules()
         self.model.derivation_steps = DerivationStepManager(self)
-
-        self.change_visualization(prefs.default_visualization)
 
         if buildstring:
             self.create_tree_from_string(buildstring)
@@ -128,7 +127,6 @@ class Forest:
                 values.
         :return: None
         """
-        self.update_visualization()
         print('created a forest %s , its traces should be visible: %s ' % (self, self.traces_are_visible()))
 
         # self.bracket_manager.rebuild_brackets()
@@ -264,6 +262,32 @@ class Forest:
         return self.main.graph_scene
 
 
+    def prepare_for_drawing(self):
+        """ Prepares the forest instance to be displayed in graph scene --
+         called when switching forests
+        :return: None
+        """
+        self.in_display = True
+        ctrl.disable_undo = True
+        self.update_colors()
+        self.add_all_to_scene()
+        self.update_visualization()
+        self.scene.manual_zoom = False
+        ctrl.ui.update_all_fields()
+        self.undo_manager.init_if_empty()
+        ctrl.disable_undo = False
+
+    def retire_from_drawing(self):
+        """ Announce that this forest should not try to work with scene anymore --
+         some other forest is occupying the scene now.
+        :return:
+        """
+        scene = self.scene
+        for item in self.get_all_objects():
+            if item.scene() is scene:
+                scene.removeItem(item)
+        self.in_display = False
+
     def traces_are_visible(self):
         """ Helper method for checking if we need to deal with chains
         :return:
@@ -335,45 +359,41 @@ class Forest:
         """
         return [x for x in self.nodes.values() if x.is_visible]
 
-    def draw_gloss_text(self):
+    def update_forest_gloss(self):
         """ Draw the gloss text on screen, if it exists. """
         if self.gloss_text:
-            print('adding a gloss text:', self.gloss_text)
-            if not self.gloss:
-                # noinspection PyArgumentList
-                self.gloss = QtWidgets.QGraphicsTextItem(parent=None)
-                self.gloss.setTextWidth(400)
-                self.gloss.setDefaultTextColor(ctrl.cm.drawing())
-                self.gloss.setFont(qt_prefs.font(g.MAIN_FONT))  # @UndefinedVariable
-                # self.gloss.setFlag(QtGui.QGraphicsItem.ItemIsMovable)
-            if self.gloss.scene() != ctrl.graph_scene:
-                self.add_to_scene(self.gloss)
-            self.gloss.setPlainText("‘" + self.gloss_text + "’")
-            self.gloss.show()
+            if prefs.show_gloss_text:
+                if not self.gloss:
+                    self.gloss = self.create_gloss_node(label=self.gloss_text)
+            elif self.gloss:
+                self.scene.removeItem(self.gloss)
+                self.gloss = None
         elif self.gloss:
             self.scene.removeItem(self.gloss)
             self.gloss = None
 
+    @caller
     def change_visualization(self, key):
         """ Switches the active visualization to visualization with given key
         :param key: string
         """
+        print('changing visualization to ', key)
         if self.visualization and self.visualization.__class__.name == key:
             self.visualization.reselect()
         else:
-            self.visualization = self.main.visualizations[key]
+            vs = self.main.visualizations
+            self.visualization = vs.get(key, vs.get(prefs.default_visualization, None))
             self.visualization.prepare(self)
-        self.main.graph_scene.reset_zoom()
+        self.main.graph_scene.manual_zoom = False
 
 
     def update_visualization(self):
         """ Verify that the active visualization is the same as defined in the vis_data (saved visualization state)
         :return: None
         """
-        key = self.vis_data['name']
-        if key != self.visualization.__class__.name:
-            self.visualization = self.main.visualizations[key]
-            self.visualization.prepare(self, reset=False)
+        key = self.vis_data.get('name', None)
+        if (not self.visualization) or key != self.visualization.__class__.name:
+            self.change_visualization(key)
 
     #### Maintenance and support methods ################################################
 
@@ -445,17 +465,10 @@ class Forest:
         return list(self.nodes.values()) + list(self.edges.values()) + list(
             self.others.values()) + self.bracket_manager.get_brackets()
 
-    def clear_scene(self):
-        """ Disconnect related graphic items from GraphScene """
-        scene = self.scene
-        if self.gloss:
-            scene.removeItem(self.gloss)
-        for item in self.get_all_objects():
-            if item.scene() is scene:
-                scene.removeItem(item)
-
-    def draw_forest(self):
+    def draw(self):
         """ Update all trees in the forest according to current visualization """
+        if not self.in_display:
+            print("Why are we drawing a forest which shouldn't be in scene")
         sc = ctrl.graph_scene
         sc.stop_animations()
         if not self.visualization:
@@ -467,34 +480,19 @@ class Forest:
         sc.start_animations()
         ctrl.graph_view.repaint()
 
-
-    def burn_forest(self):
-        """
-
-
-        """
-        self.gloss = None
-        self.nodes = {}
-        self.edges = {}
-        self.others = {}
-        self.bracket_manager.brackets = {}
-        self.chain_manager.chains = {}
-
     def add_all_to_scene(self):
         """ Put items belonging to this forest to scene """
-        if ctrl.disable_scene:
-            return
-        for item in self.get_all_objects():
-            self.scene.addItem(item)
+        if self.in_display:
+            for item in self.get_all_objects():
+                self.scene.addItem(item)
 
     def add_to_scene(self, item):
         """ Put items belonging to this forest to scene
         :param item:
         """
-        if ctrl.disable_scene:
-            return
-        if item.scene() != self.scene:
-            self.scene.addItem(item)
+        if self.in_display:
+            if item.scene() != self.scene:
+                self.scene.addItem(item)
 
 
     def update_all(self):
@@ -504,7 +502,7 @@ class Forest:
         for root in self.roots:
             root.update_visibility()
         self.bracket_manager.update_brackets()
-        self.draw_gloss_text()
+        self.update_forest_gloss()
 
 
     def update_colors(self):
@@ -519,8 +517,6 @@ class Forest:
             self.main.graph_scene.setBackgroundBrush(qt_prefs.no_brush)
         for other in self.others.values():
             other.update_colors()
-        if self.gloss:
-            self.gloss.setDefaultTextColor(cm.drawing())
         self.main.ui_manager.update_colors()
 
 
@@ -777,6 +773,7 @@ class Forest:
     def create_gloss_node(self, host_node=None, label=None):
         """ Creates the gloss node for existing constituent node and necessary connection
         :param host_node: if the gloss is created for some specific constituentnode. Can be None
+        :return: gloss node
         """
         if host_node:
             gn = GlossNode(text=host_node.gloss)
@@ -1159,12 +1156,17 @@ class Forest:
         :param visible:
         """
         if isinstance(node, ConstituentNode):
-            constituent_edges_visible = visible and self.visualization.show_edges_for(
-                node) and self.settings.shows_constituent_edges and not node.triangle
+            if not visible:
+                edges_visible = False
+            elif self.visualization and not node.triangle:
+                edges_visible = self.visualization.show_edges_for(
+                node) and self.settings.shows_constituent_edges
+            else:
+                edges_visible = False
             for edge in node.edges_down:
                 v = edge.visible
                 if edge.edge_type == g.CONSTITUENT_EDGE:
-                    edge.visible = constituent_edges_visible and edge.end.visible
+                    edge.visible = edges_visible and edge.end.visible
                 else:
                     edge.visible = visible
                 if v and not edge.visible:

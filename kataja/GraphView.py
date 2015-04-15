@@ -30,7 +30,7 @@ import PyQt5.QtWidgets as QtWidgets
 from PyQt5.QtCore import Qt
 from kataja.singletons import ctrl
 import kataja.globals as g
-from utils import time_me
+from kataja.utils import time_me
 
 
 class GraphView(QtWidgets.QGraphicsView):

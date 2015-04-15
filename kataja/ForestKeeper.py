@@ -159,7 +159,7 @@ class ForestKeeper:
         print('----------- starting loading ------------')
         ctrl.disable_undo = True  # disable tracking of changes (e.g. undo)
         if self.forest:
-            self.forest.clear_scene()
+            self.forest.retire_from_drawing()
         self.forests = []
 
         # buildstring is the bracket tree or trees.

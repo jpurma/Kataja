@@ -173,26 +173,18 @@ class KatajaMain(QtWidgets.QMainWindow):
         :param value:
         """
         self.model.forest = value
-        if hasattr(value, 'visualization'):
-            if not value.visualization:
-                value.change_visualization(prefs.default_visualization)
-            else:
-                value.visualization.prepare(value)
 
     @property
     def forest_keeper(self):
-        """
-
-
-        :return:
+        """ Return the forest keeper instance, there should be only one per Kataja instance
+        :return: ForestKeeper instance
         """
         return self.model.forest_keeper
 
     @forest_keeper.setter
     def forest_keeper(self, value):
-        """
-
-        :param value:
+        """ Return the forest keeper instance, there should be only one per Kataja instance
+        :param value: ForestKeeper instance
         """
         self.model.forest_keeper = value
 
@@ -202,40 +194,24 @@ class KatajaMain(QtWidgets.QMainWindow):
         :param forest:
         """
         ctrl.disable_undo = True
-        if self.forest:
-            self.forest.clear_scene()
         self.ui_manager.clear_items()
-        self.forest = forest
-        self.forest.update_colors()
-        if debug.DEBUG_FOREST_OPERATION:
-            self.forest.info_dump()
-        self.forest.add_all_to_scene()
-        self.forest.update_visualization()
-        self.graph_scene.reset_zoom()
-        self.ui_manager.update_all_fields()
-        self.forest.undo_manager.init_if_empty()
+        if self.forest:
+            self.forest.retire_from_drawing()
+        self.forest = self.forest_keeper.forest
+        self.forest.prepare_for_drawing()
         ctrl.disable_undo = False
 
     def redraw(self):
+        """ Call for forest redraw
+        :return: None
         """
-
-
-        """
-        self.graph_scene.draw_forest(self.forest)
+        self.forest.draw()
 
     def add_message(self, msg):
-        """ :type msg: StringType
-        :param msg:
+        """ Show a message in UI's console
+        :param msg: str -- message
         """
         self.ui_manager.add_message(msg)
-
-        # ### General events ##########
-
-        # def event(self, event):
-        # print 'm:', event.type()
-        # print 'Main event received: %s' % event.type()
-
-    # return QtWidgets.QMainWindow.event(self, event)
 
     def mousePressEvent(self, event):
         """ KatajaMain doesn't do anything with mousePressEvents, it delegates
@@ -393,7 +369,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         if undoable:
             ctrl.forest.undo_manager.take_snapshot(m)
         if ctrl.action_redraw:
-            ctrl.forest.draw_forest()
+            ctrl.forest.draw()
         else:
             ctrl.graph_scene.start_animations()
         print('--- action finished ---')
@@ -492,11 +468,7 @@ class KatajaMain(QtWidgets.QMainWindow):
             counter += 1
             full_path = path + filename + str(counter) + '.pdf'
         # Prepare image
-        gloss = prefs.include_gloss_to_print
-        if gloss:
-            source = self.graph_scene.visible_rect_and_gloss()
-        else:
-            source = self.graph_scene.visible_rect()
+        source = self.graph_scene.visible_rect()
         source.adjust(0, 0, 5, 10)
         self.graph_scene.removeItem(self.graph_scene.photo_frame)
         self.graph_scene.photo_frame = None
@@ -517,9 +489,6 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.add_message("printed to %s as PDF with %s dpi." % (full_path, dpi))
         # Restore image
         self.graph_scene.setBackgroundBrush(self.color_manager.gradient)
-        if self.forest.gloss:
-            self.forest.gloss.show()
-            # hide unwanted components
 
     # Not called from anywhere yet, but useful
     def release_selected(self, **kw):
@@ -562,8 +531,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         """ Empty everything - maybe necessary before loading new data. """
         self.ui_manager.clear_items()
         if self.forest:
-            self.forest.clear_scene()
-            self.forest.burn_forest()
+            self.forest.retire_from_drawing()
             self.forest = None
         self.forest_keeper = None
         print('garbage stats:', gc.get_count())

@@ -163,37 +163,23 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
     # ####
 
-    def reset_zoom(self):
-        """
-
-
-        """
-        self.manual_zoom = False
-
-    #@time_me
+    # @time_me
     def fit_to_window(self):
         """ Calls up to graph view and makes it to fit all visible items here to view window."""
-        #vr = self.visible_rect()
-        #border = 60
-        #new_rect = QtCore.QRectF(vr.x() - border / 2, vr.y() - border / 2, vr.width() + border, vr.height() + border)
-        # sc = ctrl.graph.sceneRect()
-        # if abs(sc.x()-new_rect.x())>5 or abs(sc.y()-new_rect.y())>5 or abs(sc.height()-new_rect.height())>5 or abs(sc.width()-new_rect.width())>5:
-        for item in self.items():
-            if not item.isVisible():
-                print('hidden item: ', item)
-        self.graph_view.instant_fit_to_view(self.itemsBoundingRect())
+        self.graph_view.instant_fit_to_view(self.visible_rect())
 
     def visible_rect(self):
         """ Counts all visible items in scene and returns QRectF object
          that contains all of them """
-        #r = QtCore.QRectF(self.min_x, self.min_y, self.max_x - self.min_x, self.max_y - self.min_y)
+        # r = QtCore.QRectF(self.min_x, self.min_y, self.max_x - self.min_x, self.max_y - self.min_y)
         r = self.itemsBoundingRect()
         return r
 
     @time_me
     def visible_rect_old(self):
         """ Counts all visible items in scene and returns QRectF object
-         that contains all of them """
+         that contains all of them -- deprecated, it is slower than calling itemsBoundingRect, but
+          on the other hand this doesn't count invisible objects."""
         lefts = []
         rights = []
         tops = []
@@ -799,9 +785,10 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 background_fade = True
 
         f = self.main.forest
-        if f.gloss and f.roots:
-            pt = f.roots[0].current_position
-            f.gloss.setPos(pt[0] - 20, pt[1] - 40)
+        #if f.gloss and f.roots and not f.gloss.locked_to_position:
+        #    pt = f.roots[0].current_position
+        #    f.gloss.setPos(pt[0] - 20, pt[1] - 40)
+        #    f.gloss.lock()
 
         for e in f.edges.values():
             e.make_path()

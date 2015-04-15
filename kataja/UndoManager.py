@@ -176,7 +176,7 @@ class UndoManager:
 
             self.full_state['stack_index'] = self._current
             self.forest.load_objects(self.full_state, ctrl.main)
-            self.forest.main.graph_scene.draw_forest(self.forest)
+            self.forest.main.graph_scene.draw(self.forest)
         else:
             ctrl.add_message('cannot undo')
 
@@ -217,7 +217,7 @@ class UndoManager:
 
             self.full_state['stack_index'] = self._current
             self.forest.load_objects(self.full_state, ctrl.main)
-            self.forest.main.graph_scene.draw_forest(self.forest)
+            self.forest.main.graph_scene.draw(self.forest)
         else:
             ctrl.add_message('cannot redo')
 

@@ -76,7 +76,6 @@ class Controller:
         self.print_garbage = True
         self.focus = None
         self.disable_undo = False  # flag that affects if pickle.load assumes
-        self.disable_scene = False
         # an empty workspace (loading new) or if it tries to compare changes (undo).
         self.unassigned_objects = {}
         self.watch_for_drag_end = False

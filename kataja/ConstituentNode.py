@@ -26,7 +26,7 @@ from PyQt5 import QtGui
 
 from kataja.singletons import ctrl
 from kataja.Node import Node, NodeModel
-from kataja.utils import to_tuple
+from kataja.utils import to_tuple, time_me
 from kataja.parser.INodes import IConstituentNode
 import kataja.globals as g
 
@@ -369,6 +369,7 @@ class ConstituentNode(Node):
         else:
             return atts
 
+    @time_me
     def update_visibility(self, **kw):
         """
 
