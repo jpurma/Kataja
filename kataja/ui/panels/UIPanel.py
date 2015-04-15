@@ -87,11 +87,9 @@ class PanelTitle(QtWidgets.QWidget):
 
     def update_fold(self, folded):
         if folded:
-            print('folding')
             self.fold_button.setIcon(QtGui.QIcon(qt_prefs.more_icon))
             self.fold_button.setStatusTip("Expand this panel")
         else:
-            print('expanding')
             self.fold_button.setIcon(QtGui.QIcon(qt_prefs.fold_icon))
             self.fold_button.setStatusTip("Minimize this panel")
 

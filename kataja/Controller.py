@@ -75,8 +75,8 @@ class Controller:
         self.rebuild_dict = {}
         self.print_garbage = True
         self.focus = None
-        self.loading = False  # flag that affects if pickle.load assumes
-        self.initializing = False
+        self.disable_undo = False  # flag that affects if pickle.load assumes
+        self.disable_scene = False
         # an empty workspace (loading new) or if it tries to compare changes (undo).
         self.unassigned_objects = {}
         self.watch_for_drag_end = False
@@ -85,7 +85,6 @@ class Controller:
         # these are True by default, but action method may toggle them off temporarily. The next action will
         # set these back on.
         self.action_redraw = True
-        self.action_undo = True
         self.undo_pile = set()
         # ---------------------------
 

@@ -246,14 +246,15 @@ def next_structure():
     """ Show the next 'slide', aka Forest from a list in ForestKeeper.
     :return: None
     """
-    ctrl.action_undo = False
-    i = ctrl.main.switch_to_next_forest()
+    i, forest = ctrl.main.forest_keeper.next_forest()
+    ctrl.main.change_forest(forest)
     ctrl.ui.clear_items()
-    ctrl.main.add_message('(.) tree %s: %s' % (i + 1, ctrl.forest.textual_form()))
+    ctrl.main.add_message('(.) tree %s: %s' % (i + 1, forest.textual_form()))
 
 a['next_forest'] = {
     'command': 'Next forest',
     'method': next_structure,
+    'undoable': False,
     'shortcut': '.',
     'tooltip': 'Switch to next forest'}
 
@@ -262,15 +263,16 @@ def previous_structure():
     """ Show the previous 'slide', aka Forest from a list in ForestKeeper.
     :return: None
     """
-    ctrl.action_undo = False
-    i = ctrl.main.switch_to_previous_forest()
+    i, forest = ctrl.main.forest_keeper.prev_forest()
+    ctrl.main.change_forest(forest)
     ctrl.ui.clear_items()
-    ctrl.main.add_message('(,) tree %s: %s' % (i + 1, ctrl.forest.textual_form()))
+    ctrl.main.add_message('(,) tree %s: %s' % (i + 1, forest.textual_form()))
 
 a['prev_forest'] = {
     'command': 'Previous forest',
     'method': previous_structure,
     'shortcut': ',',
+    'undoable': False,
     'tooltip': 'Switch to previous forest'}
 
 
@@ -518,6 +520,7 @@ a['fullscreen_mode'] = {
     'command': '&Fullscreen',
     'method': toggle_full_screen,
     'shortcut': 'f',
+    'undoable': False,
     'checkable': True}
 
 
@@ -528,7 +531,6 @@ def change_edge_panel_scope(selection):
     """
     if isinstance(selection, tuple):
         selection = selection[1]
-    ctrl.action_undo = False
     p = ctrl.ui.get_panel(g.EDGES)
     if p:
         p.change_scope(selection)
@@ -541,6 +543,7 @@ a['edge_shape_scope'] = {
     'command': 'Select shape for...',
     'method': change_edge_panel_scope,
     'selection': 'line_type_target',
+    'undoable': False,
     'tooltip': 'Which relations are affected?'}
 
 
@@ -867,7 +870,7 @@ def change_visualization(i=None):
 
 a['change_visualization'] = {
     'command': 'Change visualization algorithm',
-    'method': 'change_visualization',
+    'method': change_visualization,
     'selection': 'visualization_selector',
     'tooltip': 'Change visualization algorithm'
 }
@@ -1160,7 +1163,7 @@ def key_backspace():
 
 a['key_backspace'] = {
     'command': 'key_backspace',
-    'method': 'key_backspace',
+    'method': key_backspace,
     'shortcut': 'Backspace'
 }
 

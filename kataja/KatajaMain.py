@@ -149,10 +149,12 @@ class KatajaMain(QtWidgets.QMainWindow):
         """ Loads and initializes a new set of trees. Has to be done before the program can do anything sane.
         :param treeset_list:
         """
-        ctrl.initializing = True
+        print('----- Initializing -----')
         self.forest_keeper = ForestKeeper(filename=filename or prefs.debug_treeset)
-        ctrl.initializing = False
+        print('----- End Initializing -----')
+        print('--- Changing forest ----')
         self.change_forest(self.forest_keeper.forest)
+        print('--- End Changing forest ----')
 
     # ### Visualization #############################################################
 
@@ -199,6 +201,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         """ Tells the scene to remove current tree and related data and change it to a new one
         :param forest:
         """
+        ctrl.disable_undo = True
         if self.forest:
             self.forest.clear_scene()
         self.ui_manager.clear_items()
@@ -211,27 +214,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.graph_scene.reset_zoom()
         self.ui_manager.update_all_fields()
         self.forest.undo_manager.init_if_empty()
-
-    def switch_to_next_forest(self):
-        """
-
-
-        :return:
-        """
-        i, forest = self.forest_keeper.next_forest()
-        self.change_forest(forest)
-        return i
-
-    def switch_to_previous_forest(self):
-        """
-
-
-        :return:
-        """
-        i, forest = self.forest_keeper.prev_forest()
-        self.change_forest(forest)
-        return i
-
+        ctrl.disable_undo = False
 
     def redraw(self):
         """
@@ -380,34 +363,39 @@ class KatajaMain(QtWidgets.QMainWindow):
         """
         # -- Redraw and undo flags: these are on by default, can be switched off by action method
         ctrl.action_redraw = True
-        ctrl.action_undo = True
         # ---------------------------
         sender = self.sender()
         key = sender.data()
         data = self.ui_manager.actions[key]
         args = list(data.get('args', []))
+        undoable = data.get('undoable', True)
         element = self.ui_manager.get_element_value(data.get('ui_element', None))
         if element:
             args += element
         print("Doing action '%s' with method '%s' and with args: %s" % (key, data['method'], str(args)))
         method = data['method']
+        undo_state = ctrl.disable_undo
+        if not undoable:
+            ctrl.disable_undo = True
         if args:
             method(*args)
         else:
             method()
+        ctrl.disable_undo = undo_state
         self.action_finished()
 
-    def action_finished(self, m=''):
+    def action_finished(self, m='', undoable=True):
         """
 
-        :param m:
+        :param m: message for undo
+        :param undoable: are we supposed to take a snapshot of changes after this action.
         """
-        if ctrl.action_undo:
-            ctrl.forest.undo_manager.record(m)
+        if undoable:
+            ctrl.forest.undo_manager.take_snapshot(m)
         if ctrl.action_redraw:
-            ctrl.graph_scene.draw_forest(ctrl.forest)
+            ctrl.forest.draw_forest()
         else:
-            ctrl.graph_scene.item_moved()
+            ctrl.graph_scene.start_animations()
         print('--- action finished ---')
 
 
@@ -509,7 +497,7 @@ class KatajaMain(QtWidgets.QMainWindow):
             source = self.graph_scene.visible_rect_and_gloss()
         else:
             source = self.graph_scene.visible_rect()
-        source.adjustment(0, 0, 5, 10)
+        source.adjust(0, 0, 5, 10)
         self.graph_scene.removeItem(self.graph_scene.photo_frame)
         self.graph_scene.photo_frame = None
         target = QtCore.QRectF(0, 0, source.width() / 2.0, source.height() / 2.0)
@@ -565,9 +553,9 @@ class KatajaMain(QtWidgets.QMainWindow):
         f.close()
         # prefs.update(data['preferences'].__dict__)
         # qt_prefs.update(prefs)
-        ctrl.loading = True
+        ctrl.disable_undo = True
         self.model.load_objects(data, self)
-        ctrl.loading = False
+        ctrl.disable_undo = False
         self.change_forest(self.forest_keeper.forest)
 
     def clear_all(self):

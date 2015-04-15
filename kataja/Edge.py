@@ -906,7 +906,7 @@ class Edge(BaseModel, QtWidgets.QGraphicsItem):
                 self.local_shape_args[key] = value
 
     # ### Derivative features ############################################
-    # @time_me
+    #@utils.time_me
     def make_path(self):
         """ Draws the shape as a path """
         self.update_end_points()
@@ -932,31 +932,35 @@ class Edge(BaseModel, QtWidgets.QGraphicsItem):
             self._arrowhead_end_path = None
 
         sn = self.shape_name
-
-        # Fat path is the shape of the path with some extra margin to make it easier to click/touch
-        if sn == 'blob' or sn == 'directional_blob':
-            # These fat, filled shapes don't need separate fat path
-            self._fat_path = self._path
-        elif c.get('thickness', 0):
-            # if the edge uses a solid line, but uses an arrowhead at start, the line's blunt end spoils the arrowhead.
-            # solution is to move the edge's line's startinpoint a little. This has been computed earlier, but now it is
-            # applied to path.
-            if self.arrowhead_at_start:
-                x, y = self._arrow_cut_point_start
-                self._path.setElementPositionAt(0, x, y)
-            if self.arrowhead_at_end:
-                x, y = self._arrow_cut_point_end
-                self._path.setElementPositionAt(self._path.elementCount() - 1, x, y)
-            bi = QtGui.QPainterPath(self._path)
-            bi.addPath(self._path.toReversed())
-            self._fat_path = outline_stroker.createStroke(self._path).united(bi)
-        else:
-            self._fat_path = outline_stroker.createStroke(self._path).united(self._path)
-        if self._arrowhead_start_path:
-            self._fat_path = self._fat_path.united(self._arrowhead_start_path)
-        if self._arrowhead_end_path:
-            self._fat_path = self._fat_path.united(self._arrowhead_end_path)
-
+        self._fat_path = self._path
+        # # Fat path is the shape of the path with some extra margin to make it easier to click/touch
+        # if sn == 'blob' or sn == 'directional_blob':
+        #     # These fat, filled shapes don't need separate fat path
+        #     self._fat_path = self._path
+        # elif c.get('thickness', 0):
+        #     # if the edge uses a solid line, but uses an arrowhead at start, the line's blunt end spoils the arrowhead.
+        #     # solution is to move the edge's line's startinpoint a little. This has been computed earlier, but now it is
+        #     # applied to path.
+        #     if self.arrowhead_at_start:
+        #         x, y = self._arrow_cut_point_start
+        #         self._path.setElementPositionAt(0, x, y)
+        #     if self.arrowhead_at_end:
+        #         x, y = self._arrow_cut_point_end
+        #         self._path.setElementPositionAt(self._path.elementCount() - 1, x, y)
+        #     bi = QtGui.QPainterPath(self._path)
+        #     bi.addPath(self._path.toReversed())
+        #     # outline stroker is so damn slow. we want to do without it.
+        #     #self._fat_path = outline_stroker.createStroke(self._path).united(bi)
+        #     self._fat_path = self._path
+        # else:
+        #     pass
+        #     self._fat_path = self._path
+        #     #self._fat_path = outline_stroker.createStroke(self._path).united(self._path)
+        # if self._arrowhead_start_path:
+        #     self._fat_path = self._fat_path.united(self._arrowhead_start_path)
+        # if self._arrowhead_end_path:
+        #     self._fat_path = self._fat_path.united(self._arrowhead_end_path)
+        #
         self.update_label_pos()
         ctrl.ui.update_control_point_positions()
         if ctrl.is_selected(self):

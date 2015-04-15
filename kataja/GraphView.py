@@ -30,6 +30,7 @@ import PyQt5.QtWidgets as QtWidgets
 from PyQt5.QtCore import Qt
 from kataja.singletons import ctrl
 import kataja.globals as g
+from utils import time_me
 
 
 class GraphView(QtWidgets.QGraphicsView):
@@ -75,17 +76,17 @@ class GraphView(QtWidgets.QGraphicsView):
 
     # def drawBackground(self, painter, rect):
     # painter.fillRect(rect, colors.paper)
-    def instant_fit_to_view(self, _target_rect):
+    #@time_me
+    def instant_fit_to_view(self, target_rect):
+        """ Fit the current scene into view, snugly
+        :param target_rect: scene rect that contains all of the items we want to fit into view.
         """
-
-        :param _target_rect:
-        """
-        if self.sceneRect() == _target_rect:
-            return
-        self.setSceneRect(_target_rect)
-        self.target_scale = min((self.width() / _target_rect.width(), self.height() / _target_rect.height()))
-        self.resetTransform()
-        self.scale(self.target_scale, self.target_scale)
+        self.setSceneRect(target_rect)
+        self.fitInView(target_rect, 1)
+        #new_scale = min((self.width() / target_rect.width(), self.height() / target_rect.height()))
+        #self.target_scale = new_scale
+        #self.resetTransform()
+        #self.scale(self.target_scale, self.target_scale)
         self.main.ui_manager.update_positions()
 
     def scale_view_by(self, delta):

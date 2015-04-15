@@ -65,6 +65,9 @@ class NodeModel(MovableModel):
         :param value:
         :return:
         """
+        if ctrl.disable_undo:
+            return True
+
         so = getattr(self, 'syntactic_object', None)
         if so:
             model = getattr(so, 'model')
@@ -76,6 +79,7 @@ class NodeModel(MovableModel):
                     touched = getattr(self, touched_name, False)
                     if not touched:
                         ctrl.undo_pile.add(self._host)
+                        print('(touch synobj) adding to undo_pile', self._host)
                         setattr(model, '_' + attribute + '_history', old_value)
                         setattr(model, touched_name, True)
                     return True
@@ -920,10 +924,10 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :param x:
         :param y:
         """
-        self.release()
         self.update()
         if recipient and recipient.accepts_drops(self):
             self.adjustment = (0, 0, 0)
+            self.release()
             recipient.drop(self)
         else:
             for node in ctrl.dragged:

@@ -48,11 +48,14 @@ class BaseModel:
         :param value: new value
         :return: True if set operation would change the value, False if not
         """
+        if ctrl.disable_undo:
+            return True
         old_value = getattr(self, attribute, None)
         if old_value != value:
             touched_name = '_' + attribute + '_touched'
             touched = getattr(self, touched_name, False)
             if not touched:
+                print('(touch) adding to undo_pile %s for attribute %s (%s, %s)' % (self._host, attribute, old_value, value))
                 ctrl.undo_pile.add(self._host)
                 setattr(self, '_' + attribute + '_history', old_value)
                 setattr(self, touched_name, True)
@@ -66,13 +69,36 @@ class BaseModel:
         :param attribute: string, name of the attribute
         :return: None
         """
+        if ctrl.disable_undo:
+            return
         touched_name = '_' + attribute + '_touched'
         touched = getattr(self, touched_name, False)
         if not touched:
+            print('(poke) adding to undo_pile', self._host)
             ctrl.undo_pile.add(self._host)
             setattr(self, '_' + attribute + '_history', getattr(self, attribute, None))
             setattr(self, touched_name, True)
 
+    def changes(self):
+        """ Create a dict of changes based on touched attributes of the item.
+        After creation, reset the touched attributes so that the attribute can
+        record the next changes.
+        result dict has tuples as value, where the first item is value before, and second
+        item is value after the change.
+        :return: dict of changed attributes
+        """
+        changes = {}
+        for attr_name in dir(self):
+            if attr_name.endswith('_touched') and attr_name.startswith('_'):
+                if getattr(self, attr_name, False):
+                    attr_base = attr_name[1:-8]
+                    hist_name = '_%s_history' % attr_base
+                    old = getattr(self, hist_name)
+                    new = getattr(self, attr_base)
+                    changes[attr_base] = (old, new)
+                    setattr(self, hist_name, None)
+                    setattr(self, attr_name, False)
+        return changes
 
     def save_object(self, saved_objs, open_refs):
         """

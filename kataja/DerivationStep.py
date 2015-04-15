@@ -254,12 +254,12 @@ class DerivationStepManager:
     def save_and_create_derivation_step(self, msg=''):
 
         # print 'saving derivation_step %s' % self._derivation_step_index
-        # needs to be reimplemented, make every operation bidirectional and undoable.
+        # fixme: needs to be reimplemented, make every operation bidirectional and undoable.
         """
 
         :param msg:
         """
-        print('save_and_create_derivation_step called')
+        #print('save_and_create_derivation_step called')
         roots = self.forest.roots
         chains = self.forest.chain_manager.chains
         if chains:

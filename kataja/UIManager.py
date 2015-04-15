@@ -34,6 +34,7 @@ from kataja.ui.ControlPoint import ControlPoint
 from kataja.ui.FadingSymbol import FadingSymbol
 from kataja.ui.MessageItem import MessageItem
 from kataja.ui.StretchLine import StretchLine
+import kataja.actions as action_methods
 from kataja.actions import actions
 import kataja.globals as g
 from kataja.ui.TouchArea import TouchArea
@@ -393,24 +394,24 @@ class UIManager:
         self._dynamic_action_groups['visualizations'] = []
         for name, vis in VISUALIZATIONS.items():
             key = action_key(name)
-            self.actions[key] = {'command': name, 'method': 'change_visualization', 'shortcut': vis.shortcut,
+            self.actions[key] = {'command': name, 'method': action_methods.change_visualization, 'shortcut': vis.shortcut,
                                  'checkable': True, 'viewgroup': 'visualizations'}
             self._dynamic_action_groups['visualizations'].append(key)
 
         self._dynamic_action_groups['panels'] = []
         for panel_key, panel_data in PANELS.items():
             key = 'toggle_panel_%s' % panel_key
-            self.actions[key] = {'command': panel_data['name'], 'method': 'toggle_panel', 'checkable': True,
+            self.actions[key] = {'command': panel_data['name'], 'method': action_methods.toggle_panel, 'checkable': True,
                                  'action_group': 'Panels', 'args': [panel_key], 'context': 'ui', 'no_undo': True,
                                  'tooltip': "Close this panel"}
             self._dynamic_action_groups['panels'].append(key)
             key = 'toggle_fold_panel_%s' % panel_key
-            self.actions[key] = {'command': 'Fold %s' % panel_data['name'], 'method': 'toggle_fold_panel',
+            self.actions[key] = {'command': 'Fold %s' % panel_data['name'], 'method': action_methods.toggle_fold_panel,
                                  'checkable': True,
                                  'action_group': 'Panels', 'args': [panel_key], 'context': 'ui', 'no_undo': True,
                                  'tooltip': "Minimize this panel"}
             key = 'pin_panel_%s' % panel_key
-            self.actions[key] = {'command': 'Pin to dock %s' % panel_data['name'], 'method': 'pin_panel',
+            self.actions[key] = {'command': 'Pin to dock %s' % panel_data['name'], 'method': action_methods.pin_panel,
                                  'action_group': 'Panels', 'args': [panel_key], 'context': 'ui', 'no_undo': True,
                                  'tooltip': "Pin to dock"}
 

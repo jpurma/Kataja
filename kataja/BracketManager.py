@@ -1,7 +1,7 @@
 # coding=utf-8
 from kataja.singletons import qt_prefs
 from kataja.Bracket import Bracket
-
+import kataja.globals as g
 
 class BracketManager:
     """ Bracket manager handles showing and hiding brackets. When loading and saving, it should only take care that there are no remainders of previous forests getting in the way. """
@@ -41,7 +41,7 @@ class BracketManager:
         :param left:
         :return:
         """
-        # print('creating bracket ...')
+        print('creating bracket ...')
         if left:
             key = 'lb_%s' % host.save_key
         else:
@@ -77,15 +77,12 @@ class BracketManager:
         # print('updating brackets')
         self._bracket_slots = {}
         f = self.forest
-        bs = f.settings.bracket_style
-        # print('bracket style: %s' % bs)
-        if bs:
-            if not self.brackets:
-                self.rebuild_brackets()
+        self.rebuild_brackets()
+
+        if f.settings.bracket_style != g.NO_BRACKETS:
             for tree in f:
                 for node in f.list_nodes_once(tree):  # not sure if this should use 'once'
-                    node.update_visibility(brackets=bs)
-                    if node.has_visible_brackets:
+                    if node.left_bracket:
                         this_left = node
                         next_left = node.left()
                         while next_left:
@@ -110,9 +107,6 @@ class BracketManager:
                             self._bracket_slots[key] = (left_brackets, right_brackets)
                         else:
                             self._bracket_slots[key] = ([], [node])
-        else:
-            for node in f.nodes.values():
-                node.update_visibility(brackets=bs)
         # print(self._bracket_slots)
         # print(self.brackets)
         for bracket in self.brackets.values():
@@ -150,12 +144,14 @@ class BracketManager:
         """ remove from scene and remove references from nodes
         :param bracket:
         """
-        node = bracket.host
-        if bracket.left:
-            node.left_bracket = None
-        else:
-            node.right_bracket = None
-        del self.brackets[bracket.key]
+        #node = bracket.host
+        #if bracket.left:
+        #    node.left_bracket = None
+        #else:
+        #    node.right_bracket = None
+        print('deleting bracket ', bracket.key)
+        if bracket.key in self.brackets:
+            del self.brackets[bracket.key]
         sc = bracket.scene()
         if sc:
             sc.removeItem(bracket)

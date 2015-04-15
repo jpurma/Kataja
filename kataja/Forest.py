@@ -454,6 +454,20 @@ class Forest:
             if item.scene() is scene:
                 scene.removeItem(item)
 
+    def draw_forest(self):
+        """ Update all trees in the forest according to current visualization """
+        sc = ctrl.graph_scene
+        sc.stop_animations()
+        if not self.visualization:
+            self.change_visualization(prefs.default_visualization)
+        self.update_all()
+        self.visualization.draw()
+        if not sc.manual_zoom:
+            sc.fit_to_window()
+        sc.start_animations()
+        ctrl.graph_view.repaint()
+
+
     def burn_forest(self):
         """
 
@@ -468,9 +482,7 @@ class Forest:
 
     def add_all_to_scene(self):
         """ Put items belonging to this forest to scene """
-        if ctrl.loading:
-            return
-        if ctrl.initializing:
+        if ctrl.disable_scene:
             return
         for item in self.get_all_objects():
             self.scene.addItem(item)
@@ -479,7 +491,7 @@ class Forest:
         """ Put items belonging to this forest to scene
         :param item:
         """
-        if ctrl.loading or ctrl.initializing:
+        if ctrl.disable_scene:
             return
         if item.scene() != self.scene:
             self.scene.addItem(item)
@@ -1528,12 +1540,8 @@ class Forest:
         # Create edge and make connections
         new_edge = self.create_edge(edge_type=edge_type, direction=direction)
         self.set_edge_ends(new_edge, parent, child)
-        if parent.left():
-            if not parent.left_bracket:
-                parent.left_bracket = self.create_bracket(host=parent, left=True)
-        if parent.right():
-            if not parent.right_bracket:
-                parent.right_bracket = self.create_bracket(host=parent, left=False)
+        parent.rebuild_brackets()
+        child.rebuild_brackets()
         parent.update_label()
         child.update_label()
         self.update_root_status(child)

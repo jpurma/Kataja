@@ -62,12 +62,7 @@ def create(object_class_name, *args, **kwargs):
     if class_object and callable(class_object):
         # print('creating obj %s with args %s and kwargs %s ' % (object_class_name, str(args), str(kwargs)))
         new_object = class_object(*args, **kwargs)
-        # new_object = object.__new__(class_object, *args, **kwargs)
-        # print(new_object)
         return new_object
     else:
-        # print('class missing: ', object_class_name)
         # Here we should try importing classes from probable places (plugins, kataja, syntax)
-
         raise TypeError('class missing: %s ' % object_class_name)
-        # print(globals().keys())

@@ -67,7 +67,6 @@ class ConstituentNode(Node):
         Node.__init__(self, syntactic_object=constituent)
 
         # ------ Bracket drawing -------
-        self.has_visible_brackets = False
         self.left_bracket = None
         self.right_bracket = None
         # ###
@@ -376,7 +375,6 @@ class ConstituentNode(Node):
         :param kw:
         """
         # print("For node %s: %s" % (self, str(kw)))
-        self._visibility_brackets = kw.get('brackets', self._visibility_brackets)
         was_visible = self.visible
         visible = not self.folded_away
         self.visible = visible
@@ -422,24 +420,6 @@ class ConstituentNode(Node):
             for feature in self.get_features():
                 feature.setVisible(False)
 
-        ### Brackets
-        if self._visibility_brackets:
-            if self._visibility_brackets == 2:
-                self.has_visible_brackets = not self.is_leaf_node()
-            elif self._visibility_brackets == 1:
-                is_left = False
-                for edge in self.get_edges_up():
-                    if edge.alignment == 1:  # LEFT
-                        is_left = True
-                        break
-                self.has_visible_brackets = is_left
-        else:
-            self.has_visible_brackets = False
-        if self.left_bracket:
-            self.left_bracket.setVisible(self.has_visible_brackets)
-        if self.right_bracket:
-            self.right_bracket.setVisible(self.has_visible_brackets)
-
     def reset(self):
         """
 
@@ -462,20 +442,55 @@ class ConstituentNode(Node):
         pass
 
     def rebuild_brackets(self):
-        """
+        """ Creates left and right brackets for node, depending on active bracket style.
 
 
         """
-        if self.left():
+        def add_left():
             if not self.left_bracket:
                 self.left_bracket = ctrl.forest.create_bracket(host=self, left=True)
-        else:
-            self.left_bracket = None
-        if self.right():
+
+        def add_right():
             if not self.right_bracket:
                 self.right_bracket = ctrl.forest.create_bracket(host=self, left=False)
-        else:
-            self.right_bracket = None
+
+        def del_left():
+            if self.left_bracket:
+                f.bracket_manager.delete_bracket(self.left_bracket)
+                self.left_bracket = None
+
+        def del_right():
+            if self.right_bracket:
+                f.bracket_manager.delete_bracket(self.right_bracket)
+                self.right_bracket = None
+
+        f = ctrl.forest
+        bs = f.settings.bracket_style
+        if bs == g.ALL_BRACKETS:
+            if self.left():
+                add_left()
+            else:
+                del_left()
+            if self.right():
+                add_right()
+            else:
+                del_right()
+        elif bs == g.MAJOR_BRACKETS:
+            should_have = False
+            for edge in self.get_edges_up():
+                if edge.alignment == g.LEFT:
+                    should_have = True
+                    break
+            if should_have:
+                add_left()
+                add_right()
+            else:
+                del_left()
+                del_right()
+        elif bs == g.NO_BRACKETS:
+            del_left()
+            del_right()
+
 
     # ### Features #########################################
 
@@ -662,7 +677,7 @@ class ConstituentNode(Node):
             rect = True
         elif ctrl.is_selected(self):
             rect = True
-        elif self.has_visible_brackets:
+        elif self.left_bracket:
             rect = False
         else:
             rect = False
@@ -789,10 +804,10 @@ class ConstituentNode(Node):
         :param x:
         :param y:
         """
-        self.release()
         self.update()
         if recipient and recipient.accepts_drops(self):
             self.adjustment = (0, 0, 0)
+            self.release()
             recipient.drop(self)
         else:
             for node in ctrl.dragged:

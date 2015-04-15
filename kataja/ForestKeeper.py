@@ -27,7 +27,11 @@ from kataja.singletons import ctrl
 from kataja.Forest import Forest
 from kataja.BaseModel import BaseModel
 
+
 class ForestKeeperModel(BaseModel):
+    """ Container and loader for Forest objects. Remember to not enable undo for any of the actions in here,
+    as scope of undo should be a single Forest. """
+
     def __init__(self, host):
         super().__init__(host, unique=True)
         self.forests = []
@@ -35,15 +39,11 @@ class ForestKeeperModel(BaseModel):
         self.forest = None
 
 
-class ForestKeeper(BaseModel):
-    """ Container and loader for Forest objects """
+class ForestKeeper:
+    """ Container and loader for Forest objects. Remember to not enable undo for any of the actions in here,
+    as scope of undo should be a single Forest. """
 
     def __init__(self, filename=None):
-        """
-
-        :param List treelist:
-        :param StringType file_name:
-        """
         self.model = ForestKeeperModel(self)
         if filename:
             treelist = self.load_treelist_from_file(filename)
@@ -51,37 +51,51 @@ class ForestKeeper(BaseModel):
             treelist = []
         self.create_forests(treelist)
 
-
-
     @property
     def forests(self):
+        """ Keeps the list of forest instances, which each have their own settings, undo stacks etc.
+        :return: list of Forest instances
+        """
         return self.model.forests
 
     @forests.setter
     def forests(self, value):
+        """ Keeps the list of forest instances, which each have their own settings, undo stacks etc.
+        :param value: list of Forest instances
+        """
         self.model.forests = value
 
     @property
     def current_index(self):
+        """ Index of currently active forest in forests-list
+        :return: int
+        """
         return self.model.current_index
 
     @current_index.setter
     def current_index(self, value):
+        """ Index of currently active forest in forests-list
+        :param value: int
+        """
         self.model.current_index = value
 
     @property
     def forest(self):
+        """ Currently active forest
+        :return: Forest instance
+        """
         return self.model.forest
 
     @forest.setter
     def forest(self, value):
+        """ Currently active forest
+        :param value: Forest instance
+        """
         self.model.forest = value
 
-
     def next_forest(self):
-        """
-
-        :return:
+        """ Select the next forest in the list of forests. The list loops at end.
+        :return: tuple (current_index (int), selected forest (Forest)
         """
         if not self.forests:
             return None
@@ -89,14 +103,15 @@ class ForestKeeper(BaseModel):
             self.current_index += 1
         else:
             self.current_index = 0
+        if ctrl.undo_pile:
+            print('undo pile has stuff we are about to discard: ', ctrl.undo_pile)
+        ctrl.undo_pile = set()
         self.forest = self.forests[self.current_index]
         return self.current_index, self.forest
 
     def prev_forest(self):
-        """
-
-
-        :return:
+        """ Select the previous forest in the list of forests. The list loops at -1.
+        :return: tuple (current_index (int), selected forest (Forest)
         """
         if not self.forests:
             return None
@@ -104,19 +119,17 @@ class ForestKeeper(BaseModel):
             self.current_index -= 1
         else:
             self.current_index = len(self.forests) - 1
+        if ctrl.undo_pile:
+            print('undo pile has stuff we are about to discard: ', ctrl.undo_pile)
+        ctrl.undo_pile = set()
         self.forest = self.forests[self.current_index]
         return self.current_index, self.forest
 
-
-    def load_treelist_from_file(self, filename):
+    @staticmethod
+    def load_treelist_from_file(filename):
+        """ Pretty dumb fileloader, to create a treelist (list of strings)
+        :param filename: str, does nothing with the path.
         """
-
-
-        :param filename:
-        :param StringType filename:
-        """
-        # f = codecs.open(filename, 'rb', encoding = 'utf-8')
-        print(filename)
         try:
             f = open(filename, 'r', encoding='UTF-8')
             treelist = f.readlines()
@@ -128,7 +141,8 @@ class ForestKeeper(BaseModel):
     def create_forests(self, treelist):
         """ This will read list of strings where each line defines a tree or an element of tree. Example:
 
-        [.AspP [.Asp\\Ininom] [.vP [.KP [.K\\ng ] [.DP [.D´ [.D ] [.NP\\lola ]] [.KP [.K\\ng] [.DP [.D´ [.D ] [.NP\\alila ] ] [.KP\\{ni Maria} ]]]]] [.v´ [.v ] [.VP [.V ] [.KP\\{ang tubig}]]]]]
+        [.AspP [.Asp\\Ininom] [.vP [.KP [.K\\ng ] [.DP [.D´ [.D ] [.NP\\lola ]] [.KP [.K\\ng]
+        [.DP [.D´ [.D ] [.NP\\alila ] ] [.KP\\{ni Maria} ]]]]] [.v´ [.v ] [.VP [.V ] [.KP\\{ang tubig}]]]]]
         Ininom = drank
         ng = NG
         ng = NG
@@ -138,9 +152,12 @@ class ForestKeeper(BaseModel):
         ang tubig = ANG water
         'Maria's grandmother's servant drank the water'
 
-        :param treelist:list of strings, where a line can be a bracket tree or definition line for element in a tree
+        :param treelist: list of strings, where a line can be a bracket tree or definition line for element
+        in a tree
         """
         # Clear this screen before we start creating a mess
+        print('----------- starting loading ------------')
+        ctrl.disable_undo = True  # disable tracking of changes (e.g. undo)
         if self.forest:
             self.forest.clear_scene()
         self.forests = []
@@ -177,7 +194,10 @@ class ForestKeeper(BaseModel):
                     gloss_text = line[1:]
             # empty line: finalize this forest
             elif started_forest and not line:
-                self.forests.append(Forest(buildstring=buildstring, definitions=definitions, gloss_text=gloss_text, comments=comments))
+                self.forests.append(Forest(buildstring=buildstring,
+                                           definitions=definitions,
+                                           gloss_text=gloss_text,
+                                           comments=comments))
                 started_forest = False
             # tree definition starts a new forest
             elif line and not started_forest:
@@ -186,15 +206,17 @@ class ForestKeeper(BaseModel):
                 gloss_text = ''
                 comments = []
             # another tree definition, append to previous
-            elif line and forest:
+            elif line:
                 buildstring += '\n' + line
         if started_forest:  # make sure that the last forest is also added
-            self.forests.append(Forest(buildstring=buildstring, definitions=definitions, gloss_text=gloss_text, comments=comments))
+            self.forests.append(Forest(buildstring=buildstring,
+                                       definitions=definitions,
+                                       gloss_text=gloss_text,
+                                       comments=comments))
         self.current_index = 0
         if self.forests:
             self.forest = self.forests[0]
             self.forest.undo_manager.init_if_empty()
             # self.save()
-
-
-
+        # allow change tracking (undo) again
+        ctrl.disable_undo = False

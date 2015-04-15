@@ -33,7 +33,7 @@ from kataja.ConstituentNode import ConstituentNode
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.Movable import Movable
 from kataja.Node import Node
-from kataja.utils import to_tuple
+from kataja.utils import to_tuple, time_me
 from kataja.ui import TouchArea
 import kataja.globals as g
 
@@ -63,6 +63,10 @@ class GraphScene(QtWidgets.QGraphicsScene):
             self.setBackgroundBrush(qt_prefs.no_brush)
         # else:
         # self.setBackgroundBrush(QtGui.QBrush(colors.paper))
+        self.min_x = 100
+        self.max_x = -100
+        self.min_y = 100
+        self.max_y = -100
         self._timer_id = 0
         self._dblclick = False
         self._dragging = False
@@ -71,7 +75,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         self._right_border = 50
         self._top_border = -50
         self._bottom_border = 50
-        self._manual_zoom = False
+        self.manual_zoom = False
         self._signal_forwarding = {}
 
         # self.ants = []
@@ -164,18 +168,30 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
 
         """
-        self._manual_zoom = False
+        self.manual_zoom = False
 
+    #@time_me
     def fit_to_window(self):
         """ Calls up to graph view and makes it to fit all visible items here to view window."""
-        vr = self.visible_rect()
-        border = 60
-        new_rect = QtCore.QRectF(vr.x() - border / 2, vr.y() - border / 2, vr.width() + border, vr.height() + border)
+        #vr = self.visible_rect()
+        #border = 60
+        #new_rect = QtCore.QRectF(vr.x() - border / 2, vr.y() - border / 2, vr.width() + border, vr.height() + border)
         # sc = ctrl.graph.sceneRect()
         # if abs(sc.x()-new_rect.x())>5 or abs(sc.y()-new_rect.y())>5 or abs(sc.height()-new_rect.height())>5 or abs(sc.width()-new_rect.width())>5:
-        self.graph_view.instant_fit_to_view(new_rect)
+        for item in self.items():
+            if not item.isVisible():
+                print('hidden item: ', item)
+        self.graph_view.instant_fit_to_view(self.itemsBoundingRect())
 
     def visible_rect(self):
+        """ Counts all visible items in scene and returns QRectF object
+         that contains all of them """
+        #r = QtCore.QRectF(self.min_x, self.min_y, self.max_x - self.min_x, self.max_y - self.min_y)
+        r = self.itemsBoundingRect()
+        return r
+
+    @time_me
+    def visible_rect_old(self):
         """ Counts all visible items in scene and returns QRectF object
          that contains all of them """
         lefts = []
@@ -226,21 +242,22 @@ class GraphScene(QtWidgets.QGraphicsScene):
         else:
             return self.visible_rect()
 
-    # @time_me
-    def draw_forest(self, forest):
-        """ Update all trees in the forest
-        :param forest:
+    def item_moved(self):
+        """ Starts the animations unless they are running already
+        :return: None
+        """
+        if not self._timer_id:
+            self._timer_id = self.startTimer(prefs.fps_in_msec)
+
+    start_animations = item_moved
+
+    def stop_animations(self):
+        """ Stops the move and fade animation timer
+        :return: None
         """
         self.killTimer(self._timer_id)
         self._timer_id = 0
-        if not forest.visualization:
-            forest.change_visualization(prefs.default_visualization)
-        forest.update_all()
-        forest.visualization.draw()
-        if not self._manual_zoom:
-            self.fit_to_window()
-        self.item_moved()
-        self.graph_view.repaint()
+
 
     def export_3d(self, path, forest):
         """
@@ -251,13 +268,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
         pass
         # export_visible_items(path = path, scene = self, forest = forest, prefs = prefs)
 
-    def item_moved(self):
-        """
-
-
-        """
-        if not self._timer_id:
-            self._timer_id = self.startTimer(prefs.fps_in_msec)
 
     def move_selection(self, direction):
 
@@ -763,12 +773,11 @@ class GraphScene(QtWidgets.QGraphicsScene):
         self._fade_steps_list.reverse()
 
 
-    # @time_me
+    #@time_me
     def timerEvent(self, event):
-        # Main loop for animations and movement in scene
-        """
-
-        :param event:
+        """ Main loop for animations and movement in the scene -- calls nodes and tells them to update
+        their position
+        :param event: timer event? sent by Qt
         """
         items_have_moved = False
         items_fading = False
@@ -780,6 +789,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         x_sum = 0
         y_sum = 0
         z_sum = 0
+        avg_x = avg_y = avg_z = 0
         self.main.ui_manager.activity_marker.show()
         ctrl.items_moving = True
         if self._fade_steps:
@@ -839,28 +849,26 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 avg_x = x_sum / len(moved_nodes)
                 avg_y = y_sum / len(moved_nodes)
                 avg_z = z_sum / len(moved_nodes)
-                #print('normalizing', avg_x, avg_y, avg_z)
-                for xvel, yvel, zvel, node in moved_nodes:
-                    xvel -= avg_x
-                    yvel -= avg_y
-                    zvel -= avg_z
-                    if abs(xvel) > 0.25 or abs(yvel) > 0.25 or abs(zvel) > 0.25:
-                        x, y, z = node.current_position
-                        x += xvel
-                        y += yvel
-                        z += zvel
-                        node.current_position = (x, y, z)
-                        items_have_moved = True
-            else:
-                for xvel, yvel, zvel, node in moved_nodes:
-                    if abs(xvel) > 0.25 or abs(yvel) > 0.25 or abs(zvel) > 0.25:
-                        x, y, z = node.current_position
-                        x += xvel
-                        y += yvel
-                        z += zvel
-                        node.current_position = (x, y, z)
-                        items_have_moved = True
-        if resize_required and (not self._manual_zoom) and (not ctrl.dragged):
+            for xvel, yvel, zvel, node in moved_nodes:
+                xvel -= avg_x
+                yvel -= avg_y
+                zvel -= avg_z
+                x, y, z = node.current_position
+                if abs(xvel) > 0.25 or abs(yvel) > 0.25 or abs(zvel) > 0.25:
+                    x += xvel
+                    y += yvel
+                    z += zvel
+                    node.current_position = (x, y, z)
+                    items_have_moved = True
+                # if x < self.min_x:
+                #     self.min_x = x
+                # if x > self.max_x:
+                #     self.max_x = x
+                # if y < self.min_y:
+                #     self.min_y = y
+                # if y > self.max_y:
+                #     self.max_y = y
+        if resize_required and (not self.manual_zoom) and (not ctrl.dragged):
             self.fit_to_window()
 
         if items_have_moved:
@@ -869,7 +877,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 # for area in f.touch_areas:
                 # area.update_position()
         if not (items_have_moved or items_fading or frame_has_moved or background_fade):
-            self.killTimer(self._timer_id)
+            self.stop_animations()
             self.main.ui_manager.activity_marker.hide()
             ctrl.items_moving = False
-            self._timer_id = 0
