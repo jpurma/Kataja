@@ -801,7 +801,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             if node.folding_towards:
                 x, y, z = node.folding_towards.computed_position
                 node.computed_position = (x, y + 10, z)
-                if node.move_towards_target_position(bind_all=True):
+                if node.move_towards_target_position(force_move=True):
                     items_have_moved = True
                 normalize = False
                 moved_nodes.append((0, 0, 0, node))

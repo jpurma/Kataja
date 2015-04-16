@@ -15,7 +15,8 @@ __author__ = 'purma'
 
 
 class SaveError(Exception):
-    pass
+    """ for errors related to storing the model
+    """
     # def __init__(self, value):
     # self.value = value
     # def __str__(self):
@@ -55,7 +56,8 @@ class BaseModel:
             touched_name = '_' + attribute + '_touched'
             touched = getattr(self, touched_name, False)
             if not touched:
-                print('(touch) adding to undo_pile %s for attribute %s (%s, %s)' % (self._host, attribute, old_value, value))
+                # print('(touch) adding to undo_pile %s for attribute %s (%s, %s)' %
+                # (self._host, attribute, old_value, value))
                 ctrl.undo_pile.add(self._host)
                 setattr(self, '_' + attribute + '_history', old_value)
                 setattr(self, touched_name, True)
@@ -74,7 +76,7 @@ class BaseModel:
         touched_name = '_' + attribute + '_touched'
         touched = getattr(self, touched_name, False)
         if not touched:
-            print('(poke) adding to undo_pile', self._host)
+            # print('(poke) adding to undo_pile', self._host)
             ctrl.undo_pile.add(self._host)
             setattr(self, '_' + attribute + '_history', getattr(self, attribute, None))
             setattr(self, touched_name, True)
@@ -89,24 +91,59 @@ class BaseModel:
         """
         changes = {}
         for attr_name in dir(self):
-            if attr_name.endswith('_touched') and attr_name.startswith('_'):
-                if getattr(self, attr_name, False):
-                    attr_base = attr_name[1:-8]
-                    hist_name = '_%s_history' % attr_base
-                    old = getattr(self, hist_name)
-                    new = getattr(self, attr_base)
-                    changes[attr_base] = (old, new)
-                    setattr(self, hist_name, None)
-                    setattr(self, attr_name, False)
+            if attr_name.startswith('_'):
+                if attr_name.endswith('_touched'):
+                    if getattr(self, attr_name, False):
+                        attr_base = attr_name[1:-8]
+                        hist_name = '_%s_history' % attr_base
+                        old = getattr(self, hist_name)
+                        new = getattr(self, attr_base)
+                        changes[attr_base] = (old, new)
+                        setattr(self, hist_name, None)
+                        setattr(self, attr_name, False)
+                elif attr_name.endswith('_synobj') and getattr(self, attr_name, False):
+                    changes[attr_name] = (True, True)
         return changes
 
-    def save_object(self, saved_objs, open_refs):
+    def revert_to_earlier(self, changes):
+        """ Restore to earlier version with a given changes -dict
+        :param changes: dict of changes, values are tuples of (old, new) -pairs
+        :return: None
         """
+        for key, value in changes.items():
+            if key.startswith('_') and key.endswith('_synobj'):
+                continue
+            old, new = value
+            setattr(self, key, old)
 
-        :param self:
-        :param saved_objs:
-        :param open_refs:
-        :return: :raise:
+    def move_to_later(self, changes):
+        """ Move to later version with a given changes -dict
+        :param changes: dict of changes, values are tuples of (old, new) -pairs
+        :return: None
+        """
+        for key, value in changes.items():
+            if key.startswith('_') and key.endswith('_synobj'):
+                continue
+            old, new = value
+            setattr(self, key, new)
+
+    def update(self, changes):
+        """ Runs the after_model_update that should do the necessary derivative calculations and graphical updates
+        after the model has been changed by redo/undo.
+        updates are run as a batch after all of the objects have had their model values updated.
+        :param changes: dict of changes, same as in revert/move
+        :return:
+        """
+        updater = getattr(self._host, 'after_model_update', None)
+        if updater:
+            updater(changes.keys())
+
+    def save_object(self, saved_objs, open_refs):
+        """ Flatten the object to saveable dict and recursively save the objects it contains
+        :param saved_objs: dict where saved objects are stored.
+        :param open_refs: set of open references. We cannot go jumping to save each referred object when one is
+        met, as it would soon lead to circular references. Open references are stored and cyclically reduced.
+        :return: None
         """
 
         def _simplify(data):
@@ -148,7 +185,8 @@ class BaseModel:
                     result.add(_simplify(o))
                 return result
             elif isinstance(data, types.FunctionType):
-                # if functions are stored in the dict, there should be some original version of the same dict, where these
+                # if functions are stored in the dict, there should be some original
+                # version of the same dict, where these
                 # are in their original form.
                 raise SaveError('trying to save a function at object ', self)
             elif data is None:
@@ -170,12 +208,11 @@ class BaseModel:
             elif hasattr(data, 'save_key'):
                 k = getattr(data, 'save_key')
                 if k not in saved_objs and k not in open_refs:
-                    #print('in %s adding open reference %s' % (self.save_key, k))
+                    # print('in %s adding open reference %s' % (self.save_key, k))
                     open_refs[k] = data
                 return '|'.join(('*r*', str(k)))
             else:
                 raise SaveError("simplifying unknown data type:", data, type(data))
-
 
         if self.save_key in saved_objs:
             return
@@ -237,7 +274,6 @@ class BaseModel:
         print('full_map has %s items' % len(full_map))
         self.restore(self.save_key)
         del full_map, restored, full_data, main
-
 
     def restore(self, obj_key, class_key=''):
         """

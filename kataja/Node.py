@@ -70,18 +70,19 @@ class NodeModel(MovableModel):
 
         so = getattr(self, 'syntactic_object', None)
         if so:
-            model = getattr(so, 'model')
-            if model:
-                old_value = getattr(model, attribute, None)
+            so_model = getattr(so, 'model', None)
+            if so_model:
+                old_value = getattr(so_model, attribute, None)
                 if old_value != value:
                     # hmmm... cannot now think through how badly it will break things as
-                    touched_name = '_' + attribute + '_touched_synobj'
-                    touched = getattr(self, touched_name, False)
+                    touched_name = '_' + attribute + '_touched'
+                    touched = getattr(so_model, touched_name, False)
                     if not touched:
                         ctrl.undo_pile.add(self._host)
-                        print('(touch synobj) adding to undo_pile', self._host)
-                        setattr(model, '_' + attribute + '_history', old_value)
-                        setattr(model, touched_name, True)
+                        ctrl.undo_pile.add(so)
+                        setattr(so_model, '_' + attribute + '_history', old_value)
+                        setattr(so_model, touched_name, True)
+                        setattr(self, '_' + attribute + '_synobj', True)
                     return True
         return False
 
@@ -140,6 +141,19 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self.effect = create_shadow_effect(ctrl.cm.selection())
         self._update_magnets = True
         self.setGraphicsEffect(self.effect)
+
+    def after_model_update(self, updated_fields):
+        """ This is called after the item's model has been updated, to run the side-effects of various
+        setters in an order that makes sense.
+        :param updated_fields: list of names of fields that have been updated.
+        :return: None
+        """
+        super().after_model_update(updated_fields)
+        for key in updated_fields:
+            if key.startswith('_') and key.endswith('_synobj'):
+                print('change in syntactic object detected for node: ', key)
+        if 'label' in updated_fields or 'index' in updated_fields:
+            self._inode_changed = True
 
     @property
     def syntactic_object(self):
@@ -261,6 +275,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             self.model.index = value
             self._inode_changed = True
 
+    # Non-model-based properties ########################################
 
     @property
     def hovering(self):

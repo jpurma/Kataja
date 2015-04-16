@@ -34,6 +34,7 @@ import kataja.globals as g
 
 TRIANGLE_HEIGHT = 10
 
+
 class ConstituentNodeModel(NodeModel):
     """ ConstituentNodeModel contains the permanent (saved) data of a ConstituentNode instance """
 
@@ -91,9 +92,9 @@ class ConstituentNode(Node):
 
     def after_init(self):
         """ After_init is called in 2nd step in process of creating objects:
-            1st wave creates the objects and calls __init__, and then iterates through and sets the values.
-            2nd wave calls after_inits for all created objects. Now they can properly refer to each other and know their
-                values.
+        1st wave creates the objects and calls __init__, and then iterates through and sets the values.
+        2nd wave calls after_inits for all created objects. Now they can properly refer to each other and know their
+        values.
         :return: None
         """
         self.update_features()
@@ -101,6 +102,16 @@ class ConstituentNode(Node):
         self.update_label()
         self.update_visibility()
         ctrl.forest.store(self)
+
+    def after_model_update(self, updated_fields):
+        """ This is called after the item's model has been updated, to run the side-effects of various
+        setters in an order that makes sense.
+        :param updated_fields: list of names of fields that have been updated.
+        :return: None
+        """
+        super().after_model_update(updated_fields)
+        if 'alias' in updated_fields:
+            self._inode_changed = True
 
     # properties implemented by syntactic node
 
@@ -369,7 +380,6 @@ class ConstituentNode(Node):
         else:
             return atts
 
-    @time_me
     def update_visibility(self, **kw):
         """
 

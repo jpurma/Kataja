@@ -1170,6 +1170,7 @@ def undo():
 a['undo'] = {
     'command': 'undo',
     'method': undo,
+    'undoable': False,
     'shortcut': 'Ctrl+z'}
 
 
@@ -1182,6 +1183,7 @@ def redo():
 a['redo'] = {
     'command': 'redo',
     'method': redo,
+    'undoable': False,
     'shortcut': 'Ctrl+Shift+z'}
 
 

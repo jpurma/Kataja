@@ -93,7 +93,7 @@ class Forest:
         """ Create an empty forest """
         if not hasattr(self, 'model'):
             self.model = ForestModel(self)
-        self.nodes_by_uid = {}
+        self.nodes_from_synobs = {}
         self.main = ctrl.main
         self.main.forest = self  # assign self to be the active forest while creating the managers.
         self.in_display = False
@@ -115,6 +115,21 @@ class Forest:
             self.gloss_text = gloss_text
         if comments:
             self.comments = comments
+
+
+
+    def after_model_update(self, updated_fields):
+        """ This is called after the item's model has been updated, to run the side-effects of various
+        setters in an order that makes sense.
+        :param updated_fields: list of names of fields that have been updated.
+        :return: None
+        """
+        if 'nodes' in updated_fields:
+            # rebuild from-syntactic_object-to-node -dict
+            self.nodes_from_synobs = {}
+            for node in self.nodes.values():
+                if node.syntactic_object:
+                    self.nodes_from_synobs[node.syntactic_object.save_key] = node
 
     @property
     def save_key(self):
@@ -275,6 +290,7 @@ class Forest:
         self.scene.manual_zoom = False
         ctrl.ui.update_all_fields()
         self.undo_manager.init_if_empty()
+        self.draw() ## do draw once to avoid having the first draw in undo stack.
         ctrl.disable_undo = False
 
     def retire_from_drawing(self):
@@ -443,7 +459,8 @@ class Forest:
         if isinstance(item, Node):
             self.nodes[item.save_key] = item
             if item.syntactic_object:
-                self.nodes_by_uid[item.syntactic_object.save_key] = item
+                # remember to rebuild nodes_by_uid in undo/redo, as it is not stored in model
+                self.nodes_from_synobs[item.syntactic_object.save_key] = item
         elif isinstance(item, Edge):
             self.edges[item.save_key] = item
         elif isinstance(item, TextArea):
@@ -471,9 +488,10 @@ class Forest:
             print("Why are we drawing a forest which shouldn't be in scene")
         sc = ctrl.graph_scene
         sc.stop_animations()
-        if not self.visualization:
-            self.change_visualization(prefs.default_visualization)
-        self.update_all()
+        for root in self.roots:
+            root.update_visibility()
+        self.bracket_manager.update_brackets()
+        self.update_forest_gloss()
         self.visualization.draw()
         if not sc.manual_zoom:
             sc.fit_to_window()
@@ -494,15 +512,6 @@ class Forest:
             if item.scene() != self.scene:
                 self.scene.addItem(item)
 
-
-    def update_all(self):
-        """ Go through the visible tree and check that every node that should exist exists and
-        that every edge of every type that should exist is there too.
-        Then check that there isn't any objects that shouldn't be there """
-        for root in self.roots:
-            root.update_visibility()
-        self.bracket_manager.update_brackets()
-        self.update_forest_gloss()
 
 
     def update_colors(self):
@@ -527,7 +536,7 @@ class Forest:
         :param syntax.BaseConstituent constituent:
         :rtype kataja.ConstituentNode
         """
-        return self.nodes_by_uid.get(constituent.save_key, None)
+        return self.nodes_from_synobs.get(constituent.save_key, None)
 
     def get_constituent_edges(self):
         """ Return list of constituent edges
@@ -939,8 +948,8 @@ class Forest:
         # -- dictionaries --
         if node.save_key in self.nodes:
             del self.nodes[node.save_key]
-        if node.syntactic_object and node.syntactic_object.save_key in self.nodes_by_uid:
-            del self.nodes_by_uid[node.syntactic_object.save_key]
+        if node.syntactic_object and node.syntactic_object.save_key in self.nodes_from_synobs:
+            del self.nodes_from_synobs[node.syntactic_object.save_key]
         if node in self.roots:
             self.roots.remove(node)
         # -- scene --

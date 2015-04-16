@@ -349,16 +349,19 @@ class KatajaMain(QtWidgets.QMainWindow):
         if element:
             args += element
         print("Doing action '%s' with method '%s' and with args: %s" % (key, data['method'], str(args)))
-        method = data['method']
-        undo_state = ctrl.disable_undo
+
+        # Disable undo if necessary
         if not undoable:
+            remember_undo_state = ctrl.disable_undo
             ctrl.disable_undo = True
-        if args:
-            method(*args)
-        else:
-            method()
-        ctrl.disable_undo = undo_state
-        self.action_finished()
+
+        # Call method
+        data['method'](*args)
+
+        # Restore undo state to what it was
+        if not undoable:
+            ctrl.disable_undo = remember_undo_state
+        self.action_finished(undoable=undoable)
 
     def action_finished(self, m='', undoable=True):
         """
@@ -366,13 +369,16 @@ class KatajaMain(QtWidgets.QMainWindow):
         :param m: message for undo
         :param undoable: are we supposed to take a snapshot of changes after this action.
         """
-        if undoable:
-            ctrl.forest.undo_manager.take_snapshot(m)
+        print('--- start "action finished" ---', m)
         if ctrl.action_redraw:
+            print('-- calling draw --')
             ctrl.forest.draw()
+        if undoable:
+            print('-- calling take_snapshot --')
+            ctrl.forest.undo_manager.take_snapshot(m)
         else:
             ctrl.graph_scene.start_animations()
-        print('--- action finished ---')
+        print('--- end action finished ---')
 
 
     def enable_actions(self):

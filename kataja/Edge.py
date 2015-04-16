@@ -65,7 +65,7 @@ class EdgeModel(BaseModel):
         self.visible = None
 
 
-class Edge(BaseModel, QtWidgets.QGraphicsItem):
+class Edge(QtWidgets.QGraphicsItem):
     """ Any connection between nodes: can be represented as curves, branches or arrows """
 
     receives_signals = [g.EDGE_SHAPES_CHANGED]

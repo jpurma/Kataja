@@ -31,6 +31,7 @@ from syntax.ConfigurableFeature import Feature
 # from copy import deepcopy
 
 
+
 class BaseConstituentModel(BaseModel):
     """ BaseConstituentModel holds the data of BaseConstituent in a form that can be saved and restored easily.
     """
