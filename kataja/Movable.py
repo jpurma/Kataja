@@ -123,7 +123,6 @@ class Movable:
         :return: None
         """
         x, y, z = value
-        print('computed position updated')
         if self.can_adjust_position() and self.model.adjustment:
             ax, ay, az = self.model.adjustment
             self.final_position = (x + ax, y + ay, z + az)
@@ -131,7 +130,6 @@ class Movable:
             self.final_position = tuple(self.model.computed_position)
         if self.should_move():
             self.start_moving()
-            print('start moving')
 
     @property
     def adjustment(self):

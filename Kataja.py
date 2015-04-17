@@ -5,16 +5,28 @@ Created on 28.8.2013
 
 @author: purma
 """
-from PyQt5 import QtWidgets
+from PyQt5 import QtCore
+import os
+
+filePath = os.path.dirname(os.path.abspath(__file__))
+print(filePath)
+if filePath.endswith('Resources'):
+    QtCore.QCoreApplication.setLibraryPaths([filePath + '/../plugins'])
+print('librarypath:', QtCore.QCoreApplication.libraryPaths())
+
+
+from PyQt5 import QtWidgets, QtPrintSupport
 from kataja.KatajaMain import KatajaMain
 import sys
 
+ok = QtPrintSupport
 
 # building with pyinstaller:
 # PyInstaller-2.1/pyinstaller.py Kataja.py --clean -n Kataja -i kataja.icns --windowed
 
 # noinspection PyCallByClass,PyTypeChecker
 #QtWidgets.QApplication.setStyle('Fusion')
+
 
 app = QtWidgets.QApplication(sys.argv)
 app.setApplicationName('Kataja')

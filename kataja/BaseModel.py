@@ -65,9 +65,11 @@ class BaseModel:
         return False
 
     def poke(self, attribute):
-        """ Like "touch", but this is used manually for container-type objects in the model before changing adding or
-        removing objects in them, as these operations would not be catch by setters. This doesn't do any checks, as
-        we know we are going to change the list/dict/set
+        """ Like "touch", to alert undo system that this object is being changed.
+        This is used manually for container-type objects in the model before changing adding or
+        removing objects in them, as these operations would not be catch by setters. This doesn't check if
+         the new value is different from previous, as this is used manually before actions that change
+         the list/dict/set.
         :param attribute: string, name of the attribute
         :return: None
         """
@@ -285,7 +287,8 @@ class BaseModel:
         global full_map, restored, full_data, main
 
         def inflate(data):
-            """ Recursively turn QObject descriptions back into actual objects and object references back into real objects
+            """ Recursively turn QObject descriptions back into actual objects and object references
+            back into real objects
             :param data:
             :return:
             """
@@ -296,9 +299,8 @@ class BaseModel:
                 return data
             elif isinstance(data, dict):
                 result = {}
-                for key, value in data.items():
-                    value = inflate(value)
-                    result[key] = value
+                for k, value in data.items():
+                    result[k] = inflate(value)
                 return result
             elif isinstance(data, list):
                 result = []
@@ -355,7 +357,7 @@ class BaseModel:
         # If the object already exists (e.g. we are doing undo), the loaded values overwrite existing values.
         obj = full_map.get(obj_key, None)
         if not obj:
-            #print('creating new ', class_key)
+            # print('creating new ', class_key)
             obj = main.object_factory(class_key)
         # when creating/modifying values inside forests, they may refer back to ctrl.forest. That has to be the current
         # forest, or otherwise things go awry

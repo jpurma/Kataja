@@ -800,9 +800,9 @@ class Edge(QtWidgets.QGraphicsItem):
         return SHAPE_PRESETS[self.shape_name]['control_points']
 
     def drag(self, event):
-        """
-
-        :param event:
+        """ This is for dragging the whole edge in cases when edge is not connected to nodes at any point
+        e.g. it is freely floating arrow or divider
+        :param event: Drag event?
         """
         sx, sy, z = self.start_point
         dx, dy = self.end_point[0] - sx, self.end_point[1] - sy
@@ -901,8 +901,10 @@ class Edge(QtWidgets.QGraphicsItem):
                     ctrl.forest.settings.edge_shape_settings(self.edge_type, key=key, shape_name=self.shape_name)
             elif value == g.DELETE:
                 if key in self.local_shape_args:
+                    self.model.poke('local_shape_args')
                     del self.local_shape_args[key]
             else:
+                self.model.poke('local_shape_args')
                 self.local_shape_args[key] = value
 
     # ### Derivative features ############################################

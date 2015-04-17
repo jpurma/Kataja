@@ -149,11 +149,10 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :return: None
         """
         super().after_model_update(updated_fields)
-        for key in updated_fields:
-            if key.startswith('_') and key.endswith('_synobj'):
-                print('change in syntactic object detected for node: ', key)
-        if 'label' in updated_fields or 'index' in updated_fields:
+        if '_label_synobj' in updated_fields or '_index_synobj' in updated_fields:
             self._inode_changed = True
+            self.update_label()
+
 
     @property
     def syntactic_object(self):

@@ -110,8 +110,25 @@ class ConstituentNode(Node):
         :return: None
         """
         super().after_model_update(updated_fields)
-        if 'alias' in updated_fields:
+        update_label = False
+        if '_alias_synobj' in updated_fields:
             self._inode_changed = True
+            update_label = True
+        if '_index_synobj' in updated_fields:
+            self._inode_changed = True
+            update_label = True
+        if '_gloss_synobj' in updated_fields:
+            self._inode_changed = True
+            self.update_gloss()
+            update_label = True
+        if '_features_synobj' in updated_fields:
+            self._inode_changed = True
+            self.update_features()
+            update_label = True
+        if 'triangle' in updated_fields:
+            self.triangle_updated(self.triangle)
+        if update_label:
+            self.update_label()
 
     # properties implemented by syntactic node
 
@@ -193,7 +210,6 @@ class ConstituentNode(Node):
         """
         return self.model.original_parent
 
-
     @original_parent.setter
     def original_parent(self, value):
         """
@@ -216,14 +232,20 @@ class ConstituentNode(Node):
             value = False
         if self.model.touch('triangle', value):
             self.model.triangle = value
-            # update label positioning here so that offset doesn't need to be stored in save files and it
-            # still will be updated correctly
-            if self._label_complex:
-                if value:
-                    self._label_complex.y_offset = TRIANGLE_HEIGHT
-                else:
-                    self._label_complex.y_offset = 0
-                self.update_label()
+            self.triangle_updated(value)
+
+    def triangle_updated(self, value):
+        """ update label positioning here so that offset doesn't need to be stored in save files and it
+            still will be updated correctly
+        :param value: bool
+        :return: None
+        """
+        if self._label_complex:
+            if value:
+                self._label_complex.y_offset = TRIANGLE_HEIGHT
+            else:
+                self._label_complex.y_offset = 0
+            self.update_label()
 
     @property
     def merge_order(self):

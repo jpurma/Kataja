@@ -1,0 +1,30 @@
+
+install_name_tool -id @executable_path/../Frameworks/QtGui.framework/Versions/5/QtGui Kataja.app/Contents/Frameworks/QtGui.framework/Versions/5/QtGui
+
+install_name_tool -id @executable_path/../Frameworks/QtWidgets.framework/Versions/5/QtWidgets Kataja.app/Contents/Frameworks/QtWidgets.framework/Versions/5/QtWidgets
+
+install_name_tool -id @executable_path/../Frameworks/QtCore.framework/Versions/5/QtCore Kataja.app/Contents/Frameworks/QtCore.framework/Versions/5/QtCore
+
+install_name_tool -change /Users/purma/Qt5.4.1/5.4/clang_64/lib/QtGui.framework/Versions/5/QtGui @executable_path/../Frameworks/QtGui.framework/Versions/5/QtGui Kataja.app/Contents/MacOS/Kataja 
+
+install_name_tool -change /Users/purma/Qt5.4.1/5.4/clang_64/lib/QtWidgets.framework/Versions/5/QtWidgets @executable_path/../Frameworks/QtWidgets.framework/Versions/5/QtWidgets Kataja.app/Contents/MacOS/Kataja 
+
+install_name_tool -change /Users/purma/Qt5.4.1/5.4/clang_64/lib/QtCore.framework/Versions/5/QtCore @executable_path/../Frameworks/QtCore.framework/Versions/5/QtCore Kataja.app/Contents/MacOS/Kataja 
+
+install_name_tool -change /Users/purma/Qt5.4.1/5.4/clang_64/lib/QtCore.framework/Versions/5/QtCore @executable_path/../Frameworks/QtCore.framework/Versions/5/QtCore Kataja.app/Contents/Frameworks/QtGui.framework/Versions/5/QtGui 
+
+install_name_tool -change /Users/purma/Qt5.4.1/5.4/clang_64/lib/QtCore.framework/Versions/5/QtCore @executable_path/../Frameworks/QtCore.framework/Versions/5/QtCore Kataja.app/Contents/Frameworks/QtWidgets.framework/Versions/5/QtWidgets 
+
+install_name_tool -change /Users/purma/Qt5.4.1/5.4/clang_64/lib/QtGui.framework/Versions/5/QtGui @executable_path/../Frameworks/QtGui.framework/Versions/5/QtGui Kataja.app/Contents/Frameworks/QtWidgets.framework/Versions/5/QtWidgets 
+
+
+install_name_tool -id @executable_path/../plugins/platforms/libqcocoa.dylib Kataja.app/Contents/plugins/platforms/libqcocoa.dylib
+
+install_name_tool -change /Users/purma/Qt5.4.1/5.4/clang_64/lib/QtPrintSupport.framework/Versions/5/QtPrintSupport @executable_path/../Frameworks/QtPrintSupport.framework/Versions/5/QtPrintSupport Kataja.app/Contents/plugins/platforms/libqcocoa.dylib
+
+install_name_tool -change /Users/purma/Qt5.4.1/5.4/clang_64/lib/QtCore.framework/Versions/5/QtCore @executable_path/../Frameworks/QtCore.framework/Versions/5/QtCore Kataja.app/Contents/plugins/platforms/libqcocoa.dylib
+
+install_name_tool -change /Users/purma/Qt5.4.1/5.4/clang_64/lib/QtWidgets.framework/Versions/5/QtWidgets @executable_path/../Frameworks/QtWidgets.framework/Versions/5/QtWidgets Kataja.app/Contents/plugins/platforms/libqcocoa.dylib
+
+install_name_tool -change /Users/purma/Qt5.4.1/5.4/clang_64/lib/QtGui.framework/Versions/5/QtGui @executable_path/../Frameworks/QtGui.framework/Versions/5/QtGui Kataja.app/Contents/plugins/platforms/libqcocoa.dylib
+
