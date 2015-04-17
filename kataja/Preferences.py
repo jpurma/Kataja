@@ -25,10 +25,14 @@
 from pathlib import Path
 from collections import OrderedDict
 import sys
+import os
+import importlib
+import shutil
 
 from PyQt5 import QtGui, QtCore
 
 from kataja.globals import *
+
 
 
 disable_saving_preferences = True
@@ -49,7 +53,6 @@ windows_fonts = {MAIN_FONT: ['Cambria', 'Normal', 10], CONSOLE_FONT: ['Consolas'
                  UI_FONT: ['Droid Sans', 'Normal', 10], ITALIC_FONT: ['Cambria', 'Italic', 10],
                  BOLD_FONT: ['Cambria', 'Bold', 10], SMALL_CAPS: ['Lao MN', 'Normal', 8],
                  SMALL_FEATURE: ['Lao MN', 'Normal', 7]}
-
 print('platform:', sys.platform)
 if sys.platform == 'darwin':
     fonts = mac_fonts
@@ -84,7 +87,7 @@ class Preferences(object):
 
     """
     # Prefs are not saved in save command, but changes here are undoable, so this must support the save protocol.
-    not_saved = ['resources_path', 'default_userspace_path', 'in_app']
+    not_saved = ['resources_path', 'default_userspace_path', 'in_app', 'plugins']
 
 
     def __init__(self):
@@ -94,7 +97,7 @@ class Preferences(object):
         self.thickness_multiplier = 2
         self.color_modes = color_modes
         self.shared_palettes = {}
-
+        self.plugins = {}
         self.dpi = 300
         self.FPS = 30
         self.fps_in_msec = 1000 / self.FPS
@@ -146,16 +149,34 @@ class Preferences(object):
         self.show_gloss_text = True  # fixme: is it global preference?
 
         my_path = Path(__file__).parts
+        print('my_path In preferences: ', my_path)
         if sys.platform == 'darwin' and 'Kataja.app' in my_path:
-            print(my_path)
             i = my_path.index('Kataja.app')
             self.resources_path = str(Path(*list(my_path[:i + 1]) + ['Contents', 'Resources', 'resources', ''])) + '/'
-            self.default_userspace_path = '~/'
+            self.default_userspace_path = os.path.expanduser('~/')
             self.in_app = True
+            print('running from inside os x .app -container')
+            # Make sure that 'plugins'-dir is available in Application Support
+            app_support = os.path.expanduser('~/Library/Application Support')
+            library_kat = app_support+'/Kataja'
+            library_plugins = library_kat+'/plugins'
+            if os.access(app_support, os.F_OK):
+                if not os.access(library_kat, os.F_OK):
+                    os.makedirs(library_kat)
+                if os.access(library_kat, os.W_OK):
+                    local_plugin_path = str(Path(*list(my_path[:-1]) + ['plugins']))
+                    if (not os.access(library_plugins, os.F_OK)) and os.access(local_plugin_path, os.W_OK):
+                        print("Moving 'plugins' to /~Library/Application Support/Kataja")
+                        shutil.move(local_plugin_path, library_plugins)
+                        print("making a local symlink here to keep plugins easily accessible")
+                        os.symlink(library_plugins, local_plugin_path, target_is_directory=True)
+            print('plugins dir readable: ', os.access(library_plugins, os.R_OK))
+
         else:
             self.resources_path = './resources/'
             self.default_userspace_path = './'
             self.in_app = False
+            print('running as a python script')
         print("resources_path: ", self.resources_path)
         print("default_userspace_path: ", self.default_userspace_path)
         self.userspace_path = ''
@@ -213,7 +234,23 @@ class Preferences(object):
                       PROPERTY_NODE: {'color': 'accent6', 'font': SMALL_CAPS, 'font-size': 10},
                       COMMENT_NODE: {'color': 'accent4', 'font': MAIN_FONT, 'font-size': 14}}
         self.custom_colors = {}
+        self.import_plugins()
 
+    def import_plugins(self):
+        import kataja.plugins
+        plugins_path = kataja.plugins.__path__[0]
+        print(kataja.plugins.__path__)
+        plugins_dir = os.listdir(plugins_path)
+        print(plugins_dir)
+        self.plugins = {}
+        for plugin_file in plugins_dir:
+            if plugin_file.endswith('.py') and not plugin_file.startswith('__'):
+                plugin_name = plugin_file[:-3]
+                try:
+                    self.plugins[plugin_name] = importlib.import_module('kataja.plugins.%s' % plugin_name)
+                except:
+                    print('import error with: ' % plugin_file)
+        print('Modules imported from plugins: %s' % list(self.plugins.keys()))
 
     def update(self, update_dict):
         """

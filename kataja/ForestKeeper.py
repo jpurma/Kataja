@@ -136,7 +136,6 @@ class ForestKeeper:
             f.close()
         except FileNotFoundError:
             treelist = ['[A B]', '[ A [ C B ] ]', '']
-        print(treelist)
         return treelist
 
     def create_forests(self, treelist):
@@ -157,8 +156,6 @@ class ForestKeeper:
         in a tree
         """
         # Clear this screen before we start creating a mess
-        print('----------- starting loading ------------')
-        print(treelist)
         ctrl.disable_undo = True  # disable tracking of changes (e.g. undo)
         if self.forest:
             self.forest.retire_from_drawing()
@@ -178,14 +175,12 @@ class ForestKeeper:
             line = line.strip()
             #line.split('=', 1)
             parts = line.split('=', 1)
-            print(line)
             # comment line
             if line.startswith('#'):
                 if started_forest:
                     comments.append(line[1:])
             # Definition line
             elif len(parts) > 1 and not line.startswith('['):
-                print('starting forest, parts and defs?')
                 started_forest = True
                 word = parts[0].strip()
                 values = parts[1]

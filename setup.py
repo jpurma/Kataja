@@ -9,8 +9,9 @@ from setuptools import setup
 
 APP = ['Kataja.py']
 DATA_FILES = ['resources']
-OPTIONS = {'argv_emulation': True, 'includes':['sip']}
-
+OPTIONS = {'argv_emulation': True, 'includes':['sip'],
+'iconfile': 'resources/icons/Kataja.icns'
+}
 setup(
     app=APP,
     data_files=DATA_FILES,

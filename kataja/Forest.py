@@ -91,7 +91,6 @@ class Forest:
 
     def __init__(self, buildstring='', definitions=None, gloss_text='', comments=None):
         """ Create an empty forest """
-        print('Forest:', buildstring)
         if not hasattr(self, 'model'):
             self.model = ForestModel(self)
         self.nodes_from_synobs = {}

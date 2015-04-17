@@ -19,14 +19,9 @@ from PyQt5 import QtWidgets, QtPrintSupport
 from kataja.KatajaMain import KatajaMain
 import sys
 
+# QtPrintSupport is imported here only because py2app then knows to add it as a framework.
+# libqcocoa.dynlib requires QtPrintSupport.
 ok = QtPrintSupport
-
-# building with pyinstaller:
-# PyInstaller-2.1/pyinstaller.py Kataja.py --clean -n Kataja -i kataja.icns --windowed
-
-# noinspection PyCallByClass,PyTypeChecker
-#QtWidgets.QApplication.setStyle('Fusion')
-
 
 app = QtWidgets.QApplication(sys.argv)
 app.setApplicationName('Kataja')
