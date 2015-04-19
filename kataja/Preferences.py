@@ -156,6 +156,10 @@ class Preferences(object):
         self.show_gloss_text = True  # fixme: is it global preference?
 
         if running_environment == 'mac app':
+            # When runnins as a mac app, the plugins directory is put to Application Support/Kataja/plugins
+            # code there is loaded on launch.
+            # Also the resoruces folder is inside the app package, and default save location is user's
+            # home path.
             my_path = Path(__file__).parts
             i = my_path.index('Kataja.app')
             app_path = str(Path(*list(my_path[:i + 1])))
@@ -174,6 +178,9 @@ class Preferences(object):
                         print("Copying 'plugins' to /~Library/Application Support/Kataja")
                         shutil.copytree(local_plugin_path, self.plugins_path)
         elif running_environment == 'mac python':
+            # When runnins as a mac python script, plugins, resources and default save location are
+            # based on the kataja code base.
+            # This is easier for development and active 'bold' use.
             prefs_code = os.path.realpath(__file__)
             filename = __file__.split('/')[-1]
             kataja_root = prefs_code[:-len('kataja/'+filename)]
@@ -239,25 +246,6 @@ class Preferences(object):
                       PROPERTY_NODE: {'color': 'accent6', 'font': SMALL_CAPS, 'font-size': 10},
                       COMMENT_NODE: {'color': 'accent4', 'font': MAIN_FONT, 'font-size': 14}}
         self.custom_colors = {}
-        self.import_plugins()
-
-    def import_plugins(self):
-        """ Find the plugins dir for the running configuration and import all found modules to plugins -dict.
-        :return: None
-        """
-        plugins_dir = os.listdir(self.plugins_path)
-        print('plugins dir:', plugins_dir)
-        sys.path.append(self.plugins_path)
-        for plugin_file in plugins_dir:
-            if plugin_file.endswith('.py') and not plugin_file.startswith('__'):
-                plugin_name = plugin_file[:-3]
-                if plugin_name not in self.plugins:
-                    try:
-                        self.plugins[plugin_name] = importlib.import_module(plugin_name)
-                    except:
-                        print('import error with:', plugin_name)
-
-        print('Modules imported from plugins: %s' % list(self.plugins.keys()))
 
     def update(self, update_dict):
         """

@@ -50,7 +50,7 @@ from kataja.UIManager import UIManager
 from kataja.PaletteManager import PaletteManager
 from kataja.object_factory import create
 import kataja.globals as g
-from kataja.utils import time_me
+from kataja.utils import time_me, import_plugins
 from kataja.visualizations.available import VISUALIZATIONS
 import kataja.debug as debug
 from kataja.BaseModel import BaseModel
@@ -101,6 +101,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         print('---- Initialized color manager ... ', time.time() - t)
         prefs.load_preferences()
         qt_prefs.late_init(prefs, self.fontdb)
+        import_plugins(prefs)
         self.setWindowIcon(QtGui.QIcon(qt_prefs.kataja_icon))
         self.app.setFont(qt_prefs.font(g.UI_FONT))
         print('---- initialized prefs ... ', time.time() - t)

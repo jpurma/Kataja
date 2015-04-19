@@ -21,6 +21,8 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
+import importlib
+import os
 
 from types import FrameType
 import gc
@@ -378,6 +380,25 @@ def print_transform(transform):
         t.m11(), t.m12(), t.m13(), t.m21(), t.m22(), t.m23(), t.m31(), t.m32(), t.m33(), t.dx(), t.dy()))
     print('isRotating:%s isScaling:%s isTranslating:%s' % (t.isRotating(), t.isScaling(), t.isTranslating()))
 
+
+
+def import_plugins(prefs):
+    """ Find the plugins dir for the running configuration and import all found modules to plugins -dict.
+    :return: None
+    """
+    plugins_dir = os.listdir(prefs.plugins_path)
+    print('plugins dir:', plugins_dir)
+    sys.path.append(prefs.plugins_path)
+    for plugin_file in plugins_dir:
+        if plugin_file.endswith('.py') and not plugin_file.startswith('__'):
+            plugin_name = plugin_file[:-3]
+            if plugin_name not in prefs.plugins:
+                try:
+                    prefs.plugins[plugin_name] = importlib.import_module(plugin_name)
+                except:
+                    print('import error with:', plugin_name)
+
+    print('Modules imported from plugins: %s' % list(prefs.plugins.keys()))
 
 
 
