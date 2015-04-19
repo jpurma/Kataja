@@ -237,19 +237,22 @@ class Preferences(object):
         self.import_plugins()
 
     def import_plugins(self):
-        import kataja.plugins
-        plugins_path = kataja.plugins.__path__[0]
-        print(kataja.plugins.__path__)
+        #import kataja.plugins
+        #plugins_path = kataja.plugins.__path__[0]
+        #print(kataja.plugins.__path__)
+        plugins_path = '/Users/purma/github/Kataja/dist/Kataja.app/Contents/Resources/lib/plugins'
         plugins_dir = os.listdir(plugins_path)
-        print(plugins_dir)
+        print('plugins dir:', plugins_dir)
         self.plugins = {}
+        sys.path.append(plugins_path)
         for plugin_file in plugins_dir:
             if plugin_file.endswith('.py') and not plugin_file.startswith('__'):
                 plugin_name = plugin_file[:-3]
                 try:
-                    self.plugins[plugin_name] = importlib.import_module('kataja.plugins.%s' % plugin_name)
+                    self.plugins[plugin_name] = importlib.import_module(plugin_name)
                 except:
-                    print('import error with: ' % plugin_file)
+                    print('import error with:', plugin_name)
+
         print('Modules imported from plugins: %s' % list(self.plugins.keys()))
 
     def update(self, update_dict):
