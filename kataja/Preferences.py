@@ -34,7 +34,6 @@ from PyQt5 import QtGui, QtCore
 from kataja.globals import *
 
 
-
 disable_saving_preferences = True
 # Alternatives: Cambria Math, Asana Math, XITS Math
 
@@ -53,13 +52,21 @@ windows_fonts = {MAIN_FONT: ['Cambria', 'Normal', 10], CONSOLE_FONT: ['Consolas'
                  UI_FONT: ['Droid Sans', 'Normal', 10], ITALIC_FONT: ['Cambria', 'Italic', 10],
                  BOLD_FONT: ['Cambria', 'Bold', 10], SMALL_CAPS: ['Lao MN', 'Normal', 8],
                  SMALL_FEATURE: ['Lao MN', 'Normal', 7]}
-print('platform:', sys.platform)
+
+running_environment = ''
+
 if sys.platform == 'darwin':
     fonts = mac_fonts
+    if 'Kataja.app' in Path(__file__).parts:
+        running_environment = 'mac app'
+    else:
+        running_environment = 'mac python'
 elif sys.platform == 'win32':
     fonts = windows_fonts
+    running_environment = 'win python'
 else:
     fonts = linux_fonts
+    running_environment = 'nix python'
 
 color_modes = OrderedDict([('solarized_dk', {'name': 'Solarized dark', 'fixed': True, 'hsv': [0, 0, 0]}),
                            ('solarized_lt', {'name': 'Solarized light', 'fixed': True, 'hsv': [0, 0, 0]}),
@@ -103,8 +110,8 @@ class Preferences(object):
         self.fps_in_msec = 1000 / self.FPS
         self.default_visualization = 'Left first tree'
 
-        self.blender_app_path = '/Applications/blender.app/Contents/MacOS/blender'
-        self.blender_env_path = '/Users/purma/Dropbox/bioling_blender'
+        #self.blender_app_path = '/Applications/blender.app/Contents/MacOS/blender'
+        #self.blender_env_path = '/Users/purma/Dropbox/bioling_blender'
 
         self.move_frames = 12
         self._curve = 'InQuad'
@@ -148,33 +155,31 @@ class Preferences(object):
         self.feature_nodes = True
         self.show_gloss_text = True  # fixme: is it global preference?
 
-        my_path = Path(__file__).parts
-        print('my_path In preferences: ', my_path)
-        if sys.platform == 'darwin' and 'Kataja.app' in my_path:
+        if running_environment == 'mac app':
+            my_path = Path(__file__).parts
             i = my_path.index('Kataja.app')
-            self.resources_path = str(Path(*list(my_path[:i + 1]) + ['Contents', 'Resources', 'resources', ''])) + '/'
+            app_path = str(Path(*list(my_path[:i + 1])))
+            self.resources_path = app_path + '/Contents/Resources/resources/'
             self.default_userspace_path = os.path.expanduser('~/')
             self.in_app = True
-            print('running from inside os x .app -container')
+            print('running from inside Mac OS X .app -container')
             # Make sure that 'plugins'-dir is available in Application Support
-            app_support = os.path.expanduser('~/Library/Application Support')
-            library_kat = app_support+'/Kataja'
-            library_plugins = library_kat+'/plugins'
-            if os.access(app_support, os.F_OK):
-                if not os.access(library_kat, os.F_OK):
-                    os.makedirs(library_kat)
+            library_kat = os.path.expanduser('~/Library/Application Support/Kataja')
+            self.plugins_path = library_kat+'/plugins'
+            if not os.access(self.plugins_path, os.F_OK):
+                os.makedirs(library_kat, exist_ok=True)
                 if os.access(library_kat, os.W_OK):
-                    local_plugin_path = str(Path(*list(my_path[:-1]) + ['plugins']))
-                    if (not os.access(library_plugins, os.F_OK)) and os.access(local_plugin_path, os.W_OK):
-                        print("Moving 'plugins' to /~Library/Application Support/Kataja")
-                        shutil.move(local_plugin_path, library_plugins)
-                        print("making a local symlink here to keep plugins easily accessible")
-                        os.symlink(library_plugins, local_plugin_path, target_is_directory=True)
-            print('plugins dir readable: ', os.access(library_plugins, os.R_OK))
-
-        else:
-            self.resources_path = './resources/'
-            self.default_userspace_path = './'
+                    local_plugin_path = app_path + '/Contents/Resources/lib/plugins'
+                    if (not os.access(self.plugins_path, os.F_OK)) and os.access(local_plugin_path, os.W_OK):
+                        print("Copying 'plugins' to /~Library/Application Support/Kataja")
+                        shutil.copytree(local_plugin_path, self.plugins_path)
+        elif running_environment == 'mac python':
+            prefs_code = os.path.realpath(__file__)
+            filename = __file__.split('/')[-1]
+            kataja_root = prefs_code[:-len('kataja/'+filename)]
+            self.resources_path = kataja_root + 'resources/'
+            self.plugins_path = kataja_root + 'kataja/plugins'
+            self.default_userspace_path = kataja_root
             self.in_app = False
             print('running as a python script')
         print("resources_path: ", self.resources_path)
@@ -237,21 +242,20 @@ class Preferences(object):
         self.import_plugins()
 
     def import_plugins(self):
-        #import kataja.plugins
-        #plugins_path = kataja.plugins.__path__[0]
-        #print(kataja.plugins.__path__)
-        plugins_path = '/Users/purma/github/Kataja/dist/Kataja.app/Contents/Resources/lib/plugins'
-        plugins_dir = os.listdir(plugins_path)
+        """ Find the plugins dir for the running configuration and import all found modules to plugins -dict.
+        :return: None
+        """
+        plugins_dir = os.listdir(self.plugins_path)
         print('plugins dir:', plugins_dir)
-        self.plugins = {}
-        sys.path.append(plugins_path)
+        sys.path.append(self.plugins_path)
         for plugin_file in plugins_dir:
             if plugin_file.endswith('.py') and not plugin_file.startswith('__'):
                 plugin_name = plugin_file[:-3]
-                try:
-                    self.plugins[plugin_name] = importlib.import_module(plugin_name)
-                except:
-                    print('import error with:', plugin_name)
+                if plugin_name not in self.plugins:
+                    try:
+                        self.plugins[plugin_name] = importlib.import_module(plugin_name)
+                    except:
+                        print('import error with:', plugin_name)
 
         print('Modules imported from plugins: %s' % list(self.plugins.keys()))
 
