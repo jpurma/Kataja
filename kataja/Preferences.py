@@ -34,7 +34,7 @@ from PyQt5 import QtGui, QtCore
 from kataja.globals import *
 
 
-disable_saving_preferences = True
+disable_saving_preferences = False
 # Alternatives: Cambria Math, Asana Math, XITS Math
 
 mac_fonts = {MAIN_FONT: ['Asana Math', 'Normal', 12], CONSOLE_FONT: ['Monaco', 'Normal', 10],
