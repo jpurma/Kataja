@@ -382,13 +382,13 @@ def print_transform(transform):
 
 
 
-def import_plugins(prefs):
+def import_plugins(prefs, plugins_path):
     """ Find the plugins dir for the running configuration and import all found modules to plugins -dict.
     :return: None
     """
-    plugins_dir = os.listdir(prefs.plugins_path)
+    plugins_dir = os.listdir(plugins_path)
     print('plugins dir:', plugins_dir)
-    sys.path.append(prefs.plugins_path)
+    sys.path.append(plugins_path)
     for plugin_file in plugins_dir:
         if plugin_file.endswith('.py') and not plugin_file.startswith('__'):
             plugin_name = plugin_file[:-3]

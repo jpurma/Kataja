@@ -37,6 +37,7 @@ import pickle
 import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
+from kataja.environment import default_userspace_path, plugins_path
 from kataja.KeyPressManager import KeyPressManager
 
 from kataja.singletons import ctrl, prefs, qt_prefs
@@ -86,7 +87,7 @@ class KatajaMain(QtWidgets.QMainWindow):
     inside this, in scene objects with view widgets. This window also manages
     keypresses and menus. """
 
-    def __init__(self, kataja_app, args):
+    def __init__(self, kataja_app, splash, args):
         """ KatajaMain initializes all its children and connects itself to
         be the main window of the given application. """
         t = time.time()
@@ -101,9 +102,10 @@ class KatajaMain(QtWidgets.QMainWindow):
         print('---- Initialized color manager ... ', time.time() - t)
         prefs.load_preferences()
         qt_prefs.late_init(prefs, self.fontdb)
-        import_plugins(prefs)
+        import_plugins(prefs, plugins_path)
         self.setWindowIcon(QtGui.QIcon(qt_prefs.kataja_icon))
         self.app.setFont(qt_prefs.font(g.UI_FONT))
+        self.app.processEvents()
         print('---- initialized prefs ... ', time.time() - t)
         ctrl.late_init(self)
         print('---- controller late init ... ', time.time() - t)
@@ -460,7 +462,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         """
         self.killTimer(event.timerId())
         # Prepare file and path
-        path = prefs.print_file_path or prefs.userspace_path or prefs.default_userspace_path
+        path = prefs.print_file_path or prefs.userspace_path or default_userspace_path
         if not path.endswith('/'):
             path += '/'
         if not os.path.exists(path):
