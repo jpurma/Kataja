@@ -365,7 +365,7 @@ class QtPreferences:
         self.fonts = {}
         for key, font_tuple in fonts_dict.items():
             name, style, size = font_tuple
-            print(font_tuple)
+            size = int(size)
             font = self.fontdb.font(name, style, size)
             #print(name, font.exactMatch())
             if name == 'Asana Math' and not font.exactMatch():

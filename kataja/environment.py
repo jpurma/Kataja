@@ -31,12 +31,15 @@ if sys.platform == 'darwin':
         running_environment = 'mac app'
     else:
         running_environment = 'mac python'
+        print('running as a python script in OS X')
 elif sys.platform == 'win32':
     fonts = windows_fonts
     running_environment = 'win python'
+    print('running as a python script in Windows')
 else:
     fonts = linux_fonts
     running_environment = 'nix python'
+    print('running as a python script in Linux/Unix')
 
 resources_path = ''
 default_userspace_path = ''
@@ -63,8 +66,8 @@ if running_environment == 'mac app':
             if (not os.access(plugins_path, os.F_OK)) and os.access(local_plugin_path, os.W_OK):
                 print("Copying 'plugins' to /~Library/Application Support/Kataja")
                 shutil.copytree(local_plugin_path, plugins_path)
-elif running_environment == 'mac python':
-    # When runnins as a mac python script, plugins, resources and default save location are
+elif running_environment.endswith('python'):
+    # When runnins as a python script, plugins, resources and default save location are
     # based on the kataja code base.
     # This is easier for development and active 'bold' use.
     prefs_code = os.path.realpath(__file__)
@@ -74,15 +77,6 @@ elif running_environment == 'mac python':
     plugins_path = kataja_root + 'kataja/plugins'
     default_userspace_path = kataja_root
     print('running as a python script in OS X')
-elif running_environment == 'nix python':
-    prefs_code = os.path.realpath(__file__)
-    filename = __file__.split('/')[-1]
-    kataja_root = prefs_code[:-len('kataja/'+filename)]
-    resources_path = kataja_root + 'resources/'
-    plugins_path = kataja_root + 'kataja/plugins'
-    default_userspace_path = kataja_root
-    print('running as a python script in OS X')
-
 
 print("resources_path: ", resources_path)
 print("default_userspace_path: ", default_userspace_path)

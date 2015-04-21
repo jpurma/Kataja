@@ -8,18 +8,16 @@ Created on 28.8.2013
 from PyQt5 import QtCore
 import os
 import sys
+from kataja.environment import resources_path, running_environment
 
-filePath = os.path.dirname(os.path.abspath(__file__))
-print(filePath)
-if filePath.endswith('Resources'):
+if running_environment == 'mac app':
+    filePath = os.path.dirname(os.path.abspath(__file__))
     QtCore.QCoreApplication.setLibraryPaths([filePath + '/../plugins'])
-print('librarypath:', QtCore.QCoreApplication.libraryPaths())
 print("Launching Kataja with Python %s.%s" % (sys.version_info.major, sys.version_info.minor))
 
 
 from PyQt5 import QtWidgets, QtPrintSupport, QtGui
 from kataja.KatajaMain import KatajaMain
-from kataja.environment import resources_path
 
 # QtPrintSupport is imported here only because py2app then knows to add it as a framework.
 # libqcocoa.dynlib requires QtPrintSupport.
