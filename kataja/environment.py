@@ -73,6 +73,16 @@ elif running_environment == 'mac python':
     resources_path = kataja_root + 'resources/'
     plugins_path = kataja_root + 'kataja/plugins'
     default_userspace_path = kataja_root
-    print('running as a python script')
+    print('running as a python script in OS X')
+elif running_environment == 'nix python':
+    prefs_code = os.path.realpath(__file__)
+    filename = __file__.split('/')[-1]
+    kataja_root = prefs_code[:-len('kataja/'+filename)]
+    resources_path = kataja_root + 'resources/'
+    plugins_path = kataja_root + 'kataja/plugins'
+    default_userspace_path = kataja_root
+    print('running as a python script in OS X')
+
+
 print("resources_path: ", resources_path)
 print("default_userspace_path: ", default_userspace_path)

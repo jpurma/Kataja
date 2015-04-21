@@ -352,7 +352,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
         self._dragging = False
         if self._drag_hint:
             return False
-        ctrl.forest.undo_manager.record('add constituent')
+        ctrl.forest.undo_manager.take_snapshot('add constituent')
         edge = None
         node = self.host
         if hasattr(self.host, 'end'):

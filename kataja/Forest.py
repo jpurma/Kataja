@@ -1551,8 +1551,10 @@ class Forest:
         # Create edge and make connections
         new_edge = self.create_edge(edge_type=edge_type, direction=direction)
         self.set_edge_ends(new_edge, parent, child)
-        parent.rebuild_brackets()
-        child.rebuild_brackets()
+        if hasattr(parent, 'rebuild_brackets'):
+            parent.rebuild_brackets()
+        if hasattr(child, 'rebuild_brackets'):
+            child.rebuild_brackets()
         parent.update_label()
         child.update_label()
         self.update_root_status(child)

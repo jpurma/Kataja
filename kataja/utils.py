@@ -386,6 +386,8 @@ def import_plugins(prefs, plugins_path):
     """ Find the plugins dir for the running configuration and import all found modules to plugins -dict.
     :return: None
     """
+    if not plugins_path:
+        return
     plugins_dir = os.listdir(plugins_path)
     print('plugins dir:', plugins_dir)
     sys.path.append(plugins_path)
