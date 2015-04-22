@@ -67,12 +67,11 @@ if running_environment.endswith('python'):
 
 splash.showMessage('%s | %s | v. %s | %s' % (author, date, running_number, version_name),
                    QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter, nice_yellow)
-app.processEvents()
 
 from kataja.KatajaMain import KatajaMain
 
 window = KatajaMain(app, splash, sys.argv)
 splash.finish(window)
-window.show()
-window.setFocus()
+app.setActiveWindow(window)
+app.processEvents()
 app.exec_()

@@ -24,7 +24,7 @@ create_dmg = True
 qt_mac = '~/Qt5.4.1/'
 
 DATA_FILES = ['resources']
-OPTIONS = {'argv_emulation': True, 'includes': ['sip'], 'iconfile': 'resources/icons/Kataja.icns'}
+OPTIONS = {'argv_emulation': False, 'includes': ['sip'], 'iconfile': 'resources/icons/Kataja.icns'}
 
 if sys.platform == 'darwin':
     extra_options = dict(setup_requires=['py2app'],
