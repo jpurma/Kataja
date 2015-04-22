@@ -68,5 +68,5 @@ class Label(QtWidgets.QGraphicsTextItem):
         :param option:
         :param widget:
         """
-        self.setDefaultTextColor(self._host.contextual_color())
+        self.setDefaultTextColor(self._host.contextual_color)
         QtWidgets.QGraphicsTextItem.paint(self, painter, option, widget)

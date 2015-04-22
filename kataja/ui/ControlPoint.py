@@ -65,7 +65,8 @@ class ControlPoint(QtWidgets.QGraphicsItem):
         elif self.role == g.END_POINT:
             p = Pf(self.host_edge.end_point[0], self.host_edge.end_point[1])
         elif self.role == g.LABEL_START:
-            p = Pf(self.host_edge.get_cached_label_start().x(), self.host_edge.get_cached_label_start().y())
+            c = self.host_edge.cached_label_start
+            p = Pf(c.x(), c.y())
         else:
             return False
         self.setPos(p)

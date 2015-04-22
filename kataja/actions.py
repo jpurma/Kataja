@@ -1010,8 +1010,9 @@ a['edit_edge_label_enter_text'] = {
 
 
 def edge_disconnect():
-    """
-    :return:
+    """ Remove connection between two nodes, by either cutting from the start or the end. This will result
+    in a dangling edge, which should be either connected to another node or removed.
+    :return: None
     """
     # Find the triggering edge
     edge = None
@@ -1033,7 +1034,7 @@ def edge_disconnect():
     elif role is 'end_cut':
         if edge.edge_type is g.CONSTITUENT_EDGE:
             old_start = edge.start
-            ctrl.forest._disconnect_node(first=old_start, second=edge.end, edge=edge)
+            ctrl.forest.disconnect_node(first=old_start, second=edge.end, edge=edge)
             ctrl.forest.fix_stubs_for(old_start)
         else:
             ctrl.forest.delete_edge(edge)
@@ -1048,10 +1049,9 @@ a['disconnect_edge'] = {
 
 
 def remove_merger():
-    """
-
-
-    :return:
+    """ In cases where there another part of binary merge is removed, and a stub edge is left dangling,
+    there is an option to remove the unnecessary merge -- it is the triggering host.
+    :return: None
     """
     node = _get_triggered_host()
     if not node:
@@ -1066,10 +1066,8 @@ a['remove_merger'] = {
 
 
 def add_triangle():
-    """
-
-
-    :return:
+    """ Turn triggering node into triangle node
+    :return: None
     """
     node = _get_triggered_host()
     if not node:
@@ -1085,10 +1083,8 @@ a['add_triangle'] = {
 
 
 def remove_triangle():
-    """
-
-
-    :return:
+    """ If triggered node is triangle node, restore it to normal
+    :return: None
     """
     node = _get_triggered_host()
     if not node:
@@ -1104,12 +1100,9 @@ a['remove_triangle'] = {
 
 
 def finish_constituent_edit():
-    """
-
-
+    """ Set the new values and close the constituent editing embed.
     :return: None
     """
-    print('Edited constituent!')
     embed = ctrl.ui.get_constituent_edit_embed()
     if not embed.node:
         ctrl.ui.close_constituent_editing()
@@ -1138,7 +1131,6 @@ a['raw_editing_toggle'] = {
     'method': toggle_raw_editing
 }
 
-
 # Generic keys ####
 # 'key_esc'] = {
 #     'command': 'key_esc',
@@ -1160,6 +1152,7 @@ a['key_backspace'] = {
     'method': key_backspace,
     'shortcut': 'Backspace'
 }
+
 
 def undo():
     """ Undo -command triggered
@@ -1197,7 +1190,6 @@ a['key_m'] = {
     'command': 'key_m',
     'method': key_m,
     'shortcut': 'm'}
-
 
 a['toggle_all_panels'] = {
     'command': 'Hide all panels',

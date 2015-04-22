@@ -703,7 +703,7 @@ class ConstituentNode(Node):
         :param option:
         :param widget:
         """
-        painter.setPen(self.contextual_color())
+        painter.setPen(self.contextual_color)
         if ctrl.pressed == self:
             rect = True
         elif self._hovering:

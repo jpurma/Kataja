@@ -609,9 +609,11 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         palette.setColor(QtGui.QPalette.Text, self.color)
         return palette
 
-
+    @property
     def contextual_color(self):
-        """ Drawing color that is sensitive to node's state """
+        """ Drawing color that is sensitive to node's state
+        :return: QColor
+        """
         if ctrl.pressed == self:
             return ctrl.cm.active(ctrl.cm.selection())
         elif self._hovering:
@@ -685,7 +687,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :param option:
         :param widget:
         nodes it is the label of the node that needs complex painting """
-        painter.setPen(self.contextual_color())
+        painter.setPen(self.contextual_color)
         if ctrl.pressed == self or self._hovering or ctrl.is_selected(self):
             painter.drawRoundedRect(self.inner_rect, 5, 5)
 

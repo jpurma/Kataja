@@ -150,7 +150,7 @@ class Bracket(Movable, QtWidgets.QGraphicsSimpleTextItem):
         :param option:
         :param widget:
         """
-        c = self.host.contextual_color()
+        c = self.host.contextual_color
         painter.setBrush(c)
         if self.hovering:
             painter.setPen(c)

@@ -115,7 +115,7 @@ class Edge(QtWidgets.QGraphicsItem):
         self._arrow_cut_point_end = None
         self._arrowhead_start_path = None
         self._arrowhead_end_path = None
-
+        self._cached_cp_rect = None
         self._use_labels = None
         self._label_text = None
         self.label_item = None
@@ -701,10 +701,9 @@ class Edge(QtWidgets.QGraphicsItem):
 
 
     def get_label_line_positions(self):
-        """
-
-
-        :return:
+        """ When editing edge labels, there is a line connecting the edge to label. This one provides the
+        end- and start points for such line.
+        :return: None
         """
         start = self.get_point_at(self.label_start)
         angle = (360 - self.get_angle_at(self.label_start)) + self.label_angle
@@ -719,9 +718,7 @@ class Edge(QtWidgets.QGraphicsItem):
         return start, end
 
     def update_label_pos(self):
-        """
-
-
+        """ Compute and set position for edge label. Make sure that path is up to date before doing this.
         :return:
         """
         if not self.label_item:
@@ -733,21 +730,20 @@ class Edge(QtWidgets.QGraphicsItem):
         self._cached_label_start = start
         self.label_item.setPos(label_pos)
 
-    def get_cached_label_start(self):
-        """
-
-
-        :return:
+    @property
+    def cached_label_start(self):
+        """ Get the cached (absolute) label starting position. This has to be visible outside, because
+        control points may need it.
+        :return: QPos
         """
         if not self._cached_label_start:
             self.update_label_pos()
         return self._cached_label_start
 
     def is_broken(self):
-        """
-
-
-        :return:
+        """ If this edge should be a connection between two nodes and either node is missing, the edge
+        is broken and should be displayed differently.
+        :return: bool
         """
         if self.edge_type == g.ARROW:
             return False
@@ -757,8 +753,9 @@ class Edge(QtWidgets.QGraphicsItem):
 
     # ### Color ############################################################
 
+    @property
     def contextual_color(self):
-        """ Drawing color that is sensitive to node's state
+        """ Drawing color that is sensitive to edge's state
         :return: QColor
         """
         if ctrl.pressed == self:
@@ -770,11 +767,11 @@ class Edge(QtWidgets.QGraphicsItem):
         else:
             return self.color
 
-    def use_labels(self):
-        """
-
-
-        :return:
+    @property
+    def uses_labels(self):
+        """ Some edge types, e.g. arrows inherently suggest adding labels to them. For others, having ui
+         textbox for adding label would be unwanted noise.
+        :return: bool
         """
         if self._use_labels is None:
             return ctrl.forest.settings.edge_type_settings(self.edge_type, 'labeled')
@@ -932,9 +929,8 @@ class Edge(QtWidgets.QGraphicsItem):
             self._arrowhead_end_path = self.make_arrowhead_path('end')
         else:
             self._arrowhead_end_path = None
-
-        sn = self.shape_name
         self._fat_path = self._path
+        self._cached_cp_rect = self._path.controlPointRect()
         # # Fat path is the shape of the path with some extra margin to make it easier to click/touch
         # if sn == 'blob' or sn == 'directional_blob':
         #     # These fat, filled shapes don't need separate fat path
@@ -969,7 +965,8 @@ class Edge(QtWidgets.QGraphicsItem):
             ctrl.ui.update_edge_button_positions(self)
 
     def shape(self):
-        """ Override of the QGraphicsItem method. Should returns the real shape of item to allow exact hit detection.
+        """ Override of the QGraphicsItem method. Should returns the real shape of item to
+        allow exact hit detection.
         In our case we should have special '_fat_path' for those shapes that are just narrow lines.
         :return: QGraphicsPath
         """
@@ -1008,6 +1005,7 @@ class Edge(QtWidgets.QGraphicsItem):
         :param cp:
         """
         x, y = points
+        self.model.poke('adjustment')
         self.prepare_adjust_array(index)
         z = self.adjustment[index][2]
         self.adjustment[index] = (x, y, z)
@@ -1025,6 +1023,7 @@ class Edge(QtWidgets.QGraphicsItem):
         :param value:
         :return:
         """
+        self.model.poke('adjustment')
         self.prepare_adjust_array(index)
         x, y, z = self.adjustment[index]
         if dim == 'x':
@@ -1043,6 +1042,7 @@ class Edge(QtWidgets.QGraphicsItem):
         :param index:
         :return:
         """
+        self.model.poke('adjustment')
         if self.adjustment and len(self.adjustment) > index:
             self.adjustment[index] = (0, 0, 0)
         can_delete = True
@@ -1205,7 +1205,7 @@ class Edge(QtWidgets.QGraphicsItem):
         """
         if selected:
             if self.allow_orphan_ends() or not self.has_orphan_ends():
-                if self.use_labels():
+                if self.uses_labels:
                     if not self.label_item:
                         self.label_item = EdgeLabel('', self, placeholder=True)
                         self.update_label_pos()
@@ -1222,13 +1222,13 @@ class Edge(QtWidgets.QGraphicsItem):
         self.update()
 
     def boundingRect(self):
-        """
+        """ BoundingRect that includes the control points of the arc
 
         :return:
         """
         if not self._path:
             self.make_path()
-        return self._path.controlPointRect()
+        return self._cached_cp_rect
 
     # ### Mouse - Qt events ##################################################
 
@@ -1305,6 +1305,7 @@ class Edge(QtWidgets.QGraphicsItem):
 
         :return:
         """
+        # fixme -- please
         return True
 
     # ## Qt paint method override
@@ -1317,7 +1318,7 @@ class Edge(QtWidgets.QGraphicsItem):
         :param widget:
         :return:
         """
-        c = self.contextual_color()
+        c = self.contextual_color
         width = self.has_outline()
         if width:
             p = QtGui.QPen()
@@ -1344,16 +1345,6 @@ class Edge(QtWidgets.QGraphicsItem):
             painter.setPen(p)
             painter.drawPath(self._true_path)
 
-            # painter.setPen(ctrl.cm.d['accent6'])
-            # painter.drawPath(self._fat_path)
-            # painter.fillPath(self._fat_path, ctrl.cm.d['accent7'])
-
-    def get_path(self) -> QtGui.QPainterPath:
-        """ Get drawing path of this edge
-        :return: QPath
-        """
-        return self._path
-
     def get_point_at(self, d: float) -> Pf:
         """ Get coordinates at the percentage of the length of the path.
         :param d: int
@@ -1373,10 +1364,11 @@ class Edge(QtWidgets.QGraphicsItem):
         return self._true_path.angleAtPercent(d)
 
     def get_closest_path_point(self, pos):
-        """
-
-        :param pos:
-        :return:
+        """ When dragging object along path, gives the coordinates to closest point in path corresponding to
+        given position. There is no exact way of doing this, what we do is to take 100 points along the line and
+        find the closest point from there.
+        :param pos: position looking for closest path position
+        :return: (float:pointAtPercent, QPos:path position)
         """
         if not self._true_path:
             self.make_path()
@@ -1392,20 +1384,11 @@ class Edge(QtWidgets.QGraphicsItem):
                 min_pos = p2
         return min_i / 100.0, min_pos
 
-    # ### Event filter - be sensitive to changes in settings  ########################################################
-
-    # def sceneEvent(self, event):
-    # print 'Edge event received: ', event.type()
-    # return QtWidgets.QGraphicsItem.sceneEvent(self, event)
-
-    # ### Restoring after load / undo #########################################
-
-
-
     def make_arrowhead_path(self, pos='end'):
-        """
-
-        :param pos:
+        """ Assumes that the path exists already, creates arrowhead path to either at the end or at start,
+        but doesn't yet combine these paths.
+        :param pos: 'end' or 'start'
+        :return: QPainterPath for arrowhead
         """
         ad = 0.5
         x = y = size = a = 0
@@ -1436,4 +1419,3 @@ class Edge(QtWidgets.QGraphicsItem):
         elif pos == 'end':
             self._arrow_cut_point_end = xm, ym
         return p
-

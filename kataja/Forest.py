@@ -935,12 +935,12 @@ class Forest:
         """
         # -- connections to other nodes --
         for edge in node.edges_up:
-            self._disconnect_node(edge=edge)
+            self.disconnect_node(edge=edge)
         for edge in node.edges_down:
             if edge.end:
                 self.delete_node(edge.end)  # this will also disconnect node
             else:
-                self._disconnect_node(edge=edge)
+                self.disconnect_node(edge=edge)
         # -- ui elements --
         self.main.ui_manager.delete_ui_elements_for(node)
         # -- brackets --
@@ -1428,7 +1428,7 @@ class Forest:
                     for edge in node.edges_up:
                         if edge.edge_type == node.__class__.default_edge_type:
                             start = edge.start
-                            self._disconnect_node(node, edge.start, edge.edge_type)
+                            self.disconnect_node(node, edge.start, edge.edge_type)
                             if not start.left():
                                 stub = self.create_empty_node(pos=to_tuple(start.pos()))
                                 self.connect_node(start, child=stub, direction='left')
@@ -1446,7 +1446,7 @@ class Forest:
                 self.chain_manager.remove_from_chain(node)
         for edge in list(node.edges_up):
             start = edge.start
-            self._disconnect_node(node, edge.start, edge.edge_type)
+            self.disconnect_node(node, edge.start, edge.edge_type)
             if start.is_empty_node():
                 self.delete_node(start)
             elif prefs.default_binary_branching:
@@ -1458,7 +1458,7 @@ class Forest:
                     self.connect_node(start, child=stub, direction='right')
         for edge in list(node.edges_down):
             end = edge.end
-            self._disconnect_node(node, edge.end, edge.edge_type)
+            self.disconnect_node(node, edge.end, edge.edge_type)
             if end.is_empty_node():
                 self.delete_node(end)
         ctrl.remove_from_selection(node)
@@ -1560,9 +1560,15 @@ class Forest:
         self.update_root_status(child)
         return new_edge
 
-    def _disconnect_node(self, first=None, second=None, edge_type='', edge=None, ignore_missing=False):
-        """ Removes and deletes a edge between two nodes """
-        forest('_disconnect_node %s %s %s %s' % (first, second, edge_type, edge))
+    def disconnect_node(self, first=None, second=None, edge_type='', edge=None, ignore_missing=False):
+        """ Removes and deletes a edge between two nodes
+        :param first:
+        :param second:
+        :param edge_type:
+        :param edge:
+        :param ignore_missing:
+        """
+        forest('disconnect_node %s %s %s %s' % (first, second, edge_type, edge))
         if not edge:
             edge = first.get_edge_to(second, edge_type)
         if edge:
@@ -1602,7 +1608,7 @@ class Forest:
                 parent = edge.start
                 if only_for_parent and parent != only_for_parent:
                     continue
-                self._disconnect_node(parent, old_node, edge.edge_type)
+                self.disconnect_node(parent, old_node, edge.edge_type)
                 self.connect_node(parent, child=new_node, direction=align)
 
         if replace_children and not only_for_parent:
@@ -1610,7 +1616,7 @@ class Forest:
                 child = edge.end
                 if child:
                     align = edge.alignment
-                    self._disconnect_node(old_node, child, edge.edge_type)
+                    self.disconnect_node(old_node, child, edge.edge_type)
                     self.connect_node(new_node, child, direction=align)
 
         if (not old_node.edges_up) and can_delete:
@@ -1665,24 +1671,24 @@ class Forest:
             else:
                 good_parents.append(parent)
         if not (bad_parents or good_parents):
-            self._disconnect_node(first=node, second=child)
+            self.disconnect_node(first=node, second=child)
         else:
             if bad_parents:
                 # more complex case
                 ctrl.add_message(
                     "Removing node would make parent to have same node as both left and right child. Removing parent too.")
-                self._disconnect_node(first=node, second=child)
+                self.disconnect_node(first=node, second=child)
                 for parent in bad_parents:
                     for grandparent in parent.get_parents():
-                        self._disconnect_node(first=grandparent, second=parent)
-                        self._disconnect_node(first=parent, second=child)
+                        self.disconnect_node(first=grandparent, second=parent)
+                        self.disconnect_node(first=parent, second=child)
                         self.connect_node(parent=grandparent, child=child)
 
             if good_parents:
                 # normal case
-                self._disconnect_node(first=node, second=child, ignore_missing=True)
+                self.disconnect_node(first=node, second=child, ignore_missing=True)
                 for parent in good_parents:
-                    self._disconnect_node(first=parent, second=node)
+                    self.disconnect_node(first=parent, second=node)
                     self.connect_node(parent=parent, child=child)
         if i:
             child.set_index(i)
@@ -1734,7 +1740,7 @@ class Forest:
             print('Nodes in different trees.')
 
         if edge:
-            self._disconnect_node(edge=edge)
+            self.disconnect_node(edge=edge)
 
         if merge_to_left:
             left = new_node
