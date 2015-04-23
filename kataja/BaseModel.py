@@ -13,6 +13,9 @@ from kataja.singletons import ctrl
 
 __author__ = 'purma'
 
+# Creation/Deletion flags
+CREATED = 1
+DELETED = 2
 
 class SaveError(Exception):
     """ for errors related to storing the model
@@ -35,6 +38,7 @@ class BaseModel:
             key = str(id(self)) + '|' + self.__class__.__name__
         self.save_key = key
         self._host = host
+        self._cd = 0 # / CREATED / DELETED
         sys.intern(self.save_key)
 
     def touch(self, attribute, value):
@@ -83,15 +87,36 @@ class BaseModel:
             setattr(self, '_' + attribute + '_history', getattr(self, attribute, None))
             setattr(self, touched_name, True)
 
-    def changes(self):
+    def announce_creation(self):
+        """ Flag object to have been created in this undo cycle.
+        If the object was created here, when moving to _previous_ cycle should launch removal of the object
+        from scene.
+        :return:None
+        """
+        if ctrl.disable_undo:
+            return
+        self._cd = CREATED
+        ctrl.undo_pile.add(self._host)
+
+    def announce_deletion(self):
+        """ Flag object to have been deleted in this undo cycle.
+        :return:None
+        """
+        if ctrl.disable_undo:
+            return
+        self._cd = DELETED
+        ctrl.undo_pile.add(self._host)
+
+
+    def transitions(self):
         """ Create a dict of changes based on touched attributes of the item.
         After creation, reset the touched attributes so that the attribute can
         record the next changes.
         result dict has tuples as value, where the first item is value before, and second
         item is value after the change.
-        :return: dict of changed attributes
+        :return: (dict of changed attributes, 0=EDITED(default) | 1=CREATED | 2=DELETED)
         """
-        changes = {}
+        transitions = {}
         for attr_name in dir(self):
             if attr_name.startswith('_'):
                 if attr_name.endswith('_touched'):
@@ -100,36 +125,38 @@ class BaseModel:
                         hist_name = '_%s_history' % attr_base
                         old = getattr(self, hist_name)
                         new = getattr(self, attr_base)
-                        changes[attr_base] = (old, new)
+                        transitions[attr_base] = (old, new)
                         setattr(self, hist_name, None)
                         setattr(self, attr_name, False)
                 elif attr_name.endswith('_synobj') and getattr(self, attr_name, False):
-                    changes[attr_name] = (True, True)
-        return changes
+                    transitions[attr_name] = (True, True)
+        created_or_deleted = self._cd
+        self._cd = 0
+        return transitions, created_or_deleted
 
-    def revert_to_earlier(self, changes):
+    def revert_to_earlier(self, transitions):
         """ Restore to earlier version with a given changes -dict
-        :param changes: dict of changes, values are tuples of (old, new) -pairs
+        :param transitions: dict of changes, values are tuples of (old, new) -pairs
         :return: None
         """
-        for key, value in changes.items():
+        for key, value in transitions.items():
             if key.startswith('_') and key.endswith('_synobj'):
                 continue
             old, new = value
             setattr(self, key, old)
 
-    def move_to_later(self, changes):
+    def move_to_later(self, transitions):
         """ Move to later version with a given changes -dict
-        :param changes: dict of changes, values are tuples of (old, new) -pairs
+        :param transitions: dict of changes, values are tuples of (old, new) -pairs
         :return: None
         """
-        for key, value in changes.items():
+        for key, value in transitions.items():
             if key.startswith('_') and key.endswith('_synobj'):
                 continue
             old, new = value
             setattr(self, key, new)
 
-    def update(self, changes):
+    def update(self, changed_fields):
         """ Runs the after_model_update that should do the necessary derivative calculations and graphical updates
         after the model has been changed by redo/undo.
         updates are run as a batch after all of the objects have had their model values updated.
@@ -138,7 +165,7 @@ class BaseModel:
         """
         updater = getattr(self._host, 'after_model_update', None)
         if updater:
-            updater(changes.keys())
+            updater(changed_fields)
 
     def save_object(self, saved_objs, open_refs):
         """ Flatten the object to saveable dict and recursively save the objects it contains
@@ -278,8 +305,7 @@ class BaseModel:
         del full_map, restored, full_data, main
 
     def restore(self, obj_key, class_key=''):
-        """
-
+        """ Recursively restore objects inside the scope of current obj. Used for loading kataja files.
         :param obj_key:
         :param class_key:
         :return:

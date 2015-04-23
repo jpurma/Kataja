@@ -8,7 +8,7 @@ __author__ = 'purma'
 
 
 class VisualizationPanel(UIPanel):
-    """ Switch visualizations and their adjustment their settings """
+    """ Switch visualizations and adjust their settings """
 
 
     def __init__(self, name, key, default_position='right', parent=None, ui_manager=None, folded=False):

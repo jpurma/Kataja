@@ -44,9 +44,9 @@ class ControlPoint(QtWidgets.QGraphicsItem):
         elif self.role == g.END_POINT:
             self.status_tip = "Drag to move the ending point"
         elif self._index > -1:
-            self.status_tip = "Drag to adjustment the curvature of this line"
+            self.status_tip = "Drag to adjust the curvature of this line"
         elif self.role == g.LABEL_START:
-            self.status_tip = "Drag along the line to adjustment the anchor point of label"
+            self.status_tip = "Drag along the line to adjust the anchor point of label"
         self.setToolTip(self.status_tip)
 
     def _compute_position(self):
@@ -55,8 +55,8 @@ class ControlPoint(QtWidgets.QGraphicsItem):
         """
         if -1 < self._index < len(self.host_edge.control_points):
             p = self.host_edge.control_points[self._index]
-            if self.host_edge.adjustment and len(self.host_edge.adjustment) > self._index:
-                a = self.host_edge.adjustment[self._index]
+            if self.host_edge.curve_adjustment and len(self.host_edge.curve_adjustment) > self._index:
+                a = self.host_edge.curve_adjustment[self._index]
                 p = Pf(p[0] + a[0], p[1] + a[1])
             else:
                 p = Pf(p[0], p[1])
@@ -94,21 +94,21 @@ class ControlPoint(QtWidgets.QGraphicsItem):
         assert (self._index != -1)
         p = self.host_edge.control_points[self._index]
         return int(x - p[0]), int(y - p[1])
-        # print 'computed adjustment:', self.adjustment
+        # print 'computed curve_adjustment:', self.curve_adjustment
 
     def click(self, event=None):
-        """
-
-        :param event:
-        :return:
+        """ Clicking a control point usually does nothing. These are more for dragging.
+        :param event: some kind of mouse event
+        :return: bool
         """
         pass
         return True  # consumes click
 
     def drag(self, event):
-        """
-
-        :param event:
+        """ Dragging a control point at least requires to update its coordinates and announcing the
+        host object that things are a'changing. How this will be announced depends on control point's _role_.
+        :param event: some kind of mouse event
+        :return: None
         """
         if self.role == g.LABEL_START:
             d, point = self.host_edge.get_closest_path_point(event.scenePos())
@@ -130,6 +130,11 @@ class ControlPoint(QtWidgets.QGraphicsItem):
             self.host_edge.update()
 
     def drop_to(self, x, y, recipient=None):
+        """ Dragging ends, possibly by dropping over another object.
+        :param x: scene x coordinate
+        :param y: scene y coordinate
+        :param recipient: object that receives the dropped _control point_
+        """
         if recipient:
             # recipient.accept_drop(self)
             if self.role == g.START_POINT:
@@ -137,20 +142,17 @@ class ControlPoint(QtWidgets.QGraphicsItem):
             elif self.role == g.END_POINT:
                 self.host_edge.connect_end_to(recipient)
 
-
     def hoverEnterEvent(self, event):
-        """
-
-        :param event:
+        """ Trigger and update hover effects.
+        :param event: somekind of qt mouse event?
         """
         self._hovering = True
         ctrl.set_status(self.status_tip)
         QtWidgets.QGraphicsItem.hoverEnterEvent(self, event)
 
     def hoverLeaveEvent(self, event):
-        """
-
-        :param event:
+        """ Remove hover effects for this piece.
+        :param event: somekind of qt mouse event?
         """
         self._hovering = False
         ctrl.remove_status(self.status_tip)

@@ -401,7 +401,7 @@ class KatajaMain(QtWidgets.QMainWindow):
 
     def adjust_colors(self, hsv):
         """
-        adjustment colors -action (shift-alt-c)
+        adjust colors -action (shift-alt-c)
 
         :param hsv:
         """

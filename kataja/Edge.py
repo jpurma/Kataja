@@ -53,7 +53,7 @@ class EdgeModel(BaseModel):
         self.fixed_start_point = None
         self.fixed_end_point = None
         self.edge_type = None
-        self.adjustment = None
+        self.curve_adjustment = None
         self.alignment = g.NO_ALIGN
         self.start = None
         self.end = None
@@ -216,23 +216,24 @@ class Edge(QtWidgets.QGraphicsItem):
             self.model.edge_type = value
 
     @property
-    def adjustment(self):
+    def curve_adjustment(self):
         """ This is a list of adjustments (x, y, z) tuples to control points: the list should be at least as long as the list of
         control points. The list can be longer: the user should be able to test curves with less control points without
         losing existing adjustments.
         :return: list of tuples (x, y, z)
         """
-        return self.model.adjustment
+        return self.model.curve_adjustment
 
-    @adjustment.setter
-    def adjustment(self, value):
+    @curve_adjustment.setter
+    def curve_adjustment(self, value):
         """ This is a list of adjustments (x, y, z) tuples to control points: the list should be at least as long as the list of
         control points. The list can be longer: the user should be able to test curves with less control points without
         losing existing adjustments.
         :param value: list of tuples (x, y, z)
         """
-        if self.model.touch('adjustment', value):
-            self.model.adjustment = value
+        if self.model.touch('curve_adjustment', value):
+            print('setting CA model to:', value)
+            self.model.curve_adjustment = value
 
     @property
     def alignment(self):
@@ -914,7 +915,7 @@ class Edge(QtWidgets.QGraphicsItem):
         c = self._cached_shape_args
         c['start_point'] = self.start_point
         c['end_point'] = self.end_point
-        c['adjustment'] = self.adjustment
+        c['curve_adjustment'] = self.curve_adjustment
         c['alignment'] = self.alignment
         c['start'] = self.start
         c['end'] = self.end
@@ -980,8 +981,8 @@ class Edge(QtWidgets.QGraphicsItem):
         self._cached_shape_args = self.shape_args()
         cpl = len(self.control_points)
         self.make_path()
-        # while len(self.adjustment) < len(self.control_points):
-        # self.adjustment.append((0, 0, 0))
+        # while len(self.curve_adjustment) < len(self.control_points):
+        # self.curve_adjustment.append((0, 0, 0))
         if cpl != len(self.control_points):
             ctrl.ui.reset_control_points(self)
         ctrl.ui.update_control_point_positions()
@@ -992,10 +993,10 @@ class Edge(QtWidgets.QGraphicsItem):
 
         :param index:
         """
-        if self.adjustment is None:
-            self.adjustment = [(0, 0, 0)] * (index + 1)
-        elif index >= len(self.adjustment):
-            self.adjustment += [(0, 0, 0)] * (index - len(self.adjustment) + 1)
+        if self.curve_adjustment is None:
+            self.curve_adjustment = [(0, 0, 0)] * (index + 1)
+        elif index >= len(self.curve_adjustment):
+            self.curve_adjustment += [(0, 0, 0)] * (index - len(self.curve_adjustment) + 1)
 
 
     def adjust_control_point(self, index, points, cp=True):
@@ -1004,11 +1005,13 @@ class Edge(QtWidgets.QGraphicsItem):
         :param points:
         :param cp:
         """
+        print('adjusting control point')
         x, y = points
-        self.model.poke('adjustment')
+        self.model.poke('curve_adjustment')
         self.prepare_adjust_array(index)
-        z = self.adjustment[index][2]
-        self.adjustment[index] = (x, y, z)
+        z = self.curve_adjustment[index][2]
+        self.curve_adjustment[index] = (x, y, z)
+        print(self.curve_adjustment, self.model.curve_adjustment)
         self.make_path()
         self.update()
         if cp:
@@ -1023,15 +1026,15 @@ class Edge(QtWidgets.QGraphicsItem):
         :param value:
         :return:
         """
-        self.model.poke('adjustment')
+        self.model.poke('curve_adjustment')
         self.prepare_adjust_array(index)
-        x, y, z = self.adjustment[index]
+        x, y, z = self.curve_adjustment[index]
         if dim == 'x':
-            self.adjustment[index] = value, y, z
+            self.curve_adjustment[index] = value, y, z
         elif dim == 'y':
-            self.adjustment[index] = x, value, z
+            self.curve_adjustment[index] = x, value, z
         elif dim == 'z':
-            self.adjustment[index] = x, y, value
+            self.curve_adjustment[index] = x, y, value
         self.make_path()
         ctrl.ui.update_control_point_positions()
         self.update()
@@ -1042,15 +1045,15 @@ class Edge(QtWidgets.QGraphicsItem):
         :param index:
         :return:
         """
-        self.model.poke('adjustment')
-        if self.adjustment and len(self.adjustment) > index:
-            self.adjustment[index] = (0, 0, 0)
+        self.model.poke('curve_adjustment')
+        if self.curve_adjustment and len(self.curve_adjustment) > index:
+            self.curve_adjustment[index] = (0, 0, 0)
         can_delete = True
-        for (x, y, z) in self.adjustment:
+        for (x, y, z) in self.curve_adjustment:
             if x != 0 or y != 0:
                 can_delete = False
         if can_delete:
-            self.adjustment = None
+            self.curve_adjustment = None
         self.make_path()
         ctrl.ui.update_control_point_positions()
         self.update()

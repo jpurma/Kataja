@@ -59,7 +59,7 @@ class LineOptionsPanel(UIPanel):
         self.cp1_box.setLayout(cp1_layout)
         layout.addWidget(self.cp1_box)
 
-        # Control point 1 adjustment
+        # Control point 2 adjustment
         self.cp2_box = QtWidgets.QWidget(inner)
         cp2_layout = QtWidgets.QHBoxLayout()
         cp2_label = QtWidgets.QLabel('Arc adjustment 2', self)
@@ -361,16 +361,16 @@ class LineOptionsPanel(UIPanel):
             if isinstance(item, Edge):
                 if len(item.control_points) > 1:
                     if cp2_x is None:
-                        if item.adjustment and len(item.adjustment) > 1:
-                            cp2_x = item.adjustment[1][0]
-                            cp2_y = item.adjustment[1][1]
+                        if item.curve_adjustment and len(item.curve_adjustment) > 1:
+                            cp2_x = item.curve_adjustment[1][0]
+                            cp2_y = item.curve_adjustment[1][1]
                         else:
                             cp2_x = 0
                             cp2_y = 0
                     else:
-                        if item.adjustment and len(item.adjustment) > 1:
-                            ax = item.adjustment[1][0]
-                            ay = item.adjustment[1][1]
+                        if item.curve_adjustment and len(item.curve_adjustment) > 1:
+                            ax = item.curve_adjustment[1][0]
+                            ay = item.curve_adjustment[1][1]
                         else:
                             ax = 0
                             ay = 0
@@ -380,16 +380,16 @@ class LineOptionsPanel(UIPanel):
                             cp2_y_conflict = True
                 if len(item.control_points) > 0:
                     if cp1_x is None:
-                        if item.adjustment:
-                            cp1_x = item.adjustment[0][0]
-                            cp1_y = item.adjustment[0][1]
+                        if item.curve_adjustment:
+                            cp1_x = item.curve_adjustment[0][0]
+                            cp1_y = item.curve_adjustment[0][1]
                         else:
                             cp1_x = 0
                             cp1_y = 0
                     else:
-                        if item.adjustment:
-                            ax = item.adjustment[0][0]
-                            ay = item.adjustment[0][1]
+                        if item.curve_adjustment:
+                            ax = item.curve_adjustment[0][0]
+                            ay = item.curve_adjustment[0][1]
                         else:
                             ax = 0
                             ay = 0

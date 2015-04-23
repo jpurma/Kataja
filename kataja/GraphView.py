@@ -127,7 +127,6 @@ class GraphView(QtWidgets.QGraphicsView):
 
         :param event:
         """
-        print("mouseReleaseEvent")
         QtWidgets.QGraphicsView.mouseReleaseEvent(self, event)
 
     def mouseMoveEvent(self, event):

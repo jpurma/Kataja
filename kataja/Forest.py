@@ -956,7 +956,8 @@ class Forest:
         sc = node.scene()
         if sc:
             sc.removeItem(node)
-
+        # -- undo stack --
+        node.model.announce_deletion()
 
     def delete_edge(self, edge):
         """ remove from scene and remove references from nodes
@@ -990,6 +991,8 @@ class Forest:
         sc = edge.scene()
         if sc:
             sc.removeItem(edge)
+        # -- undo stack --
+        edge.model.announce_deletion()
 
 
     def delete_item(self, item):

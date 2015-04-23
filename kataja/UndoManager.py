@@ -28,6 +28,9 @@ import pprint
 from kataja.utils import time_me
 from kataja.singletons import ctrl
 
+# Creation/Deletion flags
+CREATED = 1
+DELETED = 2
 
 class UndoManager:
     """ Holds the undo stack and manages the undo- and redo-activities. """
@@ -38,6 +41,7 @@ class UndoManager:
         self.full_state = {}
         self._stack = []
         self._current = 0
+        self.phase = 'new'
 
     @time_me
     def init_if_empty(self):
@@ -58,13 +62,16 @@ class UndoManager:
         # save objects in undo pile
         snapshot = {}
         for obj in ctrl.undo_pile:
-            snapshot[obj.save_key] = (obj, obj.model.changes())
+            transitions, transition_type = obj.model.transitions()
+            snapshot[obj.save_key] = (obj, transitions, transition_type)
         # ...
-        self._stack = self._stack[:self._current + 1]
-        self._stack.append((msg, snapshot))
-        self._current = len(self._stack) - 1
-        print('snapshot: %s items in stack of %s snapshots' % (len(snapshot), len(self._stack)))
+        if snapshot:
+            self._stack = self._stack[:self._current + 1]
+            self._stack.append((msg, snapshot))
+            self._current = len(self._stack) - 1
+            print('snapshot: %s items in stack of %s snapshots' % (len(snapshot), len(self._stack)))
         ctrl.undo_pile = set()
+        self.phase = 'new'
 
     # def record_full_state(self):
     #     """ Iterates through all items in forest and puts them to the full_state -dict.
@@ -85,27 +92,55 @@ class UndoManager:
         """ Move backward in the undo stack
         :return: None
         """
+        if not self._stack:
+            return
+        if self.phase == 'old':
+            if self._current > 0:
+                self._current -= 1
+                self.phase = 'new'
+            else:
+                return
+        ctrl.disable_undo = True
         msg, snapshot = self._stack[self._current]
-        for obj, changes in snapshot.values():
-            obj.model.revert_to_earlier(changes)
-        for obj, changes in snapshot.values():
-            obj.model.update(changes)
+        print('undo: ', msg, snapshot)
+        for obj, transitions, transition_type in snapshot.values():
+            obj.model.revert_to_earlier(transitions)
+            if transition_type == CREATED:
+                print('undo should undo creation (=cancel) of object ', obj)
+            elif transition_type == DELETED:
+                print('undo should undo deletion (=revive) of object ', obj)
+
+        for obj, transitions, transition_type in snapshot.values():
+            obj.model.update(transitions.keys())
+        self.phase = 'old'
         ctrl.add_message('undo [%s]: %s' % (self._current, msg))
-        if self._current > 0:
-            self._current -= 1
+        ctrl.disable_undo = False
 
     def redo(self):
         """ Move forward in the undo stack
         :return: None
         """
+        if self.phase == 'new':
+            if self._current < len(self._stack) - 1:
+                self._current += 1
+                self.phase = 'old'
+            else:
+                return
+        ctrl.disable_undo = True
         msg, snapshot = self._stack[self._current]
-        for obj, changes in snapshot.values():
-            obj.model.move_to_later(changes)
-        for obj, changes in snapshot.values():
-            obj.model.update(changes)
+        print('redo: ', msg, snapshot)
+        for obj, transitions, transition_type  in snapshot.values():
+            obj.model.move_to_later(transitions)
+            if transition_type == CREATED:
+                print('redo should recreate object ', obj)
+            elif transition_type == DELETED:
+                print('redo should delete object', obj)
+        for obj, transitions, transition_type  in snapshot.values():
+            obj.model.update(transitions.keys())
         ctrl.add_message('redo [%s]: %s' % (self._current, msg))
         if self._current < len(self._stack) - 1:
             self._current += 1
+        ctrl.disable_undo = False
 
     @staticmethod
     def dump_dict_to_file(undo_dict, filename='undo_dump'):
