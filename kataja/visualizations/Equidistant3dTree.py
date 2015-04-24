@@ -65,13 +65,13 @@ class Equidistant3dTree(BaseVisualization):
 
         :param node:
         """
-        node.locked_to_position = False
-        node.reset_adjustment()
+        node.use_fixed_position = False
+        node.adjustment = None
         node.update_label()
         node.update_visibility()
-        node.bind_y = False
-        node.bind_x = False
-        node.bind_z = False
+        node.dyn_y = True
+        node.dyn_x = True
+        node.dyn_z = True
         x, y, z = node.current_position
         node.current_position = (x, y, z + (random.random() * 10) - 5)
 
@@ -181,11 +181,11 @@ class Equidistant3dTree(BaseVisualization):
         xvel += node_x * -0.002
         yvel += node_y * -0.002
 
-        if node.bind_x:
+        if not node.dyn_x:
             xvel = 0
-        if node.bind_y:
+        if not node.dyn_y:
             yvel = 0
-        if node.bind_z:
+        if not node.dyn_z:
             zvel = 0
 
         # print 'after:', (xvel, yvel, zvel)

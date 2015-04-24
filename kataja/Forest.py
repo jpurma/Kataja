@@ -118,7 +118,7 @@ class Forest:
 
 
 
-    def after_model_update(self, updated_fields):
+    def after_model_update(self, updated_fields, update_type):
         """ This is called after the item's model has been updated, to run the side-effects of various
         setters in an order that makes sense.
         :param updated_fields: list of names of fields that have been updated.
@@ -370,7 +370,6 @@ class Forest:
 
     def visible_nodes(self):
         """ Any node that is visible. Ignore the type.
-
         :return:
         """
         return [x for x in self.nodes.values() if x.is_visible]
@@ -1498,6 +1497,15 @@ class Forest:
         self.delete_edge(edge)
         return
 
+    def get_direction(self, parent, child):
+        """ Returns the direction/alignment parameter of edge between nodes, can be useful for deciding
+        how to show them or what exactly needs replacing.
+        :param parent: Node
+        :param child: Node
+        :return: int (from globals, see g.LEFT, g.RIGHT, g.NO_ALIGN )
+        """
+        edge = parent.get_edge_to(child)
+        return edge.alignment
 
     #### Connecting and disconnecting items ##########################
     #
@@ -1602,7 +1610,7 @@ class Forest:
         assert (old_node != new_node)  # if this can happen, we'll probably have infinite loop somewhere
         new_node.current_position = old_node.current_position
         new_node.adjustment = old_node.adjustment
-        new_node.computed_position = tuple(old_node.computed_position)
+        new_node.algo_position = tuple(old_node.algo_position)
         new_node.update_visibility(active=True, fade=True)
 
         for edge in list(old_node.edges_up):
@@ -1691,8 +1699,9 @@ class Forest:
                 # normal case
                 self.disconnect_node(first=node, second=child, ignore_missing=True)
                 for parent in good_parents:
+                    d = self.get_direction(parent, node)
                     self.disconnect_node(first=parent, second=node)
-                    self.connect_node(parent=parent, child=child)
+                    self.connect_node(parent=parent, child=child, direction=d)
         if i:
             child.set_index(i)
         self.delete_node(node)

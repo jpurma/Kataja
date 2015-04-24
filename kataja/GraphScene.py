@@ -573,35 +573,32 @@ class GraphScene(QtWidgets.QGraphicsScene):
         return QtWidgets.QGraphicsScene.mouseMoveEvent(self, event)
 
     def mouseReleaseEvent(self, event):
-        """
-
+        """ deliver clicks, drops and selections to correct objects and make sure that the Controller
+        state is up to date.
         :param event:
         :return:
         """
         self.graph_view.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
-
         if self._dblclick and not ctrl.pressed:  # doubleclick sends one release event at the end, swallow that
             self._dblclick = False
             return
         elif ctrl.pressed:
-
             pressed = ctrl.pressed  # : :type pressed: Movable
             x, y = to_tuple(event.scenePos())
-            success = False
             if self._dragging:
                 recipient = self.get_drop_recipient(pressed, event)  # @UndefinedVariable
-                pressed.drop_to(x, y, recipient=recipient)
+                message = pressed.drop_to(x, y, recipient=recipient)
                 self.kill_dragging()
                 ctrl.ui.update_selections()  # drag operation may have changed visible affordances
+                ctrl.pressed = None
+                ctrl.main.action_finished(message)  # @UndefinedVariable
             else:
                 if pressed.clickable:
                     success = pressed.click(event)
                 if pressed.selectable:
                     success = pressed.select(event)
                 pressed.update()
-            ctrl.pressed = None
-            if success:
-                ctrl.main.action_finished()  # @UndefinedVariable
+                ctrl.pressed = None
             return None  # this mouseRelease is now consumed
         else:
 
@@ -690,19 +687,11 @@ class GraphScene(QtWidgets.QGraphicsScene):
             if data.hasFormat("application/x-qabstractitemmodeldatalist") or data.hasFormat("text/plain"):
                 event.acceptProposedAction()
 
-    def drag_exact_start_point(self):
-        """
-
-
-        :return:
-        """
-        return self._drag_start_point
-
     def mouseDoubleClickEvent(self, event):
-        """
-
-        :param event:
-        :return:
+        """ If doubleclicking an empty spot, open creation menu. If doubleclicking an object, it may or may not
+        do something with it.
+        :param event: some kind of mouse event?
+        :return: None
         """
         self._dblclick = True
         QtWidgets.QGraphicsScene.mouseDoubleClickEvent(self, event)
@@ -715,8 +704,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 found = True
         if found:
             return
-        forest = self.main.forest
-        forest.undo_manager.record()
         ctrl.ui.create_creation_dialog(event.scenePos())
 
     # ### Timer loop #################################################################
@@ -769,13 +756,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
         items_fading = False
         frame_has_moved = False
         background_fade = False
-        resize_required = False
-        moved_nodes = []
-        normalize = True
-        x_sum = 0
-        y_sum = 0
-        z_sum = 0
-        avg_x = avg_y = avg_z = 0
+        can_normalize = True
+        md = {'xsum': 0, 'ysum': 0, 'zsum': 0, 'nodes':[]}
         self.main.ui_manager.activity_marker.show()
         ctrl.items_moving = True
         if self._fade_steps:
@@ -785,7 +767,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 background_fade = True
 
         f = self.main.forest
-        #if f.gloss and f.roots and not f.gloss.locked_to_position:
+        #if f.gloss and f.roots and not f.gloss.use_fixed_position:
         #    pt = f.roots[0].current_position
         #    f.gloss.setPos(pt[0] - 20, pt[1] - 40)
         #    f.gloss.lock()
@@ -794,68 +776,30 @@ class GraphScene(QtWidgets.QGraphicsScene):
             e.make_path()
             e.update()
 
-        for n, node in enumerate(f.visible_nodes()):
+        for node in f.visible_nodes():
             if node.adjust_opacity():
                 items_fading = True
             # Computed movement
-            if node.folding_towards:
-                x, y, z = node.folding_towards.computed_position
-                node.computed_position = (x, y + 10, z)
-                if node.move_towards_target_position(force_move=True):
-                    items_have_moved = True
-                normalize = False
-                moved_nodes.append((0, 0, 0, node))
-                continue
-            elif ctrl.pressed:
-                continue
-            elif node.locked_to_position:
-                continue
-            elif node.bind_x and node.bind_y:
-                if node.move_towards_target_position():
-                    items_have_moved = True
-                normalize = False
-                moved_nodes.append((0, 0, 0, node))
-                # print '%s is bound' % node
-                continue
-            elif node.bind_x or node.bind_y:
-                normalize = True
-                if node.move_towards_target_position():
-                    items_have_moved = True
-            elif not node.use_physics:
-                continue
-            # Dynamic movement
-            xvel, yvel, zvel = node.calculate_movement()
-            moved_nodes.append((xvel, yvel, zvel, node))
-            x_sum += xvel
-            y_sum += yvel
-            z_sum += zvel
+            moved, normalizable = node.move(md)
+            if moved:
+                items_have_moved = True
+            if not normalizable:
+                can_normalize = False
         # normalize movement so that the tree won't glide away
-        if moved_nodes:
+        ln = len(md['nodes'])
+        if ln and can_normalize:
             resize_required = True
-            if normalize:
-                avg_x = x_sum / len(moved_nodes)
-                avg_y = y_sum / len(moved_nodes)
-                avg_z = z_sum / len(moved_nodes)
-            for xvel, yvel, zvel, node in moved_nodes:
-                xvel -= avg_x
-                yvel -= avg_y
-                zvel -= avg_z
+            avg_x = md['xsum'] / ln
+            avg_y = md['ysum'] / ln
+            avg_z = md['zsum'] / ln
+            print(avg_x, avg_y, avg_z)
+            for node in md['nodes']:
                 x, y, z = node.current_position
-                if abs(xvel) > 0.25 or abs(yvel) > 0.25 or abs(zvel) > 0.25:
-                    x += xvel
-                    y += yvel
-                    z += zvel
-                    node.current_position = (x, y, z)
-                    items_have_moved = True
-                # if x < self.min_x:
-                #     self.min_x = x
-                # if x > self.max_x:
-                #     self.max_x = x
-                # if y < self.min_y:
-                #     self.min_y = y
-                # if y > self.max_y:
-                #     self.max_y = y
-        if resize_required and (not self.manual_zoom) and (not ctrl.dragged):
+                x -= avg_x
+                y -= avg_y
+                z -= avg_z
+                node.current_position = (x, y, z)
+        if items_have_moved and (not self.manual_zoom) and (not ctrl.dragged):
             self.fit_to_window()
 
         if items_have_moved:
@@ -867,3 +811,4 @@ class GraphScene(QtWidgets.QGraphicsScene):
             self.stop_animations()
             self.main.ui_manager.activity_marker.hide()
             ctrl.items_moving = False
+

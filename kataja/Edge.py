@@ -141,6 +141,16 @@ class Edge(QtWidgets.QGraphicsItem):
         # print("after-initing edge ", self)
         pass
 
+    def after_model_update(self, updated_fields, update_type):
+        """ Compute derived effects of updated values in sensible order.
+        :param updated_fields: field keys of updates
+        :param update_type: 0:edit, 1:CREATED, 2:DELETED
+        :return: None
+        """
+        if 'visible' in updated_fields:
+            self.update_visibility()
+
+
     @property
     def save_key(self):
         """ Return the save_key from the model. It is a property from BaseModel.
@@ -297,19 +307,22 @@ class Edge(QtWidgets.QGraphicsItem):
          for these purposes: it will have its UI buttons, it is selectable etc.
         :param value: bool
         """
-        v = self.isVisible()
         if self.model.touch('visible', value):
-            if v and not value:
-                self.model.visible = False
-                self.hide()
-                ctrl.main.ui_manager.remove_control_points(self)
-            elif (not v) and value:
-                self.model.visible = True
-                self.show()
-                if ctrl.is_selected(self):
-                    ctrl.main.ui_manager.add_control_points(self)
-            else:
-                self.model.visible = value
+            self.model.visible = value
+            self.update_visibility()
+
+    def update_visibility(self):
+        """ Hide or show according to model.visible flag, which allows edge to exist but not be drawn.
+        :return:
+        """
+        v = self.isVisible()
+        if v and not self.visible:
+            self.hide()
+            ctrl.main.ui_manager.remove_control_points(self)
+        elif self.visible and not v:
+            self.show()
+            if ctrl.is_selected(self):
+                ctrl.main.ui_manager.add_control_points(self)
 
     # Edge type - based settings that can be overridden
 

@@ -142,13 +142,13 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self._update_magnets = True
         self.setGraphicsEffect(self.effect)
 
-    def after_model_update(self, updated_fields):
+    def after_model_update(self, updated_fields, update_type):
         """ This is called after the item's model has been updated, to run the side-effects of various
         setters in an order that makes sense.
         :param updated_fields: list of names of fields that have been updated.
         :return: None
         """
-        super().after_model_update(updated_fields)
+        super().after_model_update(updated_fields, update_type)
         if '_label_synobj' in updated_fields or '_index_synobj' in updated_fields:
             self._inode_changed = True
             self.update_label()
@@ -323,9 +323,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     # return IterateOnce(self)
 
 
-    def calculate_movement(self):
-        """ Let a dynamic visualization algorithm work its magic """
-        return ctrl.forest.visualization.calculate_movement(self)
 
     def reset(self):
         """
@@ -343,6 +340,31 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :return: boolean
         """
         return False
+
+
+    def move(self, md):
+        """ Do one frame of movement: either move towards target position or take a step according to algorithm
+        :return:
+        """
+        if self.folding_towards:
+            px, py, pz = self.current_position
+            tx, ty, tz = self.folding_towards.current_position
+            if self._move_counter:
+                if self._use_easing:
+                    xvel = self._x_step * qt_prefs.easing_curve[self._move_counter - 1]
+                    yvel = self._y_step * qt_prefs.easing_curve[self._move_counter - 1]
+                    zvel = self._z_step * qt_prefs.easing_curve[self._move_counter - 1]
+                else:
+                    xvel = (px - tx) / self._move_counter
+                    yvel = (py - ty) / self._move_counter
+                    zvel = (pz - tz) / self._move_counter
+                self._move_counter -= 1
+                if not self._move_counter:
+                    self.stop_moving()
+            self.current_position = (px + xvel, py + yvel, pz + zvel)
+            return abs(xvel) + abs(yvel) + abs(zvel) > 3, False
+        else:
+            return super().move(md)
 
     # ### Children and parents ####################################################
 
@@ -893,11 +915,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         now_x, now_y = to_tuple(pos)
         if not getattr(ctrl, 'dragged', None):
             self.start_dragging(now_x, now_y)
-
-        mx, my = to_tuple(event.scenePos())
-        z = self.current_position[2]
-        self.current_position = (mx, my, z)
-        # scene.item_moved()
         px, py, pz = self._position_before_dragging
         if self.can_adjust_position:
             ax, ay, az = self._adjustment_before_dragging
@@ -905,7 +922,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             diff_y = now_y - py - ay
             self.adjustment = (diff_x, diff_y, az)
         else:
-            self.computed_position = (now_x, now_y, pz)
+            self.fixed_position = (now_x, now_y, pz)
+            self.use_fixed_position = True
 
 
     def dragged_over_by(self, dragged):

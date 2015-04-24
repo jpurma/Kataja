@@ -32,13 +32,14 @@ from kataja.BaseModel import BaseModel
 class MovableModel(BaseModel):
     def __init__(self, host):
         super().__init__(host)
-        self.computed_position = (0, 0, 0)
+        self.algo_position = (0, 0, 0)
         self.adjustment = None
+        self.fixed_position = None
         self.visible = True  # avoid isVisible for detecting if something is folded away
-        self.bind_x = False
-        self.bind_y = False
-        self.bind_z = False
-        self.locked_to_position = False
+        self.dyn_x = False
+        self.dyn_y = False
+        self.dyn_z = False
+        self.use_fixed_position = False
 
 
 
@@ -55,7 +56,7 @@ class Movable:
     def __init__(self):
         """ Basic properties for any scene objects
             positioning can be a bit difficult. There are:
-            saved.computed_position = visualization algorithm provided position
+            saved.algo_position = visualization algorithm provided position
             saved.adjustment = dragged somewhere
             .final_position = computed position + adjustment
             .current_position = real screen position, can be moving towards final position
@@ -68,8 +69,7 @@ class Movable:
         self.z = 0
         self._x_step, self._y_step, self._z_step = 0, 0, 0
         self._current_position = ((random.random() * 150) - 75, (random.random() * 150) - 75, 0)
-        self.final_position = (
-            0, 0, 0)  # Return computed final position, which is computed position based on visualization algorithm
+        self._target_position = (0, 0, 0)
         # + user-made adjustments
         self._move_counter = 0
         self._use_easing = True
@@ -81,6 +81,7 @@ class Movable:
         self.draggable = False
         self.clickable = False
         self._hovering = False
+        self.forced_movement = False
 
     @property
     def save_key(self):
@@ -89,47 +90,29 @@ class Movable:
         """
         return self.model.save_key
 
-    def after_model_update(self, updated_fields):
+    def after_model_update(self, updated_fields, update_type):
         """ This is called after the item's model has been updated, to run the side-effects of various
         setters in an order that makes sense.
         :param updated_fields: list of names of fields that have been updated.
         :return: None
         """
-        if 'computed_position' in updated_fields:
-            self._computed_position_updated(self.computed_position)
-        if 'adjustment' in updated_fields:
-            self._adjustment_updated(self.adjustment)
+        self.update_position()
 
     @property
-    def computed_position(self):
+    def algo_position(self):
         """ Return the computed position, which was set by visualization algorithm.
         :return: tuple (x, y, z)
         """
-        return self.model.computed_position
+        return self.model.algo_position
 
-    @computed_position.setter
-    def computed_position(self, value):
+    @algo_position.setter
+    def algo_position(self, value):
         """ Set the computed position of this item. This is usually called by visualization algorithm.
         :param value: tuple (x, y, z)
         """
-        if self.model.touch('computed_position', value):
-            self.model.computed_position = value
-            self._computed_position_updated(value)
-
-    def _computed_position_updated(self, value):
-        """ This is for updating consequences of changes in computed position.
-        It is called by setter above, and also when undo/redo sets a value for computed position
-        :param value: tuple (dx, dy, dz)
-        :return: None
-        """
-        x, y, z = value
-        if self.can_adjust_position() and self.model.adjustment:
-            ax, ay, az = self.model.adjustment
-            self.final_position = (x + ax, y + ay, z + az)
-        else:
-            self.final_position = tuple(self.model.computed_position)
-        if self.should_move():
-            self.start_moving()
+        if self.model.touch('algo_position', value):
+            self.model.algo_position = value
+            self.update_position()
 
     @property
     def adjustment(self):
@@ -144,21 +127,23 @@ class Movable:
         """
         if self.model.touch('adjustment', value):
             self.model.adjustment = value
-            self._adjustment_updated(value)
+            self.update_position()
 
-    def _adjustment_updated(self, value):
-        """ This is called by setter, and also when undo restores a previous value
-        :param value: tuple (dx, dy, dz)
-        :return: None
+    @property
+    def fixed_position(self):
+        """ Return the fixed position, set by user.
+        :return: tuple (x, y, z) or None
         """
-        if value:
-            ax, ay, az = value
-            x, y, z = self.computed_position
-            self.final_position = (x + ax, y + ay, z + az)
-        else:
-            self.final_position = tuple(self.computed_position)
-        if self.should_move():
-            self.start_moving()
+        return self.model.fixed_position
+
+    @fixed_position.setter
+    def fixed_position(self, value):
+        """ Set the fixed position, making the object stick there and ignore dynamic moving.
+        :param value: tuple (x, y, z) or None
+        """
+        if self.model.touch('fixed_position', value):
+            self.model.fixed_position = value
+            self.update_position()
 
     @property
     def visible(self):
@@ -176,64 +161,64 @@ class Movable:
             self.model.visible = value
 
     @property
-    def bind_x(self):
+    def dyn_x(self):
         """ Dynamic movement is ignored for x-dimension
         :return: bool
         """
-        return self.model.bind_x
+        return self.model.dyn_x
 
-    @bind_x.setter
-    def bind_x(self, value):
+    @dyn_x.setter
+    def dyn_x(self, value):
         """ Dynamic movement is ignored for x-dimension
         :param value: bool
         """
-        if self.model.touch('bind_x', value):
-            self.model.bind_x = value
+        if self.model.touch('dyn_x', value):
+            self.model.dyn_x = value
 
     @property
-    def bind_y(self):
+    def dyn_y(self):
         """ Dynamic movement is ignored for y-dimension
         :return: bool
         """
-        return self.model.bind_y
+        return self.model.dyn_y
 
-    @bind_y.setter
-    def bind_y(self, value):
+    @dyn_y.setter
+    def dyn_y(self, value):
         """ Dynamic movement is ignored for y-dimension
         :param value: bool
         """
-        if self.model.touch('bind_y', value):
-            self.model.bind_y = value
+        if self.model.touch('dyn_y', value):
+            self.model.dyn_y = value
 
     @property
-    def bind_z(self):
+    def dyn_z(self):
         """ Dynamic movement is ignored for z-dimension
         :return: bool
         """
-        return self.model.bind_z
+        return self.model.dyn_z
 
-    @bind_z.setter
-    def bind_z(self, value):
+    @dyn_z.setter
+    def dyn_z(self, value):
         """ Dynamic movement is ignored for z-dimension
         :param value: bool
         """
-        if self.model.touch('bind_z', value):
-            self.model.bind_z = value
+        if self.model.touch('dyn_z', value):
+            self.model.dyn_z = value
 
     @property
-    def locked_to_position(self):
+    def use_fixed_position(self):
         """ Element ignores dynamic movement
         :return: bool
         """
-        return self.model.locked_to_position
+        return self.model.use_fixed_position
 
-    @locked_to_position.setter
-    def locked_to_position(self, value):
+    @use_fixed_position.setter
+    def use_fixed_position(self, value):
         """ Element ignores dynamic movement
         :param value: bool
         """
-        if self.model.touch('locked_to_position', value):
-            self.model.locked_to_position = value
+        if self.model.touch('use_fixed_position', value):
+            self.model.use_fixed_position = value
 
     # ## Not saved properties, but otherwise interesting
 
@@ -254,6 +239,51 @@ class Movable:
         self.z = value[2]
         if isinstance(self, QtWidgets.QGraphicsItem):
             QtWidgets.QGraphicsItem.setPos(self, value[0], value[1])
+
+    @property
+    def use_adjustment(self):
+        """ Should the relative adjustment counted into position or is the position absolute,
+        because it is updated by dynamic algo and has to use fixed user-determined position.
+        :return:
+        """
+        return self.adjustment and not (self.dyn_x and self.dyn_y and self.dyn_z)
+
+    @property
+    def can_adjust_position(self):
+        """Only those items that get their fixed position from algorithm can be adjusted.
+        Dynamically moving items are just dragged around. Returns if the object gets both x and y
+        coords from algorithm.
+        :return: boolean
+        """
+        return not (self.dyn_x and self.dyn_y and self.dyn_z)
+
+    def update_position(self, instant=False):
+        """ Compute new current_position and target_position
+        :param instant: don't animate (for e.g. dragging)
+        :return: None
+        """
+        print('updating position ', self)
+        if self.use_fixed_position:
+            print(self.fixed_position)
+            self._target_position = self.fixed_position
+        elif self.use_adjustment:
+            ax, ay, az = self.algo_position
+            dx, dy, dz = self.adjustment
+            self._target_position = (ax + dx, ay + dy, az + dz)
+        else:
+            self._target_position = self.algo_position
+
+        if instant:
+            self.current_position = tuple(self._target_position)
+            self.stop_moving()
+        else:
+            if self._target_position != self.current_position:
+                print('started moving, target: ', self._target_position, ' current: ', self.current_position)
+                self.start_moving()
+            else:
+                self.stop_moving()
+
+
 
     def reset(self):
         """ Remove mode information, eg. hovering
@@ -327,60 +357,69 @@ class Movable:
 
     # ## Movement ##############################################################
 
-    def move_towards_target_position(self, force_move=False):
-        """ Takes one step in movement trajectory or finishes movement. Returns true if the movement is still
-        continuing, false if it has stopped.
-        :param force_move: bool -- ignore the bind_xyz -status and just move it
-        :return: bool -- did we move?
+    def move(self, md):
+        """ Do one frame of movement: either move towards target position or take a step according to algorithm
+        :return:
         """
-        if not self._move_counter:
-            return False
+        if self.use_fixed_position:
+            self.current_position = self.fixed_position
+            return False, False
         px, py, pz = self.current_position
-        tx, ty, tz = self.final_position
-        if abs(px - tx) < .1 and abs(py - ty) < .1 and abs(pz - tz) < .1:
-            self.stop_moving()
-            return False
-        x_step, y_step, z_step = 0, 0, 0
-        if self._use_easing:
-            if force_move:
-                x_step = self._x_step * qt_prefs.easing_curve[self._move_counter - 1]
-                y_step = self._y_step * qt_prefs.easing_curve[self._move_counter - 1]
-                z_step = self._z_step * qt_prefs.easing_curve[self._move_counter - 1]
-            else:
-                if self.bind_x:
-                    x_step = self._x_step * qt_prefs.easing_curve[self._move_counter - 1]
-                if self.bind_y:
-                    y_step = self._y_step * qt_prefs.easing_curve[self._move_counter - 1]
-                if self.bind_z:
-                    z_step = self._z_step * qt_prefs.easing_curve[self._move_counter - 1]
+        xvel = yvel = zvel = 0
+        normalize = False
+
+        if self.dyn_x and self.dyn_y:
+            # dynamic movement only
+            if self.use_physics and not ctrl.pressed:
+                xvel, yvel, zvel = ctrl.forest.visualization.calculate_movement(self)
+                md['xsum'] += xvel
+                md['ysum'] += yvel
+                md['zsum'] += zvel
+                md['nodes'].append(self)
+            normalize = True
+        if not (self.dyn_x or self.dyn_y or self.dyn_z):
+            # straight move to target
+            tx, ty, tz = self._target_position
+            if self._move_counter:
+                if self._use_easing:
+                    xvel = self._x_step * qt_prefs.easing_curve[self._move_counter - 1]
+                    yvel = self._y_step * qt_prefs.easing_curve[self._move_counter - 1]
+                    zvel = self._z_step * qt_prefs.easing_curve[self._move_counter - 1]
+                else:
+                    xvel = (tx - px) / self._move_counter
+                    yvel = (ty - py) / self._move_counter
+                    zvel = (tz - pz) / self._move_counter
+                self._move_counter -= 1
+                if not self._move_counter:
+                    self.stop_moving()
         else:
-            if force_move:
-                x_step = (px - tx) / self._move_counter
-                y_step = (py - ty) / self._move_counter
-                z_step = (pz - tz) / self._move_counter
-            else:
-                if self.bind_x:
-                    x_step = (px - tx) / self._move_counter
-                if self.bind_y:
-                    y_step = (py - ty) / self._move_counter
-                if self.bind_z:
-                    z_step = (pz - tz) / self._move_counter
-        self._move_counter -= 1
-        self.current_position = (px - x_step, py - y_step, pz - z_step)
-        if not self._move_counter:
-            self.stop_moving()
-        return True
+            # combination of move to target and dynamic movement
+            tx, ty, tz = self._target_position
+            xvel, yvel, zvel = ctrl.forest.visualization.calculate_movement(self)
+            if self._move_counter:
+                if self._use_easing:
+                    if not self.dyn_x:
+                        xvel = self._x_step * qt_prefs.easing_curve[self._move_counter - 1]
+                    if not self.dyn_y:
+                        yvel = self._y_step * qt_prefs.easing_curve[self._move_counter - 1]
+                    if not self.dyn_z:
+                        zvel = self._z_step * qt_prefs.easing_curve[self._move_counter - 1]
+                else:
+                    if not self.dyn_x:
+                        xvel = (tx - px) / self._move_counter
+                    if not self.dyn_y:
+                        yvel = (ty - py) / self._move_counter
+                    if not self.dyn_z:
+                        zvel = (tz - pz) / self._move_counter
+                self._move_counter -= 1
+                if not self._move_counter:
+                    self.stop_moving()
+        self.current_position = (px + xvel, py + yvel, pz + zvel)
+        return abs(xvel) + abs(yvel) + abs(zvel) > 0.6, normalize
 
     def moving(self):
         """ Check if moving trajectory is on """
         return self._move_counter
-
-    def should_move(self):
-        """
-        Returns true if the item is not yet where it should be.
-        :return: boolean
-        """
-        return self.final_position != self.current_position
 
     def set_original_position(self, pos):
         """ Sets both current position and computed position to same place,
@@ -389,8 +428,8 @@ class Movable:
         """
         if isinstance(pos, (QtCore.QPoint, QtCore.QPointF)):
             pos = pos.x(), pos.y(), 0
-        self.computed_position = tuple(pos)
-        self.final_position = tuple(pos)
+        self.algo_position = tuple(pos)
+        self._target_position = tuple(pos)
         self.adjustment = None
         self.current_position = tuple(pos)
 
@@ -398,7 +437,7 @@ class Movable:
         """ Initiate moving animation for object.
         :return: None
         """
-        x, y, z = self.final_position
+        x, y, z = self._target_position
         sx, sy, sz = self.current_position
         # print 'item %s starts moving from (%s %s %s) to (%s %s %s)' % (self, sx,sy,sz,x,y,z)
         if self._move_counter:  # don't force animation to start again, redirect it instead
@@ -406,32 +445,19 @@ class Movable:
         else:
             self._use_easing = True
             self._move_counter = prefs.move_frames or 20
-        self._x_step, self._y_step, self._z_step = sx - x, sy - y, sz - z
+        self._x_step, self._y_step, self._z_step = x - sx, y - sy, z - sz
+        print(self._move_counter)
 
     def stop_moving(self):
         """ Kill moving animation for this object.
         :return: None
         """
+        print('stop moving, ', self)
         amv = getattr(self, 'after_move_function', None)
         if amv:
             amv()
             self.after_move_function = None
         self._move_counter = 0
-
-    def can_adjust_position(self):
-        """Only those items that get their fixed position from algorithm can be adjusted.
-        Dynamically moving items are just dragged around. Returns if the object gets both x and y
-        coords from algorithm.
-        :return: boolean
-        """
-        return self.bind_x and self.bind_y
-
-    def reset_adjustment(self):
-        """ Remove adjustments from this object.
-        :return: None
-        """
-        self.adjustment = None
-        self.final_position = tuple(self.computed_position)
 
     # ## Selection ############################################################
 
@@ -479,15 +505,15 @@ class Movable:
 
     def release(self):
         """ Item can be affected by computed positions """
-        self.locked_to_position = False
+        self.use_fixed_position = False
 
     def lock(self):
         """ Item cannot be moved to computed positions """
-        self.locked_to_position = True
+        self.use_fixed_position = True
 
     def is_locked(self):
         """
         Returns if the item's position can be changed by algorithm, or if it is fixed to position.
         :return: boolean
         """
-        return self.locked_to_position
+        return self.use_fixed_position

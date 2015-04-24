@@ -63,23 +63,23 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
 
         :param node:
         """
-        node.locked_to_position = False
-        node.reset_adjustment()
+        node.use_fixed_position = False
+        node.adjustment = None
         node.update_label()
         node.update_visibility()
         if isinstance(node, ConstituentNode):
             if node.is_leaf_node():
-                node.bind_x = True
-                node.bind_y = True
+                node.dyn_x = False
+                node.dyn_y = False
             elif node.is_root_node():
-                node.bind_x = False
-                node.bind_y = True
+                node.dyn_x = True
+                node.dyn_y = False
             else:
-                node.bind_x = False
-                node.bind_y = False
+                node.dyn_x = True
+                node.dyn_y = True
         elif isinstance(node, FeatureNode) or isinstance(node, GlossNode):
-            node.bind_x = False
-            node.bind_y = False
+            node.dyn_x = True
+            node.dyn_y = True
 
 
     def reselect(self):
@@ -108,14 +108,14 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
             nodelist = []
             for node in self.forest.list_nodes_once(root):
                 if node == root:
-                    node.bind_x = False
-                    node.bind_y = True
+                    node.dyn_x = True
+                    node.dyn_y = False
                     rx, ry, rz = node.current_position
-                    node.computed_position = (rx, 0, rz)
+                    node.algo_position = (rx, 0, rz)
                 elif node.is_leaf_node():
                     if node:
-                        node.bind_x = True
-                        node.bind_y = True
+                        node.dyn_x = False
+                        node.dyn_y = False
                         if node.folding_towards:
                             if node.folding_towards not in nodelist:
                                 nodelist.append(node.folding_towards)
@@ -124,8 +124,8 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
                         else:
                             nodelist.append(node)
                 else:
-                    node.bind_x = False
-                    node.bind_y = False
+                    node.dyn_x = True
+                    node.dyn_y = True
             total_width = sum([node.width for node in nodelist]) + (10 * len(nodelist))
             offset = total_width / -2
             x = offset
@@ -134,7 +134,7 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
             for node in nodelist:
                 nw = node.width
                 x += nw / 2
-                node.bind_x = True
-                node.bind_y = True
-                node.computed_position = (x, start_height, node.z)
+                node.dyn_x = False
+                node.dyn_y = False
+                node.algo_position = (x, start_height, node.z)
                 x += (nw / 2) + 10

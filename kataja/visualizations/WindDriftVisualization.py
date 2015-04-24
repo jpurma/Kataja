@@ -69,15 +69,15 @@ class WindDriftTree(BaseVisualization):
 
         :param node:
         """
-        node.locked_to_position = False
-        node.reset_adjustment()
+        node.use_fixed_position = False
+        node.adjustment = None
         node.update_visibility()
         if isinstance(node, ConstituentNode):
-            node.bind_x = True
-            node.bind_y = True
+            node.dyn_x = True
+            node.dyn_y = True
         elif isinstance(node, FeatureNode) or isinstance(node, GlossNode):
-            node.bind_y = False
-            node.bind_x = False
+            node.dyn_y = False
+            node.dyn_x = False
         node.update_label()
 
 
@@ -104,7 +104,7 @@ class WindDriftTree(BaseVisualization):
                         x = lx - self._leftmost.width / 2 - node.width / 2
                     self._leftmost = node
                     self._last_pos = (x, y)
-                    node.computed_position = (x, y, 0)
+                    node.algo_position = (x, y, 0)
                 else:
                     x, y = self._last_pos
                     left_right_node = left.right()
@@ -114,7 +114,7 @@ class WindDriftTree(BaseVisualization):
                         y -= self._grid_height
                     x += self._grid_height
                     self._last_pos = (x, y)
-                    node.computed_position = (x, y, 0)
+                    node.algo_position = (x, y, 0)
 
         draw_node(topmost_node, None)
 

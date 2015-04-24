@@ -66,15 +66,15 @@ class BracketedLinearization(BaseVisualization):
 
         :param node:
         """
-        node.locked_to_position = False
-        node.reset_adjustment()
+        node.use_fixed_position = False
+        node.adjustment = None
         node.update_visibility()
         if isinstance(node, ConstituentNode):
-            node.bind_x = True
-            node.bind_y = True
+            node.dyn_x = True
+            node.dyn_y = True
         elif isinstance(node, FeatureNode) or isinstance(node, GlossNode):
-            node.bind_x = False
-            node.bind_y = False
+            node.dyn_x = False
+            node.dyn_y = False
         node.update_label()
 
 
@@ -121,7 +121,7 @@ class BracketedLinearization(BaseVisualization):
                 # we want to tile the words after each other and for that reason left and right edges
                 # are more useful than the center.
                 left_edge += self.forest.bracket_manager.count_bracket_space(node, left=True)
-                node.computed_position = (left_edge + node.width / 2, 0, 0)
+                node.algo_position = (left_edge + node.width / 2, 0, 0)
                 if node.is_visible() and (not node.has_empty_label()):
                     left_edge += node.width
                 if left:

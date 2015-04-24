@@ -70,16 +70,16 @@ class LeftFirstTree(BaseVisualization):
 
         :param node:
         """
-        node.locked_to_position = False
-        node.reset_adjustment()
+        node.use_fixed_position = False
+        node.adjustment = None
         node.update_label()
         node.update_visibility()
         if isinstance(node, ConstituentNode):
-            node.bind_x = True
-            node.bind_y = True
+            node.dyn_x = False
+            node.dyn_y = False
         elif isinstance(node, FeatureNode) or isinstance(node, GlossNode):
-            node.bind_x = False
-            node.bind_y = False
+            node.dyn_x = True
+            node.dyn_y = True
 
 
     @caller
@@ -220,7 +220,7 @@ class LeftFirstTree(BaseVisualization):
                     if width_spillover > extra_width[x_i]:
                         extra_width[x_i] = math.ceil(width_spillover / float(edge_width)) * edge_width
                     x += extra_width[x_i]
-                    node.computed_position = (x, y, 0)
+                    node.algo_position = (x, y, 0)
                     prev_width = node.width
                     if not node in all_nodes:
                         print('non-visible node included in visualization grid: ', node)

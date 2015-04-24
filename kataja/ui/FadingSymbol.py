@@ -1,7 +1,6 @@
 # coding=utf-8
 from PyQt5 import QtCore, QtWidgets
 
-from PyQt5.QtCore import QPointF as Pf
 from kataja.singletons import prefs
 
 
@@ -28,7 +27,9 @@ class FadingSymbol(QtWidgets.QGraphicsPixmapItem):
 
         """
         if self.place == 'bottom_right':
-            self.setPos(Pf(self.host.sceneBoundingRect().bottomRight()))
+            w2 = self.pixmap().width() / 2
+            br = QtCore.QPointF(self.host.sceneBoundingRect().bottomRight() - QtCore.QPoint(w2, 0))
+            self.setPos(br)
 
     def fade_out(self, speed='slow'):
         """

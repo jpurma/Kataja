@@ -58,12 +58,12 @@ class EquidistantElasticTree(BaseVisualization):
 
         :param node:
         """
-        node.locked_to_position = False
-        node.reset_adjustment()
+        node.use_fixed_position = False
+        node.adjustment = None
         node.update_label()
         node.update_visibility()
-        node.bind_y = False
-        node.bind_x = False
+        node.dyn_y = True
+        node.dyn_x = True
 
     def calculate_movement(self, node):
         # @time_me
@@ -132,9 +132,9 @@ class EquidistantElasticTree(BaseVisualization):
         xvel += node_x * -0.002
         yvel += node_y * -0.002
 
-        if node.bind_x:
+        if not node.dyn_x:
             xvel = 0
-        if node.bind_y:
+        if not node.dyn_y:
             yvel = 0
         if abs(xvel > 10):
             if xvel > 10:

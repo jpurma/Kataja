@@ -99,6 +99,7 @@ class UndoManager:
                 self._current -= 1
                 self.phase = 'new'
             else:
+                ctrl.add_message('undo [%s]: Cannot undo further' % self._current)
                 return
         ctrl.disable_undo = True
         msg, snapshot = self._stack[self._current]
@@ -106,12 +107,13 @@ class UndoManager:
         for obj, transitions, transition_type in snapshot.values():
             obj.model.revert_to_earlier(transitions)
             if transition_type == CREATED:
-                print('undo should undo creation (=cancel) of object ', obj)
+                print('undo should undo creation of object (=>cancel) ', obj)
+                ctrl.forest.delete_item(obj)
             elif transition_type == DELETED:
-                print('undo should undo deletion (=revive) of object ', obj)
-
+                print('undo should undo deletion of object (=>revive)', obj)
+                ctrl.forest.add_to_scene(obj)
         for obj, transitions, transition_type in snapshot.values():
-            obj.model.update(transitions.keys())
+            obj.model.update(transitions.keys(), transition_type)
         self.phase = 'old'
         ctrl.add_message('undo [%s]: %s' % (self._current, msg))
         ctrl.disable_undo = False
@@ -125,6 +127,7 @@ class UndoManager:
                 self._current += 1
                 self.phase = 'old'
             else:
+                ctrl.add_message('redo [%s]: In last action' % self._current)
                 return
         ctrl.disable_undo = True
         msg, snapshot = self._stack[self._current]
@@ -133,13 +136,14 @@ class UndoManager:
             obj.model.move_to_later(transitions)
             if transition_type == CREATED:
                 print('redo should recreate object ', obj)
+                ctrl.forest.add_to_scene(obj)
             elif transition_type == DELETED:
                 print('redo should delete object', obj)
+                ctrl.forest.delete_item(obj)
         for obj, transitions, transition_type  in snapshot.values():
-            obj.model.update(transitions.keys())
+            obj.model.update(transitions.keys(), transition_type)
         ctrl.add_message('redo [%s]: %s' % (self._current, msg))
-        if self._current < len(self._stack) - 1:
-            self._current += 1
+        self.phase = 'new'
         ctrl.disable_undo = False
 
     @staticmethod

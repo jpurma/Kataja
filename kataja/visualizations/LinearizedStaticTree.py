@@ -66,16 +66,16 @@ class LinearizedStaticTree(BalancedTree):
 
         :param node:
         """
-        node.locked_to_position = False
-        node.reset_adjustment()
+        node.use_fixed_position = False
+        node.adjustment = None
         node.update_label()
         node.update_visibility()
         if isinstance(node, ConstituentNode):
-            node.bind_x = True
-            node.bind_y = True
+            node.dyn_x = True
+            node.dyn_y = True
         elif isinstance(node, FeatureNode) or isinstance(node, GlossNode):
-            node.bind_x = False
-            node.bind_y = False
+            node.dyn_x = False
+            node.dyn_y = False
 
 
     def reselect(self):
@@ -221,7 +221,7 @@ class LinearizedStaticTree(BalancedTree):
             for x, node in enumerate(row):
                 if node and isinstance(node, Movable):
                     node.release()
-                    node.computed_position = (width_now, height_now, 0)
+                    node.algo_position = (width_now, height_now, 0)
                 width_now += edge_width
 
         draw_grid_lines = False

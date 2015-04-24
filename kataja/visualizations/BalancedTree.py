@@ -63,16 +63,16 @@ class BalancedTree(BaseVisualization):
 
         :param node:
         """
-        node.locked_to_position = False
-        node.reset_adjustment()
+        node.use_fixed_position = False
+        node.adjustment = None
         node.update_label()
         node.update_visibility()
         if isinstance(node, ConstituentNode):
-            node.bind_x = True
-            node.bind_y = True
+            node.dyn_x = True
+            node.dyn_y = True
         elif isinstance(node, FeatureNode) or isinstance(node, GlossNode):
-            node.bind_x = False
-            node.bind_y = False
+            node.dyn_x = False
+            node.dyn_y = False
 
 
     def reselect(self):
@@ -98,7 +98,7 @@ class BalancedTree(BaseVisualization):
             for n, x, width in rows[row]:
                 x_pos += width
             rows[row].append((node, x_pos, node.width))
-            node.computed_position = (x_pos + node.width / 2, row * edge_height * 2, 0)
+            node.algo_position = (x_pos + node.width / 2, row * edge_height * 2, 0)
             left = node.left()
             if left:
                 _fill_grid(left, row + 1)

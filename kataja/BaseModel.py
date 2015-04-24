@@ -139,33 +139,46 @@ class BaseModel:
         :param transitions: dict of changes, values are tuples of (old, new) -pairs
         :return: None
         """
+        print('--- restore to earlier for ', self, ' ----------')
         for key, value in transitions.items():
             if key.startswith('_') and key.endswith('_synobj'):
                 continue
             old, new = value
             setattr(self, key, old)
+            print('  %s: %s <- %s' % (key, old, new))
+        print('-------------')
 
     def move_to_later(self, transitions):
         """ Move to later version with a given changes -dict
         :param transitions: dict of changes, values are tuples of (old, new) -pairs
         :return: None
         """
+        print('--- move to later for ', self, ' ----------')
         for key, value in transitions.items():
             if key.startswith('_') and key.endswith('_synobj'):
                 continue
             old, new = value
             setattr(self, key, new)
+            print('  %s: %s -> %s' % (key, old, new))
+        print('-------------')
 
-    def update(self, changed_fields):
+    def update(self, changed_fields, transition_type, doing_undo=True):
         """ Runs the after_model_update that should do the necessary derivative calculations and graphical updates
         after the model has been changed by redo/undo.
         updates are run as a batch after all of the objects have had their model values updated.
-        :param changes: dict of changes, same as in revert/move
+        :param changed_fields: dict of changes, same as in revert/move
+        :param transition_type: 0:edit, 1:CREATED, 2:DELETED
+        :param doing_undo: bool - are we doing undo (True) or redo (False), affects how transition_type is
+        interpreted
         :return:
         """
         updater = getattr(self._host, 'after_model_update', None)
+        if transition_type == CREATED and doing_undo:
+            transition_type = DELETED
+        elif transition_type == DELETED and doing_undo:
+            transition_type = CREATED
         if updater:
-            updater(changed_fields)
+            updater(changed_fields, transition_type)
 
     def save_object(self, saved_objs, open_refs):
         """ Flatten the object to saveable dict and recursively save the objects it contains

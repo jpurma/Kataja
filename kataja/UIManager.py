@@ -893,7 +893,7 @@ class UIManager:
 
         :param node:
         """
-        assert node.locked_to_position
+        assert node.use_fixed_position
         item = FadingSymbol(qt_prefs.lock_icon, node, self, place='bottom_right')
         # print u"\U0001F512" , unichr(9875) # unichr(9875)
         self.add_ui(item)

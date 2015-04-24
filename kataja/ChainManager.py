@@ -161,14 +161,14 @@ class ChainManager:
                     if key not in y_adjust:
                         y_adjust[key] = head.boundingRect().height(), head.boundingRect().height()
                     dx, dy = y_adjust[key]
-                    if head.bind_x and head.bind_y:
-                        node.bind_x = True
-                        node.bind_y = True
-                        x, y, z = head.computed_position
+                    if head.dyn_x and head.dyn_y:
+                        node.dyn_x = False
+                        node.dyn_y = False
+                        x, y, z = head.algo_position
                         node.adjustment = head.adjustment
                         y += dy
                         x -= dx
-                        node.computed_position = (x, y, z)
+                        node.algo_position = (x, y, z)
                     else:
                         x, y, z = head.current_position
                         y += dy

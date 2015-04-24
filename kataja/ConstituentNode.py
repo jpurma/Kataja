@@ -26,7 +26,7 @@ from PyQt5 import QtGui
 
 from kataja.singletons import ctrl
 from kataja.Node import Node, NodeModel
-from kataja.utils import to_tuple, time_me
+from kataja.utils import to_tuple, time_me, caller
 from kataja.parser.INodes import IConstituentNode
 import kataja.globals as g
 
@@ -103,13 +103,13 @@ class ConstituentNode(Node):
         self.update_visibility()
         ctrl.forest.store(self)
 
-    def after_model_update(self, updated_fields):
+    def after_model_update(self, updated_fields, update_type):
         """ This is called after the item's model has been updated, to run the side-effects of various
         setters in an order that makes sense.
         :param updated_fields: list of names of fields that have been updated.
         :return: None
         """
-        super().after_model_update(updated_fields)
+        super().after_model_update(updated_fields, update_type)
         update_label = False
         if '_alias_synobj' in updated_fields:
             self._inode_changed = True
@@ -372,10 +372,10 @@ class ConstituentNode(Node):
         print('| print: %s ' % self)
         print('| x: %s y: %s z: %s' % self.current_position)
         print('| adjustment: x: %s y: %s z: %s ' % self.adjustment)
-        print('| computed x: %s y: %s z: %s' % self.computed_position)
+        print('| computed x: %s y: %s z: %s' % self.algo_position)
         print('| final: x: %s y: %s z: %s ' % self.final_position)
-        print('| bind x: %s y: %s z: %s' % (self.bind_x, self.bind_y, self.bind_z))
-        print('| locked_to_position: %s ' % self.locked_to_position)
+        print('| bind x: %s y: %s z: %s' % (self.dyn_x, self.dyn_y, self.dyn_z))
+        print('| use_fixed_position: %s ' % self.use_fixed_position)
         print('| label rect: ', self.label_rect)
         print('| index: %s' % self.index)
         print('| edges up:', self.edges_up)
@@ -645,9 +645,9 @@ class ConstituentNode(Node):
         # print u'node %s preparing to collapse to %s at %s' % (self, triangle, triangle.target_position )
         self.folding_towards = triangle  # folding_towards should override other kinds of movements
         self.after_move_function = self.finish_folding
-        tx, ty, tz = triangle.computed_position
+        tx, ty, tz = triangle.algo_position
         self.adjustment = triangle.adjustment
-        self.computed_position = (tx, ty + 30, tz)  # , fast = True)
+        self.algo_position = (tx, ty + 30, tz)  # , fast = True)
         # for feature in self.features:
         # feature.fade_out()
 
@@ -811,31 +811,40 @@ class ConstituentNode(Node):
         if not getattr(ctrl, 'dragged', None):
             self.start_dragging(now_x, now_y)
 
+        if self.can_adjust_position:
+            self.use_fixed_position = False
+            ax, ay, az = self.algo_position
+            dx = now_x - ax
+            dy = now_y - ay
+            self.adjustment = dx, dy, az
+        else:
+            self.fixed_position = now_x, now_y, self.current_position[2]
+            self.use_fixed_position = True
+        self.update_position(instant=True)
+
         # change dragged positions to be based on adjustment instead of distance to main dragged.
         for node in ctrl.dragged:
             dx, dy = node._distance_from_dragged
             px, py, pz = node._position_before_dragging
             if node.can_adjust_position:
+                self.use_fixed_position = False
                 ax, ay, az = node._adjustment_before_dragging
                 diff_x = now_x + dx - px - ax
                 diff_y = now_y + dy - py - ay
                 node.adjustment = (diff_x, diff_y, az)
             else:
-                node.computed_position = (now_x + dx, now_y + dy, pz)
-            # try:
-            # assert (int(px - ax) == int(node._computed_position[0])) # position without adjustment
-            # except AssertionError:
-            # print 'Assertion error:'
-            # print px - ax, py - ay, node._computed_position
-            node.current_position = (now_x + dx, now_y + dy, pz)
+                node.fixed_position = (now_x + dx, now_y + dy, pz)
+                node.use_fixed_position = True
+            node.update_position(instant=True)
+
 
     def drop_to(self, x, y, recipient=None):
         """
 
-
         :param recipient:
         :param x:
         :param y:
+        :return: action finished -message (str)
         """
         self.update()
         if recipient and recipient.accepts_drops(self):
@@ -844,15 +853,15 @@ class ConstituentNode(Node):
             recipient.drop(self)
         else:
             for node in ctrl.dragged:
-                node.lock()
-                ctrl.main.ui_manager.show_anchor(node)  # @UndefinedVariable
+                if not node.use_fixed_position:
+                    node.lock()
+                    ctrl.main.ui_manager.show_anchor(node)  # @UndefinedVariable
         del self._position_before_dragging
         del self._adjustment_before_dragging
         del self._distance_from_dragged
         ctrl.dragged = set()
         ctrl.dragged_positions = set()
-        ctrl.main.action_finished('moved node %s' % self)
-        # ctrl.scene.fit_to_window()
+        return 'moved node %s' % self
 
     def cancel_dragging(self):
         """
@@ -862,10 +871,10 @@ class ConstituentNode(Node):
         assert False
         sx, sy = self._before_drag_position
         z = self.current_position[2]
-        self.computed_position = (sx, sy, z)
+        self.algo_position = (sx, sy, z)
         for node, x, y in ctrl.dragged_positions:
             z = node.current_position[2]
-            node.computed_position = (sx + x, sy + y, z)
+            node.algo_position = (sx + x, sy + y, z)
         del self.before_drag_position
         ctrl.dragged = set()
         ctrl.dragged_positions = set()

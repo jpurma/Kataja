@@ -69,15 +69,15 @@ class BaseVisualization:
 
         :param node:
         """
-        node.locked_to_position = False
-        node.reset_adjustment()
+        node.use_fixed_position = False
+        node.adjustment = None
         node.update_label()
         if isinstance(node, ConstituentNode):
             node.update_visibility()
         elif isinstance(node, FeatureNode) or isinstance(node, GlossNode):
             pass
-        node.bind_y = False
-        node.bind_x = False
+        node.dyn_y = False
+        node.dyn_x = False
 
 
     def draw(self):
@@ -201,11 +201,11 @@ class BaseVisualization:
                     node_x -= 1
 
 
-        if node.bind_x:
+        if not node.dyn_x:
             xvel = 0
         else:
             xvel = node_x - old_x
-        if node.bind_y:
+        if not node.dyn_y:
             yvel = 0
         else:
             yvel = node_y - old_y

@@ -290,7 +290,7 @@ class QtPreferences:
             """
             p = QtGui.QPixmap(iconpath + path)
             if width:
-                p.scaledToWidth(width)
+                p = p.scaledToWidth(width)
             return p
 
         #print("font families:", QtGui.QFontDatabase().families())
@@ -302,7 +302,7 @@ class QtPreferences:
         self.no_pen.setStyle(QtCore.Qt.NoPen)
         self.no_brush = QtGui.QBrush()
         self.no_brush.setStyle(QtCore.Qt.NoBrush)
-        self.lock_icon = pixmap('lock.png', 16)
+        self.lock_icon = pixmap('lock32.png', 16)
         self.cut_icon = pixmap('cut_icon48.png', 24)
         self.delete_icon = pixmap('backspace48.png', 24)
         self.close_icon = pixmap('close24.png')

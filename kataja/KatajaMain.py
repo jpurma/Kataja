@@ -383,6 +383,7 @@ class KatajaMain(QtWidgets.QMainWindow):
             print('-- calling take_snapshot --')
             ctrl.forest.undo_manager.take_snapshot(m)
         else:
+            print('start animations')
             ctrl.graph_scene.start_animations()
         print('--- end action finished ---')
 
