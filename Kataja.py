@@ -31,7 +31,8 @@ app.setOrganizationName('JPurma-Aalto')
 app.setOrganizationDomain('jpurma.aalto.fi')
 app.setStyle('Fusion')
 splash = QtWidgets.QSplashScreen(QtGui.QPixmap(resources_path+'katajalogo.png'))
-nice_yellow = QtGui.QColor(181, 137, 0)
+#nice_yellow = QtGui.QColor(181, 137, 0)
+nice_yellow = QtGui.QColor(238, 232, 213)
 splash.showMessage('%s | Fetching version...' % author, QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter, nice_yellow)
 app.processEvents()
 splash.show()
@@ -46,7 +47,6 @@ except FileNotFoundError:
 
 if version:
     date, running_number, version_name = version[0].split(' | ', 2)
-    print(running_number)
     running_number = int(running_number[2:])
     if running_environment.endswith('python'):
         date = str(datetime.datetime.now())

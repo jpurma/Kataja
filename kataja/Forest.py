@@ -1177,7 +1177,7 @@ class Forest:
             for edge in node.edges_down:
                 v = edge.visible
                 if edge.edge_type == g.CONSTITUENT_EDGE:
-                    edge.visible = edges_visible and edge.end.visible
+                    edge.visible = edges_visible and ((edge.end and edge.end.visible) or not edge.end)
                 else:
                     edge.visible = visible
                 if v and not edge.visible:

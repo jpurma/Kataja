@@ -1130,6 +1130,8 @@ class Edge(QtWidgets.QGraphicsItem):
                     self._computed_start_point = self.start.magnet(9)
             if self.end:
                 self._computed_end_point = self.end.magnet(2)
+            if not (self._computed_start_point or self._computed_end_point):
+                raise hell
 
     def connect_end_points(self, start, end):
         """

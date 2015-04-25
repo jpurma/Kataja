@@ -24,9 +24,20 @@ create_dmg = True
 qt_mac = '~/Qt5.4.1/'
 
 DATA_FILES = ['resources']
-OPTIONS = {'argv_emulation': False, 'includes': ['sip'], 'iconfile': 'resources/icons/Kataja.icns'}
+
+version_file = open('resources/version.txt', 'r')
+version = version_file.readlines()
+version_file.close()
+version_long = version[0].strip()
+version_short = version_long.split('|')[1].strip()
+
 
 if sys.platform == 'darwin':
+    plist = {'CFBundleVersion':version_long,
+    'CFBundleShortVersionString':version_short,
+    'CFBundleIdentifier':'fi.aalto.jpurma.Kataja',
+    'NSHumanReadableCopyright':'GPL 3'}
+    OPTIONS = {'argv_emulation': False, 'includes': ['sip'], 'iconfile': 'resources/icons/Kataja.icns', 'plist': plist}
     extra_options = dict(setup_requires=['py2app'],
                          app=[mainscript],
                          data_files=DATA_FILES,
