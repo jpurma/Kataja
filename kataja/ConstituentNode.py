@@ -32,8 +32,6 @@ import kataja.globals as g
 
 # ctrl = Controller object, gives accessa to other modules
 
-TRIANGLE_HEIGHT = 10
-
 
 class ConstituentNodeModel(NodeModel):
     """ ConstituentNodeModel contains the permanent (saved) data of a ConstituentNode instance """
@@ -41,7 +39,6 @@ class ConstituentNodeModel(NodeModel):
     def __init__(self, host):
         super().__init__(host)
         self.is_trace = False
-        self.triangle = False
         self.merge_order = 0
         self.select_order = 0
         self.original_parent = None
@@ -125,8 +122,6 @@ class ConstituentNode(Node):
             self._inode_changed = True
             self.update_features()
             update_label = True
-        if 'triangle' in updated_fields:
-            self.triangle_updated(self.triangle)
         if update_label:
             self.update_label()
 
@@ -218,34 +213,6 @@ class ConstituentNode(Node):
         """
         if self.model.touch('original_parent', value):
             self.model.original_parent = value
-
-    @property
-    def triangle(self):
-        """:return:  """
-        return self.model.triangle
-
-    @triangle.setter
-    def triangle(self, value):
-        """
-        :param value:  """
-        if value is None:
-            value = False
-        if self.model.touch('triangle', value):
-            self.model.triangle = value
-            self.triangle_updated(value)
-
-    def triangle_updated(self, value):
-        """ update label positioning here so that offset doesn't need to be stored in save files and it
-            still will be updated correctly
-        :param value: bool
-        :return: None
-        """
-        if self._label_complex:
-            if value:
-                self._label_complex.y_offset = TRIANGLE_HEIGHT
-            else:
-                self._label_complex.y_offset = 0
-            self.update_label()
 
     @property
     def merge_order(self):
@@ -607,46 +574,6 @@ class ConstituentNode(Node):
             return not (self.is_leaf_node() and self.label == 't')
         return False
 
-    # ### Folding / Triangles #################################
-
-
-    def prepare_to_be_folded(self, triangle):
-        """ Initialize move to triangle's position and make sure that move is not
-        :param triangle:
-        interrupted  """
-        # print u'node %s preparing to collapse to %s at %s' % (self, triangle, triangle.target_position )
-        self.folding_towards = triangle  # folding_towards should override other kinds of movements
-        self.after_move_function = self.finish_folding
-        tx, ty, tz = triangle.algo_position
-        self.adjustment = triangle.adjustment
-        self.algo_position = (tx, ty + 30, tz)  # , fast = True)
-        # for feature in self.features:
-        # feature.fade_out()
-
-    def finish_folding(self):
-        """ Hide, and remember why this is hidden """
-        self.folded_away = True
-        self.update_visibility()
-        self.update_bounding_rect()
-
-
-    def paint_triangle(self, painter):
-        """ Drawing the triangle, called from paint-method
-        :param painter:
-        """
-        br = self.boundingRect()
-        left = br.x()
-        center = left + self.width / 2
-        right = left + self.width
-        top = br.y()
-        bottom = br.y() + TRIANGLE_HEIGHT
-
-        triangle = QtGui.QPainterPath()
-        triangle.moveTo(center, top)
-        triangle.lineTo(right, bottom)
-        triangle.lineTo(left, bottom)
-        triangle.lineTo(center, top)
-        painter.drawPath(triangle)
 
 
     # ## Multidomination #############################################

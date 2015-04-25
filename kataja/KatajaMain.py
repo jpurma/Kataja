@@ -367,7 +367,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         # Restore undo state to what it was
         if not undoable:
             ctrl.disable_undo = remember_undo_state
-        self.action_finished(undoable=undoable)
+        self.action_finished(m=data.get('command', ''), undoable=undoable)
 
     def action_finished(self, m='', undoable=True):
         """
@@ -375,17 +375,12 @@ class KatajaMain(QtWidgets.QMainWindow):
         :param m: message for undo
         :param undoable: are we supposed to take a snapshot of changes after this action.
         """
-        print('--- start "action finished" ---', m)
         if ctrl.action_redraw:
-            print('-- calling draw --')
             ctrl.forest.draw()
         if undoable:
-            print('-- calling take_snapshot --')
             ctrl.forest.undo_manager.take_snapshot(m)
         else:
-            print('start animations')
             ctrl.graph_scene.start_animations()
-        print('--- end action finished ---')
 
 
     def enable_actions(self):

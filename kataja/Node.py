@@ -33,6 +33,7 @@ from kataja.utils import to_tuple, create_shadow_effect
 import kataja.globals as g
 from kataja.parser.LatexToINode import parse_field
 
+TRIANGLE_HEIGHT = 10
 
 
 # ctrl = Controller object, gives accessa to other modules
@@ -53,6 +54,7 @@ class NodeModel(MovableModel):
         self.syntactic_object = None
         self.edges_up = []
         self.edges_down = []
+        self.triangle = False
         self.folded_away = False
         self.folding_towards = None
         self.color = None
@@ -152,7 +154,10 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         if '_label_synobj' in updated_fields or '_index_synobj' in updated_fields:
             self._inode_changed = True
             self.update_label()
-
+        if 'triangle' in updated_fields:
+            self.triangle_updated(self.triangle)
+        if 'folding_towards' in updated_fields:
+            self.update_position()
 
     @property
     def syntactic_object(self):
@@ -229,6 +234,34 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             self.model.edges_down = value
 
     @property
+    def triangle(self):
+        """:return:  """
+        return self.model.triangle
+
+    @triangle.setter
+    def triangle(self, value):
+        """
+        :param value:  """
+        if value is None:
+            value = False
+        if self.model.touch('triangle', value):
+            self.model.triangle = value
+            self.triangle_updated(value)
+
+    def triangle_updated(self, value):
+        """ update label positioning here so that offset doesn't need to be stored in save files and it
+            still will be updated correctly
+        :param value: bool
+        :return: None
+        """
+        if self._label_complex:
+            if value:
+                self._label_complex.y_offset = TRIANGLE_HEIGHT
+            else:
+                self._label_complex.y_offset = 0
+            self.update_label()
+
+    @property
     def folded_away(self):
         """ Flag to announce that node exists, but it is currently folded away
         :return:
@@ -250,6 +283,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     def folding_towards(self, value):
         if self.model.touch('folding_towards', value):
             self.model.folding_towards = value
+            self.update_position()
 
     @property
     def node_color(self):
@@ -340,30 +374,25 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """
         return False
 
-
-    def move(self, md):
-        """ Do one frame of movement: either move towards target position or take a step according to algorithm
-        :return:
+    def update_position(self, instant=False):
+        """ In addition to Movable's update_position, take account movement to fold nodes into triangle
+        Computes new current_position and target_position.
+        :param instant: don't animate (for e.g. dragging)
+        :return: None
         """
         if self.folding_towards:
-            px, py, pz = self.current_position
-            tx, ty, tz = self.folding_towards.current_position
-            if self._move_counter:
-                if self._use_easing:
-                    xvel = self._x_step * qt_prefs.easing_curve[self._move_counter - 1]
-                    yvel = self._y_step * qt_prefs.easing_curve[self._move_counter - 1]
-                    zvel = self._z_step * qt_prefs.easing_curve[self._move_counter - 1]
+            print('initiating movement to triangle: %s -> %s' % (self.current_position, self.folding_towards.current_position))
+            self._target_position = self.folding_towards.current_position
+            if instant:
+                self.current_position = tuple(self._target_position)
+                self.stop_moving()
+            else:
+                if self._target_position != self.current_position:
+                    self.start_moving()
                 else:
-                    xvel = (px - tx) / self._move_counter
-                    yvel = (py - ty) / self._move_counter
-                    zvel = (pz - tz) / self._move_counter
-                self._move_counter -= 1
-                if not self._move_counter:
                     self.stop_moving()
-            self.current_position = (px + xvel, py + yvel, pz + zvel)
-            return abs(xvel) + abs(yvel) + abs(zvel) > 3, False
         else:
-            return super().move(md)
+            super().update_position(instant=instant)
 
     # ### Children and parents ####################################################
 
@@ -752,6 +781,49 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             return self.inner_rect
         else:
             return self.update_bounding_rect()
+
+    ######### Triangles #########################################
+
+    # Here we have only low level local behavior of triangles. Most of the action is done in Forest
+    # as triangles may involve complicated forest-level calculations.
+
+    def fold_towards(self, node):
+        """ lower level launch for actual fold movement
+        :param node:
+        :return:
+        """
+        self.folding_towards = node
+        self.fade_out()
+        self.start_moving()
+        self.after_move_function = self.finish_folding
+
+    def finish_folding(self):
+        """ Hide, and remember why this is hidden """
+        self.folded_away = True
+        self.update_visibility()
+        self.update_bounding_rect()
+        # update edge visibility from triangle to its immediate children
+        if self.folding_towards in self.get_parents():
+            self.folding_towards.update_visibility()
+        ctrl.forest.draw()
+
+    def paint_triangle(self, painter):
+        """ Drawing the triangle, called from paint-method
+        :param painter:
+        """
+        br = self.boundingRect()
+        left = br.x()
+        center = left + self.width / 2
+        right = left + self.width
+        top = br.y()
+        bottom = br.y() + TRIANGLE_HEIGHT
+
+        triangle = QtGui.QPainterPath()
+        triangle.moveTo(center, top)
+        triangle.lineTo(right, bottom)
+        triangle.lineTo(left, bottom)
+        triangle.lineTo(center, top)
+        painter.drawPath(triangle)
 
 
     # ## Magnets ######################################################################

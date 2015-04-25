@@ -1,3 +1,4 @@
+import copy
 import sys
 import traceback
 import types
@@ -63,7 +64,7 @@ class BaseModel:
                 # print('(touch) adding to undo_pile %s for attribute %s (%s, %s)' %
                 # (self._host, attribute, old_value, value))
                 ctrl.undo_pile.add(self._host)
-                setattr(self, '_' + attribute + '_history', old_value)
+                setattr(self, '_' + attribute + '_history', copy.copy(old_value))
                 setattr(self, touched_name, True)
             return True
         return False
@@ -84,7 +85,7 @@ class BaseModel:
         if not touched:
             # print('(poke) adding to undo_pile', self._host)
             ctrl.undo_pile.add(self._host)
-            setattr(self, '_' + attribute + '_history', getattr(self, attribute, None))
+            setattr(self, '_' + attribute + '_history', copy.copy(getattr(self, attribute, None)))
             setattr(self, touched_name, True)
 
     def announce_creation(self):
@@ -139,28 +140,33 @@ class BaseModel:
         :param transitions: dict of changes, values are tuples of (old, new) -pairs
         :return: None
         """
-        print('--- restore to earlier for ', self, ' ----------')
+        #print('--- restore to earlier for ', self, ' ----------')
         for key, value in transitions.items():
             if key.startswith('_') and key.endswith('_synobj'):
                 continue
             old, new = value
             setattr(self, key, old)
             print('  %s: %s <- %s' % (key, old, new))
-        print('-------------')
+            if old is new:
+                print('**** identical old and new ^')
+        #print('-------------')
 
     def move_to_later(self, transitions):
         """ Move to later version with a given changes -dict
         :param transitions: dict of changes, values are tuples of (old, new) -pairs
         :return: None
         """
-        print('--- move to later for ', self, ' ----------')
+        #print('--- move to later for ', self, ' ----------')
         for key, value in transitions.items():
             if key.startswith('_') and key.endswith('_synobj'):
                 continue
             old, new = value
             setattr(self, key, new)
             print('  %s: %s -> %s' % (key, old, new))
-        print('-------------')
+            if old is new:
+                print('**** identical old and new ^')
+
+        #print('-------------')
 
     def update(self, changed_fields, transition_type, doing_undo=True):
         """ Runs the after_model_update that should do the necessary derivative calculations and graphical updates

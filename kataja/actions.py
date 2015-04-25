@@ -1076,6 +1076,7 @@ def add_triangle():
     ctrl.forest.add_triangle_to(node)
     ctrl.ui.update_selections()
 
+
 a['add_triangle'] = {
     'command': 'Add triangle',
     'method': add_triangle

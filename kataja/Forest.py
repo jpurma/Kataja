@@ -995,9 +995,8 @@ class Forest:
 
 
     def delete_item(self, item):
-        """
-
-        :param item:
+        """ User-triggered deletion (e.g backspace on selection)
+        :param item: item from selection. can be anything that can be selected
         """
         if isinstance(item, Edge):
             start = item.start
@@ -1006,11 +1005,6 @@ class Forest:
                 self.fix_stubs_for(item.start)
         elif isinstance(item, Node):
             self.delete_node(item)
-        """
-
-        :param item:
-        """
-        pass
 
     ### Free edges ###############################
 
@@ -1169,9 +1163,8 @@ class Forest:
         if isinstance(node, ConstituentNode):
             if not visible:
                 edges_visible = False
-            elif self.visualization and not node.triangle:
-                edges_visible = self.visualization.show_edges_for(
-                node) and self.settings.shows_constituent_edges
+            elif self.visualization:
+                edges_visible = self.visualization.show_edges_for(node) and self.settings.shows_constituent_edges
             else:
                 edges_visible = False
             for edge in node.edges_down:
@@ -1822,22 +1815,19 @@ class Forest:
             elif folded.is_multidominated():
                 can_fold = True
                 for parent in parents:
-                    if parent not in fold_scope:
-                        print('Node %s cannot be folded' % folded)
+                    if (parent not in fold_scope) or (parent in not_my_children):
                         not_my_children.add(folded)
                         can_fold = False
                         break
                 if can_fold:
                     print('Folding multidominated node %s' % folded)
-                    folded.fade_out()
-                    folded.folding_towards = node
-                    folded.after_move_function = folded.finish_folding
+                    folded.fold_towards(node)
+            # remember that the branch that couldn't be folded won't allow any of its children to be
+            # folded either.
             elif parents and parents[0] in not_my_children:
                 not_my_children.add(folded)
-                continue
             else:
-                folded.folding_towards = node
-                folded.after_move_function = folded.finish_folding
+                folded.fold_towards(node)
 
     def remove_triangle_from(self, node):
         """
@@ -1845,16 +1835,20 @@ class Forest:
         :param node:
         """
         node.triangle = False
-        fold_scope = self.list_nodes_once(node, only_visible=False)
+        fold_scope = [f for f in self.list_nodes_once(node, only_visible=False) if f.folding_towards is node]
         for folded in fold_scope:
-            if folded.folding_towards is node:
-                folded.folding_towards = None
-                folded.folded_away = False
-                folded.fade_in()
-                folded.adjustment = node.adjustment
-                folded.update_visibility(show_edges=True)
-                folded.update_bounding_rect()
-
+            folded.folding_towards = None
+            folded.folded_away = False
+            folded.adjustment = node.adjustment
+            folded.fixed_position = node.fixed_position
+            folded.fade_in()
+            folded.update_visibility()
+            folded.update_bounding_rect()
+        # this needs second round of update visibility, as child nodes may yet not be visible, so edges to them
+        # won't be visible either.
+        for folded in fold_scope:
+            folded.update_visibility()
+        node.update_visibility() # edges from triangle to nodes below
 
     def can_fold(self, node):
         """
@@ -1862,7 +1856,7 @@ class Forest:
         :param node:
         :return:
         """
-        return True
+        return not node.triangle
 
 
     ######### Utility functions ###############################

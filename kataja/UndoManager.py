@@ -58,7 +58,6 @@ class UndoManager:
         :param msg: str = msg to
         :return: None
         """
-        print('--- taking snapshot:%s ' % msg)
         # save objects in undo pile
         snapshot = {}
         for obj in ctrl.undo_pile:
@@ -69,10 +68,9 @@ class UndoManager:
             self._stack = self._stack[:self._current + 1]
             self._stack.append((msg, snapshot))
             self._current = len(self._stack) - 1
-            print('snapshot: %s items in stack of %s snapshots' % (len(snapshot), len(self._stack)))
         ctrl.undo_pile = set()
         self.phase = 'new'
-
+        print('stack len:', len(str(self._stack)))
     # def record_full_state(self):
     #     """ Iterates through all items in forest and puts them to the full_state -dict.
     #     This needs to be done before undo, in order to get the objects that may be affected into one place.
@@ -103,7 +101,7 @@ class UndoManager:
                 return
         ctrl.disable_undo = True
         msg, snapshot = self._stack[self._current]
-        print('undo: ', msg, snapshot)
+        print('undo: ', msg, self._current, self.phase)
         for obj, transitions, transition_type in snapshot.values():
             obj.model.revert_to_earlier(transitions)
             if transition_type == CREATED:
@@ -117,6 +115,7 @@ class UndoManager:
         self.phase = 'old'
         ctrl.add_message('undo [%s]: %s' % (self._current, msg))
         ctrl.disable_undo = False
+        print('undo done: ', self._current, self.phase)
 
     def redo(self):
         """ Move forward in the undo stack
@@ -131,7 +130,7 @@ class UndoManager:
                 return
         ctrl.disable_undo = True
         msg, snapshot = self._stack[self._current]
-        print('redo: ', msg, snapshot)
+        print('redo: ', msg, self._current, self.phase)
         for obj, transitions, transition_type  in snapshot.values():
             obj.model.move_to_later(transitions)
             if transition_type == CREATED:
@@ -145,6 +144,8 @@ class UndoManager:
         ctrl.add_message('redo [%s]: %s' % (self._current, msg))
         self.phase = 'new'
         ctrl.disable_undo = False
+        print('redo done: ', self._current, self.phase)
+
 
     @staticmethod
     def dump_dict_to_file(undo_dict, filename='undo_dump'):

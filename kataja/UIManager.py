@@ -375,7 +375,10 @@ class UIManager:
         """
         self.remove_touch_areas_for(item)
         self.remove_control_points(item)
-
+        if isinstance(item, ConstituentNode):
+            self.remove_buttons_for_constituent_node(item)
+        elif isinstance(item, Edge):
+            self.remove_buttons_for_edge(item)
 
     # ### Actions, Menus and Panels ####################################################
 

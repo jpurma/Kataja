@@ -156,6 +156,7 @@ class KeyPressManager:
 
 
         """
+        print('what is this?')
         for item in ctrl.selected:
             item.undoable_delete()
         self.action_finished()
