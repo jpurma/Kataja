@@ -69,15 +69,15 @@ class BaseVisualization:
 
         :param node:
         """
-        node.use_fixed_position = False
+        node.fixed_position = None
         node.adjustment = None
         node.update_label()
         if isinstance(node, ConstituentNode):
             node.update_visibility()
         elif isinstance(node, FeatureNode) or isinstance(node, GlossNode):
             pass
-        node.dyn_y = False
-        node.dyn_x = False
+        node.dyn_y = True
+        node.dyn_x = True
 
 
     def draw(self):

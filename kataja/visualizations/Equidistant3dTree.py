@@ -65,7 +65,7 @@ class Equidistant3dTree(BaseVisualization):
 
         :param node:
         """
-        node.use_fixed_position = False
+        node.fixed_position = None
         node.adjustment = None
         node.update_label()
         node.update_visibility()

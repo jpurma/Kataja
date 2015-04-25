@@ -69,7 +69,7 @@ class WindDriftTree(BaseVisualization):
 
         :param node:
         """
-        node.use_fixed_position = False
+        node.fixed_position = None
         node.adjustment = None
         node.update_visibility()
         if isinstance(node, ConstituentNode):

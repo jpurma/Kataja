@@ -361,33 +361,6 @@ class ConstituentNode(Node):
         """
         return not self.syntactic_object
 
-    def info_dump(self):
-        """
-
-
-        """
-        print('---- %s ----' % self.save_key)
-        print('| scene: %s' % self.scene())
-        print('| isVisible: %s' % self.isVisible())
-        print('| print: %s ' % self)
-        print('| x: %s y: %s z: %s' % self.current_position)
-        print('| adjustment: x: %s y: %s z: %s ' % self.adjustment)
-        print('| computed x: %s y: %s z: %s' % self.algo_position)
-        print('| final: x: %s y: %s z: %s ' % self.final_position)
-        print('| bind x: %s y: %s z: %s' % (self.dyn_x, self.dyn_y, self.dyn_z))
-        print('| use_fixed_position: %s ' % self.use_fixed_position)
-        print('| label rect: ', self.label_rect)
-        print('| index: %s' % self.index)
-        print('| edges up:', self.edges_up)
-        print('| edges down:', self.edges_down)
-        if self.syntactic_object:
-            print('| syntactic_object:_________________')
-            print(self.syntactic_object.__repr__())
-        else:
-            print('Empty placeholder')
-        print('----------------------------------')
-
-
     def get_attribute_nodes(self, label_key=''):
         """
 
@@ -403,15 +376,14 @@ class ConstituentNode(Node):
             return atts
 
     def update_visibility(self, **kw):
-        """
+        """ Compute visibility-related attributes for this constituent node and update those that depend on this
+        -- meaning features etc.
 
         :param kw:
         """
-        # print("For node %s: %s" % (self, str(kw)))
         was_visible = self.visible
         visible = not self.folded_away
         self.visible = visible
-
 
         ### Fade in / out
         fade = kw.get('fade', False)
@@ -796,11 +768,13 @@ class ConstituentNode(Node):
                 if nodes.index(node) >= drag_host_index:
                     ctrl.dragged.add(node)
                     x, y, dummy_z = node.current_position
-                    node._position_before_dragging = node.current_position
-                    node._adjustment_before_dragging = node.adjustment or (0, 0, 0)
+                    node._fixed_position_before_dragging = node.fixed_position
+                    node._adjustment_before_dragging = node.adjustment
                     node._distance_from_dragged = (x - dx, y - dy)
         if len(drag_hosts) == 1:  # don't allow merge if this is multidrag-situation
-            ctrl.ui.prepare_touch_areas_for_dragging(drag_host=drag_hosts[0], moving=ctrl.dragged, node_type=g.CONSTITUENT_NODE)
+            ctrl.ui.prepare_touch_areas_for_dragging(drag_host=drag_hosts[0],
+                                                     moving=ctrl.dragged,
+                                                     node_type=g.CONSTITUENT_NODE)
 
     def drag(self, event):
         """ Drags also elements that are counted to be involved: features, children etc
@@ -810,31 +784,18 @@ class ConstituentNode(Node):
         now_x, now_y = to_tuple(pos)
         if not getattr(ctrl, 'dragged', None):
             self.start_dragging(now_x, now_y)
-
-        if self.can_adjust_position:
-            self.use_fixed_position = False
-            ax, ay, az = self.algo_position
-            dx = now_x - ax
-            dy = now_y - ay
-            self.adjustment = dx, dy, az
-        else:
-            self.fixed_position = now_x, now_y, self.current_position[2]
-            self.use_fixed_position = True
-        self.update_position(instant=True)
-
         # change dragged positions to be based on adjustment instead of distance to main dragged.
         for node in ctrl.dragged:
+            # ctrl.dragged includes self
             dx, dy = node._distance_from_dragged
-            px, py, pz = node._position_before_dragging
             if node.can_adjust_position:
-                self.use_fixed_position = False
-                ax, ay, az = node._adjustment_before_dragging
-                diff_x = now_x + dx - px - ax
-                diff_y = now_y + dy - py - ay
+                ax, ay, az = node.algo_position
+                diff_x = now_x - ax + dx
+                diff_y = now_y - ay + dy
                 node.adjustment = (diff_x, diff_y, az)
             else:
-                node.fixed_position = (now_x + dx, now_y + dy, pz)
-                node.use_fixed_position = True
+                print('setting fixed position')
+                node.fixed_position = (now_x + dx, now_y + dy, node.z)
             node.update_position(instant=True)
 
 
@@ -853,29 +814,28 @@ class ConstituentNode(Node):
             recipient.drop(self)
         else:
             for node in ctrl.dragged:
-                if not node.use_fixed_position:
-                    node.lock()
+                node.lock() # does nothing now
+                if not (node._fixed_position_before_dragging or node._adjustment_before_dragging):
                     ctrl.main.ui_manager.show_anchor(node)  # @UndefinedVariable
-        del self._position_before_dragging
-        del self._adjustment_before_dragging
-        del self._distance_from_dragged
+                del node._distance_from_dragged
+                del node._fixed_position_before_dragging
+                del node._adjustment_before_dragging
         ctrl.dragged = set()
         ctrl.dragged_positions = set()
         return 'moved node %s' % self
 
     def cancel_dragging(self):
+        """ Fixme: not called by anyone
+        Revert dragged items to their previous positions.
+        :return: None
         """
-
-
-        """
-        assert False
-        sx, sy = self._before_drag_position
-        z = self.current_position[2]
-        self.algo_position = (sx, sy, z)
-        for node, x, y in ctrl.dragged_positions:
-            z = node.current_position[2]
-            node.algo_position = (sx + x, sy + y, z)
-        del self.before_drag_position
+        for node in ctrl.dragged:
+            node.adjustment = node._adjustment_before_dragging
+            node.fixed_position = node._fixed_position_before_dragging
+            node.update_position()
+            del node._distance_from_dragged
+            del node._fixed_position_before_dragging
+            del node._adjustment_before_dragging
         ctrl.dragged = set()
         ctrl.dragged_positions = set()
 

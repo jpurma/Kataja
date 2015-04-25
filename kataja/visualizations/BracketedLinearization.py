@@ -66,15 +66,15 @@ class BracketedLinearization(BaseVisualization):
 
         :param node:
         """
-        node.use_fixed_position = False
+        node.fixed_position = None
         node.adjustment = None
         node.update_visibility()
         if isinstance(node, ConstituentNode):
-            node.dyn_x = True
-            node.dyn_y = True
-        elif isinstance(node, FeatureNode) or isinstance(node, GlossNode):
             node.dyn_x = False
             node.dyn_y = False
+        elif isinstance(node, FeatureNode) or isinstance(node, GlossNode):
+            node.dyn_x = True
+            node.dyn_y = True
         node.update_label()
 
 

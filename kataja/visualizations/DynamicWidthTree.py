@@ -75,16 +75,16 @@ class DynamicWidthTree(BaseVisualization):
 
         :param node:
         """
-        node.use_fixed_position = False
+        node.fixed_position = None
         node.adjustment = None
         node.update_label()
         node.update_visibility()
         if isinstance(node, ConstituentNode):
-            node.dyn_y = True
-            node.dyn_x = False
-        elif isinstance(node, (FeatureNode, GlossNode, AttributeNode)):
-            node.dyn_x = False
             node.dyn_y = False
+            node.dyn_x = True
+        elif isinstance(node, (FeatureNode, GlossNode, AttributeNode)):
+            node.dyn_x = True
+            node.dyn_y = True
 
 
     def reselect(self):

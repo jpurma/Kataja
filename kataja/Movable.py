@@ -39,7 +39,6 @@ class MovableModel(BaseModel):
         self.dyn_x = False
         self.dyn_y = False
         self.dyn_z = False
-        self.use_fixed_position = False
 
 
 
@@ -210,15 +209,7 @@ class Movable:
         """ Element ignores dynamic movement
         :return: bool
         """
-        return self.model.use_fixed_position
-
-    @use_fixed_position.setter
-    def use_fixed_position(self, value):
-        """ Element ignores dynamic movement
-        :param value: bool
-        """
-        if self.model.touch('use_fixed_position', value):
-            self.model.use_fixed_position = value
+        return self.model.fixed_position is not None
 
     # ## Not saved properties, but otherwise interesting
 
@@ -246,7 +237,7 @@ class Movable:
         because it is updated by dynamic algo and has to use fixed user-determined position.
         :return:
         """
-        return self.adjustment and not (self.dyn_x and self.dyn_y and self.dyn_z)
+        return self.adjustment and not (self.dyn_x and self.dyn_y)
 
     @property
     def can_adjust_position(self):
@@ -255,16 +246,14 @@ class Movable:
         coords from algorithm.
         :return: boolean
         """
-        return not (self.dyn_x and self.dyn_y and self.dyn_z)
+        return not (self.dyn_x and self.dyn_y)
 
     def update_position(self, instant=False):
         """ Compute new current_position and target_position
         :param instant: don't animate (for e.g. dragging)
         :return: None
         """
-        print('updating position ', self)
         if self.use_fixed_position:
-            print(self.fixed_position)
             self._target_position = self.fixed_position
         elif self.use_adjustment:
             ax, ay, az = self.algo_position
@@ -278,7 +267,6 @@ class Movable:
             self.stop_moving()
         else:
             if self._target_position != self.current_position:
-                print('started moving, target: ', self._target_position, ' current: ', self.current_position)
                 self.start_moving()
             else:
                 self.stop_moving()
@@ -361,12 +349,14 @@ class Movable:
         """ Do one frame of movement: either move towards target position or take a step according to algorithm
         :return:
         """
+
         if self.use_fixed_position:
             self.current_position = self.fixed_position
             return False, False
         px, py, pz = self.current_position
         xvel = yvel = zvel = 0
         normalize = False
+        # how to return to undoed state?
 
         if self.dyn_x and self.dyn_y:
             # dynamic movement only
@@ -445,14 +435,12 @@ class Movable:
         else:
             self._use_easing = True
             self._move_counter = prefs.move_frames or 20
-        self._x_step, self._y_step, self._z_step = x - sx, y - sy, z - sz
-        print(self._move_counter)
+            self._x_step, self._y_step, self._z_step = x - sx, y - sy, z - sz
 
     def stop_moving(self):
         """ Kill moving animation for this object.
         :return: None
         """
-        print('stop moving, ', self)
         amv = getattr(self, 'after_move_function', None)
         if amv:
             amv()
@@ -498,22 +486,23 @@ class Movable:
         """
         if hasattr(self, "isVisible") and hasattr(self, "show"):
             if not self.isVisible():
-                print('Forcing %s to be visible' % self)
                 self.show()
 
     # ### Locked to position
 
     def release(self):
         """ Item can be affected by computed positions """
-        self.use_fixed_position = False
+        self.adjustment = None
+        self.fixed_position = None
 
     def lock(self):
         """ Item cannot be moved to computed positions """
-        self.use_fixed_position = True
+        # just having self.adjustment or self.fixed_position is enough to lock it down
+        assert(self.adjustment or self.fixed_position)
 
     def is_locked(self):
         """
         Returns if the item's position can be changed by algorithm, or if it is fixed to position.
         :return: boolean
         """
-        return self.use_fixed_position
+        return self.fixed_position or self.adjustment

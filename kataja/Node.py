@@ -328,7 +328,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """
         Remove temporary/state information from node, eg. remove touch areas.
         """
-        print("Resetting node ", self)
         Movable.reset(self)
         self.update_bounding_rect()
         ctrl.ui.remove_touch_areas_for(self)
@@ -902,8 +901,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         # there if node is both above and below the dragged node, it shouldn't move
         ctrl.dragged.add(self)
         x, y, z = self.current_position
-        self._position_before_dragging = x, y, z
-        self._adjustment_before_dragging = self.adjustment or (0, 0, 0)
         ctrl.ui.prepare_touch_areas_for_dragging(drag_host=self, moving=ctrl.dragged, node_type=self.node_type)
 
     def drag(self, event):
@@ -915,15 +912,13 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         now_x, now_y = to_tuple(pos)
         if not getattr(ctrl, 'dragged', None):
             self.start_dragging(now_x, now_y)
-        px, py, pz = self._position_before_dragging
         if self.can_adjust_position:
-            ax, ay, az = self._adjustment_before_dragging
-            diff_x = now_x - px - ax
-            diff_y = now_y - py - ay
+            ax, ay, az = self.algo_position
+            diff_x = now_x - ax
+            diff_y = now_y - ay
             self.adjustment = (diff_x, diff_y, az)
         else:
-            self.fixed_position = (now_x, now_y, pz)
-            self.use_fixed_position = True
+            self.fixed_position = (now_x, now_y, self.z)
 
 
     def dragged_over_by(self, dragged):
@@ -967,8 +962,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             for node in ctrl.dragged:
                 node.lock()
                 ctrl.main.ui_manager.show_anchor(node)  # @UndefinedVariable
-        del self._position_before_dragging
-        del self._adjustment_before_dragging
         ctrl.dragged = set()
         ctrl.dragged_positions = set()
         ctrl.main.action_finished('moved node %s' % self)

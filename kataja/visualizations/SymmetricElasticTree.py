@@ -64,11 +64,11 @@ class SymmetricElasticTree(BaseVisualization):
         node.update_label()
         node.update_visibility()
         if isinstance(node, ConstituentNode):
-            node.dyn_y = False
-            node.dyn_x = False
+            node.dyn_y = True
+            node.dyn_x = True
         elif isinstance(node, FeatureNode) or isinstance(node, GlossNode):
-            node.dyn_x = False
-            node.dyn_y = False
+            node.dyn_x = True
+            node.dyn_y = True
 
     def calculate_movement(self, node):
         # Sum up all forces pushing this item away.
