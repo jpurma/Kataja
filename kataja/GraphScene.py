@@ -772,6 +772,13 @@ class GraphScene(QtWidgets.QGraphicsScene):
         #    f.gloss.setPos(pt[0] - 20, pt[1] - 40)
         #    f.gloss.lock()
 
+        for e in f.edges.values():
+            e.make_path()
+            e.update()
+
+        if ctrl.pressed:
+            return
+
         for node in f.visible_nodes():
             if node.adjust_opacity():
                 items_fading = True
@@ -781,10 +788,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 items_have_moved = True
             if not normalizable:
                 can_normalize = False
-
-        for e in f.edges.values():
-            e.make_path()
-            e.update()
 
         # normalize movement so that the tree won't glide away
         ln = len(md['nodes'])

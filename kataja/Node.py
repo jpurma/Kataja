@@ -157,7 +157,11 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         if 'triangle' in updated_fields:
             self.triangle_updated(self.triangle)
         if 'folding_towards' in updated_fields:
-            self.update_position()
+            # do the animation and its after triggers.
+            if self.folding_towards:
+                self.fold_towards(self.folding_towards)
+            self.update_visibility()
+
 
     @property
     def syntactic_object(self):
@@ -394,8 +398,35 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         else:
             super().update_position(instant=instant)
 
-    # ### Children and parents ####################################################
 
+    def move(self, md):
+        """ Add on Moveable.move the case when node is folding towards triangle. It has priority.
+        :return: (bool, bool) -- is the node moving, does it allow normalization of movement
+        """
+
+        if self.folding_towards:
+            if self._move_counter:
+                px, py, pz = self.current_position
+                tx, ty, tz = self._target_position
+                if self._use_easing:
+                    xvel = self._x_step * qt_prefs.easing_curve[self._move_counter - 1]
+                    yvel = self._y_step * qt_prefs.easing_curve[self._move_counter - 1]
+                    zvel = self._z_step * qt_prefs.easing_curve[self._move_counter - 1]
+                else:
+                    xvel = (tx - px) / self._move_counter
+                    yvel = (ty - py) / self._move_counter
+                    zvel = (tz - pz) / self._move_counter
+                self._move_counter -= 1
+                if not self._move_counter:
+                    self.stop_moving()
+                self.current_position = (px + xvel, py + yvel, pz + zvel)
+                return True, False
+            else:
+                return False, False
+        else:
+            return super().move(md)
+
+    # ### Children and parents ####################################################
 
     def get_children(self, only_similar=True, only_visible=False, edge_type=None):
         """
@@ -794,7 +825,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """
         self.folding_towards = node
         self.fade_out()
-        self.start_moving()
         self.after_move_function = self.finish_folding
 
     def finish_folding(self):

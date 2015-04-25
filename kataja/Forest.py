@@ -1840,7 +1840,7 @@ class Forest:
             folded.folding_towards = None
             folded.folded_away = False
             folded.adjustment = node.adjustment
-            folded.fixed_position = node.fixed_position
+            folded.fixed_position = None
             folded.fade_in()
             folded.update_visibility()
             folded.update_bounding_rect()
