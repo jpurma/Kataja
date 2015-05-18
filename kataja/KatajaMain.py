@@ -459,6 +459,16 @@ class KatajaMain(QtWidgets.QMainWindow):
         """ Timer event only for printing, for 'snapshot' effect
         :param event:
         """
+        def find_path(fixed_part, extension, counter=0):
+
+            if not counter:
+                full_path = fixed_part + extension
+            else:
+                full_path = fixed_part + str(counter) + extension
+            if os.path.exists(full_path):
+                full_path = find_path(fixed_part, extension, counter + 1)
+            return full_path
+
         self.killTimer(event.timerId())
         # Prepare file and path
         path = prefs.print_file_path or prefs.userspace_path or default_userspace_path
@@ -470,31 +480,47 @@ class KatajaMain(QtWidgets.QMainWindow):
         filename = prefs.print_file_name
         if filename.endswith('.pdf'):
             filename = filename[:-4]
-        full_path = path + filename + '.pdf'
-        counter = 0
-        while os.path.exists(full_path):
-            counter += 1
-            full_path = path + filename + str(counter) + '.pdf'
         # Prepare image
-        source = self.graph_scene.visible_rect()
-        source.adjust(0, 0, 5, 10)
         self.graph_scene.removeItem(self.graph_scene.photo_frame)
         self.graph_scene.photo_frame = None
-        target = QtCore.QRectF(0, 0, source.width() / 2.0, source.height() / 2.0)
-        dpi = 25.4
         # Prepare printer
-        writer = QtGui.QPdfWriter(full_path)
-        writer.setResolution(dpi)
-        writer.setPageSizeMM(target.size())
-        writer.setPageMargins(QtCore.QMarginsF(0, 0, 0, 0))
+        png = True
+        source = self.graph_scene.visible_rect()
+        source.adjust(0, 0, 5, 10)
 
-        painter = QtGui.QPainter()
-        painter.begin(writer)
-        self.graph_scene.render(painter, target=target, source=source)
-        painter.end()
+        if png:
+            full_path = find_path(path + filename, '.png', 0)
+            scale = 4
+            target = QtCore.QRectF(QtCore.QPointF(0, 0), source.size() * scale)
+            writer = QtGui.QImage(target.size().toSize(), QtGui.QImage.Format_ARGB32_Premultiplied)
+            writer.fill(QtCore.Qt.transparent)
+            painter = QtGui.QPainter()
+            painter.begin(writer)
+            painter.setRenderHint(QtGui.QPainter.Antialiasing)
+            self.graph_scene.render(painter, target=target, source=source)
+            painter.end()
+            iwriter = QtGui.QImageWriter(full_path)
+            iwriter.write(writer)
+            self.add_message("printed to %s as PNG (%spx x %spx, %sx size)." %
+                             (full_path, int(target.width()), int(target.height()), scale))
+
+        else:
+            dpi = 25.4
+            full_path = find_path(path + filename, '.pdf', 0)
+            target = QtCore.QRectF(0, 0, source.width() / 2.0, source.height() / 2.0)
+
+            writer = QtGui.QPdfWriter(full_path)
+            writer.setResolution(dpi)
+            writer.setPageSizeMM(target.size())
+            writer.setPageMargins(QtCore.QMarginsF(0, 0, 0, 0))
+            painter = QtGui.QPainter()
+            painter.begin(writer)
+            self.graph_scene.render(painter, target=target, source=source)
+            painter.end()
+            self.add_message("printed to %s as PDF with %s dpi." % (full_path, dpi))
+
         # Thank you!
         print('printing done.')
-        self.add_message("printed to %s as PDF with %s dpi." % (full_path, dpi))
         # Restore image
         self.graph_scene.setBackgroundBrush(self.color_manager.gradient)
 
