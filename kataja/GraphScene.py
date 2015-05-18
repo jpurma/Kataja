@@ -606,7 +606,10 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 pass
             else:
                 ctrl.deselect_objects()
-        assert (not self._dragging or ctrl.pressed)
+        if self._dragging:
+            print('still _dragging!')
+        elif ctrl.pressed:
+            print('mouseReleaseEvent, but still ctrl.pressed!:', ctrl.pressed)
         return QtWidgets.QGraphicsScene.mouseReleaseEvent(self, event)
 
     def get_drop_recipient(self, pressed, event):
@@ -771,6 +774,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         #    pt = f.roots[0].current_position
         #    f.gloss.setPos(pt[0] - 20, pt[1] - 40)
         #    f.gloss.lock()
+        f.edge_visibility_check()
 
         for e in f.edges.values():
             e.make_path()

@@ -160,6 +160,10 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             # do the animation and its after triggers.
             if self.folding_towards:
                 self.fold_towards(self.folding_towards)
+            else:
+                self.folded_away = False
+                self.update_position()
+                self.fade_in()
             self.update_visibility()
 
 

@@ -365,6 +365,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
                                                             new_node_pos=self.end_point,
                                                             merger_node_pos=self.start_point)
             ctrl.deselect_objects()
+            ctrl.forest.draw()
         return True
 
     # self, N, R, merge_to_left, new_node_pos, merger_node_pos):

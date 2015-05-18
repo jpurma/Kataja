@@ -267,10 +267,10 @@ class ConstituentNode(Node):
         """
         if self._inode_changed:
             self._inode = IConstituentNode(alias=self.alias,
-                                     label=self.label,
-                                     index=self.index,
-                                     gloss=self.gloss,
-                                     features=self.features)
+                                           label=self.label,
+                                           index=self.index,
+                                           gloss=self.gloss,
+                                           features=self.features)
             self._inode_changed = False
 
         return self._inode
@@ -378,10 +378,10 @@ class ConstituentNode(Node):
             self.update_label()
         self._label_complex.setVisible(self._label_visible)
 
-        ### Edges
-        ctrl.forest.adjust_edge_visibility_for_node(self, visible)
+        # ## Edges -- these have to be delayed until all constituents etc nodes know if they are visible
+        ctrl.forest.order_edge_visibility_check()
 
-        ### FeatureNodes
+        # ## FeatureNodes
         # ctrl.forest.settings.draw_features
         feat_visible = visible and ctrl.forest.settings.draw_features
 

@@ -318,11 +318,13 @@ class Edge(QtWidgets.QGraphicsItem):
         v = self.isVisible()
         if v and not self.visible:
             self.hide()
-            ctrl.main.ui_manager.remove_control_points(self)
+            ctrl.ui.remove_control_points(self)
+            ctrl.ui.remove_touch_areas_for(self)
+
         elif self.visible and not v:
             self.show()
             if ctrl.is_selected(self):
-                ctrl.main.ui_manager.add_control_points(self)
+                ctrl.ui.add_control_points(self)
 
     # Edge type - based settings that can be overridden
 

@@ -1154,6 +1154,35 @@ class Forest:
         placeholder = self.create_placeholder_node(pos)
         self.set_edge_end(edge, placeholder)
 
+    def order_edge_visibility_check(self):
+        self._do_edge_visibility_check = True
+
+    def edge_visibility_check(self):
+        if self._do_edge_visibility_check:
+            sc = self.settings.shows_constituent_edges
+            for edge in self.edges.values():
+                if edge.edge_type == g.CONSTITUENT_EDGE:
+                    if not sc:
+                        edge.visible = False
+                        continue
+                    start = edge.start
+                    sv = False
+                    ev = True
+                    if start:
+                        sv = start.is_visible
+                        if not sv:
+                            ev = False
+                        else:
+                            ev = self.visualization.show_edges_for(start)
+                    edge.visible = ev and ((edge.end and edge.end.visible) or ((not edge.end) and sv))
+                else:
+                    if edge.start:
+                        edge.visible = edge.start.is_visible
+                    else:
+                        edge.visible = True
+            self._do_edge_visibility_check = False
+
+
     def adjust_edge_visibility_for_node(self, node, visible):
         """
 

@@ -159,7 +159,7 @@ class FeatureNode(Node):
             painter.drawRoundedRect(self.inner_rect, 5, 5)
         Node.paint(self, painter, option, widget)
 
-
+    @property
     def contextual_color(self):
         """ Drawing color that is sensitive to node's state """
         if ctrl.pressed == self:
