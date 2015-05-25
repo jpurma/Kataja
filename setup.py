@@ -25,6 +25,32 @@ qt_mac = '~/Qt5.4.1/'
 
 DATA_FILES = ['resources']
 
+def list_files(path, excluded, slash='\\'):
+    found_files = []
+    found_dirs = []
+    for file in os.listdir(path):
+        ok = True
+        for exclude in excluded:
+            if file.endswith(exclude):
+                ok = False
+                break
+        if ok:
+            fpath = path + slash + file
+            if os.path.isfile(fpath): # skip directories
+                found_files.append(fpath)
+            else:
+                found_dirs.append(file)
+    return found_files, found_dirs
+
+def make_tuple(tuples, destpath, sourcepath, excluded, slash='\\'):
+    files, dirs = list_files(sourcepath, excluded, slash)
+    tuples.append((destpath, files))
+    for destdir in dirs:
+        tuples = make_tuple(tuples, destpath + slash + destdir, sourcepath + slash + destdir, excluded, slash)
+    return tuples
+
+print(sys.platform)
+
 version_file = open('resources/version.txt', 'r')
 version = version_file.readlines()
 version_file.close()
@@ -49,6 +75,24 @@ if sys.platform == 'darwin':
                 qt_mac, os.path.expanduser(qt_mac + '5.4/clang_64/') +
                 ' Edit qt_mac variable in setup.py to match your Qt directory.'))
 
+elif sys.platform == 'win32':
+    from distutils.core import setup
+    import py2exe
+    OPTIONS = {'includes': ['sip'], 'bundle_files': 1, 'compressed':1} #  'bundle_files': 1, 'compressed':1
+
+    DATA_FILES = [("platforms",
+                  ["C:\\Python34\\lib\\site-packages\\PyQt5\\plugins\\platforms\\qwindows.dll"]),
+                 ("imageformats",
+                  ["C:\\Python34\\lib\\site-packages\\PyQt5\\plugins\\imageformats\\qgif.dll"])]
+    DATA_FILES += make_tuple([], "plugins", "kataja\\plugins", [".pyc", "__pycache__"])
+    DATA_FILES += make_tuple([], "resources", "resources", [".pyc", "temp"])
+
+
+    extra_options = dict(setup_requires=['py2exe'],
+                         options={'py2exe': OPTIONS},
+                         version=version_long,
+                         windows=[{'script': mainscript}],
+                         data_files=DATA_FILES)
 else:
     extra_options = dict(  # Normally unix-like platforms will use "setup.py install"
                            # and install the main script as such

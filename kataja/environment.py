@@ -27,15 +27,19 @@ running_environment = ''
 
 if sys.platform == 'darwin':
     fonts = mac_fonts
-    if 'Kataja.app' in Path(__file__).parts:
+    if 'Kataja.app' in Path(sys.argv[0]).parts:
         running_environment = 'mac app'
     else:
         running_environment = 'mac python'
         print('running as a python script in OS X')
 elif sys.platform == 'win32':
     fonts = windows_fonts
-    running_environment = 'win python'
-    print('running as a python script in Windows')
+    if Path(sys.argv[0]).parts[-1].endswith('.exe'):
+        running_environment = 'win exe'
+        print('running as exe in Windows')
+    else:
+        running_environment = 'win python'
+        print('running as a python script in Windows')
 else:
     fonts = linux_fonts
     running_environment = 'nix python'
@@ -66,6 +70,11 @@ if running_environment == 'mac app':
             if (not os.access(plugins_path, os.F_OK)) and os.access(local_plugin_path, os.W_OK):
                 print("Copying 'plugins' to /~Library/Application Support/Kataja")
                 shutil.copytree(local_plugin_path, plugins_path)
+elif running_environment == 'win exe':
+    my_path = Path(sys.argv[0]).parts
+    plugins_path = 'plugins'
+    resources_path = 'resources/'
+    default_userspace_path = ''
 elif running_environment.endswith('python'):
     # When runnins as a python script, plugins, resources and default save location are
     # based on the kataja code base.
@@ -76,7 +85,8 @@ elif running_environment.endswith('python'):
     resources_path = kataja_root + 'resources/'
     plugins_path = kataja_root + 'kataja/plugins'
     default_userspace_path = kataja_root
-    print('running as a python script in OS X')
+    print('running as a python script')
+
 
 print("resources_path: ", resources_path)
 print("default_userspace_path: ", default_userspace_path)

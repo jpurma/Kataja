@@ -16,7 +16,7 @@ from PyQt5 import QtWidgets, QtPrintSupport, QtGui, QtCore
 ok = QtPrintSupport
 
 
-dir_path = os.path.dirname(os.path.abspath(__file__))
+dir_path = os.path.dirname(os.path.abspath(sys.argv[0]))
 if running_environment == 'mac app':
     QtCore.QCoreApplication.setLibraryPaths([dir_path + '/../plugins'])
 print("Launching Kataja with Python %s.%s" % (sys.version_info.major, sys.version_info.minor))
