@@ -10,6 +10,7 @@ tmp/
 *.tmp
 *.bak
 *.swp
+*.dmg
 *~.nib
 local.properties
 .classpath
@@ -230,3 +231,4 @@ resources/icons/temp/
 
 # sublime edit
 *.sublime-workspace
+*.dmg

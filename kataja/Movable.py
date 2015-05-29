@@ -30,6 +30,11 @@ from kataja.singletons import prefs, qt_prefs, ctrl
 from kataja.BaseModel import BaseModel
 
 class MovableModel(BaseModel):
+    """ Stored values for all Movable objects. Base class for Nodes, Brackets etc. elements that are part of
+    the actual visualization and need to animate nicely
+    :param host: Movable instance
+    """
+
     def __init__(self, host):
         super().__init__(host)
         self.algo_position = (0, 0, 0)
@@ -41,8 +46,6 @@ class MovableModel(BaseModel):
         self.dyn_z = False
 
 
-
-# Verified 8.4. 2013
 class Movable:
     """ Movable objects have support for smooth movement from one point to another with
         set_target_position, and fade_in and fade_out. Once set, the animation derivation_steps are
@@ -59,9 +62,9 @@ class Movable:
             saved.adjustment = dragged somewhere
             .final_position = computed position + adjustment
             .current_position = real screen position, can be moving towards final position
-            don't adjustment final position directly, only change computed position and change
+            don't adjust final position directly, only change computed position and change
             adjustment to zero if necessary.
-            always return adjustment to zero when dealing with dynamic nodes.
+            always restore adjustment to zero when dealing with dynamic nodes.
              """
         if not hasattr(self, 'model'):
             self.model = MovableModel(self)
@@ -93,6 +96,8 @@ class Movable:
         """ This is called after the item's model has been updated, to run the side-effects of various
         setters in an order that makes sense.
         :param updated_fields: list of names of fields that have been updated.
+        :param update_type: can be CREATED or DELETED -- in case of DELETED, it may be that fields have
+        not changed, but the object should go the deletion routines. It can get a bit complicated.
         :return: None
         """
         self.update_position()
@@ -347,6 +352,7 @@ class Movable:
 
     def move(self, md):
         """ Do one frame of movement: either move towards target position or take a step according to algorithm
+        :param md: movement data dict
         :return:
         """
 

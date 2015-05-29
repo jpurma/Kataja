@@ -46,7 +46,6 @@ RIGHT = 2
 
 
 class NodeModel(MovableModel):
-
     """ Model for storing values of instance that will be saved """
 
     def __init__(self, host):
@@ -95,6 +94,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     height = 20
     default_edge_type = g.ABSTRACT_EDGE
     node_type = g.ABSTRACT_NODE
+    ordered = False
+    ordering_func = None
 
     def __init__(self, syntactic_object=None):
         """ Node is an abstract class that shouldn't be used by itself, though
@@ -141,6 +142,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self.setZValue(10)
         self.fade_in()
         self.effect = create_shadow_effect(ctrl.cm.selection())
+        # self.effect = create_shadow_effect(self.color)
         self._update_magnets = True
         self.setGraphicsEffect(self.effect)
 
@@ -148,6 +150,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """ This is called after the item's model has been updated, to run the side-effects of various
         setters in an order that makes sense.
         :param updated_fields: list of names of fields that have been updated.
+        :param update_type: g.DELETE or g.CREATE
         :return: None
         """
         super().after_model_update(updated_fields, update_type)
@@ -166,7 +169,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
                 self.fade_in()
             self.update_visibility()
 
-
     @property
     def syntactic_object(self):
         """ Each Node _can_ be a vehicle for a syntactic object (or a representation of).
@@ -179,6 +181,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     def syntactic_object(self, value):
         """ Each Node _can_ be a vehicle for a syntactic object (or a representation of).
         The syntactic object may have its own model, so getting values from there may take few @properties
+        :param value: syntactic object
         :return:
         """
         if self.model.touch('syntactic_object', value):
@@ -243,13 +246,13 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
     @property
     def triangle(self):
-        """:return:  """
+        """ Should the node be drawn as a triangle """
         return self.model.triangle
 
     @triangle.setter
     def triangle(self, value):
-        """
-        :param value:  """
+        """ Should the node be drawn as a triangle
+        :param value: bool """
         if value is None:
             value = False
         if self.model.touch('triangle', value):
@@ -285,31 +288,48 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
     @property
     def folding_towards(self):
+        """ Stores the triangle base node when a node is part of a triangle.
+        :return: Node
+        """
         return self.model.folding_towards
 
     @folding_towards.setter
     def folding_towards(self, value):
+        """ Stores the triangle base node when a node is part of a triangle.
+        :param value: Node
+        """
         if self.model.touch('folding_towards', value):
             self.model.folding_towards = value
             self.update_position()
 
     @property
     def node_color(self):
+        """ Node can have indivisual color set, if not then uses color set for that node type.
+        :return:
+        """
         return self.model.color
 
     @node_color.setter
     def node_color(self, value):
+        """ Node can have indivisual color set, if not then uses color set for that node type.
+        :param value: color name
+        """
         if self.model.touch('node_color', value):
             self.model.node_color = value
-
 
     # fixme: Ok why is this doubling constituentnode's index? do other nodes need index too?
     @property
     def index(self):
+        """ Node can have index to allow reversable multidomination
+        :return:
+        """
         return self.model.index
 
     @index.setter
     def index(self, value):
+        """ Node can have index to allow reversable multidomination
+        :param value: string or INode
+        """
         if value is None:
             value = ''
         if self.model.touch('index', value):
@@ -320,6 +340,9 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
     @property
     def hovering(self):
+        """ Public access to _hovering. Pretty useless.
+        :return:
+        """
         return self._hovering
 
     @hovering.setter
@@ -338,33 +361,24 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         if value and not self._hovering:
             self._hovering = True
             if ctrl.cm.use_glow():
-                self.effect.setColor(ctrl.cm.selection())
+                self.effect.setColor(self.contextual_color)
                 self.effect.setEnabled(True)
             self.prepareGeometryChange()
             self.update()
             self.setZValue(150)
             ctrl.set_status(self.status_tip)
         elif (not value) and self._hovering:
-            if ctrl.cm.use_glow():
-                self.effect.setEnabled(False)
+            # if ctrl.cm.use_glow():
+            #    self.effect.setEnabled(False)
             self._hovering = False
             self.prepareGeometryChange()
             self.setZValue(10)
             self.update()
             ctrl.remove_status(self.status_tip)
 
-
     def __repr__(self):
         """ This is a node and this represents this UG item """
         return '%s-%s' % (self.model.syntactic_object, self.model.save_key)
-
-
-    # Let's not have nodes be able to iterate through tree --
-    # it is ambiguous thing when node structures are not trees.
-    # def __iter__(self):
-    # return IterateOnce(self)
-
-
 
     def reset(self):
         """
@@ -373,7 +387,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         Movable.reset(self)
         self.update_bounding_rect()
         ctrl.ui.remove_touch_areas_for(self)
-
 
     def is_placeholder(self):
         """ Constituent structure may assume a constituent to be somewhere, before the user has intentionally created
@@ -389,7 +402,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :return: None
         """
         if self.folding_towards:
-            print('initiating movement to triangle: %s -> %s' % (self.current_position, self.folding_towards.current_position))
+            print('initiating movement to triangle: %s -> %s' % (
+                self.current_position, self.folding_towards.current_position))
             self._target_position = self.folding_towards.current_position
             if instant:
                 self.current_position = tuple(self._target_position)
@@ -402,9 +416,9 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         else:
             super().update_position(instant=instant)
 
-
     def move(self, md):
         """ Add on Moveable.move the case when node is folding towards triangle. It has priority.
+        :param md: dict to collect total amount of movement.
         :return: (bool, bool) -- is the node moving, does it allow normalization of movement
         """
 
@@ -480,7 +494,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             else:
                 return [edge.start for edge in self.edges_up if edge.start]
 
-
     def is_connected_to(self, other):
         """ Generic check for having direct connection to some other node
         :param other:
@@ -493,7 +506,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             if edge.end == other:
                 return True
         return False
-
 
     def left(self, only_visible=True):
         """
@@ -632,7 +644,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
                 ((not similar) or rel.edge_type == self.__class__.default_edge_type) and (
                     (not visible) or rel.is_visible())]
 
-
     ### Font #####################################################################
 
     @property
@@ -745,7 +756,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """
         self.status_tip = str(self)
 
-
     def get_html_for_label(self):
         """ This should be overridden if there are alternative displays for label """
         return self.label
@@ -763,7 +773,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """ implement if label can be modified by editing it directly """
         pass
 
-
     # ## Qt overrides ######################################################################
 
     def paint(self, painter, option, widget=None):
@@ -776,11 +785,10 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         if ctrl.pressed == self or self._hovering or ctrl.is_selected(self):
             painter.drawRoundedRect(self.inner_rect, 5, 5)
 
-        # x,y,z = self.current_position
-        # w2 = self.width/2.0
-        # painter.setPen(self.contextual_color())
-        # painter.drawEllipse(-w2, -w2, w2 + w2, w2 + w2)
-
+            # x,y,z = self.current_position
+            # w2 = self.width/2.0
+            # painter.setPen(self.contextual_color())
+            # painter.drawEllipse(-w2, -w2, w2 + w2, w2 + w2)
 
     def update_bounding_rect(self):
         """
@@ -859,7 +867,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         triangle.lineTo(center, top)
         painter.drawPath(triangle)
 
-
     # ## Magnets ######################################################################
 
 
@@ -880,18 +887,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
                 w2 = (self.width - 2) / 2.0
                 h2 = (self.height - 2) / 2.0
 
-                self._magnets = [(-w2, -h2),
-                                 (-w4, -h2),
-                                 (0, -h2),
-                                 (w4, -h2),
-                                 (w2, -h2),
-                                 (-w2, 0),
-                                 (w2, 0),
-                                 (-w2, h2),
-                                 (-w4, h2),
-                                 (0, h2),
-                                 (w4, h2),
-                                 (w2, h2)]
+                self._magnets = [(-w2, -h2), (-w4, -h2), (0, -h2), (w4, -h2), (w2, -h2), (-w2, 0), (w2, 0), (-w2, h2),
+                                 (-w4, h2), (0, h2), (w4, h2), (w2, h2)]
 
             x1, y1, z1 = self.current_position
             x2, y2 = self._magnets[n]
@@ -982,19 +979,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             if editor and editor.isVisible():
                 self.open_embed()
 
-    # def drag(self, event):
-    # """ Drags also elements that are counted to be involved: features, children etc """
-    # mx, my = to_tuple(event.scenePos())
-    # if not getattr(ctrl, 'dragged', None):
-    # self.start_dragging(mx, my)
-    # for item, ox, oy in ctrl.dragged_positions:
-    # x, y, z = item.current_position
-    # item.set_adjustment(dx, dy, 0)
-    # item.update_position()
-
-    # [b.update() for b in item.get_children() + item.edges_up + item.edges_down]
-    # ctrl.scene.item_moved()
-
     def start_dragging(self, mx, my):
         """
 
@@ -1025,7 +1009,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             self.adjustment = (diff_x, diff_y, az)
         else:
             self.fixed_position = (now_x, now_y, self.z)
-
+        self.update_position(instant=True)
 
     def dragged_over_by(self, dragged):
         """
@@ -1073,7 +1057,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         ctrl.main.action_finished('moved node %s' % self)
         # ctrl.scene.fit_to_window()
 
-
     #### Mouse - Qt events ##################################################
 
     def hoverEnterEvent(self, event):
@@ -1089,7 +1072,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """
         self.hovering = False
         QtWidgets.QGraphicsItem.hoverLeaveEvent(self, event)
-
 
     def dragEnterEvent(self, event):
         """
@@ -1118,6 +1100,26 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             # pass
             # print("Drag move event for Movable")
 
+    def start_moving(self):
+        """ Experimental: add glow effect for moving things
+        :return:
+        """
+        Movable.start_moving(self)
+        self.effect.setColor(self.contextual_color)
+        self.effect.setEnabled(True)
+        for edge in self.edges_down:
+            edge.start_node_started_moving()
+        for edge in self.edges_up:
+            edge.end_node_started_moving()
 
-            #### Restoring after load / undo #########################################
-
+    def stop_moving(self):
+        """ Experimental: remove glow effect from moving things
+        :return:
+        """
+        Movable.stop_moving(self)
+        if not (ctrl.is_selected(self) or self._hovering):
+            self.effect.setEnabled(False)
+        for edge in self.edges_down:
+            edge.start_node_stopped_moving()
+        for edge in self.edges_up:
+            edge.end_node_stopped_moving()

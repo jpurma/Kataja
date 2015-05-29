@@ -72,9 +72,11 @@ SYMBOLS = 'symbols'
 NODES = 'nodes'
 
 # Alignment of edges
-NO_ALIGN = 0
-LEFT = 1
-RIGHT = 2
+NO_ALIGN = 0  # default
+LEFT = 1  # ordered left edge
+RIGHT = 2  # ordered right edge
+MIS_LEFT = 3  # shape to use for LEFT when there should be (LEFT, RIGHT), but the ordering fails
+MIS_RIGHT = 4  # shape to use for RIGHT when there should be (LEFT, RIGHT), but the ordering fails
 
 # code for deleting a value
 DELETE = 9999

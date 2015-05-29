@@ -4,8 +4,8 @@ from PyQt5 import QtGui, QtCore
 
 
 class LabelDocument(QtGui.QTextDocument):
-    """ This extends QTextDocument with ability to read INodes (intermediary nodes) and turn them into QTextDocuments
-     RTF presentation """
+    """ This extends QTextDocument with ability to read INodes (intermediary nodes) and turn them into
+    QTextDocuments RTF presentation """
 
     def __init__(self, edit=False, raw=False):
         QtGui.QTextDocument.__init__(self)
@@ -15,6 +15,7 @@ class LabelDocument(QtGui.QTextDocument):
         self.block_order = []
 
     def default_block_order(self):
+
         return ['alias', 'label', 'index', 'gloss', 'features']
 
     def clear(self):

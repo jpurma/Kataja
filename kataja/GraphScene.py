@@ -760,7 +760,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         frame_has_moved = False
         background_fade = False
         can_normalize = True
-        md = {'xsum': 0, 'ysum': 0, 'zsum': 0, 'nodes':[]}
+        md = {'xsum': 0, 'ysum': 0, 'zsum': 0, 'nodes': []}
         self.main.ui_manager.activity_marker.show()
         ctrl.items_moving = True
         if self._fade_steps:

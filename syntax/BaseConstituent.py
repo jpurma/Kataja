@@ -357,6 +357,19 @@ class BaseConstituent:
         """
         return not self.parts
 
+    def ordering(self):
+        """ Tries to do linearization between two elements according to theory being used.
+        Easiest, default case is to just store the parts as a list and return the list in its original order.
+        This is difficult to justify theoretically, though.
+        :return: len 2 list of ordered nodes, or empty list if cannot be ordered.
+        """
+        ordering_method = 1
+        if ordering_method == 1:
+            if len(self.parts) == 2 and self.parts[0] and self.parts[1]:
+                return list(self.parts)
+            else:
+                return []
+
     def copy(self):
         """ Make a deep copy of constituent. Useful for picking constituents from Lexicon.
         :return: BaseConstituent

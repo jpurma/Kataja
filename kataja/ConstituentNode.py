@@ -45,13 +45,15 @@ class ConstituentNodeModel(NodeModel):
 
 
 class ConstituentNode(Node):
-    """ ConstituentNodes are graphical representations of constituents. They are primary objects and need to support saving and loading."""
+    """ ConstituentNodes are graphical representations of constituents.
+    They are primary objects and need to support saving and loading."""
     width = 20
     height = 20
     default_edge_type = g.CONSTITUENT_EDGE
     receives_signals = []
     node_type = g.CONSTITUENT_NODE
-
+    ordered = True
+    ordering_func = None
 
 
     # ConstituentNode position points to the _center_ of the node.
@@ -275,7 +277,6 @@ class ConstituentNode(Node):
 
         return self._inode
 
-
     def update_status_tip(self):
         if self.syntactic_object:
             if self.alias:
@@ -304,7 +305,6 @@ class ConstituentNode(Node):
         else:
             return alias or label
 
-
     def as_bracket_string(self):
         """ returns a simple bracket string representation """
         if not self.syntactic_object:
@@ -319,7 +319,6 @@ class ConstituentNode(Node):
                 return '[ %s ]' % children[0].as_bracket_string()
         else:
             return self.alias or self.syntactic_object
-
 
     def is_placeholder(self):
         """ Constituent structure may assume a constituent to be somewhere, before the user has intentionally created
@@ -352,7 +351,7 @@ class ConstituentNode(Node):
         visible = not self.folded_away
         self.visible = visible
 
-        ### Fade in / out
+        # Fade in / out
         fade = kw.get('fade', False)
         if fade:
             if visible:
@@ -361,7 +360,7 @@ class ConstituentNode(Node):
                 self.fade_out()
         else:
             self.setVisible(visible)
-        ### Label
+        # Label
 
         label_mode = ctrl.forest.settings.label_style
         if label_mode == g.ALL_LABELS:
@@ -385,16 +384,15 @@ class ConstituentNode(Node):
         # ctrl.forest.settings.draw_features
         feat_visible = visible and ctrl.forest.settings.draw_features
 
-        if (feat_visible and not was_visible):
+        if feat_visible and not was_visible:
             for feature in self.get_features():
                 feature.setVisible(True)
-        elif (was_visible and not feat_visible):
+        elif was_visible and not feat_visible:
             for feature in self.get_features():
                 feature.setVisible(False)
 
     def reset(self):
         """
-
 
         """
         Node.reset(self)
@@ -402,9 +400,7 @@ class ConstituentNode(Node):
         # self.has_visible_brackets = False
         # self.boundingRect(update = True)
 
-
     # ### Parents & Children ####################################################
-
 
     def is_projecting_to(self, other):
         """
@@ -463,9 +459,7 @@ class ConstituentNode(Node):
             del_left()
             del_right()
 
-
     # ### Features #########################################
-
 
     # !!!! Shouldn't be done this way. In forest, create a feature, then connect it to ConstituentNode and let Forest's
     # methods to take care that syntactic parts are reflected properly. ConstituentNode shouldn't be modifying its
@@ -479,7 +473,7 @@ class ConstituentNode(Node):
         :param value:
         :param string:
         """
-        assert (self.syntactic_object)
+        assert self.syntactic_object
         if syntactic_feature:
             if ctrl.forest.settings.draw_features:
                 ctrl.forest.create_feature_node(self, syntactic_feature)
@@ -511,7 +505,6 @@ class ConstituentNode(Node):
         elif syn_gloss and gloss_node:
             gloss_node.update_label()
 
-
     def get_features(self):
         """ Returns FeatureNodes """
         return self.get_children(edge_type=g.FEATURE_EDGE)
@@ -535,9 +528,7 @@ class ConstituentNode(Node):
         # if current_features:
         # print('leftover features:', current_features)
 
-
     # ### Labels #############################################
-
 
     # things to do with traces:
     # if renamed and index is removed/changed, update chains
@@ -550,7 +541,6 @@ class ConstituentNode(Node):
         """ Empty nodes can be used as placeholders and deleted or replaced without structural worries """
         return (not (self.alias or self.label or self.index)) and self.is_leaf_node()
 
-
     def get_features_as_string(self):
         """
 
@@ -560,7 +550,6 @@ class ConstituentNode(Node):
         features = [f.syntactic_object for f in self.get_features()]
         feature_strings = [str(f) for f in features]
         return ', '.join(feature_strings)
-
 
     # ## Indexes and chains ###################################
 
@@ -574,10 +563,7 @@ class ConstituentNode(Node):
             return not (self.is_leaf_node() and self.label == 't')
         return False
 
-
-
     # ## Multidomination #############################################
-
 
     def is_multidominated(self):
         """ Check if the ConstituentNode has more than one parent. """
@@ -591,7 +577,6 @@ class ConstituentNode(Node):
                 if child is not self:
                     result.append(child)
         return result
-
 
     # ## Qt overrides ######################################################################
 
@@ -619,7 +604,7 @@ class ConstituentNode(Node):
             painter.drawRect(self.inner_rect)
             # if self.uses_scope_area:
             # self.paint_scope_rect(painter, rect)
-        #Node.paint(self, painter, option, widget)
+        # Node.paint(self, painter, option, widget)
 
     # def itemChange(self, change, value):
     # """ Whatever menus or UI objects are associated with object, they move
@@ -637,17 +622,11 @@ class ConstituentNode(Node):
     # # ctrl.ui.update_target_reticle_position()
     # return QtWidgets.QGraphicsItem.itemChange(self, change, value)
 
-
-
     def open_embed(self):
-        """
-
-
-        """
+        """ """
         ctrl.ui.start_constituent_editing(self)
 
-
-    #### Selection ########################################################
+    # ### Selection ########################################################
 
     def refresh_selection_status(self, selected):
         """
@@ -656,20 +635,16 @@ class ConstituentNode(Node):
         """
         self.update()
 
-
-    #### Checks for callable actions ####
+    # ### Checks for callable actions ####
 
     def can_root_merge(self):
         """
-
-
         :return:
         """
         root = self.get_root_node()
         return self is not root and self is not root.left(only_visible=False)
 
-
-    #### Dragging #####################################################################
+    # ### Dragging #####################################################################
 
     # ## Some of this needs to be implemented further down in constituentnode-node-movable -inheritance
 
@@ -724,7 +699,6 @@ class ConstituentNode(Node):
                 print('setting fixed position')
                 node.fixed_position = (now_x + dx, now_y + dy, node.z)
             node.update_position(instant=True)
-
 
     def drop_to(self, x, y, recipient=None):
         """
@@ -790,8 +764,7 @@ class ConstituentNode(Node):
             self.right_bracket.hovering = value
         self._set_hovering(value)
 
-    # ### Suggestions for completing missing aspects (active for selected nodes) ######################################
-
+    # ### Suggestions for completing missing aspects (active for selected nodes)
     def add_completion_suggestions(self):
         """ Node has selected and if it is a placeholder or otherwise lacking, it may suggest an
          option to add a proper node here.
@@ -799,12 +772,9 @@ class ConstituentNode(Node):
         if self.is_placeholder():
             ctrl.ui.create_touch_area(self, g.TOUCH_ADD_CONSTITUENT)
 
-
     def dropEvent(self, event):
         """
 
         :param event:
         """
         print("CN dropEvent")
-
-

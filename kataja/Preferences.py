@@ -102,7 +102,7 @@ class Preferences(object):
         self.default_draw_features = True
         self.default_draw_width = 2
         self.my_palettes = {}
-        self.default_color_mode = 'solarized_dk'
+        self.default_color_mode = 'solarized_lt'
         self.default_hsv = None
         self.default_bracket_style = 0
 

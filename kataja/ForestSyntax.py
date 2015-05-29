@@ -8,6 +8,11 @@ __author__ = 'purma'
 
 
 class ForestSyntaxError(Exception):
+    """
+
+    :param value:
+    """
+
     def __init__(self, value):
         self.value = value
 
@@ -146,6 +151,12 @@ def disconnect_edge(edge):
 
 
 def constituent_merge(left_node, right_node):
+    """
+
+    :param left_node:
+    :param right_node:
+    :return: :raise ForestSyntaxError:
+    """
     lc = left_node.syntactic_object
     rc = right_node.syntactic_object
     if not (lc and rc):
@@ -154,6 +165,12 @@ def constituent_merge(left_node, right_node):
 
 
 def which_selects(left_node, right_node):
+    """
+
+    :param left_node:
+    :param right_node:
+    :return: :raise ForestSyntaxError:
+    """
     lc = left_node.syntactic_object
     rc = right_node.syntactic_object
     if not (lc and rc):
@@ -167,7 +184,31 @@ def which_selects(left_node, right_node):
         return None
 
 
+def is_left(node, parent):
+    """ Check that node is syntactically left child of its parent. Depending on syntax it may never be true.
+    :param node: child node
+    :param parent: parent node
+    """
+    pc = parent.syntactic_object
+    nc = node.syntactic_object
+    ordered = pc.ordering()
+    return ordered and ordered[0] == nc
+
+def is_right(node, parent):
+    """ Check that node is syntactically right child of its parent. Depending on syntax it may never be true.
+    :param node: child node
+    :param parent: parent node
+    """
+    pc = parent.syntactic_object
+    nc = node.syntactic_object
+    ordered = pc.ordering()
+    return ordered and ordered[1] == nc
+
 def set_constituent_features(node):
+    """
+
+    :param node:
+    """
     c = node.syntactic_object
     new_features = ctrl.forest.get_feature_nodes(node)
     old_features = c.features
@@ -182,16 +223,38 @@ def set_constituent_features(node):
 
 
 def constituent_copy(node):
+    """
+
+    :param node:
+    :return: :raise ForestSyntaxError:
+    """
     if not node or not node.syntactic_object:
         raise ForestSyntaxError("Trying to copy empty node")
     return node.syntactic_object.copy()
 
 
 def new_constituent(label, source=None):
+    """
+
+    :param label:
+    :param source:
+    :return:
+    """
     return ctrl.Constituent(label, source=source)
 
 def new_feature(label, source=None):
+    """
+
+    :param label:
+    :param source:
+    :return:
+    """
     return ctrl.Feature(label)
 
 def set_constituent_index(constituent, index):
+    """
+
+    :param constituent:
+    :param index:
+    """
     constituent.index = index

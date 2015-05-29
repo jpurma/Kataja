@@ -59,13 +59,16 @@ else:
 if running_environment.endswith('python'):
     try:
         version_file = open(resources_path+'version.txt', 'w')
-        version_file.write('%s | v. %s | %s' % (date, running_number, version_name))
+        version_file.write('%s | v. %s | %s' % (date, running_number, version_name.strip()))
         version_file.close()
     except IOError:
         print('write failed')
         pass
 
-splash.showMessage('%s | %s | v. %s | %s' % (author, date, running_number, version_name),
+#splash.showMessage('%s | %s | v. %s' % (author, date, running_number),
+#                   QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter, nice_yellow)
+
+splash.showMessage('%s | %s | v. %s | %s' % (author, date, running_number, version_name.strip()),
                    QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter, nice_yellow)
 
 from kataja.KatajaMain import KatajaMain

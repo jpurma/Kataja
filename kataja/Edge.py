@@ -105,6 +105,9 @@ class Edge(QtWidgets.QGraphicsItem):
         self.draggable = not (self.start or self.end)
         self.clickable = False
         self._hovering = False
+        self._start_node_moving = False
+        self._end_node_moving = False
+        self._make_fat_path = False
         self.setZValue(10)
         self.status_tip = ""
         self._cached_shape_args = {}
@@ -128,7 +131,7 @@ class Edge(QtWidgets.QGraphicsItem):
         # self.setFlag(QtGui.QGraphicsItem.ItemIsSelectable)
         self.setAcceptHoverEvents(True)
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.effect = utils.create_shadow_effect(ctrl.cm.selection())
+        self.effect = utils.create_shadow_effect(self.color)
         self.setGraphicsEffect(self.effect)
 
     def after_init(self):
@@ -945,35 +948,12 @@ class Edge(QtWidgets.QGraphicsItem):
             self._arrowhead_end_path = self.make_arrowhead_path('end')
         else:
             self._arrowhead_end_path = None
-        self._fat_path = self._path
+        if self._make_fat_path:
+            # Fat path is the shape of the path with some extra margin to make it easier to click/touch
+            self._fat_path = outline_stroker.createStroke(self._path)
+        else:
+            self._fat_path = self._path
         self._cached_cp_rect = self._path.controlPointRect()
-        # # Fat path is the shape of the path with some extra margin to make it easier to click/touch
-        # if sn == 'blob' or sn == 'directional_blob':
-        #     # These fat, filled shapes don't need separate fat path
-        #     self._fat_path = self._path
-        # elif c.get('thickness', 0):
-        #     # if the edge uses a solid line, but uses an arrowhead at start, the line's blunt end spoils the arrowhead.
-        #     # solution is to move the edge's line's startinpoint a little. This has been computed earlier, but now it is
-        #     # applied to path.
-        #     if self.arrowhead_at_start:
-        #         x, y = self._arrow_cut_point_start
-        #         self._path.setElementPositionAt(0, x, y)
-        #     if self.arrowhead_at_end:
-        #         x, y = self._arrow_cut_point_end
-        #         self._path.setElementPositionAt(self._path.elementCount() - 1, x, y)
-        #     bi = QtGui.QPainterPath(self._path)
-        #     bi.addPath(self._path.toReversed())
-        #     # outline stroker is so damn slow. we want to do without it.
-        #     #self._fat_path = outline_stroker.createStroke(self._path).united(bi)
-        #     self._fat_path = self._path
-        # else:
-        #     pass
-        #     self._fat_path = self._path
-        #     #self._fat_path = outline_stroker.createStroke(self._path).united(self._path)
-        # if self._arrowhead_start_path:
-        #     self._fat_path = self._fat_path.united(self._arrowhead_start_path)
-        # if self._arrowhead_end_path:
-        #     self._fat_path = self._fat_path.united(self._arrowhead_end_path)
         #
         self.update_label_pos()
         ctrl.ui.update_control_point_positions()
@@ -1278,8 +1258,8 @@ class Edge(QtWidgets.QGraphicsItem):
             self.update()
             ctrl.set_status(self.status_tip)
         elif (not value) and self._hovering:
-            if ctrl.cm.use_glow():
-                self.effect.setEnabled(False)
+            #if ctrl.cm.use_glow():
+            #    self.effect.setEnabled(False)
             self._hovering = False
             self.prepareGeometryChange()
             self.setZValue(10)
@@ -1439,3 +1419,38 @@ class Edge(QtWidgets.QGraphicsItem):
         elif pos == 'end':
             self._arrow_cut_point_end = xm, ym
         return p
+
+    def end_node_started_moving(self):
+        """ Called if the end node has started moving.
+        :return:
+        """
+        self._end_node_moving = True
+        self._make_fat_path = False
+
+
+    def start_node_started_moving(self):
+        """ Called if the end node has started moving.
+        :return:
+        """
+        self._start_node_moving = True
+        self._make_fat_path = False
+
+    def start_node_stopped_moving(self):
+        """ Called if the end node has started moving.
+        :return:
+        """
+        self._start_node_moving = False
+        if not self._end_node_moving:
+            self._make_fat_path = True
+
+    def end_node_stopped_moving(self):
+        """ Called if the end node has started moving.
+        :return:
+        """
+        self._end_node_moving = False
+        if not self._start_node_moving:
+            self._make_fat_path = True
+
+
+
+
