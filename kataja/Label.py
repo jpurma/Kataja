@@ -54,12 +54,10 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.setPos(brect.width() / -2.0, (self.total_height / -2.0) + self.y_offset)
 
     def is_empty(self):
+        """ Turning this node into label would result in an empty label.
+        :return: bool
         """
-
-
-        :return:
-        """
-        return self._host.as_inode
+        return bool(self._host.as_inode)
 
     def paint(self, painter, option, widget):
         """ Painting is sensitive to mouse/selection issues, but usually with

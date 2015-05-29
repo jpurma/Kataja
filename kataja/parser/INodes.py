@@ -51,16 +51,23 @@ class ITextNode:
     def __add__(self, other):
         if isinstance(other, (ITextNode, str)):
             return ITextNode(parts=[self, other])
+        else:
+            raise TypeError()
 
     def __radd__(self, other):
         if isinstance(other, ITextNode):
             return ITextNode(parts=[other, self])
         elif isinstance(other, str):
             return other + str(self)
+        else:
+            raise TypeError()
 
     def __iadd__(self, other):
         if isinstance(other, (ITextNode, str)):
             self.append(other)
+            return self
+        else:
+            raise TypeError()
 
     def __bool__(self):
         return not self.is_empty()
@@ -94,6 +101,7 @@ class ITextNode:
         if new_part:
             new_parts.append(''.join(new_part))
         self.parts = new_parts
+        return self
 
     def is_plain_string(self):
         """ Check if this ITextNode contains only strings or ITextNodes that can be represented as plain strings

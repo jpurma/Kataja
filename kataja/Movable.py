@@ -322,7 +322,7 @@ class Movable:
 
     def adjust_opacity(self):
         """ Takes one step in fading trajectory or finishes fading
-        :return: None
+        :return: bool, is the fade in/out still going on
         """
         active = False
         if self._fade_in_counter:

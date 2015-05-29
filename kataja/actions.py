@@ -1074,7 +1074,7 @@ def add_triangle():
         return
     ctrl.add_message('folding in %s' % node.as_bracket_string())
     ctrl.forest.add_triangle_to(node)
-    ctrl.ui.update_selections()
+    ctrl.deselect_objects()
 
 
 a['add_triangle'] = {
@@ -1092,7 +1092,7 @@ def remove_triangle():
         return
     ctrl.add_message('unfolding from %s' % node.as_bracket_string())
     ctrl.forest.remove_triangle_from(node)
-    ctrl.ui.update_selections()
+    ctrl.deselect_objects()
 
 a['remove_triangle'] = {
     'command': 'Remove triangle',

@@ -21,10 +21,7 @@ def parse_inode(inode, document, gloss_in_view=True, features_in_view=True):
     if isinstance(inode, IFeatureNode):
         parse_ifeaturenode(inode, document)
     elif isinstance(inode, IConstituentNode):
-        if document.edit_mode:
-            parse_iconstituentnode_for_editing(inode, document)
-        else:
-            parse_iconstituentnode_for_viewing(inode, document, gloss_in_view, features_in_view)
+        parse_iconstituentnode_for_viewing(inode, document, gloss_in_view, features_in_view)
     elif isinstance(inode, ITextNode):
         parse_itextnode(inode, document)
     else:
@@ -33,7 +30,7 @@ def parse_inode(inode, document, gloss_in_view=True, features_in_view=True):
 
 def parse_itextnode(inode, document):
     cursor = QtGui.QTextCursor(document)
-    write_node_to_document(inode, cursor, document.raw_mode)
+    write_node_to_document(inode, cursor)
 
 
 def parse_iconstituentnode_for_viewing(inode, document, gloss_in_view=True, features_in_view=True):
@@ -54,95 +51,35 @@ def parse_iconstituentnode_for_viewing(inode, document, gloss_in_view=True, feat
         cursor.setCharFormat(old_format)
 
     cursor = QtGui.QTextCursor(document)
-    actual_block_order = []
     first = True
-    index_row = -1
-    if inode.index:
-        if inode.alias:
-            index_row = 0
-        elif inode.label:
-            index_row = 1
-        else:
-            index_row = 0
-    for block_id in document.block_order:
-        if block_id == 'alias':
-            if inode.alias:
-                if not first:
-                    cursor.insertBlock()
-                write_node_to_document(inode.alias, cursor)
-                actual_block_order.append(block_id)
-                first = False
-            if index_row == 0:
-                write_index(inode.index, cursor)
-        elif block_id == 'label':
-            if inode.label:
-                if not first:
-                    cursor.insertBlock()
-                write_node_to_document(inode.label, cursor)
-                actual_block_order.append(block_id)
-                first = False
-            if index_row == 1:
-                write_index(inode.index, cursor)
-        elif block_id == 'gloss' and not prefs.gloss_nodes:
-            if inode.gloss and gloss_in_view:
-                if not first:
-                    cursor.insertBlock()
-                write_node_to_document(inode.gloss, cursor)
-                actual_block_order.append(block_id)
-                first = False
-        elif block_id == 'features' and not prefs.feature_nodes:
-            if inode.features and features_in_view:
-                if not first:
-                    cursor.insertBlock()
-
-                print(inode.features)
-                for item in inode.features.values():
-                    write_node_to_document(item, cursor)
-                    write_node_to_document(' ', cursor)
-                actual_block_order.append(block_id)
-                first = False
-    document.block_order = actual_block_order
-
-
-def parse_iconstituentnode_for_editing(inode, document):
-    """ Write all fields into one document for easier editing -- if field is empty, leave a blank row as a placeholder
-    :param inode: IConstituentNode
-    :param document: LabelDocument
-    :return:
-    """
-    # o = QtGui.QTextOption()
-    # o.setFlags(QtGui.QTextOption.ShowLineAndParagraphSeparators |
-    # QtGui.QTextOption.AddSpaceForLineAndParagraphSeparators)
-    #document.setDefaultTextOption(o)
-    cursor = QtGui.QTextCursor(document)
-    first = document.block_order[0]
-    raw = document.raw_mode
-    for block_id in document.block_order:
-        if block_id == 'alias':
-            if block_id != first:
-                cursor.insertBlock()
-            if inode.alias:
-                write_node_to_document(inode.alias, cursor, raw)
-        elif block_id == 'label':
-            if block_id != first:
-                cursor.insertBlock()
-            if inode.label:
-                write_node_to_document(inode.label, cursor, raw)
-        elif block_id == 'index':
-            if block_id != first:
-                cursor.insertBlock()
-            if inode.index:
-                write_node_to_document(inode.index, cursor, raw)
-        elif block_id == 'gloss':
-            if block_id != first:
-                cursor.insertBlock()
-            if inode.gloss:
-                write_node_to_document(inode.gloss, cursor, raw)
-        elif block_id == 'features':
-            if block_id != first:
-                cursor.insertBlock()
-            if inode.features:
-                write_node_to_document(inode.features, cursor, raw)
+    index_done = False
+    if inode.alias:
+        if not first:
+            cursor.insertBlock()
+        write_node_to_document(inode.alias, cursor)
+        first = False
+        if inode.index:
+            write_index(inode.index, cursor)
+            index_done = True
+    if inode.label:
+        if not first:
+            cursor.insertBlock()
+        write_node_to_document(inode.label, cursor)
+        first = False
+    if inode.index and not index_done:
+        write_index(inode.index, cursor)
+    if inode.gloss and gloss_in_view:
+        if not first:
+            cursor.insertBlock()
+        write_node_to_document(inode.gloss, cursor)
+        first = False
+    if inode.features and features_in_view:
+        if not first:
+            cursor.insertBlock()
+        print(inode.features)
+        for item in inode.features.values():
+            write_node_to_document(item, cursor)
+            write_node_to_document(' ', cursor)
 
 
 def parse_ifeaturenode(inode, document):
@@ -200,28 +137,26 @@ def run_command(command, cursor):
         cursor.mergeCharFormat(c)
 
 
-def write_node_to_document(n, cursor, raw=False):
+def write_node_to_document(n, cursor):
     """ Recursive node writer. Stores the current charformat, so when the end of formatting scope is reached,
     we can return to previous format.
     :param n: node or string
     :param cursor: cursor in document, this is the point where we write
-    :param raw: write as latex instead of RTF
     :return:
     """
     if not n:
-        return
-    if raw:
-        cursor.insertText(parse_inode_for_field(n))
         return
     if isinstance(n, ITextNode):
         old_format = None
         if isinstance(n, ICommandNode) and n.command:
             old_format = QtGui.QTextCharFormat(cursor.charFormat())
             run_command(n.command, cursor)
+        print(n.parts)
         for part in n.parts:
             if isinstance(part, ITextNode):  # ITextNode includes also ICommandNodes and IConstituentNodes
                 write_node_to_document(part, cursor)
             else:
+                print('writing(1) ', part)
                 cursor.insertText(part)
         if old_format:
             cursor.setCharFormat(old_format)
@@ -230,7 +165,9 @@ def write_node_to_document(n, cursor, raw=False):
             if isinstance(part, ITextNode):  # ITextNode includes also ICommandNodes and IConstituentNodes
                 write_node_to_document(part, cursor)
             else:
+                print('writing(2) ', part)
                 cursor.insertText(part)
     else:
+        print('writing(3) ', n)
         cursor.insertText(n)
 

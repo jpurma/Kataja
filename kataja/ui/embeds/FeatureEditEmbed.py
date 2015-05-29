@@ -8,7 +8,6 @@ from kataja.singletons import qt_prefs, ctrl
 from kataja.ui.panels.SymbolPanel import open_symbol_data
 from kataja.LabelDocument import LabelDocument
 from kataja.parser import INodeToLabelDocument
-from kataja.parser import LabelDocumentToINode
 from kataja.parser import INodeToKatajaConstituent
 import kataja.globals as g
 
@@ -81,7 +80,7 @@ class FeatureEditEmbed(UIEmbed):
         self.move(px, py)
 
     def push_values_back(self):
-        inode = LabelDocumentToINode.parse_labeldocument(self.master_edit.document())
+        #inode = LabelDocumentToINode.parse_labeldocument(self.master_edit.document())
         INodeToKatajaConstituent.update_constituentnode_fields(self.node, inode)
 
     def update_embed(self, scenePos=None, node=None):

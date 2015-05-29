@@ -257,6 +257,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             value = False
         if self.model.touch('triangle', value):
             self.model.triangle = value
+            self._inode_changed = True
             self.triangle_updated(value)
 
     def triangle_updated(self, value):
@@ -443,6 +444,20 @@ class Node(Movable, QtWidgets.QGraphicsItem):
                 return False, False
         else:
             return super().move(md)
+
+    def adjust_opacity(self):
+        """ Add to Movable.adjust_opacity fading of edges that connect to this node. If node fades
+        away, the edges fade away. There shouldn't be situations where this isn't the case.
+        :return: bool, is the fade in/out still going on
+        """
+        active = super().adjust_opacity()
+        o = self.opacity()
+        if active:
+            for edge in self.edges_down:
+                edge.setOpacity(o)
+            for edge in self.edges_up:
+                edge.setOpacity(o)
+
 
     # ### Children and parents ####################################################
 

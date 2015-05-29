@@ -27,7 +27,7 @@ from PyQt5 import QtGui
 from kataja.singletons import ctrl
 from kataja.Node import Node, NodeModel
 from kataja.utils import to_tuple, time_me, caller
-from kataja.parser.INodes import IConstituentNode
+from kataja.parser.INodes import IConstituentNode, ITextNode
 import kataja.globals as g
 
 # ctrl = Controller object, gives accessa to other modules
@@ -268,8 +268,19 @@ class ConstituentNode(Node):
         :return: INodes or str or tuple of them
         """
         if self._inode_changed:
+            if self.triangle:
+                leaves = ITextNode()
+                # todo: Use a better linearization here
+                for node in ctrl.forest.list_nodes_once(self, only_visible=False):
+                    if node.is_leaf_node(only_visible=False):
+                        leaves += node.label
+                        leaves += ' '
+                label = leaves.tidy()
+            else:
+                label = self.label
+
             self._inode = IConstituentNode(alias=self.alias,
-                                           label=self.label,
+                                           label=label,
                                            index=self.index,
                                            gloss=self.gloss,
                                            features=self.features)
