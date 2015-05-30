@@ -34,11 +34,11 @@ class BaseModel:
 
     def __init__(self, host, unique=False):
         if unique:
-            key = self.__class__.__name__
+            key = host.__class__.__name__
         else:
-            key = str(id(self)) + '|' + self.__class__.__name__
-        self.save_key = key
+            key = str(id(self)) + '|' + host.__class__.__name__
         self._host = host
+        self.save_key = key
         self._cd = 0 # / CREATED / DELETED
         sys.intern(self.save_key)
 
@@ -270,6 +270,7 @@ class BaseModel:
             if not key.startswith('_') and item and not callable(item):
                 obj_data[key] = _simplify(item)
 
+        print('saving obj: ', self.save_key, obj_data)
         saved_objs[self.save_key] = obj_data
         if self.save_key in open_refs:
             del open_refs[self.save_key]
@@ -306,13 +307,11 @@ class BaseModel:
                 return
             # objects that support saving
             key = getattr(obj, 'save_key', '')
-            try:
-                print(getattr(obj, 'save_key', ''), obj.save_key)
-            except AttributeError:
-                pass
             if key and key not in full_map:
-                full_map[key] = obj
-                print(type(obj))
+                if isinstance(obj, BaseModel):
+                    full_map[key] = obj._host
+                else:
+                    full_map[key] = obj
                 for item in vars(obj).values():
                     map_existing(item)
 
@@ -395,16 +394,20 @@ class BaseModel:
                 return result
             return data
 
-        # print('restoring %s , %s ' % (obj_key, class_key))
+        print('restoring %s , %s ' % (obj_key, class_key))
         # Don't restore object several times, even if the object is referred in several places
         if obj_key in restored:
             return restored[obj_key]
         # If the object already exists (e.g. we are doing undo), the loaded values overwrite existing values.
         obj = full_map.get(obj_key, None)
         if not obj:
-            # print('creating new ', class_key)
+            print('creating new ', class_key)
             obj = main.object_factory(class_key)
+            print('created new ', obj)
+        else:
+            print('found obj: ', obj)
         # when creating/modifying values inside forests, they may refer back to ctrl.forest. That has to be the current
+
         # forest, or otherwise things go awry
         if class_key == 'Forest':
             main.forest = obj

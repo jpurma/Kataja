@@ -156,7 +156,6 @@ def write_node_to_document(n, cursor):
             if isinstance(part, ITextNode):  # ITextNode includes also ICommandNodes and IConstituentNodes
                 write_node_to_document(part, cursor)
             else:
-                print('writing(1) ', part)
                 cursor.insertText(part)
         if old_format:
             cursor.setCharFormat(old_format)
@@ -165,9 +164,7 @@ def write_node_to_document(n, cursor):
             if isinstance(part, ITextNode):  # ITextNode includes also ICommandNodes and IConstituentNodes
                 write_node_to_document(part, cursor)
             else:
-                print('writing(2) ', part)
                 cursor.insertText(part)
     else:
-        print('writing(3) ', n)
         cursor.insertText(n)
 

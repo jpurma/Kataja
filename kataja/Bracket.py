@@ -129,7 +129,7 @@ class Bracket(Movable, QtWidgets.QGraphicsSimpleTextItem):
         self.host.hovering = False
         QtWidgets.QGraphicsSimpleTextItem.hoverLeaveEvent(self, event)
 
-    def select(self, event=None):
+    def select(self, event=None, multi=False):
         """ Scene has decided that this node has been clicked
         :param event:
         """

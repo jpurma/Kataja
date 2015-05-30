@@ -71,7 +71,7 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         else:
             p.select(event)
 
-    def select(self, event):
+    def select(self, event, multi=False):
         self.click(event)
 
     def update_text(self, value):

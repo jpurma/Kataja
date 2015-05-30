@@ -106,6 +106,7 @@ def open_kataja_file():
 a['open'] = {
     'command': '&Open',
     'method': open_kataja_file,
+    'undoable': False,
     'shortcut': 'Ctrl+o'}
 
 
@@ -150,6 +151,7 @@ def save_kataja_file():
 a['save'] = {
     'command': '&Save',
     'method': save_kataja_file,
+    'undoable': False,
     'shortcut': 'Ctrl+s'}
 
 
@@ -165,6 +167,7 @@ def save_as():
 
 a['save_as'] = {
     'command': '&Save as',
+    'undoable': False,
     'method': save_as}
 
 
@@ -189,6 +192,7 @@ def print_to_file():
 a['print_pdf'] = {
     'command': '&Print',
     'method': print_to_file,
+    'undoable': False,
     'shortcut': 'Ctrl+p'}
 
 

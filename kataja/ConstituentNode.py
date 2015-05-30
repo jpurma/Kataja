@@ -644,6 +644,7 @@ class ConstituentNode(Node):
 
         :param selected:
         """
+        self.effect.setEnabled(selected)
         self.update()
 
     # ### Checks for callable actions ####
@@ -719,6 +720,7 @@ class ConstituentNode(Node):
         :param y:
         :return: action finished -message (str)
         """
+        self.effect.setEnabled(False)
         self.update()
         if recipient and recipient.accepts_drops(self):
             self.adjustment = (0, 0, 0)
@@ -748,6 +750,7 @@ class ConstituentNode(Node):
             del node._distance_from_dragged
             del node._fixed_position_before_dragging
             del node._adjustment_before_dragging
+        self.effect.setEnabled(False)
         ctrl.dragged = set()
         ctrl.dragged_positions = set()
 

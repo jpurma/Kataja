@@ -664,14 +664,17 @@ class KatajaMain(QtWidgets.QMainWindow):
         savedata = {}
         open_references = {}
         savedata['save_scheme_version'] = 0.2
-        self.save_object(savedata, open_references)
+        self.model.save_object(savedata, open_references)
         c = 0
         while open_references and c < 10:
             c += 1
             print(len(savedata))
             print('---------------------------')
             for obj in list(open_references.values()):
-                obj.save_object(savedata, open_references)
+                if hasattr(obj, 'model') and hasattr(obj, 'save_key'):
+                    obj.model.save_object(savedata, open_references)
+                else:
+                    print('cannot save open reference object ', obj)
 
         print('total savedata: %s chars in %s items.' % (len(str(savedata)), len(savedata)))
         # print(savedata)

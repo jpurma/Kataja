@@ -129,6 +129,7 @@ class Edge(QtWidgets.QGraphicsItem):
         # self.setAcceptedMouseButtons(QtCore.Qt.NoButton)
         # self.setFlag(QtGui.QGraphicsItem.ItemIsMovable)
         # self.setFlag(QtGui.QGraphicsItem.ItemIsSelectable)
+        self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable)
         self.setAcceptHoverEvents(True)
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.effect = utils.create_shadow_effect(self.color)
@@ -1285,13 +1286,14 @@ class Edge(QtWidgets.QGraphicsItem):
 
     # ## Scene-managed call
 
-    def select(self, event=None):
+    def select(self, event=None, multi=False):
         """ Scene has decided that this node has been selected
         (update
         :param event:
+        :param multi: force multiple selection (append, not replace)
         """
         self.hovering = False
-        if event and event.modifiers() == Qt.ShiftModifier:  # multiple selection
+        if (event and event.modifiers() == Qt.ShiftModifier) or multi:  # multiple selection
             if ctrl.is_selected(self):
                 ctrl.remove_from_selection(self)
             else:

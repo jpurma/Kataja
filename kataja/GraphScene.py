@@ -481,35 +481,35 @@ class GraphScene(QtWidgets.QGraphicsScene):
         items = self.items(event.scenePos())
         clickables = [i for i in items if getattr(i, 'clickable', False)]
         # print('clickables: ', clickables)
+        success = False
+        draggable = False
         if clickables:
             closest_item = self.get_closest_item(x, y, clickables)
             if closest_item:
                 ctrl.pressed = closest_item
-                if closest_item.draggable:
-                    self.graph_view.setDragMode(QtWidgets.QGraphicsView.NoDrag)
-            return QtWidgets.QGraphicsScene.mousePressEvent(self, event)  # None
-        # It wasn't consumed, continue with other selectables:
-        draggables = [i for i in items if getattr(i, 'draggable', False)]
-        # print('draggables: ', draggables)
-        if draggables:
-            closest_item = self.get_closest_item(x, y, draggables)
-            if closest_item:
-                ctrl.pressed = closest_item
-                self.graph_view.setDragMode(QtWidgets.QGraphicsView.NoDrag)
-            return QtWidgets.QGraphicsScene.mousePressEvent(self, event)  # None
-
-        selectables = [i for i in items if getattr(i, 'selectable', False)]
-        # print('selectables: ', selectables)
-        if selectables:
-            closest_item = self.get_closest_item(x, y, selectables)
-            if closest_item:
-                ctrl.pressed = closest_item
-                if closest_item.draggable:
-                    self.graph_view.setDragMode(QtWidgets.QGraphicsView.NoDrag)
-            return QtWidgets.QGraphicsScene.mousePressEvent(self, event)  # None
-
-        else:
-            return QtWidgets.QGraphicsScene.mousePressEvent(self, event)
+                draggable = closest_item.draggable
+            success = True
+        if not success:
+            # It wasn't consumed, continue with other selectables:
+            draggables = [i for i in items if getattr(i, 'draggable', False)]
+            # print('draggables: ', draggables)
+            if draggables:
+                closest_item = self.get_closest_item(x, y, draggables)
+                if closest_item:
+                    ctrl.pressed = closest_item
+                    draggable = True
+                success = True
+        if not success:
+            selectables = [i for i in items if getattr(i, 'selectable', False)]
+            # print('selectables: ', selectables)
+            if selectables:
+                closest_item = self.get_closest_item(x, y, selectables)
+                if closest_item:
+                    ctrl.pressed = closest_item
+                    draggable = closest_item.draggable
+        if draggable:
+            self.graph_view.toggle_suppress_drag(True)
+        return QtWidgets.QGraphicsScene.mousePressEvent(self, event)
 
 
     def start_dragging(self):
@@ -542,7 +542,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         ctrl.main.ui_manager.remove_touch_areas()  # @UndefinedVariable
         ctrl.main.ui_manager.update_touch_areas()  # @UndefinedVariable
-        self.graph_view.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
+        self.graph_view.toggle_suppress_drag(False)
 
     def mouseMoveEvent(self, event):
         """
@@ -578,7 +578,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         :param event:
         :return:
         """
-        self.graph_view.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
+        self.graph_view.toggle_suppress_drag(False)
         if self._dblclick and not ctrl.pressed:  # doubleclick sends one release event at the end, swallow that
             self._dblclick = False
             return
@@ -594,9 +594,9 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 ctrl.main.action_finished(message)  # @UndefinedVariable
             else:
                 if pressed.clickable:
-                    success = pressed.click(event)
+                    pressed.click(event)
                 if pressed.selectable:
-                    success = pressed.select(event)
+                    pressed.select(event)
                 pressed.update()
                 ctrl.pressed = None
             return None  # this mouseRelease is now consumed
@@ -610,6 +610,18 @@ class GraphScene(QtWidgets.QGraphicsScene):
             print('still _dragging!')
         elif ctrl.pressed:
             print('mouseReleaseEvent, but still ctrl.pressed!:', ctrl.pressed)
+        if self.graph_view.rubberband_mode():
+            ctrl.deselect_objects(update_ui=False)
+            # prioritize nodes in multiple selection. e.g. if there are nodes and edges in selected area,
+            #  select only nodes. If there are multiple edges and no nodes, then take edges
+            only_nodes = False
+            for item in self.selectedItems():
+                if isinstance(item, Node):
+                    only_nodes = True
+                    break
+            for item in self.selectedItems():
+                if ((not only_nodes) or isinstance(item, Node)) and getattr(item, 'selectable', False):
+                    item.select(event, multi=True)
         return QtWidgets.QGraphicsScene.mouseReleaseEvent(self, event)
 
     def get_drop_recipient(self, pressed, event):

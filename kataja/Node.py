@@ -89,7 +89,7 @@ class NodeModel(MovableModel):
 
 
 class Node(Movable, QtWidgets.QGraphicsItem):
-    """ Basic class for syntactic elements that have graphic representation """
+    """ Basic class for any visualization elements that can be connected to each other """
     width = 20
     height = 20
     default_edge_type = g.ABSTRACT_EDGE
@@ -106,7 +106,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         QtWidgets.QGraphicsItem.__init__(self)
         Movable.__init__(self)
         self.syntactic_object = syntactic_object
-
         self._label_complex = None
         self._label_visible = True
         self._label_font = None  # @UndefinedVariable
@@ -114,31 +113,23 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self.label_rect = None
         self._inode = None
         self._inode_changed = True
-
         self._index_label = None
         self._index_visible = True
-
         self._gravity = 0
-
         self.clickable = False
         self.selectable = True
         self.draggable = True
-
         self._magnets = []
         self.status_tip = ""
-
         self.width = 0
         self.height = 0
-
         self.inner_rect = None
         self.setAcceptHoverEvents(True)
         # self.setAcceptDrops(True)
         self.setFlag(QtWidgets.QGraphicsItem.ItemSendsGeometryChanges)
         # self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable)
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable)
-
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-
         self.setZValue(10)
         self.fade_in()
         self.effect = create_shadow_effect(ctrl.cm.selection())
@@ -971,12 +962,13 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         else:
             ctrl.select(self)
 
-    def select(self, event=None):
+    def select(self, event=None, multi=False):
         """ Scene has decided that this node has been clicked
         :param event:
+        :param multi: assume multiple selection (append, don't replace)
         """
         self.hovering = False
-        if event and event.modifiers() == Qt.ShiftModifier:  # multiple selection
+        if (event and event.modifiers() == Qt.ShiftModifier) or multi:  # multiple selection
             for node in ctrl.get_all_selected():
                 if hasattr(node, 'remove_merge_options'):
                     node.remove_merge_options()
@@ -1058,6 +1050,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :param x:
         :param y:
         """
+        self.effect.setEnabled(False)
         self.update()
         if recipient and recipient.accepts_drops(self):
             self.adjustment = (0, 0, 0)

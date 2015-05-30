@@ -52,6 +52,13 @@ class ForestKeeper:
         self.create_forests(treelist)
 
     @property
+    def save_key(self):
+        """ Return the save_key from the model. It is a property from BaseModel.
+        :return: str
+        """
+        return self.model.save_key
+
+    @property
     def forests(self):
         """ Keeps the list of forest instances, which each have their own settings, undo stacks etc.
         :return: list of Forest instances
