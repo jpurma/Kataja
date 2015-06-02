@@ -144,8 +144,8 @@ class Forest:
                 values.
         :return: None
         """
-        print('created a forest %s , its traces should be visible: %s ' % (self, self.traces_are_visible()))
-
+        #print('created a forest %s , its traces should be visible: %s ' % (self, self.traces_are_visible()))
+        pass
         # self.bracket_manager.rebuild_brackets()
         # for node in self.nodes.values():
         # if node.syntactic_object:

@@ -187,7 +187,7 @@ class DerivationStepManager:
     """
 
 
-    def __init__(self, forest):
+    def __init__(self, forest=None):
         if not hasattr(self, 'model'):
             self.model = DerivationStepManagerModel(self)
         self.forest = forest

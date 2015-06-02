@@ -270,7 +270,7 @@ class BaseModel:
             if not key.startswith('_') and item and not callable(item):
                 obj_data[key] = _simplify(item)
 
-        print('saving obj: ', self.save_key, obj_data)
+        #print('saving obj: ', self.save_key, obj_data)
         saved_objs[self.save_key] = obj_data
         if self.save_key in open_refs:
             del open_refs[self.save_key]
@@ -291,9 +291,7 @@ class BaseModel:
         # First we need a full index of objects that already exist within the existing objects.
         # This is to avoid recreating those objects. We just want to modify them
         def map_existing(obj):
-            # containers
-            """
-
+            """ Take note of existing objects, as undo? will overwrite these.
             :param obj:
             :return:
             """
@@ -309,16 +307,20 @@ class BaseModel:
             key = getattr(obj, 'save_key', '')
             if key and key not in full_map:
                 if isinstance(obj, BaseModel):
+                    print('putting to existing: ', key, obj, obj._host)
                     full_map[key] = obj._host
+                    for item in vars(obj).values():
+                        map_existing(item)
                 else:
                     full_map[key] = obj
-                for item in vars(obj).values():
-                    map_existing(item)
+                    for item in vars(obj.model).values():
+                        if item != obj:
+                            map_existing(item)
 
         # Restore either takes existing object or creates a new 'stub' object and then loads it with given data
-
+        print('Loading objects...')
         map_existing(self)
-        print('full_map has %s items' % len(full_map))
+        print('full_map has %s items' % len(full_map), full_map)
         self.restore(self.save_key)
         del full_map, restored, full_data, main
 
@@ -361,7 +363,7 @@ class BaseModel:
                 else:
                     return data
             elif isinstance(data, tuple):
-                if data and isinstance(data[0], str) and data[0].startswith('Q'):
+                if data and isinstance(data[0], str):
                     data_type = data[0]
                     if data_type == 'INode':
                         return parse_field(data[1])
@@ -394,18 +396,19 @@ class BaseModel:
                 return result
             return data
 
-        print('restoring %s , %s ' % (obj_key, class_key))
+        #print('restoring %s , %s ' % (obj_key, class_key))
         # Don't restore object several times, even if the object is referred in several places
         if obj_key in restored:
             return restored[obj_key]
         # If the object already exists (e.g. we are doing undo), the loaded values overwrite existing values.
         obj = full_map.get(obj_key, None)
         if not obj:
-            print('creating new ', class_key)
+            #print('creating new ', class_key)
             obj = main.object_factory(class_key)
-            print('created new ', obj)
+            #print('created new ', obj)
         else:
-            print('found obj: ', obj)
+            #print('found obj: ', obj)
+            pass
         # when creating/modifying values inside forests, they may refer back to ctrl.forest. That has to be the current
 
         # forest, or otherwise things go awry
@@ -419,13 +422,18 @@ class BaseModel:
         new_data = full_data[obj_key]
         # only values that can be replaced are those defined inside the obj.model -instance.
         for key, old_value in vars(obj.model).items():
+            if key.startswith('_'):
+                continue # don't overwrite _host or _cd -flag
             new_value = new_data.get(key, None)
             if new_value is not None:
                 new_value = inflate(new_value)
-            if new_value != old_value and (new_value or old_value):
-                # changes[key] = (old_value, new_value)
-                # print('set: %s.%s = %s (old value: %s)' % (obj, key, new_value, old_value))
-                setattr(obj, key, new_value)
+            if new_value != old_value:
+                if new_value:
+                    #print('set: %s.%s = %s' % (obj, key, new_value))
+                    setattr(obj.model, key, new_value)
+                elif old_value:
+                    #print('set: %s.%s = %s (old value: %s)' % (obj, key, new_value, old_value))
+                    setattr(obj.model, key, new_value)
         # object needs to be finalized after setting values
         if hasattr(obj, 'after_init'):
             obj.after_init()

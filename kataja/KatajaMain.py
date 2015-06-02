@@ -537,30 +537,6 @@ class KatajaMain(QtWidgets.QMainWindow):
         return True
 
 
-    @time_me
-    def load_state_from_file(self, filename=''):
-        """
-        Perform the loading of kataja state from a file.
-        :param filename: string
-        """
-        self.clear_all()
-        if filename.endswith('.zkataja'):
-            # f = gzip.open(filename, 'r')
-            f = open(filename, 'r')
-        else:
-            f = open(filename, 'rb')
-            # import codecs
-            # f = codecs.open(filename, 'rb', encoding = 'utf-8')
-        pickle_worker = pickle.Unpickler(f)
-        data = pickle_worker.load()
-        f.close()
-        # prefs.update(data['preferences'].__dict__)
-        # qt_prefs.update(prefs)
-        ctrl.disable_undo = True
-        self.model.load_objects(data, self)
-        ctrl.disable_undo = False
-        self.change_forest(self.forest_keeper.forest)
-
     def clear_all(self):
         """ Empty everything - maybe necessary before loading new data. """
         self.ui_manager.clear_items()

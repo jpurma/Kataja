@@ -1,3 +1,5 @@
+import ast
+import gzip
 import json
 import pickle
 import pprint
@@ -86,22 +88,73 @@ def pin_panel(panel_id):
 
 # ### File ######
 
+file_extensions = {
+    'pickle': '.kataja',
+    'pickle.zipped': '.zkataja',
+    'dict': '.dict',
+    'dict.zipped': '.zdict',
+    'json': '.json',
+    'json.zipped': '.zjson',
+} # Not sure if we need a separate set for windows, if they still use three-letter extensions
+
 def open_kataja_file():
     """ Open file browser to load a kataja data file
     :return: None
     """
+    m = ctrl.main
     # fileName  = QtGui.QFileDialog.getOpenFileName(self,
     # self.tr("Open File"),
     # QtCore.QDir.currentPath())
-    file_help = "KatajaMain files (*.kataja *.zkataja);;Text files containing bracket trees (*.txt, *.tex)"
+    file_help = """All (*.kataja *.zkataja *.dict *.zdict *.json *.zjson);;
+Kataja files (*.kataja);; Packed Kataja files (*.zkataja);;
+Python dict dumps (*.dict);; Packed python dicts (*.zdict);;
+JSON dumps (*.json);; Packed JSON (*.zjson);;
+Text files containing bracket trees (*.txt, *.tex)"""
 
     # inspection doesn't recognize that getOpenFileName is static, switch it off:
     # noinspection PyTypeChecker,PyCallByClass
-    # filename, filetypes = QtWidgets.QFileDialog.getOpenFileName(ctrl.main, "Open KatajaMain tree", "", file_help)
-    filename = 'savetest.kataja'
-    if filename:
-        ctrl.main.load_state_from_file(filename)
-        ctrl.main.add_message("Loaded '%s'." % filename)
+    filename, filetypes = QtWidgets.QFileDialog.getOpenFileName(ctrl.main, "Open KatajaMain tree", "", file_help)
+    if not filename:
+        return
+    save_format = 'pickle'
+    zipped = False
+    for key, value, in file_extensions.items():
+        if filename.endswith(value):
+            i = key.split('.')
+            zipped = len(i) == 2
+            save_format = i[0]
+            break
+
+    m.clear_all()
+    if zipped:
+        if save_format == 'json' or save_format == 'dict':
+            f = gzip.open(filename, 'rt')
+        elif save_format == 'pickle':
+            f = gzip.open(filename, 'rb')
+    else:
+        if save_format == 'pickle':
+            f = open(filename, 'rb')
+        else:
+            f = open(filename, 'r')
+        # import codecs
+        # f = codecs.open(filename, 'rb', encoding = 'utf-8')
+
+    if save_format == 'pickle':
+        pickle_worker = pickle.Unpickler(f)
+        data = pickle_worker.load()
+    elif save_format == 'dict':
+        data = ast.literal_eval(f.read())
+        # data = eval(f.read())
+    elif save_format == 'json':
+        data = json.load(f)
+    f.close()
+    # prefs.update(data['preferences'].__dict__)
+    # qt_prefs.update(prefs)
+    ctrl.disable_undo = True
+    m.model.load_objects(data, m)
+    ctrl.disable_undo = False
+    m.change_forest(m.forest_keeper.forest)
+    ctrl.add_message("Loaded '%s'." % filename)
 
 a['open'] = {
     'command': '&Open',
@@ -109,42 +162,52 @@ a['open'] = {
     'undoable': False,
     'shortcut': 'Ctrl+o'}
 
-
-def save_kataja_file():
+def save_kataja_file(filename=None):
     """ Save kataja data with an existing file name.
+    :param filename: filename received from dialog.
+    Format is deduced from the extension of filename.
     :return: None
     """
     # action  = self.sender()
-    ctrl.main.action_finished()
-    filename = prefs.file_name
+    save_format = 'pickle'
+    zipped = False
+    if not filename:
+        filename = prefs.file_name
+    for key, value, in file_extensions.items():
+        if filename.endswith(value):
+            i = key.split('.')
+            zipped = len(i) == 2
+            save_format = i[0]
+            break
+
     all_data = ctrl.main.create_save_data()
     t = time.time()
     pickle_format = 4
-    if filename.endswith('.zkataja'):
-        # f = gzip.open(filename, 'wb')
-        f = open(filename, 'wb')
-    else:
-        f = open(filename, 'wb')
-    pickle_worker = pickle.Pickler(f, protocol=pickle_format)
-    pickle_worker.dump(all_data)
-    f.close()
-    ctrl.main.add_message("Saved to '%s'. Took %s seconds." % (filename, time.time() - t))
-    if True:
-        return
 
-    filename = prefs.file_name + '.dict'
-    f = open(filename, 'w')
-    pp = pprint.PrettyPrinter(indent=1, stream=f)
-    print('is readable: ', pprint.isreadable(all_data))
-    pp.pprint(all_data)
+    if save_format == 'pickle':
+        if zipped:
+            f = gzip.open(filename, 'wb')
+        else:
+            f = open(filename, 'wb')
+        pickle_worker = pickle.Pickler(f, protocol=pickle_format)
+        pickle_worker.dump(all_data)
+    elif save_format == 'dict':
+        if zipped:
+            f = gzip.open(filename, 'wt')
+        else:
+            f = open(filename, 'w')
+        pp = pprint.PrettyPrinter(indent=1, stream=f)
+        print('is readable: ', pprint.isreadable(all_data))
+        pp.pprint(all_data)
+    elif save_format == 'json':
+        if zipped:
+            f = gzip.open(filename, 'wt')
+        else:
+            f = open(filename, 'w')
+        json.dump(all_data, f, indent="\t", sort_keys=False)
     f.close()
     ctrl.main.add_message("Saved to '%s'. Took %s seconds." % (filename, time.time() - t))
 
-    filename = prefs.file_name + '.json'
-    f = open(filename, 'w')
-    json.dump(all_data, f, indent="\t", sort_keys=False)
-    f.close()
-    ctrl.main.add_message("Saved to '%s'. Took %s seconds." % (filename, time.time() - t))
     # fileFormat  = action.data().toByteArray()
     # self.saveFile(fileFormat)
 
@@ -158,12 +221,15 @@ a['save'] = {
 def save_as():
     """ Save kataja data to file set by file dialog """
     ctrl.main.action_finished()
-    # noinspection PyCallByClass,PyTypeChecker
-    filename = QtWidgets.QFileDialog.getSaveFileName(ctrl.main, "Save KatajaMain tree", "",
-                                                     "KatajaMain files (*.kataja *.zkataja)")
-    prefs.file_name = filename
-    ctrl.save_state_to_file(filename)
-    ctrl.main.add_message("Saved to '%s'." % filename)
+    file_help = """"All (*.kataja *.zkataja *.dict *.zdict *.json *.zjson);;
+Kataja files (*.kataja);; Packed Kataja files (*.zkataja);;
+Python dict dumps (*.dict);; Packed python dicts (*.zdict);;
+JSON dumps (*.json);; Packed JSON (*.zjson)
+"""
+    filename, file_type = QtWidgets.QFileDialog.getSaveFileName(ctrl.main, "Save Kataja tree",
+                                                                "", file_help)
+    if filename:
+        save_kataja_file(filename)
 
 a['save_as'] = {
     'command': '&Save as',

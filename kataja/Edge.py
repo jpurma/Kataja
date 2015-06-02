@@ -132,8 +132,7 @@ class Edge(QtWidgets.QGraphicsItem):
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable)
         self.setAcceptHoverEvents(True)
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.effect = utils.create_shadow_effect(self.color)
-        self.setGraphicsEffect(self.effect)
+        self.effect = None
 
     def after_init(self):
         """ After_init is called in 2nd step in process of creating objects:
@@ -143,7 +142,8 @@ class Edge(QtWidgets.QGraphicsItem):
         :return: None
         """
         # print("after-initing edge ", self)
-        pass
+        self.effect = utils.create_shadow_effect(self.color)
+        self.setGraphicsEffect(self.effect)
 
     def after_model_update(self, updated_fields, update_type):
         """ Compute derived effects of updated values in sensible order.
