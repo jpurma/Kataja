@@ -658,101 +658,18 @@ class ConstituentNode(Node):
 
     # ### Dragging #####################################################################
 
-    # ## Some of this needs to be implemented further down in constituentnode-node-movable -inheritance
+    # ## Most of this is implemented in Node
 
-    def start_dragging(self, mx, my):
+    def prepare_children_for_dragging(self):
+        """ Implement this if structure is supposed to drag with the node
+        :return:
         """
+        nodes_in_tree = ctrl.forest.list_nodes_once(self.get_root_node())
+        parent_index = nodes_in_tree.index(self)
+        for node in ctrl.forest.list_nodes_once(self, only_visible=True):
+            if node is not ctrl.dragged_focus and nodes_in_tree.index(node) > parent_index:
+                node.add_to_dragged()
 
-        :param mx:
-        :param my:
-        """
-        if ctrl.is_selected(self):
-            drag_hosts = ctrl.get_all_selected()
-        else:
-            drag_hosts = [self]
-        ctrl.dragged = set()
-
-        # there if node is both above and below the dragged node, it shouldn't move
-        for drag_host in drag_hosts:
-            root = drag_host.get_root_node()
-            nodes = ctrl.forest.list_nodes_once(root)
-            drag_host_index = nodes.index(drag_host)
-            dx, dy, dummy_z = drag_host.current_position
-            for node in ctrl.forest.list_nodes_once(drag_host, only_visible=True):
-                if nodes.index(node) >= drag_host_index:
-                    ctrl.dragged.add(node)
-                    x, y, dummy_z = node.current_position
-                    node._fixed_position_before_dragging = node.fixed_position
-                    node._adjustment_before_dragging = node.adjustment
-                    node._distance_from_dragged = (x - dx, y - dy)
-        if len(drag_hosts) == 1:  # don't allow merge if this is multidrag-situation
-            ctrl.ui.prepare_touch_areas_for_dragging(drag_host=drag_hosts[0],
-                                                     moving=ctrl.dragged,
-                                                     node_type=g.CONSTITUENT_NODE)
-
-    def drag(self, event):
-        """ Drags also elements that are counted to be involved: features, children etc
-        :param event:
-        """
-        pos = event.scenePos()
-        now_x, now_y = to_tuple(pos)
-        if not getattr(ctrl, 'dragged', None):
-            self.start_dragging(now_x, now_y)
-        # change dragged positions to be based on adjustment instead of distance to main dragged.
-        for node in ctrl.dragged:
-            # ctrl.dragged includes self
-            dx, dy = node._distance_from_dragged
-            if node.can_adjust_position:
-                ax, ay, az = node.algo_position
-                diff_x = now_x - ax + dx
-                diff_y = now_y - ay + dy
-                node.adjustment = (diff_x, diff_y, az)
-            else:
-                print('setting fixed position')
-                node.fixed_position = (now_x + dx, now_y + dy, node.z)
-            node.update_position(instant=True)
-
-    def drop_to(self, x, y, recipient=None):
-        """
-
-        :param recipient:
-        :param x:
-        :param y:
-        :return: action finished -message (str)
-        """
-        self.effect.setEnabled(False)
-        self.update()
-        if recipient and recipient.accepts_drops(self):
-            self.adjustment = (0, 0, 0)
-            self.release()
-            recipient.drop(self)
-        else:
-            for node in ctrl.dragged:
-                node.lock() # does nothing now
-                if not (node._fixed_position_before_dragging or node._adjustment_before_dragging):
-                    ctrl.main.ui_manager.show_anchor(node)  # @UndefinedVariable
-                del node._distance_from_dragged
-                del node._fixed_position_before_dragging
-                del node._adjustment_before_dragging
-        ctrl.dragged = set()
-        ctrl.dragged_positions = set()
-        return 'moved node %s' % self
-
-    def cancel_dragging(self):
-        """ Fixme: not called by anyone
-        Revert dragged items to their previous positions.
-        :return: None
-        """
-        for node in ctrl.dragged:
-            node.adjustment = node._adjustment_before_dragging
-            node.fixed_position = node._fixed_position_before_dragging
-            node.update_position()
-            del node._distance_from_dragged
-            del node._fixed_position_before_dragging
-            del node._adjustment_before_dragging
-        self.effect.setEnabled(False)
-        ctrl.dragged = set()
-        ctrl.dragged_positions = set()
 
     #################################
 

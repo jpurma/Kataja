@@ -354,12 +354,20 @@ def quit():
     sys.exit()
 
 
-def create_shadow_effect(color):
+def create_blur_effect():
+    """ Prepare a blur effect, good for moving things.
+    :return: QGraphicsBlurEffect
     """
+    effect = QtWidgets.QGraphicsBlurEffect()
+    effect.setBlurHints(QtWidgets.QGraphicsBlurEffect.QualityHint)
+    effect.setBlurRadius(3)
+    effect.setEnabled(False)
+    return effect
 
-
-    :param color:
-    :return:
+def create_shadow_effect(color):
+    """ Prepare shadow effect for highlighting
+    :param color: color of effect
+    :return: QGraphicsDropShadowEffect
     """
     effect = QtWidgets.QGraphicsDropShadowEffect()
     effect.setBlurRadius(20)

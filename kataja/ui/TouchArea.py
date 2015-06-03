@@ -379,9 +379,9 @@ class TouchArea(QtWidgets.QGraphicsItem):
         :return:
         """
         host = self.host
-        if host == dragged:
+        if host is ctrl.dragged_focus:
             return False
-        elif host in ctrl.dragged:
+        elif host in ctrl.dragged_set:
             return False
         elif host is ctrl.pressed:
             return False

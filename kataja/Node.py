@@ -119,6 +119,9 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self.clickable = False
         self.selectable = True
         self.draggable = True
+        self._fixed_position_before_dragging = None
+        self._adjustment_before_dragging = None
+        self._distance_from_dragged = (0, 0)
         self._magnets = []
         self.status_tip = ""
         self.width = 0
@@ -394,8 +397,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :return: None
         """
         if self.folding_towards:
-            print('initiating movement to triangle: %s -> %s' % (
-                self.current_position, self.folding_towards.current_position))
             self._target_position = self.folding_towards.current_position
             if instant:
                 self.current_position = tuple(self._target_position)
@@ -842,6 +843,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :return:
         """
         self.folding_towards = node
+        if ctrl.is_selected(self):
+            ctrl.remove_from_selection(self)
         self.fade_out()
         self.after_move_function = self.finish_folding
 
@@ -992,31 +995,80 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :param mx:
         :param my:
         """
-        print("start dragging for ", self)
-        ctrl.dragged = set()
 
-        # there if node is both above and below the dragged node, it shouldn't move
-        ctrl.dragged.add(self)
-        x, y, z = self.current_position
-        ctrl.ui.prepare_touch_areas_for_dragging(drag_host=self, moving=ctrl.dragged, node_type=self.node_type)
+        print("start dragging for ", self)
+        ctrl.dragged_focus = self
+        ctrl.dragged_set = set()
+        multidrag = False
+        if ctrl.is_selected(self):
+            for item in ctrl.get_all_selected():
+                if item is not self and getattr(item, 'draggable', True):
+                    item.add_to_dragged()
+                    item.prepare_children_for_dragging()
+                    multidrag = True
+        self.prepare_children_for_dragging()
+        self._fixed_position_before_dragging = self.fixed_position
+        self._adjustment_before_dragging = self.adjustment
+        self._distance_from_dragged = (self.current_position[0], self.current_position[1])
+
+        if not multidrag:  # don't allow merge if this is multidrag-situation
+            ctrl.ui.prepare_touch_areas_for_dragging(drag_host=self,
+                                                     moving=ctrl.dragged_set,
+                                                     node_type=self.node_type)
+        self.start_moving()
+
+
+    def add_to_dragged(self):
+        """ Add this node to entourage of dragged node. These nodes will maintain their relative
+         position to dragged node while dragging.
+        :return: None
+        """
+        ctrl.dragged_set.add(self)
+        dx, dy, dummy_z = ctrl.dragged_focus.current_position
+        x, y, dummy_z = self.current_position
+        self._fixed_position_before_dragging = self.fixed_position
+        self._adjustment_before_dragging = self.adjustment
+        self._distance_from_dragged = (x - dx, y - dy)
+
+    def prepare_children_for_dragging(self):
+        """ Implement this if structure is supposed to drag with the node
+        :return:
+        """
+        pass
 
     def drag(self, event):
-        """
-
+        """ Drags also elements that are counted to be involved: features, children etc
         :param event:
         """
-        pos = event.scenePos()
-        now_x, now_y = to_tuple(pos)
-        if not getattr(ctrl, 'dragged', None):
+        now_x, now_y = to_tuple(event.scenePos())
+        if not ctrl.dragged_focus:
             self.start_dragging(now_x, now_y)
-        if self.can_adjust_position:
-            ax, ay, az = self.algo_position
-            diff_x = now_x - ax
-            diff_y = now_y - ay
-            self.adjustment = (diff_x, diff_y, az)
+        # change dragged positions to be based on adjustment instead of distance to main dragged.
+        for node in ctrl.dragged_set:
+            node.dragged_to(now_x, now_y)
+        self.dragged_to(now_x, now_y)
+
+    def dragged_to(self, now_x, now_y):
+        """ Dragged focus is in now_x, now_y. Move there or to position relative to that
+        :param now_x: current drag focus x
+        :param now_y: current drag focus y
+        :return:
+        """
+        if ctrl.dragged_focus is self:
+            if self.can_adjust_position:
+                ax, ay, az = self.algo_position
+                self.adjustment = (now_x - ax, now_y - ay, az)
+            else:
+                self.fixed_position = (now_x, now_y, self.z)
         else:
-            self.fixed_position = (now_x, now_y, self.z)
+            dx, dy = self._distance_from_dragged
+            if self.can_adjust_position:
+                ax, ay, az = self.algo_position
+                self.adjustment = (now_x - ax + dx, now_y - ay + dy, az)
+            else:
+                self.fixed_position = (now_x + dx, now_y + dy, self.z)
         self.update_position(instant=True)
+
 
     def dragged_over_by(self, dragged):
         """
@@ -1045,27 +1097,64 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     def drop_to(self, x, y, recipient=None):
         """
 
-
         :param recipient:
         :param x:
         :param y:
+        :return: action finished -message (str)
         """
-        self.effect.setEnabled(False)
+        self.stop_moving()
         self.update()
         if recipient and recipient.accepts_drops(self):
-            self.adjustment = (0, 0, 0)
+            self.adjustment = None
+            self.fixed_position = None
             self.release()
             recipient.drop(self)
         else:
-            for node in ctrl.dragged:
-                node.lock()
-                ctrl.main.ui_manager.show_anchor(node)  # @UndefinedVariable
-        ctrl.dragged = set()
-        ctrl.dragged_positions = set()
-        ctrl.main.action_finished('moved node %s' % self)
-        # ctrl.scene.fit_to_window()
+            self.lock() # does nothing now
+            for node in ctrl.dragged_set:
+                node.lock() # does nothing now
+        self.finish_dragging()
+        return 'moved node %s' % self
 
-    #### Mouse - Qt events ##################################################
+    def finish_dragging(self):
+        """ Flush dragging-related temporary variables. Called always when dragging is finished for any
+         reason.
+        :return:
+        """
+        if self is ctrl.dragged_focus:
+            for node in ctrl.dragged_set:
+                node.finish_dragging()
+            ctrl.dragged_set = set()
+            ctrl.dragged_focus = None
+        self._distance_from_dragged = None
+        self._fixed_position_before_dragging = None
+        self._adjustment_before_dragging = None
+        self.effect.setEnabled(False)
+
+    def cancel_dragging(self):
+        """ Fixme: not called by anyone
+        Revert dragged items to their previous positions.
+        :return: None
+        """
+        self.adjustment = self._adjustment_before_dragging
+        self.fixed_position = self._fixed_position_before_dragging
+        self.update_position()
+        for node in ctrl.dragged_set:
+            node.cancel_dragging()
+        if self is ctrl.dragged_focus:
+            self.finish_dragging()
+
+    def lock(self):
+        """ Display lock, unless already locked. Added functionality to recognize the state before
+         dragging started.
+        :return:
+        """
+        super().lock()
+        if not (self._fixed_position_before_dragging or self._adjustment_before_dragging):
+            ctrl.main.ui_manager.show_anchor(self)  # @UndefinedVariable
+
+
+    # ### Mouse - Qt events ##################################################
 
     def hoverEnterEvent(self, event):
         """ Hovering has some visual effects, usually handled in paint-method
@@ -1113,8 +1202,9 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :return:
         """
         Movable.start_moving(self)
-        self.effect.setColor(self.contextual_color)
-        self.effect.setEnabled(True)
+        if prefs.move_effect:
+            self.effect.setColor(self.contextual_color)
+            self.effect.setEnabled(True)
         for edge in self.edges_down:
             edge.start_node_started_moving()
         for edge in self.edges_up:
@@ -1125,8 +1215,9 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :return:
         """
         Movable.stop_moving(self)
-        if not (ctrl.is_selected(self) or self._hovering):
-            self.effect.setEnabled(False)
+        if prefs.move_effect:
+            if not (ctrl.is_selected(self) or self._hovering):
+                self.effect.setEnabled(False)
         for edge in self.edges_down:
             edge.start_node_stopped_moving()
         for edge in self.edges_up:

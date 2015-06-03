@@ -119,6 +119,7 @@ class Preferences(object):
         self.constituency_edge_shape = 1
         self.feature_edge_shape = 3
         self.console_visible = False
+        self.move_effect = 0
         self.ui_speed = 8
         self.touch = True
         self.gloss_nodes = True

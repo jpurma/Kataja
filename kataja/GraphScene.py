@@ -518,10 +518,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         """
         ctrl.watch_for_drag_end = True
-        # these should be activated by constituentnode instead in start_dragging -method
-        # for ma in ctrl.forest.touch_areas:
-        # if ma.host not in ctrl.dragged and ma.host is not ctrl.pressed:
-        # ma.set_hint_visible(True)
         self._dragging = True
 
 
@@ -530,8 +526,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
 
         """
-        ctrl.dragged = set()
-        ctrl.dragged_positions = set()
+        if ctrl.dragged_focus:
+            ctrl.dragged_focus.finish_dragging()
         ctrl.pressed = None
         ctrl.watch_for_drag_end = False
         self._dragging = False
@@ -817,7 +813,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 y -= avg_y
                 z -= avg_z
                 node.current_position = (x, y, z)
-        if items_have_moved and (not self.manual_zoom) and (not ctrl.dragged):
+        if items_have_moved and (not self.manual_zoom) and (not ctrl.dragged_focus):
             self.fit_to_window()
 
         if items_have_moved:

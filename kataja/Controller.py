@@ -64,8 +64,8 @@ class Controller:
         self.pointing_data = {}
         self.pressed = None  # set() # prepare for multitouch
         self.ui_pressed = None  # set() # different coordinates to pressed set
-        self.dragged = set()
-        self.dragged_positions = set()
+        self.dragged_focus = None
+        self.dragged_set = set()
         self.latest_hover = None  # used only while dragging, because standard hovering doesn't work while dragging
         self.ui_focus = None
         self.focus_point = None

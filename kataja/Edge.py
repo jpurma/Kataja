@@ -27,7 +27,7 @@ import math
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 from PyQt5.QtCore import QPointF as Pf, Qt
-from kataja.singletons import ctrl, qt_prefs
+from kataja.singletons import ctrl, qt_prefs, prefs
 import kataja.globals as g
 from kataja.globals import LEFT, RIGHT
 from kataja.shapes import SHAPE_PRESETS, outline_stroker
@@ -101,6 +101,7 @@ class Edge(QtWidgets.QGraphicsItem):
         self._path = None
         self._true_path = None  # inner arc or line without the leaf effect
         self._fat_path = None
+        self._use_simple_path = False
         self.selectable = True
         self.draggable = not (self.start or self.end)
         self.clickable = False
@@ -133,6 +134,7 @@ class Edge(QtWidgets.QGraphicsItem):
         self.setAcceptHoverEvents(True)
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.effect = None
+        self.move_effect = None
 
     def after_init(self):
         """ After_init is called in 2nd step in process of creating objects:
@@ -143,6 +145,7 @@ class Edge(QtWidgets.QGraphicsItem):
         """
         # print("after-initing edge ", self)
         self.effect = utils.create_shadow_effect(self.color)
+        self.move_effect = utils.create_blur_effect()
         self.setGraphicsEffect(self.effect)
 
     def after_model_update(self, updated_fields, update_type):
@@ -938,7 +941,11 @@ class Edge(QtWidgets.QGraphicsItem):
         c['alignment'] = self.alignment
         c['start'] = self.start
         c['end'] = self.end
+        c['inner_only'] = self._use_simple_path
         self._path, self._true_path, self.control_points = self._shape_method(**c)
+
+        if self._use_simple_path:
+            self._path = self._true_path
 
         if self.arrowhead_at_start:
             self._arrowhead_start_path = self.make_arrowhead_path('start')
@@ -949,7 +956,7 @@ class Edge(QtWidgets.QGraphicsItem):
             self._arrowhead_end_path = self.make_arrowhead_path('end')
         else:
             self._arrowhead_end_path = None
-        if self._make_fat_path:
+        if self._make_fat_path and not self._use_simple_path:
             # Fat path is the shape of the path with some extra margin to make it easier to click/touch
             self._fat_path = outline_stroker.createStroke(self._path)
         else:
@@ -1252,9 +1259,9 @@ class Edge(QtWidgets.QGraphicsItem):
         if value and not self._hovering:
             self._hovering = True
             self.setZValue(100)
-            if ctrl.cm.use_glow():
-                self.effect.setColor(ctrl.cm.selection())
-                self.effect.setEnabled(True)
+            #if ctrl.cm.use_glow():
+            #    self.effect.setColor(ctrl.cm.selection())
+            #    self.effect.setEnabled(True)
             self.prepareGeometryChange()
             self.update()
             ctrl.set_status(self.status_tip)
@@ -1321,27 +1328,33 @@ class Edge(QtWidgets.QGraphicsItem):
         :return:
         """
         c = self.contextual_color
-        width = self.has_outline()
-        if width:
-            p = QtGui.QPen()
-            p.setColor(c)
-            if self.asymmetric() and self.alignment is g.RIGHT:
-                width *= 2
-            p.setWidthF(width)
-            painter.setPen(p)
-            painter.drawPath(self._path)
-        elif self.asymmetric() and self.alignment is g.RIGHT:
+        if self._use_simple_path:
             p = QtGui.QPen()
             p.setColor(c)
             painter.setPen(p)
-            painter.drawPath(self._path)
+            painter.drawPath(self._true_path)
+        else:
+            width = self.has_outline()
+            if width:
+                p = QtGui.QPen()
+                p.setColor(c)
+                if self.asymmetric() and self.alignment is g.RIGHT:
+                    width *= 2
+                p.setWidthF(width)
+                painter.setPen(p)
+                painter.drawPath(self._path)
+            elif self.asymmetric() and self.alignment is g.RIGHT:
+                p = QtGui.QPen()
+                p.setColor(c)
+                painter.setPen(p)
+                painter.drawPath(self._path)
 
-        if self.is_filled():
-            painter.fillPath(self._path, c)
-        if self.arrowhead_at_start:
-            painter.fillPath(self._arrowhead_start_path, c)
-        if self.arrowhead_at_end:
-            painter.fillPath(self._arrowhead_end_path, c)
+            if self.is_filled():
+                painter.fillPath(self._path, c)
+            if self.arrowhead_at_start:
+                painter.fillPath(self._arrowhead_start_path, c)
+            if self.arrowhead_at_end:
+                painter.fillPath(self._arrowhead_end_path, c)
         if ctrl.is_selected(self):
             p = QtGui.QPen(ctrl.cm.ui_tr())
             painter.setPen(p)
@@ -1428,6 +1441,8 @@ class Edge(QtWidgets.QGraphicsItem):
         """
         self._end_node_moving = True
         self._make_fat_path = False
+        if not self._start_node_moving:
+            self._start_moving()
 
 
     def start_node_started_moving(self):
@@ -1436,6 +1451,17 @@ class Edge(QtWidgets.QGraphicsItem):
         """
         self._start_node_moving = True
         self._make_fat_path = False
+        if not self._end_node_moving:
+            self._start_moving()
+
+    def _start_moving(self):
+        """ Low level toggle off things that slow drawing
+        :return: None
+        """
+        if prefs.move_effect:
+            self.setGraphicsEffect(self.move_effect)
+            self._use_simple_path = True
+            self.move_effect.setEnabled(True)
 
     def start_node_stopped_moving(self):
         """ Called if the end node has started moving.
@@ -1443,7 +1469,7 @@ class Edge(QtWidgets.QGraphicsItem):
         """
         self._start_node_moving = False
         if not self._end_node_moving:
-            self._make_fat_path = True
+            self._stop_moving()
 
     def end_node_stopped_moving(self):
         """ Called if the end node has started moving.
@@ -1451,7 +1477,16 @@ class Edge(QtWidgets.QGraphicsItem):
         """
         self._end_node_moving = False
         if not self._start_node_moving:
-            self._make_fat_path = True
+            self._stop_moving()
+
+    def _stop_moving(self):
+        """ Low level toggle back complex drawing
+        :return: None
+        """
+        self._make_fat_path = True
+        if prefs.move_effect:
+            self._use_simple_path = False
+            self.move_effect.setEnabled(False)
 
 
 

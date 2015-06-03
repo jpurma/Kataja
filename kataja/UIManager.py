@@ -848,7 +848,7 @@ class UIManager:
     def prepare_touch_areas_for_dragging(self, drag_host=None, moving=None, node_type=''):
         """
         :param drag_host: node that is being dragged
-        :param dragged: set of moving nodes (includes drag_host)
+        :param moving: set of moving nodes (does not include drag_host)
         :param node_type: If the node doesn't exist yet, node_type can be given as a hint of what to expect
         """
         self.remove_touch_areas()
@@ -858,12 +858,12 @@ class UIManager:
             node_type = drag_host.node_type
         if node_type == g.CONSTITUENT_NODE:
             for root in ctrl.forest.roots:
-                if root in moving:
+                if root in moving or root is drag_host:
                     continue
                 self.create_touch_area(root, g.LEFT_ADD_ROOT)
                 self.create_touch_area(root, g.RIGHT_ADD_ROOT)
             for edge in ctrl.forest.get_constituent_edges():
-                if edge.start in moving or edge.end in moving:
+                if edge.start in moving or edge.end in moving or edge.start is drag_host or edge.end is drag_host:
                     continue
                 self.create_touch_area(edge, g.LEFT_ADD_SIBLING)
                 self.create_touch_area(edge, g.RIGHT_ADD_SIBLING)
@@ -878,7 +878,7 @@ class UIManager:
             elif node_type == g.COMMENT_NODE:
                 touch_area_type = g.TOUCH_CONNECT_COMMENT
             for node in ctrl.forest.get_constituent_nodes():
-                if node in moving:
+                if node in moving or node is drag_host:
                     continue
                 if drag_host and node.is_connected_to(drag_host):
                     continue
