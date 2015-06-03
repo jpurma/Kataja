@@ -144,6 +144,8 @@ class Edge(QtWidgets.QGraphicsItem):
         :return: None
         """
         # print("after-initing edge ", self)
+        self.connect_end_points(self.start, self.end)
+        self.make_relative_vector()
         self.effect = utils.create_shadow_effect(self.color)
         self.move_effect = utils.create_blur_effect()
         self.setGraphicsEffect(self.effect)
@@ -156,6 +158,8 @@ class Edge(QtWidgets.QGraphicsItem):
         """
         if 'visible' in updated_fields:
             self.update_visibility()
+        self.connect_end_points(self.start, self.end)
+        self.make_relative_vector()
 
 
     @property
@@ -201,8 +205,10 @@ class Edge(QtWidgets.QGraphicsItem):
         :return: tuple (x, y, z)
         """
         if self.model.start:
+            assert self._computed_start_point
             return self._computed_start_point
         else:
+            assert self.model.fixed_start_point
             return self.model.fixed_start_point
 
     @property
@@ -211,8 +217,10 @@ class Edge(QtWidgets.QGraphicsItem):
         :return: tuple (x, y, z)
         """
         if self.model.end:
+            assert self._computed_end_point
             return self._computed_end_point
         else:
+            assert self.model.fixed_end_point
             return self.model.fixed_end_point
 
     @property
@@ -638,10 +646,11 @@ class Edge(QtWidgets.QGraphicsItem):
         return self.visible
 
     def make_relative_vector(self):
-        """
-
+        """ Relative vector helps to keep the shape of a line when another, attached end moves.
+         It applies only to lines where the other end is attached to node.
         :return:
         """
+        #print(id(self), self.start_point, self.end_point, self.start, self.end)
         if self.start and not self.end:
             sx, sy, sz = self.start.current_position
             ex, ey, ez = self.end_point
@@ -650,6 +659,7 @@ class Edge(QtWidgets.QGraphicsItem):
             sx, sy, sz = self.start_point
             ex, ey, ez = self.end.current_position
             self._relative_vector = ex - sx, ey - sy, ez - sz
+        #print(id(self), self.start_point, self.end_point, self.start, self.end)
 
     def connect_start_to(self, node):
         """

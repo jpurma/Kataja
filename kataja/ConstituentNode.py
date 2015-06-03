@@ -312,9 +312,9 @@ class ConstituentNode(Node):
         alias = str(self.alias)
         label = str(self.label)
         if alias and label:
-            return ' '.join((alias, label)) + ' adj: %s fixed: %s' % (self.adjustment, self.fixed_position)
+            return ' '.join((alias, label))  # + ' adj: %s fixed: %s' % (self.adjustment, self.fixed_position)
         else:
-            return alias or label + ' adj: %s fixed: %s' % (self.adjustment, self.fixed_position)
+            return alias or label  # + ' adj: %s fixed: %s' % (self.adjustment, self.fixed_position)
 
     def as_bracket_string(self):
         """ returns a simple bracket string representation """

@@ -357,8 +357,8 @@ class KatajaMain(QtWidgets.QMainWindow):
         print("Doing action '%s' with method '%s' and with args: %s" % (key, data['method'], str(args)))
 
         # Disable undo if necessary
+        remember_undo_state = ctrl.disable_undo
         if not undoable:
-            remember_undo_state = ctrl.disable_undo
             ctrl.disable_undo = True
 
         # Call method
@@ -370,20 +370,18 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.action_finished(m=data.get('command', ''), undoable=undoable)
 
     def action_finished(self, m='', undoable=True):
-        """
-
+        """ Write action to undo stack, report back to user and redraw trees if necessary
         :param m: message for undo
         :param undoable: are we supposed to take a snapshot of changes after this action.
         """
         if m:
-            ctrl.add_message(m)
+            self.add_message(m)
         if ctrl.action_redraw:
             ctrl.forest.draw()
         if undoable:
             ctrl.forest.undo_manager.take_snapshot(m)
         else:
             ctrl.graph_scene.start_animations()
-
 
     def enable_actions(self):
         """ Restores menus """
@@ -428,48 +426,23 @@ class KatajaMain(QtWidgets.QMainWindow):
             self.forest.settings.uses_magnets(True)
 
 
-    def change_edge_ending(self, which_end, value):
-        """
-
-        :param which_end:
-        :param value:
-        :return:
-        """
-        if value is g.AMBIGUOUS_VALUES:
-            return
-        panel = self.ui_manager.get_panel(g.EDGES)
-        if panel.scope == g.SELECTION:
-            for edge in ctrl.get_all_selected():
-                if isinstance(edge, Edge):
-                    edge.ending(which_end, value)
-                    edge.update_shape()
-        elif panel.scope:
-            if which_end == 'start':
-                self.forest.settings.edge_type_settings(panel.scope, 'arrowhead_at_start', value)
-            elif which_end == 'end':
-                self.forest.settings.edge_type_settings(panel.scope, 'arrowhead_at_end', value)
-            else:
-                print('Invalid place for edge ending: ', which_end)
-
-    #
-
-
-
-
-
     def timerEvent(self, event):
         """ Timer event only for printing, for 'snapshot' effect
         :param event:
         """
         def find_path(fixed_part, extension, counter=0):
-
+            """ Generate file names until free one is found
+            :param fixed_part: blah
+            :param extension: blah
+            :param counter: blah
+            """
             if not counter:
-                full_path = fixed_part + extension
+                fpath = fixed_part + extension
             else:
-                full_path = fixed_part + str(counter) + extension
-            if os.path.exists(full_path):
-                full_path = find_path(fixed_part, extension, counter + 1)
-            return full_path
+                fpath = fixed_part + str(counter) + extension
+            if os.path.exists(fpath):
+                fpath = find_path(fixed_part, extension, counter + 1)
+            return fpath
 
         self.killTimer(event.timerId())
         # Prepare file and path
@@ -537,7 +510,6 @@ class KatajaMain(QtWidgets.QMainWindow):
             node.release()
         self.action_finished()
         return True
-
 
     def clear_all(self):
         """ Empty everything - maybe necessary before loading new data. """

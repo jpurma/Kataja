@@ -771,7 +771,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
         #    f.gloss.setPos(pt[0] - 20, pt[1] - 40)
         #    f.gloss.lock()
         f.edge_visibility_check()
-
         for e in f.edges.values():
             e.make_path()
             e.update()

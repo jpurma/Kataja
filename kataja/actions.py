@@ -1078,6 +1078,34 @@ a['edit_edge_label_enter_text'] = {
     'shortcut_context': 'parent_and_children'
 }
 
+def change_edge_ending(self, which_end, value):
+    """
+
+    :param which_end:
+    :param value:
+    :return:
+    """
+    if value is g.AMBIGUOUS_VALUES:
+        return
+    panel = self.ui_manager.get_panel(g.EDGES)
+    if panel.scope == g.SELECTION:
+        for edge in ctrl.get_all_selected():
+            if isinstance(edge, Edge):
+                edge.ending(which_end, value)
+                edge.update_shape()
+    elif panel.scope:
+        if which_end == 'start':
+            self.forest.settings.edge_type_settings(panel.scope, 'arrowhead_at_start', value)
+        elif which_end == 'end':
+            self.forest.settings.edge_type_settings(panel.scope, 'arrowhead_at_end', value)
+        else:
+            print('Invalid place for edge ending: ', which_end)
+
+# fixme: No UI to call this
+a['change_edge_ending'] = {
+    'command': 'Change edge ending',
+    'method': change_edge_ending
+}
 
 def edge_disconnect():
     """ Remove connection between two nodes, by either cutting from the start or the end. This will result
