@@ -375,6 +375,8 @@ class KatajaMain(QtWidgets.QMainWindow):
         :param m: message for undo
         :param undoable: are we supposed to take a snapshot of changes after this action.
         """
+        if m:
+            ctrl.add_message(m)
         if ctrl.action_redraw:
             ctrl.forest.draw()
         if undoable:

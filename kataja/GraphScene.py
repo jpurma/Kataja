@@ -511,33 +511,22 @@ class GraphScene(QtWidgets.QGraphicsScene):
             self.graph_view.toggle_suppress_drag(True)
         return QtWidgets.QGraphicsScene.mousePressEvent(self, event)
 
-
     def start_dragging(self):
+        """ Raise graph scene flags related to dragging -- the dragged nodes have already
+        alerted controller.
         """
-
-
-        """
-        ctrl.watch_for_drag_end = True
         self._dragging = True
 
-
     def kill_dragging(self):
-        """
-
-
-        """
+        """ Remove all flags and temporary things related to dragging """
         if ctrl.dragged_focus:
             ctrl.dragged_focus.finish_dragging()
         ctrl.pressed = None
-        ctrl.watch_for_drag_end = False
         self._dragging = False
-        f = self.main.forest
         if ctrl.latest_hover:
             ctrl.latest_hover.hovering = False
             ctrl.latest_hover = None
-
-        ctrl.main.ui_manager.remove_touch_areas()  # @UndefinedVariable
-        ctrl.main.ui_manager.update_touch_areas()  # @UndefinedVariable
+        ctrl.main.ui_manager.update_touch_areas()
         self.graph_view.toggle_suppress_drag(False)
 
     def mouseMoveEvent(self, event):
@@ -560,12 +549,10 @@ class GraphScene(QtWidgets.QGraphicsScene):
                     ctrl.latest_hover = None
                 self.main.ui_manager.update_positions()
             else:
-                if (event.buttonDownScenePos(QtCore.Qt.LeftButton) - event.scenePos()).manhattanLength() > 4:
+                if (event.buttonDownScenePos(QtCore.Qt.LeftButton) - event.scenePos()).manhattanLength() > 6:
                     self.start_dragging()
                     ctrl.pressed.drag(event)
                     self.item_moved()
-            return QtWidgets.QGraphicsScene.mouseMoveEvent(self, event)
-
         return QtWidgets.QGraphicsScene.mouseMoveEvent(self, event)
 
     def mouseReleaseEvent(self, event):
@@ -577,6 +564,9 @@ class GraphScene(QtWidgets.QGraphicsScene):
         self.graph_view.toggle_suppress_drag(False)
         if self._dblclick and not ctrl.pressed:  # doubleclick sends one release event at the end, swallow that
             self._dblclick = False
+            if self._dragging:
+                print('dblclick while dragging? Unpossible!')
+            ctrl.pressed = None
             return
         elif ctrl.pressed:
             pressed = ctrl.pressed  # : :type pressed: Movable
@@ -586,7 +576,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 message = pressed.drop_to(x, y, recipient=recipient)
                 self.kill_dragging()
                 ctrl.ui.update_selections()  # drag operation may have changed visible affordances
-                ctrl.pressed = None
                 ctrl.main.action_finished(message)  # @UndefinedVariable
             else:
                 if pressed.clickable:
@@ -597,7 +586,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 ctrl.pressed = None
             return None  # this mouseRelease is now consumed
         else:
-
             if event.modifiers() == Qt.ShiftModifier:
                 pass
             else:

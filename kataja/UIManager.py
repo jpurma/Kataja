@@ -845,13 +845,15 @@ class UIManager:
         """
         self.remove_touch_areas_for(node)
 
-    def prepare_touch_areas_for_dragging(self, drag_host=None, moving=None, node_type=''):
+    def prepare_touch_areas_for_dragging(self, drag_host=None, moving=None, node_type='', multidrag=False):
         """
         :param drag_host: node that is being dragged
         :param moving: set of moving nodes (does not include drag_host)
         :param node_type: If the node doesn't exist yet, node_type can be given as a hint of what to expect
         """
         self.remove_touch_areas()
+        if multidrag:
+            return
         if not moving:
             moving = []
         if not node_type:

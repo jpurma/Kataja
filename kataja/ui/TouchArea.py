@@ -104,7 +104,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
             self.status_tip = "Unknown touch area???"
         self.selectable = False
         self.focusable = True
-        self.draggable = True
+        self.draggable = False
         self.clickable = True
         self._visible = True
         self._hovering = False
@@ -276,7 +276,6 @@ class TouchArea(QtWidgets.QGraphicsItem):
                 align = g.RIGHT
             self._path, true_path, control_points = shape_method(sp, ep, align=align, adjust=adjust, **path_settings)
 
-
     def __repr__(self):
         return '<toucharea %s>' % self.key
 
@@ -286,7 +285,6 @@ class TouchArea(QtWidgets.QGraphicsItem):
         if sc:
             sc.removeItem(self)
 
-
     def drop(self, dropped_node):
         """
         Connect dropped node to host of this TouchArea.
@@ -294,7 +292,6 @@ class TouchArea(QtWidgets.QGraphicsItem):
         top left, top right, left, right
         :param dropped_node:
         """
-        print('---- dropped node to touch area -----')
         message = ''
         if isinstance(dropped_node, str):
             command_identifier, *args = dropped_node.split(':')
@@ -318,7 +315,6 @@ class TouchArea(QtWidgets.QGraphicsItem):
                     return
             else:
                 print('received just some string: ', dropped_node)
-        print('dropped node: ', dropped_node)
 
         if self.type == g.TOUCH_CONNECT_FEATURE:
             ctrl.forest.add_feature_to_node(dropped_node, self.host)
@@ -330,20 +326,24 @@ class TouchArea(QtWidgets.QGraphicsItem):
             ctrl.forest.add_comment_to_node(dropped_node, self.host)
             message = 'added feature %s to %s' % (dropped_node, self.host)
         elif self.type == g.RIGHT_ADD_SIBLING or self.type == g.LEFT_ADD_SIBLING:
-            ctrl.forest.replace_node_with_merged_node(self.host.end, dropped_node, edge=self.host,
+            ctrl.forest.replace_node_with_merged_node(self.host.end,
+                                                      dropped_node,
+                                                      edge=self.host,
                                                       merge_to_left=self._align_left,
                                                       merger_node_pos=self.start_point)
+            for node in ctrl.dragged_set:
+                node.adjustment = self.host.end.adjustment
             message = 'moved node %s to sibling of %s' % (dropped_node, self.host)
         elif self.type == g.RIGHT_ADD_ROOT or self.type == g.LEFT_ADD_ROOT:
-            ctrl.forest.replace_node_with_merged_node(self.host, dropped_node, edge=None,
+            ctrl.forest.replace_node_with_merged_node(self.host,
+                                                      dropped_node,
+                                                      edge=None,
                                                       merge_to_left=self._align_left,
                                                       merger_node_pos=self.start_point)
+            for node in ctrl.dragged_set:
+                node.adjustment = self.host.adjustment
             message = 'moved node %s to sibling of %s' % (dropped_node, self.host)
-        ctrl.main.action_finished(message)
-
-
-
-
+        return message
 
     def click(self, event=None):
         """
@@ -361,7 +361,9 @@ class TouchArea(QtWidgets.QGraphicsItem):
         if self.type is g.TOUCH_ADD_CONSTITUENT:
             node.open_embed()
         else:
-            ctrl.forest.replace_node_with_merged_empty_node(node=node, edge=edge, merge_to_left=self._align_left,
+            ctrl.forest.replace_node_with_merged_empty_node(node=node,
+                                                            edge=edge,
+                                                            merge_to_left=self._align_left,
                                                             new_node_pos=self.end_point,
                                                             merger_node_pos=self.start_point)
             ctrl.deselect_objects()
@@ -462,13 +464,13 @@ class TouchArea(QtWidgets.QGraphicsItem):
         self.hovering = False
         QtWidgets.QGraphicsItem.dragLeaveEvent(self, event)
 
-
     def dropEvent(self, event):
         print("dropEvent")
         self.hovering = False
         event.accept()
-        self.drop(event.mimeData().text())
+        message = self.drop(event.mimeData().text())
         QtWidgets.QGraphicsItem.dropEvent(self, event)
+        ctrl.main.finish_action(message)
 
 
     def paint(self, painter, option, widget):
@@ -479,7 +481,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
         :param widget:
         :raise:
         """
-        if ctrl.pressed == self:
+        if ctrl.pressed is self:
             pass
 
         if self._hovering:

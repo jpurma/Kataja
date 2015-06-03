@@ -312,9 +312,9 @@ class ConstituentNode(Node):
         alias = str(self.alias)
         label = str(self.label)
         if alias and label:
-            return ' '.join((alias, label))
+            return ' '.join((alias, label)) + ' adj: %s fixed: %s' % (self.adjustment, self.fixed_position)
         else:
-            return alias or label
+            return alias or label + ' adj: %s fixed: %s' % (self.adjustment, self.fixed_position)
 
     def as_bracket_string(self):
         """ returns a simple bracket string representation """
@@ -617,21 +617,6 @@ class ConstituentNode(Node):
             # self.paint_scope_rect(painter, rect)
         # Node.paint(self, painter, option, widget)
 
-    # def itemChange(self, change, value):
-    # """ Whatever menus or UI objects are associated with object, they move
-    # :param change:
-    # :param value:
-    # when node moves """
-    # if change == QtWidgets.QGraphicsItem.ItemPositionHasChanged:
-    # #if self.ui_menu and self.ui_menu.isVisible():
-    # #    self.ui_menu.update_position(drag=True)
-    # if self._hovering or ctrl.focus == self:
-    # pass
-    # # print 'ctrl.ui problem here!'
-    # # assert(False)
-    # # if ctrl.ui.is_target_reticle_over(self):
-    # # ctrl.ui.update_target_reticle_position()
-    # return QtWidgets.QGraphicsItem.itemChange(self, change, value)
 
     def open_embed(self):
         """ """

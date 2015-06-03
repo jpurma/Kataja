@@ -1716,6 +1716,7 @@ class Forest:
             node, edge, merge_to_left, new_node_pos, merger_node_pos))
         ex, ey = new_node_pos
         empty_node = self.create_empty_node(pos=(ex, ey, node.z))
+        empty_node.adjustment = node.adjustment
         self.replace_node_with_merged_node(node, empty_node, edge, merge_to_left, merger_node_pos)
 
     def delete_unnecessary_merger(self, node):
@@ -1824,6 +1825,7 @@ class Forest:
             right = new_node
 
         merger_node = self.create_merger_node(left=left, right=right, pos=(mx, my, replaced.z))
+        merger_node.adjustment = replaced.adjustment
         if edge:
             forest('connecting merger to parent')
             self.connect_node(start_node, merger_node, direction=align)

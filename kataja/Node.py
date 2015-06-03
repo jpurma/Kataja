@@ -717,7 +717,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """ Drawing color that is sensitive to node's state
         :return: QColor
         """
-        if ctrl.pressed == self:
+        if ctrl.pressed is self:
             return ctrl.cm.active(ctrl.cm.selection())
         elif self._hovering:
             return ctrl.cm.hovering(ctrl.cm.selection())
@@ -773,7 +773,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
         :return:
         """
-        print('has_empty_label: ', self._label_complex.is_empty())
         return self._label_complex.is_empty()
 
     def label_edited(self):
@@ -789,7 +788,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :param widget:
         nodes it is the label of the node that needs complex painting """
         painter.setPen(self.contextual_color)
-        if ctrl.pressed == self or self._hovering or ctrl.is_selected(self):
+        if ctrl.pressed is self or self._hovering or ctrl.is_selected(self):
             painter.drawRoundedRect(self.inner_rect, 5, 5)
 
             # x,y,z = self.current_position
@@ -896,8 +895,10 @@ class Node(Movable, QtWidgets.QGraphicsItem):
                 w2 = (self.width - 2) / 2.0
                 h2 = (self.height - 2) / 2.0
 
-                self._magnets = [(-w2, -h2), (-w4, -h2), (0, -h2), (w4, -h2), (w2, -h2), (-w2, 0), (w2, 0), (-w2, h2),
-                                 (-w4, h2), (0, h2), (w4, h2), (w2, h2)]
+
+                self._magnets = [(-w2, -h2), (-w4, -h2), (0, -h2), (w4, -h2), (w2, -h2),
+                                 (-w2, 0),                                    (w2, 0),
+                                 (-w2, h2),  (-w4, h2),  (0, h2),  (w4, h2),  (w2, h2)]
 
             x1, y1, z1 = self.current_position
             x2, y2 = self._magnets[n]
@@ -906,35 +907,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             return self.current_position
 
     # ### Menus #########################################
-
-    def create_menu(self):
-        """ Define menus for this node type """
-        ctrl.add_message('Menu not implemented')
-        return None
-
-    def open_menus(self):
-        """ Activates menus """
-        # only one menu is open at time
-        ctrl.ui.close_menus()
-        # create menus only when necessary
-        if not self.ui_menu:
-            self.ui_menu = self.create_menu()
-        # it takes a while to open the menu, ignore open-commands if it is still opening
-        if self.ui_menu and not self.ui_menu.moving():
-            self.ui_menu.open()
-
-    def close_menus(self):
-        """ Close menus related to this node """
-        if self.ui_menu:
-            self.ui_menu.close()
-
-    def remove_menu(self, menu):
-        """ Tries to remove a menu associated with this node
-        :param menu:
-        """
-        if menu is self.ui_menu:
-            ctrl.ui.remove_menu(menu)
-            self.ui_menu = None
 
     def refresh_selection_status(self, selected):
         """ This is called
@@ -995,8 +967,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :param mx:
         :param my:
         """
-
-        print("start dragging for ", self)
         ctrl.dragged_focus = self
         ctrl.dragged_set = set()
         multidrag = False
@@ -1011,12 +981,11 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self._adjustment_before_dragging = self.adjustment
         self._distance_from_dragged = (self.current_position[0], self.current_position[1])
 
-        if not multidrag:  # don't allow merge if this is multidrag-situation
-            ctrl.ui.prepare_touch_areas_for_dragging(drag_host=self,
-                                                     moving=ctrl.dragged_set,
-                                                     node_type=self.node_type)
+        ctrl.ui.prepare_touch_areas_for_dragging(drag_host=self,
+                                                 moving=ctrl.dragged_set,
+                                                 node_type=self.node_type,
+                                                 multidrag=multidrag)
         self.start_moving()
-
 
     def add_to_dragged(self):
         """ Add this node to entourage of dragged node. These nodes will maintain their relative
@@ -1069,7 +1038,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
                 self.fixed_position = (now_x + dx, now_y + dy, self.z)
         self.update_position(instant=True)
 
-
     def dragged_over_by(self, dragged):
         """
 
@@ -1104,17 +1072,23 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """
         self.stop_moving()
         self.update()
+        message = ''
         if recipient and recipient.accepts_drops(self):
-            self.adjustment = None
-            self.fixed_position = None
             self.release()
-            recipient.drop(self)
+            message = recipient.drop(self)
         else:
-            self.lock() # does nothing now
+            self.lock()
             for node in ctrl.dragged_set:
-                node.lock() # does nothing now
+                node.lock()
+            if self.adjustment:
+                message = 'adjusted node to {:.2f}, {:.2f}'.format(self.adjustment[0], self.adjustment[1])
+
+            elif self.fixed_position:
+                message = 'moved node to {:.2f}, {:.2f}'.format(self.fixed_position[0],
+                                                                self.fixed_position[1])
+        self.update_position()
         self.finish_dragging()
-        return 'moved node %s' % self
+        return message
 
     def finish_dragging(self):
         """ Flush dragging-related temporary variables. Called always when dragging is finished for any
@@ -1171,8 +1145,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         QtWidgets.QGraphicsItem.hoverLeaveEvent(self, event)
 
     def dragEnterEvent(self, event):
-        """
-
+        """ Dragging a foreign object (could be from ui) over a node, entering.
         :param event:
         """
         if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist"):
@@ -1182,8 +1155,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             QtWidgets.QGraphicsItem.dragEnterEvent(self, event)
 
     def dragLeaveEvent(self, event):
-        """
-
+        """ Dragging a foreign object (could be from ui) over a node, leaving.
         :param event:
         """
         if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist"):
@@ -1191,11 +1163,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             self.hovering = False
         else:
             QtWidgets.QGraphicsItem.dragLeaveEvent(self, event)
-
-            # def dragMoveEvent(self, event):
-            # if
-            # pass
-            # print("Drag move event for Movable")
 
     def start_moving(self):
         """ Experimental: add glow effect for moving things
