@@ -1238,7 +1238,7 @@ a['raw_editing_toggle'] = {
 
 
 def key_backspace():
-    """ In many contexts this wille delete something. Expand this as necessary
+    """ In many contexts this will delete something. Expand this as necessary
     for contexts that don't otherwise grab keyboard.
     :return: None
     """

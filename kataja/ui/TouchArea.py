@@ -352,7 +352,6 @@ class TouchArea(QtWidgets.QGraphicsItem):
         self._dragging = False
         if self._drag_hint:
             return False
-        ctrl.forest.undo_manager.take_snapshot('add constituent')
         edge = None
         node = self.host
         if hasattr(self.host, 'end'):
@@ -367,7 +366,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
                                                             new_node_pos=self.end_point,
                                                             merger_node_pos=self.start_point)
             ctrl.deselect_objects()
-            ctrl.forest.draw()
+            ctrl.main.action_finished(m='add constituent')
         return True
 
     # self, N, R, merge_to_left, new_node_pos, merger_node_pos):

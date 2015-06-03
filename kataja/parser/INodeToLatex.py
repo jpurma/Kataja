@@ -12,6 +12,8 @@ def parse_inode_for_field(inode):
     """
 
     def parse(jnode):
+        if not jnode:
+            return ''
         r = []
         if isinstance(jnode, ICommandNode):
             r.append(jnode.prefix)

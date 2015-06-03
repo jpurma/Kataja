@@ -76,7 +76,6 @@ def parse_iconstituentnode_for_viewing(inode, document, gloss_in_view=True, feat
     if inode.features and features_in_view:
         if not first:
             cursor.insertBlock()
-        print(inode.features)
         for item in inode.features.values():
             write_node_to_document(item, cursor)
             write_node_to_document(' ', cursor)
@@ -151,7 +150,6 @@ def write_node_to_document(n, cursor):
         if isinstance(n, ICommandNode) and n.command:
             old_format = QtGui.QTextCharFormat(cursor.charFormat())
             run_command(n.command, cursor)
-        print(n.parts)
         for part in n.parts:
             if isinstance(part, ITextNode):  # ITextNode includes also ICommandNodes and IConstituentNodes
                 write_node_to_document(part, cursor)

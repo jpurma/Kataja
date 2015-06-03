@@ -61,6 +61,15 @@ class DerivationStep:
             self.roots = [self.snapshot_of_tree(root) for root in roots]
             self.chains = self.snapshot_of_chains(chains)
 
+    def after_init(self):
+        """ After_init is called in 2nd step in process of creating objects:
+        1st wave creates the objects and calls __init__, and then iterates through and sets the values.
+        2nd wave calls after_inits for all created objects. Now they can properly refer to each other and know their
+        values.
+        :return: None
+        """
+        self.model.announce_creation()
+
     @property
     def save_key(self):
         """ Return the save_key from the model. It is a property from BaseModel.

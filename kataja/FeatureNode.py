@@ -57,6 +57,7 @@ class FeatureNode(Node):
         self.update_label()
         self.update_bounding_rect()
         self.update_visibility()
+        self.model.announce_creation()
         ctrl.forest.store(self)
 
 

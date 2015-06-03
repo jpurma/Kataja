@@ -162,6 +162,20 @@ class Node(Movable, QtWidgets.QGraphicsItem):
                 self.update_position()
                 self.fade_in()
             self.update_visibility()
+        if update_type == g.CREATED:
+            print('Node.CREATED. (%s)'
+                  % self.save_key)
+            for edge in self.edges_up:
+                print('restoring connection up: %s %s %s ' % (edge, edge.start, self))
+                edge.connect_end_points(edge.start, self)
+                edge.update_end_points()
+            for edge in self.edges_down:
+                print('restoring connection down: %s %s %s ' % (edge, self, edge.end))
+                edge.connect_end_points(self, edge.end)
+                edge.update_end_points()
+        elif update_type == g.DELETED:
+            print('Node.DELETED. (%s) should I be reverting deletion or have we just been deleted?'
+                  % self.save_key)
 
     @property
     def syntactic_object(self):

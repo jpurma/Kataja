@@ -69,6 +69,8 @@ class UndoManager:
             self._stack.append((msg, snapshot))
             self._current = len(self._stack) - 1
         ctrl.undo_pile = set()
+        ctrl.add_message('took snapshot, undo stack size: %s items %s chars' % (
+            len(self._stack), len(str(self._stack))))
         self.phase = 'new'
         print('stack len:', len(str(self._stack)))
     # def record_full_state(self):
@@ -105,10 +107,10 @@ class UndoManager:
         for obj, transitions, transition_type in snapshot.values():
             obj.model.revert_to_earlier(transitions)
             if transition_type == CREATED:
-                print('undo should undo creation of object (=>cancel) ', obj)
-                ctrl.forest.delete_item(obj)
+                print('undo should undo creation of object (=>cancel) ', obj.save_key)
+                ctrl.forest.delete_item(obj, ignore_consequences=True)
             elif transition_type == DELETED:
-                print('undo should undo deletion of object (=>revive)', obj)
+                print('undo should undo deletion of object (=>revive)', obj.save_key)
                 ctrl.forest.add_to_scene(obj)
         for obj, transitions, transition_type in snapshot.values():
             obj.model.update(transitions.keys(), transition_type)
@@ -138,7 +140,7 @@ class UndoManager:
                 ctrl.forest.add_to_scene(obj)
             elif transition_type == DELETED:
                 print('redo should delete object', obj)
-                ctrl.forest.delete_item(obj)
+                ctrl.forest.delete_item(obj, ignore_consequences=True)
         for obj, transitions, transition_type  in snapshot.values():
             obj.model.update(transitions.keys(), transition_type)
         ctrl.add_message('redo [%s]: %s' % (self._current, msg))

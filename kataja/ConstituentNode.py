@@ -100,6 +100,7 @@ class ConstituentNode(Node):
         self.update_gloss()
         self.update_label()
         self.update_visibility()
+        self.model.announce_creation()
         ctrl.forest.store(self)
 
     def after_model_update(self, updated_fields, update_type):

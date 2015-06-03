@@ -11,12 +11,10 @@ from kataja.parser.INodes import ITextNode
 from kataja.parser.INodeToLatex import parse_inode_for_field
 from kataja.parser.LatexToINode import parse_field
 from kataja.singletons import ctrl
+from globals import CREATED, DELETED
 
 __author__ = 'purma'
 
-# Creation/Deletion flags
-CREATED = 1
-DELETED = 2
 
 class SaveError(Exception):
     """ for errors related to storing the model
@@ -132,6 +130,8 @@ class BaseModel:
                 elif attr_name.endswith('_synobj') and getattr(self, attr_name, False):
                     transitions[attr_name] = (True, True)
         created_or_deleted = self._cd
+        if self._cd:
+            print(self.save_key, 'transition type ', self._cd)
         self._cd = 0
         return transitions, created_or_deleted
 
@@ -140,33 +140,39 @@ class BaseModel:
         :param transitions: dict of changes, values are tuples of (old, new) -pairs
         :return: None
         """
-        #print('--- restore to earlier for ', self, ' ----------')
+        # print('--- restore to earlier for ', self, ' ----------')
         for key, value in transitions.items():
             if key.startswith('_') and key.endswith('_synobj'):
                 continue
             old, new = value
             setattr(self, key, old)
-            print('  %s: %s <- %s' % (key, old, new))
+            if len(str(new)) < 80:
+                print('%s  %s: %s <- %s' % (self.save_key, key, old, new))
+            else:
+                print('%s %s: (long) <- (long)' % (self.save_key, key))
             if old is new:
                 print('**** identical old and new ^')
-        #print('-------------')
+        # print('-------------')
 
     def move_to_later(self, transitions):
         """ Move to later version with a given changes -dict
         :param transitions: dict of changes, values are tuples of (old, new) -pairs
         :return: None
         """
-        #print('--- move to later for ', self, ' ----------')
+        # print('--- move to later for ', self, ' ----------')
         for key, value in transitions.items():
             if key.startswith('_') and key.endswith('_synobj'):
                 continue
             old, new = value
             setattr(self, key, new)
-            print('  %s: %s -> %s' % (key, old, new))
+            if len(str(new)) < 80:
+                print('%s  %s: %s -> %s' % (self.save_key, key, old, new))
+            else:
+                print('%s %s: (long) -> (long)' % (self.save_key, key))
             if old is new:
                 print('**** identical old and new ^')
 
-        #print('-------------')
+        # print('-------------')
 
     def update(self, changed_fields, transition_type, doing_undo=True):
         """ Runs the after_model_update that should do the necessary derivative calculations and graphical updates

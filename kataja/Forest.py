@@ -565,14 +565,18 @@ class Forest:
         # self.nodes[item.key] = item
         # elif isinstance(item, FeatureNode):
         # self.features[item.key] = item
+
         if isinstance(item, Node):
+            self.model.poke('nodes')
             self.nodes[item.save_key] = item
             if item.syntactic_object:
                 # remember to rebuild nodes_by_uid in undo/redo, as it is not stored in model
                 self.nodes_from_synobs[item.syntactic_object.save_key] = item
         elif isinstance(item, Edge):
+            self.model.poke('edges')
             self.edges[item.save_key] = item
         elif isinstance(item, TextArea):
+            self.model.poke('others')
             self.others[item.save_key] = item
         elif isinstance(item, Bracket):
             self.bracket_manager.store(item)
@@ -580,6 +584,7 @@ class Forest:
         else:
             key = getattr(item, 'save_key', '') or getattr(item, 'key', '')
             if key and key not in self.others:
+                self.model.poke('others')
                 self.others[key] = item
             else:
                 print('F trying to store broken type:', item.__class__.__name__)
@@ -708,8 +713,10 @@ class Forest:
         has_parents = bool([x for x in node.edges_up if x.edge_type is g.CONSTITUENT_EDGE])
         if node in self.roots:
             if has_parents:
+                self.model.poke('roots')
                 self.roots.remove(node)
         elif not has_parents:
+            self.model.poke('roots')
             self.roots.append(node)
 
     # not used
@@ -1040,32 +1047,38 @@ class Forest:
     # here when something is removed from scene, it is made sure that it is also removed
     # from items that reference to it.
 
-    def delete_node(self, node):
+    def delete_node(self, node, ignore_consequences=False):
         """ Delete given node and its children and fix the tree accordingly
         :param node:
+        :param ignore_consequences: don't try to fix things like connections, just delete.
         Note: This and other complicated revisions assume that the target tree is 'normalized' by
         replacing multidomination with traces. Each node can have only one parent.
         This makes calculation easier, just remember to call multidomination_to_traces
         and traces_to_multidomination after deletions.
         """
         # -- connections to other nodes --
-        for edge in node.edges_up:
-            self.disconnect_node(edge=edge)
-        for edge in node.edges_down:
-            if edge.end:
-                self.delete_node(edge.end)  # this will also disconnect node
-            else:
+        print('deleting node: ', node)
+        if not ignore_consequences:
+            for edge in list(node.edges_down):
+                if edge.end:
+                    self.delete_node(edge.end)  # this will also disconnect node
+                else:
+                    self.disconnect_node(edge=edge)
+            for edge in list(node.edges_up):
                 self.disconnect_node(edge=edge)
+
         # -- ui elements --
         self.main.ui_manager.delete_ui_elements_for(node)
         # -- brackets --
         self.bracket_manager.remove_brackets(node)
         # -- dictionaries --
         if node.save_key in self.nodes:
+            self.model.poke('nodes')
             del self.nodes[node.save_key]
         if node.syntactic_object and node.syntactic_object.save_key in self.nodes_from_synobs:
             del self.nodes_from_synobs[node.syntactic_object.save_key]
         if node in self.roots:
+            self.model.poke('roots')
             self.roots.remove(node)
         # -- scene --
         sc = node.scene()
@@ -1074,34 +1087,39 @@ class Forest:
         # -- undo stack --
         node.model.announce_deletion()
 
-    def delete_edge(self, edge):
+    def delete_edge(self, edge, ignore_consequences=False):
         """ remove from scene and remove references from nodes
         :param edge:
+        :param ignore_consequences: don't try to fix things like connections, just delete.
         """
         # -- connections to host nodes --
         start_node = edge.start
         end_node = edge.end
         # -- selections --
         ctrl.remove_from_selection(edge)
-        if start_node:
-            if edge in start_node.edges_down:
-                start_node.edges_down.remove(edge)
-            if edge in start_node.edges_up:  # shouldn't happen
-                start_node.edges_up.remove(edge)
-                self.update_root_status(start_node)
-        if end_node:
-            if edge in end_node.edges_down:  # shouldn't happen
-                end_node.edges_down.remove(edge)
-            if edge in end_node.edges_up:
-                end_node.edges_up.remove(edge)
-                self.update_root_status(end_node)
+        if not ignore_consequences:
+            if start_node:
+                if edge in start_node.edges_down:
+                    start_node.model.poke('edges_down')
+                    start_node.edges_down.remove(edge)
+                if edge in start_node.edges_up:  # shouldn't happen
+                    start_node.model.poke('edges_up')
+                    start_node.edges_up.remove(edge)
+                    self.update_root_status(start_node)
+            if end_node:
+                if edge in end_node.edges_down:  # shouldn't happen
+                    end_node.model.poke('edges_down')
+                    end_node.edges_down.remove(edge)
+                if edge in end_node.edges_up:
+                    end_node.model.poke('edges_up')
+                    end_node.edges_up.remove(edge)
+                    self.update_root_status(end_node)
         # -- ui elements --
         self.main.ui_manager.delete_ui_elements_for(edge)
         # -- dictionaries --
         if edge.save_key in self.edges:
+            self.model.poke('edges')
             del self.edges[edge.save_key]
-        else:
-            print('from some reason %s is not in edge keys: %s.' % (edge.save_key, self.edges.keys()))
         # -- scene --
         sc = edge.scene()
         if sc:
@@ -1109,17 +1127,19 @@ class Forest:
         # -- undo stack --
         edge.model.announce_deletion()
 
-    def delete_item(self, item):
+    def delete_item(self, item, ignore_consequences=False):
         """ User-triggered deletion (e.g backspace on selection)
         :param item: item from selection. can be anything that can be selected
+        :param ignore_consequences: don't try to fix remainders (because deletion is part of
+            some major rewrite of values, e.g. in undo process.
         """
         if isinstance(item, Edge):
             start = item.start
-            self.delete_edge(item)
-            if start:
+            self.delete_edge(item, ignore_consequences=ignore_consequences)
+            if (not ignore_consequences) and start:
                 self.fix_stubs_for(item.start)
         elif isinstance(item, Node):
-            self.delete_node(item)
+            self.delete_node(item, ignore_consequences=ignore_consequences)
 
     # ## Free edges ###############################
 
@@ -1135,9 +1155,11 @@ class Forest:
         assert new_start.save_key in self.nodes
         if edge.start:
             ForestSyntax.disconnect_edge(edge)
+            edge.start.model.poke('edges_down')
             edge.start.edges_down.remove(edge)
         edge.connect_end_points(new_start, edge.end)
         ForestSyntax.connect_according_to_edge(edge)
+        new_start.model.poke('edges_down')
         new_start.edges_down.append(edge)
 
     def set_edge_end(self, edge, new_end):
@@ -1149,10 +1171,12 @@ class Forest:
         assert new_end.save_key in self.nodes
         if edge.end:
             ForestSyntax.disconnect_edge(edge)
+            edge.end.model.poke('edges_up')
             edge.end.edges_up.remove(edge)
             self.update_root_status(edge.end)
         edge.connect_end_points(edge.start, new_end)
         ForestSyntax.connect_according_to_edge(edge)
+        new_end.model.poke('edges_up')
         new_end.edges_up.append(edge)
         self.update_root_status(new_end)
         self.update_root_status(edge.start)
@@ -1168,14 +1192,18 @@ class Forest:
         assert new_end.save_key in self.nodes
         if edge.start:
             ForestSyntax.disconnect_edge(edge)
+            edge.start.model.poke('edges_down')
             edge.start.edges_down.remove(edge)
         if edge.end:
             ForestSyntax.disconnect_edge(edge)
+            edge.end.model.poke('edges_up')
             edge.end.edges_up.remove(edge)
             self.update_root_status(edge.end)
         edge.connect_end_points(new_start, new_end)
         ForestSyntax.connect_according_to_edge(edge)
+        new_end.model.poke('edges_up')
         new_end.edges_up.append(edge)
+        new_start.model.poke('edges_down')
         new_start.edges_down.append(edge)
         self.update_root_status(new_start)
         self.update_root_status(new_end)
@@ -1187,6 +1215,7 @@ class Forest:
         """
         if edge.start:
             ForestSyntax.disconnect_edge(edge)
+            edge.model.poke('edges_down')
             edge.start.edges_down.remove(edge)
         edge.start = None
         edge.make_relative_vector()
@@ -1200,6 +1229,7 @@ class Forest:
         """
         if edge.end:
             ForestSyntax.disconnect_edge(edge)
+            edge.model.poke('edges_up')
             edge.end.edges_up.remove(edge)
             self.update_root_status(edge.end)
         edge.end = None
@@ -1459,16 +1489,15 @@ class Forest:
 
 
         """
-        print('group_traces_to_chain_head called in ', self)
+        #print('group_traces_to_chain_head called in ', self)
         self.chain_manager.group_traces_to_chain_head()
 
-    @caller
     def traces_to_multidomination(self):
         """
 
 
         """
-        print('traces_to_multidomination called in ', self)
+        #print('traces_to_multidomination called in ', self)
         self.chain_manager.traces_to_multidomination()
         for node in self.nodes.values():
             if hasattr(node, 'is_trace') and node.is_trace:
@@ -1481,7 +1510,7 @@ class Forest:
 
 
         """
-        print('multidomination_to_traces called in ', self)
+        #print('multidomination_to_traces called in ', self)
         self.chain_manager.multidomination_to_traces()
 
 
@@ -1648,11 +1677,15 @@ class Forest:
             edge = first.get_edge_to(second, edge_type)
         if edge:
             if edge.start == first:
+                first.model.poke('edges_down')
                 first.edges_down.remove(edge)
+                second.model.poke('edges_up')
                 second.edges_up.remove(edge)
                 self.update_root_status(second)
             elif edge.end == first:
+                second.model.poke('edges_down')
                 second.edges_down.remove(edge)
+                first.model.poke('edges_up')
                 first.edges_up.remove(edge)
                 self.update_root_status(first)
             ForestSyntax.disconnect_edge(edge)

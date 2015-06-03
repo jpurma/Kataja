@@ -62,7 +62,7 @@ class EdgeModel(BaseModel):
         self.color = None
         self.shape_name = None
         self.pull = None
-        self.visible = None
+        self.visible = True
 
 
 class Edge(QtWidgets.QGraphicsItem):
@@ -149,6 +149,8 @@ class Edge(QtWidgets.QGraphicsItem):
         self.effect = utils.create_shadow_effect(self.color)
         self.move_effect = utils.create_blur_effect()
         self.setGraphicsEffect(self.effect)
+        self.update_visibility()
+        self.model.announce_creation()
 
     def after_model_update(self, updated_fields, update_type):
         """ Compute derived effects of updated values in sensible order.

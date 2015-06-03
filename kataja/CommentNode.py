@@ -67,6 +67,7 @@ class CommentNode(Node):
         self.update_bounding_rect()
         self.update_visibility()
         # !fixme: is there a good reason for storing the object only in after_init???
+        self.model.announce_creation()
         ctrl.forest.store(self)
 
     @property

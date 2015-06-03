@@ -106,3 +106,7 @@ START_CUT = 'start_cut'
 END_CUT = 'end_cut'
 ADD_TRIANGLE = 'add_triangle'
 REMOVE_TRIANGLE = 'remove_triangle'
+
+# Creation/Deletion flags
+CREATED = 1
+DELETED = 2

@@ -70,7 +70,7 @@ class ChainManager:
         :return:
         """
 
-        print('rebuild chains from traces called')
+        #print('rebuild chains from traces called')
         f = self.forest
         self.chains = {}
         self.traces_from_bottom = []
@@ -107,7 +107,7 @@ class ChainManager:
         (node, parent, is_head)-tuples, where the first element is the head, and topmost instance in tree,
         and the rest are other appearances top down. The node remains the same, parent is different. """
 
-        print('rebuild chains from md called')
+        #print('rebuild chains from md called')
         f = self.forest
         self.chains = {}
         self.traces_from_bottom = []
