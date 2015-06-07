@@ -44,15 +44,6 @@ class UndoManager:
         self.phase = 'new'
 
     @time_me
-    def init_if_empty(self):
-        """ Not sure if we need this, but keep it for now.
-        :return: None """
-        pass
-        # if not self.full_state:
-        #     self.record_full_state()
-        # print('full state: ', len(self.full_state))
-
-    @time_me
     def take_snapshot(self, msg=''):
         """ Store changes from ctrl.undo_pile and put them here into undo_stack.
         :param msg: str = msg to
@@ -61,8 +52,9 @@ class UndoManager:
         # save objects in undo pile
         snapshot = {}
         for obj in ctrl.undo_pile:
-            transitions, transition_type = obj.model.transitions()
+            transitions, transition_type = obj.transitions()
             snapshot[obj.save_key] = (obj, transitions, transition_type)
+            obj.flush_history()
         # ...
         if snapshot:
             self._stack = self._stack[:self._current + 1]
@@ -101,11 +93,11 @@ class UndoManager:
             else:
                 ctrl.add_message('undo [%s]: Cannot undo further' % self._current)
                 return
-        ctrl.disable_undo = True
+        ctrl.undo_disabled = True
         msg, snapshot = self._stack[self._current]
         print('undo: ', msg, self._current, self.phase)
         for obj, transitions, transition_type in snapshot.values():
-            obj.model.revert_to_earlier(transitions)
+            obj.revert_to_earlier(transitions)
             if transition_type == CREATED:
                 print('undo should undo creation of object (=>cancel) ', obj.save_key)
                 ctrl.forest.delete_item(obj, ignore_consequences=True)
@@ -113,10 +105,10 @@ class UndoManager:
                 print('undo should undo deletion of object (=>revive)', obj.save_key)
                 ctrl.forest.add_to_scene(obj)
         for obj, transitions, transition_type in snapshot.values():
-            obj.model.update(transitions.keys(), transition_type)
+            obj.update_model(transitions.keys(), transition_type)
         self.phase = 'old'
         ctrl.add_message('undo [%s]: %s' % (self._current, msg))
-        ctrl.disable_undo = False
+        ctrl.undo_disabled = False
         print('undo done: ', self._current, self.phase)
 
     def redo(self):
@@ -130,11 +122,11 @@ class UndoManager:
             else:
                 ctrl.add_message('redo [%s]: In last action' % self._current)
                 return
-        ctrl.disable_undo = True
+        ctrl.undo_disabled = True
         msg, snapshot = self._stack[self._current]
         print('redo: ', msg, self._current, self.phase)
-        for obj, transitions, transition_type  in snapshot.values():
-            obj.model.move_to_later(transitions)
+        for obj, transitions, transition_type in snapshot.values():
+            obj.move_to_later(transitions)
             if transition_type == CREATED:
                 print('redo should recreate object ', obj)
                 ctrl.forest.add_to_scene(obj)
@@ -142,10 +134,10 @@ class UndoManager:
                 print('redo should delete object', obj)
                 ctrl.forest.delete_item(obj, ignore_consequences=True)
         for obj, transitions, transition_type  in snapshot.values():
-            obj.model.update(transitions.keys(), transition_type)
+            obj.update_model(transitions.keys(), transition_type)
         ctrl.add_message('redo [%s]: %s' % (self._current, msg))
         self.phase = 'new'
-        ctrl.disable_undo = False
+        ctrl.undo_disabled = False
         print('redo done: ', self._current, self.phase)
 
 

@@ -23,7 +23,7 @@
 # ############################################################################
 
 import random
-
+from kataja.BaseModel import Synobj
 from kataja.globals import FEATURE_EDGE, FEATURE_NODE
 from kataja.Node import Node
 from kataja.singletons import ctrl, qt_prefs
@@ -41,11 +41,11 @@ class FeatureNode(Node):
     height = 20
     default_edge_type = FEATURE_EDGE
     node_type = FEATURE_NODE
+    short_name = "FN"
 
     def __init__(self, feature=None):
         Node.__init__(self, syntactic_object=feature)
         self._gravity = 1
-
 
     def after_init(self):
         """ After_init is called in 2nd step in process of creating objects:
@@ -57,48 +57,8 @@ class FeatureNode(Node):
         self.update_label()
         self.update_bounding_rect()
         self.update_visibility()
-        self.model.announce_creation()
+        self.announce_creation()
         ctrl.forest.store(self)
-
-
-    @property
-    def key(self):
-        """:return:  """
-        if self.syntactic_object:
-            return self.syntactic_object.key
-
-    @key.setter
-    def key(self, value):
-        """
-        :param value:  """
-        if self.syntactic_object:
-            self.syntactic_object.key = value
-            self._inode_changed = True
-
-    @property
-    def value(self):
-        if self.syntactic_object:
-            return self.syntactic_object.value
-
-    @value.setter
-    def value(self, value):
-        if value is None:
-            value = ""
-        self.syntactic_object.value = value
-        self._inode_changed = True
-
-    @property
-    def family(self):
-        if self.syntactic_object:
-            return self.syntactic_object.family
-
-    @family.setter
-    def family(self, value):
-        if value is None:
-            value = ""
-        if self.syntactic_object:
-            self.syntactic_object.family = value
-        self._inode_changed = True
 
     @property
     def as_inode(self):
@@ -109,7 +69,6 @@ class FeatureNode(Node):
             self._inode = IFeatureNode(key=self.key, value=self.value, family=self.family)
             self._inode_changed = False
         return self._inode
-
 
     # implement color() to map one of the d['rainbow_%'] colors here. Or if bw mode is on, then something else.
 
@@ -188,3 +147,12 @@ class FeatureNode(Node):
     def __str__(self):
         return 'feature %s' % self.syntactic_object
 
+    # ############## #
+    #                #
+    #  Save support  #
+    #                #
+    # ############## #
+
+    key = Synobj("key", if_changed=Node.alert_inode)
+    value = Synobj("value", if_changed=Node.alert_inode)
+    family = Synobj("family", if_changed=Node.alert_inode)

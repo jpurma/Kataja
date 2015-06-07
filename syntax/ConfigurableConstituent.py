@@ -25,18 +25,7 @@ in very specific manner. Configuration is stored in UG-instance.config -dict and
 #
 # ############################################################################
 
-from syntax.BaseConstituent import BaseConstituent, BaseConstituentModel
-
-
-class ConfigurableConstituentModel(BaseConstituentModel):
-    """ ConfigurableConstituent is a constituent whose behaviour is adjusted by properties of UG.
-    It inherits mostly everything from BaseConstituent, and overrides those methods that can be
-    configured.
-    :param host: ConfigurableConstituent instance
-    """
-
-    def __init__(self, host=None):
-        super().__init__(host)
+from syntax.BaseConstituent import BaseConstituent
 
 
 class ConfigurableConstituent(BaseConstituent):
@@ -44,8 +33,10 @@ class ConfigurableConstituent(BaseConstituent):
     It inherits mostly everything from BaseConstituent, and overrides those methods that can be
     configured.
     """
+    short_name = "CC"
 
-    def __init__(self, label='', left=None, right=None, source=''):
-        if not hasattr(self, 'model'):
-            self.model = ConfigurableConstituentModel(self)
-        super().__init__(label=label, left=left, right=right, source=source)
+    # ############## #
+    #                #
+    #  Save support  #
+    #                #
+    # ############## #

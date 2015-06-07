@@ -24,18 +24,35 @@
 
 from kataja.globals import *
 from kataja.shapes import SHAPE_PRESETS
-from kataja.BaseModel import BaseModel
+from kataja.BaseModel import BaseModel, Saved
 from kataja.singletons import prefs
 
 ONLY_LEAF_LABELS = 0
 ALL_LABELS = 1
 ALIASES = 2
 
-class ForestSettingsModel(BaseModel):
 
-    def __init__(self, host):
-        super().__init__(host)
-        # ## General settings for Forest
+class SavedSetting(Saved):
+    """ Descriptor like Saved, but if getter doesn't find local version, takes one from preferences. """
+#    def __init__(self, name, before_set=None, if_changed=None, after_get=None):
+#        super().__init__(name, before_set=before_set, if_changed=if_changed)
+#        self.after_get = after_get
+
+    def __get__(self, obj: BaseModel, objtype=None):
+        value = obj._saved[self.name]
+        if value is None:
+            return getattr(prefs, self.name)
+        else:
+            return value
+
+
+class ForestSettings(BaseModel):
+    """ Settings specific for this forest -- a level between global preferences and settings specific for object. """
+
+    short_name = "FSettings"
+
+    def __init__(self):
+        super().__init__()
         self.label_style = None
         self.uses_multidomination = None
         self.traces_are_grouped_together = None
@@ -52,169 +69,6 @@ class ForestSettingsModel(BaseModel):
         # ## Nodes - take node type as argument ###########################
         self.node_types = {}
 
-class ForestSettings:
-    """ Settings specific for this forest -- a level between global preferences and settings specific for object. """
-    saved_fields = 'all'
-    saved_fields_ignore = 'prefs'
-    # saved_fields_ignore_None = True
-
-    """ Settings that affect trees in one forest in a form that can be easily pickled """
-
-    def __init__(self):
-        if not hasattr(self, 'model'):
-            self.model = ForestSettingsModel(self)
-
-    @property
-    def save_key(self):
-        """ Return the save_key from the model. It is a property from BaseModel.
-        :return: str
-        """
-        return self.model.save_key
-
-    @property
-    def label_style(self):
-        """
-        :return:
-        """
-        if self.model.label_style is None:
-            return prefs.default_label_style
-        else:
-            return self.model.label_style
-
-    @label_style.setter
-    def label_style(self, value):
-        """
-        :param value: """
-        self.model.label_style = value
-
-
-    @property
-    def uses_multidomination(self):
-        """
-        :return:
-        """
-        if self.model.uses_multidomination is None:
-            return prefs.default_use_multidomination
-        else:
-            return self.model.uses_multidomination
-
-    @uses_multidomination.setter
-    def uses_multidomination(self, value):
-        """
-        :param value: """
-        self.model.uses_multidomination = value
-
-
-    @property
-    def traces_are_grouped_together(self):
-        """
-        :return:
-        """
-        if self.model.traces_are_grouped_together is None:
-            return prefs.default_traces_are_grouped_together
-        else:
-            return self.model.traces_are_grouped_together
-
-    @traces_are_grouped_together.setter
-    def traces_are_grouped_together(self, value):
-        """
-        :param value: """
-        self.model.traces_are_grouped_together = value
-
-
-    @property
-    def shows_constituent_edges(self):
-        """
-        :return:
-        """
-        if self.model.shows_constituent_edges is None:
-            return prefs.default_shows_constituent_edges
-        else:
-            return self.model.shows_constituent_edges
-
-    @shows_constituent_edges.setter
-    def shows_constituent_edges(self, value):
-        """
-        :param value: """
-        self.model.shows_constituent_edges = value
-
-    @property
-    def shows_merge_order(self):
-        """
-        :return:
-        """
-        if self.model.shows_merge_order is None:
-            return prefs.default_shows_merge_order
-        else:
-            return self.model.shows_merge_order
-
-    @shows_merge_order.setter
-    def shows_merge_order(self, value):
-        """
-        :param value: """
-        self.model.shows_merge_order = value
-
-    @property
-    def shows_select_order(self):
-        """
-        :return:
-        """
-        if self.model.shows_select_order is None:
-            return prefs.default_shows_select_order
-        else:
-            return self.model.shows_select_order
-
-    @shows_select_order.setter
-    def shows_select_order(self, value):
-        """
-        :param value: """
-        self.model.shows_select_order = value
-
-    @property
-    def draw_features(self):
-        """
-        :return:
-        """
-        if self.model.draw_features is None:
-            return prefs.default_draw_features
-        else:
-            return self.model.draw_features
-
-    @draw_features.setter
-    def draw_features(self, value):
-        """
-        :param value: """
-        self.model.draw_features = value
-
-    @property
-    def hsv(self):
-        """
-        :return:
-        """
-        if self.model.hsv is None:
-            return prefs.default_hsv
-        else:
-            return self.model.hsv
-
-    @hsv.setter
-    def hsv(self, value):
-        """
-        :param value: """
-        self.model.hsv = value
-
-    @property
-    def bracket_style(self):
-        """ :return: """
-        if self.model.bracket_style is None:
-            return prefs.default_bracket_style
-        else:
-            return self.model.bracket_style
-
-    @bracket_style.setter
-    def bracket_style(self, value):
-        """
-        :param value:  """
-        self.model.bracket_style = value
 
     def last_key_color_for_mode(self, mode_key, value=None):
         """
@@ -224,24 +78,9 @@ class ForestSettings:
         :return:
         """
         if value is None:
-            return self.model.last_key_colors.get(mode_key, None)
+            return self.last_key_colors.get(mode_key, None)
         else:
-            self.model.last_key_colors[mode_key] = value
-
-    @property
-    def color_mode(self):
-        """ :return: """
-        if self.model.color_mode is None:
-            return prefs.color_mode
-        else:
-            return self.model.color_mode
-
-    @color_mode.setter
-    def color_mode(self, value=None):
-        """
-        :param value:"""
-        self.model.color_mode = value
-
+            self.last_key_colors[mode_key] = value
 
     # ## Edges - all require edge type as argument, value is stored in dict ###########
 
@@ -256,7 +95,7 @@ class ForestSettings:
         """
         if not edge_type:
             return
-        local_edge_settings = self.model.edge_types.get(edge_type)
+        local_edge_settings = self.edge_types.get(edge_type)
         if value is None:
             if local_edge_settings is None or local_edge_settings.get(key, None) is None:
                 return prefs.edges[edge_type].get(key, None)
@@ -264,7 +103,7 @@ class ForestSettings:
                 return local_edge_settings[key]
         else:
             if local_edge_settings is None:
-                self.model.edge_types[edge_type] = {key: value}
+                self.edge_types[edge_type] = {key: value}
             else:
                 local_edge_settings[key] = value
 
@@ -282,7 +121,7 @@ class ForestSettings:
         if not shape_name:
             shape_name = self.edge_type_settings(edge_type, 'shape_name')
 
-        local_edge_type = self.model.edge_types.get(edge_type, None)
+        local_edge_type = self.edge_types.get(edge_type, None)
         if local_edge_type:
             shape_args = local_edge_type.get('shape_args', None)
         else:
@@ -299,7 +138,7 @@ class ForestSettings:
             else:  # set single setting
                 if not local_edge_type:
                     local_edge_type = {}
-                    self.model.edge_types[edge_type] = local_edge_type
+                    self.edge_types[edge_type] = local_edge_type
                 local_edge_type['shape_args'] = shape_defaults.copy()
                 local_edge_type['shape_args'][key] = value
         else:
@@ -344,15 +183,15 @@ class ForestSettings:
             # Return settings for all node types
             settings = {}
             settings.update(prefs.nodes)
-            settings.update(self.model.node_types)
+            settings.update(self.node_types)
             return settings
         elif not key:
             # Return all settings of certain node type
             settings = {}
             settings.update(prefs.nodes[node_type])
-            settings.update(self.model.node_types.get(node_type, {}))
+            settings.update(self.node_types.get(node_type, {}))
             return settings
-        local_node_settings = self.model.node_types.get(node_type, None)
+        local_node_settings = self.node_types.get(node_type, None)
         if value is None:
             if local_node_settings is None or local_node_settings.get(key) is None:
                 return prefs.nodes[node_type][key]
@@ -360,110 +199,52 @@ class ForestSettings:
                 return local_node_settings[key]
         else:
             if local_node_settings is None:
-                self.model.node_types[node_type] = {key: value}
+                self.node_types[node_type] = {key: value}
             else:
                 local_node_settings[key] = value
 
 
-class ForestRulesModel(BaseModel):
+    # ############## #
+    #                #
+    #  Save support  #
+    #                #
+    # ############## #
 
-    def __init__(self, host):
-        super().__init__(host)
-        self.allow_multidomination = None
-        self.only_binary_branching = None
-        self.projection = None
-        self.projected_inherits_labels = None
+    label_style = SavedSetting("label_style")
+    uses_multidomination = SavedSetting("uses_multidomination")
+    traces_are_grouped_together = SavedSetting("traces_are_grouped_together")
+    shows_constituent_edges = SavedSetting("shows_constituent_edges")
+    shows_merge_order = SavedSetting("shows_merge_order")
+    shows_select_order = SavedSetting("shows_select_order")
+    draw_features = SavedSetting("draw_features")
+    hsv = SavedSetting("hsv")
+    color_mode = SavedSetting("color_mode")
+    bracket_style = SavedSetting("bracket_style")
+    # these have dicts, they don't need SavedSetting check but special care in use
+    last_key_colors = Saved("last_key_colors")
+    edge_types = Saved("edge_types")
+    node_types = Saved("node_types")
 
 
 class ForestRules(BaseModel):
     """ Rules that affect trees in one forest in a form that can be easily pickled """
 
+    short_name = "FRules"
+
     def __init__(self):
-        if not hasattr(self, 'model'):
-            self.model = ForestRulesModel(self)
+        super().__init__()
+        self.allow_multidomination = None
+        self.only_binary_branching = None
+        self.projection = None
+        self.projected_inherits_labels = None
 
-    @property
-    def save_key(self):
-        """ Return the save_key from the model. It is a property from BaseModel.
-        :return: str
-        """
-        return self.model.save_key
+    # ############## #
+    #                #
+    #  Save support  #
+    #                #
+    # ############## #
 
-    @property
-    def allow_multidomination(self, value=None):
-        """
-        :param value:
-        :return:
-        """
-        if self.model.allow_multidomination is None:
-            return prefs.rules_allow_multidomination
-        else:
-            return self.model.allow_multidomination
-
-    @allow_multidomination.setter
-    def allow_multidomination(self, value=None):
-        """
-        :param value:
-        :return:
-        """
-        self.model.allow_multidomination = value
-
-
-    @property
-    def only_binary_branching(self, value=None):
-        """
-        :param value:
-        :return:
-        """
-        if self.model.only_binary_branching is None:
-            return prefs.rules_only_binary_branching
-        else:
-            return self.model.only_binary_branching
-
-    @only_binary_branching.setter
-    def only_binary_branching(self, value=None):
-        """
-
-        :param value:
-        :return:
-        """
-        self.model.only_binary_branching = value
-
-    @property
-    def projection(self, value=None):
-        """
-        :param value:
-        :return:
-        """
-        if self.model.projection is None:
-            return prefs.rules_projection
-        else:
-            return self.model.projection
-
-    @projection.setter
-    def projection(self, value=None):
-        """
-        :param value:
-        :return:
-        """
-        self.model.projection = value
-
-
-    @property
-    def projected_inherits_labels(self):
-        """
-        :return:
-        """
-        if self.model.projected_inherits_labels is None:
-            return prefs.rules_projected_inherits_labels
-        else:
-            return self.model.projected_inherits_labels
-
-    @projected_inherits_labels.setter
-    def projected_inherits_labels(self, value=None):
-        """
-        :param value:
-        :return:
-        """
-        self.model.projected_inherits_labels = value
-
+    allow_multidomination = SavedSetting("allow_multidomination")
+    only_binary_branching = SavedSetting("only_binary_branching")
+    projection = SavedSetting("projection")
+    projected_inherits_labels = SavedSetting("projected_inherits_labels")

@@ -23,22 +23,10 @@
 #
 # ############################################################################
 
-from kataja.BaseModel import BaseModel
+from kataja.BaseModel import BaseModel, Saved
 
 
-class FeatureModel(BaseModel):
-    """ Data model for Features
-    :param host: the instance which is using this model
-    """
-
-    def __init__(self, host=None):
-        super().__init__(host)
-        self.fkey = ''
-        self.values = []
-        self.family = ''
-
-
-class Feature:
+class Feature(BaseModel):
     """ Features are primitive comparable and compatible parts. The class supports several kinds of features:
     Features have property "key" which is used to look for certain exact kind of features, e.g. 'number', 'gender', or
     'case'.
@@ -49,52 +37,24 @@ class Feature:
     meaning. Family property can be used e.g. to mark phi-features or LF features.
     """
 
+    short_name = "F"
+
     def __init__(self, key=None, value=None, values=None, family=''):
-        if not hasattr(self, 'model'):
-            self.model = FeatureModel(self)
+        super().__init__(self)
         if key and not (value or values): # e.g. 'nom:case:deletable'
             values = key.split(':')
             key = values.pop(0)
         elif not key:
             key = "AnonymousFeature"
-        self.model.fkey = key
+        self.key = key
         if values:
-            self.model.values = values
+            self.values = values
         elif value:
-            self.model.values = [value]
+            self.values = [value]
         else:
-            self.model.values = []
-        self.model.family = family
+            self.values = []
+        self.family = family
 
-    @property
-    def save_key(self):
-        """ Return the save_key from the model. It is a property from BaseModel.
-        :return: str
-        """
-        return self.model.save_key
-
-
-    @property
-    def label(self):
-        """ Label returns the feature key, identifier for which kind of feature this is.
-        :return: str or ITextNode
-        """
-        return self.model.fkey
-
-    @property
-    def key(self):
-        """ Feature key, identifier for which kind of feature this is.
-        :return: str or ITextNode
-        """
-        return self.model.fkey
-
-    @key.setter
-    def key(self, value):
-        """ Feature key, identifier for which kind of feature this is.
-        :param value: str or ITextNode
-        """
-        if self.model.touch('fkey', value):
-            self.model.fkey = value
 
     @property
     def value(self):
@@ -111,8 +71,8 @@ class Feature:
           feature for syntactic models that have single value for features.
         :return: bool, str, ITextNode or None
         """
-        if self.model.values:
-            return self.model.values[0]
+        if self.values:
+            return self.values[0]
         else:
             return None
 
@@ -131,60 +91,8 @@ class Feature:
         :param value: bool, str, ITextNode
         """
         if self.value != value:
-            self.model.poke('values')
-            self.model.values = [value]
-
-    @property
-    def values(self):
-        """ Value of feature can mean different things on different syntactic models.
-        a) At minimum, it can have boolean value, ('+', '-'), or (True, False).
-        b) Tertiary: ('+', '-', '=')
-        c) Value within a vocabulary: ('-', 'NOM', 'ACC', 'GEN', 'PRT)
-        d) other string based value
-        e) list of strings so that feature can satisfy several roles
-        f) list of Features and strings, where strings are the values that this feature is bringing in, and
-            other Features bring recursively their values. (Feature tree)
-
-        when accessed with plural "values" the returned result is list of values that can include other Features.
-        :return: mixed list of bools, strings, ITextNodes and Features
-        """
-        return self.model.values
-
-    @values.setter
-    def values(self, value):
-        """ Value of feature can mean different things on different syntactic models.
-        a) At minimum, it can have boolean value, ('+', '-'), or (True, False).
-        b) Tertiary: ('+', '-', '=')
-        c) Value within a vocabulary: ('-', 'NOM', 'ACC', 'GEN', 'PRT)
-        d) other string based value
-        e) list of strings so that feature can satisfy several roles
-        f) list of Features and strings, where strings are the values that this feature is bringing in, and
-            other Features bring recursively their values. (Feature tree)
-
-        when set with a singular "value" the value cannot be a list (it will be stored in a list anyways)
-        :param value: bool, str, ITextNode
-        """
-
-        if isinstance(value, list):
-            if self.model.touch('values', value):
-                self.model.values = value
-        elif self.model.touch('values', [value]):
-            self.model.values = [value]
-
-    @property
-    def family(self):
-        """ e.g. feature 'number' may belong to family 'phi'. Features don't need to have a family.
-        :return: str
-        """
-        return self.model.family
-
-    @family.setter
-    def family(self, value):
-        """ e.g. feature 'number' may belong to family 'phi'. Features don't need to have a family.
-        :param value: string
-        :return: None
-        """
-        self.model.family = value
+            self.poke('values')
+            self.values = [value]
 
 
     def add(self, prop):
@@ -192,7 +100,7 @@ class Feature:
         :param prop: str, boolean, Feature
         """
         if not prop in self.values:
-            self.model.poke('values')
+            self.poke('values')
             self.values.append(prop)
 
     def remove(self, prop):
@@ -201,7 +109,7 @@ class Feature:
         :raise KeyError:
         """
         if prop in self.values:
-            self.model.poke('values')
+            self.poke('values')
             self.values.remove(prop)
         else:
             raise KeyError
@@ -231,6 +139,16 @@ class Feature:
 
     def __str__(self):
         return ":".join([self.key] + self.values)
+
+    # ############## #
+    #                #
+    #  Save support  #
+    #                #
+    # ############## #
+
+    key = Saved("key")
+    values = Saved("values")
+    family = Saved("family")
 
 
 if __name__ == "__main__":

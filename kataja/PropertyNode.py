@@ -22,15 +22,9 @@
 #
 # ############################################################################
 
-from kataja.Node import Node, NodeModel
+from kataja.Node import Node
 from kataja.globals import PROPERTY_EDGE, PROPERTY_NODE
 
-
-class PropertyNodeModel(NodeModel):
-    """ This is somekind of a microfeature. I don't remember why it exists, but maybe time will tell. """
-    def __init__(self, host):
-        super().__init__(self, host)
-        # what is needed goes here
 
 
 class PropertyNode(Node):
@@ -39,6 +33,7 @@ class PropertyNode(Node):
     height = 20
     default_edge_type = PROPERTY_EDGE
     node_type = PROPERTY_NODE
+    short_name = "PropN"
 
     def __init__(self, property=None):
         Node.__init__(self, syntactic_object=property)

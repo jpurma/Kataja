@@ -47,6 +47,16 @@ class LeftFirstHexTree(BaseVisualization):
         self._max_hits = {}
         self._directed = True
         self._indentation = 0
+        self.drawn = {}
+        self.areas = {}
+        self.start_x = 0
+        self.iterations = 0
+        self.edge = 0
+        self.traces_to_draw = []
+        self.counter = 0
+        self.postponed_list = []
+
+
 
     def prepare(self, forest, reset=True):
         """ If loading a state, don't reset.
@@ -61,7 +71,7 @@ class LeftFirstHexTree(BaseVisualization):
         if reset:
             self.forest.settings.bracket_style = g.NO_BRACKETS
             self.forest.settings.show_constituent_edges = True
-            self.forest.vis_data = {'name': self.__class__.name, 'rotation': 0}
+            self.set_vis_data('rotation', 0)
             for node in self.forest.visible_nodes():
                 self.reset_node(node)
 
@@ -85,7 +95,7 @@ class LeftFirstHexTree(BaseVisualization):
     @caller
     def reselect(self):
         """ if there are different modes for one visualization, rotating between different modes is triggered here. """
-        self.forest.vis_data['rotation'] -= 1
+        self.set_vis_data('rotation', self.get_vis_data('rotation') - 1)
 
     def drawNot(self):
 
@@ -278,13 +288,13 @@ class LeftFirstHexTree(BaseVisualization):
             node.algo_position = (d['x'], d['y'], 0)
             return True
 
-
         self.areas = {}
         self.start_x = 0
 
         self.edge = math.hypot(prefs.edge_width, prefs.edge_height) * 2
-        self.forest.vis_data['rotation'], self.traces_to_draw = self._compute_traces_to_draw(
-            self.forest.vis_data['rotation'])
+        new_rotation, self.traces_to_draw = self._compute_traces_to_draw(
+            self.get_vis_data('rotation'))
+        self.set_vis_data('rotation', new_rotation)
 
         for root in self.forest:
             self.counter = 0
@@ -305,7 +315,6 @@ class LeftFirstHexTree(BaseVisualization):
                         repairing = draw_node(repair)
                         if not repairing:
                             self.postponed_list.append(repair)
-
 
     def draw(self):
 
@@ -417,8 +426,10 @@ class LeftFirstHexTree(BaseVisualization):
         self.iterations = 0
 
         self.edge = math.hypot(prefs.edge_width, prefs.edge_height) * 2
-        self.forest.vis_data['rotation'], self.traces_to_draw = self._compute_traces_to_draw(
-            self.forest.vis_data['rotation'])
+        new_rotation, self.traces_to_draw = self._compute_traces_to_draw(
+            self.get_vis_data('rotation'))
+        self.set_vis_data('rotation', new_rotation)
+
 
         x = 0
 

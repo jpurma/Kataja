@@ -26,45 +26,35 @@ It is a primary datatype, needs to support saving and loading. """
 # ############################################################################
 
 
-from kataja.BaseModel import BaseModel
+from kataja.BaseModel import BaseModel, Saved
 from syntax.ConfigurableFeature import Feature
 # from copy import deepcopy
 
-
-
-class BaseConstituentModel(BaseModel):
-    """ BaseConstituentModel holds the data of BaseConstituent in a form that can be saved and restored easily.
-    """
-    def __init__(self, host):
-        super().__init__(host)
-        self.features = {}
-        self.sourcestring = ''
-        self.label = ''
-        self.alias = ''
-        self.parts = []
-        self.gloss = ''
-        self.index = ''
-
-
-class BaseConstituent:
+class BaseConstituent(BaseModel):
     """ BaseConstituent is a default constituent used in syntax.
     It uses getters and setters so that other compatible implementations can be built using the same interface.
     It is a primary datatype, needs to support saving and loading. """
+
+    short_name = "BC"
 
     def __init__(self, label='', left=None, right=None, source=''):
         """ BaseConstituent is a default constituent used in syntax.
         It is Savable, which means that the actual values are stored in separate object that is easily dumped to file.
         Extending this needs to take account if new fields should also be treated as savable, e.g. put them into
-        .model. and make necessary property and setter.
+        . and make necessary property and setter.
          """
-        if not hasattr(self, 'model'):
-            self.model = BaseConstituentModel(self)
-        self.model.sourcestring = source or label
-        self.model.label = label
+        super().__init__()
+        self.features = {}
+        self.sourcestring = source or label
+        self.label = label
+        self.alias = ''
+        self.parts = []
+        self.gloss = ''
+        self.index = ''
         if left:
-            self.model.parts.append(left)
+            self.left = left
         if right:
-            self.model.parts.append(right)
+            self.right = right
 
     def __str__(self):
         if self.index:
@@ -72,90 +62,29 @@ class BaseConstituent:
         else:
             return str(self.label)
 
-    @property
-    def save_key(self):
-        """ Return the save_key from the model. It is a property from BaseModel.
-        :return: str
-        """
-        return self.model.save_key
-
-    @property
-    def features(self):
-        """ Features are a dict with probably Features as values, but values can be also simpler stuff, strings etc.
-        :return: dict of features
-        """
-        return self.model.features
-
-    @features.setter
-    def features(self, value):
+    def before_set_features(self, value):
         """ If given features include 'label' or 'index', put them to their right place, otherwise update with
         new values. If and empty value is given, set features to empty.
         :param value: dict of features
         """
         if value:
-            self.model.poke('features')
-            for key, feature in value.items():
-                if key == 'label':
-                    self.label = feature.value
-                elif key == 'index':
-                    self.index = feature.value
+            if "label" in value:
+                v = value["label"]
+                if isinstance(v, Feature):
+                    self.label = v.value
                 else:
-                    self.model.features[key] = feature
+                    self.label = v
+                del value["label"]
+            if "index" in value:
+                v = value["index"]
+                if isinstance(v, Feature):
+                    self.index = v.value
+                else:
+                    self.index = v
+                del value["index"]
+            return value
         else:
-            if self.model.features:
-                self.model.poke('features')
-            self.model.features = {}
-
-    @property
-    def sourcestring(self):
-        """ Sourcestring is provided if the constituent is created by parsing some text. Maybe unnecessary.
-        :return:
-        """
-        return self.model.sourcestring
-
-    @sourcestring.setter
-    def sourcestring(self, value):
-        """ Sourcestring is provided if the constituent is created by parsing some text. Maybe unnecessary.
-        :param value: str
-        """
-        if self.model.touch('sourcestring', value):
-            self.model.sourcestring = value
-
-    @property
-    def label(self):
-        """ This is the syntactic label for the Constituent. It can be used for matching/computation purposes.
-        :return: str or ITextNode
-        """
-        return self.model.label
-
-    @label.setter
-    def label(self, value):
-        """ This is the syntactic label for the Constituent. It can be used for matching/computation purposes.
-        :param value: str or ITextNode
-        """
-        if self.model.touch('label', value):
-            if value is None:
-                self.model.label = ''
-            else:
-                self.model.label = value
-
-    @property
-    def alias(self):
-        """ This is an alias, a syntactically inert label used for readability (think XP, X', X^0 in Minimalism)
-        :return: str or ITextNode
-        """
-        return self.model.alias
-
-    @alias.setter
-    def alias(self, value):
-        """ This is an alias, a syntactically inert label used for readability (think XP, X', X^0 in Minimalism)
-        :param value: str or ITextNode
-        """
-        if self.model.touch('alias', value):
-            if value is None:
-                self.model.alias = ''
-            else:
-                self.model.alias = value
+            return {}
 
     @property
     def left(self):
@@ -164,8 +93,8 @@ class BaseConstituent:
         probably need to call some UG -ordering method.
         :return: BaseConstituent instance or None
         """
-        if self.model.parts:
-            return self.model.parts[0]
+        if self.parts:
+            return self.parts[0]
         else:
             return None
 
@@ -176,12 +105,12 @@ class BaseConstituent:
         probably need to call some UG -ordering method.
         :param value: BaseConstituent instance or None
         """
-        if not self.model.parts:
-            self.model.poke('parts')
-            self.model.parts = [value]
-        elif self.model.parts[0] != value:
-            self.model.poke('parts')
-            self.model.parts[0] = value
+        if not self.parts:
+            self.poke('parts')
+            self.parts = [value]
+        elif self.parts[0] != value:
+            self.poke('parts')
+            self.parts[0] = value
 
     @property
     def right(self):
@@ -190,8 +119,8 @@ class BaseConstituent:
         probably need to call some UG -ordering method.
         :return: BaseConstituent instance or None
         """
-        if self.model.parts and len(self.model.parts) > 1:
-            return self.model.parts[1]
+        if self.parts and len(self.parts) > 1:
+            return self.parts[1]
         else:
             return None
 
@@ -202,78 +131,19 @@ class BaseConstituent:
         probably need to call some UG -ordering method.
         :param value: BaseConstituent instance or None
         """
-        if self.model.parts:
-            if len(self.model.parts) > 1:
-                if self.model.parts[1] == value:
+        if self.parts:
+            if len(self.parts) > 1:
+                if self.parts[1] == value:
                     return
-                self.model.poke('parts')
-                self.model.parts[1] = value
+                self.poke('parts')
+                self.parts[1] = value
             else:
-                self.model.poke('parts')
-                self.model.parts.append(value)
+                self.poke('parts')
+                self.parts.append(value)
         else:
-            self.model.poke('parts')
-            self.model.parts = [None, value]
+            self.poke('parts')
+            self.parts = [None, value]
 
-    @property
-    def parts(self):
-        """ Parts are the constituents of the constituent (its children). In some syntactic theories they may be
-        ordered, in others they are unordered set, and they may be strictly binary, or the amount of constituent may
-         be undecided. They are anyways implemented as ordered list with no limits on length. It is up to UG to treat
-          them as binary tree or empty.
-        :return: list of constituents
-        """
-        return self.model.parts
-
-    @parts.setter
-    def parts(self, value):
-        """ Parts are the constituents of the constituent (its children). In some syntactic theories they may be
-        ordered, in others they are unordered set, and they may be strictly binary, or the amount of constituent may
-         be undecided. They are anyways implemented as ordered list with no limits on length. It is up to UG to treat
-          them as binary tree or empty.
-        :param value: list of constituents
-        :return: None
-        """
-        if self.model.touch('parts', value):
-            self.model.parts = value
-
-    @property
-    def gloss(self):
-        """ Gloss text is the translation for this constituent, just a syntactically inert string. Wonder what it
-        does here?
-        :return: str or ITextNode
-        """
-        return self.model.gloss
-
-    @gloss.setter
-    def gloss(self, value):
-        """ Gloss text is the translation for this constituent, just a syntactically inert string. Wonder what it
-        does here?
-        :param value: str or ITextNode
-        """
-        if value is None:
-            value = ''
-        if self.model.touch('gloss', value):
-            self.model.gloss = value
-
-    @property
-    def index(self):
-        """ Index is the small letter to indicate which constituents are the same or have some kind of historical
-        connection (e.g. X and trace of X would have the same index)
-        :return: str
-        """
-        return self.model.index
-
-    @index.setter
-    def index(self, value):
-        """ Index is the small letter to indicate which constituents are the same or have some kind of historical
-        connection (e.g. X and trace of X would have the same index)
-        :param value: str
-        """
-        if value is None:
-            value = ''
-        if self.model.touch('index', value):
-            self.model.index = value
 
     def __repr__(self):
         if self.is_leaf():
@@ -330,7 +200,7 @@ class BaseConstituent:
         :param family: string, optional. If new feature belongs to a certain feature family, e.g. phi features.
         """
         if isinstance(value, Feature):
-            self.model.poke('features')
+            self.poke('features')
             self.features[key] = value
         else:
             f = self.features.get(key, None)
@@ -338,7 +208,7 @@ class BaseConstituent:
                 f.set(value)
             else:
                 f = Feature(key, value)
-                self.model.poke('features')
+                self.poke('features')
             self.features[key] = f
 
     def del_feature(self, key):
@@ -348,7 +218,7 @@ class BaseConstituent:
         if isinstance(key, Feature):
             key = key.key
         if hasattr(self.features, key):
-            self.model.poke('features')
+            self.poke('features')
             del self.features[key]
 
     def is_leaf(self):
@@ -387,3 +257,17 @@ class BaseConstituent:
             nc.set_feature(key, value)
         nc.parts = new_parts
         return nc
+
+    # ############## #
+    #                #
+    #  Save support  #
+    #                #
+    # ############## #
+
+    features = Saved("features", before_set=before_set_features)
+    sourcestring = Saved("sourcestring")
+    label = Saved("label")
+    alias = Saved("alias")
+    parts = Saved("parts")
+    gloss = Saved("gloss")
+    index = Saved("index")

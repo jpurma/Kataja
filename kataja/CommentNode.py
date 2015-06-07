@@ -25,7 +25,7 @@ CommentNode is a non-functional node for freeform text
 #
 #############################################################################
 
-from kataja.Node import Node, NodeModel
+from kataja.Node import Node
 from kataja.globals import ARROW, COMMENT_NODE
 from kataja.singletons import ctrl
 from kataja.parser.INodes import ITextNode
@@ -34,11 +34,6 @@ from kataja.parser.LatexToINode import parse_field
 
 color_map = {'tense': 0, 'person': 2, 'number': 4, 'case': 6, 'unknown': 3}
 
-class CommentNodeModel(NodeModel):
-
-    def __init__(self, host):
-        super().__init__(host)
-
 
 class CommentNode(Node):
     """ Node to display comments, annotations etc. syntactically inert information """
@@ -46,14 +41,12 @@ class CommentNode(Node):
     height = 20
     default_edge_type = ARROW
     node_type = COMMENT_NODE
+    short_name = "ComNode"
 
     def __init__(self, text=''):
-        if not hasattr(self, 'model'):
-            self.model = CommentNodeModel(self)
         Node.__init__(self)
         self.label = text
         self.use_physics = False
-
 
     def after_init(self):
         """ After_init is called in 2nd step in process of creating objects:
@@ -67,7 +60,7 @@ class CommentNode(Node):
         self.update_bounding_rect()
         self.update_visibility()
         # !fixme: is there a good reason for storing the object only in after_init???
-        self.model.announce_creation()
+        self.announce_creation()
         ctrl.forest.store(self)
 
     @property
@@ -84,7 +77,7 @@ class CommentNode(Node):
         """ The text of the comment. Uses the generic node.label as storage.
         :return: str or ITextNode
         """
-        return self.model.label
+        return self.label
 
     @text.setter
     def text(self, value):
@@ -118,3 +111,11 @@ class CommentNode(Node):
             print('comment node inode is: ', self._inode)
             self._inode_changed = False
         return self._inode
+
+    # ############## #
+    #                #
+    #  Save support  #
+    #                #
+    # ############## #
+
+    # all same as Node

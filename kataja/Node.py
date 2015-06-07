@@ -28,7 +28,8 @@ from PyQt5.QtCore import Qt
 from kataja.ui.ControlPoint import ControlPoint
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.Label import Label
-from kataja.Movable import Movable, MovableModel
+from kataja.Movable import Movable
+from kataja.BaseModel import Saved, Synobj
 from kataja.utils import to_tuple, create_shadow_effect
 import kataja.globals as g
 from kataja.parser.LatexToINode import parse_field
@@ -45,49 +46,6 @@ LEFT = 1
 RIGHT = 2
 
 
-class NodeModel(MovableModel):
-    """ Model for storing values of instance that will be saved """
-
-    def __init__(self, host):
-        super().__init__(host)
-        self.syntactic_object = None
-        self.edges_up = []
-        self.edges_down = []
-        self.triangle = False
-        self.folded_away = False
-        self.folding_towards = None
-        self.color = None
-        self.index = None
-
-    def touch_syntactic_object(self, attribute, value):
-        """ Similar as "touch", checks if the new value would change an attribute and makes the attribute undo-ready.
-            Instead of model, this goes to model of syntactic object and does the operation there.
-        :param attribute:
-        :param value:
-        :return:
-        """
-        if ctrl.disable_undo:
-            return True
-
-        so = getattr(self, 'syntactic_object', None)
-        if so:
-            so_model = getattr(so, 'model', None)
-            if so_model:
-                old_value = getattr(so_model, attribute, None)
-                if old_value != value:
-                    # hmmm... cannot now think through how badly it will break things as
-                    touched_name = '_' + attribute + '_touched'
-                    touched = getattr(so_model, touched_name, False)
-                    if not touched:
-                        ctrl.undo_pile.add(self._host)
-                        ctrl.undo_pile.add(so)
-                        setattr(so_model, '_' + attribute + '_history', old_value)
-                        setattr(so_model, touched_name, True)
-                        setattr(self, '_' + attribute + '_synobj', True)
-                    return True
-        return False
-
-
 class Node(Movable, QtWidgets.QGraphicsItem):
     """ Basic class for any visualization elements that can be connected to each other """
     width = 20
@@ -96,16 +54,16 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     node_type = g.ABSTRACT_NODE
     ordered = False
     ordering_func = None
+    short_name = "Node" # shouldn't be used on its own
 
     def __init__(self, syntactic_object=None):
         """ Node is an abstract class that shouldn't be used by itself, though
         it should contain all methods to make it work. Inherit and modify this for
         Constituents, Features etc. """
-        if not hasattr(self, 'model'):
-            self.model = NodeModel(self)
         QtWidgets.QGraphicsItem.__init__(self)
         Movable.__init__(self)
         self.syntactic_object = syntactic_object
+
         self._label_complex = None
         self._label_visible = True
         self._label_font = None  # @UndefinedVariable
@@ -127,6 +85,16 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self.width = 0
         self.height = 0
         self.inner_rect = None
+
+        self.edges_up = []
+        self.edges_down = []
+        self.triangle = None
+        self.folded_away = False
+        self.folding_towards = None
+        self.color = None
+        self.index = ""
+
+
         self.setAcceptHoverEvents(True)
         # self.setAcceptDrops(True)
         self.setFlag(QtWidgets.QGraphicsItem.ItemSendsGeometryChanges)
@@ -148,7 +116,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :return: None
         """
         super().after_model_update(updated_fields, update_type)
-        if '_label_synobj' in updated_fields or '_index_synobj' in updated_fields:
+        if 'label' in updated_fields or 'index' in updated_fields:
             self._inode_changed = True
             self.update_label()
         if 'triangle' in updated_fields:
@@ -177,96 +145,16 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             print('Node.DELETED. (%s) should I be reverting deletion or have we just been deleted?'
                   % self.save_key)
 
-    @property
-    def syntactic_object(self):
-        """ Each Node _can_ be a vehicle for a syntactic object (or a representation of).
-        The syntactic object may have its own model, so getting values from there may take few @properties
+    def alert_inode(self, value):
+        """ Setters may announce that inode needs to be updated
+        :param value: don't care about that
         :return:
         """
-        return self.model.syntactic_object
+        self._inode_changed = True
 
-    @syntactic_object.setter
-    def syntactic_object(self, value):
-        """ Each Node _can_ be a vehicle for a syntactic object (or a representation of).
-        The syntactic object may have its own model, so getting values from there may take few @properties
-        :param value: syntactic object
-        :return:
-        """
-        if self.model.touch('syntactic_object', value):
-            self.model.syntactic_object = value
-
-    @property
-    def label(self):
-        """ Label refers to syntactic object's label. If there is no syntactic object there is no label.
-        Labels are important for syntactic manipulation.
-        :return: str or ITextNode
-        """
-        if self.syntactic_object:
-            return self.syntactic_object.label
-
-    @label.setter
-    def label(self, value):
-        """ Label refers to syntactic object's label. If there is no syntactic object there is no label.
-        Labels are important for syntactic manipulation.
-        :param value: str or ITextNode
-        """
-        if self.model.touch_syntactic_object('label', value):
-            self.syntactic_object.label = value
-            self._inode_changed = True
-
-    @property
-    def edges_up(self):
-        """ Edges up is a list of those edges that lead INTO this node, eg. these can be followed to get the parent
-        nodes.
-        :return: list (or set?) of Edge instances or None
-        """
-        return self.model.edges_up
-
-    @edges_up.setter
-    def edges_up(self, value):
-        """ Edges up is a list of those edges that lead INTO this node, eg. these can be followed to get the parent
-        nodes.
-        :param value: list of Edge instances or None
-        """
-        if value is None:
-            value = []
-        if self.model.touch('edges_up', value):
-            self.model.edges_up = value
-
-    @property
-    def edges_down(self):
-        """ Edges down is a list of those edges that leave FROM this node, eg. these can be followed to get the child
-        nodes.
-        :return: list of Edge instances or None
-        """
-        return self.model.edges_down
-
-    @edges_down.setter
-    def edges_down(self, value):
-        """ Edges down is a list of those edges that leave FROM this node, eg. these can be followed to get the child
-        nodes.
-        :param value: list (or set?) of Edge instances or None
-        """
-        if value is None:
-            value = []
-        if self.model.touch('edges_down', value):
-            self.model.edges_down = value
-
-    @property
-    def triangle(self):
-        """ Should the node be drawn as a triangle """
-        return self.model.triangle
-
-    @triangle.setter
-    def triangle(self, value):
-        """ Should the node be drawn as a triangle
-        :param value: bool """
-        if value is None:
-            value = False
-        if self.model.touch('triangle', value):
-            self.model.triangle = value
-            self._inode_changed = True
-            self.triangle_updated(value)
+    def if_changed_triangle(self, value):
+        self._inode_changed = True
+        self.triangle_updated(value)
 
     def triangle_updated(self, value):
         """ update label positioning here so that offset doesn't need to be stored in save files and it
@@ -281,69 +169,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
                 self._label_complex.y_offset = 0
             self.update_label()
 
-    @property
-    def folded_away(self):
-        """ Flag to announce that node exists, but it is currently folded away
-        :return:
-        """
-        return self.model.folded_away
-
-    @folded_away.setter
-    def folded_away(self, value):
-        if value is None:
-            value = False
-        if self.model.touch('folded_away', value):
-            self.model.folded_away = value
-
-    @property
-    def folding_towards(self):
-        """ Stores the triangle base node when a node is part of a triangle.
-        :return: Node
-        """
-        return self.model.folding_towards
-
-    @folding_towards.setter
-    def folding_towards(self, value):
-        """ Stores the triangle base node when a node is part of a triangle.
-        :param value: Node
-        """
-        if self.model.touch('folding_towards', value):
-            self.model.folding_towards = value
-            self.update_position()
-
-    @property
-    def node_color(self):
-        """ Node can have indivisual color set, if not then uses color set for that node type.
-        :return:
-        """
-        return self.model.color
-
-    @node_color.setter
-    def node_color(self, value):
-        """ Node can have indivisual color set, if not then uses color set for that node type.
-        :param value: color name
-        """
-        if self.model.touch('node_color', value):
-            self.model.node_color = value
-
-    # fixme: Ok why is this doubling constituentnode's index? do other nodes need index too?
-    @property
-    def index(self):
-        """ Node can have index to allow reversable multidomination
-        :return:
-        """
-        return self.model.index
-
-    @index.setter
-    def index(self, value):
-        """ Node can have index to allow reversable multidomination
-        :param value: string or INode
-        """
-        if value is None:
-            value = ''
-        if self.model.touch('index', value):
-            self.model.index = value
-            self._inode_changed = True
+    def if_changed_folding_towards(self, value):
+        self.update_position()
 
     # Non-model-based properties ########################################
 
@@ -387,7 +214,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
     def __repr__(self):
         """ This is a node and this represents this UG item """
-        return '%s-%s' % (self.model.syntactic_object, self.model.save_key)
+        return '%s-%s' % (self.syntactic_object, self.save_key)
 
     def reset(self):
         """
@@ -475,21 +302,21 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :param edge_type: int, only return Edges of certain subclass.
         :return: list of Nodes
         """
-        if not self.model.edges_down:
+        if not self.edges_down:
             return []
         if only_similar or edge_type is not None:
             if edge_type is None:
                 edge_type = self.__class__.default_edge_type
             if only_visible:
-                return [edge.end for edge in self.model.edges_down if
+                return [edge.end for edge in self.edges_down if
                         edge.edge_type == edge_type and edge.end and edge.end.is_visible()]
             else:
-                return [edge.end for edge in self.model.edges_down if edge.edge_type == edge_type and edge.end]
+                return [edge.end for edge in self.edges_down if edge.edge_type == edge_type and edge.end]
         else:
             if only_visible:
-                return [edge.end for edge in self.model.edges_down if edge.end and edge.end.is_visible()]
+                return [edge.end for edge in self.edges_down if edge.end and edge.end.is_visible()]
             else:
-                return [edge.end for edge in self.model.edges_down if edge.end]
+                return [edge.end for edge in self.edges_down if edge.end]
 
     def get_parents(self, only_similar=True, only_visible=False, edge_type=None):
         """
@@ -499,19 +326,19 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :param edge_type: int, only return Edges of certain subclass.
         :return: list of Nodes
         """
-        if not self.model.edges_up:
+        if not self.edges_up:
             return []
         if only_similar or edge_type is not None:
             if edge_type is None:
                 edge_type = self.__class__.default_edge_type
             if only_visible:
-                return [edge.start for edge in self.model.edges_up if
+                return [edge.start for edge in self.edges_up if
                         edge.edge_type == edge_type and edge.start and edge.start.is_visible()]
             else:
-                return [edge.start for edge in self.model.edges_up if edge.edge_type == edge_type and edge.start]
+                return [edge.start for edge in self.edges_up if edge.edge_type == edge_type and edge.start]
         else:
             if only_visible:
-                return [edge.start for edge in self.model.edges_up if edge.start and edge.start.is_visible()]
+                return [edge.start for edge in self.edges_up if edge.start and edge.start.is_visible()]
             else:
                 return [edge.start for edge in self.edges_up if edge.start]
 
@@ -1203,3 +1030,22 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             edge.start_node_stopped_moving()
         for edge in self.edges_up:
             edge.end_node_stopped_moving()
+
+    # ############## #
+    #                #
+    #  Save support  #
+    #                #
+    # ############## #
+
+    # Properties delegated to syntactic object
+    label = Synobj("label", if_changed=alert_inode)
+    index = Synobj("index", if_changed=alert_inode)
+
+    # Saved properties
+    syntactic_object = Saved("syntactic_object")
+    edges_up = Saved("edges_up")
+    edges_down = Saved("edges_down")
+    triangle = Saved("triangle", if_changed=if_changed_triangle)
+    folded_away = Saved("folded_away")
+    folding_towards = Saved("folding_towards", if_changed=if_changed_folding_towards)
+    color_id = Saved("color_id")

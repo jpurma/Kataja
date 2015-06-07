@@ -24,7 +24,7 @@ GlossNode is a Node to display translation or explanation of a constituent
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
+from kataja.BaseModel import Synobj
 from kataja.Node import Node
 from kataja.globals import GLOSS_EDGE, GLOSS_NODE
 from kataja.singletons import ctrl
@@ -43,6 +43,7 @@ class GlossNode(Node):
     height = 20
     default_edge_type = GLOSS_EDGE
     node_type = GLOSS_NODE
+    short_name = "GNode"
 
     def __init__(self, text=''):
         Node.__init__(self)
@@ -60,7 +61,7 @@ class GlossNode(Node):
         self.update_label()
         self.update_bounding_rect()
         self.update_visibility()
-        self.model.announce_creation()
+        self.announce_creation()
         ctrl.forest.store(self)
 
     @property
@@ -72,29 +73,31 @@ class GlossNode(Node):
         """
         return self.get_parents(edge_type=GLOSS_EDGE)
 
+    def if_changed_label(self, value):
+        for host in self.hosts:
+            host.gloss = value
+        self.label = value
+        self._inode_changed = True
 
     @property
     def label(self):
-        return self.model.label
+        for host in self.hosts:
+            if host.gloss:
+                return host.gloss
 
     @label.setter
     def label(self, value):
         for host in self.hosts:
             host.gloss = value
-        self.model.label = value
         self._inode_changed = True
-
 
     @property
     def text(self):
-        return self.model.label
+        return self.label
 
     @text.setter
     def text(self, value):
-        for host in self.hosts:
-            host.gloss = value
-        self.model.label = value
-        self._inode_changed = True
+        self.label = value
 
     def update_colors(self):
         """
@@ -121,3 +124,9 @@ class GlossNode(Node):
             print('gloss node inode is: ', self._inode)
             self._inode_changed = False
         return self._inode
+
+    # ############## #
+    #                #
+    #  Save support  #
+    #                #
+    # ############## #

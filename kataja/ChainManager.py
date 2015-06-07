@@ -9,7 +9,8 @@ from kataja.singletons import ctrl
 
 # ### Chains #######################################################################
 
-# # chains should hold tuples of (node, parent), where node can be either real node or trace, and the parent provides the reliable/restorable identity/location for the trace.
+# chains should hold tuples of (node, parent), where node can be either real node or trace, and
+# the parent provides the reliable/restorable identity/location for the trace.
 
 ChainItem = namedtuple('ChainItem', ['node', 'parent', 'is_head'])
 
@@ -101,7 +102,6 @@ class ChainManager:
             # print('used trace-based rebuild, received chains: ', self.chains)
             # print(self.traces_from_bottom)
 
-
     def rebuild_chains_from_multidomination(self):
         """ When building chains from multidomination, the end result should consist of list of
         (node, parent, is_head)-tuples, where the first element is the head, and topmost instance in tree,
@@ -149,7 +149,6 @@ class ChainManager:
             self.chains[key] = new_values
             # print('used multidomination-based rebuild, received chains: ', self.chains)
 
-
     def group_traces_to_chain_head(self):
         """ Move traces to their multidominant originals, purely didactic thing """
         self.rebuild_chains()
@@ -178,7 +177,6 @@ class ChainManager:
         self.forest.settings.traces_are_grouped_together = True
         self.forest.settings.uses_multidomination = False
 
-
     def traces_to_multidomination(self):
         """Switch traces to multidominant originals, also mirror changes in syntax  """
         self.rebuild_chains()
@@ -187,7 +185,6 @@ class ChainManager:
                 original = self.get_chain_head(trace.index)
                 self.forest.replace_node(trace, original)
         self.forest.settings.uses_multidomination = True
-
 
     def multidomination_to_traces(self):
         """ Switch multidominated elements to use traces instead  """
@@ -204,7 +201,6 @@ class ChainManager:
                     self.forest.replace_node(head, trace, only_for_parent=parent)
         self.forest.settings.uses_multidomination = False
         self.forest.settings.traces_are_grouped_together = False
-
 
     def next_free_index(self):
         """ Return the next available letter suitable for indexes (i, j, k, l...)

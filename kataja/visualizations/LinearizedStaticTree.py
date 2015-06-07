@@ -57,7 +57,7 @@ class LinearizedStaticTree(BalancedTree):
         if reset:
             self.forest.settings.bracket_style = g.NO_BRACKETS
             self.forest.settings.show_constituent_edges = True
-            self.forest.vis_data = {'name': self.__class__.name, 'rotation': 0}
+            self.set_vis_data('rotation', 0)
             for node in self.forest.visible_nodes():
                 self.reset_node(node)
 
@@ -83,7 +83,7 @@ class LinearizedStaticTree(BalancedTree):
 
 
         """
-        self.forest.vis_data['rotation'] -= 1
+        self.set_vis_data('rotation', self.get_vis_data('rotation') - 1)
 
 
     # @time_me
@@ -113,8 +113,9 @@ class LinearizedStaticTree(BalancedTree):
         edge_width = prefs.edge_width / 2
         merged_grid = Grid()
 
-        self.forest.vis_data['rotation'], self.traces_to_draw = self._compute_traces_to_draw(
-            self.forest.vis_data['rotation'])
+        new_rotation, self.traces_to_draw = self._compute_traces_to_draw(
+            self.get_vis_data('rotation'))
+        self.set_vis_data('rotation', new_rotation)
 
 
         def _get_gride_size(node):

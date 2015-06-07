@@ -61,7 +61,7 @@ class LeftFirstTree(BaseVisualization):
         if reset:
             self.forest.settings.bracket_style = g.NO_BRACKETS
             self.forest.settings.show_constituent_edges = True
-            self.forest.vis_data = {'name': self.__class__.name, 'rotation': 0}
+            self.set_vis_data('rotation', 0)
             for node in self.forest.visible_nodes():
                 self.reset_node(node)
 
@@ -85,7 +85,7 @@ class LeftFirstTree(BaseVisualization):
     @caller
     def reselect(self):
         """ if there are different modes for one visualization, rotating between different modes is triggered here. """
-        self.forest.vis_data['rotation'] -= 1
+        self.set_vis_data('rotation', self.get_vis_data('rotation') - 1)
 
     def _indent(self, node, c):
         left = node.left()
@@ -185,8 +185,9 @@ class LeftFirstTree(BaseVisualization):
         edge_width = prefs.edge_width
         merged_grid = Grid()
         self._indentation = 0
-        self.forest.vis_data['rotation'], self.traces_to_draw = self._compute_traces_to_draw(
-            self.forest.vis_data['rotation'])
+        new_rotation, self.traces_to_draw = self._compute_traces_to_draw(
+            self.get_vis_data('rotation'))
+        self.set_vis_data('rotation', new_rotation)
         for root in self.forest:
             grid = Grid()
             if isinstance(root, ConstituentNode):

@@ -58,6 +58,8 @@ feature= ConfigurableFeature
 class ConfigurableUG:
     """ Configurable UG has lots of possible axioms and definitions and UG uses a partial set of these """
 
+    short_name = "ConfFL"
+
     def __init__(self, config_path='kataja.cfg'):
         self.config = ConfigParser()
         # self.config.readfp(io.BytesIO(DEFAULT))
@@ -1373,6 +1375,15 @@ class ConfigurableUG:
 
         print(linear)
         return linear
+
+
+    # ############## #
+    #                #
+    #  Save support  #
+    #                #
+    # ############## #
+
+
 
 
 def _closest_parents(A, context, is_not=None, parent_list=None):

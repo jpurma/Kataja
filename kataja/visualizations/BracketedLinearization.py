@@ -55,7 +55,6 @@ class BracketedLinearization(BaseVisualization):
         self._hits = {}
         self._max_hits = {}
         if reset:
-            self.forest.vis_data = {'name': self.__class__.name}
             self.forest.settings.bracket_style = g.NO_BRACKETS
             self.forest.settings.show_constituent_edges = False
             for node in self.forest.visible_nodes():

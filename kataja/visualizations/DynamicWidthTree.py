@@ -55,12 +55,12 @@ class DynamicWidthTree(BaseVisualization):
         self.forest = forest
         self._directed = True
         if reset:
-            self.forest.vis_data = {'name': self.__class__.name, 'push': 20}
+            self.set_vis_data('push', 20)
             self.forest.settings.show_constituent_edges = True
             self.forest.settings.bracket_style = g.NO_BRACKETS
             for node in self.forest.visible_nodes():
                 self.reset_node(node)
-        self.push = self.forest.vis_data['push']
+        self.push = self.get_vis_data('push')
         self._linear = self.linearize_all()
 
     def linearize_all(self):
@@ -92,13 +92,13 @@ class DynamicWidthTree(BaseVisualization):
 
 
         """
-        push = self.forest.vis_data['push']
+        push = self.get_vis_data('push')
         push -= 5
         if push > 30:
             push = 10
         if push < 5:
             push = 30
-        self.forest.vis_data['push'] = push
+        self.set_vis_data('push', push)
         self.push = push
         ctrl.add_message('Push: %s' % push)
 

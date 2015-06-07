@@ -27,26 +27,10 @@ import random
 from PyQt5 import QtWidgets, QtCore
 
 from kataja.singletons import prefs, qt_prefs, ctrl
-from kataja.BaseModel import BaseModel
-
-class MovableModel(BaseModel):
-    """ Stored values for all Movable objects. Base class for Nodes, Brackets etc. elements that are part of
-    the actual visualization and need to animate nicely
-    :param host: Movable instance
-    """
-
-    def __init__(self, host):
-        super().__init__(host)
-        self.algo_position = (0, 0, 0)
-        self.adjustment = None
-        self.fixed_position = None
-        self.visible = True  # avoid isVisible for detecting if something is folded away
-        self.dyn_x = False
-        self.dyn_y = False
-        self.dyn_z = False
+from kataja.BaseModel import BaseModel, Saved
 
 
-class Movable:
+class Movable(BaseModel):
     """ Movable objects have support for smooth movement from one point to another with
         set_target_position, and fade_in and fade_out. Once set, the animation derivation_steps are
         triggered by timerEvent in GraphScene.
@@ -54,6 +38,7 @@ class Movable:
         Class using Movable has to inherit also some kind of QtGraphicsItem,
         otherwise its positioning methods won't work.
         """
+    short_name = "Movable" # shouldn't be used on its own
 
     def __init__(self):
         """ Basic properties for any scene objects
@@ -66,13 +51,12 @@ class Movable:
             adjustment to zero if necessary.
             always restore adjustment to zero when dealing with dynamic nodes.
              """
-        if not hasattr(self, 'model'):
-            self.model = MovableModel(self)
+        super().__init__()
+        self._initializing = True
         self.z = 0
         self._x_step, self._y_step, self._z_step = 0, 0, 0
         self._current_position = ((random.random() * 150) - 75, (random.random() * 150) - 75, 0)
         self._target_position = (0, 0, 0)
-        # + user-made adjustments
         self._move_counter = 0
         self._use_easing = True
         self._fade_in_counter = 0
@@ -84,13 +68,15 @@ class Movable:
         self.clickable = False
         self._hovering = False
         self.forced_movement = False
+        self.algo_position = (0, 0, 0)
+        self.adjustment = None
+        self.fixed_position = None
+        self.visible = True  # avoid isVisible for detecting if something is folded away
+        self.dyn_x = False
+        self.dyn_y = False
+        self.dyn_z = False
+        self._initializing = False
 
-    @property
-    def save_key(self):
-        """ Return the save_key from the model. It is a property from BaseModel.
-        :return: str
-        """
-        return self.model.save_key
 
     def after_model_update(self, updated_fields, update_type):
         """ This is called after the item's model has been updated, to run the side-effects of various
@@ -103,118 +89,11 @@ class Movable:
         self.update_position()
 
     @property
-    def algo_position(self):
-        """ Return the computed position, which was set by visualization algorithm.
-        :return: tuple (x, y, z)
-        """
-        return self.model.algo_position
-
-    @algo_position.setter
-    def algo_position(self, value):
-        """ Set the computed position of this item. This is usually called by visualization algorithm.
-        :param value: tuple (x, y, z)
-        """
-        if self.model.touch('algo_position', value):
-            self.model.algo_position = value
-            self.update_position()
-
-    @property
-    def adjustment(self):
-        """Return adjustments, which are user-made fine tuning to objects computed coordinates.
-        :return: tuple (dx, dy, dz)"""
-        return self.model.adjustment
-
-    @adjustment.setter
-    def adjustment(self, value):
-        """ Set adjustments, which are user-made fine tuning to objects computed coordinates.
-        :param value: tuple (dx, dy, dz)
-        """
-        if self.model.touch('adjustment', value):
-            self.model.adjustment = value
-            self.update_position()
-
-    @property
-    def fixed_position(self):
-        """ Return the fixed position, set by user.
-        :return: tuple (x, y, z) or None
-        """
-        return self.model.fixed_position
-
-    @fixed_position.setter
-    def fixed_position(self, value):
-        """ Set the fixed position, making the object stick there and ignore dynamic moving.
-        :param value: tuple (x, y, z) or None
-        """
-        if self.model.touch('fixed_position', value):
-            self.model.fixed_position = value
-            self.update_position()
-
-    @property
-    def visible(self):
-        """ Is the element toggled visible/invisible by user decision.
-        :return: bool
-        """
-        return self.model.visible
-
-    @visible.setter
-    def visible(self, value):
-        """ Is the element toggled visible/invisible by user decision.
-        :param value: bool
-        """
-        if self.model.touch('visible', value):
-            self.model.visible = value
-
-    @property
-    def dyn_x(self):
-        """ Dynamic movement is ignored for x-dimension
-        :return: bool
-        """
-        return self.model.dyn_x
-
-    @dyn_x.setter
-    def dyn_x(self, value):
-        """ Dynamic movement is ignored for x-dimension
-        :param value: bool
-        """
-        if self.model.touch('dyn_x', value):
-            self.model.dyn_x = value
-
-    @property
-    def dyn_y(self):
-        """ Dynamic movement is ignored for y-dimension
-        :return: bool
-        """
-        return self.model.dyn_y
-
-    @dyn_y.setter
-    def dyn_y(self, value):
-        """ Dynamic movement is ignored for y-dimension
-        :param value: bool
-        """
-        if self.model.touch('dyn_y', value):
-            self.model.dyn_y = value
-
-    @property
-    def dyn_z(self):
-        """ Dynamic movement is ignored for z-dimension
-        :return: bool
-        """
-        return self.model.dyn_z
-
-    @dyn_z.setter
-    def dyn_z(self, value):
-        """ Dynamic movement is ignored for z-dimension
-        :param value: bool
-        """
-        if self.model.touch('dyn_z', value):
-            self.model.dyn_z = value
-
-    @property
     def use_fixed_position(self):
         """ Element ignores dynamic movement
         :return: bool
         """
-        return self.model.fixed_position is not None
+        return self.fixed_position is not None
 
     # ## Not saved properties, but otherwise interesting
 
@@ -253,6 +132,15 @@ class Movable:
         """
         return not (self.dyn_x and self.dyn_y)
 
+    def autoupdate_position(self, value):
+        """ update position, callable by if_changed-hooks in properties.
+        doesn't start anything if still initializing the object
+        :param value:
+        :return:
+        """
+        if not self._initializing:
+            self.update_position()
+
     def update_position(self, instant=False):
         """ Compute new current_position and target_position
         :param instant: don't animate (for e.g. dragging)
@@ -275,8 +163,6 @@ class Movable:
                 self.start_moving()
             else:
                 self.stop_moving()
-
-
 
     def reset(self):
         """ Remove mode information, eg. hovering
@@ -512,3 +398,17 @@ class Movable:
         :return: boolean
         """
         return self.fixed_position or self.adjustment
+
+    # ############## #
+    #                #
+    #  Save support  #
+    #                #
+    # ############## #
+
+    algo_position = Saved("algo_position", if_changed=autoupdate_position)
+    adjustment = Saved("adjustment", if_changed=autoupdate_position)
+    fixed_position = Saved("fixed_position", if_changed=autoupdate_position)
+    visible = Saved("visible")  # avoid isVisible for detecting if something is folded away
+    dyn_x = Saved("dyn_x")
+    dyn_y = Saved("dyn_y")
+    dyn_z = Saved("dyn_z")

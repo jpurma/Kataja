@@ -46,7 +46,7 @@ from kataja.Edge import Edge
 from kataja.UndoManager import UndoManager
 from kataja.utils import to_tuple, caller
 from kataja.FeatureNode import FeatureNode
-from kataja.BaseModel import BaseModel
+from kataja.BaseModel import BaseModel, Saved
 import kataja.globals as g
 
 ONLY_LEAF_LABELS = 0
@@ -54,28 +54,7 @@ ALL_LABELS = 1
 ALIASES = 2
 
 
-class ForestModel(BaseModel):
-    """ Saved values of Forest
-    :param host: Forest instance
-    """
-
-    def __init__(self, host):
-        super().__init__(host)
-        self.roots = []  # the current line of trees
-        self.nodes = {}
-        self.edges = {}
-        self.others = {}
-        self.settings = None
-        self.rules = None
-        self.vis_data = {}
-        self.derivation_steps = None
-        self.merge_counter = 0
-        self.select_counter = 0
-        self.comments = []
-        self.gloss_text = ''
-
-
-class Forest:
+class Forest(BaseModel):
     """ Forest is a group of trees that together form one view.
     Often there needs to be more than one tree visible at same time,
      so that they can be compared or to show states of construction
@@ -84,10 +63,11 @@ class Forest:
       Forest also takes care of the operations manipulating, creating and
       removing trees. """
 
+    short_name = "Fore"
+
     def __init__(self, buildstring='', definitions=None, gloss_text='', comments=None):
         """ Create an empty forest """
-        if not hasattr(self, 'model'):
-            self.model = ForestModel(self)
+        super().__init__()
         self.nodes_from_synobs = {}
         self.main = ctrl.main
         self.main.forest = self  # assign self to be the active forest while creating the managers.
@@ -98,9 +78,18 @@ class Forest:
         self.parser = INodeToKatajaConstituent(self)
         self.undo_manager = UndoManager(self)
         self.chain_manager = ChainManager(self)
-        self.model.settings = ForestSettings()
-        self.model.rules = ForestRules()
-        self.model.derivation_steps = DerivationStepManager(self)
+        self.settings = ForestSettings()
+        self.rules = ForestRules()
+        self.derivation_steps = DerivationStepManager()
+        self.roots = []  # the current line of trees
+        self.nodes = {}
+        self.edges = {}
+        self.others = {}
+        self.vis_data = {}
+        self.merge_counter = 0
+        self.select_counter = 0
+        self.comments = []
+        self.gloss_text = ''
 
         if buildstring:
             self.create_tree_from_string(buildstring)
@@ -128,14 +117,6 @@ class Forest:
                 if node.syntactic_object:
                     self.nodes_from_synobs[node.syntactic_object.save_key] = node
 
-    @property
-    def save_key(self):
-        """
-
-
-        :return:
-        """
-        return self.model.save_key
 
     def after_init(self):
         """ After_init is called in 2nd step in process of creating objects:
@@ -151,233 +132,6 @@ class Forest:
         # if node.syntactic_object:
         # self.nodes_by_uid[node.syntactic_object.save_key] = node
 
-    @property
-    def roots(self):
-        """
-
-
-        :return:
-        """
-        return self.model.roots
-
-    # oh hell. undo operation does not recognize changes inside dicts, lists, sets etc.
-    # fixed it, use 'poke', like self.model.poke(attributename) before making changes in containers attributes
-    @roots.setter
-    def roots(self, value):
-        """
-
-        :param value:
-        """
-        if value is None:
-            value = []
-        if self.model.touch('roots', value):
-            self.model.roots = value
-
-    @property
-    def nodes(self):
-        """
-
-
-        :return:
-        """
-        return self.model.nodes
-
-    @nodes.setter
-    def nodes(self, value):
-        """
-
-        :param value:
-        """
-        if value is None:
-            value = {}
-        if self.model.touch('nodes', value):
-            self.model.nodes = value
-
-    @property
-    def edges(self):
-        """
-
-
-        :return:
-        """
-        return self.model.edges
-
-    @edges.setter
-    def edges(self, value):
-        """
-
-        :param value:
-        """
-        if value is None:
-            value = {}
-        if self.model.touch('edges', value):
-            self.model.edges = value
-
-    @property
-    def others(self):
-        """
-
-
-        :return:
-        """
-        return self.model.others
-
-    @others.setter
-    def others(self, value):
-        """
-
-        :param value:
-        """
-        if value is None:
-            value = {}
-        if self.model.touch('others', value):
-            self.model.others = value
-
-    @property
-    def settings(self):
-        """
-
-
-        :return:
-        """
-        return self.model.settings
-
-    @settings.setter
-    def settings(self, value):
-        """
-
-        :param value:
-        """
-        if self.model.touch('settings', value):
-            self.model.settings = value
-
-    @property
-    def rules(self):
-        """
-
-
-        :return:
-        """
-        return self.model.rules
-
-    @rules.setter
-    def rules(self, value):
-        """
-
-        :param value:
-        """
-        if self.model.touch('rules', value):
-            self.model.rules = value
-
-    @property
-    def vis_data(self):
-        """
-
-
-        :return:
-        """
-        return self.model.vis_data
-
-    @vis_data.setter
-    def vis_data(self, value):
-        """
-
-        :param value:
-        """
-        if value is None:
-            value = {}
-        if self.model.touch('vis_data', value):
-            self.model.vis_data = value
-
-    @property
-    def derivation_steps(self):
-        """
-
-
-        :return:
-        """
-        return self.model.derivation_steps
-
-    @derivation_steps.setter
-    def derivation_steps(self, value):
-        """
-
-        :param value:
-        """
-        if self.model.touch('derivation_steps', value):
-            self.model.derivation_steps = value
-
-    @property
-    def merge_counter(self):
-        """
-
-
-        :return:
-        """
-        return self.model.merge_counter
-
-    @merge_counter.setter
-    def merge_counter(self, value):
-        """
-
-        :param value:
-        """
-        if self.model.touch('merge_counter', value):
-            self.model.merge_counter = value
-
-    @property
-    def select_counter(self):
-        """
-
-
-        :return:
-        """
-        return self.model.select_counter
-
-    @select_counter.setter
-    def select_counter(self, value):
-        """
-
-        :param value:
-        """
-        if self.model.touch('select_counter', value):
-            self.model.select_counter = value
-
-    @property
-    def comments(self):
-        """
-
-
-        :return:
-        """
-        return self.model.comments
-
-    @comments.setter
-    def comments(self, value):
-        """
-
-        :param value:
-        """
-        if self.model.touch('comments', value):
-            self.model.comments = value
-
-    @property
-    def gloss_text(self):
-        """
-
-
-        :return:
-        """
-        return self.model.gloss_text
-
-    @gloss_text.setter
-    def gloss_text(self, value):
-        """
-
-        :param value:
-        """
-        if self.model.touch('gloss_text', value):
-            self.model.gloss_text = value
 
     @property
     def scene(self):
@@ -392,15 +146,14 @@ class Forest:
         :return: None
         """
         self.in_display = True
-        ctrl.disable_undo = True
+        ctrl.undo_disabled = True
         self.update_colors()
         self.add_all_to_scene()
         self.update_visualization()
         self.scene.manual_zoom = False
         ctrl.ui.update_all_fields()
-        self.undo_manager.init_if_empty()
         self.draw()  # do draw once to avoid having the first draw in undo stack.
-        ctrl.disable_undo = False
+        ctrl.undo_disabled = False
 
     def retire_from_drawing(self):
         """ Announce that this forest should not try to work with scene anymore --
@@ -499,16 +252,18 @@ class Forest:
             self.gloss = None
 
     @caller
-    def change_visualization(self, key):
+    def change_visualization(self, name):
         """ Switches the active visualization to visualization with given key
         :param key: string
         """
-        print('changing visualization to ', key)
-        if self.visualization and self.visualization.__class__.name == key:
+        print('changing visualization to ', name)
+        if self.visualization and self.visualization.say_my_name() == name:
             self.visualization.reselect()
         else:
             vs = self.main.visualizations
-            self.visualization = vs.get(key, vs.get(prefs.default_visualization, None))
+            self.visualization = vs.get(name, vs.get(prefs.default_visualization, None))
+            self.vis_data = {'name': self.visualization.say_my_name()}
+
             self.visualization.prepare(self)
         self.main.graph_scene.manual_zoom = False
 
@@ -516,9 +271,9 @@ class Forest:
         """ Verify that the active visualization is the same as defined in the vis_data (saved visualization state)
         :return: None
         """
-        key = self.vis_data.get('name', None)
-        if (not self.visualization) or key != self.visualization.__class__.name:
-            self.change_visualization(key)
+        name = self.vis_data.get('name', None)
+        if (not self.visualization) or name != self.visualization.say_my_name():
+            self.change_visualization(name)
 
     # ### Maintenance and support methods ################################################
 
@@ -567,16 +322,16 @@ class Forest:
         # self.features[item.key] = item
 
         if isinstance(item, Node):
-            self.model.poke('nodes')
+            self.poke('nodes')
             self.nodes[item.save_key] = item
             if item.syntactic_object:
                 # remember to rebuild nodes_by_uid in undo/redo, as it is not stored in model
                 self.nodes_from_synobs[item.syntactic_object.save_key] = item
         elif isinstance(item, Edge):
-            self.model.poke('edges')
+            self.poke('edges')
             self.edges[item.save_key] = item
         elif isinstance(item, TextArea):
-            self.model.poke('others')
+            self.poke('others')
             self.others[item.save_key] = item
         elif isinstance(item, Bracket):
             self.bracket_manager.store(item)
@@ -584,7 +339,7 @@ class Forest:
         else:
             key = getattr(item, 'save_key', '') or getattr(item, 'key', '')
             if key and key not in self.others:
-                self.model.poke('others')
+                self.poke('others')
                 self.others[key] = item
             else:
                 print('F trying to store broken type:', item.__class__.__name__)
@@ -713,10 +468,10 @@ class Forest:
         has_parents = bool([x for x in node.edges_up if x.edge_type is g.CONSTITUENT_EDGE])
         if node in self.roots:
             if has_parents:
-                self.model.poke('roots')
+                self.poke('roots')
                 self.roots.remove(node)
         elif not has_parents:
-            self.model.poke('roots')
+            self.poke('roots')
             self.roots.append(node)
 
     # not used
@@ -1073,19 +828,19 @@ class Forest:
         self.bracket_manager.remove_brackets(node)
         # -- dictionaries --
         if node.save_key in self.nodes:
-            self.model.poke('nodes')
+            self.poke('nodes')
             del self.nodes[node.save_key]
         if node.syntactic_object and node.syntactic_object.save_key in self.nodes_from_synobs:
             del self.nodes_from_synobs[node.syntactic_object.save_key]
         if node in self.roots:
-            self.model.poke('roots')
+            self.poke('roots')
             self.roots.remove(node)
         # -- scene --
         sc = node.scene()
         if sc:
             sc.removeItem(node)
         # -- undo stack --
-        node.model.announce_deletion()
+        node.announce_deletion()
 
     def delete_edge(self, edge, ignore_consequences=False):
         """ remove from scene and remove references from nodes
@@ -1100,32 +855,32 @@ class Forest:
         if not ignore_consequences:
             if start_node:
                 if edge in start_node.edges_down:
-                    start_node.model.poke('edges_down')
+                    start_node.poke('edges_down')
                     start_node.edges_down.remove(edge)
                 if edge in start_node.edges_up:  # shouldn't happen
-                    start_node.model.poke('edges_up')
+                    start_node.poke('edges_up')
                     start_node.edges_up.remove(edge)
                     self.update_root_status(start_node)
             if end_node:
                 if edge in end_node.edges_down:  # shouldn't happen
-                    end_node.model.poke('edges_down')
+                    end_node.poke('edges_down')
                     end_node.edges_down.remove(edge)
                 if edge in end_node.edges_up:
-                    end_node.model.poke('edges_up')
+                    end_node.poke('edges_up')
                     end_node.edges_up.remove(edge)
                     self.update_root_status(end_node)
         # -- ui elements --
         self.main.ui_manager.delete_ui_elements_for(edge)
         # -- dictionaries --
         if edge.save_key in self.edges:
-            self.model.poke('edges')
+            self.poke('edges')
             del self.edges[edge.save_key]
         # -- scene --
         sc = edge.scene()
         if sc:
             sc.removeItem(edge)
         # -- undo stack --
-        edge.model.announce_deletion()
+        edge.announce_deletion()
 
     def delete_item(self, item, ignore_consequences=False):
         """ User-triggered deletion (e.g backspace on selection)
@@ -1155,11 +910,11 @@ class Forest:
         assert new_start.save_key in self.nodes
         if edge.start:
             ForestSyntax.disconnect_edge(edge)
-            edge.start.model.poke('edges_down')
+            edge.start.poke('edges_down')
             edge.start.edges_down.remove(edge)
         edge.connect_end_points(new_start, edge.end)
         ForestSyntax.connect_according_to_edge(edge)
-        new_start.model.poke('edges_down')
+        new_start.poke('edges_down')
         new_start.edges_down.append(edge)
 
     def set_edge_end(self, edge, new_end):
@@ -1171,12 +926,12 @@ class Forest:
         assert new_end.save_key in self.nodes
         if edge.end:
             ForestSyntax.disconnect_edge(edge)
-            edge.end.model.poke('edges_up')
+            edge.end.poke('edges_up')
             edge.end.edges_up.remove(edge)
             self.update_root_status(edge.end)
         edge.connect_end_points(edge.start, new_end)
         ForestSyntax.connect_according_to_edge(edge)
-        new_end.model.poke('edges_up')
+        new_end.poke('edges_up')
         new_end.edges_up.append(edge)
         self.update_root_status(new_end)
         self.update_root_status(edge.start)
@@ -1192,18 +947,18 @@ class Forest:
         assert new_end.save_key in self.nodes
         if edge.start:
             ForestSyntax.disconnect_edge(edge)
-            edge.start.model.poke('edges_down')
+            edge.start.poke('edges_down')
             edge.start.edges_down.remove(edge)
         if edge.end:
             ForestSyntax.disconnect_edge(edge)
-            edge.end.model.poke('edges_up')
+            edge.end.poke('edges_up')
             edge.end.edges_up.remove(edge)
             self.update_root_status(edge.end)
         edge.connect_end_points(new_start, new_end)
         ForestSyntax.connect_according_to_edge(edge)
-        new_end.model.poke('edges_up')
+        new_end.poke('edges_up')
         new_end.edges_up.append(edge)
-        new_start.model.poke('edges_down')
+        new_start.poke('edges_down')
         new_start.edges_down.append(edge)
         self.update_root_status(new_start)
         self.update_root_status(new_end)
@@ -1215,7 +970,7 @@ class Forest:
         """
         if edge.start:
             ForestSyntax.disconnect_edge(edge)
-            edge.model.poke('edges_down')
+            edge.poke('edges_down')
             edge.start.edges_down.remove(edge)
         edge.start = None
         edge.make_relative_vector()
@@ -1229,7 +984,7 @@ class Forest:
         """
         if edge.end:
             ForestSyntax.disconnect_edge(edge)
-            edge.model.poke('edges_up')
+            edge.poke('edges_up')
             edge.end.edges_up.remove(edge)
             self.update_root_status(edge.end)
         edge.end = None
@@ -1677,15 +1432,15 @@ class Forest:
             edge = first.get_edge_to(second, edge_type)
         if edge:
             if edge.start == first:
-                first.model.poke('edges_down')
+                first.poke('edges_down')
                 first.edges_down.remove(edge)
-                second.model.poke('edges_up')
+                second.poke('edges_up')
                 second.edges_up.remove(edge)
                 self.update_root_status(second)
             elif edge.end == first:
-                second.model.poke('edges_down')
+                second.poke('edges_down')
                 second.edges_down.remove(edge)
-                first.model.poke('edges_up')
+                first.poke('edges_up')
                 first.edges_up.remove(edge)
                 self.update_root_status(first)
             ForestSyntax.disconnect_edge(edge)
@@ -1972,3 +1727,22 @@ class Forest:
         """
         print('parse_features called')
         return self.parser.parse_definition(string, node)
+
+    # ############## #
+    #                #
+    #  Save support  #
+    #                #
+    # ############## #
+
+    roots = Saved("roots") # the current line of trees
+    nodes = Saved("nodes")
+    edges = Saved("edges")
+    others = Saved("others")
+    settings = Saved("settings")
+    rules = Saved("rules")
+    vis_data = Saved("vis_data")
+    derivation_steps = Saved("derivation_steps")
+    merge_counter = Saved("merge_counter")
+    select_counter = Saved("select_counter")
+    comments = Saved("comments")
+    gloss_text = Saved("gloss_text")

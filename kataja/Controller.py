@@ -75,7 +75,7 @@ class Controller:
         self.rebuild_dict = {}
         self.print_garbage = True
         self.focus = None
-        self.disable_undo = False  # flag that affects if pickle.load assumes
+        self.undo_disabled = False  # flag that affects if pickle.load assumes
         # an empty workspace (loading new) or if it tries to compare changes (undo).
         self.unassigned_objects = {}
         self.items_moving = False

@@ -54,7 +54,7 @@ import kataja.globals as g
 from kataja.utils import time_me, import_plugins
 from kataja.visualizations.available import VISUALIZATIONS
 import kataja.debug as debug
-from kataja.BaseModel import BaseModel
+from kataja.BaseModel import BaseModel, Saved
 
 
 
@@ -73,26 +73,19 @@ ALIASES = 2
 # KatajaMain > UIView > UIManager > GraphView > GraphScene > Leaves etc.
 
 
-class KatajaMainModel(BaseModel):
-    def __init__(self, host, unique=False):
-        super().__init__(host, unique)
-        self.forest_keeper = None
-        self.forest = None
-        self._forest_keeper_touched = False
-        self._forest_touched = False
-
-
-class KatajaMain(QtWidgets.QMainWindow):
+class KatajaMain(BaseModel, QtWidgets.QMainWindow):
     """ Qt's main window. When this is closed, application closes. Graphics are
     inside this, in scene objects with view widgets. This window also manages
     keypresses and menus. """
+
+    short_name = "Kataja"
 
     def __init__(self, kataja_app, splash, args):
         """ KatajaMain initializes all its children and connects itself to
         be the main window of the given application. """
         t = time.time()
-        self.model = KatajaMainModel(self, unique=True)
-        super().__init__()
+        QtWidgets.QMainWindow.__init__(self)
+        BaseModel.__init__(self, unique=True)
         print('---- initialized MainWindow base class ... ', time.time() - t)
         self.app = kataja_app
         self.forest = None
@@ -119,7 +112,7 @@ class KatajaMain(QtWidgets.QMainWindow):
         self.key_manager = KeyPressManager(self)
         self.object_factory = create
         print('---- ui init ... ', time.time() - t)
-        self.model.forest_keeper = ForestKeeper()
+        self.forest_keeper = ForestKeeper()
         print('---- forest_keeper init ... ', time.time() - t)
         kataja_app.setPalette(self.color_manager.get_qt_palette())
         self.visualizations = VISUALIZATIONS
@@ -164,48 +157,17 @@ class KatajaMain(QtWidgets.QMainWindow):
 
     # ### Visualization #############################################################
 
-    @property
-    def forest(self):
-        """
-
-
-        :return:
-        """
-        return self.model.forest
-
-    @forest.setter
-    def forest(self, value):
-        """ :param forest:
-        :param value:
-        """
-        self.model.forest = value
-
-    @property
-    def forest_keeper(self):
-        """ Return the forest keeper instance, there should be only one per Kataja instance
-        :return: ForestKeeper instance
-        """
-        return self.model.forest_keeper
-
-    @forest_keeper.setter
-    def forest_keeper(self, value):
-        """ Return the forest keeper instance, there should be only one per Kataja instance
-        :param value: ForestKeeper instance
-        """
-        self.model.forest_keeper = value
-
-
     def change_forest(self, forest):
         """ Tells the scene to remove current tree and related data and change it to a new one
         :param forest:
         """
-        ctrl.disable_undo = True
+        ctrl.undo_disabled = True
         self.ui_manager.clear_items()
         if self.forest:
             self.forest.retire_from_drawing()
         self.forest = self.forest_keeper.forest
         self.forest.prepare_for_drawing()
-        ctrl.disable_undo = False
+        ctrl.undo_disabled = False
 
     def redraw(self):
         """ Call for forest redraw
@@ -357,16 +319,16 @@ class KatajaMain(QtWidgets.QMainWindow):
         print("Doing action '%s' with method '%s' and with args: %s" % (key, data['method'], str(args)))
 
         # Disable undo if necessary
-        remember_undo_state = ctrl.disable_undo
+        remember_undo_state = ctrl.undo_disabled
         if not undoable:
-            ctrl.disable_undo = True
+            ctrl.undo_disabled = True
 
         # Call method
         data['method'](*args)
 
         # Restore undo state to what it was
         if not undoable:
-            ctrl.disable_undo = remember_undo_state
+            ctrl.undo_disabled = remember_undo_state
         self.action_finished(m=data.get('command', ''), undoable=undoable)
 
     def action_finished(self, m='', undoable=True):
@@ -613,16 +575,16 @@ class KatajaMain(QtWidgets.QMainWindow):
         """
         savedata = {}
         open_references = {}
-        savedata['save_scheme_version'] = 0.2
-        self.model.save_object(savedata, open_references)
+        savedata['save_scheme_version'] = 0.4
+        self.save_object(savedata, open_references)
         c = 0
         while open_references and c < 10:
             c += 1
             print(len(savedata))
             print('---------------------------')
             for obj in list(open_references.values()):
-                if hasattr(obj, 'model') and hasattr(obj, 'save_key'):
-                    obj.model.save_object(savedata, open_references)
+                if hasattr(obj, 'save_key'):
+                    obj.save_object(savedata, open_references)
                 else:
                     print('cannot save open reference object ', obj)
 
@@ -633,6 +595,16 @@ class KatajaMain(QtWidgets.QMainWindow):
         # f = open('kataja_default.cfg', 'w')
         # json.dump(prefs.__dict__, f, indent = 1)
         # f.close()
+
+    # ############## #
+    #                #
+    #  Save support  #
+    #                #
+    # ############## #
+
+    forest_keeper = Saved("forest_keeper")
+    forest = Saved("forest")
+
 
 # def maybeSave(self):
 # if False and self.scribbleArea.isModified():

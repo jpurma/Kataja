@@ -60,9 +60,36 @@ class BaseVisualization:
         self.forest.settings.bracket_style = g.NO_BRACKETS
         self.forest.settings.show_constituent_edges = True
         if reset:
-            self.forest.vis_data = {'name': self.__class__.name}
             for node in self.forest.visible_nodes():
                 self.reset_node(node)
+
+    def say_my_name(self):
+        """
+        :return: name of the visualization e.g. Heisenberg
+        """
+        return self.__class__.name
+
+    def set_vis_data(self, key, value):
+        """ Sets (Saved) visualization data. Basically does the necessary poking
+        so visualization algorithms don't have to bother with that.
+        :param key: key in vis_data
+        :param value: new value
+        :return:
+        """
+        old_value = self.forest.vis_data.get(key, None)
+        if old_value is None:
+            self.forest.vis_data[key] = value
+        elif old_value != value:
+            self.forest.poke("vis_data")
+            self.forest.vis_data[key] = value
+
+    def get_vis_data(self, key):
+        """ Gets visualization saved within the forest.
+        :param key: key in vis_data
+        :return:
+        """
+        return self.forest.vis_data[key]
+
 
     def reset_node(self, node):
         """

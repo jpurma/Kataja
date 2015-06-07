@@ -43,6 +43,7 @@ class BalancedTree(BaseVisualization):
         BaseVisualization.__init__(self)
         self.forest = None
         self._directed = True
+        self._linear = []
 
     def prepare(self, forest, reset=True):
         """ If loading a state, don't reset.
@@ -54,7 +55,7 @@ class BalancedTree(BaseVisualization):
         if reset:
             self.forest.settings.bracket_style = g.NO_BRACKETS
             self.forest.settings.show_constituent_edges = True
-            self.forest.vis_data = {'name': self.__class__.name, 'rotation': 0}
+            self.set_vis_data('rotation', 0)
             for node in self.forest.visible_nodes():
                 self.reset_node(node)
 
@@ -80,7 +81,7 @@ class BalancedTree(BaseVisualization):
 
 
         """
-        self.forest.vis_data['rotation'] -= 1
+        self.set_vis_data('rotation', self.get_vis_data('rotation') - 1)
 
 
     # @time_me

@@ -24,10 +24,10 @@
 
 import random
 import collections
+from kataja.BaseModel import Saved
 
 from kataja.globals import ATTRIBUTE_EDGE, ATTRIBUTE_NODE
-from kataja.Node import Node, NodeModel
-
+from kataja.Node import Node
 
 color_map = {'S': 0, 'order': 1, 'M': 2, 'unknown': 3}
 
@@ -59,14 +59,6 @@ def ordinal(value):
         suffix = 'th'
     return val_str + suffix
 
-class AttributeNodeModel(NodeModel):
-
-    def __init__(self, host):
-        super().__init__(host)
-        self.host = None
-        self.attribute_label = ''
-        self.attribute_id = ''
-
 
 class AttributeNode(Node):
     """
@@ -75,9 +67,8 @@ class AttributeNode(Node):
     width = 20
     height = 20
     default_edge_type = ATTRIBUTE_EDGE
-    saved_fields = ['host']
     node_type = ATTRIBUTE_NODE
-
+    short_name = "ANode"
 
     def __init__(self, host, attribute_id, attribute_label='', show_label=False, restoring=False):
         """
@@ -90,8 +81,6 @@ class AttributeNode(Node):
         :param restoring: 
         :raise: 
         """
-        if not hasattr(self, 'model'):
-            self.model = AttributeNodeModel(self)
         Node.__init__(self, syntactic_object=None)
         self.host = host
         self.attribute_label = attribute_label or attribute_id
@@ -119,61 +108,6 @@ class AttributeNode(Node):
             self.update_bounding_rect()
             self.update_visibility()
 
-    @property
-    def host(self):
-        """
-
-
-        :return:
-        """
-        return self.model.host
-
-    @host.setter
-    def host(self, value):
-        """
-
-        :param value:
-        """
-        if self.model.touch('host', value):
-            self.model.host = value
-
-    @property
-    def attribute_label(self):
-        """
-
-
-        :return:
-        """
-        return self.model.attribute_label
-
-    @attribute_label.setter
-    def attribute_label(self, value):
-        """
-
-        :param value:
-        """
-        if self.model.touch('attribute_label', value):
-            self.model.attribute_label = value
-
-    @property
-    def attribute_id(self):
-        """
-
-
-        :return:
-        """
-        return self.model.attribute_id
-
-    @attribute_id.setter
-    def attribute_id(self, value):
-        """
-
-        :param value:
-        """
-        if self.model.touch('attribute_id', value):
-            self.model.attribute_id = value
-
-
     def update_help_text(self):
         """
 
@@ -183,7 +117,6 @@ class AttributeNode(Node):
             self.help_text = "'{host}' was Selected {value_ordinal} when constructing the tree."
         elif self.attribute_id == 'merge_order':
             self.help_text = "'{host}' was Merged {value_ordinal} when constructing the tree."
-
 
     def set_help_text(self, text):
         """
@@ -228,11 +161,19 @@ class AttributeNode(Node):
         else:
             return val
 
-
     def __str__(self):
         """
         :returns : str
         """
         return 'AttributeNode %s' % self.attribute_label
 
+    # ############## #
+    #                #
+    #  Save support  #
+    #                #
+    # ############## #
+
+    host = Saved("host")
+    attribute_label = Saved("attribute_label")
+    attribute_id = Saved("attribute_id")
 

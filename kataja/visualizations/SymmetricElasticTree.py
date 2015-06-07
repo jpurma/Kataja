@@ -51,7 +51,6 @@ class SymmetricElasticTree(BaseVisualization):
         if reset:
             self.forest.settings.bracket_style = g.NO_BRACKETS
             self.forest.settings.show_constituent_edges = True
-            self.forest.vis_data = {'name': self.__class__.name}
             for node in self.forest.visible_nodes():
                 self.reset_node(node)
 

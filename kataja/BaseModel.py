@@ -25,50 +25,153 @@ class SaveError(Exception):
     # return repr(self.value)
 
 
-class BaseModel:
+
+class Saved(object):
+    """ Descriptor to use together with the BaseModel -class.
+    if class variables are created as varname = Saved("varname"),
+    when the same variable name is used in instances it will store the
+    values in such way that they can be used for saving the data or remembering history
+    through undo/redo system
+
+    >class Item(BaseModel):
+    >    d = Saved("d")
+    >
+    >    def __init__(self):
+    >       super().__init__()
+    >       self.d = 30
+    Now instance variable d supports Saving, Undo and Redo!
+
+    Descriptor can be assigned a before_set, a method of object that is called with provided value
+    if setting a value needs to have some side effect. This is to replace property -setters.
+
+    Note that if variable is container e.g. list or dict,
+    the setter doesn't activate when the insides are changed. For container, you have
+    to poke them manually to notify that they need to save their current state to history.
+
+    This is simple: (implemented in BaseModel)
+    before manipulating a container, e.g. append, remove, pop, [key]=something assignments etc.
+    call
+
+    self.poke("d")
+    d["oh"] = "my"
+
+    since common Undo round, the old variable is stored only before the changes begin, you need
+    to poke container only once if there are many changes incoming. e.g. if you are doing a loop
+    that will write to a list or dictionary, poke the container before the loop, not inside it.
+
+     """
+    def __init__(self, name, before_set=None, if_changed=None):
+        self.name = name
+        self.before_set = before_set
+        self.if_changed = if_changed
+
+    def __get__(self, obj, objtype=None):
+        return obj._saved.get(self.name, None)
+
+    def __set__(self, obj, value):
+        if self.before_set:
+            value = self.before_set(obj, value)
+        if ctrl.undo_disabled:
+            if self.name in obj._saved:
+                old_value = obj._saved[self.name]
+                obj._saved[self.name] = value
+                if self.if_changed and old_value != value:
+                    self.if_changed(obj, value)
+            else:
+                obj._saved[self.name] = value
+                if self.if_changed:
+                    self.if_changed(obj, value)
+
+        elif self.name in obj._saved:
+            old = obj._saved[self.name]
+            if old != value:
+                if not obj._history:
+                    ctrl.undo_pile.add(obj)
+                    obj._history[self.name] = old
+                elif self.name not in obj._history:
+                    obj._history[self.name] = old
+                obj._saved[self.name] = value
+                if self.if_changed:
+                    self.if_changed(obj, value)
+        else:
+            obj._saved[self.name] = value
+            if self.if_changed:
+                self.if_changed(obj, value)
+
+
+class SavedAndGetter(Saved):
+    """ Saved, but getter runs provided after_get -method for the returned value. Probably bit slower
+    than regular Saved
+    """
+    def __init__(self, name, before_set=None, if_changed=None, after_get=None):
+        super().__init__(name, before_set=before_set, if_changed=if_changed)
+        self.after_get = after_get
+
+    def __get__(self, obj, objtype=None):
+        value = obj._saved[self.name]
+        if self.after_get:
+            return self.after_get(obj, value)
+        else:
+            return value
+
+
+class Synobj(Saved):
+    """ Descriptor that delegates attribute requests to syntactic_object.
+    can be given before_set, a method in object that is run when value is set
+    and if property has different name in synobj than here it can be provided as
+    name_in_synobj
+    """
+
+    def __init__(self, name, before_set=None, if_changed=None, name_in_synobj=None):
+        super().__init__(name, before_set=before_set, if_changed=if_changed)
+        self.name_in_synobj = name_in_synobj or name
+
+    def __get__(self, obj, objtype=None):
+        synob = obj._saved.get("syntactic_object")
+        if synob:
+            return getattr(synob, self.name_in_synobj)
+        else:
+            return obj._saved.get(self.name, None)
+
+    def __set__(self, obj, value):
+        if self.before_set:
+            value = self.before_set(obj, value)
+        synob = obj._saved.get("syntactic_object")
+        if synob:
+            if self.before_set:
+                value = self.before_set(obj, value)
+            old_value = getattr(synob, self.name_in_synobj)
+            setattr(synob, self.name_in_synobj, value)
+            if self.if_changed and value != old_value:
+                self.if_changed(obj, value)
+        else:
+            super().__set__(obj, value)
+
+
+class BaseModel(object):
     """ Make the object to have internal .saved -object where saved data should go.
     Also makes it neater to check if item is Savable.
     """
+    short_name = "Override this!"
+    _sk = Saved("_sk")
 
-    def __init__(self, host, unique=False):
+    def __init__(self, unique=False):
         if unique:
-            key = host.__class__.__name__
+            key = self.__class__.short_name
         else:
-            key = str(id(self)) + '|' + host.__class__.__name__
-        self._host = host
-        self.save_key = key
+            key = str(id(self))[-6:] + '|' + self.__class__.short_name
+        self._saved = {}
+        self._history = {}
+        self._sk = key
         self._cd = 0 # / CREATED / DELETED
-        sys.intern(self.save_key)
+        sys.intern(key)
 
-    def touch(self, attribute, value):
-        """ Prepare a permanency-supporting attribute for being changed: if the new value would change it,
-          store its current value in _x_history, raise the _x_touched -flag and announce controller to check
-          this object when the undo cycle is finished.
-
-           The idea is that modified values between undo cycles are easy to collect, and thus we can create a diff from
-           global kataja state or diff in forest.
-
-        :param attribute: string, the name of attribute being set
-        :param value: new value
-        :return: True if set operation would change the value, False if not
-        """
-        if ctrl.disable_undo:
-            return True
-        old_value = getattr(self, attribute, None)
-        if old_value != value:
-            touched_name = '_' + attribute + '_touched'
-            touched = getattr(self, touched_name, False)
-            if not touched:
-                # print('(touch) adding to undo_pile %s for attribute %s (%s, %s)' %
-                # (self._host, attribute, old_value, value))
-                ctrl.undo_pile.add(self._host)
-                setattr(self, '_' + attribute + '_history', copy.copy(old_value))
-                setattr(self, touched_name, True)
-            return True
-        return False
+    @property
+    def save_key(self):
+        return self._sk
 
     def poke(self, attribute):
-        """ Like "touch", to alert undo system that this object is being changed.
+        """ Alert undo system that this (Saved) object is being changed.
         This is used manually for container-type objects in the model before changing adding or
         removing objects in them, as these operations would not be catch by setters. This doesn't check if
          the new value is different from previous, as this is used manually before actions that change
@@ -76,15 +179,14 @@ class BaseModel:
         :param attribute: string, name of the attribute
         :return: None
         """
-        if ctrl.disable_undo:
+        if ctrl.undo_disabled:
             return
-        touched_name = '_' + attribute + '_touched'
-        touched = getattr(self, touched_name, False)
-        if not touched:
-            # print('(poke) adding to undo_pile', self._host)
-            ctrl.undo_pile.add(self._host)
-            setattr(self, '_' + attribute + '_history', copy.copy(getattr(self, attribute, None)))
-            setattr(self, touched_name, True)
+
+        if not self._history:
+            ctrl.undo_pile.add(self)
+            self._history[attribute] = copy.copy(self._saved[attribute])
+        elif attribute not in self._history:
+            self._history[attribute] = copy.copy(self._saved[attribute])
 
     def announce_creation(self):
         """ Flag object to have been created in this undo cycle.
@@ -92,48 +194,45 @@ class BaseModel:
         from scene.
         :return:None
         """
-        if ctrl.disable_undo:
+        if ctrl.undo_disabled:
             return
         self._cd = CREATED
-        ctrl.undo_pile.add(self._host)
+        ctrl.undo_pile.add(self)
 
     def announce_deletion(self):
         """ Flag object to have been deleted in this undo cycle.
         :return:None
         """
-        if ctrl.disable_undo:
+        if ctrl.undo_disabled:
             return
         self._cd = DELETED
-        ctrl.undo_pile.add(self._host)
+        ctrl.undo_pile.add(self)
 
 
     def transitions(self):
-        """ Create a dict of changes based on touched attributes of the item.
-        After creation, reset the touched attributes so that the attribute can
-        record the next changes.
+        """ Create a dict of changes based on modified attributes of the item.
         result dict has tuples as value, where the first item is value before, and second
         item is value after the change.
         :return: (dict of changed attributes, 0=EDITED(default) | 1=CREATED | 2=DELETED)
         """
         transitions = {}
-        for attr_name in dir(self):
-            if attr_name.startswith('_'):
-                if attr_name.endswith('_touched'):
-                    if getattr(self, attr_name, False):
-                        attr_base = attr_name[1:-8]
-                        hist_name = '_%s_history' % attr_base
-                        old = getattr(self, hist_name)
-                        new = getattr(self, attr_base)
-                        transitions[attr_base] = (old, new)
-                        setattr(self, hist_name, None)
-                        setattr(self, attr_name, False)
-                elif attr_name.endswith('_synobj') and getattr(self, attr_name, False):
-                    transitions[attr_name] = (True, True)
-        created_or_deleted = self._cd
-        if self._cd:
-            print(self.save_key, 'transition type ', self._cd)
-        self._cd = 0
-        return transitions, created_or_deleted
+        print('item %s history: %s' % (self.save_key, self._history))
+        for key, old_value in self._history.items():
+            new_value = self._saved[key]
+            transitions[key] = old_value, new_value
+        return transitions, self._cd
+
+    def flush_history(self):
+        """ Call after getting storing a set of transitions. Prepare for next round of transitions.
+        :return: None
+        """
+        self._history = {}
+        self._cd = {}
+
+# don't know yet what to do with synobjs:
+#                elif attr_name.endswith('_synobj') and getattr(self, attr_name, False):
+#                    transitions[attr_name] = (True, True)
+
 
     def revert_to_earlier(self, transitions):
         """ Restore to earlier version with a given changes -dict
@@ -142,17 +241,14 @@ class BaseModel:
         """
         # print('--- restore to earlier for ', self, ' ----------')
         for key, value in transitions.items():
-            if key.startswith('_') and key.endswith('_synobj'):
-                continue
+            #if key.startswith('_') and key.endswith('_synobj'):
+            #    continue
             old, new = value
             setattr(self, key, old)
             if len(str(new)) < 80:
                 print('%s  %s: %s <- %s' % (self.save_key, key, old, new))
             else:
                 print('%s %s: (long) <- (long)' % (self.save_key, key))
-            if old is new:
-                print('**** identical old and new ^')
-        # print('-------------')
 
     def move_to_later(self, transitions):
         """ Move to later version with a given changes -dict
@@ -161,20 +257,16 @@ class BaseModel:
         """
         # print('--- move to later for ', self, ' ----------')
         for key, value in transitions.items():
-            if key.startswith('_') and key.endswith('_synobj'):
-                continue
+            #if key.startswith('_') and key.endswith('_synobj'):
+            #    continue
             old, new = value
             setattr(self, key, new)
             if len(str(new)) < 80:
                 print('%s  %s: %s -> %s' % (self.save_key, key, old, new))
             else:
                 print('%s %s: (long) -> (long)' % (self.save_key, key))
-            if old is new:
-                print('**** identical old and new ^')
 
-        # print('-------------')
-
-    def update(self, changed_fields, transition_type, doing_undo=True):
+    def update_model(self, changed_fields, transition_type, doing_undo=True):
         """ Runs the after_model_update that should do the necessary derivative calculations and graphical updates
         after the model has been changed by redo/undo.
         updates are run as a batch after all of the objects have had their model values updated.
@@ -184,7 +276,8 @@ class BaseModel:
         interpreted
         :return:
         """
-        updater = getattr(self._host, 'after_model_update', None)
+        updater = getattr(self, 'after_model_update', None)
+        # a little piece of stupidity here
         if transition_type == CREATED and doing_undo:
             transition_type = DELETED
         elif transition_type == DELETED and doing_undo:
@@ -272,9 +365,8 @@ class BaseModel:
             return
 
         obj_data = {}
-        for key, item in vars(self).items():
-            if not key.startswith('_') and item and not callable(item):
-                obj_data[key] = _simplify(item)
+        for key, item in self._saved.items():
+            obj_data[key] = _simplify(item)
 
         #print('saving obj: ', self.save_key, obj_data)
         saved_objs[self.save_key] = obj_data
@@ -312,16 +404,10 @@ class BaseModel:
             # objects that support saving
             key = getattr(obj, 'save_key', '')
             if key and key not in full_map:
-                if isinstance(obj, BaseModel):
-                    print('putting to existing: ', key, obj, obj._host)
-                    full_map[key] = obj._host
-                    for item in vars(obj).values():
-                        map_existing(item)
-                else:
-                    full_map[key] = obj
-                    for item in vars(obj.model).values():
-                        if item != obj:
-                            map_existing(item)
+                print('putting to existing: ', key, obj)
+                full_map[key] = obj
+                for item in obj._saved.values():
+                    map_existing(item)
 
         # Restore either takes existing object or creates a new 'stub' object and then loads it with given data
         print('Loading objects...')
@@ -426,25 +512,15 @@ class BaseModel:
 
         # new data that the object should have
         new_data = full_data[obj_key]
-        # only values that can be replaced are those defined inside the obj.model -instance.
-        for key, old_value in vars(obj.model).items():
-            if key.startswith('_'):
-                continue # don't overwrite _host or _cd -flag
+        for key, old_value in obj._saved.items():
             new_value = new_data.get(key, None)
             if new_value is not None:
                 new_value = inflate(new_value)
             if new_value != old_value:
-                if new_value:
-                    #print('set: %s.%s = %s' % (obj, key, new_value))
-                    setattr(obj.model, key, new_value)
-                elif old_value:
-                    #print('set: %s.%s = %s (old value: %s)' % (obj, key, new_value, old_value))
-                    setattr(obj.model, key, new_value)
+                setattr(obj, key, new_value)
         # object needs to be finalized after setting values
         if hasattr(obj, 'after_init'):
             obj.after_init()
         return obj
-
-
 
 

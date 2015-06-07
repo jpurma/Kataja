@@ -106,6 +106,24 @@ class Preferences(object):
         self.default_hsv = None
         self.default_bracket_style = 0
 
+        self.use_projection = True
+        self.who_projects = 'left_external'
+        self.use_multidomination = True
+        self.binary_branching = False
+
+        self.label_style = 2
+        self.uses_multidomination = True
+        self.traces_are_grouped_together = 0
+        self.shows_constituent_edges = True
+        self.shows_merge_order = False
+        self.shows_select_order = False
+        self.draw_features = True
+        self.draw_width = 2
+        self.color_mode = 'solarized_lt'
+        self.hsv = None
+        self.bracket_style = 0
+
+
         # ## Global preferences
         self.color_mode = self.default_color_mode
         self.fonts = fonts

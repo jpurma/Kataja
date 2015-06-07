@@ -25,23 +25,14 @@
 from PyQt5 import QtGui
 
 from kataja.singletons import ctrl
-from kataja.Node import Node, NodeModel
+from kataja.Node import Node
 from kataja.utils import to_tuple, time_me, caller
 from kataja.parser.INodes import IConstituentNode, ITextNode
 import kataja.globals as g
+from kataja.BaseModel import Saved, Synobj
 
 # ctrl = Controller object, gives accessa to other modules
 
-
-class ConstituentNodeModel(NodeModel):
-    """ ConstituentNodeModel contains the permanent (saved) data of a ConstituentNode instance """
-
-    def __init__(self, host):
-        super().__init__(host)
-        self.is_trace = False
-        self.merge_order = 0
-        self.select_order = 0
-        self.original_parent = None
 
 
 class ConstituentNode(Node):
@@ -54,6 +45,8 @@ class ConstituentNode(Node):
     node_type = g.CONSTITUENT_NODE
     ordered = True
     ordering_func = None
+    short_name = "CN"
+
 
 
     # ConstituentNode position points to the _center_ of the node.
@@ -61,10 +54,12 @@ class ConstituentNode(Node):
 
     def __init__(self, constituent=None):
         """ Most of the initiation is inherited from Node """
-        if not hasattr(self, 'model'):
-            self.model = ConstituentNodeModel(self)
-
         Node.__init__(self, syntactic_object=constituent)
+
+        self.is_trace = False
+        self.merge_order = 0
+        self.select_order = 0
+        self.original_parent = None
 
         # ------ Bracket drawing -------
         self.left_bracket = None
@@ -100,7 +95,7 @@ class ConstituentNode(Node):
         self.update_gloss()
         self.update_label()
         self.update_visibility()
-        self.model.announce_creation()
+        self.announce_creation()
         ctrl.forest.store(self)
 
     def after_model_update(self, updated_fields, update_type):
@@ -111,17 +106,17 @@ class ConstituentNode(Node):
         """
         super().after_model_update(updated_fields, update_type)
         update_label = False
-        if '_alias_synobj' in updated_fields:
+        if 'alias' in updated_fields:
             self._inode_changed = True
             update_label = True
-        if '_index_synobj' in updated_fields:
+        if 'index' in updated_fields:
             self._inode_changed = True
             update_label = True
-        if '_gloss_synobj' in updated_fields:
+        if 'gloss' in updated_fields:
             self._inode_changed = True
             self.update_gloss()
             update_label = True
-        if '_features_synobj' in updated_fields:
+        if 'features' in updated_fields:
             self._inode_changed = True
             self.update_features()
             update_label = True
@@ -129,121 +124,26 @@ class ConstituentNode(Node):
             self.update_label()
 
     # properties implemented by syntactic node
+    # set_hooks, to be run when values are set
 
-    @property
-    def alias(self):
-        """:return:  """
-        if self.syntactic_object:
-            return self.syntactic_object.alias
-
-    @alias.setter
-    def alias(self, value):
-        """
-        :param value:  """
-        if self.model.touch_syntactic_object('alias', value):
-            self.syntactic_object.alias = value
-            self._inode_changed = True
-
-    @property
-    def index(self):
-        if self.syntactic_object:
-            return self.syntactic_object.index
-
-    @index.setter
-    def index(self, value):
-        if value is None:
-            value = ""
-        if self.model.touch_syntactic_object('index', value):
-            self.syntactic_object.index = value
-            self._inode_changed = True
-
-    @property
-    def gloss(self):
-        if self.syntactic_object:
-            return self.syntactic_object.gloss
-
-    @gloss.setter
-    def gloss(self, value):
-        if value is None:
-            value = ""
-        if self.model.touch_syntactic_object('gloss', value):
-            self.syntactic_object.gloss = value
-            self._inode_changed = True
-            self.update_gloss()
-
-    @property
-    def features(self):
-        if self.syntactic_object:
-            return self.syntactic_object.features
-
-    @features.setter
-    def features(self, value):
-        if value is None:
-            value = []
-        if self.model.touch_syntactic_object('features', value):
-            self.syntactic_object.features = value
-            self._inode_changed = True
-            self.update_features()
-
-    # Saved properties
-
-    @property
-    def is_trace(self):
-        """:return:  """
-        return self.model.is_trace
-
-    @is_trace.setter
-    def is_trace(self, value):
-        """
-        :param value:  """
-        if value is None:
-            value = False
-        if self.model.touch('is_trace', value):
-            self.model.is_trace = value
-
-    @property
-    def original_parent(self):
-        """ When switching between multidomination and traces, original parent may be needed.
-        :return:
-        """
-        return self.model.original_parent
-
-    @original_parent.setter
-    def original_parent(self, value):
-        """
+    def if_changed_gloss(self, value):
+        """ Synobj changed, but remind to update inodes here
         :param value:
         :return:
         """
-        if self.model.touch('original_parent', value):
-            self.model.original_parent = value
+        self._inode_changed = True
+        self.update_gloss()
 
-    @property
-    def merge_order(self):
-        """:return:  """
-        return self.model.merge_order
-
-    @merge_order.setter
-    def merge_order(self, value):
+    def if_changed_features(self, value):
+        """ Synobj changed, but remind to update inodes here
+        :param value:
+        :return:
         """
-        :param value:  """
-        if value is None:
-            value = 0
-        if self.model.touch('merge_order', value):
-            self.model.merge_order = value
+        self._inode_changed = True
+        self.update_features()
 
-    @property
-    def select_order(self):
-        """:return:  """
-        return self.model.select_order
+    # Saved properties
 
-    @select_order.setter
-    def select_order(self, value):
-        """
-        :param value:  """
-        if value is None:
-            value = 0
-        if self.model.touch('select_order', value):
-            self.model.select_order = value
 
     # Other properties
 
@@ -290,6 +190,7 @@ class ConstituentNode(Node):
         return self._inode
 
     def update_status_tip(self):
+        """ Hovering status tip """
         if self.syntactic_object:
             if self.alias:
                 alias = '"%s" ' % self.alias
@@ -695,3 +596,20 @@ class ConstituentNode(Node):
         :param event:
         """
         print("CN dropEvent")
+
+    # ############## #
+    #                #
+    #  Save support  #
+    #                #
+    # ############## #
+
+    # Attributes from synobj and their setter hooks
+    alias = Synobj("alias", if_changed=Node.alert_inode)
+    gloss = Synobj("gloss", if_changed=if_changed_gloss)
+    features = Synobj("features", if_changed=if_changed_features)
+
+    # Saved attributes: (+ those coming from Node, Movable etc.)
+    is_trace = Saved("is_trace")
+    merge_order = Saved("merge_order")
+    select_order = Saved("select_order")
+    original_parent = Saved("original_parent")

@@ -49,6 +49,9 @@ def _closest_parents(A, context, is_not=None, parent_list=None):
 
 class UG:
     """ Universal Grammar, collects Lexicon and Interfaces so that they can operate together."""
+
+    short_name = "FL"
+
     def __init__(self, lexicon='testlexicon.txt', constituent=Constituent, feature=Feature):
         self.Constituent = constituent
         self.Feature = feature
@@ -275,3 +278,9 @@ class UG:
 
         print(linear)
         return linear
+
+    # ############## #
+    #                #
+    #  Save support  #
+    #                #
+    # ############## #

@@ -70,6 +70,8 @@ MULTI = multiple edges, not ordered
 MIS_LEFT = swoosh to use when there should be (LEFT, RIGHT), but the ordering fails
 MIS_RIGHT = swoosh to use when there should be (LEFT, RIGHT), but the ordering fails
 
+6.6. 2015
+Found a better way to implement saving: descriptors. The existing Saved -object based is too difficult for plugins. I still have to poke container objects before saving them, but I can get rid of properties.
 
 
 

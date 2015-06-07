@@ -44,11 +44,11 @@ assert Feature
 
 # We could use globals but it is safer this way: you can only create objects listed here.
 factory_models = {ConstituentNode, AttributeNode, FeatureNode, GlossNode, PropertyNode, CommentNode, Edge, Forest,
-                  ChainManager, DerivationStep, DerivationStepManager, ForestSettings, ForestRules,
+                  DerivationStep, DerivationStepManager, ForestSettings, ForestRules,
                   ConfigurableConstituent, BaseConstituent, Feature}
 factory_dict = {}
 for value in factory_models:
-    factory_dict[value.__name__] = value
+    factory_dict[value.short_name] = value
 
 
 def create(object_class_name, *args, **kwargs):

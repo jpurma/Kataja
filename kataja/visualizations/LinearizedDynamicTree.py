@@ -51,9 +51,10 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
         if reset:
             self.forest.settings.show_constituent_edges = True
             self.forest.settings.bracket_style = g.NO_BRACKETS
-            _max_height_steps = max([len(self.forest.list_nodes_once(root)) for root in self.forest])
-            self.forest.vis_data = {'name': self.__class__.name, '_max_height_steps': _max_height_steps,
-                                    '_height_steps': _max_height_steps / 2}
+            max_height_steps = max([len(self.forest.list_nodes_once(root)) for root in self.forest])
+            self.set_vis_data('max_height_steps', max_height_steps)
+            self.set_vis_data('height_steps', max_height_steps / 2)
+
 
         for node in self.forest.visible_nodes():
             self.reset_node(node)
@@ -84,10 +85,12 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
 
     def reselect(self):
         """ Linearization has  """
-        self.forest.vis_data['_height_steps'] += 1
-        if self.forest.vis_data['_max_height_steps'] < self.forest.vis_data['_height_steps']:
-            self.forest.vis_data['_height_steps'] = 1
-        self.forest.main.add_message('Set height: %s' % self.forest.vis_data['_height_steps'])
+        hs = self.get_vis_data('height_steps')
+        hs += 1
+        if self.get_vis_data('max_heigh_steps') < hs:
+            hs = 1
+        self.set_vis_data('height_steps', hs)
+        self.forest.main.add_message('Set height: %s' % hs)
 
 
     def draw(self):
@@ -97,7 +100,7 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
         """
         x = 0
         y = 0
-        start_height = self.forest.vis_data['_height_steps'] * prefs.edge_height
+        start_height = self.get_vis_data('height_steps') * prefs.edge_height
 
         for root in self.forest:
             if not isinstance(root, ConstituentNode):

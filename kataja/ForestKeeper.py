@@ -25,80 +25,25 @@
 
 from kataja.singletons import ctrl
 from kataja.Forest import Forest
-from kataja.BaseModel import BaseModel
+from kataja.BaseModel import BaseModel, Saved
 
 
-class ForestKeeperModel(BaseModel):
+class ForestKeeper(BaseModel):
     """ Container and loader for Forest objects. Remember to not enable undo for any of the actions in here,
     as scope of undo should be a single Forest. """
 
-    def __init__(self, host):
-        super().__init__(host, unique=True)
-        self.forests = []
-        self.current_index = 0
-        self.forest = None
-
-
-class ForestKeeper:
-    """ Container and loader for Forest objects. Remember to not enable undo for any of the actions in here,
-    as scope of undo should be a single Forest. """
+    short_name = "FKeeper"
 
     def __init__(self, filename=None):
-        self.model = ForestKeeperModel(self)
+        super().__init__(unique=True)
         if filename:
             treelist = self.load_treelist_from_file(filename)
         else:
             treelist = []
+        self.forests = []
+        self.current_index = 0
+        self.forest = None
         self.create_forests(treelist)
-
-    @property
-    def save_key(self):
-        """ Return the save_key from the model. It is a property from BaseModel.
-        :return: str
-        """
-        return self.model.save_key
-
-    @property
-    def forests(self):
-        """ Keeps the list of forest instances, which each have their own settings, undo stacks etc.
-        :return: list of Forest instances
-        """
-        return self.model.forests
-
-    @forests.setter
-    def forests(self, value):
-        """ Keeps the list of forest instances, which each have their own settings, undo stacks etc.
-        :param value: list of Forest instances
-        """
-        self.model.forests = value
-
-    @property
-    def current_index(self):
-        """ Index of currently active forest in forests-list
-        :return: int
-        """
-        return self.model.current_index
-
-    @current_index.setter
-    def current_index(self, value):
-        """ Index of currently active forest in forests-list
-        :param value: int
-        """
-        self.model.current_index = value
-
-    @property
-    def forest(self):
-        """ Currently active forest
-        :return: Forest instance
-        """
-        return self.model.forest
-
-    @forest.setter
-    def forest(self, value):
-        """ Currently active forest
-        :param value: Forest instance
-        """
-        self.model.forest = value
 
     def next_forest(self):
         """ Select the next forest in the list of forests. The list loops at end.
@@ -163,7 +108,7 @@ class ForestKeeper:
         in a tree
         """
         # Clear this screen before we start creating a mess
-        ctrl.disable_undo = True  # disable tracking of changes (e.g. undo)
+        ctrl.undo_disabled = True  # disable tracking of changes (e.g. undo)
         if self.forest:
             self.forest.retire_from_drawing()
         self.forests = []
@@ -223,7 +168,16 @@ class ForestKeeper:
         self.current_index = 0
         if self.forests:
             self.forest = self.forests[0]
-            self.forest.undo_manager.init_if_empty()
             # self.save()
         # allow change tracking (undo) again
-        ctrl.disable_undo = False
+        ctrl.undo_disabled = False
+
+    # ############## #
+    #                #
+    #  Save support  #
+    #                #
+    # ############## #
+
+    forests = Saved("forests")
+    current_index = Saved("current_index")
+    forest = Saved("forest")
