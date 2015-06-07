@@ -63,7 +63,7 @@ class Forest(BaseModel):
       Forest also takes care of the operations manipulating, creating and
       removing trees. """
 
-    short_name = "Fore"
+    short_name = "Forest"
 
     def __init__(self, buildstring='', definitions=None, gloss_text='', comments=None):
         """ Create an empty forest """
@@ -812,7 +812,7 @@ class Forest(BaseModel):
         and traces_to_multidomination after deletions.
         """
         # -- connections to other nodes --
-        print('deleting node: ', node)
+        #print('deleting node: ', node)
         if not ignore_consequences:
             for edge in list(node.edges_down):
                 if edge.end:
@@ -1457,7 +1457,7 @@ class Forest(BaseModel):
         :param can_delete: replaced node can be deleted
         :return:
         """
-        forest('replace_node %s %s %s %s' % (old_node, new_node, only_for_parent, replace_children))
+        #print('replace_node %s %s %s %s' % (old_node, new_node, only_for_parent, replace_children))
 
         assert (old_node != new_node)  # if this can happen, we'll probably have infinite loop somewhere
         new_node.current_position = old_node.current_position

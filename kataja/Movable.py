@@ -146,6 +146,11 @@ class Movable(BaseModel):
         :param instant: don't animate (for e.g. dragging)
         :return: None
         """
+        if instant:
+            self.current_position = tuple(self._target_position)
+            self.stop_moving()
+            return
+        ct = self._target_position
         if self.use_fixed_position:
             self._target_position = self.fixed_position
         elif self.use_adjustment:
@@ -154,10 +159,9 @@ class Movable(BaseModel):
             self._target_position = (ax + dx, ay + dy, az + dz)
         else:
             self._target_position = self.algo_position
-
-        if instant:
-            self.current_position = tuple(self._target_position)
-            self.stop_moving()
+        if self._target_position == ct:
+            if ct == self.current_position:
+                self.stop_moving()
         else:
             if self._target_position != self.current_position:
                 self.start_moving()
@@ -322,12 +326,14 @@ class Movable(BaseModel):
         x, y, z = self._target_position
         sx, sy, sz = self.current_position
         # print 'item %s starts moving from (%s %s %s) to (%s %s %s)' % (self, sx,sy,sz,x,y,z)
-        if self._move_counter:  # don't force animation to start again, redirect it instead
-            self._use_easing = False
+        if False and self._move_counter and self._move_counter < (prefs.move_frames or 20):
+            # don't force animation to start again, redirect it instead, unless we haven't yet moved
+            self._use_easing = True
         else:
             self._use_easing = True
             self._move_counter = prefs.move_frames or 20
             self._x_step, self._y_step, self._z_step = x - sx, y - sy, z - sz
+        ctrl.graph_scene.item_moved()
 
     def stop_moving(self):
         """ Kill moving animation for this object.

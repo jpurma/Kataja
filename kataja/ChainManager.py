@@ -163,16 +163,13 @@ class ChainManager:
                     if head.dyn_x and head.dyn_y:
                         node.dyn_x = False
                         node.dyn_y = False
-                        x, y, z = head.algo_position
-                        node.adjustment = head.adjustment
-                        y += dy
-                        x -= dx
-                        node.algo_position = (x, y, z)
-                    else:
                         x, y, z = head.current_position
-                        y += dy
-                        x -= dx
-                        node.current_position = (x, y, z)
+                    else:
+                        x, y, z = head.algo_position
+                    node.adjustment = head.adjustment
+                    y += dy
+                    x -= dx
+                    node.algo_position = (x, y, z)
                     y_adjust[key] = (dx + node.boundingRect().width(), dy + node.boundingRect().height())
         self.forest.settings.traces_are_grouped_together = True
         self.forest.settings.uses_multidomination = False

@@ -36,7 +36,6 @@ class UndoManager:
     """ Holds the undo stack and manages the undo- and redo-activities. """
 
     def __init__(self, forest):
-        self.save_key = forest.save_key + '_undo_manager'
         self.forest = forest
         self.full_state = {}
         self._stack = []

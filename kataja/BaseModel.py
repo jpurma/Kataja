@@ -216,7 +216,7 @@ class BaseModel(object):
         :return: (dict of changed attributes, 0=EDITED(default) | 1=CREATED | 2=DELETED)
         """
         transitions = {}
-        print('item %s history: %s' % (self.save_key, self._history))
+        #print('item %s history: %s' % (self.save_key, self._history))
         for key, old_value in self._history.items():
             new_value = self._saved[key]
             transitions[key] = old_value, new_value

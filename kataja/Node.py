@@ -92,7 +92,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self.folded_away = False
         self.folding_towards = None
         self.color = None
-        self.index = ""
 
 
         self.setAcceptHoverEvents(True)
@@ -238,7 +237,12 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :return: None
         """
         if self.folding_towards:
+            tp = self._target_position
             self._target_position = self.folding_towards.current_position
+            if tp == self._target_position:
+                if self.current_position == self._target_position:
+                    self.stop_moving()
+                # don't trigger start moving again if we are already going there
             if instant:
                 self.current_position = tuple(self._target_position)
                 self.stop_moving()
