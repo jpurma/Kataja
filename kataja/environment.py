@@ -7,10 +7,11 @@ import sys
 __author__ = 'purma'
 
 
-mac_fonts = {MAIN_FONT: ['Asana Math', 'Normal', 12], CONSOLE_FONT: ['Monaco', 'Normal', 10],
-             UI_FONT: ['Helvetica', 'Normal', 10], BOLD_FONT: ['STIX', 'Bold', 12],
-             ITALIC_FONT: ['Asana Math', 'Italic', 12], SMALL_CAPS: ['Lao MN', 'Normal', 10],
-             SMALL_FEATURE: ['Lao MN', 'Normal', 7]}
+mac_fonts = {MAIN_FONT: ['Asana Math', 'Normal', 12], CONSOLE_FONT: ['Menlo', 'Normal', 10],
+             UI_FONT: ['Helvetica Neue', 'Normal', 10], BOLD_FONT: ['STIX', 'Bold', 12],
+             ITALIC_FONT: ['Asana Math', 'Italic', 12], SMALL_CAPS: ['Helvetica Neue', 'Normal', 10],
+             SMALL_FEATURE: ['Helvetica Neue', 'Normal', 7]}
+
 
 linux_fonts = {MAIN_FONT: ['Asana Math', 'Normal', 12], CONSOLE_FONT: ['Courier', 'Normal', 10],
                UI_FONT: ['Droid Sans', 'Normal', 10], ITALIC_FONT: ['Asana Math', 'Italic', 12],

@@ -105,7 +105,7 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
         for root in self.forest:
             if not isinstance(root, ConstituentNode):
                 continue
-            # linearized = ctrl.UG.Linearize(root.syntactic_object)
+            # linearized = ctrl.FL.Linearize(root.syntactic_object)
             depths = []
             total_width = 0
             nodelist = []

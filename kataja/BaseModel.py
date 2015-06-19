@@ -11,7 +11,7 @@ from kataja.parser.INodes import ITextNode
 from kataja.parser.INodeToLatex import parse_inode_for_field
 from kataja.parser.LatexToINode import parse_field
 from kataja.singletons import ctrl
-from globals import CREATED, DELETED
+from kataja.globals import CREATED, DELETED
 
 __author__ = 'purma'
 
@@ -155,8 +155,10 @@ class BaseModel(object):
     short_name = "Override this!"
     _sk = Saved("_sk")
 
-    def __init__(self, unique=False):
-        if unique:
+    def __init__(self, unique=False, save_key='', **kw):
+        if save_key:
+            key = save_key
+        elif unique:
             key = self.__class__.short_name
         else:
             key = str(id(self))[-6:] + '|' + self.__class__.short_name
@@ -168,6 +170,9 @@ class BaseModel(object):
 
     @property
     def save_key(self):
+        """ Unique key for retrieving the object and identifying it in save/load/undo systems
+        :return:
+        """
         return self._sk
 
     def poke(self, attribute):

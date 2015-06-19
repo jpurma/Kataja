@@ -16,7 +16,7 @@ from kataja.DerivationStep import DerivationStep, DerivationStepManager
 
 from syntax.ConfigurableConstituent import ConfigurableConstituent
 from syntax.BaseConstituent import BaseConstituent
-from syntax.ConfigurableFeature import Feature
+from syntax.BaseFeature import BaseFeature
 
 # These asserts prevent automated cleanups from removing imports above as unused
 # Node types
@@ -40,12 +40,12 @@ assert ForestRules
 # Syntax
 assert ConfigurableConstituent
 assert BaseConstituent
-assert Feature
+assert BaseFeature
 
 # We could use globals but it is safer this way: you can only create objects listed here.
 factory_models = {ConstituentNode, AttributeNode, FeatureNode, GlossNode, PropertyNode, CommentNode, Edge, Forest,
                   DerivationStep, DerivationStepManager, ForestSettings, ForestRules,
-                  ConfigurableConstituent, BaseConstituent, Feature}
+                  ConfigurableConstituent, BaseConstituent, BaseFeature}
 factory_dict = {}
 for value in factory_models:
     factory_dict[value.short_name] = value

@@ -604,8 +604,8 @@ class ConstituentNode(Node):
     # ############## #
 
     # Attributes from synobj and their setter hooks
-    alias = Synobj("alias", if_changed=Node.alert_inode)
-    gloss = Synobj("gloss", if_changed=if_changed_gloss)
+    alias = Saved("alias", if_changed=Node.alert_inode)
+    gloss = Saved("gloss", if_changed=if_changed_gloss)
     features = Synobj("features", if_changed=if_changed_features)
 
     # Saved attributes: (+ those coming from Node, Movable etc.)

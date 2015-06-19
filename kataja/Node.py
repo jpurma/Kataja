@@ -212,7 +212,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             ctrl.remove_status(self.status_tip)
 
     def __repr__(self):
-        """ This is a node and this represents this UG item """
+        """ This is a node and this represents this FL item """
         return '%s-%s' % (self.syntactic_object, self.save_key)
 
     def reset(self):
@@ -1043,7 +1043,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
     # Properties delegated to syntactic object
     label = Synobj("label", if_changed=alert_inode)
-    index = Synobj("index", if_changed=alert_inode)
+    index = Saved("index", if_changed=alert_inode)
 
     # Saved properties
     syntactic_object = Saved("syntactic_object")

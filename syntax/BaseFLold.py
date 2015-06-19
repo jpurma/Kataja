@@ -27,7 +27,7 @@
 import re
 
 from syntax.BaseConstituent import BaseConstituent as Constituent
-from syntax.ConfigurableFeature import Feature
+from syntax.BaseFeature import BaseFeature
 from syntax.utils import load_lexicon, time_me  # , save_lexicon
 
 # from random import randint, choice
@@ -47,15 +47,16 @@ def _closest_parents(A, context, is_not=None, parent_list=None):
     return parent_list
 
 
-class UG:
-    """ Universal Grammar, collects Lexicon and Interfaces so that they can operate together."""
+class FL:
+    """ Faculty of Language, collects Lexicon and Interfaces so that they can operate together."""
 
     short_name = "FL"
 
-    def __init__(self, lexicon='testlexicon.txt', constituent=Constituent, feature=Feature):
+    def __init__(self, lexicon='testlexicon.txt', constituent=Constituent, feature=BaseFeature):
         self.Constituent = constituent
         self.Feature = feature
         self.lexicon = load_lexicon(lexicon, constituent, feature)
+        self.workspace = {}
         self.structure = None
 
     def feature_check(self, left, right):
@@ -117,7 +118,7 @@ class UG:
 
     def CCommands(self, A, B, context):
         """ C-Command edge needs the root constituent of the tree as a context, as
-            my implementation of UG tries to do without constituents having access to their parents
+            my implementation of FL tries to do without constituents having access to their parents
         :param context:
         :param B:
         :param A:

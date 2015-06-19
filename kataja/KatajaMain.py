@@ -196,68 +196,6 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         """
         return QtWidgets.QMainWindow.keyPressEvent(self, event)
 
-
-    # ### ConstituentNode's radial menu commands ################################
-
-    # radial menu only
-    def do_merge(self, caller, event):
-        """
-
-        :param caller:
-        :param event:
-        :return:
-        """
-        # if isinstance(caller, MenuItem):
-        # caller = caller.host_node
-        node_A = caller
-        node_B = caller.get_root_node()
-        assert (node_A is not node_B)
-        merged = self.forest.merge_nodes(node_A, node_B)
-        node_A.release()
-        self.action_finished()
-        merged.take_focus()
-        return True
-
-    # radial menu only
-    def do_delete_node(self, caller, event):
-        """
-
-        :param caller:
-        :param event:
-        :return:
-        """
-        # if isinstance(caller, MenuItem):
-        # caller = caller.host_node
-        self.forest.command_delete(caller)
-        self.action_finished()
-        ctrl.focus = None
-        return True
-
-    # radial menu only
-    def disconnect_node(self, caller=None, event=None):
-        """
-
-        :param caller:
-        :param event:
-        :return:
-        """
-        # if isinstance(caller, MenuItem):
-        # caller = caller.host_node
-        self.forest.disconnect_node_from_tree(caller)
-        self.action_finished()
-        ctrl.focus = None
-        return True
-
-    # radial menu only
-    def copy_selected(self, **kw):
-        """ Make a copy of element and put it beside the original
-        :param kw:
-        """
-        for node in ctrl.get_all_selected():
-            self.forest.copy_node(node)
-        self.action_finished()
-        return True
-
     # ## New node creation commands #############################################
 
     def add_text_box(self, caller=None):

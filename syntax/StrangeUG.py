@@ -1,5 +1,5 @@
 # coding=utf-8
-""" Playing with UG """
+""" Playing with FL """
 # ############################################################################
 #
 # *** Kataja - Biolinguistic Visualization tool ***
@@ -25,7 +25,7 @@
 
 
 from syntax.BaseConstituent import BaseConstituent as Constituent
-from syntax.ConfigurableFeature import Feature
+from syntax.BaseFeature import BaseFeature
 from syntax.utils import load_lexicon, time_me
 
 # Try adding semantic forms DP, VP and CP as pre-created structures with their own features as
@@ -49,7 +49,7 @@ class UG:
     A system that connects lexicon and interfaces
     """
 
-    def __init__(self, lexicon='testlexicon.txt', constituent=Constituent, feature=Feature):
+    def __init__(self, lexicon='testlexicon.txt', constituent=Constituent, feature=BaseFeature):
         self.Constituent = constituent
         self.Feature = feature
         self.lexicon = load_lexicon(lexicon, constituent, feature)
@@ -96,7 +96,7 @@ class UG:
         :param A:
         :param B:
         :param context:
-            my implementation of UG tries to do without constituents having access to their parents """
+            my implementation of FL tries to do without constituents having access to their parents """
         closest_parents = _closest_parents(A, context, parent_list=[])
         # if 'closest_parent' for B is found within (other edge of) closest_parent, B sure is dominated by it.
         for parent in closest_parents:

@@ -23,10 +23,11 @@
 #
 # ############################################################################
 
-from kataja.BaseModel import BaseModel, Saved
+from kataja.BaseModel import Saved
+from syntax.IFeature import IFeature
 
 
-class Feature(BaseModel):
+class BaseFeature(IFeature):
     """ Features are primitive comparable and compatible parts. The class supports several kinds of features:
     Features have property "key" which is used to look for certain exact kind of features, e.g. 'number', 'gender', or
     'case'.
@@ -122,7 +123,7 @@ class Feature(BaseModel):
         if prop in self.values:
             return True
         for v in self.values:
-            if isinstance(v, Feature) and v.has_value(prop):
+            if isinstance(v, BaseFeature) and v.has_value(prop):
                 return True
         return False
 
@@ -132,7 +133,6 @@ class Feature(BaseModel):
         :return: bool
         """
         return feature.key == self.key and self.value != '-'
-
 
     def __repr__(self):
         return "Feature(key=%s, values=%s, family=%s)" % (self.key, repr(self.values), self.family)

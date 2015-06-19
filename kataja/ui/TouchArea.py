@@ -27,6 +27,7 @@ import math
 from PyQt5 import QtCore
 
 import PyQt5.QtWidgets as QtWidgets
+import Node
 from kataja.errors import TouchAreaError
 from kataja.Edge import Edge
 from kataja.singletons import ctrl, prefs
@@ -326,18 +327,22 @@ class TouchArea(QtWidgets.QGraphicsItem):
             ctrl.forest.add_comment_to_node(dropped_node, self.host)
             message = 'added feature %s to %s' % (dropped_node, self.host)
         elif self.type == g.RIGHT_ADD_SIBLING or self.type == g.LEFT_ADD_SIBLING:
+            # host is an edge
+            assert isinstance(self.host, Edge)
             ctrl.forest.replace_node_with_merged_node(self.host.end,
                                                       dropped_node,
-                                                      edge=self.host,
+                                                      self.host.start,
                                                       merge_to_left=self._align_left,
                                                       merger_node_pos=self.start_point)
             for node in ctrl.dragged_set:
                 node.adjustment = self.host.end.adjustment
             message = 'moved node %s to sibling of %s' % (dropped_node, self.host)
         elif self.type == g.RIGHT_ADD_ROOT or self.type == g.LEFT_ADD_ROOT:
+            # host is a node
+            assert isinstance(self.host, Node)
             ctrl.forest.replace_node_with_merged_node(self.host,
                                                       dropped_node,
-                                                      edge=None,
+                                                      None,
                                                       merge_to_left=self._align_left,
                                                       merger_node_pos=self.start_point)
             for node in ctrl.dragged_set:
@@ -352,19 +357,19 @@ class TouchArea(QtWidgets.QGraphicsItem):
         self._dragging = False
         if self._drag_hint:
             return False
-        edge = None
-        node = self.host
-        if hasattr(self.host, 'end'):
-            edge = self.host
-            node = self.host.end
-        if self.type is g.TOUCH_ADD_CONSTITUENT:
-            node.open_embed()
+        if isinstance(self.host, Edge):
+            replaced = self.host.end
+            closest_parent = self.host.start
         else:
-            ctrl.forest.replace_node_with_merged_empty_node(node=node,
-                                                            edge=edge,
-                                                            merge_to_left=self._align_left,
-                                                            new_node_pos=self.end_point,
-                                                            merger_node_pos=self.start_point)
+            replaced = self.host
+            closest_parent = None
+        if self.type is g.TOUCH_ADD_CONSTITUENT:
+            replaced.open_embed()
+        else:
+            ctrl.forest.replace_node_with_merged_node(replaced, None, closest_parent,
+                                                      merge_to_left=self._align_left,
+                                                      new_node_pos=self.end_point,
+                                                      merger_node_pos=self.start_point)
             ctrl.deselect_objects()
             ctrl.main.action_finished(m='add constituent')
         return True
@@ -387,7 +392,6 @@ class TouchArea(QtWidgets.QGraphicsItem):
         elif host is ctrl.pressed:
             return False
         return True
-
 
     def dragged_over_by(self, dragged):
         """

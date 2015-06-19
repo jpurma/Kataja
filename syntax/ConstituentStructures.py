@@ -55,8 +55,10 @@ feature= ConfigurableFeature
 """
 
 
-class ConfigurableUG:
-    """ Configurable UG has lots of possible axioms and definitions and UG uses a partial set of these """
+class ConstituentStructures:
+    """ This is a collection of axioms and definitions from Carnie (2010) Constituent Structures.
+    These are not used yet, but keep them in case we find a way to use them.
+     """
 
     short_name = "ConfFL"
 
@@ -1219,7 +1221,7 @@ class ConfigurableUG:
         :param A:
         :param B:
         :param context:
-            my implementation of UG tries to do without constituents having access to their parents """
+            my implementation of FL tries to do without constituents having access to their parents """
         closest_parents = _closest_parents(A, context, parent_list=[])
         # if 'closest_parent' for B is found within (other edge of) closest_parent, B sure is dominated by it.
         for parent in closest_parents:

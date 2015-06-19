@@ -26,73 +26,43 @@ It is a primary datatype, needs to support saving and loading. """
 # ############################################################################
 
 
-from kataja.BaseModel import Saved
-from syntax.IConstituent import IConstituent
+from kataja.BaseModel import BaseModel, Saved
 from syntax.BaseFeature import BaseFeature
 # from copy import deepcopy
 
-class BaseConstituent(IConstituent):
-    """ BaseConstituent is a default constituent used in syntax.
-    It uses getters and setters so that other compatible implementations can be built using the same interface.
-    It is a primary datatype, needs to support saving and loading. """
+class IConstituent(BaseModel):
+    """ IConstituent is the interface for constituents in syntax. """
 
-    short_name = "BC"
+    short_name = "I-C"
 
     def __init__(self, label='', parts=None, save_key='', features=None, head=None, **kw):
-        """ BaseConstituent is a default constituent used in syntax.
-        It is Savable, which means that the actual values are stored in separate object that is easily dumped to file.
-        Extending this needs to take account if new fields should also be treated as savable, e.g. put them into
-        . and make necessary property and setter.
-         """
         super().__init__(**kw)
-        self.label = label
-        self.head = head
-        if features:
-            self.features = features
-        else:
-            self.features = {}
-        if parts:
-            self.parts = parts
-        else:
-            self.parts = []
-
-    def __str__(self):
-        return str(self.label)
-
-    def __repr__(self):
-        if self.is_leaf():
-            return 'Constituent(id=%s)' % self.label
-        else:
-            return "[ %s ]" % (' '.join([x.__repr__() for x in self.parts]))
+        self.label = None
+        self.parts = None
+        self.features = None
+        self.head = None
 
     def __contains__(self, c):
-        if self == c:
-            return True
-        for part in self.parts:
-            if c in part:
-                return True
-        else:
-            return False
+        raise NotImplementedError
 
-    def print_tree(self):
-        """ Bracket tree representation of the constituent structure. Now it is same as str(self).
-        :return: str
+    def get_feature(self, key):
+        """ Gets the local feature (within this constituent, not of its children) with key 'key'
+        :param key: string for identifying feature type
+        :return: feature object
         """
-        return self.__repr__()
+        raise NotImplementedError
 
     def add_part(self, new_part):
         """ Add constitutive part to this constituent
         :param new_part:
         """
-        self.poke('parts')
-        self.parts.append(new_part)
+        raise NotImplementedError
 
     def remove_part(self, part):
         """ Remove constitutive part
         :param part:
         """
-        self.poke('parts')
-        self.parts.remove(part)
+        raise NotImplementedError
 
     def replace_part(self, old_part, new_part):
         """
@@ -100,12 +70,7 @@ class BaseConstituent(IConstituent):
         :param new_part:
         :return:
         """
-        if old_part in self.parts:
-            i = self.parts.index(old_part)
-            self.poke('parts')
-            self.parts[i] = new_part
-        else:
-            raise IndexError
+        raise NotImplementedError
 
     def set_head(self, head):
         """
@@ -113,24 +78,14 @@ class BaseConstituent(IConstituent):
         :param head:
         :return:
         """
-        self.head = head
-
-    def get_feature(self, key):
-        """ Gets the local feature (within this constituent, not of its children) with key 'key'
-        :param key: string for identifying feature type
-        :return: feature object
-        """
-        f = self.features.get(key, None)
-        return f
+        raise NotImplementedError
 
     def has_feature(self, key):
         """ Check the existence of feature within this constituent
         :param key: string for identifying feature type or Feature instance
         :return: bool
         """
-        if isinstance(key, BaseFeature):
-            return key in list(self.features.values())
-        return key in list(self.features.keys())
+        raise NotImplementedError
 
     def set_feature(self, key, value, family=''):
         """ Set constituent to have a certain feature. If the value given is Feature instance, then it is used,
@@ -139,33 +94,19 @@ class BaseConstituent(IConstituent):
         :param value:
         :param family: string, optional. If new feature belongs to a certain feature family, e.g. phi features.
         """
-        if isinstance(value, BaseFeature):
-            self.poke('features')
-            self.features[key] = value
-        else:
-            f = self.features.get(key, None)
-            if f:
-                f.set(value)
-            else:
-                f = BaseFeature(key, value)
-                self.poke('features')
-            self.features[key] = f
+        raise NotImplementedError
 
     def del_feature(self, key):
         """ Remove feature from a constituent. It's not satisfied, it is just gone.
         :param key: str, the key for finding the feature or for convenience, a feature instance to be removed
         """
-        if isinstance(key, BaseFeature):
-            key = key.key
-        if hasattr(self.features, key):
-            self.poke('features')
-            del self.features[key]
+        raise NotImplementedError
 
     def is_leaf(self):
         """ Check if the constituent is leaf constituent (no children) or inside a tree (has children).
         :return: bool
         """
-        return not self.parts
+        raise NotImplementedError
 
     def ordered_parts(self):
         """ Tries to do linearization between two elements according to theory being used.
@@ -173,27 +114,13 @@ class BaseConstituent(IConstituent):
         This is difficult to justify theoretically, though.
         :return: len 2 list of ordered nodes, or empty list if cannot be ordered.
         """
-        ordering_method = 1
-        if ordering_method == 1:
-            if len(self.parts) == 2 and self.parts[0] and self.parts[1]:
-                return list(self.parts)
-            else:
-                return []
+        raise NotImplementedError
 
     def copy(self):
         """ Make a deep copy of constituent. Useful for picking constituents from Lexicon.
         :return: BaseConstituent
         """
-        new_parts = []
-        for part in self.parts:
-            new = part.copy()
-            new_parts.append(new)
-        new_features = self.features.copy()
-        nc = self.__class__(label=self.label,
-                            parts=new_parts,
-                            features=new_features,
-                            head=self.head)
-        return nc
+        raise NotImplementedError
 
     # ############## #
     #                #
@@ -202,7 +129,6 @@ class BaseConstituent(IConstituent):
     # ############## #
 
     features = Saved("features")
-    sourcestring = Saved("sourcestring")
     label = Saved("label")
     parts = Saved("parts")
     head = Saved("head")

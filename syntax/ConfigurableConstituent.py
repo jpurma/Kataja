@@ -1,6 +1,6 @@
 # coding=utf-8
 """ ConfigurableConstituent tries to be theory-editable constituent, whose behaviour can be adjusted
-in very specific manner. Configuration is stored in UG-instance.config -dict and can be changed from outside. """
+in very specific manner. Configuration is stored in FL-instance.config -dict and can be changed from outside. """
 
 # ############################################################################
 #
@@ -29,7 +29,7 @@ from syntax.BaseConstituent import BaseConstituent
 
 
 class ConfigurableConstituent(BaseConstituent):
-    """ ConfigurableConstituent is a constituent whose behaviour is adjusted by properties of UG.
+    """ ConfigurableConstituent is a constituent whose behaviour is adjusted by properties of FL.
     It inherits mostly everything from BaseConstituent, and overrides those methods that can be
     configured.
     """

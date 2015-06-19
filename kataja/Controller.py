@@ -54,7 +54,7 @@ class Controller:
         self.main = None
         self.Constituent = None
         self.Feature = None
-        self.UG = None
+        self.FL = None
         self.structure = None
         self.selected = []
         self.selected_root = None
@@ -93,12 +93,11 @@ class Controller:
         :param main: KatajaMain
         """
         from syntax.ConfigurableConstituent import ConfigurableConstituent
-        from syntax.BaseUG import UG
-        from syntax.ConfigurableFeature import Feature
+        from syntax.BaseFL import FL
+        from syntax.BaseFeature import BaseFeature
         self.Constituent = ConfigurableConstituent
-        self.Feature = Feature
-        self.UG = UG(constituent=self.Constituent, feature=self.Feature)
-
+        self.Feature = BaseFeature
+        self.FL = FL()
         self.main = main
 
 

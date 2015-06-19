@@ -189,7 +189,7 @@ class BaseParser:
             label = features['label'].value
         else:
             raise Exception("Label is not a proper Feature")
-        lexicon_entry = ctrl.UG.lexicon.get(label, None)
+        lexicon_entry = ctrl.FL.lexicon.get(label, None)
         local_entry = self.local_lexicon.get(label, None)
         if local_entry:
             constituent = local_entry
@@ -285,7 +285,7 @@ class BaseParser:
         #                 tid = topmost_C.label
         #             else:
         #                 tid = C.label
-        #             topmost_C = ctrl.UG.Merge(C, topmost_C)
+        #             topmost_C = ctrl.FL.Merge(C, topmost_C)
         #             topmost_C.label = C.label
         #             topmost_node = self.forest.create_node_from_constituent(topmost_C, result_of_merge=True)
         #             if dotlabel:

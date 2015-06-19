@@ -57,8 +57,6 @@ def inode_to_constituentnodes(inode, forest):
             # todo: features here
             print('Needs to create features from:', inode.features)
         constituent = ctrl.Constituent(inode.label)
-        constituent.index = inode.index
-        constituent.alias = inode.alias
         if inode.parts:
             result_of_merge = True
             result_of_select = False
@@ -68,8 +66,11 @@ def inode_to_constituentnodes(inode, forest):
         cn = forest.create_node_from_constituent(constituent,
                                                  result_of_merge=result_of_merge,
                                                  result_of_select=result_of_select)
+        cn.index = inode.index
+        cn.alias = inode.alias
         cn.gloss = inode.gloss
         cn.features = inode.features
+        print(inode.features)
 
         if len(children) == 2:
             left = children[1]

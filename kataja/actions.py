@@ -1132,7 +1132,7 @@ def edge_disconnect():
     elif role is 'end_cut':
         if edge.edge_type is g.CONSTITUENT_EDGE:
             old_start = edge.start
-            ctrl.forest.disconnect_node(first=old_start, second=edge.end, edge=edge)
+            ctrl.forest.disconnect_node(parent=old_start, child=edge.end, edge=edge)
             ctrl.forest.fix_stubs_for(old_start)
         else:
             ctrl.forest.delete_edge(edge)
