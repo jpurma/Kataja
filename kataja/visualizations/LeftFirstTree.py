@@ -26,7 +26,7 @@
 import math
 
 from kataja.debug import vis
-from kataja.ConstituentNode import ConstituentNode
+from kataja.BaseConstituentNode import BaseConstituentNode
 from kataja.singletons import prefs
 from kataja.FeatureNode import FeatureNode
 from kataja.utils import caller
@@ -74,7 +74,7 @@ class LeftFirstTree(BaseVisualization):
         node.adjustment = None
         node.update_label()
         node.update_visibility()
-        if isinstance(node, ConstituentNode):
+        if isinstance(node, BaseConstituentNode):
             node.dyn_x = False
             node.dyn_y = False
         elif isinstance(node, FeatureNode) or isinstance(node, GlossNode):
@@ -87,7 +87,7 @@ class LeftFirstTree(BaseVisualization):
         """ if there are different modes for one visualization, rotating between different modes is triggered here. """
         self.set_vis_data('rotation', self.get_vis_data('rotation') - 1)
 
-    def _indent(self, node, c):
+    def _indent_old(self, node, c):
         left = node.left()
         if left:
             c += 2
@@ -100,63 +100,68 @@ class LeftFirstTree(BaseVisualization):
         return c
 
     # Recursively put nodes to their correct position in grid
-    def _fill_grid(self, grid, node, x, y, parent=None):
+    def _put_to_grid(self, grid, node, x, y, parent=None):
+        print('_put_to_grid for node %s, (%s,  %s), %s' % (node, x, y, parent))
         if not self.should_we_draw(node, parent):
             return
         grid.set(x, y, node)
-        left = node.left()
-        if left:
-            if isinstance(left, FeatureNode):
-                self._fill_grid(grid, left, x - 1, y + 1, parent=node)
+        children = list(node.get_visible_children())
+        if not children:
+            return
+        x_shift = (len(children) // 2) * -2
+        x_step = 2
+        y_step = 2
+        first = True
+        nx = x + x_shift
+        ny = y + y_step
+        print('nx: %s, ny: %s, x_shift: %s ' % (nx, ny, x_shift))
+        for child in children:
+
+            if first:
+                blocked = grid.fill_path_if_free(x, y, nx, ny)
+                if blocked:
+                    print('path was blocked!')
+                if grid.get(nx, ny):
+                    print('path end was blocked!')
+                else:
+                    print('left: ', nx, ny)
+                    self._put_to_grid(grid, child, nx, ny, parent=node)
+                first = False
+                nx += x_step
             else:
-                grid.set(x - 1, y + 1, 1)
-                self._fill_grid(grid, left, x - 2, y + 2, parent=node)
-        elif self.forest.settings.draw_features and getattr(node.syntactic_object, 'feature_tree', None):
-            vis("(1) drawing feature_tree, this shouldn't happen anymore!")
-            self._fill_grid(grid, left, x - 1, y + 1, parent=node)
+                blocked = True
+                while blocked:
+                    blocked = grid.get(nx, ny)
+                    if not blocked:
+                        blocked = grid.fill_path_if_free(x, y, nx, ny)
+                    if not blocked:
+                        print('not left: ', nx, ny)
+                        self._put_to_grid(grid, child, nx, ny, parent=node)
+                    nx += x_step
 
-        right = node.right()
-        if right:
-            block_size = 2
-            nx = x + 2
-            ny = y + 2
-            filler = 1
-            while grid.get(nx - 2, ny + 2):  #
-                grid.set(nx - 1, ny - 1, 1)
-                grid.set(nx, ny, 1)  # this coordinate is now blocked, not by a node but a edge
-                nx += 2
-                ny += 2
-            grid.set(nx - 1, ny - 1, 1)
-            self._fill_grid(grid, right, nx, ny, parent=node)
 
-        # if isinstance(right, FeatureNode):
-        # block_size = 1
-        # else:
-        # block_size = 2
-        # nx = x + block_size
-        # ny = y + block_size
-        #             filler = block_size - 1
-        #             while filler:
-        #                 grid.set(nx - filler, ny - filler, 1)
-        #                 filler -= 1
-        #             while grid.get(nx - block_size, ny + block_size):
-        #                 filler = block_size - 1
-        #                 while filler:
-        #                     grid.set(nx - filler, ny - filler, 1)
-        #                     filler -= 1
-        #                 grid.set(nx, ny, 1)  # this coordinate is now blocked, not by a node but a edge
-        #                 nx += block_size
-        #                 ny += block_size
-        #             self._fill_grid(grid, right, nx, ny, parent = node)
-        elif self.forest.settings.draw_features and getattr(node.syntactic_object, 'feature_tree', None):
-            vis("(2) drawing feature_tree, this shouldn't happen anymore!")
-            nx = x + 1
-            ny = y + 1
-            while grid.get(nx - 1, ny + 1):
-                grid.set(nx, ny, 1)  # this coordinate is now blocked, not by a node but a edge
-                nx += 1
-                ny += 1
-            self._fill_grid(grid, right, nx, ny, parent=node)
+        # right = node.right()
+        # if right:
+        #     block_size = 2
+        #     nx = x + 2
+        #     ny = y + 2
+        #     filler = 1
+        #     while grid.get(nx - 2, ny + 2):  #
+        #         grid.set(nx - 1, ny - 1, 1)
+        #         grid.set(nx, ny, 1)  # this coordinate is now blocked, not by a node but a edge
+        #         nx += 2
+        #         ny += 2
+        #     grid.set(nx - 1, ny - 1, 1)
+        #     self._put_to_grid(grid, right, nx, ny, parent=node)
+        # elif self.forest.settings.draw_features and getattr(node.syntactic_object, 'feature_tree', None):
+        #     vis("(2) drawing feature_tree, this shouldn't happen anymore!")
+        #     nx = x + 1
+        #     ny = y + 1
+        #     while grid.get(nx - 1, ny + 1):
+        #         grid.set(nx, ny, 1)  # this coordinate is now blocked, not by a node but a edge
+        #         nx += 1
+        #         ny += 1
+        #     self._put_to_grid(grid, right, nx, ny, parent=node)
 
     def _merge_grids(self, grid, other_grid):
         if not other_grid:
@@ -190,9 +195,9 @@ class LeftFirstTree(BaseVisualization):
         self.set_vis_data('rotation', new_rotation)
         for root in self.forest:
             grid = Grid()
-            if isinstance(root, ConstituentNode):
-                self._indent(root, 0)
-                self._fill_grid(grid, root, self._indentation, 0)
+            if isinstance(root, BaseConstituentNode):
+                self._put_to_grid(grid, root, 0, 0)
+                grid.ascii_dump()
                 merged_grid = self._merge_grids(grid, merged_grid)
 
         offset_x = 0  # tree_w/-2
@@ -206,13 +211,13 @@ class LeftFirstTree(BaseVisualization):
         # if node is extra wide, then move all columns to right from that point on
         # same for extra tall nodes. move everything down after that row
 
-        all_nodes = set([x for x in self.forest.visible_nodes() if isinstance(x, ConstituentNode)])
+        all_nodes = set([x for x in self.forest.visible_nodes() if isinstance(x, BaseConstituentNode)])
         for y_i, row in enumerate(merged_grid):
             extra_height = 0
             prev_width = 0
             x = offset_x
             for x_i, node in enumerate(row):
-                if node and isinstance(node, ConstituentNode):
+                if node and isinstance(node, BaseConstituentNode):
 
                     height_spillover = node.inner_rect.bottom() - edge_height
                     if height_spillover > extra_height:

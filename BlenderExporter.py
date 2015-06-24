@@ -26,7 +26,7 @@
 
 import PyQt5.QtCore as QtCore, PyQt5.QtGui as QtGui
 from PyQt5.QtCore import QPointF as Pf, QPoint as P, Qt
-from .kataja.ConstituentNode import ConstituentNode
+from .kataja.BaseConstituentNode import BaseConstituentNode
 from .kataja.Controller import colors
 import collections, json
 

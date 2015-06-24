@@ -1,7 +1,7 @@
 
 
 from kataja.AttributeNode import AttributeNode
-from kataja.ConstituentNode import ConstituentNode
+from kataja.BaseConstituentNode import BaseConstituentNode
 from kataja.FeatureNode import FeatureNode
 from kataja.GlossNode import GlossNode
 from kataja.PropertyNode import PropertyNode
@@ -20,7 +20,7 @@ from syntax.BaseFeature import BaseFeature
 
 # These asserts prevent automated cleanups from removing imports above as unused
 # Node types
-assert ConstituentNode
+assert BaseConstituentNode
 assert AttributeNode
 assert FeatureNode
 assert GlossNode
@@ -43,7 +43,7 @@ assert BaseConstituent
 assert BaseFeature
 
 # We could use globals but it is safer this way: you can only create objects listed here.
-factory_models = {ConstituentNode, AttributeNode, FeatureNode, GlossNode, PropertyNode, CommentNode, Edge, Forest,
+factory_models = {BaseConstituentNode, AttributeNode, FeatureNode, GlossNode, PropertyNode, CommentNode, Edge, Forest,
                   DerivationStep, DerivationStepManager, ForestSettings, ForestRules,
                   ConfigurableConstituent, BaseConstituent, BaseFeature}
 factory_dict = {}

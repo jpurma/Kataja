@@ -4,7 +4,7 @@ from kataja.parser.BaseParser import BaseParser
 from kataja.parser.LatexToINode import parse
 from kataja.parser.INodes import IConstituentNode
 from kataja.singletons import ctrl
-from kataja.ConstituentNode import ConstituentNode
+from kataja.BaseConstituentNode import BaseConstituentNode
 import kataja.globals as g
 
 
@@ -51,7 +51,7 @@ def inode_to_constituentnodes(inode, forest):
             right_first = reversed(inode)
             for nnode in right_first:
                 child = inode_to_constituentnodes(nnode, forest)
-                if child and isinstance(child, ConstituentNode):
+                if child and isinstance(child, BaseConstituentNode):
                     children.append(child)
         if inode.features:
             # todo: features here
@@ -66,11 +66,13 @@ def inode_to_constituentnodes(inode, forest):
         cn = forest.create_node_from_constituent(constituent,
                                                  result_of_merge=result_of_merge,
                                                  result_of_select=result_of_select)
-        cn.index = inode.index
-        cn.alias = inode.alias
-        cn.gloss = inode.gloss
+        if hasattr(cn, 'index'):
+            cn.index = inode.index
+        if hasattr(cn, 'alias'):
+            cn.alias = inode.alias
+        if hasattr(cn, 'gloss'):
+            cn.gloss = inode.gloss
         cn.features = inode.features
-        print(inode.features)
 
         if len(children) == 2:
             left = children[1]

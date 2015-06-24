@@ -29,7 +29,7 @@ import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
 from kataja.Edge import Edge
-from kataja.ConstituentNode import ConstituentNode
+from kataja.BaseConstituentNode import BaseConstituentNode
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.Movable import Movable
 from kataja.Node import Node
@@ -77,6 +77,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         self._bottom_border = 50
         self.manual_zoom = False
         self._signal_forwarding = {}
+        self._cached_visible_rect = None
 
         # self.ants = []
         # for n in range(0,1000):
@@ -94,7 +95,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
     # return QtWidgets.QGraphicsScene.event(self, event)
 
     def forward_signal(self, signal, *args):
-        """ When graph scene receives signals, they are forwarded to Kataja's graphic item subclasses. They all have a signal receiver class that can handle certain kinds of signals and modify the item accordingly. 
+        """ When graph scene receives signals, they are forwarded to Kataja's graphic item subclasses. They all have a
+        signal receiver class that can handle certain kinds of signals and modify the item accordingly.
         :param signal:
         :param args:
         """
@@ -166,18 +168,20 @@ class GraphScene(QtWidgets.QGraphicsScene):
     # @time_me
     def fit_to_window(self):
         """ Calls up to graph view and makes it to fit all visible items here to view window."""
-        self.graph_view.instant_fit_to_view(self.visible_rect())
+        vr = self.visible_rect()
+        if self._cached_visible_rect and vr != self._cached_visible_rect:
+            self.graph_view.instant_fit_to_view(vr)
+        self._cached_visible_rect = vr
 
     def visible_rect(self):
         """ Counts all visible items in scene and returns QRectF object
          that contains all of them """
-        # r = QtCore.QRectF(self.min_x, self.min_y, self.max_x - self.min_x, self.max_y - self.min_y)
-        r = self.itemsBoundingRect()
-        return r
+        return self.itemsBoundingRect()
 
     @time_me
     def visible_rect_old(self):
-        """ Counts all visible items in scene and returns QRectF object
+        """ deprecated
+         Counts all visible items in scene and returns QRectF object
          that contains all of them -- deprecated, it is slower than calling itemsBoundingRect, but
           on the other hand this doesn't count invisible objects."""
         lefts = []
@@ -185,7 +189,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         tops = []
         bottoms = []
         for item in self.items():
-            if isinstance(item, ConstituentNode) and not item.is_fading_away():
+            if isinstance(item, BaseConstituentNode) and not item.is_fading_away():
                 top_left_x, top_left_y, top_left_z = item.magnet(0)
                 bottom_right_x, bottom_right_y, bottom_right_z = item.magnet(11)
                 lefts.append(top_left_x)
@@ -218,9 +222,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         return r
 
     def visible_rect_and_gloss(self):
-        """
-
-
+        """ deprecated
         :return:
         """
         if self.main.forest.gloss:
@@ -244,9 +246,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
         self.killTimer(self._timer_id)
         self._timer_id = 0
 
-
     def export_3d(self, path, forest):
-        """
+        """ deprecated
 
         :param path:
         :param forest:
@@ -254,70 +255,65 @@ class GraphScene(QtWidgets.QGraphicsScene):
         pass
         # export_visible_items(path = path, scene = self, forest = forest, prefs = prefs)
 
-
     def move_selection(self, direction):
-
         """
         Compute which is the closest or most appropriate object in given direction. Used for keyboard movement.
         :param direction:
         """
-        selectables = [(item, to_tuple(item.sceneBoundingRect().center())) for item in self.items() if
-                       getattr(item, 'selectable', False) and item.is_visible()]
         # debugging plotter
         # for item, pos in selectables:
         # x,y = pos
         # el = QtGui.QGraphicsEllipseItem(x-2, y-2, 4, 4)
         # el.setBrush(colors.drawing)
         # self.addItem(el)
+        #
 
+        # ############### Absolute left/right/up/down ###############################
         # if nothing is selected, select the edgemost item from given direction
         if not ctrl.selected:
-            best = None
+            selectables = [(item, to_tuple(item.sceneBoundingRect().center())) for item in self.items() if
+                           getattr(item, 'selectable', False) and item.is_visible()]
             if direction == 'left':
-                min_x = 999
-                min_y = 999
-                for item, pos in selectables:
-                    x, y = pos
-                    if x < min_x or (x == min_x and y < min_y):
-                        min_x = x
-                        min_y = y
-                        best = item
+                sortable = [(po[0], po[1], it) for it, po in selectables]
+                x, y, item = min(sortable)
             elif direction == 'right':
-                max_x = -999
-                max_y = -999
-                for item, pos in selectables:
-                    x, y = pos
-                    if x > max_x or (x == max_x and y < max_y):
-                        max_x = x
-                        max_y = y
-                        best = item
-            if direction == 'up':
-                min_x = 999
-                min_y = 999
-                for item, pos in selectables:
-                    x, y = pos
-                    if y < min_y or (y == min_y and x < min_x):
-                        min_x = x
-                        min_y = y
-                        best = item
+                sortable = [(po[0], po[1], it) for it, po in selectables]
+                x, y, item = max(sortable)
+            elif direction == 'up':
+                sortable = [(po[1], po[0], it) for it, po in selectables]
+                y, x, item = min(sortable)
             elif direction == 'down':
-                max_x = -999
-                max_y = -999
-                for item, pos in selectables:
-                    x, y = pos
-                    if y > max_y or (y == max_y and x < max_x):
-                        max_x = x
-                        max_y = y
-                        best = item
+                sortable = [(po[1], po[0], it) for it, po in selectables]
+                y, x, item = max(sortable)
+            else:
+                raise KeyError
+            ctrl.select(item)
+            return item
+        # ################ Relative left/right/up/down #############################
         else:
             current = ctrl.get_selected()
+            # ################### Nodes #############################
+            if isinstance(current, Node):
+                if direction == 'left':
+                    lefts = list(current.get_edges_down(similar=True, visible=True, align=g.LEFT))
+                    if len(lefts) == 1:
+                        ctrl.select(lefts[0])
+                        return lefts[0]
+                    elif len(lefts) >= 1:
+                        distances = [current.distance_to(x.end) for x in lefts]
+                        i = distances.index(min(distances))
+                        ctrl.select(lefts[i])
+                        return lefts[i]
+
+
+
+
             best = current
             x, y = to_tuple(current.sceneBoundingRect().center())
             x = int(x)
             y = int(y)
-            min_x = 999
-            min_y = 999
-            min_xy = 99999
+            selectables = []
+
 
             if direction == 'left':
                 found = False
@@ -358,7 +354,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             if direction == 'right':
                 found = False
                 if isinstance(current, Node):
-                    edges = current.get_edges_down(similar=True, visible=True)
+                    edges = list(current.get_edges_down(similar=True, visible=True))
                     if len(edges) == 2:
                         best = edges[1]
                         found = True

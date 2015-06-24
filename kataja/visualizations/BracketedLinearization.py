@@ -23,7 +23,7 @@
 # ############################################################################
 
 
-from kataja.ConstituentNode import ConstituentNode
+from kataja.BaseConstituentNode import BaseConstituentNode
 from kataja.singletons import prefs, ctrl
 from kataja.visualizations.BaseVisualization import BaseVisualization
 from kataja.FeatureNode import FeatureNode
@@ -32,7 +32,13 @@ import kataja.globals as g
 
 
 class BracketedLinearization(BaseVisualization):
-    """
+    """ This should give the commonly used bracket notation, but instead of plain text, the elements are kataja
+    nodes and the structure can be edited like any tree. Reselecting BracketedLinearization switches between different
+    modes of showing brackets:
+
+    0 - g.NO_BRACKETS - no brackets
+    1 - g.MAJOR_BRACKETS - only use brackets for branches that are deeper than 1 node
+    2 - g.ALL_BRACKETS - show all brackets
 
     """
     name = 'Bracketed linearization'
@@ -43,7 +49,6 @@ class BracketedLinearization(BaseVisualization):
         self._hits = {}
         self._max_hits = {}
         self._directed = True
-
 
     def prepare(self, forest, reset=True):
         """ If loading a state, don't reset.
@@ -68,7 +73,7 @@ class BracketedLinearization(BaseVisualization):
         node.fixed_position = None
         node.adjustment = None
         node.update_visibility()
-        if isinstance(node, ConstituentNode):
+        if isinstance(node, BaseConstituentNode):
             node.dyn_x = False
             node.dyn_y = False
         elif isinstance(node, FeatureNode) or isinstance(node, GlossNode):
@@ -76,14 +81,12 @@ class BracketedLinearization(BaseVisualization):
             node.dyn_y = True
         node.update_label()
 
-
     def show_edges_for(self, node):
         """ Bracket visualization never shows constituent edges
         :param node: Node
         :return:
         """
         return False
-
 
     def reselect(self):
         """ if there are different modes for one visualization, rotating between different modes is triggered here. """
@@ -132,7 +135,7 @@ class BracketedLinearization(BaseVisualization):
 
         start = 0
         for root in self.forest:
-            if isinstance(root, ConstituentNode):
+            if isinstance(root, BaseConstituentNode):
                 used, start = draw_node(root, used=set(), left_edge=start)
                 start += prefs.edge_width
 

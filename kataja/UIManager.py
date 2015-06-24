@@ -26,7 +26,7 @@ from collections import OrderedDict
 from PyQt5 import QtCore, QtWidgets, QtGui
 
 from kataja.KeyPressManager import ShortcutSolver, ButtonShortcutFilter
-from kataja.ConstituentNode import ConstituentNode
+from kataja.BaseConstituentNode import BaseConstituentNode
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.Edge import Edge
 from kataja.ui.ActivityMarker import ActivityMarker
@@ -375,7 +375,7 @@ class UIManager:
         """
         self.remove_touch_areas_for(item)
         self.remove_control_points(item)
-        if isinstance(item, ConstituentNode):
+        if isinstance(item, BaseConstituentNode):
             self.remove_buttons_for_constituent_node(item)
         elif isinstance(item, Edge):
             self.remove_buttons_for_edge(item)
@@ -431,9 +431,14 @@ class UIManager:
             shortcut = data.get('shortcut', None)
             # if action has shortcut_context, it shouldn't have global shortcut
             # in these cases shortcut is tied to ui_element.
-            if shortcut and not data.get('shortcut_context', None):
+            if shortcut:
                 act.setShortcut(QtGui.QKeySequence(shortcut))
-                act.setShortcutContext(QtCore.Qt.ApplicationShortcut)
+                scs = data.get('shortcut_context', None)
+                if scs == 'parent_and_children':
+                    sc = QtCore.Qt.WidgetWithChildrenShortcut
+                else:
+                    sc = QtCore.Qt.ApplicationShortcut
+                act.setShortcutContext(sc)
             viewgroup = data.get('viewgroup', None)
             if viewgroup:
                 if viewgroup not in self._action_groups:
@@ -807,7 +812,7 @@ class UIManager:
         :param selected: is item being selected or deselected
         """
         if selected and item.visible:
-            if isinstance(item, ConstituentNode):
+            if isinstance(item, BaseConstituentNode):
                 if item.is_root_node():
                     self.create_touch_area(item, g.LEFT_ADD_ROOT)
                     self.create_touch_area(item, g.RIGHT_ADD_ROOT)
@@ -1140,7 +1145,7 @@ class UIManager:
                 self.add_buttons_for_edge(item)
             else:
                 self.remove_buttons_for_edge(item)
-        elif isinstance(item, ConstituentNode):
+        elif isinstance(item, BaseConstituentNode):
             if selected:
                 self.remove_buttons_for_constituent_node(item)
                 self.add_buttons_for_constituent_node(item)

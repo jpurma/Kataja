@@ -30,7 +30,7 @@ from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.Label import Label
 from kataja.Movable import Movable
 from kataja.BaseModel import Saved, Synobj
-from kataja.utils import to_tuple, create_shadow_effect
+from kataja.utils import to_tuple, create_shadow_effect, time_me
 import kataja.globals as g
 from kataja.parser.LatexToINode import parse_field
 
@@ -71,8 +71,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self.label_rect = None
         self._inode = None
         self._inode_changed = True
-        self._index_label = None
-        self._index_visible = True
         self._gravity = 0
         self.clickable = False
         self.selectable = True
@@ -115,7 +113,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :return: None
         """
         super().after_model_update(updated_fields, update_type)
-        if 'label' in updated_fields or 'index' in updated_fields:
+        if 'label' in updated_fields:
             self._inode_changed = True
             self.update_label()
         if 'triangle' in updated_fields:
@@ -298,29 +296,57 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
     # ### Children and parents ####################################################
 
-    def get_children(self, only_similar=True, only_visible=False, edge_type=None):
+
+    def get_all_children(self):
         """
-        Get child nodes of this node.
-        :param only_similar: boolean, only return nodes of same type (eg. ConstituentNodes)
-        :param only_visible: boolean, only return visible nodes
-        :param edge_type: int, only return Edges of certain subclass.
-        :return: list of Nodes
+        Get all types of child nodes of this node.
+        :return: iterator of Nodes
         """
-        if not self.edges_down:
-            return []
-        if only_similar or edge_type is not None:
-            if edge_type is None:
-                edge_type = self.__class__.default_edge_type
-            if only_visible:
-                return [edge.end for edge in self.edges_down if
-                        edge.edge_type == edge_type and edge.end and edge.end.is_visible()]
-            else:
-                return [edge.end for edge in self.edges_down if edge.edge_type == edge_type and edge.end]
-        else:
-            if only_visible:
-                return [edge.end for edge in self.edges_down if edge.end and edge.end.is_visible()]
-            else:
-                return [edge.end for edge in self.edges_down if edge.end]
+        return (edge.end for edge in self.edges_down)
+
+
+    def get_all_visible_children(self):
+        """
+        Get all types of child nodes of this node if they are visible.
+        :return: iterator of Nodes
+        """
+        return (edge.end for edge in self.edges_down if edge.end.is_visible())
+
+    def get_children(self):
+        """
+        Get child nodes of this node if they are of the same type as this.
+        :return: iterator of Nodes
+        """
+        et = self.__class__.default_edge_type
+        return (edge.end for edge in self.edges_down if edge.edge_type == et)
+
+    def get_reversed_children(self):
+        """
+        Get child nodes of this node if they are of the same type as this.
+        :return: iterator of Nodes
+        """
+        et = self.__class__.default_edge_type
+        return (edge.end for edge in reversed(self.edges_down) if edge.edge_type == et)
+
+    def get_visible_children(self):
+        """
+        Get child nodes of this node if they are of the same type as this.
+        :return: iterator of Nodes
+        """
+        et = self.__class__.default_edge_type
+        return (edge.end for edge in self.edges_down if edge.edge_type == et)
+
+    def get_children_of_type(self, edge_type=None, node_type=None):
+        """
+        Get child nodes of this node if they are of the same type as this.
+        :return: iterator of Nodes
+        """
+        if edge_type:
+            return (edge.end for edge in self.edges_down if edge.edge_type == edge_type)
+        elif node_type:
+            return (edge.end for edge in self.edges_down if isinstance(edge.end, node_type))
+
+
 
     def get_parents(self, only_similar=True, only_visible=False, edge_type=None):
         """
@@ -415,11 +441,15 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :param only_visible:
         :return:
         """
-        children = self.get_children(only_similar, only_visible)
-        if children:
-            return False
+        if only_similar and only_visible:
+            gen = self.get_visible_children()
+        elif only_similar:
+            gen = self.get_children()
+        elif only_visible:
+            gen = self.get_all_visible_children()
         else:
-            return True
+            gen = self.get_all_children()
+        return next(gen, True) is True
 
     def get_only_parent(self, only_similar=True, only_visible=True):
         """ Returns one or zero parents -- useful when not using multidomination
@@ -478,23 +508,44 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
         return None
 
-    def get_edges_up(self, similar=True, visible=False):
+
+    def get_edges_up(self, similar=True, visible=False, align=None):
         """ Returns edges up, filtered
         :param similar:
         :param visible:
+        :param align:
         """
-        return [rel for rel in self.edges_up if
-                ((not similar) or rel.edge_type == self.__class__.default_edge_type) and (
-                    (not visible) or rel.is_visible())]
+        def filter_func(rel):
+            """
+            :param rel:
+            :return: bool """
+            if similar and rel.edge_type != self.__class__.default_edge_type:
+                return False
+            if align and rel.align != align:
+                return False
+            if visible and not rel.is_visible():
+                return False
+            return True
+        return filter(filter_func, self.edges_up)
 
-    def get_edges_down(self, similar=True, visible=False):
+    def get_edges_down(self, similar=True, visible=False, align=None):
         """ Returns edges down, filtered
         :param similar:
         :param visible:
+        :param align:
         """
-        return [rel for rel in self.edges_down if
-                ((not similar) or rel.edge_type == self.__class__.default_edge_type) and (
-                    (not visible) or rel.is_visible())]
+        def filter_func(rel):
+            """
+            :param rel:
+            :return: bool """
+            if similar and rel.edge_type != self.__class__.default_edge_type:
+                return False
+            if align and rel.align != align:
+                return False
+            if visible and not rel.is_visible():
+                return False
+            return True
+        return filter(filter_func, self.edges_down)
 
     ### Font #####################################################################
 
@@ -1043,7 +1094,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
     # Properties delegated to syntactic object
     label = Synobj("label", if_changed=alert_inode)
-    index = Saved("index", if_changed=alert_inode)
 
     # Saved properties
     syntactic_object = Saved("syntactic_object")

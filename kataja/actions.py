@@ -1132,7 +1132,7 @@ def edge_disconnect():
     elif role is 'end_cut':
         if edge.edge_type is g.CONSTITUENT_EDGE:
             old_start = edge.start
-            ctrl.forest.disconnect_node(parent=old_start, child=edge.end, edge=edge)
+            ctrl.forest.disconnect_edge(edge)
             ctrl.forest.fix_stubs_for(old_start)
         else:
             ctrl.forest.delete_edge(edge)
@@ -1298,29 +1298,72 @@ a['toggle_all_panels'] = {
     'condition': 'are_panels_visible'
 }
 
-# 'key_return'] = {
-#     'command': 'key_return',
-#     'method': 'key_return',
-#     'shortcut': 'Return'},
-# 'key_left'] = {
-#     'command': 'key_left',
-#     'method': 'key_left',
-#     'shortcut': 'Left'},
-# 'key_right'] = {
-#     'command': 'key_right',
-#     'method': 'key_right',
-#     'shortcut': 'Right'},
-# 'key_up'] = {
-#     'command': 'key_up',
-#     'method': 'key_up',
-#     'shortcut': 'Up'},
-# 'key_down'] = {
-#     'command': 'key_down',
-#     'method': 'key_down',
-#     'shortcut': 'Down'},
-# 'key_tab'] = {
+def key_left():
+    """ Placeholder for keypress
+    :return: None
+    """
+    print('key_left called')
+    if not ctrl.ui_focus:
+        ctrl.graph_scene.move_selection('left')
+
+a['key_left'] = {
+    'command': 'key_left',
+    'undoable': False,
+    'method': key_left,
+    'shortcut': 'Left'}
+
+def key_right():
+    """ Placeholder for keypress
+    :return: None
+    """
+    print('key_right called')
+    if not ctrl.ui_focus:
+        ctrl.graph_scene.move_selection('right')
+
+a['key_right'] = {
+    'command': 'key_right',
+    'undoable': False,
+    'method': key_right,
+    'shortcut': 'Right'}
+
+def key_up():
+    """ Placeholder for keypress
+    :return: None
+    """
+    print('key_up called')
+    if not ctrl.ui_focus:
+        ctrl.graph_scene.move_selection('up')
+
+a['key_up'] = {
+    'command': 'key_up',
+    'undoable': False,
+    'method': key_up,
+    'shortcut': 'Up'}
+
+def key_down():
+    """ Placeholder for keypress
+    :return: None
+    """
+    print('key_down called')
+    if not ctrl.ui_focus:
+        ctrl.graph_scene.move_selection('down')
+
+a['key_down'] = {
+    'command': 'key_down',
+    'undoable': False,
+    'method': key_down,
+    'shortcut': 'Down'}
+
+# def key_tab():
+#     """ Placeholder for keypress
+#     :return: None
+#     """
+#     print('key_tab called')
+#
+# a['key_tab'] = {
 #     'command': 'key_tab',
-#     'method': 'key_tab',
-#     'shortcut': 'Tab'},
+#     'undoable': False,
+#     'method': key_tab,
+#     'shortcut': 'Tab'}
 
 actions = a

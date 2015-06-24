@@ -12,25 +12,20 @@ class BracketManager:
         self._bracket_slots = {}
 
     def get_brackets(self):
-        """
-
-
+        """ Get brackets as a iterable
         :return:
         """
-        return list(self.brackets.values())
+        return self.brackets.values()
 
     def store(self, item):
-        """
-
+        """ Keep track on brackets
         :param item:
         """
         self.brackets[item.key] = item
 
     def update_positions(self):
-        """
+        """ Update all bracket positions """
 
-
-        """
         for bracket in self.brackets.values():
             bracket.update_position()
 
@@ -81,7 +76,7 @@ class BracketManager:
 
         if f.settings.bracket_style != g.NO_BRACKETS:
             for tree in f:
-                for node in f.list_nodes_once(tree):  # not sure if this should use 'once'
+                for node in f.list_visible_nodes_once(tree):  # not sure if this should use 'once'
                     if node.left_bracket:
                         this_left = node
                         next_left = node.left()
@@ -127,7 +122,6 @@ class BracketManager:
                 return len(right_brackets) * (qt_prefs.font_bracket_width + 2)
         else:
             return 0
-
 
     def remove_brackets(self, node):
         """

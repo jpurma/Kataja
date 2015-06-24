@@ -22,7 +22,7 @@
 #
 # ############################################################################
 
-from kataja.ConstituentNode import ConstituentNode
+from kataja.BaseConstituentNode import BaseConstituentNode
 from kataja.singletons import prefs
 from kataja.visualizations.BaseVisualization import BaseVisualization
 from kataja.FeatureNode import FeatureNode
@@ -71,7 +71,7 @@ class WindDriftTree(BaseVisualization):
         node.fixed_position = None
         node.adjustment = None
         node.update_visibility()
-        if isinstance(node, ConstituentNode):
+        if isinstance(node, BaseConstituentNode):
             node.dyn_x = True
             node.dyn_y = True
         elif isinstance(node, FeatureNode) or isinstance(node, GlossNode):
@@ -82,21 +82,20 @@ class WindDriftTree(BaseVisualization):
 
     def _draw_wind_drift_tree(self, topmost_node):
 
+
         def draw_node(node, parent):
             """
 
             :param node:
             :param parent:
             """
-            right = node.right()
-            left = node.left()
-            if right:
-                draw_node(right, node)
-            if left:
-                draw_node(left, node)
+            children = node.get_children()
+            children.reverse()
+            for child in children:
+                draw_node(child, node)
             self._reduce_node_count(node)
             if self._is_last_node(node):
-                if not (left or right):  # bottom level nodes
+                if not children:  # bottom level nodes
                     x, y = self._last_pos
                     if self._leftmost:  # this isn't bottom right node
                         lx, y, z = self._leftmost.current_position
@@ -106,9 +105,10 @@ class WindDriftTree(BaseVisualization):
                     node.algo_position = (x, y, 0)
                 else:
                     x, y = self._last_pos
-                    left_right_node = left.right()
-                    if left_right_node:
-                        y = min((y - self._grid_height, left_right_node.current_position[1] - self._grid_height))
+                    left = children[0]
+                    lc = left.get_children()
+                    if lc:
+                        y = min((y - self._grid_height, lc[-1].current_position[1] - self._grid_height))
                     else:
                         y -= self._grid_height
                     x += self._grid_height
@@ -123,6 +123,6 @@ class WindDriftTree(BaseVisualization):
         self._last_pos = (0, 0)
         for tree in self.forest:
             self._count_occurences_of_node(tree.root)
-            if not isinstance(tree.root, ConstituentNode):
+            if not isinstance(tree.root, BaseConstituentNode):
                 continue
             self._draw_wind_drift_tree(tree.root)

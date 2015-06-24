@@ -34,6 +34,9 @@ class IConstituent(BaseModel):
     """ IConstituent is the interface for constituents in syntax. """
 
     short_name = "I-C"
+    visible = []
+    editable = []
+    addable = []
 
     def __init__(self, label='', parts=None, save_key='', features=None, head=None, **kw):
         super().__init__(**kw)

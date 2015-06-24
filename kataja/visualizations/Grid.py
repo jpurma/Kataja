@@ -22,7 +22,7 @@
 #
 # ############################################################################
 
-from kataja.ConstituentNode import ConstituentNode
+from kataja.BaseConstituentNode import BaseConstituentNode
 from kataja.Node import Node
 
 
@@ -39,7 +39,7 @@ class Grid:
         for column in self._rows:
             collist = []
             for item in column:
-                if isinstance(item, ConstituentNode):
+                if isinstance(item, BaseConstituentNode):
                     collist.append(item.label or 'Placeholder')
                 else:
                     collist.append(str(item))
@@ -66,8 +66,8 @@ class Grid:
         :param x: int
         :param y: int
         """
-        assert (x >= 0)
-        assert (y >= 0)
+        if x < 0 or y < 0:
+            return None
         if x > self.width - 1 or y > self.height - 1:
             return None
         else:
@@ -83,13 +83,13 @@ class Grid:
         :param w: int
         :param h: int
         """
-        try:
-            assert (isinstance(x, int))
-            assert (isinstance(y, int))
-            assert (x >= 0)
-            assert (y >= 0)
-        except AssertionError:
-            print('Bad coordinates in grid: ', x, y)
+        while x < 0:
+            self.insert_column()
+            x += 1
+        while y < 0:
+            self.insert_row()
+            y += 1
+
         if w > 1 or h > 1:
             l = x - (w - 1) // 2
             r = x + (w - 1) // 2
@@ -179,6 +179,80 @@ class Grid:
         row = self.width * [0]
         self.height += 1
         self._rows.insert(0, row)
+
+    def insert_column(self):
+        """ Add one column to left ( each row has an empty slot at index 0)
+        :return:
+        """
+        for row in self._rows:
+            row.insert(0, 0)
+        self.width += 1
+
+    def pixelated_path(self, start_x, start_y, end_x, end_y):
+        """ Return the grid blocks that are crossed in the line between start and end. start and end blocks are omitted.
+        :param start_x:
+        :param start_y:
+        :param end_x:
+        :param end_y:
+        :return:
+        """
+        used = {(start_x, start_y), (end_x, end_y)}
+        path = []
+        dx = end_x - start_x
+        dy = end_y - start_y
+        if dx == 0: # simple case, line straight up or down, but handled separately to avoid division by zero
+            if dy < 0:
+                step = -1
+            else:
+                step = 1
+            for y in range(0, dy, step):
+                p = start_x, start_y + y
+                if p not in used:
+                    path.append(p)
+                    used.add(p)
+            return path
+
+        d = float(dy) / float(dx)
+        if abs(dx) > abs(dy):
+            if dx < 0:
+                step = -1
+            else:
+                step = 1
+            for x in range(0, dx, step):
+                p = start_x + x, start_y + int(d * x)
+                if p not in used:
+                    path.append(p)
+                    used.add(p)
+        else:
+            if dy < 0:
+                step = -1
+            else:
+                step = 1
+            for y in range(0, dy, step):
+                p = start_x + int(y / d), start_y + y
+                if p not in used:
+                    path.append(p)
+                    used.add(p)
+        return path
+
+    def fill_path_if_free(self, start_x, start_y, end_x, end_y, marker=1):
+        """ Try to draw a line in grid from start to end (omitting start and end). If the path is empty, fill them
+         with marker and return None, if it is occupied, return True
+        :param start_x:
+        :param start_y:
+        :param end_x:
+        :param end_y:
+        :param marker: item to use as a path marker
+        :return:
+        """
+        pp = self.pixelated_path(start_x, start_y, end_x, end_y)
+        for x, y in pp:
+            if self.get(x, y):
+                return True
+        for x, y in pp:
+            self.set(x, y, marker)
+
+
 
     def __iter__(self):
         return self._rows.__iter__()

@@ -26,26 +26,24 @@ from PyQt5 import QtGui
 
 from kataja.singletons import ctrl
 from kataja.Node import Node
-from kataja.utils import to_tuple, time_me, caller
 from kataja.parser.INodes import IConstituentNode, ITextNode
 import kataja.globals as g
-from kataja.BaseModel import Saved, Synobj
+from kataja.BaseModel import Synobj
 
 # ctrl = Controller object, gives accessa to other modules
 
 
 
-class ConstituentNode(Node):
-    """ ConstituentNodes are graphical representations of constituents.
-    They are primary objects and need to support saving and loading."""
+class BaseConstituentNode(Node):
+    """ BaseConstituentNodes are minimal graphical representations of constituents. ConstituentNode -class
+    inherits this and adds more fields and features, but if you want to create new kind of Constituents in syntax it
+    may be cleaner to build on BaseConstituentNode and not ConstituentNode. """
     width = 20
     height = 20
     default_edge_type = g.CONSTITUENT_EDGE
     receives_signals = []
     node_type = g.CONSTITUENT_NODE
-    ordered = True
-    ordering_func = None
-    short_name = "CN"
+    short_name = "BCN"
 
 
 
@@ -55,11 +53,6 @@ class ConstituentNode(Node):
     def __init__(self, constituent=None):
         """ Most of the initiation is inherited from Node """
         Node.__init__(self, syntactic_object=constituent)
-
-        self.is_trace = False
-        self.merge_order = 0
-        self.select_order = 0
-        self.original_parent = None
 
         # ------ Bracket drawing -------
         self.left_bracket = None
@@ -71,9 +64,6 @@ class ConstituentNode(Node):
         self.can_project = True
         self.projecting_to = set()
 
-        # ### Cycle index stores the order when node was originally merged to structure.
-        # going up in tree, cycle index should go up too
-
         # ## use update_visibility to change these: visibility of particular elements
         # depends on many factors
         if ctrl.forest:
@@ -82,7 +72,6 @@ class ConstituentNode(Node):
             self._visibility_brackets = 0
 
         self.setAcceptDrops(True)
-        self.update_status_tip()
 
     def after_init(self):
         """ After_init is called in 2nd step in process of creating objects:
@@ -92,7 +81,6 @@ class ConstituentNode(Node):
         :return: None
         """
         self.update_features()
-        self.update_gloss()
         self.update_label()
         self.update_visibility()
         self.announce_creation()
@@ -106,16 +94,6 @@ class ConstituentNode(Node):
         """
         super().after_model_update(updated_fields, update_type)
         update_label = False
-        if 'alias' in updated_fields:
-            self._inode_changed = True
-            update_label = True
-        if 'index' in updated_fields:
-            self._inode_changed = True
-            update_label = True
-        if 'gloss' in updated_fields:
-            self._inode_changed = True
-            self.update_gloss()
-            update_label = True
         if 'features' in updated_fields:
             self._inode_changed = True
             self.update_features()
@@ -126,14 +104,6 @@ class ConstituentNode(Node):
     # properties implemented by syntactic node
     # set_hooks, to be run when values are set
 
-    def if_changed_gloss(self, value):
-        """ Synobj changed, but remind to update inodes here
-        :param value:
-        :return:
-        """
-        self._inode_changed = True
-        self.update_gloss()
-
     def if_changed_features(self, value):
         """ Synobj changed, but remind to update inodes here
         :param value:
@@ -142,26 +112,7 @@ class ConstituentNode(Node):
         self._inode_changed = True
         self.update_features()
 
-    # Saved properties
-
-
     # Other properties
-
-    @property
-    def gloss_node(self):
-        """
-        :return:
-        """
-        gl = self.get_children(edge_type=g.GLOSS_EDGE)
-        if gl:
-            return gl[0]
-
-    @property
-    def raw_alias(self):
-        """ Get the unparsed raw version of label (str)
-        :return:
-        """
-        return self.alias
 
     @property
     def as_inode(self):
@@ -172,7 +123,7 @@ class ConstituentNode(Node):
             if self.triangle:
                 leaves = ITextNode()
                 # todo: Use a better linearization here
-                for node in ctrl.forest.list_nodes_once(self, only_visible=False):
+                for node in ctrl.forest.list_nodes_once(self):
                     if node.is_leaf_node(only_visible=False):
                         leaves += node.label
                         leaves += ' '
@@ -180,11 +131,7 @@ class ConstituentNode(Node):
             else:
                 label = self.label
 
-            self._inode = IConstituentNode(alias=self.alias,
-                                           label=label,
-                                           index=self.index,
-                                           gloss=self.gloss,
-                                           features=self.features)
+            self._inode = IConstituentNode(label=label, features=self.features)
             self._inode_changed = False
 
         return self._inode
@@ -192,31 +139,21 @@ class ConstituentNode(Node):
     def update_status_tip(self):
         """ Hovering status tip """
         if self.syntactic_object:
-            if self.alias:
-                alias = '"%s" ' % self.alias
-            else:
-                alias = ''
-            if self.is_trace:
-                name = "Trace"
             if self.is_leaf_node():
                 name = "Leaf constituent"
             elif self.is_root_node():
                 name = "Root constituent"
             else:
                 name = "Inner constituent"
-            self.status_tip = "%s %s%s" % (name, alias, self.label)
+            self.status_tip = "%s %s" % (name, self.label)
         else:
             self.status_tip = "Empty, but mandatory constituent position"
 
     def __str__(self):
         if not self.syntactic_object:
             return 'Placeholder node'
-        alias = str(self.alias)
-        label = str(self.label)
-        if alias and label:
-            return ' '.join((alias, label))  # + ' adj: %s fixed: %s' % (self.adjustment, self.fixed_position)
         else:
-            return alias or label  # + ' adj: %s fixed: %s' % (self.adjustment, self.fixed_position)
+            return str(self.label)  # + ' adj: %s fixed: %s' % (self.adjustment, self.fixed_position)
 
     def as_bracket_string(self):
         """ returns a simple bracket string representation """
@@ -224,14 +161,12 @@ class ConstituentNode(Node):
             return '0'
         children = self.get_children()
         if children:
-            if self.alias and len(children) == 2:
-                return '[.%s %s %s ]' % (self.alias, children[0].as_bracket_string(), children[1].as_bracket_string())
-            elif len(children) == 2:
+            if len(children) == 2:
                 return '[ %s %s ]' % (children[0].as_bracket_string(), children[1].as_bracket_string())
             else:
                 return '[ %s ]' % children[0].as_bracket_string()
         else:
-            return self.alias or self.syntactic_object
+            return self.syntactic_object
 
     def is_placeholder(self):
         """ Constituent structure may assume a constituent to be somewhere, before the user has intentionally created
@@ -277,8 +212,6 @@ class ConstituentNode(Node):
 
         label_mode = ctrl.forest.settings.label_style
         if label_mode == g.ALL_LABELS:
-            self._label_visible = True
-        elif label_mode == g.ALIASES and self.alias:
             self._label_visible = True
         elif self.triangle:
             self._label_visible = True
@@ -348,13 +281,11 @@ class ConstituentNode(Node):
         f = ctrl.forest
         bs = f.settings.bracket_style
         if bs == g.ALL_BRACKETS:
-            if self.left():
+            if self.get_children():
                 add_left()
-            else:
-                del_left()
-            if self.right():
                 add_right()
             else:
+                del_left()
                 del_right()
         elif bs == g.MAJOR_BRACKETS:
             should_have = False
@@ -377,50 +308,35 @@ class ConstituentNode(Node):
     # !!!! Shouldn't be done this way. In forest, create a feature, then connect it to ConstituentNode and let Forest's
     # methods to take care that syntactic parts are reflected properly. ConstituentNode shouldn't be modifying its
     # syntactic component.
-    def set_feature(self, syntactic_feature=None, key=None, value=None, string=''):
-        """ Convenience method for assigning a new feature node related to this constituent.
-        can take syntactic feature, which is assumed to be already assigned for the syntactic constituent.
-            Can take key, value pair to create new syntactic feature object, and then a proper feature object is created from this.
-        :param syntactic_feature:
-        :param key:
-        :param value:
-        :param string:
-        """
-        assert self.syntactic_object
-        if syntactic_feature:
-            if ctrl.forest.settings.draw_features:
-                ctrl.forest.create_feature_node(self, syntactic_feature)
-        elif key:
-            sf = self.syntactic_object.set_feature(key, value)
-            self.set_feature(syntactic_feature=sf)
-        elif string:
-            features = ctrl.forest.parse_features(string, self)
-            if 'gloss' in features:
-                self.gloss = features['gloss']
-                del features['gloss']
-            for feature in features.values():
-                self.set_feature(syntactic_feature=feature)
-            self.update_features()
+    # def set_feature(self, syntactic_feature=None, key=None, value=None, string=''):
+    #     """ Convenience method for assigning a new feature node related to this constituent.
+    #     can take syntactic feature, which is assumed to be already assigned for the syntactic constituent.
+    #         Can take key, value pair to create new syntactic feature object, and then a proper feature object is created from this.
+    #     :param syntactic_feature:
+    #     :param key:
+    #     :param value:
+    #     :param string:
+    #     """
+    #     assert self.syntactic_object
+    #     if syntactic_feature:
+    #         if ctrl.forest.settings.draw_features:
+    #             ctrl.forest.create_feature_node(self, syntactic_feature)
+    #     elif key:
+    #         sf = self.syntactic_object.set_feature(key, value)
+    #         self.set_feature(syntactic_feature=sf)
+    #     elif string:
+    #         features = ctrl.forest.parse_features(string, self)
+    #         if 'gloss' in features:
+    #             self.gloss = features['gloss']
+    #             del features['gloss']
+    #         for feature in features.values():
+    #             self.set_feature(syntactic_feature=feature)
+    #         self.update_features()
 
-    def update_gloss(self):
-        """
-
-
-        """
-        if not self.syntactic_object:
-            return
-        syn_gloss = self.gloss
-        gloss_node = self.gloss_node
-        if gloss_node and not syn_gloss:
-            ctrl.forest.delete_node(gloss_node)
-        elif syn_gloss and not gloss_node:
-            ctrl.forest.create_gloss_node(self)
-        elif syn_gloss and gloss_node:
-            gloss_node.update_label()
 
     def get_features(self):
         """ Returns FeatureNodes """
-        return self.get_children(edge_type=g.FEATURE_EDGE)
+        return self.get_children_of_type(edge_type=g.FEATURE_EDGE)
 
     def update_features(self):
         """
@@ -452,7 +368,7 @@ class ConstituentNode(Node):
 
     def is_empty_node(self):
         """ Empty nodes can be used as placeholders and deleted or replaced without structural worries """
-        return (not (self.alias or self.label or self.index)) and self.is_leaf_node()
+        return (not self.label) and self.is_leaf_node()
 
     def get_features_as_string(self):
         """
@@ -463,18 +379,6 @@ class ConstituentNode(Node):
         features = [f.syntactic_object for f in self.get_features()]
         feature_strings = [str(f) for f in features]
         return ', '.join(feature_strings)
-
-    # ## Indexes and chains ###################################
-
-    def is_chain_head(self):
-        """
-
-
-        :return:
-        """
-        if self.index:
-            return not (self.is_leaf_node() and self.label == 't')
-        return False
 
     # ## Multidomination #############################################
 
@@ -553,7 +457,7 @@ class ConstituentNode(Node):
         """
         nodes_in_tree = ctrl.forest.list_nodes_once(self.get_root_node())
         parent_index = nodes_in_tree.index(self)
-        for node in ctrl.forest.list_nodes_once(self, only_visible=True):
+        for node in ctrl.forest.list_nodes_once(self):
             if node is not ctrl.dragged_focus and nodes_in_tree.index(node) > parent_index:
                 node.add_to_dragged()
 
@@ -604,12 +508,4 @@ class ConstituentNode(Node):
     # ############## #
 
     # Attributes from synobj and their setter hooks
-    alias = Saved("alias", if_changed=Node.alert_inode)
-    gloss = Saved("gloss", if_changed=if_changed_gloss)
     features = Synobj("features", if_changed=if_changed_features)
-
-    # Saved attributes: (+ those coming from Node, Movable etc.)
-    is_trace = Saved("is_trace")
-    merge_order = Saved("merge_order")
-    select_order = Saved("select_order")
-    original_parent = Saved("original_parent")

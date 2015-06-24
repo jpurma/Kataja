@@ -36,7 +36,13 @@ class BaseConstituent(IConstituent):
     It uses getters and setters so that other compatible implementations can be built using the same interface.
     It is a primary datatype, needs to support saving and loading. """
 
+    # info for kataja engine
     short_name = "BC"
+    visible = {'label': {'order': 1}}
+    editable = {'label': {'order': 1}}
+    addable = {'parts': {'check_before': 'can_add_part', 'add': 'add_part', 'order': 1},
+               'features': {'check_before': 'can_add_feature', 'add': 'add_feature', 'order': 2}
+               }
 
     def __init__(self, label='', parts=None, save_key='', features=None, head=None, **kw):
         """ BaseConstituent is a default constituent used in syntax.
@@ -79,6 +85,13 @@ class BaseConstituent(IConstituent):
         :return: str
         """
         return self.__repr__()
+
+    def can_add_part(self, **kw):
+        """
+        :param kw:
+        :return:
+        """
+        return True
 
     def add_part(self, new_part):
         """ Add constitutive part to this constituent
@@ -131,6 +144,17 @@ class BaseConstituent(IConstituent):
         if isinstance(key, BaseFeature):
             return key in list(self.features.values())
         return key in list(self.features.keys())
+
+    def add_feature(self, feature):
+        """ Add an existing Feature object to this constituent.
+        :param feature:
+        :return:
+        """
+        if isinstance(feature, BaseFeature):
+            self.poke('features')
+            self.features[feature.key] = feature
+        else:
+            raise TypeError
 
     def set_feature(self, key, value, family=''):
         """ Set constituent to have a certain feature. If the value given is Feature instance, then it is used,

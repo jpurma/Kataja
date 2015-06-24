@@ -65,7 +65,7 @@ class GraphView(QtWidgets.QGraphicsView):
         # self.setViewportUpdateMode(QtWidgets.QGraphicsView.BoundingRectViewportUpdate)
         self.setViewportUpdateMode(QtWidgets.QGraphicsView.FullViewportUpdate)
         # self.setViewportUpdateMode(QtWidgets.QGraphicsView.NoViewportUpdate)
-        self.setFocusPolicy(QtCore.Qt.NoFocus)
+        #self.setFocusPolicy(QtCore.Qt.NoFocus)
         self.setMouseTracking(False)
         #self.setAcceptDrops(True)
         # self.setTransformationAnchor(QtWidgets.QGraphicsView.NoAnchor)

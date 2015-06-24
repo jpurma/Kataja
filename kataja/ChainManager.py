@@ -78,13 +78,11 @@ class ChainManager:
 
         # recursive method for collecting usage of a trace/node, counted from bottom up.
         def _bottom_right_count_traces(node, parent):
-            r = node.right()
-            if r:
-                _bottom_right_count_traces(r, node)
-            l = node.left()
-            if l:
-                _bottom_right_count_traces(l, node)
-            if node.index:
+            children = node.get_reversed_children() # right first for bottom-up!
+            for child in children:
+                _bottom_right_count_traces(child, node)
+            # then this node:
+            if getattr(node, 'index', None):
                 if node.index in self.chains:
                     chain = self.chains[node.index]
                 else:

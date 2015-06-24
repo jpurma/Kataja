@@ -26,7 +26,7 @@ import random
 
 from kataja.singletons import prefs
 from kataja.utils import caller
-from kataja.ConstituentNode import ConstituentNode
+from kataja.BaseConstituentNode import BaseConstituentNode
 from kataja.FeatureNode import FeatureNode
 from kataja.GlossNode import GlossNode
 import kataja.globals as g
@@ -99,7 +99,7 @@ class BaseVisualization:
         node.fixed_position = None
         node.adjustment = None
         node.update_label()
-        if isinstance(node, ConstituentNode):
+        if isinstance(node, BaseConstituentNode):
             node.update_visibility()
         elif isinstance(node, FeatureNode) or isinstance(node, GlossNode):
             pass

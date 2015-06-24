@@ -307,6 +307,16 @@ class Movable(BaseModel):
         """ Check if moving trajectory is on """
         return self._move_counter
 
+    def distance_to(self, movable):
+        """ Return current x,y distance to another movable
+        :param movable:
+        :return: x, y
+        """
+        my_x, my_y, my_z = self.current_position
+        o_x, o_y, o_z = movable.current_position
+        return my_x - o_x, my_y - o_y
+
+
     def set_original_position(self, pos):
         """ Sets both current position and computed position to same place,
         use when first adding items to scene to prevent them wandering from afar
