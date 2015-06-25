@@ -346,7 +346,6 @@ class Forest(BaseModel):
             else:
                 print('F trying to store broken type:', item.__class__.__name__)
 
-    @time_me
     def get_all_objects(self):
         """ Just return all objects governed by Forest -- not all scene objects 
         :return: iterator through objects
@@ -359,7 +358,6 @@ class Forest(BaseModel):
             yield(n)
         for n in self.bracket_manager.get_brackets():
             yield(n)
-
 
     def draw(self):
         """ Update all trees in the forest according to current visualization """

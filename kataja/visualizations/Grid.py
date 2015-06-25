@@ -30,13 +30,15 @@ class Grid:
     """ 2-dimensional grid to help drawing nodes and avoiding overlaps """
 
     def __init__(self):
-        self._rows = []
+        self.rows = []
+        self.x_adjustment = 0
+        self.y_adjustment = 0
         self.width = 0
         self.height = 0
 
     def __str__(self):
         rowlist = []
-        for column in self._rows:
+        for column in self.rows:
             collist = []
             for item in column:
                 if isinstance(item, BaseConstituentNode):
@@ -50,7 +52,7 @@ class Grid:
         """
         Give an ascii presentation of the grid for debugging.
         """
-        for row in self._rows:
+        for row in self.rows:
             s = []
             for item in row:
                 if isinstance(item, Node):
@@ -60,20 +62,23 @@ class Grid:
                 else:
                     s.append('.')
             print(''.join(s))
+        print('x_adjustment: %s, y_adjustment: %s' % (self.x_adjustment, self.y_adjustment))
 
     def get(self, x, y):
         """ Get object in grid at given coords. None if empty.
         :param x: int
         :param y: int
         """
+        x += self.x_adjustment
+        y += self.y_adjustment
         if x < 0 or y < 0:
             return None
         if x > self.width - 1 or y > self.height - 1:
             return None
         else:
-            return self._rows[y][x]
+            return self.rows[y][x]
 
-    def set(self, x, y, item, w=1, h=1):
+    def set(self, x, y, item, w=1, h=1, raw=False):
         """
         Put object into grid into coords x,y. If object should take several slots, use w and h to give its size.
         The grid is expanded to fit the object.
@@ -82,13 +87,22 @@ class Grid:
         :param item: node
         :param w: int
         :param h: int
+        :param raw: bool -- if raw is True, don't use adjustments.
+        :return: x_a, y_a -- if they were negative when given, this is the adjustment required
         """
+        if raw:
+            assert x >= 0 and y >= 0
+        else:
+            x += self.x_adjustment
+            y += self.y_adjustment
         while x < 0:
             self.insert_column()
             x += 1
+            self.x_adjustment += 1
         while y < 0:
             self.insert_row()
             y += 1
+            self.y_adjustment += 1
 
         if w > 1 or h > 1:
             l = x - (w - 1) // 2
@@ -109,29 +123,41 @@ class Grid:
             self.set(x, y, item)
         else:
             while x > self.width - 1:
-                for row in self._rows:
+                for row in self.rows:
                     row.append(0)
                 self.width += 1
             while y > self.height - 1:
                 new_row = [0] * self.width
-                self._rows.append(new_row)
+                self.rows.append(new_row)
                 self.height += 1
             try:
-                self._rows[y][x] = item
+                self.rows[y][x] = item
             except IndexError:
                 print('catched index error')
-                print(self._rows, len(self._rows), y, x)
-            assert len(self._rows[y]) == self.width
-            assert len(self._rows) == self.height
+                print(self.rows, len(self.rows), y, x)
+            assert len(self.rows[y]) == self.width
+            assert len(self.rows) == self.height
 
     def row(self, y):
         """
-        Return one row from the grid
+        Return one row from the grid, normalized from possible negative indices
+        :param y:
+        :return:
+        """
+        y += self.y_adjustment
+        if y < self.height:
+            return self.rows[y]
+        else:
+            return []
+
+    def raw_row(self, y):
+        """
+        Return one row from the grid, using raw indices starting from 0
         :param y:
         :return:
         """
         if y < self.height:
-            return self._rows[y]
+            return self.rows[y]
         else:
             return []
 
@@ -141,7 +167,7 @@ class Grid:
         :param item_to_find:
         :return:
         """
-        for y, row in enumerate(self._rows):
+        for y, row in enumerate(self.rows):
             for x, item in enumerate(row):
                 if item is item_to_find:
                     return x, y
@@ -153,12 +179,12 @@ class Grid:
         :param y:
         :return:
         """
-        row = self.row(y)
+        row = self.raw_row(y)
         found = -1
         for i, item in enumerate(row):
             if item:
                 found = i
-        return found
+        return found - self.x_adjustment
 
     def first_filled_column(self, y):
         """
@@ -166,11 +192,11 @@ class Grid:
         :param y:
         :return:
         """
-        row = self.row(y)
+        row = self.raw_row(y)
         for i, item in enumerate(row):
             if item:
-                return i
-        return -1
+                return i - self.x_adjustment
+        return None
 
     def insert_row(self):
         """
@@ -178,17 +204,18 @@ class Grid:
         """
         row = self.width * [0]
         self.height += 1
-        self._rows.insert(0, row)
+        self.rows.insert(0, row)
 
     def insert_column(self):
         """ Add one column to left ( each row has an empty slot at index 0)
         :return:
         """
-        for row in self._rows:
+        for row in self.rows:
             row.insert(0, 0)
         self.width += 1
 
-    def pixelated_path(self, start_x, start_y, end_x, end_y):
+    @staticmethod
+    def pixelated_path(start_x, start_y, end_x, end_y):
         """ Return the grid blocks that are crossed in the line between start and end. start and end blocks are omitted.
         :param start_x:
         :param start_y:
@@ -235,27 +262,60 @@ class Grid:
                     used.add(p)
         return path
 
-    def fill_path_if_free(self, start_x, start_y, end_x, end_y, marker=1):
+    def is_path_blocked(self, path):
         """ Try to draw a line in grid from start to end (omitting start and end). If the path is empty, fill them
          with marker and return None, if it is occupied, return True
-        :param start_x:
-        :param start_y:
-        :param end_x:
-        :param end_y:
-        :param marker: item to use as a path marker
-        :return:
+        :return: bool - True if there are already objects in path
         """
-        pp = self.pixelated_path(start_x, start_y, end_x, end_y)
-        for x, y in pp:
+        for x, y in path:
             if self.get(x, y):
                 return True
-        for x, y in pp:
+        return False
+
+    def fill_path(self, path, marker=1):
+        """ Draws the line in grid given by path. Marker can be given as parameter, we usually use 1 for a line part.
+        :param path:
+        :param marker:
+        :return:
+        """
+        for x, y in path:
             self.set(x, y, marker)
 
-
+    def merge_grids(self, right_grid, extra_padding=0):
+        if right_grid and not self:
+            self.rows = right_grid.rows
+            self.x_adjustment = right_grid.x_adjustment
+            self.y_adjustment = right_grid.y_adjustment
+            self.width = right_grid.width
+            self.height = right_grid.height
+            return
+        elif self and not right_grid:
+            return
+        paddings = []
+        # actual merging of grids begins with calculating the closest fit for two grids
+        for row_n, right_side_row in enumerate(right_grid):
+            # measuring where the right border of the left grid should be.
+            left_side_occupied = self.last_filled_column(row_n) + 1
+            # measuring where the left border of the right grid should be
+            right_side_margin = right_grid.first_filled_column(row_n)
+            if right_side_margin is None:
+                paddings.append(0)
+            else:
+                paddings.append(left_side_occupied - right_side_margin)
+        if paddings:
+            padding = max(paddings) + extra_padding
+        else:
+            padding = extra_padding
+        for row_n, right_row in enumerate(right_grid):
+            for col_n, right_row_node in enumerate(right_row):
+                if right_row_node:
+                    self.set(col_n + padding, row_n, right_row_node, raw=True)
 
     def __iter__(self):
-        return self._rows.__iter__()
+        return self.rows.__iter__()
+
+    def __len__(self):
+        return len(self.rows)
 
 # def _closestDistance(nodeA, nodeB,Ax,Ay):
 # nodeAx=Ax or nodeA.pos_tuple[0]

@@ -81,27 +81,13 @@ class LeftFirstTree(BaseVisualization):
             node.dyn_x = True
             node.dyn_y = True
 
-
     @caller
     def reselect(self):
         """ if there are different modes for one visualization, rotating between different modes is triggered here. """
         self.set_vis_data('rotation', self.get_vis_data('rotation') - 1)
 
-    def _indent_old(self, node, c):
-        left = node.left()
-        if left:
-            c += 2
-            if c > self._indentation:
-                self._indentation = c
-            c = self._indent(left, c)
-        right = node.right()
-        if right:
-            c = self._indent(right, c - 3)
-        return c
-
     # Recursively put nodes to their correct position in grid
     def _put_to_grid(self, grid, node, x, y, parent=None):
-        print('_put_to_grid for node %s, (%s,  %s), %s' % (node, x, y, parent))
         if not self.should_we_draw(node, parent):
             return
         grid.set(x, y, node)
@@ -114,74 +100,49 @@ class LeftFirstTree(BaseVisualization):
         first = True
         nx = x + x_shift
         ny = y + y_step
-        print('nx: %s, ny: %s, x_shift: %s ' % (nx, ny, x_shift))
         for child in children:
-
             if first:
-                blocked = grid.fill_path_if_free(x, y, nx, ny)
-                if blocked:
-                    print('path was blocked!')
-                if grid.get(nx, ny):
-                    print('path end was blocked!')
-                else:
-                    print('left: ', nx, ny)
-                    self._put_to_grid(grid, child, nx, ny, parent=node)
+                blocked = grid.get(nx, ny)
+                if not blocked:
+                    path = grid.pixelated_path(x, y, nx, ny)
+                    blocked = grid.is_path_blocked(path)
+                    if not blocked:
+                        grid.fill_path(path)
+                        self._put_to_grid(grid, child, nx, ny, parent=node)
+                assert not blocked
                 first = False
-                nx += x_step
+                if len(children) > 2:
+                    nx += x_step
+                else:
+                    nx += x_step * 2
+
             else:
                 blocked = True
+                grandchildren = list(child.get_visible_children())
                 while blocked:
+                    # is the right node position available?
                     blocked = grid.get(nx, ny)
                     if not blocked:
-                        blocked = grid.fill_path_if_free(x, y, nx, ny)
-                    if not blocked:
-                        print('not left: ', nx, ny)
-                        self._put_to_grid(grid, child, nx, ny, parent=node)
-                    nx += x_step
-
-
-        # right = node.right()
-        # if right:
-        #     block_size = 2
-        #     nx = x + 2
-        #     ny = y + 2
-        #     filler = 1
-        #     while grid.get(nx - 2, ny + 2):  #
-        #         grid.set(nx - 1, ny - 1, 1)
-        #         grid.set(nx, ny, 1)  # this coordinate is now blocked, not by a node but a edge
-        #         nx += 2
-        #         ny += 2
-        #     grid.set(nx - 1, ny - 1, 1)
-        #     self._put_to_grid(grid, right, nx, ny, parent=node)
-        # elif self.forest.settings.draw_features and getattr(node.syntactic_object, 'feature_tree', None):
-        #     vis("(2) drawing feature_tree, this shouldn't happen anymore!")
-        #     nx = x + 1
-        #     ny = y + 1
-        #     while grid.get(nx - 1, ny + 1):
-        #         grid.set(nx, ny, 1)  # this coordinate is now blocked, not by a node but a edge
-        #         nx += 1
-        #         ny += 1
-        #     self._put_to_grid(grid, right, nx, ny, parent=node)
-
-    def _merge_grids(self, grid, other_grid):
-        if not other_grid:
-            return grid
-        paddings = []
-        for row_n, row in enumerate(grid):
-            rightmost_free = other_grid.last_filled_column(row_n) + 1
-            left_empties = 0
-            for node in row:
-                if not node:
-                    left_empties += 1
-                else:
-                    break
-            paddings.append(rightmost_free - left_empties)
-        padding = max(paddings) + prefs.spacing_between_trees
-        for row_n, row in enumerate(grid):
-            for col_n, node in enumerate(row):
-                if node:
-                    other_grid.set(col_n + padding, row_n, node)
-        return other_grid
+                        # is the path to the right node position available?
+                        path = grid.pixelated_path(x, y, nx, ny)
+                        blocked = grid.is_path_blocked(path)
+                        if not blocked:
+                            # is there room for the left child of this node
+                            if grandchildren:
+                                if len(grandchildren) == 1:
+                                    child_pos_x, child_pos_y = nx, ny + y_step # middle
+                                else:
+                                    child_pos_x, child_pos_y = nx - x_step, ny + y_step # reach left
+                                blocked = grid.get(child_pos_x, child_pos_y)
+                                if not blocked:
+                                    cpath = grid.pixelated_path(nx, ny, child_pos_x, child_pos_y)
+                                    blocked = grid.is_path_blocked(cpath)
+                    if blocked:
+                        nx += x_step
+                        ny += y_step
+                grid.fill_path(path)
+                self._put_to_grid(grid, child, nx, ny, parent=node)
+                nx += x_step
 
     # @time_me
     def draw(self):
@@ -197,8 +158,8 @@ class LeftFirstTree(BaseVisualization):
             grid = Grid()
             if isinstance(root, BaseConstituentNode):
                 self._put_to_grid(grid, root, 0, 0)
-                grid.ascii_dump()
-                merged_grid = self._merge_grids(grid, merged_grid)
+                merged_grid.merge_grids(grid, extra_padding=2)
+                #merged_grid = self._merge_grids(grid, merged_grid)
 
         offset_x = 0  # tree_w/-2
         y = 0

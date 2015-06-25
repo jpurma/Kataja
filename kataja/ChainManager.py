@@ -118,7 +118,7 @@ class ChainManager:
             l = node.left()
             if l:
                 c = _bottom_right_count_parents(l, node, c)
-            if node.index:
+            if hasattr(node, 'index') and node.index:
                 c += 1
                 if node.index in self.chains:
                     chain = self.chains[node.index]
