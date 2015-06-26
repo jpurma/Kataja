@@ -1028,41 +1028,29 @@ class Forest(BaseModel):
         """
         if not isinstance(node, BaseConstituentNode):
             return
-        left = node.left()
-        right = node.right()
-        print("Fixing stubs for ", node, left, right)
-
-        if not (left or right):
-            # nothing to do, doesn't have children
-            return
-        elif not left:
-            if right.is_placeholder():
-                right_edge = node.get_edge_to(right)
-                self.delete_edge(right_edge)
-                self.delete_node(right)
+        print("Fixing stubs for ", node)
+        real_children = []
+        placeholders = []
+        for child in node.get_children():
+            if child.is_placeholder():
+                placeholders.append(child)
             else:
-                # we are missing the stub to left here
-                print("Creating placeholder to LEFT")
-                placeholder = self.create_placeholder_node(node.current_position)
-                self.connect_node(node, placeholder, direction=g.LEFT)
-        elif not right:
-            if left.is_placeholder():
-                left_edge = node.get_edge_to(left)
-                self.delete_edge(left_edge)
-                self.delete_node(left)
-            else:
-                # we are missing the stub to right here
-                print("Creating placeholder to RIGHT")
-                placeholder = self.create_placeholder_node(node.current_position)
-                self.connect_node(node, placeholder, direction=g.RIGHT)
-        elif left.is_placeholder() and right.is_placeholder():
-            # both are placeholders, so this node doesn't need to have children at all. remove stubs.
-            left_edge = node.get_edge_to(left)
-            self.delete_edge(left_edge)
-            self.delete_node(left)
-            right_edge = node.get_edge_to(right)
-            self.delete_edge(right_edge)
-            self.delete_node(right)
+                real_children.append(child)
+        if len(real_children) == 1 and len(placeholders) == 0:
+            align = node.get_edge_to(real_children[0]).align
+            placeholder_align = g.NO_ALIGN
+            if align == g.LEFT:
+                placeholder_align == g.RIGHT
+            elif align == g.RIGHT:
+                placeholder_align == g.LEFT
+            placeholder = self.create_placeholder_node(node.current_position)
+            self.connect_node(node, placeholder, direction=placeholder_align)
+        elif not real_children:
+            for ph in placeholders:
+                edge = node.get_edge_to(ph, g.CONSTITUENT_EDGE)
+                if edge:
+                    self.delete_edge(edge)
+                self.delete_node(ph)
 
     def add_placeholder_to_edge_start(self, edge):
         """
@@ -1457,54 +1445,60 @@ class Forest(BaseModel):
         """
         if not isinstance(node, BaseConstituentNode):
             raise ForestError("Trying to treat wrong kind of node as ConstituentNode and forcing it to binary merge")
-        i = node.index
-        left = node.left()
-        right = node.right()
-        child = None
-        if left.is_placeholder():
-            child = right
-        elif right.is_placeholder():
-            child = left
-        parents = node.get_parents()
-        parents_children = set()
-        bad_parents = []
-        good_parents = []
-        for parent in parents:
-            if child in parent.get_children():
-                bad_parents.append(parent)
-            else:
-                good_parents.append(parent)
-        if not (bad_parents or good_parents):
-            self.disconnect_node(node, child)
-        else:
-            if bad_parents:
-                # more complex case
-                m = "Removing node would make parent to have same node as both left and right child. " + \
-                    "Removing parent too."
-                ctrl.add_message(m)
-                self.disconnect_node(node, child)
-                for parent in bad_parents:
-                    for grandparent in parent.get_parents():
-                        self.disconnect_node(grandparent, parent)
-                        self.disconnect_node(parent, child)
-                        self.connect_node(grandparent, child)
 
-            if good_parents:
-                # normal case
-                self.disconnect_node(node, child, ignore_missing=True)
-                for parent in good_parents:
-                    edge = parent.get_edge_to(node)
-                    self.disconnect_node(parent, node)
-                    self.connect_node(parent, child, direction=edge.alignment)
-        if i:
-            child.set_index(i)
-        self.delete_node(node)
-        for parent in bad_parents:
-            self.delete_node(parent)
-            # if right.is_placeholder():
-            # self.delete_node(right)
-            # if left.is_placeholder():
-            # self.delete_node(left)
+        if hasattr(node, 'index'):
+            i = node.index
+        else:
+            i = ''
+        children = list(node.get_children())
+        real_children = []
+        placeholders = []
+        for child in children:
+            if child.is_placeholder():
+                placeholders.append(child)
+            else:
+                real_children.append(child)
+        for child in real_children:
+            parents = node.get_parents()
+            parents_children = set()
+            bad_parents = []
+            good_parents = []
+            for parent in parents:
+                if child in parent.get_children():
+                    bad_parents.append(parent)
+                else:
+                    good_parents.append(parent)
+            if not (bad_parents or good_parents):
+                self.disconnect_node(node, child)
+            else:
+                if bad_parents:
+                    # more complex case
+                    m = "Removing node would make parent to have same node as both left and right child. " + \
+                        "Removing parent too."
+                    ctrl.add_message(m)
+                    self.disconnect_node(node, child)
+                    for parent in bad_parents:
+                        for grandparent in parent.get_parents():
+                            self.disconnect_node(grandparent, parent)
+                            self.disconnect_node(parent, child)
+                            self.connect_node(grandparent, child)
+
+                if good_parents:
+                    # normal case
+                    self.disconnect_node(node, child, ignore_missing=True)
+                    for parent in good_parents:
+                        edge = parent.get_edge_to(node)
+                        self.disconnect_node(parent, node)
+                        self.connect_node(parent, child, direction=edge.alignment)
+            if i:
+                child.set_index(i)
+            self.delete_node(node)
+            for parent in bad_parents:
+                self.delete_node(parent)
+                # if right.is_placeholder():
+                # self.delete_node(right)
+                # if left.is_placeholder():
+                # self.delete_node(left)
 
     def replace_node_with_merged_node(self, replaced, new_node, closest_parent,
                                       merge_to_left=False, merger_node_pos=None, new_node_pos=None):

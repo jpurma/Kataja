@@ -112,12 +112,8 @@ class ChainManager:
 
         # recursive method for collecting usage of a node, counted from bottom up.
         def _bottom_right_count_parents(node, parent, c):
-            r = node.right()
-            if r:
-                c = _bottom_right_count_parents(r, node, c)
-            l = node.left()
-            if l:
-                c = _bottom_right_count_parents(l, node, c)
+            for child in node.get_reversed_children():
+                c = _bottom_right_count_parents(child, node, c)
             if hasattr(node, 'index') and node.index:
                 c += 1
                 if node.index in self.chains:

@@ -445,7 +445,7 @@ class BaseConstituentNode(Node):
         :return:
         """
         root = self.get_root_node()
-        return self is not root and self is not root.left(only_visible=False)
+        return self is not root and self not in root.get_children()
 
     # ### Dragging #####################################################################
 

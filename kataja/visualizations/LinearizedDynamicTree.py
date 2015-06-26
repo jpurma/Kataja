@@ -51,7 +51,7 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
         if reset:
             self.forest.settings.show_constituent_edges = True
             self.forest.settings.bracket_style = g.NO_BRACKETS
-            max_height_steps = max([len(self.forest.list_nodes_once(root)) for root in self.forest])
+            max_height_steps = max([len(list(self.forest.list_nodes_once(root))) for root in self.forest])
             self.set_vis_data('max_height_steps', max_height_steps)
             self.set_vis_data('height_steps', max_height_steps / 2)
 

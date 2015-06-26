@@ -100,12 +100,8 @@ class BalancedTree(BaseVisualization):
                 x_pos += width
             rows[row].append((node, x_pos, node.width))
             node.algo_position = (x_pos + node.width / 2, row * edge_height * 2, 0)
-            left = node.left()
-            if left:
-                _fill_grid(left, row + 1)
-            right = node.right()
-            if right:
-                _fill_grid(right, row + 1)
+            for child in node.get_visible_children():
+                _fill_grid(child, row + 1)
 
         for root_node in self.forest:
             _fill_grid(root_node, 0)

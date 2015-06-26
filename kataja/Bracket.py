@@ -27,6 +27,7 @@ from PyQt5 import QtWidgets
 # noinspection PyUnresolvedReferences
 from PyQt5.QtCore import Qt
 from kataja.Movable import Movable
+from kataja.singletons import ctrl
 
 
 class Bracket(Movable, QtWidgets.QGraphicsSimpleTextItem):
@@ -69,25 +70,14 @@ class Bracket(Movable, QtWidgets.QGraphicsSimpleTextItem):
 
         """
         adjust = self.boundingRect().width()
-        steps = 0
         if self.left:
-            node = self.host
-            left = self.host.left()
-            while left:
-                steps += 1
-                node = left
-                left = node.left()
-            x, y, z = node.current_position
-            my_x = x + node.boundingRect().left() - steps * adjust
+            depth, leftmost = ctrl.forest.bracket_manager.find_leftmost(self.host)
+            x, y, z = leftmost.current_position
+            my_x = x + leftmost.boundingRect().left() - depth * adjust
         else:
-            node = self.host
-            right = self.host.right()
-            while right:
-                steps += 1
-                node = right
-                right = node.right()
-            x, y, z = node.current_position
-            my_x = x + node.boundingRect().right() + (steps - 1) * adjust
+            depth, rightmost = ctrl.forest.bracket_manager.find_rightmost(self.host)
+            x, y, z = rightmost.current_position
+            my_x = x + rightmost.boundingRect().right() + (depth - 1) * adjust
         my_y = y - self.boundingRect().height() / 2
         self.current_position = (my_x, my_y, z)
 

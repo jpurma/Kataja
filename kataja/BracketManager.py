@@ -29,6 +29,40 @@ class BracketManager:
         for bracket in self.brackets.values():
             bracket.update_position()
 
+    @staticmethod
+    def find_leftmost(node):
+        """ Helper method for handling brackets: traverse down a tree and find the leftmost node
+         of branch
+        :param node: node to traverse from, only allow this kind of nodes
+        :return: tuple (depth, leftmost_node)
+        """
+        def leftmost(depth, node):
+            children = node.get_children()
+            left = next(children, None)
+            if left:
+                depth += 1
+                return leftmost(depth, left)
+            else:
+                return depth, node
+        return leftmost(0, node)
+
+    @staticmethod
+    def find_rightmost(node):
+        """ Helper method for handling brackets: traverse down a tree and find the rightmost node
+         of branch
+        :param node: node to traverse from, only allow this kind of nodes
+        :return: tuple (depth, rightmost_node)
+        """
+        def rightmost(depth, node):
+            children = node.get_reversed_children()
+            right = next(children, None)
+            if right:
+                depth += 1
+                return rightmost(depth, right)
+            else:
+                return depth, node
+        return rightmost(0, node)
+
     def create_bracket(self, host=None, left=True):
         """
 
@@ -78,30 +112,22 @@ class BracketManager:
             for tree in f:
                 for node in f.list_visible_nodes_once(tree):  # not sure if this should use 'once'
                     if node.left_bracket:
-                        this_left = node
-                        next_left = node.left()
-                        while next_left:
-                            this_left = next_left
-                            next_left = this_left.left()
-                        key = this_left.save_key
-                        if key in self._bracket_slots:
-                            left_brackets, right_brackets = self._bracket_slots[key]
+                        depth, left = self.find_leftmost(node)
+                        k = left.save_key
+                        if k in self._bracket_slots:
+                            left_brackets, right_brackets = self._bracket_slots[k]
                             left_brackets.append(node)
-                            self._bracket_slots[key] = (left_brackets, right_brackets)
+                            self._bracket_slots[k] = (left_brackets, right_brackets)
                         else:
-                            self._bracket_slots[key] = ([node], [])
-                        this_right = node
-                        next_right = node.right()
-                        while next_right:
-                            this_right = next_right
-                            next_right = this_right.right()
-                        key = this_right.save_key
-                        if key in self._bracket_slots:
-                            left_brackets, right_brackets = self._bracket_slots[key]
+                            self._bracket_slots[k] = ([node], [])
+                        depth, right = self.find_rightmost(node)
+                        k = right.save_key
+                        if k in self._bracket_slots:
+                            left_brackets, right_brackets = self._bracket_slots[k]
                             right_brackets.append(node)
-                            self._bracket_slots[key] = (left_brackets, right_brackets)
+                            self._bracket_slots[k] = (left_brackets, right_brackets)
                         else:
-                            self._bracket_slots[key] = ([], [node])
+                            self._bracket_slots[k] = ([], [node])
         # print(self._bracket_slots)
         # print(self.brackets)
         for bracket in self.brackets.values():

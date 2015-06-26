@@ -118,24 +118,21 @@ class BracketedLinearization(BaseVisualization):
                 return used, left_edge
             else:
                 used.add(node)
-                left = node.left()
-                right = node.right()
-                # we want to tile the words after each other and for that reason left and right edges
+                # we want to tile the words after each other and
+                # for that reason left and right edges
                 # are more useful than the center.
                 left_edge += self.forest.bracket_manager.count_bracket_space(node, left=True)
                 node.algo_position = (left_edge + node.width / 2, 0, 0)
                 if node.is_visible() and (not node.has_empty_label()):
                     left_edge += node.width
-                if left:
-                    used, left_edge = draw_node(left, used, left_edge)
-                if right:
-                    used, left_edge = draw_node(right, used, left_edge)
+                for child in node.get_visible_children():
+                    used, left_edge = draw_node(child, used, left_edge)
                 left_edge += self.forest.bracket_manager.count_bracket_space(node, left=False)
             return used, left_edge
 
         start = 0
         for root in self.forest:
             if isinstance(root, BaseConstituentNode):
-                used, start = draw_node(root, used=set(), left_edge=start)
+                nodes_used, start = draw_node(root, used=set(), left_edge=start)
                 start += prefs.edge_width
 

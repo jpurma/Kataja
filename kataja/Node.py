@@ -385,32 +385,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
                 return True
         return False
 
-    def left(self, only_visible=True):
-        """
-
-        :param only_visible:
-        :return:
-        """
-        for edge in self.edges_down:
-            if edge.edge_type == self.__class__.default_edge_type and edge.alignment == g.LEFT:
-                if edge.end:
-                    if (only_visible and edge.end.is_visible()) or not only_visible:
-                        return edge.end
-                return None
-
-    def right(self, only_visible=True):
-        """
-
-        :param only_visible:
-        :return:
-        """
-        for edge in self.edges_down:
-            if edge.edge_type == self.__class__.default_edge_type and edge.alignment == g.RIGHT:
-                if edge.end:
-                    if (only_visible and edge.end.is_visible()) or not only_visible:
-                        return edge.end
-                return None
-
     def is_sibling(self, other):
         """ Nodes are siblings if they share a parent.
         :param other: node to compared with

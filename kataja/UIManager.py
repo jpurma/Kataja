@@ -1158,10 +1158,10 @@ class UIManager:
 
         :param node:
         """
-        left = node.left()
-        right = node.right()
-        if (left and left.is_placeholder()) or (right and right.is_placeholder()):
-            self.add_remove_merger_button(node)
+        for child in node.get_children():
+            if child.is_placeholder():
+                self.add_remove_merger_button(node)
+                break
         if node.triangle:
             self.add_unfold_triangle_button(node)
         elif ctrl.forest.can_fold(node):
