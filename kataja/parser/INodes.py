@@ -78,6 +78,29 @@ class ITextNode:
     def remove(self, node):
         self.parts.remove(node)
 
+    def startswith(self, s):
+        return self.parts and self.parts[0].startswith(s)
+
+    def remove_prefix(self, s):
+        if self.parts:
+            p = self.parts[0]
+            if isinstance(p, ITextNode):
+                p.remove_prefix(s)
+            elif p.startswith(s):
+                self.parts[0] = p[len(s):]
+
+    def find_and_remove_part(self, part):
+        """ Recursively search and remove part
+        :param part: INode or str
+        :return:
+        """
+        if part in self.parts:
+            self.remove(part)
+        else:
+            for p in self.parts:
+                if isinstance(p, ITextNode):
+                    p.find_and_remove_part(part)
+
     def parts_as_string(self):
         """ Parts flattened into string, recursively stringifies parts if they contain other INodes
         :return:
@@ -163,6 +186,14 @@ class ICommandNode(ITextNode):
         else:
             return '(%s/)' % self.command
 
+    def scope(self):
+        """ Return the content of command (parts), simplified if possible.
+        :return:
+        """
+        new = ITextNode(self.parts)
+        new.tidy()
+        return new.simplified()
+
     def is_empty(self):
         return not (self.command or self.parts)
 
@@ -231,6 +262,91 @@ class IFeatureNode(ITextNode):
         ifeature = IFeatureNode(feature.key, feature.value, feature.family)
         return ifeature
 
+
+class ITemplateNode(ITextNode):
+    """ Node used for complex visible labels, allowing a template be given for the node that
+    describes the displayed fields and their positioning and another for parsing nodes
+    """
+
+    def __init__(self, parts=None):
+        """
+
+        :param parts:
+        :return:
+        """
+        ITextNode.__init__(self, parts=parts)
+        self.rows = []
+        self.indices = []
+        self.unanalyzed = None
+        self.view_order = []
+        self.values = {}
+
+    def analyze_label_data(self):
+        """ Go through label complex and make rows out of it, also pick indices to separate list.
+        :return: None
+        """
+
+        def find_index(inode):
+            if isinstance(inode, ICommandNode) and inode.command == '_':
+                return inode
+            elif isinstance(inode, ITextNode):
+                for n in reversed(inode):
+                    found = find_index(n)
+                    if found:
+                        return found
+
+        self.rows = []
+        if not self.unanalyzed:
+            return
+        container = ITextNode()
+
+        if isinstance(self.unanalyzed, ITextNode):
+            index_found = find_index(self.unanalyzed)
+            if index_found:
+                self.unanalyzed.find_and_remove_part(index_found)
+                self.indices.append(index_found.scope())
+
+            for part in self.unanalyzed:
+                if isinstance(part, ICommandNode):
+                    # Linebreak --
+                    if part.command == '\\':
+                        self.rows.append(container.simplified())
+                        container = ITextNode()
+                    # Anything else --
+                    else:
+                        container.append(part)
+                else:
+                    container.append(part)
+            final_row = container.simplified()
+            self.rows.append(final_row)
+
+    def is_plain_string(self):
+        """ Cannot be represented with just a string.
+        :return: bool
+        """
+        return False
+
+    def __str__(self):
+        if self.values:
+            vals = ';'.join([str(x['value']) for x in self.values.values() if
+                             x.get('value', False)])
+        else:
+            vals = '|'.join([str(x) for x in self.rows])
+        if self.parts:
+            return '[.%s %s]' % (vals, self.parts_as_string())
+        else:
+            return vals
+
+    def is_empty(self):
+        """
+        :return:
+        """
+        return not (self.values or self.rows)
+
+    def __repr__(self):
+        return 'ITemplateNode(rows=%s, values=%s)' % (repr(self.rows), repr(self.values))
+
+
 class IConstituentNode(ITextNode):
     """ Intermediary Node that contains basic information required for building a linguistic constituent.
     (Except features)
@@ -247,6 +363,7 @@ class IConstituentNode(ITextNode):
         :param gloss:
         :param parts:
         """
+        raise hell
         ITextNode.__init__(self, parts=parts)
         self.label = label
         self.index = index
@@ -267,13 +384,12 @@ class IConstituentNode(ITextNode):
         self.gloss = gloss
         self._label_complex = []
 
-
     def add_feature(self, node):
         if not isinstance(node, IFeatureNode):
             node = node.as_inode
         self.features.append(node)
 
-    def add_label_complex(self, node):
+    def add_unanalyzed_label_node(self, node):
         self._label_complex.append(node)
 
     def is_plain_string(self):
@@ -282,7 +398,7 @@ class IConstituentNode(ITextNode):
         """
         return False
 
-    def sort_out_label_complex(self):
+    def analyze_label_data(self):
         """ Go through label complex and fill alias, label, index, gloss and features if provided.
         :return: None
         """
@@ -365,12 +481,10 @@ class IConstituentNode(ITextNode):
 
         :return:
         """
-        return not (self.label or self.parts or self.index or self.alias or self.features or self.gloss)
+        return not (self.label or self.parts or self.index or self.alias or self.features
+                    or self.gloss)
 
     def __repr__(self):
-        return 'IConstituentNode(alias=%s, label=%s, index=%s, gloss=%s, features=%s, parts=%s)' % (repr(self.alias),
-                                                                                                    repr(self.label),
-                                                                                                    repr(self.index),
-                                                                                                    repr(self.gloss),
-                                                                                                    repr(self.features),
-                                                                                                    repr(self.parts))
+        return 'IConstituentNode(alias=%s, label=%s, index=%s, gloss=%s, features=%s, parts=%s)' % \
+               (repr(self.alias), repr(self.label), repr(self.index), repr(self.gloss),
+                repr(self.features),  repr(self.parts))

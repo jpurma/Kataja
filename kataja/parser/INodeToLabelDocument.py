@@ -1,7 +1,8 @@
 __author__ = 'purma'
 
 from PyQt5 import QtGui, QtCore
-from kataja.parser.INodes import ITextNode, ICommandNode, IConstituentNode, IFeatureNode, IGenericNode
+from kataja.parser.INodes import ITextNode, ICommandNode, IConstituentNode, IFeatureNode, IGenericNode, \
+    ITemplateNode
 from kataja.LabelDocument import LabelDocument
 import kataja.globals as g
 from kataja.singletons import qt_prefs, prefs
@@ -9,7 +10,7 @@ from kataja.parser.latex_to_unicode import latex_to_unicode
 from kataja.parser.INodeToLatex import parse_inode_for_field
 
 
-def parse_inode(inode, document, gloss_in_view=True, features_in_view=True):
+def parse_inode(inode, document, options=None):
     """ Does what it says. Takes an existing LabelDocument to avoid problems with their garbage collection.
     :param inode: IConstituentNode or IFeatureNode
     :param document: LabelDocument where to write
@@ -18,19 +19,72 @@ def parse_inode(inode, document, gloss_in_view=True, features_in_view=True):
     """
     assert (isinstance(document, LabelDocument))
     document.clear()
-    if isinstance(inode, IFeatureNode):
+    if isinstance(inode, ITemplateNode):
+        parse_itemplatenode_for_viewing(inode, document, options)
+    elif isinstance(inode, IFeatureNode):
         parse_ifeaturenode(inode, document)
     elif isinstance(inode, IConstituentNode):
-        parse_iconstituentnode_for_viewing(inode, document, gloss_in_view, features_in_view)
+        parse_iconstituentnode_for_viewing(inode, document)
     elif isinstance(inode, ITextNode):
         parse_itextnode(inode, document)
-    else:
+        # fixme
         print('skipping parse_inode, ', inode, type(inode))
-
 
 def parse_itextnode(inode, document):
     cursor = QtGui.QTextCursor(document)
     write_node_to_document(inode, cursor)
+
+
+def parse_itemplatenode_for_viewing(inode, document, options):
+    """ Write inode to document, using the template stored with inode.
+    :param inode: ITemplateNode
+    :param document: LabelDocument
+    """
+
+    cursor = QtGui.QTextCursor(document)
+    postponed = [None]
+    is_empty = True
+
+    def write_subscript(index, cursor):
+        old_format = QtGui.QTextCharFormat(cursor.charFormat())
+        c = QtGui.QTextCharFormat()
+        c.setVerticalAlignment(QtGui.QTextCharFormat.AlignSubScript)
+        cursor.mergeCharFormat(c)
+        write_node_to_document(index, cursor)
+        cursor.setCharFormat(old_format)
+
+    def write_field(field_name, cursor, empty_line):
+        d = inode.values[field_name]
+        v = d['value']
+        if not v:
+            return False
+        align = d.get('align', 'newline')
+        if align == 'newline':
+            if not empty_line:
+                cursor.insertBlock()
+        elif align == 'line-end':
+            if empty_line:
+                postponed[0] = field_name
+                return False
+        elif align == 'append':
+            if not empty_line:
+                cursor.insertText(' ')
+        style = d.get('style', 'normal')
+        if style == 'normal':
+            write_node_to_document(v, cursor)
+        elif style == 'subscript':
+            write_subscript(v, cursor)
+        return True
+
+    for field_name in inode.view_order:
+        if postponed[0] and not is_empty:
+            wrote_something = write_field(postponed[0], cursor, is_empty)
+            if wrote_something:
+                postponed[0] = None
+                is_empty = False
+        wrote_something = write_field(field_name, cursor, is_empty)
+        if wrote_something:
+            is_empty = False
 
 
 def parse_iconstituentnode_for_viewing(inode, document, gloss_in_view=True, features_in_view=True):

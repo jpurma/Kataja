@@ -21,26 +21,28 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
-
+from kataja.Node import Node
 from kataja.BaseConstituentNode import BaseConstituentNode
 from kataja.BaseModel import Saved
 from kataja.singletons import ctrl
-from kataja.parser.INodes import ITextNode, IConstituentNode
+from kataja.parser.INodes import ITextNode
 import kataja.globals as g
 
 __author__ = 'purma'
 
 
 class ConstituentNode(BaseConstituentNode):
-    """ ConstituentNode is enriched with few fields that have no syntactic meaning but help with reading the tree,
-    like aliases, indices and glosses.
+    """ ConstituentNode is enriched with few fields that have no syntactic meaning but help with
+     reading the tree aliases, indices and glosses.
     """
 
     receives_signals = []
     short_name = "CN"
-
-    # ConstituentNode position points to the _center_ of the node.
-    # boundingRect should be (w/-2, h/-2, w, h)
+    visible = {'alias': {'order': 0},
+               'index': {'order': 1, 'align': 'line-end', 'style': 'subscript'},
+               'label': {'order': 2},
+               'gloss': {'order': 3},
+               }
 
     def __init__(self, constituent=None):
         """ Most of the initiation is inherited from Node """
@@ -62,9 +64,9 @@ class ConstituentNode(BaseConstituentNode):
 
     def after_init(self):
         """ After_init is called in 2nd step in process of creating objects:
-        1st wave creates the objects and calls __init__, and then iterates through and sets the values.
-        2nd wave calls after_inits for all created objects. Now they can properly refer to each other and know their
-        values.
+        1st wave creates the objects and calls __init__, and then iterates through and sets the
+        values. 2nd wave calls after_inits for all created objects. Now they can properly refer
+        to each other and know their values.
         :return: None
         """
         self.update_features()
@@ -75,8 +77,8 @@ class ConstituentNode(BaseConstituentNode):
         ctrl.forest.store(self)
 
     def after_model_update(self, updated_fields, update_type):
-        """ This is called after the item's model has been updated, to run the side-effects of various
-        setters in an order that makes sense.
+        """ This is called after the item's model has been updated, to run the side-effects of
+         various setters in an order that makes sense.
         :param updated_fields: list of names of fields that have been updated.
         :return: None
         """
@@ -98,6 +100,41 @@ class ConstituentNode(BaseConstituentNode):
     # properties implemented by syntactic node
     # set_hooks, to be run when values are set
 
+    def impose_order_to_inode(self):
+        """ Prepare inode (ITemplateNode) to match data structure of this type of node.
+        ITemplateNode has parsed input from latex trees to rows of text or ITextNodes and
+        these can be mapped to match Node fields, e.g. label or index. The mapping is
+        implemented here, and subclasses of Node should make their mapping.
+        :return:
+        """
+        Node.impose_order_to_inode(self)
+        inode = self._inode
+        iv = inode.values
+        alias = ''
+        label = ''
+        gloss = ''
+        index = ''
+        if inode.indices and inode.indices[0]:
+            index = inode.indices[0]
+
+        is_leaf = self.is_leaf_node()
+        lines = len(inode.rows)
+        if lines >= 3:
+            alias = inode.rows[0]
+            label = inode.rows[1]
+            gloss = inode.rows[2]
+        elif lines == 2:
+            alias = inode.rows[0]
+            label = inode.rows[1]
+        elif lines == 1 and is_leaf:
+            label = inode.rows[0]
+        elif lines == 1:
+            alias = inode.rows[0]
+        iv['alias']['value'] = alias
+        iv['label']['value'] = label
+        iv['gloss']['value'] = gloss
+        iv['index']['value'] = index
+
     def if_changed_gloss(self, value):
         """ Synobj changed, but remind to update inodes here
         :param value:
@@ -108,7 +145,6 @@ class ConstituentNode(BaseConstituentNode):
 
     # Saved properties
 
-
     # Other properties
 
     @property
@@ -117,8 +153,7 @@ class ConstituentNode(BaseConstituentNode):
         :return:
         """
         gl = self.get_children_of_type(edge_type=g.GLOSS_EDGE)
-        if gl:
-            return gl[0]
+        return next(gl, None)
 
     @property
     def raw_alias(self):
@@ -133,6 +168,8 @@ class ConstituentNode(BaseConstituentNode):
         :return: INodes or str or tuple of them
         """
         if self._inode_changed:
+            if not self._inode.values:
+                return ''
             if self.triangle:
                 leaves = ITextNode()
                 # todo: Use a better linearization here
@@ -144,13 +181,13 @@ class ConstituentNode(BaseConstituentNode):
             else:
                 label = self.label
 
-            self._inode = IConstituentNode(alias=self.alias,
-                                           label=label,
-                                           index=self.index,
-                                           gloss=self.gloss,
-                                           features=self.features)
+            iv = self._inode.values
+            iv['label']['value'] = label
+            iv['alias']['value'] = self.alias
+            iv['index']['value'] = self.index
+            iv['gloss']['value'] = self.gloss
+            #iv['features']['value'] = self.features
             self._inode_changed = False
-        print(self._inode)
         return self._inode
 
     def update_status_tip(self):
@@ -168,7 +205,8 @@ class ConstituentNode(BaseConstituentNode):
                 name = "Root constituent"
             else:
                 name = "Inner constituent"
-            self.status_tip = "%s %s%s" % (name, alias, self.label)
+            self.status_tip = "%s Alias: %s Label: %s is_leaf: %s" % (name, alias, self.label,
+                                                                      self.is_leaf_node())
         else:
             self.status_tip = "Empty, but mandatory constituent position"
 
@@ -206,7 +244,7 @@ class ConstituentNode(BaseConstituentNode):
         super().update_visibility(**kw)
         if ctrl.forest.settings.label_style == g.ALIASES and self.alias:
             self._label_visible = True
-            self._label_complex.setVisible(self._label_visible)
+            self._label_complex.setVisible(True)
 
     # ### Features #########################################
 

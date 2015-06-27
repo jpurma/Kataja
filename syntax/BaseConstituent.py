@@ -53,14 +53,8 @@ class BaseConstituent(IConstituent):
         super().__init__(**kw)
         self.label = label
         self.head = head
-        if features:
-            self.features = features
-        else:
-            self.features = {}
-        if parts:
-            self.parts = parts
-        else:
-            self.parts = []
+        self.features = features or {}
+        self.parts = parts or []
 
     def __str__(self):
         return str(self.label)

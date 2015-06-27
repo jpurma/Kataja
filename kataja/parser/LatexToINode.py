@@ -4,7 +4,7 @@
 # This module can be run and tested as it is,
 # from kataja.utils import time_me
 
-from kataja.parser.INodes import ICommandNode, IConstituentNode, ITextNode
+from kataja.parser.INodes import ICommandNode, ITextNode, ITemplateNode
 
 
 class ParseError(Exception):
@@ -139,10 +139,10 @@ def parse_curlies(feed):
 
 
 def parse_one_character_command(feed):
-    """ Start a new command node, where the command is just one character and already given as a param.
+    """ Start a new command node, where the command is just one character and already given as
+    a param.
         e.g. _{subscripted text} or ^{superscript}
         :param feed: list of chars (strings of length 1)
-        :param command: one character command recognized by parent parser
     """
     node = ICommandNode(command=feed.pop(0), prefix='')
 
@@ -176,9 +176,10 @@ def parse_one_character_command(feed):
 
 
 def parse_command(feed):
-    """ Turn text into ICommandNodes. These are best understood as tags, where the tag is the command, and parts of the
-     node are the scope of the tag. Reads a word and stores it as a command, and then depending how the word ends,
-        either ends the command node or starts reading next entries as a nodes inside the ICommandNode.
+    """ Turn text into ICommandNodes. These are best understood as tags, where the tag is the
+     command, and parts of the node are the scope of the tag. Reads a word and stores it as a
+     command, and then depending how the word ends, either ends the command node or starts reading
+     next entries as a nodes inside the ICommandNode.
         :param feed: list of chars (strings of length 1)
     """
     node = ICommandNode()
@@ -217,7 +218,7 @@ def parse_brackets(feed):
     and these are read as IConstituentNodes or ITextNodes.
         :param feed: list of chars (strings of length 1)
     """
-    node = IConstituentNode()
+    node = ITemplateNode()
     assert (feed[0] == '[')
 
     feed.pop(0)
@@ -234,23 +235,23 @@ def parse_brackets(feed):
             if feed and feed[0] == '.':
                 feed.pop(0)
                 feed, new_node = parse_word(feed)
-                node.add_label_complex(new_node)
+                node.unanalyzed = new_node
             break
         elif c.isspace():
             feed.pop(0)
         elif c == '.':
             feed.pop(0)
             feed, new_node = parse_word(feed, end_on_space=True)
-            node.add_label_complex(new_node)
+            node.unanalyzed = new_node
         else:
             # Make a new constituent
-            new_cnode = IConstituentNode()
+            new_cnode = ITemplateNode()
             feed, new_node = parse_word(feed, end_on_space=True)  # Read simple constituent e.g. A or B in [ A B ]
             # What we just read was label for that constituent
-            new_cnode.add_label_complex(new_node)
-            new_cnode.sort_out_label_complex()
+            new_cnode.unanalyzed = new_node
+            new_cnode.analyze_label_data()
             node.append(new_cnode)
-    node.sort_out_label_complex()
+    node.analyze_label_data()
     node.tidy()
     return feed, node
 

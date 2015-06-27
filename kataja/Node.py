@@ -21,6 +21,7 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
+from collections import OrderedDict
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
@@ -55,6 +56,9 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     ordered = False
     ordering_func = None
     short_name = "Node" # shouldn't be used on its own
+
+    # override this if you need to turn inodes into your custom Nodes. See examples in
+    # ConstituentNode or FeatureNode
 
     def __init__(self, syntactic_object=None):
         """ Node is an abstract class that shouldn't be used by itself, though
@@ -91,6 +95,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self.folding_towards = None
         self.color = None
 
+        self.label_display_data = {}
 
         self.setAcceptHoverEvents(True)
         # self.setAcceptDrops(True)
@@ -141,6 +146,69 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         elif update_type == g.DELETED:
             print('Node.DELETED. (%s) should I be reverting deletion or have we just been deleted?'
                   % self.save_key)
+
+    def prepare_schema_for_label_display(self):
+        """
+        :return:
+        """
+        if self.syntactic_object and hasattr(self.syntactic_object.__class__, 'visible'):
+            synvis = self.syntactic_object.__class__.visible
+        else:
+            synvis = {}
+        myvis = getattr(self.__class__, 'visible', {})
+        sortable = []
+        for key, value in synvis.items():
+            o = value.get('order', 50)
+            sortable.append((o, 0, key, value))
+        for key, value in myvis.items():
+            o = value.get('order', 50)
+            sortable.append((o, 1, key, value))
+        sortable.sort()
+        self.label_display_data = OrderedDict()
+        for foo, bar, key, value in sortable:
+            self.label_display_data[key] = value
+
+    def impose_order_to_inode(self):
+        """ Prepare inode (ITemplateNode) to match data structure of this type of node
+        ITemplateNode has parsed input from latex trees to rows of text or ITextNodes and
+        these can be mapped to match Node fields, e.g. label or index. The mapping is
+        implemented here, and subclasses of Node should make their mapping.
+        :return:
+        """
+        # This part should be done by all subclasses, call super().impose_order_to_inode()
+        self._inode.values = {}
+        self._inode.view_order = []
+        if self.syntactic_object and hasattr(self.syntactic_object.__class__, 'visible'):
+            synvis = self.syntactic_object.__class__.visible
+        else:
+            synvis = {}
+        myvis = getattr(self.__class__, 'visible', {})
+        sortable = []
+        for key, value in synvis.items():
+            o = value.get('order', 50)
+            sortable.append((o, 0, key, value))
+        for key, value in myvis.items():
+            o = value.get('order', 50)
+            sortable.append((o, 1, key, value))
+        sortable.sort()
+        for foo, bar, key, value in sortable:
+            self._inode.values[key] = dict(value)
+            if key not in self._inode.view_order:
+                self._inode.view_order.append(key)
+
+    def update_values_from_inode(self):
+        """ Take values from given inode and set this object to have these values.
+        :return:
+        """
+        for key, value_data in self._inode.values.items():
+            if 'value' in value_data:
+                v = value_data['value']
+                if 'readonly' in value_data:
+                    continue
+                elif 'setter' in value_data:
+                    getattr(self, value_data['setter'])(v)
+                else:
+                    setattr(self, key, v)
 
     def alert_inode(self, value):
         """ Setters may announce that inode needs to be updated
@@ -296,14 +364,12 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
     # ### Children and parents ####################################################
 
-
     def get_all_children(self):
         """
         Get all types of child nodes of this node.
         :return: iterator of Nodes
         """
         return (edge.end for edge in self.edges_down)
-
 
     def get_all_visible_children(self):
         """
@@ -345,8 +411,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             return (edge.end for edge in self.edges_down if edge.edge_type == edge_type)
         elif node_type:
             return (edge.end for edge in self.edges_down if isinstance(edge.end, node_type))
-
-
 
     def get_parents(self, only_similar=True, only_visible=False, edge_type=None):
         """
@@ -423,7 +487,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             gen = self.get_all_visible_children()
         else:
             gen = self.get_all_children()
-        return next(gen, True) is True
+        return not next(gen, False)
 
     def get_only_parent(self, only_similar=True, only_visible=True):
         """ Returns one or zero parents -- useful when not using multidomination
@@ -451,7 +515,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :param only_visible:
         :param recursion:
         :param visited:
-        If a node that is already visited is visited again, this is a derivation_step that should not be followed. """
+        If a node that is already visited is visited again, this is a derivation_step that
+         should not be followed. """
         if not recursion:
             visited = set()
         if self in visited:
@@ -467,7 +532,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         return self
 
     def get_edge_to(self, other, edge_type=''):
-        """ Returns edge object, not the related node. There should be only one instance of edge of certain type between two elements.
+        """ Returns edge object, not the related node. There should be only one instance of edge
+        of certain type between two elements.
         :param other:
         :param edge_type:
         """
@@ -481,7 +547,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
                     return edge
 
         return None
-
 
     def get_edges_up(self, similar=True, visible=False, align=None):
         """ Returns edges up, filtered
@@ -521,7 +586,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             return True
         return filter(filter_func, self.edges_down)
 
-    ### Font #####################################################################
+    # ## Font #####################################################################
 
     @property
     def font(self):
@@ -606,7 +671,9 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """
         if not self._label_complex:
             self._label_complex = Label(parent=self)
-        self._label_complex.update_label()
+        if not self._inode:
+            return
+        self._label_complex.update_label(self.font, self.as_inode)
         self.update_bounding_rect()
         self.update_status_tip()
 

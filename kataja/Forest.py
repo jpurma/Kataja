@@ -25,6 +25,7 @@
 
 import string
 import collections
+from kataja.ConstituentNode import ConstituentNode
 
 from kataja.errors import ForestError
 from kataja.debug import forest
@@ -170,9 +171,11 @@ class Forest(BaseModel):
         """
         return not self.settings.uses_multidomination
 
-    def list_nodes(self, first):
+    @staticmethod
+    def list_nodes(first):
         """
-        Do left-first iteration through all nodes. Can become quite large if there is lots of multidomination.
+        Do left-first iteration through all nodes. Can become quite large if there is lots of
+         multidomination.
         :param first: Node, can be started from a certain point in structure
         :return: iterator through nodes
         """
@@ -183,42 +186,41 @@ class Forest(BaseModel):
 
         return _iterate(first)
 
-
-    def list_visible_nodes_once(self, first):
+    @staticmethod
+    def list_visible_nodes_once(first):
         """
-        Do left-first iteration through all nodes and return an iterator where only first instance of each node is present.
+        Do left-first iteration through all nodes and return an iterator where only first instance
+         of each node is present.
         :param first: Node, can be started from a certain point in structure
         :return: iterator through nodes
         """
-        used = set()
+        result = []
 
         def _iterate(node):
-            if node not in used:
-                used.add(node)
-                yield node
+            if node not in result:
+                result.append(node)
                 for child in node.get_visible_children():
                     _iterate(child)
+        _iterate(first)
+        return result
 
-        return _iterate(first)
-
-
-    def list_nodes_once(self, first):
+    @staticmethod
+    def list_nodes_once(first):
         """
-        Do left-first iteration through all nodes and return a list where only first instance of each node is present.
-        :param first: Node, can be started from a certain point in structure
-        :param only_visible:
+        Do left-first iteration through all nodes and return a list where only first instance of
+        each node is present.
+        :param first: Node, start from a certain point in structure
         :return: iterator through nodes
         """
-        used = set()
+        result = []
 
         def _iterate(node):
-            if node not in used:
-                used.add(node)
-                yield node
+            if node not in result:
+                result.append(node)
                 for child in node.get_children():
                     _iterate(child)
-
-        return _iterate(first)
+        _iterate(first)
+        return result
 
     def info_dump(self):
         """
@@ -543,7 +545,7 @@ class Forest(BaseModel):
         """
         node = self.get_node(constituent)
         if not node:
-            node = BaseConstituentNode(constituent=constituent)
+            node = ConstituentNode(constituent=constituent)
             node.after_init()
         else:
             assert False
@@ -1037,7 +1039,7 @@ class Forest(BaseModel):
             else:
                 real_children.append(child)
         if len(real_children) == 1 and len(placeholders) == 0:
-            align = node.get_edge_to(real_children[0]).align
+            align = node.get_edge_to(real_children[0]).alignment
             placeholder_align = g.NO_ALIGN
             if align == g.LEFT:
                 placeholder_align == g.RIGHT
@@ -1345,9 +1347,6 @@ class Forest(BaseModel):
                         raise ForestError('Identical edge exists already')
                     elif old_edge.start == child and old_edge.end == parent:
                         raise ForestError('Connection is circular')
-        # Check for directionality
-        if edge_type is g.CONSTITUENT_EDGE and not direction:
-            raise ForestError('ConstituentNode connection needs a direction argument')
 
         # Create edge and make connections
         new_edge = self.create_edge(edge_type=edge_type, direction=direction)

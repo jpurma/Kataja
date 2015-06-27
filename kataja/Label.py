@@ -41,13 +41,16 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.total_height = 0
         self.setDocument(LabelDocument())
 
-    def update_label(self):
-        """ Asks for node/host to give text and update if changed """
+    def update_label(self, font, inode):
+        """ Asks for node/host to give text and update if changed
+        :param font: provide font to use for label document
+        :param inode: provide inode to parse to label document
+        """
         doc = self.document()
-        self.setFont(self._host.font)
+        self.setFont(font)
         self.prepareGeometryChange()
         self.setTextWidth(-1)
-        INodeToLabelDocument.parse_inode(self._host.as_inode, doc)
+        INodeToLabelDocument.parse_inode(inode, doc)
         self.setTextWidth(doc.idealWidth())
         brect = self.boundingRect()
         self.total_height = brect.height() + self.y_offset

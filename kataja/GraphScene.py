@@ -24,21 +24,16 @@
 # ############################################################################
 
 
-from PyQt5.QtCore import QPointF as Pf, Qt
+from PyQt5.QtCore import Qt
 import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
 from kataja.Edge import Edge
-from kataja.BaseConstituentNode import BaseConstituentNode
 from kataja.singletons import ctrl, prefs, qt_prefs
-from kataja.Movable import Movable
 from kataja.Node import Node
 from kataja.utils import to_tuple, time_me
 from kataja.ui import TouchArea
 import kataja.globals as g
-
-
-
 
 # from BlenderExporter import export_visible_items
 
@@ -95,8 +90,9 @@ class GraphScene(QtWidgets.QGraphicsScene):
     # return QtWidgets.QGraphicsScene.event(self, event)
 
     def forward_signal(self, signal, *args):
-        """ When graph scene receives signals, they are forwarded to Kataja's graphic item subclasses. They all have a
-        signal receiver class that can handle certain kinds of signals and modify the item accordingly.
+        """ When graph scene receives signals, they are forwarded to Kataja's graphic item
+        subclasses. They all have a signal receiver class that can handle certain kinds of
+        signals and modify the item accordingly.
         :param signal:
         :param args:
         """
@@ -129,7 +125,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 receiving_items = self._signal_forwarding[signal]
                 receiving_items.remove(item)
 
-
     # Overriding QGraphicsScene method
     def addItem(self, item):
         """
@@ -151,7 +146,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
             print('wrong scene: ', item)
         QtWidgets.QGraphicsScene.removeItem(self, item)
 
-
     def reset_edge_shapes(self):
         """
 
@@ -169,7 +163,10 @@ class GraphScene(QtWidgets.QGraphicsScene):
     def fit_to_window(self):
         """ Calls up to graph view and makes it to fit all visible items here to view window."""
         vr = self.visible_rect()
-        if self._cached_visible_rect and vr != self._cached_visible_rect:
+        if self._cached_visible_rect:
+            if vr != self._cached_visible_rect:
+                self.graph_view.instant_fit_to_view(vr)
+        else:
             self.graph_view.instant_fit_to_view(vr)
         self._cached_visible_rect = vr
 
@@ -177,58 +174,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
         """ Counts all visible items in scene and returns QRectF object
          that contains all of them """
         return self.itemsBoundingRect()
-
-    @time_me
-    def visible_rect_old(self):
-        """ deprecated
-         Counts all visible items in scene and returns QRectF object
-         that contains all of them -- deprecated, it is slower than calling itemsBoundingRect, but
-          on the other hand this doesn't count invisible objects."""
-        lefts = []
-        rights = []
-        tops = []
-        bottoms = []
-        for item in self.items():
-            if isinstance(item, BaseConstituentNode) and not item.is_fading_away():
-                top_left_x, top_left_y, top_left_z = item.magnet(0)
-                bottom_right_x, bottom_right_y, bottom_right_z = item.magnet(11)
-                lefts.append(top_left_x)
-                rights.append(bottom_right_x)
-                tops.append(top_left_y)
-                bottoms.append(bottom_right_y)
-            elif isinstance(item, Movable) and not item.is_fading_away():
-                br = item.boundingRect()
-                x, y, z = item.current_position  # try using final position here
-                lefts.append(x + br.left())
-                rights.append(x + br.right())
-                tops.append(y + br.top())
-                bottoms.append(y + br.bottom())
-            elif isinstance(item, Edge):
-                if not item.start:
-                    lefts.append(item.start_point[0])
-                    rights.append(item.start_point[0])
-                    tops.append(item.start_point[1])
-                    bottoms.append(item.start_point[1])
-                if not item.end:
-                    lefts.append(item.end_point[0])
-                    rights.append(item.end_point[0])
-                    tops.append(item.end_point[1])
-                    bottoms.append(item.end_point[1])
-
-        if lefts and rights and bottoms and tops:
-            r = QtCore.QRectF(Pf(min(lefts), min(tops)), Pf(max(rights), max(bottoms)))
-        else:
-            r = QtCore.QRectF(-50, -50, 100, 100)
-        return r
-
-    def visible_rect_and_gloss(self):
-        """ deprecated
-        :return:
-        """
-        if self.main.forest.gloss:
-            return self.visible_rect().united(self.main.forest.gloss.sceneBoundingRect())
-        else:
-            return self.visible_rect()
 
     def item_moved(self):
         """ Starts the animations unless they are running already
@@ -257,7 +202,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
     def move_selection(self, direction):
         """
-        Compute which is the closest or most appropriate object in given direction. Used for keyboard movement.
+        Compute which is the closest or most appropriate object in given direction. Used for
+        keyboard movement.
         :param direction:
         """
         # debugging plotter
@@ -271,8 +217,9 @@ class GraphScene(QtWidgets.QGraphicsScene):
         # ############### Absolute left/right/up/down ###############################
         # if nothing is selected, select the edgemost item from given direction
         if not ctrl.selected:
-            selectables = [(item, to_tuple(item.sceneBoundingRect().center())) for item in self.items() if
-                           getattr(item, 'selectable', False) and item.is_visible()]
+            selectables = [(item, to_tuple(item.sceneBoundingRect().center())) for item in
+                           self.items() if getattr(item, 'selectable', False) and
+                           item.is_visible()]
             if direction == 'left':
                 sortable = [(po[0], po[1], it) for it, po in selectables]
                 x, y, item = min(sortable)
@@ -345,7 +292,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         dx = ix - x
                         dy = iy - y
                         dxy = (dx * dx) + (2 * dy * dy)
-                        # if dx > 0 and ((dx < min_x) or (dx == min_x and (dy > 0 and dy < min_y ))):
                         if (dx < 0 and (dxy < min_xy)) or (dx == 0 and dy < 0 and (dxy < min_xy)):
                             min_x = dx
                             min_y = dy
@@ -381,7 +327,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         dx = ix - x
                         dy = iy - y
                         dxy = (dx * dx) + (2 * dy * dy)
-                        # if dx > 0 and ((dx < min_x) or (dx == min_x and (dy > 0 and dy < min_y ))):
                         if (dx > 0 and (dxy < min_xy)) or (dx == 0 and dy > 0 and (dxy < min_xy)):
                             min_x = dx
                             min_y = dy
@@ -403,7 +348,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         dx = ix - x
                         dy = iy - y
                         dxy = (dx * dx * 2) + (dy * dy)
-                        # if dy > 0 and ((dy < min_y) or (dy == min_y and (dx > 0 and dx < min_x ))):
                         if (dy < 0 and (dxy < min_xy)) or (dy == 0 and dx < 0 and (dxy < min_xy)):
                             min_x = dx
                             min_y = dy
@@ -431,17 +375,17 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         # ctrl.ui_manager.info('dx: %s, dy: %s, dxy: %s' % (min_x, min_y, min_xy))
         ctrl.select(best)
 
-
     # ######### MOUSE ##############
-    def get_closest_item(self, x, y, candidates, must_contain=False):
+
+    @staticmethod
+    def get_closest_item(x, y, candidates, must_contain=False):
         """ If there are several partially overlapping items at the point, choose
         the one that where we clicked closest to center.
-
         :param x:
         :param y:
         :param candidates:
         :param must_contain:
-        :return:
+        :return: GraphicsItem or None
         """
         min_d = 1000
         closest_item = None
@@ -460,7 +404,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 closest_item = item
                 min_d = dist
         return closest_item
-
 
     def mousePressEvent(self, event):
         """
@@ -545,20 +488,22 @@ class GraphScene(QtWidgets.QGraphicsScene):
                     ctrl.latest_hover = None
                 self.main.ui_manager.update_positions()
             else:
-                if (event.buttonDownScenePos(QtCore.Qt.LeftButton) - event.scenePos()).manhattanLength() > 6:
+                if (event.buttonDownScenePos(QtCore.Qt.LeftButton) -
+                        event.scenePos()).manhattanLength() > 6:
                     self.start_dragging()
                     ctrl.pressed.drag(event)
                     self.item_moved()
         return QtWidgets.QGraphicsScene.mouseMoveEvent(self, event)
 
     def mouseReleaseEvent(self, event):
-        """ deliver clicks, drops and selections to correct objects and make sure that the Controller
-        state is up to date.
+        """ deliver clicks, drops and selections to correct objects and make sure that the
+        Controller state is up to date.
         :param event:
         :return:
         """
         self.graph_view.toggle_suppress_drag(False)
-        if self._dblclick and not ctrl.pressed:  # doubleclick sends one release event at the end, swallow that
+        if self._dblclick and not ctrl.pressed:
+            # doubleclick sends one release event at the end, swallow that
             self._dblclick = False
             if self._dragging:
                 print('dblclick while dragging? Unpossible!')
@@ -592,15 +537,17 @@ class GraphScene(QtWidgets.QGraphicsScene):
             print('mouseReleaseEvent, but still ctrl.pressed!:', ctrl.pressed)
         if self.graph_view.rubberband_mode():
             ctrl.deselect_objects(update_ui=False)
-            # prioritize nodes in multiple selection. e.g. if there are nodes and edges in selected area,
-            #  select only nodes. If there are multiple edges and no nodes, then take edges
+            # prioritize nodes in multiple selection. e.g. if there are nodes and edges in
+            # selected area, select only nodes. If there are multiple edges and no nodes, then
+            # take edges
             only_nodes = False
             for item in self.selectedItems():
                 if isinstance(item, Node):
                     only_nodes = True
                     break
             for item in self.selectedItems():
-                if ((not only_nodes) or isinstance(item, Node)) and getattr(item, 'selectable', False):
+                if ((not only_nodes) or isinstance(item, Node)) and \
+                        getattr(item, 'selectable', False):
                     item.select(event, multi=True)
         return QtWidgets.QGraphicsScene.mouseReleaseEvent(self, event)
 
@@ -611,7 +558,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
         """
         # redo this to be more generic
         return ctrl.latest_hover
-
 
     def dragEnterEvent(self, event):
         """
@@ -660,7 +606,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
                     command, *args = args
                     if command == "new_node":
                         node_type = args[0]
-                        node = ctrl.forest.create_empty_node(pos=event.scenePos(), node_type=node_type)
+                        node = ctrl.forest.create_empty_node(pos=event.scenePos(),
+                                                             node_type=node_type)
                         node.lock()
                         ctrl.main.action_finished('added %s' % args[0])
                     else:
@@ -679,12 +626,13 @@ class GraphScene(QtWidgets.QGraphicsScene):
         if not event.isAccepted():
             data = event.mimeData()
             event.accept()
-            if data.hasFormat("application/x-qabstractitemmodeldatalist") or data.hasFormat("text/plain"):
+            if data.hasFormat("application/x-qabstractitemmodeldatalist") or \
+                    data.hasFormat("text/plain"):
                 event.acceptProposedAction()
 
     def mouseDoubleClickEvent(self, event):
-        """ If doubleclicking an empty spot, open creation menu. If doubleclicking an object, it may or may not
-        do something with it.
+        """ If doubleclicking an empty spot, open creation menu. If doubleclicking an object,
+        it may or may not do something with it.
         :param event: some kind of mouse event?
         :return: None
         """

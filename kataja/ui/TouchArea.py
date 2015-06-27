@@ -27,7 +27,7 @@ import math
 from PyQt5 import QtCore
 
 import PyQt5.QtWidgets as QtWidgets
-import Node
+from kataja.Node import Node
 from kataja.errors import TouchAreaError
 from kataja.Edge import Edge
 from kataja.singletons import ctrl, prefs

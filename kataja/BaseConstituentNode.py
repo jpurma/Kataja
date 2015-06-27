@@ -21,12 +21,13 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
+from collections import OrderedDict
 
 from PyQt5 import QtGui
 
 from kataja.singletons import ctrl
 from kataja.Node import Node
-from kataja.parser.INodes import IConstituentNode, ITextNode
+from kataja.parser.INodes import ITextNode
 import kataja.globals as g
 from kataja.BaseModel import Synobj
 
@@ -35,9 +36,10 @@ from kataja.BaseModel import Synobj
 
 
 class BaseConstituentNode(Node):
-    """ BaseConstituentNodes are minimal graphical representations of constituents. ConstituentNode -class
-    inherits this and adds more fields and features, but if you want to create new kind of Constituents in syntax it
-    may be cleaner to build on BaseConstituentNode and not ConstituentNode. """
+    """ BaseConstituentNodes are minimal graphical representations of constituents.
+    ConstituentNode -class inherits this and adds more fields and features, but if you want to
+     create new kind of Constituents in syntax it may be cleaner to build on BaseConstituentNode
+      and not ConstituentNode. """
     width = 20
     height = 20
     default_edge_type = g.CONSTITUENT_EDGE
@@ -45,6 +47,9 @@ class BaseConstituentNode(Node):
     node_type = g.CONSTITUENT_NODE
     short_name = "BCN"
 
+    visible = {'label': {'order': 1}}
+    editable = {}
+    addable = {}
 
 
     # ConstituentNode position points to the _center_ of the node.
@@ -53,6 +58,7 @@ class BaseConstituentNode(Node):
     def __init__(self, constituent=None):
         """ Most of the initiation is inherited from Node """
         Node.__init__(self, syntactic_object=constituent)
+
 
         # ------ Bracket drawing -------
         self.left_bracket = None
@@ -72,6 +78,18 @@ class BaseConstituentNode(Node):
             self._visibility_brackets = 0
 
         self.setAcceptDrops(True)
+
+    def impose_order_to_inode(self):
+        """ Prepare inode (ITemplateNode) to match data structure of this type of node
+        ITemplateNode has parsed input from latex trees to rows of text or ITextNodes and
+        these can be mapped to match Node fields, e.g. label or index. The mapping is
+        implemented here, and subclasses of Node should make their mapping.
+        :return:
+        """
+        super().impose_order_to_inode()
+        inode = self._inode
+        if inode.rows:
+            inode.values['label']['value'] = inode.rows[0]
 
     def after_init(self):
         """ After_init is called in 2nd step in process of creating objects:
@@ -120,6 +138,8 @@ class BaseConstituentNode(Node):
         :return: INodes or str or tuple of them
         """
         if self._inode_changed:
+            if not self._inode:
+                return ''
             if self.triangle:
                 leaves = ITextNode()
                 # todo: Use a better linearization here
@@ -130,10 +150,8 @@ class BaseConstituentNode(Node):
                 label = leaves.tidy()
             else:
                 label = self.label
-
-            self._inode = IConstituentNode(label=label, features=self.features)
+            self._inode.values['label']['value'] = label
             self._inode_changed = False
-
         return self._inode
 
     def update_status_tip(self):
@@ -159,18 +177,16 @@ class BaseConstituentNode(Node):
         """ returns a simple bracket string representation """
         if not self.syntactic_object:
             return '0'
-        children = self.get_children()
-        if children:
-            if len(children) == 2:
-                return '[ %s %s ]' % (children[0].as_bracket_string(), children[1].as_bracket_string())
-            else:
-                return '[ %s ]' % children[0].as_bracket_string()
+        inside = ' '.join((x.as_bracket_string() for x in self.get_children()))
+        if inside:
+            return '[ ' + inside + ' ]'
         else:
-            return self.syntactic_object
+            return str(self.syntactic_object)
 
     def is_placeholder(self):
-        """ Constituent structure may assume a constituent to be somewhere, before the user has intentionally created
-        one there. These are shown as placeholders, which are nodes, but with limited presence.
+        """ Constituent structure may assume a constituent to be somewhere, before the user has
+        intentionally created one there. These are shown as placeholders, which are nodes,
+        but with limited presence.
         :return: boolean
         """
         return not self.syntactic_object
@@ -460,7 +476,6 @@ class BaseConstituentNode(Node):
         for node in ctrl.forest.list_nodes_once(self):
             if node is not ctrl.dragged_focus and nodes_in_tree.index(node) > parent_index:
                 node.add_to_dragged()
-
 
     #################################
 
