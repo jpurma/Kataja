@@ -95,6 +95,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self.folding_towards = None
         self.color = None
 
+        self._editing_template = {}
+
         self.label_display_data = {}
 
         self.setAcceptHoverEvents(True)
@@ -167,6 +169,42 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self.label_display_data = OrderedDict()
         for foo, bar, key, value in sortable:
             self.label_display_data[key] = value
+
+    def get_editing_template(self, refresh=False):
+        """ Create or fetch a dictionary template to help building an editing UI for Node.
+        The template is based on 'editable'-class variable and combines templates from Node
+        and its subclasses and its syntactic object's templates.
+
+        The dictionary includes a special key field_order that gives the order of the fields.
+        :param refresh: force recalculation of template
+        :return: dict
+        """
+        if self._editing_template and not refresh:
+            return self._editing_template
+
+        self._editing_template = {}
+        if self.syntactic_object and hasattr(self.syntactic_object.__class__, 'editable'):
+            synedit = self.syntactic_object.__class__.editable
+        else:
+            synedit = {}
+        myedit = getattr(self.__class__, 'editable', {})
+        sortable = []
+        for key, value in synedit.items():
+            o = value.get('order', 50)
+            sortable.append((o, 0, key, value))
+        for key, value in myedit.items():
+            o = value.get('order', 50)
+            sortable.append((o, 1, key, value))
+        sortable.sort()
+        order = []
+        for foo, syntactic, key, value in sortable:
+            self._editing_template[key] = value
+            if syntactic == 0:
+                self._editing_template[key]['syntactic'] = True
+            if key not in order:
+                order.append(key)
+        self._editing_template['field_order'] = order
+        return self._editing_template
 
     def impose_order_to_inode(self):
         """ Prepare inode (ITemplateNode) to match data structure of this type of node

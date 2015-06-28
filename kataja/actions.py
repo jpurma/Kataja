@@ -1206,7 +1206,7 @@ def finish_constituent_edit():
     if not embed.node:
         ctrl.ui.close_constituent_editing()
         return
-    embed.push_values_back()
+    embed.submit_values()
     ctrl.ui.close_constituent_editing()
 
 a['edit_constituent_finished'] = {

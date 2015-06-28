@@ -48,8 +48,9 @@ class BaseConstituentNode(Node):
     short_name = "BCN"
 
     visible = {'label': {'order': 1}}
-    editable = {}
+    editable = {'label': {'order': 1}}
     addable = {}
+
 
 
     # ConstituentNode position points to the _center_ of the node.

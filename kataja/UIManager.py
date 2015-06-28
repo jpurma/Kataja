@@ -51,10 +51,9 @@ from kataja.ui.embeds.NewElementEmbed import NewElementEmbed, NewElementMarker
 from kataja.ui.embeds.EdgeLabelEmbed import EdgeLabelEmbed
 from kataja.ui.panels import UIPanel
 from kataja.ui.OverlayButton import OverlayButton
-from kataja.ui.embeds.ConstituentEditEmbed import ConstituentEditEmbed
 from kataja.ui.panels.SymbolPanel import SymbolPanel
 from kataja.ui.panels.NodesPanel import NodesPanel
-
+from kataja.ui.embeds.NodeEditEmbed import NodeEditEmbed
 
 NOTHING = 0
 SELECTING_AREA = 1
@@ -735,7 +734,7 @@ class UIManager:
         """
         np = node.pos()
         if not self._constituent_edit_embed:
-            self._constituent_edit_embed = ConstituentEditEmbed(self.main.graph_view, self, node, np)
+            self._constituent_edit_embed = NodeEditEmbed(self.main.graph_view, self, node, np)
         self._constituent_edit_embed.update_embed(scenePos=np, node=node)
         self._constituent_edit_embed.wake_up()
 
