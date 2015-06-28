@@ -43,12 +43,15 @@ class ConstituentNode(BaseConstituentNode):
                'label': {'order': 2},
                'gloss': {'order': 3},
                }
-    editable = {'alias': {'order': 0, 'prefill': 'alias', 'tooltip':
-                'Non-functional readable label of the constituent'},
-                'index': {'order': 1, 'align': 'line-end', 'width': 20, 'prefill': 'i',
-                          'tooltip': 'Index to recognize multiple occurences'},
-                'label': {'order': 2, 'prefill': 'label', 'tooltip': 'Label of the constituent (functional identifier)'},
-                'gloss': {'order': 3, 'prefill': 'gloss', 'tooltip': 'translation (optional)'}}
+    editable = {'alias': dict(name='Alias', order=3, prefill='alias',
+                              tooltip='Non-functional readable label of the constituent'),
+                'index': dict(name='Index', order=6, align='line-end', width=20, prefill='i',
+                              tooltip='Index to recognize multiple occurences'),
+                'label': dict(name='Label', order=9, prefill='label',
+                              tooltip='Label of the constituent (functional identifier)',
+                              width=200, focus=True, syntactic=True),
+                'gloss': dict(name='Gloss', order=12, prefill='gloss',
+                              tooltip='translation (optional)', width=200)}
 
     def __init__(self, constituent=None):
         """ Most of the initiation is inherited from Node """

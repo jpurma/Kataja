@@ -985,7 +985,7 @@ def close_embeds():
     """
     ctrl.ui.close_new_element_embed()
     ctrl.ui.close_edge_label_editing()
-    ctrl.ui.close_constituent_editing()
+    ctrl.ui.close_node_editing()
 
 a['close_embed'] = {
     'command': 'Cancel',
@@ -1198,20 +1198,20 @@ a['remove_triangle'] = {
 }
 
 
-def finish_constituent_edit():
+def finish_editing_node():
     """ Set the new values and close the constituent editing embed.
     :return: None
     """
-    embed = ctrl.ui.get_constituent_edit_embed()
+    embed = ctrl.ui.get_node_edit_embed()
     if not embed.node:
-        ctrl.ui.close_constituent_editing()
+        ctrl.ui.close_node_editing()
         return
     embed.submit_values()
-    ctrl.ui.close_constituent_editing()
+    ctrl.ui.close_node_editing()
 
-a['edit_constituent_finished'] = {
+a['finish_editing_node'] = {
     'command': 'Apply changes',
-    'method': finish_constituent_edit,
+    'method': finish_editing_node,
     'shortcut': 'Return',
     'shortcut_context': 'parent_and_children'
 }
@@ -1222,7 +1222,7 @@ def toggle_raw_editing():
     editing
     :return: None
     """
-    embed = ctrl.ui.get_constituent_edit_embed()
+    embed = ctrl.ui.get_node_edit_embed()
     embed.toggle_raw_edit(embed.raw_button.isChecked())
 
 a['raw_editing_toggle'] = {

@@ -149,6 +149,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             print('Node.DELETED. (%s) should I be reverting deletion or have we just been deleted?'
                   % self.save_key)
 
+    @time_me
     def prepare_schema_for_label_display(self):
         """
         :return:
@@ -170,6 +171,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         for foo, bar, key, value in sortable:
             self.label_display_data[key] = value
 
+    @time_me
     def get_editing_template(self, refresh=False):
         """ Create or fetch a dictionary template to help building an editing UI for Node.
         The template is based on 'editable'-class variable and combines templates from Node
@@ -189,16 +191,17 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             synedit = {}
         myedit = getattr(self.__class__, 'editable', {})
         sortable = []
-        for key, value in synedit.items():
-            o = value.get('order', 50)
-            sortable.append((o, 0, key, value))
         for key, value in myedit.items():
-            o = value.get('order', 50)
+            o = value.get('order', 200)
             sortable.append((o, 1, key, value))
+        for key, value in synedit.items():
+            o = value.get('order', 200)
+            sortable.append((o, 0, key, value))
         sortable.sort()
         order = []
         for foo, syntactic, key, value in sortable:
-            self._editing_template[key] = value
+            if key not in self._editing_template:
+                self._editing_template[key] = value
             if syntactic == 0:
                 self._editing_template[key]['syntactic'] = True
             if key not in order:
@@ -206,6 +209,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self._editing_template['field_order'] = order
         return self._editing_template
 
+    @time_me
     def impose_order_to_inode(self):
         """ Prepare inode (ITemplateNode) to match data structure of this type of node
         ITemplateNode has parsed input from latex trees to rows of text or ITextNodes and
@@ -897,10 +901,12 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     # ### MOUSE - kataja ########################################################
 
     def open_embed(self):
-        """ Tell ui to open a menu relevant for this node type -- overloaded by specialized nodes
+        """ Tell ui to open an embedded edit, generated from
+        edit template or overridden.
         :return: None
         """
-        pass
+        ctrl.ui.start_editing_node(self)
+
 
     def double_click(self, event=None):
         """ Scene has decided that this node has been clicked
@@ -930,7 +936,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         if ctrl.is_selected(self):
             self.open_embed()
         else:
-            editor = ctrl.ui.get_constituent_edit_embed()
+            editor = ctrl.ui.get_node_edit_embed()
             ctrl.select(self)
             ctrl.ui.add_completion_suggestions(self)
             if editor and editor.isVisible():

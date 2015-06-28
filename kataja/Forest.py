@@ -666,7 +666,7 @@ class Forest(BaseModel):
         self.add_to_scene(gn)
 
         # Cosmetic improvemet, if gloss is created by editing the gloss text field. (not present anymore)
-        # ee = ctrl.ui.get_constituent_edit_embed()
+        # ee = ctrl.ui.get_node_edit_embed()
         # if ee and ee.isVisible():
         #     pos = ee.master_edit.pos()
         #     scene_pos = ctrl.graph_view.mapToScene(ee.mapToParent(pos))

@@ -38,10 +38,10 @@ class BaseConstituent(IConstituent):
 
     # info for kataja engine
     short_name = "BC"
-    visible = {'label': {'order': 1}}
-    editable = {'label': {'order': 1}}
-    addable = {'parts': {'check_before': 'can_add_part', 'add': 'add_part', 'order': 1},
-               'features': {'check_before': 'can_add_feature', 'add': 'add_feature', 'order': 2}
+    visible = {'label': {'order': 10}}
+    editable = {'label': {'order': 10}}
+    addable = {'parts': {'check_before': 'can_add_part', 'add': 'add_part', 'order': 10},
+               'features': {'check_before': 'can_add_feature', 'add': 'add_feature', 'order': 20}
                }
 
     def __init__(self, label='', parts=None, save_key='', features=None, head=None, **kw):

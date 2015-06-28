@@ -179,7 +179,8 @@ class LeftFirstTree(BaseVisualization):
             x = offset_x
             for x_i, node in enumerate(row):
                 if node and isinstance(node, BaseConstituentNode):
-
+                    if not node.inner_rect:
+                        node.update_bounding_rect()
                     height_spillover = node.inner_rect.bottom() - edge_height
                     if height_spillover > extra_height:
                         extra_height = math.ceil(height_spillover / float(edge_height)) * edge_height

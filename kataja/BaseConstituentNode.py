@@ -440,11 +440,6 @@ class BaseConstituentNode(Node):
             # self.paint_scope_rect(painter, rect)
         # Node.paint(self, painter, option, widget)
 
-
-    def open_embed(self):
-        """ """
-        ctrl.ui.start_constituent_editing(self)
-
     # ### Selection ########################################################
 
     def refresh_selection_status(self, selected):

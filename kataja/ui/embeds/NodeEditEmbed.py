@@ -6,7 +6,6 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from kataja.parser.LatexToINode import parse_field
 from kataja.ui.embeds.UIEmbed import UIEmbed, EmbeddedLineEdit
 from kataja.singletons import qt_prefs, ctrl
-from kataja.parser import INodeToLabelDocument
 from kataja.parser import INodeToLatex
 import kataja.globals as g
 
@@ -43,6 +42,9 @@ class NodeEditEmbed(UIEmbed):
         ui_p = QtGui.QPalette()
         ui_p.setColor(QtGui.QPalette.Text, ctrl.cm.ui())
 
+        ui_s = QtGui.QPalette()
+        ui_s.setColor(QtGui.QPalette.Text, ctrl.cm.secondary())
+
         f = QtGui.QFont(qt_prefs.font(g.MAIN_FONT))
         f.setPointSize(f.pointSize() * 2)
 
@@ -50,7 +52,6 @@ class NodeEditEmbed(UIEmbed):
         field_order = ed['field_order']
         self.fields = {}
         hlayout = None
-
 
         # Generate edit fields based on data, expand this as necessary
 
@@ -61,12 +62,14 @@ class NodeEditEmbed(UIEmbed):
             tt = d.get('tooltip', '')
             itype = d.get('input_type', 'text')
             prefill = d.get('prefill', '')
+            syntactic = d.get('syntactic', False)
             field = None
             if itype == 'text':
                 width = d.get('width', 140)
                 field = EmbeddedLineEdit(self, tip=tt, font=f, prefill=prefill)
                 field.setMaximumWidth(width)
-
+                if syntactic:
+                    field.setPalette(ui_s)
             if field:
                 align = d.get('align', 'newline')
                 if align == 'newline':
@@ -74,8 +77,13 @@ class NodeEditEmbed(UIEmbed):
                         layout.addLayout(hlayout)
                     hlayout = QtWidgets.QHBoxLayout()
                 hlayout.addWidget(field)
+                self.fields[field_name] = field
                 ui_name = d.get('name', field_name)
-                label = make_label(ui_name, self, hlayout, tt, field, ui_p)
+                if syntactic:
+                    palette = ui_s
+                else:
+                    palette = ui_p
+                label = make_label(ui_name, self, hlayout, tt, field, palette)
                 hlayout.addWidget(label)
         if hlayout:
             layout.addLayout(hlayout)
@@ -83,7 +91,7 @@ class NodeEditEmbed(UIEmbed):
         self.enter_button = QtWidgets.QPushButton("↩")  # U+21A9 &#8617;
         self.enter_button.setMaximumWidth(20)
         self.enter_button.setParent(self)
-        ui_manager.connect_element_to_action(self.enter_button, 'edit_constituent_finished')
+        ui_manager.connect_element_to_action(self.enter_button, 'finish_editing_node')
         layout.addWidget(self.enter_button)
         self.update_fields()
 
@@ -106,7 +114,8 @@ class NodeEditEmbed(UIEmbed):
         return base + QtCore.QSize(40, 0)
 
     def after_appear(self):
-        """ Customizable calls for refreshing widgets that have drawing problems recovering from blur effect.
+        """ Customizable calls for refreshing widgets that have drawing problems recovering
+        from blur effect.
         :return:
         """
         pass
@@ -148,8 +157,17 @@ class NodeEditEmbed(UIEmbed):
         self.move(self.mapToParent(event.pos()) - self._drag_diff)
 
     def focus_to_main(self):
-        self.label_edit.setFocus()
+        """ Find the main element to focus in this embed.
+        :return:
+        """
+        # look for explicit focus in template definitions.
+        ed = self.node.get_editing_template()
+        for key, data in ed.items():
+            if 'focus' in data and data['focus']:
+                self.fields[key].setFocus()
+                return
+        # default to first field in field order
+        self.fields[ed['field_order'][0]].setFocus()
 
     def close(self):
-        # self.input_line_edit.setText('')
         UIEmbed.close(self)

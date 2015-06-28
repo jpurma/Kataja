@@ -116,7 +116,7 @@ class UIManager:
         self._rubber_band = None
         self._rubber_band_origin = None
         self._new_element_embed = None
-        self._constituent_edit_embed = None
+        self._node_edit = None
         self._new_element_marker = None
         self._edge_label_embed = None
         self._overlay_buttons = {}
@@ -364,8 +364,8 @@ class UIManager:
             touch_area.update_position()
         if self._new_element_marker:
             self._new_element_marker.update_position()
-        if self._constituent_edit_embed:
-            self._constituent_edit_embed.update_position()
+        if self._node_edit:
+            self._node_edit.update_position()
 
     def delete_ui_elements_for(self, item):
         """
@@ -719,33 +719,32 @@ class UIManager:
 
     #### Constituent editing #########################################################
 
-    def get_constituent_edit_embed(self):
+    def get_node_edit_embed(self):
         """
 
 
         :return:
         """
-        return self._constituent_edit_embed
+        return self._node_edit
 
-    def start_constituent_editing(self, node):
+    def start_editing_node(self, node):
         """
 
         :param node:
         """
         np = node.pos()
-        if not self._constituent_edit_embed:
-            self._constituent_edit_embed = NodeEditEmbed(self.main.graph_view, self, node, np)
-        self._constituent_edit_embed.update_embed(scenePos=np, node=node)
-        self._constituent_edit_embed.wake_up()
+        if not self._node_edit:
+            self._node_edit = NodeEditEmbed(self.main.graph_view, self, node, np)
+        self._node_edit.update_embed(scenePos=np, node=node)
+        self._node_edit.wake_up()
 
-
-    def close_constituent_editing(self):
+    def close_node_editing(self):
         """
 
 
         """
-        if self._constituent_edit_embed and self._constituent_edit_embed.isVisible():
-            self._constituent_edit_embed.blur_away()
+        if self._node_edit and self._node_edit.isVisible():
+            self._node_edit.blur_away()
 
 
     # ### Touch areas #####################################################################
