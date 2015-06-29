@@ -68,8 +68,10 @@ class UIEmbed(QtWidgets.QWidget):
     :param scenePos:
     """
 
-    def __init__(self, parent, ui_manager, scenePos):
+    def __init__(self, parent, ui_manager, ui_key, host):
         QtWidgets.QWidget.__init__(self, parent)
+        self.ui_key = ui_key
+        self.host = host
         self.ui_manager = ui_manager
         self.setPalette(ctrl.cm.get_qt_palette_for_ui())
         self._drag_diff = None
@@ -95,7 +97,6 @@ class UIEmbed(QtWidgets.QWidget):
         # Remember to add top_row_layout to your layout
 
         # Remember Johnny fucking Marr
-
 
     def update_embed(self, scenePos=None):
 
@@ -158,12 +159,19 @@ class UIEmbed(QtWidgets.QWidget):
         if self._timeline.direction() == QtCore.QTimeLine.Backward:
             self.hide()
             self.close()
+            self.after_close()
         else:
             print('finished appearing, calling update')
             self.after_appear()
 
     def after_appear(self):
         """ Customizable calls for refreshing widgets that have drawing problems recovering from blur effect.
+        :return:
+        """
+        pass
+
+    def after_close(self):
+        """ Customizable call for removing the widget after the blur away effect is finished.
         :return:
         """
         pass
@@ -187,6 +195,8 @@ class UIEmbed(QtWidgets.QWidget):
             self._effect.setEnabled(True)
             self._timeline.setDirection(QtCore.QTimeLine.Backward)
             self._timeline.start()
+        else:
+            self.close()
 
     def focus_to_main(self):
         pass

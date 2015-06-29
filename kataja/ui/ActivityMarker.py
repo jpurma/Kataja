@@ -11,7 +11,7 @@ class ActivityMarker(QtWidgets.QGraphicsRectItem):
 
     """
 
-    def __init__(self, parent=None):
+    def __init__(self, ui_key):
         """
 
         :param parent:
@@ -20,6 +20,7 @@ class ActivityMarker(QtWidgets.QGraphicsRectItem):
         self.setBrush(QtGui.QColor(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
         self.setPen(qt_prefs.no_pen)  # QtCore.Qt.NoPen
         self.setZValue(100)
+        self.ui_key = ui_key
 
     def show(self):
         """

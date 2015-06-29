@@ -9,8 +9,9 @@ class FadingSymbol(QtWidgets.QGraphicsPixmapItem):
 
     """
 
-    def __init__(self, symbol, host, ui_manager, place='bottom_right'):
+    def __init__(self, symbol, host, ui_manager, ui_key, place='bottom_right'):
         QtWidgets.QGraphicsPixmapItem.__init__(self)
+        self.ui_key = ui_key
         self.setPixmap(symbol)
         self.host = host
         self.place = place

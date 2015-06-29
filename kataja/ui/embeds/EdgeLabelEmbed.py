@@ -11,7 +11,7 @@ __author__ = 'purma'
 
 class EdgeLabelEmbed(UIEmbed):
     def __init__(self, parent, ui_manager, scenePos):
-        UIEmbed.__init__(self, parent, ui_manager, scenePos)
+        UIEmbed.__init__(self, parent, ui_manager, ui_key)
         self.marker = None
         self.edge = None
         layout = QtWidgets.QVBoxLayout()

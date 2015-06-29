@@ -51,7 +51,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
         """
         return 'touch_area_%s_%s' % (type, host.save_key)
 
-    def __init__(self, host, type):
+    def __init__(self, host, type, ui_key):
         """
 
         :param ConstituentNode host:
@@ -62,6 +62,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
         QtWidgets.QGraphicsItem.__init__(self)
         self._dragging = False
         self.host = host
+        self.ui_key = ui_key
         self._path = None
         self.start_point = None
         self.end_point = None

@@ -8,8 +8,9 @@ from kataja.singletons import ctrl, prefs
 class MessageItem(QtWidgets.QGraphicsTextItem):
     """ Floating messages at bottom of the screen """
 
-    def __init__(self, msg, log_panel, ui_manager):
+    def __init__(self, msg, log_panel, ui_manager, ui_key):
         QtWidgets.QGraphicsTextItem.__init__(self, msg)
+        self.ui_key = ui_key
         self._messages = [msg]
         self._msg_string = msg
         self.setPlainText('\n' + self._msg_string)

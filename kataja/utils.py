@@ -109,7 +109,7 @@ def load_features(obj, key, d):
     """
     if (isinstance(obj, str) or isinstance(obj, str)) and obj.startswith('_*'):
         if isinstance(d[obj], str) or isinstance(d[obj], str):
-            classname = obj.split('_')[1][1:]  # _*[classname]_id
+            classname = obj.split('_')[1][1:]  # _*[classname]ui_key
             obj = eval(classname + '()')
             d[obj] = load_features(obj, obj, d)
         obj = d[obj]

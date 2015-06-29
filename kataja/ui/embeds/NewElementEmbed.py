@@ -55,8 +55,9 @@ class NewElementMarker(QtWidgets.QGraphicsItem):
     :param scenePos:
     """
 
-    def __init__(self, scenePos, embed):
+    def __init__(self, scenePos, embed, ui_key):
         QtWidgets.QGraphicsItem.__init__(self)
+        self.ui_key = ui_key
         self.start_point = None
         self.end_point = None
         self.embed = embed
@@ -95,8 +96,8 @@ class NewElementMarker(QtWidgets.QGraphicsItem):
 
 
 class NewElementEmbed(UIEmbed):
-    def __init__(self, parent, ui_manager, scenePos):
-        UIEmbed.__init__(self, parent, ui_manager, scenePos)
+    def __init__(self, parent, ui_manager, ui_key):
+        UIEmbed.__init__(self, parent, ui_manager, ui_key, None)
         self.marker = None
         layout = QtWidgets.QVBoxLayout()
         self.new_arrow_button = QtWidgets.QPushButton(" &Arrow")
@@ -147,6 +148,11 @@ class NewElementEmbed(UIEmbed):
         UIEmbed.finished_effect_animation(self)
         if self._timeline.direction() == QtCore.QTimeLine.Backward and self.marker:
             ctrl.ui.clean_up_creation_dialog()
+
+    def get_marker_points(self):
+        p1 = self.marker.pos()
+        p2 = self.marker.mapToScene(self.marker.end_point)
+        return p1, p2
 
 
 # line = new QFrame(w);

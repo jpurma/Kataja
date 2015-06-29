@@ -5,7 +5,7 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 from kataja.singletons import qt_prefs, ctrl, prefs
 from kataja.ui.panels.UIPanel import UIPanel
 import kataja.globals as g
-from kataja.ui.OverlayButton import OverlayButton
+from kataja.ui.OverlayButton import PanelButton
 
 __author__ = 'purma'
 
@@ -35,16 +35,17 @@ class DraggableNodeFrame(QtWidgets.QFrame):
         self.setPalette(ctrl.cm.palette_from_key(color_key))
         self.setFont(qt_prefs.font(settings[key]['font']))
 
-        self.add_button = OverlayButton(qt_prefs.add_icon, None, 'panel', text='Add ' + name, parent=self,
-                                        size=24, color_key=color_key)
+        self.add_button = PanelButton(qt_prefs.add_icon, text='Add ' + name, parent=self,
+                                      size=24, color_key=color_key)
+        self.add_button.data = key
         self.add_button.setFixedSize(26, 26)
         ctrl.ui.connect_element_to_action(self.add_button, 'add_node', tooltip_suffix=name)
         hlayout.addWidget(self.add_button)
         self.label = QtWidgets.QLabel(name)
         self.label.setBuddy(self.add_button)
         hlayout.addWidget(self.label)
-        self.conf_button = OverlayButton(qt_prefs.settings_icon, None, 'panel',
-                                         text='Modify %s behaviour' % name, parent=self, size=16)
+        self.conf_button = PanelButton(qt_prefs.settings_icon, text='Modify %s behaviour' % name,
+                                       parent=self, size=16)
         self.conf_button.setFixedSize(26, 26)
         hlayout.addWidget(self.conf_button, 1, QtCore.Qt.AlignRight)
         self.setLayout(hlayout)
@@ -100,20 +101,6 @@ class NodesPanel(UIPanel):
         :return:
         """
         pass
-
-    def which_add_button_was_clicked(self):
-        for key, frame in self.node_frames.items():
-            if frame.add_button.just_triggered:
-                frame.add_button.just_triggered = False
-                return key, frame.add_button
-        return None
-
-    def which_settings_button_was_clicked(self):
-        for key, frame in self.node_frames.items():
-            if frame.conf_button.just_triggered:
-                frame.conf_button.just_triggered = False
-                return key, frame.conf_button
-        return None
 
     def update_colors(self):
         """

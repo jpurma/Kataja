@@ -8,8 +8,7 @@ import kataja.globals as g
 from kataja.ui.panels.UIPanel import UIPanel
 from kataja.ui.DrawnIconEngine import DrawnIconEngine
 from kataja.ui.ColorSwatchIconEngine import ColorSwatchIconEngine
-from kataja.ui.OverlayButton import OverlayButton
-
+from kataja.ui.OverlayButton import PanelButton
 
 __author__ = 'purma'
 
@@ -203,8 +202,8 @@ class EdgesPanel(UIPanel):
         ui_manager.connect_element_to_action(self.color_selector, 'change_edge_color')
         hlayout.addWidget(self.color_selector)
 
-        self.edge_options = OverlayButton(qt_prefs.settings_icon, None, 'panel', text='More line options', parent=self,
-                                          size=16)
+        self.edge_options = PanelButton(qt_prefs.settings_icon, text='More line options',
+                                        parent=self, size=16)
         self.edge_options.setCheckable(True)
         ui_manager.ui_buttons['line_options'] = self.edge_options
         ui_manager.connect_element_to_action(self.edge_options, 'toggle_line_options')
@@ -214,7 +213,6 @@ class EdgesPanel(UIPanel):
         inner.setLayout(layout)
         self.setWidget(inner)
         self.finish_init()
-
 
     def selected_objects_changed(self):
         """ Called after ctrl.selection has changed. Prepare panel to use selection as scope

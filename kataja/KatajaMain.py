@@ -239,36 +239,6 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
 
     # ## Menu management #######################################################
 
-    def action_triggered(self):
-        """ Trigger action with parameters received from action data object and designated UI element
-        :return: None
-        """
-        # -- Redraw and undo flags: these are on by default, can be switched off by action method
-        ctrl.action_redraw = True
-        # ---------------------------
-        sender = self.sender()
-        key = sender.data()
-        data = self.ui_manager.actions[key]
-        args = list(data.get('args', []))
-        undoable = data.get('undoable', True)
-        element = self.ui_manager.get_element_value(data.get('ui_element', None))
-        if element:
-            args += element
-        print("Doing action '%s' with method '%s' and with args: %s" % (key, data['method'], str(args)))
-
-        # Disable undo if necessary
-        remember_undo_state = ctrl.undo_disabled
-        if not undoable:
-            ctrl.undo_disabled = True
-
-        # Call method
-        data['method'](*args)
-
-        # Restore undo state to what it was
-        if not undoable:
-            ctrl.undo_disabled = remember_undo_state
-        self.action_finished(m=data.get('command', ''), undoable=undoable)
-
     def action_finished(self, m='', undoable=True):
         """ Write action to undo stack, report back to user and redraw trees if necessary
         :param m: message for undo

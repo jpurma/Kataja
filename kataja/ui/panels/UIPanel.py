@@ -38,7 +38,7 @@ from PyQt5 import QtCore, QtWidgets, QtGui
 # return QtGui.QIcon.paint(self, painter, kwargs)
 from kataja.singletons import ctrl, qt_prefs
 import kataja.globals as g
-from kataja.ui.OverlayButton import OverlayButton
+from kataja.ui.OverlayButton import PanelButton
 
 
 # Hey! This is only the top row title, not the actual UIPanel(DockWidget)! It is down below.
@@ -64,19 +64,20 @@ class PanelTitle(QtWidgets.QWidget):
         layout.setContentsMargins(0, 2, 0, 2)
         layout.setSpacing(0)
         layout.minimumSize = self.sizeHint
-        close_button = OverlayButton(qt_prefs.close_icon, None, 'panel', text='Close panel', parent=self, size=12)
+        close_button = PanelButton(qt_prefs.close_icon, text='Close panel', parent=self, size=12)
         close_button.setMaximumWidth(16)
-        self.panel.ui_manager.connect_element_to_action(close_button, panel.get_visibility_action())
+        self.panel.ui_manager.connect_element_to_action(close_button, 'toggle_panel_%s' %
+                                                        self.panel.ui_key)
         layout.addWidget(close_button)
         self.setMinimumSize(self.preferred_size)
-        self.fold_button = OverlayButton(qt_prefs.fold_icon, None, 'panel', text='Minimize this panel', parent=self,
-                                         size=12)
+        self.fold_button = PanelButton(qt_prefs.fold_icon, text='Minimize this panel', parent=self,
+                                       size=12)
         self.fold_button.setMaximumWidth(16)
-        self.panel.ui_manager.connect_element_to_action(self.fold_button, panel.get_fold_action())
-        self.pin_button = OverlayButton(qt_prefs.pin_drop_icon, None, 'panel', text='Dock this panell', parent=self,
-                                        size=12)
+        self.panel.ui_manager.connect_element_to_action(self.fold_button, 'toggle_fold_panel')
+        self.pin_button = PanelButton(qt_prefs.pin_drop_icon, text='Dock this panell', parent=self,
+                                      size=12)
         self.pin_button.setMaximumWidth(16)
-        self.panel.ui_manager.connect_element_to_action(self.pin_button, panel.get_pin_action())
+        self.panel.ui_manager.connect_element_to_action(self.pin_button, 'pin_panel')
         layout.addWidget(self.pin_button)
 
         self.setContentsMargins(0, 0, 0, 0)
@@ -115,7 +116,7 @@ class UIPanel(QtWidgets.QDockWidget):
         # self.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed))
         self.folded = folded
         self.name = name
-        self._id = key
+        self.ui_key = key
         self._last_position = None
         self.ui_manager = ui_manager
         self.default_position = default_position
@@ -149,13 +150,8 @@ class UIPanel(QtWidgets.QDockWidget):
     # print 'UIPanel %s floating: %s' % (self, floating)
 
     def get_visibility_action(self):
-        return self.ui_manager.qt_actions['toggle_panel_%s' % self._id]
+        return self.ui_manager.qt_actions['toggle_panel_%s' % self.ui_key]
 
-    def get_fold_action(self):
-        return self.ui_manager.qt_actions['toggle_fold_panel_%s' % self._id]
-
-    def get_pin_action(self):
-        return self.ui_manager.qt_actions['pin_panel_%s' % self._id]
 
 
     def set_folded(self, folded):

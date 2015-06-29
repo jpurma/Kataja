@@ -25,8 +25,8 @@ def make_label(text, parent=None, layout=None, tooltip='', buddy=None, palette=N
 
 
 class FeatureEditEmbed(UIEmbed):
-    def __init__(self, parent, ui_manager, node, scenePos):
-        UIEmbed.__init__(self, parent, ui_manager, scenePos)
+    def __init__(self, parent, ui_manager, ui_key, node):
+        UIEmbed.__init__(self, parent, ui_manager, ui_key, node)
         layout = QtWidgets.QVBoxLayout()
         self.setLayout(layout)
 

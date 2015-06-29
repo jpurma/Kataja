@@ -28,16 +28,15 @@ class NodeEditEmbed(UIEmbed):
     :param parent:
     :param ui_manager:
     :param node:
-    :param scenePos:
+    :param scene_pos:
     """
 
-    def __init__(self, parent, ui_manager, node, scenePos):
-        UIEmbed.__init__(self, parent, ui_manager, scenePos)
+    def __init__(self, parent, ui_manager, ui_key, node):
+        UIEmbed.__init__(self, parent, ui_manager, ui_key, node)
         layout = QtWidgets.QVBoxLayout()
         self.setLayout(layout)
         layout.addLayout(self.top_row_layout)
         layout.addSpacing(4)
-        self.node = node
 
         ui_p = QtGui.QPalette()
         ui_p.setColor(QtGui.QPalette.Text, ctrl.cm.ui())
@@ -54,7 +53,6 @@ class NodeEditEmbed(UIEmbed):
         hlayout = None
 
         # Generate edit fields based on data, expand this as necessary
-
         for field_name in field_order:
             d = ed[field_name]
             if d.get('hidden', False):
@@ -94,16 +92,17 @@ class NodeEditEmbed(UIEmbed):
         ui_manager.connect_element_to_action(self.enter_button, 'finish_editing_node')
         layout.addWidget(self.enter_button)
         self.update_fields()
+        self.update_position()
 
     def update_fields(self):
         """ Update field values on embed form based on template """
-        ed = self.node.get_editing_template()
+        ed = self.host.get_editing_template()
         for field_name, field in self.fields.items():
             d = ed[field_name]
             if 'getter' in d:
-                value = getattr(self.node, d['getter'])()
+                value = getattr(self.host, d['getter'])()
             else:
-                value = getattr(self.node, field_name, '')
+                value = getattr(self.host, field_name, '')
             itype = d.get('input_type', 'text')
             if itype == 'text':
                 parsed = INodeToLatex.parse_inode_for_field(value)
@@ -113,25 +112,21 @@ class NodeEditEmbed(UIEmbed):
         base = QtWidgets.QWidget.sizeHint(self)
         return base + QtCore.QSize(40, 0)
 
-    def after_appear(self):
-        """ Customizable calls for refreshing widgets that have drawing problems recovering
-        from blur effect.
+    def after_close(self):
+        """ Try to remove this embed after closing
         :return:
         """
-        pass
+        self.ui_manager.remove_edit_embed(self)
 
     def update_position(self):
-        sx, sy, sz = self.node.current_position
-        p = self.parent().mapFromScene(sx, sy)
-        px, py = p.x(), p.y()
-        py -= self.assumed_height / 2
-        self.move(px, py)
+        sx, sy, sz = self.host.current_position
+        self.update_embed(scenePos = QtCore.QPointF(sx, sy))
 
     def submit_values(self):
         """ Submit field values back to object based on template
         :return:
         """
-        ed = self.node.get_editing_template()
+        ed = self.host.get_editing_template()
         for field_name, field in self.fields.items():
             d = ed[field_name]
             itype = d.get('input_type', 'text')
@@ -140,17 +135,18 @@ class NodeEditEmbed(UIEmbed):
             else:
                 raise NotImplementedError
             if 'setter' in d:
-                getattr(self.node, d['setter'])(value)
+                getattr(self.host, d['setter'])(value)
             else:
-                setattr(self.node, field_name, value)
-        self.node.update_label()
+                setattr(self.host, field_name, value)
+        self.host.update_label()
 
-    def update_embed(self, scenePos=None, node=None):
-        if node:
-            self.node = node
-        if self.node:
+    def update_embed(self, scenePos=None):
+        """ Update position and field values for embed.
+        :param scenePos:
+        """
+        if self.host:
             self.update_fields()
-            scene_pos = self.node.pos()
+            scene_pos = self.host.pos()
             UIEmbed.update_embed(self, scenePos=scene_pos)
 
     def mouseMoveEvent(self, event):
@@ -161,7 +157,7 @@ class NodeEditEmbed(UIEmbed):
         :return:
         """
         # look for explicit focus in template definitions.
-        ed = self.node.get_editing_template()
+        ed = self.host.get_editing_template()
         for key, data in ed.items():
             if 'focus' in data and data['focus']:
                 self.fields[key].setFocus()

@@ -24,13 +24,31 @@ from kataja.singletons import ctrl, prefs
 import kataja.globals as g
 
 
-def _get_triggered_host():
-    host = None
-    for item in ctrl.ui.get_overlay_buttons():
-        if item.just_triggered:
-            item.just_triggered = False
-            host = item.host
-    return host
+def get_ui_container(qt_object):
+    """ Traverse up in widget hierarchy until object governed by UIManager is found. Return this.
+    :param qt_object:
+    :return:
+    """
+    if not qt_object:
+        return None
+    if hasattr(qt_object, 'ui_key'):
+        return qt_object
+    else:
+        p = qt_object.parent()
+        if p:
+            return get_ui_container(p)
+        else:
+            return None
+
+
+def get_host(sender):
+    """ Get the Kataja object that this UI element is about, the 'host' element.
+    :param sender:
+    :return:
+    """
+    container = get_ui_container(sender)
+    if container:
+        return container.host
 
 a = {}
 
@@ -44,6 +62,7 @@ def toggle_panel(panel_id):
     :return: None
     """
     panel = ctrl.ui.get_panel(panel_id)
+
     if panel:
         if panel.isVisible():
             panel.close()
@@ -55,23 +74,6 @@ def toggle_panel(panel_id):
         panel.setVisible(True)
         panel.set_folded(False)
 
-
-def toggle_fold_panel(panel_id):
-    """ Fold panel into label line or reveal the whole panel.
-    :param panel_id: enum of panel identifiers (str)
-    :return: None
-    """
-    panel = ctrl.ui.get_panel(panel_id)
-    panel.set_folded(not panel.folded)
-
-
-def pin_panel(panel_id):
-    """ Put panel back to panel dock area.
-    :param panel_id: enum of panel identifiers (str)
-    :return: None
-    """
-    panel = ctrl.ui.get_panel(panel_id)
-    panel.pin_to_dock()
 
 
 #### Actions from actions.py ######################################################
@@ -531,6 +533,40 @@ a['select_order_attribute'] = {
 # View ####
 
 
+
+def toggle_fold_panel(sender):
+    """ Fold panel into label line or reveal the whole panel.
+    :param panel_id: enum of panel identifiers (str)
+    :return: None
+    """
+    panel = get_ui_container(sender)
+    if panel:
+        panel.set_folded(not panel.folded)
+
+a['toggle_fold_panel'] = {'command': 'Fold panel',
+                          'method': toggle_fold_panel,
+                          'sender_arg': True,
+                          'checkable': True,
+                          'undoable': False,
+                          'tooltip': "Minimize this panel"}
+
+
+def pin_panel(sender):
+    """ Put panel back to panel dock area.
+    :param panel_id: enum of panel identifiers (str)
+    :return: None
+    """
+    panel = get_ui_container(sender)
+    if panel:
+        panel.pin_to_dock()
+
+a['pin_panel'] = {'command': 'Pin to dock',
+                  'method': pin_panel,
+                  'sender_arg': True,
+                  'undoable': False,
+                  'tooltip': "Pin to dock"}
+
+
 def change_colors():
     """ DEPRECATED change colors -action (shift-c)
     :return: None
@@ -860,14 +896,14 @@ def change_curvature(dim, value=0):
                 ctrl.forest.settings.edge_shape_settings(panel.scope, 'rel_dy', value * .01)
             else:
                 ctrl.forest.settings.edge_shape_settings(panel.scope, 'fixed_dy', value)
-        elif dim == 'r':
+        elif dim == 'r': # reset
             ctrl.forest.settings.edge_shape_settings(panel.scope, 'rel_dx', g.DELETE)
             ctrl.forest.settings.edge_shape_settings(panel.scope, 'rel_dy', g.DELETE)
             ctrl.forest.settings.edge_shape_settings(panel.scope, 'fixed_dx', g.DELETE)
             ctrl.forest.settings.edge_shape_settings(panel.scope, 'fixed_dy', g.DELETE)
             ctrl.forest.settings.edge_shape_settings(panel.scope, 'relative', g.DELETE)
             options_panel.update_panel()
-        elif dim == 's':
+        elif dim == 's': # toggle between relative and fixed
             ctrl.forest.settings.edge_shape_settings(panel.scope, 'relative', value == 'relative')
             options_panel.update_panel()
         else:
@@ -914,20 +950,18 @@ a['edge_asymmetry'] = {
 }
 
 
-def change_visualization(i=None):
+def change_visualization(sender, visualization_key=None):
     """ Switch the visualization being used.
-    :param i: (index, name) of selected visualization in relevant panel. If None, then check if the action sender
-     has that information.
+
     :return: None
     """
-    visualization_key = None
-    if i is None:
-        visualization_key = str(ctrl.main.sender().text())
-        ctrl.ui.update_field('visualization_selector', visualization_key)
-    elif isinstance(i, tuple):
-        i, visualization_key = i
+    print('change visualization: ', sender, visualization_key)
+    if visualization_key is None and isinstance(sender, QtWidgets.QComboBox):
+        visualization_key = str(sender.currentData())
         action = ctrl.ui.qt_actions[action_key(visualization_key)]
         action.setChecked(True)
+    else:
+        ctrl.ui.update_field('visualization_selector', visualization_key)
     if visualization_key:
         ctrl.forest.change_visualization(visualization_key)
         ctrl.add_message(visualization_key)
@@ -935,26 +969,26 @@ def change_visualization(i=None):
 a['change_visualization'] = {
     'command': 'Change visualization algorithm',
     'method': change_visualization,
-    'selection': 'visualization_selector',
+    'sender_arg': True,
+    'exclusive': True,
     'tooltip': 'Change visualization algorithm'
 }
 
 
-def add_node(ntype=None):
+def add_node(sender, ntype=None):
     """ Generic add node, gets the node type as an argument.
     :param ntype: node type (str/int, see globals), if not provided, evaluates which add_node button was clicked.
     :return: None
     """
     if ntype is None:
         panel = ctrl.ui.get_panel(g.NODES)
-        clicked = panel.which_add_button_was_clicked()
-        if clicked:
-            key, button = clicked
+        if sender:
             ctrl.forest.create_empty_node(pos=QtCore.QPoint(random.random() * 60 - 25, random.random() * 60 - 25),
-                                          give_label=True, node_type=key)
+                                          give_label=True, node_type=sender.data)
 
 a['add_node'] = {
     'command': 'Add node',
+    'sender_arg': True,
     'method': add_node,
     'tooltip': 'Add %s'}
 
@@ -963,7 +997,7 @@ def show_help_message():
     """ Dump keyboard shortcuts to console. At some point, make this to use dialog window instead.
     :return: None
     """
-    m ="""(h):------- KatajaMain commands ----------
+    m = """(h):------- KatajaMain commands ----------
     (left arrow/,):previous structure   (right arrow/.):next structure
     (1-9, 0): switch between visualizations
     (f):fullscreen/windowed mode
@@ -978,25 +1012,29 @@ a['help'] = {
     'shortcut': 'h'}
 
 
-def close_embeds():
-    """ If embedded menus (node creation / editing in place, etc.) are open, close them. This is expected behavior
-    for pressing 'esc'.
+def close_embeds(sender):
+    """ If embedded menus (node creation / editing in place, etc.) are open, close them.
+    This is expected behavior for pressing 'esc'.
+    :param sender:
     :return: None
     """
-    ctrl.ui.close_new_element_embed()
-    ctrl.ui.close_edge_label_editing()
-    ctrl.ui.close_node_editing()
+    embed = get_ui_container(sender)
+    if embed:
+        embed.blur_away()
 
 a['close_embed'] = {
     'command': 'Cancel',
     'method': close_embeds,
     'shortcut': 'Escape',
+    'undoable': False,
+    'sender_arg': True,
     'shortcut_context': 'parent_and_children'
 }
 
 
 def new_element_accept():
-    """ Create new element according to fields in this embed. Can create constituentnodes, features, arrows, etc.
+    """ Create new element according to fields in this embed. Can create constituentnodes,
+    features, arrows, etc.
     :return: None
     """
     type = ctrl.ui.get_new_element_type_selection()
@@ -1025,18 +1063,20 @@ a['new_element_enter_text'] = {
 }
 
 
-def create_new_arrow():
+def create_new_arrow(sender):
     """ Create a new arrow into embed menu's location
     :return: None
     """
     print("New arrow called")
-    p1, p2 = ctrl.ui.get_new_element_embed_points()
-    text = ctrl.ui.get_new_element_text()
+    embed = get_ui_container(sender)
+    p1, p2 = embed.get_marker_points()
+    text = embed.input_line_edit.text()
     ctrl.forest.create_arrow(p1, p2, text)
-    ctrl.ui.close_new_element_embed()
+    embed.blur_away()
 
 a['new_arrow'] = {
     'command': 'New arrow',
+    'sender_arg': True,
     'method':  create_new_arrow,
     'shortcut': 'a',
     'shortcut_context': 'parent_and_children'
@@ -1107,19 +1147,17 @@ a['change_edge_ending'] = {
     'method': change_edge_ending
 }
 
-def edge_disconnect():
+def edge_disconnect(sender):
     """ Remove connection between two nodes, by either cutting from the start or the end. This will result
     in a dangling edge, which should be either connected to another node or removed.
     :return: None
     """
     # Find the triggering edge
-    edge = None
-    role = None
-    for item in ctrl.ui.get_overlay_buttons():
-        if item.just_triggered:
-            item.just_triggered = False
-            edge = item.host
-            role = item.role
+    button = get_ui_container(sender)
+    if not button:
+        return
+    edge = button.host
+    role = button.role
     if not edge:
         return
     # Then do the cutting
@@ -1142,16 +1180,17 @@ def edge_disconnect():
 
 a['disconnect_edge'] = {
     'command': 'Disconnect',
+    'sender_arg': True,
     'method': edge_disconnect
 }
 
 
-def remove_merger():
+def remove_merger(sender):
     """ In cases where there another part of binary merge is removed, and a stub edge is left dangling,
     there is an option to remove the unnecessary merge -- it is the triggering host.
     :return: None
     """
-    node = _get_triggered_host()
+    node = get_host(sender)
     if not node:
         return
     ctrl.remove_from_selection(node)
@@ -1159,15 +1198,16 @@ def remove_merger():
 
 a['remove_merger'] = {
     'command': 'Remove merger',
+    'sender_arg': True,
     'method': remove_merger
 }
 
 
-def add_triangle():
+def add_triangle(sender):
     """ Turn triggering node into triangle node
     :return: None
     """
-    node = _get_triggered_host()
+    node = get_host(sender)
     if not node:
         return
     ctrl.add_message('folding in %s' % node.as_bracket_string())
@@ -1177,15 +1217,16 @@ def add_triangle():
 
 a['add_triangle'] = {
     'command': 'Add triangle',
+    'sender_arg': True,
     'method': add_triangle
 }
 
 
-def remove_triangle():
+def remove_triangle(sender):
     """ If triggered node is triangle node, restore it to normal
     :return: None
     """
-    node = _get_triggered_host()
+    node = get_host(sender)
     if not node:
         return
     ctrl.add_message('unfolding from %s' % node.as_bracket_string())
@@ -1194,25 +1235,25 @@ def remove_triangle():
 
 a['remove_triangle'] = {
     'command': 'Remove triangle',
+    'sender_arg': True,
     'method': remove_triangle
 }
 
 
-def finish_editing_node():
+def finish_editing_node(sender):
     """ Set the new values and close the constituent editing embed.
     :return: None
     """
-    embed = ctrl.ui.get_node_edit_embed()
-    if not embed.node:
-        ctrl.ui.close_node_editing()
-        return
-    embed.submit_values()
-    ctrl.ui.close_node_editing()
+    embed = get_ui_container(sender)
+    if embed.host:
+        embed.submit_values()
+    embed.blur_away()
 
 a['finish_editing_node'] = {
     'command': 'Apply changes',
     'method': finish_editing_node,
     'shortcut': 'Return',
+    'sender_arg': True,
     'shortcut_context': 'parent_and_children'
 }
 

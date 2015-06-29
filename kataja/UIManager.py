@@ -25,6 +25,7 @@ from collections import OrderedDict
 
 from PyQt5 import QtCore, QtWidgets, QtGui
 
+from kataja.KatajaAction import KatajaAction
 from kataja.KeyPressManager import ShortcutSolver, ButtonShortcutFilter
 from kataja.BaseConstituentNode import BaseConstituentNode
 from kataja.singletons import ctrl, prefs, qt_prefs
@@ -54,6 +55,7 @@ from kataja.ui.OverlayButton import OverlayButton
 from kataja.ui.panels.SymbolPanel import SymbolPanel
 from kataja.ui.panels.NodesPanel import NodesPanel
 from kataja.ui.embeds.NodeEditEmbed import NodeEditEmbed
+from utils import time_me
 
 NOTHING = 0
 SELECTING_AREA = 1
@@ -108,7 +110,7 @@ class UIManager:
         self.qt_actions = {}
         self._top_menus = {}
 
-        self._items = set()
+        self._items = {}
         # self.setSceneRect(view.parent.geometry())
         self._stretchline = None
         self._message = None
@@ -116,7 +118,7 @@ class UIManager:
         self._rubber_band = None
         self._rubber_band_origin = None
         self._new_element_embed = None
-        self._node_edit = None
+        self._node_edits = set()
         self._new_element_marker = None
         self._edge_label_embed = None
         self._overlay_buttons = {}
@@ -127,7 +129,6 @@ class UIManager:
         self.moving_things = set()
         self.touch_areas = set()
         self.symbols = set()
-        self.shortcut_solver = ShortcutSolver(self)
         self.button_shortcut_filter = ButtonShortcutFilter()
 
         self.activity_marker = None
@@ -151,11 +152,11 @@ class UIManager:
         ## Create UI panels, requires actions to exist
         self.create_panels()
 
-        self.activity_marker = ActivityMarker(self)
+        self.activity_marker = ActivityMarker('activity')
         self.add_ui(self.activity_marker)
         self.activity_marker.setPos(5, 5)
         self.activity_marker.show()
-        self.ui_activity_marker = ActivityMarker(self)
+        self.ui_activity_marker = ActivityMarker('ui_activity')
         self.add_ui(self.ui_activity_marker)
         self.ui_activity_marker.setPos(15, 5)
         self.ui_activity_marker.hide()
@@ -178,6 +179,15 @@ class UIManager:
         return self._ui_panels.get(panel_id, None)
 
 
+    def get_action_group(self, action_group_name):
+        """ Get action group with this name, or create one if it doesn't exist
+        :param action_group_name:
+        :return:
+        """
+        if action_group_name not in self._action_groups:
+            self._action_groups[action_group_name] = QtWidgets.QActionGroup(self.main)
+        return self._action_groups[action_group_name]
+
     def start_color_dialog(self, receiver, slot_name):
         if not self.color_dialog:
             self.color_dialog = QtWidgets.QColorDialog(self.main)
@@ -185,22 +195,33 @@ class UIManager:
         self.color_dialog.show()
         self.color_dialog.setCurrentColor(ctrl.cm.drawing())
 
-
     def add_ui(self, item):
         """
 
         :param item:
         """
-        self._items.add(item)
-        self.scene.addItem(item)
+        #print('adding ui item: ', item.ui_key)
+        self._items[item.ui_key] = item
+        if isinstance(item, QtWidgets.QGraphicsItem):
+            self.scene.addItem(item)
 
     def remove_ui(self, item):
         """
 
         :param item:
         """
-        self._items.remove(item)
-        self.scene.removeItem(item)
+        #print('removing ui item: ', item.ui_key)
+        if item.ui_key in self._items:
+            del self._items[item.ui_key]
+        if isinstance(item, QtWidgets.QGraphicsItem):
+            self.scene.removeItem(item)
+
+    def get_ui(self, ui_key):
+        """ Return a managed ui item
+        :param ui_key:
+        :return:
+        """
+        return self._items.get(ui_key, None)
 
     def store_panel_positions(self):
         """
@@ -213,16 +234,15 @@ class UIManager:
             # self.log_panel.setGeometry(0, self.size().height() - self.log_panel.height(),
             # self.log_panel.width(), self.log_panel.height())
 
-
     def update_all_fields(self):
         """
 
 
         """
+        print('*** ui update_all_fields called ***')
         self.update_field('treeset_counter',
                           '%s/%s' % (self.main.forest_keeper.current_index + 1, len(self.main.forest_keeper.forests)))
         self.update_field('visualization_selector', self.main.forest.visualization.name)
-
 
     def update_edge_shapes(self, edge_type, i):
         """
@@ -235,12 +255,12 @@ class UIManager:
         elif edge_type == g.FEATURE_EDGE:
             self.ui_buttons['feature_line_type'].setCurrentIndex(i)
 
-
     def update_field(self, field_name, value):
         """ Delegate updating action to panel that hosts that field
         :param field_name:
         :param value:
         """
+        print('update_field for "%s", value: "%s"' % (field_name, value))
         if field_name in self.ui_buttons:
             field = self.ui_buttons[field_name]
             parent = field.parent()
@@ -252,14 +272,6 @@ class UIManager:
                 print('did not found field %s from any ui panels' % field_name)
         else:
             print('did not found field %s from any ui panels' % field_name)
-
-
-    def update_panel(self, panel_id):
-        """
-
-        :param panel_id:
-        """
-        self._ui_panels[panel_id].update_fields()
 
     def restore_panel_positions(self):
         """
@@ -298,7 +310,6 @@ class UIManager:
             if panel:
                 panel.update_colors()
 
-
     def update_selections(self, selected=None, deselected=None):
         """ Many UI elements change mode depending on if object of specific type is selected
         :param selected:
@@ -328,7 +339,6 @@ class UIManager:
             self.update_overlay_buttons_for(item, True)
         self.update_touch_areas()
 
-
     # unused, but sane
     def focusable_elements(self):
         """
@@ -338,7 +348,6 @@ class UIManager:
         for e in self._items:
             if getattr(e, 'focusable', False) and e.isVisible():
                 yield e
-
 
     def clear_items(self):
         """
@@ -364,8 +373,8 @@ class UIManager:
             touch_area.update_position()
         if self._new_element_marker:
             self._new_element_marker.update_position()
-        if self._node_edit:
-            self._node_edit.update_position()
+        for edit in self._node_edits:
+            edit.update_position()
 
     def delete_ui_elements_for(self, item):
         """
@@ -385,6 +394,7 @@ class UIManager:
         """ Build menus and other actions that can be triggered by user based on actions.py"""
 
         main = self.main
+        shortcut_solver = ShortcutSolver(self)
 
         # dynamic actions are created based on other data e.g. available visualization plugins.
         # they are added into actions as everyone else, but there is a special mapping to find them later.
@@ -396,64 +406,38 @@ class UIManager:
         self._dynamic_action_groups['visualizations'] = []
         for name, vis in VISUALIZATIONS.items():
             key = action_key(name)
-            self.actions[key] = {'command': name, 'method': action_methods.change_visualization, 'shortcut': vis.shortcut,
-                                 'checkable': True, 'viewgroup': 'visualizations'}
+            d = {'command': name,
+                 'method': action_methods.change_visualization,
+                 'shortcut': vis.shortcut,
+                 'checkable': True,
+                 'sender_arg': True,
+                 'args': [name],
+                 'viewgroup': 'visualizations',
+                 'exclusive': True}
+            self.actions[key] = d
             self._dynamic_action_groups['visualizations'].append(key)
 
         self._dynamic_action_groups['panels'] = []
         for panel_key, panel_data in PANELS.items():
             key = 'toggle_panel_%s' % panel_key
-            self.actions[key] = {'command': panel_data['name'], 'method': action_methods.toggle_panel, 'checkable': True,
-                                 'action_group': 'Panels', 'args': [panel_key], 'context': 'ui', 'no_undo': True,
-                                 'tooltip': "Close this panel"}
+            d = {'command': panel_data['name'],
+                 'method': action_methods.toggle_panel,
+                 'checkable':  True,
+                 'viewgroup': 'Panels',
+                 'args': [panel_key],
+                 'undoable': False,
+                 'exclusive': False,
+                 'tooltip': "Close this panel"}
+            self.actions[key] = d
             self._dynamic_action_groups['panels'].append(key)
-            key = 'toggle_fold_panel_%s' % panel_key
-            self.actions[key] = {'command': 'Fold %s' % panel_data['name'], 'method': action_methods.toggle_fold_panel,
-                                 'checkable': True,
-                                 'action_group': 'Panels', 'args': [panel_key], 'context': 'ui', 'no_undo': True,
-                                 'tooltip': "Minimize this panel"}
-            key = 'pin_panel_%s' % panel_key
-            self.actions[key] = {'command': 'Pin to dock %s' % panel_data['name'], 'method': action_methods.pin_panel,
-                                 'action_group': 'Panels', 'args': [panel_key], 'context': 'ui', 'no_undo': True,
-                                 'tooltip': "Pin to dock"}
-
-
         # ## Create actions
         self._action_groups = {}
         self.qt_actions = {}
 
         for key, data in self.actions.items():
-            act = QtWidgets.QAction(data['command'], main)
-            # noinspection PyUnresolvedReferences
-            act.triggered.connect(main.action_triggered)
-            act.setData(key)
-            shortcut = data.get('shortcut', None)
-            # if action has shortcut_context, it shouldn't have global shortcut
-            # in these cases shortcut is tied to ui_element.
-            if shortcut:
-                act.setShortcut(QtGui.QKeySequence(shortcut))
-                scs = data.get('shortcut_context', None)
-                if scs == 'parent_and_children':
-                    sc = QtCore.Qt.WidgetWithChildrenShortcut
-                else:
-                    sc = QtCore.Qt.ApplicationShortcut
-                act.setShortcutContext(sc)
-            viewgroup = data.get('viewgroup', None)
-            if viewgroup:
-                if viewgroup not in self._action_groups:
-                    self._action_groups[viewgroup] = QtWidgets.QActionGroup(main)
-                act.setActionGroup(self._action_groups[viewgroup])
-            checkable = data.get('checkable', None)
-            if checkable:
-                act.setCheckable(True)
-            tooltip = data.get('tooltip', None)
-            if tooltip:
-                act.setToolTip(tooltip)
-                act.setStatusTip(tooltip)
-            self.qt_actions[key] = act
-            act.installEventFilter(self.shortcut_solver)
-            main.addAction(act)
-
+            action = KatajaAction(key, **data)
+            self.qt_actions[key] = action
+            main.addAction(action)
 
     def create_menus(self):
         """ Put actions to menus. Menu structure is defined at the top of this file.
@@ -537,9 +521,7 @@ class UIManager:
         self._ui_panels[id] = new_panel
         return new_panel
 
-
     def connect_element_to_action(self, element, action, tooltip_suffix=''):
-
         """
 
         :param element:
@@ -547,42 +529,8 @@ class UIManager:
         :param tooltip_suffix:
         """
         if isinstance(action, str):
-            action_key = action
-            action = self.qt_actions[action_key]
-        else:
-            action_key = action.data()
-        action_data = self.actions[action_key]
-        tooltip = action_data.get('tooltip', None)
-        action_data['ui_element'] = element
-        if tooltip:
-            if tooltip_suffix:
-                element.setStatusTip(tooltip % tooltip_suffix)
-                element.setToolTip(tooltip % tooltip_suffix)
-            else:
-                element.setStatusTip(tooltip)
-                element.setToolTip(tooltip)
-        shortcut = action_data.get('shortcut', None)
-        shortcut_context = action_data.get('shortcut_context', None)
-        if shortcut and shortcut_context:
-            # element shortcuts are available only when element is visible
-            element.setShortcut(QtGui.QKeySequence(shortcut))
-            # there are still possibility that e.g. two panels that read enter or esc are visible.
-            # button_shortcut_filter should decide between these.
-            element.installEventFilter(self.button_shortcut_filter)
-        if isinstance(element, OverlayButton):
-            element.connect_to_action(action)
-            element.setFocusPolicy(QtCore.Qt.TabFocus)
-        elif isinstance(element, QtWidgets.QAbstractButton):
-            element.clicked.connect(action.trigger)
-            element.setFocusPolicy(QtCore.Qt.TabFocus)
-        elif isinstance(element, QtWidgets.QComboBox):
-            element.activated.connect(action.trigger)
-            element.setFocusPolicy(QtCore.Qt.TabFocus)
-        elif isinstance(element, QtWidgets.QAbstractSpinBox):
-            element.valueChanged.connect(action.trigger)
-        elif isinstance(element, QtWidgets.QCheckBox):
-            element.stateChanged.connect(action.trigger)
-        self.actions[action_key] = action_data
+            action = self.qt_actions[action]
+        action.connect_element(element, tooltip_suffix)
 
     def get_element_value(self, element):
         """
@@ -604,7 +552,6 @@ class UIManager:
             args.append(element.value())
         return args
 
-
     def get_selector_value(self, selector):
         """
 
@@ -614,27 +561,7 @@ class UIManager:
         i = selector.currentIndex()
         return selector.itemData(i)
 
-
     #### Embedded menus ################################
-
-
-    def get_new_element_embed_points(self):
-        """
-
-
-        :return:
-        """
-        p1 = self._new_element_marker.pos()
-        p2 = self._new_element_marker.mapToScene(self._new_element_marker.end_point)
-        return p1, p2
-
-    def get_new_element_text(self):
-        """
-
-
-        :return:
-        """
-        return self._new_element_embed.input_line_edit.text()
 
     def get_new_element_type_selection(self):
         """
@@ -645,13 +572,6 @@ class UIManager:
         return self._new_element_embed.input_action_selector.itemData(
             self._new_element_embed.input_action_selector.currentIndex())
 
-    def close_new_element_embed(self):
-        """
-
-
-        """
-        if self._new_element_embed and self._new_element_embed.isVisible():
-            self._new_element_embed.blur_away()
 
     def get_overlay_buttons(self):
         """
@@ -699,9 +619,12 @@ class UIManager:
         :param scenePos:
         """
         if not self._new_element_embed:
-            self._new_element_embed = NewElementEmbed(self.main.graph_view, self, scenePos)
+            ui_key = 'new_element_embed'
+            self._new_element_embed = NewElementEmbed(self.main.graph_view, self, scenePos, ui_key)
+            self.add_ui(self._new_element_embed)
         if not self._new_element_marker:
-            self._new_element_marker = NewElementMarker(scenePos, self._new_element_embed)
+            ui_key = 'new_element_marker'
+            self._new_element_marker = NewElementMarker(scenePos, self._new_element_embed, ui_key)
             self.add_ui(self._new_element_marker)
             self._new_element_embed.marker = self._new_element_marker
         self._new_element_embed.update_embed(scenePos=scenePos)
@@ -717,35 +640,51 @@ class UIManager:
             self._new_element_marker.hide()
             self._new_element_marker = None
 
-    #### Constituent editing #########################################################
-
-    def get_node_edit_embed(self):
-        """
-
-
-        :return:
-        """
-        return self._node_edit
+    # ### Node editing #########################################################
 
     def start_editing_node(self, node):
         """
-
         :param node:
         """
-        np = node.pos()
-        if not self._node_edit:
-            self._node_edit = NodeEditEmbed(self.main.graph_view, self, node, np)
-        self._node_edit.update_embed(scenePos=np, node=node)
-        self._node_edit.wake_up()
+        ui_key = node.save_key + '_edit'
+        ed = self.get_ui(ui_key)
+        if ed:
+            self.remove_ui(ed)
 
-    def close_node_editing(self):
+        ed = NodeEditEmbed(self.main.graph_view, self, ui_key, node)
+        self.add_ui(ed)
+        self._node_edits.add(ed)
+        ed.wake_up()
+
+    def get_editing_node(self, node):
+        ui_key = node.save_key + '_edit'
+        return self.get_ui(ui_key)
+
+    def close_node_editing(self, node=None, embed=None):
+        """ Blur away, but destroy node editing if
+        :param node_key:
         """
+        if node:
+            ui_key = node.save_key + '_edit'
+            embed = self.get_ui(ui_key)
+        if embed:
+            embed.blur_away()
 
-
+    def close_all_edits(self):
+        """ Remove all node edit embeds from UI. e.g. when changing forests
+        :return:
         """
-        if self._node_edit and self._node_edit.isVisible():
-            self._node_edit.blur_away()
+        for edit in self._node_edits:
+            edit.close()
+            self.remove_ui(edit)
+        self._node_edits = set()
 
+    def remove_edit_embed(self, embed):
+        """
+        :param node_key:
+        """
+        self.remove_ui(embed)
+        self._node_edits.remove(embed)
 
     # ### Touch areas #####################################################################
 
@@ -758,11 +697,11 @@ class UIManager:
         :param host:
         :return:
         """
-        for ta in self.touch_areas:
-            if ta.host == host and ta.type == type:
-                print('skip ta creation: it already exists')
-                return ta
-        ta = TouchArea(host, type)
+        ui_key = host.save_key + '_ta_' + str(type)
+        if ui_key in self._items:
+            print('skip ta creation: it already exists')
+            return self._items[ui_key]
+        ta = TouchArea(host, type, ui_key)
         self.touch_areas.add(ta)
         self.add_ui(ta)
         return ta
@@ -902,7 +841,8 @@ class UIManager:
         :param node:
         """
         assert(node.is_locked())
-        item = FadingSymbol(qt_prefs.lock_icon, node, self, place='bottom_right')
+        ui_key = node.save_key + '_lock_icon'
+        item = FadingSymbol(qt_prefs.lock_icon, node, self, ui_key, place='bottom_right')
         # print u"\U0001F512" , unichr(9875) # unichr(9875)
         self.add_ui(item)
         self.symbols.add(item)
@@ -970,7 +910,7 @@ class UIManager:
         if not self._message:
             log = self.get_panel(g.LOG)
             if log:
-                self._message = MessageItem('>>>' + msg, log.widget(), self)
+                self._message = MessageItem('>>>' + msg, log.widget(), self, 'messages')
                 self.add_ui(self._message)
         else:
             self._message.add_feedback_from_command(msg)
@@ -983,7 +923,7 @@ class UIManager:
         if not self._message:
             log = self.get_panel(g.LOG)
             if log:
-                self._message = MessageItem(msg, log.widget(), self)
+                self._message = MessageItem(msg, log.widget(), self, 'messages')
                 self.add_ui(self._message)
         else:
             self._message.add(msg)
@@ -1186,22 +1126,26 @@ class UIManager:
         :param edge:
         """
         for i, point in enumerate(edge.control_points):
-            cp = ControlPoint(edge, index=i)
+            ui_key = edge.save_key + '_cp' + i
+            cp = ControlPoint(edge, ui_key, index=i)
             self.add_ui(cp)
             self._control_points.append(cp)
             cp.update_position()
-        if (not edge.start):  # or edge.start.is_placeholder():
-            cp = ControlPoint(edge, role=g.START_POINT)
+        if not edge.start:  # or edge.start.is_placeholder():
+            ui_key = edge.save_key + '_cp_' + g.START_POINT
+            cp = ControlPoint(edge, ui_key, role=g.START_POINT)
             self.add_ui(cp)
             self._control_points.append(cp)
             cp.update_position()
-        if (not edge.end):  # or edge.end.is_placeholder():
-            cp = ControlPoint(edge, role=g.END_POINT)
+        if not edge.end:  # or edge.end.is_placeholder():
+            ui_key = edge.save_key + '_cp_' + g.END_POINT
+            cp = ControlPoint(edge, ui_key, role=g.END_POINT)
             self.add_ui(cp)
             self._control_points.append(cp)
             cp.update_position()
         if edge.label_item:
-            cp = ControlPoint(edge, role=g.LABEL_START)
+            ui_key = edge.save_key + '_cp_' + g.LABEL_START
+            cp = ControlPoint(edge, ui_key, role=g.LABEL_START)
             self.add_ui(cp)
             self._control_points.append(cp)
 
