@@ -10,10 +10,9 @@ __author__ = 'purma'
 
 
 class EdgeLabelEmbed(UIEmbed):
-    def __init__(self, parent, ui_manager, ui_key):
-        UIEmbed.__init__(self, parent, ui_manager, ui_key)
+    def __init__(self, parent, ui_manager, edge, ui_key):
+        UIEmbed.__init__(self, parent, ui_manager, ui_key, edge)
         self.marker = None
-        self.edge = None
         layout = QtWidgets.QVBoxLayout()
         layout.addLayout(self.top_row_layout)  # close-button from UIEmbed
         self.input_line_edit = QtWidgets.QLineEdit(self)
@@ -40,14 +39,13 @@ class EdgeLabelEmbed(UIEmbed):
 
     def update_embed(self, scenePos=None, edge=None):
         if edge:
-            self.edge = edge
-        if self.edge:
+            self.host = edge
+        if self.host:
             p = QtGui.QPalette()
-            p.setColor(QtGui.QPalette.Text, self.edge.color)
+            p.setColor(QtGui.QPalette.Text, self.host.color)
             self.input_line_edit.setPalette(p)
-            f = QtGui.QFont(self.edge.font)
+            f = QtGui.QFont(self.host.font)
             f.setPointSize(f.pointSize() * 2)
             self.input_line_edit.setFont(f)
-            self.input_line_edit.setText(self.edge.label_text)
-
+            self.input_line_edit.setText(self.host.label_text)
         UIEmbed.update_embed(self, scenePos=scenePos)

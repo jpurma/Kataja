@@ -701,7 +701,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
         background_fade = False
         can_normalize = True
         md = {'xsum': 0, 'ysum': 0, 'zsum': 0, 'nodes': []}
-        self.main.ui_manager.activity_marker.show()
         ctrl.items_moving = True
         if self._fade_steps:
             self.setBackgroundBrush(self._fade_steps_list[self._fade_steps - 1])
@@ -748,12 +747,13 @@ class GraphScene(QtWidgets.QGraphicsScene):
             self.fit_to_window()
 
         if items_have_moved:
+            self.main.ui_manager.get_activity_marker().show()
             if f.settings.bracket_style:
                 f.bracket_manager.update_positions()
                 # for area in f.touch_areas:
                 # area.update_position()
         if not (items_have_moved or items_fading or frame_has_moved or background_fade):
             self.stop_animations()
-            self.main.ui_manager.activity_marker.hide()
+            self.main.ui_manager.get_activity_marker().hide()
             ctrl.items_moving = False
 

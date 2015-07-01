@@ -23,6 +23,7 @@ def make_label(text, parent=None, layout=None, tooltip='', buddy=None, palette=N
     return label
 
 
+# This will be replaced with NodeEditEmbed
 
 class FeatureEditEmbed(UIEmbed):
     def __init__(self, parent, ui_manager, ui_key, node):

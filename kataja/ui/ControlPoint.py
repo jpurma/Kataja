@@ -28,7 +28,7 @@ class ControlPoint(QtWidgets.QGraphicsItem):
             self.setCursor(Qt.CrossCursor)
         self.ui_key = ui_key
         self.role = role
-        self.host_edge = edge
+        self.host = edge
         self._index = index
         self.focusable = True
         self.draggable = True
@@ -54,19 +54,19 @@ class ControlPoint(QtWidgets.QGraphicsItem):
         """
         :return:
         """
-        if -1 < self._index < len(self.host_edge.control_points):
-            p = self.host_edge.control_points[self._index]
-            if self.host_edge.curve_adjustment and len(self.host_edge.curve_adjustment) > self._index:
-                a = self.host_edge.curve_adjustment[self._index]
+        if -1 < self._index < len(self.host.control_points):
+            p = self.host.control_points[self._index]
+            if self.host.curve_adjustment and len(self.host.curve_adjustment) > self._index:
+                a = self.host.curve_adjustment[self._index]
                 p = Pf(p[0] + a[0], p[1] + a[1])
             else:
                 p = Pf(p[0], p[1])
         elif self.role == g.START_POINT:
-            p = Pf(self.host_edge.start_point[0], self.host_edge.start_point[1])
+            p = Pf(self.host.start_point[0], self.host.start_point[1])
         elif self.role == g.END_POINT:
-            p = Pf(self.host_edge.end_point[0], self.host_edge.end_point[1])
+            p = Pf(self.host.end_point[0], self.host.end_point[1])
         elif self.role == g.LABEL_START:
-            c = self.host_edge.cached_label_start
+            c = self.host.cached_label_start
             p = Pf(c.x(), c.y())
         else:
             return False
@@ -93,7 +93,7 @@ class ControlPoint(QtWidgets.QGraphicsItem):
     def _compute_adjust(self):
         x, y = to_tuple(self.pos())
         assert (self._index != -1)
-        p = self.host_edge.control_points[self._index]
+        p = self.host.control_points[self._index]
         return int(x - p[0]), int(y - p[1])
         # print 'computed curve_adjustment:', self.curve_adjustment
 
@@ -112,23 +112,23 @@ class ControlPoint(QtWidgets.QGraphicsItem):
         :return: None
         """
         if self.role == g.LABEL_START:
-            d, point = self.host_edge.get_closest_path_point(event.scenePos())
+            d, point = self.host.get_closest_path_point(event.scenePos())
             # self.setPos(point)
-            self.host_edge.label_start = d
+            self.host.label_start = d
             ctrl.ui.update_control_point_positions()
             # self.update()
         else:
             self.setPos(event.scenePos())
         if self._index > -1:
-            self.host_edge.adjust_control_point(self._index, self._compute_adjust(), cp=True)
+            self.host.adjust_control_point(self._index, self._compute_adjust(), cp=True)
         elif self.role == g.START_POINT:
-            self.host_edge.set_start_point(event.scenePos())
-            self.host_edge.make_path()
-            self.host_edge.update()
+            self.host.set_start_point(event.scenePos())
+            self.host.make_path()
+            self.host.update()
         elif self.role == g.END_POINT:
-            self.host_edge.set_end_point(event.scenePos())
-            self.host_edge.make_path()
-            self.host_edge.update()
+            self.host.set_end_point(event.scenePos())
+            self.host.make_path()
+            self.host.update()
 
     def drop_to(self, x, y, recipient=None):
         """ Dragging ends, possibly by dropping over another object.
@@ -139,9 +139,9 @@ class ControlPoint(QtWidgets.QGraphicsItem):
         if recipient:
             # recipient.accept_drop(self)
             if self.role == g.START_POINT:
-                self.host_edge.connect_start_to(recipient)
+                self.host.connect_start_to(recipient)
             elif self.role == g.END_POINT:
-                self.host_edge.connect_end_to(recipient)
+                self.host.connect_end_to(recipient)
 
     def hoverEnterEvent(self, event):
         """ Trigger and update hover effects.

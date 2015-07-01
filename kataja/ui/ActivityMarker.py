@@ -1,32 +1,29 @@
 # coding=utf-8
-import random
 
-from PyQt5 import QtGui, QtWidgets
-
-from kataja.singletons import qt_prefs
+from PyQt5 import QtWidgets
+from kataja.singletons import qt_prefs, ctrl
 
 
 class ActivityMarker(QtWidgets.QGraphicsRectItem):
-    """
+    """ Blinky thing to announce that computing is going on. """
 
-    """
-
-    def __init__(self, ui_key):
-        """
-
-        :param parent:
-        """
-        QtWidgets.QGraphicsRectItem.__init__(self, 0, 0, 10, 10)  # , scene = parent)
-        self.setBrush(QtGui.QColor(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
-        self.setPen(qt_prefs.no_pen)  # QtCore.Qt.NoPen
-        self.setZValue(100)
+    def __init__(self, role, ui_key):
+        QtWidgets.QGraphicsRectItem.__init__(self, 0, 0, 4, 4)  # , scene = parent)
         self.ui_key = ui_key
+        self.host = None
+        self.role = role
+        self.setZValue(100)
+        self.setBrush(ctrl.cm.get('accent%s' % str(self.role + 1)))
+        self.setPen(qt_prefs.no_pen)  # QtCore.Qt.NoPen
+        self.setPos(5 + self.role * 10, 5)
 
-    def show(self):
-        """
+    def update_position(self):
+        """ stay always in initial position """
+        pass
 
+    def update_colors(self):
+        """ Uses available accent colors """
+        self.setBrush(ctrl.cm.get('accent%s' % str(self.role + 1)))
 
-        """
-        QtWidgets.QGraphicsRectItem.show(self)
 
 

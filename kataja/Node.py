@@ -938,7 +938,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         else:
             editor = ctrl.ui.get_editing_node(self)
             ctrl.select(self)
-            ctrl.ui.add_completion_suggestions(self)
             if editor and editor.isVisible():
                 self.open_embed()
 

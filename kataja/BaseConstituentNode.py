@@ -503,7 +503,7 @@ class BaseConstituentNode(Node):
          option to add a proper node here.
         """
         if self.is_placeholder():
-            ctrl.ui.create_touch_area(self, g.TOUCH_ADD_CONSTITUENT)
+            ctrl.ui.get_touch_area(self, g.TOUCH_ADD_CONSTITUENT)
 
     def dropEvent(self, event):
         """

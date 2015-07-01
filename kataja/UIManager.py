@@ -104,6 +104,8 @@ NEW_ELEMENT_EMBED = 'new_element_embed'
 NEW_ELEMENT_MARKER = 'new_element_marker'
 EDGE_LABEL_EMBED = 'edge_label_embed'
 STRETCHLINE = 'stretchline'
+ACTIVITY_MARKER = 'activity_marker'
+UI_ACTIVITY_MARKER = 'ui_activity_marker'
 
 
 class UIManager:
@@ -123,8 +125,6 @@ class UIManager:
 
         self._items = {}
         # self.setSceneRect(view.parent.geometry())
-        self._message = None
-        self._control_points = []
         self._rubber_band = None
         self._rubber_band_origin = None
         self._node_edits = set()
@@ -134,12 +134,8 @@ class UIManager:
         self._ui_panels = {}
         self.ui_buttons = {}
         self.moving_things = set()
-        self.touch_areas = set()
-        self.symbols = set()
         self.button_shortcut_filter = ButtonShortcutFilter()
 
-        self.activity_marker = None
-        self.ui_activity_marker = None
         self.preferences_dialog = None
         self.color_dialog = None
 
@@ -157,15 +153,6 @@ class UIManager:
         self.create_menus()
         # Create UI panels, requires actions to exist
         self.create_panels()
-
-        self.activity_marker = ActivityMarker('activity')
-        self.add_ui(self.activity_marker)
-        self.activity_marker.setPos(5, 5)
-        self.activity_marker.show()
-        self.ui_activity_marker = ActivityMarker('ui_activity')
-        self.add_ui(self.ui_activity_marker)
-        self.ui_activity_marker.setPos(15, 5)
-        self.ui_activity_marker.hide()
 
     def get_panel(self, panel_id) -> UIPanel:
         """
@@ -195,6 +182,8 @@ class UIManager:
 
         :param item:
         """
+        if item.ui_key in self._items:
+            raise KeyError
         self._items[item.ui_key] = item
         if isinstance(item, QtWidgets.QGraphicsItem):
             self.scene.addItem(item)
@@ -208,6 +197,9 @@ class UIManager:
             del self._items[item.ui_key]
         if isinstance(item, QtWidgets.QGraphicsItem):
             self.scene.removeItem(item)
+        elif isinstance(item, QtWidgets.QWidget):
+            item.close()
+            item.hide()
 
     def get_ui(self, ui_key):
         """ Return a managed ui item
@@ -227,9 +219,15 @@ class UIManager:
             # self.log_panel.setGeometry(0, self.size().height() - self.log_panel.height(),
             # self.log_panel.width(), self.log_panel.height())
 
+    def reset_panel_fields(self):
+        """ Update all panel fields, may be costly -- try to do specific updates instead.
+        :return:
+        """
+        for panel in self._ui_panels.values():
+            panel.update_fields()
+
     def update_all_fields(self):
         """
-
 
         """
         print('*** ui update_all_fields called ***')
@@ -281,25 +279,16 @@ class UIManager:
 
         :param size:
         """
-        self.activity_marker.setPos(5, 5)
-        if self._message:
-            self._message.update_position()
         self.update_positions()
 
     def update_colors(self):
-        """
-
-
-        """
-        if self._message:
-            self._message.update_color()
-        if NEW_ELEMENT_EMBED in self._items:
-            self._items[NEW_ELEMENT_EMBED].update_color()
-
-        for panel_key in [g.COLOR_THEME, g.COLOR_WHEEL, g.NODES]:
-            panel = self.get_panel(panel_key)
-            if panel:
-                panel.update_colors()
+        """ Update colors in all ui elements that understand that demand."""
+        for item in self._items.values():
+            if hasattr(item, 'update_colors'):
+                item.update_colors()
+        for item in self._ui_panels.values():
+            if hasattr(item, 'update_colors'):
+                item.update_colors()
 
     def update_selections(self, selected=None, deselected=None):
         """ Many UI elements change mode depending on if object of specific type is selected
@@ -319,69 +308,62 @@ class UIManager:
         if np:
             np.update_panel()
 
-        if deselected:
-            for item in deselected:
-                self.update_touch_areas_for(item, False)
-                self.update_control_points_for(item, False)
-                self.update_overlay_buttons_for(item, False)
+        # clear all ui pieces
+        for item in list(self._items.values()):
+            if item.host:
+                self.remove_ui(item)
+        # create ui pieces for selected elements
         for item in selected:
-            self.update_touch_areas_for(item, True)
-            self.update_control_points_for(item, True)
-            self.update_overlay_buttons_for(item, True)
-        self.update_touch_areas()
+            self.update_touch_areas_for_selected(item)
+            if isinstance(item, Edge):
+                self.add_control_points(item)
+                self.add_buttons_for_edge(item)
+            elif isinstance(item, BaseConstituentNode):
+                self.add_buttons_for_constituent_node(item)
 
     # unused, but sane
     def focusable_elements(self):
-        """
-
-
+        """ Return those UI elements that are flagged focusable (Kataja's focusable, not Qt's).
         """
         for e in self._items:
             if getattr(e, 'focusable', False) and e.isVisible():
                 yield e
 
     def clear_items(self):
+        """ Remove all ui objects managed by UIManager.
         """
-
-
-        """
-        for item in self.symbols:
+        ctrl.deselect_objects()
+        for item in list(self._items.values()):
             self.remove_ui(item)
 
-        self.symbols = set()
-        ctrl.deselect_objects()
-
-    @time_me
     def update_positions(self):
         """ UI has elements that point to graph scene elements, and when something moves there
         UI has to update its elements too."""
         for item in self._items.values():
             if hasattr(item, 'update_position'):
                 item.update_position()
-        # for cp in self._control_points:
-        #     cp.update_position()
-        # for symbol in self.symbols:
-        #     symbol.update_position()
-        # #for button in self._overlay_buttons.values():
-        # #    button.update_position()
-        # for touch_area in self.touch_areas:
-        #     touch_area.update_position()
-        # if NEW_ELEMENT_MARKER in self._items:
-        #     self._items[NEW_ELEMENT_MARKER].update_position()
-        # for edit in self._node_edits:
-        #     edit.update_position()
+
+    def update_position_for(self, obj):
+        """ Update position of ui-elements for selected (non-ui) object.
+        :param obj:
+        :return:
+        """
+        for item in self._items.values():
+            if item.host is obj:
+                item.update_position()
 
     def delete_ui_elements_for(self, item):
         """
-
-        :param item:
+        :param item: item or iterable of items
         """
-        self.remove_touch_areas_for(item)
-        self.remove_control_points(item)
-        if isinstance(item, BaseConstituentNode):
-            self.remove_buttons_for_constituent_node(item)
-        elif isinstance(item, Edge):
-            self.remove_buttons_for_edge(item)
+        if isinstance(item, (tuple, list, set)):
+            for ui_item in list(self._items.values()):
+                if ui_item.host in item:
+                    self.remove_ui(ui_item)
+        else:
+            for ui_item in list(self._items.values()):
+                if ui_item.host is item:
+                    self.remove_ui(ui_item)
 
     # ### Actions, Menus and Panels ####################################################
 
@@ -566,11 +548,11 @@ class UIManager:
         """
         lp = edge.label_item.pos()
         if EDGE_LABEL_EMBED not in self._items:
-            embed = EdgeLabelEmbed(self.main.graph_view, self, EDGE_LABEL_EMBED)
+            embed = EdgeLabelEmbed(self.main.graph_view, self, edge, EDGE_LABEL_EMBED)
             self.add_ui(embed)
         else:
             embed = self._items[EDGE_LABEL_EMBED]
-        embed.update_embed(scenePos=lp, edge=edge)
+        embed.update_embed(scenePos=lp)
         embed.wake_up()
 
     # ### Creation dialog #########################################################
@@ -642,99 +624,54 @@ class UIManager:
 
     # ### Touch areas #####################################################################
 
-    def create_touch_area(self, host=None, type=''):
-        """
-
-
-        :param type:
+    def get_touch_area(self, host, type):
+        """ Get touch area for specific purpose or create one if it doesn't exist.
         :param host:
+        :param type:
         :return:
         """
         ui_key = host.save_key + '_ta_' + str(type)
-        if ui_key in self._items:
-            print('skip ta creation: it already exists')
-            return self._items[ui_key]
-        ta = TouchArea(host, type, ui_key)
-        self.touch_areas.add(ta)
-        self.add_ui(ta)
+        ta = self.get_ui(ui_key)
+        if not ta:
+            ta = TouchArea(host, type, ui_key)
+            self.add_ui(ta)
         return ta
 
-    def delete_touch_area(self, touch_area):
-        """ remove from scene and remove references from nodes
-        :param touch_area:
-        """
-        self.touch_areas.remove(touch_area)
-        self.remove_ui(touch_area)
-
     def remove_touch_areas(self):
-        """
-
-
-        """
-        for ta in list(self.touch_areas):
-            self.delete_touch_area(ta)
-
-    def remove_touch_areas_for(self, host):
-        """
-
-        :param host:
-        """
-        my_areas = [x for x in self.touch_areas if x.host is host]
-        for ta in my_areas:
-            self.delete_touch_area(ta)
+        """ Remove all touch areas from UI. Needs to be done when changing selection or starting
+         dragging, or generally before touch areas are recalculated """
+        for item in list(self._items.values()):
+            if isinstance(item, TouchArea):
+                self.remove_ui(item)
 
     def update_touch_areas(self):
-        """
-
-
+        """ Create touch areas as necessary
         """
         self.remove_touch_areas()
         for item in ctrl.get_all_selected():
-            self.update_touch_areas_for(item, True)
+            self.update_touch_areas_for_selected(item)
 
-    def update_touch_areas_for(self, item, selected=True):
-        """
-
+    def update_touch_areas_for_selected(self, item):
+        """ Assumes that touch areas for this item are empty and that the item is selected
         :param item: object to update
-        :param selected: is item being selected or deselected
         """
-        if selected and item.visible:
-            if isinstance(item, BaseConstituentNode):
-                if item.is_root_node():
-                    self.create_touch_area(item, g.LEFT_ADD_ROOT)
-                    self.create_touch_area(item, g.RIGHT_ADD_ROOT)
-                if not item.is_placeholder():
-                    for edge in item.get_edges_up(visible=True):
-                        self.create_touch_area(edge, g.LEFT_ADD_SIBLING)
-                        self.create_touch_area(edge, g.RIGHT_ADD_SIBLING)
-            elif isinstance(item, Edge) and item.edge_type == g.CONSTITUENT_EDGE:
-                if item.has_orphan_ends():
-                    if item.end and (item.end.is_placeholder()):
-                        self.add_completion_suggestions(item.end)
-                    if item.start and (item.start.is_placeholder()):
-                        self.add_completion_suggestions(item.start)
-                else:
-                    self.create_touch_area(item, g.LEFT_ADD_SIBLING)
-                    self.create_touch_area(item, g.RIGHT_ADD_SIBLING)
-        else:
-            self.remove_touch_areas_for(item)
-
-    def add_completion_suggestions(self, node):
-        """ Node has selected and if it is a placeholder or otherwise lacking, it may suggest an
-         option to add a proper node here.
-        :param node: any node
-        :return:
-        """
-        if node.is_placeholder():
-            self.create_touch_area(node, g.TOUCH_ADD_CONSTITUENT)
-
-    def remove_completion_suggestins(self, node):
-        """ Completion suggestions may be there even if the node is complete, as it can be completed
-        after it has been selected.
-        :param node: any node
-        :return:
-        """
-        self.remove_touch_areas_for(node)
+        if isinstance(item, BaseConstituentNode):
+            if item.is_root_node():
+                self.get_touch_area(item, g.LEFT_ADD_ROOT)
+                self.get_touch_area(item, g.RIGHT_ADD_ROOT)
+            if not item.is_placeholder():
+                for edge in item.get_edges_up(visible=True):
+                    self.get_touch_area(edge, g.LEFT_ADD_SIBLING)
+                    self.get_touch_area(edge, g.RIGHT_ADD_SIBLING)
+        elif isinstance(item, Edge) and item.edge_type == g.CONSTITUENT_EDGE:
+            if item.has_orphan_ends():
+                if item.end and (item.end.is_placeholder()):
+                    self.get_touch_area(item.end, g.TOUCH_ADD_CONSTITUENT)
+                if item.start and (item.start.is_placeholder()):
+                    self.get_touch_area(item.start, g.TOUCH_ADD_CONSTITUENT)
+            else:
+                self.get_touch_area(item, g.LEFT_ADD_SIBLING)
+                self.get_touch_area(item, g.RIGHT_ADD_SIBLING)
 
     def prepare_touch_areas_for_dragging(self, drag_host=None, moving=None, node_type='',
                                          multidrag=False):
@@ -754,17 +691,17 @@ class UIManager:
             for root in ctrl.forest.roots:
                 if root in moving or root is drag_host:
                     continue
-                self.create_touch_area(root, g.LEFT_ADD_ROOT)
-                self.create_touch_area(root, g.RIGHT_ADD_ROOT)
+                self.get_touch_area(root, g.LEFT_ADD_ROOT)
+                self.get_touch_area(root, g.RIGHT_ADD_ROOT)
             for edge in ctrl.forest.get_constituent_edges():
                 if edge.start in moving or edge.end in moving or edge.start is drag_host or \
                    edge.end is drag_host:
                     continue
-                self.create_touch_area(edge, g.LEFT_ADD_SIBLING)
-                self.create_touch_area(edge, g.RIGHT_ADD_SIBLING)
+                self.get_touch_area(edge, g.LEFT_ADD_SIBLING)
+                self.get_touch_area(edge, g.RIGHT_ADD_SIBLING)
             for node in ctrl.forest.get_constituent_nodes():
                 if node.is_placeholder():
-                    self.create_touch_area(node, g.TOUCH_ADD_CONSTITUENT)
+                    self.get_touch_area(node, g.TOUCH_ADD_CONSTITUENT)
         else:
             if node_type == g.FEATURE_NODE:
                 touch_area_type = g.TOUCH_CONNECT_FEATURE
@@ -777,7 +714,7 @@ class UIManager:
                     continue
                 if drag_host and node.is_connected_to(drag_host):
                     continue
-                self.create_touch_area(node, touch_area_type)
+                self.get_touch_area(node, touch_area_type)
 
     # ### Flashing symbols ################################################################
 
@@ -791,7 +728,6 @@ class UIManager:
         item = FadingSymbol(qt_prefs.lock_icon, node, self, ui_key, place='bottom_right')
         # print u"\U0001F512" , unichr(9875) # unichr(9875)
         self.add_ui(item)
-        self.symbols.add(item)
         item.fade_out('slow')
 
     # ### Stretchlines ####################################################################
@@ -858,7 +794,7 @@ class UIManager:
         """ Show '>>>_' in log """
         self.log_writer.add('>>>_')
 
-    # ### Edge buttons ############################
+    # ### Embedded buttons ############################
 
     def _create_overlay_button(self, icon, host, role, key, text, action, size=None):
         """
@@ -878,13 +814,6 @@ class UIManager:
             button.update_position()
             self.connect_element_to_action(button, action)
             button.show()
-
-    def _del_button(self, key):
-        if key in self._items:
-            button = self.get_ui(key)
-            button.close()
-            button.hide()
-            self.remove_ui(button)
 
     def add_remove_merger_button(self, node):
         """
@@ -944,8 +873,6 @@ class UIManager:
                                             key=key,
                                             text='Disconnect from node',
                                             action='disconnect_edge')
-            else:
-                self._del_button(key)
         key = edge.save_key + "_cut_end"
         if edge.end and not edge.end.is_placeholder():
             self._create_overlay_button(icon=qt_prefs.cut_icon,
@@ -954,50 +881,6 @@ class UIManager:
                                         key=key,
                                         text='Disconnect from node',
                                         action='disconnect_edge')
-        else:
-            self._del_button(key)
-
-    def remove_buttons_for_edge(self, edge):
-        """
-
-        :param edge:
-        """
-        keys = [edge.save_key + "_cut_start", edge.save_key + "_cut_end"]
-        if edge.start:
-            keys.append(edge.start.save_key + g.REMOVE_MERGER)
-        for key in keys:
-            self._del_button(key)
-
-    def update_edge_button_positions(self, edge):
-        """
-
-        :param edge:
-        """
-        keys = [edge.save_key + "_cut_start", edge.save_key + "_cut_end"]
-        if edge.start:
-            keys.append(edge.start.save_key + g.REMOVE_MERGER)
-        for key in keys:
-            button = self.get_ui(key)
-            if button:
-                button.update_position()
-
-    def update_overlay_buttons_for(self, item, selected):
-        """
-
-        :param item:
-        :param selected:
-        """
-        if isinstance(item, Edge):
-            if selected:
-                self.add_buttons_for_edge(item)
-            else:
-                self.remove_buttons_for_edge(item)
-        elif isinstance(item, BaseConstituentNode):
-            if selected:
-                self.remove_buttons_for_constituent_node(item)
-                self.add_buttons_for_constituent_node(item)
-            else:
-                self.remove_buttons_for_constituent_node(item)
 
     def add_buttons_for_constituent_node(self, node):
         """
@@ -1013,14 +896,6 @@ class UIManager:
         elif ctrl.forest.can_fold(node):
             self.add_fold_triangle_button(node)
 
-    def remove_buttons_for_constituent_node(self, node):
-        """
-
-        :param node:
-        """
-        for key_part in [g.REMOVE_MERGER, g.REMOVE_TRIANGLE, g.ADD_TRIANGLE]:
-            self._del_button(node.save_key + key_part)
-
     # ### Control points ####################################################################
 
     def add_control_points(self, edge):
@@ -1030,7 +905,6 @@ class UIManager:
         def _add_cp(key, index, role):
             cp = ControlPoint(edge, key, index=index, role=role)
             self.add_ui(cp)
-            self._control_points.append(cp)
             cp.update_position()
 
         key_base = edge.save_key + '_cp_'
@@ -1043,48 +917,46 @@ class UIManager:
         if edge.label_item:
             _add_cp(key_base + g.LABEL_START, -1, g.LABEL_START)
 
-    def update_control_points_for(self, item, selected=True):
-        """
-
-        :param item:
-        :param selected:
+    def update_control_points(self):
+        """ Create all necessary control points
         :return:
         """
-        if not isinstance(item, Edge):
-            return
-        if selected:
-            self.add_control_points(item)
-        else:
-            self.remove_control_points(item)
+        self.remove_control_points()
+        for item in ctrl.selected:
+            if isinstance(item, Edge):
+                self.add_control_points(item)
 
-    def update_control_point_positions(self):
-        """ Update positions for all control points without doing any checks to see if they are legit or used.
-        We assume that there won't be too many of them
+    def remove_control_points(self):
+        """ Remove all control points
         :return:
         """
-        for item in self._control_points:
-            if not item.update_position():
+        for item in list(self._items.values()):
+            if isinstance(item, ControlPoint):
                 self.remove_ui(item)
-                self._control_points.remove(item)
-                del item
 
-    def remove_control_points(self, edge):
-        """ Removes control points from this edge
-        :param edge:
-        """
-        cps = [cp for cp in self._control_points if cp.host_edge == edge]
-        for cp in cps:
-            self.remove_ui(cp)
-            self._control_points.remove(cp)
-            del cp
+    # ### Activity marker ##############################################
 
-    def reset_control_points(self, edge):
+    def get_activity_marker(self):
         """
-        :param edge:
+
+        :return:
         """
-        self.remove_control_points(edge)
-        if ctrl.is_selected(edge):
-            self.add_control_points(edge)
+        am = self.get_ui(ACTIVITY_MARKER)
+        if not am:
+            am = ActivityMarker(0, ACTIVITY_MARKER)
+            self.add_ui(am)
+        return am
+
+    def get_ui_activity_marker(self):
+        """
+
+        :return:
+        """
+        am = self.get_ui(UI_ACTIVITY_MARKER)
+        if not am:
+            am = ActivityMarker(1, UI_ACTIVITY_MARKER)
+            self.add_ui(am)
+        return am
 
     # ### Timer ########################################################
 
@@ -1101,13 +973,14 @@ class UIManager:
 
         :param event:
         """
-        self.ui_activity_marker.show()
         items_have_moved = False
         for item in self.moving_things:
             if item.move_towards_target_position():
                 items_have_moved = True
+        if items_have_moved:
+            self.get_ui_activity_marker().show()
         if not items_have_moved:
-            self.ui_activity_marker.hide()
+            self.get_ui_activity_marker().hide()
             self.killTimer(self._timer_id)
             self._timer_id = 0
 

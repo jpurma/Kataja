@@ -463,7 +463,6 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
         """
         ctrl.forest.set_edge_start(self, node)
         self.make_relative_vector()
-        ctrl.ui.reset_control_points(self)
         self.update_shape()
         # self.update()
 
@@ -474,7 +473,6 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
         """
         ctrl.forest.set_edge_end(self, node)
         self.make_relative_vector()
-        ctrl.ui.reset_control_points(self)
         self.update_shape()
 
     def set_start_point(self, p, y=None, z=None):
@@ -769,9 +767,8 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
         self._cached_cp_rect = self._path.controlPointRect()
         #
         self.update_label_pos()
-        ctrl.ui.update_control_point_positions()
         if ctrl.is_selected(self):
-            ctrl.ui.update_edge_button_positions(self)
+            ctrl.ui.update_position_for(self)
 
     def shape(self):
         """ Override of the QGraphicsItem method. Should returns the real shape of item to
@@ -792,8 +789,7 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
         # while len(self.curve_adjustment) < len(self.control_points):
         # self.curve_adjustment.append((0, 0, 0))
         if cpl != len(self.control_points):
-            ctrl.ui.reset_control_points(self)
-        ctrl.ui.update_control_point_positions()
+            ctrl.ui.update_control_points()
         self.update()
 
     def prepare_adjust_array(self, index):
