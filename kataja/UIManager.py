@@ -33,7 +33,7 @@ from kataja.Edge import Edge
 from kataja.ui.ActivityMarker import ActivityMarker
 from kataja.ui.ControlPoint import ControlPoint
 from kataja.ui.FadingSymbol import FadingSymbol
-from kataja.ui.MessageItem import MessageItem
+from kataja.ui.MessageWriter import MessageWriter
 from kataja.ui.StretchLine import StretchLine
 import kataja.actions as action_methods
 from kataja.actions import actions
@@ -67,38 +67,49 @@ PANELS = {g.LOG: {'name': 'Log', 'position': 'bottom'},
           g.NAVIGATION: {'name': 'Trees', 'position': 'right'},
           g.VISUALIZATION: {'name': 'Visualization', 'position': 'right'},
           g.COLOR_THEME: {'name': 'Color theme', 'position': 'right'},
-          g.COLOR_WHEEL: {'name': 'Color theme wheel', 'position': 'right', 'folded': True, 'closed': True},
+          g.COLOR_WHEEL: {'name': 'Color theme wheel', 'position': 'right', 'folded': True,
+                          'closed': True},
           g.LINE_OPTIONS: {'name': 'More line options', 'position': 'float', 'closed': True},
           g.EDGES: {'name': 'Edge drawing', 'position': 'right'},
           g.SYMBOLS: {'name': 'Symbols', 'position': 'right'},
           g.NODES: {'name': 'Nodes', 'position': 'right'}
 }
 
-panel_order = [g.LOG, g.NAVIGATION, g.SYMBOLS, g.NODES, g.VISUALIZATION, g.COLOR_THEME, g.COLOR_WHEEL, g.LINE_OPTIONS,
-               g.EDGES]
+panel_order = [g.LOG, g.NAVIGATION, g.SYMBOLS, g.NODES, g.VISUALIZATION, g.COLOR_THEME,
+               g.COLOR_WHEEL, g.LINE_OPTIONS, g.EDGES]
 
-panel_classes = {g.LOG: LogPanel, g.TEST: TestPanel, g.NAVIGATION: NavigationPanel, g.VISUALIZATION: VisualizationPanel,
+panel_classes = {g.LOG: LogPanel, g.TEST: TestPanel, g.NAVIGATION: NavigationPanel,
+                 g.VISUALIZATION: VisualizationPanel,
                  g.COLOR_THEME: ColorPanel, g.COLOR_WHEEL: ColorWheelPanel, g.EDGES: EdgesPanel,
                  g.LINE_OPTIONS: LineOptionsPanel, g.SYMBOLS: SymbolPanel, g.NODES: NodesPanel}
 
 menu_structure = OrderedDict([
     ('file_menu',
-     ('&File', ['open', 'save', 'save_as', '---', 'print_pdf', 'blender_render', '---', 'preferences', '---', 'quit'])),
+     ('&File', ['open', 'save', 'save_as', '---', 'print_pdf', 'blender_render', '---',
+                'preferences', '---', 'quit'])),
     ('edit_menu', ('&Edit', ['undo', 'redo'])),
-    ('build_menu', ('&Build', ['next_forest', 'prev_forest', 'next_derivation_step', 'prev_derivation_step'])),
+    ('build_menu', ('&Build', ['next_forest', 'prev_forest', 'next_derivation_step',
+                               'prev_derivation_step'])),
     ('rules_menu', ('&Rules',
-                    ['label_visibility', 'bracket_mode', 'trace_mode', 'merge_edge_shape', 'feature_edge_shape',
-                     'merge_order_attribute', 'select_order_attribute'])),
+                    ['label_visibility', 'bracket_mode', 'trace_mode', 'merge_edge_shape',
+                     'feature_edge_shape', 'merge_order_attribute', 'select_order_attribute'])),
     ('view_menu',
-     ('&View', ['$visualizations', '---', 'change_colors', 'adjust_colors', 'zoom_to_fit', '---', 'fullscreen_mode'])),
+     ('&View', ['$visualizations', '---', 'change_colors', 'adjust_colors', 'zoom_to_fit', '---',
+                'fullscreen_mode'])),
     ('panels_menu', ('&Panels', ['$panels', '---', 'toggle_all_panels'])),
     ('help_menu', ('&Help', ['help']))
 ])
 
+NEW_ELEMENT_EMBED = 'new_element_embed'
+NEW_ELEMENT_MARKER = 'new_element_marker'
+EDGE_LABEL_EMBED = 'edge_label_embed'
+STRETCHLINE = 'stretchline'
+
 
 class UIManager:
     """
-    UIManager Keeps track of all UI-related widgets and tries to do the most work to keep KatajaMain as simple as possible.
+    UIManager Keeps track of all UI-related widgets and tries to do the most work to keep
+    KatajaMain as simple as possible.
     """
 
     def __init__(self, main=None):
@@ -112,16 +123,12 @@ class UIManager:
 
         self._items = {}
         # self.setSceneRect(view.parent.geometry())
-        self._stretchline = None
         self._message = None
         self._control_points = []
         self._rubber_band = None
         self._rubber_band_origin = None
-        self._new_element_embed = None
         self._node_edits = set()
-        self._new_element_marker = None
-        self._edge_label_embed = None
-        self._overlay_buttons = {}
+        self.log_writer = MessageWriter()
 
         self._timer_id = 0
         self._ui_panels = {}
@@ -134,22 +141,21 @@ class UIManager:
         self.activity_marker = None
         self.ui_activity_marker = None
         self.preferences_dialog = None
-        self.hud = None
         self.color_dialog = None
 
         # self.hud = HUD(self)
         # self.info('free drawing')
 
     def populate_ui_elements(self):
-        """ These cannot be created in __init__, as individual panels etc. may refer to ctrl.ui, which doesn't exist
-        until the __init__  is completed.
+        """ These cannot be created in __init__, as individual panels etc. may refer to ctrl.ui,
+        which doesn't exist until the __init__  is completed.
         :return:
         """
-        ## Create actions based on actions.py and menus based on
+        # Create actions based on actions.py and menus based on
         self.create_actions()
-        ## Create top menus, requires actions to exist
+        # Create top menus, requires actions to exist
         self.create_menus()
-        ## Create UI panels, requires actions to exist
+        # Create UI panels, requires actions to exist
         self.create_panels()
 
         self.activity_marker = ActivityMarker('activity')
@@ -161,23 +167,12 @@ class UIManager:
         self.ui_activity_marker.setPos(15, 5)
         self.ui_activity_marker.hide()
 
-
-    # def parseConstituentNodebox(self, escaped=False, finish=False):
-    # text=unicode(self.nodebox.get_value())
-    # tree=ctrl.forest.add_root(text=text, pos=self.nodebox.pos(), replace=False)
-    # ctrl.action_finished()
-    #
-    # if finish and tree:
-    # self.abortConstituentNodebox()
-    # ctrl.action_finished()
-
     def get_panel(self, panel_id) -> UIPanel:
         """
         :param panel_id: panel key. Probably from constant from globals
         :return: UIPanel instance or None
         """
         return self._ui_panels.get(panel_id, None)
-
 
     def get_action_group(self, action_group_name):
         """ Get action group with this name, or create one if it doesn't exist
@@ -200,7 +195,6 @@ class UIManager:
 
         :param item:
         """
-        #print('adding ui item: ', item.ui_key)
         self._items[item.ui_key] = item
         if isinstance(item, QtWidgets.QGraphicsItem):
             self.scene.addItem(item)
@@ -210,7 +204,6 @@ class UIManager:
 
         :param item:
         """
-        #print('removing ui item: ', item.ui_key)
         if item.ui_key in self._items:
             del self._items[item.ui_key]
         if isinstance(item, QtWidgets.QGraphicsItem):
@@ -300,10 +293,8 @@ class UIManager:
         """
         if self._message:
             self._message.update_color()
-        if self.hud:
-            self.hud.update_color()
-        if self._new_element_embed:
-            self._new_element_embed.update_color()
+        if NEW_ELEMENT_EMBED in self._items:
+            self._items[NEW_ELEMENT_EMBED].update_color()
 
         for panel_key in [g.COLOR_THEME, g.COLOR_WHEEL, g.NODES]:
             panel = self.get_panel(panel_key)
@@ -360,21 +351,25 @@ class UIManager:
         self.symbols = set()
         ctrl.deselect_objects()
 
+    @time_me
     def update_positions(self):
         """ UI has elements that point to graph scene elements, and when something moves there
         UI has to update its elements too."""
-        for cp in self._control_points:
-            cp.update_position()
-        for symbol in self.symbols:
-            symbol.update_position()
-        for button in self._overlay_buttons.values():
-            button.update_position()
-        for touch_area in self.touch_areas:
-            touch_area.update_position()
-        if self._new_element_marker:
-            self._new_element_marker.update_position()
-        for edit in self._node_edits:
-            edit.update_position()
+        for item in self._items.values():
+            if hasattr(item, 'update_position'):
+                item.update_position()
+        # for cp in self._control_points:
+        #     cp.update_position()
+        # for symbol in self.symbols:
+        #     symbol.update_position()
+        # #for button in self._overlay_buttons.values():
+        # #    button.update_position()
+        # for touch_area in self.touch_areas:
+        #     touch_area.update_position()
+        # if NEW_ELEMENT_MARKER in self._items:
+        #     self._items[NEW_ELEMENT_MARKER].update_position()
+        # for edit in self._node_edits:
+        #     edit.update_position()
 
     def delete_ui_elements_for(self, item):
         """
@@ -397,7 +392,8 @@ class UIManager:
         shortcut_solver = ShortcutSolver(self)
 
         # dynamic actions are created based on other data e.g. available visualization plugins.
-        # they are added into actions as everyone else, but there is a special mapping to find them later.
+        # they are added into actions as everyone else, but there is a special mapping to find
+        # them later.
         # eg. self._dynamic_action_groups['visualizations'] = ['vis_1','vis_2','vis_3'...]
         self._dynamic_action_groups = {}
         self.actions = actions
@@ -516,8 +512,8 @@ class UIManager:
             position = data.get('position', None)
             folded = data.get('folded', False)
         constructor = panel_classes[id]
-        new_panel = constructor(name, id, default_position=position, parent=self.main, ui_manager=self,
-                                folded=folded)
+        new_panel = constructor(name, id, default_position=position, parent=self.main,
+                                ui_manager=self, folded=folded)
         self._ui_panels[id] = new_panel
         return new_panel
 
@@ -561,35 +557,7 @@ class UIManager:
         i = selector.currentIndex()
         return selector.itemData(i)
 
-    #### Embedded menus ################################
-
-    def get_new_element_type_selection(self):
-        """
-
-
-        :return:
-        """
-        return self._new_element_embed.input_action_selector.itemData(
-            self._new_element_embed.input_action_selector.currentIndex())
-
-
-    def get_overlay_buttons(self):
-        """
-
-
-        :return:
-        """
-        return self._overlay_buttons.values()
-
-    #### Label edge editin dialog #########################################################
-
-    def get_edge_label_embed(self):
-        """
-
-
-        :return:
-        """
-        return self._edge_label_embed
+    # ### Label edge editin dialog #########################################################
 
     def start_edge_label_editing(self, edge):
         """
@@ -597,48 +565,44 @@ class UIManager:
         :param edge:
         """
         lp = edge.label_item.pos()
-        if not self._edge_label_embed:
-            self._edge_label_embed = EdgeLabelEmbed(self.main.graph_view, self, lp)
-        self._edge_label_embed.update_embed(scenePos=lp, edge=edge)
-        self._edge_label_embed.wake_up()
+        if EDGE_LABEL_EMBED not in self._items:
+            embed = EdgeLabelEmbed(self.main.graph_view, self, EDGE_LABEL_EMBED)
+            self.add_ui(embed)
+        else:
+            embed = self._items[EDGE_LABEL_EMBED]
+        embed.update_embed(scenePos=lp, edge=edge)
+        embed.wake_up()
 
-
-    def close_edge_label_editing(self):
-        """
-
-
-        """
-        if self._edge_label_embed and self._edge_label_embed.isVisible():
-            self._edge_label_embed.blur_away()
-
-    #### Creation dialog #########################################################
+    # ### Creation dialog #########################################################
 
     def create_creation_dialog(self, scenePos):
         """
 
         :param scenePos:
         """
-        if not self._new_element_embed:
-            ui_key = 'new_element_embed'
-            self._new_element_embed = NewElementEmbed(self.main.graph_view, self, scenePos, ui_key)
-            self.add_ui(self._new_element_embed)
-        if not self._new_element_marker:
-            ui_key = 'new_element_marker'
-            self._new_element_marker = NewElementMarker(scenePos, self._new_element_embed, ui_key)
-            self.add_ui(self._new_element_marker)
-            self._new_element_embed.marker = self._new_element_marker
-        self._new_element_embed.update_embed(scenePos=scenePos)
-        self._new_element_marker.update_position(scenePos=scenePos)
-        self._new_element_embed.wake_up()
+        embed = self.get_ui(NEW_ELEMENT_EMBED)
+        marker = self.get_ui(NEW_ELEMENT_MARKER)
+        if not embed:
+            embed = NewElementEmbed(self.main.graph_view, self, NEW_ELEMENT_EMBED)
+            self.add_ui(embed)
+        if not marker:
+            marker = NewElementMarker(scenePos, embed, NEW_ELEMENT_MARKER)
+            self.add_ui(marker)
+        embed.marker = marker
+        embed.update_embed(scenePos=scenePos)
+        marker.update_position(scenePos=scenePos)
+        embed.wake_up()
 
     def clean_up_creation_dialog(self):
-        """ Not sure if the items should be removed or is it enough to hide them.
+        """ Remove both
         :return:
         """
-        if self._new_element_marker:
-            self.remove_ui(self._new_element_marker)
-            self._new_element_marker.hide()
-            self._new_element_marker = None
+        embed = self.get_ui(NEW_ELEMENT_EMBED)
+        marker = self.get_ui(NEW_ELEMENT_MARKER)
+        if marker:
+            self.remove_ui(marker)
+        if embed:
+            embed.blur_away()
 
     # ### Node editing #########################################################
 
@@ -660,16 +624,6 @@ class UIManager:
         ui_key = node.save_key + '_edit'
         return self.get_ui(ui_key)
 
-    def close_node_editing(self, node=None, embed=None):
-        """ Blur away, but destroy node editing if
-        :param node_key:
-        """
-        if node:
-            ui_key = node.save_key + '_edit'
-            embed = self.get_ui(ui_key)
-        if embed:
-            embed.blur_away()
-
     def close_all_edits(self):
         """ Remove all node edit embeds from UI. e.g. when changing forests
         :return:
@@ -688,7 +642,6 @@ class UIManager:
 
     # ### Touch areas #####################################################################
 
-
     def create_touch_area(self, host=None, type=''):
         """
 
@@ -706,14 +659,12 @@ class UIManager:
         self.add_ui(ta)
         return ta
 
-
     def delete_touch_area(self, touch_area):
         """ remove from scene and remove references from nodes
         :param touch_area:
         """
         self.touch_areas.remove(touch_area)
         self.remove_ui(touch_area)
-
 
     def remove_touch_areas(self):
         """
@@ -740,7 +691,6 @@ class UIManager:
         self.remove_touch_areas()
         for item in ctrl.get_all_selected():
             self.update_touch_areas_for(item, True)
-
 
     def update_touch_areas_for(self, item, selected=True):
         """
@@ -769,7 +719,6 @@ class UIManager:
         else:
             self.remove_touch_areas_for(item)
 
-
     def add_completion_suggestions(self, node):
         """ Node has selected and if it is a placeholder or otherwise lacking, it may suggest an
          option to add a proper node here.
@@ -787,7 +736,8 @@ class UIManager:
         """
         self.remove_touch_areas_for(node)
 
-    def prepare_touch_areas_for_dragging(self, drag_host=None, moving=None, node_type='', multidrag=False):
+    def prepare_touch_areas_for_dragging(self, drag_host=None, moving=None, node_type='',
+                                         multidrag=False):
         """
         :param drag_host: node that is being dragged
         :param moving: set of moving nodes (does not include drag_host)
@@ -807,7 +757,8 @@ class UIManager:
                 self.create_touch_area(root, g.LEFT_ADD_ROOT)
                 self.create_touch_area(root, g.RIGHT_ADD_ROOT)
             for edge in ctrl.forest.get_constituent_edges():
-                if edge.start in moving or edge.end in moving or edge.start is drag_host or edge.end is drag_host:
+                if edge.start in moving or edge.end in moving or edge.start is drag_host or \
+                   edge.end is drag_host:
                     continue
                 self.create_touch_area(edge, g.LEFT_ADD_SIBLING)
                 self.create_touch_area(edge, g.RIGHT_ADD_SIBLING)
@@ -828,12 +779,7 @@ class UIManager:
                     continue
                 self.create_touch_area(node, touch_area_type)
 
-
-
-
-
     # ### Flashing symbols ################################################################
-
 
     def show_anchor(self, node):
         """
@@ -848,48 +794,42 @@ class UIManager:
         self.symbols.add(item)
         item.fade_out('slow')
 
-
     # ### Stretchlines ####################################################################
 
     def begin_stretchline(self, start, end):
         """
-
         :param start:
         :param end:
         """
-        if not self._stretchline:
-            line = QtCore.QLineF(start, end)
-            self._stretchline = StretchLine(line)  # QtGui.QGraphicsLineItem(line)
-            self._stretchline.setPen(ctrl.cm.ui())
-            self.add_ui(self._stretchline)
-        else:
-            line = self._stretchline.line()
+        sl = self.get_ui(STRETCHLINE)
+        if sl:
+            line = sl.line()
             line.setPoints(start, end)
-            self._stretchline.setLine(line)
-        self._stretchline.show()
+            sl.setLine(line)
+        else:
+            line = QtCore.QLineF(start, end)
+            sl = StretchLine(line, STRETCHLINE)
+            sl.setPen(ctrl.cm.ui())
+            self.add_ui(sl)
+        sl.show()
 
     def draw_stretchline(self, end):
         """
-
         :param end:
         """
-        if self._stretchline:
-            line = self._stretchline.line()
+        sl = self.get_ui(STRETCHLINE)
+        if sl:
+            line = sl.line()
             line.setP2(end)
-            self._stretchline.setLine(line)
+            sl.setLine(line)
 
     def end_stretchline(self):
         """
-
-
         :return:
         """
-        if not self._stretchline:
-            return
-        if self._stretchline:
-            self._stretchline.hide()
-        self.remove_ui(self._stretchline)
-        self._stretchline = None
+        sl = self.get_ui(STRETCHLINE)
+        if sl:
+            self.remove_ui(sl)
 
     # def beginRename(self, node):
     # ctrl.selected=node
@@ -900,108 +840,90 @@ class UIManager:
     # node.label.hide()
     # ctrl.main.disable_actions()
 
-
     # ### Messages ####################################################################
 
-    def add_feedback_from_command(self, msg):
+    def add_command_feedback(self, msg):
         """ Insert new row of text to message window
         :param msg:
         """
-        if not self._message:
-            log = self.get_panel(g.LOG)
-            if log:
-                self._message = MessageItem('>>>' + msg, log.widget(), self, 'messages')
-                self.add_ui(self._message)
-        else:
-            self._message.add_feedback_from_command(msg)
+        self.log_writer.add('>>>'+msg)
 
     def add_message(self, msg):
-        """ Insert new row of text to message window
+        """ Insert new row of text to log
         :param msg:
         """
-
-        if not self._message:
-            log = self.get_panel(g.LOG)
-            if log:
-                self._message = MessageItem(msg, log.widget(), self, 'messages')
-                self.add_ui(self._message)
-        else:
-            self._message.add(msg)
-
-    def get_message(self):
-        """
-
-
-        """
-        self._message.display_message()
+        self.log_writer.add(msg)
 
     def show_command_prompt(self):
-        """
-
-
-        """
-        self._message.show_next_query()
-
-    def info(self, msg):
-        """
-
-        :param msg:
-        """
-        self.hud.setText(msg)
+        """ Show '>>>_' in log """
+        self.log_writer.add('>>>_')
 
     # ### Edge buttons ############################
 
-    def add_remove_merger_button(self, node, edge=None):
+    def _create_overlay_button(self, icon, host, role, key, text, action, size=None):
+        """
+
+        :param icon:
+        :param host:
+        :param role:
+        :param key:
+        :param text:
+        :param action:
+        :param size:
+        """
+        if key not in self._items:
+            button = OverlayButton(icon, host, role, key, text, parent=self.main.graph_view,
+                                   size=size or 16)
+            self.add_ui(button)
+            button.update_position()
+            self.connect_element_to_action(button, action)
+            button.show()
+
+    def _del_button(self, key):
+        if key in self._items:
+            button = self.get_ui(key)
+            button.close()
+            button.hide()
+            self.remove_ui(button)
+
+    def add_remove_merger_button(self, node):
         """
 
         :param node:
         :param edge:
         """
-        key = node.save_key + g.REMOVE_MERGER
-        if key not in self._overlay_buttons:
-            button = OverlayButton(qt_prefs.delete_icon, node, g.REMOVE_MERGER, 'Remove this non-merging node',
-                                   parent=self.main.graph_view)
-            button.update_position()
-            self.connect_element_to_action(button, 'remove_merger')
-            button.show()
-            self._overlay_buttons[key] = button
+        self._create_overlay_button(icon=qt_prefs.delete_icon,
+                                    host=node,
+                                    role=g.REMOVE_TRIANGLE,
+                                    key=node.save_key + g.REMOVE_MERGER,
+                                    text='Remove this non-merging node',
+                                    action='remove_merger')
 
     def add_unfold_triangle_button(self, node):
         """
 
         :param node:
         """
-        key = node.save_key + g.REMOVE_TRIANGLE
-        if key not in self._overlay_buttons:
-            button = OverlayButton(qt_prefs.triangle_close_icon,
-                                   node,
-                                   g.REMOVE_TRIANGLE,
-                                   'Reveal nodes inside the triangle',
-                                   parent=self.main.graph_view,
-                                   size=(48, 24))
-            button.update_position()
-            self.connect_element_to_action(button, 'remove_triangle')
-            button.show()
-            self._overlay_buttons[key] = button
+        self._create_overlay_button(icon=qt_prefs.triangle_close_icon,
+                                    host=node,
+                                    role=g.REMOVE_TRIANGLE,
+                                    key=node.save_key + g.REMOVE_TRIANGLE,
+                                    text='Reveal nodes inside the triangle',
+                                    action='remove_triangle',
+                                    size=(48, 24))
 
     def add_fold_triangle_button(self, node):
         """
 
         :param node:
         """
-        key = node.save_key + g.ADD_TRIANGLE
-        if key not in self._overlay_buttons:
-            button = OverlayButton(qt_prefs.triangle_icon,
-                                   node,
-                                   g.ADD_TRIANGLE,
-                                   'Turn into a triangle',
-                                   parent=self.main.graph_view,
-                                   size=(48, 24))
-            button.update_position()
-            self.connect_element_to_action(button, 'add_triangle')
-            button.show()
-            self._overlay_buttons[key] = button
-
+        self._create_overlay_button(icon=qt_prefs.triangle_icon,
+                                    host=node,
+                                    role=g.ADD_TRIANGLE,
+                                    key=node.save_key + g.ADD_TRIANGLE,
+                                    text='Turn into a triangle',
+                                    action='add_triangle',
+                                    size=(48, 24))
 
     def add_buttons_for_edge(self, edge):
         # Constituent edges have a button to remove the edge and the node in between.
@@ -1011,38 +933,29 @@ class UIManager:
         """
         if edge.edge_type is g.CONSTITUENT_EDGE:
             if edge.end and edge.end.is_placeholder():
-                self.add_remove_merger_button(edge.start, edge)
+                self.add_remove_merger_button(edge.start)
         # Constituent edges don't have cut-button at the start
         else:
             key = edge.save_key + "_cut_start"
             if edge.start:
-                if key not in self._overlay_buttons:
-                    button = OverlayButton(qt_prefs.cut_icon, edge, g.START_CUT, 'Disconnect from node',
-                                           parent=self.main.graph_view)
-                    self.connect_element_to_action(button, 'disconnect_edge')
-                    button.show()
-                    self._overlay_buttons[key] = button
+                self._create_overlay_button(icon=qt_prefs.cut_icon,
+                                            host=edge,
+                                            role=g.START_CUT,
+                                            key=key,
+                                            text='Disconnect from node',
+                                            action='disconnect_edge')
             else:
-                if key in self._overlay_buttons:
-                    button = self._overlay_buttons[key]
-                    button.close()
-                    button.hide()
-                    del self._overlay_buttons[key]
+                self._del_button(key)
         key = edge.save_key + "_cut_end"
         if edge.end and not edge.end.is_placeholder():
-            if key not in self._overlay_buttons:
-                button = OverlayButton(qt_prefs.cut_icon, edge, g.END_CUT, 'Disconnect from node',
-                                       parent=self.main.graph_view)
-                button.update_position()
-                self.connect_element_to_action(button, 'disconnect_edge')
-                button.show()
-                self._overlay_buttons[key] = button
+            self._create_overlay_button(icon=qt_prefs.cut_icon,
+                                        host=edge,
+                                        role=g.END_CUT,
+                                        key=key,
+                                        text='Disconnect from node',
+                                        action='disconnect_edge')
         else:
-            if key in self._overlay_buttons:
-                button = self._overlay_buttons[key]
-                button.close()
-                button.hide()
-                del self._overlay_buttons[key]
+            self._del_button(key)
 
     def remove_buttons_for_edge(self, edge):
         """
@@ -1053,11 +966,7 @@ class UIManager:
         if edge.start:
             keys.append(edge.start.save_key + g.REMOVE_MERGER)
         for key in keys:
-            if key in self._overlay_buttons:
-                button = self._overlay_buttons[key]
-                button.close()
-                button.hide()
-                del self._overlay_buttons[key]
+            self._del_button(key)
 
     def update_edge_button_positions(self, edge):
         """
@@ -1068,8 +977,8 @@ class UIManager:
         if edge.start:
             keys.append(edge.start.save_key + g.REMOVE_MERGER)
         for key in keys:
-            if key in self._overlay_buttons:
-                button = self._overlay_buttons[key]
+            button = self.get_ui(key)
+            if button:
                 button.update_position()
 
     def update_overlay_buttons_for(self, item, selected):
@@ -1089,7 +998,6 @@ class UIManager:
                 self.add_buttons_for_constituent_node(item)
             else:
                 self.remove_buttons_for_constituent_node(item)
-
 
     def add_buttons_for_constituent_node(self, node):
         """
@@ -1111,13 +1019,7 @@ class UIManager:
         :param node:
         """
         for key_part in [g.REMOVE_MERGER, g.REMOVE_TRIANGLE, g.ADD_TRIANGLE]:
-            key = node.save_key + key_part
-            if key in self._overlay_buttons:
-                button = self._overlay_buttons[key]
-                button.close()
-                button.hide()
-                del self._overlay_buttons[key]
-
+            self._del_button(node.save_key + key_part)
 
     # ### Control points ####################################################################
 
@@ -1125,30 +1027,21 @@ class UIManager:
         """ Display control points for this edge
         :param edge:
         """
-        for i, point in enumerate(edge.control_points):
-            ui_key = edge.save_key + '_cp' + i
-            cp = ControlPoint(edge, ui_key, index=i)
+        def _add_cp(key, index, role):
+            cp = ControlPoint(edge, key, index=index, role=role)
             self.add_ui(cp)
             self._control_points.append(cp)
             cp.update_position()
-        if not edge.start:  # or edge.start.is_placeholder():
-            ui_key = edge.save_key + '_cp_' + g.START_POINT
-            cp = ControlPoint(edge, ui_key, role=g.START_POINT)
-            self.add_ui(cp)
-            self._control_points.append(cp)
-            cp.update_position()
-        if not edge.end:  # or edge.end.is_placeholder():
-            ui_key = edge.save_key + '_cp_' + g.END_POINT
-            cp = ControlPoint(edge, ui_key, role=g.END_POINT)
-            self.add_ui(cp)
-            self._control_points.append(cp)
-            cp.update_position()
-        if edge.label_item:
-            ui_key = edge.save_key + '_cp_' + g.LABEL_START
-            cp = ControlPoint(edge, ui_key, role=g.LABEL_START)
-            self.add_ui(cp)
-            self._control_points.append(cp)
 
+        key_base = edge.save_key + '_cp_'
+        for i, point in enumerate(edge.control_points):
+            _add_cp(key_base + str(i), i, '')
+        if not edge.start:  # or edge.start.is_placeholder():
+            _add_cp(key_base + g.START_POINT, -1, g.START_POINT)
+        if not edge.end:  # or edge.end.is_placeholder():
+            _add_cp(key_base + g.END_POINT, -1, g.END_POINT)
+        if edge.label_item:
+            _add_cp(key_base + g.LABEL_START, -1, g.LABEL_START)
 
     def update_control_points_for(self, item, selected=True):
         """
@@ -1193,8 +1086,7 @@ class UIManager:
         if ctrl.is_selected(edge):
             self.add_control_points(edge)
 
-
-    #### Timer ########################################################
+    # ### Timer ########################################################
 
     def item_moved(self):
         """
@@ -1218,9 +1110,4 @@ class UIManager:
             self.ui_activity_marker.hide()
             self.killTimer(self._timer_id)
             self._timer_id = 0
-
-
-
-
-
 

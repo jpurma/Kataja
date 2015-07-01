@@ -14,7 +14,7 @@ class ControlPoint(QtWidgets.QGraphicsItem):
 
     """
 
-    def __init__(self, edge=None, index=-1, role=''):
+    def __init__(self, edge, ui_key, index=-1, role=''):
         QtWidgets.QGraphicsItem.__init__(self)
         if prefs.touch:
             self._wh = 12
@@ -26,6 +26,7 @@ class ControlPoint(QtWidgets.QGraphicsItem):
             self._xy = -2
             self.round = True
             self.setCursor(Qt.CrossCursor)
+        self.ui_key = ui_key
         self.role = role
         self.host_edge = edge
         self._index = index

@@ -28,6 +28,7 @@ class LogPanel(UIPanel):
         inner.sizeHint = self.sizeHint
         self.preferred_size = inner.preferred_size
         self.setWidget(inner)
+        ui_manager.log_writer.attach_display_widget(inner)
         self.finish_init()
         print('*** created log panel ***')
 

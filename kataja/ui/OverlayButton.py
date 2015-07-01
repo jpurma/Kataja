@@ -42,7 +42,6 @@ class PanelButton(QtWidgets.QPushButton):
         if text:
             self.setToolTip(text)
             self.setStatusTip(text)
-        self.data = None
         self.color_key = color_key
         self.setContentsMargins(0, 0, 0, 0)
         if isinstance(size, tuple):

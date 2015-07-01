@@ -87,7 +87,7 @@ class KeyPressManager:
 
         ks = event.text()
         debug.keys('received key press: ', ks)
-        self.ui_manager.add_feedback_from_command(ks)
+        self.ui_manager.add_command_feedback(ks)
         # if ctrl.selected and all([item.can_take_keyevent(event) for item in ctrl.selected]):
         # for item in ctrl.selected:
         # item.take_keyevent(event)

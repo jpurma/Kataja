@@ -1032,14 +1032,16 @@ a['close_embed'] = {
 }
 
 
-def new_element_accept():
+def new_element_accept(sender):
     """ Create new element according to fields in this embed. Can create constituentnodes,
     features, arrows, etc.
     :return: None
     """
-    type = ctrl.ui.get_new_element_type_selection()
-    text = ctrl.ui.get_new_element_text()
-    p1, p2 = ctrl.ui.get_new_element_embed_points()
+
+    embed = get_ui_container(sender)
+    type = embed.input_action_selector.itemData(embed.input_action_selector.currentIndex())
+    p1, p2 = embed.get_marker_points()
+    text = embed.input_line_edit.text()
     ctrl.focus_point = p2
 
     if type == g.GUESS_FROM_INPUT:
@@ -1053,11 +1055,12 @@ def new_element_accept():
         else:
             print('trying to parse ', text)
             node = ctrl.forest.create_node_from_string(text)
-    ctrl.ui.close_new_element_embed()
+    embed.blur_away()
 
 a['new_element_enter_text'] = {
     'command': 'Enter',
     'method': new_element_accept,
+    'sender_arg': True,
     'shortcut': 'Return',
     'shortcut_context': 'parent_and_children'
 }
@@ -1083,18 +1086,20 @@ a['new_arrow'] = {
 }
 
 
-def create_new_divider():
+def create_new_divider(sender):
     """ Create a new divider into embed menu's location
     :return: None
     """
     print("New divider called")
-    p1, p2 = ctrl.ui.get_new_element_embed_points()
-    ctrl.ui.close_new_element_embed()
+    embed = get_ui_container(sender)
+    p1, p2 = embed.get_marker_points()
+    embed.blur_away()
     # fixme: finish this!
 
 a['new_divider'] = {
     'command': 'New divider',
     'method': create_new_divider,
+    'sender_arg': True,
     'shortcut': 'd',
     'shortcut_context': 'parent_and_children'
 }

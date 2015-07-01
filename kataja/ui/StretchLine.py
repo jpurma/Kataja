@@ -8,9 +8,10 @@ from kataja.shapes import draw_arrow_shape, arrow_shape_bounding_rect
 class StretchLine(QtWidgets.QGraphicsLineItem):
     """ Temporary arrow for dragging and pointing """
 
-    def __init__(self, line):
+    def __init__(self, line, ui_key):
         self._arrow_size = 5.0
         self.setZValue(52)
+        self.ui_key = ui_key
         QtWidgets.QGraphicsLineItem.__init__(self, line)
 
     def remove(self):
