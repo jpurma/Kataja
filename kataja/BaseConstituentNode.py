@@ -442,7 +442,7 @@ class BaseConstituentNode(Node):
 
     # ### Selection ########################################################
 
-    def refresh_selection_status(self, selected):
+    def update_selection_status(self, selected):
         """
 
         :param selected:

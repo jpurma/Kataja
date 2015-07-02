@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets, QtCore
 
-from kataja.singletons import qt_prefs
+from kataja.singletons import qt_prefs, ctrl
 from kataja.ui.TwoColorButton import TwoColorButton
 from kataja.ui.panels.UIPanel import UIPanel
 
@@ -24,7 +24,7 @@ class NavigationPanel(UIPanel):
         inner = QtWidgets.QWidget()
         inner.setMinimumHeight(48)
         inner.preferred_size = QtCore.QSize(220, 64)
-
+        self.watchlist = ['forest_changed']
         layout = QtWidgets.QGridLayout()
 
         label = QtWidgets.QLabel('Tree set', self)
@@ -34,7 +34,7 @@ class NavigationPanel(UIPanel):
         treeset_counter = QtWidgets.QLabel('0/0', self)
         treeset_counter.setSizePolicy(label_policy)
         layout.addWidget(treeset_counter, 0, 1, 1, 1)
-        ui_manager.ui_buttons['treeset_counter'] = treeset_counter
+        self.treeset_counter = treeset_counter
 
         prev_tree = TwoColorButton(qt_prefs.left_arrow, '', self)
         # prev_tree.setIconSize(QtCore.QSize(24,24))
@@ -42,7 +42,7 @@ class NavigationPanel(UIPanel):
         prev_tree.setMinimumWidth(72)
         # prev_tree.setMinimumHeight(32)
         layout.addWidget(prev_tree, 1, 0, 1, 1)
-        ui_manager.ui_buttons['prev_forest'] = prev_tree
+        self.prev_tree = prev_tree
         ui_manager.connect_element_to_action(prev_tree, ui_manager.qt_actions['prev_forest'])
         # prev_tree.setDefaultAction(ui_manager.qt_actions['prev_forest'])
 
@@ -52,10 +52,9 @@ class NavigationPanel(UIPanel):
         next_tree.setMinimumWidth(72)
         # next_tree.setMinimumHeight(32)
         layout.addWidget(next_tree, 1, 1, 1, 1)
-        ui_manager.ui_buttons['next_forest'] = next_tree
+        self.next_tree = next_tree
         ui_manager.connect_element_to_action(next_tree, ui_manager.qt_actions['next_forest'])
         # next_tree.setDefaultAction(ui_manager.qt_actions['next_forest'])
-
 
         label = QtWidgets.QLabel('Derivation step', self)
         label.setSizePolicy(label_policy)
@@ -64,20 +63,37 @@ class NavigationPanel(UIPanel):
         derivation_counter = QtWidgets.QLabel('0/0', self)
         derivation_counter.setSizePolicy(label_policy)
         layout.addWidget(derivation_counter, 2, 1, 1, 1)
-        ui_manager.ui_buttons['derivation_counter'] = derivation_counter
+        self.derivation_counter = derivation_counter
 
         prev_der = TwoColorButton(qt_prefs.left_arrow, '', self)
         prev_der.setSizePolicy(label_policy)
         layout.addWidget(prev_der, 3, 0, 1, 1)
-        ui_manager.ui_buttons['prev_der'] = prev_der
+        self.prev_der = prev_der
         prev_der.clicked.connect(ui_manager.qt_actions['prev_derivation_step'].triggered)
 
         next_der = TwoColorButton(qt_prefs.right_arrow, '', self)
         next_der.setSizePolicy(label_policy)
         layout.addWidget(next_der, 3, 1, 1, 1)
-        ui_manager.ui_buttons['next_der'] = next_der
+        self.next_der = next_der
         layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
         inner.setLayout(layout)
         self.setWidget(inner)
         self.widget().setAutoFillBackground(True)
         self.finish_init()
+
+
+    def watch_alerted(self, obj, signal, field_name, value):
+        """ Receives alerts from signals that this object has chosen to listen. These signals
+         are declared in 'self.watchlist'.
+
+         This method will try to sort out the received signals and act accordingly.
+
+        :param obj: the object causing the alarm
+        :param signal: identifier for type of the alarm
+        :param field_name: name of the field of the object causing the alarm
+        :param value: value given to the field
+        :return:
+        """
+        if signal == 'forest_changed':
+            self.treeset_counter.setText('%s/%s' % (ctrl.main.forest_keeper.current_index + 1,
+                                                    len(ctrl.main.forest_keeper.forests)))

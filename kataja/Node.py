@@ -887,7 +887,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
     # ### Menus #########################################
 
-    def refresh_selection_status(self, selected):
+    def update_selection_status(self, selected):
         """ This is called
 
         :param selected:
@@ -925,7 +925,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """
         self.hovering = False
         if (event and event.modifiers() == Qt.ShiftModifier) or multi:  # multiple selection
-            for node in ctrl.get_all_selected():
+            for node in ctrl.selected:
                 if hasattr(node, 'remove_merge_options'):
                     node.remove_merge_options()
             if ctrl.is_selected(self):
@@ -951,7 +951,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         ctrl.dragged_set = set()
         multidrag = False
         if ctrl.is_selected(self):
-            for item in ctrl.get_all_selected():
+            for item in ctrl.selected:
                 if item is not self and getattr(item, 'draggable', True):
                     item.add_to_dragged()
                     item.prepare_children_for_dragging()

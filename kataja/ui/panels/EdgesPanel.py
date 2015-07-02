@@ -171,7 +171,6 @@ class EdgesPanel(UIPanel):
         :param name: Title of the panel and the key for accessing it
         :param default_position: 'bottom', 'right'...
         :param parent: self.main
-        :param ui_buttons: pass a dictionary where buttons from this panel will be added
         """
         UIPanel.__init__(self, name, key, default_position, parent, ui_manager, folded)
         inner = QtWidgets.QWidget(self)
@@ -184,7 +183,7 @@ class EdgesPanel(UIPanel):
         self.scope_selector.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         self._visible_scopes = []
         self.current_color = ctrl.cm.drawing()
-        ui_manager.ui_buttons['line_type_target'] = self.scope_selector
+        self.watchlist = ['edge_shape', 'edge_color', 'selection_changed', 'forest_changed']
         # Other items may be temporarily added, they are defined as class.variables
         ui_manager.connect_element_to_action(self.scope_selector, 'edge_shape_scope')
         layout.addWidget(self.scope_selector)
@@ -193,19 +192,16 @@ class EdgesPanel(UIPanel):
         hlayout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
 
         self.shape_selector = ShapeSelector(self)
-        ui_manager.ui_buttons['line_type'] = self.shape_selector
         ui_manager.connect_element_to_action(self.shape_selector, 'change_edge_shape')
         hlayout.addWidget(self.shape_selector)
 
         self.color_selector = ColorSelector(self)
-        ui_manager.ui_buttons['line_color'] = self.color_selector
         ui_manager.connect_element_to_action(self.color_selector, 'change_edge_color')
         hlayout.addWidget(self.color_selector)
 
         self.edge_options = PanelButton(qt_prefs.settings_icon, text='More line options',
                                         parent=self, size=16)
         self.edge_options.setCheckable(True)
-        ui_manager.ui_buttons['line_options'] = self.edge_options
         ui_manager.connect_element_to_action(self.edge_options, 'toggle_line_options')
         hlayout.addWidget(self.edge_options, 1, QtCore.Qt.AlignRight)
         layout.addLayout(hlayout)
@@ -214,11 +210,12 @@ class EdgesPanel(UIPanel):
         self.setWidget(inner)
         self.finish_init()
 
-    def selected_objects_changed(self):
+    def update_selection(self):
         """ Called after ctrl.selection has changed. Prepare panel to use selection as scope
         :return:
         """
-        selection = ctrl.get_all_selected()
+        print('EdgePanel -- update_selection')
+        selection = ctrl.selected
         found = False
         for item in selection:
             if isinstance(item, Edge):
@@ -230,7 +227,7 @@ class EdgesPanel(UIPanel):
             self.scope = g.SELECTION
         elif self.scope == g.SELECTION:
             self.scope = self._old_scope
-
+        self.update_scope_selector()
 
     def change_scope(self, value):
         """ Change the scope of other manipulations in this panel.
@@ -244,11 +241,11 @@ class EdgesPanel(UIPanel):
         self.current_color = color
         self.color_selector.select_data(color)
 
-
     def update_panel(self):
         """ Panel update should be necessary when changing ctrl.selection or after the tree has otherwise changed.
         :return:
         """
+        self.update_selection()
         self.update_scope_selector_options()
         self.update_scope_selector()
         self.update_fields()
@@ -256,6 +253,7 @@ class EdgesPanel(UIPanel):
     # @time_me
     def update_scope_selector_options(self):
         """ Redraw scope selector, show only scopes that are used in this forest """
+        print('EdgePanel -- update_scope_selector_options')
         used_scopes = {self.scope}
         for edge in ctrl.main.forest.edges.values():
             used_scopes.add(edge.edge_type)
@@ -263,7 +261,6 @@ class EdgesPanel(UIPanel):
         self.scope_selector.clear()
         for item in scope_list:
             self.scope_selector.addItem(scope_display_items[item], item)
-
 
     def update_scope_selector(self):
         """ Visual update for scope selector value """
@@ -284,7 +281,7 @@ class EdgesPanel(UIPanel):
             edge_color = None
             ambiguous_edge = False
             ambiguous_color = False
-            for edge in ctrl.get_all_selected():
+            for edge in ctrl.selected:
                 if isinstance(edge, Edge):
                     if not edge_shape:
                         edge_shape = edge.shape_name
@@ -322,6 +319,25 @@ class EdgesPanel(UIPanel):
             edge_shape = ctrl.forest.settings.edge_type_settings(self.scope, 'shape_name')
             self.shape_selector.select_data(edge_shape)
             self.shape_selector.update()
+
+
+    def watch_alerted(self, obj, signal, field_name, value):
+        """ Receives alerts from signals that this object has chosen to listen. These signals
+         are declared in 'self.watchlist'.
+
+         This method will try to sort out the received signals and act accordingly.
+
+        :param obj: the object causing the alarm
+        :param signal: identifier for type of the alarm
+        :param field_name: name of the field of the object causing the alarm
+        :param value: value given to the field
+        :return:
+        """
+        print('EdgesPanel alerted: ', obj, signal, field_name, value)
+        if signal == 'selection_changed':
+            self.update_selection()
+        elif signal == 'forest_changed':
+            self.update_scope_selector_options()
 
 
 

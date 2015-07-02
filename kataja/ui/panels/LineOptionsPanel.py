@@ -21,7 +21,6 @@ class LineOptionsPanel(UIPanel):
         :param name: Title of the panel and the key for accessing it
         :param default_position: 'bottom', 'right'...
         :param parent: self.main
-        :param ui_buttons: pass a dictionary where buttons from this panel will be added
         """
         UIPanel.__init__(self, name, key, default_position, parent, ui_manager, folded)
         inner = QtWidgets.QWidget(self)
@@ -357,7 +356,7 @@ class LineOptionsPanel(UIPanel):
         cp1_y = None
         cp2_x = None
         cp2_y = None
-        for item in ctrl.get_all_selected():
+        for item in ctrl.selected:
             if isinstance(item, Edge):
                 if len(item.control_points) > 1:
                     if cp2_x is None:
@@ -441,7 +440,7 @@ class LineOptionsPanel(UIPanel):
         # check if selection has conflicting values: these cannot be shown then
         shape_name = None
         keys = ['relative', 'leaf_x', 'leaf_y', 'thickness', 'rel_dx', 'rel_dy', 'fixed_dx', 'fixed_dy']
-        for item in ctrl.get_all_selected():
+        for item in ctrl.selected:
             if isinstance(item, Edge):
                 e = item.shape_args()
                 if not d:

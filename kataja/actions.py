@@ -314,7 +314,6 @@ def next_structure():
     """
     i, forest = ctrl.main.forest_keeper.next_forest()
     ctrl.main.change_forest(forest)
-    ctrl.ui.clear_items()
     ctrl.main.add_message('(.) tree %s: %s' % (i + 1, forest.textual_form()))
 
 a['next_forest'] = {
@@ -331,7 +330,6 @@ def previous_structure():
     """
     i, forest = ctrl.main.forest_keeper.prev_forest()
     ctrl.main.change_forest(forest)
-    ctrl.ui.clear_items()
     ctrl.main.add_message('(,) tree %s: %s' % (i + 1, forest.textual_form()))
 
 a['prev_forest'] = {
@@ -482,7 +480,7 @@ def change_feature_edge_shape(shape):
             i = 0
         shape = list(SHAPE_PRESETS.keys())[i]
         ctrl.forest.settings.edge_shape_name(g.FEATURE_EDGE, shape)
-    ctrl.ui.ui_buttons['feature_line_type'].setCurrentIndex(i)
+    #ctrl.ui.ui_buttons['feature_line_type'].setCurrentIndex(i)
     ctrl.main.add_message('(s) Change feature edge shape: %s-%s' % (i, shape))
 
 a['feature_edge_shape'] = {
@@ -642,7 +640,7 @@ def change_edge_panel_scope(selection):
 a['edge_shape_scope'] = {
     'command': 'Select shape for...',
     'method': change_edge_panel_scope,
-    'selection': 'line_type_target',
+    'args': ['line_type_target'],
     'undoable': False,
     'tooltip': 'Which relations are affected?'}
 
@@ -656,7 +654,7 @@ def change_edge_shape(shape):
         return
     scope = ctrl.ui.get_panel(g.EDGES).scope
     if scope == g.SELECTION:
-        for edge in ctrl.get_all_selected():
+        for edge in ctrl.selected:
             if isinstance(edge, Edge):
                 edge.shape_name = shape
                 edge.update_shape()
@@ -671,7 +669,7 @@ def change_edge_shape(shape):
 a['change_edge_shape'] = {
     'command': 'Change relation shape',
     'method': change_edge_shape,
-    'selection': 'line_type',
+    'args': ['line_type'],
     'tooltip': 'Change shape of relations (lines, edges) between objects'}
 
 
@@ -687,7 +685,7 @@ def change_edge_color(color):
         ctrl.ui.start_color_dialog(panel, 'color_changed')
         return
     if panel.scope == g.SELECTION:
-        for edge in ctrl.get_all_selected():
+        for edge in ctrl.selected:
             if isinstance(edge, Edge):
                 edge.color(color)
                 # edge.update_shape()
@@ -739,7 +737,7 @@ def adjust_control_point(cp_index, dim, value=0):
     :return: None
     """
     cp_index -= 1
-    for edge in ctrl.get_all_selected():
+    for edge in ctrl.selected:
         if isinstance(edge, Edge):
             if dim == 'r':
                 edge.reset_control_point(cp_index)
@@ -795,7 +793,7 @@ def change_leaf_shape(dim, value=0):
     # return
     panel = ctrl.ui.get_panel(g.EDGES)
     if panel.scope == g.SELECTION:
-        for edge in ctrl.get_all_selected():
+        for edge in ctrl.selected:
             if isinstance(edge, Edge):
                 edge.change_leaf_shape(dim, value)
     elif panel.scope:
@@ -840,7 +838,7 @@ def change_edge_thickness(dim, value=0):
     """
     panel = ctrl.ui.get_panel(g.EDGES)
     if panel.scope == g.SELECTION:
-        for edge in ctrl.get_all_selected():
+        for edge in ctrl.selected:
             if isinstance(edge, Edge):
                 edge.change_thickness(dim, value)
     elif panel.scope:
@@ -876,7 +874,7 @@ def change_curvature(dim, value=0):
     """
     panel = ctrl.ui.get_panel(g.EDGES)
     if panel.scope == g.SELECTION:
-        for edge in ctrl.get_all_selected():
+        for edge in ctrl.selected:
             if isinstance(edge, Edge):
                 edge.change_curvature(dim, value)
         if dim == 'r' or dim == 's':
@@ -960,8 +958,6 @@ def change_visualization(sender, visualization_key=None):
         visualization_key = str(sender.currentData())
         action = ctrl.ui.qt_actions[action_key(visualization_key)]
         action.setChecked(True)
-    else:
-        ctrl.ui.update_field('visualization_selector', visualization_key)
     if visualization_key:
         ctrl.forest.change_visualization(visualization_key)
         ctrl.add_message(visualization_key)
@@ -1134,7 +1130,7 @@ def change_edge_ending(self, which_end, value):
         return
     panel = self.ui_manager.get_panel(g.EDGES)
     if panel.scope == g.SELECTION:
-        for edge in ctrl.get_all_selected():
+        for edge in ctrl.selected:
             if isinstance(edge, Edge):
                 edge.ending(which_end, value)
                 edge.update_shape()
@@ -1289,7 +1285,7 @@ def key_backspace():
     :return: None
     """
     print('Backspace pressed')
-    for item in ctrl.get_all_selected():
+    for item in ctrl.selected:
         ctrl.forest.delete_item(item)
 
 a['key_backspace'] = {

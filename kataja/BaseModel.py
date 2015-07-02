@@ -59,11 +59,24 @@ class Saved(object):
     to poke container only once if there are many changes incoming. e.g. if you are doing a loop
     that will write to a list or dictionary, poke the container before the loop, not inside it.
 
+    == Watchers ==
+
+    The descriptor also supports announcing the changes in values to arbitrary Kataja objects.
+    Usually this will be used to reflect changed value in UI fields, e.g. changing
+    numeric values in comboboxes as user drags an element.
+
+    The signaling works by giving a string identifier for 'watcher'. Then, if value is changed,
+    Kataja looks into its global dict where Kataja (UI) objects are listed under the identifier.
+    If there are objects, all of them are called with method 'watch_alerted', with calling
+    object, field name, and new value as arguments.
+
+
      """
-    def __init__(self, name, before_set=None, if_changed=None):
+    def __init__(self, name, before_set=None, if_changed=None, watcher=None):
         self.name = name
         self.before_set = before_set
         self.if_changed = if_changed
+        self.watcher = watcher
 
     def __get__(self, obj, objtype=None):
         return obj._saved.get(self.name, None)
@@ -75,13 +88,17 @@ class Saved(object):
             if self.name in obj._saved:
                 old_value = obj._saved[self.name]
                 obj._saved[self.name] = value
-                if self.if_changed and old_value != value:
-                    self.if_changed(obj, value)
+                if old_value != value:
+                    if self.if_changed:
+                        self.if_changed(obj, value)
+                    if self.watcher:
+                        obj.call_watchers(self.watcher, self.name, value)
             else:
                 obj._saved[self.name] = value
                 if self.if_changed:
                     self.if_changed(obj, value)
-
+                if self.watcher:
+                    obj.call_watchers(self.watcher, self.name, value)
         elif self.name in obj._saved:
             old = obj._saved[self.name]
             if old != value:
@@ -93,10 +110,14 @@ class Saved(object):
                 obj._saved[self.name] = value
                 if self.if_changed:
                     self.if_changed(obj, value)
+                if self.watcher:
+                    obj.call_watchers(self.watcher, self.name, value)
         else:
             obj._saved[self.name] = value
             if self.if_changed:
                 self.if_changed(obj, value)
+            if self.watcher:
+                obj.call_watchers(self.watcher, self.name, value)
 
 
 class SavedAndGetter(Saved):
@@ -213,6 +234,14 @@ class BaseModel(object):
         self._cd = DELETED
         ctrl.undo_pile.add(self)
 
+    def call_watchers(self, signal, field_name, value):
+        """ Alert (UI) objects that are watching for changes for given field in this object
+        :param signal:
+        :param field_name:
+        :param value:
+        :return:
+        """
+        ctrl.call_watchers(self, signal, field_name, value)
 
     def transitions(self):
         """ Create a dict of changes based on modified attributes of the item.

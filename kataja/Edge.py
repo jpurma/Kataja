@@ -190,8 +190,7 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
         v = self.isVisible()
         if v and not self.visible:
             self.hide()
-            ctrl.ui.remove_control_points(self)
-            ctrl.ui.remove_touch_areas_for(self)
+            ctrl.ui.remove_ui_for(self)
 
         elif self.visible and not v:
             self.show()
@@ -220,7 +219,6 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
         """
         if self.label_item:
             self.label_item.setDefaultTextColor(ctrl.cm.get(value))
-
 
     def after_get_shape_name(self, value):
         """ Get the shape name key for this edge. These keys are used to get the shape drawing settings, amount of
@@ -524,7 +522,6 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
         self.make_relative_vector()
 
     # Label for arrow etc. ##############################################
-
 
     def get_label_line_positions(self):
         """ When editing edge labels, there is a line connecting the edge to label. This one provides the
@@ -1006,7 +1003,7 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
         """
         return (self.end and (self.end.is_placeholder())) or (self.start and (self.start.is_placeholder()))
 
-    def refresh_selection_status(self, selected):
+    def update_selection_status(self, selected):
         """
 
         :param selected:
@@ -1298,12 +1295,12 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
     fixed_start_point = Saved("fixed_start_point")
     fixed_end_point = Saved("fixed_end_point")
     edge_type = Saved("edge_type")
-    curve_adjustment = Saved("curve_adjustment")
+    curve_adjustment = Saved("curve_adjustment", watcher="edge_adjustment")
     alignment = Saved("alignment")
     start = Saved("start")
     end = Saved("end")
-    label_data = Saved("label_data")
-    local_shape_args = Saved("local_shape_args")
+    label_data = Saved("label_data", watcher="edge_label")
+    local_shape_args = Saved("local_shape_args", watcher="edge_shape")
     color_id = SavedAndGetter("color_id", after_get=after_get_color_id, if_changed=if_changed_color_id)
     shape_name = SavedAndGetter("shape_name", after_get=after_get_shape_name,
                                 if_changed=if_changed_shape_name)

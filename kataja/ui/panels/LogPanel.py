@@ -17,7 +17,6 @@ class LogPanel(UIPanel):
         :param name: Title of the panel and the key for accessing it
         :param default_position: 'bottom', 'right'...
         :param parent: self.main
-        :param ui_buttons: pass a dictionary where buttons from this panel will be added
         """
         UIPanel.__init__(self, name, key, default_position, parent, ui_manager, folded)
         inner = QtWidgets.QTextBrowser()

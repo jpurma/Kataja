@@ -82,7 +82,7 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
             self.draggable = True
         p = self.parentItem()
         if p:
-            p.refresh_selection_status(ctrl.is_selected(p))
+            p.update_selection_status(ctrl.is_selected(p))
 
     def find_closest_magnet(self, top_left, start_pos):
         spx, spy = start_pos.x(), start_pos.y()

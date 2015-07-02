@@ -22,7 +22,6 @@ class ColorWheelPanel(UIPanel):
         :param name: Title of the panel and the key for accessing it
         :param default_position: 'bottom', 'right'...
         :param parent: self.main
-        :param ui_buttons: pass a dictionary where buttons from this panel will be added
         """
         UIPanel.__init__(self, name, key, default_position, parent, ui_manager, folded)
         # ### Color wheel
@@ -164,7 +163,6 @@ class ColorWheelInner(QtWidgets.QWidget):
         :param name: Title of the panel and the key for accessing it
         :param default_position: 'bottom', 'right'...
         :param parent: self.main
-        :param ui_buttons: pass a dictionary where buttons from this panel will be added
         """
         QtWidgets.QWidget.__init__(self, parent=parent)
         self._pressed = 0

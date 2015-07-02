@@ -826,7 +826,7 @@ class Forest(BaseModel):
                 self.disconnect_edge(edge)
 
         # -- ui elements --
-        self.main.ui_manager.delete_ui_elements_for(node)
+        self.main.ui_manager.remove_ui_for(node)
         # -- brackets --
         self.bracket_manager.remove_brackets(node)
         # -- dictionaries --
@@ -873,7 +873,7 @@ class Forest(BaseModel):
                     end_node.edges_up.remove(edge)
                     self.update_root_status(end_node)
         # -- ui elements --
-        self.main.ui_manager.delete_ui_elements_for(edge)
+        self.main.ui_manager.remove_ui_for(edge)
         # -- dictionaries --
         if edge.save_key in self.edges:
             self.poke('edges')
@@ -1675,7 +1675,7 @@ class Forest(BaseModel):
     others = Saved("others")
     settings = Saved("settings")
     rules = Saved("rules")
-    vis_data = Saved("vis_data")
+    vis_data = Saved("vis_data", watcher="visualization")
     derivation_steps = Saved("derivation_steps")
     merge_counter = Saved("merge_counter")
     select_counter = Saved("select_counter")

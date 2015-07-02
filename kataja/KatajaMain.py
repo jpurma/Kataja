@@ -86,6 +86,15 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         t = time.time()
         QtWidgets.QMainWindow.__init__(self)
         BaseModel.__init__(self, unique=True)
+        self.setDockOptions(QtWidgets.QMainWindow.AnimatedDocks)
+        self.setCorner(QtCore.Qt.TopLeftCorner, QtCore.Qt.LeftDockWidgetArea)
+        self.setCorner(QtCore.Qt.TopRightCorner, QtCore.Qt.RightDockWidgetArea)
+        self.setCorner(QtCore.Qt.BottomLeftCorner, QtCore.Qt.LeftDockWidgetArea)
+        self.setCorner(QtCore.Qt.BottomRightCorner, QtCore.Qt.RightDockWidgetArea)
+        x, y, w, h = (50, 50, 940, 720)
+        self.setMinimumSize(w, h)
+        self.setGeometry(x, y, w, h)
+        self.setWindowTitle(self.tr("Kataja"))
         print('---- initialized MainWindow base class ... ', time.time() - t)
         self.app = kataja_app
         self.forest = None
@@ -105,11 +114,12 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         self.graph_scene = GraphScene(main=self, graph_view=None)
         print('---- scene init ... ', time.time() - t)
         self.graph_view = GraphView(main=self, graph_scene=self.graph_scene)
+
         print('---- view init ... ', time.time() - t)
         self.graph_scene.graph_view = self.graph_view
         self.ui_manager = UIManager(self)
         self.ui_manager.populate_ui_elements()
-        self.key_manager = KeyPressManager(self)
+        #self.key_manager = KeyPressManager(self)
         self.object_factory = create
         print('---- ui init ... ', time.time() - t)
         self.forest_keeper = ForestKeeper()
@@ -120,27 +130,15 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         self.forest = Forest()
         print('---- forest init ... ', time.time() - t)
         self.setCentralWidget(self.graph_view)
+        self.show()
+        self.raise_()
+        self.activateWindow()
+        self.status_bar = self.statusBar()
+        self.add_message('Welcome to Kataja! (h) for help')
 
         print('---- set palette ... ', time.time() - t)
         self.load_treeset()
         print('---- loaded treeset ... ', time.time() - t)
-        x, y, w, h = (50, 50, 940, 720)
-        self.setMinimumSize(w, h)
-        self.setWindowTitle(self.tr("Kataja"))
-        self.setDockOptions(QtWidgets.QMainWindow.AnimatedDocks)
-        self.setCorner(QtCore.Qt.TopLeftCorner, QtCore.Qt.LeftDockWidgetArea)
-        self.setCorner(QtCore.Qt.TopRightCorner, QtCore.Qt.RightDockWidgetArea)
-        self.setCorner(QtCore.Qt.BottomLeftCorner, QtCore.Qt.LeftDockWidgetArea)
-        self.setCorner(QtCore.Qt.BottomRightCorner, QtCore.Qt.RightDockWidgetArea)
-        # toolbar = QtWidgets.QToolBar()
-        # toolbar.setFixedSize(480, 40)
-        # self.addToolBar(toolbar)
-        self.status_bar = self.statusBar()
-        self.setGeometry(x, y, w, h)
-        self.show()
-        self.raise_()
-        self.activateWindow()
-        self.add_message('Welcome to Kataja! (h) for help')
         self.action_finished()
         print('---- finished start sequence... ', time.time() - t)
 
@@ -162,7 +160,6 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         :param forest:
         """
         ctrl.undo_disabled = True
-        self.ui_manager.clear_items()
         if self.forest:
             self.forest.retire_from_drawing()
         self.forest = self.forest_keeper.forest
@@ -220,7 +217,7 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         if hasattr(caller, 'get_text_input'):
             text = caller.get_text_input()
         if ctrl.single_selection():  # live editing
-            self.forest.reform_constituent_node_from_string(text, ctrl.get_selected())
+            self.forest.reform_constituent_node_from_string(text, ctrl.get_single_selected())
         else:
             self.forest.create_node_from_string(text, caller.pos())
         self.action_finished()
@@ -376,14 +373,13 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         :param kw:
         :return:
         """
-        for node in ctrl.get_all_selected():
+        for node in ctrl.selected:
             node.release()
         self.action_finished()
         return True
 
     def clear_all(self):
         """ Empty everything - maybe necessary before loading new data. """
-        self.ui_manager.clear_items()
         if self.forest:
             self.forest.retire_from_drawing()
             self.forest = None
@@ -404,7 +400,7 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         """ Check if the selected node can be merged upwards to the root node of its current tree.
         :return: bool
         """
-        return ctrl.single_selection() and not ctrl.get_selected().is_root_node()
+        return ctrl.single_selection() and not ctrl.get_single_selected().is_root_node()
 
     # ### Unused two-phase actions ###############################################
 
@@ -438,7 +434,7 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         """ MergeTo is a two phase action. First the target is selected in pointing mode, then 'end_merge_to' is called
         :param event:
         """
-        self.start_pointing_mode(event, method=self.end_merge_to, data={'start': ctrl.get_selected()})
+        self.start_pointing_mode(event, method=self.end_merge_to, data={'start': ctrl.get_single_selected()})
         return False
 
     def end_merge_to(self, event):

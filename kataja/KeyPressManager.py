@@ -17,21 +17,40 @@ class ShortcutSolver(QtCore.QObject):
     def __init__(self, ui_manager):
         QtCore.QObject.__init__(self)
         self.ui_manager = ui_manager
+        self.clickable_actions = {}
 
     def eventFilter(self, action, event):
+        """
+
+        :param action:
+        :param event:
+        :return:
+        """
         if event.type() == QtCore.QEvent.Shortcut and event.isAmbiguous():
-            print('Dealing with ambiguous action shortcut, ', action, action.isEnabled(), action.data())
-            act_data = self.ui_manager.actions[action.data()]
-            element = act_data.get('ui_element', None)
-            if element and isinstance(element, QtWidgets.QAbstractButton):
-                assert (element.isVisible())
-                print('Coming from element, ', element, element.isVisible())
-                if element.isVisible():
-                    element.animateClick()
-                    return True
+            key = event.key().toString()
+            if key in self.clickable_actions:
+                els = self.clickable_actions.get(key, [])
+                for e in els:
+                    if e.isVisible():
+                        e.animateClick()
+                        return True
+                print('diipa daapa')
+                return True
             else:
-                print("Don't know how to handle this ambiguous shortcut in ", action)
+                print('couldnt solve ambiguous action: ', action, event, event.key().toString())
         return False
+
+    def add_solvable_action(self, key_seq, element):
+        """
+
+        :param key_seq: QKeySequence
+        :return:
+        """
+        key = key_seq.toString()
+        if key not in self.clickable_actions:
+            self.clickable_actions[key] = [element]
+        else:
+            self.clickable_actions[key].append(element)
 
 
 class ButtonShortcutFilter(QtCore.QObject):
@@ -86,7 +105,7 @@ class KeyPressManager:
         then they are delegated further """
 
         ks = event.text()
-        debug.keys('received key press: ', ks)
+        print('received key press: ', ks)
         self.ui_manager.add_command_feedback(ks)
         # if ctrl.selected and all([item.can_take_keyevent(event) for item in ctrl.selected]):
         # for item in ctrl.selected:
@@ -95,7 +114,7 @@ class KeyPressManager:
 
         act = self._shortcuts.get(ks)
         if act:
-            debug.keys('triggering action ', act.data())
+            print('triggering action ', act.data())
             act.trigger()
             self.ui_manager.show_command_prompt()
             return True
@@ -109,7 +128,7 @@ class KeyPressManager:
         :param event:
         """
         key = event.key()
-        debug.keys("key_press:", key)
+        print("key_press:", key)
         qtkey = QtCore.Qt.Key
         focus = ctrl.focus  # : :type focus: Movable
 
@@ -180,7 +199,7 @@ class KeyPressManager:
 
         """
         if ctrl.single_selection():
-            item = ctrl.get_selected()
+            item = ctrl.get_single_selected()
             if isinstance(item, ConstituentNode):
                 print('merge up, missing function call here')
                 assert False

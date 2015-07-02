@@ -62,7 +62,6 @@ class KatajaAction(QtWidgets.QAction):
         self.args = args or []
         # when triggered from menu, forward the call to more complex trigger handler
         self.triggered.connect(self.action_triggered)
-        #self.installEventFilter(shortcut_solver)
 
         # if action has shortcut_context, it shouldn't have global shortcut
         # in these cases shortcut is tied to ui_element.
@@ -126,14 +125,12 @@ class KatajaAction(QtWidgets.QAction):
             else:
                 element.setStatusTip(tooltip)
                 element.setToolTip(tooltip)
+
         shortcut = self.shortcut()
         shortcut_context = self.shortcutContext()
         if shortcut and shortcut_context:
-            # element shortcuts are available only when element is visible
-            element.setShortcut(QtGui.QKeySequence(shortcut))
-            # there are still possibility that e.g. two panels that read enter or esc are visible.
-            # button_shortcut_filter should decide between these.
-            element.installEventFilter(ctrl.ui.button_shortcut_filter)
+            ctrl.ui.manage_shortcut(shortcut, element, self)
+
         if isinstance(element, PanelButton):
             element.clicked.connect(self.action_triggered)
             element.setFocusPolicy(QtCore.Qt.TabFocus)

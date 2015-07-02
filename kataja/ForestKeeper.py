@@ -180,4 +180,4 @@ class ForestKeeper(BaseModel):
 
     forests = Saved("forests")
     current_index = Saved("current_index")
-    forest = Saved("forest")
+    forest = Saved("forest", watcher="forest_changed")

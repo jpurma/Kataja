@@ -36,6 +36,7 @@ from kataja.utils import caller
 # )
 # gc.set_debug(flags)
 
+
 class Controller:
     """ Controller provides
     a) access to shared objects or objects upstream in containers.
@@ -55,6 +56,7 @@ class Controller:
         self.Constituent = None
         self.Feature = None
         self.FL = None
+        self.watchers = {}
         self.structure = None
         self.selected = []
         self.selected_root = None
@@ -135,13 +137,12 @@ class Controller:
     def graph_view(self):
         return self.main.graph_view
 
-
     def add_message(self, msg):
         """
 
         :param msg:
         """
-        self.main.add_message(msg)
+        self.ui.add_message(msg)
 
     def is_zooming(self):
         return self.main.graph_view.zoom_timer.isActive()
@@ -206,22 +207,15 @@ class Controller:
         """
         return len(self.selected) > 1
 
-    def get_selected(self):
+    def get_single_selected(self):
         """ Return as one object
         :return:
         """
 
-        if self.selected:
-            # todo: do we need this? creates more complications than it solves?
+        if len(self.selected) == 1:
             return self.selected[-1]
         else:
             return None
-
-    def get_all_selected(self):
-        """ Fixme: Always return selected as a list
-        :return:
-        """
-        return self.selected
 
     def is_selected(self, obj) -> bool:
         """
@@ -231,7 +225,7 @@ class Controller:
         """
         return obj in self.selected
 
-    def deselect_objects(self, update_ui=True):
+    def deselect_objects(self):
         """
 
         :param update_ui:
@@ -239,29 +233,24 @@ class Controller:
         olds = list(self.selected)
         self.selected = []
         for obj in olds:
-            obj.refresh_selection_status(False)
-        if update_ui:
-            self.main.ui_manager.update_selections(self.selected, olds)
+            obj.update_selection_status(False)
+        self.call_watchers(self, 'selection_changed', value=self.selected)
 
     def select(self, obj):
         """
 
         :param obj:
         """
-        # if hasattr(obj, 'info_dump'):
-        # obj.info_dump()
-        old_selected = list(self.selected)
-        if self.selected:
-            self.deselect_objects(update_ui=False)
+        for o in self.selected:
+            o.update_selection_status(False)
         self.selected = [obj]
         if hasattr(obj, 'syntactic_object'):
             # here is room for constituent specific print information
             self.add_message('selected %s' % str(obj))
         else:
             self.add_message('selected %s' % str(obj))
-
-        obj.refresh_selection_status(True)
-        self.main.ui_manager.update_selections(self.selected, old_selected)
+        obj.update_selection_status(True)
+        self.call_watchers(self, 'selection_changed', value=self.selected)
 
     def add_to_selection(self, obj):
         """
@@ -271,8 +260,8 @@ class Controller:
         if obj not in self.selected:
             self.selected.append(obj)
             self.add_message('added to selection %s' % str(obj))
-            obj.refresh_selection_status(True)
-            self.main.ui_manager.update_selections(self.selected)
+            obj.update_selection_status(True)
+            self.call_watchers(self, 'selection_changed', value=self.selected)
 
     def remove_from_selection(self, obj):
         """
@@ -281,8 +270,8 @@ class Controller:
         """
         if obj in self.selected:
             self.selected.remove(obj)
-            obj.refresh_selection_status(False)
-            self.main.ui_manager.update_selections(self.selected, [obj])
+            obj.update_selection_status(False)
+            self.call_watchers(self, 'selection_changed', value=self.selected)
 
     # ******** /selection *******
 
@@ -305,3 +294,49 @@ class Controller:
         """*** calling quits ***"""
         sys.exit()
 
+    # Watchers #####################################
+
+    def add_watcher(self, signal, obj):
+        """
+
+        :param signal:
+        :param obj:
+        """
+        print('adding watcher: ', obj, signal)
+        if signal in self.watchers:
+            watchlist = self.watchers[signal]
+            if obj not in watchlist:
+                watchlist.append(obj)
+        else:
+            self.watchers[signal] = [obj]
+
+    def remove_from_watch(self, obj):
+        """
+
+        :param obj:
+        """
+        print('removing from watch: ', obj)
+        for watchlist in self.watchers.values():
+            if obj in watchlist:
+                watchlist.remove(obj)
+
+    def get_watchers(self, signal):
+        """
+        :param signal:
+        :return:
+        """
+        return self.watchers.get(signal, [])
+
+    def call_watchers(self, obj, signal, field_name=None, value=None):
+        """ Alert (UI) objects that are watching for changes for given field in given object
+        :param obj:
+        :param signal:
+        :param field_name
+        :param value:
+        :return:
+        """
+        watchers = self.get_watchers(signal)
+        for watcher in watchers:
+            watcher.watch_alerted(obj, signal, field_name, value)
+        if not watchers:
+            print('no watcher found for signal "%s"' % signal)

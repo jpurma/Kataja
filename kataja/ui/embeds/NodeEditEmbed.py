@@ -163,7 +163,8 @@ class NodeEditEmbed(UIEmbed):
                 self.fields[key].setFocus()
                 return
         # default to first field in field order
-        self.fields[ed['field_order'][0]].setFocus()
+        if self.fields:
+            self.fields[ed['field_order'][0]].setFocus()
 
     def close(self):
         UIEmbed.close(self)

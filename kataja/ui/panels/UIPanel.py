@@ -58,6 +58,7 @@ class PanelTitle(QtWidgets.QWidget):
         # self.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum))
         self.panel = panel
         self.preferred_size = QtCore.QSize(220, 22)
+        self._watched = False
         self.setBackgroundRole(QtGui.QPalette.Base)
         self.setAutoFillBackground(True)
         layout = QtWidgets.QHBoxLayout()
@@ -117,7 +118,9 @@ class UIPanel(QtWidgets.QDockWidget):
         self.folded = folded
         self.name = name
         self.ui_key = key
+        self._watched = False
         self._last_position = None
+        self.watchlist = []
         self.ui_manager = ui_manager
         self.default_position = default_position
         if default_position == 'bottom':
@@ -139,7 +142,6 @@ class UIPanel(QtWidgets.QDockWidget):
         self.setTitleBarWidget(title_widget)
         self.report_top_level(self.isFloating())
 
-
     def finish_init(self):
         self.set_folded(self.folded)
 
@@ -151,6 +153,18 @@ class UIPanel(QtWidgets.QDockWidget):
 
     def get_visibility_action(self):
         return self.ui_manager.qt_actions['toggle_panel_%s' % self.ui_key]
+
+    def update_panel(self):
+        """ Implement if general update everything is needed
+        :return:
+        """
+        pass
+
+    def update_colors(self):
+        """ Implement if trickier color update than palette change is needed
+        :return:
+        """
+        pass
 
 
 
@@ -167,7 +181,6 @@ class UIPanel(QtWidgets.QDockWidget):
 
     def pin_to_dock(self):
         self.setFloating(False)
-
 
     def report_dock_location(self, area):
         """
@@ -238,7 +251,6 @@ class UIPanel(QtWidgets.QDockWidget):
         elif isinstance(element, (QtWidgets.QSpinBox, QtWidgets.QDoubleSpinBox)):
             element.setSuffix(' (?)')
 
-
     @staticmethod
     def remove_ambiguous_marker(element):
         if isinstance(element, QtWidgets.QComboBox):
@@ -272,7 +284,6 @@ class UIPanel(QtWidgets.QDockWidget):
         else:
             return QtCore.QSize(100, 100)
 
-
     def initial_position(self):
         """
 
@@ -282,6 +293,20 @@ class UIPanel(QtWidgets.QDockWidget):
         return QtCore.QPoint(ctrl.main.x() / ctrl.main.devicePixelRatio() + ctrl.main.width(),
                              ctrl.main.y() / ctrl.main.devicePixelRatio())
 
+    def watch_alerted(self, obj, signal, field_name, value):
+        """ Receives alerts from signals that this object has chosen to listen. These signals
+         are declared in 'self.watchlist'.
+
+         This method will try to sort out the received signals and act accordingly.
+
+        :param obj: the object causing the alarm
+        :param signal: identifier for type of the alarm
+        :param field_name: name of the field of the object causing the alarm
+        :param value: value given to the field
+        :return:
+        """
+        print('watch alerted: ', obj, signal, field_name, value)
+
     def showEvent(self, QShowEvent):
         """
 
@@ -289,8 +314,21 @@ class UIPanel(QtWidgets.QDockWidget):
         """
         if self.isFloating():
             self.move(self.initial_position())
+        if not self._watched:
+            for signal in self.watchlist:
+                ctrl.add_watcher(signal, self)
+            self._watched = True
         QtWidgets.QDockWidget.showEvent(self, QShowEvent)
 
+    def closeEvent(self, QCloseEvent):
+        """
+
+        :param QCloseEvent:
+        :return:
+        """
+        ctrl.remove_from_watch(self)
+        self._watched = False
+        QtWidgets.QDockWidget.closeEvent(self, QCloseEvent)
 
 NONE = 0
 FLAG = 1

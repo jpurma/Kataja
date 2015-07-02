@@ -45,10 +45,13 @@ class GlossNode(Node):
     node_type = GLOSS_NODE
     short_name = "GNode"
 
+    visible = {'label': {'order': 3}}
+    editable = {'label': dict(name='Gloss', order=3, prefill='gloss',
+                              tooltip='translation (optional)')}
+
     def __init__(self, text=''):
         Node.__init__(self)
         self.label = text
-
 
     def after_init(self):
         """ After_init is called in 2nd step in process of creating objects:

@@ -19,7 +19,6 @@ class ColorMappingPanel(UIPanel):
         :param name: Title of the panel and the key for accessing it
         :param default_position: 'bottom', 'right'...
         :param parent: self.main
-        :param ui_buttons: pass a dictionary where buttons from this panel will be added
         """
         UIPanel.__init__(self, name, key, default_position, parent, ui_manager, folded)
         inner = QtWidgets.QWidget(self)
@@ -30,7 +29,6 @@ class ColorMappingPanel(UIPanel):
         button_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.MinimumExpanding)
         self.preferred_size = (200, 220)
         selector = QtWidgets.QComboBox(self)
-        ui_buttons['color_mode'] = selector
 
         selector.addItems([c['name'] for c in prefs.color_modes.values()])
         selector.activated.connect(self.change_color_mode)

@@ -23,14 +23,11 @@ class ColorPanel(UIPanel):
         :param name: Title of the panel and the key for accessing it
         :param default_position: 'bottom', 'right'...
         :param parent: self.main
-        :param ui_buttons: pass a dictionary where buttons from this panel will be added
         """
         UIPanel.__init__(self, name, key, default_position, parent, ui_manager, folded)
         layout = QtWidgets.QVBoxLayout()
         widget = QtWidgets.QWidget(self)
         selector = QtWidgets.QComboBox(self)
-        ui_manager.ui_buttons['color_mode'] = selector
-
         selector.addItems([c['name'] for c in prefs.color_modes.values()])
         selector.activated.connect(self.change_color_mode)
         self.mode_select = selector

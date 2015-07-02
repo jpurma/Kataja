@@ -238,7 +238,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             return item
         # ################ Relative left/right/up/down #############################
         else:
-            current = ctrl.get_selected()
+            current = ctrl.get_single_selected()
             # ################### Nodes #############################
             if isinstance(current, Node):
                 if direction == 'left':
@@ -536,7 +536,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         elif ctrl.pressed:
             print('mouseReleaseEvent, but still ctrl.pressed!:', ctrl.pressed)
         if self.graph_view.rubberband_mode():
-            ctrl.deselect_objects(update_ui=False)
+            ctrl.deselect_objects()
             # prioritize nodes in multiple selection. e.g. if there are nodes and edges in
             # selected area, select only nodes. If there are multiple edges and no nodes, then
             # take edges

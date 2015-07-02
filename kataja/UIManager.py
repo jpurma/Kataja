@@ -119,28 +119,22 @@ class UIManager:
         self.scene = main.graph_scene
         self.actions = {}
         self._action_groups = {}
-        self._dynamic_action_groups = {}
         self.qt_actions = {}
         self._top_menus = {}
 
         self._items = {}
-        # self.setSceneRect(view.parent.geometry())
-        self._rubber_band = None
-        self._rubber_band_origin = None
         self._node_edits = set()
         self.log_writer = MessageWriter()
 
         self._timer_id = 0
-        self._ui_panels = {}
-        self.ui_buttons = {}
+        self._panels = {}
+        self._panel_positions = {}
         self.moving_things = set()
         self.button_shortcut_filter = ButtonShortcutFilter()
+        self.shortcut_solver = ShortcutSolver(self)
 
         self.preferences_dialog = None
         self.color_dialog = None
-
-        # self.hud = HUD(self)
-        # self.info('free drawing')
 
     def populate_ui_elements(self):
         """ These cannot be created in __init__, as individual panels etc. may refer to ctrl.ui,
@@ -148,18 +142,20 @@ class UIManager:
         :return:
         """
         # Create actions based on actions.py and menus based on
-        self.create_actions()
+        additional_actions = self.create_actions()
         # Create top menus, requires actions to exist
-        self.create_menus()
+        self.create_menus(additional_actions)
         # Create UI panels, requires actions to exist
         self.create_panels()
+        ctrl.add_watcher('selection_changed', self)
+        ctrl.add_watcher('forest_changed', self)
 
     def get_panel(self, panel_id) -> UIPanel:
         """
         :param panel_id: panel key. Probably from constant from globals
         :return: UIPanel instance or None
         """
-        return self._ui_panels.get(panel_id, None)
+        return self._panels.get(panel_id, None)
 
     def get_action_group(self, action_group_name):
         """ Get action group with this name, or create one if it doesn't exist
@@ -209,67 +205,60 @@ class UIManager:
         return self._items.get(ui_key, None)
 
     def store_panel_positions(self):
-        """
-
-
+        """ Store panel positions temporarily. UI manager doesn't save to file, if that is
+        wanted, data has to be sent to some permanency supporting object.
         """
         self._panel_positions = {}
-        for panel_id, panel in self._ui_panels.items():
+        for panel_id, panel in self._panels.items():
             self._panel_positions[panel_id] = panel.geometry()
-            # self.log_panel.setGeometry(0, self.size().height() - self.log_panel.height(),
-            # self.log_panel.width(), self.log_panel.height())
 
     def reset_panel_fields(self):
         """ Update all panel fields, may be costly -- try to do specific updates instead.
         :return:
         """
-        for panel in self._ui_panels.values():
+        for panel in self._panels.values():
             panel.update_fields()
+
+    def watch_alerted(self, obj, signal, field_name, value):
+        """ Receives alerts from signals that this object has chosen to listen. These signals
+         are declared in 'self.watchlist'.
+
+         This method will try to sort out the received signals and act accordingly.
+
+        :param obj: the object causing the alarm
+        :param signal: identifier for type of the alarm
+        :param field_name: name of the field of the object causing the alarm
+        :param value: value given to the field
+        :return:
+        """
+        if signal == 'selection_changed':
+            self.update_selections()
+        elif signal == 'forest_changed':
+            self.clear_items()
+
+
 
     def update_all_fields(self):
         """
 
         """
         print('*** ui update_all_fields called ***')
-        self.update_field('treeset_counter',
-                          '%s/%s' % (self.main.forest_keeper.current_index + 1, len(self.main.forest_keeper.forests)))
-        self.update_field('visualization_selector', self.main.forest.visualization.name)
+        #self.update_field('treeset_counter',
+        #                  '%s/%s' % (self.main.forest_keeper.current_index + 1,
+        # len(self.main.forest_keeper.forests)))
+        #self.update_field('visualization_selector', self.main.forest.visualization.name)
 
-    def update_edge_shapes(self, edge_type, i):
-        """
-
-        :param edge_type:
-        :param i:
-        """
-        if edge_type == g.CONSTITUENT_EDGE:
-            self.ui_buttons['line_type'].setCurrentIndex(i)
-        elif edge_type == g.FEATURE_EDGE:
-            self.ui_buttons['feature_line_type'].setCurrentIndex(i)
-
-    def update_field(self, field_name, value):
-        """ Delegate updating action to panel that hosts that field
-        :param field_name:
-        :param value:
-        """
-        print('update_field for "%s", value: "%s"' % (field_name, value))
-        if field_name in self.ui_buttons:
-            field = self.ui_buttons[field_name]
-            parent = field.parent()
-            while (not hasattr(parent, 'update_field')) and parent:
-                parent = parent.parent()
-            if parent:
-                parent.update_field(field_name, field, value)
-            else:
-                print('did not found field %s from any ui panels' % field_name)
-        else:
-            print('did not found field %s from any ui panels' % field_name)
+    #if edge_type == g.CONSTITUENT_EDGE:
+    #    self.ui_buttons['line_type'].setCurrentIndex(i)
+    #elif edge_type == g.FEATURE_EDGE:
+    #    self.ui_buttons['feature_line_type'].setCurrentIndex(i)
 
     def restore_panel_positions(self):
         """
 
 
         """
-        for name, panel in self._ui_panels.items():
+        for name, panel in self._panels.items():
             if name in self._panel_positions:
                 panel.setGeometry(self._panel_positions[name])
 
@@ -286,34 +275,17 @@ class UIManager:
         for item in self._items.values():
             if hasattr(item, 'update_colors'):
                 item.update_colors()
-        for item in self._ui_panels.values():
-            if hasattr(item, 'update_colors'):
-                item.update_colors()
+        for panel in self._panels.values():
+            panel.update_colors()
 
-    def update_selections(self, selected=None, deselected=None):
-        """ Many UI elements change mode depending on if object of specific type is selected
-        :param selected:
-        :param deselected:
-        """
-        if selected is None:
-            selected = ctrl.get_all_selected()
-        lp = self.get_panel(g.EDGES)
-        if lp:
-            lp.selected_objects_changed()
-            lp.update_panel()
-        lop = self.get_panel(g.LINE_OPTIONS)
-        if lop:
-            lop.update_panel()
-        np = self.get_panel(g.NODES)
-        if np:
-            np.update_panel()
-
+    def update_selections(self):
+        """ Many UI elements change mode depending on if object of specific type is selected """
         # clear all ui pieces
         for item in list(self._items.values()):
             if item.host:
                 self.remove_ui(item)
         # create ui pieces for selected elements
-        for item in selected:
+        for item in ctrl.selected:
             self.update_touch_areas_for_selected(item)
             if isinstance(item, Edge):
                 self.add_control_points(item)
@@ -352,7 +324,7 @@ class UIManager:
             if item.host is obj:
                 item.update_position()
 
-    def delete_ui_elements_for(self, item):
+    def remove_ui_for(self, item):
         """
         :param item: item or iterable of items
         """
@@ -371,17 +343,16 @@ class UIManager:
         """ Build menus and other actions that can be triggered by user based on actions.py"""
 
         main = self.main
-        shortcut_solver = ShortcutSolver(self)
 
         # dynamic actions are created based on other data e.g. available visualization plugins.
         # they are added into actions as everyone else, but there is a special mapping to find
         # them later.
-        # eg. self._dynamic_action_groups['visualizations'] = ['vis_1','vis_2','vis_3'...]
-        self._dynamic_action_groups = {}
+        # eg. additional_actions['visualizations'] = ['vis_1','vis_2','vis_3'...]
+        additional_actions = {}
         self.actions = actions
 
         i = 0
-        self._dynamic_action_groups['visualizations'] = []
+        additional_actions['visualizations'] = []
         for name, vis in VISUALIZATIONS.items():
             key = action_key(name)
             d = {'command': name,
@@ -393,9 +364,9 @@ class UIManager:
                  'viewgroup': 'visualizations',
                  'exclusive': True}
             self.actions[key] = d
-            self._dynamic_action_groups['visualizations'].append(key)
+            additional_actions['visualizations'].append(key)
 
-        self._dynamic_action_groups['panels'] = []
+        additional_actions['panels'] = []
         for panel_key, panel_data in PANELS.items():
             key = 'toggle_panel_%s' % panel_key
             d = {'command': panel_data['name'],
@@ -407,7 +378,7 @@ class UIManager:
                  'exclusive': False,
                  'tooltip': "Close this panel"}
             self.actions[key] = d
-            self._dynamic_action_groups['panels'].append(key)
+            additional_actions['panels'].append(key)
         # ## Create actions
         self._action_groups = {}
         self.qt_actions = {}
@@ -416,8 +387,9 @@ class UIManager:
             action = KatajaAction(key, **data)
             self.qt_actions[key] = action
             main.addAction(action)
+        return additional_actions
 
-    def create_menus(self):
+    def create_menus(self, additional_actions):
         """ Put actions to menus. Menu structure is defined at the top of this file.
         :return: None
         """
@@ -451,12 +423,12 @@ class UIManager:
             exp_items = []
             for item in items:
                 if isinstance(item, str) and item.startswith("$"):
-                    exp_items += self._dynamic_action_groups[item[1:]]
+                    exp_items += additional_actions[item[1:]]
                 elif isinstance(item, tuple):
                     exp_items.append(expand_list(item))
                 else:
                     exp_items.append(item)
-            return (label, exp_items)
+            return label, exp_items
 
         # replace '$names' with dynamic actions
         expanded_menu_structure = OrderedDict()
@@ -473,7 +445,7 @@ class UIManager:
         """ Put actions to panels. Panel contents are defined at the top of this file.
         :return: None
         """
-        self._ui_panels = {}
+        self._panels = {}
         for panel_key in panel_order:
             data = PANELS[panel_key]
             if not data.get('closed', False):
@@ -496,7 +468,7 @@ class UIManager:
         constructor = panel_classes[id]
         new_panel = constructor(name, id, default_position=position, parent=self.main,
                                 ui_manager=self, folded=folded)
-        self._ui_panels[id] = new_panel
+        self._panels[id] = new_panel
         return new_panel
 
     def connect_element_to_action(self, element, action, tooltip_suffix=''):
@@ -509,6 +481,24 @@ class UIManager:
         if isinstance(action, str):
             action = self.qt_actions[action]
         action.connect_element(element, tooltip_suffix)
+
+    def manage_shortcut(self, key_seq, element, action):
+        """ Some shortcut become ambiguous as they are used for several buttons and menus at
+        the same time and we need some extra information to solve these.
+
+        :param key_seq:
+        :param element:
+        :param action:
+        :return:
+        """
+        action.installEventFilter(self.shortcut_solver)
+        if isinstance(element, QtWidgets.QAbstractButton):
+            element.installEventFilter(self.button_shortcut_filter)
+            self.shortcut_solver.add_solvable_action(key_seq, element)
+        element.setShortcut(key_seq)
+
+
+
 
     def get_element_value(self, element):
         """
@@ -648,7 +638,7 @@ class UIManager:
         """ Create touch areas as necessary
         """
         self.remove_touch_areas()
-        for item in ctrl.get_all_selected():
+        for item in ctrl.selected:
             self.update_touch_areas_for_selected(item)
 
     def update_touch_areas_for_selected(self, item):
@@ -767,15 +757,6 @@ class UIManager:
         if sl:
             self.remove_ui(sl)
 
-    # def beginRename(self, node):
-    # ctrl.selected=node
-    # if self.radial_menu:
-    # self.radial_menu.close()
-    # self.radial_menu=TextEditor(node)
-    # self.radial_menu.open()
-    # node.label.hide()
-    # ctrl.main.disable_actions()
-
     # ### Messages ####################################################################
 
     def add_command_feedback(self, msg):
@@ -855,9 +836,7 @@ class UIManager:
                                     size=(48, 24))
 
     def add_buttons_for_edge(self, edge):
-        # Constituent edges have a button to remove the edge and the node in between.
-        """
-
+        """ Constituent edges have a button to remove the edge and the node in between.
         :param edge:
         """
         if edge.edge_type is g.CONSTITUENT_EDGE:
@@ -983,4 +962,3 @@ class UIManager:
             self.get_ui_activity_marker().hide()
             self.killTimer(self._timer_id)
             self._timer_id = 0
-
