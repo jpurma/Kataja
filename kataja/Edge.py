@@ -806,19 +806,14 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
         :param points:
         :param cp:
         """
-        print('adjusting control point')
         x, y = points
         self.poke('curve_adjustment')
         self.prepare_adjust_array(index)
         z = self.curve_adjustment[index][2]
         self.curve_adjustment[index] = (x, y, z)
-        print(self.curve_adjustment, self.curve_adjustment)
+        self.call_watchers('edge_adjustment', 'curve_adjustment', self.curve_adjustment)
         self.make_path()
         self.update()
-        if cp:
-            panel = ctrl.ui.get_panel(g.LINE_OPTIONS)
-            if panel:
-                panel.update_control_point_spinboxes()
 
     def adjust_control_point_xy(self, index, dim, value):
         """ Called when modifying control point settings directly
@@ -836,8 +831,8 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
             self.curve_adjustment[index] = x, value, z
         elif dim == 'z':
             self.curve_adjustment[index] = x, y, value
+        self.call_watchers('edge_adjustment', 'curve_adjustment', self.curve_adjustment)
         self.make_path()
-        ctrl.ui.update_control_point_positions()
         self.update()
 
     def reset_control_point(self, index):
@@ -858,8 +853,6 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
         self.make_path()
         ctrl.ui.update_control_point_positions()
         self.update()
-        panel = ctrl.ui.get_panel(g.LINE_OPTIONS)
-        panel.update_control_point_spinboxes()
 
     def update_end_points(self):
         """

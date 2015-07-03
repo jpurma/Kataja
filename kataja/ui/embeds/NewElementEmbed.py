@@ -58,6 +58,7 @@ class NewElementMarker(QtWidgets.QGraphicsItem):
     def __init__(self, scenePos, embed, ui_key):
         QtWidgets.QGraphicsItem.__init__(self)
         self.ui_key = ui_key
+        self.host = None
         self.start_point = None
         self.end_point = None
         self.embed = embed

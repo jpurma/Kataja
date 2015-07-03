@@ -93,8 +93,6 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         self.setCorner(QtCore.Qt.BottomRightCorner, QtCore.Qt.RightDockWidgetArea)
         x, y, w, h = (50, 50, 940, 720)
         self.setMinimumSize(w, h)
-        self.setGeometry(x, y, w, h)
-        self.setWindowTitle(self.tr("Kataja"))
         print('---- initialized MainWindow base class ... ', time.time() - t)
         self.app = kataja_app
         self.forest = None
@@ -119,7 +117,7 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         self.graph_scene.graph_view = self.graph_view
         self.ui_manager = UIManager(self)
         self.ui_manager.populate_ui_elements()
-        #self.key_manager = KeyPressManager(self)
+        self.key_manager = KeyPressManager(self)
         self.object_factory = create
         print('---- ui init ... ', time.time() - t)
         self.forest_keeper = ForestKeeper()
@@ -130,6 +128,8 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         self.forest = Forest()
         print('---- forest init ... ', time.time() - t)
         self.setCentralWidget(self.graph_view)
+        self.setGeometry(x, y, w, h)
+        self.setWindowTitle(self.tr("Kataja"))
         self.show()
         self.raise_()
         self.activateWindow()
@@ -139,6 +139,9 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         print('---- set palette ... ', time.time() - t)
         self.load_treeset()
         print('---- loaded treeset ... ', time.time() - t)
+        # toolbar = QtWidgets.QToolBar()
+        # toolbar.setFixedSize(480, 40)
+        # self.addToolBar(toolbar)
         self.action_finished()
         print('---- finished start sequence... ', time.time() - t)
 

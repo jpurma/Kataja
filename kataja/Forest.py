@@ -255,19 +255,16 @@ class Forest(BaseModel):
             self.scene.removeItem(self.gloss)
             self.gloss = None
 
-    @caller
-    def change_visualization(self, name):
+    def set_visualization(self, name):
         """ Switches the active visualization to visualization with given key
         :param name: string
         """
-        print('changing visualization to ', name)
         if self.visualization and self.visualization.say_my_name() == name:
             self.visualization.reselect()
         else:
             vs = self.main.visualizations
             self.visualization = vs.get(name, vs.get(prefs.default_visualization, None))
             self.vis_data = {'name': self.visualization.say_my_name()}
-
             self.visualization.prepare(self)
         self.main.graph_scene.manual_zoom = False
 
@@ -275,9 +272,9 @@ class Forest(BaseModel):
         """ Verify that the active visualization is the same as defined in the vis_data (saved visualization state)
         :return: None
         """
-        name = self.vis_data.get('name', None)
+        name = self.vis_data.get('name', prefs.default_visualization)
         if (not self.visualization) or name != self.visualization.say_my_name():
-            self.change_visualization(name)
+            self.set_visualization(name)
 
     # ### Maintenance and support methods ################################################
 

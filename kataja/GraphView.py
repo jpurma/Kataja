@@ -76,8 +76,6 @@ class GraphView(QtWidgets.QGraphicsView):
         self._target_rect = QtCore.QRectF(-300, -300, 300, 300)
         self.zoom_timer = QtCore.QBasicTimer()
 
-    # def drawBackground(self, painter, rect):
-    # painter.fillRect(rect, colors.paper)
     #@time_me
     def instant_fit_to_view(self, target_rect):
         """ Fit the current scene into view, snugly
@@ -87,7 +85,7 @@ class GraphView(QtWidgets.QGraphicsView):
         self.fitInView(target_rect, 1)
         self._fit_scale = self.transform().m11()
         self.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
-        self.main.ui_manager.update_positions()
+        ctrl.call_watchers(self, 'viewport_changed')
 
     def scale_view_by(self, delta):
         """
@@ -106,7 +104,7 @@ class GraphView(QtWidgets.QGraphicsView):
             factor = 9.0
         self.resetTransform()
         self.scale(factor, factor)
-        self.main.ui_manager.update_positions()
+        ctrl.call_watchers(self, 'viewport_changed')
         return factor
 
     # ## WINDOW ###
@@ -117,8 +115,7 @@ class GraphView(QtWidgets.QGraphicsView):
         :param event:
         """
         QtWidgets.QGraphicsView.resizeEvent(self, event)
-        if hasattr(self.main, 'ui_manager'):
-            self.main.ui_manager.update_positions()
+        ctrl.call_watchers(self, 'viewport_changed')
 
     # ######### MOUSE ##############
 

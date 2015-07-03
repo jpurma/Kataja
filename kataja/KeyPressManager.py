@@ -7,9 +7,9 @@ __author__ = 'purma'
 
 
 class ShortcutSolver(QtCore.QObject):
-    """ I want to have Shortcuts available in Menus and also to have 'button clicked' effect in panels when the
-    relevant shortcut is pressed. Qt doesn't like ambiguous shortcuts, so we interrupt those and only pseudo-click
-    the button in those cases.
+    """ I want to have Shortcuts available in Menus and also to have 'button clicked' effect in
+    panels when the relevant shortcut is pressed. Qt doesn't like ambiguous shortcuts,
+    so we interrupt those and only pseudo-click the button in those cases.
 
     :param ui_manager:
     """

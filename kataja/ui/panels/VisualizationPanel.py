@@ -32,7 +32,7 @@ class VisualizationPanel(UIPanel):
         for key, item in VISUALIZATIONS.items():
             selector.addItem('%s (%s)' % (key, item.shortcut), key)
 
-        ui_manager.connect_element_to_action(selector, 'change_visualization')
+        ui_manager.connect_element_to_action(selector, 'set_visualization')
         layout.addWidget(selector)
         inner.setLayout(layout)
         self.watchlist = ['visualization']

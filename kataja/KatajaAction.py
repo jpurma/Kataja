@@ -95,8 +95,8 @@ class KatajaAction(QtWidgets.QAction):
             args = []
         if self.args:
             args += self.args
-        print("Doing action '%s' with method '%s' and with sender %s and args: %s" %
-              (self.key, self.method, self.sender(), str(args)))
+        #print("Doing action '%s' with method '%s' and with sender %s and args: %s" %
+        #      (self.key, self.method, self.sender(), str(args)))
         # Disable undo if necessary
         remember_undo_state = ctrl.undo_disabled
         if not self.undoable:

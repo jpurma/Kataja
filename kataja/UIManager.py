@@ -149,6 +149,7 @@ class UIManager:
         self.create_panels()
         ctrl.add_watcher('selection_changed', self)
         ctrl.add_watcher('forest_changed', self)
+        ctrl.add_watcher('viewport_changed', self)
 
     def get_panel(self, panel_id) -> UIPanel:
         """
@@ -235,6 +236,8 @@ class UIManager:
             self.update_selections()
         elif signal == 'forest_changed':
             self.clear_items()
+        elif signal == 'viewport_changed':
+            self.update_positions()
 
 
 

@@ -238,28 +238,6 @@ class UIPanel(QtWidgets.QDockWidget):
         else:
             return -1
 
-    @staticmethod
-    def add_and_select_ambiguous_marker(element):
-
-        if isinstance(element, QtWidgets.QComboBox):
-            i = UIPanel.find_list_item(g.AMBIGUOUS_VALUES, element)
-            if i == -1:
-                element.insertItem(0, '---', g.AMBIGUOUS_VALUES)
-                element.setCurrentIndex(0)
-            else:
-                element.setCurrentIndex(i)
-        elif isinstance(element, (QtWidgets.QSpinBox, QtWidgets.QDoubleSpinBox)):
-            element.setSuffix(' (?)')
-
-    @staticmethod
-    def remove_ambiguous_marker(element):
-        if isinstance(element, QtWidgets.QComboBox):
-            i = UIPanel.find_list_item(g.AMBIGUOUS_VALUES, element)
-            if i > -1:
-                element.removeItem(i)
-        elif isinstance(element, (QtWidgets.QSpinBox, QtWidgets.QDoubleSpinBox)):
-            element.setSuffix('')
-
 
     def minimumSizeHint(self):
         if self.folded:

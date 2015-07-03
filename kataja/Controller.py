@@ -163,29 +163,6 @@ class Controller:
             if msg == self.main.status_bar.currentMessage():
                 self.main.status_bar.clearMessage()
 
-    def announce(self, signal, *args):
-        """ Announcing is used to broadcast update requests to objects in graph scene
-        or UI items. Items need to support this by having signal in 
-        'receives_signals'- list and by having 'receive_signal' method that then
-        distinguishes between different signals. Announcements can include arguments.
-        :param signal:
-        :param args:
-        """
-        # self.main.ui_manager.forward_signal(signal, *args)
-        self.main.graph_scene.forward_signal(signal, *args)
-
-    def send_event(self, event_id, **kwargs):
-        """
-
-        :param event_id:
-        :param kwargs:
-        """
-        event = QtCore.QEvent(event_id)
-        # noinspection PyTypeChecker
-        QtWidgets.QApplication.sendEvent(self.main, event)
-        # sevent = QtWidgets.QGraphicsSceneEvent(event_id)
-        self.main.graph_scene.sceneEvent(event)
-
         # ******* Selection *******
 
     # trees and edges can be selected.

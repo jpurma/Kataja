@@ -458,7 +458,6 @@ def change_constituent_edge_shape(shape=''):
         shape = list(SHAPE_PRESETS.keys())[i]
         ctrl.forest.settings.edge_type_settings(g.CONSTITUENT_EDGE, 'shape_name', shape)
     ctrl.main.add_message('(s) Change constituent edge shape: %s-%s' % (i, shape))
-    ctrl.announce(g.EDGE_SHAPES_CHANGED, g.CONSTITUENT_EDGE, i)
 
 a['merge_edge_shape'] = {
     'command': 'Change branch &shape',
@@ -660,7 +659,6 @@ def change_edge_shape(shape):
                 edge.update_shape()
     elif scope:
         ctrl.forest.settings.edge_type_settings(scope, 'shape_name', shape)
-        ctrl.announce(g.EDGE_SHAPES_CHANGED, scope, shape)
     line_options = ctrl.ui.get_panel(g.LINE_OPTIONS)
     if line_options:
         line_options.update_panel()
@@ -808,7 +806,6 @@ def change_leaf_shape(dim, value=0):
             options_panel.update_panel()
         else:
             raise ValueError
-        ctrl.announce(g.EDGE_SHAPES_CHANGED, panel.scope, value)
 
 a['leaf_shape_x'] = {
     'command': 'Line leaf shape width',
@@ -848,7 +845,6 @@ def change_edge_thickness(dim, value=0):
             options_panel.update_panel()
         else:
             ctrl.forest.settings.edge_shape_settings(panel.scope, 'thickness', value)
-        ctrl.announce(g.EDGE_SHAPES_CHANGED, panel.scope, value)
 
 a['edge_thickness'] = {
     'command': 'Line thickness',
@@ -906,7 +902,6 @@ def change_curvature(dim, value=0):
             options_panel.update_panel()
         else:
             raise ValueError
-        ctrl.announce(g.EDGE_SHAPES_CHANGED, panel.scope, value)
 
 a['edge_curvature_x'] = {
     'command': 'Line curvature modifier X',
@@ -959,10 +954,10 @@ def change_visualization(sender, visualization_key=None):
         action = ctrl.ui.qt_actions[action_key(visualization_key)]
         action.setChecked(True)
     if visualization_key:
-        ctrl.forest.change_visualization(visualization_key)
+        ctrl.forest.set_visualization(visualization_key)
         ctrl.add_message(visualization_key)
 
-a['change_visualization'] = {
+a['set_visualization'] = {
     'command': 'Change visualization algorithm',
     'method': change_visualization,
     'sender_arg': True,
@@ -1066,7 +1061,7 @@ def create_new_arrow(sender):
     """ Create a new arrow into embed menu's location
     :return: None
     """
-    print("New arrow called")
+    print("New arrow called", sender)
     embed = get_ui_container(sender)
     p1, p2 = embed.get_marker_points()
     text = embed.input_line_edit.text()
