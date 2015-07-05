@@ -84,6 +84,8 @@ class Forest(BaseModel):
         self.roots = []  # the current line of trees
         self.nodes = {}
         self.edges = {}
+        self.edge_types = set()
+        self.node_types = set()
         self.others = {}
         self.vis_data = {}
         self.merge_counter = 0
@@ -325,12 +327,14 @@ class Forest(BaseModel):
         if isinstance(item, Node):
             self.poke('nodes')
             self.nodes[item.save_key] = item
+            self.node_types.add(item.node_type)
             if item.syntactic_object:
                 # remember to rebuild nodes_by_uid in undo/redo, as it is not stored in model
                 self.nodes_from_synobs[item.syntactic_object.save_key] = item
         elif isinstance(item, Edge):
             self.poke('edges')
             self.edges[item.save_key] = item
+            self.edge_types.add(item.edge_type)
         elif isinstance(item, TextArea):
             self.poke('others')
             self.others[item.save_key] = item
@@ -830,8 +834,19 @@ class Forest(BaseModel):
         if node.save_key in self.nodes:
             self.poke('nodes')
             del self.nodes[node.save_key]
+        # -- check if it is last of its type --
+        found = False
+        my_type = node.node_type
+        for n in self.nodes.values():
+            if n.node_type == my_type:
+                found = True
+                break
+        if not found:
+            self.node_types.remove(my_type)
+        # -- synobj-to-node -mapping (is it used anymore?)
         if node.syntactic_object and node.syntactic_object.save_key in self.nodes_from_synobs:
             del self.nodes_from_synobs[node.syntactic_object.save_key]
+
         if node in self.roots:
             self.poke('roots')
             self.roots.remove(node)
@@ -875,6 +890,15 @@ class Forest(BaseModel):
         if edge.save_key in self.edges:
             self.poke('edges')
             del self.edges[edge.save_key]
+        # -- check if it is last of its type --
+        found = False
+        my_type = edge.edge_type
+        for e in self.edges.values():
+            if e.edge_type == my_type:
+                found = True
+                break
+        if not found:
+            self.edge_types.remove(my_type)
         # -- scene --
         sc = edge.scene()
         if sc:

@@ -316,6 +316,7 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
             self.poke('label_data')
             self.label_data['start_at'] = value
             self.update_label_pos()
+            self.call_watchers('edge_label_adjust', 'start_at', value)
 
 
     @property
@@ -336,6 +337,7 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
             self.poke('label_data')
             self.label_data['angle'] = value
             self.update_label_pos()
+            self.call_watchers('edge_label_adjust', 'angle', value)
 
     @property
     def label_dist(self):
@@ -355,6 +357,7 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
             self.poke('label_data')
             self.label_data['dist'] = value
             self.update_label_pos()
+            self.call_watchers('edge_label_adjust', 'dist', value)
 
     ### Local shape settings and its shortcut properties #################
 
@@ -844,6 +847,7 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
         self.poke('curve_adjustment')
         if self.curve_adjustment and len(self.curve_adjustment) > index:
             self.curve_adjustment[index] = (0, 0, 0)
+            self.call_watchers('edge_adjustment', 'curve_adjustment', self.curve_adjustment)
         can_delete = True
         for (x, y, z) in self.curve_adjustment:
             if x != 0 or y != 0:
@@ -851,7 +855,6 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
         if can_delete:
             self.curve_adjustment = None
         self.make_path()
-        ctrl.ui.update_control_point_positions()
         self.update()
 
     def update_end_points(self):

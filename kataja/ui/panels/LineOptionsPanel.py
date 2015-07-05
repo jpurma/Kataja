@@ -4,7 +4,8 @@ from kataja.Edge import Edge
 from kataja.singletons import ctrl
 import kataja.globals as g
 from kataja.ui.panels.field_utils import *
-
+from kataja.utils import time_me
+from kataja.ui.panels.UIPanel import UIPanel
 
 __author__ = 'purma'
 
@@ -22,6 +23,7 @@ class LineOptionsPanel(UIPanel):
         :param parent: self.main
         """
         UIPanel.__init__(self, name, key, default_position, parent, ui_manager, folded)
+        self.scope = None
         inner = QtWidgets.QWidget(self)
         layout = QtWidgets.QVBoxLayout()
         layout.setSizeConstraint(QtWidgets.QLayout.SetMinimumSize)
@@ -106,15 +108,20 @@ class LineOptionsPanel(UIPanel):
         """ Choose which selectors to show and update their values
         :return: None
         """
-        scope = ctrl.ui.get_panel(g.EDGES).scope
-        shape_dict = None
-        if scope == g.SELECTION:
+        print('updating panel')
+        edge_panel = ctrl.ui.get_panel(g.EDGES)
+        if edge_panel:
+            self.scope = edge_panel.scope
+        else:
+            self.scope = g.SELECTION
+        if self.scope == g.SELECTION:
             shape_dict = self.build_shape_dict_for_selection()
+            print(shape_dict)
             self.update_cp1()
             self.update_cp2()
             selection = True
         else:  # Adjusting how this relation type is drawn
-            shape_dict = ctrl.forest.settings.edge_shape_settings(scope)
+            shape_dict = ctrl.forest.settings.edge_shape_settings(self.scope)
             # print('shape settings: ', shape_dict)
             selection = False
         if shape_dict:
@@ -171,28 +178,24 @@ class LineOptionsPanel(UIPanel):
         """
         return self.arc_type_selector.currentData() == 'relative'
 
-
-    def show_conflict(self, spinbox):
-        """ Put '---' instead of value to show that there is no unambiguous value that can be put here
-        (this happens when modifying several different items)
-        :param spinbox:
-        :return: None
-        """
-        spinbox.setSpecialValueText('---')
-        spinbox.setValue(spinbox.minimum())
-
     def update_cp1(self):
         if not ctrl.selected:
+            self.cp1_box.setVisible(False)
             return
+
         elif len(ctrl.selected) == 1:
             item = ctrl.selected[0]
             if isinstance(ctrl.selected[0], Edge) and item.curve_adjustment and len(
                     item.curve_adjustment) > 0:
+                self.cp1_box.setVisible(True)
                 set_value(self.cp1_x_spinbox, item.curve_adjustment[0][0])
                 set_value(self.cp1_y_spinbox, item.curve_adjustment[0][1])
+            else:
+                self.cp1_box.setVisible(False)
         else:
             cps = (e.curve_adjustment[0] for e in ctrl.selected if isinstance(e, Edge) and
                    e.curve_adjustment and len(e.control_points) > 0)
+            self.cp1_box.setVisible(True)
             x_conflict = False
             y_conflict = False
             prev_x, prev_y = 0, 0
@@ -210,6 +213,7 @@ class LineOptionsPanel(UIPanel):
 
     def update_cp2(self):
         if not ctrl.selected:
+            self.cp2_box.setVisible(False)
             return
         elif len(ctrl.selected) == 1:
             item = ctrl.selected[0]
@@ -217,9 +221,13 @@ class LineOptionsPanel(UIPanel):
                     item.curve_adjustment) > 1:
                 set_value(self.cp2_x_spinbox, item.curve_adjustment[1][0])
                 set_value(self.cp2_y_spinbox, item.curve_adjustment[1][1])
+                self.cp2_box.setVisible(True)
+            else:
+                self.cp2_box.setVisible(False)
         else:
             cps = (e.curve_adjustment[0] for e in ctrl.selected if isinstance(e, Edge) and
                    e.curve_adjustment and len(e.control_points) > 1)
+            self.cp2_box.setVisible(True)
             x_conflict = False
             y_conflict = False
             prev_x, prev_y = 0, 0
@@ -252,17 +260,24 @@ class LineOptionsPanel(UIPanel):
 
     @time_me
     def build_shape_dict_for_selection(self):
+        """ Create a dict of values to show in this panel, add a about conflicting values in
+        selection so that they can be shown as special items.
+        :return: dict with familiar attributes and $varname_conflict: True for conflicts.
         """
-
-
-        :return:
-        """
-        d = {}
         # check if selection has conflicting values: these cannot be shown then
-        shape_name = None
-        keys = ['relative', 'leaf_x', 'leaf_y', 'thickness', 'rel_dx', 'rel_dy', 'fixed_dx', 'fixed_dy']
-        for item in ctrl.selected:
-            if isinstance(item, Edge):
+        edges = [item for item in ctrl.selected if isinstance(item, Edge)]
+        if not edges:
+            return {}
+        elif len(edges) == 1:
+            d = edges[0].shape_args().copy()
+            d['shape_name'] = edges[0].shape_name
+            return d
+        else:
+            shape_name = None
+            keys = ['relative', 'leaf_x', 'leaf_y', 'thickness', 'rel_dx', 'rel_dy', 'fixed_dx',
+                    'fixed_dy']
+            d = {}
+            for item in edges:
                 e = item.shape_args()
                 if not d:
                     d = e.copy()
@@ -278,23 +293,17 @@ class LineOptionsPanel(UIPanel):
                         d[key] = new
                     elif old is not None and new is not None and old != new:
                         d[key + '_conflict'] = True
-        return d
+            return d
 
     def close(self):
-        """
-
-
-        """
+        """ Untick check box in EDGES panel """
         dp = self.ui_manager.get_panel(g.EDGES)
         if dp:
             dp.edge_options.setChecked(False)
         UIPanel.close(self)
 
     def show(self):
-        """
-
-
-        """
+        """ Tick check box in EDGES panel """
         dp = self.ui_manager.get_panel(g.EDGES)
         if dp:
             dp.edge_options.setChecked(True)
@@ -312,6 +321,7 @@ class LineOptionsPanel(UIPanel):
         :param value: value given to the field
         :return:
         """
+        print('LineOptions panel alerted:', signal, field_name, value)
         if signal == 'scope_changed':
             self.update_panel()
         elif signal == 'edge_shape':

@@ -181,7 +181,7 @@ class PaletteManager:
         self.d = OrderedDict()
         self.d['white'] = c(255, 255, 255)
         self.d['black'] = c(0, 0, 0)
-        self.custom_colors = []
+        self.custom_colors = ['custom%s' % i for i in range(0,10)]
         self._ui_palette = None
         self._palette = None
         self.transparent = Qt.transparent
@@ -297,7 +297,7 @@ class PaletteManager:
         :param key:
         :return:
         """
-        return self.d[key]
+        return self.d.get(key, None)
 
     def update_colors(self, prefs, settings, refresh=False):
         """ Create/get root color and build palette around it

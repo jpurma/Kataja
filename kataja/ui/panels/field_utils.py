@@ -1,9 +1,108 @@
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore, QtGui
+from kataja.ui.ColorSwatchIconEngine import ColorSwatchIconEngine
 from PyQt5.QtCore import QSize
-from kataja.ui.panels.UIPanel import UIPanel
+
 import kataja.globals as g
+from kataja.singletons import ctrl
 
 __author__ = 'purma'
+
+
+class TableModelComboBox(QtWidgets.QComboBox):
+
+    def find_item(self, data):
+        """ Return the item corresponding to this data
+        :param data: data to match
+        :return: None if not found, item itself if it is found
+        """
+        model = self.model()
+        for i in range(0, model.columnCount()):
+            for j in range(0, model.rowCount()):
+                item = model.item(j, i)
+                if item and item.data() == data:
+                    return item
+        return None
+
+    def add_and_select_ambiguous_marker(self):
+        item = self.find_item(g.AMBIGUOUS_VALUES)
+        if item:
+            self.setCurrentIndex(item.row())
+            self.setModelColumn(item.column())
+        else:
+            row = []
+            for i in range(0, self.model().rowCount()):
+                item = QtGui.QStandardItem('---')
+                item.setData(g.AMBIGUOUS_VALUES)
+                item.setSizeHint(QSize(22, 20))
+                row.append(item)
+            self.model().insertRow(0, row)
+            self.setCurrentIndex(0)
+            self.setModelColumn(0)
+
+    def remove_ambiguous_marker(self):
+        item = self.find_item(g.AMBIGUOUS_VALUES)
+        if item:
+            self.model().removeRow(item.row())
+
+    def select_data(self, data):
+        item = self.find_item(data)
+        assert item
+        self.setCurrentIndex(item.row())
+        self.setModelColumn(item.column())
+
+    def currentData(self, **kwargs):
+        """
+
+        :param kwargs:
+        :return:
+        """
+        i = self.view().currentIndex()
+        item = self.model().itemFromIndex(i)
+        if item:
+            return item.data()
+        else:
+            return None
+
+
+class LineColorIcon(QtGui.QIcon):
+    def __init__(self, color_id):
+        QtGui.QIcon.__init__(self, ColorSwatchIconEngine(color_id))
+
+
+class ColorSelector(TableModelComboBox):
+    def __init__(self, parent):
+        QtWidgets.QComboBox.__init__(self, parent)
+        self.setIconSize(QSize(16, 16))
+        colors = []
+        for c in ctrl.cm.color_keys + ctrl.cm.custom_colors:
+            print(c)
+            item = QtGui.QStandardItem(LineColorIcon(c), '')
+            item.setData(c)
+            item.setSizeHint(QSize(22, 20))
+            colors.append(item)
+        new_view = QtWidgets.QTableView()
+        #add_icon = QtGui.QIcon()
+        #add_icon.fromTheme("list-add")
+        #add_item = QtGui.QStandardItem('+')
+        #add_item.setTextAlignment(QtCore.Qt.AlignCenter)
+        #add_item.setSizeHint(QSize(22, 20))
+        self.table = [colors[0:5] + colors[21:24], colors[5:13],
+                 colors[13:21], colors[21:27]] # + [add_item]
+        model = self.model()
+        model.clear()
+        model.setRowCount(8)
+        model.setColumnCount(4)
+        for c, column in enumerate(self.table):
+            for r, item in enumerate(column):
+                model.setItem(r, c, item)
+        new_view.horizontalHeader().hide()
+        new_view.verticalHeader().hide()
+        new_view.setCornerButtonEnabled(False)
+        new_view.setModel(self.model())
+        new_view.resizeColumnsToContents()
+        cw = new_view.columnWidth(0)
+        new_view.setMinimumWidth(self.model().columnCount() * cw)
+        self.setView(new_view)
 
 
 def label(panel, layout, text):
@@ -81,6 +180,7 @@ def box_row(container):
         container.setLayout(hlayout)
     return hlayout
 
+
 def set_value(field, value, conflict=False):
     field.blockSignals(True)
     if isinstance(field, QtWidgets.QSpinBox):
@@ -93,9 +193,12 @@ def set_value(field, value, conflict=False):
         remove_ambiguous_marker(field)
     field.blockSignals(False)
 
+
 def add_and_select_ambiguous_marker(element):
-    if isinstance(element, QtWidgets.QComboBox):
-        i = UIPanel.find_list_item(g.AMBIGUOUS_VALUES, element)
+    if isinstance(element, TableModelComboBox):
+        element.add_and_select_ambiguous_marker()
+    elif isinstance(element, QtWidgets.QComboBox):
+        i = find_list_item(g.AMBIGUOUS_VALUES, element)
         if i == -1:
             element.insertItem(0, '---', g.AMBIGUOUS_VALUES)
             element.setCurrentIndex(0)
@@ -104,10 +207,35 @@ def add_and_select_ambiguous_marker(element):
     elif isinstance(element, (QtWidgets.QSpinBox, QtWidgets.QDoubleSpinBox)):
         element.setSuffix(' (?)')
 
+
 def remove_ambiguous_marker(element):
-    if isinstance(element, QtWidgets.QComboBox):
-        i = UIPanel.find_list_item(g.AMBIGUOUS_VALUES, element)
+    if isinstance(element, TableModelComboBox):
+        element.remove_ambiguous_marker()
+    elif isinstance(element, QtWidgets.QComboBox):
+        i = find_list_item(g.AMBIGUOUS_VALUES, element)
         if i > -1:
             element.removeItem(i)
     elif isinstance(element, (QtWidgets.QSpinBox, QtWidgets.QDoubleSpinBox)):
         element.setSuffix('')
+
+
+def find_list_item(data, selector):
+    """ Helper method to check the index of data item in list
+    :param data: data to match
+    :param selector: QComboBox instance
+    :return: -1 if not found, index if found
+    """
+    if isinstance(selector, TableModelComboBox):
+        return selector.find_item(data)
+    return selector.findData(data)
+
+
+def remove_list_item(data, selector):
+    """ Helper method to remove items from combo boxes
+    :param data: list item's data has to match this
+    :param selector: QComboBox instance
+    """
+    i = find_list_item(data, selector)
+    if i != -1:
+        selector.removeItem(i)
+    return i

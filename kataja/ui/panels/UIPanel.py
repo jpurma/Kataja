@@ -23,21 +23,7 @@
 # ############################################################################
 
 from PyQt5 import QtCore, QtWidgets, QtGui
-
-# class TwoColorIcon(QtGui.QIcon):
-# """ Icons that change their color according to widget where they are """
-#
-# def paint(self, painter, **kwargs):
-# """
-#
-# :param painter:
-# :param kwargs:
-# :return:
-# """
-# print('using twocoloricon painter')
-# return QtGui.QIcon.paint(self, painter, kwargs)
 from kataja.singletons import ctrl, qt_prefs
-import kataja.globals as g
 from kataja.ui.OverlayButton import PanelButton
 
 
@@ -209,34 +195,6 @@ class UIPanel(QtWidgets.QDockWidget):
         """
         field.setText(value)
 
-    @staticmethod
-    def find_list_item(data, selector):
-        """ Helper method to check the index of data item in list
-        :param data: data to match
-        :param selector: QComboBox instance
-        :return: -1 if not found, index if found
-        """
-        for i in range(0, selector.count()):
-            if selector.itemData(i) == data:
-                return i
-        return -1
-
-    @staticmethod
-    def remove_list_item(data, selector):
-        """ Helper method to remove items from combo boxes
-        :param data: list item's data has to match this
-        :param selector: QComboBox instance
-        """
-        found = False
-        for i in range(0, selector.count()):
-            if selector.itemData(i) == data:
-                found = True
-                break
-        if found:
-            selector.removeItem(i)
-            return i
-        else:
-            return -1
 
 
     def minimumSizeHint(self):

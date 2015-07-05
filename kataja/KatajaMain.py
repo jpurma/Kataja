@@ -144,6 +144,7 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         # self.addToolBar(toolbar)
         self.action_finished()
         print('---- finished start sequence... ', time.time() - t)
+        print(ctrl.watchers)
 
     def load_treeset(self, filename=''):
         """ Loads and initializes a new set of trees. Has to be done before the program can do anything sane.
@@ -244,6 +245,7 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         :param m: message for undo
         :param undoable: are we supposed to take a snapshot of changes after this action.
         """
+        print('=== action finished: ', m)
         if m:
             self.add_message(m)
         if ctrl.action_redraw:

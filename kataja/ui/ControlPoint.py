@@ -49,6 +49,21 @@ class ControlPoint(QtWidgets.QGraphicsItem):
         elif self.role == g.LABEL_START:
             self.status_tip = "Drag along the line to adjust the anchor point of label"
         self.setToolTip(self.status_tip)
+        self.show()
+
+    def show(self):
+        """ Assign as a watcher if necessary and make visible
+        :return: None
+        """
+        if self.role == g.LABEL_START:
+            ctrl.add_watcher('edge_label', self)
+
+    def hide(self):
+        """ Remove from watchers' list when control point is hidden
+        :return: None
+        """
+        if self.role == g.LABEL_START:
+            ctrl.remove_from_watch(self)
 
     def _compute_position(self):
         """
@@ -115,7 +130,6 @@ class ControlPoint(QtWidgets.QGraphicsItem):
             d, point = self.host.get_closest_path_point(event.scenePos())
             # self.setPos(point)
             self.host.label_start = d
-            ctrl.ui.update_control_point_positions()
             # self.update()
         else:
             self.setPos(event.scenePos())

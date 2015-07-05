@@ -163,7 +163,7 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
             new_angle = a2
         edge.label_angle = new_angle
         edge.label_dist = math.hypot(line_x, line_y)
-        ctrl.ui.update_control_point_positions()
+        ctrl.call_watchers(self, 'edge_label_adjust', 'adjustment', adjustment)
 
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget):
         if self.being_dragged():

@@ -621,25 +621,23 @@ a['fullscreen_mode'] = {
     'checkable': True}
 
 
-def change_edge_panel_scope(selection):
+def change_edge_panel_scope(sender):
     """ Change drawing panel to work on selection, constituent edges or other available edges
     :param selection: int scope identifier, from globals
     :return: None
     """
-    if isinstance(selection, tuple):
-        selection = selection[1]
-    p = ctrl.ui.get_panel(g.EDGES)
-    if p:
-        p.change_scope(selection)
-        p.update_panel()
-    p = ctrl.ui.get_panel(g.LINE_OPTIONS)
-    if p:
-        p.update_panel()
+    print('changing scope: ', sender)
+    if sender:
+        data = sender.currentData()
+        panel = get_ui_container(sender)
+        if panel:
+            panel.scope = data
+        ctrl.call_watchers(sender, 'scope_changed', 'scope', data)
 
 a['edge_shape_scope'] = {
     'command': 'Select shape for...',
     'method': change_edge_panel_scope,
-    'args': ['line_type_target'],
+    'sender_arg': True,
     'undoable': False,
     'tooltip': 'Which relations are affected?'}
 
@@ -671,34 +669,33 @@ a['change_edge_shape'] = {
     'tooltip': 'Change shape of relations (lines, edges) between objects'}
 
 
-def change_edge_color(color):
+def change_edge_color(sender):
     """ Change edge shape for selection or in currently active edge type.
     :param color: color key (str)
     :return: None
     """
-    if color is g.AMBIGUOUS_VALUES:
-        return
-    panel = ctrl.ui.get_panel(g.EDGES)
-    if not color:
-        ctrl.ui.start_color_dialog(panel, 'color_changed')
-        return
-    if panel.scope == g.SELECTION:
-        for edge in ctrl.selected:
-            if isinstance(edge, Edge):
-                edge.color(color)
-                # edge.update_shape()
-                edge.update()
-    elif panel.scope:
-        ctrl.forest.settings.edge_type_settings(panel.scope, 'color', color)
-        # ctrl.announce(g.EDGE_SHAPES_CHANGED, scope, color)
-    panel.update_color(color)
-    panel.update_panel()
-    ctrl.main.add_message('(s) Changed relation color to: %s' % ctrl.cm.get_color_name(color))
+
+    if sender:
+        color_id = sender.currentData()
+        panel = get_ui_container(sender)
+        if (not color_id) or not ctrl.cm.get(color_id):
+            ctrl.ui.start_color_dialog(sender, panel, 'edge_color')
+            return
+        if panel.scope == g.SELECTION:
+            for edge in ctrl.selected:
+                if isinstance(edge, Edge):
+                    edge.color_id = color_id
+                    edge.update()
+        elif panel.scope:
+            ctrl.forest.settings.edge_type_settings(panel.scope, 'color', color_id)
+        panel.update_color(color_id)
+        ctrl.main.add_message('(s) Changed relation color to: %s' % ctrl.cm.get_color_name(
+            color_id))
 
 a['change_edge_color'] = {
     'command': 'Change relation color',
     'method': change_edge_color,
-    'selection': 'line_color',
+    'sender_arg': True,
     'tooltip': 'Change drawing color of relations'}
 
 
@@ -1026,6 +1023,7 @@ a['close_embed'] = {
 def new_element_accept(sender):
     """ Create new element according to fields in this embed. Can create constituentnodes,
     features, arrows, etc.
+    :param sender:
     :return: None
     """
 
@@ -1041,7 +1039,7 @@ def new_element_accept(sender):
         # Fixme Use screen coordinates instead, as if zoomed out, the default line can already be long enough. oops.
         if (p1 - p2).manhattanLength() > 20 and not text.startswith('['):
             # It's an Arrow!
-            create_new_arrow()
+            create_new_arrow(sender)
             return
         else:
             print('trying to parse ', text)
@@ -1059,6 +1057,7 @@ a['new_element_enter_text'] = {
 
 def create_new_arrow(sender):
     """ Create a new arrow into embed menu's location
+    :param sender:
     :return: None
     """
     print("New arrow called", sender)

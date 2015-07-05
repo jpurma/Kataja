@@ -26,7 +26,8 @@ import sys
 
 from PyQt5 import QtCore, QtWidgets
 
-from kataja.utils import caller
+from kataja.utils import caller, time_me
+
 
 # gc.set_debug(gc.DEBUG_LEAK)
 
@@ -304,6 +305,7 @@ class Controller:
         """
         return self.watchers.get(signal, [])
 
+    @time_me
     def call_watchers(self, obj, signal, field_name=None, value=None):
         """ Alert (UI) objects that are watching for changes for given field in given object
         :param obj:
@@ -315,5 +317,5 @@ class Controller:
         watchers = self.get_watchers(signal)
         for watcher in watchers:
             watcher.watch_alerted(obj, signal, field_name, value)
-        if not watchers:
-            print('no watcher found for signal "%s"' % signal)
+        #if not watchers:
+        #    print('no watcher found for signal "%s"' % signal)

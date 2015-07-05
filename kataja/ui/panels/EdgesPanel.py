@@ -7,8 +7,9 @@ from kataja.singletons import ctrl, qt_prefs
 import kataja.globals as g
 from kataja.ui.panels.UIPanel import UIPanel
 from kataja.ui.DrawnIconEngine import DrawnIconEngine
-from kataja.ui.ColorSwatchIconEngine import ColorSwatchIconEngine
 from kataja.ui.OverlayButton import PanelButton
+from kataja.ui.panels.field_utils import find_list_item, add_and_select_ambiguous_marker, \
+    remove_ambiguous_marker, TableModelComboBox, ColorSelector
 
 __author__ = 'purma'
 
@@ -41,7 +42,6 @@ class LineStyleIcon(QIcon):
         # pixmap.fill(ctrl.cm.ui())
         # self.addPixmap(pixmap)
 
-
     def paint_settings(self):
         s = SHAPE_PRESETS[self.shape_key]
         pen = self.panel.current_color
@@ -50,88 +50,6 @@ class LineStyleIcon(QIcon):
 
         d = {'color': pen}
         return d
-
-
-class LineColorIcon(QIcon):
-    def __init__(self, color_id):
-        QIcon.__init__(self, ColorSwatchIconEngine(color_id))
-
-
-class TableModelComboBox(QtWidgets.QComboBox):
-    def find_item(self, data):
-        """ Return the item corresponding to this data
-        :param data: data to match
-        :return: None if not found, item itself if it is found
-        """
-        model = self.model()
-        for i in range(0, model.columnCount()):
-            for j in range(0, model.rowCount()):
-                item = model.item(j, i)
-                if item and item.data() == data:
-                    return item
-        return None
-
-    def add_and_select_ambiguous_marker(self):
-        item = self.find_item(g.AMBIGUOUS_VALUES)
-        if item:
-            self.setCurrentIndex(item.row())
-            self.setModelColumn(item.column())
-        else:
-            row = []
-            for i in range(0, self.model().rowCount()):
-                item = QStandardItem('---')
-                item.setData(g.AMBIGUOUS_VALUES)
-                item.setSizeHint(QSize(22, 20))
-                row.append(item)
-            self.model().insertRow(0, row)
-            self.setCurrentIndex(0)
-            self.setModelColumn(0)
-
-    def remove_ambiguous_marker(self):
-        item = self.find_item(g.AMBIGUOUS_VALUES)
-        if item:
-            self.model().removeRow(item.row())
-
-
-    def select_data(self, data):
-        item = self.find_item(data)
-        assert (item)
-        self.setCurrentIndex(item.row())
-        self.setModelColumn(item.column())
-
-
-class ColorSelector(TableModelComboBox):
-    def __init__(self, parent):
-        QtWidgets.QComboBox.__init__(self, parent)
-        self.setIconSize(QSize(16, 16))
-        # self.color_selector.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
-        model = self.model()
-        model.setRowCount(8)
-        model.setColumnCount(4)
-        items = []
-        for c in ctrl.cm.color_keys:
-            item = QStandardItem(LineColorIcon(c), '')
-            item.setData(c)
-            item.setSizeHint(QSize(22, 20))
-            items.append(item)
-        new_view = QtWidgets.QTableView()
-        add_icon = QIcon()
-        add_icon.fromTheme("list-add")
-        add_item = QStandardItem('+')
-        add_item.setTextAlignment(QtCore.Qt.AlignCenter)
-        add_item.setSizeHint(QSize(22, 20))
-        table = [items[0:3], items[5:13], items[13:21], [add_item]]
-        for c, column in enumerate(table):
-            for r, item in enumerate(column):
-                model.setItem(r, c, item)
-        new_view.horizontalHeader().hide()
-        new_view.verticalHeader().hide()
-        new_view.setCornerButtonEnabled(False)
-        new_view.setModel(model)
-        new_view.resizeColumnsToContents()
-        cw = new_view.columnWidth(0)
-        new_view.setMinimumWidth(model.columnCount() * cw)
-        self.setView(new_view)
 
 
 class ShapeSelector(TableModelComboBox):
@@ -152,14 +70,6 @@ class ShapeSelector(TableModelComboBox):
         for r, item in enumerate(items):
             model.setItem(r, 0, item)
         self.view().setModel(model)
-        # new_view.horizontalHeader().hide()
-        # new_view.verticalHeader().hide()
-        # new_view.setCornerButtonEnabled(False)
-        # new_view.setModel(model)
-        # new_view.resizeColumnsToContents()
-        # cw = new_view.columnWidth(0)
-        # new_view.setMinimumWidth(model.columnCount() * cw)
-        # self.setView(new_view)
 
 
 class EdgesPanel(UIPanel):
@@ -182,6 +92,7 @@ class EdgesPanel(UIPanel):
         self.scope_selector = QtWidgets.QComboBox(self)
         self.scope_selector.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         self._visible_scopes = []
+        self.cached_edge_types = set()
         self.current_color = ctrl.cm.drawing()
         self.watchlist = ['edge_shape', 'edge_color', 'selection_changed', 'forest_changed']
         # Other items may be temporarily added, they are defined as class.variables
@@ -210,73 +121,75 @@ class EdgesPanel(UIPanel):
         self.setWidget(inner)
         self.finish_init()
 
+    def are_there_edges_in_selection(self):
+        """ Helper method for checking if line options should react to selection
+        :return:
+        """
+        for item in ctrl.selected:
+            if isinstance(item, Edge):
+                return True
+        return False
+
     def update_selection(self):
         """ Called after ctrl.selection has changed. Prepare panel to use selection as scope
         :return:
         """
-        print('EdgePanel -- update_selection')
-        selection = ctrl.selected
-        found = False
-        for item in selection:
-            if isinstance(item, Edge):
-                found = True
-                break
-        if found:
+        if self.are_there_edges_in_selection():
+            # store previous scope selection so it can be returned to
             if self.scope != g.SELECTION:
                 self._old_scope = self.scope
             self.scope = g.SELECTION
+            self.update_scope_selector_options(selection_changed=True)
         elif self.scope == g.SELECTION:
+            # return to previous selection
             self.scope = self._old_scope
-        self.update_scope_selector()
-
-    def change_scope(self, value):
-        """ Change the scope of other manipulations in this panel.
-        Could change value directly, but just in case.
-        :param value: new scope
-        :return: None
-        """
-        self.scope = value
+            self.update_scope_selector_options(selection_changed=True)
+        elif not self.cached_edge_types:
+            self.update_scope_selector_options()
+        i = find_list_item(self.scope, self.scope_selector)
+        self.scope_selector.setCurrentIndex(i)
 
     def update_color(self, color):
         self.current_color = color
         self.color_selector.select_data(color)
+        self.color_selector.update()
+        self.shape_selector.update()
 
     def update_panel(self):
-        """ Panel update should be necessary when changing ctrl.selection or after the tree has otherwise changed.
+        """ Panel update should be necessary when changing ctrl.selection or after the tree has
+        otherwise changed.
         :return:
         """
-        self.update_selection()
-        self.update_scope_selector_options()
-        self.update_scope_selector()
         self.update_fields()
 
     # @time_me
-    def update_scope_selector_options(self):
+    def update_scope_selector_options(self, selection_changed=False):
         """ Redraw scope selector, show only scopes that are used in this forest """
-        print('EdgePanel -- update_scope_selector_options')
-        used_scopes = {self.scope}
-        for edge in ctrl.main.forest.edges.values():
-            used_scopes.add(edge.edge_type)
-        scope_list = [x for x in scope_display_order if x in used_scopes]
-        self.scope_selector.clear()
-        for item in scope_list:
-            self.scope_selector.addItem(scope_display_items[item], item)
-
-    def update_scope_selector(self):
-        """ Visual update for scope selector value """
-        i = self.find_list_item(self.scope, self.scope_selector)
-        self.scope_selector.setCurrentIndex(i)
+        if (not self.cached_edge_types) or (self.cached_edge_types != ctrl.forest.edge_types) or \
+                selection_changed:
+            scope_list = [x for x in scope_display_order if x in ctrl.forest.edge_types]
+            self.scope_selector.clear()
+            if self.are_there_edges_in_selection():
+                self.scope_selector.addItem(scope_display_items[g.SELECTION], g.SELECTION)
+            if not scope_list:
+                self.scope_selector.addItem(scope_display_items[g.CONSTITUENT_EDGE],
+                                            g.CONSTITUENT_EDGE)
+            for item in scope_list:
+                self.scope_selector.addItem(scope_display_items[item], item)
+            self.cached_edge_types = ctrl.forest.edge_types.copy()
 
     def update_fields(self):
-        """ Update different fields in the panel to show the correct values based on selection or current scope.
-        There may be that this makes fields to remove or add new values to selectors or do other hard manipulation
-        to fields.
+        """ Update different fields in the panel to show the correct values based on selection
+        or current scope. There may be that this makes fields to remove or add new values to
+        selectors or do other hard manipulation to fields.
+
+        First find what are the properties of the selected edges.
+        If they are conflicting, e.g. there are two different colors in selected edges, they cannot
+         be shown in the color selector. They can still be overridden with new selection.
         """
 
-        ### First find what are the properties of the selected edges.
-        ### If they are conflicting, e.g. there are two different colors in selected edges,
-        ### then they cannot be shown in the color selector. They can still be overridden with new selection.
         if self.scope == g.SELECTION:
+            if self.are_there_edges_in_selection():
             edge_shape = None
             edge_color = None
             ambiguous_edge = False
@@ -294,9 +207,9 @@ class EdgesPanel(UIPanel):
             ### Color selector - show
             if edge_color:
                 if ambiguous_color:
-                    self.color_selector.add_and_select_ambiguous_marker()
+                    add_and_select_ambiguous_marker(self.color_selector)
                 else:
-                    self.color_selector.remove_ambiguous_marker()
+                    remove_ambiguous_marker(self.color_selector)
                     self.color_selector.select_data(edge_color)
                     self.current_color = edge_color
 
@@ -320,7 +233,6 @@ class EdgesPanel(UIPanel):
             self.shape_selector.select_data(edge_shape)
             self.shape_selector.update()
 
-
     def watch_alerted(self, obj, signal, field_name, value):
         """ Receives alerts from signals that this object has chosen to listen. These signals
          are declared in 'self.watchlist'.
@@ -336,8 +248,10 @@ class EdgesPanel(UIPanel):
         print('EdgesPanel alerted: ', obj, signal, field_name, value)
         if signal == 'selection_changed':
             self.update_selection()
+            self.update_fields()
         elif signal == 'forest_changed':
-            self.update_scope_selector_options()
+            self.update_selection()
+            self.update_fields()
 
 
 

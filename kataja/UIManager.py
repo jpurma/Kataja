@@ -167,12 +167,41 @@ class UIManager:
             self._action_groups[action_group_name] = QtWidgets.QActionGroup(self.main)
         return self._action_groups[action_group_name]
 
-    def start_color_dialog(self, receiver, slot_name):
+    def start_color_dialog(self, receiver, parent, slot_name):
         if not self.color_dialog:
-            self.color_dialog = QtWidgets.QColorDialog(self.main)
-            self.color_dialog.setOption(QtWidgets.QColorDialog.NoButtons)
-        self.color_dialog.show()
-        self.color_dialog.setCurrentColor(ctrl.cm.drawing())
+            self.color_dialog = QtWidgets.QColorDialog(parent)
+            cd = self.color_dialog
+            cd.setOption(QtWidgets.QColorDialog.NoButtons)
+            #cd.setOption(QtWidgets.QColorDialog.DontUseNativeDialog)
+            cd.setOption(QtWidgets.QColorDialog.ShowAlphaChannel)
+            for i, key in enumerate(ctrl.cm.color_keys):
+                cd.setStandardColor(i, ctrl.cm.get(key))
+            cd.currentColorChanged.connect(self.color_adjusted)
+        else:
+            cd = self.color_dialog
+        cd.show()
+        cd.selector = receiver
+        cd.is_for_purpose = slot_name
+        cd.setCurrentColor(ctrl.cm.drawing())
+        receiver.update()
+
+    def color_adjusted(self, color):
+        color_id = self.color_dialog.selector.currentData()
+        ctrl.cm.d[color_id] = color
+        if self.color_dialog.is_for_purpose == 'edge_color':
+            panel = self.color_dialog.parent()
+            if panel:
+                if panel.scope == g.SELECTION:
+                    for edge in ctrl.selected:
+                        if isinstance(edge, Edge):
+                            edge.color_id = color_id
+                            edge.update()
+                elif panel.scope:
+                    ctrl.forest.settings.edge_type_settings(panel.scope, 'color', color_id)
+                panel.update_color(color_id)
+                for edge in ctrl.forest.edges.values():
+                    edge.update()
+        self.color_dialog.selector.update()
 
     def add_ui(self, item):
         """
@@ -184,6 +213,7 @@ class UIManager:
         self._items[item.ui_key] = item
         if isinstance(item, QtWidgets.QGraphicsItem):
             self.scene.addItem(item)
+            item.show()
 
     def remove_ui(self, item):
         """
@@ -193,6 +223,7 @@ class UIManager:
         if item.ui_key in self._items:
             del self._items[item.ui_key]
         if isinstance(item, QtWidgets.QGraphicsItem):
+            item.hide()
             self.scene.removeItem(item)
         elif isinstance(item, QtWidgets.QWidget):
             item.close()
