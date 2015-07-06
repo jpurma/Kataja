@@ -60,6 +60,13 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     # override this if you need to turn inodes into your custom Nodes. See examples in
     # ConstituentNode or FeatureNode
 
+    default_style = {'color': 'content1', 'font': g.MAIN_FONT, 'font-size': 10,
+                     'edge': g.ABSTRACT_EDGE}
+
+    default_edge = {'id': g.ABSTRACT_EDGE, 'shape_name': 'linear', 'color': 'content1',
+                    'pull': .40, 'visible': True, 'arrowhead_at_start': False,
+                    'arrowhead_at_end': False, 'labeled': False}
+
     def __init__(self, syntactic_object=None):
         """ Node is an abstract class that shouldn't be used by itself, though
         it should contain all methods to make it work. Inherit and modify this for

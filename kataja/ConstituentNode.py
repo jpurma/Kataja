@@ -36,7 +36,6 @@ class ConstituentNode(BaseConstituentNode):
      reading the tree aliases, indices and glosses.
     """
 
-    receives_signals = []
     short_name = "CN"
     visible = {'alias': {'order': 0},
                'index': {'order': 1, 'align': 'line-end', 'style': 'subscript'},
@@ -52,6 +51,12 @@ class ConstituentNode(BaseConstituentNode):
                               width=200, focus=True, syntactic=True),
                 'gloss': dict(name='Gloss', order=12, prefill='gloss',
                               tooltip='translation (optional)', width=200)}
+    default_style = {'color': 'content1', 'font': g.MAIN_FONT, 'font-size': 10,
+                     'edge': g.CONSTITUENT_EDGE}
+
+    default_edge = {'id': g.CONSTITUENT_EDGE, 'shape_name': 'shaped_cubic', 'color': 'content1',
+                    'pull': .24, 'visible': True, 'arrowhead_at_start': False,
+                    'arrowhead_at_end': False, 'labeled': False}
 
     def __init__(self, constituent=None):
         """ Most of the initiation is inherited from Node """

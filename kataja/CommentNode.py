@@ -30,6 +30,7 @@ from kataja.globals import ARROW, COMMENT_NODE
 from kataja.singletons import ctrl
 from kataja.parser.INodes import ITextNode
 from kataja.parser.LatexToINode import parse_field
+import kataja.globals as g
 
 
 color_map = {'tense': 0, 'person': 2, 'number': 4, 'case': 6, 'unknown': 3}
@@ -42,6 +43,14 @@ class CommentNode(Node):
     default_edge_type = ARROW
     node_type = COMMENT_NODE
     short_name = "ComNode"
+
+    default_style = {'color': 'accent4', 'font': g.MAIN_FONT, 'font-size': 14,
+                     'edge': g.COMMENT_EDGE}
+
+    default_edge = {'id': g.COMMENT_EDGE,'shape_name': 'linear', 'color': 'accent4', 'pull': 0,
+                    'visible': True, 'arrowhead_at_start': True, 'arrowhead_at_end': False,
+                    'labeled': False}
+
 
     def __init__(self, text=''):
         Node.__init__(self)

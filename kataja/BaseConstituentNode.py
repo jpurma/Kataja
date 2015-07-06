@@ -43,7 +43,6 @@ class BaseConstituentNode(Node):
     width = 20
     height = 20
     default_edge_type = g.CONSTITUENT_EDGE
-    receives_signals = []
     node_type = g.CONSTITUENT_NODE
     short_name = "BCN"
 

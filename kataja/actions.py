@@ -621,6 +621,47 @@ a['fullscreen_mode'] = {
     'checkable': True}
 
 
+def change_style_scope(sender):
+    """ Change drawing panel to work on selected nodes, constituent nodes or other available
+    nodes
+    :param selection: int scope identifier, from globals
+    :return: None
+    """
+    print('changing scope: ', sender)
+    if sender:
+        data = sender.currentData()
+        panel = get_ui_container(sender)
+        if panel:
+            panel.scope = data
+        ctrl.call_watchers(sender, 'scope_changed', 'scope', data)
+
+a['style_scope'] = {
+    'command': 'Select the scope for style changes',
+    'method': change_style_scope,
+    'sender_arg': True,
+    'undoable': False,
+    'tooltip': 'Select the scope for style changes'}
+
+def open_font_selector(sender):
+    """ Change drawing panel to work on selected nodes, constituent nodes or other available
+    nodes
+    :param selection: int scope identifier, from globals
+    :return: None
+    """
+    print('opening font selector: ', sender)
+    if sender:
+        panel = get_ui_container(sender)
+        ctrl.ui.open_font_dialog(panel, panel.scope)
+
+a['font_selector'] = {
+    'command': 'Change label font',
+    'method': open_font_selector,
+    'sender_arg': True,
+    'undoable': False,
+    'tooltip': 'Select the label font'}
+
+
+
 def change_edge_panel_scope(sender):
     """ Change drawing panel to work on selection, constituent edges or other available edges
     :param selection: int scope identifier, from globals
@@ -668,6 +709,38 @@ a['change_edge_shape'] = {
     'args': ['line_type'],
     'tooltip': 'Change shape of relations (lines, edges) between objects'}
 
+def change_node_color(sender):
+    """ Change color for selection or in currently active edge type.
+    :param color: color key (str)
+    :return: None
+    """
+
+    if sender:
+        prev_color = sender.model().selected_color
+        color_id = sender.currentData()
+        sender.model().selected_color = color_id
+        panel = get_ui_container(sender)
+        if (not color_id) or (not ctrl.cm.get(color_id)) or prev_color == color_id:
+            ctrl.ui.start_color_dialog(sender, panel, 'node_color')
+            return
+        if panel.scope == g.SELECTION:
+            for edge in ctrl.selected:
+                if isinstance(edge, Edge):
+                    edge.color_id = color_id
+                    edge.update()
+        elif panel.scope:
+            pass
+            #ctrl.forest.settings.edge_type_settings(panel.scope, 'color', color_id)
+        panel.update_color(color_id)
+        ctrl.main.add_message('(s) Changed node color to: %s' % ctrl.cm.get_color_name(
+            color_id))
+
+a['change_node_color'] = {
+    'command': 'Change node color',
+    'method': change_node_color,
+    'sender_arg': True,
+    'tooltip': 'Change drawing color of nodes'}
+
 
 def change_edge_color(sender):
     """ Change edge shape for selection or in currently active edge type.
@@ -676,9 +749,11 @@ def change_edge_color(sender):
     """
 
     if sender:
+        prev_color = sender.model().selected_color
         color_id = sender.currentData()
+        sender.model().selected_color = color_id
         panel = get_ui_container(sender)
-        if (not color_id) or not ctrl.cm.get(color_id):
+        if (not color_id) or (not ctrl.cm.get(color_id)) or prev_color == color_id:
             ctrl.ui.start_color_dialog(sender, panel, 'edge_color')
             return
         if panel.scope == g.SELECTION:

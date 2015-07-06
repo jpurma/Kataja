@@ -30,7 +30,7 @@ from kataja.singletons import ctrl
 class ColorSwatchIconEngine(QtGui.QIconEngine):
     """ An icon which you can provide a method to draw on the icon """
 
-    def __init__(self, color_key):
+    def __init__(self, color_key, model):
         """
         :param paint_method: a compatible drawing method
         :param owner: an object that is queried for settings for paint_method
@@ -38,6 +38,7 @@ class ColorSwatchIconEngine(QtGui.QIconEngine):
         """
         QtGui.QIconEngine.__init__(self)
         self.color_key = color_key
+        self.model = model
 
     # @caller
     def paint(self, painter, rect, mode, state):
@@ -49,12 +50,23 @@ class ColorSwatchIconEngine(QtGui.QIconEngine):
         :param state:
         """
         painter.setRenderHint(QtGui.QPainter.Antialiasing)
-        painter.fillRect(rect, ctrl.cm.get('background1'))
+        bg = ctrl.cm.get('background1')
+        painter.fillRect(rect, bg)
         c = ctrl.cm.get(self.color_key)
-        if c:
-            painter.setPen(c.darker())
-            painter.setBrush(c)
-            painter.drawRoundedRect(rect, 2, 2)
+        if not c:
+            c = bg
+        painter.setBrush(c)
+        if self.model.selected_color == self.color_key:
+            pen = QtGui.QPen(c.lighter())
+        else:
+            pen = QtGui.QPen(c.darker())
+        if self.model.default_color == self.color_key:
+            pen.setWidth(3)
+        else:
+            pen.setWidth(1)
+
+        painter.setPen(pen)
+        painter.drawRoundedRect(rect, 2, 2)
         # painter.fillRect(rect, ctrl.cm.get(self.color_key))
 
 

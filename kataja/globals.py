@@ -70,6 +70,7 @@ EDGES = 'drawing'
 LINE_OPTIONS = 'line_options'
 SYMBOLS = 'symbols'
 NODES = 'nodes'
+STYLE = 'style'
 
 # Alignment of edges
 NO_ALIGN = 0  # default

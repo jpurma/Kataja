@@ -2,6 +2,7 @@ from PyQt5 import QtWidgets, QtCore
 
 from PyQt5.QtCore import QSize
 from PyQt5.QtGui import QIcon, QColor, QStandardItem
+from kataja.Node import Node
 from kataja.Edge import SHAPE_PRESETS, Edge
 from kataja.singletons import ctrl, qt_prefs
 import kataja.globals as g
@@ -9,7 +10,7 @@ from kataja.ui.panels.UIPanel import UIPanel
 from kataja.ui.DrawnIconEngine import DrawnIconEngine
 from kataja.ui.OverlayButton import PanelButton
 from kataja.ui.panels.field_utils import find_list_item, add_and_select_ambiguous_marker, \
-    remove_ambiguous_marker, TableModelComboBox, ColorSelector, set_value
+    remove_ambiguous_marker, TableModelComboBox, ColorSelector, set_value, mini_button, font_button
 from utils import time_me
 
 __author__ = 'purma'
@@ -19,14 +20,15 @@ scope_display_order = [g.SELECTION, g.CONSTITUENT_EDGE, g.FEATURE_EDGE, g.GLOSS_
 
 scope_display_items = {
     g.SELECTION: 'Current selection',
-    g.CONSTITUENT_EDGE: 'Constituent relations',
-    g.FEATURE_EDGE: 'Feature relations',
-    g.GLOSS_EDGE: 'Gloss relations',
+    g.CONSTITUENT_NODE: 'Constituents',
+    g.FEATURE_NODE: 'Features',
+    g.GLOSS_NODE: 'Glosses',
     g.ARROW: 'Arrows',
-    g.PROPERTY_EDGE: 'Property relations',
-    g.ATTRIBUTE_EDGE: 'Attribute relatios',
-    g.ABSTRACT_EDGE: 'Unspecified relations'
+    g.PROPERTY_NODE: 'Properties',
+    g.ATTRIBUTE_NODE: 'Attributes',
+    g.ABSTRACT_NODE: 'Unspecified nodes'
 }
+
 
 line_icons = {
 
@@ -73,11 +75,10 @@ class ShapeSelector(TableModelComboBox):
         self.view().setModel(model)
 
 
-class EdgesPanel(UIPanel):
+class StylePanel(UIPanel):
     """ Panel for editing how edges and nodes are drawn. """
 
-    def __init__(self, name, key, default_position='right', parent=None, ui_manager=None,
-                 folded=True):
+    def __init__(self, name, key, default_position='right', parent=None, ui_manager=None, folded=False):
         """
         All of the panel constructors follow the same format so that the construction can be automated.
         :param name: Title of the panel and the key for accessing it
@@ -89,28 +90,50 @@ class EdgesPanel(UIPanel):
         layout = QtWidgets.QVBoxLayout()
         layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
         # layout.setContentsMargins(4, 4, 4, 4)
-        self.scope = g.CONSTITUENT_EDGE
-        self._old_scope = g.CONSTITUENT_EDGE
-        self.scope_selector = QtWidgets.QComboBox(self)
-        self.scope_selector.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
-        self._visible_scopes = []
-        self.cached_edge_types = set()
+        self.scope = g.CONSTITUENT_NODE
+        self.base_scope = g.CONSTITUENT_NODE
+        self._nodes_in_selection = []
+        self._edges_in_selection = []
+        self.cached_node_types = set()
         self.current_color = ctrl.cm.drawing()
         self.watchlist = ['edge_shape', 'edge_color', 'selection_changed', 'forest_changed']
         # Other items may be temporarily added, they are defined as class.variables
-        ui_manager.connect_element_to_action(self.scope_selector, 'edge_shape_scope')
-        layout.addWidget(self.scope_selector)
+
+        hlayout = QtWidgets.QHBoxLayout()
+        hlayout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
+        label = QtWidgets.QLabel('Style for', self)
+        hlayout.addWidget(label)
+        self.scope_selector = QtWidgets.QComboBox(self)
+        self.scope_selector.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        self.scope_selector.setMinimumWidth(120)
+        ui_manager.connect_element_to_action(self.scope_selector, 'style_scope')
+        hlayout.addWidget(self.scope_selector, 1, QtCore.Qt.AlignLeft)
+        layout.addLayout(hlayout)
+
+        hlayout = QtWidgets.QHBoxLayout()
+        hlayout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
+
+        default_font = qt_prefs.font(g.MAIN_FONT)
+        self.font_selector = font_button(ui_manager, hlayout, default_font, 'font_selector')
+
+        self.node_color_selector = ColorSelector(self)
+        ui_manager.connect_element_to_action(self.node_color_selector, 'change_node_color')
+        hlayout.addWidget(self.node_color_selector, 1, QtCore.Qt.AlignLeft)
+        layout.addLayout(hlayout)
 
         hlayout = QtWidgets.QHBoxLayout()
         hlayout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
 
         self.shape_selector = ShapeSelector(self)
         ui_manager.connect_element_to_action(self.shape_selector, 'change_edge_shape')
-        hlayout.addWidget(self.shape_selector)
+        hlayout.addWidget(self.shape_selector, 1, QtCore.Qt.AlignLeft)
 
-        self.color_selector = ColorSelector(self)
-        ui_manager.connect_element_to_action(self.color_selector, 'change_edge_color')
-        hlayout.addWidget(self.color_selector)
+        self.font_selector.setMinimumWidth(self.shape_selector.width())
+        self.font_selector.setMaximumWidth(self.shape_selector.width())
+
+        self.edge_color_selector = ColorSelector(self)
+        ui_manager.connect_element_to_action(self.edge_color_selector, 'change_edge_color')
+        hlayout.addWidget(self.edge_color_selector, 1, QtCore.Qt.AlignLeft)
 
         self.edge_options = PanelButton(qt_prefs.settings_icon, text='More line options',
                                         parent=self, size=16)
@@ -123,31 +146,26 @@ class EdgesPanel(UIPanel):
         self.setWidget(inner)
         self.finish_init()
 
-    def are_there_edges_in_selection(self):
-        """ Helper method for checking if line options should react to selection
-        :return:
-        """
-        for item in ctrl.selected:
-            if isinstance(item, Edge):
-                return True
-        return False
-
     def update_selection(self):
         """ Called after ctrl.selection has changed. Prepare panel to use selection as scope
         :return:
         """
-        if self.are_there_edges_in_selection():
-            # store previous scope selection so it can be returned to
+        self._edges_in_selection = []
+        self._nodes_in_selection = []
+        self.cached_node_types = set()
+        if ctrl.selected:
             if self.scope != g.SELECTION:
-                self._old_scope = self.scope
+                self.base_scope = self.scope
             self.scope = g.SELECTION
-            self.update_scope_selector_options(selection_changed=True)
-        elif self.scope == g.SELECTION:
-            # return to previous selection
-            self.scope = self._old_scope
-            self.update_scope_selector_options(selection_changed=True)
-        elif not self.cached_edge_types:
-            self.update_scope_selector_options()
+            for item in ctrl.selected:
+                if isinstance(item, Node):
+                    self._nodes_in_selection.append(item)
+                    self.cached_node_types.add(item.node_type)
+                elif isinstance(item, Edge):
+                    self._edges_in_selection.append(item)
+        elif self.base_scope:
+            self.scope = self.base_scope
+        self.update_scope_selector_options(selection_changed=True)
         i = find_list_item(self.scope, self.scope_selector)
         self.scope_selector.setCurrentIndex(i)
 
@@ -167,21 +185,42 @@ class EdgesPanel(UIPanel):
     # @time_me
     def update_scope_selector_options(self, selection_changed=False):
         """ Redraw scope selector, show only scopes that are used in this forest """
-        if (not self.cached_edge_types) or (self.cached_edge_types != ctrl.forest.edge_types) or \
-                selection_changed:
-            scope_list = [x for x in scope_display_order if x in ctrl.forest.edge_types]
-            self.scope_selector.clear()
-            if self.are_there_edges_in_selection():
-                self.scope_selector.addItem(scope_display_items[g.SELECTION], g.SELECTION)
-            if not scope_list:
-                self.scope_selector.addItem(scope_display_items[g.CONSTITUENT_EDGE],
-                                            g.CONSTITUENT_EDGE)
-            for item in scope_list:
-                self.scope_selector.addItem(scope_display_items[item], item)
-            self.cached_edge_types = ctrl.forest.edge_types.copy()
+        scope_list = [x for x in scope_display_order if x in self.cached_node_types]
+        self.scope_selector.clear()
+        if self._nodes_in_selection or self._edges_in_selection:
+            self.scope_selector.addItem(scope_display_items[g.SELECTION], g.SELECTION)
+        if not scope_list:
+            self.scope_selector.addItem(scope_display_items[g.CONSTITUENT_NODE],
+                                        g.CONSTITUENT_NODE)
+        for item in scope_list:
+            self.scope_selector.addItem(scope_display_items[item], item)
 
     @time_me
     def update_fields(self):
+        """ Update different fields in the panel to show the correct values based on selection
+        or current scope. There may be that this makes fields to remove or add new values to
+        selectors or do other hard manipulation to fields.
+
+        First find what are the properties of the selected edges.
+        If they are conflicting, e.g. there are two different colors in selected edges, they cannot
+         be shown in the color selector. They can still be overridden with new selection.
+        """
+        if self.scope == g.SELECTION:
+            d = self.build_display_values()
+        else:
+            edge_scope = ctrl.forest.settings.node_settings(self.scope, 'edge')
+            #print(edge_scope)
+            edge_color = ctrl.forest.settings.edge_type_settings(self.scope, 'color')
+            edge_shape = ctrl.forest.settings.edge_type_settings(self.scope, 'shape_name')
+            # Color selector - show
+            #set_value(self.color_selector, edge_color, ambiguous_color)
+            #self.current_color = edge_color
+            # Shape selector -show shape of selected edges, or '---' if they contain more than 1 shape.
+            #set_value(self.shape_selector, edge_shape, ambiguous_edge)
+            #self.shape_selector.update()
+
+    @time_me
+    def update_fields_old(self):
         """ Update different fields in the panel to show the correct values based on selection
         or current scope. There may be that this makes fields to remove or add new values to
         selectors or do other hard manipulation to fields.
@@ -250,7 +289,7 @@ class EdgesPanel(UIPanel):
         :param value: value given to the field
         :return:
         """
-        print('EdgesPanel alerted: ', obj, signal, field_name, value)
+        print('StylePanel alerted: ', obj, signal, field_name, value)
         if signal == 'selection_changed':
             self.update_selection()
             self.update_fields()

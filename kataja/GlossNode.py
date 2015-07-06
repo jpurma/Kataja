@@ -30,6 +30,7 @@ from kataja.globals import GLOSS_EDGE, GLOSS_NODE
 from kataja.singletons import ctrl
 from kataja.parser.LatexToINode import parse_field
 from kataja.parser.INodes import ITextNode
+import kataja.globals as g
 
 
 color_map = {'tense': 0, 'person': 2, 'number': 4, 'case': 6, 'unknown': 3}
@@ -48,6 +49,13 @@ class GlossNode(Node):
     visible = {'label': {'order': 3}}
     editable = {'label': dict(name='Gloss', order=3, prefill='gloss',
                               tooltip='translation (optional)')}
+
+    default_style = {'color': 'accent5', 'font': g.ITALIC_FONT, 'font-size': 10,
+                     'edge': g.GLOSS_EDGE}
+
+    default_edge = {'id': g.GLOSS_EDGE, 'shape_name': 'cubic', 'color': 'accent5', 'pull': .40,
+                    'visible': True, 'arrowhead_at_start': False, 'arrowhead_at_end': False,
+                    'labeled': False}
 
     def __init__(self, text=''):
         Node.__init__(self)

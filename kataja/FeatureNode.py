@@ -28,6 +28,7 @@ from kataja.globals import FEATURE_EDGE, FEATURE_NODE
 from kataja.Node import Node
 from kataja.singletons import ctrl, qt_prefs
 from kataja.parser.INodes import IFeatureNode
+import kataja.globals as g
 
 
 color_map = {'tense': 0, 'order': 1, 'person': 2, 'number': 4, 'case': 6, 'unknown': 3}
@@ -42,6 +43,14 @@ class FeatureNode(Node):
     default_edge_type = FEATURE_EDGE
     node_type = FEATURE_NODE
     short_name = "FN"
+
+    default_style = {'color': 'accent2', 'font': g.SMALL_CAPS, 'font-size': 9,
+                     'edge': g.FEATURE_EDGE}
+
+    default_edge = {'id': g.FEATURE_EDGE, 'shape_name': 'cubic', 'color': 'accent2', 'pull': .40,
+                    'visible': True, 'arrowhead_at_start': False, 'arrowhead_at_end': False,
+                    'labeled': False}
+
 
     def __init__(self, feature=None):
         Node.__init__(self, syntactic_object=feature)

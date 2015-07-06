@@ -23,7 +23,7 @@
 # ############################################################################
 
 from kataja.Node import Node
-from kataja.globals import PROPERTY_EDGE, PROPERTY_NODE
+import kataja.globals as g
 
 
 
@@ -31,9 +31,16 @@ class PropertyNode(Node):
     """ This is somekind of a microfeature. I don't remember why it exists, but maybe time will tell. """
     width = 20
     height = 20
-    default_edge_type = PROPERTY_EDGE
-    node_type = PROPERTY_NODE
+    default_edge_type = g.PROPERTY_EDGE
+    node_type = g.PROPERTY_NODE
     short_name = "PropN"
+
+    default_style = {'color': 'accent6', 'font': g.SMALL_CAPS, 'font-size': 10,
+                     'edge': g.PROPERTY_EDGE}
+
+    default_edge = {'id': g.PROPERTY_EDGE, 'shape_name': 'linear', 'color': 'accent5', 'pull': .40,
+                    'visible': True,'arrowhead_at_start': False, 'arrowhead_at_end': False,
+                    'labeled': False}
 
     def __init__(self, property=None):
         Node.__init__(self, syntactic_object=property)

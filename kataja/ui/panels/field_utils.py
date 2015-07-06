@@ -4,11 +4,16 @@ from PyQt5.QtCore import QSize
 
 import kataja.globals as g
 from kataja.singletons import ctrl
+from kataja.utils import time_me
 
 __author__ = 'purma'
 
 
 class TableModelComboBox(QtWidgets.QComboBox):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.ambiguous = False
 
     def find_item(self, data):
         """ Return the item corresponding to this data
@@ -23,6 +28,7 @@ class TableModelComboBox(QtWidgets.QComboBox):
                     return item
         return None
 
+    @time_me
     def add_and_select_ambiguous_marker(self):
         item = self.find_item(g.AMBIGUOUS_VALUES)
         if item:
@@ -39,6 +45,7 @@ class TableModelComboBox(QtWidgets.QComboBox):
             self.setCurrentIndex(0)
             self.setModelColumn(0)
 
+    @time_me
     def remove_ambiguous_marker(self):
         item = self.find_item(g.AMBIGUOUS_VALUES)
         if item:
@@ -65,35 +72,41 @@ class TableModelComboBox(QtWidgets.QComboBox):
 
 
 class LineColorIcon(QtGui.QIcon):
-    def __init__(self, color_id):
-        QtGui.QIcon.__init__(self, ColorSwatchIconEngine(color_id))
+    def __init__(self, color_id, model):
+        QtGui.QIcon.__init__(self, ColorSwatchIconEngine(color_id, model))
 
 
 class ColorSelector(TableModelComboBox):
     def __init__(self, parent):
-        QtWidgets.QComboBox.__init__(self, parent)
+        super().__init__(parent)
         self.setIconSize(QSize(16, 16))
+        self.setMinimumWidth(40)
+        self.setMaximumWidth(40)
         colors = []
+        model = self.model()
         for c in ctrl.cm.color_keys + ctrl.cm.custom_colors:
-            print(c)
-            item = QtGui.QStandardItem(LineColorIcon(c), '')
+            item = QtGui.QStandardItem(LineColorIcon(c, model), '')
             item.setData(c)
             item.setSizeHint(QSize(22, 20))
             colors.append(item)
         new_view = QtWidgets.QTableView()
+
         #add_icon = QtGui.QIcon()
         #add_icon.fromTheme("list-add")
         #add_item = QtGui.QStandardItem('+')
         #add_item.setTextAlignment(QtCore.Qt.AlignCenter)
         #add_item.setSizeHint(QSize(22, 20))
         self.table = [colors[0:5] + colors[21:24], colors[5:13],
-                 colors[13:21], colors[21:27]] # + [add_item]
-        model = self.model()
+                 colors[13:21], colors[24:31]] # + [add_item]
+        print(model)
         model.clear()
-        model.setRowCount(8)
-        model.setColumnCount(4)
+        #model.setRowCount(8)
+        #model.setColumnCount(4)
+        model.selected_color = 'content1'
+        model.default_color = 'content1'
         for c, column in enumerate(self.table):
             for r, item in enumerate(column):
+                print(r, c, item.data())
                 model.setItem(r, c, item)
         new_view.horizontalHeader().hide()
         new_view.verticalHeader().hide()
@@ -103,6 +116,20 @@ class ColorSelector(TableModelComboBox):
         cw = new_view.columnWidth(0)
         new_view.setMinimumWidth(self.model().columnCount() * cw)
         self.setView(new_view)
+
+    def select_data(self, data):
+        item = self.find_item(data)
+        self.setCurrentIndex(item.row())
+        self.setModelColumn(item.column())
+        self.model().selected_color = data
+
+    def currentData(self, **kwargs):
+        """
+
+        :param kwargs:
+        :return:
+        """
+        return self.model().selected_color
 
 
 def label(panel, layout, text):
@@ -115,6 +142,7 @@ def spinbox(ui_manager, panel, layout, label, range_min, range_max, action):
     slabel = QtWidgets.QLabel(label, panel)
     slabel.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
     spinbox = QtWidgets.QSpinBox()
+    spinbox.ambiguous = False
     spinbox.setRange(range_min, range_max)
     ui_manager.connect_element_to_action(spinbox, action)
     slabel.setBuddy(spinbox)
@@ -128,6 +156,7 @@ def decimal_spinbox(ui_manager, panel, layout, label, range_min, range_max, step
     spinbox = QtWidgets.QDoubleSpinBox()
     spinbox.setRange(range_min, range_max)
     spinbox.setSingleStep(step)
+    spinbox.ambiguous = False
     ui_manager.connect_element_to_action(spinbox, action)
     slabel.setBuddy(spinbox)
     layout.addWidget(slabel)
@@ -144,6 +173,16 @@ def mini_button(ui_manager, layout, text, action):
     return button
 
 
+def font_button(ui_manager, layout, font, action):
+    button = QtWidgets.QPushButton(font.family())
+    button.setFont(font)
+    button.setMinimumSize(QSize(130, 24))
+    button.setMaximumSize(QSize(130, 24))
+    ui_manager.connect_element_to_action(button, action)
+    layout.addWidget(button)
+    return button
+
+
 def mini_selector(ui_manager, panel, layout, data, action):
     selector = QtWidgets.QComboBox(panel)
     selector.addItems(['pt', '%'])
@@ -152,6 +191,7 @@ def mini_selector(ui_manager, panel, layout, data, action):
     for text, value in data:
         selector.setItemData(i, value)
         i += 1
+    selector.ambiguous = False
     selector.setItemData(1, 'relative')
     selector.setMinimumSize(QSize(40, 20))
     selector.setMaximumSize(QSize(40, 20))
@@ -165,6 +205,7 @@ def checkbox(ui_manager, panel, layout, label, action):
     scheckbox = QtWidgets.QCheckBox()
     ui_manager.connect_element_to_action(scheckbox, action)
 
+    scheckbox.ambiguous = False
     slabel.setBuddy(scheckbox)
     layout.addWidget(slabel)
     layout.addWidget(scheckbox)
@@ -180,20 +221,22 @@ def box_row(container):
         container.setLayout(hlayout)
     return hlayout
 
-
+@time_me
 def set_value(field, value, conflict=False):
     field.blockSignals(True)
     if isinstance(field, QtWidgets.QSpinBox):
         field.setValue(value)
+    elif isinstance(field, TableModelComboBox):
+        field.select_data(value)
     elif isinstance(field, QtWidgets.QComboBox):
         field.setCurrentIndex(value)
-    if conflict:
+    if conflict and not field.ambiguous:
         add_and_select_ambiguous_marker(field)
-    else:
+    elif field.ambiguous and not conflict:
         remove_ambiguous_marker(field)
     field.blockSignals(False)
 
-
+@time_me
 def add_and_select_ambiguous_marker(element):
     if isinstance(element, TableModelComboBox):
         element.add_and_select_ambiguous_marker()
@@ -206,8 +249,9 @@ def add_and_select_ambiguous_marker(element):
             element.setCurrentIndex(i)
     elif isinstance(element, (QtWidgets.QSpinBox, QtWidgets.QDoubleSpinBox)):
         element.setSuffix(' (?)')
+    element.ambiguous = True
 
-
+@time_me
 def remove_ambiguous_marker(element):
     if isinstance(element, TableModelComboBox):
         element.remove_ambiguous_marker()
@@ -217,6 +261,7 @@ def remove_ambiguous_marker(element):
             element.removeItem(i)
     elif isinstance(element, (QtWidgets.QSpinBox, QtWidgets.QDoubleSpinBox)):
         element.setSuffix('')
+    element.ambiguous = False
 
 
 def find_list_item(data, selector):

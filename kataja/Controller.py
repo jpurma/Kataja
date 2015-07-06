@@ -87,6 +87,8 @@ class Controller:
         # set these back on.
         self.action_redraw = True
         self.undo_pile = set()
+        self.node_classes = {}
+        self.edge_class = None
         # ---------------------------
 
 
@@ -98,11 +100,13 @@ class Controller:
         from syntax.ConfigurableConstituent import ConfigurableConstituent
         from syntax.BaseFL import FL
         from syntax.BaseFeature import BaseFeature
+        from object_factory import node_classes, edge_class
         self.Constituent = ConfigurableConstituent
         self.Feature = BaseFeature
         self.FL = FL()
         self.main = main
-
+        self.node_classes = node_classes
+        self.edge_class = edge_class
 
     @property
     def ui(self):
@@ -280,7 +284,6 @@ class Controller:
         :param signal:
         :param obj:
         """
-        print('adding watcher: ', obj, signal)
         if signal in self.watchers:
             watchlist = self.watchers[signal]
             if obj not in watchlist:
@@ -293,7 +296,6 @@ class Controller:
 
         :param obj:
         """
-        print('removing from watch: ', obj)
         for watchlist in self.watchers.values():
             if obj in watchlist:
                 watchlist.remove(obj)
@@ -305,7 +307,6 @@ class Controller:
         """
         return self.watchers.get(signal, [])
 
-    @time_me
     def call_watchers(self, obj, signal, field_name=None, value=None):
         """ Alert (UI) objects that are watching for changes for given field in given object
         :param obj:

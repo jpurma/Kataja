@@ -151,54 +151,24 @@ class Preferences(object):
         self.print_file_name = 'kataja_print'
         self.include_gloss_to_print = True
 
-        # ## Default edge settings
-        # Edge types
-        # CONSTITUENT_EDGE = 1
-        # FEATURE_EDGE = 2
-        # GLOSS_EDGE = 3
-        # ARROW = 4
-        # PROPERTY_EDGE = 5
-        # ABSTRACT_EDGE = 0
-        # ATTRIBUTE_EDGE = 6
-
+        # Rest of the edges are defined in their corresponding node classes
         self.edges = {
-            CONSTITUENT_EDGE: {'shape_name': 'shaped_cubic', 'color': 'content1', 'pull': .24, 'visible': True,
-                               'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False},
-            FEATURE_EDGE: {'shape_name': 'cubic', 'color': 'accent2', 'pull': .40, 'visible': True,
-                           'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False},
-            GLOSS_EDGE: {'shape_name': 'cubic', 'color': 'accent5', 'pull': .40, 'visible': True,
-                         'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False},
-            ARROW: {'shape_name': 'linear', 'color': 'accent4', 'pull': 0, 'visible': True, 'arrowhead_at_start': False,
-                    'arrowhead_at_end': True, 'font': SMALL_CAPS, 'labeled': True},
+            ARROW: {'shape_name': 'linear', 'color': 'accent4', 'pull': 0, 'visible': True,
+                    'arrowhead_at_start': False, 'arrowhead_at_end': True, 'font': SMALL_CAPS,
+                    'labeled': True},
             DIVIDER: {'shape_name': 'linear', 'color': 'accent6', 'pull': 0, 'visible': True,
-                      'arrowhead_at_start': False, 'arrowhead_at_end': False, 'font': SMALL_CAPS, 'labeled': True,
-                      'style': 'dashed'},
-            PROPERTY_EDGE: {'shape_name': 'linear', 'color': 'accent5', 'pull': .40, 'visible': True,
-                            'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False},
-            ABSTRACT_EDGE: {'shape_name': 'linear', 'color': 'content1', 'pull': .40, 'visible': True,
-                            'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False},
-            ATTRIBUTE_EDGE: {'shape_name': 'linear', 'color': 'content1', 'pull': .50, 'visible': True,
-                             'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False},
-            COMMENT_EDGE: {'shape_name': 'linear', 'color': 'accent4', 'pull': 0, 'visible': True,
-                             'arrowhead_at_start': True, 'arrowhead_at_end': False, 'labeled': False},
+                      'arrowhead_at_start': False, 'arrowhead_at_end': False, 'font': SMALL_CAPS,
+                      'labeled': True, 'style': 'dashed'}
             }
-
-        ### Default node settings
-        # Node types
-        # ABSTRACT_NODE = 0
-        # CONSTITUENT_NODE = 1
-        # FEATURE_NODE = 2
-        # ATTRIBUTE_NODE = 3
-        # GLOSS_NODE = 4
-        # PROPERTY_NODE = 5
-        self.nodes = {ABSTRACT_NODE: {'color': 'content1', 'font': MAIN_FONT, 'font-size': 10},
-                      CONSTITUENT_NODE: {'color': 'content1', 'font': MAIN_FONT, 'font-size': 10},
-                      FEATURE_NODE: {'color': 'accent2', 'font': SMALL_CAPS, 'font-size': 9},
-                      ATTRIBUTE_NODE: {'color': 'accent4', 'font': SMALL_CAPS, 'font-size': 10},
-                      GLOSS_NODE: {'color': 'accent5', 'font': ITALIC_FONT, 'font-size': 10},
-                      PROPERTY_NODE: {'color': 'accent6', 'font': SMALL_CAPS, 'font-size': 10},
-                      COMMENT_NODE: {'color': 'accent4', 'font': MAIN_FONT, 'font-size': 14}}
+        # Nodes are defined in their classes and preference dict is generated from those.
+        self.nodes = {}
         self.custom_colors = {}
+
+    def import_node_classes(self, ctrl):
+        for key, nodeclass in ctrl.node_classes.items():
+            self.nodes[key] = nodeclass.default_style.copy()
+            edge_key = nodeclass.default_style['edge']
+            self.edges[edge_key] = nodeclass.default_edge.copy()
 
     def update(self, update_dict):
         """

@@ -55,7 +55,10 @@ from kataja.utils import time_me, import_plugins
 from kataja.visualizations.available import VISUALIZATIONS
 import kataja.debug as debug
 from kataja.BaseModel import BaseModel, Saved
-
+from kataja.ConstituentNode import ConstituentNode
+from kataja.FeatureNode import FeatureNode
+from kataja.AttributeNode import AttributeNode
+from kataja.GlossNode import GlossNode
 
 
 # show labels
@@ -100,6 +103,10 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         print('---- set up font db ... ', time.time() - t)
         self.color_manager = PaletteManager()
         print('---- Initialized color manager ... ', time.time() - t)
+        ctrl.late_init(self)
+        prefs.import_node_classes(ctrl)
+        print('---- controller late init ... ', time.time() - t)
+
         prefs.load_preferences()
         qt_prefs.late_init(prefs, self.fontdb)
         import_plugins(prefs, plugins_path)
@@ -107,8 +114,6 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         self.app.setFont(qt_prefs.font(g.UI_FONT))
         self.app.processEvents()
         print('---- initialized prefs ... ', time.time() - t)
-        ctrl.late_init(self)
-        print('---- controller late init ... ', time.time() - t)
         self.graph_scene = GraphScene(main=self, graph_view=None)
         print('---- scene init ... ', time.time() - t)
         self.graph_view = GraphView(main=self, graph_scene=self.graph_scene)
@@ -144,7 +149,6 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         # self.addToolBar(toolbar)
         self.action_finished()
         print('---- finished start sequence... ', time.time() - t)
-        print(ctrl.watchers)
 
     def load_treeset(self, filename=''):
         """ Loads and initializes a new set of trees. Has to be done before the program can do anything sane.

@@ -55,6 +55,7 @@ from kataja.ui.OverlayButton import OverlayButton
 from kataja.ui.panels.SymbolPanel import SymbolPanel
 from kataja.ui.panels.NodesPanel import NodesPanel
 from kataja.ui.embeds.NodeEditEmbed import NodeEditEmbed
+from kataja.ui.panels.StylePanel import StylePanel
 from utils import time_me
 
 NOTHING = 0
@@ -70,18 +71,20 @@ PANELS = {g.LOG: {'name': 'Log', 'position': 'bottom'},
           g.COLOR_WHEEL: {'name': 'Color theme wheel', 'position': 'right', 'folded': True,
                           'closed': True},
           g.LINE_OPTIONS: {'name': 'More line options', 'position': 'float', 'closed': True},
-          g.EDGES: {'name': 'Edge drawing', 'position': 'right'},
+          g.EDGES: {'name': 'Edge drawing', 'position': 'right', 'closed': True},
+          g.STYLE: {'name': 'Styles', 'position': 'right'},
           g.SYMBOLS: {'name': 'Symbols', 'position': 'right'},
           g.NODES: {'name': 'Nodes', 'position': 'right'}
 }
 
-panel_order = [g.LOG, g.NAVIGATION, g.SYMBOLS, g.NODES, g.VISUALIZATION, g.COLOR_THEME,
+panel_order = [g.LOG, g.NAVIGATION, g.SYMBOLS, g.NODES, g.STYLE, g.VISUALIZATION, g.COLOR_THEME,
                g.COLOR_WHEEL, g.LINE_OPTIONS, g.EDGES]
 
 panel_classes = {g.LOG: LogPanel, g.TEST: TestPanel, g.NAVIGATION: NavigationPanel,
                  g.VISUALIZATION: VisualizationPanel,
                  g.COLOR_THEME: ColorPanel, g.COLOR_WHEEL: ColorWheelPanel, g.EDGES: EdgesPanel,
-                 g.LINE_OPTIONS: LineOptionsPanel, g.SYMBOLS: SymbolPanel, g.NODES: NodesPanel}
+                 g.LINE_OPTIONS: LineOptionsPanel, g.SYMBOLS: SymbolPanel, g.NODES: NodesPanel,
+                 g.STYLE: StylePanel}
 
 menu_structure = OrderedDict([
     ('file_menu',

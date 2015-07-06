@@ -1,11 +1,13 @@
+import kataja.globals as g
 
-
+from kataja.ConstituentNode import ConstituentNode
 from kataja.AttributeNode import AttributeNode
 from kataja.BaseConstituentNode import BaseConstituentNode
 from kataja.FeatureNode import FeatureNode
 from kataja.GlossNode import GlossNode
 from kataja.PropertyNode import PropertyNode
 from kataja.CommentNode import CommentNode
+from kataja.Node import Node
 
 from kataja.Edge import Edge
 
@@ -43,12 +45,21 @@ assert BaseConstituent
 assert BaseFeature
 
 # We could use globals but it is safer this way: you can only create objects listed here.
-factory_models = {BaseConstituentNode, AttributeNode, FeatureNode, GlossNode, PropertyNode, CommentNode, Edge, Forest,
+factory_models = {ConstituentNode, BaseConstituentNode, AttributeNode, FeatureNode, GlossNode,
+                  PropertyNode, CommentNode, Edge, Forest,
                   DerivationStep, DerivationStepManager, ForestSettings, ForestRules,
                   ConfigurableConstituent, BaseConstituent, BaseFeature}
 factory_dict = {}
 for value in factory_models:
     factory_dict[value.short_name] = value
+
+
+node_classes = {g.CONSTITUENT_NODE: ConstituentNode, g.ABSTRACT_NODE: Node,
+                g.FEATURE_NODE: FeatureNode, g.GLOSS_NODE: GlossNode,
+                g.ATTRIBUTE_NODE: AttributeNode, g.PROPERTY_NODE: PropertyNode,
+                g.COMMENT_NODE: CommentNode}
+
+edge_class = Edge
 
 
 def create(object_class_name, *args, **kwargs):

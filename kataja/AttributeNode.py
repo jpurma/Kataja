@@ -25,7 +25,7 @@
 import random
 import collections
 from kataja.BaseModel import Saved
-
+import kataja.globals as g
 from kataja.globals import ATTRIBUTE_EDGE, ATTRIBUTE_NODE
 from kataja.Node import Node
 
@@ -69,6 +69,13 @@ class AttributeNode(Node):
     default_edge_type = ATTRIBUTE_EDGE
     node_type = ATTRIBUTE_NODE
     short_name = "ANode"
+
+    default_style = {'color': 'accent4', 'font': g.SMALL_CAPS, 'font-size': 10,
+                     'edge': g.ATTRIBUTE_EDGE}
+
+    default_edge = {'id': g.ATTRIBUTE_EDGE, 'shape_name': 'linear', 'color': 'content1',
+                    'pull': .50, 'visible': True, 'arrowhead_at_start': False,
+                    'arrowhead_at_end': False, 'labeled': False}
 
     def __init__(self, host, attribute_id, attribute_label='', show_label=False, restoring=False):
         """

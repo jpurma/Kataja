@@ -47,7 +47,6 @@ atan_magnet_map = {-8: 5, -7: 5, -6: 0, -5: 1, -4: 2, -3: 3, -2: 4, -1: 6, 0: 6,
 class Edge(QtWidgets.QGraphicsItem, BaseModel):
     """ Any connection between nodes: can be represented as curves, branches or arrows """
 
-    receives_signals = [g.EDGE_SHAPES_CHANGED]
     short_name = "E"
 
     def __init__(self, start=None, end=None, edge_type='', direction=''):
