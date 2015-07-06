@@ -170,7 +170,7 @@ class UIManager:
             self._action_groups[action_group_name] = QtWidgets.QActionGroup(self.main)
         return self._action_groups[action_group_name]
 
-    def start_color_dialog(self, receiver, parent, slot_name):
+    def start_color_dialog(self, receiver, parent, slot_name, initial_color):
         if not self.color_dialog:
             self.color_dialog = QtWidgets.QColorDialog(parent)
             cd = self.color_dialog
@@ -185,26 +185,18 @@ class UIManager:
         cd.show()
         cd.selector = receiver
         cd.is_for_purpose = slot_name
-        cd.setCurrentColor(ctrl.cm.drawing())
+        if initial_color:
+            cd.setCurrentColor(ctrl.cm.get(initial_color))
+        else:
+            cd.setCurrentColor(ctrl.cm.get('content1'))
         receiver.update()
 
     def color_adjusted(self, color):
         color_id = self.color_dialog.selector.currentData()
         ctrl.cm.d[color_id] = color
-        if self.color_dialog.is_for_purpose == 'edge_color':
-            panel = self.color_dialog.parent()
-            if panel:
-                if panel.scope == g.SELECTION:
-                    for edge in ctrl.selected:
-                        if isinstance(edge, Edge):
-                            edge.color_id = color_id
-                            edge.update()
-                elif panel.scope:
-                    ctrl.forest.settings.edge_type_settings(panel.scope, 'color', color_id)
-                panel.update_color(color_id)
-                for edge in ctrl.forest.edges.values():
-                    edge.update()
-        self.color_dialog.selector.update()
+        panel = self.color_dialog.parent()
+        if panel:
+            panel.update_color_from(self.color_dialog.is_for_purpose)
 
     def add_ui(self, item):
         """

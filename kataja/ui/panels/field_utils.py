@@ -28,7 +28,6 @@ class TableModelComboBox(QtWidgets.QComboBox):
                     return item
         return None
 
-    @time_me
     def add_and_select_ambiguous_marker(self):
         item = self.find_item(g.AMBIGUOUS_VALUES)
         if item:
@@ -45,7 +44,6 @@ class TableModelComboBox(QtWidgets.QComboBox):
             self.setCurrentIndex(0)
             self.setModelColumn(0)
 
-    @time_me
     def remove_ambiguous_marker(self):
         item = self.find_item(g.AMBIGUOUS_VALUES)
         if item:
@@ -119,11 +117,12 @@ class ColorSelector(TableModelComboBox):
 
     def select_data(self, data):
         item = self.find_item(data)
-        self.setCurrentIndex(item.row())
-        self.setModelColumn(item.column())
-        self.model().selected_color = data
+        if item:
+            self.setCurrentIndex(item.row())
+            self.setModelColumn(item.column())
+            self.model().selected_color = data
 
-    def currentData(self, **kwargs):
+    def decurrentData(self, **kwargs):
         """
 
         :param kwargs:
@@ -168,6 +167,7 @@ def mini_button(ui_manager, layout, text, action):
     button = QtWidgets.QPushButton(text)
     button.setMinimumSize(QSize(40, 20))
     button.setMaximumSize(QSize(40, 20))
+    button.ambiguous = False
     ui_manager.connect_element_to_action(button, action)
     layout.addWidget(button)
     return button
@@ -178,6 +178,7 @@ def font_button(ui_manager, layout, font, action):
     button.setFont(font)
     button.setMinimumSize(QSize(130, 24))
     button.setMaximumSize(QSize(130, 24))
+    button.ambiguous = False
     ui_manager.connect_element_to_action(button, action)
     layout.addWidget(button)
     return button
@@ -221,19 +222,23 @@ def box_row(container):
         container.setLayout(hlayout)
     return hlayout
 
-@time_me
-def set_value(field, value, conflict=False):
+def set_value(field, value, conflict=False, enabled=True):
     field.blockSignals(True)
-    if isinstance(field, QtWidgets.QSpinBox):
-        field.setValue(value)
-    elif isinstance(field, TableModelComboBox):
-        field.select_data(value)
-    elif isinstance(field, QtWidgets.QComboBox):
-        field.setCurrentIndex(value)
-    if conflict and not field.ambiguous:
-        add_and_select_ambiguous_marker(field)
-    elif field.ambiguous and not conflict:
-        remove_ambiguous_marker(field)
+    old_v = getattr(field, 'cached_value', None)
+    field.setEnabled(enabled)
+    if old_v != value and enabled:
+        if isinstance(field, QtWidgets.QSpinBox):
+            field.setValue(value)
+        elif isinstance(field, TableModelComboBox):
+            field.select_data(value)
+        elif isinstance(field, QtWidgets.QComboBox):
+            field.setCurrentIndex(value)
+        if conflict and not field.ambiguous:
+            add_and_select_ambiguous_marker(field)
+        elif field.ambiguous and not conflict:
+            remove_ambiguous_marker(field)
+        field.cached_value = value
+    field.update()
     field.blockSignals(False)
 
 @time_me

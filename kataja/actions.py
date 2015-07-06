@@ -11,6 +11,7 @@ import subprocess
 from PyQt5 import QtGui, QtWidgets, QtCore
 
 from PyQt5.QtCore import Qt
+from kataja.Node import Node
 from kataja.errors import ForestError
 import kataja.debug as debug
 from kataja.ui.PreferencesDialog import PreferencesDialog
@@ -683,22 +684,30 @@ a['edge_shape_scope'] = {
     'tooltip': 'Which relations are affected?'}
 
 
-def change_edge_shape(shape):
+def change_edge_shape(sender):
     """ Change edge shape for selection or in currently active edge type.
     :param shape: shape key (str)
     :return: None
     """
+    shape = sender.currentData()
     if shape is g.AMBIGUOUS_VALUES:
         return
-    scope = ctrl.ui.get_panel(g.EDGES).scope
+    panel = get_ui_container(sender)
+    scope = panel.scope
     if scope == g.SELECTION:
         for edge in ctrl.selected:
             if isinstance(edge, Edge):
                 edge.shape_name = shape
                 edge.update_shape()
     elif scope:
-        ctrl.forest.settings.edge_type_settings(scope, 'shape_name', shape)
+        edge_type = ctrl.forest.settings.node_settings(scope, 'edge')
+        print(edge_type, shape)
+        ctrl.forest.settings.edge_type_settings(edge_type, 'shape_name', shape)
+        print(ctrl.forest.settings.edge_type_settings(edge_type, 'shape_name'))
+        for edge in ctrl.forest.edges.values():
+            edge.update_shape()
     line_options = ctrl.ui.get_panel(g.LINE_OPTIONS)
+
     if line_options:
         line_options.update_panel()
     ctrl.main.add_message('(s) Changed relation shape to: %s' % shape)
@@ -706,7 +715,7 @@ def change_edge_shape(shape):
 a['change_edge_shape'] = {
     'command': 'Change relation shape',
     'method': change_edge_shape,
-    'args': ['line_type'],
+    'sender_arg': True,
     'tooltip': 'Change shape of relations (lines, edges) between objects'}
 
 def change_node_color(sender):
@@ -716,24 +725,11 @@ def change_node_color(sender):
     """
 
     if sender:
-        prev_color = sender.model().selected_color
-        color_id = sender.currentData()
-        sender.model().selected_color = color_id
         panel = get_ui_container(sender)
-        if (not color_id) or (not ctrl.cm.get(color_id)) or prev_color == color_id:
-            ctrl.ui.start_color_dialog(sender, panel, 'node_color')
-            return
-        if panel.scope == g.SELECTION:
-            for edge in ctrl.selected:
-                if isinstance(edge, Edge):
-                    edge.color_id = color_id
-                    edge.update()
-        elif panel.scope:
-            pass
-            #ctrl.forest.settings.edge_type_settings(panel.scope, 'color', color_id)
-        panel.update_color(color_id)
-        ctrl.main.add_message('(s) Changed node color to: %s' % ctrl.cm.get_color_name(
-            color_id))
+        color_id = panel.update_color_from('node_color')
+        if color_id:
+            ctrl.main.add_message('(s) Changed node color to: %s' %
+                                  ctrl.cm.get_color_name(color_id))
 
 a['change_node_color'] = {
     'command': 'Change node color',
@@ -747,25 +743,12 @@ def change_edge_color(sender):
     :param color: color key (str)
     :return: None
     """
-
     if sender:
-        prev_color = sender.model().selected_color
-        color_id = sender.currentData()
-        sender.model().selected_color = color_id
         panel = get_ui_container(sender)
-        if (not color_id) or (not ctrl.cm.get(color_id)) or prev_color == color_id:
-            ctrl.ui.start_color_dialog(sender, panel, 'edge_color')
-            return
-        if panel.scope == g.SELECTION:
-            for edge in ctrl.selected:
-                if isinstance(edge, Edge):
-                    edge.color_id = color_id
-                    edge.update()
-        elif panel.scope:
-            ctrl.forest.settings.edge_type_settings(panel.scope, 'color', color_id)
-        panel.update_color(color_id)
-        ctrl.main.add_message('(s) Changed relation color to: %s' % ctrl.cm.get_color_name(
-            color_id))
+        color_id = panel.update_color_from('edge_color')
+        if color_id:
+            ctrl.main.add_message('(s) Changed relation color to: %s' %
+                                  ctrl.cm.get_color_name(color_id))
 
 a['change_edge_color'] = {
     'command': 'Change relation color',
