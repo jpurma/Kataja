@@ -9,14 +9,6 @@ from kataja.ui.OverlayButton import PanelButton
 
 __author__ = 'purma'
 
-nodes_table = OrderedDict([(g.ABSTRACT_NODE, {'name': 'Abstract Node', 'show': False}),
-                           (g.CONSTITUENT_NODE, {'name': 'Constituent', 'show': True}),
-                           (g.FEATURE_NODE, {'name': 'Feature', 'show': True}),
-                           (g.GLOSS_NODE, {'name': 'Gloss', 'show': True}),
-                           (g.COMMENT_NODE, {'name': 'Comment', 'show': True}),
-                           (g.ATTRIBUTE_NODE, {'name': 'Attribute', 'show': False}),
-                           (g.PROPERTY_NODE, {'name': 'Property', 'show': False})])
-
 
 class DraggableNodeFrame(QtWidgets.QFrame):
     def __init__(self, key, name, parent=None):
@@ -59,11 +51,18 @@ class DraggableNodeFrame(QtWidgets.QFrame):
         self.add_button.setDown(True)
         data = QtCore.QMimeData()
         data.setText('kataja:new_node:%s' % self.key)
-        drag = QtGui.QDrag(self)
-        drag.setMimeData(data)
-        drag.exec_(QtCore.Qt.CopyAction)
-        self.add_button.setDown(False)
+        #drag = QtGui.QDrag(self)
+        #drag.setMimeData(data)
+        #drag.exec_(QtCore.Qt.CopyAction)
+        #self.add_button.setDown(False)
         QtWidgets.QFrame.mousePressEvent(self, event)
+
+    def mouseReleaseEvent(self, event):
+        print('frame release event')
+        self.add_button.setDown(False)
+        ctrl.ui.set_scope(self.key)
+        ctrl.deselect_objects()
+        QtWidgets.QFrame.mouseReleaseEvent(self, event)
 
 
 class NodesPanel(UIPanel):
@@ -82,10 +81,9 @@ class NodesPanel(UIPanel):
         layout = QtWidgets.QVBoxLayout()
         self.node_frames = {}
 
-        for key, item in nodes_table.items():
-            if not item['show']:
-                continue
-            frame = DraggableNodeFrame(key, item['name'], parent=inner)
+        for key in prefs.node_types_order:
+            nd = prefs.nodes[key]
+            frame = DraggableNodeFrame(key, nd['name'], parent=inner)
             self.node_frames[key] = frame
             layout.addWidget(frame)
 

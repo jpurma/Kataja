@@ -68,7 +68,9 @@ class AttributeNode(Node):
     height = 20
     default_edge_type = ATTRIBUTE_EDGE
     node_type = ATTRIBUTE_NODE
+    name = ('Attribute', 'Attributes')
     short_name = "ANode"
+    display = True
 
     default_style = {'color': 'accent4', 'font': g.SMALL_CAPS, 'font-size': 10,
                      'edge': g.ATTRIBUTE_EDGE}

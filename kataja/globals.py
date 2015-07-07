@@ -27,13 +27,13 @@ DIVIDER = 'd'
 COMMENT_EDGE = '#'
 
 # Node types
-ABSTRACT_NODE = 'z'
-CONSTITUENT_NODE = 'c'
-FEATURE_NODE = 'f'
-ATTRIBUTE_NODE = 'a'
-GLOSS_NODE = 'g'
-PROPERTY_NODE = 'p'
-COMMENT_NODE = 'm'
+ABSTRACT_NODE = 7
+CONSTITUENT_NODE = 1
+FEATURE_NODE = 2
+ATTRIBUTE_NODE = 6
+GLOSS_NODE = 3
+PROPERTY_NODE = 5
+COMMENT_NODE = 4
 
 # Touch area types
 LEFT_ADD_ROOT = 0
@@ -111,3 +111,8 @@ REMOVE_TRIANGLE = 'remove_triangle'
 # Creation/Deletion flags
 CREATED = 1
 DELETED = 2
+
+
+FONT_ROLES = [(MAIN_FONT, 'main'), (CONSOLE_FONT, 'console'), (BOLD_FONT, 'bold'),
+              (ITALIC_FONT, 'italic'), (UI_FONT, 'ui'), (SMALL_FEATURE, 'small'),
+              (SMALL_CAPS, 'small caps')]

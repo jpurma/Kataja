@@ -3,7 +3,7 @@ from kataja.ui.ColorSwatchIconEngine import ColorSwatchIconEngine
 from PyQt5.QtCore import QSize
 
 import kataja.globals as g
-from kataja.singletons import ctrl
+from kataja.singletons import ctrl, qt_prefs
 from kataja.utils import time_me
 
 __author__ = 'purma'
@@ -51,9 +51,9 @@ class TableModelComboBox(QtWidgets.QComboBox):
 
     def select_data(self, data):
         item = self.find_item(data)
-        assert item
-        self.setCurrentIndex(item.row())
-        self.setModelColumn(item.column())
+        if item:
+            self.setCurrentIndex(item.row())
+            self.setModelColumn(item.column())
 
     def currentData(self, **kwargs):
         """
@@ -87,7 +87,7 @@ class ColorSelector(TableModelComboBox):
             item.setData(c)
             item.setSizeHint(QSize(22, 20))
             colors.append(item)
-        new_view = QtWidgets.QTableView()
+        view = QtWidgets.QTableView()
 
         #add_icon = QtGui.QIcon()
         #add_icon.fromTheme("list-add")
@@ -106,14 +106,14 @@ class ColorSelector(TableModelComboBox):
             for r, item in enumerate(column):
                 print(r, c, item.data())
                 model.setItem(r, c, item)
-        new_view.horizontalHeader().hide()
-        new_view.verticalHeader().hide()
-        new_view.setCornerButtonEnabled(False)
-        new_view.setModel(self.model())
-        new_view.resizeColumnsToContents()
-        cw = new_view.columnWidth(0)
-        new_view.setMinimumWidth(self.model().columnCount() * cw)
-        self.setView(new_view)
+        view.horizontalHeader().hide()
+        view.verticalHeader().hide()
+        view.setCornerButtonEnabled(False)
+        view.setModel(self.model())
+        view.resizeColumnsToContents()
+        cw = view.columnWidth(0)
+        view.setMinimumWidth(self.model().columnCount() * cw)
+        self.setView(view)
 
     def select_data(self, data):
         item = self.find_item(data)
@@ -122,13 +122,26 @@ class ColorSelector(TableModelComboBox):
             self.setModelColumn(item.column())
             self.model().selected_color = data
 
-    def decurrentData(self, **kwargs):
-        """
 
-        :param kwargs:
-        :return:
-        """
-        return self.model().selected_color
+class FontSelector(TableModelComboBox):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.setIconSize(QSize(64, 16))
+        # self.shape_selector.setView(view)
+        items = []
+        for key, role in g.FONT_ROLES:
+            font = qt_prefs.fonts[key]
+            item = QtGui.QStandardItem(role)
+            item.setData(key)
+            item.setToolTip('%s, %spt' % (font.family(), font.pointSize()))
+            item.setFont(font)
+            item.setSizeHint(QSize(64, 16))
+            items.append(item)
+        model = self.model()
+        model.setRowCount(len(items))
+        for r, item in enumerate(items):
+            model.setItem(r, 0, item)
+        self.view().setModel(model)
 
 
 def label(panel, layout, text):
@@ -205,7 +218,6 @@ def checkbox(ui_manager, panel, layout, label, action):
     slabel = QtWidgets.QLabel(label, panel)
     scheckbox = QtWidgets.QCheckBox()
     ui_manager.connect_element_to_action(scheckbox, action)
-
     scheckbox.ambiguous = False
     slabel.setBuddy(scheckbox)
     layout.addWidget(slabel)
@@ -223,6 +235,7 @@ def box_row(container):
     return hlayout
 
 def set_value(field, value, conflict=False, enabled=True):
+    print('set_value: %s value: %s conflict: %s enabled: %s ' % (field, value, conflict, enabled))
     field.blockSignals(True)
     old_v = getattr(field, 'cached_value', None)
     field.setEnabled(enabled)

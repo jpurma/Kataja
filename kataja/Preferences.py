@@ -162,13 +162,23 @@ class Preferences(object):
             }
         # Nodes are defined in their classes and preference dict is generated from those.
         self.nodes = {}
+        self.node_types_order = []
         self.custom_colors = {}
 
     def import_node_classes(self, ctrl):
         for key, nodeclass in ctrl.node_classes.items():
-            self.nodes[key] = nodeclass.default_style.copy()
+            nd = nodeclass.default_style.copy()
+            nd['name'] = nodeclass.name[0]
+            nd['name_pl'] = nodeclass.name[1]
+            nd['display'] = nodeclass.display
+            nd['short_name'] = nodeclass.short_name
+            self.nodes[key] = nd
             edge_key = nodeclass.default_style['edge']
+            if nd['display']:
+                self.node_types_order.append(key)
             self.edges[edge_key] = nodeclass.default_edge.copy()
+        self.node_types_order.sort()
+
 
     def update(self, update_dict):
         """
@@ -285,7 +295,7 @@ class QtPreferences:
         #print("font families:", QtGui.QFontDatabase().families())
         self.easing_curve = []
         self.fontdb = fontdb
-        self.prepare_fonts(preferences.fonts, preferences)
+        self.prepare_fonts(preferences.fonts)
         self.prepare_easing_curve(preferences._curve, preferences.move_frames)
         self.no_pen = QtGui.QPen()
         self.no_pen.setStyle(QtCore.Qt.NoPen)
@@ -342,7 +352,7 @@ class QtPreferences:
         s = sum(self.easing_curve)
         self.easing_curve = [x / s for x in self.easing_curve]
 
-    def prepare_fonts(self, fonts_dict, preferences):
+    def prepare_fonts(self, fonts_dict):
         """
 
 

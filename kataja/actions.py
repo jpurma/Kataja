@@ -651,14 +651,34 @@ def open_font_selector(sender):
     """
     print('opening font selector: ', sender)
     if sender:
+        font_key = sender.currentData()
         panel = get_ui_container(sender)
-        ctrl.ui.open_font_dialog(panel, panel.scope)
+        ctrl.ui.open_font_dialog(panel, font_key)
 
-a['font_selector'] = {
+a['open_font_dialog'] = {
     'command': 'Change label font',
     'method': open_font_selector,
     'sender_arg': True,
     'undoable': False,
+    'tooltip': 'Select the label font'}
+
+
+def select_font(sender):
+    """ Change drawing panel to work on selected nodes, constituent nodes or other available
+    nodes
+    :param selection: int scope identifier, from globals
+    :return: None
+    """
+    print('opening font selector: ', sender)
+    if sender:
+        font_key = sender.currentData()
+        panel = get_ui_container(sender)
+        panel.update_font_to(font_key)
+
+a['font_selector'] = {
+    'command': 'Change label font',
+    'method': select_font,
+    'sender_arg': True,
     'tooltip': 'Select the label font'}
 
 
@@ -692,18 +712,14 @@ def change_edge_shape(sender):
     shape = sender.currentData()
     if shape is g.AMBIGUOUS_VALUES:
         return
-    panel = get_ui_container(sender)
-    scope = panel.scope
-    if scope == g.SELECTION:
+    if ctrl.ui.scope == g.SELECTION:
         for edge in ctrl.selected:
             if isinstance(edge, Edge):
                 edge.shape_name = shape
                 edge.update_shape()
-    elif scope:
-        edge_type = ctrl.forest.settings.node_settings(scope, 'edge')
-        print(edge_type, shape)
+    elif ctrl.ui.scope:
+        edge_type = ctrl.forest.settings.node_settings(ctrl.ui.scope, 'edge')
         ctrl.forest.settings.edge_type_settings(edge_type, 'shape_name', shape)
-        print(ctrl.forest.settings.edge_type_settings(edge_type, 'shape_name'))
         for edge in ctrl.forest.edges.values():
             edge.update_shape()
     line_options = ctrl.ui.get_panel(g.LINE_OPTIONS)

@@ -55,7 +55,9 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     node_type = g.ABSTRACT_NODE
     ordered = False
     ordering_func = None
+    name = ('Abstract node', 'Abstract nodes')
     short_name = "Node" # shouldn't be used on its own
+    display = False
 
     # override this if you need to turn inodes into your custom Nodes. See examples in
     # ConstituentNode or FeatureNode
@@ -649,8 +651,19 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         else:
             return qt_prefs.font(ctrl.forest.settings.node_settings(self.node_type, 'font'))
 
-    @font.setter
-    def font(self, value):
+    @property
+    def font_id(self):
+        """
+        :return:
+        """
+        if self._label_font:
+            return self._label_font
+        else:
+            return ctrl.forest.settings.node_settings(self.node_type, 'font')
+
+
+    @font_id.setter
+    def font_id(self, value):
         """
 
         :param value:

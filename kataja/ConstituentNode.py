@@ -35,8 +35,9 @@ class ConstituentNode(BaseConstituentNode):
     """ ConstituentNode is enriched with few fields that have no syntactic meaning but help with
      reading the tree aliases, indices and glosses.
     """
-
+    name = ('Constituent', 'Constituents')
     short_name = "CN"
+    display = True
     visible = {'alias': {'order': 0},
                'index': {'order': 1, 'align': 'line-end', 'style': 'subscript'},
                'label': {'order': 2},

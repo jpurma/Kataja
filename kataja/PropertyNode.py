@@ -33,8 +33,9 @@ class PropertyNode(Node):
     height = 20
     default_edge_type = g.PROPERTY_EDGE
     node_type = g.PROPERTY_NODE
+    name = ('Property', 'Properties')
     short_name = "PropN"
-
+    display = True
     default_style = {'color': 'accent6', 'font': g.SMALL_CAPS, 'font-size': 10,
                      'edge': g.PROPERTY_EDGE}
 

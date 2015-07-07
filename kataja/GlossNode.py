@@ -44,7 +44,9 @@ class GlossNode(Node):
     height = 20
     default_edge_type = GLOSS_EDGE
     node_type = GLOSS_NODE
+    name = ('Gloss', 'Glosses')
     short_name = "GNode"
+    display = True
 
     visible = {'label': {'order': 3}}
     editable = {'label': dict(name='Gloss', order=3, prefill='gloss',

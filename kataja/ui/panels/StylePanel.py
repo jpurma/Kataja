@@ -4,35 +4,17 @@ from PyQt5.QtCore import QSize
 from PyQt5.QtGui import QIcon, QColor, QStandardItem
 from kataja.Node import Node
 from kataja.Edge import SHAPE_PRESETS, Edge
-from kataja.singletons import ctrl, qt_prefs
+from kataja.singletons import ctrl, qt_prefs, prefs
 import kataja.globals as g
 from kataja.ui.panels.UIPanel import UIPanel
 from kataja.ui.DrawnIconEngine import DrawnIconEngine
 from kataja.ui.OverlayButton import PanelButton
 from kataja.ui.panels.field_utils import find_list_item, add_and_select_ambiguous_marker, \
-    remove_ambiguous_marker, TableModelComboBox, ColorSelector, set_value, mini_button, font_button
+    remove_ambiguous_marker, TableModelComboBox, ColorSelector, set_value, mini_button, font_button, \
+    FontSelector
 from utils import time_me
 
 __author__ = 'purma'
-
-scope_display_order = [g.SELECTION, g.CONSTITUENT_EDGE, g.FEATURE_EDGE, g.GLOSS_EDGE, g.ARROW, g.PROPERTY_EDGE,
-                       g.ATTRIBUTE_EDGE, g.ABSTRACT_EDGE]
-
-scope_display_items = {
-    g.SELECTION: 'Current selection',
-    g.CONSTITUENT_NODE: 'Constituents',
-    g.FEATURE_NODE: 'Features',
-    g.GLOSS_NODE: 'Glosses',
-    g.ARROW: 'Arrows',
-    g.PROPERTY_NODE: 'Properties',
-    g.ATTRIBUTE_NODE: 'Attributes',
-    g.ABSTRACT_NODE: 'Unspecified nodes'
-}
-
-
-line_icons = {
-
-}
 
 
 class LineStyleIcon(QIcon):
@@ -46,7 +28,6 @@ class LineStyleIcon(QIcon):
         # self.addPixmap(pixmap)
 
     def paint_settings(self):
-        s = SHAPE_PRESETS[self.shape_key]
         pen = self.panel.edge_color_selector.currentData()
         if not pen:
             pen = 'content1'
@@ -74,6 +55,7 @@ class ShapeSelector(TableModelComboBox):
         self.view().setModel(model)
 
 
+
 class StylePanel(UIPanel):
     """ Panel for editing how edges and nodes are drawn. """
 
@@ -89,8 +71,6 @@ class StylePanel(UIPanel):
         layout = QtWidgets.QVBoxLayout()
         layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
         # layout.setContentsMargins(4, 4, 4, 4)
-        self.scope = g.CONSTITUENT_NODE
-        self.base_scope = g.CONSTITUENT_NODE
         self._nodes_in_selection = []
         self._edges_in_selection = []
         self.cached_node_types = set()
@@ -103,8 +83,9 @@ class StylePanel(UIPanel):
         label = QtWidgets.QLabel('Style for', self)
         hlayout.addWidget(label)
         self.scope_selector = QtWidgets.QComboBox(self)
-        self.scope_selector.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
-        self.scope_selector.setMinimumWidth(120)
+        #self.scope_selector.setSizePolicy(QtWidgets.QSizePolicy.Fixed,
+        # QtWidgets.QSizePolicy.Fixed)
+        #self.scope_selector.setMinimumWidth(120)
         ui_manager.connect_element_to_action(self.scope_selector, 'style_scope')
         hlayout.addWidget(self.scope_selector, 1, QtCore.Qt.AlignLeft)
         layout.addLayout(hlayout)
@@ -113,12 +94,19 @@ class StylePanel(UIPanel):
         hlayout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
 
         default_font = qt_prefs.font(g.MAIN_FONT)
-        self.font_selector = font_button(ui_manager, hlayout, default_font, 'font_selector')
+        self.font_selector = FontSelector(self)
+        ui_manager.connect_element_to_action(self.font_selector, 'font_selector')
+        hlayout.addWidget(self.font_selector)
+        print('font selector uses view: ', self.font_selector.view())
+
+        #font_button(ui_manager, hlayout, default_font,
+        #                                         'font_selector')
 
         self.node_color_selector = ColorSelector(self)
         ui_manager.connect_element_to_action(self.node_color_selector, 'change_node_color')
         hlayout.addWidget(self.node_color_selector, 1, QtCore.Qt.AlignLeft)
         layout.addLayout(hlayout)
+        print('color selector uses view: ', self.node_color_selector.view())
 
         hlayout = QtWidgets.QHBoxLayout()
         hlayout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
@@ -152,45 +140,35 @@ class StylePanel(UIPanel):
         self._edges_in_selection = []
         self._nodes_in_selection = []
         self.cached_node_types = set()
-        if ctrl.selected:
-            if self.scope != g.SELECTION:
-                self.base_scope = self.scope
-            self.scope = g.SELECTION
-            for item in ctrl.selected:
-                if isinstance(item, Node):
-                    self._nodes_in_selection.append(item)
-                    self.cached_node_types.add(item.node_type)
-                elif isinstance(item, Edge):
-                    self._edges_in_selection.append(item)
-        elif self.base_scope:
-            self.scope = self.base_scope
-        self.update_scope_selector_options(selection_changed=True)
-        i = find_list_item(self.scope, self.scope_selector)
+        for item in ctrl.selected:
+            if isinstance(item, Node):
+                self._nodes_in_selection.append(item)
+                self.cached_node_types.add(item.node_type)
+            elif isinstance(item, Edge):
+                self._edges_in_selection.append(item)
+        self.update_scope_selector_options()
+        i = find_list_item(ctrl.ui.scope, self.scope_selector)
         self.scope_selector.setCurrentIndex(i)
 
-    def update_color(self, color):
-        self.current_color = color
-        self.color_selector.select_data(color)
-        self.color_selector.update()
-        self.shape_selector.update()
-
     def update_color_from(self, source):
+        scope = ctrl.ui.scope
         if source == 'node_color':
             s = self.node_color_selector
             m = s.model()
             prev_color = m.selected_color
             color_id = s.currentData()
+            print('color_id from currentData: ', color_id)
             m.selected_color = color_id
             if (not color_id) or (not ctrl.cm.get(color_id)) or prev_color == color_id:
                 ctrl.ui.start_color_dialog(s, self, 'node_color', color_id)
                 return
-            if self.scope == g.SELECTION:
+            if scope == g.SELECTION:
                 for node in ctrl.selected:
                     if isinstance(node, Node):
                         node.color_id = color_id
                         node.update()
-            elif self.scope:
-                ctrl.forest.settings.node_settings(self.scope, 'color', color_id)
+            elif scope:
+                ctrl.forest.settings.node_settings(scope, 'color', color_id)
             s.select_data(color_id)
             s.update()
             return color_id
@@ -199,22 +177,34 @@ class StylePanel(UIPanel):
             m = s.model()
             prev_color = m.selected_color
             color_id = s.currentData()
+            print('color_id from currentData: ', color_id)
             m.selected_color = color_id
             if (not color_id) or (not ctrl.cm.get(color_id)) or prev_color == color_id:
                 ctrl.ui.start_color_dialog(s, self, 'edge_color', color_id)
                 return
-            if self.scope == g.SELECTION:
+            if scope == g.SELECTION:
                 for edge in ctrl.selected:
                     if isinstance(edge, Edge):
                         edge.color_id = color_id
                         edge.update()
-            elif self.scope:
-                edge_type = ctrl.forest.settings.node_settings(self.scope, 'edge')
+            elif scope:
+                edge_type = ctrl.forest.settings.node_settings(scope, 'edge')
                 ctrl.forest.settings.edge_type_settings(edge_type, 'color', color_id)
             s.select_data(color_id)
             s.update()
             self.shape_selector.update()
             return color_id
+
+    def update_font_to(self, font_id):
+        if ctrl.ui.scope == g.SELECTION:
+            for node in ctrl.selected:
+                if isinstance(node, Node):
+                    node.font_id = font_id
+                    node.update_label()
+        elif ctrl.ui.scope:
+            ctrl.forest.settings.node_settings(ctrl.ui.scope, 'font', font_id)
+            for node in ctrl.forest.nodes.values():
+                node.update_label()
 
 
     def update_panel(self):
@@ -225,17 +215,15 @@ class StylePanel(UIPanel):
         self.update_fields()
 
     # @time_me
-    def update_scope_selector_options(self, selection_changed=False):
+    def update_scope_selector_options(self):
         """ Redraw scope selector, show only scopes that are used in this forest """
-        scope_list = [x for x in scope_display_order if x in self.cached_node_types]
+        nd = prefs.nodes
+        scope_list = [(key, nd[key]['name_pl']) for key in prefs.node_types_order]
         self.scope_selector.clear()
         if self._nodes_in_selection or self._edges_in_selection:
-            self.scope_selector.addItem(scope_display_items[g.SELECTION], g.SELECTION)
-        if not scope_list:
-            self.scope_selector.addItem(scope_display_items[g.CONSTITUENT_NODE],
-                                        g.CONSTITUENT_NODE)
-        for item in scope_list:
-            self.scope_selector.addItem(scope_display_items[item], item)
+            self.scope_selector.addItem('Current selection', g.SELECTION)
+        for key, name in scope_list:
+            self.scope_selector.addItem(name, key)
 
     def update_fields(self):
         """ Update different fields in the panel to show the correct values based on selection
@@ -246,8 +234,11 @@ class StylePanel(UIPanel):
         If they are conflicting, e.g. there are two different colors in selected edges, they cannot
          be shown in the color selector. They can still be overridden with new selection.
         """
-        if self.scope == g.SELECTION:
+        print('---- update fields for StylePanel ----')
+        scope = ctrl.ui.scope
+        if scope == g.SELECTION:
             d = self.build_display_values()
+            print(d)
             for key, item in d.items():
                 value, enabled, conflict = item
                 if key == 'edge_color':
@@ -261,12 +252,14 @@ class StylePanel(UIPanel):
                 else:
                     continue
                 set_value(f, value, conflict=conflict, enabled=enabled)
+            #self.font_selector.setFont(qt_prefs.font(d['node_font'][0]))
+
         else:
             ns = ctrl.forest.settings.node_settings
             es = ctrl.forest.settings.edge_type_settings
-            edge_scope = ns(self.scope, 'edge')
-            node_color = ns(self.scope, 'color')
-            node_font = ns(self.scope, 'font')
+            edge_scope = ns(scope, 'edge')
+            node_color = ns(scope, 'color')
+            node_font = ns(scope, 'font')
             edge_color = es(edge_scope, 'color')
             edge_shape = es(edge_scope, 'shape_name')
             # Color selector - show
@@ -274,6 +267,7 @@ class StylePanel(UIPanel):
             set_value(self.font_selector, node_font, False)
             set_value(self.edge_color_selector, edge_color, False)
             set_value(self.shape_selector, edge_shape, False)
+            #self.font_selector.setFont(qt_prefs.font(node_font))
             #self.current_color = edge_color
 
     def build_display_values(self):
@@ -290,7 +284,7 @@ class StylePanel(UIPanel):
                 d['edge_color'] = ('', False, False)
                 d['edge_shape'] = ('', False, False)
                 d['node_color'] = (n.color_id, True, False)
-                d['node_font'] = (n.font, True, False)
+                d['node_font'] = (n.font_id, True, False)
         else:
             color_conflict = False
             shape_conflict = False
@@ -315,72 +309,14 @@ class StylePanel(UIPanel):
                 elif n.color_id != ncolor:
                     ncolor_conflict = True
                 if not font:
-                    font = n.font
-                elif n.font != font:
+                    font = n.font_id
+                elif n.font_id != font:
                     font_conflict = True
             d['edge_color'] = (color, bool(color), color_conflict)
             d['edge_shape'] = (shape, bool(shape), shape_conflict)
             d['node_color'] = (ncolor, bool(ncolor), ncolor_conflict)
             d['node_font'] = (font, bool(font), font_conflict)
         return d
-
-    @time_me
-    def update_fields_old(self):
-        """ Update different fields in the panel to show the correct values based on selection
-        or current scope. There may be that this makes fields to remove or add new values to
-        selectors or do other hard manipulation to fields.
-
-        First find what are the properties of the selected edges.
-        If they are conflicting, e.g. there are two different colors in selected edges, they cannot
-         be shown in the color selector. They can still be overridden with new selection.
-        """
-        edge_shape = None
-        edge_color = None
-        ambiguous_edge = False
-        ambiguous_color = False
-        ambiguous_type = False
-        edge_type = None
-
-        if self.scope == g.SELECTION:
-            edges = []
-            for item in ctrl.selected:
-                if isinstance(item, Edge):
-                    edges.append(item)
-            if len(edges) == 0:
-                return
-            if len(edges) == 1:
-                e = edges[0]
-                edge_color = e.color_id
-                edge_shape = e.shape_name
-                edge_type = e.edge_type
-            else:
-                for edge in edges:
-                    if not edge_shape:
-                        edge_shape = edge.shape_name
-                    elif edge.shape_name != edge_shape:
-                        ambiguous_edge = True
-                    if not edge_color:
-                        edge_color = edge.color_id
-                    elif edge.color_id != edge_color:
-                        ambiguous_color = True
-                    if not edge_type:
-                        edge_type = edge.edge_type
-                    elif edge.edge_type != edge_type:
-                        ambiguous_type = True
-            if edge_type and not ambiguous_type:
-                self.color_selector.default_color = ctrl.forest.settings.edge_type_settings(
-                    edge_type, 'color')
-            else:
-                self.color_selector.default_color = None
-        else:
-            edge_color = ctrl.forest.settings.edge_type_settings(self.scope, 'color')
-            edge_shape = ctrl.forest.settings.edge_type_settings(self.scope, 'shape_name')
-        # Color selector - show
-        set_value(self.color_selector, edge_color, ambiguous_color)
-        self.current_color = edge_color
-        # Shape selector -show shape of selected edges, or '---' if they contain more than 1 shape.
-        set_value(self.shape_selector, edge_shape, ambiguous_edge)
-        self.shape_selector.update()
 
     def watch_alerted(self, obj, signal, field_name, value):
         """ Receives alerts from signals that this object has chosen to listen. These signals

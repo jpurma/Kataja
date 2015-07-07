@@ -42,7 +42,9 @@ class FeatureNode(Node):
     height = 20
     default_edge_type = FEATURE_EDGE
     node_type = FEATURE_NODE
+    name = ('Feature', 'Features')
     short_name = "FN"
+    display = True
 
     default_style = {'color': 'accent2', 'font': g.SMALL_CAPS, 'font-size': 9,
                      'edge': g.FEATURE_EDGE}

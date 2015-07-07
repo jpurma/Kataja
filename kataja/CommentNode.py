@@ -42,7 +42,9 @@ class CommentNode(Node):
     height = 20
     default_edge_type = ARROW
     node_type = COMMENT_NODE
+    name = ('Comment', 'Comments')
     short_name = "ComNode"
+    display = True
 
     default_style = {'color': 'accent4', 'font': g.MAIN_FONT, 'font-size': 14,
                      'edge': g.COMMENT_EDGE}

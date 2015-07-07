@@ -41,7 +41,7 @@ import kataja.globals as g
 from kataja.ui.TouchArea import TouchArea
 from kataja.ui.panels.ColorThemePanel import ColorPanel
 from kataja.ui.panels.ColorWheelPanel import ColorWheelPanel
-from kataja.ui.panels.EdgesPanel import EdgesPanel, TableModelComboBox
+from kataja.ui.panels.StylePanel import TableModelComboBox
 from kataja.ui.panels.LogPanel import LogPanel
 from kataja.ui.panels.NavigationPanel import NavigationPanel
 from kataja.ui.panels.TestPanel import TestPanel
@@ -71,18 +71,17 @@ PANELS = {g.LOG: {'name': 'Log', 'position': 'bottom'},
           g.COLOR_WHEEL: {'name': 'Color theme wheel', 'position': 'right', 'folded': True,
                           'closed': True},
           g.LINE_OPTIONS: {'name': 'More line options', 'position': 'float', 'closed': True},
-          g.EDGES: {'name': 'Edge drawing', 'position': 'right', 'closed': True},
           g.STYLE: {'name': 'Styles', 'position': 'right'},
           g.SYMBOLS: {'name': 'Symbols', 'position': 'right'},
           g.NODES: {'name': 'Nodes', 'position': 'right'}
 }
 
 panel_order = [g.LOG, g.NAVIGATION, g.SYMBOLS, g.NODES, g.STYLE, g.VISUALIZATION, g.COLOR_THEME,
-               g.COLOR_WHEEL, g.LINE_OPTIONS, g.EDGES]
+               g.COLOR_WHEEL, g.LINE_OPTIONS]
 
 panel_classes = {g.LOG: LogPanel, g.TEST: TestPanel, g.NAVIGATION: NavigationPanel,
                  g.VISUALIZATION: VisualizationPanel,
-                 g.COLOR_THEME: ColorPanel, g.COLOR_WHEEL: ColorWheelPanel, g.EDGES: EdgesPanel,
+                 g.COLOR_THEME: ColorPanel, g.COLOR_WHEEL: ColorWheelPanel,
                  g.LINE_OPTIONS: LineOptionsPanel, g.SYMBOLS: SymbolPanel, g.NODES: NodesPanel,
                  g.STYLE: StylePanel}
 
@@ -136,8 +135,12 @@ class UIManager:
         self.button_shortcut_filter = ButtonShortcutFilter()
         self.shortcut_solver = ShortcutSolver(self)
 
+        self.scope = g.CONSTITUENT_NODE
+        self.base_scope = g.CONSTITUENT_NODE
+
         self.preferences_dialog = None
         self.color_dialog = None
+        self.font_dialog = None
 
     def populate_ui_elements(self):
         """ These cannot be created in __init__, as individual panels etc. may refer to ctrl.ui,
@@ -191,12 +194,37 @@ class UIManager:
             cd.setCurrentColor(ctrl.cm.get('content1'))
         receiver.update()
 
+    def set_scope(self, scope):
+        self.scope = scope
+        if scope != g.SELECTION:
+            self.base_scope = scope
+
     def color_adjusted(self, color):
         color_id = self.color_dialog.selector.currentData()
         ctrl.cm.d[color_id] = color
         panel = self.color_dialog.parent()
         if panel:
             panel.update_color_from(self.color_dialog.is_for_purpose)
+
+    def open_font_dialog(self, parent, initial_font):
+        if not self.font_dialog:
+            self.font_dialog = QtWidgets.QFontDialog(parent)
+            fd = self.font_dialog
+            fd.setOption(QtWidgets.QFontDialog.NoButtons)
+            fd.currentFontChanged.connect(self.font_changed)
+        else:
+            fd = self.font_dialog
+        if initial_font:
+            fd.setCurrentFont(qt_prefs.font(initial_font))
+        else:
+            fd.setCurrentFont(qt_prefs.font(g.MAIN_FONT))
+        fd.show()
+
+    def font_changed(self, font):
+        panel = self.font_dialog.parent()
+        font_id = qt_prefs.add_or_replace_custom_font(font)
+        if panel:
+            panel.update_font_to(font_id)
 
     def add_ui(self, item):
         """
@@ -321,6 +349,13 @@ class UIManager:
                 self.add_buttons_for_edge(item)
             elif isinstance(item, BaseConstituentNode):
                 self.add_buttons_for_constituent_node(item)
+            scope = ctrl.ui.scope
+        if ctrl.selected:
+            if self.scope != g.SELECTION:
+                self.base_scope = self.scope
+            self.scope = g.SELECTION
+        else:
+            self.scope = self.base_scope
 
     # unused, but sane
     def focusable_elements(self):
