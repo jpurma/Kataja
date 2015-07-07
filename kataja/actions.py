@@ -631,9 +631,7 @@ def change_style_scope(sender):
     print('changing scope: ', sender)
     if sender:
         data = sender.currentData()
-        panel = get_ui_container(sender)
-        if panel:
-            panel.scope = data
+        ctrl.ui.scope = data
         ctrl.call_watchers(sender, 'scope_changed', 'scope', data)
 
 a['style_scope'] = {
@@ -651,8 +649,8 @@ def open_font_selector(sender):
     """
     print('opening font selector: ', sender)
     if sender:
-        font_key = sender.currentData()
         panel = get_ui_container(sender)
+        font_key = panel.cached_font_id
         ctrl.ui.open_font_dialog(panel, font_key)
 
 a['open_font_dialog'] = {
@@ -680,28 +678,6 @@ a['font_selector'] = {
     'method': select_font,
     'sender_arg': True,
     'tooltip': 'Select the label font'}
-
-
-
-def change_edge_panel_scope(sender):
-    """ Change drawing panel to work on selection, constituent edges or other available edges
-    :param selection: int scope identifier, from globals
-    :return: None
-    """
-    print('changing scope: ', sender)
-    if sender:
-        data = sender.currentData()
-        panel = get_ui_container(sender)
-        if panel:
-            panel.scope = data
-        ctrl.call_watchers(sender, 'scope_changed', 'scope', data)
-
-a['edge_shape_scope'] = {
-    'command': 'Select shape for...',
-    'method': change_edge_panel_scope,
-    'sender_arg': True,
-    'undoable': False,
-    'tooltip': 'Which relations are affected?'}
 
 
 def change_edge_shape(sender):
@@ -734,6 +710,7 @@ a['change_edge_shape'] = {
     'sender_arg': True,
     'tooltip': 'Change shape of relations (lines, edges) between objects'}
 
+
 def change_node_color(sender):
     """ Change color for selection or in currently active edge type.
     :param color: color key (str)
@@ -741,6 +718,7 @@ def change_node_color(sender):
     """
 
     if sender:
+        sender.model().selected_color = sender.currentData()
         panel = get_ui_container(sender)
         color_id = panel.update_color_from('node_color')
         if color_id:

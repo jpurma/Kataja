@@ -28,7 +28,7 @@ class LineStyleIcon(QIcon):
         # self.addPixmap(pixmap)
 
     def paint_settings(self):
-        pen = self.panel.edge_color_selector.currentData()
+        pen = self.panel.cached_edge_color
         if not pen:
             pen = 'content1'
         d = {'color': ctrl.cm.get(pen)}
@@ -75,7 +75,11 @@ class StylePanel(UIPanel):
         self._edges_in_selection = []
         self.cached_node_types = set()
         self.current_color = ctrl.cm.drawing()
-        self.watchlist = ['edge_shape', 'edge_color', 'selection_changed', 'forest_changed']
+        self.cached_node_color = None
+        self.cached_edge_color = None
+        self.cached_font_id = None
+        self.watchlist = ['edge_shape', 'edge_color', 'selection_changed', 'forest_changed',
+                          'scope_changed']
         # Other items may be temporarily added, they are defined as class.variables
 
         hlayout = QtWidgets.QHBoxLayout()
@@ -93,20 +97,16 @@ class StylePanel(UIPanel):
         hlayout = QtWidgets.QHBoxLayout()
         hlayout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
 
-        default_font = qt_prefs.font(g.MAIN_FONT)
         self.font_selector = FontSelector(self)
         ui_manager.connect_element_to_action(self.font_selector, 'font_selector')
         hlayout.addWidget(self.font_selector)
-        print('font selector uses view: ', self.font_selector.view())
 
-        #font_button(ui_manager, hlayout, default_font,
-        #                                         'font_selector')
+        self.open_font_dialog = mini_button(ui_manager, hlayout, 'font', 'open_font_dialog')
 
         self.node_color_selector = ColorSelector(self)
         ui_manager.connect_element_to_action(self.node_color_selector, 'change_node_color')
         hlayout.addWidget(self.node_color_selector, 1, QtCore.Qt.AlignLeft)
         layout.addLayout(hlayout)
-        print('color selector uses view: ', self.node_color_selector.view())
 
         hlayout = QtWidgets.QHBoxLayout()
         hlayout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
@@ -114,9 +114,6 @@ class StylePanel(UIPanel):
         self.shape_selector = ShapeSelector(self)
         ui_manager.connect_element_to_action(self.shape_selector, 'change_edge_shape')
         hlayout.addWidget(self.shape_selector, 1, QtCore.Qt.AlignLeft)
-
-        self.font_selector.setMinimumWidth(self.shape_selector.width())
-        self.font_selector.setMaximumWidth(self.shape_selector.width())
 
         self.edge_color_selector = ColorSelector(self)
         ui_manager.connect_element_to_action(self.edge_color_selector, 'change_edge_color')
@@ -154,11 +151,9 @@ class StylePanel(UIPanel):
         scope = ctrl.ui.scope
         if source == 'node_color':
             s = self.node_color_selector
-            m = s.model()
-            prev_color = m.selected_color
+            prev_color = self.cached_node_color
             color_id = s.currentData()
-            print('color_id from currentData: ', color_id)
-            m.selected_color = color_id
+            self.cached_node_color = color_id
             if (not color_id) or (not ctrl.cm.get(color_id)) or prev_color == color_id:
                 ctrl.ui.start_color_dialog(s, self, 'node_color', color_id)
                 return
@@ -174,11 +169,9 @@ class StylePanel(UIPanel):
             return color_id
         elif source == 'edge_color':
             s = self.edge_color_selector
-            m = s.model()
-            prev_color = m.selected_color
+            prev_color = self.cached_edge_color
             color_id = s.currentData()
-            print('color_id from currentData: ', color_id)
-            m.selected_color = color_id
+            self.cached_edge_color = color_id
             if (not color_id) or (not ctrl.cm.get(color_id)) or prev_color == color_id:
                 ctrl.ui.start_color_dialog(s, self, 'edge_color', color_id)
                 return
@@ -196,6 +189,10 @@ class StylePanel(UIPanel):
             return color_id
 
     def update_font_to(self, font_id):
+        self.cached_font_id = font_id
+        if not self.font_selector.find_item(font_id):
+            self.font_selector.add_font(font_id, qt_prefs.fonts[font_id])
+        self.font_selector.select_data(font_id)
         if ctrl.ui.scope == g.SELECTION:
             for node in ctrl.selected:
                 if isinstance(node, Node):
@@ -234,11 +231,9 @@ class StylePanel(UIPanel):
         If they are conflicting, e.g. there are two different colors in selected edges, they cannot
          be shown in the color selector. They can still be overridden with new selection.
         """
-        print('---- update fields for StylePanel ----')
         scope = ctrl.ui.scope
         if scope == g.SELECTION:
             d = self.build_display_values()
-            print(d)
             for key, item in d.items():
                 value, enabled, conflict = item
                 if key == 'edge_color':
@@ -253,7 +248,12 @@ class StylePanel(UIPanel):
                     continue
                 set_value(f, value, conflict=conflict, enabled=enabled)
             #self.font_selector.setFont(qt_prefs.font(d['node_font'][0]))
-
+            if d['node_color'][0]:
+                self.cached_node_color = d['node_color'][0]
+            if d['edge_color'][0]:
+                self.cached_edge_color = d['edge_color'][0]
+            if d['node_font'][0]:
+                self.cached_font_id = d['node_font'][0]
         else:
             ns = ctrl.forest.settings.node_settings
             es = ctrl.forest.settings.edge_type_settings
@@ -268,7 +268,9 @@ class StylePanel(UIPanel):
             set_value(self.edge_color_selector, edge_color, False)
             set_value(self.shape_selector, edge_shape, False)
             #self.font_selector.setFont(qt_prefs.font(node_font))
-            #self.current_color = edge_color
+            self.cached_node_color = node_color
+            self.cached_edge_color = edge_color
+            self.cached_font_id = node_font
 
     def build_display_values(self):
         d = {}
@@ -283,8 +285,8 @@ class StylePanel(UIPanel):
                 n = self._nodes_in_selection[0]
                 d['edge_color'] = ('', False, False)
                 d['edge_shape'] = ('', False, False)
-                d['node_color'] = (n.color_id, True, False)
-                d['node_font'] = (n.font_id, True, False)
+                d['node_color'] = (n.get_color_id(), True, False)
+                d['node_font'] = (n.get_font_id(), True, False)
         else:
             color_conflict = False
             shape_conflict = False
@@ -337,7 +339,8 @@ class StylePanel(UIPanel):
         elif signal == 'forest_changed':
             self.update_selection()
             self.update_fields()
-
+        elif signal == 'scope_changed':
+            self.update_fields()
 
 
 

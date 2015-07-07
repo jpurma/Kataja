@@ -79,7 +79,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
         self._label_complex = None
         self._label_visible = True
-        self._label_font = None  # @UndefinedVariable
         self._label_qdocument = None
         self.label_rect = None
         self._inode = None
@@ -102,7 +101,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self.triangle = None
         self.folded_away = False
         self.folding_towards = None
-        self.color = None
+        self.color_id = None
+        self.node_color = None
 
         self._editing_template = {}
 
@@ -646,32 +646,20 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
         :return:
         """
-        if self._label_font:
-            return qt_prefs.font(self._label_font)
+        if self.font_id:
+            return qt_prefs.font(self.font_id)
         else:
             return qt_prefs.font(ctrl.forest.settings.node_settings(self.node_type, 'font'))
 
-    @property
-    def font_id(self):
+    def get_font_id(self):
         """
         :return:
         """
-        if self._label_font:
-            return self._label_font
+        if self.font_id:
+            return self.font_id
         else:
             return ctrl.forest.settings.node_settings(self.node_type, 'font')
 
-
-    @font_id.setter
-    def font_id(self, value):
-        """
-
-        :param value:
-        """
-        if isinstance(value, QtGui.QFont):
-            self._label_font = qt_prefs.get_key_for_font(value)
-        else:
-            self._label_font = value
 
     # ### Colors and drawing settings ############################################################
 
@@ -685,18 +673,18 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         if self.node_color is None:
             return ctrl.cm.get(ctrl.forest.settings.node_settings(self.__class__.node_type, 'color'))
         else:
-            return ctrl.cm.get(self.node_color)
+            return ctrl.cm.get(self.color_id)
 
-    @color.setter
-    def color(self, value=None):
+    def get_color_id(self):
         """
-
-        :param value:
         :return:
         """
-        self.node_color = value
-        # if self._label_complex:
-        # self._label_complex.setDefaultTextColor(self._color)
+        if self.color_id is None:
+            c= ctrl.forest.settings.node_settings(self.__class__.node_type, 'color')
+            print('looking for color, found: ', c)
+            return c
+        else:
+            return self.color_id
 
     def palette(self):
         """
@@ -1207,3 +1195,4 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     folded_away = Saved("folded_away")
     folding_towards = Saved("folding_towards", if_changed=if_changed_folding_towards)
     color_id = Saved("color_id")
+    font_id = Saved("font_id")

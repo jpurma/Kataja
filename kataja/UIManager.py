@@ -222,7 +222,11 @@ class UIManager:
 
     def font_changed(self, font):
         panel = self.font_dialog.parent()
-        font_id = qt_prefs.add_or_replace_custom_font(font)
+        font_id = panel.cached_font_id
+        if not font_id.startswith('custom'):
+            font_id = qt_prefs.get_key_for_font(font)
+        qt_prefs.fonts[font_id] = font
+        print(font_id, font)
         if panel:
             panel.update_font_to(font_id)
 
@@ -338,6 +342,7 @@ class UIManager:
     def update_selections(self):
         """ Many UI elements change mode depending on if object of specific type is selected """
         # clear all ui pieces
+        print('ui update_selections called')
         for item in list(self._items.values()):
             if item.host:
                 self.remove_ui(item)
@@ -349,13 +354,13 @@ class UIManager:
                 self.add_buttons_for_edge(item)
             elif isinstance(item, BaseConstituentNode):
                 self.add_buttons_for_constituent_node(item)
-            scope = ctrl.ui.scope
         if ctrl.selected:
             if self.scope != g.SELECTION:
                 self.base_scope = self.scope
             self.scope = g.SELECTION
         else:
             self.scope = self.base_scope
+        print('scope: %s , base scope: %s' % (self.scope, self.base_scope))
 
     # unused, but sane
     def focusable_elements(self):

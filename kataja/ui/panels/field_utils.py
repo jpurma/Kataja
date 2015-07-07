@@ -54,6 +54,9 @@ class TableModelComboBox(QtWidgets.QComboBox):
         if item:
             self.setCurrentIndex(item.row())
             self.setModelColumn(item.column())
+        else:
+            print("couldn't find data %s from selector model" % data)
+            raise hell
 
     def currentData(self, **kwargs):
         """
@@ -63,7 +66,9 @@ class TableModelComboBox(QtWidgets.QComboBox):
         """
         i = self.view().currentIndex()
         item = self.model().itemFromIndex(i)
+        print(i, item)
         if item:
+            print(item.data())
             return item.data()
         else:
             return None
@@ -121,6 +126,10 @@ class ColorSelector(TableModelComboBox):
             self.setCurrentIndex(item.row())
             self.setModelColumn(item.column())
             self.model().selected_color = data
+            print('set selected color to ', data)
+        else:
+            print("couldn't find data %s from selector model" % data)
+            raise hell
 
 
 class FontSelector(TableModelComboBox):
@@ -142,6 +151,15 @@ class FontSelector(TableModelComboBox):
         for r, item in enumerate(items):
             model.setItem(r, 0, item)
         self.view().setModel(model)
+
+    def add_font(self, font_id, font):
+        item = QtGui.QStandardItem(font_id)
+        item.setData(font_id)
+        item.setToolTip('%s, %spt' % (font.family(), font.pointSize()))
+        item.setFont(font)
+        item.setSizeHint(QSize(64, 16))
+        self.model().appendRow(item)
+
 
 
 def label(panel, layout, text):

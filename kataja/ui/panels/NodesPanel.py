@@ -62,6 +62,7 @@ class DraggableNodeFrame(QtWidgets.QFrame):
         self.add_button.setDown(False)
         ctrl.ui.set_scope(self.key)
         ctrl.deselect_objects()
+        ctrl.call_watchers(self, 'scope_changed')
         QtWidgets.QFrame.mouseReleaseEvent(self, event)
 
 
