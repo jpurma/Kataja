@@ -23,7 +23,6 @@ class LineOptionsPanel(UIPanel):
         :param parent: self.main
         """
         UIPanel.__init__(self, name, key, default_position, parent, ui_manager, folded)
-        self.scope = None
         inner = QtWidgets.QWidget(self)
         layout = QtWidgets.QVBoxLayout()
         layout.setSizeConstraint(QtWidgets.QLayout.SetMinimumSize)
@@ -109,49 +108,44 @@ class LineOptionsPanel(UIPanel):
         :return: None
         """
         print('updating panel')
-        edge_panel = ctrl.ui.get_panel(g.EDGES)
-        if edge_panel:
-            self.scope = edge_panel.scope
-        else:
-            self.scope = g.SELECTION
-        if self.scope == g.SELECTION:
-            shape_dict = self.build_shape_dict_for_selection()
-            print(shape_dict)
+        if ctrl.ui.scope == g.SELECTION:
+            sd = self.build_shape_dict_for_selection()
+            print(sd)
             self.update_cp1()
             self.update_cp2()
             selection = True
         else:  # Adjusting how this relation type is drawn
-            shape_dict = ctrl.forest.settings.edge_shape_settings(self.scope)
+            sd = ctrl.forest.settings.edge_shape_settings(ctrl.ui.edge_scope)
             # print('shape settings: ', shape_dict)
             selection = False
-        if shape_dict:
-            self.update_box_visibility(shape_dict, selection)
-            cps = shape_dict['control_points']
+        if sd:
+            self.update_box_visibility(sd, selection)
+            cps = sd['control_points']
             # Relative / fixed curvature
             if cps > 0:
-                rel = shape_dict.get('relative', None)
+                rel = sd.get('relative', None)
                 if rel:
                     set_value(self.arc_type_selector, 1)
-                    set_value(self.arc_dx_spinbox, shape_dict['rel_dx'] * 100,
-                              'rel_dx_conflict' in shape_dict)
-                    set_value(self.arc_dy_spinbox, shape_dict['rel_dy'] * 100,
-                              'rel_dy_conflict' in shape_dict)
+                    set_value(self.arc_dx_spinbox, sd['rel_dx'] * 100,
+                              'rel_dx_conflict' in sd)
+                    set_value(self.arc_dy_spinbox, sd['rel_dy'] * 100,
+                              'rel_dy_conflict' in sd)
                 elif rel is not None:
                     set_value(self.arc_type_selector, 0)
-                    set_value(self.arc_dx_spinbox, shape_dict['fixed_dx'],
-                              'fixed_dx_conflict' in shape_dict)
-                    set_value(self.arc_dy_spinbox, shape_dict['fixed_dy'],
-                              'fixed_dy_conflict' in shape_dict)
+                    set_value(self.arc_dx_spinbox, sd['fixed_dx'],
+                              'fixed_dx_conflict' in sd)
+                    set_value(self.arc_dy_spinbox, sd['fixed_dy'],
+                              'fixed_dy_conflict' in sd)
             # Leaf-shaped lines or solid lines
-            if shape_dict['fill']:
-                if 'leaf_x' in shape_dict:
-                    set_value(self.leaf_x_spinbox, shape_dict['leaf_x'],
-                              'leaf_x_conflict' in shape_dict)
-                    set_value(self.leaf_y_spinbox, shape_dict['leaf_y'],
-                              'leaf_y_conflict' in shape_dict)
+            if sd['fill']:
+                if 'leaf_x' in sd:
+                    set_value(self.leaf_x_spinbox, sd['leaf_x'],
+                              'leaf_x_conflict' in sd)
+                    set_value(self.leaf_y_spinbox, sd['leaf_y'],
+                              'leaf_y_conflict' in sd)
             else:
-                set_value(self.thickness_spinbox, shape_dict['thickness'],
-                          'thickness_conflict' in shape_dict)
+                set_value(self.thickness_spinbox, sd['thickness'],
+                          'thickness_conflict' in sd)
         self.widget().updateGeometry()
         self.widget().update()
         self.updateGeometry()

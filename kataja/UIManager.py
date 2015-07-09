@@ -56,7 +56,8 @@ from kataja.ui.panels.SymbolPanel import SymbolPanel
 from kataja.ui.panels.NodesPanel import NodesPanel
 from kataja.ui.embeds.NodeEditEmbed import NodeEditEmbed
 from kataja.ui.panels.StylePanel import StylePanel
-from utils import time_me
+from kataja.utils import time_me
+from kataja.ui.panels.field_utils import MyColorDialog
 
 NOTHING = 0
 SELECTING_AREA = 1
@@ -139,8 +140,8 @@ class UIManager:
         self.base_scope = g.CONSTITUENT_NODE
 
         self.preferences_dialog = None
-        self.color_dialog = None
-        self.font_dialog = None
+        self.color_dialogs = {}
+        self.font_dialogs = {}
 
     def populate_ui_elements(self):
         """ These cannot be created in __init__, as individual panels etc. may refer to ctrl.ui,
@@ -173,47 +174,54 @@ class UIManager:
             self._action_groups[action_group_name] = QtWidgets.QActionGroup(self.main)
         return self._action_groups[action_group_name]
 
-    def start_color_dialog(self, receiver, parent, slot_name, initial_color):
-        if not self.color_dialog:
-            self.color_dialog = QtWidgets.QColorDialog(parent)
-            cd = self.color_dialog
-            cd.setOption(QtWidgets.QColorDialog.NoButtons)
-            #cd.setOption(QtWidgets.QColorDialog.DontUseNativeDialog)
-            cd.setOption(QtWidgets.QColorDialog.ShowAlphaChannel)
-            for i, key in enumerate(ctrl.cm.color_keys):
-                cd.setStandardColor(i, ctrl.cm.get(key))
-            cd.currentColorChanged.connect(self.color_adjusted)
-        else:
-            cd = self.color_dialog
-        cd.show()
-        cd.selector = receiver
-        cd.is_for_purpose = slot_name
-        if initial_color:
-            cd.setCurrentColor(ctrl.cm.get(initial_color))
-        else:
-            cd.setCurrentColor(ctrl.cm.get('content1'))
-        receiver.update()
-
     def set_scope(self, scope):
         self.scope = scope
         if scope != g.SELECTION:
             self.base_scope = scope
 
-    def color_adjusted(self, color):
-        color_id = self.color_dialog.selector.currentData()
-        ctrl.cm.d[color_id] = color
-        panel = self.color_dialog.parent()
-        if panel:
-            panel.update_color_from(self.color_dialog.is_for_purpose)
+    @property
+    def edge_scope(self):
+        return ctrl.forest.settings.node_settings(self.scope, 'edge')
 
-    def open_font_dialog(self, parent, initial_font):
-        if not self.font_dialog:
-            self.font_dialog = QtWidgets.QFontDialog(parent)
+    def start_color_dialog(self, receiver, parent, role,
+                           initial_color='content1'):
+        """ There can be several color dialogs active at same time. Even when
+        closed they are kept in the color_dialogs -dict.
+
+        Color dialogs store their role (e.g. the field they are connected to)
+         in 'role' variable. When they report color change, the role redirects
+         the change to correct field.
+
+        :param receiver:
+        :param parent:
+        :param slot_name:
+        :param initial_color:
+        :return:
+        """
+        if role in self.color_dialogs:
+            cd = self.color_dialogs[role]
+            cd.setCurrentColor(ctrl.cm.get(initial_color))
+        else:
+            cd = MyColorDialog(parent, role, initial_color)
+            self.color_dialogs[role] = cd
+        cd.show()
+        receiver.update()
+
+    def update_color_dialog(self, role, color_id):
+        if role in self.color_dialogs:
+            self.color_dialogs[role].setCurrentColor(ctrl.cm.get(color_id))
+
+    def start_font_dialog(self, receiver, parent, role, initial_font):
+        if role in self.font_dialogs:
+            fd = self.font_dialog
+        else:
+            self.font_dialogs = QtWidgets.QFontDialog(parent)
             fd = self.font_dialog
             fd.setOption(QtWidgets.QFontDialog.NoButtons)
             fd.currentFontChanged.connect(self.font_changed)
-        else:
-            fd = self.font_dialog
+            fd.role = role
+        fd.show()
+        fd.selector = receiver
         if initial_font:
             fd.setCurrentFont(qt_prefs.font(initial_font))
         else:
@@ -221,12 +229,14 @@ class UIManager:
         fd.show()
 
     def font_changed(self, font):
+        print('ui received font change from dialog: ', font)
         panel = self.font_dialog.parent()
         font_id = panel.cached_font_id
+        print('setting font to replace font under current panel font_id: ',
+              font_id)
         if not font_id.startswith('custom'):
             font_id = qt_prefs.get_key_for_font(font)
         qt_prefs.fonts[font_id] = font
-        print(font_id, font)
         if panel:
             panel.update_font_to(font_id)
 
@@ -297,22 +307,11 @@ class UIManager:
         elif signal == 'viewport_changed':
             self.update_positions()
 
-
-
     def update_all_fields(self):
         """
 
         """
         print('*** ui update_all_fields called ***')
-        #self.update_field('treeset_counter',
-        #                  '%s/%s' % (self.main.forest_keeper.current_index + 1,
-        # len(self.main.forest_keeper.forests)))
-        #self.update_field('visualization_selector', self.main.forest.visualization.name)
-
-    #if edge_type == g.CONSTITUENT_EDGE:
-    #    self.ui_buttons['line_type'].setCurrentIndex(i)
-    #elif edge_type == g.FEATURE_EDGE:
-    #    self.ui_buttons['feature_line_type'].setCurrentIndex(i)
 
     def restore_panel_positions(self):
         """
@@ -565,9 +564,6 @@ class UIManager:
             element.installEventFilter(self.button_shortcut_filter)
             self.shortcut_solver.add_solvable_action(key_seq, element)
         element.setShortcut(key_seq)
-
-
-
 
     def get_element_value(self, element):
         """

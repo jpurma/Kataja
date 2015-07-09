@@ -651,9 +651,9 @@ def open_font_selector(sender):
     if sender:
         panel = get_ui_container(sender)
         font_key = panel.cached_font_id
-        ctrl.ui.open_font_dialog(panel, font_key)
+        ctrl.ui.start_font_dialog(panel, font_key)
 
-a['open_font_dialog'] = {
+a['start_font_dialog'] = {
     'command': 'Change label font',
     'method': open_font_selector,
     'sender_arg': True,
@@ -720,7 +720,7 @@ def change_node_color(sender):
     if sender:
         sender.model().selected_color = sender.currentData()
         panel = get_ui_container(sender)
-        color_id = panel.update_color_from('node_color')
+        color_id = panel.update_color('node_color')
         if color_id:
             ctrl.main.add_message('(s) Changed node color to: %s' %
                                   ctrl.cm.get_color_name(color_id))
@@ -739,7 +739,7 @@ def change_edge_color(sender):
     """
     if sender:
         panel = get_ui_container(sender)
-        color_id = panel.update_color_from('edge_color')
+        color_id = panel.update_color('edge_color')
         if color_id:
             ctrl.main.add_message('(s) Changed relation color to: %s' %
                                   ctrl.cm.get_color_name(color_id))

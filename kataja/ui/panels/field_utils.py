@@ -66,12 +66,29 @@ class TableModelComboBox(QtWidgets.QComboBox):
         """
         i = self.view().currentIndex()
         item = self.model().itemFromIndex(i)
-        print(i, item)
         if item:
-            print(item.data())
             return item.data()
         else:
             return None
+
+
+class MyColorDialog(QtWidgets.QColorDialog):
+    def __init__(self, parent, role, initial_color):
+        super().__init__(parent)
+        self.setOption(QtWidgets.QColorDialog.NoButtons)
+        #self.setOption(QtWidgets.QColorDialog.DontUseNativeDialog)
+        self.setOption(QtWidgets.QColorDialog.ShowAlphaChannel)
+        for i, key in enumerate(ctrl.cm.color_keys):
+            self.setStandardColor(i, ctrl.cm.get(key))
+        self.setCurrentColor(ctrl.cm.get(initial_color))
+        self.currentColorChanged.connect(self.color_adjusted)
+        self.role = role
+        self.show()
+
+    def color_adjusted(self, color):
+        panel = self.parent()
+        if panel:
+            panel.update_color(self.role, color)
 
 
 class LineColorIcon(QtGui.QIcon):
@@ -101,7 +118,6 @@ class ColorSelector(TableModelComboBox):
         #add_item.setSizeHint(QSize(22, 20))
         self.table = [colors[0:5] + colors[21:24], colors[5:13],
                  colors[13:21], colors[24:31]] # + [add_item]
-        print(model)
         model.clear()
         #model.setRowCount(8)
         #model.setColumnCount(4)
@@ -109,7 +125,6 @@ class ColorSelector(TableModelComboBox):
         model.default_color = 'content1'
         for c, column in enumerate(self.table):
             for r, item in enumerate(column):
-                print(r, c, item.data())
                 model.setItem(r, c, item)
         view.horizontalHeader().hide()
         view.verticalHeader().hide()
@@ -126,9 +141,7 @@ class ColorSelector(TableModelComboBox):
             self.setCurrentIndex(item.row())
             self.setModelColumn(item.column())
             self.model().selected_color = data
-            print('set selected color to ', data)
         else:
-            print("couldn't find data %s from selector model" % data)
             raise hell
 
 
@@ -253,7 +266,8 @@ def box_row(container):
     return hlayout
 
 def set_value(field, value, conflict=False, enabled=True):
-    print('set_value: %s value: %s conflict: %s enabled: %s ' % (field, value, conflict, enabled))
+    #print('set_value: %s value: %s conflict: %s enabled: %s ' % (field,
+    # value, conflict, enabled))
     field.blockSignals(True)
     old_v = getattr(field, 'cached_value', None)
     field.setEnabled(enabled)

@@ -12,7 +12,7 @@ from kataja.ui.OverlayButton import PanelButton
 from kataja.ui.panels.field_utils import find_list_item, add_and_select_ambiguous_marker, \
     remove_ambiguous_marker, TableModelComboBox, ColorSelector, set_value, mini_button, font_button, \
     FontSelector
-from utils import time_me
+from kataja.utils import time_me
 
 __author__ = 'purma'
 
@@ -101,7 +101,7 @@ class StylePanel(UIPanel):
         ui_manager.connect_element_to_action(self.font_selector, 'font_selector')
         hlayout.addWidget(self.font_selector)
 
-        self.open_font_dialog = mini_button(ui_manager, hlayout, 'font', 'open_font_dialog')
+        self.open_font_dialog = mini_button(ui_manager, hlayout, 'font', 'start_font_dialog')
 
         self.node_color_selector = ColorSelector(self)
         ui_manager.connect_element_to_action(self.node_color_selector, 'change_node_color')
@@ -147,42 +147,60 @@ class StylePanel(UIPanel):
         i = find_list_item(ctrl.ui.scope, self.scope_selector)
         self.scope_selector.setCurrentIndex(i)
 
-    def update_color_from(self, source):
+    def update_color(self, role, color=None):
         scope = ctrl.ui.scope
-        if source == 'node_color':
+        if role == 'node_color':
             s = self.node_color_selector
             prev_color = self.cached_node_color
             color_id = s.currentData()
             self.cached_node_color = color_id
-            if (not color_id) or (not ctrl.cm.get(color_id)) or prev_color == color_id:
+            # Replace color in palette with new color
+            if color:
+                ctrl.cm.d[color_id] = color
+            # Or launch a color dialog if color_id is unknown or clicking
+            # already selected color
+            elif prev_color == color_id or (not color_id) or (not ctrl.cm.get(
+                    color_id)):
                 ctrl.ui.start_color_dialog(s, self, 'node_color', color_id)
                 return
+            else:
+                ctrl.ui.update_color_dialog('node_color', color_id)
             if scope == g.SELECTION:
-                for node in ctrl.selected:
-                    if isinstance(node, Node):
-                        node.color_id = color_id
-                        node.update()
+                for node in self._nodes_in_selection:
+                    node.color_id = color_id
+                    node.update_label()
             elif scope:
                 ctrl.forest.settings.node_settings(scope, 'color', color_id)
+                for node in ctrl.forest.nodes.values():
+                    node.update_label()
             s.select_data(color_id)
             s.update()
             return color_id
-        elif source == 'edge_color':
+        elif role == 'edge_color':
             s = self.edge_color_selector
             prev_color = self.cached_edge_color
             color_id = s.currentData()
             self.cached_edge_color = color_id
-            if (not color_id) or (not ctrl.cm.get(color_id)) or prev_color == color_id:
+            # Replace color in palette with new color
+            if color:
+                ctrl.cm.d[color_id] = color
+            # Or launch a color dialog if color_id is unknown or clicking
+            # already selected color
+            elif prev_color == color_id or (not color_id) or (not ctrl.cm.get(
+                    color_id)):
                 ctrl.ui.start_color_dialog(s, self, 'edge_color', color_id)
                 return
+            else:
+                ctrl.ui.update_color_dialog('edge_color', color_id)
             if scope == g.SELECTION:
-                for edge in ctrl.selected:
-                    if isinstance(edge, Edge):
-                        edge.color_id = color_id
-                        edge.update()
+                for edge in self._edges_in_selection:
+                    edge.color_id = color_id
+                    edge.update()
             elif scope:
                 edge_type = ctrl.forest.settings.node_settings(scope, 'edge')
                 ctrl.forest.settings.edge_type_settings(edge_type, 'color', color_id)
+                for edge in ctrl.forest.edges.values():
+                    edge.update()
             s.select_data(color_id)
             s.update()
             self.shape_selector.update()
