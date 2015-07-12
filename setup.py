@@ -21,7 +21,7 @@ import shutil
 
 mainscript = 'Kataja.py'
 create_dmg = True
-qt_mac = '~/Qt5.4.1/'
+qt_mac = '~/Qt5.4.2/'
 
 DATA_FILES = ['resources']
 

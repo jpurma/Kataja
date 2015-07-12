@@ -110,7 +110,7 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         prefs.load_preferences()
         qt_prefs.late_init(prefs, self.fontdb)
         import_plugins(prefs, plugins_path)
-        self.setWindowIcon(QtGui.QIcon(qt_prefs.kataja_icon))
+        self.setWindowIcon(qt_prefs.kataja_icon)
         self.app.setFont(qt_prefs.font(g.UI_FONT))
         self.app.processEvents()
         print('---- initialized prefs ... ', time.time() - t)

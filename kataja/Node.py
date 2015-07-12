@@ -218,7 +218,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self._editing_template['field_order'] = order
         return self._editing_template
 
-    @time_me
     def impose_order_to_inode(self):
         """ Prepare inode (ITemplateNode) to match data structure of this type of node
         ITemplateNode has parsed input from latex trees to rows of text or ITextNodes and

@@ -23,13 +23,14 @@ print("Launching Kataja with Python %s.%s" % (sys.version_info.major, sys.versio
 print('launch path: ', dir_path)
 
 app = QtWidgets.QApplication(sys.argv)
+app.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps)
 font = QtGui.QFont('Helvetica', 10)
 app.setFont(font)
 author = 'Jukka Purma'
 app.setApplicationName('Kataja')
 app.setOrganizationName('JPurma-Aalto')
 app.setOrganizationDomain('jpurma.aalto.fi')
-app.setStyle('Fusion')
+app.setStyle('fusion')
 splash = QtWidgets.QSplashScreen(QtGui.QPixmap(resources_path+'katajalogo.png'))
 #nice_yellow = QtGui.QColor(181, 137, 0)
 nice_yellow = QtGui.QColor(238, 232, 213)

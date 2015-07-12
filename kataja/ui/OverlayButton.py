@@ -57,10 +57,10 @@ class PanelButton(QtWidgets.QPushButton):
             self.setIcon(pixmap)
         else:
             self.setIcon(QtGui.QIcon(pixmap))
-            self.effect = QtWidgets.QGraphicsColorizeEffect(self)
-            self.effect.setColor(ctrl.cm.get(self.color_key))
-            self.effect.setStrength(0.6)
-            self.setGraphicsEffect(self.effect)
+        self.effect = QtWidgets.QGraphicsColorizeEffect(self)
+        self.effect.setColor(ctrl.cm.get(self.color_key))
+        self.effect.setStrength(0.6)
+        self.setGraphicsEffect(self.effect)
 
     def update_color(self):
         if self.effect:

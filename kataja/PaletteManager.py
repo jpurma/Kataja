@@ -604,7 +604,7 @@ class PaletteManager:
         """ In dark backgrounds the glow effect is nice, in light we prefer not.
         :return: boolean
         """
-        return self.light_on_dark()
+        return prefs.glow_effect and self.light_on_dark()
 
     def get_qt_palette(self, cached=True):
         """

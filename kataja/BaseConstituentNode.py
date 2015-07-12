@@ -446,7 +446,8 @@ class BaseConstituentNode(Node):
 
         :param selected:
         """
-        self.effect.setEnabled(selected)
+        if ctrl.cm.use_glow():
+            self.effect.setEnabled(selected)
         self.update()
 
     # ### Checks for callable actions ####

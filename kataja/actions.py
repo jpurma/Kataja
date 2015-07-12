@@ -688,13 +688,14 @@ def change_edge_shape(sender):
     shape = sender.currentData()
     if shape is g.AMBIGUOUS_VALUES:
         return
-    if ctrl.ui.scope == g.SELECTION:
+    scope = ctrl.ui.scope
+    if scope == g.SELECTION:
         for edge in ctrl.selected:
             if isinstance(edge, Edge):
                 edge.shape_name = shape
                 edge.update_shape()
-    elif ctrl.ui.scope:
-        edge_type = ctrl.forest.settings.node_settings(ctrl.ui.scope, 'edge')
+    elif scope:
+        edge_type = ctrl.forest.settings.node_settings(scope, 'edge')
         ctrl.forest.settings.edge_type_settings(edge_type, 'shape_name', shape)
         for edge in ctrl.forest.edges.values():
             edge.update_shape()
@@ -838,19 +839,19 @@ def change_leaf_shape(dim, value=0):
     # if value is g.AMBIGUOUS_VALUES:
     # if we need this, we'll need to find some impossible ambiguous value to avoid weird, rare incidents
     # return
-    panel = ctrl.ui.get_panel(g.EDGES)
-    if panel.scope == g.SELECTION:
+    scope = ctrl.ui.scope
+    if scope == g.SELECTION:
         for edge in ctrl.selected:
             if isinstance(edge, Edge):
                 edge.change_leaf_shape(dim, value)
-    elif panel.scope:
+    elif scope:
         if dim == 'w':
-            ctrl.forest.settings.edge_shape_settings(panel.scope, 'leaf_x', value)
+            ctrl.forest.settings.edge_shape_settings(scope, 'leaf_x', value)
         elif dim == 'h':
-            ctrl.forest.settings.edge_shape_settings(panel.scope, 'leaf_y', value)
+            ctrl.forest.settings.edge_shape_settings(scope, 'leaf_y', value)
         elif dim == 'r':
-            ctrl.forest.settings.edge_shape_settings(panel.scope, 'leaf_x', g.DELETE)
-            ctrl.forest.settings.edge_shape_settings(panel.scope, 'leaf_y', g.DELETE)
+            ctrl.forest.settings.edge_shape_settings(scope, 'leaf_x', g.DELETE)
+            ctrl.forest.settings.edge_shape_settings(scope, 'leaf_y', g.DELETE)
             options_panel = ctrl.ui.get_panel(g.LINE_OPTIONS)
             options_panel.update_panel()
         else:
@@ -882,18 +883,18 @@ def change_edge_thickness(dim, value=0):
     :param dim: 'r' for reset, otherwise doesn't matter
     :param value: new thickness (float)
     """
-    panel = ctrl.ui.get_panel(g.EDGES)
-    if panel.scope == g.SELECTION:
+    scope = ctrl.ui.scope
+    if scope == g.SELECTION:
         for edge in ctrl.selected:
             if isinstance(edge, Edge):
                 edge.change_thickness(dim, value)
-    elif panel.scope:
+    elif scope:
         if dim == 'r':
-            ctrl.forest.settings.edge_shape_settings(panel.scope, 'thickness', g.DELETE)
+            ctrl.forest.settings.edge_shape_settings(scope, 'thickness', g.DELETE)
             options_panel = ctrl.ui.get_panel(g.LINE_OPTIONS)
             options_panel.update_panel()
         else:
-            ctrl.forest.settings.edge_shape_settings(panel.scope, 'thickness', value)
+            ctrl.forest.settings.edge_shape_settings(scope, 'thickness', value)
 
 a['edge_thickness'] = {
     'command': 'Line thickness',
@@ -917,37 +918,37 @@ def change_curvature(dim, value=0):
     :param value: float
     :raise ValueError:
     """
-    panel = ctrl.ui.get_panel(g.EDGES)
-    if panel.scope == g.SELECTION:
+    scope = ctrl.ui.scope
+    if scope == g.SELECTION:
         for edge in ctrl.selected:
             if isinstance(edge, Edge):
                 edge.change_curvature(dim, value)
         if dim == 'r' or dim == 's':
             options_panel = ctrl.ui.get_panel(g.LINE_OPTIONS)
             options_panel.update_panel()
-    elif panel.scope:
+    elif scope:
         options_panel = ctrl.ui.get_panel(g.LINE_OPTIONS)
         relative = options_panel.relative_curvature()
 
         if dim == 'x':
             if relative:
-                ctrl.forest.settings.edge_shape_settings(panel.scope, 'rel_dx', value * .01)
+                ctrl.forest.settings.edge_shape_settings(scope, 'rel_dx', value * .01)
             else:
-                ctrl.forest.settings.edge_shape_settings(panel.scope, 'fixed_dx', value)
+                ctrl.forest.settings.edge_shape_settings(scope, 'fixed_dx', value)
         elif dim == 'y':
             if relative:
-                ctrl.forest.settings.edge_shape_settings(panel.scope, 'rel_dy', value * .01)
+                ctrl.forest.settings.edge_shape_settings(scope, 'rel_dy', value * .01)
             else:
-                ctrl.forest.settings.edge_shape_settings(panel.scope, 'fixed_dy', value)
+                ctrl.forest.settings.edge_shape_settings(scope, 'fixed_dy', value)
         elif dim == 'r': # reset
-            ctrl.forest.settings.edge_shape_settings(panel.scope, 'rel_dx', g.DELETE)
-            ctrl.forest.settings.edge_shape_settings(panel.scope, 'rel_dy', g.DELETE)
-            ctrl.forest.settings.edge_shape_settings(panel.scope, 'fixed_dx', g.DELETE)
-            ctrl.forest.settings.edge_shape_settings(panel.scope, 'fixed_dy', g.DELETE)
-            ctrl.forest.settings.edge_shape_settings(panel.scope, 'relative', g.DELETE)
+            ctrl.forest.settings.edge_shape_settings(scope, 'rel_dx', g.DELETE)
+            ctrl.forest.settings.edge_shape_settings(scope, 'rel_dy', g.DELETE)
+            ctrl.forest.settings.edge_shape_settings(scope, 'fixed_dx', g.DELETE)
+            ctrl.forest.settings.edge_shape_settings(scope, 'fixed_dy', g.DELETE)
+            ctrl.forest.settings.edge_shape_settings(scope, 'relative', g.DELETE)
             options_panel.update_panel()
         elif dim == 's': # toggle between relative and fixed
-            ctrl.forest.settings.edge_shape_settings(panel.scope, 'relative', value == 'relative')
+            ctrl.forest.settings.edge_shape_settings(scope, 'relative', value == 'relative')
             options_panel.update_panel()
         else:
             raise ValueError
@@ -1174,17 +1175,17 @@ def change_edge_ending(self, which_end, value):
     """
     if value is g.AMBIGUOUS_VALUES:
         return
-    panel = self.ui_manager.get_panel(g.EDGES)
-    if panel.scope == g.SELECTION:
+    scope = ctrl.ui.scope
+    if scope == g.SELECTION:
         for edge in ctrl.selected:
             if isinstance(edge, Edge):
                 edge.ending(which_end, value)
                 edge.update_shape()
-    elif panel.scope:
+    elif scope:
         if which_end == 'start':
-            self.forest.settings.edge_type_settings(panel.scope, 'arrowhead_at_start', value)
+            self.forest.settings.edge_type_settings(scope, 'arrowhead_at_start', value)
         elif which_end == 'end':
-            self.forest.settings.edge_type_settings(panel.scope, 'arrowhead_at_end', value)
+            self.forest.settings.edge_type_settings(scope, 'arrowhead_at_end', value)
         else:
             print('Invalid place for edge ending: ', which_end)
 
