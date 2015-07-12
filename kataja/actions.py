@@ -651,14 +651,14 @@ def open_font_selector(sender):
     if sender:
         panel = get_ui_container(sender)
         font_key = panel.cached_font_id
-        ctrl.ui.start_font_dialog(panel, font_key)
+        ctrl.ui.start_font_dialog(panel, 'node_font', font_key)
 
 a['start_font_dialog'] = {
-    'command': 'Change label font',
+    'command': 'Use a custom font',
     'method': open_font_selector,
     'sender_arg': True,
     'undoable': False,
-    'tooltip': 'Select the label font'}
+    'tooltip': 'Use a custom font'}
 
 
 def select_font(sender):
@@ -671,7 +671,7 @@ def select_font(sender):
     if sender:
         font_key = sender.currentData()
         panel = get_ui_container(sender)
-        panel.update_font_to(font_key)
+        panel.update_font_for_role('node_font', font_key)
 
 a['font_selector'] = {
     'command': 'Change label font',

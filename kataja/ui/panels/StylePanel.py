@@ -101,7 +101,11 @@ class StylePanel(UIPanel):
         ui_manager.connect_element_to_action(self.font_selector, 'font_selector')
         hlayout.addWidget(self.font_selector)
 
-        self.open_font_dialog = mini_button(ui_manager, hlayout, 'font', 'start_font_dialog')
+        self.open_font_dialog = PanelButton(qt_prefs.font_icon,
+                                            text='Add custom font',
+                                            parent=self, size=20)
+        ui_manager.connect_element_to_action(self.open_font_dialog, 'start_font_dialog')
+        hlayout.addWidget(self.open_font_dialog, 1, QtCore.Qt.AlignLeft)
 
         self.node_color_selector = ColorSelector(self)
         ui_manager.connect_element_to_action(self.node_color_selector, 'change_node_color')
@@ -120,7 +124,7 @@ class StylePanel(UIPanel):
         hlayout.addWidget(self.edge_color_selector, 1, QtCore.Qt.AlignLeft)
 
         self.edge_options = PanelButton(qt_prefs.settings_icon, text='More line options',
-                                        parent=self, size=16)
+                                        parent=self, size=20)
         self.edge_options.setCheckable(True)
         ui_manager.connect_element_to_action(self.edge_options, 'toggle_line_options')
         hlayout.addWidget(self.edge_options, 1, QtCore.Qt.AlignRight)
@@ -147,7 +151,7 @@ class StylePanel(UIPanel):
         i = find_list_item(ctrl.ui.scope, self.scope_selector)
         self.scope_selector.setCurrentIndex(i)
 
-    def update_color(self, role, color=None):
+    def update_color_for_role(self, role, color=None):
         scope = ctrl.ui.scope
         if role == 'node_color':
             s = self.node_color_selector
@@ -206,7 +210,12 @@ class StylePanel(UIPanel):
             self.shape_selector.update()
             return color_id
 
-    def update_font_to(self, font_id):
+    def update_font_for_role(self, role, font_id):
+        """ Make sure that new font_id is updated to all items under the scope.
+        :param role: Not used, only one font dialog currently here
+        :param font_id:
+        :return:
+        """
         self.cached_font_id = font_id
         if not self.font_selector.find_item(font_id):
             self.font_selector.add_font(font_id, qt_prefs.fonts[font_id])

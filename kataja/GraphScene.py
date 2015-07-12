@@ -266,7 +266,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             if direction == 'up':
                 found = False
                 if isinstance(current, Node):
-                    edges = current.get_edges_up(visible=True)
+                    edges = list(current.get_edges_up(visible=True))
                     if len(edges) == 1:
                         best = edges[0]
                         found = True

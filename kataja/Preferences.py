@@ -312,9 +312,10 @@ class QtPreferences:
         self.right_arrow = extract_bitmaps(iconpath + 'right_2c.gif')
         self.add_icon = pixmap('add_box48.png')
         self.add_box_icon = pixmap('add_box24.png')
-        self.settings_icon = pixmap('settings24.png')
+        self.settings_icon = pixmap('settings48.png')
         self.triangle_icon = pixmap('triangle48.png')
         self.triangle_close_icon = pixmap('triangle_close48.png')
+        self.font_icon = pixmap('text_format48.png')
         self.kataja_icon = pixmap('kataja.png')
         # self.gear_icon = extract_bitmaps(preferences.resources_path+'icons/gear2_16.gif')
 

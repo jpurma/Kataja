@@ -88,7 +88,25 @@ class MyColorDialog(QtWidgets.QColorDialog):
     def color_adjusted(self, color):
         panel = self.parent()
         if panel:
-            panel.update_color(self.role, color)
+            panel.update_color_for_role(self.role, color)
+        ctrl.main.action_finished()
+
+class MyFontDialog(QtWidgets.QFontDialog):
+    def __init__(self, parent, role, initial_font):
+        super().__init__(parent)
+        self.setOption(QtWidgets.QFontDialog.NoButtons)
+        self.setCurrentFont(qt_prefs.font(initial_font))
+        self.currentFontChanged.connect(self.font_changed)
+        self.role = role
+        self.font_key = initial_font
+        self.show()
+
+    def font_changed(self, font):
+        panel = self.parent()
+        font_id = panel.cached_font_id
+        font_id = ctrl.ui.create_or_set_font(font_id, font)
+        panel.update_font_for_role(self.role, font_id)
+        ctrl.main.action_finished()
 
 
 class LineColorIcon(QtGui.QIcon):

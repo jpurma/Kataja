@@ -57,7 +57,7 @@ from kataja.ui.panels.NodesPanel import NodesPanel
 from kataja.ui.embeds.NodeEditEmbed import NodeEditEmbed
 from kataja.ui.panels.StylePanel import StylePanel
 from kataja.utils import time_me
-from kataja.ui.panels.field_utils import MyColorDialog
+from kataja.ui.panels.field_utils import MyColorDialog, MyFontDialog
 
 NOTHING = 0
 SELECTING_AREA = 1
@@ -211,34 +211,26 @@ class UIManager:
         if role in self.color_dialogs:
             self.color_dialogs[role].setCurrentColor(ctrl.cm.get(color_id))
 
-    def start_font_dialog(self, receiver, parent, role, initial_font):
+    def start_font_dialog(self, parent, role, initial_font=None):
+        if not initial_font:
+            initial_font = g.MAIN_FONT
         if role in self.font_dialogs:
-            fd = self.font_dialog
-        else:
-            self.font_dialogs = QtWidgets.QFontDialog(parent)
-            fd = self.font_dialog
-            fd.setOption(QtWidgets.QFontDialog.NoButtons)
-            fd.currentFontChanged.connect(self.font_changed)
-            fd.role = role
-        fd.show()
-        fd.selector = receiver
-        if initial_font:
+            fd = self.font_dialogs[role]
             fd.setCurrentFont(qt_prefs.font(initial_font))
         else:
-            fd.setCurrentFont(qt_prefs.font(g.MAIN_FONT))
+            fd = MyFontDialog(parent, role, initial_font)
+            self.font_dialogs[role] = fd
         fd.show()
 
-    def font_changed(self, font):
-        print('ui received font change from dialog: ', font)
-        panel = self.font_dialog.parent()
-        font_id = panel.cached_font_id
-        print('setting font to replace font under current panel font_id: ',
-              font_id)
+    def update_font_dialog(self, role, font_id):
+        if role in self.font_dialogs:
+            self.font_dialogs[role].setCurrentFont(qt_prefs.font(font_id))
+
+    def create_or_set_font(self, font_id, font):
         if not font_id.startswith('custom'):
             font_id = qt_prefs.get_key_for_font(font)
         qt_prefs.fonts[font_id] = font
-        if panel:
-            panel.update_font_to(font_id)
+        return font_id
 
     def add_ui(self, item):
         """
