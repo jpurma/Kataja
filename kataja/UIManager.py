@@ -1002,7 +1002,7 @@ class UIManager:
 
         """
         if not self._timer_id:
-            self._timer_id = self.startTimer(prefs.fps_in_msec)
+            self._timer_id = self.startTimer(prefs._fps_in_msec)
 
     def timerEvent(self, event):
         """

@@ -113,6 +113,39 @@ class DoubleSlider(QtWidgets.QHBoxLayout):
         self.now_changing = False
 
 
+class CheckBox(QtWidgets.QHBoxLayout):
+    """
+
+    """
+
+    def __init__(self, field_name, parent):
+        QtWidgets.QHBoxLayout.__init__(self)
+        self.checkbox = QtWidgets.QCheckBox(parent)
+        self.field_name = field_name
+        self.on_change_method = None
+        value = getattr(prefs, self.field_name)
+        self.checkbox.setChecked(value)
+        self.checkbox.stateChanged.connect(self.checkbox_changed)
+        self.addWidget(self.checkbox)
+
+    def set_on_change_method(self, method):
+        """
+
+        :param method:
+        """
+        self.on_change_method = method
+
+    def checkbox_changed(self, value):
+        """
+
+        :param value:
+        :return:
+        """
+        setattr(prefs, self.field_name, value)
+        if self.on_change_method:
+            self.on_change_method()
+
+
 class PreferencesDialog(QtWidgets.QDialog):
     """
 
@@ -121,89 +154,78 @@ class PreferencesDialog(QtWidgets.QDialog):
     def __init__(self, main):
         QtWidgets.QDialog.__init__(self, parent=None)  # separate window
         self.main = main
-        self.dpi_choices = [72, 150, 300, 450, 600]
+        self.tabwidget = QtWidgets.QTabWidget(parent=self)
+        lo = QtWidgets.QVBoxLayout()
+        lo.addWidget(self.tabwidget)
+        self.setLayout(lo)
+        self.fields = {}
+        self.tabs = {}
 
+
+        for key, value in vars(prefs).items():
+            if not key.startswith('_'):
+                d = getattr(prefs, '_%s_ui' % key, {})
+                if d:
+                    print(d)
+                field_type = d.get('type', '')
+                if not field_type:
+                    if isinstance(value, float):
+                        field_type = 'float_slider'
+                    elif isinstance(value, bool):
+                        field_type = 'checkbox'
+                    elif isinstance(value, int):
+                        field_type = 'int_slider'
+                    elif isinstance(value, dict):
+                        continue
+                print('creating field for ', key, value)
+                label = d.get('label', '')
+                tab_key = d.get('tab', 'General')
+                widget, layout = self.get_tab(tab_key)
+                if not label:
+                    label = key.replace('_', ' ').capitalize()
+                if field_type == 'int_slider':
+                    if 'range' in d:
+                        minv, maxv = d['range']
+                    elif value < -10 or value > 10:
+                        minv, maxv = -200, 200
+                    else:
+                        minv, maxv = -10, 10
+                    f = DoubleSlider(key, self, decimals=False)
+                    self.fields[key] = f
+                    f.setRange(minv, maxv)
+                    f.set_on_change_method(self.main.redraw)
+                    layout.addRow(label, f)
+                elif field_type == 'float_slider':
+                    if 'range' in d:
+                        minv, maxv = d['range']
+                    elif value < -10 or value > 10:
+                        minv, maxv = -200, 200
+                    else:
+                        minv, maxv = -10, 10
+                    f = DoubleSlider(key, self, decimals=True)
+                    self.fields[key] = f
+                    f.setRange(minv, maxv)
+                    f.set_on_change_method(self.main.redraw)
+                    layout.addRow(label, f)
+                elif field_type == 'checkbox':
+                    f = CheckBox(key, self)
+                    self.fields[key] = f
+                    f.set_on_change_method(self.main.redraw)
+                    layout.addRow(label, f)
+
+
+
+
+    def get_tab(self, key):
+        if key in self.tabs:
+            return self.tabs[key], self.tabs[key].layout()
+        new_tab = QtWidgets.QWidget()
         layout = QtWidgets.QFormLayout()
+        self.tabwidget.addTab(new_tab, key)
+        self.tabs[key] = new_tab
+        new_tab.setLayout(layout)
+        return new_tab, layout
 
-
-        # self.draw_width = .5
-        draw_width = DoubleSlider('draw_width', self, decimals=True)
-        draw_width.setRange(0.1, 5)
-        draw_width.set_on_change_method(self.update_pens)
-        layout.addRow('Base line thickness', draw_width)
-
-        # self.selection_width = 0.8
-        # -- No need for preferences
-
-        # self.thickness_multiplier = 2
-        thickness_multiplier = DoubleSlider('thickness_multiplier', self, decimals=True)
-        thickness_multiplier.setRange(0.5, 5)
-        thickness_multiplier.set_on_change_method(self.update_pens)
-        layout.addRow('Thickness multiplier for right branches ', thickness_multiplier)
-
-        # self.dpi = 300
-        dpi = QtWidgets.QComboBox(self)
-        dpi.addItems([str(x) for x in self.dpi_choices])
-        dpi.activated.connect(self.dpi_changed)
-        dpi.setCurrentIndex(self.dpi_choices.index(prefs.dpi))
-        layout.addRow('Dots Per Inch (DPI) for exported trees ', dpi)
-
-        # self.FPS = 30
-        # self.fps_in_msec = 1000 / self.FPS
-        FPS = DoubleSlider('FPS', self, decimals=False)
-        FPS.setRange(10, 90)
-        layout.addRow('Frames per second (FPS) ', FPS)
-
-        # self.move_frames = 12
-        move_frames = DoubleSlider('move_frames', self, decimals=False)
-        move_frames.setRange(0, 30)
-        layout.addRow('Frames in each move animation ', move_frames)
-
-        # self.edge_width = 20  # 20
-        edge_width = DoubleSlider('edge_width', self, decimals=False)
-        edge_width.setRange(5, 100)
-        edge_width.set_on_change_method(self.main.redraw)
-        layout.addRow('Edge width ', edge_width)
-
-        # self.edge_height = 20
-        edge_height = DoubleSlider('edge_height', self, decimals=False)
-        edge_height.setRange(5, 100)
-        edge_height.set_on_change_method(self.main.redraw)
-        layout.addRow('Edge height ', edge_height)
-
-        # self.color_mode = 'random'
-        # self.color_modes = color_modes
-        # self.shared_palettes = {}
-
-        # self.default_visualization = 'Left first tree'
-
-        # self.blender_app_path = '/Applications/blender.app/Contents/MacOS/blender'
-        # self.blender_env_path = '/Users/purma/Dropbox/bioling_blender'
-
-        # self._curve = 'InQuad'
-
-        # self.fonts = fonts
-        # self.keep_vertical_order = False
-        # self.default_binary_branching = False  # True
-        # self.use_magnets = True
-        # self.hanging_gloss = True
-        # self.spacing_between_trees = 3
-        # self.include_features_to_label = False
-        # self.default_use_multidomination = True
-        # self.constituency_edge_shape = 1
-        # self.feature_edge_shape = 3
-        # self.console_visible = False
-        # self.traces_are_grouped_together_by_default = 0
-        # self.ui_speed = 8
-        # self.show_labels = 2
-        # self.touch = False
-        # self.app_path = self.solve_app_path()
-        # self.debug_treeset = self.app_path + '/trees.txt'
-        # self.file_name = 'savetest.kataja'
-        # self.print_file_path = self.app_path
-        # self.print_file_name = 'kataja_print'
-        # self.include_gloss_to_print = True
-        self.setLayout(layout)
 
     def update_pens(self):
         """

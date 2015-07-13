@@ -111,7 +111,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         :return: None
         """
         if not self._timer_id:
-            self._timer_id = self.startTimer(prefs.fps_in_msec)
+            self._timer_id = self.startTimer(prefs._fps_in_msec)
 
     start_animations = item_moved
 
@@ -590,7 +590,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         """
         self._fade_steps = 7
         if not self._timer_id:
-            self._timer_id = self.startTimer(prefs.fps_in_msec)
+            self._timer_id = self.startTimer(prefs._fps_in_msec)
         self._fade_steps_list = []
         # oh, os, ov, oa = old_base_color.getRgbF()
         # nh, ns, nv, na = new_base_color.getRgbF()

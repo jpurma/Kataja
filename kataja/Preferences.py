@@ -76,15 +76,19 @@ class Preferences(object):
         self.shared_palettes = {}
         self.plugins = {}
         self.dpi = 300
+        self._dpi_ui = {'tab': 'Print', 'choices': [72, 150, 300, 450, 600]}
         self.FPS = 30
-        self.fps_in_msec = 1000 / self.FPS
+        self._FPS_ui = {'tab': 'Performance'}
+
+        self._fps_in_msec = 1000 / self.FPS
         self.default_visualization = 'Left first tree'
 
         #self.blender_app_path = '/Applications/blender.app/Contents/MacOS/blender'
         #self.blender_env_path = '/Users/purma/Dropbox/bioling_blender'
 
         self.move_frames = 12
-        self._curve = 'InQuad'
+        self._move_frames_ui = {'tab': 'Performance'}
+        self.curve = 'InQuad'
 
         # ## Default structural rules that apply to new trees
         self.default_use_projection = True
@@ -136,10 +140,10 @@ class Preferences(object):
         self.include_features_to_label = False
         self.constituency_edge_shape = 1
         self.feature_edge_shape = 3
-        self.console_visible = False
         self.move_effect = 0
         self.ui_speed = 8
         self.glow_effect = False
+        self._glow_effect_ui = {'tab': 'Performance'}
         self.touch = True
         self.gloss_nodes = True
         self.feature_nodes = True
@@ -151,6 +155,9 @@ class Preferences(object):
         self.print_file_path = ''
         self.print_file_name = 'kataja_print'
         self.include_gloss_to_print = True
+        self._print_file_path_ui = {'tab': 'Print'}
+        self._print_file_name_ui = {'tab': 'Print'}
+        self._include_gloss_to_print_ui = {'tab': 'Print'}
 
         # Rest of the edges are defined in their corresponding node classes
         self.edges = {
@@ -231,10 +238,12 @@ class Preferences(object):
         if disable_saving_preferences:
             return
 
+        print('loading preferences')
         settings = QtCore.QSettings()
         for key, default_value in vars(self).items():
             if key in Preferences.not_saved:
                 continue
+            print('default_value: ', default_value)
             if isinstance(default_value, dict):
                 settings.beginGroup(key)
                 d = getattr(self, key)
@@ -243,10 +252,12 @@ class Preferences(object):
                 setattr(self, key, d)
             elif isinstance(default_value, float):
                 setattr(self, key, float(settings.value(key, default_value)))
-            elif isinstance(default_value, int):
-                setattr(self, key, int(settings.value(key, default_value)))
             elif isinstance(default_value, bool):
+                print('setting bool')
                 setattr(self, key, bool(settings.value(key, default_value)))
+            elif isinstance(default_value, int):
+                print('setting int')
+                setattr(self, key, int(settings.value(key, default_value)))
             else:
                 setattr(self, key, settings.value(key, default_value))
 
@@ -309,7 +320,7 @@ class QtPreferences:
         self.easing_curve = []
         self.fontdb = fontdb
         self.prepare_fonts(preferences.fonts)
-        self.prepare_easing_curve(preferences._curve, preferences.move_frames)
+        self.prepare_easing_curve(preferences.curve, preferences.move_frames)
         self.no_pen = QtGui.QPen()
         self.no_pen.setStyle(QtCore.Qt.NoPen)
         self.no_brush = QtGui.QBrush()

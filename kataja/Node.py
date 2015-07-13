@@ -450,7 +450,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :return: iterator of Nodes
         """
         et = self.__class__.default_edge_type
-        return (edge.end for edge in self.edges_down if edge.edge_type == et)
+        return (edge.end for edge in self.edges_down if edge.edge_type == et
+                and edge.end.is_visible())
 
     def get_children_of_type(self, edge_type=None, node_type=None):
         """

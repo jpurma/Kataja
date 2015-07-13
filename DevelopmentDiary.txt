@@ -73,8 +73,22 @@ MIS_RIGHT = swoosh to use when there should be (LEFT, RIGHT), but the ordering f
 6.6. 2015
 Found a better way to implement saving: descriptors. The existing Saved -object based is too difficult for plugins. I still have to poke container objects before saving them, but I can get rid of properties.
 
+13.7. 2015
+I need to be more strict with order of happenings when user does things
+that have syntactic consequences.
 
+1. UI triggers an *action*.
+2. *action* launches a syntactic operation or if not, skips to 5.
+3. syntactic operation changes *syntactic objects*
+4. *kataja objects* corresponding to syntactic objects are updated to reflect
+the states of their syntactic objects.
+5. other non-syntactic operations related to *action* are carried out.
+6. action finished, undo state saved.
 
+The weak point in the process is when syntactic operations end up changing
+unexpected amount of objects. The updates of kataja objects would need to
+check all of the syntactic objects or we need a system to keep track which
+objects were changed.
 
 
 
