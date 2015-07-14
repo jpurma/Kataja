@@ -61,6 +61,9 @@ node_classes = {g.CONSTITUENT_NODE: ConstituentNode, g.ABSTRACT_NODE: Node,
 
 edge_class = Edge
 
+synobj_classes = {'constituent': ConfigurableConstituent, 'feature':
+    BaseFeature}
+
 
 def create(object_class_name, *args, **kwargs):
     """ Create empty kataja object stubs, to be loaded with correct values.
@@ -77,3 +80,4 @@ def create(object_class_name, *args, **kwargs):
     else:
         # Here we should try importing classes from probable places (plugins, kataja, syntax)
         raise TypeError('class missing: %s ' % object_class_name)
+

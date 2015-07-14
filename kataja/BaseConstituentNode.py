@@ -45,6 +45,7 @@ class BaseConstituentNode(Node):
     default_edge_type = g.CONSTITUENT_EDGE
     node_type = g.CONSTITUENT_NODE
     short_name = "BCN"
+    wraps = 'constituent'
 
     visible = {'label': {'order': 1}}
     editable = {'label': {'order': 1}}
@@ -131,28 +132,6 @@ class BaseConstituentNode(Node):
         self.update_features()
 
     # Other properties
-
-    @property
-    def as_inode(self):
-        """
-        :return: INodes or str or tuple of them
-        """
-        if self._inode_changed:
-            if not self._inode:
-                return ''
-            if self.triangle:
-                leaves = ITextNode()
-                # todo: Use a better linearization here
-                for node in ctrl.forest.list_nodes_once(self):
-                    if node.is_leaf_node(only_visible=False):
-                        leaves += node.label
-                        leaves += ' '
-                label = leaves.tidy()
-            else:
-                label = self.label
-            self._inode.values['label']['value'] = label
-            self._inode_changed = False
-        return self._inode
 
     def update_status_tip(self):
         """ Hovering status tip """

@@ -33,7 +33,7 @@ from kataja.Movable import Movable
 from kataja.BaseModel import Saved, Synobj
 from kataja.utils import to_tuple, create_shadow_effect, time_me
 import kataja.globals as g
-from kataja.parser.LatexToINode import parse_field
+from kataja.parser.INodes import ITemplateNode
 
 TRIANGLE_HEIGHT = 10
 
@@ -120,6 +120,21 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         # self.effect = create_shadow_effect(self.color)
         self._update_magnets = True
         self.setGraphicsEffect(self.effect)
+
+    def after_init(self):
+        """ After_init is called in 2nd step in process of creating objects:
+            1st wave creates the objects and calls __init__, and then iterates through and sets the values.
+            2nd wave calls after_inits for all created objects. Now they can properly refer to each other and know their
+                values.
+        :return: None
+        """
+        self._inode_changed = True
+        a = self.as_inode
+        self.update_label()
+        self.update_bounding_rect()
+        self.update_visibility()
+        self.announce_creation()
+        ctrl.forest.store(self)
 
     def after_model_update(self, updated_fields, update_type):
         """ This is called after the item's model has been updated, to run the side-effects of various
@@ -410,6 +425,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
                 edge.setOpacity(o)
             for edge in self.edges_up:
                 edge.setOpacity(o)
+        return active
 
 
     # ### Children and parents ####################################################
@@ -680,8 +696,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :return:
         """
         if self.color_id is None:
-            c= ctrl.forest.settings.node_settings(self.__class__.node_type, 'color')
-            print('looking for color, found: ', c)
+            c = ctrl.forest.settings.node_settings(self.__class__.node_type,
+                                                   'color')
             return c
         else:
             return self.color_id
@@ -739,8 +755,17 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """
         :return: INodes or str or tuple of them
         """
+        if not self._inode:
+            self._inode = ITemplateNode()
+            self.impose_order_to_inode()
+            self._inode_changed = True
         if self._inode_changed:
-            self._inode = parse_field(self.label)
+            iv = self._inode.values
+            for key, value in iv.items():
+                getter = value.get('getter', key)
+                # use 'getter' or default to 'key', assuming that key is the
+                # same as the property it is representing
+                iv[key]['value'] = getattr(self, getter)
             self._inode_changed = False
         return self._inode
 
@@ -778,10 +803,10 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         if ctrl.pressed is self or self._hovering or ctrl.is_selected(self):
             painter.drawRoundedRect(self.inner_rect, 5, 5)
 
-            # x,y,z = self.current_position
-            # w2 = self.width/2.0
-            # painter.setPen(self.contextual_color())
-            # painter.drawEllipse(-w2, -w2, w2 + w2, w2 + w2)
+        #x,y,z = self.current_position
+        w2 = self.width/2.0
+        #painter.setPen(self.contextual_color())
+        painter.drawEllipse(-w2, -w2, w2 + w2, w2 + w2)
 
     def update_bounding_rect(self):
         """

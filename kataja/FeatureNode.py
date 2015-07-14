@@ -27,7 +27,6 @@ from kataja.BaseModel import Synobj
 from kataja.globals import FEATURE_EDGE, FEATURE_NODE
 from kataja.Node import Node
 from kataja.singletons import ctrl, qt_prefs
-from kataja.parser.INodes import IFeatureNode
 import kataja.globals as g
 
 
@@ -45,6 +44,23 @@ class FeatureNode(Node):
     name = ('Feature', 'Features')
     short_name = "FN"
     display = True
+    wraps = 'feature'
+
+    visible = {'key': {'order': 0},
+               'value': {'order': 1},
+               'family': {'order': 2}
+               }
+    editable = {'key': dict(name='Name', order=3, prefill='name',
+                            tooltip='Name of the feature', syntactic=True),
+                'value': dict(name='Value', order=6, align='line-end',
+                              width=20, prefill='value',
+                              tooltip='Value given to this feature',
+                              syntactic=True),
+                'family': dict(name='Family', order=9, prefill='family',
+                               tooltip='Several distinct features can be '
+                                       'grouped under one family (e.g. '
+                                       'phi-features)', syntactic=True)
+                }
 
     default_style = {'color': 'accent2', 'font': g.SMALL_CAPS, 'font-size': 9,
                      'edge': g.FEATURE_EDGE}
@@ -57,29 +73,6 @@ class FeatureNode(Node):
     def __init__(self, feature=None):
         Node.__init__(self, syntactic_object=feature)
         self._gravity = 1
-
-    def after_init(self):
-        """ After_init is called in 2nd step in process of creating objects:
-            1st wave creates the objects and calls __init__, and then iterates through and sets the values.
-            2nd wave calls after_inits for all created objects. Now they can properly refer to each other and know their
-                values.
-        :return: None
-        """
-        self.update_label()
-        self.update_bounding_rect()
-        self.update_visibility()
-        self.announce_creation()
-        ctrl.forest.store(self)
-
-    @property
-    def as_inode(self):
-        """
-        :return: INodes or str or tuple of them
-        """
-        if self._inode_changed:
-            self._inode = IFeatureNode(key=self.key, value=self.value, family=self.family)
-            self._inode_changed = False
-        return self._inode
 
     # implement color() to map one of the d['rainbow_%'] colors here. Or if bw mode is on, then something else.
 
@@ -98,27 +91,8 @@ class FeatureNode(Node):
             y += random.uniform(-4, 4)
         self.set_original_position((x, y, z))
 
-    def update_label(self):
-        """
 
-        :return:
-        """
-        Node.update_label(self)
-        self._label_complex.show()
-
-
-    # def get_html_for_label(self):
-    #     """ This should be overridden if there are alternative displays for label """
-    #     f = self.syntactic_object
-    #     if not f:
-    #         return 'orphaned feature node'
-    #     if f.key in color_map:
-    #         return str(f.get_value_string())
-    #     else:
-    #         return str(f)
-    #         # u'%s:%s' % (self.syntactic_object.key, self.syntactic_object.get_value_string())
-
-    def paint(self, painter, option, widget=None):
+    def xpaint(self, painter, option, widget=None):
         """ Painting is sensitive to mouse/selection issues, but usually with
         :param painter:
         :param option:

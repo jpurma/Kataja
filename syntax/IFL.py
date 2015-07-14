@@ -117,7 +117,7 @@ class IFL(BaseModel):
     # these methods don't belong to assumed capabilities of FL, they are to allow Kataja editing
     # capabilities to directly create and modify FL structures.
 
-    def create_constituent(self, **kw):
+    def k_create_constituent(self, **kw):
         """ Create constituent with provided values and return it
         :param kw:
         :return: IConstituent

@@ -39,8 +39,11 @@ class IFeature(BaseModel):
 
     short_name = "I-F"
 
-    def __init__(self, key=None, value=None, values=None, family=''):
-        raise NotImplementedError("IFeature __init__")
+    def __init__(self, key=None, value=None, values=None, family='', **kw):
+        super().__init__(**kw)
+        self.key = key
+        self.value = value
+        self.family = family
 
     @property
     def value(self):

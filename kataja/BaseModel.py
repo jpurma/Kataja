@@ -530,7 +530,7 @@ class BaseModel(object):
         obj = full_map.get(obj_key, None)
         if not obj:
             #print('creating new ', class_key)
-            obj = main.object_factory(class_key)
+            obj = main.object_factory.create(class_key)
             #print('created new ', obj)
         else:
             #print('found obj: ', obj)

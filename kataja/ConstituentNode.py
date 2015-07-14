@@ -25,7 +25,7 @@ from kataja.Node import Node
 from kataja.BaseConstituentNode import BaseConstituentNode
 from kataja.BaseModel import Saved
 from kataja.singletons import ctrl
-from kataja.parser.INodes import ITextNode
+from kataja.parser.INodes import ITextNode, ITemplateNode
 import kataja.globals as g
 
 __author__ = 'purma'
@@ -38,9 +38,11 @@ class ConstituentNode(BaseConstituentNode):
     name = ('Constituent', 'Constituents')
     short_name = "CN"
     display = True
+    wraps = 'constituent'
+
     visible = {'alias': {'order': 0},
                'index': {'order': 1, 'align': 'line-end', 'style': 'subscript'},
-               'label': {'order': 2},
+               'label': {'order': 2, 'getter': 'triangled_label'},
                'gloss': {'order': 3},
                }
     editable = {'alias': dict(name='Alias', order=3, prefill='alias',
@@ -178,32 +180,20 @@ class ConstituentNode(BaseConstituentNode):
         return self.alias
 
     @property
-    def as_inode(self):
+    def triangled_label(self):
+        """ Label with triangled elements concatenated into it
+        :return:
         """
-        :return: INodes or str or tuple of them
-        """
-        if self._inode_changed:
-            if not self._inode.values:
-                return ''
-            if self.triangle:
-                leaves = ITextNode()
-                # todo: Use a better linearization here
-                for node in ctrl.forest.list_nodes_once(self):
-                    if node.is_leaf_node(only_visible=False):
-                        leaves += node.label
-                        leaves += ' '
-                label = leaves.tidy()
-            else:
-                label = self.label
-
-            iv = self._inode.values
-            iv['label']['value'] = label
-            iv['alias']['value'] = self.alias
-            iv['index']['value'] = self.index
-            iv['gloss']['value'] = self.gloss
-            #iv['features']['value'] = self.features
-            self._inode_changed = False
-        return self._inode
+        if self.triangle:
+            leaves = ITextNode()
+            # todo: Use a better linearization here
+            for node in ctrl.forest.list_nodes_once(self):
+                if node.is_leaf_node(only_visible=False):
+                    leaves += node.label
+                    leaves += ' '
+            return leaves.tidy()
+        else:
+            return self.label
 
     def update_status_tip(self):
         """ Hovering status tip """

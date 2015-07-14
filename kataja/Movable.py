@@ -220,7 +220,6 @@ class Movable(BaseModel):
             if hasattr(self, "setOpacity"):
                 self.setOpacity((10 - self._fade_in_counter) / 10.0)
             active = True
-
         if self._fade_out_counter:
             self._fade_out_counter -= 1
             if self._fade_out_counter:

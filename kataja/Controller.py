@@ -100,7 +100,8 @@ class Controller:
         from syntax.ConfigurableConstituent import ConfigurableConstituent
         from syntax.BaseFL import FL
         from syntax.BaseFeature import BaseFeature
-        from kataja.object_factory import node_classes, edge_class
+        from kataja.object_factory import node_classes, edge_class, \
+            synobj_classes
         self.Constituent = ConfigurableConstituent
         self.Feature = BaseFeature
         self.FL = FL()

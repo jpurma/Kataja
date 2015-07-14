@@ -760,6 +760,35 @@ class Forest(BaseModel):
         :param give_label:
         :return:
         """
+        node_class = ctrl.node_classes.get(node_type)
+        wraps = getattr(node_class, 'wraps', '')
+        if wraps:
+            if wraps == 'constituent':
+                synobj = ctrl.Constituent()
+            elif wraps == 'feature':
+                synobj = ctrl.Feature()
+            else:
+                print('wraps unknown type: ', wraps)
+                synobj = None
+            node = node_class(synobj)
+        else:
+            node = node_class()
+        node.after_init()
+        node.update_position(pos)
+        print('created: ', node, node.opacity(), node.is_visible())
+        self.add_to_scene(node)
+        node.fade_in()
+        return node
+
+    def create_empty_node_old(self, pos, give_label=True, node_type='c'):
+        """
+
+
+        :param node_type:
+        :param pos:
+        :param give_label:
+        :return:
+        """
         node = None
         if node_type == g.CONSTITUENT_NODE:
             if give_label:

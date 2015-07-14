@@ -2,7 +2,7 @@ __author__ = 'purma'
 
 from kataja.parser.BaseParser import BaseParser
 from kataja.parser.LatexToINode import parse
-from kataja.parser.INodes import IConstituentNode, ITemplateNode
+from kataja.parser.INodes import ITemplateNode
 from kataja.singletons import ctrl
 from kataja.BaseConstituentNode import BaseConstituentNode
 import kataja.globals as g
@@ -39,9 +39,10 @@ class INodeToKatajaConstituent(BaseParser):
 
 # @time_me
 def inode_to_constituentnodes(inode, forest):
-    """ Recursively turn IConstituentNodes into Constituents supported by syntax and further into
+    """ Recursively turn ITemplateNodes into Constituents supported by syntax
+    and further into
      Kataja's ConstituentNodes.
-    :param inode: should be IConstituentNode.
+    :param inode: should be ITemplateNode.
     :param forest: forest where ConstituentNodes will be added
     :return: the root ConstituentNode
     """
@@ -78,72 +79,6 @@ def inode_to_constituentnodes(inode, forest):
         cn.update_label()
         forest.derivation_steps.save_and_create_derivation_step()
         return cn
-
-    elif isinstance(inode, IConstituentNode):
-        children = []
-        if inode.parts:
-            right_first = reversed(inode)
-            for nnode in right_first:
-                child = inode_to_constituentnodes(nnode, forest)
-                if child and isinstance(child, BaseConstituentNode):
-                    children.append(child)
-        if inode.features:
-            # todo: features here
-            print('Needs to create features from:', inode.features)
-        constituent = ctrl.Constituent(inode.label)
-        if inode.parts:
-            result_of_merge = True
-            result_of_select = False
-        else:
-            result_of_merge = False
-            result_of_select = True
-        cn = forest.create_node_from_constituent(constituent,
-                                                 result_of_merge=result_of_merge,
-                                                 result_of_select=result_of_select)
-        if hasattr(cn, 'index'):
-            cn.index = inode.index
-        if hasattr(cn, 'alias'):
-            cn.alias = inode.alias
-        if hasattr(cn, 'gloss'):
-            cn.gloss = inode.gloss
-        cn.features = inode.features
-
-        if len(children) == 2:
-            left = children[1]
-            right = children[0]
-            constituent.left = left.syntactic_object
-            constituent.right = right.syntactic_object
-            forest.connect_node(parent=cn, child=left, direction=g.LEFT)
-            forest.connect_node(parent=cn, child=right, direction=g.RIGHT)
-
-        # fixme: monochild
-        elif len(children) == 1:
-            left = children[0]
-            constituent.left = left.syntactic_object
-            forest.connect_node(parent=cn, child=left, direction=g.LEFT)
-
-        cn.update_label()
-        forest.derivation_steps.save_and_create_derivation_step()
-        return cn
     else:
         print('failing here')
-
-
-def update_constituentnode_fields(constituentnode, inode):
-    if not inode:
-        print("Updating constituent node %s, but no inode to update with" % constituentnode)
-        return
-    if constituentnode.alias != inode.alias:
-        constituentnode.alias = inode.alias
-    if constituentnode.label != inode.label:
-        constituentnode.label = inode.label
-    if constituentnode.gloss != inode.gloss:
-        constituentnode.gloss = inode.gloss
-    if constituentnode.index != inode.index:
-        constituentnode.index = inode.index
-    constituentnode.update_label()
-    # todo: handling of features
-
-
-
 

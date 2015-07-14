@@ -44,7 +44,7 @@ class BaseFeature(IFeature):
     addable = {}
 
     def __init__(self, key=None, value=None, values=None, family=''):
-        super().__init__(self)
+        super().__init__()
         if key and not (value or values): # e.g. 'nom:case:deletable'
             values = key.split(':')
             key = values.pop(0)

@@ -1,5 +1,7 @@
-# This module has functions for parsing LaTeX QTree structures to generic node-based representations.
-# These representations can then be converted to other structures, e.g. Kataja Constituents and ConstituentNodes.
+# This module has functions for parsing LaTeX QTree structures to generic
+# node-based representations.
+# These representations can then be converted to other structures, e.g. Kataja
+# Constituents and ConstituentNodes.
 
 # This module can be run and tested as it is,
 # from kataja.utils import time_me
@@ -15,10 +17,11 @@ one_character_commands = ['&', '~', '#', '%', '$', '^', '_']
 
 # @time_me
 def parse(text):
-    """ Turn text into INodes (intermediary nodes). These can be IConstituentNodes, ICommandNodes or ITextNodes.
-    INodes are then, dependent on purpose of parsing turned into Kataja's ConstituentNodes, rich text format
-    representations (with NodeToQTextDocument), HTML or flat strings. The nodes also store the original raw string
-    (=text that was given to parser).
+    """ Turn text into INodes (intermediary nodes). These can be ITemplateNodes,
+     ICommandNodes or ITextNodes. INodes are then, dependent on purpose of
+     parsing turned into Kataja's ConstituentNodes, rich text format
+     representations (with NodeToQTextDocument), HTML or flat strings. The
+     nodes also store the original raw string (=text that was given to parser).
         :param text: string to parse.
     """
     if not text:
@@ -50,8 +53,9 @@ def parse(text):
 
 # @time_me
 def parse_field(text):
-    """ Simpler version of parse, turns values of text fields into INodes (intermediary nodes).
-    Results are ITextNodes that may contain more ITextNodes and ICommandNodes.
+    """ Simpler version of parse, turns values of text fields into INodes
+    (intermediary nodes).  Results are ITextNodes that may contain more
+    ITextNodes and ICommandNodes.
         :param text: string to parse.
     """
     if not text:
@@ -71,8 +75,8 @@ def parse_field(text):
 
 
 def parse_word(feed, end_on_space=False):
-    """ Turn text into ITextNodes. If something special (commands, curlybraces, brackets is found, deal with them by
-    creating new Nodes of specific types
+    """ Turn text into ITextNodes. If something special (commands, curlybraces,
+    brackets is found, deal with them by creating new Nodes of specific types
         :param feed: list of chars (strings of length 1)
     """
 
@@ -109,8 +113,8 @@ def parse_word(feed, end_on_space=False):
 
 
 def parse_curlies(feed):
-    """ Turn text into ITextNodes, but don't let space end the current ITextNode. Only closing curly brace will end
-    the node parsing.
+    """ Turn text into ITextNodes, but don't let space end the current
+    ITextNode. Only closing curly brace will end the node parsing.
         :param feed: list of chars (strings of length 1)
     """
     node = ITextNode()
@@ -139,8 +143,8 @@ def parse_curlies(feed):
 
 
 def parse_one_character_command(feed):
-    """ Start a new command node, where the command is just one character and already given as
-    a param.
+    """ Start a new command node, where the command is just one character and
+    already given as a param.
         e.g. _{subscripted text} or ^{superscript}
         :param feed: list of chars (strings of length 1)
     """
@@ -176,10 +180,11 @@ def parse_one_character_command(feed):
 
 
 def parse_command(feed):
-    """ Turn text into ICommandNodes. These are best understood as tags, where the tag is the
-     command, and parts of the node are the scope of the tag. Reads a word and stores it as a
-     command, and then depending how the word ends, either ends the command node or starts reading
-     next entries as a nodes inside the ICommandNode.
+    """ Turn text into ICommandNodes. These are best understood as tags, where
+     the tag is the command, and parts of the node are the scope of the tag.
+     Reads a word and stores it as a command, and then depending how the word
+     ends, either ends the command node or starts reading next entries as a
+     nodes inside the ICommandNode.
         :param feed: list of chars (strings of length 1)
     """
     node = ICommandNode()
@@ -195,7 +200,7 @@ def parse_command(feed):
             break
         elif c == '\\':
             if not node.command:
-                # this is an line break in latex, '\\'', two backslashes in row --
+                # this is an line break in latex, '\\'', two backslashes in row.
                 # not two command words
                 feed.pop(0)
                 node.add_command_char(c)
@@ -214,8 +219,9 @@ def parse_command(feed):
 
 
 def parse_brackets(feed):
-    """ Turn text into IConstituentNodes. Constituents are expected to contain aliases, labels and other constituents
-    and these are read as IConstituentNodes or ITextNodes.
+    """ Turn text into IConstituentNodes. Constituents are expected to contain
+    aliases, labels and other constituents and these are read as
+    IConstituentNodes or ITextNodes.
         :param feed: list of chars (strings of length 1)
     """
     node = ITemplateNode()
@@ -231,7 +237,8 @@ def parse_brackets(feed):
         elif c == ']':
             # Finalize merger
             feed.pop(0)
-            # if closing bracket continues with . ( "[ ... ].NP " ) it is treated as label
+            # if closing bracket continues with . ( "[ ... ].NP " )
+            # it is treated as label
             if feed and feed[0] == '.':
                 feed.pop(0)
                 feed, new_node = parse_word(feed)
@@ -246,7 +253,8 @@ def parse_brackets(feed):
         else:
             # Make a new constituent
             new_cnode = ITemplateNode()
-            feed, new_node = parse_word(feed, end_on_space=True)  # Read simple constituent e.g. A or B in [ A B ]
+            # Read simple constituent e.g. A or B in [ A B ]
+            feed, new_node = parse_word(feed, end_on_space=True)
             # What we just read was label for that constituent
             new_cnode.unanalyzed = new_node
             new_cnode.analyze_label_data()

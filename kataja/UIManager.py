@@ -772,7 +772,8 @@ class UIManager:
         """
         assert(node.is_locked())
         ui_key = node.save_key + '_lock_icon'
-        item = FadingSymbol(qt_prefs.lock_icon, node, self, ui_key, place='bottom_right')
+        item = FadingSymbol(qt_prefs.lock_pixmap, node, self, ui_key,
+                            place='bottom_right')
         # print u"\U0001F512" , unichr(9875) # unichr(9875)
         self.add_ui(item)
         item.fade_out('slow')

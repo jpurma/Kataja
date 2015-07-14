@@ -1,34 +1,31 @@
 __author__ = 'purma'
 
-from PyQt5 import QtGui, QtCore
-from kataja.parser.INodes import ITextNode, ICommandNode, IConstituentNode, IFeatureNode, IGenericNode, \
-    ITemplateNode
+from PyQt5 import QtGui
+from kataja.parser.INodes import ITextNode, ICommandNode, ITemplateNode
 from kataja.LabelDocument import LabelDocument
 import kataja.globals as g
-from kataja.singletons import qt_prefs, prefs
+from kataja.singletons import qt_prefs
 from kataja.parser.latex_to_unicode import latex_to_unicode
-from kataja.parser.INodeToLatex import parse_inode_for_field
 
 
 def parse_inode(inode, document, options=None):
     """ Does what it says. Takes an existing LabelDocument to avoid problems with their garbage collection.
-    :param inode: IConstituentNode or IFeatureNode
+    :param inode: ITemplateNode, ICommandNode or ITextNode
     :param document: LabelDocument where to write
-    :param gloss_in_view:
-    :param features_in_view:
+    :param options: flags to be delivered for actual parsing method
     """
-    assert (isinstance(document, LabelDocument))
+    assert isinstance(document, LabelDocument)
     document.clear()
-    if isinstance(inode, ITemplateNode):
+    if isinstance(inode, str):
+        cursor = QtGui.QTextCursor(document)
+        cursor.insertText(inode)
+    elif isinstance(inode, ITemplateNode):
         parse_itemplatenode_for_viewing(inode, document, options)
-    elif isinstance(inode, IFeatureNode):
-        parse_ifeaturenode(inode, document)
-    elif isinstance(inode, IConstituentNode):
-        parse_iconstituentnode_for_viewing(inode, document)
     elif isinstance(inode, ITextNode):
         parse_itextnode(inode, document)
-        # fixme
-        print('skipping parse_inode, ', inode, type(inode))
+    else:
+        print('what is inode?', type(inode))
+
 
 def parse_itextnode(inode, document):
     cursor = QtGui.QTextCursor(document)
@@ -87,73 +84,6 @@ def parse_itemplatenode_for_viewing(inode, document, options):
             is_empty = False
 
 
-def parse_iconstituentnode_for_viewing(inode, document, gloss_in_view=True, features_in_view=True):
-    """ Show only those fields that have values and add index as subscript to either alias or label
-    :param inode: IConstituentNode
-    :param document: LabelDocument
-    :param gloss_in_view: include gloss in label complex (alternative is to have it as free floating node)
-    :param features_in_view: include features in label complex (alternative is to have them as free floating nodes)
-    :return:
-    """
-
-    def write_index(index, cursor):
-        old_format = QtGui.QTextCharFormat(cursor.charFormat())
-        c = QtGui.QTextCharFormat()
-        c.setVerticalAlignment(QtGui.QTextCharFormat.AlignSubScript)
-        cursor.mergeCharFormat(c)
-        write_node_to_document(index, cursor)
-        cursor.setCharFormat(old_format)
-
-    cursor = QtGui.QTextCursor(document)
-    first = True
-    index_done = False
-    if inode.alias:
-        if not first:
-            cursor.insertBlock()
-        write_node_to_document(inode.alias, cursor)
-        first = False
-        if inode.index:
-            write_index(inode.index, cursor)
-            index_done = True
-    if inode.label:
-        if not first:
-            cursor.insertBlock()
-        write_node_to_document(inode.label, cursor)
-        first = False
-    if inode.index and not index_done:
-        write_index(inode.index, cursor)
-    if inode.gloss and gloss_in_view:
-        if not first:
-            cursor.insertBlock()
-        write_node_to_document(inode.gloss, cursor)
-        first = False
-    if inode.features and features_in_view:
-        if not first:
-            cursor.insertBlock()
-        for item in inode.features.values():
-            write_node_to_document(item, cursor)
-            write_node_to_document(' ', cursor)
-
-
-def parse_ifeaturenode(inode, document):
-    """ Write feature into document. At this point it only has single field, label
-    :param inode: IFeatureNode
-    :param document: LabelDocument
-    """
-    cursor = QtGui.QTextCursor(document)
-    if inode.family:
-        write_node_to_document(inode.family, cursor)
-        cursor.insertText(':')
-    write_node_to_document(inode.key, cursor)
-    if inode.value:
-        cursor.insertText('=')
-        write_node_to_document(inode.value, cursor)
-    if inode.parts:
-        cursor.insertText(' ')
-        write_node_to_document(inode.parts, cursor)
-
-
-
 def run_command(command, cursor):
     """
     :param command: latex command that may be translated to rtf formatting commands.
@@ -205,7 +135,8 @@ def write_node_to_document(n, cursor):
             old_format = QtGui.QTextCharFormat(cursor.charFormat())
             run_command(n.command, cursor)
         for part in n.parts:
-            if isinstance(part, ITextNode):  # ITextNode includes also ICommandNodes and IConstituentNodes
+            if isinstance(part, ITextNode):  # ITextNode is parent class for
+            # other INodes
                 write_node_to_document(part, cursor)
             else:
                 cursor.insertText(part)
@@ -213,7 +144,8 @@ def write_node_to_document(n, cursor):
             cursor.setCharFormat(old_format)
     elif isinstance(n, list):
         for part in n:
-            if isinstance(part, ITextNode):  # ITextNode includes also ICommandNodes and IConstituentNodes
+            if isinstance(part, ITextNode):  # ITextNode is parent class for
+            # other INodes
                 write_node_to_document(part, cursor)
             else:
                 cursor.insertText(part)

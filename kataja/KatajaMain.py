@@ -49,7 +49,7 @@ from kataja.Presentation import TextArea
 from kataja.Edge import Edge
 from kataja.UIManager import UIManager
 from kataja.PaletteManager import PaletteManager
-from kataja.object_factory import create
+import kataja.object_factory
 import kataja.globals as g
 from kataja.utils import time_me, import_plugins
 from kataja.visualizations.available import VISUALIZATIONS
@@ -123,7 +123,7 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         self.ui_manager = UIManager(self)
         self.ui_manager.populate_ui_elements()
         self.key_manager = KeyPressManager(self)
-        self.object_factory = create
+        self.object_factory = kataja.object_factory
         print('---- ui init ... ', time.time() - t)
         self.forest_keeper = ForestKeeper()
         print('---- forest_keeper init ... ', time.time() - t)

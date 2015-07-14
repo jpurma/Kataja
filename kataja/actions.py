@@ -1016,16 +1016,20 @@ a['set_visualization'] = {
 }
 
 
-def add_node(sender, ntype=None):
+def add_node(sender, ntype=None, pos=None):
     """ Generic add node, gets the node type as an argument.
     :param ntype: node type (str/int, see globals), if not provided, evaluates which add_node button was clicked.
+    :param pos: QPoint for where the node should first appear
     :return: None
     """
-    if ntype is None:
-        panel = ctrl.ui.get_panel(g.NODES)
-        if sender:
-            ctrl.forest.create_empty_node(pos=QtCore.QPoint(random.random() * 60 - 25, random.random() * 60 - 25),
-                                          give_label=True, node_type=sender.data)
+    if not ntype:
+        ntype = sender.data
+    if not pos:
+        pos = QtCore.QPoint(random.random() * 60 - 25, random.random() * 60 - 25)
+    ctrl.forest.create_empty_node(pos=pos, give_label=True, node_type=ntype)
+    nclass = ctrl.node_classes[ntype]
+    ctrl.add_message('Added new %s.' % nclass.name[0])
+
 
 a['add_node'] = {
     'command': 'Add node',

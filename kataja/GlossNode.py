@@ -61,21 +61,7 @@ class GlossNode(Node):
 
     def __init__(self, text=''):
         Node.__init__(self)
-        self.label = text
-
-    def after_init(self):
-        """ After_init is called in 2nd step in process of creating objects:
-            1st wave creates the objects and calls __init__, and then iterates through and sets the values.
-            2nd wave calls after_inits for all created objects. Now they can properly refer to each other and know their
-                values.
-        :return: None
-        """
-        print("GlossNode after_init called")
-        self.update_label()
-        self.update_bounding_rect()
-        self.update_visibility()
-        self.announce_creation()
-        ctrl.forest.store(self)
+        self._label = text or 'gloss'
 
     @property
     def hosts(self):
@@ -97,11 +83,13 @@ class GlossNode(Node):
         for host in self.hosts:
             if host.gloss:
                 return host.gloss
+        return self._label
 
     @label.setter
     def label(self, value):
         for host in self.hosts:
             host.gloss = value
+        self._label = value
         self._inode_changed = True
 
     @property
@@ -110,33 +98,10 @@ class GlossNode(Node):
 
     @text.setter
     def text(self, value):
-        self.label = value
-
-    def update_colors(self):
-        """
-        Deprecated for now? Does nothing, overrides, but doesn't call Node's update_colors.
-        """
-        pass
-        # self.color = colors.drawing2
-        # if self._label_complex:
-        # self._label_complex.setDefaultTextColor(colors.drawing2)
+        self._label = value
 
     def __str__(self):
         return 'gloss: %s' % self.text
-
-    @property
-    def as_inode(self):
-        """
-        :return: INodes or str or tuple of them
-        """
-        if self._inode_changed:
-            if isinstance(self.label, ITextNode):
-                self._inode = self.label
-            else:
-                self._inode = parse_field(self.label)
-            print('gloss node inode is: ', self._inode)
-            self._inode_changed = False
-        return self._inode
 
     # ############## #
     #                #

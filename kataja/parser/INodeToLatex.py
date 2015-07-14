@@ -36,7 +36,7 @@ def parse_inode_for_field(inode):
 
 
 def parse_inode(inode):
-    """ General INode parser, parses IConstituentNodes all the way to LaTeX QTrees
+    """ General INode parser, parses ITemplateNodes all the way to LaTeX QTrees
     :param inode:
     :return:
     """
