@@ -56,15 +56,11 @@ def inode_to_constituentnodes(inode, forest):
                     children.append(child)
 
         constituent = ctrl.Constituent(str(hash(inode)))
+        cn = forest.create_node(synobj=constituent)
         if inode.parts:
-            result_of_merge = True
-            result_of_select = False
+            forest.add_merge_counter(cn)
         else:
-            result_of_merge = False
-            result_of_select = True
-        cn = forest.create_node_from_constituent(constituent,
-                                                 result_of_merge=result_of_merge,
-                                                 result_of_select=result_of_select)
+            forest.add_select_counter(cn)
         cn._inode = inode
         children.reverse()
         direction = g.LEFT

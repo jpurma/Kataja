@@ -92,7 +92,8 @@ class BottomUpParser(BaseParser):
             constituent = ctrl.Constituent()
             constituent.left = left.syntactic_object
             constituent.right = right.syntactic_object
-            node = self.forest.create_node_from_constituent(constituent, result_of_merge=True)
+            node = self.forest.create_node(synobj=constituent)
+            self.forest.add_merge_counter(node)
             if dot_alias:
                 dot_alias, index = find_index(dot_alias)
                 if index:

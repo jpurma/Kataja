@@ -531,49 +531,51 @@ class Forest(BaseModel):
                 if letter + letter2 not in names:
                     return letter + letter2
 
-    # ### Primitive creation of forest objects ###################################
+    # ### Primitive creation of forest objects ################################
 
-    def create_node_from_constituent(self, constituent, pos=None, result_of_merge=False, result_of_select=False,
-                                     replacing_merge=0, replacing_select=0, silent=False):
-        """ All of the node creation should go through this!
-        :param constituent:
+    def create_node(self, synobj=None, pos=None, node_type=1):
+        """ This is generic method for creating all of the Node subtypes.
+        Keep it generic!
+        :param synobj: If syntactic object is passed here, the node created
+        will be a wrapper around this syntactic object
+        :param node_type:
         :param pos:
-        :param result_of_merge:
-        :param result_of_select:
-        :param replacing_merge:
-        :param replacing_select:
-        :param silent:
+        :return:
         """
-        node = self.get_node(constituent)
-        if not node:
-            node = ConstituentNode(constituent=constituent)
-            node.after_init()
+        # First check that the node doesn't exist already
+        if synobj:
+            n = self.get_node(synobj)
+            if n:
+                return n
+
+        node_class = ctrl.node_classes.get(node_type)
+        # Create corresponding syntactic object if necessary
+        if not synobj:
+            if hasattr(node_class, 'create_synobj'):
+                synobj = node_class.create_synobj()
+        if synobj:
+            node = node_class(synobj)
         else:
-            assert False
+            node = node_class()
+        # after_init should take care that syntactic object is properly
+        # reflected by node's connections (call node.reflect_synobj()?)
+        node.after_init()
         if pos:
             node.set_original_position(pos)
-        elif ctrl.focus_point:
-            node.set_original_position(ctrl.focus_point)
+            #node.update_position(pos)
         self.add_to_scene(node)
-        if result_of_merge:
-            self.add_merge_counter(node)
-        elif replacing_merge:
-            self.add_merge_counter(node, replace=replacing_merge)
-        elif result_of_select:
-            self.add_select_counter(node)
-        elif replacing_select:
-            self.add_select_counter(node, replace=replacing_select)
-        elif silent:
-            pass
-        else:
-            print("ConstituentNode doesn't announce its origin")
-            raise KeyError
+        #node.fade_in()
 
-        # for key, feature in constituent.get_features().items():
-        # self.create_feature_node(node, feature)
+        # root status is meaningful to only certain types of nodes, others
+        # exit immediately
+        self.update_root_status(node)
+
+        # resetting node by visualization is equal to initializing node for
+        # visualization. e.g. if nodes are locked to position in this vis,
+        # then lock this node.
         if self.visualization:
             self.visualization.reset_node(node)
-        self.update_root_status(node)
+
         return node
 
     def create_placeholder_node(self, pos):
@@ -592,21 +594,6 @@ class Forest(BaseModel):
             self.visualization.reset_node(node)
         return node
 
-    def create_feature_node(self, host, syntactic_feature):
-        """
-
-        :param host:
-        :param syntactic_feature:
-        :return:
-        """
-        FN = FeatureNode(syntactic_feature)
-        FN.after_init()
-        if host:
-            FN.compute_start_position(host)
-            self.connect_node(host, child=FN)
-        self.add_to_scene(FN)
-        FN.update_visibility()
-        return FN
 
     def create_attribute_node(self, host, attribute_id, attribute_label, show_label=False):
         """
@@ -650,21 +637,6 @@ class Forest(BaseModel):
         self.add_to_scene(br)
         return br
 
-    def create_gloss_node(self, host_node=None, label=None):
-        """ Creates the gloss node for existing constituent node and necessary connection
-        :param label:
-        :param host_node: if the gloss is created for some specific constituentnode. Can be None
-        :return: gloss node
-        """
-        if host_node:
-            gn = GlossNode(text=host_node.gloss)
-            self.connect_node(child=gn, parent=host_node)
-        elif label:
-            gn = GlossNode(text=label)
-        else:
-            gn = GlossNode(text="gloss")
-        gn.after_init()
-        self.add_to_scene(gn)
 
         # Cosmetic improvemet, if gloss is created by editing the gloss text field. (not present anymore)
         # ee = ctrl.ui.get_node_edit_embed()
@@ -673,17 +645,6 @@ class Forest(BaseModel):
         #     scene_pos = ctrl.graph_view.mapToScene(ee.mapToParent(pos))
         #     gn.set_original_position(scene_pos)
         return gn
-
-    def create_comment_node(self, comment):
-        """
-
-        :param comment:
-        :return:
-        """
-        cn = CommentNode(comment)
-        cn.after_init()
-        self.add_to_scene(cn)
-        return cn
 
     # not used
     def create_image(self, image_path):
@@ -743,75 +704,13 @@ class Forest(BaseModel):
             node.index = index
         assert index
         constituent = ctrl.Constituent(label='t', index=index)
-        trace = self.create_node_from_constituent(constituent, silent=True)
+        trace = self.create_node(synobj=constituent)
         trace.is_trace = True
         # if new_chain:
         # self.chain_manager.rebuild_chains()
         # if self.settings.uses_multidomination:
         # trace.hide()
         return trace
-
-    def create_empty_node(self, pos, give_label=True, node_type='c'):
-        """
-
-
-        :param node_type:
-        :param pos:
-        :param give_label:
-        :return:
-        """
-        node_class = ctrl.node_classes.get(node_type)
-        wraps = getattr(node_class, 'wraps', '')
-        if wraps:
-            if wraps == 'constituent':
-                synobj = ctrl.Constituent()
-            elif wraps == 'feature':
-                synobj = ctrl.Feature()
-            else:
-                print('wraps unknown type: ', wraps)
-                synobj = None
-            node = node_class(synobj)
-        else:
-            node = node_class()
-        node.after_init()
-        node.update_position(pos)
-        print('created: ', node, node.opacity(), node.is_visible())
-        self.add_to_scene(node)
-        node.fade_in()
-        return node
-
-    def create_empty_node_old(self, pos, give_label=True, node_type='c'):
-        """
-
-
-        :param node_type:
-        :param pos:
-        :param give_label:
-        :return:
-        """
-        node = None
-        if node_type == g.CONSTITUENT_NODE:
-            if give_label:
-                label = self.get_first_free_constituent_name()
-            else:
-                label = ''
-            const = ctrl.Constituent(label=label)
-            node = self.create_node_from_constituent(const, pos, result_of_select=True)
-        elif node_type == g.FEATURE_NODE:
-            label = 'feature'
-            feat = ctrl.Feature(key=label)
-            node = self.create_feature_node(None, feat)
-            node.set_original_position(pos)
-        elif node_type == g.GLOSS_NODE:
-            label = 'gloss'
-            node = self.create_gloss_node(None, label=label)
-            node.set_original_position(pos)
-        elif node_type == g.COMMENT_NODE:
-            label = 'comment'
-            node = self.create_comment_node(label)
-            node.set_original_position(pos)
-        print('created a new node: ', node)
-        return node
 
     def create_arrow(self, p1, p2, text=None):
         """ Create an arrow (Edge) using the default arrow style
@@ -1570,7 +1469,7 @@ class Forest(BaseModel):
                 ex, ey = new_node_pos
             else:
                 ex, ey = replaced.algo_position[0], replaced.algo_position[1]
-            new_node = self.create_empty_node(pos=(ex, ey, replaced.z))
+            new_node = self.create_node(pos=(ex, ey, replaced.z))
             new_node.adjustment = replaced.adjustment
 
         if hasattr(new_node, 'index'):
@@ -1620,7 +1519,8 @@ class Forest(BaseModel):
         if not pos:
             pos = (0, 0, 0)
         merger_const = ctrl.FL.merge(left.syntactic_object, right.syntactic_object)
-        merger_node = self.create_node_from_constituent(merger_const, pos=pos, result_of_merge=True)
+        merger_node = self.create_node(synobj=merger_const, pos=pos)
+        self.add_merge_counter(merger_node)
         self.connect_node(parent=merger_node, child=left, direction=g.LEFT)
         self.connect_node(parent=merger_node, child=right, direction=g.RIGHT)
         return merger_node
@@ -1633,7 +1533,8 @@ class Forest(BaseModel):
         if not node:
             return
         new_c = node.syntactic_object.copy()
-        new_node = self.create_node_from_constituent(new_c, pos=node.current_position, result_of_select=True)
+        new_node = self.create_node(new_c, pos=node.current_position)
+        self.add_select_counter(new_node)
         self.main.add_message("Copied %s" % node)
         return new_node
 

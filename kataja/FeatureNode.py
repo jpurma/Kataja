@@ -76,6 +76,15 @@ class FeatureNode(Node):
 
     # implement color() to map one of the d['rainbow_%'] colors here. Or if bw mode is on, then something else.
 
+    @staticmethod
+    def create_synobj():
+        """ FeatureNodes are wrappers for Features. Exact
+        implementation/class of feature is defined in ctrl.
+        :return:
+        """
+        return ctrl.Feature()
+
+
     def compute_start_position(self, host):
         """ Makes features start at somewhat predictable position, if they are of common kinds of features.
         If not, then some random noise is added to prevent features sticking together

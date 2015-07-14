@@ -1026,7 +1026,7 @@ def add_node(sender, ntype=None, pos=None):
         ntype = sender.data
     if not pos:
         pos = QtCore.QPoint(random.random() * 60 - 25, random.random() * 60 - 25)
-    ctrl.forest.create_empty_node(pos=pos, give_label=True, node_type=ntype)
+    ctrl.forest.create_node(pos=pos, node_type=ntype)
     nclass = ctrl.node_classes[ntype]
     ctrl.add_message('Added new %s.' % nclass.name[0])
 

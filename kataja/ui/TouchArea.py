@@ -311,7 +311,9 @@ class TouchArea(QtWidgets.QGraphicsItem):
                         h = self.host.height
                     else:
                         h = 0
-                    dropped_node = ctrl.forest.create_empty_node(QtCore.QPointF(x, y + h), node_type=node_type)
+                    pos = QtCore.QPointF(x, y + h)
+                    dropped_node = ctrl.forest.create_node(pos=pos,
+                                                           node_type=node_type)
                 else:
                     print('received unknown command:', command, args)
                     return

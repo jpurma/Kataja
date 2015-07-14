@@ -203,16 +203,18 @@ class BaseParser:
 
 
     def _new_trace_from_constituent(self, constituent):
-        node = self.forest.create_node_from_constituent(constituent, silent=True)
+        node = self.forest.create_node(constituent)
         node.is_trace = True
         return node
 
     def _new_node_from_constituent(self, constituent):
-        node = self.forest.create_node_from_constituent(constituent, result_of_select=True)
+        node = self.forest.create_node(synobj=constituent)
+        self.forest.add_select_counter(node)
         return node
 
     def _new_merger_node_from_constituent(self, constituent):
-        node = self.forest.create_node_from_constituent(constituent, result_of_merge=True)
+        node = self.forest.create_node(synobj=constituent)
+        self.forest.add_merge_counter(node)
         return node
 
         # not used

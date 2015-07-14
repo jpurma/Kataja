@@ -80,6 +80,16 @@ class BaseConstituentNode(Node):
 
         self.setAcceptDrops(True)
 
+    @staticmethod
+    def create_synobj():
+        """ ConstituentNodes are wrappers for Constituents. Exact
+        implementation/class of constituent is defined in ctrl.
+        :return:
+        """
+        label = ctrl.forest.get_first_free_constituent_name()
+        c = ctrl.Constituent(label)
+        return c
+
     def impose_order_to_inode(self):
         """ Prepare inode (ITemplateNode) to match data structure of this type of node
         ITemplateNode has parsed input from latex trees to rows of text or ITextNodes and
@@ -99,6 +109,8 @@ class BaseConstituentNode(Node):
         values.
         :return: None
         """
+        self._inode_changed = True
+        a = self.as_inode
         self.update_features()
         self.update_label()
         self.update_visibility()
@@ -499,3 +511,4 @@ class BaseConstituentNode(Node):
 
     # Attributes from synobj and their setter hooks
     features = Synobj("features", if_changed=if_changed_features)
+

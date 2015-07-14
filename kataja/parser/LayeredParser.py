@@ -49,7 +49,8 @@ class LayeredParser(BaseParser):
             right = children[1]
             constituent.left = left
             constituent.right = right
-            node = self.forest.create_node_from_constituent(constituent, result_of_merge=True)
+            node = self.forest.create_node(synobj=constituent)
+            self.forest.add_merge_counter(node)
         elif len(children) == 1:
             constituent = children[0]
             node = self.forest.get_node(constituent)

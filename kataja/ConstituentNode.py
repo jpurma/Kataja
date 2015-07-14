@@ -64,7 +64,6 @@ class ConstituentNode(BaseConstituentNode):
     def __init__(self, constituent=None):
         """ Most of the initiation is inherited from Node """
         BaseConstituentNode.__init__(self, constituent=constituent)
-
         self._index_label = None
         self._index_visible = True
         self.is_trace = False
@@ -77,7 +76,6 @@ class ConstituentNode(BaseConstituentNode):
 
         # ## use update_visibility to change these: visibility of particular elements
         # depends on many factors
-        self.update_status_tip()
 
     def after_init(self):
         """ After_init is called in 2nd step in process of creating objects:
@@ -86,10 +84,13 @@ class ConstituentNode(BaseConstituentNode):
         to each other and know their values.
         :return: None
         """
+        self._inode_changed = True
+        a = self.as_inode
         self.update_features()
         self.update_gloss()
         self.update_label()
         self.update_visibility()
+        self.update_status_tip()
         self.announce_creation()
         ctrl.forest.store(self)
 
@@ -218,12 +219,16 @@ class ConstituentNode(BaseConstituentNode):
     def __str__(self):
         if not self.syntactic_object:
             return 'Placeholder node'
-        alias = str(self.alias)
-        label = str(self.label)
+        alias = self.alias
+        label = self.label
         if alias and label:
-            return ' '.join((alias, label))  # + ' adj: %s fixed: %s' % (self.adjustment, self.fixed_position)
+            return ' '.join((str(alias), str(label)))
+        elif alias:
+            return str(alias)
+        elif label:
+            return str(label)
         else:
-            return alias or label  # + ' adj: %s fixed: %s' % (self.adjustment, self.fixed_position)
+            return ''
 
     def as_bracket_string(self):
         """ returns a simple bracket string representation """

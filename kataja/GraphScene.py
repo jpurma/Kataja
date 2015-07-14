@@ -537,8 +537,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
                     command, *args = args
                     if command == "new_node":
                         node_type = args[0]
-                        node = ctrl.forest.create_empty_node(pos=event.scenePos(),
-                                                             node_type=node_type)
+                        node = ctrl.forest.create_node(pos=event.scenePos(),
+                                                       node_type=node_type)
                         node.lock()
                         ctrl.main.action_finished('added %s' % args[0])
                     else:

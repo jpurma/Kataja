@@ -173,6 +173,15 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             print('Node.DELETED. (%s) should I be reverting deletion or have we just been deleted?'
                   % self.save_key)
 
+    @staticmethod
+    def create_synobj():
+        """ (Abstract) Nodes do not have corresponding syntactic object, so
+        return None and the Node factory knows to not try to pass syntactic
+        object -argument.
+        :return:
+        """
+        return None
+
     @time_me
     def prepare_schema_for_label_display(self):
         """
