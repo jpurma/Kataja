@@ -28,7 +28,18 @@ from PyQt5 import QtWidgets, QtCore
 
 from kataja.singletons import prefs, qt_prefs, ctrl
 from kataja.BaseModel import BaseModel, Saved
+from kataja.utils import time_me
 
+
+def about_there(pos1, pos2):
+    """ Two triplets are about equal
+    :param pos1:
+    :param pos2:
+    :return:
+    """
+    return round(pos1[0]) == round(pos2[0]) and \
+           round(pos1[1]) == round(pos2[1]) and \
+           round(pos1[2]) == round(pos2[2])
 
 class Movable(BaseModel):
     """ Movable objects have support for smooth movement from one point to another with
@@ -173,14 +184,14 @@ class Movable(BaseModel):
             self._target_position = (ax + dx, ay + dy, az + dz)
         else:
             self._target_position = self.algo_position
-        if self._target_position == ct:
-            if ct == self.current_position:
+        if about_there(self._target_position, ct):
+            if about_there(ct, self.current_position):
                 self.stop_moving()
         else:
-            if self._target_position != self.current_position:
-                self.start_moving()
-            else:
+            if about_there(self._target_position, self.current_position):
                 self.stop_moving()
+            else:
+                self.start_moving()
 
     def reset(self):
         """ Remove mode information, eg. hovering
@@ -258,7 +269,6 @@ class Movable(BaseModel):
         :param md: movement data dict
         :return:
         """
-
         if self.use_fixed_position:
             self.current_position = self.fixed_position
             return False, False
@@ -278,19 +288,24 @@ class Movable(BaseModel):
             normalize = True
         if not (self.dyn_x or self.dyn_y or self.dyn_z):
             # straight move to target
-            tx, ty, tz = self._target_position
             if self._move_counter:
+                if about_there(self.current_position, self._target_position):
+                    self.stop_moving()
+                    return False, False
                 if self._use_easing:
                     xvel = self._x_step * qt_prefs.easing_curve[self._move_counter - 1]
                     yvel = self._y_step * qt_prefs.easing_curve[self._move_counter - 1]
                     zvel = self._z_step * qt_prefs.easing_curve[self._move_counter - 1]
                 else:
+                    tx, ty, tz = self._target_position
                     xvel = (tx - px) / self._move_counter
                     yvel = (ty - py) / self._move_counter
                     zvel = (tz - pz) / self._move_counter
                 self._move_counter -= 1
                 if not self._move_counter:
                     self.stop_moving()
+            else:
+                return False, False
         else:
             # combination of move to target and dynamic movement
             tx, ty, tz = self._target_position
@@ -337,10 +352,13 @@ class Movable(BaseModel):
         """
         if isinstance(pos, (QtCore.QPoint, QtCore.QPointF)):
             pos = pos.x(), pos.y(), 0
+        was_initializing = self._initializing
+        self._initializing = True
         self.algo_position = tuple(pos)
         self._target_position = tuple(pos)
         self.adjustment = None
         self.current_position = tuple(pos)
+        self._initializing = was_initializing
 
     def start_moving(self):
         """ Initiate moving animation for object.

@@ -25,15 +25,14 @@
 import math
 
 from PyQt5 import QtCore
-
 import PyQt5.QtWidgets as QtWidgets
+
 from kataja.Node import Node
 from kataja.errors import TouchAreaError
 from kataja.Edge import Edge
 from kataja.singletons import ctrl, prefs
 from kataja.utils import to_tuple
 import kataja.globals as g
-
 
 end_spot_size = 7
 
@@ -119,7 +118,6 @@ class TouchArea(QtWidgets.QGraphicsItem):
 
         self.setToolTip(self.status_tip)
 
-
     def is_visible(self):
         """
 
@@ -162,7 +160,8 @@ class TouchArea(QtWidgets.QGraphicsItem):
         else:
             # Just the bounding rect of end spot ellipse
             ex, ey = self.end_point
-            return QtCore.QRectF(ex - end_spot_size, ey - end_spot_size, end_spot_size + end_spot_size,
+            return QtCore.QRectF(ex - end_spot_size, ey - end_spot_size,
+                                 end_spot_size + end_spot_size,
                                  end_spot_size + end_spot_size)
 
     def sensitive_area(self):
@@ -203,14 +202,19 @@ class TouchArea(QtWidgets.QGraphicsItem):
         if not self._has_tail:
             if not end_point:
                 if isinstance(self.host, Edge):
-                    self.end_point = (self.host.end_point[0], self.host.end_point[1])
+                    self.end_point = (
+                    self.host.end_point[0], self.host.end_point[1])
                 elif hasattr(self.host, 'current_position'):
                     if self._below_node:
-                        self.end_point = (self.host.current_position[0], self.host.current_position[1] + self.host.height / 2)
+                        self.end_point = (self.host.current_position[0],
+                                          self.host.current_position[
+                                              1] + self.host.height / 2)
                     else:
-                        self.end_point = (self.host.current_position[0], self.host.current_position[1])
+                        self.end_point = (self.host.current_position[0],
+                                          self.host.current_position[1])
                 else:
-                    raise TouchAreaError("Cannot set end point from %s " % self.host)
+                    raise TouchAreaError(
+                        "Cannot set end point from %s " % self.host)
 
             self.start_point = self.end_point
             self._path = None
@@ -218,9 +222,11 @@ class TouchArea(QtWidgets.QGraphicsItem):
         use_middle_point = False
         line_middle_point = None
         path_settings = None
-        if isinstance(self.host, Edge):  # Touch area starts from relation between nodes
+        if isinstance(self.host,
+                      Edge):  # Touch area starts from relation between nodes
             rel = self.host
-            path_settings = ctrl.forest.settings.edge_shape_settings(rel.edge_type)
+            path_settings = ctrl.forest.settings.edge_shape_settings(
+                rel.edge_type)
             sx, sy = to_tuple(rel.get_point_at(0.5))
             self.start_point = sx, sy
             if not end_point:
@@ -237,14 +243,17 @@ class TouchArea(QtWidgets.QGraphicsItem):
                 y = sy + dy * l
                 self.end_point = x, y
         elif self._shape_has_joint:
-            path_settings = ctrl.forest.settings.edge_shape_settings(g.CONSTITUENT_EDGE)
+            path_settings = ctrl.forest.settings.edge_shape_settings(
+                g.CONSTITUENT_EDGE)
             sx, sy, dummy = self.host.magnet(2)
             self.start_point = sx, sy
             if not end_point:
                 if self._align_left:
-                    self.end_point = sx - max((prefs.edge_width * 2, self.host.width)), sy
+                    self.end_point = sx - max(
+                        (prefs.edge_width * 2, self.host.width)), sy
                 else:
-                    self.end_point = sx + max((prefs.edge_width * 2, self.host.width)), sy
+                    self.end_point = sx + max(
+                        (prefs.edge_width * 2, self.host.width)), sy
             use_middle_point = True
             line_middle_point = sx - (0.5 * (sx - self.end_point[0])), sy - 10
         else:
@@ -263,9 +272,15 @@ class TouchArea(QtWidgets.QGraphicsItem):
                 ep = self.start_point[0], self.start_point[1], 0
                 sp = self.end_point[0], self.end_point[1], 0
 
-            self._path, true_path, control_points = shape_method(mp, sp, align=g.RIGHT, adjust=adjust, **path_settings)
+            self._path, true_path, control_points = shape_method(mp, sp,
+                                                                 align=g.RIGHT,
+                                                                 adjust=adjust,
+                                                                 **path_settings)
             self._path.moveTo(sp[0], sp[1])
-            path2, true_path, control_points = shape_method(mp, ep, align=g.LEFT, adjust=adjust, **path_settings)
+            path2, true_path, control_points = shape_method(mp, ep,
+                                                            align=g.LEFT,
+                                                            adjust=adjust,
+                                                            **path_settings)
             self._path = self._path.united(path2)
 
         else:
@@ -276,7 +291,10 @@ class TouchArea(QtWidgets.QGraphicsItem):
                 align = g.LEFT
             else:
                 align = g.RIGHT
-            self._path, true_path, control_points = shape_method(sp, ep, align=align, adjust=adjust, **path_settings)
+            self._path, true_path, control_points = shape_method(sp, ep,
+                                                                 align=align,
+                                                                 adjust=adjust,
+                                                                 **path_settings)
 
     def __repr__(self):
         return '<toucharea %s>' % self.key
@@ -301,6 +319,10 @@ class TouchArea(QtWidgets.QGraphicsItem):
                 command, *args = args
                 if command == "new_node":
                     node_type = args[0]
+                    try:
+                        node_type = int(node_type)
+                    except TypeError:
+                        pass
                     if hasattr(self.host, 'current_position'):
                         x, y, z = self.host.current_position
                     elif hasattr(self.host, 'start_point'):
@@ -325,10 +347,10 @@ class TouchArea(QtWidgets.QGraphicsItem):
             message = 'added feature %s to %s' % (dropped_node, self.host)
         elif self.type == g.TOUCH_CONNECT_GLOSS:
             ctrl.forest.add_gloss_to_node(dropped_node, self.host)
-            message = 'added feature %s to %s' % (dropped_node, self.host)
+            message = 'added gloss %s to %s' % (dropped_node, self.host)
         elif self.type == g.TOUCH_CONNECT_COMMENT:
             ctrl.forest.add_comment_to_node(dropped_node, self.host)
-            message = 'added feature %s to %s' % (dropped_node, self.host)
+            message = 'added %s to %s' % (dropped_node, self.host)
         elif self.type == g.RIGHT_ADD_SIBLING or self.type == g.LEFT_ADD_SIBLING:
             # host is an edge
             assert isinstance(self.host, Edge)
@@ -339,18 +361,19 @@ class TouchArea(QtWidgets.QGraphicsItem):
                                                       merger_node_pos=self.start_point)
             for node in ctrl.dragged_set:
                 node.adjustment = self.host.end.adjustment
-            message = 'moved node %s to sibling of %s' % (dropped_node, self.host)
+            message = 'moved node %s to sibling of %s' % (
+            dropped_node, self.host)
         elif self.type == g.RIGHT_ADD_ROOT or self.type == g.LEFT_ADD_ROOT:
             # host is a node
             assert isinstance(self.host, Node)
-            ctrl.forest.replace_node_with_merged_node(self.host,
-                                                      dropped_node,
+            ctrl.forest.replace_node_with_merged_node(self.host, dropped_node,
                                                       None,
                                                       merge_to_left=self._align_left,
                                                       merger_node_pos=self.start_point)
             for node in ctrl.dragged_set:
                 node.adjustment = self.host.adjustment
-            message = 'moved node %s to sibling of %s' % (dropped_node, self.host)
+            message = 'moved node %s to sibling of %s' % (
+            dropped_node, self.host)
         return message
 
     def click(self, event=None):
@@ -369,7 +392,8 @@ class TouchArea(QtWidgets.QGraphicsItem):
         if self.type is g.TOUCH_ADD_CONSTITUENT:
             replaced.open_embed()
         else:
-            ctrl.forest.replace_node_with_merged_node(replaced, None, closest_parent,
+            ctrl.forest.replace_node_with_merged_node(replaced, None,
+                                                      closest_parent,
                                                       merge_to_left=self._align_left,
                                                       new_node_pos=self.end_point,
                                                       merger_node_pos=self.start_point)
@@ -407,7 +431,6 @@ class TouchArea(QtWidgets.QGraphicsItem):
             ctrl.latest_hover = self
             self.hovering = True
 
-
     def accepts_drops(self, dragged):
         """
 
@@ -415,7 +438,6 @@ class TouchArea(QtWidgets.QGraphicsItem):
         :return:
         """
         return self.calculate_if_can_merge(dragged, None, None)
-
 
     @property
     def hovering(self):
@@ -476,8 +498,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
         event.accept()
         message = self.drop(event.mimeData().text())
         QtWidgets.QGraphicsItem.dropEvent(self, event)
-        ctrl.main.finish_action(message)
-
+        ctrl.main.action_finished(message)
 
     def paint(self, painter, option, widget):
         """
@@ -505,19 +526,20 @@ class TouchArea(QtWidgets.QGraphicsItem):
                 painter.drawPath(self._path)
             if self._hovering:
                 painter.setBrush(ctrl.cm.paper())
-                painter.drawEllipse(self.end_point[0] - end_spot_size + 1, self.end_point[1] - end_spot_size + 1,
+                painter.drawEllipse(self.end_point[0] - end_spot_size + 1,
+                                    self.end_point[1] - end_spot_size + 1,
                                     2 * end_spot_size, 2 * end_spot_size)
-                painter.drawLine(self.end_point[0] - 1, self.end_point[1] + 1, self.end_point[0] + 3,
-                                 self.end_point[1] + 1)
-                painter.drawLine(self.end_point[0] + 1, self.end_point[1] - 1, self.end_point[0] + 1,
-                                 self.end_point[1] + 3)
+                painter.drawLine(self.end_point[0] - 1, self.end_point[1] + 1,
+                                 self.end_point[0] + 3, self.end_point[1] + 1)
+                painter.drawLine(self.end_point[0] + 1, self.end_point[1] - 1,
+                                 self.end_point[0] + 1, self.end_point[1] + 3)
         else:
             painter.setBrush(ctrl.cm.paper())
-            painter.drawEllipse(self.end_point[0] - end_spot_size + 1, self.end_point[1] - end_spot_size + 1,
+            painter.drawEllipse(self.end_point[0] - end_spot_size + 1,
+                                self.end_point[1] - end_spot_size + 1,
                                 2 * end_spot_size, 2 * end_spot_size)
             if self._hovering:
-                painter.drawLine(self.end_point[0] - 1, self.end_point[1] + 1, self.end_point[0] + 3,
-                                 self.end_point[1] + 1)
-                painter.drawLine(self.end_point[0] + 1, self.end_point[1] - 1, self.end_point[0] + 1,
-                                 self.end_point[1] + 3)
-
+                painter.drawLine(self.end_point[0] - 1, self.end_point[1] + 1,
+                                 self.end_point[0] + 3, self.end_point[1] + 1)
+                painter.drawLine(self.end_point[0] + 1, self.end_point[1] - 1,
+                                 self.end_point[0] + 1, self.end_point[1] + 3)

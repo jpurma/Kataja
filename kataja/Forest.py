@@ -575,7 +575,6 @@ class Forest(BaseModel):
         # then lock this node.
         if self.visualization:
             self.visualization.reset_node(node)
-
         return node
 
     def create_placeholder_node(self, pos):
@@ -1091,12 +1090,15 @@ class Forest(BaseModel):
         self.connect_node(parent=node, child=feature)
 
     def add_comment_to_node(self, comment, node):
-        """
+        """ Comments are connected the other way around compared to
+        other unusual added nodes. Comments are parents and commented nodes
+        are their children. It makes more sense in cases when you first add a
+        comment and then drag an arrow out of it.
 
         :param comment:
         :param node:
         """
-        self.connect_node(parent=node, child=comment)
+        self.connect_node(parent=node, child=comment, edge_type=g.COMMENT_EDGE)
 
     def add_gloss_to_node(self, gloss, node):
         """
@@ -1268,7 +1270,8 @@ class Forest(BaseModel):
     # by forest's higher level methods.
     #
 
-    def connect_node(self, parent=None, child=None, direction=''):
+    def connect_node(self, parent=None, child=None, direction='',
+                     edge_type=None):
         """ This is for connecting nodes with a certain edge. Calling this once will create the necessary links for both partners.
         Sanity checks:
         - Immediate circular links (child becomes immediate parent of its immediate parent) are not allowed.
@@ -1278,6 +1281,7 @@ class Forest(BaseModel):
         :param parent: Node
         :param child: Node
         :param direction:
+        :param edge_type: optional, force edge to be of given type
         """
 
         # Check for arguments:
@@ -1286,7 +1290,8 @@ class Forest(BaseModel):
         if not parent and child:
             raise ForestError('Trying to connect nodes, but other is missing (parent:%s, child%s)' % (parent, child))
 
-        edge_type = child.__class__.default_edge_type
+        if not edge_type:
+            edge_type = child.__class__.default_edge_type
 
         # Check for circularity:
         if edge_type is not g.ARROW:

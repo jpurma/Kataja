@@ -527,10 +527,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         :param event:
         """
-        print('dropEvent in graphscene!')
         event.ignore()
         QtWidgets.QGraphicsScene.dropEvent(self, event)
-        print('dropEvent in graphscene! jee!')
         if not event.isAccepted():
             data = event.mimeData()
             event.accept()

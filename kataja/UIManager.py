@@ -333,7 +333,6 @@ class UIManager:
     def update_selections(self):
         """ Many UI elements change mode depending on if object of specific type is selected """
         # clear all ui pieces
-        print('ui update_selections called')
         for item in list(self._items.values()):
             if item.host:
                 self.remove_ui(item)
@@ -351,7 +350,6 @@ class UIManager:
             self.scope = g.SELECTION
         else:
             self.scope = self.base_scope
-        print('scope: %s , base scope: %s' % (self.scope, self.base_scope))
 
     # unused, but sane
     def focusable_elements(self):
