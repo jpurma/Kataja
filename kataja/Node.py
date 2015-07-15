@@ -807,9 +807,11 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :param option:
         :param widget:
         nodes it is the label of the node that needs complex painting """
-        painter.setPen(self.contextual_color)
-        if ctrl.pressed is self or self._hovering or ctrl.is_selected(self):
-            painter.drawRoundedRect(self.inner_rect, 5, 5)
+        p = QtGui.QPen(self.contextual_color)
+        p.setWidth(4)
+        painter.setPen(p)
+        #if ctrl.pressed is self or self._hovering or ctrl.is_selected(self):
+        #    painter.drawRoundedRect(self.inner_rect, 5, 5)
 
         #x,y,z = self.current_position
         w2 = self.width/2.0

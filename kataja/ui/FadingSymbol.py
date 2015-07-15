@@ -67,7 +67,6 @@ class FadingSymbol(QtWidgets.QGraphicsPixmapItem):
         self._timer.stop()
         self._timer = None
         self.hide()
-        self.ui_manager.symbols.remove(self)
         self.ui_manager.remove_ui(self)
 
 

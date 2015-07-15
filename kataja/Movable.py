@@ -123,6 +123,20 @@ class Movable(BaseModel):
         """
         return self.adjustment and not (self.dyn_x and self.dyn_y)
 
+    def set_fixed_position(self, value):
+        """ Manual setter for fixed position, accepts tuples, triples or
+        QPoint(F)s.
+        :return:
+        """
+        if hasattr(value, 'x'):
+            self.fixed_position = value.x(), value.y(), 0
+        elif len(value) == 2:
+            self.fixed_position = value[0], value[1], 0
+        elif len(value) == 3:
+            self.fixed_position = value
+
+
+
     @property
     def can_adjust_position(self):
         """Only those items that get their fixed position from algorithm can be adjusted.

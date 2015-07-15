@@ -3,7 +3,6 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 from kataja.singletons import ctrl
 from kataja.ui.panels.SymbolPanel import open_symbol_data
 
-
 __author__ = 'purma'
 
 
@@ -20,13 +19,13 @@ class EmbeddedLineEdit(QtWidgets.QLineEdit):
         self.setAcceptDrops(True)
         self.setDragEnabled(True)
 
-
     def dragEnterEvent(self, event):
         """ Announce support for regular ascii drops and drops of characters from symbolpanel.
         :param event: QDragEnterEvent
         :return:
         """
-        if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist"):
+        if event.mimeData().hasFormat(
+                "application/x-qabstractitemmodeldatalist"):
             event.acceptProposedAction()
         else:
             return QtWidgets.QLineEdit.dragEnterEvent(self, event)
@@ -36,7 +35,8 @@ class EmbeddedLineEdit(QtWidgets.QLineEdit):
         :param event: QDropEvent
         :return:
         """
-        if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist"):
+        if event.mimeData().hasFormat(
+                "application/x-qabstractitemmodeldatalist"):
             data = open_symbol_data(event.mimeData())
             if data and 'char' in data:
                 self.insert(data['char'])
@@ -54,14 +54,17 @@ class EmbeddedLineEdit(QtWidgets.QLineEdit):
 
 
 class UIEmbed(QtWidgets.QWidget):
-    """ UIEmbeds are UI elements that are drawn on the main graphics view: they are contextual panels that need more
-    UI-capabilities like focus, selection and text editing than would be practical to do with GraphicsItems.
-    The benefits of UIEmbeds are that these do not scale with graphicsitems, and these are styled automatically from
-    palette, as long as they get updated properly. These are also not counted in GraphicsScene, so these won't cause
-    additional code there.
+    """ UIEmbeds are UI elements that are drawn on the main graphics view: they
+    are contextual panels that need more UI-capabilities like focus, selection
+    and text editing than would be practical to do with GraphicsItems.
+    The benefits of UIEmbeds are that these do not scale with graphicsitems,
+    and these are styled automatically from palette, as long as they get
+    updated properly. These are also not counted in GraphicsScene, so these
+    won't cause additional code there.
 
-    UIEmbed implements the basic functions of all embeds: showing them, updating their positions, close buttons,
-    updating colors. The approach is similar to UIPanels.
+    UIEmbed implements the basic functions of all embeds: showing them,
+    updating their positions, close buttons, updating colors. The approach is
+    similar to UIPanels.
 
     :param parent:
     :param ui_manager:
@@ -210,10 +213,8 @@ class UIEmbed(QtWidgets.QWidget):
     def focus_to_main(self):
         pass
 
-
     def mousePressEvent(self, event):
         self._drag_diff = event.pos()
 
     def mouseMoveEvent(self, event):
         self.move(self.mapToParent(event.pos()) - self._drag_diff)
-

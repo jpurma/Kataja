@@ -26,9 +26,6 @@ class EdgeLabelEmbed(UIEmbed):
         ui_manager.connect_element_to_action(self.enter_button, 'edit_edge_label_enter_text')
 
         hlayout.addWidget(self.enter_button)
-        self.unlock_button = OverlayButton(qt_prefs.lock_icon, 'unlock', self)
-        hlayout.addWidget(self.unlock_button)
-
         layout.addLayout(hlayout)
         self.setLayout(layout)
         self.assumed_width = 200
@@ -49,3 +46,7 @@ class EdgeLabelEmbed(UIEmbed):
             self.input_line_edit.setFont(f)
             self.input_line_edit.setText(self.host.label_text)
         UIEmbed.update_embed(self, scenePos=scenePos)
+
+    def update_position(self):
+        UIEmbed.update_embed(self, scenePos=self.host.label_item.pos())
+

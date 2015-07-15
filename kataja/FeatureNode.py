@@ -101,7 +101,7 @@ class FeatureNode(Node):
         self.set_original_position((x, y, z))
 
 
-    def xpaint(self, painter, option, widget=None):
+    def paint(self, painter, option, widget=None):
         """ Painting is sensitive to mouse/selection issues, but usually with
         :param painter:
         :param option:

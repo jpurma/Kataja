@@ -495,6 +495,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         :param event:
         """
+        print('dragEnterEvent in GraphScene!')
         data = event.mimeData()
         if data.hasFormat("application/x-qabstractitemmodeldatalist"):
             event.acceptProposedAction()
@@ -505,6 +506,10 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 command, *args = args
                 if command == "new_node":
                     node_type = args[0]
+                    try:
+                        node_type = int(node_type)
+                    except TypeError:
+                        pass
                     ctrl.ui.prepare_touch_areas_for_dragging(node_type=node_type)
                 else:
                     print('received unknown command:', command, args)
@@ -522,14 +527,15 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         :param event:
         """
+        print('dropEvent in graphscene!')
         event.ignore()
         QtWidgets.QGraphicsScene.dropEvent(self, event)
+        print('dropEvent in graphscene! jee!')
         if not event.isAccepted():
             data = event.mimeData()
             event.accept()
             if data.hasFormat("application/x-qabstractitemmodeldatalist"):
                 event.acceptProposedAction()
-                print('adding symbol as a what kind of a node?')
             elif data.hasFormat("text/plain"):
                 event.acceptProposedAction()
                 command_identifier, *args = data.text().split(':')
@@ -537,8 +543,13 @@ class GraphScene(QtWidgets.QGraphicsScene):
                     command, *args = args
                     if command == "new_node":
                         node_type = args[0]
+                        try:
+                            node_type = int(node_type)
+                        except TypeError:
+                            pass
                         node = ctrl.forest.create_node(pos=event.scenePos(),
                                                        node_type=node_type)
+                        node.set_fixed_position(event.scenePos())
                         node.lock()
                         ctrl.main.action_finished('added %s' % args[0])
                     else:
@@ -618,7 +629,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
         gradient.setColorAt(0, color.lighter())
         self._fade_steps_list.append(gradient)
         self._fade_steps_list.reverse()
-
 
     #@time_me
     def timerEvent(self, event):

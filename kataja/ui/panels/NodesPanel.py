@@ -51,10 +51,10 @@ class DraggableNodeFrame(QtWidgets.QFrame):
         self.add_button.setDown(True)
         data = QtCore.QMimeData()
         data.setText('kataja:new_node:%s' % self.key)
-        #drag = QtGui.QDrag(self)
-        #drag.setMimeData(data)
-        #drag.exec_(QtCore.Qt.CopyAction)
-        #self.add_button.setDown(False)
+        drag = QtGui.QDrag(self)
+        drag.setMimeData(data)
+        drag.exec_(QtCore.Qt.CopyAction)
+        self.add_button.setDown(False)
         QtWidgets.QFrame.mousePressEvent(self, event)
 
     def mouseReleaseEvent(self, event):

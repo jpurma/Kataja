@@ -1,7 +1,7 @@
 from PyQt5 import QtWidgets, QtCore
-
 from PyQt5.QtCore import QSize
-from PyQt5.QtGui import QIcon, QColor, QStandardItem
+from PyQt5.QtGui import QIcon, QStandardItem
+
 from kataja.Node import Node
 from kataja.Edge import SHAPE_PRESETS, Edge
 from kataja.singletons import ctrl, qt_prefs, prefs
@@ -9,10 +9,8 @@ import kataja.globals as g
 from kataja.ui.panels.UIPanel import UIPanel
 from kataja.ui.DrawnIconEngine import DrawnIconEngine
 from kataja.ui.OverlayButton import PanelButton
-from kataja.ui.panels.field_utils import find_list_item, add_and_select_ambiguous_marker, \
-    remove_ambiguous_marker, TableModelComboBox, ColorSelector, set_value, mini_button, font_button, \
-    FontSelector
-from kataja.utils import time_me
+from kataja.ui.panels.field_utils import find_list_item, TableModelComboBox, \
+    ColorSelector, set_value, FontSelector
 
 __author__ = 'purma'
 
@@ -20,7 +18,8 @@ __author__ = 'purma'
 class LineStyleIcon(QIcon):
     def __init__(self, shape_key, panel):
         self.shape_key = shape_key
-        self.engine = DrawnIconEngine(SHAPE_PRESETS[shape_key]['icon'], owner=self)
+        self.engine = DrawnIconEngine(SHAPE_PRESETS[shape_key]['icon'],
+                                      owner=self)
         QIcon.__init__(self, self.engine)
         self.panel = panel
         # pixmap = QPixmap(60, 20)
@@ -55,18 +54,19 @@ class ShapeSelector(TableModelComboBox):
         self.view().setModel(model)
 
 
-
 class StylePanel(UIPanel):
     """ Panel for editing how edges and nodes are drawn. """
 
-    def __init__(self, name, key, default_position='right', parent=None, ui_manager=None, folded=False):
+    def __init__(self, name, key, default_position='right', parent=None,
+                 ui_manager=None, folded=False):
         """
         All of the panel constructors follow the same format so that the construction can be automated.
         :param name: Title of the panel and the key for accessing it
         :param default_position: 'bottom', 'right'...
         :param parent: self.main
         """
-        UIPanel.__init__(self, name, key, default_position, parent, ui_manager, folded)
+        UIPanel.__init__(self, name, key, default_position, parent, ui_manager,
+                         folded)
         inner = QtWidgets.QWidget(self)
         layout = QtWidgets.QVBoxLayout()
         layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
@@ -78,8 +78,8 @@ class StylePanel(UIPanel):
         self.cached_node_color = None
         self.cached_edge_color = None
         self.cached_font_id = None
-        self.watchlist = ['edge_shape', 'edge_color', 'selection_changed', 'forest_changed',
-                          'scope_changed']
+        self.watchlist = ['edge_shape', 'edge_color', 'selection_changed',
+                          'forest_changed', 'scope_changed']
         # Other items may be temporarily added, they are defined as class.variables
 
         hlayout = QtWidgets.QHBoxLayout()
@@ -87,9 +87,9 @@ class StylePanel(UIPanel):
         label = QtWidgets.QLabel('Style for', self)
         hlayout.addWidget(label)
         self.scope_selector = QtWidgets.QComboBox(self)
-        #self.scope_selector.setSizePolicy(QtWidgets.QSizePolicy.Fixed,
+        # self.scope_selector.setSizePolicy(QtWidgets.QSizePolicy.Fixed,
         # QtWidgets.QSizePolicy.Fixed)
-        #self.scope_selector.setMinimumWidth(120)
+        # self.scope_selector.setMinimumWidth(120)
         ui_manager.connect_element_to_action(self.scope_selector, 'style_scope')
         hlayout.addWidget(self.scope_selector, 1, QtCore.Qt.AlignLeft)
         layout.addLayout(hlayout)
@@ -98,17 +98,20 @@ class StylePanel(UIPanel):
         hlayout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
 
         self.font_selector = FontSelector(self)
-        ui_manager.connect_element_to_action(self.font_selector, 'font_selector')
+        ui_manager.connect_element_to_action(self.font_selector,
+                                             'font_selector')
         hlayout.addWidget(self.font_selector)
 
         self.open_font_dialog = PanelButton(qt_prefs.font_icon,
-                                            text='Add custom font',
-                                            parent=self, size=20)
-        ui_manager.connect_element_to_action(self.open_font_dialog, 'start_font_dialog')
+                                            text='Add custom font', parent=self,
+                                            size=20)
+        ui_manager.connect_element_to_action(self.open_font_dialog,
+                                             'start_font_dialog')
         hlayout.addWidget(self.open_font_dialog, 1, QtCore.Qt.AlignLeft)
 
         self.node_color_selector = ColorSelector(self)
-        ui_manager.connect_element_to_action(self.node_color_selector, 'change_node_color')
+        ui_manager.connect_element_to_action(self.node_color_selector,
+                                             'change_node_color')
         hlayout.addWidget(self.node_color_selector, 1, QtCore.Qt.AlignLeft)
         layout.addLayout(hlayout)
 
@@ -116,17 +119,21 @@ class StylePanel(UIPanel):
         hlayout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
 
         self.shape_selector = ShapeSelector(self)
-        ui_manager.connect_element_to_action(self.shape_selector, 'change_edge_shape')
+        ui_manager.connect_element_to_action(self.shape_selector,
+                                             'change_edge_shape')
         hlayout.addWidget(self.shape_selector, 1, QtCore.Qt.AlignLeft)
 
         self.edge_color_selector = ColorSelector(self)
-        ui_manager.connect_element_to_action(self.edge_color_selector, 'change_edge_color')
+        ui_manager.connect_element_to_action(self.edge_color_selector,
+                                             'change_edge_color')
         hlayout.addWidget(self.edge_color_selector, 1, QtCore.Qt.AlignLeft)
 
-        self.edge_options = PanelButton(qt_prefs.settings_icon, text='More line options',
-                                        parent=self, size=20)
+        self.edge_options = PanelButton(qt_prefs.settings_icon,
+                                        text='More line options', parent=self,
+                                        size=20)
         self.edge_options.setCheckable(True)
-        ui_manager.connect_element_to_action(self.edge_options, 'toggle_line_options')
+        ui_manager.connect_element_to_action(self.edge_options,
+                                             'toggle_line_options')
         hlayout.addWidget(self.edge_options, 1, QtCore.Qt.AlignRight)
         layout.addLayout(hlayout)
 
@@ -161,25 +168,26 @@ class StylePanel(UIPanel):
             # Replace color in palette with new color
             if color:
                 ctrl.cm.d[color_id] = color
-            # Or launch a color dialog if color_id is unknown or clicking
+            # ... or launch a color dialog if color_id is unknown or if clicking
             # already selected color
-            elif prev_color == color_id or (not color_id) or (not ctrl.cm.get(
-                    color_id)):
+            elif prev_color == color_id or (not color_id) or (
+            not ctrl.cm.get(color_id)):
                 ctrl.ui.start_color_dialog(s, self, 'node_color', color_id)
                 return
             else:
                 ctrl.ui.update_color_dialog('node_color', color_id)
+
+            # Update color for selected nodes
             if scope == g.SELECTION:
-                if not self._nodes_in_selection:
-                    print('hey you!')
                 for node in self._nodes_in_selection:
-                    print('setting node %s color to %s' % (node, color_id))
                     node.color_id = color_id
                     node.update_label()
+            # ... or update color for all nodes of this type
             elif scope:
                 ctrl.forest.settings.node_settings(scope, 'color', color_id)
                 for node in ctrl.forest.nodes.values():
                     node.update_label()
+            # make sure that selector has correct choice selected
             s.select_data(color_id)
             s.update()
             return color_id
@@ -191,21 +199,25 @@ class StylePanel(UIPanel):
             # Replace color in palette with new color
             if color:
                 ctrl.cm.d[color_id] = color
-            # Or launch a color dialog if color_id is unknown or clicking
+            # ...or launch a color dialog if color_id is unknown or clicking
             # already selected color
-            elif prev_color == color_id or (not color_id) or (not ctrl.cm.get(
-                    color_id)):
+            elif prev_color == color_id or (not color_id) or (
+            not ctrl.cm.get(color_id)):
                 ctrl.ui.start_color_dialog(s, self, 'edge_color', color_id)
                 return
             else:
                 ctrl.ui.update_color_dialog('edge_color', color_id)
+
+            # Update color for selected edges
             if scope == g.SELECTION:
                 for edge in self._edges_in_selection:
                     edge.color_id = color_id
                     edge.update()
+            # ... or update color for all edges of this type
             elif scope:
                 edge_type = ctrl.forest.settings.node_settings(scope, 'edge')
-                ctrl.forest.settings.edge_type_settings(edge_type, 'color', color_id)
+                ctrl.forest.settings.edge_type_settings(edge_type, 'color',
+                                                        color_id)
                 for edge in ctrl.forest.edges.values():
                     edge.update()
             s.select_data(color_id)
@@ -233,19 +245,20 @@ class StylePanel(UIPanel):
             for node in ctrl.forest.nodes.values():
                 node.update_label()
 
-
     def update_panel(self):
-        """ Panel update should be necessary when changing ctrl.selection or after the tree has
-        otherwise changed.
+        """ Panel update should be necessary when changing ctrl.selection or
+        after the tree has otherwise changed.
         :return:
         """
         self.update_fields()
 
     # @time_me
     def update_scope_selector_options(self):
-        """ Redraw scope selector, show only scopes that are used in this forest """
+        """ Redraw scope selector, show only scopes that are used in this
+        forest """
         nd = prefs.nodes
-        scope_list = [(key, nd[key]['name_pl']) for key in prefs.node_types_order]
+        scope_list = [(key, nd[key]['name_pl']) for key in
+                      prefs.node_types_order]
         self.scope_selector.clear()
         if self._nodes_in_selection or self._edges_in_selection:
             self.scope_selector.addItem('Current selection', g.SELECTION)
@@ -253,13 +266,14 @@ class StylePanel(UIPanel):
             self.scope_selector.addItem(name, key)
 
     def update_fields(self):
-        """ Update different fields in the panel to show the correct values based on selection
-        or current scope. There may be that this makes fields to remove or add new values to
-        selectors or do other hard manipulation to fields.
+        """ Update different fields in the panel to show the correct values
+        based on selection or current scope. Change of scope may remove or
+        add new choices to selectors or do other hard manipulation to fields.
 
         First find what are the properties of the selected edges.
-        If they are conflicting, e.g. there are two different colors in selected edges, they cannot
-         be shown in the color selector. They can still be overridden with new selection.
+        If they are conflicting, e.g. there are two different colors in selected
+         edges, they cannot be shown in the color selector. They can still be
+         overridden with new selection.
         """
         scope = ctrl.ui.scope
         if scope == g.SELECTION:
@@ -277,7 +291,7 @@ class StylePanel(UIPanel):
                 else:
                     continue
                 set_value(f, value, conflict=conflict, enabled=enabled)
-            #self.font_selector.setFont(qt_prefs.font(d['node_font'][0]))
+            # self.font_selector.setFont(qt_prefs.font(d['node_font'][0]))
             if d['node_color'][0]:
                 self.cached_node_color = d['node_color'][0]
             if d['edge_color'][0]:
@@ -297,7 +311,7 @@ class StylePanel(UIPanel):
             set_value(self.font_selector, node_font, False)
             set_value(self.edge_color_selector, edge_color, False)
             set_value(self.shape_selector, edge_shape, False)
-            #self.font_selector.setFont(qt_prefs.font(node_font))
+            # self.font_selector.setFont(qt_prefs.font(node_font))
             self.cached_node_color = node_color
             self.cached_edge_color = edge_color
             self.cached_font_id = node_font
@@ -362,7 +376,7 @@ class StylePanel(UIPanel):
         :param value: value given to the field
         :return:
         """
-        #print('StylePanel alerted: ', obj, signal, field_name, value)
+        # print('StylePanel alerted: ', obj, signal, field_name, value)
         if signal == 'selection_changed':
             self.update_selection()
             self.update_fields()
@@ -371,8 +385,3 @@ class StylePanel(UIPanel):
             self.update_fields()
         elif signal == 'scope_changed':
             self.update_fields()
-
-
-
-
-

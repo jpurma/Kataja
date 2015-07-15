@@ -756,6 +756,8 @@ class UIManager:
                 touch_area_type = g.TOUCH_CONNECT_GLOSS
             elif node_type == g.COMMENT_NODE:
                 touch_area_type = g.TOUCH_CONNECT_COMMENT
+            else:
+                print('what kind of touch area? :', node_type)
             for node in ctrl.forest.get_constituent_nodes():
                 if node in moving or node is drag_host:
                     continue

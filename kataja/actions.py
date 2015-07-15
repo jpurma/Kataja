@@ -1152,20 +1152,20 @@ a['new_divider'] = {
 }
 
 
-def edge_label_accept(**args):
+def edge_label_accept(sender):
     """ Accept & update changes to edited edge label
     :param args: don't know? not used
     :return None:
     """
-    print('edge label accept, ', args)
-    e = ctrl.ui.get_edge_label_embed()
-    if e:
-        e.edge.label_text = e.input_line_edit.text()
-    ctrl.ui.close_edge_label_editing()
+    embed = get_ui_container(sender)
+    if embed:
+        embed.host.label_text = embed.input_line_edit.text()
+    embed.blur_away()
 
 a['edit_edge_label_enter_text'] = {
     'command': 'Enter',
     'method': edge_label_accept,
+    'sender_arg': True,
     'shortcut': 'Return',
     'shortcut_context': 'parent_and_children'
 }

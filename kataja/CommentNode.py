@@ -27,13 +27,7 @@ CommentNode is a non-functional node for freeform text
 
 from kataja.Node import Node
 from kataja.globals import ARROW, COMMENT_NODE
-from kataja.singletons import ctrl
-from kataja.parser.INodes import ITextNode
-from kataja.parser.LatexToINode import parse_field
 import kataja.globals as g
-
-
-color_map = {'tense': 0, 'person': 2, 'number': 4, 'case': 6, 'unknown': 3}
 
 
 class CommentNode(Node):
@@ -45,6 +39,12 @@ class CommentNode(Node):
     name = ('Comment', 'Comments')
     short_name = "ComNode"
     display = True
+
+    visible = {'text': {'order': 3}}
+    editable = {'text': dict(name='Comment', order=3, prefill='comment',
+                              tooltip='freeform text, invisible for '
+                                      'processing')}
+
 
     default_style = {'color': 'accent4', 'font': g.MAIN_FONT, 'font-size': 14,
                      'edge': g.COMMENT_EDGE}
@@ -58,21 +58,6 @@ class CommentNode(Node):
         Node.__init__(self)
         self.label = text
         self.use_physics = False
-
-    def after_init(self):
-        """ After_init is called in 2nd step in process of creating objects:
-            1st wave creates the objects and calls __init__, and then iterates through and sets the values.
-            2nd wave calls after_inits for all created objects. Now they can properly refer to each other and know their
-                values.
-        :return: None
-        """
-        print("CommentNode after_init called")
-        self.update_label()
-        self.update_bounding_rect()
-        self.update_visibility()
-        # !fixme: is there a good reason for storing the object only in after_init???
-        self.announce_creation()
-        ctrl.forest.store(self)
 
     @property
     def hosts(self):
@@ -97,31 +82,9 @@ class CommentNode(Node):
         """
         self.label = value
 
-    def update_colors(self):
-        """
-        Deprecated for now? Does nothing, overrides, but doesn't call Node's update_colors.
-        """
-        pass
-        # self.color = colors.drawing2
-        # if self._label_complex:
-        # self._label_complex.setDefaultTextColor(colors.drawing2)
 
     def __str__(self):
         return 'comment: %s' % self.text
-
-    @property
-    def as_inode(self):
-        """ INode representation of the whole CommentNode
-        :return: INodes or str or tuple of them
-        """
-        if self._inode_changed:
-            if isinstance(self.label, ITextNode):
-                self._inode = self.label
-            else:
-                self._inode = parse_field(self.label)
-            print('comment node inode is: ', self._inode)
-            self._inode_changed = False
-        return self._inode
 
     # ############## #
     #                #
