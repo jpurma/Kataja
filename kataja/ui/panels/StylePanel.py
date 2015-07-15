@@ -170,7 +170,10 @@ class StylePanel(UIPanel):
             else:
                 ctrl.ui.update_color_dialog('node_color', color_id)
             if scope == g.SELECTION:
+                if not self._nodes_in_selection:
+                    print('hey you!')
                 for node in self._nodes_in_selection:
+                    print('setting node %s color to %s' % (node, color_id))
                     node.color_id = color_id
                     node.update_label()
             elif scope:

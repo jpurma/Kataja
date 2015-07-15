@@ -78,7 +78,7 @@ PANELS = {g.LOG: {'name': 'Log', 'position': 'bottom'},
 }
 
 panel_order = [g.LOG, g.NAVIGATION, g.SYMBOLS, g.NODES, g.STYLE, g.VISUALIZATION, g.COLOR_THEME,
-               g.COLOR_WHEEL, g.LINE_OPTIONS]
+               g.COLOR_WHEEL, g.LINE_OPTIONS] # g.TEST
 
 panel_classes = {g.LOG: LogPanel, g.TEST: TestPanel, g.NAVIGATION: NavigationPanel,
                  g.VISUALIZATION: VisualizationPanel,

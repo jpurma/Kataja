@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore, QtGui
 
 from kataja.singletons import ctrl
 from kataja.ui.panels.SymbolPanel import open_symbol_data
@@ -73,7 +73,8 @@ class UIEmbed(QtWidgets.QWidget):
         self.ui_key = ui_key
         self.host = host
         self.ui_manager = ui_manager
-        self.setPalette(ctrl.cm.get_qt_palette_for_ui())
+        self._palette = None
+        self.update_color()
         self._drag_diff = None
 
         self.top_row_layout = QtWidgets.QHBoxLayout()
@@ -93,14 +94,15 @@ class UIEmbed(QtWidgets.QWidget):
         self._timeline.frameChanged[int].connect(self.update_frame)
         self._timeline.finished.connect(self.finished_effect_animation)
         self.setGraphicsEffect(self._effect)
+        self.setAutoFillBackground(True)
+        self.setBackgroundRole(QtGui.QPalette.Window)
 
         # Remember to add top_row_layout to your layout
 
         # Remember Johnny fucking Marr
 
     def update_embed(self, scenePos=None):
-
-        self.setPalette(ctrl.cm.get_qt_palette_for_ui())
+        self.update_color()
         if scenePos:
             h = self.height()
             w = self.width()
@@ -159,9 +161,9 @@ class UIEmbed(QtWidgets.QWidget):
         if self._timeline.direction() == QtCore.QTimeLine.Backward:
             self.hide()
             self.close()
+            ctrl.graph_scene.update()
             self.after_close()
         else:
-            print('finished appearing, calling update')
             self.after_appear()
 
     def after_appear(self):
@@ -177,7 +179,14 @@ class UIEmbed(QtWidgets.QWidget):
         pass
 
     def update_color(self):
-        self.setPalette(ctrl.cm.get_qt_palette_for_ui())
+        key = None
+        if self.host and hasattr(self.host, 'get_color_id'):
+            key = self.host.get_color_id()
+        if key:
+            self._palette = ctrl.cm.get_accent_palette(key)
+        else:
+            self._palette = ctrl.cm.get_qt_palette_for_ui()
+        self.setPalette(self._palette)
 
     def wake_up(self):
         if not self.isVisible():

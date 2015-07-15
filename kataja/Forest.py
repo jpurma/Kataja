@@ -518,7 +518,7 @@ class Forest(BaseModel):
         :return: String
         """
         names = [node.syntactic_object.label for node in self.nodes.values() if
-                 isinstance(node, BaseConstituentNode) and node.syntactic_object]
+                 node.node_type == g.CONSTITUENT_NODE and node.syntactic_object]
         # I'm not trying to be efficient here.
         for letter in string.ascii_uppercase:
             if letter not in names:
@@ -866,7 +866,8 @@ class Forest(BaseModel):
         if not (edge.start and edge.end):
             raise ValueError("Cannot make a connection based on edge, is the other end of edge is empty: %s" % edge)
         if etype is g.CONSTITUENT_EDGE:
-            if isinstance(edge.start, BaseConstituentNode) and isinstance(edge.end, BaseConstituentNode):
+            if edge.start.node_type == g.CONSTITUENT_NODE and \
+                    edge.end.node_type == g.CONSTITUENT_NODE:
                 start_constituent = edge.start.syntactic_object
                 end_constituent = edge.end.syntactic_object
                 if not start_constituent:
@@ -880,8 +881,8 @@ class Forest(BaseModel):
                 raise ValueError("Cannot make a constituent edge connection if " +
                                  "one of the ends is not a constituent node")
         elif etype is g.FEATURE_EDGE:
-            if isinstance(edge.start, BaseConstituentNode) and isinstance(edge.end, FeatureNode):
-                print('Connecting a feature')
+            if edge.start.node_type == g.CONSTITUENT_NODE and \
+                    edge.end.node_type == g.FEATURE_NODE:
                 constituent = edge.start.syntactic_object
                 feature = edge.end.syntactic_object
                 if not constituent:
@@ -909,7 +910,7 @@ class Forest(BaseModel):
             # syntactically relationship doesn't exist unless it has both elements
             return
         if etype is g.CONSTITUENT_EDGE:
-            if isinstance(edge.start, BaseConstituentNode) and edge.end:
+            if edge.start.node_type == g.CONSTITUENT_NODE and edge.end:
                 # Remove child (edge.end) from constituent
                 start_constituent = edge.start.syntactic_object
                 if not start_constituent:
@@ -923,14 +924,14 @@ class Forest(BaseModel):
                 if end_constituent in start_constituent.parts:
                     start_constituent.remove_part(end_constituent)
         elif etype is g.FEATURE_EDGE:
-            if isinstance(edge.start, BaseConstituentNode) and edge.end:
+            if edge.start.node_type == g.CONSTITUENT_NODE and edge.end:
                 # Remove feature (edge.end) from constituent
                 start_constituent = edge.start.syntactic_object
                 end_feature = edge.end.syntactic_object
                 ### Obey the syntax API ###
                 start_constituent.remove_feature(end_feature)
         elif etype is g.GLOSS_EDGE:
-            if isinstance(edge.start, BaseConstituentNode):
+            if edge.start.node_type == g.CONSTITUENT_NODE:
                 if edge.start.syntactic_object.gloss:
                     edge.start.syntactic_object.gloss = ''
         else:
@@ -1062,7 +1063,7 @@ class Forest(BaseModel):
         :param node:
         :param visible:
         """
-        if isinstance(node, BaseConstituentNode):
+        if node.node_type == g.CONSTITUENT_NODE:
             if not visible:
                 edges_visible = False
             elif self.visualization:

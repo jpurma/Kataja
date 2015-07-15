@@ -102,7 +102,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self.folded_away = False
         self.folding_towards = None
         self.color_id = None
-        self.node_color = None
 
         self._editing_template = {}
 
@@ -695,7 +694,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
         :return:
         """
-        if self.node_color is None:
+        if self.color_id is None:
             return ctrl.cm.get(ctrl.forest.settings.node_settings(self.__class__.node_type, 'color'))
         else:
             return ctrl.cm.get(self.color_id)

@@ -37,11 +37,8 @@ class NodeEditEmbed(UIEmbed):
         self.setLayout(layout)
         layout.addLayout(self.top_row_layout)
         layout.addSpacing(4)
-
-        ui_p = QtGui.QPalette()
-        ui_p.setColor(QtGui.QPalette.Text, ctrl.cm.ui())
-
-        ui_s = QtGui.QPalette()
+        ui_p = self._palette
+        ui_s = QtGui.QPalette(ui_p)
         ui_s.setColor(QtGui.QPalette.Text, ctrl.cm.secondary())
 
         f = QtGui.QFont(qt_prefs.font(g.MAIN_FONT))

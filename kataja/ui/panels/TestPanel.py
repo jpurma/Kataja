@@ -1,5 +1,4 @@
 from PyQt5 import QtWidgets
-
 from kataja.ui.ColorBox import ColorBox
 from kataja.ui.panels.UIPanel import UIPanel
 
@@ -24,15 +23,11 @@ class TestPanel(UIPanel):
         layout = QtWidgets.QVBoxLayout()
         boxes = [('drawing', "Drawing"), ('text', "Text"), ('paper', "Paper"), ('ui', "UI"), ('ui_paper', "UI paper"),
                  ('secondary', "Secondary"), ('selection', "Selection")]
-        for box_base, box_text in boxes:
-            color_button = ColorBox(box_base, box_text)
-            layout.addWidget(color_button)
+        #for box_base, box_text in boxes:
+        #    color_button = ColorBox(box_base, box_text)
+        #    layout.addWidget(color_button)
         # layout.setSizeConstraint(QtWidgets.QLayout.SetMinimumSize)
         # layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
-        inner.setLayout(layout)
-        self.setWidget(inner)
-        self.finish_init()
-
 
 
         # def secondary(self):
