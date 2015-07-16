@@ -24,12 +24,8 @@
 import math
 import random
 
-from kataja.BaseConstituentNode import BaseConstituentNode
 from kataja.singletons import prefs, ctrl
 from kataja.visualizations.BaseVisualization import BaseVisualization
-from kataja.FeatureNode import FeatureNode
-from kataja.GlossNode import GlossNode
-from kataja.AttributeNode import AttributeNode
 import kataja.globals as g
 
 
@@ -79,10 +75,10 @@ class DynamicWidthTree(BaseVisualization):
         node.adjustment = None
         node.update_label()
         node.update_visibility()
-        if isinstance(node, BaseConstituentNode):
+        if node.node_type == g.CONSTITUENT_NODE:
             node.dyn_y = False
             node.dyn_x = True
-        elif isinstance(node, (FeatureNode, GlossNode, AttributeNode)):
+        else:
             node.dyn_x = True
             node.dyn_y = True
 

@@ -22,8 +22,7 @@
 #
 # ############################################################################
 
-from kataja.BaseConstituentNode import BaseConstituentNode
-from kataja.Node import Node
+import kataja.globals as g
 
 
 class Grid:
@@ -41,7 +40,7 @@ class Grid:
         for column in self.rows:
             collist = []
             for item in column:
-                if isinstance(item, BaseConstituentNode):
+                if item.node_type == g.CONSTITUENT_NODE:
                     collist.append(item.label or 'Placeholder')
                 else:
                     collist.append(str(item))
@@ -55,7 +54,7 @@ class Grid:
         for row in self.rows:
             s = []
             for item in row:
-                if isinstance(item, Node):
+                if hasattr(item, 'node_type'):
                     s.append('O')
                 elif isinstance(item, int) and item == 1:
                     s.append('|')

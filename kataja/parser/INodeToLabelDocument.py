@@ -9,7 +9,8 @@ from kataja.parser.latex_to_unicode import latex_to_unicode
 
 
 def parse_inode(inode, document, options=None):
-    """ Does what it says. Takes an existing LabelDocument to avoid problems with their garbage collection.
+    """ Does what it says. Takes an existing LabelDocument to avoid problems
+    with their garbage collection.
     :param inode: ITemplateNode, ICommandNode or ITextNode
     :param document: LabelDocument where to write
     :param options: flags to be delivered for actual parsing method

@@ -25,7 +25,7 @@ CommentNode is a non-functional node for freeform text
 #
 #############################################################################
 
-from kataja.Node import Node
+from kataja.nodes.Node import Node
 from kataja.globals import ARROW, COMMENT_NODE
 import kataja.globals as g
 

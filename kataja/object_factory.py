@@ -1,19 +1,19 @@
 import kataja.globals as g
 
-from kataja.ConstituentNode import ConstituentNode
-from kataja.AttributeNode import AttributeNode
-from kataja.BaseConstituentNode import BaseConstituentNode
-from kataja.FeatureNode import FeatureNode
-from kataja.GlossNode import GlossNode
-from kataja.PropertyNode import PropertyNode
-from kataja.CommentNode import CommentNode
-from kataja.Node import Node
+from kataja.nodes.ConstituentNode import ConstituentNode
+from kataja.nodes.AttributeNode import AttributeNode
+from kataja.nodes.BaseConstituentNode import BaseConstituentNode
+from kataja.nodes.FeatureNode import FeatureNode
+from kataja.nodes.GlossNode import GlossNode
+from kataja.nodes.PropertyNode import PropertyNode
+from kataja.nodes.CommentNode import CommentNode
+from kataja.nodes.Node import Node
 
 from kataja.Edge import Edge
 
 from kataja.Forest import Forest
 from kataja.ForestSettings import ForestSettings, ForestRules
-from kataja.ChainManager import ChainManager
+from kataja.managers.ChainManager import ChainManager
 from kataja.DerivationStep import DerivationStep, DerivationStepManager
 
 from syntax.ConfigurableConstituent import ConfigurableConstituent

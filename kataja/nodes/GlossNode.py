@@ -24,12 +24,8 @@ GlossNode is a Node to display translation or explanation of a constituent
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from kataja.BaseModel import Synobj
-from kataja.Node import Node
+from kataja.nodes.Node import Node
 from kataja.globals import GLOSS_EDGE, GLOSS_NODE
-from kataja.singletons import ctrl
-from kataja.parser.LatexToINode import parse_field
-from kataja.parser.INodes import ITextNode
 import kataja.globals as g
 
 

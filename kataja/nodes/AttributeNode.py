@@ -24,10 +24,11 @@
 
 import random
 import collections
+
 from kataja.BaseModel import Saved
 import kataja.globals as g
 from kataja.globals import ATTRIBUTE_EDGE, ATTRIBUTE_NODE
-from kataja.Node import Node
+from kataja.nodes.Node import Node
 
 color_map = {'S': 0, 'order': 1, 'M': 2, 'unknown': 3}
 

@@ -24,11 +24,11 @@
 #############################################################################
 
 
-import PyQt5.QtCore as QtCore, PyQt5.QtGui as QtGui
-from PyQt5.QtCore import QPointF as Pf, QPoint as P, Qt
-from .kataja.BaseConstituentNode import BaseConstituentNode
+import collections
+import json
+
 from .kataja.Controller import colors
-import collections, json
+
 
 def export_visible_items(path = 'tempdata.json', scene = None, forest = None, prefs = None):
     """

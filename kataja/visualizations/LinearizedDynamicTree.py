@@ -22,11 +22,7 @@
 #
 # ############################################################################
 
-from kataja.BaseConstituentNode import BaseConstituentNode
 from kataja.singletons import prefs
-from kataja.visualizations.BaseVisualization import BaseVisualization
-from kataja.FeatureNode import FeatureNode
-from kataja.GlossNode import GlossNode
 import kataja.globals as g
 from kataja.visualizations.AsymmetricElasticTree import AsymmetricElasticTree
 
@@ -68,7 +64,7 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
         node.adjustment = None
         node.update_label()
         node.update_visibility()
-        if isinstance(node, BaseConstituentNode):
+        if node.node_type == g.CONSTITUENT_NODE:
             if node.is_leaf_node():
                 node.dyn_x = False
                 node.dyn_y = False
@@ -78,7 +74,7 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
             else:
                 node.dyn_x = True
                 node.dyn_y = True
-        elif isinstance(node, FeatureNode) or isinstance(node, GlossNode):
+        else:
             node.dyn_x = True
             node.dyn_y = True
 
@@ -103,7 +99,7 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
         start_height = self.get_vis_data('height_steps') * prefs.edge_height
 
         for root in self.forest:
-            if not isinstance(root, BaseConstituentNode):
+            if root.node_type != g.CONSTITUENT_NODE:
                 continue
             # linearized = ctrl.FL.Linearize(root.syntactic_object)
             depths = []

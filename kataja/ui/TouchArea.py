@@ -27,7 +27,7 @@ import math
 from PyQt5 import QtCore
 import PyQt5.QtWidgets as QtWidgets
 
-from kataja.Node import Node
+from kataja.nodes.Node import Node
 from kataja.errors import TouchAreaError
 from kataja.Edge import Edge
 from kataja.singletons import ctrl, prefs
@@ -38,7 +38,8 @@ end_spot_size = 7
 
 
 class TouchArea(QtWidgets.QGraphicsItem):
-    """ Mouse sensitive areas connected to either nodes or edges between them. """
+    """ Mouse sensitive areas connected to either nodes or edges between
+    them. """
 
     @staticmethod
     def create_key(host, type):
@@ -203,7 +204,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
             if not end_point:
                 if isinstance(self.host, Edge):
                     self.end_point = (
-                    self.host.end_point[0], self.host.end_point[1])
+                        self.host.end_point[0], self.host.end_point[1])
                 elif hasattr(self.host, 'current_position'):
                     if self._below_node:
                         self.end_point = (self.host.current_position[0],
@@ -351,7 +352,8 @@ class TouchArea(QtWidgets.QGraphicsItem):
         elif self.type == g.TOUCH_CONNECT_COMMENT:
             ctrl.forest.add_comment_to_node(dropped_node, self.host)
             message = 'added %s to %s' % (dropped_node, self.host)
-        elif self.type == g.RIGHT_ADD_SIBLING or self.type == g.LEFT_ADD_SIBLING:
+        elif self.type == g.RIGHT_ADD_SIBLING or self.type == \
+                g.LEFT_ADD_SIBLING:
             # host is an edge
             assert isinstance(self.host, Edge)
             ctrl.forest.replace_node_with_merged_node(self.host.end,
@@ -362,7 +364,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
             for node in ctrl.dragged_set:
                 node.adjustment = self.host.end.adjustment
             message = 'moved node %s to sibling of %s' % (
-            dropped_node, self.host)
+                dropped_node, self.host)
         elif self.type == g.RIGHT_ADD_ROOT or self.type == g.LEFT_ADD_ROOT:
             # host is a node
             assert isinstance(self.host, Node)
@@ -373,7 +375,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
             for node in ctrl.dragged_set:
                 node.adjustment = self.host.adjustment
             message = 'moved node %s to sibling of %s' % (
-            dropped_node, self.host)
+                dropped_node, self.host)
         return message
 
     def click(self, event=None):

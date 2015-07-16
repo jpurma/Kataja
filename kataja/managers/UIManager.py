@@ -23,11 +23,11 @@
 # ############################################################################
 from collections import OrderedDict
 
-from PyQt5 import QtCore, QtWidgets, QtGui
+from PyQt5 import QtCore, QtWidgets
 
 from kataja.KatajaAction import KatajaAction
-from kataja.KeyPressManager import ShortcutSolver, ButtonShortcutFilter
-from kataja.BaseConstituentNode import BaseConstituentNode
+from kataja.managers.KeyPressManager import ShortcutSolver, ButtonShortcutFilter
+from kataja.nodes.BaseConstituentNode import BaseConstituentNode
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.Edge import Edge
 from kataja.ui.ActivityMarker import ActivityMarker
@@ -56,7 +56,6 @@ from kataja.ui.panels.SymbolPanel import SymbolPanel
 from kataja.ui.panels.NodesPanel import NodesPanel
 from kataja.ui.embeds.NodeEditEmbed import NodeEditEmbed
 from kataja.ui.panels.StylePanel import StylePanel
-from kataja.utils import time_me
 from kataja.ui.panels.field_utils import MyColorDialog, MyFontDialog
 
 NOTHING = 0

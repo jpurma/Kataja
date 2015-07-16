@@ -22,11 +22,8 @@
 #
 # ############################################################################
 
-from kataja.BaseConstituentNode import BaseConstituentNode
 from kataja.singletons import prefs
 from kataja.visualizations.BaseVisualization import BaseVisualization
-from kataja.FeatureNode import FeatureNode
-from kataja.GlossNode import GlossNode
 import kataja.globals as g
 
 
@@ -71,10 +68,10 @@ class WindDriftTree(BaseVisualization):
         node.fixed_position = None
         node.adjustment = None
         node.update_visibility()
-        if isinstance(node, BaseConstituentNode):
+        if node.node_type == g.CONSTITUENT_NODE:
             node.dyn_x = True
             node.dyn_y = True
-        elif isinstance(node, FeatureNode) or isinstance(node, GlossNode):
+        else:
             node.dyn_y = False
             node.dyn_x = False
         node.update_label()
@@ -123,6 +120,6 @@ class WindDriftTree(BaseVisualization):
         self._last_pos = (0, 0)
         for tree in self.forest:
             self._count_occurences_of_node(tree.root)
-            if not isinstance(tree.root, BaseConstituentNode):
+            if tree.root.node_type != g.CONSTITUENT_NODE:
                 continue
             self._draw_wind_drift_tree(tree.root)

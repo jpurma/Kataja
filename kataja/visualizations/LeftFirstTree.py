@@ -26,18 +26,17 @@
 import math
 
 from kataja.debug import vis
-from kataja.BaseConstituentNode import BaseConstituentNode
 from kataja.singletons import prefs
-from kataja.FeatureNode import FeatureNode
 from kataja.utils import caller
 from kataja.visualizations.BaseVisualization import BaseVisualization
 from kataja.visualizations.Grid import Grid
-from kataja.GlossNode import GlossNode
 import kataja.globals as g
 
 
 class LeftFirstTree(BaseVisualization):
-    """ Visualization that draws branches, starting from top and left. Each branch takes the space it needs, and may force next branch drawing to further down and right. """
+    """ Visualization that draws branches, starting from top and left. Each
+    branch takes the space it needs, and may force next branch drawing to
+    further down and right. """
     name = 'Left first tree'
 
     def __init__(self):
@@ -74,16 +73,17 @@ class LeftFirstTree(BaseVisualization):
         node.adjustment = None
         node.update_label()
         node.update_visibility()
-        if isinstance(node, BaseConstituentNode):
+        if node.node_type == g.CONSTITUENT_NODE:
             node.dyn_x = False
             node.dyn_y = False
-        elif isinstance(node, FeatureNode) or isinstance(node, GlossNode):
+        else:
             node.dyn_x = True
             node.dyn_y = True
 
     @caller
     def reselect(self):
-        """ if there are different modes for one visualization, rotating between different modes is triggered here. """
+        """ if there are different modes for one visualization, rotating
+        between different modes is triggered here. """
         self.set_vis_data('rotation', self.get_vis_data('rotation') - 1)
 
     # Recursively put nodes to their correct position in grid
@@ -130,12 +130,18 @@ class LeftFirstTree(BaseVisualization):
                             # is there room for the left child of this node
                             if grandchildren:
                                 if len(grandchildren) == 1:
-                                    child_pos_x, child_pos_y = nx, ny + y_step # middle
+                                    child_pos_x, child_pos_y = nx, \
+                                                               ny + y_step  #
+                                                               #  middle
                                 else:
-                                    child_pos_x, child_pos_y = nx - x_step, ny + y_step # reach left
+                                    child_pos_x, child_pos_y = nx - x_step, \
+                                                               ny + y_step  #
+                                                               #  reach left
                                 blocked = grid.get(child_pos_x, child_pos_y)
                                 if not blocked:
-                                    cpath = grid.pixelated_path(nx, ny, child_pos_x, child_pos_y)
+                                    cpath = grid.pixelated_path(nx, ny,
+                                                                child_pos_x,
+                                                                child_pos_y)
                                     blocked = grid.is_path_blocked(cpath)
                     if blocked:
                         nx += x_step
@@ -146,7 +152,8 @@ class LeftFirstTree(BaseVisualization):
 
     # @time_me
     def draw(self):
-        """ Draws the tree to a table or a grid, much like latex qtree and then scales the grid to the scene. """
+        """ Draws the tree to a table or a grid, much like latex qtree and
+        then scales the grid to the scene. """
         edge_height = prefs.edge_height
         edge_width = prefs.edge_width
         merged_grid = Grid()
@@ -156,10 +163,10 @@ class LeftFirstTree(BaseVisualization):
         self.set_vis_data('rotation', new_rotation)
         for root in self.forest:
             grid = Grid()
-            if isinstance(root, BaseConstituentNode):
+            if root.node_type == g.CONSTITUENT_NODE:
                 self._put_to_grid(grid, root, 0, 0)
                 merged_grid.merge_grids(grid, extra_padding=2)
-                #merged_grid = self._merge_grids(grid, merged_grid)
+                # merged_grid = self._merge_grids(grid, merged_grid)
 
         offset_x = 0  # tree_w/-2
         y = 0
@@ -169,29 +176,36 @@ class LeftFirstTree(BaseVisualization):
             extra_width = [0] * merged_grid.width
         else:
             extra_width = [0]
-        # if node is extra wide, then move all columns to right from that point on
+        # if node is extra wide, then move all columns to right from that
+        # point on
         # same for extra tall nodes. move everything down after that row
 
-        all_nodes = set([x for x in self.forest.visible_nodes() if isinstance(x, BaseConstituentNode)])
+        all_nodes = set(self.forest.get_constituent_nodes())
         for y_i, row in enumerate(merged_grid):
             extra_height = 0
             prev_width = 0
             x = offset_x
             for x_i, node in enumerate(row):
-                if node and isinstance(node, BaseConstituentNode):
+                if node and getattr(node, 'node_type',
+                                    '') == g.CONSTITUENT_NODE:
                     if not node.inner_rect:
                         node.update_bounding_rect()
                     height_spillover = node.inner_rect.bottom() - edge_height
                     if height_spillover > extra_height:
-                        extra_height = math.ceil(height_spillover / float(edge_height)) * edge_height
-                    width_spillover = ((node.width + prev_width) / 2) - (edge_width * 4)
+                        extra_height = math.ceil(
+                            height_spillover / float(edge_height)) * edge_height
+                    width_spillover = ((node.width + prev_width) / 2) - (
+                    edge_width * 4)
                     if width_spillover > extra_width[x_i]:
-                        extra_width[x_i] = math.ceil(width_spillover / float(edge_width)) * edge_width
+                        extra_width[x_i] = math.ceil(
+                            width_spillover / float(edge_width)) * edge_width
                     x += extra_width[x_i]
                     node.algo_position = (x, y, 0)
                     prev_width = node.width
                     if not node in all_nodes:
-                        print('non-visible node included in visualization grid: ', node)
+                        print(
+                            'non-visible node included in visualization grid: ',
+                            node)
                     else:
                         all_nodes.remove(node)
                 else:
@@ -200,4 +214,3 @@ class LeftFirstTree(BaseVisualization):
             y += edge_height + extra_height
         if all_nodes:
             vis('nodes left remaining: ', all_nodes)
-

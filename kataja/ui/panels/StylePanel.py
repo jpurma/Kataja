@@ -2,7 +2,7 @@ from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtCore import QSize
 from PyQt5.QtGui import QIcon, QStandardItem
 
-from kataja.Node import Node
+from kataja.nodes.Node import Node
 from kataja.Edge import SHAPE_PRESETS, Edge
 from kataja.singletons import ctrl, qt_prefs, prefs
 import kataja.globals as g
@@ -60,7 +60,8 @@ class StylePanel(UIPanel):
     def __init__(self, name, key, default_position='right', parent=None,
                  ui_manager=None, folded=False):
         """
-        All of the panel constructors follow the same format so that the construction can be automated.
+        All of the panel constructors follow the same format so that the
+        construction can be automated.
         :param name: Title of the panel and the key for accessing it
         :param default_position: 'bottom', 'right'...
         :param parent: self.main
@@ -80,7 +81,8 @@ class StylePanel(UIPanel):
         self.cached_font_id = None
         self.watchlist = ['edge_shape', 'edge_color', 'selection_changed',
                           'forest_changed', 'scope_changed']
-        # Other items may be temporarily added, they are defined as class.variables
+        # Other items may be temporarily added, they are defined as
+        # class.variables
 
         hlayout = QtWidgets.QHBoxLayout()
         hlayout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
@@ -142,7 +144,8 @@ class StylePanel(UIPanel):
         self.finish_init()
 
     def update_selection(self):
-        """ Called after ctrl.selection has changed. Prepare panel to use selection as scope
+        """ Called after ctrl.selection has changed. Prepare panel to use
+        selection as scope
         :return:
         """
         self._edges_in_selection = []
@@ -171,7 +174,7 @@ class StylePanel(UIPanel):
             # ... or launch a color dialog if color_id is unknown or if clicking
             # already selected color
             elif prev_color == color_id or (not color_id) or (
-            not ctrl.cm.get(color_id)):
+                    not ctrl.cm.get(color_id)):
                 ctrl.ui.start_color_dialog(s, self, 'node_color', color_id)
                 return
             else:
@@ -202,7 +205,7 @@ class StylePanel(UIPanel):
             # ...or launch a color dialog if color_id is unknown or clicking
             # already selected color
             elif prev_color == color_id or (not color_id) or (
-            not ctrl.cm.get(color_id)):
+                    not ctrl.cm.get(color_id)):
                 ctrl.ui.start_color_dialog(s, self, 'edge_color', color_id)
                 return
             else:
@@ -365,10 +368,12 @@ class StylePanel(UIPanel):
         return d
 
     def watch_alerted(self, obj, signal, field_name, value):
-        """ Receives alerts from signals that this object has chosen to listen. These signals
+        """ Receives alerts from signals that this object has chosen to
+        listen. These signals
          are declared in 'self.watchlist'.
 
-         This method will try to sort out the received signals and act accordingly.
+         This method will try to sort out the received signals and act
+         accordingly.
 
         :param obj: the object causing the alarm
         :param signal: identifier for type of the alarm

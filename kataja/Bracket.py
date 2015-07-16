@@ -31,8 +31,8 @@ from kataja.singletons import ctrl
 
 
 class Bracket(Movable, QtWidgets.QGraphicsSimpleTextItem):
-    """ Brackets are added as separate characters next to nodes. They are created dynamically and shouldn't be saved or loaded. """
-
+    """ Brackets are added as separate characters next to nodes. They are
+    created dynamically and shouldn't be saved or loaded. """
 
     def __init__(self, host=None, left=True):
         """
@@ -71,11 +71,13 @@ class Bracket(Movable, QtWidgets.QGraphicsSimpleTextItem):
         """
         adjust = self.boundingRect().width()
         if self.left:
-            depth, leftmost = ctrl.forest.bracket_manager.find_leftmost(self.host)
+            depth, leftmost = ctrl.forest.bracket_manager.find_leftmost(
+                self.host)
             x, y, z = leftmost.current_position
             my_x = x + leftmost.boundingRect().left() - depth * adjust
         else:
-            depth, rightmost = ctrl.forest.bracket_manager.find_rightmost(self.host)
+            depth, rightmost = ctrl.forest.bracket_manager.find_rightmost(
+                self.host)
             x, y, z = rightmost.current_position
             my_x = x + rightmost.boundingRect().right() + (depth - 1) * adjust
         my_y = y - self.boundingRect().height() / 2
@@ -106,14 +108,16 @@ class Bracket(Movable, QtWidgets.QGraphicsSimpleTextItem):
             self.update()
 
     def hoverEnterEvent(self, event):
-        """ Hovering over a bracket is same as hovering over the host constituent
+        """ Hovering over a bracket is same as hovering over the host
+        constituent
         :param event: mouse event
         """
         self.host.hovering = True
         QtWidgets.QGraphicsSimpleTextItem.hoverEnterEvent(self, event)
 
     def hoverLeaveEvent(self, event):
-        """ Hovering over a bracket is same as hovering over the host constituent
+        """ Hovering over a bracket is same as hovering over the host
+        constituent
         :param event: mouse event
         """
         self.host.hovering = False
@@ -125,7 +129,6 @@ class Bracket(Movable, QtWidgets.QGraphicsSimpleTextItem):
         """
         self._hovering = False
         self.host.select(event)
-
 
     def update_selection_status(self):
         """
@@ -147,6 +150,3 @@ class Bracket(Movable, QtWidgets.QGraphicsSimpleTextItem):
             painter.drawRect(self.boundingRect())
             painter.setPen(Qt.NoPen)
         QtWidgets.QGraphicsSimpleTextItem.paint(self, painter, option, widget)
-
-
-

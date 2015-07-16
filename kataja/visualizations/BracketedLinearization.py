@@ -23,11 +23,8 @@
 # ############################################################################
 
 
-from kataja.BaseConstituentNode import BaseConstituentNode
 from kataja.singletons import prefs, ctrl
 from kataja.visualizations.BaseVisualization import BaseVisualization
-from kataja.FeatureNode import FeatureNode
-from kataja.GlossNode import GlossNode
 import kataja.globals as g
 
 
@@ -73,10 +70,10 @@ class BracketedLinearization(BaseVisualization):
         node.fixed_position = None
         node.adjustment = None
         node.update_visibility()
-        if isinstance(node, BaseConstituentNode):
+        if node.node_type == g.CONSTITUENT_NODE:
             node.dyn_x = False
             node.dyn_y = False
-        elif isinstance(node, FeatureNode) or isinstance(node, GlossNode):
+        else:
             node.dyn_x = True
             node.dyn_y = True
         node.update_label()
@@ -132,7 +129,7 @@ class BracketedLinearization(BaseVisualization):
 
         start = 0
         for root in self.forest:
-            if isinstance(root, BaseConstituentNode):
+            if root.node_type == g.CONSTITUENT_NODE:
                 nodes_used, start = draw_node(root, used=set(), left_edge=start)
                 start += prefs.edge_width
 

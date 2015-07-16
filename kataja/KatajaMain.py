@@ -25,20 +25,20 @@
 # ############################################################################
 
 # Note: convention that I try to start following is that Kataja methods are in
-# small caps and underscore (Python convention), but Qt methods are in camelcase.
+# small caps and underscore (Python convention), but Qt methods are in
+# camelcase.
 # Classnames are in camelcase.
 
 import gc
 # import gzip
 import os.path
 import time
-import pickle
 
 import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
 from kataja.environment import default_userspace_path, plugins_path
-from kataja.KeyPressManager import KeyPressManager
+from kataja.managers.KeyPressManager import KeyPressManager
 
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.Forest import Forest
@@ -46,19 +46,13 @@ from kataja.ForestKeeper import ForestKeeper
 from kataja.GraphScene import GraphScene
 from kataja.GraphView import GraphView
 from kataja.Presentation import TextArea
-from kataja.Edge import Edge
-from kataja.UIManager import UIManager
-from kataja.PaletteManager import PaletteManager
+from kataja.managers.UIManager import UIManager
+from kataja.managers.PaletteManager import PaletteManager
 import kataja.object_factory
 import kataja.globals as g
 from kataja.utils import time_me, import_plugins
 from kataja.visualizations.available import VISUALIZATIONS
-import kataja.debug as debug
 from kataja.BaseModel import BaseModel, Saved
-from kataja.ConstituentNode import ConstituentNode
-from kataja.FeatureNode import FeatureNode
-from kataja.AttributeNode import AttributeNode
-from kataja.GlossNode import GlossNode
 
 
 # show labels
@@ -66,6 +60,7 @@ from kataja.GlossNode import GlossNode
 ONLY_LEAF_LABELS = 0
 ALL_LABELS = 1
 ALIASES = 2
+
 
 # only for debugging (Apple-m, memory check), can be commented
 # try:
@@ -93,7 +88,8 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         self.setCorner(QtCore.Qt.TopLeftCorner, QtCore.Qt.LeftDockWidgetArea)
         self.setCorner(QtCore.Qt.TopRightCorner, QtCore.Qt.RightDockWidgetArea)
         self.setCorner(QtCore.Qt.BottomLeftCorner, QtCore.Qt.LeftDockWidgetArea)
-        self.setCorner(QtCore.Qt.BottomRightCorner, QtCore.Qt.RightDockWidgetArea)
+        self.setCorner(QtCore.Qt.BottomRightCorner,
+                       QtCore.Qt.RightDockWidgetArea)
         x, y, w, h = (50, 50, 940, 720)
         self.setMinimumSize(w, h)
         print('---- initialized MainWindow base class ... ', time.time() - t)
@@ -151,20 +147,24 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         print('---- finished start sequence... ', time.time() - t)
 
     def load_treeset(self, filename=''):
-        """ Loads and initializes a new set of trees. Has to be done before the program can do anything sane.
+        """ Loads and initializes a new set of trees. Has to be done before
+        the program can do anything sane.
         :param treeset_list:
         """
         print('----- Initializing -----')
-        self.forest_keeper = ForestKeeper(filename=filename or prefs.debug_treeset)
+        self.forest_keeper = ForestKeeper(
+            filename=filename or prefs.debug_treeset)
         print('----- End Initializing -----')
         print('--- Changing forest ----')
         self.change_forest(self.forest_keeper.forest)
         print('--- End Changing forest ----')
 
-    # ### Visualization #############################################################
+    # ### Visualization
+    # #############################################################
 
     def change_forest(self, forest):
-        """ Tells the scene to remove current tree and related data and change it to a new one
+        """ Tells the scene to remove current tree and related data and
+        change it to a new one
         :param forest:
         """
         ctrl.undo_disabled = True
@@ -201,7 +201,8 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         """
         return QtWidgets.QMainWindow.keyPressEvent(self, event)
 
-    # ## New node creation commands #############################################
+    # ## New node creation commands
+    # #############################################
 
     def add_text_box(self, caller=None):
         """
@@ -225,7 +226,8 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         if hasattr(caller, 'get_text_input'):
             text = caller.get_text_input()
         if ctrl.single_selection():  # live editing
-            self.forest.reform_constituent_node_from_string(text, ctrl.get_single_selected())
+            self.forest.reform_constituent_node_from_string(text,
+                                                            ctrl.get_single_selected())
         else:
             self.forest.create_node_from_string(text, caller.pos())
         self.action_finished()
@@ -245,9 +247,11 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
     # ## Menu management #######################################################
 
     def action_finished(self, m='', undoable=True):
-        """ Write action to undo stack, report back to user and redraw trees if necessary
+        """ Write action to undo stack, report back to user and redraw trees
+        if necessary
         :param m: message for undo
-        :param undoable: are we supposed to take a snapshot of changes after this action.
+        :param undoable: are we supposed to take a snapshot of changes after
+        this action.
         """
         print('=== action finished: ', m)
         if m:
@@ -270,7 +274,6 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         for action in self.ui_manager.qt_actions.values():
             action.setDisabled(True)
 
-
     def adjust_colors(self, hsv):
         """
         adjust colors -action (shift-alt-c)
@@ -290,7 +293,6 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
             prefs.color_mode = mode
             self.forest.update_colors()
 
-
     def toggle_magnets(self):
         """ Toggle lines to connect to margins or to centre of node (b)
         """
@@ -301,11 +303,11 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
             self.add_message('(c) 1: Lines aim to the center of the node')
             self.forest.settings.uses_magnets(True)
 
-
     def timerEvent(self, event):
         """ Timer event only for printing, for 'snapshot' effect
         :param event:
         """
+
         def find_path(fixed_part, extension, counter=0):
             """ Generate file names until free one is found
             :param fixed_part: blah
@@ -322,11 +324,14 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
 
         self.killTimer(event.timerId())
         # Prepare file and path
-        path = prefs.print_file_path or prefs.userspace_path or default_userspace_path
+        path = prefs.print_file_path or prefs.userspace_path or \
+               default_userspace_path
         if not path.endswith('/'):
             path += '/'
         if not os.path.exists(path):
-            print("bad path for printing (print_file_path in preferences) , using '.' instead.")
+            print(
+                "bad path for printing (print_file_path in preferences) , "
+                "using '.' instead.")
             path = './'
         filename = prefs.print_file_name
         if filename.endswith('.pdf'):
@@ -343,7 +348,8 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
             full_path = find_path(path + filename, '.png', 0)
             scale = 4
             target = QtCore.QRectF(QtCore.QPointF(0, 0), source.size() * scale)
-            writer = QtGui.QImage(target.size().toSize(), QtGui.QImage.Format_ARGB32_Premultiplied)
+            writer = QtGui.QImage(target.size().toSize(),
+                                  QtGui.QImage.Format_ARGB32_Premultiplied)
             writer.fill(QtCore.Qt.transparent)
             painter = QtGui.QPainter()
             painter.begin(writer)
@@ -352,13 +358,14 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
             painter.end()
             iwriter = QtGui.QImageWriter(full_path)
             iwriter.write(writer)
-            self.add_message("printed to %s as PNG (%spx x %spx, %sx size)." %
-                             (full_path, int(target.width()), int(target.height()), scale))
+            self.add_message("printed to %s as PNG (%spx x %spx, %sx size)." % (
+            full_path, int(target.width()), int(target.height()), scale))
 
         else:
             dpi = 25.4
             full_path = find_path(path + filename, '.pdf', 0)
-            target = QtCore.QRectF(0, 0, source.width() / 2.0, source.height() / 2.0)
+            target = QtCore.QRectF(0, 0, source.width() / 2.0,
+                                   source.height() / 2.0)
 
             writer = QtGui.QPdfWriter(full_path)
             writer.setResolution(dpi)
@@ -368,7 +375,8 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
             painter.begin(writer)
             self.graph_scene.render(painter, target=target, source=source)
             painter.end()
-            self.add_message("printed to %s as PDF with %s dpi." % (full_path, dpi))
+            self.add_message(
+                "printed to %s as PDF with %s dpi." % (full_path, dpi))
 
         # Thank you!
         print('printing done.')
@@ -400,21 +408,27 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
             print('garbage:', gc.garbage)
         self.forest_keeper = ForestKeeper()
 
-    # ### Action preconditions ##################################################
+    # ### Action preconditions
+    # ##################################################
 
     # return True or False: should the related action be enabled or disabled
 
     # noinspection PyMethodMayBeStatic
     def can_root_merge(self):
-        """ Check if the selected node can be merged upwards to the root node of its current tree.
+        """ Check if the selected node can be merged upwards to the root node
+        of its current tree.
         :return: bool
         """
-        return ctrl.single_selection() and not ctrl.get_single_selected().is_root_node()
+        return ctrl.single_selection() and not ctrl.get_single_selected(
 
-    # ### Unused two-phase actions ###############################################
+        ).is_root_node()
+
+    # ### Unused two-phase actions
+    # ###############################################
 
     def start_pointing_mode(self, event, method=None, data=None):
-        """ Begin pointing mode, mouse pointer draws a line behind it and normal actions are disabled
+        """ Begin pointing mode, mouse pointer draws a line behind it and
+        normal actions are disabled
         :param event:
         :param method:
         :param data:
@@ -424,7 +438,9 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         ctrl.pointing_mode = True
         ctrl.pointing_method = method
         ctrl.pointing_data = data
-        self.ui_manager.begin_stretchline(data['start'].pos(), event.scenePos())  # +data['startposF']
+        self.ui_manager.begin_stretchline(data['start'].pos(),
+                                          event.scenePos())  # +data[
+                                          # 'startposF']
         self.app.setOverrideCursor(QtCore.Qt.CrossCursor)
         self.graph.setDragMode(QtWidgets.QGraphicsView.NoDrag)
 
@@ -440,10 +456,12 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         self.graph.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
 
     def begin_merge_to(self, event):
-        """ MergeTo is a two phase action. First the target is selected in pointing mode, then 'end_merge_to' is called
+        """ MergeTo is a two phase action. First the target is selected in
+        pointing mode, then 'end_merge_to' is called
         :param event:
         """
-        self.start_pointing_mode(event, method=self.end_merge_to, data={'start': ctrl.get_single_selected()})
+        self.start_pointing_mode(event, method=self.end_merge_to,
+                                 data={'start': ctrl.get_single_selected()})
         return False
 
     def end_merge_to(self, event):
@@ -456,12 +474,14 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         node_b = None
         self.forest.merge_nodes(node_a, node_b)
         node_a.release()
-        # node_A.state =SELECTED # deselect doesn't have effect unless node is selected
+        # node_A.state =SELECTED # deselect doesn't have effect unless node
+        # is selected
         self.end_pointing_mode(event)
         self.action_finished()
         return True
 
-    # ### Other window events ###################################################
+    # ### Other window events
+    # ###################################################
 
     def closeEvent(self, event):
         """ Shut down the program, give some debug info
@@ -483,7 +503,8 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
     @time_me
     def create_save_data(self):
         """
-        Make a large dictionary of all objects with all of the complex stuff and circular references stripped out.
+        Make a large dictionary of all objects with all of the complex stuff
+        and circular references stripped out.
         :return: dict
         """
         savedata = {}
@@ -501,7 +522,8 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
                 else:
                     print('cannot save open reference object ', obj)
 
-        print('total savedata: %s chars in %s items.' % (len(str(savedata)), len(savedata)))
+        print('total savedata: %s chars in %s items.' % (
+        len(str(savedata)), len(savedata)))
         # print(savedata)
         return savedata
 
@@ -517,7 +539,6 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
 
     forest_keeper = Saved("forest_keeper")
     forest = Saved("forest")
-
 
 # def maybeSave(self):
 # if False and self.scribbleArea.isModified():

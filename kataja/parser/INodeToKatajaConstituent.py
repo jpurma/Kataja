@@ -4,17 +4,23 @@ from kataja.parser.BaseParser import BaseParser
 from kataja.parser.LatexToINode import parse
 from kataja.parser.INodes import ITemplateNode
 from kataja.singletons import ctrl
-from kataja.BaseConstituentNode import BaseConstituentNode
+from kataja.nodes.BaseConstituentNode import BaseConstituentNode
 import kataja.globals as g
 
 
 class INodeToKatajaConstituent(BaseParser):
-    """ INodeParser relies on a chain of parser components where the strings are parsed into
-     intermediary nodes (INodes) and these can be more easily turned into Constituents,
-     ConstituentNodes and their various text fields (RTF documents, raw text, stripped text).
-    The benefit of this approach is that parsing raw strings to INodes can be used as well
-     with text fields that require parsing LaTeX to Rich Text Format or HTML. If the raw
-     strings are stored with nodes, INodes can be easily recreated and translated when required.
+    """ INodeParser relies on a chain of parser components where the strings
+    are parsed into
+     intermediary nodes (INodes) and these can be more easily turned into
+     Constituents,
+     ConstituentNodes and their various text fields (RTF documents, raw text,
+     stripped text).
+    The benefit of this approach is that parsing raw strings to INodes can be
+    used as well
+     with text fields that require parsing LaTeX to Rich Text Format or HTML.
+     If the raw
+     strings are stored with nodes, INodes can be easily recreated and
+     translated when required.
     """
     # @time_me
     def parse_into_forest(self, string):
@@ -77,4 +83,3 @@ def inode_to_constituentnodes(inode, forest):
         return cn
     else:
         print('failing here')
-

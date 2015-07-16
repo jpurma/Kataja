@@ -22,7 +22,7 @@
 #
 # ############################################################################
 
-from kataja.Node import Node
+from kataja.nodes.Node import Node
 import kataja.globals as g
 
 

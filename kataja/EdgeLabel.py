@@ -25,8 +25,8 @@
 import math
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 from PyQt5.QtCore import QPointF as Pf, Qt
+
 from kataja.singletons import ctrl
 import kataja.utils as utils
 
@@ -48,14 +48,17 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
     def magnet_positions(self):
         w = self._size.width() / 2.0
         h = self._size.height() / 2.0
-        return [(0, 0), (w, 0), (w + w, 0), (0, h), (w + w, h), (0, h + h), (w, h + h), (w + w, h + h)]
+        return [(0, 0), (w, 0), (w + w, 0), (0, h), (w + w, h), (0, h + h),
+                (w, h + h), (w + w, h + h)]
 
     def drag(self, event):
         if self.placeholder:
             return
         if not self._local_drag_handle_position:
-            self._local_drag_handle_position = self.mapFromScene(event.buttonDownScenePos(Qt.LeftButton))
-        self.compute_angle_for_pos(event.scenePos(), self._local_drag_handle_position)
+            self._local_drag_handle_position = self.mapFromScene(
+                event.buttonDownScenePos(Qt.LeftButton))
+        self.compute_angle_for_pos(event.scenePos(),
+                                   self._local_drag_handle_position)
         self.update()
 
     def being_dragged(self):
@@ -193,6 +196,5 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
             p.setWidthF(0.5)
             QPainter.setPen(p)
             QPainter.drawRect(self.boundingRect())
-        QtWidgets.QGraphicsTextItem.paint(self, QPainter, QStyleOptionGraphicsItem, QWidget)
-
-
+        QtWidgets.QGraphicsTextItem.paint(self, QPainter,
+                                          QStyleOptionGraphicsItem, QWidget)

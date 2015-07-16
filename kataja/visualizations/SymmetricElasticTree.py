@@ -25,11 +25,7 @@ import math
 import random
 
 from kataja.visualizations.BaseVisualization import BaseVisualization
-from kataja.BaseConstituentNode import BaseConstituentNode
-from kataja.FeatureNode import FeatureNode
-from kataja.GlossNode import GlossNode
 import kataja.globals as g
-from kataja.singletons import prefs
 
 
 class SymmetricElasticTree(BaseVisualization):
@@ -62,10 +58,10 @@ class SymmetricElasticTree(BaseVisualization):
         """
         node.update_label()
         node.update_visibility()
-        if isinstance(node, BaseConstituentNode):
+        if node.node_type == g.CONSTITUENT_NODE:
             node.dyn_y = True
             node.dyn_x = True
-        elif isinstance(node, FeatureNode) or isinstance(node, GlossNode):
+        else:
             node.dyn_x = True
             node.dyn_y = True
 

@@ -1,6 +1,8 @@
 __author__ = 'purma'
-""" INodes can be used to represent strings that have formatting commands and to represent constituent structures
-They can replace strings for simple comparisons, but common string methods don't work with them: use str(inode)
+""" INodes can be used to represent strings that have formatting commands and
+to represent constituent structures
+They can replace strings for simple comparisons, but common string methods
+don't work with them: use str(inode)
 instead.
 """
 
@@ -8,8 +10,10 @@ instead.
 class ITextNode:
     """ Node to represent text that may contain other kinds of nodes. e.g.
     "here is a text \emph{with latexnode} inside."
-    This would turn to list of parts, where most of parts are other TextNodes and one CommandNode with TextNode inside.
-    self.raw will always contain the original text to be parsed for scope of the node
+    This would turn to list of parts, where most of parts are other TextNodes
+    and one CommandNode with TextNode inside.
+    self.raw will always contain the original text to be parsed for scope of
+    the node
     """
 
     def __init__(self, parts=None):
@@ -102,13 +106,15 @@ class ITextNode:
                     p.find_and_remove_part(part)
 
     def parts_as_string(self):
-        """ Parts flattened into string, recursively stringifies parts if they contain other INodes
+        """ Parts flattened into string, recursively stringifies parts if
+        they contain other INodes
         :return:
         """
         return ''.join([str(x) for x in self.parts])
 
     def tidy(self):
-        """ Join string parts into continuous strings when possible, just to help readability
+        """ Join string parts into continuous strings when possible, just to
+        help readability
         :return:
         """
         new_part = []
@@ -127,7 +133,8 @@ class ITextNode:
         return self
 
     def is_plain_string(self):
-        """ Check if this ITextNode contains only strings or ITextNodes that can be represented as plain strings
+        """ Check if this ITextNode contains only strings or ITextNodes that
+        can be represented as plain strings
         if so, it would be easier to replace ITextNode with just a string.
         :return: bool
         """
@@ -137,7 +144,8 @@ class ITextNode:
         return True
 
     def simplified(self):
-        """ If ITextNode can be presented as a string without losing anything, give that str, else return ITextNode
+        """ If ITextNode can be presented as a string without losing
+        anything, give that str, else return ITextNode
         :return: str or self
         """
         if self.is_plain_string():
@@ -159,11 +167,13 @@ class ITextNode:
 
 
 class ICommandNode(ITextNode):
-    """ Node that contains command (like a html tag or a LaTeX command) as a string and where
+    """ Node that contains command (like a html tag or a LaTeX command) as a
+    string and where
     the scope of the command is the parts of the node. """
 
     def __init__(self, command='', prefix='\\', parts=None):
-        """ Command is stored as a string in self.command. self.parts are the TextNodes in the scope of command. """
+        """ Command is stored as a string in self.command. self.parts are the
+        TextNodes in the scope of command. """
         ITextNode.__init__(self, parts=parts)
         self.command = command
         self.prefix = prefix
@@ -182,7 +192,8 @@ class ICommandNode(ITextNode):
 
     def __str__(self):
         if self.parts:
-            return '(%s)%s(/%s)' % (self.command, self.parts_as_string(), self.command)
+            return '(%s)%s(/%s)' % (
+            self.command, self.parts_as_string(), self.command)
         else:
             return '(%s/)' % self.command
 
@@ -198,14 +209,15 @@ class ICommandNode(ITextNode):
         return not (self.command or self.parts)
 
     def __repr__(self):
-        return 'ICommandNode(command=%s, prefix=%s, parts=%s)' % (repr(self.command),
-                                                                  repr(self.prefix),
-                                                                  repr(self.parts))
+        return 'ICommandNode(command=%s, prefix=%s, parts=%s)' % (
+        repr(self.command), repr(self.prefix), repr(self.parts))
 
 
 class ITemplateNode(ITextNode):
-    """ Node used for complex visible labels, allowing a template be given for the node that
-    describes the displayed fields and their positioning and another for parsing nodes
+    """ Node used for complex visible labels, allowing a template be given
+    for the node that
+    describes the displayed fields and their positioning and another for
+    parsing nodes
     """
 
     def __init__(self, parts=None):
@@ -222,7 +234,8 @@ class ITemplateNode(ITextNode):
         self.values = {}
 
     def analyze_label_data(self):
-        """ Go through label complex and make rows out of it, also pick indices to separate list.
+        """ Go through label complex and make rows out of it, also pick
+        indices to separate list.
         :return: None
         """
 
@@ -284,6 +297,5 @@ class ITemplateNode(ITextNode):
         return not (self.values or self.rows)
 
     def __repr__(self):
-        return 'ITemplateNode(rows=%s, values=%s)' % (repr(self.rows), repr(self.values))
-
-
+        return 'ITemplateNode(rows=%s, values=%s)' % (
+        repr(self.rows), repr(self.values))

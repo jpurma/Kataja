@@ -22,13 +22,11 @@
 #
 # ############################################################################
 import math
-import random
 
-from kataja.singletons import prefs
 from kataja.utils import caller
-from kataja.BaseConstituentNode import BaseConstituentNode
-from kataja.FeatureNode import FeatureNode
-from kataja.GlossNode import GlossNode
+from kataja.nodes.BaseConstituentNode import BaseConstituentNode
+from kataja.nodes.FeatureNode import FeatureNode
+from kataja.nodes.GlossNode import GlossNode
 import kataja.globals as g
 
 LEFT = 1

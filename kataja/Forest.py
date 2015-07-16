@@ -25,27 +25,22 @@
 
 import string
 import collections
-from kataja.ConstituentNode import ConstituentNode
 
 from kataja.errors import ForestError
-from kataja.debug import forest
 from kataja.ForestSettings import ForestSettings, ForestRules
 from kataja.Bracket import Bracket
-from kataja.BracketManager import BracketManager
-from kataja.BaseConstituentNode import BaseConstituentNode
-from kataja.AttributeNode import AttributeNode
-from kataja.CommentNode import CommentNode
+from kataja.managers.BracketManager import BracketManager
+from kataja.nodes.BaseConstituentNode import BaseConstituentNode
+from kataja.nodes.AttributeNode import AttributeNode
 from kataja.singletons import ctrl, prefs, qt_prefs
-from kataja.ChainManager import ChainManager
+from kataja.managers.ChainManager import ChainManager
 from kataja.DerivationStep import DerivationStepManager
-from kataja.GlossNode import GlossNode
-from kataja.Node import Node
+from kataja.nodes.Node import Node
 from kataja.parser.INodeToKatajaConstituent import INodeToKatajaConstituent
 from kataja.Presentation import TextArea, Image
 from kataja.Edge import Edge
-from kataja.UndoManager import UndoManager
-from kataja.utils import caller, time_me
-from kataja.FeatureNode import FeatureNode
+from kataja.managers.UndoManager import UndoManager
+from kataja.nodes.FeatureNode import FeatureNode
 from kataja.BaseModel import BaseModel, Saved
 import kataja.globals as g
 
@@ -65,12 +60,14 @@ class Forest(BaseModel):
 
     short_name = "Forest"
 
-    def __init__(self, buildstring='', definitions=None, gloss_text='', comments=None):
+    def __init__(self, buildstring='', definitions=None, gloss_text='',
+                 comments=None):
         """ Create an empty forest """
         super().__init__()
         self.nodes_from_synobs = {}
         self.main = ctrl.main
-        self.main.forest = self  # assign self to be the active forest while creating the managers.
+        self.main.forest = self  # assign self to be the active forest while
+        # creating the managers.
         self.in_display = False
         self.visualization = None
         self.gloss = None
@@ -106,7 +103,8 @@ class Forest(BaseModel):
         self._do_edge_visibility_check = False
 
     def after_model_update(self, updated_fields, update_type):
-        """ This is called after the item's model has been updated (e.g. by undo),
+        """ This is called after the item's model has been updated (e.g. by
+        undo),
         to run the side-effects of various setters in an order that makes sense.
         :param update_type:
         :param updated_fields: list of names of fields that have been updated.
@@ -117,22 +115,25 @@ class Forest(BaseModel):
             self.nodes_from_synobs = {}
             for node in self.nodes.values():
                 if node.syntactic_object:
-                    self.nodes_from_synobs[node.syntactic_object.save_key] = node
+                    self.nodes_from_synobs[
+                        node.syntactic_object.save_key] = node
 
     def after_init(self):
         """ After_init is called in 2nd step in process of creating objects:
-            1st wave creates the objects and calls __init__, and then iterates through and sets the values.
-            2nd wave calls after_inits for all created objects. Now they can properly refer to each other and know their
+            1st wave creates the objects and calls __init__, and then
+            iterates through and sets the values.
+            2nd wave calls after_inits for all created objects. Now they can
+            properly refer to each other and know their
                 values.
         :return: None
         """
-        #print('created a forest %s , its traces should be visible: %s ' % (self, self.traces_are_visible()))
+        # print('created a forest %s , its traces should be visible: %s ' % (
+        # self, self.traces_are_visible()))
         pass
         # self.bracket_manager.rebuild_brackets()
         # for node in self.nodes.values():
         # if node.syntactic_object:
         # self.nodes_by_uid[node.syntactic_object.save_key] = node
-
 
     @property
     def scene(self):
@@ -153,11 +154,13 @@ class Forest(BaseModel):
         self.update_visualization()
         self.scene.manual_zoom = False
         ctrl.ui.update_all_fields()
-        self.draw()  # do draw once to avoid having the first draw in undo stack.
+        self.draw()  # do draw once to avoid having the first draw in undo
+        # stack.
         ctrl.undo_disabled = False
 
     def retire_from_drawing(self):
-        """ Announce that this forest should not try to work with scene anymore --
+        """ Announce that this forest should not try to work with scene
+        anymore --
          some other forest is occupying the scene now.
         :return:
         """
@@ -176,11 +179,13 @@ class Forest(BaseModel):
     @staticmethod
     def list_nodes(first):
         """
-        Do left-first iteration through all nodes. Can become quite large if there is lots of
+        Do left-first iteration through all nodes. Can become quite large if
+        there is lots of
          multidomination.
         :param first: Node, can be started from a certain point in structure
         :return: iterator through nodes
         """
+
         def _iterate(node):
             yield node
             for child in node.get_children():
@@ -191,7 +196,8 @@ class Forest(BaseModel):
     @staticmethod
     def list_visible_nodes_once(first):
         """
-        Do left-first iteration through all nodes and return an iterator where only first instance
+        Do left-first iteration through all nodes and return an iterator
+        where only first instance
          of each node is present.
         :param first: Node, can be started from a certain point in structure
         :return: iterator through nodes
@@ -203,13 +209,15 @@ class Forest(BaseModel):
                 result.append(node)
                 for child in node.get_visible_children():
                     _iterate(child)
+
         _iterate(first)
         return result
 
     @staticmethod
     def list_nodes_once(first):
         """
-        Do left-first iteration through all nodes and return a list where only first instance of
+        Do left-first iteration through all nodes and return a list where
+        only first instance of
         each node is present.
         :param first: Node, start from a certain point in structure
         :return: iterator through nodes
@@ -221,6 +229,7 @@ class Forest(BaseModel):
                 result.append(node)
                 for child in node.get_children():
                     _iterate(child)
+
         _iterate(first)
         return result
 
@@ -265,27 +274,33 @@ class Forest(BaseModel):
             self.visualization.reselect()
         else:
             vs = self.main.visualizations
-            self.visualization = vs.get(name, vs.get(prefs.default_visualization, None))
+            self.visualization = vs.get(name,
+                                        vs.get(prefs.default_visualization,
+                                               None))
             self.vis_data = {'name': self.visualization.say_my_name()}
             self.visualization.prepare(self)
         self.main.graph_scene.manual_zoom = False
 
     def update_visualization(self):
-        """ Verify that the active visualization is the same as defined in the vis_data (saved visualization state)
+        """ Verify that the active visualization is the same as defined in
+        the vis_data (saved visualization state)
         :return: None
         """
         name = self.vis_data.get('name', prefs.default_visualization)
         if (not self.visualization) or name != self.visualization.say_my_name():
             self.set_visualization(name)
 
-    # ### Maintenance and support methods ################################################
+    # ### Maintenance and support methods
+    # ################################################
 
     def __iter__(self):
         return self.roots.__iter__()
 
     def textual_form(self, root=None):
-        """ return (unicode) version of linearizations of all trees with traces removed --
-            as close to original sentences as possible. If root is given, return linearization of only that.
+        """ return (unicode) version of linearizations of all trees with
+        traces removed --
+            as close to original sentences as possible. If root is given,
+            return linearization of only that.
         :param root:
         """
 
@@ -316,7 +331,8 @@ class Forest(BaseModel):
         return '\n'.join(s)
 
     def store(self, item):
-        """ Confirm that item is stored in some dictionary or other storage in forest
+        """ Confirm that item is stored in some dictionary or other storage
+        in forest
         :param item:
         """
         # if isinstance(item, ConstituentNode):
@@ -329,7 +345,8 @@ class Forest(BaseModel):
             self.nodes[item.save_key] = item
             self.node_types.add(item.node_type)
             if item.syntactic_object:
-                # remember to rebuild nodes_by_uid in undo/redo, as it is not stored in model
+                # remember to rebuild nodes_by_uid in undo/redo, as it is not
+                #  stored in model
                 self.nodes_from_synobs[item.syntactic_object.save_key] = item
         elif isinstance(item, Edge):
             self.poke('edges')
@@ -354,16 +371,17 @@ class Forest(BaseModel):
         :return: iterator through objects
         """
         for n in self.nodes.values():
-            yield(n)
+            yield (n)
         for n in self.edges.values():
-            yield(n)
+            yield (n)
         for n in self.others.values():
-            yield(n)
+            yield (n)
         for n in self.bracket_manager.get_brackets():
-            yield(n)
+            yield (n)
 
     def draw(self):
-        """ Update all trees in the forest according to current visualization """
+        """ Update all trees in the forest according to current visualization
+        """
         if not self.in_display:
             print("Why are we drawing a forest which shouldn't be in scene")
         sc = ctrl.graph_scene
@@ -399,7 +417,8 @@ class Forest(BaseModel):
         self.main.color_manager.update_colors(prefs, self.settings)
         self.main.app.setPalette(cm.get_qt_palette())
         if old_gradient_base != cm.paper() and cm.gradient:
-            self.main.graph_scene.fade_background_gradient(old_gradient_base, cm.paper())
+            self.main.graph_scene.fade_background_gradient(old_gradient_base,
+                                                           cm.paper())
         else:
             self.main.graph_scene.setBackgroundBrush(qt_prefs.no_brush)
         for other in self.others.values():
@@ -419,13 +438,15 @@ class Forest(BaseModel):
         """ Return list of constituent edges
         :return: list
         """
-        return [x for x in self.edges.values() if x.edge_type == g.CONSTITUENT_EDGE and x.is_visible()]
+        return [x for x in self.edges.values() if
+                x.edge_type == g.CONSTITUENT_EDGE and x.is_visible()]
 
     def get_constituent_nodes(self):
         """ Return list of constituent nodes
         :return: list
         """
-        return [x for x in self.nodes.values() if isinstance(x, BaseConstituentNode) and x.isVisible()]
+        return [x for x in self.nodes.values() if
+                isinstance(x, BaseConstituentNode) and x.isVisible()]
 
     def get_feature_nodes(self):
         """ Return list of feature nodes
@@ -454,13 +475,17 @@ class Forest(BaseModel):
             self.comments.remove(comment)
 
     def remove_intertree_relations(self):
-        """ After disconnections there may be multidominated nodes whose parents are in different trees.
-        In most of syntaxes these shouldn't happen: there is no disconnection activity to create such things.
+        """ After disconnections there may be multidominated nodes whose
+        parents are in different trees.
+        In most of syntaxes these shouldn't happen: there is no disconnection
+        activity to create such things.
 
-        When user disconnects a node, it is to work with branches separately: a multidominated node should get its own
+        When user disconnects a node, it is to work with branches separately:
+        a multidominated node should get its own
         copy.
 
-        However there is a remote possibility for creating them by merging non-root node from another tree to
+        However there is a remote possibility for creating them by merging
+        non-root node from another tree to
         construction, so the option should be there.
 
         :return:
@@ -468,15 +493,19 @@ class Forest(BaseModel):
         pass
 
     def update_root_status(self, node):
-        """ Check if a node should be listed as root nodes. Tries to maintain the order of trees:
-        new roots are appended to right. This is called by operations that may change the root status, but
-        there is no global way for updating all of the roots, as then the order of root list is lost.
+        """ Check if a node should be listed as root nodes. Tries to maintain
+        the order of trees:
+        new roots are appended to right. This is called by operations that
+        may change the root status, but
+        there is no global way for updating all of the roots, as then the
+        order of root list is lost.
         :param node: root to check. Only ConstituentNodes can be roots
         :return:
         """
         if (not isinstance(node, BaseConstituentNode)) or node.is_placeholder():
             return
-        has_parents = bool([x for x in node.edges_up if x.edge_type is g.CONSTITUENT_EDGE])
+        has_parents = bool(
+            [x for x in node.edges_up if x.edge_type is g.CONSTITUENT_EDGE])
         if node in self.roots:
             if has_parents:
                 self.poke('roots')
@@ -487,8 +516,10 @@ class Forest(BaseModel):
 
     # not used
     def is_higher_in_tree(self, node_a, node_b):
-        """ Compare two nodes, if node_a is higher, return True. Return False if not.
-            Return None if nodes are not in the same tree -- cannot compare. (Be careful with the result,
+        """ Compare two nodes, if node_a is higher, return True. Return False
+        if not.
+            Return None if nodes are not in the same tree -- cannot compare.
+            (Be careful with the result,
             handle None and False differently.)
         :param node_a:
         :param node_b:
@@ -513,7 +544,8 @@ class Forest(BaseModel):
         return None
 
     def get_first_free_constituent_name(self):
-        """ Generate a name for constituent, ABCDEF... and then abcdef..., then AA, AB, AC...
+        """ Generate a name for constituent, ABCDEF... and then abcdef...,
+        then AA, AB, AC...
          until a free (not used in this forest) is found.
         :return: String
         """
@@ -562,9 +594,9 @@ class Forest(BaseModel):
         node.after_init()
         if pos:
             node.set_original_position(pos)
-            #node.update_position(pos)
+            # node.update_position(pos)
         self.add_to_scene(node)
-        #node.fade_in()
+        # node.fade_in()
 
         # root status is meaningful to only certain types of nodes, others
         # exit immediately
@@ -593,8 +625,8 @@ class Forest(BaseModel):
             self.visualization.reset_node(node)
         return node
 
-
-    def create_attribute_node(self, host, attribute_id, attribute_label, show_label=False):
+    def create_attribute_node(self, host, attribute_id, attribute_label,
+                              show_label=False):
         """
 
         :param host:
@@ -603,7 +635,8 @@ class Forest(BaseModel):
         :param show_label:
         :return:
         """
-        AN = AttributeNode(host, attribute_id, attribute_label, show_label=show_label)
+        AN = AttributeNode(host, attribute_id, attribute_label,
+                           show_label=show_label)
         self.connect_node(host, child=AN)
         self.add_to_scene(AN)
         AN.update_visibility()
@@ -619,7 +652,8 @@ class Forest(BaseModel):
         :param direction:
         :return:
         """
-        rel = Edge(start=start, end=end, edge_type=edge_type, direction=direction)
+        rel = Edge(start=start, end=end, edge_type=edge_type,
+                   direction=direction)
         rel.after_init()
         self.store(rel)
         self.add_to_scene(rel)
@@ -637,7 +671,8 @@ class Forest(BaseModel):
         return br
 
 
-        # Cosmetic improvemet, if gloss is created by editing the gloss text field. (not present anymore)
+        # Cosmetic improvemet, if gloss is created by editing the gloss text
+        # field. (not present anymore)
         # ee = ctrl.ui.get_node_edit_embed()
         # if ee and ee.isVisible():
         #     pos = ee.master_edit.pos()
@@ -670,7 +705,8 @@ class Forest(BaseModel):
 
     # @time_me
     def create_tree_from_string(self, text, replace=False):
-        """ This will probably end up resulting one tree, but during parsing there may be multiple roots/trees
+        """ This will probably end up resulting one tree, but during parsing
+        there may be multiple roots/trees
         :param text:
         :param replace:
         """
@@ -683,7 +719,8 @@ class Forest(BaseModel):
 
     def read_definitions(self, definitions):
         """
-        :param definitions: Try to set features and glosses according to definition strings for nodes in tree.
+        :param definitions: Try to set features and glosses according to
+        definition strings for nodes in tree.
         :return:
         """
         # todo: can we write feature/gloss definitions into node text fields?
@@ -728,22 +765,28 @@ class Forest(BaseModel):
         ctrl.select(edge)
         return edge
 
-    ############# Deleting items ######################################################
+    ############# Deleting items
+    # ######################################################
     # item classes don't have to know how they relate to each others.
-    # here when something is removed from scene, it is made sure that it is also removed
+    # here when something is removed from scene, it is made sure that it is
+    # also removed
     # from items that reference to it.
 
     def delete_node(self, node, ignore_consequences=False):
         """ Delete given node and its children and fix the tree accordingly
         :param node:
-        :param ignore_consequences: don't try to fix things like connections, just delete.
-        Note: This and other complicated revisions assume that the target tree is 'normalized' by
-        replacing multidomination with traces. Each node can have only one parent.
-        This makes calculation easier, just remember to call multidomination_to_traces
+        :param ignore_consequences: don't try to fix things like connections,
+        just delete.
+        Note: This and other complicated revisions assume that the target
+        tree is 'normalized' by
+        replacing multidomination with traces. Each node can have only one
+        parent.
+        This makes calculation easier, just remember to call
+        multidomination_to_traces
         and traces_to_multidomination after deletions.
         """
         # -- connections to other nodes --
-        #print('deleting node: ', node)
+        # print('deleting node: ', node)
         if not ignore_consequences:
             for edge in list(node.edges_down):
                 if edge.end:
@@ -771,7 +814,8 @@ class Forest(BaseModel):
         if not found:
             self.node_types.remove(my_type)
         # -- synobj-to-node -mapping (is it used anymore?)
-        if node.syntactic_object and node.syntactic_object.save_key in self.nodes_from_synobs:
+        if node.syntactic_object and node.syntactic_object.save_key in \
+                self.nodes_from_synobs:
             del self.nodes_from_synobs[node.syntactic_object.save_key]
 
         if node in self.roots:
@@ -787,7 +831,8 @@ class Forest(BaseModel):
     def delete_edge(self, edge, ignore_consequences=False):
         """ remove from scene and remove references from nodes
         :param edge:
-        :param ignore_consequences: don't try to fix things like connections, just delete.
+        :param ignore_consequences: don't try to fix things like connections,
+        just delete.
         """
         # -- connections to host nodes --
         start_node = edge.start
@@ -836,7 +881,8 @@ class Forest(BaseModel):
     def delete_item(self, item, ignore_consequences=False):
         """ User-triggered deletion (e.g backspace on selection)
         :param item: item from selection. can be anything that can be selected
-        :param ignore_consequences: don't try to fix remainders (because deletion is part of
+        :param ignore_consequences: don't try to fix remainders (because
+        deletion is part of
             some major rewrite of values, e.g. in undo process.
         """
         if isinstance(item, Edge):
@@ -849,7 +895,8 @@ class Forest(BaseModel):
 
     # ## Free edges ###############################
 
-    # there are edges that are initially not connected anywhere and which need to be able to connect and disconnect
+    # there are edges that are initially not connected anywhere and which
+    # need to be able to connect and disconnect
     # start and end points separately
 
     @staticmethod
@@ -863,31 +910,41 @@ class Forest(BaseModel):
             # Arrows don't exist in syntax
             return
         if not (edge.start and edge.end):
-            raise ValueError("Cannot make a connection based on edge, is the other end of edge is empty: %s" % edge)
+            raise ValueError(
+                "Cannot make a connection based on edge, is the other end of "
+                "edge is empty: %s" % edge)
         if etype is g.CONSTITUENT_EDGE:
             if edge.start.node_type == g.CONSTITUENT_NODE and \
-                    edge.end.node_type == g.CONSTITUENT_NODE:
+                            edge.end.node_type == g.CONSTITUENT_NODE:
                 start_constituent = edge.start.syntactic_object
                 end_constituent = edge.end.syntactic_object
                 if not start_constituent:
                     # Placeholder (empty) constituent cannot have children
                     return
                 if not end_constituent:
-                    # setting a placeholder constituent doesn't have a syntactic effect
+                    # setting a placeholder constituent doesn't have a
+                    # syntactic effect
                     return
                 ctrl.FL.k_connect(start_constituent, end_constituent)
             else:
-                raise ValueError("Cannot make a constituent edge connection if " +
-                                 "one of the ends is not a constituent node")
+                raise ValueError(
+                    "Cannot make a constituent edge connection if " + "one of "
+                                                                      "the "
+                                                                      "ends "
+                                                                      "is not "
+                                                                      "a "
+                                                                      "constituent node")
         elif etype is g.FEATURE_EDGE:
             if edge.start.node_type == g.CONSTITUENT_NODE and \
-                    edge.end.node_type == g.FEATURE_NODE:
+                            edge.end.node_type == g.FEATURE_NODE:
                 constituent = edge.start.syntactic_object
                 feature = edge.end.syntactic_object
                 if not constituent:
-                    raise ValueError("Placeholder (empty) constituent cannot have features")
+                    raise ValueError(
+                        "Placeholder (empty) constituent cannot have features")
                 if not feature:
-                    # setting a placeholder feature doesn't have a syntactic effect
+                    # setting a placeholder feature doesn't have a syntactic
+                    # effect
                     return
                 if feature in constituent.features:
                     raise ValueError("Constituent %s already has feature %s")
@@ -906,7 +963,8 @@ class Forest(BaseModel):
             # Arrows don't have syntactic role
             return
         if not (edge.start and edge.end):
-            # syntactically relationship doesn't exist unless it has both elements
+            # syntactically relationship doesn't exist unless it has both
+            # elements
             return
         if etype is g.CONSTITUENT_EDGE:
             if edge.start.node_type == g.CONSTITUENT_NODE and edge.end:
@@ -934,7 +992,9 @@ class Forest(BaseModel):
                 if edge.start.syntactic_object.gloss:
                     edge.start.syntactic_object.gloss = ''
         else:
-            raise ValueError("Not implemented: What to do syntactically when disconnecting edge: %s" % edge)
+            raise ValueError(
+                "Not implemented: What to do syntactically when disconnecting "
+                "edge: %s" % edge)
 
     def set_edge_start(self, edge, new_start):
         """
@@ -972,7 +1032,8 @@ class Forest(BaseModel):
         self.update_root_status(edge.start)
 
     def fix_stubs_for(self, node):
-        """ Make sure that node (ConstituentNode) has binary children. Creates stubs if needed, and removes stubs if
+        """ Make sure that node (ConstituentNode) has binary children.
+        Creates stubs if needed, and removes stubs if
         node has two empty stubs.
         :param node: node to be fixed (ignore anything but constituent nodes)
         :return: None
@@ -1024,13 +1085,15 @@ class Forest(BaseModel):
         self.set_edge_end(edge, placeholder)
 
     def order_edge_visibility_check(self):
-        """ Make sure that all edges are checked to update their visibility. This can be called multiple
+        """ Make sure that all edges are checked to update their visibility.
+        This can be called multiple
         times, but the visibility check is done only once.
         """
         self._do_edge_visibility_check = True
 
     def edge_visibility_check(self):
-        """ Perform check for each edge: hide them if their start/end is hidden, show them if necessary.
+        """ Perform check for each edge: hide them if their start/end is
+        hidden, show them if necessary.
         """
         if self._do_edge_visibility_check:
             sc = self.settings.shows_constituent_edges
@@ -1048,7 +1111,8 @@ class Forest(BaseModel):
                             ev = False
                         else:
                             ev = self.visualization.show_edges_for(start)
-                    edge.visible = ev and ((edge.end and edge.end.visible) or ((not edge.end) and sv))
+                    edge.visible = ev and (
+                    (edge.end and edge.end.visible) or ((not edge.end) and sv))
                 else:
                     if edge.start:
                         edge.visible = edge.start.is_visible
@@ -1066,13 +1130,15 @@ class Forest(BaseModel):
             if not visible:
                 edges_visible = False
             elif self.visualization:
-                edges_visible = self.visualization.show_edges_for(node) and self.settings.shows_constituent_edges
+                edges_visible = self.visualization.show_edges_for(
+                    node) and self.settings.shows_constituent_edges
             else:
                 edges_visible = False
             for edge in node.edges_down:
                 v = edge.visible
                 if edge.edge_type == g.CONSTITUENT_EDGE:
-                    edge.visible = edges_visible and ((edge.end and edge.end.visible) or not edge.end)
+                    edge.visible = edges_visible and (
+                    (edge.end and edge.end.visible) or not edge.end)
                 else:
                     edge.visible = visible
                 if v and not edge.visible:
@@ -1109,7 +1175,8 @@ class Forest(BaseModel):
         self.connect_node(parent=node, child=gloss)
         node.gloss = gloss.label
 
-    # ## order markers are special nodes added to nodes to signal the order when the node was merged/added to forest
+    # ## order markers are special nodes added to nodes to signal the order
+    # when the node was merged/added to forest
     #######################################################################
 
     def add_order_features(self, key='M'):
@@ -1132,7 +1199,9 @@ class Forest(BaseModel):
             if isinstance(val, collections.Callable):
                 val = val()
             if val:
-                attr_node = self.create_attribute_node(node, attr_id, attribute_label=key, show_label=show_label)
+                attr_node = self.create_attribute_node(node, attr_id,
+                                                       attribute_label=key,
+                                                       show_label=show_label)
 
     def remove_order_features(self, key='M'):
         """
@@ -1153,11 +1222,13 @@ class Forest(BaseModel):
         if M and not self.settings.shows_merge_order:
             self.delete_node(M)
         elif self.settings.shows_merge_order and (not M) and node.merge_order:
-            self.create_attribute_node(node, 'merge_order', attribute_label='M', show_label=True)
+            self.create_attribute_node(node, 'merge_order', attribute_label='M',
+                                       show_label=True)
         if S and not self.settings.shows_select_order:
             self.delete_node(S)
         elif self.settings.shows_select_order and (not S) and node.select_order:
-            self.create_attribute_node(node, 'select_order', attribute_label='S', show_label=False)
+            self.create_attribute_node(node, 'select_order',
+                                       attribute_label='S', show_label=False)
 
     def add_select_counter(self, node, replace=0):
         """
@@ -1185,7 +1256,8 @@ class Forest(BaseModel):
             node.merge_order = self.merge_counter
         self.update_order_features(node)
 
-    # ### Minor updates for forest elements #######################################################################
+    # ### Minor updates for forest elements
+    # #######################################################################
 
     def reform_constituent_node_from_string(self, text, node):
         """
@@ -1197,14 +1269,15 @@ class Forest(BaseModel):
         if new_nodes:
             self.replace_node(node, new_nodes[0])
 
-    # ### Switching between multidomination and traces ######################################
+    # ### Switching between multidomination and traces
+    # ######################################
 
     def group_traces_to_chain_head(self):
         """
 
 
         """
-        #print('group_traces_to_chain_head called in ', self)
+        # print('group_traces_to_chain_head called in ', self)
         self.chain_manager.group_traces_to_chain_head()
 
     def traces_to_multidomination(self):
@@ -1212,11 +1285,13 @@ class Forest(BaseModel):
 
 
         """
-        #print('traces_to_multidomination called in ', self)
+        # print('traces_to_multidomination called in ', self)
         self.chain_manager.traces_to_multidomination()
         for node in self.nodes.values():
             if hasattr(node, 'is_trace') and node.is_trace:
-                print('We still have a visible trace after traces_to_multidomination')
+                print(
+                    'We still have a visible trace after '
+                    'traces_to_multidomination')
                 # else:
                 #    print('no is_trace -property')
 
@@ -1225,15 +1300,17 @@ class Forest(BaseModel):
 
 
         """
-        #print('multidomination_to_traces called in ', self)
+        # print('multidomination_to_traces called in ', self)
         self.chain_manager.multidomination_to_traces()
 
 
-        # # if using traces, merge original and leave trace, or merge trace and leave original. depending on which way the structure is built.
+        # # if using traces, merge original and leave trace, or merge trace
+        # and leave original. depending on which way the structure is built.
         # print '-------------------'
         # print 'dropping for merge'
 
-        # print 'f.settings.use_multidomination:', f.settings.use_multidomination
+        # print 'f.settings.use_multidomination:',
+        # f.settings.use_multidomination
         # if not f.settings.use_multidomination:
         # new_trace = f.create_trace_for(dropped_node)
         # new_trace.set_original_position(dropped_node.current_position)
@@ -1272,9 +1349,11 @@ class Forest(BaseModel):
 
     def connect_node(self, parent=None, child=None, direction='',
                      edge_type=None):
-        """ This is for connecting nodes with a certain edge. Calling this once will create the necessary links for both partners.
+        """ This is for connecting nodes with a certain edge. Calling this
+        once will create the necessary links for both partners.
         Sanity checks:
-        - Immediate circular links (child becomes immediate parent of its immediate parent) are not allowed.
+        - Immediate circular links (child becomes immediate parent of its
+        immediate parent) are not allowed.
         - If items are already linked with this edge type, error is raised.
         - Cannot link to itself.
         This needs to be robust.
@@ -1288,7 +1367,10 @@ class Forest(BaseModel):
         if parent == child:
             raise ForestError('Connecting to self')
         if not parent and child:
-            raise ForestError('Trying to connect nodes, but other is missing (parent:%s, child%s)' % (parent, child))
+            raise ForestError(
+                'Trying to connect nodes, but other is missing (parent:%s, '
+                'child%s)' % (
+                parent, child))
 
         if not edge_type:
             edge_type = child.__class__.default_edge_type
@@ -1338,7 +1420,8 @@ class Forest(BaseModel):
         self.verify_edge_removal(edge)
         self.delete_edge(edge)
 
-    def disconnect_node(self, parent, child, edge_type='', ignore_missing=False):
+    def disconnect_node(self, parent, child, edge_type='',
+                        ignore_missing=False):
         """ Removes and deletes a edge between two nodes
         :param parent:
         :param child:
@@ -1349,20 +1432,27 @@ class Forest(BaseModel):
         if edge:
             self.disconnect_edge(edge)
         elif not ignore_missing:
-            raise ForestError("Disconnecting nodes, but cannot find the edge between them")
+            raise ForestError(
+                "Disconnecting nodes, but cannot find the edge between them")
 
-    def replace_node(self, old_node, new_node, only_for_parent=None, replace_children=False, can_delete=True):
+    def replace_node(self, old_node, new_node, only_for_parent=None,
+                     replace_children=False, can_delete=True):
         """  When replacing a node we should make sure that edges get fixed too.
-        :param old_node: node to be replaced -- if all occurences get replaced, delete it
+        :param old_node: node to be replaced -- if all occurences get
+        replaced, delete it
         :param new_node: replacement node
         :param only_for_parent: replace only one parent connection
-        :param replace_children: new node also gains parenthood for old node's children
+        :param replace_children: new node also gains parenthood for old
+        node's children
         :param can_delete: replaced node can be deleted
         :return:
         """
-        #print('replace_node %s %s %s %s' % (old_node, new_node, only_for_parent, replace_children))
+        # print('replace_node %s %s %s %s' % (old_node, new_node,
+        # only_for_parent, replace_children))
 
-        assert (old_node != new_node)  # if this can happen, we'll probably have infinite loop somewhere
+        assert (
+        old_node != new_node)  # if this can happen, we'll probably have
+        # infinite loop somewhere
         new_node.current_position = old_node.current_position
         new_node.adjustment = old_node.adjustment
         new_node.algo_position = tuple(old_node.algo_position)
@@ -1398,7 +1488,9 @@ class Forest(BaseModel):
         :raise ForestError:
         """
         if not isinstance(node, BaseConstituentNode):
-            raise ForestError("Trying to treat wrong kind of node as ConstituentNode and forcing it to binary merge")
+            raise ForestError(
+                "Trying to treat wrong kind of node as ConstituentNode and "
+                "forcing it to binary merge")
 
         if hasattr(node, 'index'):
             i = node.index
@@ -1427,8 +1519,8 @@ class Forest(BaseModel):
             else:
                 if bad_parents:
                     # more complex case
-                    m = "Removing node would make parent to have same node as both left and right child. " + \
-                        "Removing parent too."
+                    m = "Removing node would make parent to have same node as " \
+                        "both left and right child. " + "Removing parent too."
                     ctrl.add_message(m)
                     self.disconnect_node(node, child)
                     for parent in bad_parents:
@@ -1443,7 +1535,8 @@ class Forest(BaseModel):
                     for parent in good_parents:
                         edge = parent.get_edge_to(node)
                         self.disconnect_node(parent, node)
-                        self.connect_node(parent, child, direction=edge.alignment)
+                        self.connect_node(parent, child,
+                                          direction=edge.alignment)
             if i:
                 child.set_index(i)
             self.delete_node(node)
@@ -1455,19 +1548,26 @@ class Forest(BaseModel):
                 # self.delete_node(left)
 
     def replace_node_with_merged_node(self, replaced, new_node, closest_parent,
-                                      merge_to_left=False, merger_node_pos=None, new_node_pos=None):
-        """ This is an insertion action into a tree: a new merge is created and inserted between
-        two existing constituents. One connection is removed, but three are created.
-        This happens when touch area in edge going up from node N is clicked, or if a node is dragged
+                                      merge_to_left=False, merger_node_pos=None,
+                                      new_node_pos=None):
+        """ This is an insertion action into a tree: a new merge is created
+        and inserted between
+        two existing constituents. One connection is removed, but three are
+        created.
+        This happens when touch area in edge going up from node N is clicked,
+        or if a node is dragged
         there.
 
         :param replaced:
         :param new_node:
-        :param closest_parent: The replacement happens in one place only. The place is identified
+        :param closest_parent: The replacement happens in one place only. The
+        place is identified
         by its parent.
-        :param merge_to_left: will the newly merged constituent branch to left or to right
+        :param merge_to_left: will the newly merged constituent branch to
+        left or to right
         :param merger_node_pos:
-        :param new_node_pos: optional parameter if no new_node is provided, new node is initially
+        :param new_node_pos: optional parameter if no new_node is provided,
+        new node is initially
          created in this position, animations are then nicer.
         """
         if not new_node:
@@ -1479,14 +1579,17 @@ class Forest(BaseModel):
             new_node.adjustment = replaced.adjustment
 
         if hasattr(new_node, 'index'):
-            # if new_node and old_node belong to same tree, this is a Move / Internal merge situation and we
-            # need to give the new_node an index so it can be reconstructed as a trace structure
+            # if new_node and old_node belong to same tree, this is a Move /
+            # Internal merge situation and we
+            # need to give the new_node an index so it can be reconstructed
+            # as a trace structure
             moving_was_higher = self.is_higher_in_tree(new_node, replaced)
             # returns None if they are not in same tree
             if moving_was_higher is not None:
                 if not new_node.index:
                     new_node.index = self.chain_manager.next_free_index()
-                # replace either the moving node or leftover node with trace if we are using traces
+                # replace either the moving node or leftover node with trace
+                # if we are using traces
                 if self.traces_are_visible():
                     if moving_was_higher:
                         new_node = self.create_trace_for(new_node)
@@ -1504,9 +1607,11 @@ class Forest(BaseModel):
 
         p = merger_node_pos[0], merger_node_pos[1], replaced.z
         if merge_to_left:
-            merger_node = self.create_merger_node(left=new_node, right=replaced, pos=p)
+            merger_node = self.create_merger_node(left=new_node, right=replaced,
+                                                  pos=p)
         else:
-            merger_node = self.create_merger_node(left=replaced, right=new_node, pos=p)
+            merger_node = self.create_merger_node(left=replaced, right=new_node,
+                                                  pos=p)
 
         merger_node.adjustment = replaced.adjustment
 
@@ -1517,14 +1622,16 @@ class Forest(BaseModel):
             self.chain_manager.rebuild_chains()
 
     def create_merger_node(self, left=None, right=None, pos=None):
-        """ Gives a merger node of two nodes. Doesn't try to fix their edges upwards
+        """ Gives a merger node of two nodes. Doesn't try to fix their edges
+        upwards
         :param left:
         :param right:
         :param pos:
         """
         if not pos:
             pos = (0, 0, 0)
-        merger_const = ctrl.FL.merge(left.syntactic_object, right.syntactic_object)
+        merger_const = ctrl.FL.merge(left.syntactic_object,
+                                     right.syntactic_object)
         merger_node = self.create_node(synobj=merger_const, pos=pos)
         self.add_merge_counter(merger_node)
         self.connect_node(parent=merger_node, child=left, direction=g.LEFT)
@@ -1561,18 +1668,21 @@ class Forest(BaseModel):
             # allow recursive triangles -- don't overwrite existing fold
             elif folded.folding_towards:
                 continue
-            # multidominated nodes can be folded if all parents are in scope of fold
+            # multidominated nodes can be folded if all parents are in scope
+            # of fold
             elif folded.is_multidominated():
                 can_fold = True
                 for parent in parents:
-                    if (parent not in fold_scope) or (parent in not_my_children):
+                    if (parent not in fold_scope) or (
+                        parent in not_my_children):
                         not_my_children.add(folded)
                         can_fold = False
                         break
                 if can_fold:
                     print('Folding multidominated node %s' % folded)
                     folded.fold_towards(node)
-            # remember that the branch that couldn't be folded won't allow any of its children to be
+            # remember that the branch that couldn't be folded won't allow
+            # any of its children to be
             # folded either.
             elif parents and parents[0] in not_my_children:
                 not_my_children.add(folded)
@@ -1585,7 +1695,8 @@ class Forest(BaseModel):
         :param node:
         """
         node.triangle = False
-        fold_scope = (f for f in self.list_nodes_once(node) if f.folding_towards is node)
+        fold_scope = (f for f in self.list_nodes_once(node) if
+                      f.folding_towards is node)
         for folded in fold_scope:
             folded.folding_towards = None
             folded.folded_away = False
@@ -1594,7 +1705,8 @@ class Forest(BaseModel):
             folded.fade_in()
             folded.update_visibility()
             folded.update_bounding_rect()
-        # this needs second round of update visibility, as child nodes may yet not be visible, so edges to them
+        # this needs second round of update visibility, as child nodes may
+        # yet not be visible, so edges to them
         # won't be visible either.
         for folded in fold_scope:
             folded.update_visibility()
@@ -1626,7 +1738,7 @@ class Forest(BaseModel):
     #                #
     # ############## #
 
-    roots = Saved("roots") # the current line of trees
+    roots = Saved("roots")  # the current line of trees
     nodes = Saved("nodes")
     edges = Saved("edges")
     others = Saved("others")

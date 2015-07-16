@@ -21,15 +21,11 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
-from _collections_abc import Iterable
 
 from kataja.Movable import Movable
 from kataja.singletons import prefs
 from kataja.visualizations.Grid import Grid
 from kataja.visualizations.BalancedTree import BalancedTree
-from kataja.BaseConstituentNode import BaseConstituentNode
-from kataja.FeatureNode import FeatureNode
-from kataja.GlossNode import GlossNode
 import kataja.globals as g
 
 
@@ -70,10 +66,10 @@ class LinearizedStaticTree(BalancedTree):
         node.adjustment = None
         node.update_label()
         node.update_visibility()
-        if isinstance(node, BaseConstituentNode):
+        if node.node_type == g.CONSTITUENT_NODE:
             node.dyn_x = False
             node.dyn_y = False
-        elif isinstance(node, FeatureNode) or isinstance(node, GlossNode):
+        else:
             node.dyn_x = True
             node.dyn_y = True
 

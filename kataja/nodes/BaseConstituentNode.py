@@ -21,13 +21,9 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
-from collections import OrderedDict
-
-from PyQt5 import QtGui
 
 from kataja.singletons import ctrl
-from kataja.Node import Node
-from kataja.parser.INodes import ITextNode
+from kataja.nodes.Node import Node
 import kataja.globals as g
 from kataja.BaseModel import Synobj
 

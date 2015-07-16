@@ -24,8 +24,8 @@
 from collections import OrderedDict
 
 from PyQt5 import QtWidgets, QtGui, QtCore
-
 from PyQt5.QtCore import Qt
+
 from kataja.ui.ControlPoint import ControlPoint
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.Label import Label
@@ -40,7 +40,8 @@ TRIANGLE_HEIGHT = 10
 
 # ctrl = Controller object, gives accessa to other modules
 
-# alignment of edges -- in some cases it is good to draw left branches differently than right branches
+# alignment of edges -- in some cases it is good to draw left branches
+# differently than right branches
 
 NO_ALIGN = 0
 LEFT = 1
@@ -48,7 +49,8 @@ RIGHT = 2
 
 
 class Node(Movable, QtWidgets.QGraphicsItem):
-    """ Basic class for any visualization elements that can be connected to each other """
+    """ Basic class for any visualization elements that can be connected to
+    each other """
     width = 20
     height = 20
     default_edge_type = g.ABSTRACT_EDGE
@@ -56,22 +58,25 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     ordered = False
     ordering_func = None
     name = ('Abstract node', 'Abstract nodes')
-    short_name = "Node" # shouldn't be used on its own
+    short_name = "Node"  # shouldn't be used on its own
     display = False
 
-    # override this if you need to turn inodes into your custom Nodes. See examples in
+    # override this if you need to turn inodes into your custom Nodes. See
+    # examples in
     # ConstituentNode or FeatureNode
 
     default_style = {'color': 'content1', 'font': g.MAIN_FONT, 'font-size': 10,
                      'edge': g.ABSTRACT_EDGE}
 
-    default_edge = {'id': g.ABSTRACT_EDGE, 'shape_name': 'linear', 'color': 'content1',
-                    'pull': .40, 'visible': True, 'arrowhead_at_start': False,
-                    'arrowhead_at_end': False, 'labeled': False}
+    default_edge = {'id': g.ABSTRACT_EDGE, 'shape_name': 'linear',
+                    'color': 'content1', 'pull': .40, 'visible': True,
+                    'arrowhead_at_start': False, 'arrowhead_at_end': False,
+                    'labeled': False}
 
     def __init__(self, syntactic_object=None):
         """ Node is an abstract class that shouldn't be used by itself, though
-        it should contain all methods to make it work. Inherit and modify this for
+        it should contain all methods to make it work. Inherit and modify
+        this for
         Constituents, Features etc. """
         QtWidgets.QGraphicsItem.__init__(self)
         Movable.__init__(self)
@@ -122,8 +127,10 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
     def after_init(self):
         """ After_init is called in 2nd step in process of creating objects:
-            1st wave creates the objects and calls __init__, and then iterates through and sets the values.
-            2nd wave calls after_inits for all created objects. Now they can properly refer to each other and know their
+            1st wave creates the objects and calls __init__, and then
+            iterates through and sets the values.
+            2nd wave calls after_inits for all created objects. Now they can
+            properly refer to each other and know their
                 values.
         :return: None
         """
@@ -136,7 +143,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         ctrl.forest.store(self)
 
     def after_model_update(self, updated_fields, update_type):
-        """ This is called after the item's model has been updated, to run the side-effects of various
+        """ This is called after the item's model has been updated, to run
+        the side-effects of various
         setters in an order that makes sense.
         :param updated_fields: list of names of fields that have been updated.
         :param update_type: g.DELETE or g.CREATE
@@ -158,19 +166,21 @@ class Node(Movable, QtWidgets.QGraphicsItem):
                 self.fade_in()
             self.update_visibility()
         if update_type == g.CREATED:
-            print('Node.CREATED. (%s)'
-                  % self.save_key)
+            print('Node.CREATED. (%s)' % self.save_key)
             for edge in self.edges_up:
-                print('restoring connection up: %s %s %s ' % (edge, edge.start, self))
+                print('restoring connection up: %s %s %s ' % (
+                edge, edge.start, self))
                 edge.connect_end_points(edge.start, self)
                 edge.update_end_points()
             for edge in self.edges_down:
-                print('restoring connection down: %s %s %s ' % (edge, self, edge.end))
+                print('restoring connection down: %s %s %s ' % (
+                edge, self, edge.end))
                 edge.connect_end_points(self, edge.end)
                 edge.update_end_points()
         elif update_type == g.DELETED:
-            print('Node.DELETED. (%s) should I be reverting deletion or have we just been deleted?'
-                  % self.save_key)
+            print(
+                'Node.DELETED. (%s) should I be reverting deletion or have we '
+                'just been deleted?' % self.save_key)
 
     @staticmethod
     def create_synobj():
@@ -186,7 +196,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """
         :return:
         """
-        if self.syntactic_object and hasattr(self.syntactic_object.__class__, 'visible'):
+        if self.syntactic_object and hasattr(self.syntactic_object.__class__,
+                                             'visible'):
             synvis = self.syntactic_object.__class__.visible
         else:
             synvis = {}
@@ -205,11 +216,14 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
     @time_me
     def get_editing_template(self, refresh=False):
-        """ Create or fetch a dictionary template to help building an editing UI for Node.
-        The template is based on 'editable'-class variable and combines templates from Node
+        """ Create or fetch a dictionary template to help building an editing
+        UI for Node.
+        The template is based on 'editable'-class variable and combines
+        templates from Node
         and its subclasses and its syntactic object's templates.
 
-        The dictionary includes a special key field_order that gives the order of the fields.
+        The dictionary includes a special key field_order that gives the
+        order of the fields.
         :param refresh: force recalculation of template
         :return: dict
         """
@@ -217,7 +231,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             return self._editing_template
 
         self._editing_template = {}
-        if self.syntactic_object and hasattr(self.syntactic_object.__class__, 'editable'):
+        if self.syntactic_object and hasattr(self.syntactic_object.__class__,
+                                             'editable'):
             synedit = self.syntactic_object.__class__.editable
         else:
             synedit = {}
@@ -242,16 +257,21 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         return self._editing_template
 
     def impose_order_to_inode(self):
-        """ Prepare inode (ITemplateNode) to match data structure of this type of node
-        ITemplateNode has parsed input from latex trees to rows of text or ITextNodes and
-        these can be mapped to match Node fields, e.g. label or index. The mapping is
+        """ Prepare inode (ITemplateNode) to match data structure of this
+        type of node
+        ITemplateNode has parsed input from latex trees to rows of text or
+        ITextNodes and
+        these can be mapped to match Node fields, e.g. label or index. The
+        mapping is
         implemented here, and subclasses of Node should make their mapping.
         :return:
         """
-        # This part should be done by all subclasses, call super().impose_order_to_inode()
+        # This part should be done by all subclasses, call super(
+        # ).impose_order_to_inode()
         self._inode.values = {}
         self._inode.view_order = []
-        if self.syntactic_object and hasattr(self.syntactic_object.__class__, 'visible'):
+        if self.syntactic_object and hasattr(self.syntactic_object.__class__,
+                                             'visible'):
             synvis = self.syntactic_object.__class__.visible
         else:
             synvis = {}
@@ -270,7 +290,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
                 self._inode.view_order.append(key)
 
     def update_values_from_inode(self):
-        """ Take values from given inode and set this object to have these values.
+        """ Take values from given inode and set this object to have these
+        values.
         :return:
         """
         for key, value_data in self._inode.values.items():
@@ -295,7 +316,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self.triangle_updated(value)
 
     def triangle_updated(self, value):
-        """ update label positioning here so that offset doesn't need to be stored in save files and it
+        """ update label positioning here so that offset doesn't need to be
+        stored in save files and it
             still will be updated correctly
         :param value: bool
         :return: None
@@ -363,14 +385,17 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         ctrl.ui.remove_touch_areas_for(self)
 
     def is_placeholder(self):
-        """ Constituent structure may assume a constituent to be somewhere, before the user has intentionally created
-        one there. These are shown as placeholders, which are nodes, but with limited presence.
+        """ Constituent structure may assume a constituent to be somewhere,
+        before the user has intentionally created
+        one there. These are shown as placeholders, which are nodes, but with
+        limited presence.
         :return: boolean
         """
         return False
 
     def update_position(self, instant=False):
-        """ In addition to Movable's update_position, take account movement to fold nodes into triangle
+        """ In addition to Movable's update_position, take account movement
+        to fold nodes into triangle
         Computes new current_position and target_position.
         :param instant: don't animate (for e.g. dragging)
         :return: None
@@ -381,7 +406,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             if tp == self._target_position:
                 if self.current_position == self._target_position:
                     self.stop_moving()
-                # don't trigger start moving again if we are already going there
+                    # don't trigger start moving again if we are already
+                    # going there
             if instant:
                 self.current_position = tuple(self._target_position)
                 self.stop_moving()
@@ -394,9 +420,11 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             super().update_position(instant=instant)
 
     def move(self, md):
-        """ Add on Moveable.move the case when node is folding towards triangle. It has priority.
+        """ Add on Moveable.move the case when node is folding towards
+        triangle. It has priority.
         :param md: dict to collect total amount of movement.
-        :return: (bool, bool) -- is the node moving, does it allow normalization of movement
+        :return: (bool, bool) -- is the node moving, does it allow
+        normalization of movement
         """
 
         if self.folding_towards:
@@ -404,9 +432,12 @@ class Node(Movable, QtWidgets.QGraphicsItem):
                 px, py, pz = self.current_position
                 tx, ty, tz = self._target_position
                 if self._use_easing:
-                    xvel = self._x_step * qt_prefs.easing_curve[self._move_counter - 1]
-                    yvel = self._y_step * qt_prefs.easing_curve[self._move_counter - 1]
-                    zvel = self._z_step * qt_prefs.easing_curve[self._move_counter - 1]
+                    xvel = self._x_step * qt_prefs.easing_curve[
+                        self._move_counter - 1]
+                    yvel = self._y_step * qt_prefs.easing_curve[
+                        self._move_counter - 1]
+                    zvel = self._z_step * qt_prefs.easing_curve[
+                        self._move_counter - 1]
                 else:
                     xvel = (tx - px) / self._move_counter
                     yvel = (ty - py) / self._move_counter
@@ -422,8 +453,10 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             return super().move(md)
 
     def adjust_opacity(self):
-        """ Add to Movable.adjust_opacity fading of edges that connect to this node. If node fades
-        away, the edges fade away. There shouldn't be situations where this isn't the case.
+        """ Add to Movable.adjust_opacity fading of edges that connect to
+        this node. If node fades
+        away, the edges fade away. There shouldn't be situations where this
+        isn't the case.
         :return: bool, is the fade in/out still going on
         """
         active = super().adjust_opacity()
@@ -435,8 +468,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
                 edge.setOpacity(o)
         return active
 
-
-    # ### Children and parents ####################################################
+    # ### Children and parents
+    # ####################################################
 
     def get_all_children(self):
         """
@@ -466,7 +499,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :return: iterator of Nodes
         """
         et = self.__class__.default_edge_type
-        return (edge.end for edge in reversed(self.edges_down) if edge.edge_type == et)
+        return (edge.end for edge in reversed(self.edges_down) if
+                edge.edge_type == et)
 
     def get_visible_children(self):
         """
@@ -474,8 +508,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :return: iterator of Nodes
         """
         et = self.__class__.default_edge_type
-        return (edge.end for edge in self.edges_down if edge.edge_type == et
-                and edge.end.is_visible())
+        return (edge.end for edge in self.edges_down if
+                edge.edge_type == et and edge.end.is_visible())
 
     def get_children_of_type(self, edge_type=None, node_type=None):
         """
@@ -483,14 +517,18 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :return: iterator of Nodes
         """
         if edge_type:
-            return (edge.end for edge in self.edges_down if edge.edge_type == edge_type)
+            return (edge.end for edge in self.edges_down if
+                    edge.edge_type == edge_type)
         elif node_type:
-            return (edge.end for edge in self.edges_down if isinstance(edge.end, node_type))
+            return (edge.end for edge in self.edges_down if
+                    isinstance(edge.end, node_type))
 
-    def get_parents(self, only_similar=True, only_visible=False, edge_type=None):
+    def get_parents(self, only_similar=True, only_visible=False,
+                    edge_type=None):
         """
         Get parent nodes of this node.
-        :param only_similar: boolean, only return nodes of same type (eg. ConstituentNodes)
+        :param only_similar: boolean, only return nodes of same type (eg.
+        ConstituentNodes)
         :param only_visible: boolean, only return visible nodes
         :param edge_type: int, only return Edges of certain subclass.
         :return: list of Nodes
@@ -502,12 +540,15 @@ class Node(Movable, QtWidgets.QGraphicsItem):
                 edge_type = self.__class__.default_edge_type
             if only_visible:
                 return [edge.start for edge in self.edges_up if
-                        edge.edge_type == edge_type and edge.start and edge.start.is_visible()]
+                        edge.edge_type == edge_type and edge.start and
+                        edge.start.is_visible()]
             else:
-                return [edge.start for edge in self.edges_up if edge.edge_type == edge_type and edge.start]
+                return [edge.start for edge in self.edges_up if
+                        edge.edge_type == edge_type and edge.start]
         else:
             if only_visible:
-                return [edge.start for edge in self.edges_up if edge.start and edge.start.is_visible()]
+                return [edge.start for edge in self.edges_up if
+                        edge.start and edge.start.is_visible()]
             else:
                 return [edge.start for edge in self.edges_up if edge.start]
 
@@ -584,13 +625,16 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         else:
             return True
 
-    def get_root_node(self, only_similar=True, only_visible=False, recursion=False, visited=None):
-        """ Getting the root node is not trivial if there are derivation_steps in the tree.
+    def get_root_node(self, only_similar=True, only_visible=False,
+                      recursion=False, visited=None):
+        """ Getting the root node is not trivial if there are
+        derivation_steps in the tree.
         :param only_similar:
         :param only_visible:
         :param recursion:
         :param visited:
-        If a node that is already visited is visited again, this is a derivation_step that
+        If a node that is already visited is visited again, this is a
+        derivation_step that
          should not be followed. """
         if not recursion:
             visited = set()
@@ -601,24 +645,28 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             return self
         visited.add(self)
         for parent in parents:
-            root = parent.get_root_node(only_similar, only_visible, recursion=True, visited=visited)
+            root = parent.get_root_node(only_similar, only_visible,
+                                        recursion=True, visited=visited)
             if root:
                 return root
         return self
 
     def get_edge_to(self, other, edge_type=''):
-        """ Returns edge object, not the related node. There should be only one instance of edge
+        """ Returns edge object, not the related node. There should be only
+        one instance of edge
         of certain type between two elements.
         :param other:
         :param edge_type:
         """
         for edge in self.edges_down:
             if edge.end == other:
-                if (edge_type and edge_type == edge.edge_type) or (not edge_type):
+                if (edge_type and edge_type == edge.edge_type) or (
+                not edge_type):
                     return edge
         for edge in self.edges_up:
             if edge.start == other:
-                if (edge_type and edge_type == edge.edge_type) or (not edge_type):
+                if (edge_type and edge_type == edge.edge_type) or (
+                not edge_type):
                     return edge
 
         return None
@@ -629,6 +677,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :param visible:
         :param align:
         """
+
         def filter_func(rel):
             """
             :param rel:
@@ -640,6 +689,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             if visible and not rel.is_visible():
                 return False
             return True
+
         return filter(filter_func, self.edges_up)
 
     def get_edges_down(self, similar=True, visible=False, align=None):
@@ -648,6 +698,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :param visible:
         :param align:
         """
+
         def filter_func(rel):
             """
             :param rel:
@@ -659,9 +710,11 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             if visible and not rel.is_visible():
                 return False
             return True
+
         return filter(filter_func, self.edges_down)
 
-    # ## Font #####################################################################
+    # ## Font
+    # #####################################################################
 
     @property
     def font(self):
@@ -673,7 +726,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         if self.font_id:
             return qt_prefs.font(self.font_id)
         else:
-            return qt_prefs.font(ctrl.forest.settings.node_settings(self.node_type, 'font'))
+            return qt_prefs.font(
+                ctrl.forest.settings.node_settings(self.node_type, 'font'))
 
     def get_font_id(self):
         """
@@ -684,8 +738,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         else:
             return ctrl.forest.settings.node_settings(self.node_type, 'font')
 
-
-    # ### Colors and drawing settings ############################################################
+    # ### Colors and drawing settings
+    # ############################################################
 
     @property
     def color(self):
@@ -695,7 +749,9 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :return:
         """
         if self.color_id is None:
-            return ctrl.cm.get(ctrl.forest.settings.node_settings(self.__class__.node_type, 'color'))
+            return ctrl.cm.get(
+                ctrl.forest.settings.node_settings(self.__class__.node_type,
+                                                   'color'))
         else:
             return ctrl.cm.get(self.color_id)
 
@@ -736,7 +792,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         else:
             return self.color
 
-    # ### Labels and identity ###############################################################
+    # ### Labels and identity
+    # ###############################################################
 
     def update_label(self):
         """
@@ -784,7 +841,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self.status_tip = str(self)
 
     def get_html_for_label(self):
-        """ This should be overridden if there are alternative displays for label """
+        """ This should be overridden if there are alternative displays for
+        label """
         return self.label
 
     def has_empty_label(self):
@@ -793,13 +851,15 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
         :return:
         """
-        return self._label_complex.is_empty()
+        print(self.as_inode)
+        return not self.as_inode
 
     def label_edited(self):
         """ implement if label can be modified by editing it directly """
         pass
 
-    # ## Qt overrides ######################################################################
+    # ## Qt overrides
+    # ######################################################################
 
     def paint(self, painter, option, widget=None):
         """ Painting is sensitive to mouse/selection issues, but usually with
@@ -808,15 +868,16 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :param widget:
         nodes it is the label of the node that needs complex painting """
         p = QtGui.QPen(self.contextual_color)
-        p.setWidth(4)
+        p.setWidth(1)
         painter.setPen(p)
-        #if ctrl.pressed is self or self._hovering or ctrl.is_selected(self):
-        #    painter.drawRoundedRect(self.inner_rect, 5, 5)
+        if ctrl.pressed is self or self._hovering or ctrl.is_selected(
+                self) or self.has_empty_label():
+            painter.drawRoundedRect(self.inner_rect, 5, 5)
 
-        #x,y,z = self.current_position
-        w2 = self.width/2.0
-        #painter.setPen(self.contextual_color())
-        painter.drawEllipse(-w2, -w2, w2 + w2, w2 + w2)
+            # x,y,z = self.current_position
+            # w2 = self.width/2.0
+            # painter.setPen(self.contextual_color())
+            # painter.drawEllipse(-w2, -w2, w2 + w2, w2 + w2)
 
     def update_bounding_rect(self):
         """
@@ -829,9 +890,11 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             lbr = self._label_complex.boundingRect()
             lbh = lbr.height()
             lbw = lbr.width()
-            self.label_rect = QtCore.QRectF(self._label_complex.x(), self._label_complex.y(), lbw, lbh)
+            self.label_rect = QtCore.QRectF(self._label_complex.x(),
+                                            self._label_complex.y(), lbw, lbh)
             self.width = max((lbw, my_class.width))
-            self.height = max((lbh + self._label_complex.y_offset, my_class.height))
+            self.height = max(
+                (lbh + self._label_complex.y_offset, my_class.height))
             y = self.height / -2
             x = self.width / -2
         else:
@@ -845,8 +908,10 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         return self.inner_rect
 
     def boundingRect(self):
-        """ BoundingRects are used often and cost of this method affects performance.
-        inner_rect is used as a cached bounding rect and returned fast if there is no explicit
+        """ BoundingRects are used often and cost of this method affects
+        performance.
+        inner_rect is used as a cached bounding rect and returned fast if
+        there is no explicit
         update asked. """
         if self.inner_rect:
             return self.inner_rect
@@ -855,7 +920,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
     ######### Triangles #########################################
 
-    # Here we have only low level local behavior of triangles. Most of the action is done in Forest
+    # Here we have only low level local behavior of triangles. Most of the
+    # action is done in Forest
     # as triangles may involve complicated forest-level calculations.
 
     def fold_towards(self, node):
@@ -897,12 +963,14 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         triangle.lineTo(center, top)
         painter.drawPath(triangle)
 
-    # ## Magnets ######################################################################
+    # ## Magnets
+    # ######################################################################
 
 
     def magnet(self, n):
         """
-        :param n: index of magnets. There are five magnets in top and bottom and three for sides:
+        :param n: index of magnets. There are five magnets in top and bottom
+        and three for sides:
 
         0   1   2   3   4
         5               6
@@ -917,10 +985,9 @@ class Node(Movable, QtWidgets.QGraphicsItem):
                 w2 = (self.width - 2) / 2.0
                 h2 = (self.height - 2) / 2.0
 
-
-                self._magnets = [(-w2, -h2), (-w4, -h2), (0, -h2), (w4, -h2), (w2, -h2),
-                                 (-w2, 0),                                    (w2, 0),
-                                 (-w2, h2),  (-w4, h2),  (0, h2),  (w4, h2),  (w2, h2)]
+                self._magnets = [(-w2, -h2), (-w4, -h2), (0, -h2), (w4, -h2),
+                                 (w2, -h2), (-w2, 0), (w2, 0), (-w2, h2),
+                                 (-w4, h2), (0, h2), (w4, h2), (w2, h2)]
 
             x1, y1, z1 = self.current_position
             x2, y2 = self._magnets[n]
@@ -941,7 +1008,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             self.setZValue(200)
         self.update()
 
-    # ### MOUSE - kataja ########################################################
+    # ### MOUSE - kataja
+    # ########################################################
 
     def open_embed(self):
         """ Tell ui to open an embedded edit, generated from
@@ -949,7 +1017,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :return: None
         """
         ctrl.ui.start_editing_node(self)
-
 
     def double_click(self, event=None):
         """ Scene has decided that this node has been clicked
@@ -967,7 +1034,9 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :param multi: assume multiple selection (append, don't replace)
         """
         self.hovering = False
-        if (event and event.modifiers() == Qt.ShiftModifier) or multi:  # multiple selection
+        if (
+            event and event.modifiers() == Qt.ShiftModifier) or multi:  #
+            # multiple selection
             for node in ctrl.selected:
                 if hasattr(node, 'remove_merge_options'):
                     node.remove_merge_options()
@@ -1002,7 +1071,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self.prepare_children_for_dragging()
         self._fixed_position_before_dragging = self.fixed_position
         self._adjustment_before_dragging = self.adjustment
-        self._distance_from_dragged = (self.current_position[0], self.current_position[1])
+        self._distance_from_dragged = (
+        self.current_position[0], self.current_position[1])
 
         ctrl.ui.prepare_touch_areas_for_dragging(drag_host=self,
                                                  moving=ctrl.dragged_set,
@@ -1011,7 +1081,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self.start_moving()
 
     def add_to_dragged(self):
-        """ Add this node to entourage of dragged node. These nodes will maintain their relative
+        """ Add this node to entourage of dragged node. These nodes will
+        maintain their relative
          position to dragged node while dragging.
         :return: None
         """
@@ -1029,19 +1100,22 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         pass
 
     def drag(self, event):
-        """ Drags also elements that are counted to be involved: features, children etc
+        """ Drags also elements that are counted to be involved: features,
+        children etc
         :param event:
         """
         now_x, now_y = to_tuple(event.scenePos())
         if not ctrl.dragged_focus:
             self.start_dragging(now_x, now_y)
-        # change dragged positions to be based on adjustment instead of distance to main dragged.
+        # change dragged positions to be based on adjustment instead of
+        # distance to main dragged.
         for node in ctrl.dragged_set:
             node.dragged_to(now_x, now_y)
         self.dragged_to(now_x, now_y)
 
     def dragged_to(self, now_x, now_y):
-        """ Dragged focus is in now_x, now_y. Move there or to position relative to that
+        """ Dragged focus is in now_x, now_y. Move there or to position
+        relative to that
         :param now_x: current drag focus x
         :param now_y: current drag focus y
         :return:
@@ -1104,17 +1178,19 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             for node in ctrl.dragged_set:
                 node.lock()
             if self.adjustment:
-                message = 'adjusted node to {:.2f}, {:.2f}'.format(self.adjustment[0], self.adjustment[1])
+                message = 'adjusted node to {:.2f}, {:.2f}'.format(
+                    self.adjustment[0], self.adjustment[1])
 
             elif self.fixed_position:
-                message = 'moved node to {:.2f}, {:.2f}'.format(self.fixed_position[0],
-                                                                self.fixed_position[1])
+                message = 'moved node to {:.2f}, {:.2f}'.format(
+                    self.fixed_position[0], self.fixed_position[1])
         self.update_position()
         self.finish_dragging()
         return message
 
     def finish_dragging(self):
-        """ Flush dragging-related temporary variables. Called always when dragging is finished for any
+        """ Flush dragging-related temporary variables. Called always when
+        dragging is finished for any
          reason.
         :return:
         """
@@ -1142,14 +1218,16 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             self.finish_dragging()
 
     def lock(self):
-        """ Display lock, unless already locked. Added functionality to recognize the state before
+        """ Display lock, unless already locked. Added functionality to
+        recognize the state before
          dragging started.
         :return:
         """
         super().lock()
-        if not (self._fixed_position_before_dragging or self._adjustment_before_dragging):
+        if not (
+            self._fixed_position_before_dragging or
+                    self._adjustment_before_dragging):
             ctrl.main.ui_manager.show_anchor(self)  # @UndefinedVariable
-
 
     # ### Mouse - Qt events ##################################################
 
@@ -1171,7 +1249,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """ Dragging a foreign object (could be from ui) over a node, entering.
         :param event:
         """
-        if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist"):
+        if event.mimeData().hasFormat(
+                "application/x-qabstractitemmodeldatalist"):
             event.acceptProposedAction()
             self.hovering = True
         else:
@@ -1181,7 +1260,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """ Dragging a foreign object (could be from ui) over a node, leaving.
         :param event:
         """
-        if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist"):
+        if event.mimeData().hasFormat(
+                "application/x-qabstractitemmodeldatalist"):
             event.acceptProposedAction()
             self.hovering = False
         else:
@@ -1228,6 +1308,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     edges_down = Saved("edges_down")
     triangle = Saved("triangle", if_changed=if_changed_triangle)
     folded_away = Saved("folded_away")
-    folding_towards = Saved("folding_towards", if_changed=if_changed_folding_towards)
+    folding_towards = Saved("folding_towards",
+                            if_changed=if_changed_folding_towards)
     color_id = Saved("color_id")
     font_id = Saved("font_id")

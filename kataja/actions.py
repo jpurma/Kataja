@@ -9,15 +9,13 @@ import time
 import subprocess
 
 from PyQt5 import QtGui, QtWidgets, QtCore
-
 from PyQt5.QtCore import Qt
-from kataja.Node import Node
+
 from kataja.errors import ForestError
 import kataja.debug as debug
 from kataja.ui.PreferencesDialog import PreferencesDialog
 from kataja.Edge import SHAPE_PRESETS, Edge
 from kataja.visualizations.available import action_key
-
 
 __author__ = 'purma'
 
@@ -850,8 +848,7 @@ def change_leaf_shape(dim, value=0):
         elif dim == 'h':
             ctrl.forest.settings.edge_shape_settings(scope, 'leaf_y', value)
         elif dim == 'r':
-            ctrl.forest.settings.edge_shape_settings(scope, 'leaf_x', g.DELETE)
-            ctrl.forest.settings.edge_shape_settings(scope, 'leaf_y', g.DELETE)
+            ctrl.forest.settings.reset_shape_settings(scope, 'leaf_x', 'leaf_y')
             options_panel = ctrl.ui.get_panel(g.LINE_OPTIONS)
             options_panel.update_panel()
         else:
@@ -890,7 +887,7 @@ def change_edge_thickness(dim, value=0):
                 edge.change_thickness(dim, value)
     elif scope:
         if dim == 'r':
-            ctrl.forest.settings.edge_shape_settings(scope, 'thickness', g.DELETE)
+            ctrl.forest.settings.reset_shape_settings(scope, 'thickness')
             options_panel = ctrl.ui.get_panel(g.LINE_OPTIONS)
             options_panel.update_panel()
         else:
@@ -941,11 +938,9 @@ def change_curvature(dim, value=0):
             else:
                 ctrl.forest.settings.edge_shape_settings(scope, 'fixed_dy', value)
         elif dim == 'r': # reset
-            ctrl.forest.settings.edge_shape_settings(scope, 'rel_dx', g.DELETE)
-            ctrl.forest.settings.edge_shape_settings(scope, 'rel_dy', g.DELETE)
-            ctrl.forest.settings.edge_shape_settings(scope, 'fixed_dx', g.DELETE)
-            ctrl.forest.settings.edge_shape_settings(scope, 'fixed_dy', g.DELETE)
-            ctrl.forest.settings.edge_shape_settings(scope, 'relative', g.DELETE)
+            ctrl.forest.settings.reset_shape_settings(scope, 'rel_dx',
+                                                      'rel_dy', 'fixed_dx',
+                                                      'fixed_dy', 'relative')
             options_panel.update_panel()
         elif dim == 's': # toggle between relative and fixed
             ctrl.forest.settings.edge_shape_settings(scope, 'relative', value == 'relative')

@@ -25,12 +25,9 @@
 
 import math
 
-from kataja.BaseConstituentNode import BaseConstituentNode
 from kataja.singletons import prefs
-from kataja.FeatureNode import FeatureNode
 from kataja.utils import caller
 from kataja.visualizations.BaseVisualization import BaseVisualization
-from kataja.GlossNode import GlossNode
 import kataja.globals as g
 
 
@@ -84,10 +81,10 @@ class LeftFirstHexTree(BaseVisualization):
         node.adjustment = None
         node.update_label()
         node.update_visibility()
-        if isinstance(node, BaseConstituentNode):
+        if node.node_type == g.CONSTITUENT_NODE:
             node.dyn_x = False
             node.dyn_y = False
-        elif isinstance(node, FeatureNode) or isinstance(node, GlossNode):
+        else:
             node.dyn_x = True
             node.dyn_y = True
 

@@ -107,6 +107,27 @@ class ForestSettings(BaseModel):
             else:
                 local_edge_settings[key] = value
 
+
+    def reset_shape_settings(self, edge_type, *keys):
+        """ Delecte local (forest) modifications for edge shapes
+        :param edge_type: edge_type we are resetting
+        :param keys: strings of key names
+        :return:
+        """
+        local_edge_type = self.edge_types.get(edge_type, None)
+        if not local_edge_type:
+            return
+        shape_args = local_edge_type.get('shape_args', None)
+        if not shape_args:
+            return
+        shape_defaults = SHAPE_PRESETS[self.edge_type_settings(edge_type, 'shape_name')]
+        for key in keys:
+            if key in shape_args:
+                if key in shape_defaults:
+                    shape_args[key] = shape_defaults[key]
+                else:
+                    del shape_args[key]
+
     def edge_shape_settings(self, edge_type, key=None, value=None, shape_name=None):
         """ Return the settings dict for certain edge type: often this defaults to edge_shape settings, but it can be
         overridden for each edge_type and eventually for each edge.
@@ -133,8 +154,6 @@ class ForestSettings(BaseModel):
                 return shape_defaults  # .copy()
             elif value is None:  # get single setting
                 return shape_defaults.get(key, None)
-            elif value == DELETE:
-                pass
             else:  # set single setting
                 if not local_edge_type:
                     local_edge_type = {}
@@ -150,13 +169,6 @@ class ForestSettings(BaseModel):
                     return shape_defaults.get(key, None)
                 else:  # get from here
                     return shape_args[key]
-            elif value == DELETE:
-                if key in shape_args:
-                    shape_defaults = SHAPE_PRESETS[self.edge_type_settings(edge_type, 'shape_name')]
-                    if key in shape_defaults:
-                        shape_args[key] = shape_defaults[key]
-                    else:
-                        del shape_args[key]
             else:  # set single setting
                 shape_args[key] = value
 

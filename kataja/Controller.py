@@ -24,9 +24,7 @@
 
 import sys
 
-from PyQt5 import QtCore, QtWidgets
-
-from kataja.utils import caller, time_me
+from kataja.utils import caller
 
 
 # gc.set_debug(gc.DEBUG_LEAK)
@@ -43,8 +41,10 @@ class Controller:
     a) access to shared objects or objects upstream in containers.
     b) selected objects
     c) focused UI object
-    d) capability to send announcements, which are announcement_id + argument that is sent to all objects that listen
-    to such announcements. These can be used to e.g. send requests to update ui elements without having to know what
+    d) capability to send announcements, which are announcement_id + argument
+    that is sent to all objects that listen
+    to such announcements. These can be used to e.g. send requests to update
+    ui elements without having to know what
     elements there are.
     e) capability to send Qt signals as main application.
     """
@@ -69,7 +69,8 @@ class Controller:
         self.ui_pressed = None  # set() # different coordinates to pressed set
         self.dragged_focus = None
         self.dragged_set = set()
-        self.latest_hover = None  # used only while dragging, because standard hovering doesn't work while dragging
+        self.latest_hover = None  # used only while dragging, because
+        # standard hovering doesn't work while dragging
         self.ui_focus = None
         self.focus_point = None
         self.selection_tool = False
@@ -79,18 +80,20 @@ class Controller:
         self.print_garbage = True
         self.focus = None
         self.undo_disabled = False  # flag that affects if pickle.load assumes
-        # an empty workspace (loading new) or if it tries to compare changes (undo).
+        # an empty workspace (loading new) or if it tries to compare changes
+        # (undo).
         self.unassigned_objects = {}
         self.items_moving = False
-        # -- After user action, should the visualization be redrawn and should it make an undo savepoint
-        # these are True by default, but action method may toggle them off temporarily. The next action will
+        # -- After user action, should the visualization be redrawn and
+        # should it make an undo savepoint
+        # these are True by default, but action method may toggle them off
+        # temporarily. The next action will
         # set these back on.
         self.action_redraw = True
         self.undo_pile = set()
         self.node_classes = {}
         self.edge_class = None
         # ---------------------------
-
 
     def late_init(self, main):
         """
@@ -100,8 +103,7 @@ class Controller:
         from syntax.ConfigurableConstituent import ConfigurableConstituent
         from syntax.BaseFL import FL
         from syntax.BaseFeature import BaseFeature
-        from kataja.object_factory import node_classes, edge_class, \
-            synobj_classes
+        from kataja.object_factory import node_classes, edge_class
         self.Constituent = ConfigurableConstituent
         self.Feature = BaseFeature
         self.FL = FL()
@@ -118,7 +120,8 @@ class Controller:
 
     @property
     def cm(self):
-        """ Shortcut to color manager, which replaces palettes, colors etc. older solutions.
+        """ Shortcut to color manager, which replaces palettes, colors etc.
+        older solutions.
         :return: PaletteManager
         """
         return self.main.color_manager
@@ -154,7 +157,8 @@ class Controller:
         return self.main.graph_view.zoom_timer.isActive()
 
     def set_status(self, msg):
-        """ Show message in status bar. Send empty message to clear status bar. """
+        """ Show message in status bar. Send empty message to clear status
+        bar. """
         if not (self.items_moving or self.is_zooming()):
             if msg:
                 self.main.status_bar.showMessage(msg)
@@ -162,17 +166,20 @@ class Controller:
                 self.main.status_bar.clearMessage()
 
     def remove_status(self, msg):
-        """ Clears status message, but only if it is not been replaced by another message 
-            (E.g. when contained object has put its own message, and hoverLeaveEvent has not been called for containing object. )
+        """ Clears status message, but only if it is not been replaced by
+        another message
+            (E.g. when contained object has put its own message,
+            and hoverLeaveEvent has not been called for containing object. )
         """
         if not (self.items_moving or self.is_zooming()):
             if msg == self.main.status_bar.currentMessage():
                 self.main.status_bar.clearMessage()
 
-        # ******* Selection *******
+                # ******* Selection *******
 
     # trees and edges can be selected.
-    # UI objects are focused. multiple items can be selected, but actions do not necessary apply to them.
+    # UI objects are focused. multiple items can be selected, but actions do
+    # not necessary apply to them.
 
     def single_selection(self) -> bool:
         """
@@ -259,7 +266,8 @@ class Controller:
     # ******** /selection *******
 
     # ******** Focus *********
-    # focus is used only for UI objects. scene objects use selection. only one ui object or its part can have focus
+    # focus is used only for UI objects. scene objects use selection. only
+    # one ui object or its part can have focus
 
     def get_focus_object(self):
         """
@@ -309,7 +317,8 @@ class Controller:
         return self.watchers.get(signal, [])
 
     def call_watchers(self, obj, signal, field_name=None, value=None):
-        """ Alert (UI) objects that are watching for changes for given field in given object
+        """ Alert (UI) objects that are watching for changes for given field
+        in given object
         :param obj:
         :param signal:
         :param field_name
@@ -319,5 +328,5 @@ class Controller:
         watchers = self.get_watchers(signal)
         for watcher in watchers:
             watcher.watch_alerted(obj, signal, field_name, value)
-        #if not watchers:
-        #    print('no watcher found for signal "%s"' % signal)
+            # if not watchers:
+            #    print('no watcher found for signal "%s"' % signal)
