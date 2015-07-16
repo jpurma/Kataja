@@ -338,6 +338,7 @@ class QtPreferences:
         self.add_icon = icon('add_box48.png')
         self.add_box_icon = icon('add_box24.png')
         self.settings_icon = icon('settings48.png')
+        self.settings_pixmap = pixmap('settings48.png')
         self.triangle_icon = icon('triangle48.png')
         self.triangle_close_icon = icon('triangle_close48.png')
         self.font_icon = icon('text_format48.png')

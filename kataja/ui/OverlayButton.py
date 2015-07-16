@@ -27,6 +27,64 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from kataja.errors import UIError
 from kataja.singletons import ctrl
 import kataja.globals as g
+from utils import time_me
+
+
+class ColorButtonEngine(QtGui.QIconEngine):
+    """ An icon that is drawn from two binary pixmaps with colors provided by the app environment.
+        The benefit is that the icons can adjust their colors based on the environment and with two colors
+        there are more possibilities for making the icons pretty.
+    """
+
+    def __init__(self, pixmap, color_key):
+        QtGui.QIconEngine.__init__(self)
+        self.safe_pixmap = pixmap
+        self.mask = pixmap.mask()
+        self.safe_pixmap.setMask(self.mask)
+        self.color_key = color_key
+
+    # @caller
+    def paint(self, painter, rect, mode, state):
+        """
+
+        :param painter:
+        :param rect:
+        :param mode:
+        :param state:
+        """
+        # painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        # c = ctrl.cm.ui()
+        # if mode == 0:  # normal
+        #     painter.setPen(c)
+        # elif mode == 1:  # disabled
+        #     painter.setPen(ctrl.cm.inactive(c))
+        # elif mode == 2:  # hovering
+        #     painter.setPen(ctrl.cm.hovering(c))
+        # elif mode == 3:  # selected
+        #     painter.setPen(ctrl.cm.active(c))
+        # else:
+        #     painter.setPen(c)
+        #     print('Weird button mode: ', mode)
+        #
+        # print(painter.backgroundMode(), painter.background(), QtCore.Qt.OpaqueMode, QtCore.Qt.TransparentMode)
+        #
+        #QtGui.QIconEngine.paint(self, painter, rect, mode, state)
+        #painter.setCompositionMode(QtGui.QPainter.CompositionMode_SourceOver)
+        painter.setCompositionMode(QtGui.QPainter.CompositionMode_Source)
+        #painter.fillRect(rect, ctrl.cm.paper())
+        painter.fillRect(rect, QtCore.Qt.transparent)
+        painter.setCompositionMode(QtGui.QPainter.CompositionMode_SourceOver)
+        painter.drawPixmap(rect, self.safe_pixmap)
+        #painter.setBrush(ctrl.cm.paper())
+        #painter.drawRect(rect)
+        #painter.setCompositionMode(
+        #    QtGui.QPainter.CompositionMode_SourceOut)
+        painter.setCompositionMode(QtGui.QPainter.CompositionMode_SourceIn)
+        painter.fillRect(rect, ctrl.cm.d[self.color_key])
+        painter.setCompositionMode(QtGui.QPainter.CompositionMode_DestinationOver)
+        painter.fillRect(rect, QtCore.Qt.transparent)
+        #painter.fillRect(rect, ctrl.cm.paper())
+        painter.end()
 
 
 class PanelButton(QtWidgets.QPushButton):
@@ -39,45 +97,56 @@ class PanelButton(QtWidgets.QPushButton):
      """
     def __init__(self, pixmap, text=None, parent=None, size=16, color_key='accent1'):
         QtWidgets.QPushButton.__init__(self, parent)
-        if text:
-            self.setToolTip(text)
-            self.setStatusTip(text)
         self.color_key = color_key
-        self.setContentsMargins(0, 0, 0, 0)
-        if isinstance(size, tuple):
+        if isinstance(pixmap, QtGui.QIcon):
+            self.pixmap = pixmap.pixmap(size)
+        else:
+            self.pixmap = pixmap
+        if isinstance(size, QtCore.QSize):
+            width = size.width()
+            height = size.height()
+        elif isinstance(size, tuple):
             width = size[0]
             height = size[1]
         else:
             width = size
             height = size
-        self.setIconSize(QtCore.QSize(width, height))
+        size = QtCore.QSize(width, height)
+        self.setIconSize(size)
+        hidp = self.devicePixelRatio()
+        self.isize = QtCore.QSize(width * hidp, height * hidp)
+        self.compose_icon()
+        if text:
+            self.setToolTip(text)
+            self.setStatusTip(text)
+        self.setContentsMargins(0, 0, 0, 0)
         self.setFlat(True)
-        self.effect = None
-        if isinstance(pixmap, QtGui.QIcon):
-            self.setIcon(pixmap)
-        else:
-            self.setIcon(QtGui.QIcon(pixmap))
-        self.effect = QtWidgets.QGraphicsColorizeEffect(self)
-        self.effect.setColor(ctrl.cm.get(self.color_key))
-        self.effect.setStrength(0.6)
-        self.setGraphicsEffect(self.effect)
+
+    def compose_icon(self):
+        """ Redraw the image to be used as a basis for icon, this is necessary
+        to update the overlay color.
+        :return:
+        """
+        image = QtGui.QImage(self.isize,
+                             QtGui.QImage.Format_ARGB32_Premultiplied)
+        ir = image.rect()
+        painter = QtGui.QPainter(image)
+        painter.setCompositionMode(QtGui.QPainter.CompositionMode_Source)
+        painter.fillRect(ir, QtCore.Qt.transparent)
+        painter.setCompositionMode(QtGui.QPainter.CompositionMode_SourceOver)
+        painter.drawPixmap(ir, self.pixmap)
+        painter.setCompositionMode(QtGui.QPainter.CompositionMode_SourceIn)
+        painter.fillRect(ir, ctrl.cm.get(self.color_key))
+        painter.end()
+        self.setIcon(QtGui.QIcon(QtGui.QPixmap.fromImage(image)))
 
     def update_color(self):
-        if self.effect:
-            self.effect.colorChanged(ctrl.cm.get(self.color_key))
+        self.compose_icon()
 
     def event(self, e):
-        if e.type() == QtCore.QEvent.PaletteChange and self.effect:
-            self.effect.setColor(ctrl.cm.get(self.color_key))
+        if e.type() == QtCore.QEvent.PaletteChange:
+            self.compose_icon()
         return QtWidgets.QPushButton.event(self, e)
-
-    def enterEvent(self, event):
-        if self.effect:
-            self.effect.setStrength(1.0)
-
-    def leaveEvent(self, event):
-        if self.effect:
-            self.effect.setStrength(0.5)
 
 
 class OverlayButton(PanelButton):
@@ -148,11 +217,10 @@ class OverlayButton(PanelButton):
     def enterEvent(self, event):
         if self.role == g.REMOVE_MERGER:
             self.host.hovering = True
-        if self.effect:
-            self.effect.setStrength(1.0)
 
     def leaveEvent(self, event):
         if self.role == g.REMOVE_MERGER:
             self.host.hovering = False
-        if self.effect:
-            self.effect.setStrength(0.5)
+
+
+

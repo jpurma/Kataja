@@ -36,8 +36,9 @@ class DraggableNodeFrame(QtWidgets.QFrame):
         self.label = QtWidgets.QLabel(name)
         self.label.setBuddy(self.add_button)
         hlayout.addWidget(self.label)
-        self.conf_button = PanelButton(qt_prefs.settings_icon, text='Modify %s behaviour' % name,
-                                       parent=self, size=16)
+        self.conf_button = PanelButton(qt_prefs.settings_pixmap, text='Modify '
+                                                                     '%s behaviour' % name,
+                                       parent=self, size=20)
         self.conf_button.setFixedSize(26, 26)
         hlayout.addWidget(self.conf_button, 1, QtCore.Qt.AlignRight)
         self.setLayout(hlayout)
