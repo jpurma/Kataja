@@ -294,7 +294,12 @@ class ITemplateNode(ITextNode):
         """
         :return:
         """
-        return not (self.values or self.rows)
+        if self.rows:
+            return False
+        for v in self.values.values():
+            if v.get('value', None):
+                return False
+        return True
 
     def __repr__(self):
         return 'ITemplateNode(rows=%s, values=%s)' % (

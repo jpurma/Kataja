@@ -88,6 +88,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self.label_rect = None
         self._inode = None
         self._inode_changed = True
+        self._inode_str = ''
         self._gravity = 0
         self.clickable = False
         self.selectable = True
@@ -820,8 +821,9 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """
         :return: INodes or str or tuple of them
         """
-        if not self._inode:
+        if self._inode is None:
             self._inode = ITemplateNode()
+            self._inode_str = str(self._inode)
             self.impose_order_to_inode()
             self._inode_changed = True
         if self._inode_changed:
@@ -831,6 +833,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
                 # use 'getter' or default to 'key', assuming that key is the
                 # same as the property it is representing
                 iv[key]['value'] = getattr(self, getter)
+            self._inode_str = str(self._inode)
             self._inode_changed = False
         return self._inode
 
@@ -851,8 +854,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
         :return:
         """
-        print(self.as_inode)
-        return not self.as_inode
+        return not self._inode_str
 
     def label_edited(self):
         """ implement if label can be modified by editing it directly """
