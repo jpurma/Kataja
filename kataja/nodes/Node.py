@@ -718,17 +718,12 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     # #####################################################################
 
     @property
-    def font(self):
-        """
-
-
+    def font(self) -> QtGui.QFont:
+        """ Helper to get the QFont being used here. It may be local, or set
+        for forest, or come from default preferences. You don't need to know.
         :return:
         """
-        if self.font_id:
-            return qt_prefs.font(self.font_id)
-        else:
-            return qt_prefs.font(
-                ctrl.forest.settings.node_settings(self.node_type, 'font'))
+        return qt_prefs.font(self.get_font_id())
 
     def get_font_id(self):
         """
@@ -737,40 +732,30 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         if self.font_id:
             return self.font_id
         else:
-            return ctrl.forest.settings.node_settings(self.node_type, 'font')
+            return ctrl.fs.node_info(self.node_type, 'font')
 
     # ### Colors and drawing settings
     # ############################################################
 
     @property
-    def color(self):
-        """
-
-
+    def color(self) -> QtGui.QColor:
+        """ Helper property to directly get the inherited/local QColor
         :return:
         """
-        if self.color_id is None:
-            return ctrl.cm.get(
-                ctrl.forest.settings.node_settings(self.__class__.node_type,
-                                                   'color'))
-        else:
-            return ctrl.cm.get(self.color_id)
+        return ctrl.cm.get(self.get_color_id())
 
     def get_color_id(self):
         """
         :return:
         """
         if self.color_id is None:
-            c = ctrl.forest.settings.node_settings(self.__class__.node_type,
-                                                   'color')
+            c = ctrl.fs.node_info(self.__class__.node_type, 'color')
             return c
         else:
             return self.color_id
 
     def palette(self):
         """
-
-
         :return:
         """
         palette = QtGui.QPalette(ctrl.cm.get_qt_palette())
@@ -803,7 +788,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """
         if not self._label_complex:
             self._label_complex = Label(parent=self)
-        if not self._inode:
+        if not self.as_inode:
             return
         self._label_complex.update_label(self.font, self.as_inode)
         self.update_bounding_rect()
@@ -1301,11 +1286,9 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     #                #
     # ############## #
 
-    # Properties delegated to syntactic object
-    label = Synobj("label", if_changed=alert_inode)
-
     # Saved properties
     syntactic_object = Saved("syntactic_object")
+    label = Saved("label", if_changed=alert_inode)
     edges_up = Saved("edges_up")
     edges_down = Saved("edges_down")
     triangle = Saved("triangle", if_changed=if_changed_triangle)

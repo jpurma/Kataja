@@ -226,7 +226,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
         if isinstance(self.host,
                       Edge):  # Touch area starts from relation between nodes
             rel = self.host
-            path_settings = ctrl.forest.settings.edge_shape_settings(
+            path_settings = ctrl.forest.settings.shape_info(
                 rel.edge_type)
             sx, sy = to_tuple(rel.get_point_at(0.5))
             self.start_point = sx, sy
@@ -244,7 +244,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
                 y = sy + dy * l
                 self.end_point = x, y
         elif self._shape_has_joint:
-            path_settings = ctrl.forest.settings.edge_shape_settings(
+            path_settings = ctrl.forest.settings.shape_info(
                 g.CONSTITUENT_EDGE)
             sx, sy, dummy = self.host.magnet(2)
             self.start_point = sx, sy

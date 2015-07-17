@@ -84,31 +84,46 @@ class ForestSettings(BaseModel):
 
     # ## Edges - all require edge type as argument, value is stored in dict ###########
 
-    def edge_type_settings(self, edge_type, key, value=None):
-        """ Getter/setter for settings related to various types of edges. 
+    def edge_type_for(self, node_type):
+        """ Helper for easy access to edge_type
+        :param node_type:
+        :return:
+        """
+        return self.node_info(node_type, 'edge')
+
+    def edge_info(self, edge_type, key):
+        """ Getter for settings related to various types of edges.
         If not found here, value is searched from preferences. 
-        If called with value, the value is set here and it overrides 
-        the preference setting.
+        :param edge_type:
+        :param key:
+        """
+        local_edge_settings = self.edge_types.get(edge_type)
+        if local_edge_settings is None or local_edge_settings.get(key, None) is None:
+            return prefs.edges[edge_type].get(key, None)
+        else:
+            return local_edge_settings[key]
+
+    def set_edge_info(self, edge_type, key, value):
+        """ Setter for settings related to various types of edges.
+        Values are set for forest.settings and override the preferences
         :param edge_type:
         :param key:
         :param value:
         """
-        if not edge_type:
-            return
         local_edge_settings = self.edge_types.get(edge_type)
-        if value is None:
-            if local_edge_settings is None or local_edge_settings.get(key, None) is None:
-                return prefs.edges[edge_type].get(key, None)
-            else:
-                return local_edge_settings[key]
+        if local_edge_settings is None:
+            self.edge_types[edge_type] = {key: value}
         else:
-            if local_edge_settings is None:
-                self.edge_types[edge_type] = {key: value}
-            else:
-                local_edge_settings[key] = value
+            local_edge_settings[key] = value
 
 
-    def reset_shape_settings(self, edge_type, *keys):
+    def shape_for_edge(self, edge_type):
+        """ Helper to get the shape name for given edge type.
+        :return:
+        """
+        return self.edge_info(edge_type, 'shape_name')
+
+    def reset_shape(self, edge_type, *keys):
         """ Delecte local (forest) modifications for edge shapes
         :param edge_type: edge_type we are resetting
         :param keys: strings of key names
@@ -120,7 +135,7 @@ class ForestSettings(BaseModel):
         shape_args = local_edge_type.get('shape_args', None)
         if not shape_args:
             return
-        shape_defaults = SHAPE_PRESETS[self.edge_type_settings(edge_type, 'shape_name')]
+        shape_defaults = SHAPE_PRESETS[self.edge_info(edge_type, 'shape_name')]
         for key in keys:
             if key in shape_args:
                 if key in shape_defaults:
@@ -128,61 +143,61 @@ class ForestSettings(BaseModel):
                 else:
                     del shape_args[key]
 
-    def edge_shape_settings(self, edge_type, key=None, value=None, shape_name=None):
-        """ Return the settings dict for certain edge type: often this defaults to edge_shape settings, but it can be
-        overridden for each edge_type and eventually for each edge.
-        With key, you can get one edge setting, with value you can set the edge setting.
-        :param edge_type:
-        :param key:
-        :param value:
-        :return:
-        """
-        if not edge_type:
-            return
-        if not shape_name:
-            shape_name = self.edge_type_settings(edge_type, 'shape_name')
+    def shape_defaults(self, edge_type):
+        shape_name = self.edge_info(edge_type, 'shape_name')
+        return SHAPE_PRESETS[shape_name]
 
+    def local_shape_args(self, edge_type):
         local_edge_type = self.edge_types.get(edge_type, None)
         if local_edge_type:
-            shape_args = local_edge_type.get('shape_args', None)
-        else:
-            shape_args = None
+            return local_edge_type.get('shape_args', None)
 
-        if shape_args is None:
-            shape_defaults = SHAPE_PRESETS[shape_name]
-            if key is None:  # the whole dict is asked
-                return shape_defaults  # .copy()
-            elif value is None:  # get single setting
-                return shape_defaults.get(key, None)
-            else:  # set single setting
-                if not local_edge_type:
-                    local_edge_type = {}
-                    self.edge_types[edge_type] = local_edge_type
-                local_edge_type['shape_args'] = shape_defaults.copy()
-                local_edge_type['shape_args'][key] = value
-        else:
-            if key is None:  # the whole dict is asked
-                return shape_args
-            elif value is None:  # get single setting
+    def shape_info(self, edge_type, key=None):
+        """ Return the settings dict for certain edge type: often this defaults
+        to edge_shape settings, but it can be
+        overridden for each edge_type and eventually for each edge.
+        With key, you can get one edge setting.
+        :param edge_type:
+        :param key:
+        :return:
+        """
+        shape_args = self.local_shape_args(edge_type)
+        if shape_args:
+            if key: # get single setting
                 if shape_args.get(key, None) is None:  # get from original dict
-                    shape_defaults = SHAPE_PRESETS[shape_name]
-                    return shape_defaults.get(key, None)
+                    return self.shape_defaults(edge_type).get(key, None)
                 else:  # get from here
                     return shape_args[key]
-            else:  # set single setting
-                shape_args[key] = value
+            else:  # the whole dict is asked
+                return shape_args
+        else:
+            if key:  # get single setting
+                return self.shape_defaults(edge_type).get(key, None)
+            else:  # the whole dict is asked
+                return self.shape_defaults(edge_type)  # .copy()
 
-    # ## Nodes - all require edge type as argument, value is stored in dict ###########
+    def set_shape_info(self, edge_type, key, value):
+        """ Set shape locally: each edge_type has its local settings,
+        which includes dict shape_args, where all these are to be found.
+        :param edge_type:
+        :param key:
+        :return:
+        """
+        shape_name = self.edge_info(edge_type, 'shape_name')
 
-    # Node types
-    # ABSTRACT_NODE = 0
-    # CONSTITUENT_NODE = 1
-    # FEATURE_NODE = 2
-    # ATTRIBUTE_NODE = 3
-    # GLOSS_NODE = 4
-    # PROPERTY_NODE = 5
+        local_edge_type = self.edge_types.get(edge_type, None)
+        if not local_edge_type:
+            local_edge_type = {}
+            self.edge_types[edge_type] = local_edge_type
+        shape_args = local_edge_type.get('shape_args', None)
+        if not shape_args:
+            shape_args = self.shape_defaults(edge_type).copy()
+            local_edge_type['shape_args'] = shape_args
+        shape_args[key] = value
 
-    def node_settings(self, node_type=None, key=None, value=None):
+    # ## Nodes - all require edge type as argument, value is stored in dict
+
+    def node_info(self, node_type=None, key=None):
         """ Getter/setter for settings related to various types of nodes. 
         If not found here, value is searched from preferences. 
         If called with value, the value is set here and it overrides 
@@ -204,16 +219,27 @@ class ForestSettings(BaseModel):
             settings.update(self.node_types.get(node_type, {}))
             return settings
         local_node_settings = self.node_types.get(node_type, None)
-        if value is None:
-            if local_node_settings is None or local_node_settings.get(key) is None:
-                return prefs.nodes[node_type][key]
-            else:
-                return local_node_settings[key]
+        if local_node_settings is None or local_node_settings.get(key) is None:
+            return prefs.nodes[node_type][key]
         else:
-            if local_node_settings is None:
-                self.node_types[node_type] = {key: value}
-            else:
-                local_node_settings[key] = value
+            return local_node_settings[key]
+
+    def set_node_info(self, node_type, key, value):
+        """ Setter for settings related to various types of nodes.
+        If not found here, value is searched from preferences.
+        If called with value, the value is set here and it overrides
+        the preference setting.
+        This cannot be used to create new node_types. Only to locally modify
+        existing settings
+        :param node_type:
+        :param key:
+        :param value:
+        """
+        local_node_settings = self.node_types.get(node_type, None)
+        if local_node_settings is None:
+            self.node_types[node_type] = {key: value}
+        else:
+            local_node_settings[key] = value
 
 
     # ############## #

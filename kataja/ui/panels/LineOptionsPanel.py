@@ -115,7 +115,7 @@ class LineOptionsPanel(UIPanel):
             self.update_cp2()
             selection = True
         else:  # Adjusting how this relation type is drawn
-            sd = ctrl.forest.settings.edge_shape_settings(ctrl.ui.edge_scope)
+            sd = ctrl.forest.settings.shape_info(ctrl.ui.edge_scope)
             # print('shape settings: ', shape_dict)
             selection = False
         if sd:

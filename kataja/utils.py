@@ -411,9 +411,46 @@ def import_plugins(prefs, plugins_path):
     print('Modules imported from plugins: %s' % list(prefs.plugins.keys()))
 
 
+def add_xyz(a, b):
+    """
+    :rtype : tuple
+    """
+    return a[0] + b[0], a[1] + b[1], a[2] + b[2]
 
 
+def add_xy(a, b):
+    """
+    :rtype : tuple
+    """
+    return a[0] + b[0], a[1] + b[1]
 
+
+def sub_xyz(a, b):
+    """
+    :rtype : tuple
+    """
+    return a[0] - b[0], a[1] - b[1], a[2] - b[2]
+
+
+def sub_xy(a, b):
+    """
+    :rtype : tuple
+    """
+    return a[0] - b[0], a[1] - b[1]
+
+
+def div_xyz(a, div):
+    """
+    :rtype : tuple
+    """
+    return a[0] / div, a[1] / div, a[2] / div
+
+
+def multiply_xyz(a, mul):
+    """
+    :rtype : tuple
+    """
+    return a[0] * mul, a[1] * mul, a[2] * mul
 
 
 

@@ -132,8 +132,11 @@ class NodeEditEmbed(UIEmbed):
             else:
                 raise NotImplementedError
             if 'setter' in d:
+                print('using setter: %s to save value %s' % getattr(
+                    self.host, d['setter'], value))
                 getattr(self.host, d['setter'])(value)
             else:
+                print('saving to field %s value %s' % (field_name, value))
                 setattr(self.host, field_name, value)
         self.host.update_label()
 

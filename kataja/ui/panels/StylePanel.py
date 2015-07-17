@@ -187,7 +187,7 @@ class StylePanel(UIPanel):
                     node.update_label()
             # ... or update color for all nodes of this type
             elif scope:
-                ctrl.forest.settings.node_settings(scope, 'color', color_id)
+                ctrl.fs.set_node_info(scope, 'color', color_id)
                 for node in ctrl.forest.nodes.values():
                     node.update_label()
             # make sure that selector has correct choice selected
@@ -218,9 +218,8 @@ class StylePanel(UIPanel):
                     edge.update()
             # ... or update color for all edges of this type
             elif scope:
-                edge_type = ctrl.forest.settings.node_settings(scope, 'edge')
-                ctrl.forest.settings.edge_type_settings(edge_type, 'color',
-                                                        color_id)
+                edge_type = ctrl.fs.edge_type_for(scope)
+                ctrl.fs.set_edge_info(edge_type, 'color', color_id)
                 for edge in ctrl.forest.edges.values():
                     edge.update()
             s.select_data(color_id)
@@ -244,7 +243,7 @@ class StylePanel(UIPanel):
                     node.font_id = font_id
                     node.update_label()
         elif ctrl.ui.scope:
-            ctrl.forest.settings.node_settings(ctrl.ui.scope, 'font', font_id)
+            ctrl.forest.settings.node_info(ctrl.ui.scope, 'font', font_id)
             for node in ctrl.forest.nodes.values():
                 node.update_label()
 
@@ -302,8 +301,8 @@ class StylePanel(UIPanel):
             if d['node_font'][0]:
                 self.cached_font_id = d['node_font'][0]
         else:
-            ns = ctrl.forest.settings.node_settings
-            es = ctrl.forest.settings.edge_type_settings
+            ns = ctrl.fs.node_info
+            es = ctrl.fs.edge_info
             edge_scope = ns(scope, 'edge')
             node_color = ns(scope, 'color')
             node_font = ns(scope, 'font')

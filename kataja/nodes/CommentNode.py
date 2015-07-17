@@ -24,7 +24,7 @@ CommentNode is a non-functional node for freeform text
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-
+from kataja.BaseModel import Saved
 from kataja.nodes.Node import Node
 from kataja.globals import ARROW, COMMENT_NODE
 import kataja.globals as g
@@ -81,6 +81,8 @@ class CommentNode(Node):
         :param value: str or ITextNode
         """
         self.label = value
+        print('daapadaa ', value)
+        self._inode_changed = True
 
 
     def __str__(self):
@@ -93,3 +95,5 @@ class CommentNode(Node):
     # ############## #
 
     # all same as Node
+
+    label = Saved("label", if_changed=Node.alert_inode)

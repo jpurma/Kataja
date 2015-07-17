@@ -15,8 +15,10 @@ outline_stroker.setWidth(4)
 
 
 def adjusted_control_point_list(control_points, curve_adjustment):
-    """ List where control points and their adjustments are added up, and (x,y) tuples
-    are break down into one big list x1, y1, x2, y2,... to be used in path construction
+    """ List where control points and their adjustments are added up, and (x,
+    y) tuples
+    are break down into one big list x1, y1, x2, y2,... to be used in path
+    construction
     :param curve_adjustment:
     :param control_points:
     :return: list
@@ -61,7 +63,8 @@ def draw_arrow_shape(self, painter):
     prop = back / l.length()
     if l.dy() >= 0:
         angle = pipi - angle
-    destArrowP1 = Pf((sin(angle - pi / 3) * self._arrow_size) + l2x, (cos(angle - pi / 3) * self._arrow_size) + l2y)
+    destArrowP1 = Pf((sin(angle - pi / 3) * self._arrow_size) + l2x,
+                     (cos(angle - pi / 3) * self._arrow_size) + l2y)
     destArrowP2 = Pf((sin(angle - pi + pi / 3) * self._arrow_size) + l2x,
                      (cos(angle - pi + pi / 3) * self._arrow_size) + l2y)
     l2c = Pf(l.dx() * prop + l2x, l.dy() * prop + l2y)
@@ -93,6 +96,7 @@ def arrow_shape_bounding_rect(self):
         b = p2y + extra
     return QtCore.QRectF(Pf(l, t), Pf(r, b))
 
+
 def to_pf(triple):
     """
 
@@ -101,8 +105,11 @@ def to_pf(triple):
     """
     return Pf(triple[0], triple[1])
 
-def shaped_cubic_path(start_point=None, end_point=None, curve_adjustment=None, alignment=LEFT, relative=True,
-                      rel_dx=0.2, rel_dy=0.2, fixed_dx=20, fixed_dy=15, leaf_x=1, leaf_y=3, inner_only=False, **kwargs):
+
+def shaped_cubic_path(start_point=None, end_point=None, curve_adjustment=None,
+                      alignment=LEFT, relative=True, rel_dx=0.2, rel_dy=0.2,
+                      fixed_dx=20, fixed_dy=15, leaf_x=1, leaf_y=3,
+                      inner_only=False, **kwargs):
     """ Two point leaf-shaped curve
     :param curve_adjustment:
     :param alignment:
@@ -125,7 +132,8 @@ def shaped_cubic_path(start_point=None, end_point=None, curve_adjustment=None, a
     if relative:
         dx = rel_dx * (ex - sx)
         dy = rel_dy * (ey - sy)
-        if (alignment is LEFT and sx <= ex) or (alignment is RIGHT and sx >= ex):
+        if (alignment is LEFT and sx <= ex) or (
+                        alignment is RIGHT and sx >= ex):
             dx *= -2
     else:
         if alignment is LEFT:
@@ -149,7 +157,8 @@ def shaped_cubic_path(start_point=None, end_point=None, curve_adjustment=None, a
     return path, inner_path, control_points
 
 
-def shaped_cubic_icon(painter, rect, color=None, rel_dx=0.4, rel_dy=0.8, leaf_x=1, leaf_y=3):
+def shaped_cubic_icon(painter, rect, color=None, rel_dx=0.4, rel_dy=0.8,
+                      leaf_x=1, leaf_y=3):
     """
 
     :param painter:
@@ -172,8 +181,9 @@ def shaped_cubic_icon(painter, rect, color=None, rel_dx=0.4, rel_dy=0.8, leaf_x=
     painter.fillPath(path, color)
 
 
-def cubic_path(start_point=None, end_point=None, curve_adjustment=None, alignment=LEFT, relative=True, rel_dx=0.2,
-               rel_dy=0.2, fixed_dx=20, fixed_dy=15, **kwargs):
+def cubic_path(start_point=None, end_point=None, curve_adjustment=None,
+               alignment=LEFT, relative=True, rel_dx=0.2, rel_dy=0.2,
+               fixed_dx=20, fixed_dy=15, **kwargs):
     """ Two point narrow curve
     :param start_point:
     :param end_point:
@@ -193,7 +203,8 @@ def cubic_path(start_point=None, end_point=None, curve_adjustment=None, alignmen
     if relative:
         dx = rel_dx * (ex - sx)
         dy = rel_dy * (ey - sy)
-        if (alignment is LEFT and sx <= ex) or (alignment is RIGHT and sx >= ex):
+        if (alignment is LEFT and sx <= ex) or (
+                        alignment is RIGHT and sx >= ex):
             dx *= -2
     else:
         if alignment is LEFT:
@@ -231,9 +242,10 @@ def cubic_icon(painter, rect, color=None, rel_dx=0.2, rel_dy=0.8):
     painter.drawPath(path)
 
 
-def shaped_quadratic_path(start_point=None, end_point=None, curve_adjustment=None, alignment=LEFT, relative=True,
-                          rel_dx=0.2, rel_dy=0, fixed_dx=20, fixed_dy=0, leaf_x=3, leaf_y=3, inner_only=False,
-                          **kwargs):
+def shaped_quadratic_path(start_point=None, end_point=None,
+                          curve_adjustment=None, alignment=LEFT, relative=True,
+                          rel_dx=0.2, rel_dy=0, fixed_dx=20, fixed_dy=0,
+                          leaf_x=3, leaf_y=3, inner_only=False, **kwargs):
     """ One point leaf-shaped curve with curvature relative to line length
     :param start_point:
     :param end_point:
@@ -256,7 +268,8 @@ def shaped_quadratic_path(start_point=None, end_point=None, curve_adjustment=Non
         dx = rel_dx * (ex - sx)
         dy = rel_dy * (ey - sy)
         # edges that go to wrong direction have stronger curvature
-        if (alignment is LEFT and sx <= ex) or (alignment is RIGHT and sx >= ex):
+        if (alignment is LEFT and sx <= ex) or (
+                        alignment is RIGHT and sx >= ex):
             dx *= -2
     else:
         if alignment is LEFT:
@@ -280,7 +293,8 @@ def shaped_quadratic_path(start_point=None, end_point=None, curve_adjustment=Non
     return path, inner_path, control_points
 
 
-def shaped_quadratic_icon(painter, rect, color=None, rel_dx=0.4, rel_dy=0, leaf_x=1, leaf_y=3):
+def shaped_quadratic_icon(painter, rect, color=None, rel_dx=0.4, rel_dy=0,
+                          leaf_x=1, leaf_y=3):
     """
 
     :param painter:
@@ -303,8 +317,9 @@ def shaped_quadratic_icon(painter, rect, color=None, rel_dx=0.4, rel_dy=0, leaf_
     painter.fillPath(path, color)
 
 
-def quadratic_path(start_point=None, end_point=None, curve_adjustment=None, alignment=LEFT, relative=True, rel_dx=0.2,
-                   rel_dy=0, fixed_dx=20, fixed_dy=0, **kwargs):
+def quadratic_path(start_point=None, end_point=None, curve_adjustment=None,
+                   alignment=LEFT, relative=True, rel_dx=0.2, rel_dy=0,
+                   fixed_dx=20, fixed_dy=0, **kwargs):
     """ One point curve with curvature relative to line length
     :param start_point:
     :param end_point:
@@ -323,7 +338,8 @@ def quadratic_path(start_point=None, end_point=None, curve_adjustment=None, alig
         dx = rel_dx * (ex - sx)
         dy = rel_dy * (ey - sy)
         # edges that go to wrong direction have stronger curvature
-        if (alignment is LEFT and sx <= ex) or (alignment is RIGHT and sx >= ex):
+        if (alignment is LEFT and sx <= ex) or (
+                        alignment is RIGHT and sx >= ex):
             dx *= -2
     else:
         if alignment is LEFT:
@@ -361,8 +377,9 @@ def quadratic_icon(painter, rect, color=None, rel_dx=0.4, rel_dy=0):
     painter.drawPath(path)
 
 
-def shaped_linear_path(start_point=None, end_point=None, curve_adjustment=None, alignment=LEFT, leaf_x=2, leaf_y=2,
-                       inner_only=False, **kwargs):
+def shaped_linear_path(start_point=None, end_point=None, curve_adjustment=None,
+                       alignment=LEFT, leaf_x=2, leaf_y=2, inner_only=False,
+                       **kwargs):
     """ A straight line with a slight leaf shape
     :param start_point:
     :param end_point:
@@ -410,7 +427,8 @@ def shaped_linear_icon(painter, rect, color=None, leaf_x=4, leaf_y=4):
     painter.fillPath(path, color)
 
 
-def linear_path(start_point=None, end_point=None, curve_adjustment=None, alignment=LEFT, **kwargs):
+def linear_path(start_point=None, end_point=None, curve_adjustment=None,
+                alignment=LEFT, **kwargs):
     """ Just a straight line
     :param start_point:
     :param end_point:
@@ -443,8 +461,9 @@ def linear_icon(painter, rect, color=None):
 
 
 # @time_me
-def blob_path(start_point=None, end_point=None, curve_adjustment=None, alignment=LEFT, thickness=4, start=None,
-              end=None, inner_only=False, **kwargs):
+def blob_path(start_point=None, end_point=None, curve_adjustment=None,
+              alignment=LEFT, thickness=4, start=None, end=None,
+              inner_only=False, **kwargs):
     """ Surround the node with circular shape that stretches to other node
     :param inner_only:
     :param start_point:
@@ -561,7 +580,8 @@ def blob_icon(painter, rect, color=None, thickness=3):
 
 
 # @time_me
-def directional_blob_path(start_point=None, end_point=None, curve_adjustment=None, alignment=LEFT, thickness=4,
+def directional_blob_path(start_point=None, end_point=None,
+                          curve_adjustment=None, alignment=LEFT, thickness=4,
                           start=None, end=None, inner_only=False, **kwargs):
     """ Surround the node with circular shape that stretches to other node
     :param start_point:
@@ -680,22 +700,44 @@ def no_path_icon(painter, rect, color=None):
     pass
 
 
-SHAPE_PRESETS = OrderedDict([
-    ('shaped_cubic', {'method': shaped_cubic_path, 'fill': True, 'icon': shaped_cubic_icon,
-                      'control_points': 2, 'relative': True, 'rel_dx': 0.2, 'rel_dy': 0.2,
-                      'fixed_dx': 20, 'fixed_dy': 15, 'leaf_x': 1, 'leaf_y': 3}),
-    ('cubic', {'method': cubic_path, 'fill': False, 'icon': cubic_icon, 'control_points': 2, 'relative': True,
-               'rel_dx': 0.2, 'rel_dy': 0.2, 'fixed_dx': 20, 'fixed_dy': 15, 'thickness': 1}),
-    ('shaped_quadratic', {'method': shaped_quadratic_path, 'fill': True, 'icon': shaped_quadratic_icon,
-                          'control_points': 1, 'relative': True, 'rel_dx': 0.2, 'rel_dy': 0, 'fixed_dx': 20,
-                          'fixed_dy': 0, 'leaf_x': 3, 'leaf_y': 3}),
-    ('quadratic', {'method': quadratic_path, 'fill': False, 'icon': quadratic_icon, 'control_points': 1,
-                   'relative': True, 'rel_dx': 0.2, 'rel_dy': 0, 'fixed_dx': 20, 'fixed_dy': 0,'thickness': 1}),
-    ('shaped_linear', {'method': shaped_linear_path, 'fill': True, 'icon': shaped_linear_icon, 'control_points': 0,
-                       'leaf_x': 2, 'leaf_y': 2}),
-    ('linear', {'method': linear_path, 'fill': False, 'icon': linear_icon, 'control_points': 0, 'thickness': 2}),
-    ('blob', {'method': blob_path, 'fill': True, 'icon': blob_icon, 'control_points': 1, 'thickness': 0}),
-    ('directional_blob', {'method': directional_blob_path, 'fill': True, 'icon': directional_blob_icon,
-                          'control_points': 1, 'thickness': 0}),
-    ('no draw', {'method': linear_path, 'fill': False, 'icon': no_path_icon, 'control_points': 0, 'thickness': 0})
-])
+od = [('shaped_cubic',
+       dict(method=shaped_cubic_path, fill=True, icon=shaped_cubic_icon,
+            control_points=2, relative=True, rel_dx=0.2, rel_dy=0.2,
+            fixed_dx=20, fixed_dy=15, leaf_x=1, leaf_y=3)),
+      ('cubic',
+       dict(method=cubic_path, fill=False, icon=cubic_icon, control_points=2,
+            relative=True, rel_dx=0.2, rel_dy=0.2, fixed_dx=20, fixed_dy=15,
+            thickness=1)),
+      ('shaped_quadratic',
+        dict(method=shaped_quadratic_path, fill=True,
+             icon=shaped_quadratic_icon, control_points=1,
+             relative=True, rel_dx=0.2, rel_dy=0, fixed_dx=20,
+             fixed_dy=0, leaf_x=3, leaf_y=3)),
+      ('quadratic',
+       dict(method=quadratic_path, fill=False, icon=quadratic_icon,
+            control_points=1, relative=True, rel_dx=0.2, rel_dy=0,
+            fixed_dx=20, fixed_dy=0, thickness=1)),
+      ('shaped_linear',
+       dict(method=shaped_linear_path, fill=True, icon=shaped_linear_icon,
+            control_points=0, leaf_x=2, leaf_y=2)),
+      ('linear',
+       dict(method=linear_path,
+            fill=False,
+            icon=linear_icon,
+            control_points=0,
+            thickness=2)),
+      ('blob',
+       dict(method=blob_path, fill=True, icon=blob_icon, control_points=1,
+            thickness=0)),
+      ('directional_blob',
+       dict(method=directional_blob_path, fill=True,
+            icon=directional_blob_icon, control_points=1,
+            thickness=0)),
+      ('no draw',
+       dict(method=linear_path,
+            fill=False,
+            icon=no_path_icon,
+            control_points=0,
+            thickness=0))]
+
+SHAPE_PRESETS = OrderedDict(od)

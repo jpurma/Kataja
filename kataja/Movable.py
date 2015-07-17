@@ -28,7 +28,7 @@ from PyQt5 import QtWidgets, QtCore
 
 from kataja.singletons import prefs, qt_prefs, ctrl
 from kataja.BaseModel import BaseModel, Saved
-from kataja.utils import time_me
+from kataja.utils import add_xyz, sub_xy, multiply_xyz, div_xyz, sub_xyz
 
 
 def about_there(pos1, pos2):
@@ -37,19 +37,21 @@ def about_there(pos1, pos2):
     :param pos2:
     :return:
     """
-    return round(pos1[0]) == round(pos2[0]) and \
-           round(pos1[1]) == round(pos2[1]) and \
-           round(pos1[2]) == round(pos2[2])
+    return round(pos1[0]) == round(pos2[0]) and round(pos1[1]) == round(
+        pos2[1]) and round(pos1[2]) == round(pos2[2])
+
 
 class Movable(BaseModel):
-    """ Movable objects have support for smooth movement from one point to another with
-        set_target_position, and fade_in and fade_out. Once set, the animation derivation_steps are
+    """ Movable objects have support for smooth movement from one point to
+    another with
+        set_target_position, and fade_in and fade_out. Once set,
+        the animation derivation_steps are
         triggered by timerEvent in GraphScene.
 
         Class using Movable has to inherit also some kind of QtGraphicsItem,
         otherwise its positioning methods won't work.
         """
-    short_name = "Movable" # shouldn't be used on its own
+    short_name = "Movable"  # shouldn't be used on its own
 
     def __init__(self):
         """ Basic properties for any scene objects
@@ -57,16 +59,19 @@ class Movable(BaseModel):
             saved.algo_position = visualization algorithm provided position
             saved.adjustment = dragged somewhere
             .final_position = computed position + adjustment
-            .current_position = real screen position, can be moving towards final position
-            don't adjust final position directly, only change computed position and change
+            .current_position = real screen position, can be moving towards
+            final position
+            don't adjust final position directly, only change computed
+            position and change
             adjustment to zero if necessary.
             always restore adjustment to zero when dealing with dynamic nodes.
              """
         super().__init__()
         self._initializing = True
         self.z = 0
-        self._x_step, self._y_step, self._z_step = 0, 0, 0
-        self._current_position = ((random.random() * 150) - 75, (random.random() * 150) - 75, 0)
+        self._step = (0, 0, 0)
+        self._current_position = (
+        (random.random() * 150) - 75, (random.random() * 150) - 75, 0)
         self._target_position = (0, 0, 0)
         self._move_counter = 0
         self._use_easing = True
@@ -82,19 +87,22 @@ class Movable(BaseModel):
         self.algo_position = (0, 0, 0)
         self.adjustment = None
         self.fixed_position = None
-        self.visible = True  # avoid isVisible for detecting if something is folded away
+        self.visible = True  # avoid isVisible for detecting if something is
+        # folded away
         self.dyn_x = False
         self.dyn_y = False
         self.dyn_z = False
         self._initializing = False
 
-
     def after_model_update(self, updated_fields, update_type):
-        """ This is called after the item's model has been updated, to run the side-effects of various
+        """ This is called after the item's model has been updated, to run
+        the side-effects of various
         setters in an order that makes sense.
         :param updated_fields: list of names of fields that have been updated.
-        :param update_type: can be CREATED or DELETED -- in case of DELETED, it may be that fields have
-        not changed, but the object should go the deletion routines. It can get a bit complicated.
+        :param update_type: can be CREATED or DELETED -- in case of DELETED,
+        it may be that fields have
+        not changed, but the object should go the deletion routines. It can
+        get a bit complicated.
         :return: None
         """
         self.update_position()
@@ -116,7 +124,8 @@ class Movable(BaseModel):
 
     @current_position.setter
     def current_position(self, value):
-        """ Sets the QtObjects coordinates, and saves the z-dimension to separate variable
+        """ Sets the QtObjects coordinates, and saves the z-dimension to
+        separate variable
         :rtype : None
         :param value: tuple(x, y, z)
         """
@@ -128,8 +137,10 @@ class Movable(BaseModel):
 
     @property
     def use_adjustment(self):
-        """ Should the relative adjustment counted into position or is the position absolute,
-        because it is updated by dynamic algo and has to use fixed user-determined position.
+        """ Should the relative adjustment counted into position or is the
+        position absolute,
+        because it is updated by dynamic algo and has to use fixed
+        user-determined position.
         :return:
         """
         return self.adjustment and not (self.dyn_x and self.dyn_y)
@@ -146,12 +157,12 @@ class Movable(BaseModel):
         elif len(value) == 3:
             self.fixed_position = value
 
-
-
     @property
     def can_adjust_position(self):
-        """Only those items that get their fixed position from algorithm can be adjusted.
-        Dynamically moving items are just dragged around. Returns if the object gets both x and y
+        """Only those items that get their fixed position from algorithm can
+        be adjusted.
+        Dynamically moving items are just dragged around. Returns if the
+        object gets both x and y
         coords from algorithm.
         :return: boolean
         """
@@ -179,9 +190,7 @@ class Movable(BaseModel):
         if self.use_fixed_position:
             self._target_position = self.fixed_position
         elif self.use_adjustment:
-            ax, ay, az = self.algo_position
-            dx, dy, dz = self.adjustment
-            self._target_position = (ax + dx, ay + dy, az + dz)
+            self._target_position = add_xyz(self.algo_position, self.adjustment)
         else:
             self._target_position = self.algo_position
         if about_there(self._target_position, ct):
@@ -257,7 +266,8 @@ class Movable(BaseModel):
         return active
 
     def is_visible(self):
-        """ Our own tracking of object visibility, not based on Qt's scene visibility.
+        """ Our own tracking of object visibility, not based on Qt's scene
+        visibility.
         :return: bool
         """
         return self.visible
@@ -265,25 +275,22 @@ class Movable(BaseModel):
     # ## Movement ##############################################################
 
     def move(self, md):
-        """ Do one frame of movement: either move towards target position or take a step according to algorithm
+        """ Do one frame of movement: either move towards target position or
+        take a step according to algorithm
         :param md: movement data dict
         :return:
         """
         if self.use_fixed_position:
             self.current_position = self.fixed_position
             return False, False
-        px, py, pz = self.current_position
-        xvel = yvel = zvel = 0
         normalize = False
         # how to return to undoed state?
 
         if self.dyn_x and self.dyn_y:
             # dynamic movement only
             if self.use_physics and not ctrl.pressed:
-                xvel, yvel, zvel = ctrl.forest.visualization.calculate_movement(self)
-                md['xsum'] += xvel
-                md['ysum'] += yvel
-                md['zsum'] += zvel
+                vel = ctrl.forest.visualization.calculate_movement(self)
+                md['sum'] = add_xyz(vel, md['sum'])
                 md['nodes'].append(self)
             normalize = True
         if not (self.dyn_x or self.dyn_y or self.dyn_z):
@@ -293,14 +300,12 @@ class Movable(BaseModel):
                     self.stop_moving()
                     return False, False
                 if self._use_easing:
-                    xvel = self._x_step * qt_prefs.easing_curve[self._move_counter - 1]
-                    yvel = self._y_step * qt_prefs.easing_curve[self._move_counter - 1]
-                    zvel = self._z_step * qt_prefs.easing_curve[self._move_counter - 1]
+                    vel = multiply_xyz(self._step, qt_prefs.easing_curve[
+                        self._move_counter - 1])
                 else:
-                    tx, ty, tz = self._target_position
-                    xvel = (tx - px) / self._move_counter
-                    yvel = (ty - py) / self._move_counter
-                    zvel = (tz - pz) / self._move_counter
+                    vel = div_xyz(
+                        sub_xyz(self._target_position, self.current_position),
+                        self._move_counter)
                 self._move_counter -= 1
                 if not self._move_counter:
                     self.stop_moving()
@@ -308,28 +313,36 @@ class Movable(BaseModel):
                 return False, False
         else:
             # combination of move to target and dynamic movement
-            tx, ty, tz = self._target_position
-            xvel, yvel, zvel = ctrl.forest.visualization.calculate_movement(self)
+            dvel = ctrl.forest.visualization.calculate_movement(self)
             if self._move_counter:
-                if self._use_easing:
-                    if not self.dyn_x:
-                        xvel = self._x_step * qt_prefs.easing_curve[self._move_counter - 1]
-                    if not self.dyn_y:
-                        yvel = self._y_step * qt_prefs.easing_curve[self._move_counter - 1]
-                    if not self.dyn_z:
-                        zvel = self._z_step * qt_prefs.easing_curve[self._move_counter - 1]
-                else:
-                    if not self.dyn_x:
-                        xvel = (tx - px) / self._move_counter
-                    if not self.dyn_y:
-                        yvel = (ty - py) / self._move_counter
-                    if not self.dyn_z:
-                        zvel = (tz - pz) / self._move_counter
+                if self._use_easing:  # step * easing_curve
+                    pvel = multiply_xyz(self._step, qt_prefs.easing_curve[
+                        self._move_counter - 1])
+                else:  # (t - c) / move_counter
+                    pvel = div_xyz(
+                        sub_xyz(self._target_position, self.current_position),
+                        self._move_counter)
                 self._move_counter -= 1
                 if not self._move_counter:
                     self.stop_moving()
-        self.current_position = (px + xvel, py + yvel, pz + zvel)
-        return abs(xvel) + abs(yvel) + abs(zvel) > 0.6, normalize
+            else:
+                pvel = (0, 0, 0)
+            if self.dyn_x:
+                vx = dvel[0]
+            else:
+                vx = pvel[0]
+            if self.dyn_y:
+                vy = dvel[1]
+            else:
+                vy = pvel[1]
+            if self.dyn_z:
+                vz = dvel[2]
+            else:
+                vz = pvel[2]
+            vel = vx, vy, vz
+
+        self.current_position = add_xyz(self.current_position, vel)
+        return abs(vel[0]) + abs(vel[1]) + abs(vel[2]) > 0.6, normalize
 
     def moving(self):
         """ Check if moving trajectory is on """
@@ -340,10 +353,7 @@ class Movable(BaseModel):
         :param movable:
         :return: x, y
         """
-        my_x, my_y, my_z = self.current_position
-        o_x, o_y, o_z = movable.current_position
-        return my_x - o_x, my_y - o_y
-
+        return sub_xy(self.current_position, movable.current_position)
 
     def set_original_position(self, pos):
         """ Sets both current position and computed position to same place,
@@ -364,16 +374,15 @@ class Movable(BaseModel):
         """ Initiate moving animation for object.
         :return: None
         """
-        x, y, z = self._target_position
-        sx, sy, sz = self.current_position
-        # print 'item %s starts moving from (%s %s %s) to (%s %s %s)' % (self, sx,sy,sz,x,y,z)
-        if False and self._move_counter and self._move_counter < (prefs.move_frames or 20):
-            # don't force animation to start again, redirect it instead, unless we haven't yet moved
+        if False and self._move_counter and self._move_counter < (
+            prefs.move_frames or 20):
+            # don't force animation to start again, redirect it instead,
+            # unless we haven't yet moved
             self._use_easing = True
         else:
             self._use_easing = True
             self._move_counter = prefs.move_frames or 20
-            self._x_step, self._y_step, self._z_step = x - sx, y - sy, z - sz
+            self._step = sub_xyz(self._target_position, self.current_position)
         ctrl.graph_scene.item_moved()
 
     def stop_moving(self):
@@ -398,7 +407,8 @@ class Movable(BaseModel):
 
     def drop_to(self, x, y, recipient=None):
         """
-        This item is dropped to screen coordinates. Evaluate if there are sensitive objects (TouchAreas) there and if
+        This item is dropped to screen coordinates. Evaluate if there are
+        sensitive objects (TouchAreas) there and if
         there are, call their 'drop'-method with self as argument.
         :param x: int or float
         :param y: int or float
@@ -436,12 +446,14 @@ class Movable(BaseModel):
 
     def lock(self):
         """ Item cannot be moved to computed positions """
-        # just having self.adjustment or self.fixed_position is enough to lock it down
-        assert(self.adjustment or self.fixed_position)
+        # just having self.adjustment or self.fixed_position is enough to
+        # lock it down
+        assert (self.adjustment or self.fixed_position)
 
     def is_locked(self):
         """
-        Returns if the item's position can be changed by algorithm, or if it is fixed to position.
+        Returns if the item's position can be changed by algorithm, or if it
+        is fixed to position.
         :return: boolean
         """
         return self.fixed_position or self.adjustment
@@ -455,7 +467,8 @@ class Movable(BaseModel):
     algo_position = Saved("algo_position", if_changed=autoupdate_position)
     adjustment = Saved("adjustment", if_changed=autoupdate_position)
     fixed_position = Saved("fixed_position", if_changed=autoupdate_position)
-    visible = Saved("visible")  # avoid isVisible for detecting if something is folded away
+    visible = Saved(
+        "visible")  # avoid isVisible for detecting if something is folded away
     dyn_x = Saved("dyn_x")
     dyn_y = Saved("dyn_y")
     dyn_z = Saved("dyn_z")

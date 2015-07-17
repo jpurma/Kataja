@@ -17,7 +17,7 @@ class DraggableNodeFrame(QtWidgets.QFrame):
         self.setAutoFillBackground(True)
 
         if ctrl.forest:
-            settings = ctrl.fs.node_settings()
+            settings = ctrl.fs.node_info()
         else:
             settings = prefs.nodes
         hlayout = QtWidgets.QHBoxLayout()
@@ -44,7 +44,7 @@ class DraggableNodeFrame(QtWidgets.QFrame):
         self.setLayout(hlayout)
 
     def update_colors(self):
-        settings = ctrl.fs.node_settings(self.key)
+        settings = ctrl.fs.node_info(self.key)
         self.setPalette(ctrl.cm.palette_from_key(settings['color']))
         self.setFont(qt_prefs.font(settings['font']))
 

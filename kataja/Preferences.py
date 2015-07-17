@@ -22,50 +22,60 @@
 #
 # ############################################################################
 
-from pathlib import Path
 from collections import OrderedDict
-import sys
-import os
-import importlib
-import shutil
 
 from PyQt5 import QtGui, QtCore
 
 from kataja.globals import *
-from kataja.environment import default_userspace_path, resources_path, plugins_path, fonts
+from kataja.environment import default_userspace_path, resources_path, fonts
 
 disable_saving_preferences = False
 # Alternatives: Cambria Math, Asana Math, XITS Math
 
 
-color_modes = OrderedDict([('solarized_dk', {'name': 'Solarized dark', 'fixed': True, 'hsv': [0, 0, 0]}),
-                           ('solarized_lt', {'name': 'Solarized light', 'fixed': True, 'hsv': [0, 0, 0]}),
-                           ('random', {'name': 'Random for each treeset', 'fixed': False, 'hsv': [0, 0, 0]}),
-                           ('print', {'name': 'Print-friendly', 'fixed': True, 'hsv': [0.2, 0.2, 0.2]}),
-                           ('bw', {'name': 'Black and white', 'fixed': True, 'hsv': [0, 0, 0]}),
-                           ('random-light', {'name': 'Random on a light background', 'fixed': False, 'hsv': [0, 0, 0]}),
-                           ('random-dark', {'name': 'Against a dark background', 'fixed': False, 'hsv': [0, 0, 0]})])
+color_modes = OrderedDict([('solarized_dk',
+                            {'name': 'Solarized dark', 'fixed': True,
+                             'hsv': [0, 0, 0]}), ('solarized_lt',
+                                                  {'name': 'Solarized light',
+                                                   'fixed': True,
+                                                   'hsv': [0, 0, 0]}), (
+                           'random',
+                           {'name': 'Random for each treeset', 'fixed': False,
+                            'hsv': [0, 0, 0]}), ('print',
+                                                 {'name': 'Print-friendly',
+                                                  'fixed': True,
+                                                  'hsv': [0.2, 0.2, 0.2]}), (
+                           'bw', {'name': 'Black and white', 'fixed': True,
+                                  'hsv': [0, 0, 0]}), ('random-light', {
+    'name': 'Random on a light background', 'fixed': False, 'hsv': [0, 0, 0]}),
+                           ('random-dark', {'name': 'Against a dark background',
+                                            'fixed': False, 'hsv': [0, 0, 0]})])
 
 
 class Preferences(object):
-    """ Settings that affect globally, these can be pickled, but QtPreferences not. Primary singleton object, needs to
+    """ Settings that affect globally, these can be pickled,
+    but QtPreferences not. Primary singleton object, needs to
     support saving and loading.
 
     Preferences should follow the following progression:
 
     element properties < forest settings < preferences
 
-    Preferences is the largest group. It includes global preferences and default values for forest settings.
-    If forest settings doesn't have a value set, it is get from preferences. Similarly if element doesn't have a
-    property set, it is get from forest settings, and ultimately from preferences.
+    Preferences is the largest group. It includes global preferences and
+    default values for forest settings.
+    If forest settings doesn't have a value set, it is get from preferences.
+    Similarly if element doesn't have a
+    property set, it is get from forest settings, and ultimately from
+    preferences.
 
-    This means that the implementation for getting and setting is done mostly in elements and in forest settings.
+    This means that the implementation for getting and setting is done mostly
+    in elements and in forest settings.
     Preferences it self can be written and read directly.
 
     """
-    # Prefs are not saved in save command, but changes here are undoable, so this must support the save protocol.
+    # Prefs are not saved in save command, but changes here are undoable,
+    # so this must support the save protocol.
     not_saved = ['plugins']
-
 
     def __init__(self):
         self.save_key = 'preferences'
@@ -83,8 +93,9 @@ class Preferences(object):
         self._fps_in_msec = 1000 / self.FPS
         self.default_visualization = 'Left first tree'
 
-        #self.blender_app_path = '/Applications/blender.app/Contents/MacOS/blender'
-        #self.blender_env_path = '/Users/purma/Dropbox/bioling_blender'
+        # self.blender_app_path =
+        # '/Applications/blender.app/Contents/MacOS/blender'
+        # self.blender_env_path = '/Users/purma/Dropbox/bioling_blender'
 
         self.move_frames = 12
         self._move_frames_ui = {'tab': 'Performance'}
@@ -161,14 +172,16 @@ class Preferences(object):
 
         # Rest of the edges are defined in their corresponding node classes
         self.edges = {
-            ARROW: {'shape_name': 'linear', 'color': 'accent4', 'pull': 0, 'visible': True,
-                    'arrowhead_at_start': False, 'arrowhead_at_end': True, 'font': SMALL_CAPS,
+            ARROW: {'shape_name': 'linear', 'color': 'accent4', 'pull': 0,
+                    'visible': True, 'arrowhead_at_start': False,
+                    'arrowhead_at_end': True, 'font': SMALL_CAPS,
                     'labeled': True},
-            DIVIDER: {'shape_name': 'linear', 'color': 'accent6', 'pull': 0, 'visible': True,
-                      'arrowhead_at_start': False, 'arrowhead_at_end': False, 'font': SMALL_CAPS,
-                      'labeled': True, 'style': 'dashed'}
-            }
-        # Nodes are defined in their classes and preference dict is generated from those.
+            DIVIDER: {'shape_name': 'linear', 'color': 'accent6', 'pull': 0,
+                      'visible': True, 'arrowhead_at_start': False,
+                      'arrowhead_at_end': False, 'font': SMALL_CAPS,
+                      'labeled': True, 'style': 'dashed'}}
+        # Nodes are defined in their classes and preference dict is generated
+        #  from those.
         self.nodes = {}
         self.node_types_order = []
         self.custom_colors = {}
@@ -187,7 +200,6 @@ class Preferences(object):
             self.edges[edge_key] = nodeclass.default_edge.copy()
         self.node_types_order.sort()
 
-
     def update(self, update_dict):
         """
 
@@ -196,7 +208,6 @@ class Preferences(object):
         for key, value in update_dict.items():
             setattr(self, key, value)
 
-
     def add_color_mode(self, color_key, hsv, color_settings):
         """
 
@@ -204,14 +215,16 @@ class Preferences(object):
         :param hsv:
         :param color_settings:
         """
-        self.color_modes[color_key] = {'name': color_settings.get_color_name(hsv), 'fixed': True, 'hsv': hsv}
-
+        self.color_modes[color_key] = {
+            'name': color_settings.get_color_name(hsv), 'fixed': True,
+            'hsv': hsv}
 
     # ##### Save & Load ########################################
 
 
     def save_preferences(self):
-        """ Save preferences uses QSettings, which is Qt:s abstraction over platform-dependant ini/preferences files.
+        """ Save preferences uses QSettings, which is Qt:s abstraction over
+        platform-dependant ini/preferences files.
         It doesn't need any parameters,
         """
 
@@ -231,7 +244,6 @@ class Preferences(object):
                 settings.endGroup()
             else:
                 settings.setValue(key, value)
-
 
     def load_preferences(self):
 
@@ -264,21 +276,22 @@ class Preferences(object):
 
 def extract_bitmaps(filename):
     """
-    Helper method to turn 3-color image (blue, black, transparent) into bitmap masks.
+    Helper method to turn 3-color image (blue, black, transparent) into
+    bitmap masks.
     :param filename:
     :return: tuple(original as pixmap, color1 as mask (bitmap), color2 as mask)
     """
     pm = QtGui.QPixmap(filename)
     color1 = QtGui.QColor(0, 0, 255)
     color2 = QtGui.QColor(0, 0, 0)
-    bms = (
-        pm, pm.createMaskFromColor(color1, QtCore.Qt.MaskOutColor),
-        pm.createMaskFromColor(color2, QtCore.Qt.MaskOutColor))
+    bms = (pm, pm.createMaskFromColor(color1, QtCore.Qt.MaskOutColor),
+           pm.createMaskFromColor(color2, QtCore.Qt.MaskOutColor))
     return bms
 
 
 class QtPreferences:
-    """ Preferences object that holds derived Qt objects like fonts and brushes. """
+    """ Preferences object that holds derived Qt objects like fonts and
+    brushes. """
 
     def __init__(self):  # called to create a placeholder in early imports
         pass
@@ -315,8 +328,7 @@ class QtPreferences:
             p = QtGui.QIcon(iconpath + path)
             return p
 
-
-        #print("font families:", QtGui.QFontDatabase().families())
+        # print("font families:", QtGui.QFontDatabase().families())
         self.easing_curve = []
         self.fontdb = fontdb
         self.prepare_fonts(preferences.fonts)
@@ -352,7 +364,6 @@ class QtPreferences:
         self.prepare_fonts(preferences.fonts, preferences)
         self.prepare_easing_curve(preferences._curve, preferences.move_frames)
 
-
     def prepare_easing_curve(self, curve_type, frames):
         """
 
@@ -373,8 +384,12 @@ class QtPreferences:
             return z + y - curve.valueForProgress(y)
 
         self.easing_curve = [curve_value(x) for x in range(frames)]
-        # self.easing_curve = [(1.0 / self.move_frames) + (float(x) / self.move_frames) - curve.valueForProgress(float(x) / self.move_frames) for x in range(self.move_frames)]
-        # self.easing_curve=[(float(x)/self.move_frames)-curve.valueForProgress(float(x)/self.move_frames) for x in range(self.move_frames)]
+        # self.easing_curve = [(1.0 / self.move_frames) + (float(x) /
+        # self.move_frames) - curve.valueForProgress(float(x) /
+        # self.move_frames) for x in range(self.move_frames)]
+        # self.easing_curve=[(float(
+        # x)/self.move_frames)-curve.valueForProgress(float(
+        # x)/self.move_frames) for x in range(self.move_frames)]
         s = sum(self.easing_curve)
         self.easing_curve = [x / s for x in self.easing_curve]
 
@@ -386,29 +401,33 @@ class QtPreferences:
         :param fonts_dict:
         :param fontdb:
         """
-        #print('preparing fonts...')
+        # print('preparing fonts...')
         self.fonts = {}
         for key, font_tuple in fonts_dict.items():
             name, style, size = font_tuple
             size = int(size)
             font = self.fontdb.font(name, style, size)
-            #print(name, font.exactMatch())
+            # print(name, font.exactMatch())
             if name == 'Asana Math' and not font.exactMatch():
                 print('Loading Asana Math locally')
-                self.fontdb.addApplicationFont(resources_path + "Asana-Math.otf")
+                self.fontdb.addApplicationFont(
+                    resources_path + "Asana-Math.otf")
                 font = self.fontdb.font(name, style, size)
             if style == 'Italic':
                 font.setItalic(True)
             self.fonts[key] = font
-        font = QtGui.QFontMetrics(self.fonts[MAIN_FONT])  # it takes 2 seconds to get FontMetrics
-        #print('font leading: %s font height: %s ' % (font.leading(), font.height()))
+        font = QtGui.QFontMetrics(
+            self.fonts[MAIN_FONT])  # it takes 2 seconds to get FontMetrics
+        # print('font leading: %s font height: %s ' % (font.leading(),
+        # font.height()))
         main = self.fonts[MAIN_FONT]
         main.setHintingPreference(QtGui.QFont.PreferNoHinting)
         self.font_space_width = font.width(' ')
         self.font_bracket_width = font.width(']')
         self.font_bracket_height = font.height()
-        #print('font metrics: ', font)
-        # print(self.font_space_width, self.font_bracket_width, self.font_bracket_height)
+        # print('font metrics: ', font)
+        # print(self.font_space_width, self.font_bracket_width,
+        # self.font_bracket_height)
         self.fonts[SMALL_CAPS].setCapitalization(QtGui.QFont.SmallCaps)
 
     ### Font helper ###
@@ -439,4 +458,3 @@ class QtPreferences:
             key_suggestion = 'custom_%s' % i
         self.fonts[key_suggestion] = font
         return key_suggestion
-

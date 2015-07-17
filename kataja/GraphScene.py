@@ -32,7 +32,7 @@ import PyQt5.QtWidgets as QtWidgets
 from kataja.Edge import Edge
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.nodes.Node import Node
-from kataja.utils import to_tuple
+from kataja.utils import to_tuple, sub_xyz, div_xyz
 from kataja.ui import TouchArea
 import kataja.globals as g
 
@@ -641,7 +641,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         frame_has_moved = False
         background_fade = False
         can_normalize = True
-        md = {'xsum': 0, 'ysum': 0, 'zsum': 0, 'nodes': []}
+        md = {'sum': (0, 0, 0), 'nodes': []}
         ctrl.items_moving = True
         if self._fade_steps:
             self.setBackgroundBrush(self._fade_steps_list[self._fade_steps - 1])
@@ -675,15 +675,9 @@ class GraphScene(QtWidgets.QGraphicsScene):
         # normalize movement so that the tree won't glide away
         ln = len(md['nodes'])
         if ln and can_normalize:
-            avg_x = md['xsum'] / ln
-            avg_y = md['ysum'] / ln
-            avg_z = md['zsum'] / ln
+            avg = div_xyz(md['sum'], ln)
             for node in md['nodes']:
-                x, y, z = node.current_position
-                x -= avg_x
-                y -= avg_y
-                z -= avg_z
-                node.current_position = (x, y, z)
+                node.current_position = sub_xyz(node.current_position, avg)
         if items_have_moved and (not self.manual_zoom) and (not ctrl.dragged_focus):
             self.fit_to_window()
 
