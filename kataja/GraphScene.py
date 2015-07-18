@@ -32,12 +32,13 @@ import PyQt5.QtWidgets as QtWidgets
 from kataja.Edge import Edge
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.nodes.Node import Node
-from kataja.utils import to_tuple, sub_xyz, div_xyz
+from kataja.utils import to_tuple, sub_xyz, div_xyz, time_me
 from kataja.ui import TouchArea
 import kataja.globals as g
 
 
 # from BlenderExporter import export_visible_items
+from kataja.nodes.BaseConstituentNode import BaseConstituentNode
 
 
 class GraphScene(QtWidgets.QGraphicsScene):
@@ -630,7 +631,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
         self._fade_steps_list.append(gradient)
         self._fade_steps_list.reverse()
 
-    #@time_me
     def timerEvent(self, event):
         """ Main loop for animations and movement in the scene -- calls nodes and tells them to update
         their position
@@ -661,7 +661,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         if ctrl.pressed:
             return
-
+        d=0
         for node in f.visible_nodes():
             if node.adjust_opacity():
                 items_fading = True

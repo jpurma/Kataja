@@ -144,6 +144,7 @@ class ForestSettings(BaseModel):
                     del shape_args[key]
 
     def shape_defaults(self, edge_type):
+        print('shape defaults asked for ', edge_type)
         shape_name = self.edge_info(edge_type, 'shape_name')
         return SHAPE_PRESETS[shape_name]
 
@@ -151,6 +152,9 @@ class ForestSettings(BaseModel):
         local_edge_type = self.edge_types.get(edge_type, None)
         if local_edge_type:
             return local_edge_type.get('shape_args', None)
+
+    def shape_presets(self, shape_name):
+        return SHAPE_PRESETS[shape_name]
 
     def shape_info(self, edge_type, key=None):
         """ Return the settings dict for certain edge type: often this defaults
@@ -161,6 +165,7 @@ class ForestSettings(BaseModel):
         :param key:
         :return:
         """
+        print('shape_info asked for ', edge_type)
         shape_args = self.local_shape_args(edge_type)
         if shape_args:
             if key: # get single setting

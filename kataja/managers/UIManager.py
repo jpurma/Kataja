@@ -38,7 +38,7 @@ from kataja.ui.StretchLine import StretchLine
 import kataja.actions as action_methods
 from kataja.actions import actions
 import kataja.globals as g
-from kataja.ui.TouchArea import TouchArea
+from kataja.ui.TouchArea import TouchArea, create_touch_area
 from kataja.ui.panels.ColorThemePanel import ColorPanel
 from kataja.ui.panels.ColorWheelPanel import ColorWheelPanel
 from kataja.ui.panels.StylePanel import TableModelComboBox
@@ -57,6 +57,7 @@ from kataja.ui.panels.NodesPanel import NodesPanel
 from kataja.ui.embeds.NodeEditEmbed import NodeEditEmbed
 from kataja.ui.panels.StylePanel import StylePanel
 from kataja.ui.panels.field_utils import MyColorDialog, MyFontDialog
+from kataja.nodes.Node import Node
 
 NOTHING = 0
 SELECTING_AREA = 1
@@ -349,12 +350,16 @@ class UIManager:
                 self.remove_ui(item)
         # create ui pieces for selected elements
         for item in ctrl.selected:
-            self.update_touch_areas_for_selected(item)
             if isinstance(item, Edge):
+                self.update_touch_areas_for_selected_edge(item)
                 self.add_control_points(item)
                 self.add_buttons_for_edge(item)
-            elif isinstance(item, BaseConstituentNode):
-                self.add_buttons_for_constituent_node(item)
+            elif isinstance(item, Node):
+                self.update_touch_areas_for_selected_node(item)
+                if item.node_type == g.CONSTITUENT_NODE:
+                    self.add_buttons_for_constituent_node(item)
+                #elif item.node_type == g.COMMENT_NODE:
+                #    self.add_buttons_for_comment_node(item)
         if ctrl.selected:
             if self.scope != g.SELECTION:
                 self.base_scope = self.scope
@@ -700,7 +705,7 @@ class UIManager:
         ui_key = host.save_key + '_ta_' + str(type)
         ta = self.get_ui(ui_key)
         if not ta:
-            ta = TouchArea(host, type, ui_key)
+            ta = create_touch_area(host, type, ui_key)
             self.add_ui(ta)
         return ta
 
@@ -717,30 +722,43 @@ class UIManager:
         """
         self.remove_touch_areas()
         for item in ctrl.selected:
-            self.update_touch_areas_for_selected(item)
+            if isinstance(item, Edge):
+                self.update_touch_areas_for_selected_edge(item)
+            elif isinstance(item, Node):
+                self.update_touch_areas_for_selected_node(item)
 
-    def update_touch_areas_for_selected(self, item):
-        """ Assumes that touch areas for this item are empty and that the
-        item is selected
-        :param item: object to update
+    def update_touch_areas_for_selected_node(self, node):
+        """ Assumes that touch areas for this node are empty and that the
+        node is selected
+        :param node: object to update
         """
-        if isinstance(item, BaseConstituentNode):
-            if item.is_root_node():
-                self.get_touch_area(item, g.LEFT_ADD_ROOT)
-                self.get_touch_area(item, g.RIGHT_ADD_ROOT)
-            if not item.is_placeholder():
-                for edge in item.get_edges_up(visible=True):
+        if node.node_type == g.CONSTITUENT_NODE:
+            if node.is_root_node():
+                self.get_touch_area(node, g.LEFT_ADD_ROOT)
+                self.get_touch_area(node, g.RIGHT_ADD_ROOT)
+            if not node.is_placeholder():
+                for edge in node.get_edges_up(visible=True):
                     self.get_touch_area(edge, g.LEFT_ADD_SIBLING)
                     self.get_touch_area(edge, g.RIGHT_ADD_SIBLING)
-        elif isinstance(item, Edge) and item.edge_type == g.CONSTITUENT_EDGE:
-            if item.has_orphan_ends():
-                if item.end and (item.end.is_placeholder()):
-                    self.get_touch_area(item.end, g.TOUCH_ADD_CONSTITUENT)
-                if item.start and (item.start.is_placeholder()):
-                    self.get_touch_area(item.start, g.TOUCH_ADD_CONSTITUENT)
+        elif node.node_type == g.COMMENT_NODE:
+            self.get_touch_area(node, g.DELETE_ARROW)
+
+
+    def update_touch_areas_for_selected_edge(self, edge):
+        """ Assumes that touch areas for this edge are empty and that the
+        edge is selected
+        :param edge: object to update
+        """
+        if edge.edge_type == g.CONSTITUENT_EDGE:
+            if edge.has_orphan_ends():
+                if edge.end and (edge.end.is_placeholder()):
+                    self.get_touch_area(edge.end, g.TOUCH_ADD_CONSTITUENT)
+                if edge.start and (edge.start.is_placeholder()):
+                    self.get_touch_area(edge.start, g.TOUCH_ADD_CONSTITUENT)
             else:
-                self.get_touch_area(item, g.LEFT_ADD_SIBLING)
-                self.get_touch_area(item, g.RIGHT_ADD_SIBLING)
+                self.get_touch_area(edge, g.LEFT_ADD_SIBLING)
+                self.get_touch_area(edge, g.RIGHT_ADD_SIBLING)
+
 
     def prepare_touch_areas_for_dragging(self, drag_host=None, moving=None,
                                          node_type='', multidrag=False):

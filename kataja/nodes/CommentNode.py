@@ -84,6 +84,14 @@ class CommentNode(Node):
         print('daapadaa ', value)
         self._inode_changed = True
 
+    def update_selection_status(self, selected):
+        """
+
+        :param selected:
+        :return:
+        """
+        super().update_selection_status(selected)
+
 
     def __str__(self):
         return 'comment: %s' % self.text

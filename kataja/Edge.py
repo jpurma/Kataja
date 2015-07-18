@@ -838,7 +838,7 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
     def update_shape(self):
         """ Reload shape and shape settings """
         self._shape_method = SHAPE_PRESETS[self.shape_name]['method']
-        self._cached_shape_info = self.shape_info()
+        self._cached_shape_info = self.shape_info().copy()
         cpl = len(self.control_points)
         self.make_path()
         # while len(self.curve_adjustment) < len(self.control_points):
@@ -901,17 +901,18 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
         :param index:
         :return:
         """
-        self.poke('curve_adjustment')
-        if self.curve_adjustment and len(self.curve_adjustment) > index:
-            self.curve_adjustment[index] = (0, 0, 0)
-            self.call_watchers('edge_adjustment', 'curve_adjustment',
-                               self.curve_adjustment)
-        can_delete = True
-        for (x, y, z) in self.curve_adjustment:
-            if x != 0 or y != 0:
-                can_delete = False
-        if can_delete:
-            self.curve_adjustment = None
+        if self.curve_adjustment:
+            self.poke('curve_adjustment')
+            if self.curve_adjustment and len(self.curve_adjustment) > index:
+                self.curve_adjustment[index] = (0, 0, 0)
+                self.call_watchers('edge_adjustment', 'curve_adjustment',
+                                   self.curve_adjustment)
+            can_delete = True
+            for values in self.curve_adjustment:
+                if any(values):
+                    can_delete = False
+            if can_delete:
+                self.curve_adjustment = None
         self.make_path()
         self.update()
 
@@ -961,59 +962,6 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
             if self.end:
                 self._computed_end_point = self.end.magnet(2)
 
-    def update_end_points_old(self):
-        """
-
-        :return:
-        """
-        if self.start and not self.end:
-            self._computed_end_point = add_xyz(self.start.current_position,
-                                               self._relative_vector)
-        elif self.end and not self.start:
-            self._computed_start_point = sub_xyz(self.end.current_position,
-                                                 self._relative_vector)
-        if self.edge_type == g.ARROW:
-
-            if self.start:
-                if self._true_path:
-                    a = self.get_angle_at(0)
-                    i = round(a / 22.5)
-                    self._computed_start_point = self.start.magnet(
-                        angle_magnet_map[i])
-                else:
-                    dx, dy = sub_xy(self.end_point, self.start_point)
-                    i = round(math.degrees(math.atan2(dy, dx)) / 22.5)
-                    self._computed_start_point = self.start.magnet(
-                        atan_magnet_map[i])
-            if self.end:
-                if self._true_path:
-                    a = self.get_angle_at(1.0)
-                    if a >= 180:
-                        a -= 180
-                    elif a < 180:
-                        a += 180
-                    i = round(a / 22.5)
-                    self._computed_end_point = self.end.magnet(
-                        angle_magnet_map[i])
-                else:
-                    dx, dy = sub_xy(self.end_point, self.start_point)
-                    i = round(math.degrees(math.atan2(dy, dx)) / 22.5)
-                    self._computed_end_point = self.end.magnet(
-                        atan_magnet_map[i])
-        elif self.edge_type == g.DIVIDER:
-            pass
-
-        else:
-            if self.start:
-                if self.alignment == LEFT:
-                    self._computed_start_point = self.start.magnet(8)
-                elif self.alignment == RIGHT:
-                    self._computed_start_point = self.start.magnet(10)
-                else:
-                    self._computed_start_point = self.start.magnet(9)
-            if self.end:
-                self._computed_end_point = self.end.magnet(2)
-            assert self._computed_start_point or self._computed_end_point
 
 
     def connect_end_points(self, start, end):

@@ -31,7 +31,8 @@ from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.Label import Label
 from kataja.Movable import Movable
 from kataja.BaseModel import Saved, Synobj
-from kataja.utils import to_tuple, create_shadow_effect, time_me
+from kataja.utils import to_tuple, create_shadow_effect, time_me, multiply_xyz, \
+    div_xyz, sub_xyz, add_xyz
 import kataja.globals as g
 from kataja.parser.INodes import ITemplateNode
 
@@ -430,23 +431,17 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
         if self.folding_towards:
             if self._move_counter:
-                px, py, pz = self.current_position
-                tx, ty, tz = self._target_position
                 if self._use_easing:
-                    xvel = self._x_step * qt_prefs.easing_curve[
-                        self._move_counter - 1]
-                    yvel = self._y_step * qt_prefs.easing_curve[
-                        self._move_counter - 1]
-                    zvel = self._z_step * qt_prefs.easing_curve[
-                        self._move_counter - 1]
+                    vel = multiply_xyz(self._step, qt_prefs.easing_curve[
+                        self._move_counter - 1])
                 else:
-                    xvel = (tx - px) / self._move_counter
-                    yvel = (ty - py) / self._move_counter
-                    zvel = (tz - pz) / self._move_counter
+                    vel = div_xyz(sub_xyz(self._target_position,
+                                          self.current_position),
+                                  self._move_counter)
                 self._move_counter -= 1
                 if not self._move_counter:
                     self.stop_moving()
-                self.current_position = (px + xvel, py + yvel, pz + zvel)
+                self.current_position = add_xyz(self.current_position, vel)
                 return True, False
             else:
                 return False, False

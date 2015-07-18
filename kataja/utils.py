@@ -453,6 +453,13 @@ def multiply_xyz(a, mul):
     return a[0] * mul, a[1] * mul, a[2] * mul
 
 
+def tuple2_to_tuple3(a):
+    """ Turn 2-tuple to 3-tuple, use 0 for third value.
+    :param a:
+    :rtype: tuple
+    """
+    return a[0], a[1], 0
+
 
 
 
