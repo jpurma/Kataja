@@ -400,7 +400,7 @@ class BaseConstituentNode(Node):
 
     # ## Qt overrides ######################################################################
 
-    def paint(self, painter, option, widget):
+    def fpaint(self, painter, option, widget):
         """
 
         :param painter:
@@ -418,10 +418,8 @@ class BaseConstituentNode(Node):
             rect = False
         else:
             rect = False
-        if self.triangle:
-            self.paint_triangle(painter)
-        elif rect:
-            painter.drawRect(self.inner_rect)
+        if rect:
+            painter.drawRoundedRect(self.inner_rect, 5, 5)
             # if self.uses_scope_area:
             # self.paint_scope_rect(painter, rect)
         # Node.paint(self, painter, option, widget)
@@ -433,9 +431,11 @@ class BaseConstituentNode(Node):
 
         :param selected:
         """
+
+        super().update_selection_status(selected)
         if ctrl.cm.use_glow():
             self.effect.setEnabled(selected)
-        self.update()
+            self.update()
 
     # ### Checks for callable actions ####
 

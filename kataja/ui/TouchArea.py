@@ -468,9 +468,9 @@ class BranchingTouchArea(TouchArea):
         if not end_point:
             d = e.get_angle_at(0.5)
             if self._align_left:
-                d -= 75
+                d -= 90 # 75
             else:
-                d += 75
+                d += 90 # 75
             angle = math.radians(-d)
             dx = math.cos(angle)
             dy = math.sin(angle)

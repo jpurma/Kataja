@@ -4,7 +4,7 @@ __author__ = 'purma'
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from kataja.parser.LatexToINode import parse_field
-from kataja.ui.embeds.UIEmbed import UIEmbed, EmbeddedLineEdit
+from kataja.ui.embeds.UIEmbed import UIEmbed, EmbeddedLineEdit, EmbeddedTextarea
 from kataja.singletons import qt_prefs, ctrl
 from kataja.parser import INodeToLatex
 import kataja.globals as g
@@ -58,28 +58,36 @@ class NodeEditEmbed(UIEmbed):
             itype = d.get('input_type', 'text')
             prefill = d.get('prefill', '')
             syntactic = d.get('syntactic', False)
-            field = None
             if itype == 'text':
                 width = d.get('width', 140)
                 field = EmbeddedLineEdit(self, tip=tt, font=f, prefill=prefill)
                 field.setMaximumWidth(width)
                 if syntactic:
                     field.setPalette(ui_s)
-            if field:
-                align = d.get('align', 'newline')
-                if align == 'newline':
-                    if hlayout:
-                        layout.addLayout(hlayout)
-                    hlayout = QtWidgets.QHBoxLayout()
-                hlayout.addWidget(field)
-                self.fields[field_name] = field
-                ui_name = d.get('name', field_name)
+            elif itype == 'textarea':
+                width = d.get('width', 200)
+                field = EmbeddedTextarea(self, tip=tt, font=f, prefill=prefill)
+                field.setMaximumWidth(width)
+                if syntactic:
+                    field.setPalette(ui_s)
+            else:
+                raise NotImplementedError
+            align = d.get('align', 'newline')
+            if align == 'newline':
+                # new hlayout means new line, but before starting a new hlayout,
+                # end the previous one.
+                if hlayout:
+                    layout.addLayout(hlayout)
+                hlayout = QtWidgets.QHBoxLayout()
+            hlayout.addWidget(field)
+            self.fields[field_name] = field
+            ui_name = d.get('name', field_name)
+            if ui_name:
                 if syntactic:
                     palette = ui_s
                 else:
                     palette = ui_p
-                label = make_label(ui_name, self, hlayout, tt, field, palette)
-                hlayout.addWidget(label)
+                make_label(ui_name, self, hlayout, tt, field, palette)
         if hlayout:
             layout.addLayout(hlayout)
 
@@ -104,8 +112,11 @@ class NodeEditEmbed(UIEmbed):
             if itype == 'text':
                 parsed = INodeToLatex.parse_inode_for_field(value)
                 field.setText(parsed)
+            if itype == 'textarea':
+                parsed = INodeToLatex.parse_inode_for_field(value)
+                field.setPlainText(parsed)
 
-    def sizeHint(self):
+    def psizeHint(self):
         base = QtWidgets.QWidget.sizeHint(self)
         return base + QtCore.QSize(40, 0)
 
@@ -129,6 +140,8 @@ class NodeEditEmbed(UIEmbed):
             itype = d.get('input_type', 'text')
             if itype == 'text':
                 value = parse_field(field.text())
+            elif itype == 'textarea':
+                value = parse_field(field.toPlainText())
             else:
                 raise NotImplementedError
             if 'setter' in d:

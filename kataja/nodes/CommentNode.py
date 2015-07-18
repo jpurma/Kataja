@@ -41,9 +41,9 @@ class CommentNode(Node):
     display = True
 
     visible = {'text': {'order': 3}}
-    editable = {'text': dict(name='Comment', order=3, prefill='comment',
-                              tooltip='freeform text, invisible for '
-                                      'processing')}
+    editable = {'text': dict(name='', order=3, prefill='comment',
+                             tooltip='freeform text, invisible for '
+                                     'processing', input_type='textarea')}
 
 
     default_style = {'color': 'accent4', 'font': g.MAIN_FONT, 'font-size': 14,

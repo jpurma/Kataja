@@ -766,7 +766,9 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         if ctrl.pressed is self:
             return ctrl.cm.active(ctrl.cm.selection())
         elif self._hovering:
-            return ctrl.cm.hovering(ctrl.cm.selection())
+            #return ctrl.cm.hover()
+            return self.color
+            #return ctrl.cm.hovering(ctrl.cm.selection())
         elif ctrl.is_selected(self):
             return ctrl.cm.selection()
             # return ctrl.cm.selected(ctrl.cm.selection())
@@ -801,6 +803,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """
         :return: INodes or str or tuple of them
         """
+        print('getting inode for %s, changed: %s, old value: %s' % (self,
+                                                                    self._inode_changed, self._inode_str))
         if self._inode is None:
             self._inode = ITemplateNode()
             self._inode_str = str(self._inode)
@@ -815,6 +819,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
                 iv[key]['value'] = getattr(self, getter)
             self._inode_str = str(self._inode)
             self._inode_changed = False
+            print('_inode changed, now ', self._inode_str)
         return self._inode
 
     def update_status_tip(self):
@@ -850,10 +855,19 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :param widget:
         nodes it is the label of the node that needs complex painting """
         p = QtGui.QPen(self.contextual_color)
-        p.setWidth(1)
         painter.setPen(p)
-        if ctrl.pressed is self or self._hovering or ctrl.is_selected(
-                self) or self.has_empty_label():
+        p.setWidth(1)
+        if self.triangle:
+            self.paint_triangle(painter)
+        p.setWidth(2)
+        painter.setPen(p)
+
+        if self._hovering:
+            p.setColor(ctrl.cm.hover())
+            painter.setPen(p)
+            painter.drawRoundedRect(self.inner_rect, 5, 5)
+        elif ctrl.pressed is self or ctrl.is_selected(self) or \
+                self.has_empty_label():
             painter.drawRoundedRect(self.inner_rect, 5, 5)
 
             # x,y,z = self.current_position
@@ -986,8 +1000,10 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """
         if not selected:
             self.setZValue(10)
+            self.setToolTip("")
         else:
             self.setZValue(200)
+            self.setToolTip("Click to edit")
         self.update()
 
     # ### MOUSE - kataja

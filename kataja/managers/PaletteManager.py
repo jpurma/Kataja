@@ -474,7 +474,6 @@ class PaletteManager:
     def secondary(self) -> QColor:
         """
 
-
         :return:
         """
         return self.d['accent2']
@@ -482,10 +481,16 @@ class PaletteManager:
     def selection(self):
         """
 
-
         :return:
         """
         return self.d['accent3']
+
+    def hover(self):
+        """
+
+        :return:
+        """
+        return self.d['accent3tr']
 
     def add_custom_color(self, color, n=-1):
         """
