@@ -59,7 +59,7 @@ from kataja.ui.panels.StylePanel import StylePanel
 from kataja.ui.panels.field_utils import MyColorDialog, MyFontDialog
 from kataja.nodes.Node import Node
 from kataja.ui import drawn_icons
-from utils import time_me
+from kataja.utils import time_me
 
 NOTHING = 0
 SELECTING_AREA = 1

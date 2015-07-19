@@ -4,7 +4,7 @@ from kataja.ui.embeds.UIEmbed import UIEmbed
 from kataja.ui.drawn_icons import arrow, divider
 from kataja.singletons import qt_prefs, ctrl, prefs
 import kataja.globals as g
-from ui.panels.field_utils import icon_text_button
+from kataja.ui.panels.field_utils import icon_text_button
 
 __author__ = 'purma'
 
@@ -23,9 +23,6 @@ class MarkerStartPoint(QtWidgets.QGraphicsItem):
             p = QtGui.QPen(ctrl.cm.ui_tr())
             p.setWidth(2)
             painter.setPen(p)
-            # b = ctrl.cm.ui_tr()
-            # painter.setBrush(b)
-            # painter.setPen(qt_prefs.no_pen)
             painter.drawEllipse(-6, -6, 12, 12)
         else:
             p = QtGui.QPen(ctrl.cm.ui())
@@ -106,23 +103,11 @@ class NewElementEmbed(UIEmbed):
                                                  'new_arrow',
                                                  size=QtCore.QSize(48, 24),
                                                  draw_method=arrow)
-
-        #self.top_row_layout.addWidget(self.new_arrow_button)
-        #self.new_arrow_button.setIconSize(QtCore.QSize(40, 16))
-        #self.new_arrow_button.setIcon(ArrowIcon())
-        #ui_manager.connect_element_to_action(self.new_arrow_button,
-        # 'new_arrow')
         self.divider_button = icon_text_button(ui_manager, self.top_row_layout,
                                                  self, '', '', " &Divider",
                                                  'new_divider',
                                                  size=QtCore.QSize(48, 24),
                                                  draw_method=divider)
-        #self.new_divider_button = QtWidgets.QPushButton(" &Divider")
-        #self.new_divider_button.setIconSize(QtCore.QSize(40, 16))
-        #self.new_divider_button.setIcon(DividerIcon())
-        #self.top_row_layout.addWidget(self.new_divider_button)
-        #ui_manager.connect_element_to_action(self.new_divider_button,
-        # 'new_divider')
         layout.addLayout(self.top_row_layout)
         layout.addSpacing(12)
         self.input_line_edit = QtWidgets.QLineEdit(self)

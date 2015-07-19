@@ -25,7 +25,7 @@
 from PyQt5 import QtGui, QtCore
 
 from kataja.singletons import ctrl
-from utils import time_me
+from kataja.utils import time_me
 
 
 class TwoColorIconEngine(QtGui.QIconEngine):

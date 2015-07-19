@@ -107,7 +107,23 @@ class GraphScene(QtWidgets.QGraphicsScene):
     def visible_rect(self):
         """ Counts all visible items in scene and returns QRectF object
          that contains all of them """
-        return self.itemsBoundingRect()
+        y_min = 300
+        y_max = -300
+        x_min = 300
+        x_max = -300
+        for item in ctrl.forest.visible_nodes():
+            minx, miny, maxx, maxy = item.sceneBoundingRect().getCoords()
+            if minx < x_min:
+                x_min = minx
+            elif maxx > x_max:
+                x_max = maxx
+            if miny < y_min:
+                y_min = miny
+            elif maxy > y_max:
+                y_max = maxy
+        return QtCore.QRectF(QtCore.QPoint(x_min, y_min), QtCore.QPoint(x_max,
+                                                                       y_max))
+        #return self.itemsBoundingRect()
 
     def item_moved(self):
         """ Starts the animations unless they are running already

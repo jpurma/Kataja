@@ -5,7 +5,7 @@ from PyQt5.QtCore import QSize
 import kataja.globals as g
 from kataja.singletons import ctrl, qt_prefs
 from kataja.utils import time_me
-from ui.OverlayButton import OverlayButton
+from kataja.ui.OverlayButton import OverlayButton
 
 __author__ = 'purma'
 
