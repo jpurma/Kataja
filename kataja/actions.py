@@ -32,7 +32,7 @@ def get_ui_container(qt_object):
     """
     if not qt_object:
         return None
-    if hasattr(qt_object, 'ui_key'):
+    if getattr(qt_object, 'ui_key', None):
         return qt_object
     else:
         p = qt_object.parent()
@@ -545,7 +545,7 @@ def fit_to_window():
     available as user action
     :return: None
     """
-    ctrl.graph_scene.fit_to_window()
+    ctrl.graph_scene.fit_to_window(force=True)
 
 
 a['zoom_to_fit'] = {'command': '&Zoom to fit', 'method': fit_to_window,
@@ -607,7 +607,8 @@ def open_font_selector(sender):
 
 a['start_font_dialog'] = {'command': 'Use a custom font',
                           'method': open_font_selector, 'sender_arg': True,
-                          'undoable': False, 'tooltip': 'Use a custom font'}
+                          'undoable': False, 'tooltip': 'Select custom font '
+                                                        'for node label'}
 
 
 def select_font(sender):
@@ -625,7 +626,8 @@ def select_font(sender):
 
 
 a['font_selector'] = {'command': 'Change label font', 'method': select_font,
-                      'sender_arg': True, 'tooltip': 'Select the label font'}
+                      'sender_arg': True, 'tooltip': 'Select from standard '
+                                                     'label styles'}
 
 
 def change_edge_shape(sender):

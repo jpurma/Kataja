@@ -804,8 +804,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """
         :return: INodes or str or tuple of them
         """
-        print('getting inode for %s, changed: %s, old value: %s' % (self,
-                                                                    self._inode_changed, self._inode_str))
         if self._inode is None:
             self._inode = ITemplateNode()
             self._inode_str = str(self._inode)
@@ -820,7 +818,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
                 iv[key]['value'] = getattr(self, getter)
             self._inode_str = str(self._inode)
             self._inode_changed = False
-            print('_inode changed, now ', self._inode_str)
         return self._inode
 
     def update_status_tip(self):

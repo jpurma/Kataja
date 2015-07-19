@@ -109,7 +109,7 @@ class LeftFirstTree(BaseVisualization):
                     if not blocked:
                         grid.fill_path(path)
                         self._put_to_grid(grid, child, nx, ny, parent=node)
-                assert not blocked
+                #assert not blocked
                 first = False
                 if len(children) > 2:
                     nx += x_step

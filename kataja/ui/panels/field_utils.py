@@ -5,6 +5,7 @@ from PyQt5.QtCore import QSize
 import kataja.globals as g
 from kataja.singletons import ctrl, qt_prefs
 from kataja.utils import time_me
+from ui.OverlayButton import OverlayButton
 
 __author__ = 'purma'
 
@@ -230,6 +231,19 @@ def mini_button(ui_manager, layout, text, action):
     button.setMinimumSize(QSize(40, 20))
     button.setMaximumSize(QSize(40, 20))
     button.ambiguous = False
+    ui_manager.connect_element_to_action(button, action)
+    layout.addWidget(button)
+    return button
+
+
+def icon_text_button(ui_manager, layout, parent, role, key, text, action,
+                     size=None, icon=None, draw_method=None):
+
+    button = OverlayButton(icon, None, role, key, text,
+                           parent=parent,
+                           size=size or QtCore.QSize(48, 24),
+                           draw_method=draw_method)
+    button.setText(text)
     ui_manager.connect_element_to_action(button, action)
     layout.addWidget(button)
     return button

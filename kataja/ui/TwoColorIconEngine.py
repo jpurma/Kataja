@@ -25,6 +25,7 @@
 from PyQt5 import QtGui, QtCore
 
 from kataja.singletons import ctrl
+from utils import time_me
 
 
 class TwoColorIconEngine(QtGui.QIconEngine):
@@ -73,7 +74,7 @@ class TwoColorIconEngine(QtGui.QIconEngine):
             self.mask = self.bitmap.mask()
 
 
-    # @caller
+    #@time_me
     def paint(self, painter, rect, mode, state):
         """
 

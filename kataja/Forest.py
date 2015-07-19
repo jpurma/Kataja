@@ -258,7 +258,8 @@ class Forest(BaseModel):
         if self.gloss_text:
             if prefs.show_gloss_text:
                 if not self.gloss:
-                    self.gloss = self.create_gloss_node(label=self.gloss_text)
+                    self.gloss = self.create_node(None, node_type=g.GLOSS_NODE)
+                    self.gloss.text = self.gloss_text
             elif self.gloss:
                 self.scene.removeItem(self.gloss)
                 self.gloss = None

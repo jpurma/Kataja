@@ -84,9 +84,9 @@ class ConstituentNode(BaseConstituentNode):
                                         'dragging_constituent'},
                    g.RIGHT_ADD_SIBLING: {'place': 'edge_up', 'condition':
                                          'dragging_constituent'},
-                   g.ADD_COMMENT: {'condition': 'dragging_comment'},
-                   g.ADD_FEATURE: {'condition': 'dragging_feature'},
-                   g.ADD_GLOSS: {'condition': 'dragging_gloss'}}
+                   g.TOUCH_CONNECT_COMMENT: {'condition': 'dragging_comment'},
+                   g.TOUCH_CONNECT_FEATURE: {'condition': 'dragging_feature'},
+                   g.TOUCH_CONNECT_GLOSS: {'condition': 'dragging_gloss'}}
 
     touch_areas_when_selected = {g.LEFT_ADD_ROOT: {'condition': 'is_root'},
                    g.RIGHT_ADD_ROOT: {'condition': 'is_root'},

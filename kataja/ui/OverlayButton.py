@@ -42,9 +42,14 @@ class PanelButton(QtWidgets.QPushButton):
      """
 
     def __init__(self, pixmap, text=None, parent=None, size=16,
-                 color_key='accent8'):
+                 color_key='accent8', draw_method=None):
+        print('pixmap: %s, text: %s, parent: %s, size: %s, color_key: %s, '
+              'draw_method: %s' % (pixmap, text, parent, size, color_key, draw_method))
         QtWidgets.QPushButton.__init__(self, parent)
+        self.draw_method = draw_method
         self.color_key = color_key
+        if not (pixmap or draw_method):
+            raise TypeError('Button needs either pixmap/icon or draw_method')
         if isinstance(size, QtCore.QSize):
             width = size.width()
             height = size.height()
@@ -60,8 +65,6 @@ class PanelButton(QtWidgets.QPushButton):
             self.pixmap = pixmap.pixmap(size)
         else:
             self.pixmap = pixmap
-        hidp = self.devicePixelRatio()
-        self.isize = QtCore.QSize(width * hidp, height * hidp)
         self.compose_icon()
         if text:
             self.setToolTip(text)
@@ -75,12 +78,27 @@ class PanelButton(QtWidgets.QPushButton):
         :return:
         """
         c = ctrl.cm.get(self.color_key)
-        image = self.pixmap.toImage()
-        ir = image.rect()
-        painter = QtGui.QPainter(image)
-        painter.setCompositionMode(QtGui.QPainter.CompositionMode_SourceIn)
-        painter.fillRect(ir, c)
-        painter.end()
+        if self.pixmap:
+            image = self.pixmap.toImage()
+            painter = QtGui.QPainter(image)
+            painter.setCompositionMode(QtGui.QPainter.CompositionMode_SourceIn)
+            painter.fillRect(image.rect(), c)
+            painter.end()
+        elif self.draw_method:
+            size = self.iconSize()
+
+            hidp = self.devicePixelRatio()
+            isize = QtCore.QSize(size.width() * hidp, size.height() * hidp)
+
+            image = QtGui.QImage(
+                isize, QtGui.QImage.Format_ARGB32_Premultiplied)
+            image.fill(QtCore.Qt.transparent)
+            painter = QtGui.QPainter(image)
+            painter.setRenderHint(QtGui.QPainter.Antialiasing)
+            painter.setPen(c)
+            self.draw_method(painter, image.rect(), c)
+            painter.end()
+
         i = QtGui.QIcon(QtGui.QPixmap.fromImage(image))
         self.setIcon(i)
         self.setStyleSheet(":hover {border: 1px solid %s; border-radius: 3} "
@@ -112,9 +130,9 @@ class OverlayButton(PanelButton):
     """
 
     def __init__(self, pixmap, host, role, ui_key, text=None, parent=None,
-                 size=16, color_key='accent8'):
+                 size=16, color_key='accent8', draw_method=None):
         super().__init__(pixmap, text=text, parent=parent, size=size,
-                         color_key=color_key)
+                         color_key=color_key, draw_method=draw_method)
         self.host = host
         self.ui_key = ui_key
         self.role = role
@@ -127,6 +145,9 @@ class OverlayButton(PanelButton):
 
         :raise UIError:
         """
+        if not self.host:
+            return
+
         if self.role == g.REMOVE_MERGER:
             adjust = QtCore.QPointF(19, -self.host.height / 2)
             if not self.edge:
@@ -162,6 +183,7 @@ class OverlayButton(PanelButton):
             p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(self.host.x(),
                                                                  self.host.y() + self.host.height / 2))
             p -= QtCore.QPoint((self.iconSize().width() / 2) + 4, 0)
+            print(p)
         elif self.role == g.REMOVE_TRIANGLE:
             p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(self.host.x(),
                                                                  self.host.y() + self.host.height / 2))

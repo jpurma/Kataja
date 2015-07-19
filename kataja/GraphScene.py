@@ -94,10 +94,10 @@ class GraphScene(QtWidgets.QGraphicsScene):
     # ####
 
     # @time_me
-    def fit_to_window(self):
+    def fit_to_window(self, force=False):
         """ Calls up to graph view and makes it to fit all visible items here to view window."""
         vr = self.visible_rect()
-        if self._cached_visible_rect:
+        if self._cached_visible_rect and not force:
             if vr != self._cached_visible_rect:
                 self.graph_view.instant_fit_to_view(vr)
         else:

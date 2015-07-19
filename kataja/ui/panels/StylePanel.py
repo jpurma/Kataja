@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtCore import QSize
 from PyQt5.QtGui import QIcon, QStandardItem
 
@@ -7,7 +7,6 @@ from kataja.Edge import SHAPE_PRESETS, Edge
 from kataja.singletons import ctrl, qt_prefs, prefs
 import kataja.globals as g
 from kataja.ui.panels.UIPanel import UIPanel
-from kataja.ui.DrawnIconEngine import DrawnIconEngine
 from kataja.ui.OverlayButton import PanelButton
 from kataja.ui.panels.field_utils import find_list_item, TableModelComboBox, \
     ColorSelector, set_value, FontSelector
@@ -16,15 +15,33 @@ __author__ = 'purma'
 
 
 class LineStyleIcon(QIcon):
-    def __init__(self, shape_key, panel):
+    def __init__(self, shape_key, panel, size):
+        super().__init__()
         self.shape_key = shape_key
-        self.engine = DrawnIconEngine(SHAPE_PRESETS[shape_key]['icon'],
-                                      owner=self)
-        QIcon.__init__(self, self.engine)
         self.panel = panel
+        self.size_hint = size
+        self.compose_icon()
         # pixmap = QPixmap(60, 20)
         # pixmap.fill(ctrl.cm.ui())
         # self.addPixmap(pixmap)
+
+    def compose_icon(self):
+        draw_method = SHAPE_PRESETS[self.shape_key]['icon']
+        c = ctrl.cm.get(self.panel.cached_edge_color or 'content1')
+        size = self.size_hint
+
+        hidp = self.panel.devicePixelRatio()
+        isize = QtCore.QSize(size.width() * hidp, size.height() * hidp)
+
+        image = QtGui.QImage(
+            isize, QtGui.QImage.Format_ARGB32_Premultiplied)
+        image.fill(QtCore.Qt.transparent)
+        painter = QtGui.QPainter(image)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        painter.setPen(c)
+        draw_method(painter, image.rect(), c)
+        painter.end()
+        self.addPixmap(QtGui.QPixmap.fromImage(image))
 
     def paint_settings(self):
         pen = self.panel.cached_edge_color
@@ -32,7 +49,6 @@ class LineStyleIcon(QIcon):
             pen = 'content1'
         d = {'color': ctrl.cm.get(pen)}
         return d
-
 
 class ShapeSelector(TableModelComboBox):
     def __init__(self, parent):
@@ -42,10 +58,10 @@ class ShapeSelector(TableModelComboBox):
         items = []
 
         for lt in SHAPE_PRESETS.keys():
-            item = QStandardItem(LineStyleIcon(lt, parent), '')
+            item = QStandardItem(LineStyleIcon(lt, parent, self.iconSize()), '')
             item.setData(lt)
             item.setToolTip(lt)
-            item.setSizeHint(QSize(64, 16))
+            item.setSizeHint(self.iconSize())
             items.append(item)
         model = self.model()
         model.setRowCount(len(items))

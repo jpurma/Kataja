@@ -58,6 +58,7 @@ from kataja.ui.embeds.NodeEditEmbed import NodeEditEmbed
 from kataja.ui.panels.StylePanel import StylePanel
 from kataja.ui.panels.field_utils import MyColorDialog, MyFontDialog
 from kataja.nodes.Node import Node
+from kataja.ui import drawn_icons
 from utils import time_me
 
 NOTHING = 0
@@ -161,6 +162,7 @@ class UIManager:
         self.create_menus(additional_actions)
         # Create UI panels, requires actions to exist
         self.create_panels()
+        self.create_float_buttons()
         ctrl.add_watcher('selection_changed', self)
         ctrl.add_watcher('forest_changed', self)
         ctrl.add_watcher('viewport_changed', self)
@@ -308,6 +310,7 @@ class UIManager:
             self.update_selections()
         elif signal == 'forest_changed':
             self.clear_items()
+            self.create_float_buttons()
         elif signal == 'viewport_changed':
             self.update_positions()
 
@@ -921,8 +924,25 @@ class UIManager:
 
     # ### Embedded buttons ############################
 
+
+    def create_float_buttons(self):
+        """ Create top button row
+        :return:
+        """
+        fit_to_screen = self._create_overlay_button(icon=None,
+                                                    host=None, role='bottom',
+                                                    key='fit_to_screen',
+                                                    text='Fit to screen',
+                                                    action='zoom_to_fit',
+                                                    size=(48, 24),
+                                                    draw_method=
+                                                    drawn_icons.fit_to_screen)
+        gw = fit_to_screen.parent()
+        fit_to_screen.move(gw.width() - fit_to_screen.width() - 2, 2)
+        fit_to_screen.show()
+
     def _create_overlay_button(self, icon, host, role, key, text, action,
-                               size=None):
+                               size=None, draw_method=None):
         """
 
         :param icon:
@@ -935,11 +955,16 @@ class UIManager:
         """
         if key not in self._items:
             button = OverlayButton(icon, host, role, key, text,
-                                   parent=self.main.graph_view, size=size or 16)
+                                   parent=self.main.graph_view,
+                                   size=size or 16,
+                                   draw_method=draw_method)
             self.add_ui(button)
             button.update_position()
             self.connect_element_to_action(button, action)
             button.show()
+            return button
+        else:
+            return self._items[key]
 
     def add_remove_merger_button(self, node):
         """
@@ -962,18 +987,19 @@ class UIManager:
                                     host=node, role=g.REMOVE_TRIANGLE,
                                     key=node.save_key + g.REMOVE_TRIANGLE,
                                     text='Reveal nodes inside the triangle',
-                                    action='remove_triangle', size=(48, 24))
+                                    action='remove_triangle', size=(24, 12))
 
     def add_fold_triangle_button(self, node):
         """
 
         :param node:
         """
-        self._create_overlay_button(icon=qt_prefs.triangle_icon, host=node,
+        self._create_overlay_button(icon=qt_prefs.triangle_icon,
+                                    host=node,
                                     role=g.ADD_TRIANGLE,
                                     key=node.save_key + g.ADD_TRIANGLE,
                                     text='Turn into a triangle',
-                                    action='add_triangle', size=(48, 24))
+                                    action='add_triangle', size=(24, 12))
 
     def add_buttons_for_edge(self, edge):
         """ Constituent edges have a button to remove the edge and the node

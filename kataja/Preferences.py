@@ -255,7 +255,6 @@ class Preferences(object):
         for key, default_value in vars(self).items():
             if key in Preferences.not_saved:
                 continue
-            print('default_value: ', default_value)
             if isinstance(default_value, dict):
                 settings.beginGroup(key)
                 d = getattr(self, key)
@@ -265,10 +264,8 @@ class Preferences(object):
             elif isinstance(default_value, float):
                 setattr(self, key, float(settings.value(key, default_value)))
             elif isinstance(default_value, bool):
-                print('setting bool')
                 setattr(self, key, bool(settings.value(key, default_value)))
             elif isinstance(default_value, int):
-                print('setting int')
                 setattr(self, key, int(settings.value(key, default_value)))
             else:
                 setattr(self, key, settings.value(key, default_value))

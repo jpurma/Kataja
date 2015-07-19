@@ -24,8 +24,7 @@
 
 import math
 
-from PyQt5 import QtCore
-import PyQt5.QtWidgets as QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 from kataja.nodes.Node import Node
 from kataja.errors import TouchAreaError
@@ -209,8 +208,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
                 else:
                     h = 0
                 pos = QtCore.QPointF(x, y + h)
-                return ctrl.forest.create_node(pos=pos,
-                                                       node_type=node_type)
+                return ctrl.forest.create_node(pos=pos, node_type=node_type)
             else:
                 print('received unknown command:', command, args)
         else:
@@ -223,6 +221,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
         top left, top right, left, right
         :param dropped_node:
         """
+        print('drop to toucharea')
         message = ''
         if isinstance(dropped_node, str):
             dropped_node = self.make_node_from_string(dropped_node)
@@ -238,6 +237,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
         elif self.type == g.TOUCH_CONNECT_COMMENT:
             ctrl.forest.add_comment_to_node(dropped_node, self.host)
             message = 'added %s to %s' % (dropped_node, self.host)
+        print(message, self.type)
         return message
 
     def click(self, event=None):
@@ -379,6 +379,11 @@ class TouchArea(QtWidgets.QGraphicsItem):
                              x + 3, y + 1)
             painter.drawLine(x + 1, y - 1,
                              x + 1, y + 3)
+
+        def draw_leaf(painter, x,y):
+            path = QtGui.QPainterPath(0, -end_spot_size)
+
+            painter.drawPath(p)
 
         def draw_x(painter, x, y):
             painter.drawLine(x - end_spot_size, y - end_spot_size,
