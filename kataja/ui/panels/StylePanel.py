@@ -243,7 +243,7 @@ class StylePanel(UIPanel):
                     node.font_id = font_id
                     node.update_label()
         elif ctrl.ui.scope:
-            ctrl.forest.settings.node_info(ctrl.ui.scope, 'font', font_id)
+            ctrl.fs.set_node_info(ctrl.ui.scope, 'font', font_id)
             for node in ctrl.forest.nodes.values():
                 node.update_label()
 

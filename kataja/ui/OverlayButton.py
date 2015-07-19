@@ -42,7 +42,7 @@ class PanelButton(QtWidgets.QPushButton):
      """
 
     def __init__(self, pixmap, text=None, parent=None, size=16,
-                 color_key='accent1'):
+                 color_key='accent8'):
         QtWidgets.QPushButton.__init__(self, parent)
         self.color_key = color_key
         if isinstance(size, QtCore.QSize):
@@ -112,7 +112,7 @@ class OverlayButton(PanelButton):
     """
 
     def __init__(self, pixmap, host, role, ui_key, text=None, parent=None,
-                 size=16, color_key='accent1'):
+                 size=16, color_key='accent8'):
         super().__init__(pixmap, text=text, parent=parent, size=size,
                          color_key=color_key)
         self.host = host

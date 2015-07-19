@@ -513,7 +513,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         node_type = int(node_type)
                     except TypeError:
                         pass
-                    ctrl.ui.prepare_touch_areas_for_dragging(node_type=node_type)
+                    ctrl.ui.prepare_touch_areas_for_dragging(
+                        dragged_type=node_type)
                 else:
                     print('received unknown command:', command, args)
 

@@ -120,7 +120,8 @@ class NewElementEmbed(UIEmbed):
         layout.addWidget(self.input_line_edit)
         hlayout = QtWidgets.QHBoxLayout()
         self.input_action_selector = QtWidgets.QComboBox(self)
-        for item in [g.GUESS_FROM_INPUT, g.ADD_CONSTITUENT, g.ADD_FEATURE, g.ADD_GLOSS, g.ADD_TEXT_BOX]:
+        for item in [g.GUESS_FROM_INPUT, g.ADD_CONSTITUENT, g.ADD_FEATURE,
+                     g.ADD_GLOSS, g.ADD_COMMENT]:
             self.input_action_selector.addItem(item, userData=item)  # first item here can be translated
         hlayout.addWidget(self.input_action_selector)
         self.enter_button = QtWidgets.QPushButton("↩")  # U+21A9 &#8617;

@@ -124,7 +124,7 @@ class LinearizedStaticTree(BalancedTree):
         def _build_grid(node, parent=None):
             if self.should_we_draw(node, parent):
                 grids = []
-                children = node.get_children()
+                children = node.get_visible_children()
                 for child in children:
                     grids.append(_build_grid(child, parent=node))
                 # Recursion base case

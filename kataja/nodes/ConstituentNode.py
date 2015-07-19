@@ -61,6 +61,40 @@ class ConstituentNode(BaseConstituentNode):
                     'pull': .24, 'visible': True, 'arrowhead_at_start': False,
                     'arrowhead_at_end': False, 'labeled': False}
 
+    # Touch areas are UI elements that scale with the tree: they can be
+    # temporary shapes suggesting to drag or click here to create the
+    # suggested shape.
+
+    # touch_areas_when_dragging and touch_areas_when_selected use the same
+    # format.
+
+    # 'condition': there are some general conditions implemented in UIManager,
+    # but condition can refer to method defined for node instance. When used
+    # for when-dragging checks, the method will be called with two parameters
+    # 'dragged_type' and 'dragged_host'.
+    # 'place': there are some general places defined in UIManager. The most
+    # important is 'edge_up': in this case touch areas are associated with
+    # edges going up. When left empty, touch area is associated with the node.
+
+    touch_areas_when_dragging = {g.LEFT_ADD_ROOT: {'condition': ['is_root',
+                                                   'dragging_constituent']},
+                   g.RIGHT_ADD_ROOT: {'condition': ['is_root',
+                                                    'dragging_constituent']},
+                   g.LEFT_ADD_SIBLING: {'place': 'edge_up', 'condition':
+                                        'dragging_constituent'},
+                   g.RIGHT_ADD_SIBLING: {'place': 'edge_up', 'condition':
+                                         'dragging_constituent'},
+                   g.ADD_COMMENT: {'condition': 'dragging_comment'},
+                   g.ADD_FEATURE: {'condition': 'dragging_feature'},
+                   g.ADD_GLOSS: {'condition': 'dragging_gloss'}}
+
+    touch_areas_when_selected = {g.LEFT_ADD_ROOT: {'condition': 'is_root'},
+                   g.RIGHT_ADD_ROOT: {'condition': 'is_root'},
+                   g.LEFT_ADD_SIBLING: {'place': 'edge_up'},
+                   g.RIGHT_ADD_SIBLING: {'place': 'edge_up'}}
+
+
+
     def __init__(self, constituent=None):
         """ Most of the initiation is inherited from Node """
         BaseConstituentNode.__init__(self, constituent=constituent)

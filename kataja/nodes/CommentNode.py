@@ -53,6 +53,11 @@ class CommentNode(Node):
                     'visible': True, 'arrowhead_at_start': True, 'arrowhead_at_end': False,
                     'labeled': False}
 
+    touch_areas_when_dragging = {g.DELETE_ARROW: {'condition':
+                                                  'dragging_my_arrow'}}
+
+    touch_areas_when_selected = {g.DELETE_ARROW: {'condition': 'edge_down'}}
+
 
     def __init__(self, text=''):
         Node.__init__(self)
@@ -92,6 +97,10 @@ class CommentNode(Node):
         """
         super().update_selection_status(selected)
 
+
+    def dragging_my_arrow(self, dragged_type, dragged_item):
+        print(dragged_item, dragged_type)
+        return True
 
     def __str__(self):
         return 'comment: %s' % self.text

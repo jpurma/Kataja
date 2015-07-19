@@ -1082,10 +1082,9 @@ def change_edge_ending(self, which_end, value):
                 edge.update_shape()
     elif scope:
         if which_end == 'start':
-            self.forest.settings.set_edge_info(scope, 'arrowhead_at_start',
-                                               value)
+            ctrl.fs.set_edge_info(scope, 'arrowhead_at_start', value)
         elif which_end == 'end':
-            self.forest.settings.set_edge_info(scope, 'arrowhead_at_end', value)
+            ctrl.fs.set_edge_info(scope, 'arrowhead_at_end', value)
         else:
             print('Invalid place for edge ending: ', which_end)
 

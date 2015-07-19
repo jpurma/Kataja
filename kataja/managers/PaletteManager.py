@@ -457,19 +457,19 @@ class PaletteManager:
         """ Primary UI text color
         :return: QColor
         """
-        return self.d['accent1']
+        return self.d['accent8']
 
     def ui_tr(self) -> QColor:
         """ Transparent UI color
         :return: QColor
         """
-        return self.d['accent1tr']
+        return self.d['accent8tr']
 
     def ui_paper(self) -> QColor:
         """ UI background color -- use for UI elements that float over main drawing.
         :return: QColor
         """
-        return self.d['accent1tr9']
+        return self.d['accent8tr9']
 
     def secondary(self) -> QColor:
         """
@@ -681,7 +681,7 @@ class PaletteManager:
              'dark': QtGui.QBrush(self.d['content2']),
              'mid': QtGui.QBrush(self.hovering(self.d['content1'])),
              'text': QtGui.QBrush(self.d['content1']),
-             'bright_text': QtGui.QBrush(self.d['accent1']),
+             'bright_text': QtGui.QBrush(self.d['accent8']),
              'base': QtGui.QBrush(self.d['background2']),
              'window': QtGui.QBrush(self.d['background1'])}
 
@@ -701,12 +701,12 @@ class PaletteManager:
         if cached and self._ui_palette:
             return self._ui_palette
 
-        p = {'windowText': QtGui.QBrush(self.d['accent1']),
+        p = {'windowText': QtGui.QBrush(self.d['accent8']),
              'button': QtGui.QBrush(self.d['background1']),
-             'light': QtGui.QBrush(self.d['accent1'].lighter()),
-             'dark': QtGui.QBrush(self.d['accent1'].darker()),
-             'mid': QtGui.QBrush(self.hovering(self.d['accent1'])),
-             'text': QtGui.QBrush(self.d['accent1']),
+             'light': QtGui.QBrush(self.d['accent8'].lighter()),
+             'dark': QtGui.QBrush(self.d['accent8'].darker()),
+             'mid': QtGui.QBrush(self.hovering(self.d['accent8'])),
+             'text': QtGui.QBrush(self.d['accent8']),
              'bright_text': QtGui.QBrush(self.d['accent2']),
              'base': QtGui.QBrush(self.d['background2']),
              'window': QtGui.QBrush(self.d['background1'])}

@@ -474,7 +474,7 @@ class BranchingTouchArea(TouchArea):
             angle = math.radians(-d)
             dx = math.cos(angle)
             dy = math.sin(angle)
-            l = 30
+            l = 12
             x = sx + dx * l
             y = sy + dy * l
             self.end_point = x, y

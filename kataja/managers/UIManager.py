@@ -58,6 +58,7 @@ from kataja.ui.embeds.NodeEditEmbed import NodeEditEmbed
 from kataja.ui.panels.StylePanel import StylePanel
 from kataja.ui.panels.field_utils import MyColorDialog, MyFontDialog
 from kataja.nodes.Node import Node
+from utils import time_me
 
 NOTHING = 0
 SELECTING_AREA = 1
@@ -727,23 +728,43 @@ class UIManager:
             elif isinstance(item, Node):
                 self.update_touch_areas_for_selected_node(item)
 
+
     def update_touch_areas_for_selected_node(self, node):
         """ Assumes that touch areas for this node are empty and that the
         node is selected
         :param node: object to update
         """
-        if node.node_type == g.CONSTITUENT_NODE:
-            if node.is_root_node():
-                self.get_touch_area(node, g.LEFT_ADD_ROOT)
-                self.get_touch_area(node, g.RIGHT_ADD_ROOT)
-            if not node.is_placeholder():
-                for edge in node.get_edges_up(visible=True):
-                    self.get_touch_area(edge, g.LEFT_ADD_SIBLING)
-                    self.get_touch_area(edge, g.RIGHT_ADD_SIBLING)
-        elif node.node_type == g.COMMENT_NODE:
-            self.get_touch_area(node, g.DELETE_ARROW)
 
+        def check_conditions(cond, node):
+            if isinstance(cond, list):
+                return all((check_conditions(c, node) for c in cond))
+            if not cond:
+                return True
+            elif cond == 'is_root':
+                return node.is_root_node(only_visible=False)
+            elif cond == 'edge_down':
+                return list(node.get_edges_down(similar=True, visible=True))
+            else:
+                raise NotImplementedError(cond)
 
+        if not node.is_visible():
+            return
+        d = node.__class__.touch_areas_when_selected
+        for key, values in d.items():
+            cond = values.get('condition')
+            ok = check_conditions(cond, node)
+            if ok:
+                place = values.get('place', '')
+                if place == 'edge_up':
+                    for edge in node.get_edges_up(similar=True,
+                                                  visible=True):
+                        self.get_touch_area(edge, key)
+                elif not place:
+                    self.get_touch_area(node, key)
+                else:
+                    raise NotImplementedError
+
+    # hmmmm.....
     def update_touch_areas_for_selected_edge(self, edge):
         """ Assumes that touch areas for this edge are empty and that the
         edge is selected
@@ -761,50 +782,69 @@ class UIManager:
 
 
     def prepare_touch_areas_for_dragging(self, drag_host=None, moving=None,
-                                         node_type='', multidrag=False):
+                                         dragged_type='', multidrag=False):
         """
         :param drag_host: node that is being dragged
         :param moving: set of moving nodes (does not include drag_host)
-        :param node_type: If the node doesn't exist yet, node_type can be
+        :param dragged_type: If the node doesn't exist yet, node_type can be
         given as a hint of what to expect
         """
+        def check_conditions(cond, node, drag_host, dragged_type):
+            if isinstance(cond, list):
+                return all((check_conditions(c, node, drag_host, dragged_type)
+                            for c in
+                          cond))
+            if not cond:
+                return True
+            elif cond == 'is_root':
+                return node.is_root_node(only_visible=False)
+            elif cond == 'dragging_comment':
+                return dragged_type == g.COMMENT_NODE
+            elif cond == 'dragging_feature':
+                return dragged_type == g.FEATURE_NODE
+            elif cond == 'dragging_constituent':
+                return dragged_type == g.CONSTITUENT_NODE
+            elif cond == 'dragging_gloss':
+                return dragged_type == g.GLOSS_NODE
+            elif hasattr(node, cond):
+                ncond = getattr(node, cond)
+                if callable(ncond):
+                    return ncond(dragged_type, drag_host)
+                else:
+                    return ncond
+            else:
+                raise NotImplementedError
+
         self.remove_touch_areas()
         if multidrag:
             return
         if not moving:
             moving = []
-        if not node_type:
-            node_type = drag_host.node_type
-        if node_type == g.CONSTITUENT_NODE:
-            for root in ctrl.forest.roots:
-                if root in moving or root is drag_host:
-                    continue
-                self.get_touch_area(root, g.LEFT_ADD_ROOT)
-                self.get_touch_area(root, g.RIGHT_ADD_ROOT)
-            for edge in ctrl.forest.get_constituent_edges():
-                if edge.start in moving or edge.end in moving or edge.start \
-                        is drag_host or edge.end is drag_host:
-                    continue
-                self.get_touch_area(edge, g.LEFT_ADD_SIBLING)
-                self.get_touch_area(edge, g.RIGHT_ADD_SIBLING)
-            for node in ctrl.forest.get_constituent_nodes():
-                if node.is_placeholder():
-                    self.get_touch_area(node, g.TOUCH_ADD_CONSTITUENT)
-        else:
-            if node_type == g.FEATURE_NODE:
-                touch_area_type = g.TOUCH_CONNECT_FEATURE
-            elif node_type == g.GLOSS_NODE:
-                touch_area_type = g.TOUCH_CONNECT_GLOSS
-            elif node_type == g.COMMENT_NODE:
-                touch_area_type = g.TOUCH_CONNECT_COMMENT
-            else:
-                print('what kind of touch area? :', node_type)
-            for node in ctrl.forest.get_constituent_nodes():
-                if node in moving or node is drag_host:
-                    continue
-                if drag_host and node.is_connected_to(drag_host):
-                    continue
-                self.get_touch_area(node, touch_area_type)
+        if not dragged_type:
+            dragged_type = drag_host.node_type
+
+        for node in ctrl.forest.nodes.values():
+            if not node.is_visible():
+                continue
+            if node in moving:
+                continue
+            if node is drag_host:
+                continue
+            d = node.__class__.touch_areas_when_dragging
+            for key, values in d.items():
+                cond = values.get('condition')
+                ok = check_conditions(cond, node, drag_host, dragged_type)
+                if ok:
+                    place = values.get('place', '')
+                    if place == 'edge_up':
+                        for edge in node.get_edges_up(similar=True,
+                                                      visible=True):
+                            self.get_touch_area(edge, key)
+                    elif not place:
+                        self.get_touch_area(node, key)
+                    else:
+                        raise NotImplementedError
+
 
     # ### Flashing symbols
     # ################################################################

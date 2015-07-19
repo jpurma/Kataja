@@ -73,6 +73,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
                     'color': 'content1', 'pull': .40, 'visible': True,
                     'arrowhead_at_start': False, 'arrowhead_at_end': False,
                     'labeled': False}
+    touch_areas_when_dragging = {}
+    touch_areas_when_selected = {}
 
     def __init__(self, syntactic_object=None):
         """ Node is an abstract class that shouldn't be used by itself, though
@@ -216,7 +218,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         for foo, bar, key, value in sortable:
             self.label_display_data[key] = value
 
-    @time_me
     def get_editing_template(self, refresh=False):
         """ Create or fetch a dictionary template to help building an editing
         UI for Node.
@@ -1074,7 +1075,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
         ctrl.ui.prepare_touch_areas_for_dragging(drag_host=self,
                                                  moving=ctrl.dragged_set,
-                                                 node_type=self.node_type,
+                                                 dragged_type=self.node_type,
                                                  multidrag=multidrag)
         self.start_moving()
 
