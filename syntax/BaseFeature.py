@@ -49,8 +49,8 @@ class BaseFeature(IFeature):
             values = key.split(':')
             key = values.pop(0)
         elif not key:
-            key = "AnonymousFeature"
-        self.key = key
+            key = "Feature"
+        self.key = str(key)
         if values:
             self.values = values
         elif value:
@@ -141,7 +141,7 @@ class BaseFeature(IFeature):
         return "Feature(key=%s, values=%s, family=%s)" % (self.key, repr(self.values), self.family)
 
     def __str__(self):
-        return ":".join([self.key] + self.values)
+        return ":".join([str(self.key)] + [str(x) for x in self.values])
 
     # ############## #
     #                #

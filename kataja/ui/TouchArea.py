@@ -23,6 +23,7 @@
 # ############################################################################
 
 import math
+import random
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -30,10 +31,52 @@ from kataja.nodes.Node import Node
 from kataja.errors import TouchAreaError
 from kataja.Edge import Edge
 from kataja.singletons import ctrl, prefs
-from kataja.utils import to_tuple, tuple2_to_tuple3
+from kataja.utils import to_tuple, tuple2_to_tuple3, sub_xy
 import kataja.globals as g
 
-end_spot_size = 7
+end_spot_size = 10
+
+
+def draw_circle(painter, x, y):
+    painter.setBrush(ctrl.cm.paper())
+    painter.drawEllipse(x - end_spot_size + 1,
+                        y - end_spot_size + 1,
+                        2 * end_spot_size, 2 * end_spot_size)
+
+
+def draw_plus(painter, x, y):
+    painter.drawLine(x - 1, y + 1,
+                     x + 3, y + 1)
+    painter.drawLine(x + 1, y - 1,
+                     x + 1, y + 3)
+
+
+def draw_leaf(painter, x, y):
+    x -= 4
+    path = QtGui.QPainterPath(QtCore.QPointF(x, y - end_spot_size))
+
+    path.cubicTo(x + 1.2 * end_spot_size, y - end_spot_size,
+                 x, y,
+                 x + 0.2 * end_spot_size, y + end_spot_size)
+    path.cubicTo(x - 4, y + end_spot_size,
+                 x - end_spot_size, y - end_spot_size,
+                 x, y - end_spot_size)
+    painter.fillPath(path, painter.brush())
+    painter.drawPath(path)
+    path = QtGui.QPainterPath(QtCore.QPointF(x + 4, y - end_spot_size - 4))
+    path.cubicTo(x, y - end_spot_size,
+                 x - 0.2 * end_spot_size, y,
+                 x + 0.2 * end_spot_size, y + end_spot_size)
+    painter.setBrush(QtCore.Qt.NoBrush)
+    painter.drawPath(path)
+
+
+
+def draw_x(painter, x, y):
+    painter.drawLine(x - end_spot_size, y - end_spot_size,
+                     x + end_spot_size, y + end_spot_size)
+    painter.drawLine(x - end_spot_size, y + end_spot_size,
+                     x + end_spot_size, y - end_spot_size)
 
 
 class TouchArea(QtWidgets.QGraphicsItem):
@@ -122,8 +165,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
             self.update_end_points()
             assert self.end_point
         # Just the bounding rect of end spot ellipse
-        ex, ey = self.end_point
-        return QtCore.QRectF(ex - end_spot_size, ey - end_spot_size,
+        return QtCore.QRectF(-end_spot_size, -end_spot_size,
                              end_spot_size + end_spot_size,
                              end_spot_size + end_spot_size)
 
@@ -160,6 +202,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
         """
         if end_point:
             self.end_point = end_point
+            self.setPos(end_point[0], end_point[1])
         elif not self.host:
             return
         elif isinstance(self.host, Edge):
@@ -168,9 +211,10 @@ class TouchArea(QtWidgets.QGraphicsItem):
         else:
             x, y, z = self.host.current_position
             if self._below_node:
-                y += self.host.height / 2
+                y += self.host.height / 2 + end_spot_size
             self.end_point = x, y
         self.start_point = self.end_point
+        self.setPos(self.end_point[0], self.end_point[1])
         self._path = None
         return
 
@@ -221,7 +265,6 @@ class TouchArea(QtWidgets.QGraphicsItem):
         top left, top right, left, right
         :param dropped_node:
         """
-        print('drop to toucharea')
         message = ''
         if isinstance(dropped_node, str):
             dropped_node = self.make_node_from_string(dropped_node)
@@ -237,7 +280,6 @@ class TouchArea(QtWidgets.QGraphicsItem):
         elif self.type == g.TOUCH_CONNECT_COMMENT:
             ctrl.forest.add_comment_to_node(dropped_node, self.host)
             message = 'added %s to %s' % (dropped_node, self.host)
-        print(message, self.type)
         return message
 
     def click(self, event=None):
@@ -368,47 +410,22 @@ class TouchArea(QtWidgets.QGraphicsItem):
         :param widget:
         :raise:
         """
-        def draw_circle(painter, x, y):
-            painter.setBrush(ctrl.cm.paper())
-            painter.drawEllipse(x - end_spot_size + 1,
-                                y - end_spot_size + 1,
-                                2 * end_spot_size, 2 * end_spot_size)
-
-        def draw_plus(painter, x, y):
-            painter.drawLine(x - 1, y + 1,
-                             x + 3, y + 1)
-            painter.drawLine(x + 1, y - 1,
-                             x + 1, y + 3)
-
-        def draw_leaf(painter, x,y):
-            path = QtGui.QPainterPath(0, -end_spot_size)
-
-            painter.drawPath(p)
-
-        def draw_x(painter, x, y):
-            painter.drawLine(x - end_spot_size, y - end_spot_size,
-                             x + end_spot_size, y + end_spot_size)
-            painter.drawLine(x - end_spot_size, y + end_spot_size,
-                             x + end_spot_size, y - end_spot_size)
 
         if ctrl.pressed is self:
             pass
 
         if self._hovering:
             c = ctrl.cm.hovering(ctrl.cm.ui())
-        elif ctrl.is_selected(self):  # wrong colors, just testing
-            print('cant select ui toucharea')
-            c = ctrl.cm.selection()
         else:
             c = ctrl.cm.ui_tr()
         painter.setPen(c)
-        x, y = self.end_point
         if self.shape == '+':
-            draw_circle(painter, x, y)
+            draw_leaf(painter, 0, 0)
             if self._hovering:
-                draw_plus(painter, x, y)
+                painter.setPen(c)
+                draw_plus(painter, 4, 0)
         elif self.shape == 'X':
-            draw_x(painter, x, y)
+            draw_x(painter, 0, 0)
 
 
 class BranchingTouchArea(TouchArea):
@@ -441,8 +458,10 @@ class BranchingTouchArea(TouchArea):
             self.update_end_points()
             assert self.end_point
         # Bounding rect that includes the tail and end spot ellipse
-        ex, ey = self.end_point
-        sx, sy = self.start_point
+        #ex, ey = self.end_point
+        #sx, sy = self.start_point
+        ex, ey = 0, 0
+        sx, sy = sub_xy(self.start_point, self.end_point)
         e2 = end_spot_size * 2
         if sx < ex:
             w = max((ex - sx + end_spot_size, e2))
@@ -470,7 +489,9 @@ class BranchingTouchArea(TouchArea):
         self._fill_path = e.is_filled()
         sx, sy = to_tuple(e.get_point_at(0.5))
         self.start_point = sx, sy
-        if not end_point:
+        if end_point:
+            self.end_point = end_point
+        else:
             d = e.get_angle_at(0.5)
             if self._align_left:
                 d -= 90 # 75
@@ -483,14 +504,16 @@ class BranchingTouchArea(TouchArea):
             x = sx + dx * l
             y = sy + dy * l
             self.end_point = x, y
-        sp = tuple2_to_tuple3(self.start_point)
-        ep = tuple2_to_tuple3(self.end_point)
+        self.setPos(self.end_point[0], self.end_point[1])
+        rel_sp = sub_xy(self.start_point, self.end_point)
+        sp = tuple2_to_tuple3(rel_sp)
+        #ep = tuple2_to_tuple3(self.end_point)
         adjust = []
         if self._align_left:
             align = g.LEFT
         else:
             align = g.RIGHT
-        self._path, true_path, control_points = shape_method(sp, ep,
+        self._path, true_path, control_points = shape_method(sp, (0, 0, 0),
                                                              align=align,
                                                              adjust=adjust,
                                                              **shape_info)
@@ -551,26 +574,26 @@ class BranchingTouchArea(TouchArea):
             pass
         if self._hovering:
             c = ctrl.cm.hovering(ctrl.cm.ui())
-        elif ctrl.is_selected(self):  # wrong colors, just testing
-            print('cant select ui toucharea')
-            c = ctrl.cm.selection()
         else:
             c = ctrl.cm.ui_tr()
         painter.setPen(c)
-        x, y = self.end_point
         if self._fill_path:
             painter.fillPath(self._path, c)
         else:
             painter.drawPath(self._path)
         if self._hovering:
-            painter.setBrush(ctrl.cm.paper())
-            painter.drawEllipse(x - end_spot_size + 1,
-                                y - end_spot_size + 1,
-                                2 * end_spot_size, 2 * end_spot_size)
-            painter.drawLine(x - 1, y + 1,
-                             x + 3, y + 1)
-            painter.drawLine(x + 1, y - 1,
-                             x + 1, y + 3)
+            painter.save()
+            painter.setBrush(ctrl.cm.ui())
+            if self._align_left:
+                painter.rotate(20)
+                draw_leaf(painter, 0, end_spot_size / 2)
+                painter.restore()
+                draw_plus(painter, 4, 0)
+            else:
+                painter.rotate(-160)
+                draw_leaf(painter, 0, end_spot_size / 2)
+                painter.restore()
+                draw_plus(painter, 14, 0)
 
 
 class JointedTouchArea(TouchArea):
@@ -603,8 +626,11 @@ class JointedTouchArea(TouchArea):
             self.update_end_points()
             assert self.end_point
         # Bounding rect that includes the tail and end spot ellipse
-        ex, ey = self.end_point
-        sx, sy = self.start_point
+        rel_sp = sub_xy(self.start_point, self.end_point)
+        sx, sy = rel_sp
+        ex, ey = 0, 0
+        #ex, ey = self.end_point
+        #sx, sy = self.start_point
         e2 = end_spot_size * 2
         if sx < ex:
             w = max((ex - sx + end_spot_size, e2))
@@ -638,15 +664,20 @@ class JointedTouchArea(TouchArea):
                 self.end_point = sx - good_width, sy
             else:
                 self.end_point = sx + good_width, sy
-        line_middle_point = (sx + self.end_point[0]) / 2.0, sy - 10
+        self.setPos(self.end_point[0], self.end_point[1])
+        rel_sp = sub_xy(self.start_point, self.end_point)
+        sx, sy = rel_sp
+        ex, ey = 0, 0
+
+        line_middle_point = sx / 2.0, sy - 10
         mp = tuple2_to_tuple3(line_middle_point)
         adjust = []
         if self._align_left:
-            sp = tuple2_to_tuple3(self.start_point)
-            ep = tuple2_to_tuple3(self.end_point)
+            sp = tuple2_to_tuple3((sx, sy))
+            ep = tuple2_to_tuple3((ex, ey))
         else:
-            sp = tuple2_to_tuple3(self.end_point)
-            ep = tuple2_to_tuple3(self.start_point)
+            sp = tuple2_to_tuple3((ex, ey))
+            ep = tuple2_to_tuple3((sx, sy))
 
         self._path, true_path, control_points = shape_method(mp, sp,
                                                              align=g.RIGHT,
@@ -695,25 +726,27 @@ class JointedTouchArea(TouchArea):
         if self._hovering:
             c = ctrl.cm.hovering(ctrl.cm.ui())
         elif ctrl.is_selected(self):  # wrong colors, just testing
-            print('cant select ui toucharea')
             c = ctrl.cm.selection()
         else:
             c = ctrl.cm.ui_tr()
         painter.setPen(c)
-        x, y = self.end_point
         if self._fill_path:
             painter.fillPath(self._path, c)
         else:
             painter.drawPath(self._path)
         if self._hovering:
-            painter.setBrush(ctrl.cm.paper())
-            painter.drawEllipse(x - end_spot_size + 1,
-                                y - end_spot_size + 1,
-                                2 * end_spot_size, 2 * end_spot_size)
-            painter.drawLine(x - 1, y + 1,
-                             x + 3, y + 1)
-            painter.drawLine(x + 1, y - 1,
-                             x + 1, y + 3)
+            painter.save()
+            painter.setBrush(ctrl.cm.ui())
+            if self._align_left:
+                painter.rotate(20)
+                draw_leaf(painter, 0, end_spot_size / 2)
+                painter.restore()
+                draw_plus(painter, 4, 0)
+            else:
+                painter.rotate(-160)
+                draw_leaf(painter, 0, end_spot_size / 2)
+                painter.restore()
+                draw_plus(painter, 14, 0)
 
 
 def create_touch_area(host, ttype, ui_key):

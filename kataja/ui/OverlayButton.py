@@ -43,8 +43,6 @@ class PanelButton(QtWidgets.QPushButton):
 
     def __init__(self, pixmap, text=None, parent=None, size=16,
                  color_key='accent8', draw_method=None):
-        print('pixmap: %s, text: %s, parent: %s, size: %s, color_key: %s, '
-              'draw_method: %s' % (pixmap, text, parent, size, color_key, draw_method))
         QtWidgets.QPushButton.__init__(self, parent)
         self.draw_method = draw_method
         self.color_key = color_key
@@ -81,6 +79,7 @@ class PanelButton(QtWidgets.QPushButton):
         if self.pixmap:
             image = self.pixmap.toImage()
             painter = QtGui.QPainter(image)
+            painter.setRenderHint(QtGui.QPainter.Antialiasing)
             painter.setCompositionMode(QtGui.QPainter.CompositionMode_SourceIn)
             painter.fillRect(image.rect(), c)
             painter.end()
@@ -183,7 +182,6 @@ class OverlayButton(PanelButton):
             p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(self.host.x(),
                                                                  self.host.y() + self.host.height / 2))
             p -= QtCore.QPoint((self.iconSize().width() / 2) + 4, 0)
-            print(p)
         elif self.role == g.REMOVE_TRIANGLE:
             p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(self.host.x(),
                                                                  self.host.y() + self.host.height / 2))

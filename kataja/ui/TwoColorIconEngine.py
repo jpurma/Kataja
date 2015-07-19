@@ -83,7 +83,7 @@ class TwoColorIconEngine(QtGui.QIconEngine):
         :param mode:
         :param state:
         """
-        # painter.setRenderHint(QtGui.QPainter.Antialiasing)
+        painter.setRenderHint(QtGui.QPainter.Antialiasing)
         c = ctrl.cm.ui()
         if mode == 0:  # normal
             painter.setPen(c)

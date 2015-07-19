@@ -195,7 +195,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """
         return None
 
-    @time_me
     def prepare_schema_for_label_display(self):
         """
         :return:
@@ -216,7 +215,14 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         sortable.sort()
         self.label_display_data = OrderedDict()
         for foo, bar, key, value in sortable:
-            self.label_display_data[key] = value
+            if key not in self.label_display_data:
+                self.label_display_data[key] = dict(value)
+            else:
+                old = self._inode.values[key]
+                new = dict(value)
+                new.update(old)
+                self.label_display_data[key] = new
+
 
     def get_editing_template(self, refresh=False):
         """ Create or fetch a dictionary template to help building an editing
@@ -288,7 +294,13 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             sortable.append((o, 1, key, value))
         sortable.sort()
         for foo, bar, key, value in sortable:
-            self._inode.values[key] = dict(value)
+            if key not in self._inode.values:
+                self._inode.values[key] = dict(value)
+            else:
+                old = self._inode.values[key]
+                new = dict(value)
+                new.update(old)
+                self._inode.values[key] = new
             if key not in self._inode.view_order:
                 self._inode.view_order.append(key)
 
@@ -710,6 +722,10 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
         return filter(filter_func, self.edges_down)
 
+
+    def node_alone(self):
+        return not (self.edges_down or self.edges_up)
+
     # ## Font
     # #####################################################################
 
@@ -865,7 +881,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             painter.setPen(p)
             painter.drawRoundedRect(self.inner_rect, 5, 5)
         elif ctrl.pressed is self or ctrl.is_selected(self) or \
-                self.has_empty_label():
+                (self.has_empty_label() and self.node_alone()):
             painter.drawRoundedRect(self.inner_rect, 5, 5)
 
             # x,y,z = self.current_position
