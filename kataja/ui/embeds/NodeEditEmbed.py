@@ -96,8 +96,8 @@ class NodeEditEmbed(UIEmbed):
         self.enter_button.setParent(self)
         ui_manager.connect_element_to_action(self.enter_button, 'finish_editing_node')
         layout.addWidget(self.enter_button)
-        self.update_fields()
-        self.update_position()
+        self.updateGeometry()
+        self.update_embed()
 
     def update_fields(self):
         """ Update field values on embed form based on template """
@@ -126,10 +126,6 @@ class NodeEditEmbed(UIEmbed):
         """
         self.ui_manager.remove_edit_embed(self)
 
-    def update_position(self):
-        sx, sy, sz = self.host.current_position
-        self.update_embed(scenePos = QtCore.QPointF(sx, sy))
-
     def submit_values(self):
         """ Submit field values back to object based on template
         :return:
@@ -145,22 +141,10 @@ class NodeEditEmbed(UIEmbed):
             else:
                 raise NotImplementedError
             if 'setter' in d:
-                print('using setter: %s to save value %s' % getattr(
-                    self.host, d['setter'], value))
                 getattr(self.host, d['setter'])(value)
             else:
-                print('saving to field %s value %s' % (field_name, value))
                 setattr(self.host, field_name, value)
         self.host.update_label()
-
-    def update_embed(self, scenePos=None):
-        """ Update position and field values for embed.
-        :param scenePos:
-        """
-        if self.host:
-            self.update_fields()
-            scene_pos = self.host.pos()
-            UIEmbed.update_embed(self, scenePos=scene_pos)
 
     def mouseMoveEvent(self, event):
         self.move(self.mapToParent(event.pos()) - self._drag_diff)

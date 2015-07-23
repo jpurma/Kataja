@@ -154,53 +154,65 @@ class UIEmbed(QtWidgets.QWidget):
 
         # Remember Johnny fucking Marr
 
-    def update_embed(self, scenePos=None):
+    def update_embed(self, focus_point=None):
         self.update_color()
-        if scenePos:
-            h = self.height()
-            w = self.width()
-            if h < 100:
-                h = self.assumed_height
-            if w < 100:
-                w = self.assumed_width
-            view_pos = self.parent().mapFromScene(scenePos)
-            vw = self.parent().width()
-            vh = self.parent().height()
-            x = view_pos.x()
-            y = view_pos.y()
-            p = 0
+        self.update_fields()
+        self.update_position(focus_point=focus_point)
 
-            # Magnet placement:
-            # 1---2---3
-            # |       |
-            # 4       5
-            # |       |
-            # 6---7---8
-            #
-            if x + w > vw:
-                if y + h > vh:
-                    magnet = QtCore.QPoint(w, h), 8
-                else:
-                    magnet = QtCore.QPoint(w, 0), 3
-            elif y + (h / 2) > vh:
-                if x + (w / 2) > vw:
-                    magnet = QtCore.QPoint(w, h), 8
-                elif x - (w / 2) < 0:
-                    magnet = QtCore.QPoint(0, h), 6
-                else:
-                    magnet = QtCore.QPoint(w / 2, h), 7
-            elif y - (h / 2) < 0:
-                if x + (w / 2) > vw:
-                    magnet = QtCore.QPoint(w, 0), 3
-                elif x - (w / 2) < 0:
-                    magnet = QtCore.QPoint(0, 0), 1
-                else:
-                    magnet = QtCore.QPoint(w / 2, 0), 2
+    def update_fields(self):
+        """ Subclasses implement this if there are fields to update
+        :return:
+        """
+        pass
+
+    def update_position(self, focus_point=None):
+        if not focus_point:
+            if self.host:
+                focus_point = self.host.pos()
             else:
-                magnet = QtCore.QPoint(0, h / 2), 4
-            self._magnet = magnet
-            self.move(view_pos - magnet[0])
-            self.updateGeometry()
+                return
+        h = self.height()
+        w = self.width()
+        if h < 100:
+            h = self.assumed_height
+        if w < 100:
+            w = self.assumed_width
+        view_pos = self.parent().mapFromScene(focus_point)
+        vw = self.parent().width()
+        vh = self.parent().height()
+        x = view_pos.x()
+        y = view_pos.y()
+        # Magnet placement:
+        # 1---2---3
+        # |       |
+        # 4       5
+        # |       |
+        # 6---7---8
+        #
+        if x + w > vw:
+            if y + h > vh:
+                magnet = QtCore.QPoint(w, h), 8
+            else:
+                magnet = QtCore.QPoint(w, 0), 3
+        elif y + (h / 2) > vh:
+            if x + (w / 2) > vw:
+                magnet = QtCore.QPoint(w, h), 8
+            elif x - (w / 2) < 0:
+                magnet = QtCore.QPoint(0, h), 6
+            else:
+                magnet = QtCore.QPoint(w / 2, h), 7
+        elif y - (h / 2) < 0:
+            if x + (w / 2) > vw:
+                magnet = QtCore.QPoint(w, 0), 3
+            elif x - (w / 2) < 0:
+                magnet = QtCore.QPoint(0, 0), 1
+            else:
+                magnet = QtCore.QPoint(w / 2, 0), 2
+        else:
+            magnet = QtCore.QPoint(0, h / 2), 4
+        self._magnet = magnet
+        self.move(view_pos - magnet[0])
+        self.updateGeometry()
 
     def magnet(self):
         return self._magnet
@@ -248,6 +260,8 @@ class UIEmbed(QtWidgets.QWidget):
             self._timeline.setDirection(QtCore.QTimeLine.Forward)
             self._timeline.start()
             self.show()
+            self.update_position() # size is computed properly only after
+            # widget is visible
         self.raise_()
         self.focus_to_main()
 

@@ -72,6 +72,7 @@ class KatajaAction(QtWidgets.QAction):
             else:
                 sc = QtCore.Qt.ApplicationShortcut
             self.setShortcutContext(sc)
+            self.installEventFilter(ctrl.ui.shortcut_solver)
         if viewgroup:
             ag = ctrl.ui.get_action_group(viewgroup)
             self.setActionGroup(ag)

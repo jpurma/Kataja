@@ -59,7 +59,7 @@ class CommentNode(Node):
     touch_areas_when_selected = {g.DELETE_ARROW: {'condition': 'edge_down'}}
 
 
-    def __init__(self, text=''):
+    def __init__(self, text='comment'):
         Node.__init__(self)
         self.label = text
         self.use_physics = False

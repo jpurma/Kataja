@@ -34,9 +34,7 @@ class EdgeLabelEmbed(UIEmbed):
     def focus_to_main(self):
         self.input_line_edit.setFocus()
 
-    def update_embed(self, scenePos=None, edge=None):
-        if edge:
-            self.host = edge
+    def update_embed(self, focus_point=None):
         if self.host:
             p = QtGui.QPalette()
             p.setColor(QtGui.QPalette.Text, self.host.color)
@@ -45,8 +43,8 @@ class EdgeLabelEmbed(UIEmbed):
             f.setPointSize(f.pointSize() * 2)
             self.input_line_edit.setFont(f)
             self.input_line_edit.setText(self.host.label_text)
-        UIEmbed.update_embed(self, scenePos=scenePos)
+        UIEmbed.update_embed(focus_point=focus_point)
 
     def update_position(self):
-        UIEmbed.update_embed(self, scenePos=self.host.label_item.pos())
+        UIEmbed.update_embed(focus_point=self.host.label_item.pos())
 

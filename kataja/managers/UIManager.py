@@ -268,7 +268,7 @@ class UIManager:
             item.close()
             item.hide()
 
-    def get_ui(self, ui_key):
+    def get_ui(self, ui_key) -> QtCore.QObject:
         """ Return a managed ui item
         :param ui_key:
         :return:
@@ -624,7 +624,7 @@ class UIManager:
             self.add_ui(embed)
         else:
             embed = self._items[EDGE_LABEL_EMBED]
-        embed.update_embed(scenePos=lp)
+        embed.update_embed(focus_point=lp)
         embed.wake_up()
 
     # ### Creation dialog
@@ -645,7 +645,7 @@ class UIManager:
             marker = NewElementMarker(scenePos, embed, NEW_ELEMENT_MARKER)
             self.add_ui(marker)
         embed.marker = marker
-        embed.update_embed(scenePos=scenePos)
+        embed.update_embed(focus_point=scenePos)
         marker.update_position(scenePos=scenePos)
         embed.wake_up()
 
