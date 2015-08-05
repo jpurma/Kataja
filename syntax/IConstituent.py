@@ -61,6 +61,15 @@ class IConstituent(BaseModel):
         """
         raise NotImplementedError
 
+    def insert_part(self, new_part, index=0):
+        """ Insert constitutive part to front of the parts list. Usefulness
+        depends on the linearization method.
+        :param new_part:
+        :param index:
+        :return:
+        """
+        raise NotImplementedError
+
     def remove_part(self, part):
         """ Remove constitutive part
         :param part:

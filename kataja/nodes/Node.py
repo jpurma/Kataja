@@ -726,6 +726,34 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     def node_alone(self):
         return not (self.edges_down or self.edges_up)
 
+    # Reflecting structural changes in syntax
+    # Nodes are connected and disconnected to each other by user, through UI,
+    # and these connections may have different syntactical meaning.
+    # Each node type can define how connect or disconnect affects syntactic
+    # elements.
+    #
+    # These are called in all forest's connect and disconnect -activities,
+    # so they get called also when the connection was initiated from syntax.
+    # In these cases methods should be smart enough to notice that the
+    # connection is already there and not duplicate it.
+    # ########################################
+
+    def connect_in_syntax(self, edge):
+        """ Implement this if connecting this node (using this edge) needs to be
+         reflected in syntax. Remember to verify it already isn't there.
+        :param edge:
+        :return:
+        """
+        pass
+
+    def disconnect_in_syntax(self, edge):
+        """ Implement this if disconnecting this node (using this edge) needs
+        to be reflected in syntax. Remember to verify it already isn't there.
+        :param edge:
+        :return:
+        """
+        pass
+
     # ## Font
     # #####################################################################
 

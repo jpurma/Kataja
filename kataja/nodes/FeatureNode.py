@@ -138,6 +138,42 @@ class FeatureNode(Node):
         else:
             return qt_prefs.no_brush()
 
+    def connect_in_syntax(self, edge):
+        """ Implement this if connecting this node (using this edge) needs to be
+         reflected in syntax. Remember to verify it already isn't there.
+        :param edge:
+        :return:
+        """
+        if edge.edge_type is not g.FEATURE_EDGE:
+            # We care only for constituent relations
+            return
+        assert edge.end is self
+        s = edge.start
+        if s and s.node_type == g.CONSTITUENT_NODE and s.syntactic_object:
+            # Calling syntax!
+            constituent = s.syntactic_object
+            feature = self.syntactic_object
+            if not constituent.has_feature(feature):
+                constituent.add_feature(feature)
+
+    def disconnect_in_syntax(self, edge):
+        """ Implement this if disconnecting this node (using this edge) needs
+        to be reflected in syntax. Remember to verify it already isn't there.
+        :param edge:
+        :return:
+        """
+        if edge.edge_type is not g.FEATURE_EDGE:
+            # We care only for constituent relations
+            return
+        assert edge.end is self
+        s = edge.start
+        if s and s.node_type == g.CONSTITUENT_NODE and s.syntactic_object:
+            # Calling syntax!
+            constituent = s.syntactic_object
+            feature = self.syntactic_object
+            if constituent.has_feature(feature):
+                constituent.remove_feature(feature)
+
     def __str__(self):
         return 'feature %s' % self.syntactic_object
 

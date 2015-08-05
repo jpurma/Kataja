@@ -32,13 +32,12 @@ import PyQt5.QtWidgets as QtWidgets
 from kataja.Edge import Edge
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.nodes.Node import Node
-from kataja.utils import to_tuple, sub_xyz, div_xyz, time_me
+from kataja.utils import to_tuple, sub_xyz, div_xyz
 from kataja.ui import TouchArea
 import kataja.globals as g
 
 
 # from BlenderExporter import export_visible_items
-from kataja.nodes.BaseConstituentNode import BaseConstituentNode
 
 
 class GraphScene(QtWidgets.QGraphicsScene):
@@ -95,7 +94,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
     # @time_me
     def fit_to_window(self, force=False):
-        """ Calls up to graph view and makes it to fit all visible items here to view window."""
+        """ Calls up to graph view and makes it to fit all visible items here
+        to view window."""
         vr = self.visible_rect()
         if self._cached_visible_rect and not force:
             if vr != self._cached_visible_rect:
@@ -121,9 +121,9 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 y_min = miny
             elif maxy > y_max:
                 y_max = maxy
-        return QtCore.QRectF(QtCore.QPoint(x_min, y_min), QtCore.QPoint(x_max,
-                                                                       y_max))
-        #return self.itemsBoundingRect()
+        return QtCore.QRectF(QtCore.QPoint(x_min, y_min),
+                             QtCore.QPoint(x_max, y_max))
+        # return self.itemsBoundingRect()
 
     def item_moved(self):
         """ Starts the animations unless they are running already
@@ -148,11 +148,13 @@ class GraphScene(QtWidgets.QGraphicsScene):
         :param forest:
         """
         pass
-        # export_visible_items(path = path, scene = self, forest = forest, prefs = prefs)
+        # export_visible_items(path = path, scene = self, forest = forest,
+        # prefs = prefs)
 
     def move_selection(self, direction):
         """
-        Compute which is the closest or most appropriate object in given direction. Used for
+        Compute which is the closest or most appropriate object in given
+        direction. Used for
         keyboard movement.
         :param direction:
         """
@@ -164,12 +166,14 @@ class GraphScene(QtWidgets.QGraphicsScene):
         # self.addItem(el)
         #
 
-        # ############### Absolute left/right/up/down ###############################
+        # ############### Absolute left/right/up/down
+        # ###############################
         # if nothing is selected, select the edgemost item from given direction
         if not ctrl.selected:
-            selectables = [(item, to_tuple(item.sceneBoundingRect().center())) for item in
-                           self.items() if getattr(item, 'selectable', False) and
-                           item.is_visible()]
+            selectables = [(item, to_tuple(item.sceneBoundingRect().center()))
+                           for item in self.items() if
+                           getattr(item, 'selectable',
+                                   False) and item.is_visible()]
             if direction == 'left':
                 sortable = [(po[0], po[1], it) for it, po in selectables]
                 x, y, item = min(sortable)
@@ -186,13 +190,16 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 raise KeyError
             ctrl.select(item)
             return item
-        # ################ Relative left/right/up/down #############################
+        # ################ Relative left/right/up/down
+        # #############################
         else:
             current = ctrl.get_single_selected()
             # ################### Nodes #############################
             if isinstance(current, Node):
                 if direction == 'left':
-                    lefts = list(current.get_edges_down(similar=True, visible=True, align=g.LEFT))
+                    lefts = list(
+                        current.get_edges_down(similar=True, visible=True,
+                                               align=g.LEFT))
                     if len(lefts) == 1:
                         ctrl.select(lefts[0])
                         return lefts[0]
@@ -202,15 +209,11 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         ctrl.select(lefts[i])
                         return lefts[i]
 
-
-
-
             best = current
             x, y = to_tuple(current.sceneBoundingRect().center())
             x = int(x)
             y = int(y)
             selectables = []
-
 
             if direction == 'left':
                 found = False
@@ -227,10 +230,12 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         best = current.end
                         found = True
                 elif isinstance(current, TouchArea):
-                    if current.type == g.RIGHT_ADD_ROOT and current.host.top_left_touch_area:
+                    if current.type == g.RIGHT_ADD_ROOT and \
+                            current.host.top_left_touch_area:
                         best = current.host.top_left_touch_area
                         found = True
-                    elif current.type == g.RIGHT_ADD_SIBLING and current.host.left_touch_area:
+                    elif current.type == g.RIGHT_ADD_SIBLING and \
+                            current.host.left_touch_area:
                         best = current.host.left_touch_area
                         found = True
                 if not found:
@@ -242,7 +247,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         dx = ix - x
                         dy = iy - y
                         dxy = (dx * dx) + (2 * dy * dy)
-                        if (dx < 0 and (dxy < min_xy)) or (dx == 0 and dy < 0 and (dxy < min_xy)):
+                        if (dx < 0 and (dxy < min_xy)) or \
+                           (dx == 0 and dy < 0 and (dxy < min_xy)):
                             min_x = dx
                             min_y = dy
                             min_xy = dxy
@@ -250,7 +256,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
             if direction == 'right':
                 found = False
                 if isinstance(current, Node):
-                    edges = list(current.get_edges_down(similar=True, visible=True))
+                    edges = list(
+                        current.get_edges_down(similar=True, visible=True))
                     if len(edges) == 2:
                         best = edges[1]
                         found = True
@@ -262,10 +269,12 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         best = current.start
                         found = True
                 elif isinstance(current, TouchArea):
-                    if current.type == g.LEFT_ADD_ROOT and current.host.top_right_touch_area:
+                    if current.type == g.LEFT_ADD_ROOT and \
+                            current.host.top_right_touch_area:
                         best = current.host.top_right_touch_area
                         found = True
-                    elif current.type == g.LEFT_ADD_SIBLING and current.host.right_touch_area:
+                    elif current.type == g.LEFT_ADD_SIBLING and \
+                            current.host.right_touch_area:
                         best = current.host.right_touch_area
                         found = True
                 if not found:
@@ -277,7 +286,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         dx = ix - x
                         dy = iy - y
                         dxy = (dx * dx) + (2 * dy * dy)
-                        if (dx > 0 and (dxy < min_xy)) or (dx == 0 and dy > 0 and (dxy < min_xy)):
+                        if (dx > 0 and (dxy < min_xy)) or (
+                                    dx == 0 and dy > 0 and (dxy < min_xy)):
                             min_x = dx
                             min_y = dy
                             min_xy = dxy
@@ -298,7 +308,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         dx = ix - x
                         dy = iy - y
                         dxy = (dx * dx * 2) + (dy * dy)
-                        if (dy < 0 and (dxy < min_xy)) or (dy == 0 and dx < 0 and (dxy < min_xy)):
+                        if (dy < 0 and (dxy < min_xy)) or (
+                                    dy == 0 and dx < 0 and (dxy < min_xy)):
                             min_x = dx
                             min_y = dy
                             min_xy = dxy
@@ -312,8 +323,10 @@ class GraphScene(QtWidgets.QGraphicsScene):
                     dx = ix - x
                     dy = iy - y
                     dxy = (dx * dx * 2) + (dy * dy)
-                    # if dy > 0 and ((dy < min_y) or (dy == min_y and (dx > 0 and dx < min_x ))):
-                    if (dy > 0 and (dxy < min_xy)) or (dy == 0 and dx > 0 and (dxy < min_xy)):
+                    # if dy > 0 and ((dy < min_y) or (dy == min_y and (dx > 0
+                    #  and dx < min_x ))):
+                    if (dy > 0 and (dxy < min_xy)) or (
+                                dy == 0 and dx > 0 and (dxy < min_xy)):
                         min_x = dx
                         min_y = dy
                         min_xy = dxy
@@ -322,14 +335,16 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         # x,y = to_tuple(best.sceneBoundingRect().center())
                         # el = QtGui.QGraphicsEllipseItem(x-4, y-4, 8, 8)
                         # self.addItem(el)
-                        # ctrl.ui_manager.info('dx: %s, dy: %s, dxy: %s' % (min_x, min_y, min_xy))
+                        # ctrl.ui_manager.info('dx: %s, dy: %s, dxy: %s' % (
+                        # min_x, min_y, min_xy))
         ctrl.select(best)
 
     # ######### MOUSE ##############
 
     @staticmethod
     def get_closest_item(x, y, candidates, must_contain=False):
-        """ If there are several partially overlapping items at the point, choose
+        """ If there are several partially overlapping items at the point,
+        choose
         the one that where we clicked closest to center.
         :param x:
         :param y:
@@ -345,7 +360,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 continue
             sx, sy = to_tuple(sbr.center())
             dist = abs(sx - x) + abs(sy - y)
-            # isObscured doesn't work with semi-transparent items, use zValues instead
+            # isObscured doesn't work with semi-transparent items,
+            # use zValues instead
             if closest_item:
                 if dist < min_d and item.zValue() >= closest_item.zValue():
                     closest_item = item
@@ -401,7 +417,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
         return QtWidgets.QGraphicsScene.mousePressEvent(self, event)
 
     def start_dragging(self):
-        """ Raise graph scene flags related to dragging -- the dragged nodes have already
+        """ Raise graph scene flags related to dragging -- the dragged nodes
+        have already
         alerted controller.
         """
         self._dragging = True
@@ -429,7 +446,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 ctrl.pressed.drag(event)
                 self.item_moved()
                 items = [x for x in self.items(event.scenePos()) if
-                         hasattr(x, 'dragged_over_by') and x is not ctrl.pressed]
+                         hasattr(x, 'dragged_over_by') and x is not
+                         ctrl.pressed]
                 if items:
                     for item in items:
                         item.dragged_over_by(ctrl.pressed)
@@ -438,15 +456,18 @@ class GraphScene(QtWidgets.QGraphicsScene):
                     ctrl.latest_hover = None
                 self.main.ui_manager.update_positions()
             else:
-                if (event.buttonDownScenePos(QtCore.Qt.LeftButton) -
-                        event.scenePos()).manhattanLength() > 6:
+                if (event.buttonDownScenePos(
+                        QtCore.Qt.LeftButton) - event.scenePos(
+
+                )).manhattanLength() > 6:
                     self.start_dragging()
                     ctrl.pressed.drag(event)
                     self.item_moved()
         return QtWidgets.QGraphicsScene.mouseMoveEvent(self, event)
 
     def mouseReleaseEvent(self, event):
-        """ deliver clicks, drops and selections to correct objects and make sure that the
+        """ deliver clicks, drops and selections to correct objects and make
+        sure that the
         Controller state is up to date.
         :param event:
         :return:
@@ -463,10 +484,12 @@ class GraphScene(QtWidgets.QGraphicsScene):
             pressed = ctrl.pressed  # : :type pressed: Movable
             x, y = to_tuple(event.scenePos())
             if self._dragging:
-                recipient = self.get_drop_recipient(pressed, event)  # @UndefinedVariable
+                recipient = self.get_drop_recipient(pressed,
+                                                    event)  # @UndefinedVariable
                 message = pressed.drop_to(x, y, recipient=recipient)
                 self.kill_dragging()
-                ctrl.ui.update_selections()  # drag operation may have changed visible affordances
+                ctrl.ui.update_selections()  # drag operation may have
+                # changed visible affordances
                 ctrl.main.action_finished(message)  # @UndefinedVariable
             else:
                 if pressed.clickable:
@@ -487,8 +510,10 @@ class GraphScene(QtWidgets.QGraphicsScene):
             print('mouseReleaseEvent, but still ctrl.pressed!:', ctrl.pressed)
         if self.graph_view.rubberband_mode():
             ctrl.deselect_objects()
-            # prioritize nodes in multiple selection. e.g. if there are nodes and edges in
-            # selected area, select only nodes. If there are multiple edges and no nodes, then
+            # prioritize nodes in multiple selection. e.g. if there are nodes
+            #  and edges in
+            # selected area, select only nodes. If there are multiple edges
+            # and no nodes, then
             # take edges
             only_nodes = False
             for item in self.selectedItems():
@@ -502,7 +527,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
         return QtWidgets.QGraphicsScene.mouseReleaseEvent(self, event)
 
     def get_drop_recipient(self, pressed, event):
-        """ Check which of the items in scene should accept the dropped item, if any
+        """ Check which of the items in scene should accept the dropped item,
+        if any
         :param pressed:
         :param event:
         """
@@ -586,12 +612,15 @@ class GraphScene(QtWidgets.QGraphicsScene):
         if not event.isAccepted():
             data = event.mimeData()
             event.accept()
-            if data.hasFormat("application/x-qabstractitemmodeldatalist") or \
-                    data.hasFormat("text/plain"):
+            if data.hasFormat(
+                    "application/x-qabstractitemmodeldatalist") or \
+                    data.hasFormat(
+                "text/plain"):
                 event.acceptProposedAction()
 
     def mouseDoubleClickEvent(self, event):
-        """ If doubleclicking an empty spot, open creation menu. If doubleclicking an object,
+        """ If doubleclicking an empty spot, open creation menu. If
+        doubleclicking an object,
         it may or may not do something with it.
         :param event: some kind of mouse event?
         :return: None
@@ -609,7 +638,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
             return
         ctrl.ui.create_creation_dialog(event.scenePos())
 
-    # ### Timer loop #################################################################
+    # ### Timer loop
+    # #################################################################
 
     def fade_background_gradient(self, old_base_color, new_base_color):
         """
@@ -649,7 +679,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
         self._fade_steps_list.reverse()
 
     def timerEvent(self, event):
-        """ Main loop for animations and movement in the scene -- calls nodes and tells them to update
+        """ Main loop for animations and movement in the scene -- calls nodes
+        and tells them to update
         their position
         :param event: timer event? sent by Qt
         """
@@ -667,7 +698,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 background_fade = True
 
         f = self.main.forest
-        #if f.gloss and f.roots and not f.gloss.use_fixed_position:
+        # if f.gloss and f.roots and not f.gloss.use_fixed_position:
         #    pt = f.roots[0].current_position
         #    f.gloss.setPos(pt[0] - 20, pt[1] - 40)
         #    f.gloss.lock()
@@ -678,7 +709,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         if ctrl.pressed:
             return
-        d=0
+        d = 0
         for node in f.visible_nodes():
             if node.adjust_opacity():
                 items_fading = True
@@ -695,7 +726,9 @@ class GraphScene(QtWidgets.QGraphicsScene):
             avg = div_xyz(md['sum'], ln)
             for node in md['nodes']:
                 node.current_position = sub_xyz(node.current_position, avg)
-        if items_have_moved and (not self.manual_zoom) and (not ctrl.dragged_focus):
+        if items_have_moved and \
+                (not self.manual_zoom) and \
+                (not ctrl.dragged_focus):
             self.fit_to_window()
 
         if items_have_moved:
@@ -704,8 +737,10 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 f.bracket_manager.update_positions()
                 # for area in f.touch_areas:
                 # area.update_position()
-        if not (items_have_moved or items_fading or frame_has_moved or background_fade):
+        if not (items_have_moved or
+                items_fading or
+                frame_has_moved or
+                background_fade):
             self.stop_animations()
             self.main.ui_manager.get_activity_marker().hide()
             ctrl.items_moving = False
-

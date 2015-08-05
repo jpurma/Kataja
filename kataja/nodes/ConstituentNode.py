@@ -223,7 +223,7 @@ class ConstituentNode(BaseConstituentNode):
             leaves = ITextNode()
             # todo: Use a better linearization here
             for node in ctrl.forest.list_nodes_once(self):
-                if node.is_leaf_node(only_visible=False):
+                if node.is_leaf_node(only_visible=False) and node.label:
                     leaves += node.label
                     leaves += ' '
             return leaves.tidy()

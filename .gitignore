@@ -232,3 +232,5 @@ resources/icons/temp/
 # sublime edit
 *.sublime-workspace
 *.dmg
+
+kataja_print*.png

@@ -900,103 +900,6 @@ class Forest(BaseModel):
     # need to be able to connect and disconnect
     # start and end points separately
 
-    @staticmethod
-    def verify_edge(edge):
-        """ Validate that edge exists in syntax and if it doesn't, add it.
-        :param edge:
-        :return:
-        """
-        etype = edge.edge_type
-        if etype is g.ARROW:
-            # Arrows don't exist in syntax
-            return
-        if not (edge.start and edge.end):
-            raise ValueError(
-                "Cannot make a connection based on edge, is the other end of "
-                "edge is empty: %s" % edge)
-        if etype is g.CONSTITUENT_EDGE:
-            if edge.start.node_type == g.CONSTITUENT_NODE and \
-                            edge.end.node_type == g.CONSTITUENT_NODE:
-                start_constituent = edge.start.syntactic_object
-                end_constituent = edge.end.syntactic_object
-                if not start_constituent:
-                    # Placeholder (empty) constituent cannot have children
-                    return
-                if not end_constituent:
-                    # setting a placeholder constituent doesn't have a
-                    # syntactic effect
-                    return
-                ctrl.FL.k_connect(start_constituent, end_constituent)
-            else:
-                raise ValueError(
-                    "Cannot make a constituent edge connection if " + "one of "
-                                                                      "the "
-                                                                      "ends "
-                                                                      "is not "
-                                                                      "a "
-                                                                      "constituent node")
-        elif etype is g.FEATURE_EDGE:
-            if edge.start.node_type == g.CONSTITUENT_NODE and \
-                            edge.end.node_type == g.FEATURE_NODE:
-                constituent = edge.start.syntactic_object
-                feature = edge.end.syntactic_object
-                if not constituent:
-                    raise ValueError(
-                        "Placeholder (empty) constituent cannot have features")
-                if not feature:
-                    # setting a placeholder feature doesn't have a syntactic
-                    # effect
-                    return
-                if feature in constituent.features:
-                    raise ValueError("Constituent %s already has feature %s")
-                else:
-                    constituent.set_feature(feature.key, feature)
-
-    @staticmethod
-    def verify_edge_removal(edge):
-        """
-
-        :param edge:
-        :return:
-        """
-        etype = edge.edge_type
-        if etype is g.ARROW:
-            # Arrows don't have syntactic role
-            return
-        if not (edge.start and edge.end):
-            # syntactically relationship doesn't exist unless it has both
-            # elements
-            return
-        if etype is g.CONSTITUENT_EDGE:
-            if edge.start.node_type == g.CONSTITUENT_NODE and edge.end:
-                # Remove child (edge.end) from constituent
-                start_constituent = edge.start.syntactic_object
-                if not start_constituent:
-                    # placeholder constituent doesn't have syntactic presence
-                    return
-                end_constituent = edge.end.syntactic_object
-                if not (start_constituent and end_constituent):
-                    # placeholder constituent doesn't have syntactic presence
-                    return
-                ### Obey the syntax API ###
-                if end_constituent in start_constituent.parts:
-                    start_constituent.remove_part(end_constituent)
-        elif etype is g.FEATURE_EDGE:
-            if edge.start.node_type == g.CONSTITUENT_NODE and edge.end:
-                # Remove feature (edge.end) from constituent
-                start_constituent = edge.start.syntactic_object
-                end_feature = edge.end.syntactic_object
-                ### Obey the syntax API ###
-                start_constituent.remove_feature(end_feature)
-        elif etype is g.GLOSS_EDGE:
-            if edge.start.node_type == g.CONSTITUENT_NODE:
-                if edge.start.syntactic_object.gloss:
-                    edge.start.syntactic_object.gloss = ''
-        else:
-            raise ValueError(
-                "Not implemented: What to do syntactically when disconnecting "
-                "edge: %s" % edge)
-
     def set_edge_start(self, edge, new_start):
         """
 
@@ -1005,11 +908,12 @@ class Forest(BaseModel):
         """
         assert new_start.save_key in self.nodes
         if edge.start:
-            self.verify_edge_removal(edge)
             edge.start.poke('edges_down')
             edge.start.edges_down.remove(edge)
+        if edge.end:
+            edge.end.disconnect_in_syntax(edge)
         edge.connect_end_points(new_start, edge.end)
-        self.verify_edge(edge)
+        edge.end.connect_in_syntax(edge)
         new_start.poke('edges_down')
         new_start.edges_down.append(edge)
 
@@ -1021,14 +925,14 @@ class Forest(BaseModel):
         """
         assert new_end.save_key in self.nodes
         if edge.end:
-            self.verify_edge_removal(edge)
+            edge.end.disconnect_in_syntax(edge)
             edge.end.poke('edges_up')
             edge.end.edges_up.remove(edge)
             self.update_root_status(edge.end)
         edge.connect_end_points(edge.start, new_end)
-        self.verify_edge(edge)
         new_end.poke('edges_up')
         new_end.edges_up.append(edge)
+        new_end.connect_in_syntax(edge)
         self.update_root_status(new_end)
         self.update_root_status(edge.start)
 
@@ -1390,10 +1294,14 @@ class Forest(BaseModel):
         new_edge = self.create_edge(edge_type=edge_type, direction=direction)
         new_edge.connect_end_points(parent, child)
         child.poke('edges_up')
-        child.edges_up.append(new_edge)
         parent.poke('edges_down')
-        parent.edges_down.append(new_edge)
-        self.verify_edge(new_edge)
+        if direction == g.LEFT:
+            child.edges_up.insert(0, new_edge)
+            parent.edges_down.insert(0, new_edge)
+        else:
+            child.edges_up.append(new_edge)
+            parent.edges_down.append(new_edge)
+        child.connect_in_syntax(new_edge)
         self.update_root_status(parent)
         self.update_root_status(child)
 
@@ -1417,8 +1325,8 @@ class Forest(BaseModel):
         if edge.end:
             edge.end.poke('edges_up')
             edge.end.edges_up.remove(edge)
+            edge.end.disconnect_in_syntax(edge)
         self.update_root_status(edge.end)
-        self.verify_edge_removal(edge)
         self.delete_edge(edge)
 
     def disconnect_node(self, parent, child, edge_type='',
@@ -1548,77 +1456,90 @@ class Forest(BaseModel):
                 # if left.is_placeholder():
                 # self.delete_node(left)
 
-    def replace_node_with_merged_node(self, replaced, new_node, closest_parent,
-                                      merge_to_left=False, merger_node_pos=None,
-                                      new_node_pos=None):
-        """ This is an insertion action into a tree: a new merge is created
-        and inserted between
-        two existing constituents. One connection is removed, but three are
-        created.
-        This happens when touch area in edge going up from node N is clicked,
-        or if a node is dragged
-        there.
-
-        :param replaced:
-        :param new_node:
-        :param closest_parent: The replacement happens in one place only. The
-        place is identified
-        by its parent.
-        :param merge_to_left: will the newly merged constituent branch to
-        left or to right
-        :param merger_node_pos:
-        :param new_node_pos: optional parameter if no new_node is provided,
-        new node is initially
-         created in this position, animations are then nicer.
+    def merge_to_top(self, top, new, merge_to_left, merger_pos):
         """
-        if not new_node:
-            if new_node_pos:
-                ex, ey = new_node_pos
-            else:
-                ex, ey = replaced.algo_position[0], replaced.algo_position[1]
-            new_node = self.create_node(pos=(ex, ey, replaced.z))
-            new_node.adjustment = replaced.adjustment
-
-        if hasattr(new_node, 'index'):
+        :param top:
+        :param new:
+        :param merge_to_left:
+        :param merger_pos:
+        :return:
+        """
+        if hasattr(new, 'index'):
             # if new_node and old_node belong to same tree, this is a Move /
             # Internal merge situation and we
             # need to give the new_node an index so it can be reconstructed
             # as a trace structure
-            moving_was_higher = self.is_higher_in_tree(new_node, replaced)
+            in_same_tree = self.is_higher_in_tree(new, top)
+            # returns None if they are not in same tree
+            if in_same_tree is not None:
+                if not new.index:
+                    new.index = self.chain_manager.next_free_index()
+                # replace either the moving node or leftover node with trace
+                # if we are using traces
+                if self.traces_are_visible():
+                    t = self.create_trace_for(new)
+                    self.replace_node(new, t, can_delete=False)
+        if merge_to_left:
+            left = new
+            right = top
+        else:
+            left = top
+            right = new
+        p = merger_pos[0], merger_pos[1], top.z
+        merger_node = self.create_merger_node(left=left, right=right, pos=p)
+        merger_node.adjustment = top.adjustment
+        if self.traces_are_visible():
+            self.chain_manager.rebuild_chains()
+
+
+
+    def insert_node_between(self, inserted, parent, child, merge_to_left,
+                            insertion_pos):
+        """ This is an insertion action into a tree: a new merge is created
+        and inserted between two existing constituents. One connection is
+        removed, but three are created.
+        This happens when touch area in edge going up from node N is clicked,
+        or if a node is dragged there.
+
+        :param parent:
+        :param child:
+        :param inserted:
+        :param merge_to_left:
+        :param insertion_pos:
+        """
+        if hasattr(inserted, 'index'):
+            # if inserted and child belong to same tree, this is a Move /
+            # Internal merge situation and we
+            # need to give the new_node an index so it can be reconstructed
+            # as a trace structure
+            moving_was_higher = self.is_higher_in_tree(inserted, child)
             # returns None if they are not in same tree
             if moving_was_higher is not None:
-                if not new_node.index:
-                    new_node.index = self.chain_manager.next_free_index()
+                if not inserted.index:
+                    inserted.index = self.chain_manager.next_free_index()
                 # replace either the moving node or leftover node with trace
                 # if we are using traces
                 if self.traces_are_visible():
                     if moving_was_higher:
-                        new_node = self.create_trace_for(new_node)
+                        inserted = self.create_trace_for(inserted)
                     else:
-                        t = self.create_trace_for(new_node)
-                        self.replace_node(new_node, t, can_delete=False)
-            else:
-                pass
+                        t = self.create_trace_for(inserted)
+                        self.replace_node(inserted, t, can_delete=False)
 
-        align = 0
-        if closest_parent:
-            edge = closest_parent.get_edge_to(replaced)
-            align = edge.alignment
-            self.disconnect_edge(edge)
-
-        p = merger_node_pos[0], merger_node_pos[1], replaced.z
+        edge = parent.get_edge_to(child)
+        align = edge.alignment
+        self.disconnect_edge(edge)
         if merge_to_left:
-            merger_node = self.create_merger_node(left=new_node, right=replaced,
-                                                  pos=p)
+            left = inserted
+            right = child
         else:
-            merger_node = self.create_merger_node(left=replaced, right=new_node,
-                                                  pos=p)
-
-        merger_node.adjustment = replaced.adjustment
-
-        if closest_parent:
-            self.connect_node(closest_parent, merger_node, direction=align)
-
+            left = child
+            right = inserted
+        p = insertion_pos[0], insertion_pos[1], child.z
+        merger_node = self.create_merger_node(left=left, right=right, pos=p)
+        merger_node.adjustment = child.adjustment
+        self.connect_node(parent, merger_node, direction=align)
+        print(parent.syntactic_object.print_tree())
         if self.traces_are_visible():
             self.chain_manager.rebuild_chains()
 
@@ -1680,7 +1601,6 @@ class Forest(BaseModel):
                         can_fold = False
                         break
                 if can_fold:
-                    print('Folding multidominated node %s' % folded)
                     folded.fold_towards(node)
             # remember that the branch that couldn't be folded won't allow
             # any of its children to be

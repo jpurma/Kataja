@@ -53,25 +53,28 @@ class ITextNode:
         return reversed(self.parts)
 
     def __add__(self, other):
-        if isinstance(other, (ITextNode, str)):
-            return ITextNode(parts=[self, other])
-        else:
-            raise TypeError()
+        if other:
+            if isinstance(other, (ITextNode, str)):
+                return ITextNode(parts=[self, other])
+            else:
+                raise TypeError()
 
     def __radd__(self, other):
-        if isinstance(other, ITextNode):
-            return ITextNode(parts=[other, self])
-        elif isinstance(other, str):
-            return other + str(self)
-        else:
-            raise TypeError()
+        if other:
+            if isinstance(other, ITextNode):
+                return ITextNode(parts=[other, self])
+            elif isinstance(other, str):
+                return other + str(self)
+            else:
+                raise TypeError()
 
     def __iadd__(self, other):
-        if isinstance(other, (ITextNode, str)):
-            self.append(other)
-            return self
-        else:
-            raise TypeError()
+        if other:
+            if isinstance(other, (ITextNode, str)):
+                self.append(other)
+                return self
+            else:
+                raise TypeError('Cannot handle type: %s' % type(other))
 
     def __bool__(self):
         return not self.is_empty()

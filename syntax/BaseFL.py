@@ -27,10 +27,8 @@
 import re
 
 from syntax.BaseConstituent import BaseConstituent as Constituent
-from syntax.BaseFeature import BaseFeature
-from syntax.utils import load_lexicon, time_me  # , save_lexicon
-from syntax.IFL import IFL
 from kataja.singletons import ctrl
+import kataja.globals as g
 
 
 # coding=utf-8
@@ -271,15 +269,25 @@ class FL(BaseModel):
         """
         raise NotImplementedError
 
-    def k_connect(self, parent, child):
-        """ Tries to set a parent-child connection
+    def k_connect(self, parent, child, align=None):
+        """ Tries to set a parent-child connection. It may be necessary to
+        force parts to be in specific order, alignment can be used to give
+        hints about the order
         :param parent:
         :param child:
+        :param align: edge alignment
         :return:
 
         """
+        print('connecting, align: ', align)
         if child not in parent.parts:
-            parent.add_part(child)
+            if align is None:
+                parent.add_part(child)
+            elif align == g.LEFT:
+                parent.insert_part(child)
+            else:
+                parent.add_part(child)
+
 
     def k_disconnect(self, parent, child):
         """ Tries to remove parent-child connection. Primitive: may leave binary tree to have empty

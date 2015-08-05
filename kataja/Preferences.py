@@ -50,6 +50,19 @@ color_modes = OrderedDict([('solarized_dk',
     'name': 'Random on a light background', 'fixed': False, 'hsv': [0, 0, 0]}),
                            ('random-dark', {'name': 'Against a dark background',
                                             'fixed': False, 'hsv': [0, 0, 0]})])
+def extract_bitmaps(filename):
+    """
+    Helper method to turn 3-color image (blue, black, transparent) into
+    bitmap masks.
+    :param filename:
+    :return: tuple(original as pixmap, color1 as mask (bitmap), color2 as mask)
+    """
+    pm = QtGui.QPixmap(filename)
+    color1 = QtGui.QColor(0, 0, 255)
+    color2 = QtGui.QColor(0, 0, 0)
+    bms = (pm, pm.createMaskFromColor(color1, QtCore.Qt.MaskOutColor),
+           pm.createMaskFromColor(color2, QtCore.Qt.MaskOutColor))
+    return bms
 
 
 class Preferences(object):
@@ -221,7 +234,6 @@ class Preferences(object):
 
     # ##### Save & Load ########################################
 
-
     def save_preferences(self):
         """ Save preferences uses QSettings, which is Qt:s abstraction over
         platform-dependant ini/preferences files.
@@ -269,21 +281,6 @@ class Preferences(object):
                 setattr(self, key, int(settings.value(key, default_value)))
             else:
                 setattr(self, key, settings.value(key, default_value))
-
-
-def extract_bitmaps(filename):
-    """
-    Helper method to turn 3-color image (blue, black, transparent) into
-    bitmap masks.
-    :param filename:
-    :return: tuple(original as pixmap, color1 as mask (bitmap), color2 as mask)
-    """
-    pm = QtGui.QPixmap(filename)
-    color1 = QtGui.QColor(0, 0, 255)
-    color2 = QtGui.QColor(0, 0, 0)
-    bms = (pm, pm.createMaskFromColor(color1, QtCore.Qt.MaskOutColor),
-           pm.createMaskFromColor(color2, QtCore.Qt.MaskOutColor))
-    return bms
 
 
 class QtPreferences:

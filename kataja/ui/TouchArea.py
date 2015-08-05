@@ -294,11 +294,14 @@ class TouchArea(QtWidgets.QGraphicsItem):
         if self.type is g.TOUCH_ADD_CONSTITUENT:
             replaced.open_embed()
         else: # hmm, could be unnecessary
-            ctrl.forest.replace_node_with_merged_node(replaced, None,
-                                                      closest_parent,
-                                                      merge_to_left=self._align_left,
-                                                      new_node_pos=self.end_point,
-                                                      merger_node_pos=self.start_point)
+            #ctrl.forest.replace_node_with_merged_node(replaced, None,
+            #                                          closest_parent,
+            #
+            # merge_to_left=self._align_left,
+            #
+            # new_node_pos=self.end_point,
+            #
+            # merger_node_pos=self.start_point)
             ctrl.deselect_objects()
             ctrl.main.action_finished(m='add constituent')
         return True
@@ -525,13 +528,14 @@ class BranchingTouchArea(TouchArea):
         self._dragging = False
         if self._drag_hint:
             return False
-        replaced = self.host.end
-        closest_parent = self.host.start
-        ctrl.forest.replace_node_with_merged_node(replaced, None,
-                                                  closest_parent,
-                                                  merge_to_left=self._align_left,
-                                                  new_node_pos=self.end_point,
-                                                  merger_node_pos=self.start_point)
+        child = self.host.end
+        parent = self.host.start
+        ex, ey = child.algo_position[0], child.algo_position[1]
+        new_node = ctrl.forest.create_node(pos=(ex, ey, child.z))
+        new_node.adjustment = child.adjustment
+        ctrl.forest.insert_node_between(new_node, parent, child,
+                                        self._align_left,
+                                        self.start_point)
         ctrl.deselect_objects()
         ctrl.main.action_finished(m='add constituent')
         return True
@@ -551,11 +555,10 @@ class BranchingTouchArea(TouchArea):
         if self.type == g.RIGHT_ADD_SIBLING or self.type == \
             g.LEFT_ADD_SIBLING:
             # host is an edge
-            ctrl.forest.replace_node_with_merged_node(self.host.end,
-                                                      dropped_node,
-                                                      self.host.start,
-                                                      merge_to_left=self._align_left,
-                                                      merger_node_pos=self.start_point)
+            ctrl.forest.insert_node_between(dropped_node, self.host.start,
+                                            self.host.end,
+                                            self._align_left,
+                                            self.start_point)
             for node in ctrl.dragged_set:
                 node.adjustment = self.host.end.adjustment
             message = 'moved node %s to sibling of %s' % (
@@ -704,10 +707,10 @@ class JointedTouchArea(TouchArea):
         if self.type == g.RIGHT_ADD_ROOT or self.type == g.LEFT_ADD_ROOT:
             # host is a node
             assert isinstance(self.host, Node)
-            ctrl.forest.replace_node_with_merged_node(self.host, dropped_node,
-                                                      None,
-                                                      merge_to_left=self._align_left,
-                                                      merger_node_pos=self.start_point)
+            ctrl.forest.merge_to_top(self.host,
+                                     dropped_node,
+                                     merge_to_left=self._align_left,
+                                     merger_node_pos=self.start_point)
             for node in ctrl.dragged_set:
                 node.adjustment = self.host.adjustment
             return 'moved node %s to sibling of %s' % (

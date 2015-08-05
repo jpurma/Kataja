@@ -88,11 +88,21 @@ class BaseConstituent(IConstituent):
         return True
 
     def add_part(self, new_part):
-        """ Add constitutive part to this constituent
+        """ Add constitutive part to this constituent (append to parts)
         :param new_part:
         """
         self.poke('parts')
         self.parts.append(new_part)
+
+    def insert_part(self, new_part, index=0):
+        """ Insert constitutive part to front of the parts list. Usefulness
+        depends on the linearization method.
+        :param new_part:
+        :param index:
+        :return:
+        """
+        self.poke('parts')
+        self.parts.insert(index, new_part)
 
     def remove_part(self, part):
         """ Remove constitutive part
