@@ -25,6 +25,7 @@ from PyQt5 import QtCore, QtWidgets, QtGui
 
 from kataja.singletons import ctrl
 from kataja.ui.OverlayButton import PanelButton
+from kataja.ui.panels.field_utils import EmbeddedMultibutton
 
 
 class KatajaAction(QtWidgets.QAction):
@@ -145,5 +146,8 @@ class KatajaAction(QtWidgets.QAction):
             element.valueChanged.connect(self.action_triggered)
         elif isinstance(element, QtWidgets.QCheckBox):
             element.stateChanged.connect(self.action_triggered)
+        elif isinstance(element, EmbeddedMultibutton):
+            print('embedded multibutton connected!')
+            element.bgroup.buttonToggled.connect(self.action_triggered)
 
 

@@ -64,6 +64,8 @@ class ForestSettings(BaseModel):
         self.color_mode = None
         self.last_key_colors = {}
         self.bracket_style = None
+        self.use_projection = True
+        self.use_xbar_aliases = True
         # ## Edges - take edge type as argument ###########################
         self.edge_types = {}
         # ## Nodes - take node type as argument ###########################

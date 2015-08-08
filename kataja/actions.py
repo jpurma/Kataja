@@ -1217,6 +1217,23 @@ a['raw_editing_toggle'] = {'command': 'Toggle edit mode',
                            'method': toggle_raw_editing}
 
 
+def constituent_set_head(sender):
+    """
+
+    :return:
+    """
+    checked = sender.checkedButton()
+    head = checked.my_value
+    host = get_host(sender)
+    host.set_projection(head)
+    embed = get_ui_container(sender)
+    if embed:
+        embed.update_fields()
+
+a['constituent_set_head'] = {'command': 'Set head for inheritance',
+                             'method': constituent_set_head,
+                             'sender_arg': True}
+
 # Generic keys ####
 # 'key_esc'] = {
 #     'command': 'key_esc',

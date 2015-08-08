@@ -4,7 +4,9 @@ __author__ = 'purma'
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from kataja.parser.LatexToINode import parse_field
-from kataja.ui.embeds.UIEmbed import UIEmbed, EmbeddedLineEdit, EmbeddedTextarea
+from kataja.ui.embeds.UIEmbed import UIEmbed
+from kataja.ui.panels.field_utils import EmbeddedTextarea, EmbeddedLineEdit, \
+    EmbeddedMultibutton
 from kataja.singletons import qt_prefs, ctrl
 from kataja.parser import INodeToLatex
 import kataja.globals as g
@@ -58,6 +60,14 @@ class NodeEditEmbed(UIEmbed):
             itype = d.get('input_type', 'text')
             prefill = d.get('prefill', '')
             syntactic = d.get('syntactic', False)
+            check_before = d.get('check_before', None)
+            if check_before:
+                func = getattr(self.host, check_before, None) or getattr(
+                    self.host.syntactic_object, check_before, None)
+                if func:
+                    if not func():
+                    # func is something like 'can_be_projection(self)'
+                        continue
             if itype == 'text':
                 width = d.get('width', 140)
                 field = EmbeddedLineEdit(self, tip=tt, font=f, prefill=prefill)
@@ -70,6 +80,21 @@ class NodeEditEmbed(UIEmbed):
                 field.setMaximumWidth(width)
                 if syntactic:
                     field.setPalette(ui_s)
+            elif itype == 'multibutton':
+                width = d.get('width', 200)
+                op_func = d.get('option_function')
+                op_func = getattr(self.host, op_func, None) or \
+                    getattr(self.syntactic_object, op_func, None)
+                field = EmbeddedMultibutton(self, tip=tt, options=op_func())
+                field.setMaximumWidth(width)
+                action = d.get('select_action')
+                if action:
+                    ui_manager.connect_element_to_action(field, action)
+
+                if syntactic:
+                    field.setPalette(ui_s)
+                #else:
+                #    field.setPalette(ui_p)
             else:
                 raise NotImplementedError
             align = d.get('align', 'newline')
@@ -115,6 +140,11 @@ class NodeEditEmbed(UIEmbed):
             if itype == 'textarea':
                 parsed = INodeToLatex.parse_inode_for_field(value)
                 field.setPlainText(parsed)
+            if itype == 'multibutton':
+                op_func = d.get('option_function')
+                op_func = getattr(self.host, op_func, None) or \
+                    getattr(self.syntactic_object, op_func, None)
+                field.update_selections(op_func())
 
     def psizeHint(self):
         base = QtWidgets.QWidget.sizeHint(self)
@@ -138,6 +168,11 @@ class NodeEditEmbed(UIEmbed):
                 value = parse_field(field.text())
             elif itype == 'textarea':
                 value = parse_field(field.toPlainText())
+            elif itype == 'multibutton':
+                print('Implement submit_values for multibutton in '
+                      'NodeEditEmbed')
+                print(field.bgroup)
+                value = ''
             else:
                 raise NotImplementedError
             if 'setter' in d:

@@ -95,5 +95,9 @@ class NavigationPanel(UIPanel):
         :return:
         """
         if signal == 'forest_changed':
-            self.treeset_counter.setText('%s/%s' % (ctrl.main.forest_keeper.current_index + 1,
-                                                    len(ctrl.main.forest_keeper.forests)))
+            keeper = ctrl.main.forest_keeper
+            if keeper is not None:
+                display_index = keeper.current_index + 1
+                max_index = len(keeper.forests)
+                self.treeset_counter.setText('%s/%s' % (display_index,
+                                                        max_index))

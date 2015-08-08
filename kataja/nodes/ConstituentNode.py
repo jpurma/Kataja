@@ -53,7 +53,13 @@ class ConstituentNode(BaseConstituentNode):
                               tooltip='Label of the constituent (functional identifier)',
                               width=200, focus=True, syntactic=True),
                 'gloss': dict(name='Gloss', order=12, prefill='gloss',
-                              tooltip='translation (optional)', width=200)}
+                              tooltip='translation (optional)', width=200,
+                              check_before='is_leaf'),
+                'head': dict(name='Head', order=20, tooltip='inherits from',
+                             check_before='can_be_projection',
+                             option_function='projection_options_for_ui',
+                             input_type='multibutton',
+                             select_action='constituent_set_head')}
     default_style = {'color': 'content1', 'font': g.MAIN_FONT, 'font-size': 10,
                      'edge': g.CONSTITUENT_EDGE}
 
@@ -146,6 +152,8 @@ class ConstituentNode(BaseConstituentNode):
             self._inode_changed = True
             self.update_gloss()
             update_label = True
+        if 'head' in updated_fields:
+            pass
         if update_label:
             self.update_label()
 
@@ -194,6 +202,14 @@ class ConstituentNode(BaseConstituentNode):
         """
         self._inode_changed = True
         self.update_gloss()
+
+    def if_changed_head(self, value):
+        """ If head is changed, the old head cannot be projected upwards from
+        here, so check the parents.
+        :param value:
+        :return:
+        """
+        pass
 
     # Saved properties
 
@@ -250,19 +266,36 @@ class ConstituentNode(BaseConstituentNode):
         else:
             self.status_tip = "Empty, but mandatory constituent position"
 
-    def __str__(self):
+    def short_str(self):
         if not self.syntactic_object:
-            return 'Placeholder node'
+            return 'empty'
         alias = self.alias
         label = self.label
         if alias and label:
-            return ' '.join((str(alias), str(label)))
+            l = ' '.join((str(alias), str(label)))
         elif alias:
-            return str(alias)
+            l = str(alias)
         elif label:
-            return str(label)
+            l = str(label)
         else:
-            return ''
+            return "no label"
+        return l
+
+
+    def __str__(self):
+        if not self.syntactic_object:
+            return 'a placeholder for constituent'
+        alias = self.alias
+        label = self.label
+        if alias and label:
+            l = ' '.join((str(alias), str(label)))
+        elif alias:
+            l = str(alias)
+        elif label:
+            l = str(label)
+        else:
+            return "anonymous constituent"
+        return "constituent '%s'" % l
 
     def as_bracket_string(self):
         """ returns a simple bracket string representation """
@@ -289,6 +322,108 @@ class ConstituentNode(BaseConstituentNode):
         if ctrl.forest.settings.label_style == g.ALIASES and self.alias:
             self._label_visible = True
             self._label_complex.setVisible(True)
+
+    def can_be_projection(self):
+        """ Node can be projection from other nodes if it has other nodes
+        below it.
+        It may be necessary to move this check to syntactic level at some
+        point.
+        :return:
+        """
+        if ctrl.fs.use_projection:
+            return not self.is_leaf_node(only_similar=True, only_visible=False)
+        else:
+            return False
+
+    def projection_options_for_ui(self):
+        """ Build tuples for showing projection options
+        :return: (text, value, checked) -tuples
+        """
+        r = []
+        children = list(self.get_children())
+        l = len(children)
+        # chr(2193) = down arrow
+        # chr(2198) = right down arrow
+        # chr(2199) = left down arrow
+        if l == 1:
+            prefix = [chr(0x2193)]
+        elif l == 2:
+            prefix = [chr(0x2199), chr(0x2198)]
+        elif l == 3:
+            prefix = [chr(0x2199), chr(0x2193), chr(0x2198)]
+        else: # don't use arrows for
+            prefix = [''] * l
+        for n, child in enumerate(children):
+            disabled = child.is_placeholder()
+            # assume that head is inherited.
+            ch = child.head or child
+            is_head = ch is self.head
+            tt = 'inherit head from ' + str(ch)
+            r.append(('%s%s' % (prefix[n], ch.short_str()), ch, is_head,
+                      disabled, tt))
+        tt = "doesn't inherit head"
+        r.append(('None', None, self.head is None, False, tt))
+        return r
+
+    def set_projection(self, new_head):
+        """ Set this node to be projection from new_head. If the old_head is
+        also used by parent node, propagate the change up to parent (and so
+        on).
+        :param new_head:
+        :return:
+        """
+        def strip_xbars(al):
+            if len(al) > 1 and (al.endswith('´') or
+                                al.endswith("'") or
+                                al.endswith('P')):
+                return al[:-1]
+            else:
+                return al
+
+
+        old_head = self.head
+        self.head = new_head
+        intermediate_node = False
+        if old_head:
+            for parent in self.get_parents(only_similar=True,
+                                           only_visible=False):
+                if parent.head == old_head:
+                    parent.set_projection(new_head)
+                    intermediate_node = True
+            for child in self.get_children():
+                if child is old_head or child.head is old_head:
+                    al = str(old_head.alias) or ''
+                    al = strip_xbars(al)
+                    if al:
+                        old_head.alias = al + 'P'
+                        old_head.update_label()
+                    break
+        if new_head:
+            self.label = new_head.label
+            if ctrl.fs.use_xbar_aliases:
+                al = str(new_head.alias) or '' # doesn't break if len(None)
+                # if previous head was XP or X´, turn it to X
+                if strip_xbars(al) != al:
+                    new_head.alias = strip_xbars(al)
+                    new_head.update_label()
+                al = new_head.alias or new_head.label
+                print(al)
+                if intermediate_node:
+                    c = '´'
+                else:
+                    c = 'P'
+                if al:
+                    self.alias = al + c
+                else:
+                    self.alias = ''
+            else:
+                self.alias = new_head.alias
+        elif old_head:
+            self.label = ''
+            self.alias = ''
+        self.update_label()
+        print(new_head, self.label, self.alias)
+
 
     # ### Features #########################################
 
@@ -341,6 +476,7 @@ class ConstituentNode(BaseConstituentNode):
     index = Saved("index", if_changed=BaseConstituentNode.alert_inode)
     alias = Saved("alias", if_changed=BaseConstituentNode.alert_inode)
     gloss = Saved("gloss", if_changed=if_changed_gloss)
+    head = Saved("head", if_changed=if_changed_head)
 
     is_trace = Saved("is_trace")
     merge_order = Saved("merge_order")

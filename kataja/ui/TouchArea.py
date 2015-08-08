@@ -450,7 +450,6 @@ class BranchingTouchArea(TouchArea):
         self.setToolTip(self.status_tip)
         self.update_end_points()
 
-
     def boundingRect(self):
         """
 
@@ -618,7 +617,6 @@ class JointedTouchArea(TouchArea):
         self.setToolTip(self.status_tip)
         self.update_end_points()
 
-
     def boundingRect(self):
         """
 
@@ -715,6 +713,23 @@ class JointedTouchArea(TouchArea):
                 node.adjustment = self.host.adjustment
             return 'moved node %s to sibling of %s' % (
                 dropped_node, self.host)
+
+    def click(self, event=None):
+        """
+        :type event: QMouseEvent
+         """
+        self._dragging = False
+        if self._drag_hint:
+            return False
+        root = self.host
+        ex, ey = root.algo_position[0], root.algo_position[1]
+        pos = (ex, ey, root.z)
+        new_node = ctrl.forest.create_node(pos=pos)
+        new_node.adjustment = root.adjustment
+        ctrl.forest.merge_to_top(root, new_node, self._align_left, pos)
+        ctrl.deselect_objects()
+        ctrl.main.action_finished(m='add constituent')
+        return True
 
     def paint(self, painter, option, widget):
         """

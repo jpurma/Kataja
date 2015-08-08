@@ -316,7 +316,7 @@ class StylePanel(UIPanel):
                 self.cached_edge_color = d['edge_color'][0]
             if d['node_font'][0]:
                 self.cached_font_id = d['node_font'][0]
-        else:
+        elif ctrl.forest:
             ns = ctrl.fs.node_info
             es = ctrl.fs.edge_info
             edge_scope = ns(scope, 'edge')

@@ -156,9 +156,13 @@ class BaseConstituentNode(Node):
 
     def __str__(self):
         if not self.syntactic_object:
-            return 'Placeholder node'
+            return 'a placeholder for constituent'
         else:
-            return str(self.label)  # + ' adj: %s fixed: %s' % (self.adjustment, self.fixed_position)
+            l = str(self.label)
+            if l:
+                return "constituent '%s'" % l
+            else:
+                return "anonymous constituent"
 
     def as_bracket_string(self):
         """ returns a simple bracket string representation """

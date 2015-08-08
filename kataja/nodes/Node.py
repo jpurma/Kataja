@@ -399,6 +399,15 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self.update_bounding_rect()
         ctrl.ui.remove_touch_areas_for(self)
 
+    def node_info(self):
+        so = self.syntactic_object
+        if so:
+            so = so._saved
+        print('''-----------Node saved data-----------
+saved: %s
+syntactic_object: %s
+-----------------------''' % (self._saved, so))
+
     def is_placeholder(self):
         """ Constituent structure may assume a constituent to be somewhere,
         before the user has intentionally created
@@ -518,7 +527,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """
         et = self.__class__.default_edge_type
         return (edge.end for edge in self.edges_down if
-                edge.edge_type == et and edge.end.is_visible())
+                edge.edge_type == et and edge.end and edge.end.is_visible())
 
     def get_children_of_type(self, edge_type=None, node_type=None):
         """
@@ -1036,8 +1045,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     # ### Menus #########################################
 
     def update_selection_status(self, selected):
-        """ This is called
-
+        """ This is called after item is selected or deselected to update
+        appearance and related local fields.
         :param selected:
         """
         if not selected:
@@ -1046,6 +1055,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         else:
             self.setZValue(200)
             self.setToolTip("Click to edit")
+            self.node_info()
         self.update()
 
     # ### MOUSE - kataja
@@ -1074,12 +1084,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :param multi: assume multiple selection (append, don't replace)
         """
         self.hovering = False
-        if (
-            event and event.modifiers() == Qt.ShiftModifier) or multi:  #
+        if (event and event.modifiers() == Qt.ShiftModifier) or multi:
             # multiple selection
-            for node in ctrl.selected:
-                if hasattr(node, 'remove_merge_options'):
-                    node.remove_merge_options()
             if ctrl.is_selected(self):
                 ctrl.remove_from_selection(self)
             else:
@@ -1319,6 +1325,10 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             edge.start_node_started_moving()
         for edge in self.edges_up:
             edge.end_node_started_moving()
+
+    def short_str(self):
+        return self.label or "no label"
+
 
     def stop_moving(self):
         """ Experimental: remove glow effect from moving things

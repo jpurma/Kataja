@@ -82,6 +82,8 @@ class Controller:
         self.undo_disabled = False  # flag that affects if pickle.load assumes
         # an empty workspace (loading new) or if it tries to compare changes
         # (undo).
+        self.watchers_disabled = False # flag to suppress watchers -- not
+        # sure if it is *ever* a good idea
         self.unassigned_objects = {}
         self.items_moving = False
         # -- After user action, should the visualization be redrawn and
@@ -136,7 +138,8 @@ class Controller:
     @property
     def fs(self):
         """ Shortcut to active forest's settings """
-        return self.main.forest.settings
+        if self.main.forest:
+            return self.main.forest.settings
 
     @property
     def graph_scene(self):
@@ -325,8 +328,9 @@ class Controller:
         :param value:
         :return:
         """
-        watchers = self.get_watchers(signal)
-        for watcher in watchers:
-            watcher.watch_alerted(obj, signal, field_name, value)
-            # if not watchers:
-            #    print('no watcher found for signal "%s"' % signal)
+        if not self.watchers_disabled:
+            watchers = self.get_watchers(signal)
+            for watcher in watchers:
+                watcher.watch_alerted(obj, signal, field_name, value)
+                # if not watchers:
+                #    print('no watcher found for signal "%s"' % signal)

@@ -40,9 +40,9 @@ class BaseConstituent(IConstituent):
     short_name = "BC"
     visible = {'label': {'order': 10}}
     editable = {'label': {'order': 10}}
-    addable = {'parts': {'check_before': 'can_add_part', 'add': 'add_part', 'order': 10},
-               'features': {'check_before': 'can_add_feature', 'add': 'add_feature', 'order': 20}
+    addable = {'features': {'check_before': 'can_add_feature', 'add': 'add_feature', 'order': 20}
                }
+    # 'parts': {'check_before': 'can_add_part', 'add': 'add_part', 'order': 10},
 
     def __init__(self, label='', parts=None, save_key='', features=None, head=None, **kw):
         """ BaseConstituent is a default constituent used in syntax.

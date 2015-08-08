@@ -83,7 +83,7 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
         """ Linearization has  """
         hs = self.get_vis_data('height_steps')
         hs += 1
-        if self.get_vis_data('max_heigh_steps') < hs:
+        if self.get_vis_data('max_height_steps') < hs:
             hs = 1
         self.set_vis_data('height_steps', hs)
         self.forest.main.add_message('Set height: %s' % hs)
