@@ -365,6 +365,43 @@ class ConstituentNode(BaseConstituentNode):
         r.append(('None', None, self.head is None, False, tt))
         return r
 
+    def guess_projection(self):
+        """ Analyze label, alias and children and try to guess if this is a
+        projection from somewhere. Set head accordingly.
+        :return:
+        """
+
+        suffixes = ['´', "'", "P", "(1/)", "\1"]
+
+        def strip_xbars(al):
+            for s in suffixes:
+                if len(al) > len(s) and al.endswith(s):
+                    return al[:-len(s)]
+            else:
+                return al
+
+        def find_original(node, head):
+            """ Go down in tree until the final matching label/alias is found.
+            :param node: where to start searching
+            :param head:
+            :return:
+            """
+            for child in node.get_children():
+                al = child.alias or child.label
+                al = str(al)
+                if strip_xbars(al) == head:
+                    found_below = find_original(child, head)
+                    if found_below:
+                        return found_below
+                    else:
+                        return child
+            return None
+
+        al = self.alias or self.label
+        al = str(al)
+        self.head = find_original(self, strip_xbars(al)) or self
+        return self.head
+
     def set_projection(self, new_head):
         """ Set this node to be projection from new_head. If the old_head is
         also used by parent node, propagate the change up to parent (and so
@@ -372,14 +409,14 @@ class ConstituentNode(BaseConstituentNode):
         :param new_head:
         :return:
         """
+        suffixes = ['´', "'", "P", "(1/)", "\1"]
+
         def strip_xbars(al):
-            if len(al) > 1 and (al.endswith('´') or
-                                al.endswith("'") or
-                                al.endswith('P')):
-                return al[:-1]
+            for s in suffixes:
+                if len(al) > len(s) and al.endswith(s):
+                    return al[:-len(s)]
             else:
                 return al
-
 
         old_head = self.head
         self.head = new_head
@@ -409,7 +446,7 @@ class ConstituentNode(BaseConstituentNode):
                 al = new_head.alias or new_head.label
                 print(al)
                 if intermediate_node:
-                    c = '´'
+                    c = "'"
                 else:
                     c = 'P'
                 if al:

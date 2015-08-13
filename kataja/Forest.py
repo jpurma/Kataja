@@ -25,6 +25,7 @@
 
 import string
 import collections
+from ProjectionVisual import ProjectionVisual
 
 from kataja.errors import ForestError
 from kataja.ForestSettings import ForestSettings, ForestRules
@@ -42,6 +43,7 @@ from kataja.Edge import Edge
 from kataja.managers.UndoManager import UndoManager
 from kataja.nodes.FeatureNode import FeatureNode
 from kataja.BaseModel import BaseModel, Saved
+from kataja.utils import time_me
 import kataja.globals as g
 
 ONLY_LEAF_LABELS = 0
@@ -85,6 +87,8 @@ class Forest(BaseModel):
         self.node_types = set()
         self.others = {}
         self.vis_data = {}
+        self.projection_visuals = {}
+        self.projection_rotator = 0
         self.merge_counter = 0
         self.select_counter = 0
         self.comments = []
@@ -377,6 +381,8 @@ class Forest(BaseModel):
             yield (n)
         for n in self.others.values():
             yield (n)
+        for n in self.projection_visuals.values():
+            yield (n)
         for n in self.bracket_manager.get_brackets():
             yield (n)
 
@@ -390,6 +396,7 @@ class Forest(BaseModel):
         for root in self.roots:
             root.update_visibility()
         self.bracket_manager.update_brackets()
+        self.update_projections()
         self.update_forest_gloss()
         self.visualization.draw()
         if not sc.manual_zoom:
@@ -425,6 +432,30 @@ class Forest(BaseModel):
         for other in self.others.values():
             other.update_colors()
         self.main.ui_manager.update_colors()
+
+    @time_me
+    def update_projections(self):
+        rotating_colors = ['accent%str' % i for i in range(1,9)]
+        for node in self.nodes.values():
+            if node.node_type == g.CONSTITUENT_NODE:
+                head = node.guess_projection()
+                if head.save_key not in self.projection_visuals:
+                    pj = ProjectionVisual(head, rotating_colors[
+                        self.projection_rotator])
+                    print('creating pj ', rotating_colors[self.projection_rotator])
+                    self.projection_visuals[head.save_key] = pj
+                    self.add_to_scene(pj)
+                    self.projection_rotator += 1
+                    if self.projection_rotator == len(rotating_colors):
+                        self.projection_rotator = 0
+                self.projection_visuals[head.save_key].add_to_chain(node)
+        for key, projection in list(self.projection_visuals.items()):
+            if not projection.verify_chain():
+                del self.projection_visuals[key]
+                sc = projection.scene()
+                if sc:
+                    sc.removeItem(projection)
+
 
     def get_node(self, constituent):
         """
