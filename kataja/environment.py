@@ -12,7 +12,6 @@ mac_fonts = {MAIN_FONT: ['Asana Math', 'Normal', 12], CONSOLE_FONT: ['Menlo', 'N
              ITALIC_FONT: ['Asana Math', 'Italic', 12], SMALL_CAPS: ['Helvetica Neue', 'Normal', 10],
              SMALL_FEATURE: ['Helvetica Neue', 'Normal', 7]}
 
-
 linux_fonts = {MAIN_FONT: ['Asana Math', 'Normal', 12], CONSOLE_FONT: ['Courier', 'Normal', 10],
                UI_FONT: ['Droid Sans', 'Normal', 10], ITALIC_FONT: ['Asana Math', 'Italic', 12],
                BOLD_FONT: ['STIX', 'Bold', 12], SMALL_CAPS: ['Lao MN', 'Normal', 9],

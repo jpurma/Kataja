@@ -77,19 +77,23 @@ class ProjectionVisual(QtWidgets.QGraphicsItem):
         painter.setPen(QtCore.Qt.NoPen)
         forward = []
         back = []
-        p = QtGui.QPainterPath() #QtCore.QPointF(sx - 5, sy))
-
-        for node in self.chain:
-            sx, sy, sz = node.current_position
-            r = node.sceneBoundingRect()
-            #p.addEllipse(r)
-            forward.append((sx - 5, sy))
-            back.append((sx + 5, sy))
-        back.reverse()
-        p.moveTo(forward[0][0], forward[0][1])
-        for x, y in forward[1:] + back:
-            p.lineTo(x, y)
-        painter.fillPath(p, self.color)
+        vis_chain = [x for x in self.chain if x.is_visible()]
+        if vis_chain:
+            start_x, start_y, start_z = vis_chain[0].current_position
+            # shape will be one continous filled polygon, so when we iterate
+            # through nodes it needs to go through we make list of positions for
+            # polygon going there (forward) and for its return trip (back).
+            for node in vis_chain:
+                sx, sy, sz = node.current_position
+                #r = node.sceneBoundingRect()
+                #p.addEllipse(r)
+                forward.append((sx - 5, sy))
+                back.append((sx + 5, sy))
+            back.reverse()
+            p = QtGui.QPainterPath(QtCore.QPointF(start_x, start_y + 5))
+            for x, y in forward + [(sx, sy - 5)] + back:
+                p.lineTo(x, y)
+            painter.fillPath(p, self.color)
 
 
 #

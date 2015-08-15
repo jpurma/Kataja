@@ -31,6 +31,17 @@ import kataja.globals as g
 __author__ = 'purma'
 
 
+xbar_suffixes = ['´', "'", "P", "(1/)", "\1"]
+
+
+def strip_xbars(al):
+    for s in xbar_suffixes:
+        if len(al) > len(s) and al.endswith(s):
+            return al[:-len(s)]
+    else:
+        return al
+
+
 class ConstituentNode(BaseConstituentNode):
     """ ConstituentNode is enriched with few fields that have no syntactic meaning but help with
      reading the tree aliases, indices and glosses.
@@ -371,15 +382,6 @@ class ConstituentNode(BaseConstituentNode):
         :return:
         """
 
-        suffixes = ['´', "'", "P", "(1/)", "\1"]
-
-        def strip_xbars(al):
-            for s in suffixes:
-                if len(al) > len(s) and al.endswith(s):
-                    return al[:-len(s)]
-            else:
-                return al
-
         def find_original(node, head):
             """ Go down in tree until the final matching label/alias is found.
             :param node: where to start searching
@@ -398,9 +400,35 @@ class ConstituentNode(BaseConstituentNode):
             return None
 
         al = self.alias or self.label
-        al = str(al)
-        self.head = find_original(self, strip_xbars(al)) or self
+        self.head = find_original(self, strip_xbars(str(al))) or self
         return self.head
+
+    def fix_projection_labels(self):
+        """ Start from this node, assume it is head and move upwards labeling
+        the nodes that also use this as a head.
+        :return:
+        """
+        xbar = ctrl.fs.use_xbar_aliases
+        head_base = str(self.alias or self.label)
+        head_base = strip_xbars(head_base)
+
+        def fix_label(node, level):
+            last = True
+            for parent in node.get_parents(only_similar=True,
+                                           only_visible=False):
+                if parent.head is self:
+                    fix_label(parent, level + 1)
+                    last = False
+            node.label = self.head.label
+            if xbar:
+                if last:
+                    node.alias = head_base + 'P'
+                elif level > 0:
+                    node.alias = head_base + '´'
+                else:
+                    node.alias = head_base
+            node.update_label()
+        fix_label(self, 0)
 
     def set_projection(self, new_head):
         """ Set this node to be projection from new_head. If the old_head is
@@ -409,57 +437,12 @@ class ConstituentNode(BaseConstituentNode):
         :param new_head:
         :return:
         """
-        suffixes = ['´', "'", "P", "(1/)", "\1"]
-
-        def strip_xbars(al):
-            for s in suffixes:
-                if len(al) > len(s) and al.endswith(s):
-                    return al[:-len(s)]
-            else:
-                return al
-
         old_head = self.head
         self.head = new_head
-        intermediate_node = False
         if old_head:
-            for parent in self.get_parents(only_similar=True,
-                                           only_visible=False):
-                if parent.head == old_head:
-                    parent.set_projection(new_head)
-                    intermediate_node = True
-            for child in self.get_children():
-                if child is old_head or child.head is old_head:
-                    al = str(old_head.alias) or ''
-                    al = strip_xbars(al)
-                    if al:
-                        old_head.alias = al + 'P'
-                        old_head.update_label()
-                    break
+            old_head.fix_projection_labels()
         if new_head:
-            self.label = new_head.label
-            if ctrl.fs.use_xbar_aliases:
-                al = str(new_head.alias) or '' # doesn't break if len(None)
-                # if previous head was XP or X´, turn it to X
-                if strip_xbars(al) != al:
-                    new_head.alias = strip_xbars(al)
-                    new_head.update_label()
-                al = new_head.alias or new_head.label
-                print(al)
-                if intermediate_node:
-                    c = "'"
-                else:
-                    c = 'P'
-                if al:
-                    self.alias = al + c
-                else:
-                    self.alias = ''
-            else:
-                self.alias = new_head.alias
-        elif old_head:
-            self.label = ''
-            self.alias = ''
-        self.update_label()
-        print(new_head, self.label, self.alias)
+            new_head.fix_projection_labels()
 
 
     # ### Features #########################################
