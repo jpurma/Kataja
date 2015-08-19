@@ -69,6 +69,7 @@ COLOR_THEME = 'color_theme'
 COLOR_WHEEL = 'color_wheel'
 EDGES = 'drawing'
 LINE_OPTIONS = 'line_options'
+VIS_OPTIONS = 'visualization_options'
 SYMBOLS = 'symbols'
 NODES = 'nodes'
 STYLE = 'style'
@@ -101,6 +102,11 @@ LABEL_START = 'label_start'
 NO_BRACKETS = 0
 MAJOR_BRACKETS = 1
 ALL_BRACKETS = 2
+
+# Projection styles:
+NO_PROJECTIONS = 0
+COLORIZE_PROJECTIONS = 1
+HIGHLIGHT_PROJECTIONS = 2
 
 # Overlay buttons
 REMOVE_MERGER = 'remove_merger'

@@ -60,6 +60,7 @@ from kataja.ui.panels.field_utils import MyColorDialog, MyFontDialog
 from kataja.nodes.Node import Node
 from kataja.ui import drawn_icons
 from kataja.utils import time_me
+from kataja.ui.panels.VisualizationOptionsPanel import VisualizationOptionsPanel
 
 NOTHING = 0
 SELECTING_AREA = 1
@@ -77,18 +78,21 @@ PANELS = {g.LOG: {'name': 'Log', 'position': 'bottom'},
                            'closed': True},
           g.STYLE: {'name': 'Styles', 'position': 'right'},
           g.SYMBOLS: {'name': 'Symbols', 'position': 'right'},
-          g.NODES: {'name': 'Nodes', 'position': 'right'}}
+          g.NODES: {'name': 'Nodes', 'position': 'right'},
+          g.VIS_OPTIONS: {'name': 'Visualization options', 'position':
+          'float', 'closed': True}}
 
 panel_order = [g.LOG, g.NAVIGATION, g.SYMBOLS, g.NODES, g.STYLE,
                g.VISUALIZATION, g.COLOR_THEME, g.COLOR_WHEEL,
-               g.LINE_OPTIONS]  # g.TEST
+               g.LINE_OPTIONS, g.VIS_OPTIONS]  # g.TEST
 
 panel_classes = {g.LOG: LogPanel, g.TEST: TestPanel,
                  g.NAVIGATION: NavigationPanel,
                  g.VISUALIZATION: VisualizationPanel, g.COLOR_THEME: ColorPanel,
                  g.COLOR_WHEEL: ColorWheelPanel,
                  g.LINE_OPTIONS: LineOptionsPanel, g.SYMBOLS: SymbolPanel,
-                 g.NODES: NodesPanel, g.STYLE: StylePanel}
+                 g.NODES: NodesPanel, g.STYLE: StylePanel, g.VIS_OPTIONS:
+                     VisualizationOptionsPanel}
 
 menu_structure = OrderedDict([('file_menu', ('&File',
                                              ['open', 'save', 'save_as', '---',
@@ -292,6 +296,28 @@ class UIManager:
         for panel in self._panels.values():
             panel.update_fields()
 
+    def toggle_panel(self, action, panel_id):
+        """ Show or hide panel depending if it is visible or not
+        :param panel_id: enum of panel identifiers (str)
+        :return: None
+        """
+        panel = self.get_panel(panel_id)
+
+        if panel:
+            if panel.isVisible():
+                panel.close()
+                action.setChecked(False)
+            else:
+                panel.setVisible(True)
+                panel.set_folded(False)
+                action.setChecked(True)
+        else:
+            panel = self.create_panel(panel_id, default=True)
+            panel.setVisible(True)
+            panel.set_folded(False)
+            action.setChecked(True)
+
+
     def watch_alerted(self, obj, signal, field_name, value):
         """ Receives alerts from signals that this object has chosen to
         listen. These signals
@@ -452,7 +478,8 @@ class UIManager:
             key = 'toggle_panel_%s' % panel_key
             d = {'command': panel_data['name'],
                  'method': action_methods.toggle_panel, 'checkable': True,
-                 'viewgroup': 'Panels', 'args': [panel_key], 'undoable': False,
+                 'viewgroup': 'Panels', 'args': [panel_key], 'action_arg':
+                     True, 'undoable': False,
                  'exclusive': False, 'tooltip': "Close this panel"}
             self.actions[key] = d
             additional_actions['panels'].append(key)
@@ -527,8 +554,13 @@ class UIManager:
         self._panels = {}
         for panel_key in panel_order:
             data = PANELS[panel_key]
-            if not data.get('closed', False):
+
+            if data.get('closed', False):
+                checked = False
+            else:
                 self.create_panel(panel_key, **data)
+                checked = True
+            self.qt_actions['toggle_panel_%s' % panel_key].setChecked(checked)
 
     def create_panel(self, id, name='', position=None, folded=False,
                      default=False, **kwargs):

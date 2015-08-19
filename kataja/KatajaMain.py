@@ -201,49 +201,6 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         """
         return QtWidgets.QMainWindow.keyPressEvent(self, event)
 
-    # ## New node creation commands
-    # #############################################
-
-    def add_text_box(self, caller=None):
-        """
-
-        :param caller:
-        """
-        text = ''
-        if hasattr(caller, 'get_text_input'):
-            text = caller.get_text_input()
-            text_area = TextArea(text)
-            text_area.set_original_position(caller.current_position)
-            self.forest.store(text_area)
-        self.action_finished()
-
-    def add_new_constituent(self, caller=None):
-        """
-
-        :param caller:
-        """
-        text = ''
-        if hasattr(caller, 'get_text_input'):
-            text = caller.get_text_input()
-        if ctrl.single_selection():  # live editing
-            self.forest.reform_constituent_node_from_string(text,
-                                                            ctrl.get_single_selected())
-        else:
-            self.forest.create_node_from_string(text, caller.pos())
-        self.action_finished()
-
-    def add_new_tree(self, caller=None):
-        """
-
-        :param caller:
-        """
-        text = ''
-        if hasattr(caller, 'get_text_input'):
-            text = caller.get_text_input()
-        # pos = caller.pos()
-        self.forest.create_tree_from_string(text)  # , pos=pos)
-        self.action_finished()
-
     # ## Menu management #######################################################
 
     def action_finished(self, m='', undoable=True):

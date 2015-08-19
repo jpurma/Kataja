@@ -60,23 +60,12 @@ a = {}
 # these are not necessarily found in actions.py
 
 
-def toggle_panel(panel_id):
+def toggle_panel(action, panel_id):
     """ Show or hide panel depending if it is visible or not
     :param panel_id: enum of panel identifiers (str)
     :return: None
     """
-    panel = ctrl.ui.get_panel(panel_id)
-
-    if panel:
-        if panel.isVisible():
-            panel.close()
-        else:
-            panel.setVisible(True)
-            panel.set_folded(False)
-    else:
-        panel = ctrl.ui.create_panel(panel_id, default=True)
-        panel.setVisible(True)
-        panel.set_folded(False)
+    ctrl.ui.toggle_panel(action, panel_id)
 
 
 #### Actions from actions.py
@@ -720,10 +709,30 @@ def toggle_line_options():
 
 a['toggle_line_options'] = {'command': 'Show line options',
                             'command_alt': 'Hide line options',
-                            'method': toggle_line_options, 'toggleable': True,
-                            'condition': 'are_line_options_visible',
+                            'method': toggle_line_options,
                             'tooltip': 'Show/hide advanced options for line '
                                        'drawing'}
+
+def toggle_visualization_options():
+    """ Toggle panel for visualization options
+    :return: None
+    """
+    lo = ctrl.ui.get_panel(g.VIS_OPTIONS)
+    if lo:
+        if lo.isVisible():
+            lo.close()
+        else:
+            lo.show()
+    else:
+        ctrl.ui.create_panel(g.VIS_OPTIONS, default=True)
+        lo = ctrl.ui.get_panel(g.VIS_OPTIONS)
+        lo.show()
+
+a['toggle_visualization_options'] = {'command': 'Show visualization options',
+                            'command_alt': 'Hide visualization options',
+                            'method': toggle_visualization_options,
+                            'tooltip': 'Show/hide advanced options for '
+                                       'visualizations'}
 
 
 def adjust_control_point(cp_index, dim, value=0):
@@ -924,6 +933,16 @@ a['set_visualization'] = {'command': 'Change visualization algorithm',
                           'tooltip': 'Change visualization algorithm'}
 
 
+def set_projection_style(sender):
+    print("set projection style", sender, sender.currentData())
+
+a['set_projection_style'] = {'command': 'Set how projections are displayed',
+                             'method': set_projection_style, 'sender_arg': True,
+                             'exclusive': True,
+                             'tooltip': 'Set how label projection is displayed'}
+
+
+
 def add_node(sender, ntype=None, pos=None):
     """ Generic add node, gets the node type as an argument.
     :param ntype: node type (str/int, see globals), if not provided,
@@ -989,13 +1008,13 @@ def new_element_accept(sender):
     """
 
     embed = get_ui_container(sender)
-    type = embed.input_action_selector.itemData(
-        embed.input_action_selector.currentIndex())
+    ci = embed.node_type_selector.currentIndex()
+    node_type = embed.node_type_selector.itemData(ci)
     p1, p2 = embed.get_marker_points()
     text = embed.input_line_edit.text()
     ctrl.focus_point = p2
 
-    if type == g.GUESS_FROM_INPUT:
+    if node_type == g.GUESS_FROM_INPUT:
         print("Guessing input type")
         # we can add a test if line p1 - p2 crosses several edges, then it
         # can be a divider
@@ -1007,7 +1026,10 @@ def new_element_accept(sender):
             return
         else:
             print('trying to parse ', text)
-            node = ctrl.forest.create_node_from_string(text)
+            node = ctrl.forest.create_node_from_string(text, p2)
+    else:
+        print(node_type)
+        ctrl.forest.create_node(None, p2, node_type)
     embed.blur_away()
 
 
@@ -1288,8 +1310,7 @@ a['key_m'] = {'command': 'key_m', 'method': key_m, 'shortcut': 'm'}
 
 a['toggle_all_panels'] = {'command': 'Hide all panels',
                           'command_alt': 'Show all panels',
-                          'method': 'toggle_all_panels',  # missing!
-                          'toggleable': True, 'condition': 'are_panels_visible'}
+                          'method': 'toggle_all_panels'} # missing!
 
 
 def key_left():

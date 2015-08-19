@@ -116,11 +116,18 @@ class NewElementEmbed(UIEmbed):
         self.input_line_edit.setFont(f)
         layout.addWidget(self.input_line_edit)
         hlayout = QtWidgets.QHBoxLayout()
-        self.input_action_selector = QtWidgets.QComboBox(self)
-        for item in [g.GUESS_FROM_INPUT, g.ADD_CONSTITUENT, g.ADD_FEATURE,
-                     g.ADD_GLOSS, g.ADD_COMMENT]:
-            self.input_action_selector.addItem(item, userData=item)  # first item here can be translated
-        hlayout.addWidget(self.input_action_selector)
+        self.node_type_selector = QtWidgets.QComboBox(self)
+
+        node_types = []
+        for key in prefs.node_types_order:
+            # we have dedicated buttons for arrows and dividers
+            if key not in (g.ARROW, g.DIVIDER):
+                nd = prefs.nodes[key]
+                node_types.append((nd['name'], key))
+        for name, value in node_types:
+            self.node_type_selector.addItem(name, userData=value)
+            # 'name' can be translated if necessary
+        hlayout.addWidget(self.node_type_selector)
         self.enter_button = QtWidgets.QPushButton("↩")  # U+21A9 &#8617;
         self.enter_button.setMaximumWidth(20)
         ui_manager.connect_element_to_action(self.enter_button, 'new_element_enter_text')

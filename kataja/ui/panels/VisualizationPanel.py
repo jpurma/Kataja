@@ -2,8 +2,9 @@ from PyQt5 import QtWidgets, QtCore
 
 from kataja.visualizations.available import VISUALIZATIONS
 from kataja.ui.panels.UIPanel import UIPanel
-from kataja.singletons import ctrl
-
+from kataja.singletons import ctrl, qt_prefs
+import kataja.globals as g
+from ui.OverlayButton import PanelButton
 
 __author__ = 'purma'
 
@@ -26,6 +27,8 @@ class VisualizationPanel(UIPanel):
         inner.sizeHint = self.sizeHint
 
         layout = QtWidgets.QVBoxLayout()
+        hlayout = QtWidgets.QHBoxLayout()
+        hlayout.setContentsMargins(0, 0, 0, 0)
 
         selector = QtWidgets.QComboBox(self)
         self.selector = selector
@@ -33,13 +36,24 @@ class VisualizationPanel(UIPanel):
             selector.addItem('%s (%s)' % (key, item.shortcut), key)
 
         ui_manager.connect_element_to_action(selector, 'set_visualization')
-        layout.addWidget(selector)
+        hlayout.addWidget(selector)
+        self.toggle_options = PanelButton(qt_prefs.settings_pixmap,
+                                          text='Visualization settings',
+                                          parent=self, size=20)
+        self.toggle_options.setFixedSize(26, 26)
+        self.toggle_options.setCheckable(True)
+        ctrl.ui.connect_element_to_action(self.toggle_options,
+                                          'toggle_visualization_options')
+        hlayout.addWidget(self.toggle_options, 1, QtCore.Qt.AlignRight)
+
+        layout.addLayout(hlayout)
         inner.setLayout(layout)
         self.watchlist = ['visualization']
         self.preferred_size = inner.preferred_size
         self.setWidget(inner)
         self.widget().setAutoFillBackground(True)
         self.finish_init()
+
 
     def watch_alerted(self, obj, signal, field_name, value):
         """ Receives alerts from signals that this object has chosen to listen. These signals

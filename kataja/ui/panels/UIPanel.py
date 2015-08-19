@@ -129,6 +129,12 @@ class UIPanel(QtWidgets.QDockWidget):
         self.report_top_level(self.isFloating())
 
     def finish_init(self):
+        """ Do initializations that need to be done after the subclass __init__
+        has completed. e.g. hide this from view, which can have odd results
+        for measurements for fields and layouts if it is called before
+        setting them up. Subclass __init__:s must call finish_init at the end!
+        :return:
+        """
         self.set_folded(self.folded)
 
     # def dockLocationChanged(self, area):

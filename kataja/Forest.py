@@ -95,7 +95,7 @@ class Forest(BaseModel):
         self.gloss_text = ''
 
         if buildstring:
-            self.create_tree_from_string(buildstring)
+            self.create_trees_from_string(buildstring)
         if definitions:
             self.read_definitions(definitions)
         if gloss_text:
@@ -730,24 +730,26 @@ class Forest(BaseModel):
         :param text:
         :param pos:
         """
+        print(text, pos)
         node = self.parser.parse_into_forest(text)
+        print("created node ", node)
         return node
         # self.add_to_scene(root_node)
         # self.update_root_status(root_node)
 
-    # @time_me
-    def create_tree_from_string(self, text, replace=False):
-        """ This will probably end up resulting one tree, but during parsing
-        there may be multiple roots/trees
-        :param text:
-        :param replace:
+    def create_trees_from_string(self, text):
+        """ Use this to initially draw the trees from a bracket notation or
+        whatever parser can handle. This doesn't clean up the forest before
+        creating new nodes, so make sure that this is drawn on empty forest
+        or be prepared for consequences.
+        :param text: string that the parser can handle
         """
-        if replace:
-            self.roots = []
         text = text.strip()
-        nodes = self.parser.parse_into_forest(text)
-        self.settings.uses_multidomination = False
-        self.traces_to_multidomination()
+        self.parser.parse_into_forest(text)
+        if self.settings.uses_multidomination:
+            self.settings.uses_multidomination = False
+            self.traces_to_multidomination()
+            # traces to multidomination will toggle uses_multidomination to True
 
     def read_definitions(self, definitions):
         """

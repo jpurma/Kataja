@@ -47,15 +47,15 @@ class KatajaAction(QtWidgets.QAction):
     def __init__(self, key, command=None,
                  command_alt=None, shortcut=None,
                  shortcut_context=None, viewgroup=None, sender_arg=None,
-                 exclusive=None, selection=None,
-                 condition=None, toggleable=None, checkable=None,
-                 tooltip=None,
+                 exclusive=None, selection=None, checkable=None,
+                 tooltip=None, action_arg=None,
                  undoable=None, method=None, args=None):
         super().__init__(ctrl.main)
         self.key = key
         self.command = command
         self.command_alt = command_alt
         self.sender_arg = sender_arg
+        self.action_arg = action_arg
         self.setText(command)
         self.setData(key)
         self.undoable = undoable
@@ -95,6 +95,8 @@ class KatajaAction(QtWidgets.QAction):
             args = [self.sender()]
         else:
             args = []
+        if self.action_arg:
+            args += [self]
         if self.args:
             args += self.args
         #print("Doing action '%s' with method '%s' and with sender %s and args: %s" %

@@ -1054,7 +1054,7 @@ syntactic_object: %s
             self.setToolTip("")
         else:
             self.setZValue(200)
-            self.setToolTip("Click to edit")
+            self.setToolTip("Click to edit texts")
             self.node_info()
         self.update()
 
