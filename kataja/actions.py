@@ -690,51 +690,6 @@ a['change_edge_color'] = {'command': 'Change relation color',
                           'method': change_edge_color, 'sender_arg': True,
                           'tooltip': 'Change drawing color of relations'}
 
-
-def toggle_line_options():
-    """ Toggle panel for more options for edge drawing.
-    :return: None
-    """
-    lo = ctrl.ui.get_panel(g.LINE_OPTIONS)
-    if lo:
-        if lo.isVisible():
-            lo.close()
-        else:
-            lo.show()
-    else:
-        ctrl.ui.create_panel(g.LINE_OPTIONS, default=True)
-        lo = ctrl.ui.get_panel(g.LINE_OPTIONS)
-        lo.show()
-
-
-a['toggle_line_options'] = {'command': 'Show line options',
-                            'command_alt': 'Hide line options',
-                            'method': toggle_line_options,
-                            'tooltip': 'Show/hide advanced options for line '
-                                       'drawing'}
-
-def toggle_visualization_options():
-    """ Toggle panel for visualization options
-    :return: None
-    """
-    lo = ctrl.ui.get_panel(g.VIS_OPTIONS)
-    if lo:
-        if lo.isVisible():
-            lo.close()
-        else:
-            lo.show()
-    else:
-        ctrl.ui.create_panel(g.VIS_OPTIONS, default=True)
-        lo = ctrl.ui.get_panel(g.VIS_OPTIONS)
-        lo.show()
-
-a['toggle_visualization_options'] = {'command': 'Show visualization options',
-                            'command_alt': 'Hide visualization options',
-                            'method': toggle_visualization_options,
-                            'tooltip': 'Show/hide advanced options for '
-                                       'visualizations'}
-
-
 def adjust_control_point(cp_index, dim, value=0):
     """ Adjusting control point can be done only for selected edges, not for
     an edge type. So this method is

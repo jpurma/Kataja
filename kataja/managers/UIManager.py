@@ -171,12 +171,6 @@ class UIManager:
         ctrl.add_watcher('forest_changed', self)
         ctrl.add_watcher('viewport_changed', self)
 
-    def get_panel(self, panel_id) -> UIPanel:
-        """
-        :param panel_id: panel key. Probably from constant from globals
-        :return: UIPanel instance or None
-        """
-        return self._panels.get(panel_id, None)
 
     def get_action_group(self, action_group_name):
         """ Get action group with this name, or create one if it doesn't exist
@@ -279,43 +273,6 @@ class UIManager:
         """
         return self._items.get(ui_key, None)
 
-    def store_panel_positions(self):
-        """ Store panel positions temporarily. UI manager doesn't save to
-        file, if that is
-        wanted, data has to be sent to some permanency supporting object.
-        """
-        self._panel_positions = {}
-        for panel_id, panel in self._panels.items():
-            self._panel_positions[panel_id] = panel.geometry()
-
-    def reset_panel_fields(self):
-        """ Update all panel fields, may be costly -- try to do specific
-        updates instead.
-        :return:
-        """
-        for panel in self._panels.values():
-            panel.update_fields()
-
-    def toggle_panel(self, action, panel_id):
-        """ Show or hide panel depending if it is visible or not
-        :param panel_id: enum of panel identifiers (str)
-        :return: None
-        """
-        panel = self.get_panel(panel_id)
-
-        if panel:
-            if panel.isVisible():
-                panel.close()
-                action.setChecked(False)
-            else:
-                panel.setVisible(True)
-                panel.set_folded(False)
-                action.setChecked(True)
-        else:
-            panel = self.create_panel(panel_id, default=True)
-            panel.setVisible(True)
-            panel.set_folded(False)
-            action.setChecked(True)
 
 
     def watch_alerted(self, obj, signal, field_name, value):
@@ -346,14 +303,6 @@ class UIManager:
         """
         print('*** ui update_all_fields called ***')
 
-    def restore_panel_positions(self):
-        """
-
-
-        """
-        for name, panel in self._panels.items():
-            if name in self._panel_positions:
-                panel.setGeometry(self._panel_positions[name])
 
     def resize_ui(self, size):
         # self.setSceneRect(0, 0, size.width(), size.height())
@@ -443,7 +392,7 @@ class UIManager:
                 if ui_item.host is item:
                     self.remove_ui(ui_item)
 
-    # ### Actions, Menus and Panels
+    # ### Actions and Menus
     # ####################################################
 
     def create_actions(self):
@@ -546,6 +495,17 @@ class UIManager:
             menu = add_menu(self.main.menuBar(), data)
             self._top_menus[key] = menu
 
+    # ###################################################################
+    #                           PANELS
+    # ###################################################################
+
+    def get_panel(self, panel_id) -> UIPanel:
+        """
+        :param panel_id: panel key. Probably from constant from globals
+        :return: UIPanel instance or None
+        """
+        return self._panels.get(panel_id, None)
+
     def create_panels(self):
         """ Put actions to panels. Panel contents are defined at the top of
         this file.
@@ -564,9 +524,10 @@ class UIManager:
 
     def create_panel(self, id, name='', position=None, folded=False,
                      default=False, **kwargs):
-        """
-
-        :param id:
+        """ Create single panel. Panels come in different classes, but we have
+        a local dict panel_classes to figure out which kind of panel should
+        be created.
+        :param id: globals provides some constants for panel ids
         :param name:
         :param position:
         :param folded:
@@ -583,6 +544,54 @@ class UIManager:
                                 folded=folded)
         self._panels[id] = new_panel
         return new_panel
+
+    def restore_panel_positions(self):
+        """ Restore panel to its previous position using our own panel geometry
+        storage
+        """
+        for name, panel in self._panels.items():
+            if name in self._panel_positions:
+                panel.setGeometry(self._panel_positions[name])
+
+    def store_panel_positions(self):
+        """ Store panel positions temporarily. UI manager doesn't save to
+        file, if that is
+        wanted, data has to be sent to some permanency supporting object.
+        """
+        self._panel_positions = {}
+        for panel_id, panel in self._panels.items():
+            self._panel_positions[panel_id] = panel.geometry()
+
+    def reset_panel_fields(self):
+        """ Update all panel fields, may be costly -- try to do specific
+        updates instead.
+        :return:
+        """
+        for panel in self._panels.values():
+            panel.update_fields()
+
+    def toggle_panel(self, action, panel_id):
+        """ Show or hide panel depending if it is visible or not
+        :param panel_id: enum of panel identifiers (str)
+        :return: None
+        """
+        panel = self.get_panel(panel_id)
+
+        if panel:
+            if panel.isVisible():
+                panel.close()
+                action.setChecked(False)
+            else:
+                panel.setVisible(True)
+                panel.set_folded(False)
+                action.setChecked(True)
+        else:
+            panel = self.create_panel(panel_id, default=True)
+            panel.setVisible(True)
+            panel.set_folded(False)
+            action.setChecked(True)
+
+    # Action connections ###########################
 
     def connect_element_to_action(self, element, action, tooltip_suffix=''):
         """

@@ -151,7 +151,7 @@ class StylePanel(UIPanel):
                                         size=20)
         self.edge_options.setCheckable(True)
         ui_manager.connect_element_to_action(self.edge_options,
-                                             'toggle_line_options')
+                                             'toggle_panel_%s' % g.LINE_OPTIONS)
         hlayout.addWidget(self.edge_options, 1, QtCore.Qt.AlignRight)
         layout.addLayout(hlayout)
 
