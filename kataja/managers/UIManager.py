@@ -104,7 +104,7 @@ menu_structure = OrderedDict([('file_menu', ('&File',
                                                                  'prev_forest',
                                                                  'next_derivation_step',
                                                                  'prev_derivation_step'])),
-    ('rules_menu', ('&Rules', ['label_visibility', 'bracket_mode', 'trace_mode',
+    ('rules_menu', ('&Rules', ['bracket_mode', 'trace_mode',
                                'merge_order_attribute',
                                'select_order_attribute'])), ('view_menu', (
     '&View',

@@ -54,14 +54,6 @@ from kataja.utils import time_me, import_plugins
 from kataja.visualizations.available import VISUALIZATIONS
 from kataja.BaseModel import BaseModel, Saved
 
-
-# show labels
-
-ONLY_LEAF_LABELS = 0
-ALL_LABELS = 1
-ALIASES = 2
-
-
 # only for debugging (Apple-m, memory check), can be commented
 # try:
 # import objgraph

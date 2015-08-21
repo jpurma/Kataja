@@ -156,6 +156,20 @@ class ITextNode:
         else:
             return self
 
+    def plain_string(self):
+        """ Stringify, but lose commands and other formatting
+        :return:
+        """
+        s = []
+        for part in self.parts:
+            if isinstance(part, str) and part:
+                s.append(part)
+            else:
+                p = part.plain_string()
+                if p:
+                    s.append(p)
+        return ' '.join(s)
+
     def is_empty(self):
         return not self.parts
 

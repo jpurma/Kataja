@@ -363,31 +363,6 @@ a['prev_derivation_step'] = {'command': 'Animation step backward',
 
 # ## Menu actions ##########################################################
 
-def toggle_label_visibility():
-    """ toggle label visibility -action (l)
-    :return: None
-    """
-    new_value = ctrl.fs.label_style + 1
-    if new_value == 3:
-        new_value = 0
-    if new_value == g.ONLY_LEAF_LABELS:
-        ctrl.main.add_message('(l) 0: show only leaf labels')
-    elif new_value == g.ALL_LABELS:
-        ctrl.main.add_message('(l) 1: show all labels')
-    elif new_value == g.ALIASES:
-        ctrl.main.add_message('(l) 2: show leaf labels and aliases')
-    # testing how to change labels
-    # ConstituentNode.font = prefs.sc_font
-    ctrl.fs.label_style = new_value
-
-    for node in ctrl.forest.nodes.values():
-        node.update_visibility()
-        # change = node.update_label()
-
-
-a['label_visibility'] = {'command': 'Show &labels in middle nodes',
-                         'method': toggle_label_visibility, 'shortcut': 'l',
-                         'checkable': True, }
 
 
 def toggle_brackets():

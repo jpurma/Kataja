@@ -303,6 +303,10 @@ class ConstituentNode(BaseConstituentNode):
             return 'empty'
         alias = self.alias
         label = self.label
+        if isinstance(alias, ITextNode):
+            alias = alias.plain_string()
+        if isinstance(label, ITextNode):
+            label = label.plain_string()
         if alias and label:
             l = ' '.join((str(alias), str(label)))
         elif alias:
