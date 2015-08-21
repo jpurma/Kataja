@@ -60,7 +60,7 @@ class Label(QtWidgets.QGraphicsTextItem):
         """ Turning this node into label would result in an empty label.
         :return: bool
         """
-        return not self._host.as_inode
+        return not self._host.as_inode()
 
     def paint(self, painter, option, widget):
         """ Painting is sensitive to mouse/selection issues, but usually with

@@ -108,7 +108,7 @@ def to_pf(triple):
 
 def shaped_cubic_path(start_point=None, end_point=None, curve_adjustment=None,
                       alignment=LEFT, relative=True, rel_dx=0.2, rel_dy=0.2,
-                      fixed_dx=20, fixed_dy=15, leaf_x=1, leaf_y=3,
+                      fixed_dx=20, fixed_dy=15, leaf_x=1, leaf_y=2, thick=False,
                       inner_only=False, **kwargs):
     """ Two point leaf-shaped curve
     :param curve_adjustment:
@@ -119,6 +119,7 @@ def shaped_cubic_path(start_point=None, end_point=None, curve_adjustment=None,
     :param fixed_dy:
     :param leaf_x:
     :param leaf_y:
+    :param thick:
     :param inner_only:
     :param relative:
     :param end_point:
@@ -128,6 +129,9 @@ def shaped_cubic_path(start_point=None, end_point=None, curve_adjustment=None,
     sx, sy, sz = start_point
     ex, ey, ez = end_point
     # edges that go to wrong direction have stronger curvature
+    if thick:
+        leaf_x *= 2
+        leaf_y *= 2
 
     if relative:
         dx = rel_dx * (ex - sx)
@@ -245,7 +249,8 @@ def cubic_icon(painter, rect, color=None, rel_dx=0.2, rel_dy=0.8):
 def shaped_quadratic_path(start_point=None, end_point=None,
                           curve_adjustment=None, alignment=LEFT, relative=True,
                           rel_dx=0.2, rel_dy=0, fixed_dx=20, fixed_dy=0,
-                          leaf_x=3, leaf_y=3, inner_only=False, **kwargs):
+                          leaf_x=3, leaf_y=3, thick=False, inner_only=False,
+**kwargs):
     """ One point leaf-shaped curve with curvature relative to line length
     :param start_point:
     :param end_point:
@@ -264,6 +269,10 @@ def shaped_quadratic_path(start_point=None, end_point=None,
 
     sx, sy, sz = start_point
     ex, ey, ez = end_point
+    if thick:
+        leaf_x *= 2
+        leaf_y *= 2
+
     if relative:
         dx = rel_dx * (ex - sx)
         dy = rel_dy * (ey - sy)
@@ -377,9 +386,8 @@ def quadratic_icon(painter, rect, color=None, rel_dx=0.4, rel_dy=0):
     painter.drawPath(path)
 
 
-def shaped_linear_path(start_point=None, end_point=None, curve_adjustment=None,
-                       alignment=LEFT, leaf_x=2, leaf_y=2, inner_only=False,
-                       **kwargs):
+def shaped_linear_path(start_point=None, end_point=None, leaf_x=2, leaf_y=2,
+                       thick=False, inner_only=False, **kwargs):
     """ A straight line with a slight leaf shape
     :param start_point:
     :param end_point:
@@ -392,10 +400,11 @@ def shaped_linear_path(start_point=None, end_point=None, curve_adjustment=None,
     """
     sx, sy, sz = start_point
     dx, dy, dummy = end_point
-    control_points = []
-    if alignment is RIGHT:
+    if thick:
         leaf_x *= 2
         leaf_y *= 2
+
+    control_points = []
     c = [(dx - leaf_x, dy - leaf_y, sz), (dx + leaf_x, dy - leaf_y, sz)]
     if inner_only:
         path = None
@@ -462,7 +471,7 @@ def linear_icon(painter, rect, color=None):
 
 # @time_me
 def blob_path(start_point=None, end_point=None, curve_adjustment=None,
-              alignment=LEFT, thickness=4, start=None, end=None,
+              alignment=LEFT, thickness=3, thick=False, start=None, end=None,
               inner_only=False, **kwargs):
     """ Surround the node with circular shape that stretches to other node
     :param inner_only:
@@ -483,6 +492,8 @@ def blob_path(start_point=None, end_point=None, curve_adjustment=None,
         ecx, ecy, ecz = end.current_position
     else:
         ecx, ecy, ecz = end_point
+    if thick:
+        thickness *= 2
     t2 = thickness * 2
 
     sx, sy, sz = start_point
@@ -582,7 +593,8 @@ def blob_icon(painter, rect, color=None, thickness=3):
 # @time_me
 def directional_blob_path(start_point=None, end_point=None,
                           curve_adjustment=None, alignment=LEFT, thickness=4,
-                          start=None, end=None, inner_only=False, **kwargs):
+                          start=None, end=None, thick=False, inner_only=False,
+                          **kwargs):
     """ Surround the node with circular shape that stretches to other node
     :param start_point:
     :param end_point:
@@ -606,11 +618,51 @@ def directional_blob_path(start_point=None, end_point=None,
     inner_path.lineTo(ecx, ecy)
     if inner_only:
         return None, inner_path, []
+
     t2 = thickness * 2
-    if alignment is LEFT:
+    if thick:
+        start_ball = start and start.has_visible_label()
+        if start_ball:
+            sx1, sy1, sw, sh = start.boundingRect().getRect()
+        else:
+            sx1, sy1, sw, sh = -5, -5, 10, 10
+        end_ball = end and end.has_visible_label()
+        if end_ball:
+            ex1, ey1, ew, eh = end.boundingRect().getRect()
+        else:
+            ex1, ey1, ew, eh = -5, -5, 10, 10
+        sx1 += scx
+        sy1 += scy
+        ex1 += ecx
+        ey1 += ecy
+        c1x = (scx + ecx) / 2
+        c1y = (scy + ecy) / 2
+        path1 = QtGui.QPainterPath()
+        path1.addEllipse(sx1 - thickness, sy1 - thickness, sw + t2, sh + t2)
+        path2 = QtGui.QPainterPath()
+        path2.addEllipse(ex1 - thickness, ey1 - thickness, ew + t2, eh + t2)
+        path3 = QtGui.QPainterPath()
+        path3.moveTo(sx1, scy)
+        path3.quadTo(c1x, c1y, ex1, ecy)
+        path3.lineTo(ex1 + ew, ecy)
+        path3.quadTo(c1x, c1y, sx1 + sw, scy)
+        path = path1.united(path2)
+        path = path.united(path3)
+        if start_ball:
+            path1neg = QtGui.QPainterPath()
+            path1neg.addEllipse(sx1, sy1, sw, sh)
+            path = path.subtracted(path1neg)
+        if end_ball:
+            path2neg = QtGui.QPainterPath()
+            path2neg.addEllipse(ex1, ey1, ew, eh)
+            path = path.subtracted(path2neg)
+    else:
         sx, sy, sz = start_point
         if end:
-            ex1, ey1, ew, eh = end.boundingRect().getRect()
+            if end.has_visible_label():
+                ex1, ey1, ew, eh = end.boundingRect().getRect()
+            else:
+                ex1, ey1, ew, eh = -5, -5, 10, 10
         else:
             ex1 = -10
             ey1 = -10
@@ -632,44 +684,6 @@ def directional_blob_path(start_point=None, end_point=None,
         path2.quadTo(c1x, c1y, sx, sy)
         path = path1.united(path2)
         path = path.subtracted(path1neg)
-    else:
-        if start:
-            sx1, sy1, sw, sh = start.boundingRect().getRect()
-        else:
-            sx1 = -10
-            sy1 = -10
-            sw = 20
-            sh = 20
-        if end:
-            ex1, ey1, ew, eh = end.boundingRect().getRect()
-        else:
-            ex1 = -10
-            ey1 = -10
-            ew = 20
-            eh = 20
-        sx1 += scx
-        sy1 += scy
-        ex1 += ecx
-        ey1 += ecy
-        c1x = (scx + ecx) / 2
-        c1y = (scy + ecy) / 2
-        path1 = QtGui.QPainterPath()
-        path1.addEllipse(sx1 - thickness, sy1 - thickness, sw + t2, sh + t2)
-        path1neg = QtGui.QPainterPath()
-        path1neg.addEllipse(sx1, sy1, sw, sh)
-        path2 = QtGui.QPainterPath()
-        path2.addEllipse(ex1 - thickness, ey1 - thickness, ew + t2, eh + t2)
-        path2neg = QtGui.QPainterPath()
-        path2neg.addEllipse(ex1, ey1, ew, eh)
-        path3 = QtGui.QPainterPath()
-        path3.moveTo(sx1, scy)
-        path3.quadTo(c1x, c1y, ex1, ecy)
-        path3.lineTo(ex1 + ew, ecy)
-        path3.quadTo(c1x, c1y, sx1 + sw, scy)
-        path = path1.united(path2)
-        path = path.united(path3)
-        path = path.subtracted(path1neg)
-        path = path.subtracted(path2neg)
 
     return path.simplified(), inner_path, []
 
@@ -703,7 +717,7 @@ def no_path_icon(painter, rect, color=None):
 od = [('shaped_cubic',
        dict(method=shaped_cubic_path, fill=True, icon=shaped_cubic_icon,
             control_points=2, relative=True, rel_dx=0.2, rel_dy=0.2,
-            fixed_dx=20, fixed_dy=15, leaf_x=1, leaf_y=3)),
+            fixed_dx=20, fixed_dy=15, leaf_x=0.5, leaf_y=2)),
       ('cubic',
        dict(method=cubic_path, fill=False, icon=cubic_icon, control_points=2,
             relative=True, rel_dx=0.2, rel_dy=0.2, fixed_dx=20, fixed_dy=15,
@@ -712,14 +726,14 @@ od = [('shaped_cubic',
         dict(method=shaped_quadratic_path, fill=True,
              icon=shaped_quadratic_icon, control_points=1,
              relative=True, rel_dx=0.2, rel_dy=0, fixed_dx=20,
-             fixed_dy=0, leaf_x=3, leaf_y=3)),
+             fixed_dy=0, leaf_x=2, leaf_y=2.5)),
       ('quadratic',
        dict(method=quadratic_path, fill=False, icon=quadratic_icon,
             control_points=1, relative=True, rel_dx=0.2, rel_dy=0,
             fixed_dx=20, fixed_dy=0, thickness=1)),
       ('shaped_linear',
        dict(method=shaped_linear_path, fill=True, icon=shaped_linear_icon,
-            control_points=0, leaf_x=2, leaf_y=2)),
+            control_points=0, leaf_x=1, leaf_y=2.5)),
       ('linear',
        dict(method=linear_path,
             fill=False,

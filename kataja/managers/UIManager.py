@@ -538,6 +538,7 @@ class UIManager:
             data = PANELS[id]
             position = data.get('position', None)
             folded = data.get('folded', False)
+            name = data.get('name', '')
         constructor = panel_classes[id]
         new_panel = constructor(name, id, default_position=position,
                                 parent=self.main, ui_manager=self,

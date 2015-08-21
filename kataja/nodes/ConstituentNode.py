@@ -121,6 +121,8 @@ class ConstituentNode(BaseConstituentNode):
         self.merge_order = 0
         self.select_order = 0
         self.original_parent = None
+        self._projection_color = None
+        self._projection_qcolor = None
 
         # ### Cycle index stores the order when node was originally merged to structure.
         # going up in tree, cycle index should go up too
@@ -136,7 +138,7 @@ class ConstituentNode(BaseConstituentNode):
         :return: None
         """
         self._inode_changed = True
-        a = self.as_inode
+        a = self.as_inode()
         self.update_features()
         self.update_gloss()
         self.update_label()
@@ -205,6 +207,25 @@ class ConstituentNode(BaseConstituentNode):
         iv['label']['value'] = label
         iv['gloss']['value'] = gloss
         iv['index']['value'] = index
+
+    def as_inode(self):
+        """ Inject visibility information of 'alias' and 'label' to inode, so
+        that some ConstituentNodes may have visible labels and others not.
+        :return: INodes or str or tuple of them
+        """
+        if self._inode is None:
+            self._inode = super().as_inode()
+        if self._inode_changed:
+            self._inode = super().as_inode()
+            s = ctrl.forest.settings
+            if self.is_leaf_node(only_visible=True) or self.triangle:
+                self._inode.values['alias']['visible'] = s.show_leaf_aliases
+                self._inode.values['label']['visible'] = s.show_leaf_labels
+            else:
+                self._inode.values['alias']['visible'] = s.show_internal_aliases
+                self._inode.values['label']['visible'] = s.show_internal_labels
+        return self._inode
+
 
     def if_changed_gloss(self, value):
         """ Synobj changed, but remind to update inodes here
@@ -321,19 +342,6 @@ class ConstituentNode(BaseConstituentNode):
         else:
             return super().as_bracket_string()
 
-
-
-    def update_visibility(self, **kw):
-        """ Compute visibility-related attributes for this constituent node and update those that depend on this
-        -- meaning features etc.
-
-        :param kw:
-        """
-        super().update_visibility(**kw)
-        if ctrl.forest.settings.label_style == g.ALIASES and self.alias:
-            self._label_visible = True
-            self._label_complex.setVisible(True)
-
     def can_be_projection(self):
         """ Node can be projection from other nodes if it has other nodes
         below it.
@@ -444,6 +452,31 @@ class ConstituentNode(BaseConstituentNode):
         if new_head:
             new_head.fix_projection_labels()
 
+    def set_projection_display(self, color_id):
+        self._projection_color = color_id
+        if color_id:
+            self._projection_qcolor = ctrl.cm.get(color_id)
+        else:
+            self._projection_color = None
+
+    @property
+    def contextual_color(self):
+        """ Drawing color that is sensitive to node's state
+        :return: QColor
+        """
+        if ctrl.pressed is self:
+            return ctrl.cm.active(ctrl.cm.selection())
+        elif self._hovering:
+            #return ctrl.cm.hover()
+            return self.color
+            #return ctrl.cm.hovering(ctrl.cm.selection())
+        elif ctrl.is_selected(self):
+            return ctrl.cm.selection()
+            # return ctrl.cm.selected(ctrl.cm.selection())
+        elif self._projection_color:
+            return self._projection_qcolor
+        else:
+            return self.color
 
     # ### Features #########################################
 

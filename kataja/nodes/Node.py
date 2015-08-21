@@ -139,7 +139,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :return: None
         """
         self._inode_changed = True
-        a = self.as_inode
+        a = self.as_inode()
         self.update_label()
         self.update_bounding_rect()
         self.update_visibility()
@@ -319,7 +319,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
                 else:
                     setattr(self, key, v)
 
-    def alert_inode(self, value):
+    def alert_inode(self, value=None):
         """ Setters may announce that inode needs to be updated
         :param value: don't care about that
         :return:
@@ -839,9 +839,9 @@ syntactic_object: %s
         """
         if not self._label_complex:
             self._label_complex = Label(parent=self)
-        if not self.as_inode:
+        if not self.as_inode():
             return
-        self._label_complex.update_label(self.font, self.as_inode)
+        self._label_complex.update_label(self.font, self.as_inode())
         self.update_bounding_rect()
         self.update_status_tip()
 
@@ -852,7 +852,6 @@ syntactic_object: %s
         """
         return self.label
 
-    @property
     def as_inode(self):
         """
         :return: INodes or str or tuple of them
@@ -869,6 +868,8 @@ syntactic_object: %s
                 # use 'getter' or default to 'key', assuming that key is the
                 # same as the property it is representing
                 iv[key]['value'] = getattr(self, getter)
+                print(iv[key])
+            print(self._inode.values)
             self._inode_str = str(self._inode)
             self._inode_changed = False
         return self._inode
@@ -925,6 +926,12 @@ syntactic_object: %s
             # w2 = self.width/2.0
             # painter.setPen(self.contextual_color())
             # painter.drawEllipse(-w2, -w2, w2 + w2, w2 + w2)
+
+    def has_visible_label(self):
+        """
+        :return: bool
+        """
+        return self._label_visible
 
     def update_bounding_rect(self):
         """

@@ -53,6 +53,8 @@ def parse_itemplatenode_for_viewing(inode, document, options):
 
     def write_field(field_name, cursor, empty_line):
         d = inode.values[field_name]
+        if not d.get('visible', True):
+            return False
         v = d['value']
         if not v:
             return False

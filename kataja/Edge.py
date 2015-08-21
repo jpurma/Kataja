@@ -83,6 +83,10 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
         self.pull = None
         self.visible = True
 
+        self._projection_thick = False
+        self._projection_color = None
+        self._projection_qcolor = None
+
         self._computed_start_point = None
         self._computed_end_point = None
 
@@ -468,6 +472,25 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
         """
         return self.visible
 
+    def set_projection_display(self, thick, color):
+        """ Set both options related to displaying projections with edges.
+        :param thick: bool, should the projections be drawn with thicker lines
+        :param color: edge will be painted with given marker color (assumes
+        that the color is transparent and will be painted on top of existing
+        path)
+        :return:
+        """
+
+        if thick == self._projection_thick and color == self._projection_color:
+            return
+        self._projection_thick = thick
+        self._projection_color = color
+        if color:
+            self._projection_qcolor = ctrl.cm.get(self._projection_color)
+        else:
+            self._projection_qcolor = None
+        self.make_path()
+
     def make_relative_vector(self):
         """ Relative vector helps to keep the shape of a line when another,
         attached end moves.
@@ -626,6 +649,8 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
             return ctrl.cm.hovering(ctrl.cm.selection())
         elif self.is_broken():
             return ctrl.cm.broken(self.color)
+        elif self._projection_color:
+            return self._projection_qcolor
         else:
             return self.color
 
@@ -787,6 +812,7 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
         c['start_point'] = self.start_point
         c['end_point'] = self.end_point
         c['curve_adjustment'] = self.curve_adjustment
+        c['thick'] = self._projection_thick
         c['alignment'] = self.alignment
         c['start'] = self.start
         c['end'] = self.end
@@ -1155,14 +1181,6 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
         if not ctrl.is_selected(self):
             ctrl.select(self)
 
-    def asymmetric(self):
-        """
-
-        :return:
-        """
-        # fixme -- please
-        return True
-
     # ## Qt paint method override
     def paint(self, painter, option, widget=None):
         """
@@ -1183,16 +1201,11 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
             if width:
                 p = QtGui.QPen()
                 p.setColor(c)
-                if self.asymmetric() and self.alignment is g.RIGHT:
+                if self._projection_thick:
                     width *= 2
                 p.setWidthF(width)
                 painter.setPen(p)
                 painter.drawPath(self._path)
-            # elif self.asymmetric() and self.alignment is g.RIGHT:
-            #    p = QtGui.QPen()
-            #    p.setColor(c)
-            #    painter.setPen(p)
-            #    painter.drawPath(self._path)
 
             if self.is_filled():
                 painter.fillPath(self._path, c)
@@ -1200,6 +1213,8 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
                 painter.fillPath(self._arrowhead_start_path, c)
             if self.arrowhead_at_end:
                 painter.fillPath(self._arrowhead_end_path, c)
+
+
         if ctrl.is_selected(self):
             p = QtGui.QPen(ctrl.cm.ui_tr())
             painter.setPen(p)

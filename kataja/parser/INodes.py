@@ -159,6 +159,9 @@ class ITextNode:
     def is_empty(self):
         return not self.parts
 
+    def is_empty_for_view(self):
+        return self.is_empty()
+
     def __str__(self):
         return self.parts_as_string()
 
@@ -301,6 +304,12 @@ class ITemplateNode(ITextNode):
             return False
         for v in self.values.values():
             if v.get('value', None):
+                return False
+        return True
+
+    def is_empty_for_view(self):
+        for v in self.values.values():
+            if v.get('value', None) and v.get('visible', True):
                 return False
         return True
 

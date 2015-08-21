@@ -30,16 +30,63 @@ class VisualizationOptionsPanel(UIPanel):
         self.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum,
                                                  QtWidgets.QSizePolicy.MinimumExpanding))
 
-        proj_styles = [('Highlight projections', g.HIGHLIGHT_PROJECTIONS),
-                       ('Colorize projections', g.COLORIZE_PROJECTIONS),
-                       ('No visuals for projections', g.NO_PROJECTIONS)]
-        self.proj_selector = QtWidgets.QComboBox(self)
-        for key, value in proj_styles:
-            self.proj_selector.addItem(key, value)
+        #checkbox(ui_manager, panel, layout, label, action)
 
-        ui_manager.connect_element_to_action(self.proj_selector,
-                                             'set_projection_style')
-        layout.addWidget(self.proj_selector)
+        grid = QtWidgets.QGridLayout()
+        grid.setContentsMargins(0, 0, 0, 0)
+        # layout.addLayout(grid)
+        # label(self, grid, 'Show aliases', 0, 0)
+        # self.show_leaf_alias = checkbox(ui_manager, self, grid,
+        #                                 'for leaves',
+        #                                 'toggle_show_leaf_alias', 1, 0)
+        # self.show_internal_alias = checkbox(ui_manager, self, grid,
+        #                                     'for inner nodes',
+        #                                     'toggle_show_internal_alias', 1, 1)
+        # label(self, grid, 'Show labels', 0, 2)
+        # self.show_leaf_label = checkbox(ui_manager, self, grid,
+        #                                 'for leaves',
+        #                                 'toggle_show_leaf_label', 1, 2)
+        # self.show_internal_label = checkbox(ui_manager, self, grid,
+        #                                     'for inner nodes',
+        #                                     'toggle_show_internal_label', 1, 3)
+
+        layout.addLayout(grid)
+        label(self, grid, 'For inner nodes show', 0, 0)
+        self.show_internal_alias = mini_button(ui_manager, grid,
+                                        'aliases', 'toggle_show_internal_alias'
+                                        , 3, 0, checkable=True)
+        self.show_internal_label = mini_button(ui_manager, grid,
+                                            'labels',
+                                            'toggle_show_internal_label',
+                                            3, 1, checkable=True)
+        label(self, grid, '╱', 2, 2)
+        label(self, grid, 'For leaf nodes show', 0, 3)
+        self.show_leaf_alias = mini_button(ui_manager, grid,
+                                        'aliases', 'toggle_show_leaf_alias',
+                                        1, 3, checkable=True)
+        self.show_leaf_label = mini_button(ui_manager, grid,
+                                            'labels', 'toggle_show_leaf_label',
+                                            1, 4, checkable=True)
+
+        layout.addLayout(grid)
+        grid = QtWidgets.QGridLayout()
+        grid.setContentsMargins(0, 0, 0, 0)
+
+        label(self, grid, 'Show projections', 0, 0)
+        self.highlighter_button = text_button(ui_manager, grid,
+                                              'with highlighter',
+                                              'toggle_highlighter_projection',
+                                              1, 0, checkable=True)
+        self.strong_lines_button = text_button(ui_manager, grid,
+                                               'with stronger lines',
+                                               'toggle_strong_lines_projection',
+                                               1, 1, checkable=True)
+        self.colorize_button = text_button(ui_manager, grid,
+                                           'with colorized lines',
+                                           'toggle_colorized_projection',
+                                           1, 2, checkable=True)
+
+        layout.addLayout(grid)
         inner.setLayout(layout)
         self.setWidget(inner)
         self.finish_init()
@@ -61,6 +108,15 @@ class VisualizationOptionsPanel(UIPanel):
         """
         self.widget().updateGeometry()
         self.widget().update()
+        s = ctrl.fs
+        set_value(self.show_internal_alias, s.show_internal_aliases)
+        set_value(self.show_leaf_alias, s.show_leaf_aliases)
+        set_value(self.show_internal_label, s.show_internal_labels)
+        set_value(self.show_leaf_label, s.show_leaf_labels)
+        set_value(self.highlighter_button, s.projection_highlighter)
+        set_value(self.strong_lines_button, s.projection_strong_lines)
+        set_value(self.colorize_button, s.projection_colorized)
+
         self.updateGeometry()
         self.update()
 

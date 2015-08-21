@@ -107,12 +107,13 @@ class KatajaAction(QtWidgets.QAction):
             ctrl.undo_disabled = True
 
         # Call method
-        self.method(*args)
+        message = self.method(*args)
 
         # Restore undo state to what it was
         if not self.undoable:
             ctrl.undo_disabled = remember_undo_state
-        ctrl.main.action_finished(m=self.command, undoable=self.undoable)
+        ctrl.main.action_finished(m=message or self.command,
+                                  undoable=self.undoable)
 
     def connect_element(self, element, tooltip_suffix=''):
         """

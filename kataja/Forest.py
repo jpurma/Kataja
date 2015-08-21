@@ -25,7 +25,7 @@
 
 import string
 import collections
-from ProjectionVisual import ProjectionVisual
+from ProjectionVisual import ProjectionVisual, ProjectionData
 
 from kataja.errors import ForestError
 from kataja.ForestSettings import ForestSettings, ForestRules
@@ -87,7 +87,7 @@ class Forest(BaseModel):
         self.node_types = set()
         self.others = {}
         self.vis_data = {}
-        self.projection_visuals = {}
+        self.projections = {}
         self.projection_rotator = 0
         self.merge_counter = 0
         self.select_counter = 0
@@ -381,8 +381,9 @@ class Forest(BaseModel):
             yield (n)
         for n in self.others.values():
             yield (n)
-        for n in self.projection_visuals.values():
-            yield (n)
+        for n in self.projections.values():
+            if n.visual:
+                yield (n.visual)
         for n in self.bracket_manager.get_brackets():
             yield (n)
 
@@ -435,26 +436,59 @@ class Forest(BaseModel):
 
     @time_me
     def update_projections(self):
-        rotating_colors = ['accent%str' % i for i in range(1,9)]
+        rotating_colors = [('accent%s' % i, 'accent%str' % i) for i in
+                           range(1, 9)]
         for node in self.nodes.values():
             if node.node_type == g.CONSTITUENT_NODE:
                 head = node.guess_projection()
-                if head.save_key not in self.projection_visuals:
-                    pj = ProjectionVisual(head, rotating_colors[
-                        self.projection_rotator])
-                    print('creating pj ', rotating_colors[self.projection_rotator])
-                    self.projection_visuals[head.save_key] = pj
-                    self.add_to_scene(pj)
+                if head.save_key not in self.projections:
+                    main, tr = rotating_colors[self.projection_rotator]
+                    pd = ProjectionData(head, main, tr)
+                    self.projections[head.save_key] = pd
                     self.projection_rotator += 1
                     if self.projection_rotator == len(rotating_colors):
                         self.projection_rotator = 0
-                self.projection_visuals[head.save_key].add_to_chain(node)
-        for key, projection in list(self.projection_visuals.items()):
+                self.projections[head.save_key].add_to_chain(node)
+        for key, projection in list(self.projections.items()):
             if not projection.verify_chain():
-                del self.projection_visuals[key]
-                sc = projection.scene()
-                if sc:
-                    sc.removeItem(projection)
+                del self.projections[key]
+                if projection.visual:
+                    sc = projection.visual.scene()
+                    if sc:
+                        sc.removeItem(projection.visual)
+
+        self.update_projection_display()
+
+    def update_projection_display(self):
+        strong_lines = ctrl.fs.projection_strong_lines
+        colorized = ctrl.fs.projection_colorized
+        highlighter = ctrl.fs.projection_highlighter
+        for node in self.get_constituent_nodes():
+            node.set_projection_display(None)
+        for edge in self.get_constituent_edges():
+            edge.set_projection_display(None, None)
+        for key, projection in self.projections.items():
+            if highlighter:
+                if not projection.visual:
+                    projection.add_visual()
+                    self.add_to_scene(projection.visual)
+                elif projection.visual.scene() != self.scene:
+                    self.add_to_scene(projection.visual)
+            else:
+                if projection.visual:
+                    sc = projection.visual.scene()
+                    if sc:
+                        sc.removeItem(projection.visual)
+                    projection.visual = None
+            if colorized:
+                color_id = projection.color_id
+            else:
+                color_id = None
+            for edge in projection.get_edges():
+                edge.set_projection_display(strong_lines, color_id)
+            if len(projection.chain) > 1:
+                for node in projection.chain:
+                    node.set_projection_display(color_id)
 
 
     def get_node(self, constituent):

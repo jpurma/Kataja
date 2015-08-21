@@ -1,18 +1,22 @@
 __author__ = 'purma'
 from PyQt5 import QtWidgets, QtCore, QtGui
 from kataja.singletons import ctrl
+import kataja.globals as g
 
 
-class ProjectionVisual(QtWidgets.QGraphicsItem):
-    """ Transparent overlay to show which nodes belong to one projection
+class ProjectionData:
+    """ Data structure for keeping track of projections. ProjectionVisual is
+    used to draw these as separate graphicsitems, but these can be as well
+    presented by modifying existing edges and nodes.
     """
 
-    def __init__(self, head, color_id):
+    def __init__(self, head, color_id, color_tr_id):
         super().__init__()
         self.head = head
         self.chain = [head]
         self.color_id = color_id
-        self.color = ctrl.cm.get(color_id)
+        self.color_tr_id = color_tr_id
+        self.visual = None
 
     def add_to_chain(self, node):
         if node in self.chain:
@@ -23,6 +27,25 @@ class ProjectionVisual(QtWidgets.QGraphicsItem):
                 self.chain.insert(i, node)
                 return
         self.chain.append(node)
+
+    def add_visual(self):
+        self.visual = ProjectionVisual(self)
+
+    def get_edges(self):
+        """ Return edges between nodes in this chain as a list
+        :return:
+        """
+        if len(self.chain) < 2:
+            return []
+        child = None
+        res = []
+        for parent in self.chain:
+            if child:
+                edge = child.get_edge_to(parent, edge_type=g.CONSTITUENT_EDGE)
+                if edge:
+                    res.append(edge)
+            child = parent
+        return res
 
     def verify_chain(self):
         """ Verify that chain
@@ -66,18 +89,32 @@ class ProjectionVisual(QtWidgets.QGraphicsItem):
         return True
 
 
+
+class ProjectionVisual(QtWidgets.QGraphicsItem):
+    """ Transparent overlay to show which nodes belong to one projection
+    """
+
+    def __init__(self, data):
+        super().__init__()
+        self.d = data
+        self.color = ctrl.cm.get(self.d.color_tr_id)
+
     def boundingRect(self):
         br = QtCore.QRectF()
-        for node in self.chain:
+        for node in self.d.chain:
             br.united(node.sceneBoundingRect())
         return br
 
     def paint(self, painter, style, QWidget_widget=None):
+        vis_chain = [x for x in self.d.chain if x.is_visible()]
+        if len(vis_chain) < 2:
+            return
         painter.setBrush(self.color)
         painter.setPen(QtCore.Qt.NoPen)
         forward = []
         back = []
-        vis_chain = [x for x in self.chain if x.is_visible()]
+        sx = 0
+        sy = 0
         if vis_chain:
             start_x, start_y, start_z = vis_chain[0].current_position
             # shape will be one continous filled polygon, so when we iterate

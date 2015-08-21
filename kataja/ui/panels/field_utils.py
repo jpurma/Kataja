@@ -261,7 +261,7 @@ class FontSelector(TableModelComboBox):
         self.model().appendRow(item)
 
 
-def label(panel, layout, text):
+def label(panel, layout, text, x=-1, y=-1):
     """
 
     :param panel:
@@ -270,7 +270,10 @@ def label(panel, layout, text):
     :return:
     """
     slabel = QtWidgets.QLabel(text, panel)
-    layout.addWidget(slabel)
+    if x != -1:
+        layout.addWidget(slabel, y, x)
+    else:
+        layout.addWidget(slabel)
     return slabel
 
 
@@ -324,7 +327,27 @@ def decimal_spinbox(ui_manager, panel, layout, label, range_min, range_max,
     return spinbox
 
 
-def mini_button(ui_manager, layout, text, action):
+def text_button(ui_manager, layout, text, action, x=-1, y=-1, checkable=False):
+    """
+
+    :param ui_manager:
+    :param layout:
+    :param text:
+    :param action:
+    :return:
+    """
+    button = QtWidgets.QPushButton(text)
+    button.setMaximumHeight(20)
+    button.ambiguous = False
+    button.setCheckable(checkable)
+    ui_manager.connect_element_to_action(button, action)
+    if x != -1:
+        layout.addWidget(button, y, x)
+    else:
+        layout.addWidget(button)
+    return button
+
+def mini_button(ui_manager, layout, text, action, x=-1, y=-1, checkable=False):
     """
 
     :param ui_manager:
@@ -337,8 +360,12 @@ def mini_button(ui_manager, layout, text, action):
     button.setMinimumSize(QSize(40, 20))
     button.setMaximumSize(QSize(40, 20))
     button.ambiguous = False
+    button.setCheckable(checkable)
     ui_manager.connect_element_to_action(button, action)
-    layout.addWidget(button)
+    if x != -1:
+        layout.addWidget(button, y, x)
+    else:
+        layout.addWidget(button)
     return button
 
 
@@ -412,7 +439,7 @@ def mini_selector(ui_manager, panel, layout, data, action):
     return selector
 
 
-def checkbox(ui_manager, panel, layout, label, action):
+def checkbox(ui_manager, panel, layout, label, action, x=-1, y=-1):
     """
 
     :param ui_manager:
@@ -426,9 +453,13 @@ def checkbox(ui_manager, panel, layout, label, action):
     scheckbox = QtWidgets.QCheckBox()
     ui_manager.connect_element_to_action(scheckbox, action)
     scheckbox.ambiguous = False
+    if x > -1:
+        layout.addWidget(slabel, y, x)
+        layout.addWidget(scheckbox, y, x + 1)
+    else:
+        layout.addWidget(slabel)
+        layout.addWidget(scheckbox)
     slabel.setBuddy(scheckbox)
-    layout.addWidget(slabel)
-    layout.addWidget(scheckbox)
     return scheckbox
 
 
@@ -467,6 +498,10 @@ def set_value(field, value, conflict=False, enabled=True):
             field.select_data(value)
         elif isinstance(field, QtWidgets.QComboBox):
             field.setCurrentIndex(value)
+        elif isinstance(field, QtWidgets.QCheckBox):
+            field.setChecked(value)
+        elif isinstance(field, QtWidgets.QAbstractButton):
+            field.setChecked(value)
         if conflict and not field.ambiguous:
             add_and_select_ambiguous_marker(field)
         elif field.ambiguous and not conflict:

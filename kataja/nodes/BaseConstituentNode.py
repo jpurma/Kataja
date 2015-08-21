@@ -106,7 +106,7 @@ class BaseConstituentNode(Node):
         :return: None
         """
         self._inode_changed = True
-        a = self.as_inode
+        a = self.as_inode()
         self.update_features()
         self.update_label()
         self.update_visibility()
@@ -196,6 +196,18 @@ class BaseConstituentNode(Node):
         else:
             return atts
 
+    def update_label_visibility(self):
+        """ Check if the label of the node has any content -- should it be
+        displayed. Node itself can be visible even when its label is not.
+        :return:
+        """
+        if not self._label_complex:
+            self.update_label()
+        self._label_visible = self.triangle or \
+                              not self.as_inode().is_empty_for_view()
+        self._label_complex.setVisible(self._label_visible)
+
+
     def update_visibility(self, **kw):
         """ Compute visibility-related attributes for this constituent node and update those that depend on this
         -- meaning features etc.
@@ -216,19 +228,7 @@ class BaseConstituentNode(Node):
         else:
             self.setVisible(visible)
         # Label
-
-        label_mode = ctrl.forest.settings.label_style
-        if label_mode == g.ALL_LABELS:
-            self._label_visible = True
-        elif self.triangle:
-            self._label_visible = True
-        elif self.label and self.is_leaf_node():
-            self._label_visible = True
-        else:
-            self._label_visible = False
-        if not self._label_complex:
-            self.update_label()
-        self._label_complex.setVisible(self._label_visible)
+        self.update_label_visibility()
 
         # ## Edges -- these have to be delayed until all constituents etc nodes know if they are visible
         ctrl.forest.order_edge_visibility_check()

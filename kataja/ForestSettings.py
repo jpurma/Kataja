@@ -66,7 +66,13 @@ class ForestSettings(BaseModel):
         self.bracket_style = None
         self.use_projection = True
         self.use_xbar_aliases = True
-        self.show_projections = True
+        self.projection_highlighter = False
+        self.projection_strong_lines = True
+        self.projection_colorized = True
+        self.show_leaf_labels = True
+        self.show_leaf_aliases = True
+        self.show_internal_labels = False
+        self.show_internal_aliases = True
         # ## Edges - take edge type as argument ###########################
         self.edge_types = {}
         # ## Nodes - take node type as argument ###########################

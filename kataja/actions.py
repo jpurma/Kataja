@@ -888,13 +888,106 @@ a['set_visualization'] = {'command': 'Change visualization algorithm',
                           'tooltip': 'Change visualization algorithm'}
 
 
-def set_projection_style(sender):
-    print("set projection style", sender, sender.currentData())
+def set_projection_style(action, style):
+    """ Toggle projection styles.
+    :param action: KatajaAction that is calling this method
+    :param style: 'highlighter'|'strong_lines'|'colorized'
+    :return: str message
+    """
+    v = False
+    if style == 'highlighter':
+        v = ctrl.fs.projection_highlighter
+        ctrl.fs.projection_highlighter = not v
+    elif style == 'strong_lines':
+        v = ctrl.fs.projection_strong_lines
+        ctrl.fs.projection_strong_lines = not v
+    elif style == 'colorized':
+        v = ctrl.fs.projection_colorized
+        ctrl.fs.projection_colorized = not v
+    ctrl.forest.update_projection_display()
+    if v:
+        return action.command_alt
+    else:
+        return action.command
 
-a['set_projection_style'] = {'command': 'Set how projections are displayed',
-                             'method': set_projection_style, 'sender_arg': True,
-                             'exclusive': True,
-                             'tooltip': 'Set how label projection is displayed'}
+a['toggle_highlighter_projection'] = {'command': 'Show projections with '
+                                                 'highlighter',
+                                      'command_alt': 'Remove highlighter',
+                                      'method': set_projection_style,
+                                      'args': ['highlighter'],
+                                      'action_arg': True,
+                                      'tooltip': 'Use highlighter pen -like '
+                                                 'lines to display projections'}
+a['toggle_strong_lines_projection'] = {'command': 'Draw projections with '
+                                                  'thicker lines',
+                                       'command_alt': 'Remove strong lines',
+                                       'method': set_projection_style,
+                                       'args': ['strong_lines'],
+                                       'action_arg': True,
+                                       'tooltip': 'Draw thicker edges from '
+                                                  'projecting nodes'}
+a['toggle_colorized_projection'] = {'command': 'Use colors for projections',
+                                    'command_alt': "Don't use colors for "
+                                                   "projections",
+                                    'method': set_projection_style,
+                                    'args': ['colorized'],
+                                    'action_arg': True,
+                                    'tooltip': 'Use colors to distinguish '
+                                               'projecting edges'}
+
+
+def toggle_label_visibility(action, node_location, field):
+    """ Toggle labels|aliases to be visible in inner|leaf nodes.
+    :param action: KatajaAction that is calling this method
+    :param node_location: 'internal'|'leaf'
+    :param field: 'label'|'alias'
+    :return: str message
+    """
+    v = False
+    if node_location == 'internal':
+        if field == 'label':
+            v = not ctrl.fs.show_internal_labels
+            ctrl.fs.show_internal_labels = v
+        elif field == 'alias':
+            v = not ctrl.fs.show_internal_aliases
+            ctrl.fs.show_internal_aliases = v
+    elif node_location == 'leaf':
+        if field == 'label':
+            v = not ctrl.fs.show_leaf_labels
+            ctrl.fs.show_leaf_labels = v
+        elif field == 'alias':
+            v = not ctrl.fs.show_leaf_aliases
+            ctrl.fs.show_leaf_aliases = v
+    for node in ctrl.forest.nodes.values():
+        node.alert_inode()
+        node.update_label()
+        node.update_label_visibility()
+    if action:
+        if v:
+            return action.command % 'Show'
+        else:
+            return action.command % 'Hide'
+
+a['toggle_show_internal_alias'] = {'command': '%s aliases in internal nodes',
+                                   'method': toggle_label_visibility,
+                                   'args': ['internal', 'alias'],
+                                   'action_arg': True,
+                                   'tooltip': 'Show aliases in internal nodes'}
+a['toggle_show_internal_label'] = {'command': '%s labels in internal nodes',
+                                   'method': toggle_label_visibility,
+                                   'args': ['internal', 'label'],
+                                   'action_arg': True,
+                                   'tooltip': 'Show labels in internal nodes'}
+a['toggle_show_leaf_alias'] = {'command': '%s aliases in leaf nodes',
+                               'method': toggle_label_visibility,
+                               'args': ['leaf', 'alias'],
+                               'action_arg': True,
+                               'tooltip': 'Show aliases in leaf nodes'}
+a['toggle_show_leaf_label'] = {'command': '%s labels in leaf nodes',
+                               'method': toggle_label_visibility,
+                               'args': ['leaf', 'label'],
+                               'action_arg': True,
+                               'tooltip': 'Show labels in leaf nodes'}
 
 
 
