@@ -546,13 +546,6 @@ class BaseConstituentNode(Node):
         if self.is_placeholder():
             ctrl.ui.get_touch_area(self, g.TOUCH_ADD_CONSTITUENT)
 
-    def dropEvent(self, event):
-        """
-
-        :param event:
-        """
-        print("CN dropEvent")
-
     # ############## #
     #                #
     #  Save support  #

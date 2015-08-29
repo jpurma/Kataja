@@ -25,6 +25,7 @@
 
 import string
 import collections
+import itertools
 from ProjectionVisual import ProjectionVisual, ProjectionData
 
 from kataja.errors import ForestError
@@ -88,11 +89,12 @@ class Forest(BaseModel):
         self.others = {}
         self.vis_data = {}
         self.projections = {}
-        self.projection_rotator = 0
+        self.projection_rotator = itertools.cycle(range(0, 8))
         self.merge_counter = 0
         self.select_counter = 0
         self.comments = []
         self.gloss_text = ''
+        self.guessed_projections = False
 
         if buildstring:
             self.create_trees_from_string(buildstring)
@@ -434,21 +436,77 @@ class Forest(BaseModel):
             other.update_colors()
         self.main.ui_manager.update_colors()
 
+    # ##### Projections ##########################################
+
+    def update_projection_map(self, node, old_head, new_head):
+        if old_head is new_head:
+            return
+        if old_head:
+            pd = self.projections.get(old_head.save_key, None)
+            if pd:
+                if old_head is node:
+                    del self.projections[old_head.save_key]
+                    if pd.visual:
+                        sc = pd.visual.scene()
+                        if sc:
+                            sc.removeItem(pd.visual)
+                else:
+                    pd.remove_from_chain(old_head)
+        if new_head:
+            pd = self.projections.get(new_head.save_key, None)
+            if not pd:
+                pd = ProjectionData(new_head, next(self.projection_rotator))
+                self.projections[new_head.save_key] = pd
+            if node not in pd:
+                pd.add_to_chain(node)
+
+    def update_projection_visual(self, node, new_head):
+        strong_lines = ctrl.fs.projection_strong_lines
+
+        node.set_projection_display(None)
+        for edge in node.get_edges_down(similar=True):
+            edge.set_projection_display(None, None)
+        for edge in node.get_edges_up(similar=True):
+            edge.set_projection_display(None, None)
+
+        if new_head:
+            projection = self.projections[new_head.save_key]
+            if ctrl.fs.projection_highlighter:
+                if not projection.visual:
+                    projection.add_visual()
+                    self.add_to_scene(projection.visual)
+                elif projection.visual.scene() != self.scene:
+                    self.add_to_scene(projection.visual)
+                projection.visual.update()
+            else:
+                if projection.visual:
+                    sc = projection.visual.scene()
+                    if sc:
+                        sc.removeItem(projection.visual)
+                    projection.visual = None
+            if ctrl.fs.projection_colorized:
+                color_id = projection.color_id
+            else:
+                color_id = None
+            for edge in projection.get_edges():
+                edge.set_projection_display(strong_lines, color_id)
+            if len(projection.chain) > 1:
+                for n in projection.chain:
+                    n.set_projection_display(color_id)
+
     @time_me
     def update_projections(self):
-        rotating_colors = [('accent%s' % i, 'accent%str' % i) for i in
-                           range(1, 9)]
-        for node in self.nodes.values():
-            if node.node_type == g.CONSTITUENT_NODE:
-                head = node.guess_projection()
-                if head.save_key not in self.projections:
-                    main, tr = rotating_colors[self.projection_rotator]
-                    pd = ProjectionData(head, main, tr)
-                    self.projections[head.save_key] = pd
-                    self.projection_rotator += 1
-                    if self.projection_rotator == len(rotating_colors):
-                        self.projection_rotator = 0
-                self.projections[head.save_key].add_to_chain(node)
+        for root in self.roots:
+            for node in self.list_nodes_once(root):
+                if node.node_type == g.CONSTITUENT_NODE:
+                    if self.guessed_projections:
+                        head = node.head
+                    else:
+                        # don't use set_projection as it will rewrite labels and
+                        # aliases around this node, messing
+                        head = node.guess_projection()
+                    if head:
+                        self.update_projection_map(node, None, head)
         for key, projection in list(self.projections.items()):
             if not projection.verify_chain():
                 del self.projections[key]
@@ -456,7 +514,7 @@ class Forest(BaseModel):
                     sc = projection.visual.scene()
                     if sc:
                         sc.removeItem(projection.visual)
-
+        self.guessed_projections = True
         self.update_projection_display()
 
     def update_projection_display(self):
@@ -474,6 +532,7 @@ class Forest(BaseModel):
                     self.add_to_scene(projection.visual)
                 elif projection.visual.scene() != self.scene:
                     self.add_to_scene(projection.visual)
+                projection.visual.update()
             else:
                 if projection.visual:
                     sc = projection.visual.scene()
@@ -764,9 +823,7 @@ class Forest(BaseModel):
         :param text:
         :param pos:
         """
-        print(text, pos)
         node = self.parser.parse_into_forest(text)
-        print("created node ", node)
         return node
         # self.add_to_scene(root_node)
         # self.update_root_status(root_node)
@@ -801,7 +858,6 @@ class Forest(BaseModel):
         :param node:
         :return:
         """
-        print('Creating a trace for ', node)
         index = node.index
         if not index:
             index = self.chain_manager.next_free_index()
@@ -1012,7 +1068,6 @@ class Forest(BaseModel):
         """
         if not isinstance(node, BaseConstituentNode):
             return
-        print("Fixing stubs for ", node)
         real_children = []
         placeholders = []
         for child in node.get_children():
@@ -1594,6 +1649,10 @@ class Forest(BaseModel):
                         self.replace_node(inserted, t, can_delete=False)
 
         edge = parent.get_edge_to(child)
+        head = None
+        if hasattr(parent, 'head') and hasattr(child, 'head') and parent.head\
+                is child.head:
+            head = parent.head
         align = edge.alignment
         self.disconnect_edge(edge)
         if merge_to_left:
@@ -1606,7 +1665,8 @@ class Forest(BaseModel):
         merger_node = self.create_merger_node(left=left, right=right, pos=p)
         merger_node.adjustment = child.adjustment
         self.connect_node(parent, merger_node, direction=align)
-        print(parent.syntactic_object.print_tree())
+        if head:
+            merger_node.set_projection(head)
         if self.traces_are_visible():
             self.chain_manager.rebuild_chains()
 
@@ -1717,7 +1777,6 @@ class Forest(BaseModel):
         :param node:
         :return:
         """
-        print('parse_features called')
         return self.parser.parse_definition(string, node)
 
     # ############## #

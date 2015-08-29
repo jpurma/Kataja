@@ -85,7 +85,7 @@ class NodeEditEmbed(UIEmbed):
                 op_func = d.get('option_function')
                 op_func = getattr(self.host, op_func, None) or \
                     getattr(self.syntactic_object, op_func, None)
-                field = EmbeddedMultibutton(self, tip=tt, options=op_func())
+                field = EmbeddedMultibutton(self, options=op_func())
                 field.setMaximumWidth(width)
                 action = d.get('select_action')
                 if action:
@@ -93,8 +93,8 @@ class NodeEditEmbed(UIEmbed):
 
                 if syntactic:
                     field.setPalette(ui_s)
-                #else:
-                #    field.setPalette(ui_p)
+                else:
+                    field.setPalette(ui_p)
             else:
                 raise NotImplementedError
             align = d.get('align', 'newline')
@@ -171,7 +171,6 @@ class NodeEditEmbed(UIEmbed):
             elif itype == 'multibutton':
                 print('Implement submit_values for multibutton in '
                       'NodeEditEmbed')
-                print(field.bgroup)
                 value = ''
             else:
                 raise NotImplementedError

@@ -839,9 +839,8 @@ syntactic_object: %s
         """
         if not self._label_complex:
             self._label_complex = Label(parent=self)
-        if not self.as_inode():
-            return
         self._label_complex.update_label(self.font, self.as_inode())
+        self.update_label_visibility()
         self.update_bounding_rect()
         self.update_status_tip()
 
@@ -868,8 +867,6 @@ syntactic_object: %s
                 # use 'getter' or default to 'key', assuming that key is the
                 # same as the property it is representing
                 iv[key]['value'] = getattr(self, getter)
-                print(iv[key])
-            print(self._inode.values)
             self._inode_str = str(self._inode)
             self._inode_changed = False
         return self._inode
@@ -1062,7 +1059,7 @@ syntactic_object: %s
         else:
             self.setZValue(200)
             self.setToolTip("Click to edit texts")
-            self.node_info()
+            #self.node_info()
         self.update()
 
     # ### MOUSE - kataja

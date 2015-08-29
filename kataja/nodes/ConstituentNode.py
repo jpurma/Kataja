@@ -235,14 +235,6 @@ class ConstituentNode(BaseConstituentNode):
         self._inode_changed = True
         self.update_gloss()
 
-    def if_changed_head(self, value):
-        """ If head is changed, the old head cannot be projected upwards from
-        here, so check the parents.
-        :param value:
-        :return:
-        """
-        pass
-
     # Saved properties
 
     # Other properties
@@ -360,7 +352,7 @@ class ConstituentNode(BaseConstituentNode):
 
     def projection_options_for_ui(self):
         """ Build tuples for showing projection options
-        :return: (text, value, checked) -tuples
+        :return: (text, value, checked, disabled, tooltip) -tuples
         """
         r = []
         children = list(self.get_children())
@@ -377,16 +369,23 @@ class ConstituentNode(BaseConstituentNode):
         else: # don't use arrows for
             prefix = [''] * l
         for n, child in enumerate(children):
-            disabled = child.is_placeholder()
-            # assume that head is inherited.
             ch = child.head or child
-            is_head = ch is self.head
-            tt = 'inherit head from ' + str(ch)
-            r.append(('%s%s' % (prefix[n], ch.short_str()), ch, is_head,
-                      disabled, tt))
-        tt = "doesn't inherit head"
-        r.append(('None', None, self.head is None, False, tt))
+            potent = child.head or (child.is_leaf_node() and not
+                child.is_placeholder())
+            d = {'text': '%s%s' % (prefix[n], ch.short_str()),
+                 'value': ch,
+                 'is_checked': ch is self.head,
+                 'enabled': bool(potent),
+                 'tooltip': 'inherit head from ' + str(ch)}
+            r.append(d)
+        d = {'text': 'None',
+             'value': None,
+             'is_checked': not self.head,
+             'enabled': True,
+             'tooltip': "doesn't inherit head"}
+        r.append(d)
         return r
+
 
     def guess_projection(self):
         """ Analyze label, alias and children and try to guess if this is a
@@ -413,25 +412,27 @@ class ConstituentNode(BaseConstituentNode):
 
         al = self.alias or self.label
         self.head = find_original(self, strip_xbars(str(al))) or self
+        ctrl.forest.update_projection_map(self, None, self.head)
+        ctrl.forest.update_projection_visual(self, self.head)
         return self.head
 
     def fix_projection_labels(self):
-        """ Start from this node, assume it is head and move upwards labeling
-        the nodes that also use this as a head.
+        """ If node has head, then start from this node, and
+        move upwards labeling the nodes that also use the same head.
+
+        If head is None, then remove label and alias.
         :return:
         """
         xbar = ctrl.fs.use_xbar_aliases
-        head_base = str(self.alias or self.label)
-        head_base = strip_xbars(head_base)
 
-        def fix_label(node, level):
+        def fix_label(node, level, head):
             last = True
             for parent in node.get_parents(only_similar=True,
                                            only_visible=False):
-                if parent.head is self:
-                    fix_label(parent, level + 1)
+                if parent.head is head:
+                    fix_label(parent, level + 1, head)
                     last = False
-            node.label = self.head.label
+            node.label = head.label
             if xbar:
                 if last:
                     node.alias = head_base + 'P'
@@ -440,7 +441,17 @@ class ConstituentNode(BaseConstituentNode):
                 else:
                     node.alias = head_base
             node.update_label()
-        fix_label(self, 0)
+
+        h = self.head
+        if h:
+            head_base = str(h.alias or h.label)
+            head_base = strip_xbars(head_base)
+            fix_label(h, 0, h)
+        else:
+            self.label = ''
+            if xbar:
+                self.alias = ''
+            self.update_label()
 
     def set_projection(self, new_head):
         """ Set this node to be projection from new_head. If the old_head is
@@ -450,11 +461,24 @@ class ConstituentNode(BaseConstituentNode):
         :return:
         """
         old_head = self.head
-        self.head = new_head
         if old_head:
-            old_head.fix_projection_labels()
+            # nodes up from here cannot use old_head as head anymore,
+            # as projection chain is broken.
+            # set those parent heads to None, and they will recursively
+            # fix their parents
+            for parent in self.get_parents(only_similar=True,
+                                           only_visible=False):
+                if parent.head is old_head:
+                    parent.set_projection(None)
+        self.head = new_head
+        ctrl.forest.update_projection_map(self, old_head, new_head)
+        ctrl.forest.update_projection_visual(self, new_head)
         if new_head:
             new_head.fix_projection_labels()
+        else:
+            self.fix_projection_labels()
+        if old_head:
+            old_head.fix_projection_labels()
 
     def set_projection_display(self, color_id):
         self._projection_color = color_id
@@ -533,7 +557,7 @@ class ConstituentNode(BaseConstituentNode):
     index = Saved("index", if_changed=BaseConstituentNode.alert_inode)
     alias = Saved("alias", if_changed=BaseConstituentNode.alert_inode)
     gloss = Saved("gloss", if_changed=if_changed_gloss)
-    head = Saved("head", if_changed=if_changed_head)
+    head = Saved("head")
 
     is_trace = Saved("is_trace")
     merge_order = Saved("merge_order")

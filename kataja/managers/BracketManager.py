@@ -70,7 +70,6 @@ class BracketManager:
         :param left:
         :return:
         """
-        print('creating bracket ...')
         if left:
             key = 'lb_%s' % host.save_key
         else:
@@ -169,7 +168,6 @@ class BracketManager:
         #    node.left_bracket = None
         #else:
         #    node.right_bracket = None
-        print('deleting bracket ', bracket.key)
         if bracket.key in self.brackets:
             del self.brackets[bracket.key]
         sc = bracket.scene()

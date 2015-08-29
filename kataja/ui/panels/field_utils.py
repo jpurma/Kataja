@@ -700,42 +700,51 @@ class EmbeddedMultibutton(QtWidgets.QFrame):
     :param options:
     """
 
-    def __init__(self, parent, tip='', options=None):
+    def __init__(self, parent, options=None):
         QtWidgets.QFrame.__init__(self, parent)
-        # if tip:
-        #    self.setToolTip(tip)
-        #    self.setStatusTip(tip)
-        self.setContentsMargins(0, 0, 0, 0)
-        self.setBackgroundRole(QtGui.QPalette.Window)
-        self.setAutoFillBackground(True)
+        self.setAutoFillBackground(False)
         self.bgroup = QtWidgets.QButtonGroup(self)
         self.bgroup.setExclusive(True)
         self.layout = QtWidgets.QHBoxLayout()
-        self.layout.setContentsMargins(0, 0, 0, 0)
-        self.layout.setSpacing(0)
         self.update_selections(options)
         self.setLayout(self.layout)
 
     def update_selections(self, options):
         """ Redraw all buttons
-        :param options: iterable of (text, value, checked, disabled,
-        tooltip) -tuples
+        :param options: iterable of (text, value, is_checked, disabled,
+        tooltip) -dictionaries
         :return:
         """
+        new_values = set([od['value'] for od in options])
+        old_values = set([button.my_value for button in self.bgroup.buttons()])
 
-        print(options)
         # clear old buttons
-        for button in list(self.bgroup.buttons()):
-            self.bgroup.removeButton(button)
-            self.layout.removeWidget(button)
-            button.destroy()
-        # draw new ones
-        for text, value, checked, disabled, tooltip in options:
-            button = QtWidgets.QPushButton(text)
-            button.setCheckable(True)
-            button.setChecked(checked)
-            button.setToolTip(tooltip)
-            button.setDisabled(disabled)
-            button.my_value = value
-            self.bgroup.addButton(button)
-            self.layout.addWidget(button)
+        for button in self.bgroup.buttons():
+            if button.my_value not in new_values:
+                self.bgroup.removeButton(button)
+                self.layout.removeWidget(button)
+                button.destroy()
+            else: # update old button
+                for od in options:
+                    if od['value'] == button.my_value:
+                        button.setChecked(od['is_checked'])
+                        button.setToolTip(od['tooltip'])
+                        button.setEnabled(od['enabled'])
+                        break
+        # create new buttons
+        for od in options:
+            v = od['value']
+            if v not in old_values:
+                button = QtWidgets.QPushButton(od['text'])
+                button.setCheckable(True)
+                button.my_value = v
+                button.setChecked(od['is_checked'])
+                button.setToolTip(od['tooltip'])
+                button.setEnabled(od['enabled'])
+                self.bgroup.addButton(button)
+                self.layout.addWidget(button)
+                s = ":disabled {text-decoration: line-through; color: gray;}"
+                button.setStyleSheet(s)
+
+
+

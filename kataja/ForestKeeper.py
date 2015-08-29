@@ -55,8 +55,6 @@ class ForestKeeper(BaseModel):
             self.current_index += 1
         else:
             self.current_index = 0
-        if ctrl.undo_pile:
-            print('undo pile has stuff we are about to discard: ', ctrl.undo_pile)
         ctrl.undo_pile = set()
         self.forest = self.forests[self.current_index]
         return self.current_index, self.forest
@@ -71,8 +69,6 @@ class ForestKeeper(BaseModel):
             self.current_index -= 1
         else:
             self.current_index = len(self.forests) - 1
-        if ctrl.undo_pile:
-            print('undo pile has stuff we are about to discard: ', ctrl.undo_pile)
         ctrl.undo_pile = set()
         self.forest = self.forests[self.current_index]
         return self.current_index, self.forest

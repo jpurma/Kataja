@@ -110,7 +110,6 @@ class LineOptionsPanel(UIPanel):
         print('updating panel')
         if ctrl.ui.scope == g.SELECTION:
             sd = self.build_shape_dict_for_selection()
-            print(sd)
             self.update_cp1()
             self.update_cp2()
             selection = True

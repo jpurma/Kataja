@@ -200,7 +200,6 @@ def save_kataja_file(filename=None):
         else:
             f = open(filename, 'w')
         pp = pprint.PrettyPrinter(indent=1, stream=f)
-        print('is readable: ', pprint.isreadable(all_data))
         pp.pprint(all_data)
     elif save_format == 'json':
         if zipped:
@@ -562,7 +561,6 @@ def open_font_selector(sender):
     :param selection: int scope identifier, from globals
     :return: None
     """
-    print('opening font selector: ', sender)
     if sender:
         panel = get_ui_container(sender)
         font_key = panel.cached_font_id
@@ -582,7 +580,6 @@ def select_font(sender):
     :param selection: int scope identifier, from globals
     :return: None
     """
-    print('opening font selector: ', sender)
     if sender:
         font_key = sender.currentData()
         panel = get_ui_container(sender)
@@ -847,7 +844,6 @@ def change_visualization(sender, visualization_key=None):
 
     :return: None
     """
-    print('change visualization: ', sender, visualization_key)
     if visualization_key is None and isinstance(sender, QtWidgets.QComboBox):
         visualization_key = str(sender.currentData())
         action = ctrl.ui.qt_actions[action_key(visualization_key)]
@@ -1038,7 +1034,6 @@ def new_element_accept(sender):
     ctrl.focus_point = p2
 
     if node_type == g.GUESS_FROM_INPUT:
-        print("Guessing input type")
         # we can add a test if line p1 - p2 crosses several edges, then it
         # can be a divider
         # Fixme Use screen coordinates instead, as if zoomed out, the default
@@ -1048,10 +1043,8 @@ def new_element_accept(sender):
             create_new_arrow(sender)
             return
         else:
-            print('trying to parse ', text)
             node = ctrl.forest.create_node_from_string(text, p2)
     else:
-        print(node_type)
         ctrl.forest.create_node(None, p2, node_type)
     embed.blur_away()
 
@@ -1066,7 +1059,6 @@ def create_new_arrow(sender):
     :param sender:
     :return: None
     """
-    print("New arrow called", sender)
     embed = get_ui_container(sender)
     p1, p2 = embed.get_marker_points()
     text = embed.input_line_edit.text()
@@ -1083,7 +1075,6 @@ def create_new_divider(sender):
     """ Create a new divider into embed menu's location
     :return: None
     """
-    print("New divider called")
     embed = get_ui_container(sender)
     p1, p2 = embed.get_marker_points()
     embed.blur_away()
@@ -1291,7 +1282,6 @@ def key_backspace():
     for contexts that don't otherwise grab keyboard.
     :return: None
     """
-    print('Backspace pressed')
     for item in ctrl.selected:
         ctrl.forest.delete_item(item)
 

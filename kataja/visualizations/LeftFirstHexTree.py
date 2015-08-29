@@ -155,7 +155,6 @@ class LeftFirstHexTree(BaseVisualization):
                 return
 
             if self.iterations > 100:
-                print(self.iterations)
                 allow_crossing = True
 
             if parent:

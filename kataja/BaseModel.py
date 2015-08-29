@@ -482,16 +482,13 @@ class BaseModel(object):
             # objects that support saving
             key = getattr(obj, 'save_key', '')
             if key and key not in full_map:
-                print('putting to existing: ', key, obj)
                 full_map[key] = obj
                 for item in obj._saved.values():
                     map_existing(item)
 
         # Restore either takes existing object or creates a new 'stub' object
         #  and then loads it with given data
-        print('Loading objects...')
         map_existing(self)
-        print('full_map has %s items' % len(full_map), full_map)
         self.restore(self.save_key)
         del full_map, restored, full_data, main
 

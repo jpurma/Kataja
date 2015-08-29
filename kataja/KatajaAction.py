@@ -123,7 +123,7 @@ class KatajaAction(QtWidgets.QAction):
         """
 
         tooltip = self.toolTip()
-        if tooltip:
+        if tooltip and not isinstance(element, EmbeddedMultibutton):
             if tooltip_suffix:
                 element.setStatusTip(tooltip % tooltip_suffix)
                 element.setToolTip(tooltip % tooltip_suffix)
@@ -150,7 +150,6 @@ class KatajaAction(QtWidgets.QAction):
         elif isinstance(element, QtWidgets.QCheckBox):
             element.stateChanged.connect(self.action_triggered)
         elif isinstance(element, EmbeddedMultibutton):
-            print('embedded multibutton connected!')
             element.bgroup.buttonToggled.connect(self.action_triggered)
 
 

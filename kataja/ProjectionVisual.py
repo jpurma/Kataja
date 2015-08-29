@@ -4,19 +4,28 @@ from kataja.singletons import ctrl
 import kataja.globals as g
 
 
+rotating_colors = [('accent%s' % i, 'accent%str' % i) for i in
+                   range(1, 9)]
+
+
 class ProjectionData:
     """ Data structure for keeping track of projections. ProjectionVisual is
     used to draw these as separate graphicsitems, but these can be as well
     presented by modifying existing edges and nodes.
     """
 
-    def __init__(self, head, color_id, color_tr_id):
+    def __init__(self, head, rotator):
         super().__init__()
+        self.color_id, self.color_tr_id = rotating_colors[rotator]
         self.head = head
         self.chain = [head]
-        self.color_id = color_id
-        self.color_tr_id = color_tr_id
         self.visual = None
+
+    def __contains__(self, item):
+        return item in self.chain
+
+    def __len__(self):
+        return len(self.chain)
 
     def add_to_chain(self, node):
         if node in self.chain:
@@ -30,6 +39,11 @@ class ProjectionData:
 
     def add_visual(self):
         self.visual = ProjectionVisual(self)
+
+    def remove_from_chain(self, node):
+        if node not in self.chain:
+            return
+        self.chain.remove(node)
 
     def get_edges(self):
         """ Return edges between nodes in this chain as a list
