@@ -1,11 +1,10 @@
 __author__ = 'purma'
 from PyQt5 import QtWidgets, QtCore, QtGui
+
 from kataja.singletons import ctrl
 import kataja.globals as g
 
-
-rotating_colors = [('accent%s' % i, 'accent%str' % i) for i in
-                   range(1, 9)]
+rotating_colors = [('accent%s' % i, 'accent%str' % i) for i in range(1, 9)]
 
 
 class ProjectionData:
@@ -103,7 +102,6 @@ class ProjectionData:
         return True
 
 
-
 class ProjectionVisual(QtWidgets.QGraphicsItem):
     """ Transparent overlay to show which nodes belong to one projection
     """
@@ -136,8 +134,8 @@ class ProjectionVisual(QtWidgets.QGraphicsItem):
             # polygon going there (forward) and for its return trip (back).
             for node in vis_chain:
                 sx, sy, sz = node.current_position
-                #r = node.sceneBoundingRect()
-                #p.addEllipse(r)
+                # r = node.sceneBoundingRect()
+                # p.addEllipse(r)
                 forward.append((sx - 5, sy))
                 back.append((sx + 5, sy))
             back.reverse()
@@ -145,7 +143,6 @@ class ProjectionVisual(QtWidgets.QGraphicsItem):
             for x, y in forward + [(sx, sy - 5)] + back:
                 p.lineTo(x, y)
             painter.fillPath(p, self.color)
-
 
 #
 # def blob_path(start_point=None, end_point=None, curve_adjustment=None,

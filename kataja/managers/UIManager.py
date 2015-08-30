@@ -27,7 +27,6 @@ from PyQt5 import QtCore, QtWidgets
 
 from kataja.KatajaAction import KatajaAction
 from kataja.managers.KeyPressManager import ShortcutSolver, ButtonShortcutFilter
-from kataja.nodes.BaseConstituentNode import BaseConstituentNode
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.Edge import Edge
 from kataja.ui.ActivityMarker import ActivityMarker
@@ -59,7 +58,6 @@ from kataja.ui.panels.StylePanel import StylePanel
 from kataja.ui.panels.field_utils import MyColorDialog, MyFontDialog
 from kataja.nodes.Node import Node
 from kataja.ui import drawn_icons
-from kataja.utils import time_me
 from kataja.ui.panels.VisualizationOptionsPanel import VisualizationOptionsPanel
 
 NOTHING = 0
@@ -99,17 +97,14 @@ menu_structure = OrderedDict([('file_menu', ('&File',
                                               'print_pdf', 'blender_render',
                                               '---', 'preferences', '---',
                                               'quit'])),
-    ('edit_menu', ('&Edit', ['undo', 'redo'])), ('build_menu', ('&Build',
-                                                                ['next_forest',
-                                                                 'prev_forest',
-                                                                 'next_derivation_step',
-                                                                 'prev_derivation_step'])),
+    ('edit_menu', ('&Edit', ['undo', 'redo'])),
+    ('build_menu', ('&Build', ['next_forest', 'prev_forest', 'next_derivation_step',
+                               'prev_derivation_step'])),
     ('rules_menu', ('&Rules', ['bracket_mode', 'trace_mode',
                                'merge_order_attribute',
-                               'select_order_attribute'])), ('view_menu', (
-    '&View',
-    ['$visualizations', '---', 'change_colors', 'adjust_colors', 'zoom_to_fit',
-     '---', 'fullscreen_mode'])),
+                               'select_order_attribute'])),
+    ('view_menu', ('&View', ['$visualizations', '---', 'change_colors', 'adjust_colors',
+                             'zoom_to_fit', '---', 'fullscreen_mode'])),
     ('panels_menu', ('&Panels', ['$panels', '---', 'toggle_all_panels'])),
     ('help_menu', ('&Help', ['help']))])
 
@@ -411,7 +406,6 @@ class UIManager:
         additional_actions = {}
         self.actions = actions
 
-        i = 0
         additional_actions['visualizations'] = []
         for name, vis in VISUALIZATIONS.items():
             key = action_key(name)
@@ -445,35 +439,36 @@ class UIManager:
     def create_menus(self, additional_actions):
         """ Put actions to menus. Menu structure is defined at the top of
         this file.
+        :param additional_actions: dict where each key returns a list of action schemas. This way
+        programmatically generated actions and those coming from e.g. plugins can be added to
+        menus.
         :return: None
         """
 
-        def add_menu(parent, data):
+        def add_menu(parent, menu_label, menu_items):
             """
-
             :param parent:
-            :param data:
+            :param menu_label:
+            :param menu_items:
             :return:
             """
-            menu_label, menu_items = data
-            menu = QtWidgets.QMenu(menu_label, self.main)
+            new_menu = QtWidgets.QMenu(menu_label, self.main)
             for item in menu_items:
                 if isinstance(item, tuple):
-                    add_menu(menu, item)
+                    add_menu(new_menu, item)
                 elif item == '---':
-                    menu.addSeparator()
+                    new_menu.addSeparator()
                 else:
-                    menu.addAction(self.qt_actions[item])
-            parent.addMenu(menu)
-            return menu
+                    new_menu.addAction(self.qt_actions[item])
+            parent.addMenu(new_menu)
+            return new_menu
 
-        def expand_list(data):
+        def expand_list(label, items):
             """
-
-            :param data:
+            :param label: menu title
+            :param items: menu items
             :return:
             """
-            label, items = data
             exp_items = []
             for item in items:
                 if isinstance(item, str) and item.startswith("$"):
@@ -487,12 +482,12 @@ class UIManager:
         # replace '$names' with dynamic actions
         expanded_menu_structure = OrderedDict()
         for key, data in menu_structure.items():
-            expanded_menu_structure[key] = expand_list(data)
+            expanded_menu_structure[key] = expand_list(*data)
 
         # build menus
         self._top_menus = {}
         for key, data in expanded_menu_structure.items():
-            menu = add_menu(self.main.menuBar(), data)
+            menu = add_menu(self.main.menuBar(), *data)
             self._top_menus[key] = menu
 
     # ###################################################################

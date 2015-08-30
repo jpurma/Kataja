@@ -27,6 +27,7 @@ from kataja.nodes.Node import Node
 import kataja.globals as g
 from kataja.BaseModel import Synobj
 
+
 # ctrl = Controller object, gives accessa to other modules
 
 
@@ -100,8 +101,10 @@ class BaseConstituentNode(Node):
 
     def after_init(self):
         """ After_init is called in 2nd step in process of creating objects:
-        1st wave creates the objects and calls __init__, and then iterates through and sets the values.
-        2nd wave calls after_inits for all created objects. Now they can properly refer to each other and know their
+        1st wave creates the objects and calls __init__, and then iterates through and sets the
+        values.
+        2nd wave calls after_inits for all created objects. Now they can properly refer to each
+        other and know their
         values.
         :return: None
         """
@@ -114,7 +117,8 @@ class BaseConstituentNode(Node):
         ctrl.forest.store(self)
 
     def after_model_update(self, updated_fields, update_type):
-        """ This is called after the item's model has been updated, to run the side-effects of various
+        """ This is called after the item's model has been updated, to run the side-effects of
+        various
         setters in an order that makes sense.
         :param updated_fields: list of names of fields that have been updated.
         :return: None
@@ -212,13 +216,12 @@ class BaseConstituentNode(Node):
         """
         if not self._label_complex:
             self.update_label()
-        self._label_visible = self.triangle or \
-                              not self.as_inode().is_empty_for_view()
+        self._label_visible = self.triangle or not self.as_inode().is_empty_for_view()
         self._label_complex.setVisible(self._label_visible)
 
-
     def update_visibility(self, **kw):
-        """ Compute visibility-related attributes for this constituent node and update those that depend on this
+        """ Compute visibility-related attributes for this constituent node and update those that
+        depend on this
         -- meaning features etc.
 
         :param kw:
@@ -239,7 +242,8 @@ class BaseConstituentNode(Node):
         # Label
         self.update_label_visibility()
 
-        # ## Edges -- these have to be delayed until all constituents etc nodes know if they are visible
+        # ## Edges -- these have to be delayed until all constituents etc nodes know if they are
+        # visible
         ctrl.forest.order_edge_visibility_check()
 
         # ## FeatureNodes
@@ -276,6 +280,7 @@ class BaseConstituentNode(Node):
 
 
         """
+
         def add_left():
             if not self.left_bracket:
                 self.left_bracket = ctrl.forest.create_bracket(host=self, left=True)
@@ -321,13 +326,17 @@ class BaseConstituentNode(Node):
 
     # ### Features #########################################
 
-    # !!!! Shouldn't be done this way. In forest, create a feature, then connect it to ConstituentNode and let Forest's
-    # methods to take care that syntactic parts are reflected properly. ConstituentNode shouldn't be modifying its
+    # !!!! Shouldn't be done this way. In forest, create a feature, then connect it to
+    # ConstituentNode and let Forest's
+    # methods to take care that syntactic parts are reflected properly. ConstituentNode shouldn't
+    #  be modifying its
     # syntactic component.
     # def set_feature(self, syntactic_feature=None, key=None, value=None, string=''):
     #     """ Convenience method for assigning a new feature node related to this constituent.
-    #     can take syntactic feature, which is assumed to be already assigned for the syntactic constituent.
-    #         Can take key, value pair to create new syntactic feature object, and then a proper feature object is created from this.
+    #     can take syntactic feature, which is assumed to be already assigned for the syntactic
+    # constituent.
+    #         Can take key, value pair to create new syntactic feature object, and then a proper
+    # feature object is created from this.
     #     :param syntactic_feature:
     #     :param key:
     #     :param value:
@@ -383,7 +392,8 @@ class BaseConstituentNode(Node):
     # any other operations?
 
     def is_empty_node(self):
-        """ Empty nodes can be used as placeholders and deleted or replaced without structural worries """
+        """ Empty nodes can be used as placeholders and deleted or replaced without structural
+        worries """
         return (not self.label) and self.is_leaf_node(only_similar=True, only_visible=False)
 
     def get_features_as_string(self):
@@ -403,7 +413,8 @@ class BaseConstituentNode(Node):
         return len(self.get_parents()) > 1
 
     def get_c_commanded(self):
-        """ Returns the closest c-commanded elements of this element. All dominated by those are also c-commanded """
+        """ Returns the closest c-commanded elements of this element. All dominated by those are
+        also c-commanded """
         result = []
         for parent in self.get_parents():
             for child in parent.get_children():
@@ -459,8 +470,6 @@ class BaseConstituentNode(Node):
             if child in parent.parts:
                 ctrl.FL.k_disconnect(parent, child)
 
-
-
     # ## Qt overrides ######################################################################
 
     def fpaint(self, painter, option, widget):
@@ -485,7 +494,7 @@ class BaseConstituentNode(Node):
             painter.drawRoundedRect(self.inner_rect, 5, 5)
             # if self.uses_scope_area:
             # self.paint_scope_rect(painter, rect)
-        # Node.paint(self, painter, option, widget)
+            # Node.paint(self, painter, option, widget)
 
     # ### Selection ########################################################
 
@@ -564,4 +573,3 @@ class BaseConstituentNode(Node):
     # Attributes from synobj and their setter hooks
     label = Synobj("label", if_changed=Node.alert_inode)
     features = Synobj("features", if_changed=if_changed_features)
-

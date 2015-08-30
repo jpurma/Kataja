@@ -301,8 +301,7 @@ def spinbox(ui_manager, panel, layout, label, range_min, range_max, action):
     return spinbox
 
 
-def decimal_spinbox(ui_manager, panel, layout, label, range_min, range_max,
-                    step, action):
+def decimal_spinbox(ui_manager, panel, layout, label, range_min, range_max, step, action):
     """
 
     :param ui_manager:
@@ -347,6 +346,7 @@ def text_button(ui_manager, layout, text, action, x=-1, y=-1, checkable=False):
         layout.addWidget(button)
     return button
 
+
 def mini_button(ui_manager, layout, text, action, x=-1, y=-1, checkable=False):
     """
 
@@ -369,8 +369,8 @@ def mini_button(ui_manager, layout, text, action, x=-1, y=-1, checkable=False):
     return button
 
 
-def icon_text_button(ui_manager, layout, parent, role, key, text, action,
-                     size=None, icon=None, draw_method=None):
+def icon_text_button(ui_manager, layout, parent, role, key, text, action, size=None, icon=None,
+                     draw_method=None):
     """
 
     :param ui_manager:
@@ -386,8 +386,7 @@ def icon_text_button(ui_manager, layout, parent, role, key, text, action,
     :return:
     """
     button = OverlayButton(icon, None, role, key, text, parent=parent,
-                           size=size or QtCore.QSize(48, 24),
-                           draw_method=draw_method)
+                           size=size or QtCore.QSize(48, 24), draw_method=draw_method)
     button.setText(text)
     ui_manager.connect_element_to_action(button, action)
     layout.addWidget(button)
@@ -598,8 +597,7 @@ class EmbeddedTextarea(QtWidgets.QPlainTextEdit):
         :param event: QDragEnterEvent
         :return:
         """
-        if event.mimeData().hasFormat(
-                "application/x-qabstractitemmodeldatalist"):
+        if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist"):
             event.acceptProposedAction()
         else:
             return QtWidgets.QPlainTextEdit.dragEnterEvent(self, event)
@@ -610,8 +608,7 @@ class EmbeddedTextarea(QtWidgets.QPlainTextEdit):
         :param event: QDropEvent
         :return:
         """
-        if event.mimeData().hasFormat(
-                "application/x-qabstractitemmodeldatalist"):
+        if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist"):
             data = open_symbol_data(event.mimeData())
             if data and 'char' in data:
                 self.insert(data['char'])
@@ -660,8 +657,7 @@ class EmbeddedLineEdit(QtWidgets.QLineEdit):
         :param event: QDragEnterEvent
         :return:
         """
-        if event.mimeData().hasFormat(
-                "application/x-qabstractitemmodeldatalist"):
+        if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist"):
             event.acceptProposedAction()
         else:
             return QtWidgets.QLineEdit.dragEnterEvent(self, event)
@@ -672,8 +668,7 @@ class EmbeddedLineEdit(QtWidgets.QLineEdit):
         :param event: QDropEvent
         :return:
         """
-        if event.mimeData().hasFormat(
-                "application/x-qabstractitemmodeldatalist"):
+        if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist"):
             data = open_symbol_data(event.mimeData())
             if data and 'char' in data:
                 self.insert(data['char'])
@@ -726,7 +721,7 @@ class EmbeddedMultibutton(QtWidgets.QFrame):
                 self.bgroup.removeButton(button)
                 self.layout.removeWidget(button)
                 button.destroy()
-            else: # update old button
+            else:  # update old button
                 for od in options:
                     if od['value'] == button.my_value:
                         button.setChecked(od['is_checked'])
@@ -752,6 +747,3 @@ class EmbeddedMultibutton(QtWidgets.QFrame):
                 self.layout.addWidget(button)
                 s = ":disabled {text-decoration: line-through; color: gray;}"
                 button.setStyleSheet(s)
-
-
-

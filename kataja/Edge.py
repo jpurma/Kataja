@@ -33,17 +33,18 @@ from kataja.globals import LEFT, RIGHT
 from kataja.shapes import SHAPE_PRESETS, outline_stroker
 from kataja.EdgeLabel import EdgeLabel
 import kataja.utils as utils
-from kataja.utils import time_me, to_tuple, add_xyz, add_xy, sub_xy, sub_xyz
+from kataja.utils import to_tuple, add_xyz, add_xy, sub_xy, sub_xyz
 from kataja.BaseModel import BaseModel, SavedAndGetter, Saved
 
 # ('shaped_relative_linear',{'method':shapedRelativeLinearPath,'fill':True,
 # 'pen':'thin'}),
 
-angle_magnet_map = {0: 6, 1: 6, 2: 4, 3: 3, 4: 2, 5: 1, 6: 0, 7: 5, 8: 5, 9: 5,
-                    10: 7, 11: 8, 12: 9, 13: 10, 14: 11, 15: 6, 16: 6}
+angle_magnet_map = {0: 6, 1: 6, 2: 4, 3: 3, 4: 2, 5: 1, 6: 0, 7: 5, 8: 5, 9: 5, 10: 7, 11: 8, 12: 9,
+                    13: 10, 14: 11, 15: 6, 16: 6}
 
-atan_magnet_map = {-8: 5, -7: 5, -6: 0, -5: 1, -4: 2, -3: 3, -2: 4, -1: 6, 0: 6,
-                   1: 6, 2: 11, 3: 10, 4: 9, 5: 8, 6: 7, 7: 5, 8: 5}
+atan_magnet_map = {-8: 5, -7: 5, -6: 0, -5: 1, -4: 2, -3: 3, -2: 4, -1: 6, 0: 6, 1: 6, 2: 11, 3: 10,
+                   4: 9, 5: 8, 6: 7, 7: 5, 8: 5}
+
 
 # helper functions to make code readable
 
@@ -302,8 +303,7 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
         if f_name:
             return qt_prefs.font(f_name)
         else:
-            return qt_prefs.font(
-                ctrl.fs.edge_info(self.edge_type, 'font'))
+            return qt_prefs.font(ctrl.fs.edge_info(self.edge_type, 'font'))
 
     @property
     def font_name(self):
@@ -500,11 +500,9 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
         # print(id(self), self.start_point, self.end_point, self.start,
         # self.end)
         if self.start and not self.end:
-            self._relative_vector = sub_xyz(self.end_point,
-                                            self.start.current_position)
+            self._relative_vector = sub_xyz(self.end_point, self.start.current_position)
         elif self.end and not self.start:
-            self._relative_vector = sub_xyz(self.end.current_position,
-                                            self.start_point)
+            self._relative_vector = sub_xyz(self.end.current_position, self.start_point)
             # print(id(self), self.start_point, self.end_point, self.start,
             # self.end)
 
@@ -695,8 +693,7 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
         dist = sub_xy(self.end_point, self.start_point)
         if not self._local_drag_handle_position:
             drag = to_tuple(event.buttonDownScenePos(QtCore.Qt.LeftButton))
-            self._local_drag_handle_position = sub_xy(drag,
-                                                      self.start_point)
+            self._local_drag_handle_position = sub_xy(drag, self.start_point)
         start = sub_xy(scene_pos, self._local_drag_handle_position)
         if not self.start:
             self.set_start_point(*start)
@@ -723,8 +720,7 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
         :param value:
         """
         if dim == 'r':  # reset
-            self.reset_shape_info('rel_dx', 'rel_dy', 'fixed_dx', 'fixed_dy',
-                                  'relative')
+            self.reset_shape_info('rel_dx', 'rel_dy', 'fixed_dx', 'fixed_dy', 'relative')
         elif dim == 's':  # fixed arc / relative arc
             self.set_shape_info('relative', value != 'fixed')
         elif self.shape_info('relative'):  # relative value is width/height
@@ -817,8 +813,7 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
         c['start'] = self.start
         c['end'] = self.end
         c['inner_only'] = self._use_simple_path
-        self._path, self._true_path, self.control_points = self._shape_method(
-            **c)
+        self._path, self._true_path, self.control_points = self._shape_method(**c)
         uses_pen = c.get('thickness', 0)
 
         if self._use_simple_path:
@@ -881,8 +876,7 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
         if self.curve_adjustment is None:
             self.curve_adjustment = [(0, 0, 0)] * (index + 1)
         elif index >= len(self.curve_adjustment):
-            self.curve_adjustment += [(0, 0, 0)] * (
-                index - len(self.curve_adjustment) + 1)
+            self.curve_adjustment += [(0, 0, 0)] * (index - len(self.curve_adjustment) + 1)
 
     def adjust_control_point(self, index, points, cp=True):
         """ Called from UI, when dragging
@@ -895,8 +889,7 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
         self.prepare_adjust_array(index)
         z = self.curve_adjustment[index][2]
         self.curve_adjustment[index] = (x, y, z)
-        self.call_watchers('edge_adjustment', 'curve_adjustment',
-                           self.curve_adjustment)
+        self.call_watchers('edge_adjustment', 'curve_adjustment', self.curve_adjustment)
         self.make_path()
         self.update()
 
@@ -916,8 +909,7 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
             self.curve_adjustment[index] = x, value, z
         elif dim == 'z':
             self.curve_adjustment[index] = x, y, value
-        self.call_watchers('edge_adjustment', 'curve_adjustment',
-                           self.curve_adjustment)
+        self.call_watchers('edge_adjustment', 'curve_adjustment', self.curve_adjustment)
         self.make_path()
         self.update()
 
@@ -931,8 +923,7 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
             self.poke('curve_adjustment')
             if self.curve_adjustment and len(self.curve_adjustment) > index:
                 self.curve_adjustment[index] = (0, 0, 0)
-                self.call_watchers('edge_adjustment', 'curve_adjustment',
-                                   self.curve_adjustment)
+                self.call_watchers('edge_adjustment', 'curve_adjustment', self.curve_adjustment)
             can_delete = True
             for values in self.curve_adjustment:
                 if any(values):
@@ -948,11 +939,9 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
         :return:
         """
         if self.start and not self.end:
-            self._computed_end_point = add_xyz(self.start.current_position,
-                                               self._relative_vector)
+            self._computed_end_point = add_xyz(self.start.current_position, self._relative_vector)
         elif self.end and not self.start:
-            self._computed_start_point = sub_xyz(self.end.current_position,
-                                                 self._relative_vector)
+            self._computed_start_point = sub_xyz(self.end.current_position, self._relative_vector)
         if self.edge_type == g.ARROW:
 
             if self.start:
@@ -988,8 +977,6 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
             if self.end:
                 self._computed_end_point = self.end.magnet(2)
 
-
-
     def connect_end_points(self, start, end):
         """
 
@@ -1015,8 +1002,7 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
         :return:
         """
         if self.edge_type == g.CONSTITUENT_EDGE:
-            self.status_tip = 'Constituent relation: %s is part of %s' % (
-                self.end, self.start)
+            self.status_tip = 'Constituent relation: %s is part of %s' % (self.end, self.start)
 
     def description(self):
         """
@@ -1030,8 +1016,7 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
         if self.start:
             s1 = self.start
         elif self.fixed_start_point:
-            s1 = '(%s, %s)' % (
-                int(self.start_point[0]), int(self.start_point[1]))
+            s1 = '(%s, %s)' % (int(self.start_point[0]), int(self.start_point[1]))
         else:
             s1 = 'undefined'
         if self.end:
@@ -1170,9 +1155,7 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
         :param multi: force multiple selection (append, not replace)
         """
         self.hovering = False
-        if (
-                    event and event.modifiers() == Qt.ShiftModifier) or \
-                multi:  # multiple selection
+        if (event and event.modifiers() == Qt.ShiftModifier) or multi:  # multiple selection
             if ctrl.is_selected(self):
                 ctrl.remove_from_selection(self)
             else:
@@ -1213,7 +1196,6 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
                 painter.fillPath(self._arrowhead_start_path, c)
             if self.arrowhead_at_end:
                 painter.fillPath(self._arrowhead_end_path, c)
-
 
         if ctrl.is_selected(self):
             p = QtGui.QPen(ctrl.cm.ui_tr())

@@ -1,12 +1,10 @@
-
 __author__ = 'purma'
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from kataja.parser.LatexToINode import parse_field
 from kataja.ui.embeds.UIEmbed import UIEmbed
-from kataja.ui.panels.field_utils import EmbeddedTextarea, EmbeddedLineEdit, \
-    EmbeddedMultibutton
+from kataja.ui.panels.field_utils import EmbeddedTextarea, EmbeddedLineEdit, EmbeddedMultibutton
 from kataja.singletons import qt_prefs, ctrl
 from kataja.parser import INodeToLatex
 import kataja.globals as g
@@ -62,11 +60,11 @@ class NodeEditEmbed(UIEmbed):
             syntactic = d.get('syntactic', False)
             check_before = d.get('check_before', None)
             if check_before:
-                func = getattr(self.host, check_before, None) or getattr(
-                    self.host.syntactic_object, check_before, None)
+                func = getattr(self.host, check_before, None) or getattr(self.host.syntactic_object,
+                    check_before, None)
                 if func:
                     if not func():
-                    # func is something like 'can_be_projection(self)'
+                        # func is something like 'can_be_projection(self)'
                         continue
             if itype == 'text':
                 width = d.get('width', 140)
@@ -83,8 +81,8 @@ class NodeEditEmbed(UIEmbed):
             elif itype == 'multibutton':
                 width = d.get('width', 200)
                 op_func = d.get('option_function')
-                op_func = getattr(self.host, op_func, None) or \
-                    getattr(self.syntactic_object, op_func, None)
+                op_func = getattr(self.host, op_func, None) or getattr(self.syntactic_object,
+                                                                       op_func, None)
                 field = EmbeddedMultibutton(self, options=op_func())
                 field.setMaximumWidth(width)
                 action = d.get('select_action')
@@ -142,8 +140,8 @@ class NodeEditEmbed(UIEmbed):
                 field.setPlainText(parsed)
             if itype == 'multibutton':
                 op_func = d.get('option_function')
-                op_func = getattr(self.host, op_func, None) or \
-                    getattr(self.syntactic_object, op_func, None)
+                op_func = getattr(self.host, op_func, None) or getattr(self.syntactic_object,
+                                                                       op_func, None)
                 field.update_selections(op_func())
 
     def psizeHint(self):

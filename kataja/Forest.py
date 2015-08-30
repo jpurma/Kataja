@@ -434,6 +434,17 @@ class Forest(BaseModel):
     # ##### Projections ##########################################
 
     def update_projection_map(self, node, old_head, new_head):
+        """ Projection map keeps track of all projections, e.g. chains of nodes, where the head
+        is projected through all of the member nodes. These projections may be displayed in
+        various ways (see update_projection_visual).
+
+         This method takes one node which has had its 'head' changed. It updates the projection
+         chain accordingly, or creates a new chain, or deletes one.
+        :param node: node instance with head attribute
+        :param old_head: old value for head, None or node instance
+        :param new_head: new value for head, None or node instance
+        :return:
+        """
         if old_head and old_head is not new_head:
             pd = self.projections.get(old_head.save_key, None)
             if pd:
@@ -453,7 +464,13 @@ class Forest(BaseModel):
             if node not in pd:
                 pd.add_to_chain(node)
 
+    @time_me
     def update_projection_visual(self, node, new_head):
+        """ Take one node and update its projection displays according to current settings
+        :param node:
+        :param new_head:
+        :return:
+        """
         strong_lines = ctrl.fs.projection_strong_lines
 
         node.set_projection_display(None)
@@ -489,6 +506,11 @@ class Forest(BaseModel):
 
     @time_me
     def update_projections(self):
+        """ Try to guess projections in the tree based on labels and aliases, and once this is
+        done, further updates check that the dict of projections is up to date. Calls to update
+        the visual presentation of projections too.
+        :return:
+        """
         for root in self.roots:
             for node in self.list_nodes_once(root):
                 if node.node_type == g.CONSTITUENT_NODE:
@@ -513,11 +535,14 @@ class Forest(BaseModel):
                 projection.head.fix_projection_labels()
         self.guessed_projections = True
         self.update_projection_display()
-        print('--- finish update projections---')
 
-    @time_me
     def update_projection_display(self):
-        print('update projection display called')
+        """ Don't change the projection data structures, but just draw them according to current
+        drawing settings. It is quite expensive since the new settings may draw less than
+        previous settings and this would mean removing projection visuals from nodes and edges.
+        This is done by removing all projection displays before drawing them.
+        :return:
+        """
         strong_lines = ctrl.fs.projection_strong_lines
         colorized = ctrl.fs.projection_colorized
         highlighter = ctrl.fs.projection_highlighter
@@ -543,11 +568,13 @@ class Forest(BaseModel):
                 color_id = projection.color_id
             else:
                 color_id = None
-            for edge in projection.get_edges():
-                edge.set_projection_display(strong_lines, color_id)
-            if len(projection.chain) > 1:
-                for node in projection.chain:
-                    node.set_projection_display(color_id)
+
+            if strong_lines or colorized:
+                for edge in projection.get_edges():
+                    edge.set_projection_display(strong_lines, color_id)
+                if len(projection.chain) > 1:
+                    for node in projection.chain:
+                        node.set_projection_display(color_id)
 
     def get_node(self, constituent):
         """
@@ -559,30 +586,30 @@ class Forest(BaseModel):
         return self.nodes_from_synobs.get(constituent.save_key, None)
 
     def get_constituent_edges(self):
-        """ Return list of constituent edges
-        :return: list
+        """ Return generator of constituent edges
+        :return: generator
         """
-        return [x for x in self.edges.values() if
-                x.edge_type == g.CONSTITUENT_EDGE and x.is_visible()]
+        return (x for x in self.edges.values() if
+                x.edge_type == g.CONSTITUENT_EDGE and x.is_visible())
 
     def get_constituent_nodes(self):
-        """ Return list of constituent nodes
-        :return: list
+        """ Return generator of constituent nodes
+        :return: generator
         """
-        return [x for x in self.nodes.values() if
-                isinstance(x, BaseConstituentNode) and x.isVisible()]
+        return (x for x in self.nodes.values() if
+                isinstance(x, BaseConstituentNode) and x.isVisible())
 
     def get_feature_nodes(self):
-        """ Return list of feature nodes
-        :return: list
+        """ Return generator of feature nodes
+        :return: generator
         """
-        return [x for x in self.nodes.values() if isinstance(x, FeatureNode)]
+        return (x for x in self.nodes.values() if isinstance(x, FeatureNode))
 
     def get_attribute_nodes(self):
-        """ Return list of attribute nodes
-        :return: list
+        """ Return generator of attribute nodes
+        :return: generator
         """
-        return [x for x in self.nodes.values() if isinstance(x, AttributeNode)]
+        return (x for x in self.nodes.values() if isinstance(x, AttributeNode))
 
     def add_comment(self, comment):
         """ Add comment item to forest
@@ -628,7 +655,7 @@ class Forest(BaseModel):
         """
         if (not isinstance(node, BaseConstituentNode)) or node.is_placeholder():
             return
-        has_parents = bool([x for x in node.edges_up if x.edge_type is g.CONSTITUENT_EDGE])
+        has_parents = any(x for x in node.edges_up if x.edge_type is g.CONSTITUENT_EDGE)
         if node in self.roots:
             if has_parents:
                 self.poke('roots')
@@ -1415,7 +1442,7 @@ class Forest(BaseModel):
         self.update_root_status(child)
         # fix other edge aligns: only one left align and one right align,
         # n center aligns, and if only one child, it has center align.
-        edges = [edge for edge in parent.edges_down if edge_type == edge_type]
+        edges = [edge for edge in parent.edges_down if edge.edge_type == edge_type]
         assert (edges)
         if len(edges) == 1:
             edges[0].alignment = g.NO_ALIGN
@@ -1452,13 +1479,22 @@ class Forest(BaseModel):
         self.update_root_status(edge.end)
         self.delete_edge(edge)
 
-    def disconnect_node(self, parent, child, edge_type='', ignore_missing=False):
+    def disconnect_node(self, parent, child, edge_type='', ignore_missing=False, keep_head=False):
         """ Removes and deletes a edge between two nodes
         :param parent:
         :param child:
         :param edge_type:
         :param ignore_missing:
+        :param keep_head: don't try to cut projection (useful if these nodes will be reconnected
+        soon anyways, as in insertion.
         """
+        # cut the projection between the nodes
+        if not keep_head:
+            if hasattr(parent, 'head') and hasattr(child, 'head'):
+                if parent.head is child.head:
+                    if hasattr(parent, 'set_projection'):
+                        parent.set_projection(None)
+        # then remove the edge
         edge = parent.get_edge_to(child, edge_type)
         if edge:
             self.disconnect_edge(edge)
@@ -1574,7 +1610,8 @@ class Forest(BaseModel):
                 # if left.is_placeholder():
                 # self.delete_node(left)
 
-    def add_children_for_constituentnode(self, parent: BaseConstituentNode, pos=None, head_left=True):
+    def add_children_for_constituentnode(self, parent: BaseConstituentNode, pos=None,
+                                         head_left=True):
         """ User adds children for leaf node. If binary nodes are used, new nodes are added in
         pairs. Because of this, be careful for using this in other than user-triggered situations.
         If the node where children is added is projecting, new node will take its identity and
@@ -1619,7 +1656,6 @@ class Forest(BaseModel):
             new_node.alias = parent.alias
             new_node.set_projection(new_node)
             parent.set_projection(new_node, replace_up=True)
-
 
     def merge_to_top(self, top, new, merge_to_left, merger_pos):
         """
@@ -1689,9 +1725,11 @@ class Forest(BaseModel):
                         self.replace_node(inserted, t, can_delete=False)
 
         edge = parent.get_edge_to(child)
+        # store the projection and alignment info before disconnecting the edges
         head = None
         if hasattr(parent, 'head') and hasattr(child, 'head') and parent.head is child.head:
             head = parent.head
+
         align = edge.alignment
         self.disconnect_edge(edge)
         if merge_to_left:

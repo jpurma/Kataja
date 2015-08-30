@@ -30,9 +30,8 @@ from kataja.ui.ControlPoint import ControlPoint
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.Label import Label
 from kataja.Movable import Movable
-from kataja.BaseModel import Saved, Synobj
-from kataja.utils import to_tuple, create_shadow_effect, time_me, multiply_xyz, \
-    div_xyz, sub_xyz, add_xyz
+from kataja.BaseModel import Saved
+from kataja.utils import to_tuple, create_shadow_effect, multiply_xyz, div_xyz, sub_xyz, add_xyz
 import kataja.globals as g
 from kataja.parser.INodes import ITemplateNode
 
@@ -69,9 +68,8 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     default_style = {'color': 'content1', 'font': g.MAIN_FONT, 'font-size': 10,
                      'edge': g.ABSTRACT_EDGE}
 
-    default_edge = {'id': g.ABSTRACT_EDGE, 'shape_name': 'linear',
-                    'color': 'content1', 'pull': .40, 'visible': True,
-                    'arrowhead_at_start': False, 'arrowhead_at_end': False,
+    default_edge = {'id': g.ABSTRACT_EDGE, 'shape_name': 'linear', 'color': 'content1', 'pull': .40,
+                    'visible': True, 'arrowhead_at_start': False, 'arrowhead_at_end': False,
                     'labeled': False}
     touch_areas_when_dragging = {}
     touch_areas_when_selected = {}
@@ -172,19 +170,16 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         if update_type == g.CREATED:
             print('Node.CREATED. (%s)' % self.save_key)
             for edge in self.edges_up:
-                print('restoring connection up: %s %s %s ' % (
-                edge, edge.start, self))
+                print('restoring connection up: %s %s %s ' % (edge, edge.start, self))
                 edge.connect_end_points(edge.start, self)
                 edge.update_end_points()
             for edge in self.edges_down:
-                print('restoring connection down: %s %s %s ' % (
-                edge, self, edge.end))
+                print('restoring connection down: %s %s %s ' % (edge, self, edge.end))
                 edge.connect_end_points(self, edge.end)
                 edge.update_end_points()
         elif update_type == g.DELETED:
-            print(
-                'Node.DELETED. (%s) should I be reverting deletion or have we '
-                'just been deleted?' % self.save_key)
+            print('Node.DELETED. (%s) should I be reverting deletion or have we '
+                  'just been deleted?' % self.save_key)
 
     @staticmethod
     def create_synobj():
@@ -199,8 +194,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """
         :return:
         """
-        if self.syntactic_object and hasattr(self.syntactic_object.__class__,
-                                             'visible'):
+        if self.syntactic_object and hasattr(self.syntactic_object.__class__, 'visible'):
             synvis = self.syntactic_object.__class__.visible
         else:
             synvis = {}
@@ -223,7 +217,6 @@ class Node(Movable, QtWidgets.QGraphicsItem):
                 new.update(old)
                 self.label_display_data[key] = new
 
-
     def get_editing_template(self, refresh=False):
         """ Create or fetch a dictionary template to help building an editing
         UI for Node.
@@ -240,8 +233,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
             return self._editing_template
 
         self._editing_template = {}
-        if self.syntactic_object and hasattr(self.syntactic_object.__class__,
-                                             'editable'):
+        if self.syntactic_object and hasattr(self.syntactic_object.__class__, 'editable'):
             synedit = self.syntactic_object.__class__.editable
         else:
             synedit = {}
@@ -279,8 +271,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         # ).impose_order_to_inode()
         self._inode.values = {}
         self._inode.view_order = []
-        if self.syntactic_object and hasattr(self.syntactic_object.__class__,
-                                             'visible'):
+        if self.syntactic_object and hasattr(self.syntactic_object.__class__, 'visible'):
             synvis = self.syntactic_object.__class__.visible
         else:
             synvis = {}
@@ -454,11 +445,9 @@ syntactic_object: %s
         if self.folding_towards:
             if self._move_counter:
                 if self._use_easing:
-                    vel = multiply_xyz(self._step, qt_prefs.easing_curve[
-                        self._move_counter - 1])
+                    vel = multiply_xyz(self._step, qt_prefs.easing_curve[self._move_counter - 1])
                 else:
-                    vel = div_xyz(sub_xyz(self._target_position,
-                                          self.current_position),
+                    vel = div_xyz(sub_xyz(self._target_position, self.current_position),
                                   self._move_counter)
                 self._move_counter -= 1
                 if not self._move_counter:
@@ -517,8 +506,7 @@ syntactic_object: %s
         :return: iterator of Nodes
         """
         et = self.__class__.default_edge_type
-        return (edge.end for edge in reversed(self.edges_down) if
-                edge.edge_type == et)
+        return (edge.end for edge in reversed(self.edges_down) if edge.edge_type == et)
 
     def get_visible_children(self):
         """
@@ -535,14 +523,11 @@ syntactic_object: %s
         :return: iterator of Nodes
         """
         if edge_type:
-            return (edge.end for edge in self.edges_down if
-                    edge.edge_type == edge_type)
+            return (edge.end for edge in self.edges_down if edge.edge_type == edge_type)
         elif node_type:
-            return (edge.end for edge in self.edges_down if
-                    isinstance(edge.end, node_type))
+            return (edge.end for edge in self.edges_down if isinstance(edge.end, node_type))
 
-    def get_parents(self, only_similar=True, only_visible=False,
-                    edge_type=None):
+    def get_parents(self, only_similar=True, only_visible=False, edge_type=None):
         """
         Get parent nodes of this node.
         :param only_similar: boolean, only return nodes of same type (eg.
@@ -558,8 +543,7 @@ syntactic_object: %s
                 edge_type = self.__class__.default_edge_type
             if only_visible:
                 return [edge.start for edge in self.edges_up if
-                        edge.edge_type == edge_type and edge.start and
-                        edge.start.is_visible()]
+                        edge.edge_type == edge_type and edge.start and edge.start.is_visible()]
             else:
                 return [edge.start for edge in self.edges_up if
                         edge.edge_type == edge_type and edge.start]
@@ -643,8 +627,7 @@ syntactic_object: %s
         else:
             return True
 
-    def get_root_node(self, only_similar=True, only_visible=False,
-                      recursion=False, visited=None):
+    def get_root_node(self, only_similar=True, only_visible=False, recursion=False, visited=None):
         """ Getting the root node is not trivial if there are
         derivation_steps in the tree.
         :param only_similar:
@@ -663,8 +646,7 @@ syntactic_object: %s
             return self
         visited.add(self)
         for parent in parents:
-            root = parent.get_root_node(only_similar, only_visible,
-                                        recursion=True, visited=visited)
+            root = parent.get_root_node(only_similar, only_visible, recursion=True, visited=visited)
             if root:
                 return root
         return self
@@ -678,13 +660,11 @@ syntactic_object: %s
         """
         for edge in self.edges_down:
             if edge.end == other:
-                if (edge_type and edge_type == edge.edge_type) or (
-                not edge_type):
+                if (edge_type and edge_type == edge.edge_type) or (not edge_type):
                     return edge
         for edge in self.edges_up:
             if edge.start == other:
-                if (edge_type and edge_type == edge.edge_type) or (
-                not edge_type):
+                if (edge_type and edge_type == edge.edge_type) or (not edge_type):
                     return edge
 
         return None
@@ -730,7 +710,6 @@ syntactic_object: %s
             return True
 
         return filter(filter_func, self.edges_down)
-
 
     def node_alone(self):
         return not (self.edges_down or self.edges_up)
@@ -820,9 +799,9 @@ syntactic_object: %s
         if ctrl.pressed is self:
             return ctrl.cm.active(ctrl.cm.selection())
         elif self._hovering:
-            #return ctrl.cm.hover()
+            # return ctrl.cm.hover()
             return self.color
-            #return ctrl.cm.hovering(ctrl.cm.selection())
+            # return ctrl.cm.hovering(ctrl.cm.selection())
         elif ctrl.is_selected(self):
             return ctrl.cm.selection()
             # return ctrl.cm.selected(ctrl.cm.selection())
@@ -925,8 +904,8 @@ syntactic_object: %s
             p.setColor(ctrl.cm.hover())
             painter.setPen(p)
             painter.drawRoundedRect(self.inner_rect, 5, 5)
-        elif ctrl.pressed is self or ctrl.is_selected(self) or \
-                (self.has_empty_label() and self.node_alone()):
+        elif ctrl.pressed is self or ctrl.is_selected(self) or (
+                    self.has_empty_label() and self.node_alone()):
             painter.drawRoundedRect(self.inner_rect, 5, 5)
 
             # x,y,z = self.current_position
@@ -951,11 +930,10 @@ syntactic_object: %s
             lbr = self._label_complex.boundingRect()
             lbh = lbr.height()
             lbw = lbr.width()
-            self.label_rect = QtCore.QRectF(self._label_complex.x(),
-                                            self._label_complex.y(), lbw, lbh)
+            self.label_rect = QtCore.QRectF(self._label_complex.x(), self._label_complex.y(), lbw,
+                                            lbh)
             self.width = max((lbw, my_class.width))
-            self.height = max(
-                (lbh + self._label_complex.y_offset, my_class.height))
+            self.height = max((lbh + self._label_complex.y_offset, my_class.height))
             y = self.height / -2
             x = self.width / -2
         else:
@@ -1046,9 +1024,8 @@ syntactic_object: %s
                 w2 = (self.width - 2) / 2.0
                 h2 = (self.height - 2) / 2.0
 
-                self._magnets = [(-w2, -h2), (-w4, -h2), (0, -h2), (w4, -h2),
-                                 (w2, -h2), (-w2, 0), (w2, 0), (-w2, h2),
-                                 (-w4, h2), (0, h2), (w4, h2), (w2, h2)]
+                self._magnets = [(-w2, -h2), (-w4, -h2), (0, -h2), (w4, -h2), (w2, -h2), (-w2, 0),
+                                 (w2, 0), (-w2, h2), (-w4, h2), (0, h2), (w4, h2), (w2, h2)]
 
             x1, y1, z1 = self.current_position
             x2, y2 = self._magnets[n]
@@ -1070,7 +1047,7 @@ syntactic_object: %s
             self.setZValue(200)
             self.setToolTip("Click to edit texts")
 
-            #self.node_info()
+            # self.node_info()
         self.update()
 
     # ### MOUSE - kataja
@@ -1132,13 +1109,10 @@ syntactic_object: %s
         self.prepare_children_for_dragging()
         self._fixed_position_before_dragging = self.fixed_position
         self._adjustment_before_dragging = self.adjustment
-        self._distance_from_dragged = (
-        self.current_position[0], self.current_position[1])
+        self._distance_from_dragged = (self.current_position[0], self.current_position[1])
 
-        ctrl.ui.prepare_touch_areas_for_dragging(drag_host=self,
-                                                 moving=ctrl.dragged_set,
-                                                 dragged_type=self.node_type,
-                                                 multidrag=multidrag)
+        ctrl.ui.prepare_touch_areas_for_dragging(drag_host=self, moving=ctrl.dragged_set,
+                                                 dragged_type=self.node_type, multidrag=multidrag)
         self.start_moving()
 
     def add_to_dragged(self):
@@ -1239,12 +1213,12 @@ syntactic_object: %s
             for node in ctrl.dragged_set:
                 node.lock()
             if self.adjustment:
-                message = 'adjusted node to {:.2f}, {:.2f}'.format(
-                    self.adjustment[0], self.adjustment[1])
+                message = 'adjusted node to {:.2f}, {:.2f}'.format(self.adjustment[0],
+                                                                   self.adjustment[1])
 
             elif self.fixed_position:
-                message = 'moved node to {:.2f}, {:.2f}'.format(
-                    self.fixed_position[0], self.fixed_position[1])
+                message = 'moved node to {:.2f}, {:.2f}'.format(self.fixed_position[0],
+                                                                self.fixed_position[1])
         self.update_position()
         self.finish_dragging()
         return message
@@ -1285,9 +1259,7 @@ syntactic_object: %s
         :return:
         """
         super().lock()
-        if not (
-            self._fixed_position_before_dragging or
-                    self._adjustment_before_dragging):
+        if not (self._fixed_position_before_dragging or self._adjustment_before_dragging):
             ctrl.main.ui_manager.show_anchor(self)  # @UndefinedVariable
 
     # ### Mouse - Qt events ##################################################
@@ -1310,8 +1282,7 @@ syntactic_object: %s
         """ Dragging a foreign object (could be from ui) over a node, entering.
         :param event:
         """
-        if event.mimeData().hasFormat(
-                "application/x-qabstractitemmodeldatalist"):
+        if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist"):
             event.acceptProposedAction()
             self.hovering = True
         else:
@@ -1321,8 +1292,7 @@ syntactic_object: %s
         """ Dragging a foreign object (could be from ui) over a node, leaving.
         :param event:
         """
-        if event.mimeData().hasFormat(
-                "application/x-qabstractitemmodeldatalist"):
+        if event.mimeData().hasFormat("application/x-qabstractitemmodeldatalist"):
             event.acceptProposedAction()
             self.hovering = False
         else:
@@ -1343,7 +1313,6 @@ syntactic_object: %s
 
     def short_str(self):
         return self.label or "no label"
-
 
     def stop_moving(self):
         """ Experimental: remove glow effect from moving things
@@ -1371,7 +1340,6 @@ syntactic_object: %s
     edges_down = Saved("edges_down")
     triangle = Saved("triangle", if_changed=if_changed_triangle)
     folded_away = Saved("folded_away")
-    folding_towards = Saved("folding_towards",
-                            if_changed=if_changed_folding_towards)
+    folding_towards = Saved("folding_towards", if_changed=if_changed_folding_towards)
     color_id = Saved("color_id")
     font_id = Saved("font_id")

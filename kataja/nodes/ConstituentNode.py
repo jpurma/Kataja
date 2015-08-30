@@ -30,7 +30,6 @@ import kataja.globals as g
 
 __author__ = 'purma'
 
-
 xbar_suffixes = ['´', "'", "P", "(1/)", "\1"]
 
 
@@ -53,23 +52,19 @@ class ConstituentNode(BaseConstituentNode):
 
     visible = {'alias': {'order': 0},
                'index': {'order': 1, 'align': 'line-end', 'style': 'subscript'},
-               'label': {'order': 2, 'getter': 'triangled_label'},
-               'gloss': {'order': 3},
-               }
+               'label': {'order': 2, 'getter': 'triangled_label'}, 'gloss': {'order': 3}, }
     editable = {'alias': dict(name='Alias', order=3, prefill='alias',
                               tooltip='Non-functional readable label of the constituent'),
                 'index': dict(name='Index', order=6, align='line-end', width=20, prefill='i',
                               tooltip='Index to recognize multiple occurences'),
                 'label': dict(name='Label', order=9, prefill='label',
-                              tooltip='Label of the constituent (functional identifier)',
-                              width=200, focus=True, syntactic=True),
+                              tooltip='Label of the constituent (functional identifier)', width=200,
+                              focus=True, syntactic=True),
                 'gloss': dict(name='Gloss', order=12, prefill='gloss',
-                              tooltip='translation (optional)', width=200,
-                              check_before='is_leaf'),
+                              tooltip='translation (optional)', width=200, check_before='is_leaf'),
                 'head': dict(name='Head', order=20, tooltip='inherits from',
                              check_before='can_be_projection',
-                             option_function='projection_options_for_ui',
-                             input_type='multibutton',
+                             option_function='projection_options_for_ui', input_type='multibutton',
                              select_action='constituent_set_head')}
     default_style = {'color': 'content1', 'font': g.MAIN_FONT, 'font-size': 10,
                      'edge': g.CONSTITUENT_EDGE}
@@ -93,26 +88,21 @@ class ConstituentNode(BaseConstituentNode):
     # important is 'edge_up': in this case touch areas are associated with
     # edges going up. When left empty, touch area is associated with the node.
 
-    touch_areas_when_dragging = {g.LEFT_ADD_ROOT: {'condition': ['is_root',
-                                                   'dragging_constituent']},
-                   g.RIGHT_ADD_ROOT: {'condition': ['is_root',
-                                                    'dragging_constituent']},
-                   g.LEFT_ADD_SIBLING: {'place': 'edge_up', 'condition':
-                                        'dragging_constituent'},
-                   g.RIGHT_ADD_SIBLING: {'place': 'edge_up', 'condition':
-                                         'dragging_constituent'},
-                   g.TOUCH_CONNECT_COMMENT: {'condition': 'dragging_comment'},
-                   g.TOUCH_CONNECT_FEATURE: {'condition': 'dragging_feature'},
-                   g.TOUCH_CONNECT_GLOSS: {'condition': 'dragging_gloss'}}
+    touch_areas_when_dragging = {
+        g.LEFT_ADD_ROOT: {'condition': ['is_root', 'dragging_constituent']},
+        g.RIGHT_ADD_ROOT: {'condition': ['is_root', 'dragging_constituent']},
+        g.LEFT_ADD_SIBLING: {'place': 'edge_up', 'condition': 'dragging_constituent'},
+        g.RIGHT_ADD_SIBLING: {'place': 'edge_up', 'condition': 'dragging_constituent'},
+        g.TOUCH_CONNECT_COMMENT: {'condition': 'dragging_comment'},
+        g.TOUCH_CONNECT_FEATURE: {'condition': 'dragging_feature'},
+        g.TOUCH_CONNECT_GLOSS: {'condition': 'dragging_gloss'}}
 
     touch_areas_when_selected = {g.LEFT_ADD_ROOT: {'condition': 'is_root'},
-                   g.RIGHT_ADD_ROOT: {'condition': 'is_root'},
-                   g.LEFT_ADD_SIBLING: {'place': 'edge_up'},
-                   g.RIGHT_ADD_SIBLING: {'place': 'edge_up'},
-                   g.LEFT_ADD_CHILD: {'condition': 'is_leaf'},
-                   g.RIGHT_ADD_CHILD: {'condition': 'is_leaf'}}
-
-
+                                 g.RIGHT_ADD_ROOT: {'condition': 'is_root'},
+                                 g.LEFT_ADD_SIBLING: {'place': 'edge_up'},
+                                 g.RIGHT_ADD_SIBLING: {'place': 'edge_up'},
+                                 g.LEFT_ADD_CHILD: {'condition': 'is_leaf'},
+                                 g.RIGHT_ADD_CHILD: {'condition': 'is_leaf'}}
 
     def __init__(self, constituent=None):
         """ Most of the initiation is inherited from Node """
@@ -228,7 +218,6 @@ class ConstituentNode(BaseConstituentNode):
                 self._inode.values['label']['visible'] = s.show_internal_labels
         return self._inode
 
-
     def if_changed_gloss(self, value):
         """ Synobj changed, but remind to update inodes here
         :param value:
@@ -287,8 +276,8 @@ class ConstituentNode(BaseConstituentNode):
                 name = "Root constituent"
             else:
                 name = "Inner constituent"
-            self.status_tip = "%s Alias: %s Label: %s is_leaf: %s" % (name, alias, self.label,
-                                                                      self.is_leaf_node())
+            self.status_tip = "%s Alias: %s Label: %s is_leaf: %s" % (
+            name, alias, self.label, self.is_leaf_node())
         else:
             self.status_tip = "Empty, but mandatory constituent position"
 
@@ -310,7 +299,6 @@ class ConstituentNode(BaseConstituentNode):
         else:
             return "no label"
         return l
-
 
     def __str__(self):
         if not self.syntactic_object:
@@ -334,7 +322,8 @@ class ConstituentNode(BaseConstituentNode):
                 return '0'
             children = self.get_children()
             if children:
-                return '[.%s %s ]' % (self.alias, ' '.join([c.as_bracket_string() for c in children]))
+                return '[.%s %s ]' % (
+                self.alias, ' '.join([c.as_bracket_string() for c in children]))
             else:
                 return self.alias
         else:
@@ -368,26 +357,20 @@ class ConstituentNode(BaseConstituentNode):
             prefix = [chr(0x2199), chr(0x2198)]
         elif l == 3:
             prefix = [chr(0x2199), chr(0x2193), chr(0x2198)]
-        else: # don't use arrows for
+        else:  # don't use arrows for
             prefix = [''] * l
         for n, child in enumerate(children):
             ch = child.head or child
-            potent = child.head or (child.is_leaf_node(only_visible=False) and not
-                child.is_placeholder())
-            d = {'text': '%s%s' % (prefix[n], ch.short_str()),
-                 'value': ch,
-                 'is_checked': ch is self.head,
-                 'enabled': bool(potent),
+            potent = child.head or (
+            child.is_leaf_node(only_visible=False) and not child.is_placeholder())
+            d = {'text': '%s%s' % (prefix[n], ch.short_str()), 'value': ch,
+                 'is_checked': ch is self.head, 'enabled': bool(potent),
                  'tooltip': 'inherit head from ' + str(ch)}
             r.append(d)
-        d = {'text': 'None',
-             'value': None,
-             'is_checked': not self.head,
-             'enabled': True,
+        d = {'text': 'None', 'value': None, 'is_checked': not self.head, 'enabled': True,
              'tooltip': "doesn't inherit head"}
         r.append(d)
         return r
-
 
     def guess_projection(self):
         """ Analyze label, alias and children and try to guess if this is a
@@ -415,7 +398,7 @@ class ConstituentNode(BaseConstituentNode):
         al = self.alias or self.label
         self.head = find_original(self, strip_xbars(str(al))) or self
         ctrl.forest.update_projection_map(self, None, self.head)
-        ctrl.forest.update_projection_visual(self, self.head)
+        # ctrl.forest.update_projection_visual(self, self.head)
         return self.head
 
     def fix_projection_labels(self):
@@ -429,25 +412,29 @@ class ConstituentNode(BaseConstituentNode):
 
         def fix_label(node, level, head):
             last = True
-            for parent in node.get_parents(only_similar=True,
-                                           only_visible=False):
+            for parent in node.get_parents(only_similar=True, only_visible=False):
                 if parent.head is head:
                     fix_label(parent, level + 1, head)
                     last = False
             node.label = head.label
-            if xbar and head_base:
-                if last:
-                    node.alias = head_base + 'P'
-                elif level > 0:
-                    node.alias = head_base + '´'
+            if xbar:
+                if head_base:
+                    if last:
+                        node.alias = head_base + 'P'
+                    elif level > 0:
+                        node.alias = head_base + '´'
+                    else:
+                        node.alias = head_base
                 else:
-                    node.alias = head_base
+                    node.alias = ''
             node.update_label()
 
         h = self.head
         if h:
-            head_base = str(h.alias)
-            head_base = strip_xbars(head_base)
+            head_base = None
+            if h.alias:
+                head_base = str(h.alias)
+                head_base = strip_xbars(head_base)
             fix_label(h, 0, h)
         else:
             self.label = ''
@@ -470,18 +457,18 @@ class ConstituentNode(BaseConstituentNode):
             # as projection chain is broken.
             # set those parent heads to None, and they will recursively
             # fix their parents
-            for parent in self.get_parents(only_similar=True,
-                                           only_visible=False):
+            for parent in self.get_parents(only_similar=True, only_visible=False):
                 if parent.head is old_head:
                     if replace_up:
                         parent.set_projection(new_head, True)
                     else:
                         parent.set_projection(None, False)
         self.head = new_head
-        if new_head.head is not new_head:
+        # following may look odd, but projecting head node's head should be the node itself.
+        if new_head and new_head.head is not new_head:
             new_head.head = new_head
         ctrl.forest.update_projection_map(self, old_head, new_head)
-        ctrl.forest.update_projection_visual(self, new_head)
+        # ctrl.forest.update_projection_visual(self, new_head)
         if new_head:
             new_head.fix_projection_labels()
         else:
@@ -504,9 +491,9 @@ class ConstituentNode(BaseConstituentNode):
         if ctrl.pressed is self:
             return ctrl.cm.active(ctrl.cm.selection())
         elif self._hovering:
-            #return ctrl.cm.hover()
+            # return ctrl.cm.hover()
             return self.color
-            #return ctrl.cm.hovering(ctrl.cm.selection())
+            # return ctrl.cm.hovering(ctrl.cm.selection())
         elif ctrl.is_selected(self):
             return ctrl.cm.selection()
             # return ctrl.cm.selected(ctrl.cm.selection())
@@ -542,7 +529,8 @@ class ConstituentNode(BaseConstituentNode):
     # any other operations?
 
     def is_empty_node(self):
-        """ Empty nodes can be used as placeholders and deleted or replaced without structural worries """
+        """ Empty nodes can be used as placeholders and deleted or replaced without structural
+        worries """
         return (not (self.alias or self.label or self.index)) and self.is_leaf_node()
 
     # ## Indexes and chains ###################################
