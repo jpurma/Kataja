@@ -318,6 +318,7 @@ class ColorWheelInner(QtWidgets.QWidget):
             hsv = (h, s, cm.hsv[2])
             ctrl.main.adjust_colors(hsv)  # @UndefinedVariable
             self.update()
+        QtWidgets.QWidget.mouseMoveEvent(self, event)
 
     def mouseReleaseEvent(self, event):
         """

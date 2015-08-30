@@ -169,9 +169,8 @@ class NodeEditEmbed(UIEmbed):
             elif itype == 'textarea':
                 value = parse_field(field.toPlainText())
             elif itype == 'multibutton':
-                print('Implement submit_values for multibutton in '
-                      'NodeEditEmbed')
-                value = ''
+                # buttons take action immediately when clicked
+                continue
             else:
                 raise NotImplementedError
             if 'setter' in d:
@@ -182,6 +181,7 @@ class NodeEditEmbed(UIEmbed):
 
     def mouseMoveEvent(self, event):
         self.move(self.mapToParent(event.pos()) - self._drag_diff)
+        QtWidgets.QWidget.mouseMoveEvent(self, event)
 
     def focus_to_main(self):
         """ Find the main element to focus in this embed.

@@ -184,3 +184,4 @@ class UIEmbed(QtWidgets.QWidget):
 
     def mouseMoveEvent(self, event):
         self.move(self.mapToParent(event.pos()) - self._drag_diff)
+        QtWidgets.QWidget.mouseMoveEvent(self, event)

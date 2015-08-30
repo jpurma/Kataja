@@ -108,7 +108,9 @@ class ConstituentNode(BaseConstituentNode):
     touch_areas_when_selected = {g.LEFT_ADD_ROOT: {'condition': 'is_root'},
                    g.RIGHT_ADD_ROOT: {'condition': 'is_root'},
                    g.LEFT_ADD_SIBLING: {'place': 'edge_up'},
-                   g.RIGHT_ADD_SIBLING: {'place': 'edge_up'}}
+                   g.RIGHT_ADD_SIBLING: {'place': 'edge_up'},
+                   g.LEFT_ADD_CHILD: {'condition': 'is_leaf'},
+                   g.RIGHT_ADD_CHILD: {'condition': 'is_leaf'}}
 
 
 
@@ -370,7 +372,7 @@ class ConstituentNode(BaseConstituentNode):
             prefix = [''] * l
         for n, child in enumerate(children):
             ch = child.head or child
-            potent = child.head or (child.is_leaf_node() and not
+            potent = child.head or (child.is_leaf_node(only_visible=False) and not
                 child.is_placeholder())
             d = {'text': '%s%s' % (prefix[n], ch.short_str()),
                  'value': ch,
@@ -433,7 +435,7 @@ class ConstituentNode(BaseConstituentNode):
                     fix_label(parent, level + 1, head)
                     last = False
             node.label = head.label
-            if xbar:
+            if xbar and head_base:
                 if last:
                     node.alias = head_base + 'P'
                 elif level > 0:
@@ -444,7 +446,7 @@ class ConstituentNode(BaseConstituentNode):
 
         h = self.head
         if h:
-            head_base = str(h.alias or h.label)
+            head_base = str(h.alias)
             head_base = strip_xbars(head_base)
             fix_label(h, 0, h)
         else:
@@ -453,11 +455,13 @@ class ConstituentNode(BaseConstituentNode):
                 self.alias = ''
             self.update_label()
 
-    def set_projection(self, new_head):
+    def set_projection(self, new_head, replace_up=False):
         """ Set this node to be projection from new_head. If the old_head is
         also used by parent node, propagate the change up to parent (and so
         on).
         :param new_head:
+        :param replace_up: If True, iterate upwards and change nodes that used this head to use
+        the new head instead. If False, the projection ends here.
         :return:
         """
         old_head = self.head
@@ -469,8 +473,13 @@ class ConstituentNode(BaseConstituentNode):
             for parent in self.get_parents(only_similar=True,
                                            only_visible=False):
                 if parent.head is old_head:
-                    parent.set_projection(None)
+                    if replace_up:
+                        parent.set_projection(new_head, True)
+                    else:
+                        parent.set_projection(None, False)
         self.head = new_head
+        if new_head.head is not new_head:
+            new_head.head = new_head
         ctrl.forest.update_projection_map(self, old_head, new_head)
         ctrl.forest.update_projection_visual(self, new_head)
         if new_head:

@@ -767,6 +767,166 @@ class JointedTouchArea(TouchArea):
                 draw_plus(painter, 14, 0)
 
 
+class ChildTouchArea(TouchArea):
+    """ TouchArea that adds children to nodes and has /-shape. Used to
+    add nodes to leaf nodes.
+    :param host:
+    :param type:
+    :param ui_key:
+    """
+
+    def __init__(self, host, ttype, ui_key):
+        super().__init__(host, ttype, ui_key)
+        self._fill_path = False
+        if ttype is g.LEFT_ADD_CHILD:
+            self.status_tip = "Add new child for %s" % self.host
+            self._align_left = True
+        elif ttype is g.RIGHT_ADD_CHILD:
+            self.status_tip = "Add new child for %s" % \
+                              self.host
+        self.setToolTip(self.status_tip)
+        self.update_end_points()
+
+    def boundingRect(self):
+        """
+
+
+        :return:
+        """
+        if not self.end_point:
+            self.update_end_points()
+            assert self.end_point
+        # Bounding rect that includes the tail and end spot ellipse
+        #ex, ey = self.end_point
+        #sx, sy = self.start_point
+        ex, ey = 0, 0
+        sx, sy = sub_xy(self.start_point, self.end_point)
+        e2 = end_spot_size * 2
+        if sx < ex:
+            w = max((ex - sx + end_spot_size, e2))
+            x = min((sx, ex - end_spot_size))
+        else:
+            w = max((sx - ex + end_spot_size, e2))
+            x = ex - end_spot_size
+        if sy < ey:
+            h = max((ey - sy + end_spot_size, e2))
+            y = min((sy, ey - end_spot_size))
+        else:
+            h = max((sy - ey + end_spot_size, e2))
+            y = ey - end_spot_size
+        r = QtCore.QRectF(x, y, w, h)
+        return r
+
+    def update_end_points(self, end_point=None):
+        """
+
+        :param end_point: End point can be given or it can be calculated.
+        """
+        shape_name = ctrl.fs.shape_for_edge(g.CONSTITUENT_EDGE)
+        shape_info = ctrl.fs.shape_presets(shape_name)
+        shape_method = shape_info['method']
+        self._fill_path = shape_info.get('fill', False)
+        if self._align_left:
+            sx, sy, dummy = self.host.magnet(7)
+        else:
+            sx, sy, dummy = self.host.magnet(11)
+        self.start_point = sx, sy
+        if end_point:
+            self.end_point = end_point
+        else:
+            if self._align_left:
+                ex = sx - 20 # 75
+            else:
+                ex = sx + 20 # 75
+            ey = sy + 10
+            self.end_point = ex, ey
+        self.setPos(self.end_point[0], self.end_point[1])
+        rel_sp = sub_xy(self.start_point, self.end_point)
+        sp = tuple2_to_tuple3(rel_sp)
+        #ep = tuple2_to_tuple3(self.end_point)
+        adjust = []
+        if self._align_left:
+            align = g.LEFT
+        else:
+            align = g.RIGHT
+        self._path, true_path, control_points = shape_method(sp, (0, 0, 0),
+                                                             align=align,
+                                                             adjust=adjust,
+                                                             **shape_info)
+
+    def click(self, event=None):
+        """
+        :type event: QMouseEvent
+         """
+        self._dragging = False
+        if self._drag_hint:
+            return False
+        ctrl.forest.add_children_for_constituentnode(self.host,
+                                                     pos=tuple2_to_tuple3(self.end_point),
+                                                     head_left=self._align_left)
+        ctrl.deselect_objects()
+        ctrl.main.action_finished(m='add constituent')
+        return True
+
+    def drop(self, dropped_node):
+        """
+        Connect dropped node to host of this TouchArea.
+        Connection depends on which merge area this is:
+        top left, top right, left, right
+        :param dropped_node:
+        """
+        message = ''
+        if isinstance(dropped_node, str):
+            dropped_node = self.make_node_from_string(dropped_node)
+        if not dropped_node:
+            return
+        if self.type == g.RIGHT_ADD_SIBLING or self.type == \
+            g.LEFT_ADD_SIBLING:
+            # host is an edge
+            ctrl.forest.insert_node_between(dropped_node, self.host.start,
+                                            self.host.end,
+                                            self._align_left,
+                                            self.start_point)
+            for node in ctrl.dragged_set:
+                node.adjustment = self.host.end.adjustment
+            message = 'moved node %s to sibling of %s' % (
+                dropped_node, self.host)
+        return message
+
+    def paint(self, painter, option, widget):
+        """
+
+        :param painter:
+        :param option:
+        :param widget:
+        :raise:
+        """
+        if ctrl.pressed is self:
+            pass
+        if self._hovering:
+            c = ctrl.cm.hovering(ctrl.cm.ui())
+        else:
+            c = ctrl.cm.ui_tr()
+        painter.setPen(c)
+        if self._fill_path:
+            painter.fillPath(self._path, c)
+        else:
+            painter.drawPath(self._path)
+        if self._hovering:
+            painter.save()
+            painter.setBrush(ctrl.cm.ui())
+            if self._align_left:
+                painter.rotate(20)
+                draw_leaf(painter, 0, end_spot_size / 2)
+                painter.restore()
+                draw_plus(painter, 4, 0)
+            else:
+                painter.rotate(-160)
+                draw_leaf(painter, 0, end_spot_size / 2)
+                painter.restore()
+                draw_plus(painter, 14, 0)
+
+
 def create_touch_area(host, ttype, ui_key):
     """ Factory that saves from knowing which class to use.
     :param host:
@@ -778,5 +938,7 @@ def create_touch_area(host, ttype, ui_key):
         return JointedTouchArea(host, ttype, ui_key)
     elif ttype in [g.LEFT_ADD_SIBLING, g.RIGHT_ADD_SIBLING]:
         return BranchingTouchArea(host, ttype, ui_key)
+    elif ttype in [g.LEFT_ADD_CHILD, g.RIGHT_ADD_CHILD]:
+        return ChildTouchArea(host, ttype, ui_key)
     else:
         return TouchArea(host, ttype, ui_key)

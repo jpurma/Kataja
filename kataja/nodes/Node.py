@@ -606,7 +606,7 @@ syntactic_object: %s
                     sibs.append(child)
         return sibs
 
-    def is_leaf_node(self, only_similar=True, only_visible=True):
+    def is_leaf_node(self, only_similar=True, only_visible=False):
         """
 
         :param only_similar:
@@ -844,6 +844,16 @@ syntactic_object: %s
         self.update_bounding_rect()
         self.update_status_tip()
 
+    def update_label_visibility(self):
+        """ Check if the label of the node has any content -- should it be
+        displayed. Node itself can be visible even when its label is not.
+        :return:
+        """
+        if not self._label_complex:
+            self.update_label()
+        self._label_visible = not self.as_inode().is_empty_for_view()
+        self._label_complex.setVisible(self._label_visible)
+
     @property
     def raw_label(self):
         """ Get the unparsed raw version of label (str)
@@ -1059,6 +1069,7 @@ syntactic_object: %s
         else:
             self.setZValue(200)
             self.setToolTip("Click to edit texts")
+
             #self.node_info()
         self.update()
 

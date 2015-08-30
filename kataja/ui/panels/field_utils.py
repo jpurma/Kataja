@@ -584,6 +584,7 @@ class EmbeddedTextarea(QtWidgets.QPlainTextEdit):
         if tip:
             self.setToolTip(tip)
             self.setStatusTip(tip)
+            self.setToolTipDuration(2000)
         if font:
             self.setFont(font)
         if prefill:
@@ -645,6 +646,7 @@ class EmbeddedLineEdit(QtWidgets.QLineEdit):
         if tip:
             self.setToolTip(tip)
             self.setStatusTip(tip)
+            self.setToolTipDuration(2000)
         if font:
             self.setFont(font)
         if prefill:
@@ -729,6 +731,9 @@ class EmbeddedMultibutton(QtWidgets.QFrame):
                     if od['value'] == button.my_value:
                         button.setChecked(od['is_checked'])
                         button.setToolTip(od['tooltip'])
+                        button.setToolTipDuration(2000)
+                        button.setStatusTip(od['tooltip'])
+
                         button.setEnabled(od['enabled'])
                         break
         # create new buttons
@@ -740,6 +745,8 @@ class EmbeddedMultibutton(QtWidgets.QFrame):
                 button.my_value = v
                 button.setChecked(od['is_checked'])
                 button.setToolTip(od['tooltip'])
+                button.setStatusTip(od['tooltip'])
+                button.setToolTipDuration(2000)
                 button.setEnabled(od['enabled'])
                 self.bgroup.addButton(button)
                 self.layout.addWidget(button)

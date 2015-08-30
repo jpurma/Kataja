@@ -142,6 +142,7 @@ class NewElementEmbed(UIEmbed):
         self.move(self.mapToParent(event.pos()) - self._drag_diff)
         if self.marker:
             self.marker.update_position()
+        QtWidgets.QWidget.mouseMoveEvent(self, event)
 
     def focus_to_main(self):
         self.input_line_edit.setFocus()

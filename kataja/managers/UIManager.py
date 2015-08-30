@@ -785,6 +785,8 @@ class UIManager:
                 return all((check_conditions(c, node) for c in cond))
             if not cond:
                 return True
+            elif cond == 'is_leaf':
+                return node.is_leaf_node(only_similar=True, only_visible=False)
             elif cond == 'is_root':
                 return node.is_root_node(only_visible=False)
             elif cond == 'edge_down':

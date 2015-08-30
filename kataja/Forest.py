@@ -26,8 +26,8 @@
 import string
 import collections
 import itertools
-from ProjectionVisual import ProjectionVisual, ProjectionData
 
+from ProjectionVisual import ProjectionData
 from kataja.errors import ForestError
 from kataja.ForestSettings import ForestSettings, ForestRules
 from kataja.Bracket import Bracket
@@ -63,8 +63,7 @@ class Forest(BaseModel):
 
     short_name = "Forest"
 
-    def __init__(self, buildstring='', definitions=None, gloss_text='',
-                 comments=None):
+    def __init__(self, buildstring='', definitions=None, gloss_text='', comments=None):
         """ Create an empty forest """
         super().__init__()
         self.nodes_from_synobs = {}
@@ -121,8 +120,7 @@ class Forest(BaseModel):
             self.nodes_from_synobs = {}
             for node in self.nodes.values():
                 if node.syntactic_object:
-                    self.nodes_from_synobs[
-                        node.syntactic_object.save_key] = node
+                    self.nodes_from_synobs[node.syntactic_object.save_key] = node
 
     def after_init(self):
         """ After_init is called in 2nd step in process of creating objects:
@@ -281,9 +279,7 @@ class Forest(BaseModel):
             self.visualization.reselect()
         else:
             vs = self.main.visualizations
-            self.visualization = vs.get(name,
-                                        vs.get(prefs.default_visualization,
-                                               None))
+            self.visualization = vs.get(name, vs.get(prefs.default_visualization, None))
             self.vis_data = {'name': self.visualization.say_my_name()}
             self.visualization.prepare(self)
         self.main.graph_scene.manual_zoom = False
@@ -428,8 +424,7 @@ class Forest(BaseModel):
         self.main.color_manager.update_colors(prefs, self.settings)
         self.main.app.setPalette(cm.get_qt_palette())
         if old_gradient_base != cm.paper() and cm.gradient:
-            self.main.graph_scene.fade_background_gradient(old_gradient_base,
-                                                           cm.paper())
+            self.main.graph_scene.fade_background_gradient(old_gradient_base, cm.paper())
         else:
             self.main.graph_scene.setBackgroundBrush(qt_prefs.no_brush)
         for other in self.others.values():
@@ -439,9 +434,7 @@ class Forest(BaseModel):
     # ##### Projections ##########################################
 
     def update_projection_map(self, node, old_head, new_head):
-        if old_head is new_head:
-            return
-        if old_head:
+        if old_head and old_head is not new_head:
             pd = self.projections.get(old_head.save_key, None)
             if pd:
                 if old_head is node:
@@ -514,10 +507,17 @@ class Forest(BaseModel):
                     sc = projection.visual.scene()
                     if sc:
                         sc.removeItem(projection.visual)
+        # fix labels to follow the guessed projections if we just guessed them.
+        if not self.guessed_projections:
+            for key, projection in list(self.projections.items()):
+                projection.head.fix_projection_labels()
         self.guessed_projections = True
         self.update_projection_display()
+        print('--- finish update projections---')
 
+    @time_me
     def update_projection_display(self):
+        print('update projection display called')
         strong_lines = ctrl.fs.projection_strong_lines
         colorized = ctrl.fs.projection_colorized
         highlighter = ctrl.fs.projection_highlighter
@@ -548,7 +548,6 @@ class Forest(BaseModel):
             if len(projection.chain) > 1:
                 for node in projection.chain:
                     node.set_projection_display(color_id)
-
 
     def get_node(self, constituent):
         """
@@ -629,8 +628,7 @@ class Forest(BaseModel):
         """
         if (not isinstance(node, BaseConstituentNode)) or node.is_placeholder():
             return
-        has_parents = bool(
-            [x for x in node.edges_up if x.edge_type is g.CONSTITUENT_EDGE])
+        has_parents = bool([x for x in node.edges_up if x.edge_type is g.CONSTITUENT_EDGE])
         if node in self.roots:
             if has_parents:
                 self.poke('roots')
@@ -750,8 +748,7 @@ class Forest(BaseModel):
             self.visualization.reset_node(node)
         return node
 
-    def create_attribute_node(self, host, attribute_id, attribute_label,
-                              show_label=False):
+    def create_attribute_node(self, host, attribute_id, attribute_label, show_label=False):
         """
 
         :param host:
@@ -760,8 +757,7 @@ class Forest(BaseModel):
         :param show_label:
         :return:
         """
-        AN = AttributeNode(host, attribute_id, attribute_label,
-                           show_label=show_label)
+        AN = AttributeNode(host, attribute_id, attribute_label, show_label=show_label)
         self.connect_node(host, child=AN)
         self.add_to_scene(AN)
         AN.update_visibility()
@@ -777,8 +773,7 @@ class Forest(BaseModel):
         :param direction:
         :return:
         """
-        rel = Edge(start=start, end=end, edge_type=edge_type,
-                   direction=direction)
+        rel = Edge(start=start, end=end, edge_type=edge_type, direction=direction)
         rel.after_init()
         self.store(rel)
         self.add_to_scene(rel)
@@ -938,8 +933,7 @@ class Forest(BaseModel):
         if not found:
             self.node_types.remove(my_type)
         # -- synobj-to-node -mapping (is it used anymore?)
-        if node.syntactic_object and node.syntactic_object.save_key in \
-                self.nodes_from_synobs:
+        if node.syntactic_object and node.syntactic_object.save_key in self.nodes_from_synobs:
             del self.nodes_from_synobs[node.syntactic_object.save_key]
 
         if node in self.roots:
@@ -1139,7 +1133,7 @@ class Forest(BaseModel):
                         else:
                             ev = self.visualization.show_edges_for(start)
                     edge.visible = ev and (
-                    (edge.end and edge.end.visible) or ((not edge.end) and sv))
+                        (edge.end and edge.end.visible) or ((not edge.end) and sv))
                 else:
                     if edge.start:
                         edge.visible = edge.start.is_visible
@@ -1165,7 +1159,7 @@ class Forest(BaseModel):
                 v = edge.visible
                 if edge.edge_type == g.CONSTITUENT_EDGE:
                     edge.visible = edges_visible and (
-                    (edge.end and edge.end.visible) or not edge.end)
+                        (edge.end and edge.end.visible) or not edge.end)
                 else:
                     edge.visible = visible
                 if v and not edge.visible:
@@ -1226,8 +1220,7 @@ class Forest(BaseModel):
             if isinstance(val, collections.Callable):
                 val = val()
             if val:
-                attr_node = self.create_attribute_node(node, attr_id,
-                                                       attribute_label=key,
+                attr_node = self.create_attribute_node(node, attr_id, attribute_label=key,
                                                        show_label=show_label)
 
     def remove_order_features(self, key='M'):
@@ -1249,13 +1242,11 @@ class Forest(BaseModel):
         if M and not self.settings.shows_merge_order:
             self.delete_node(M)
         elif self.settings.shows_merge_order and (not M) and node.merge_order:
-            self.create_attribute_node(node, 'merge_order', attribute_label='M',
-                                       show_label=True)
+            self.create_attribute_node(node, 'merge_order', attribute_label='M', show_label=True)
         if S and not self.settings.shows_select_order:
             self.delete_node(S)
         elif self.settings.shows_select_order and (not S) and node.select_order:
-            self.create_attribute_node(node, 'select_order',
-                                       attribute_label='S', show_label=False)
+            self.create_attribute_node(node, 'select_order', attribute_label='S', show_label=False)
 
     def add_select_counter(self, node, replace=0):
         """
@@ -1316,9 +1307,8 @@ class Forest(BaseModel):
         self.chain_manager.traces_to_multidomination()
         for node in self.nodes.values():
             if hasattr(node, 'is_trace') and node.is_trace:
-                print(
-                    'We still have a visible trace after '
-                    'traces_to_multidomination')
+                print('We still have a visible trace after '
+                      'traces_to_multidomination')
                 # else:
                 #    print('no is_trace -property')
 
@@ -1374,8 +1364,7 @@ class Forest(BaseModel):
     # by forest's higher level methods.
     #
 
-    def connect_node(self, parent=None, child=None, direction='',
-                     edge_type=None):
+    def connect_node(self, parent=None, child=None, direction='', edge_type=None):
         """ This is for connecting nodes with a certain edge. Calling this
         once will create the necessary links for both partners.
         Sanity checks:
@@ -1394,10 +1383,8 @@ class Forest(BaseModel):
         if parent == child:
             raise ForestError('Connecting to self')
         if not parent and child:
-            raise ForestError(
-                'Trying to connect nodes, but other is missing (parent:%s, '
-                'child%s)' % (
-                parent, child))
+            raise ForestError('Trying to connect nodes, but other is missing (parent:%s, '
+                              'child%s)' % (parent, child))
 
         if not edge_type:
             edge_type = child.__class__.default_edge_type
@@ -1426,6 +1413,20 @@ class Forest(BaseModel):
         child.connect_in_syntax(new_edge)
         self.update_root_status(parent)
         self.update_root_status(child)
+        # fix other edge aligns: only one left align and one right align,
+        # n center aligns, and if only one child, it has center align.
+        edges = [edge for edge in parent.edges_down if edge_type == edge_type]
+        assert (edges)
+        if len(edges) == 1:
+            edges[0].alignment = g.NO_ALIGN
+        elif len(edges) == 2:
+            edges[0].alignment = g.LEFT
+            edges[-1].alignment = g.RIGHT
+        else:
+            edges[0].alignment = g.LEFT
+            for edge in edges[1:-1]:
+                edge.alignment = g.NO_ALIGN
+            edges[-1].alignment = g.RIGHT
 
         if hasattr(parent, 'rebuild_brackets'):
             parent.rebuild_brackets()
@@ -1451,8 +1452,7 @@ class Forest(BaseModel):
         self.update_root_status(edge.end)
         self.delete_edge(edge)
 
-    def disconnect_node(self, parent, child, edge_type='',
-                        ignore_missing=False):
+    def disconnect_node(self, parent, child, edge_type='', ignore_missing=False):
         """ Removes and deletes a edge between two nodes
         :param parent:
         :param child:
@@ -1463,11 +1463,10 @@ class Forest(BaseModel):
         if edge:
             self.disconnect_edge(edge)
         elif not ignore_missing:
-            raise ForestError(
-                "Disconnecting nodes, but cannot find the edge between them")
+            raise ForestError("Disconnecting nodes, but cannot find the edge between them")
 
-    def replace_node(self, old_node, new_node, only_for_parent=None,
-                     replace_children=False, can_delete=True):
+    def replace_node(self, old_node, new_node, only_for_parent=None, replace_children=False,
+                     can_delete=True):
         """  When replacing a node we should make sure that edges get fixed too.
         :param old_node: node to be replaced -- if all occurences get
         replaced, delete it
@@ -1481,8 +1480,7 @@ class Forest(BaseModel):
         # print('replace_node %s %s %s %s' % (old_node, new_node,
         # only_for_parent, replace_children))
 
-        assert (
-        old_node != new_node)  # if this can happen, we'll probably have
+        assert (old_node != new_node)  # if this can happen, we'll probably have
         # infinite loop somewhere
         new_node.current_position = old_node.current_position
         new_node.adjustment = old_node.adjustment
@@ -1519,9 +1517,8 @@ class Forest(BaseModel):
         :raise ForestError:
         """
         if not isinstance(node, BaseConstituentNode):
-            raise ForestError(
-                "Trying to treat wrong kind of node as ConstituentNode and "
-                "forcing it to binary merge")
+            raise ForestError("Trying to treat wrong kind of node as ConstituentNode and "
+                              "forcing it to binary merge")
 
         if hasattr(node, 'index'):
             i = node.index
@@ -1566,8 +1563,7 @@ class Forest(BaseModel):
                     for parent in good_parents:
                         edge = parent.get_edge_to(node)
                         self.disconnect_node(parent, node)
-                        self.connect_node(parent, child,
-                                          direction=edge.alignment)
+                        self.connect_node(parent, child, direction=edge.alignment)
             if i:
                 child.set_index(i)
             self.delete_node(node)
@@ -1577,6 +1573,53 @@ class Forest(BaseModel):
                 # self.delete_node(right)
                 # if left.is_placeholder():
                 # self.delete_node(left)
+
+    def add_children_for_constituentnode(self, parent: BaseConstituentNode, pos=None, head_left=True):
+        """ User adds children for leaf node. If binary nodes are used, new nodes are added in
+        pairs. Because of this, be careful for using this in other than user-triggered situations.
+        If the node where children is added is projecting, new node will take its identity and
+        will become the one projecting.
+        :param parent:
+        :param pos:
+        :param head_left: adding node to left or right -- if binary nodes, this marks which one
+        will be projecting.
+        :return:
+        """
+        # Let's spend some effort to do sanity check if parent can have
+        # children added to it
+
+        siblings = list(parent.get_ordered_children())
+        if self.settings.only_binary_trees and len(siblings) > 1:
+            raise ForestError("Trying to add third child for binary tree")
+
+        # These steps are safe, connect node is smart enough to deal with
+        # unary/ binary children.
+        new_node = self.create_node(pos=pos)
+        new_node.adjustment = parent.adjustment
+        if head_left:
+            main_align = g.LEFT
+            other_align = g.RIGHT
+        else:
+            main_align = g.RIGHT
+            other_align = g.LEFT
+        self.connect_node(parent=parent, child=new_node, direction=main_align)
+        # create pair if necessary
+        if self.settings.only_binary_trees and not siblings:
+            ox, oy, oz = pos
+            if other_align == g.RIGHT:
+                ox += 40
+            else:
+                ox -= 40
+            other_node = self.create_node(pos=(ox, oy, oz))
+            new_node.adjustment = parent.adjustment
+            self.connect_node(parent=parent, child=other_node, direction=other_align)
+        # reassigning projection is trickier
+        if hasattr(parent, 'head') and parent.head and parent.head is parent:
+            new_node.label = parent.label
+            new_node.alias = parent.alias
+            new_node.set_projection(new_node)
+            parent.set_projection(new_node, replace_up=True)
+
 
     def merge_to_top(self, top, new, merge_to_left, merger_pos):
         """
@@ -1613,10 +1656,7 @@ class Forest(BaseModel):
         if self.traces_are_visible():
             self.chain_manager.rebuild_chains()
 
-
-
-    def insert_node_between(self, inserted, parent, child, merge_to_left,
-                            insertion_pos):
+    def insert_node_between(self, inserted, parent, child, merge_to_left, insertion_pos):
         """ This is an insertion action into a tree: a new merge is created
         and inserted between two existing constituents. One connection is
         removed, but three are created.
@@ -1650,8 +1690,7 @@ class Forest(BaseModel):
 
         edge = parent.get_edge_to(child)
         head = None
-        if hasattr(parent, 'head') and hasattr(child, 'head') and parent.head\
-                is child.head:
+        if hasattr(parent, 'head') and hasattr(child, 'head') and parent.head is child.head:
             head = parent.head
         align = edge.alignment
         self.disconnect_edge(edge)
@@ -1679,8 +1718,7 @@ class Forest(BaseModel):
         """
         if not pos:
             pos = (0, 0, 0)
-        merger_const = ctrl.FL.merge(left.syntactic_object,
-                                     right.syntactic_object)
+        merger_const = ctrl.FL.merge(left.syntactic_object, right.syntactic_object)
         merger_node = self.create_node(synobj=merger_const, pos=pos)
         self.add_merge_counter(merger_node)
         self.connect_node(parent=merger_node, child=left, direction=g.LEFT)
@@ -1722,8 +1760,7 @@ class Forest(BaseModel):
             elif folded.is_multidominated():
                 can_fold = True
                 for parent in parents:
-                    if (parent not in fold_scope) or (
-                        parent in not_my_children):
+                    if (parent not in fold_scope) or (parent in not_my_children):
                         not_my_children.add(folded)
                         can_fold = False
                         break
@@ -1743,8 +1780,7 @@ class Forest(BaseModel):
         :param node:
         """
         node.triangle = False
-        fold_scope = (f for f in self.list_nodes_once(node) if
-                      f.folding_towards is node)
+        fold_scope = (f for f in self.list_nodes_once(node) if f.folding_towards is node)
         for folded in fold_scope:
             folded.folding_towards = None
             folded.folded_away = False

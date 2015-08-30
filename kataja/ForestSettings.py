@@ -59,6 +59,7 @@ class ForestSettings(BaseModel):
         self.shows_constituent_edges = None
         self.shows_merge_order = None
         self.shows_select_order = None
+        self.only_binary_trees = True
         self.draw_features = None
         self.hsv = None
         self.color_mode = None

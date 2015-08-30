@@ -130,6 +130,7 @@ class KatajaAction(QtWidgets.QAction):
             else:
                 element.setStatusTip(tooltip)
                 element.setToolTip(tooltip)
+            element.setToolTipDuration(2000)
 
         shortcut = self.shortcut()
         shortcut_context = self.shortcutContext()

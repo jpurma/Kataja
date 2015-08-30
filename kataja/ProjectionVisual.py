@@ -79,7 +79,7 @@ class ProjectionData:
             if prev_node and prev_node not in node.get_children():
                 order_problem = True
             prev_node = node
-        if order_problem:
+        if order_problem and new_chain:
             print('sorting the projection chain...')
             lowest = self.head
             sorted_chain = [lowest]

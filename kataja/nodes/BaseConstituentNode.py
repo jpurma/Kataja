@@ -144,7 +144,7 @@ class BaseConstituentNode(Node):
     def update_status_tip(self):
         """ Hovering status tip """
         if self.syntactic_object:
-            if self.is_leaf_node():
+            if self.is_leaf_node(only_similar=True, only_visible=False):
                 name = "Leaf constituent"
             elif self.is_root_node():
                 name = "Root constituent"
@@ -181,6 +181,15 @@ class BaseConstituentNode(Node):
         :return: boolean
         """
         return not self.syntactic_object
+
+    def get_ordered_children(self):
+        """ Return children by using the ordering method from syntax.
+        :return:
+        """
+        if self.syntactic_object:
+            if hasattr(self.syntactic_object, 'ordered_parts'):
+                for synob in self.syntactic_object.ordered_parts():
+                    yield ctrl.forest.get_node(synob)
 
     def get_attribute_nodes(self, label_key=''):
         """
@@ -375,7 +384,7 @@ class BaseConstituentNode(Node):
 
     def is_empty_node(self):
         """ Empty nodes can be used as placeholders and deleted or replaced without structural worries """
-        return (not self.label) and self.is_leaf_node()
+        return (not self.label) and self.is_leaf_node(only_similar=True, only_visible=False)
 
     def get_features_as_string(self):
         """
