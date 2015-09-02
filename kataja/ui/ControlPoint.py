@@ -48,7 +48,8 @@ class ControlPoint(QtWidgets.QGraphicsItem):
             self.status_tip = "Drag to adjust the curvature of this line"
         elif self.role == g.LABEL_START:
             self.status_tip = "Drag along the line to adjust the anchor point of label"
-        self.setToolTip(self.status_tip)
+        if ctrl.main.use_tooltips:
+            self.setToolTip(self.status_tip)
         self.show()
 
     def show(self):

@@ -237,7 +237,8 @@ class FontSelector(TableModelComboBox):
             font = qt_prefs.fonts[key]
             item = QtGui.QStandardItem(role)
             item.setData(key)
-            item.setToolTip('%s, %spt' % (font.family(), font.pointSize()))
+            if ctrl.main.use_tooltips:
+                item.setToolTip('%s, %spt' % (font.family(), font.pointSize()))
             item.setFont(font)
             item.setSizeHint(QSize(64, 16))
             items.append(item)
@@ -255,7 +256,8 @@ class FontSelector(TableModelComboBox):
         """
         item = QtGui.QStandardItem(font_id)
         item.setData(font_id)
-        item.setToolTip('%s, %spt' % (font.family(), font.pointSize()))
+        if ctrl.main.use_tooltips:
+            item.setToolTip('%s, %spt' % (font.family(), font.pointSize()))
         item.setFont(font)
         item.setSizeHint(QSize(64, 16))
         self.model().appendRow(item)
@@ -581,9 +583,10 @@ class EmbeddedTextarea(QtWidgets.QPlainTextEdit):
     def __init__(self, parent, tip='', font=None, prefill=''):
         QtWidgets.QPlainTextEdit.__init__(self, parent)
         if tip:
-            self.setToolTip(tip)
+            if ctrl.main.use_tooltips:
+                self.setToolTip(tip)
+                self.setToolTipDuration(2000)
             self.setStatusTip(tip)
-            self.setToolTipDuration(2000)
         if font:
             self.setFont(font)
         if prefill:
@@ -641,9 +644,10 @@ class EmbeddedLineEdit(QtWidgets.QLineEdit):
     def __init__(self, parent, tip='', font=None, prefill=''):
         QtWidgets.QLineEdit.__init__(self, parent)
         if tip:
-            self.setToolTip(tip)
+            if ctrl.main.use_tooltips:
+                self.setToolTip(tip)
+                self.setToolTipDuration(2000)
             self.setStatusTip(tip)
-            self.setToolTipDuration(2000)
         if font:
             self.setFont(font)
         if prefill:
@@ -725,8 +729,9 @@ class EmbeddedMultibutton(QtWidgets.QFrame):
                 for od in options:
                     if od['value'] == button.my_value:
                         button.setChecked(od['is_checked'])
-                        button.setToolTip(od['tooltip'])
-                        button.setToolTipDuration(2000)
+                        if ctrl.main.use_tooltips:
+                            button.setToolTip(od['tooltip'])
+                            button.setToolTipDuration(2000)
                         button.setStatusTip(od['tooltip'])
 
                         button.setEnabled(od['enabled'])
@@ -739,9 +744,10 @@ class EmbeddedMultibutton(QtWidgets.QFrame):
                 button.setCheckable(True)
                 button.my_value = v
                 button.setChecked(od['is_checked'])
-                button.setToolTip(od['tooltip'])
+                if ctrl.main.use_tooltips:
+                    button.setToolTip(od['tooltip'])
+                    button.setToolTipDuration(2000)
                 button.setStatusTip(od['tooltip'])
-                button.setToolTipDuration(2000)
                 button.setEnabled(od['enabled'])
                 self.bgroup.addButton(button)
                 self.layout.addWidget(button)

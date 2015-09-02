@@ -60,7 +60,8 @@ class ShapeSelector(TableModelComboBox):
         for lt in SHAPE_PRESETS.keys():
             item = QStandardItem(LineStyleIcon(lt, parent, self.iconSize()), '')
             item.setData(lt)
-            item.setToolTip(lt)
+            if ctrl.main.use_tooltips:
+                item.setToolTip(lt)
             item.setSizeHint(self.iconSize())
             items.append(item)
         model = self.model()

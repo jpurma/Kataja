@@ -145,7 +145,8 @@ class TouchArea(QtWidgets.QGraphicsItem):
         self.update_end_points()
         self.setCursor(QtCore.Qt.PointingHandCursor)
 
-        self.setToolTip(self.status_tip)
+        if ctrl.main.use_tooltips:
+            self.setToolTip(self.status_tip)
 
     def is_visible(self):
         """
@@ -447,7 +448,8 @@ class BranchingTouchArea(TouchArea):
             self._align_left = True
         elif ttype is g.RIGHT_ADD_SIBLING:
             self.status_tip = "Add new sibling to right of %s" % self.host.end
-        self.setToolTip(self.status_tip)
+        if ctrl.main.use_tooltips:
+            self.setToolTip(self.status_tip)
         self.update_end_points()
 
     def boundingRect(self):
@@ -614,7 +616,8 @@ class JointedTouchArea(TouchArea):
             self._align_left = True
         elif ttype is g.RIGHT_ADD_ROOT:
             self.status_tip = "Add new constituent to right of %s" % self.host
-        self.setToolTip(self.status_tip)
+        if ctrl.main.use_tooltips:
+            self.setToolTip(self.status_tip)
         self.update_end_points()
 
     def boundingRect(self):
@@ -784,7 +787,8 @@ class ChildTouchArea(TouchArea):
         elif ttype is g.RIGHT_ADD_CHILD:
             self.status_tip = "Add new child for %s" % \
                               self.host
-        self.setToolTip(self.status_tip)
+        if ctrl.main.use_tooltips:
+            self.setToolTip(self.status_tip)
         self.update_end_points()
 
     def boundingRect(self):

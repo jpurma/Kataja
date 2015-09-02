@@ -1,6 +1,7 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
 
-from kataja.singletons import ctrl
+from kataja.singletons import ctrl, qt_prefs
+from kataja.ui.OverlayButton import PanelButton
 
 __author__ = 'purma'
 
@@ -33,10 +34,10 @@ class UIEmbed(QtWidgets.QWidget):
         self._drag_diff = None
 
         self.top_row_layout = QtWidgets.QHBoxLayout()
-        close_button = QtWidgets.QPushButton("x")
+        #close_button = QtWidgets.QPushButton("x")
+        close_button = PanelButton(qt_prefs.close_icon, text='Close', parent=self, size=12)
         close_button.setMaximumWidth(16)
         ui_manager.connect_element_to_action(close_button, 'close_embed')
-
         self.top_row_layout.addWidget(close_button)
         self.top_row_layout.setAlignment(QtCore.Qt.AlignLeft)
         self.assumed_width = 200

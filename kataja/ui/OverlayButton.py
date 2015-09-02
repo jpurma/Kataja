@@ -28,6 +28,12 @@ from kataja.errors import UIError
 from kataja.singletons import ctrl
 import kataja.globals as g
 
+borderstyle = """
+PanelButton {border: 1px transparent none}
+:hover {border: 1px solid %s; border-radius: 3}
+:pressed {border: 2px solid %s; border-radius: 3}
+"""
+
 
 class PanelButton(QtWidgets.QPushButton):
     """ Buttons that change their color according to widget where they are.
@@ -65,7 +71,8 @@ class PanelButton(QtWidgets.QPushButton):
             self.pixmap = pixmap
         self.compose_icon()
         if text:
-            self.setToolTip(text)
+            if ctrl.main.use_tooltips:
+                self.setToolTip(text)
             self.setStatusTip(text)
         self.setContentsMargins(0, 0, 0, 0)
         self.setFlat(True)
@@ -100,10 +107,7 @@ class PanelButton(QtWidgets.QPushButton):
 
         i = QtGui.QIcon(QtGui.QPixmap.fromImage(image))
         self.setIcon(i)
-        self.setStyleSheet(":hover {border: 1px solid %s; border-radius: 3} "
-                           ":pressed {border: 2px solid %s; border-radius: "
-                           "3}" % (
-                           c.name(), c.lighter().name()))
+        self.setStyleSheet(borderstyle % (c.name(), c.lighter().name()))
 
     def update_color(self):
         self.compose_icon()
@@ -194,7 +198,9 @@ class OverlayButton(PanelButton):
     def enterEvent(self, event):
         if self.role == g.REMOVE_MERGER:
             self.host.hovering = True
+        PanelButton.enterEvent(self, event)
 
     def leaveEvent(self, event):
         if self.role == g.REMOVE_MERGER:
             self.host.hovering = False
+        PanelButton.leaveEvent(self, event)

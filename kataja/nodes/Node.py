@@ -182,10 +182,11 @@ class Node(Movable, QtWidgets.QGraphicsItem):
                   'just been deleted?' % self.save_key)
 
     @staticmethod
-    def create_synobj():
+    def create_synobj(label=None):
         """ (Abstract) Nodes do not have corresponding syntactic object, so
         return None and the Node factory knows to not try to pass syntactic
         object -argument.
+        :param label: not used here
         :return:
         """
         return None
@@ -1042,10 +1043,12 @@ syntactic_object: %s
         """
         if not selected:
             self.setZValue(10)
-            self.setToolTip("")
+            if ctrl.main.use_tooltips:
+                self.setToolTip("")
         else:
             self.setZValue(200)
-            self.setToolTip("Click to edit texts")
+            if ctrl.main.use_tooltips:
+                self.setToolTip("Click to edit texts")
 
             # self.node_info()
         self.update()

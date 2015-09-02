@@ -715,7 +715,7 @@ class Forest(BaseModel):
 
     # ### Primitive creation of forest objects ################################
 
-    def create_node(self, synobj=None, pos=None, node_type=1):
+    def create_node(self, synobj=None, pos=None, node_type=1, text=None):
         """ This is generic method for creating all of the Node subtypes.
         Keep it generic!
         :param synobj: If syntactic object is passed here, the node created
@@ -734,11 +734,11 @@ class Forest(BaseModel):
         # Create corresponding syntactic object if necessary
         if not synobj:
             if hasattr(node_class, 'create_synobj'):
-                synobj = node_class.create_synobj()
+                synobj = node_class.create_synobj(text)
         if synobj:
             node = node_class(synobj)
         else:
-            node = node_class()
+            node = node_class(text)
         # after_init should take care that syntactic object is properly
         # reflected by node's connections (call node.reflect_synobj()?)
         node.after_init()
@@ -1057,7 +1057,8 @@ class Forest(BaseModel):
         if edge.end:
             edge.end.disconnect_in_syntax(edge)
         edge.connect_end_points(new_start, edge.end)
-        edge.end.connect_in_syntax(edge)
+        if edge.end:
+            edge.end.connect_in_syntax(edge)
         new_start.poke('edges_down')
         new_start.edges_down.append(edge)
 
@@ -1648,7 +1649,7 @@ class Forest(BaseModel):
             else:
                 ox -= 40
             other_node = self.create_node(pos=(ox, oy, oz))
-            new_node.adjustment = parent.adjustment
+            other_node.adjustment = parent.adjustment
             self.connect_node(parent=parent, child=other_node, direction=other_align)
         # reassigning projection is trickier
         if hasattr(parent, 'head') and parent.head and parent.head is parent:

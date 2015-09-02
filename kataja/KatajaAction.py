@@ -82,6 +82,7 @@ class KatajaAction(QtWidgets.QAction):
         if checkable:
             self.setCheckable(True)
         if tooltip:
+            #if ctrl.main.use_tooltips:
             self.setToolTip(tooltip)
             self.setStatusTip(tooltip)
 
@@ -123,13 +124,17 @@ class KatajaAction(QtWidgets.QAction):
         """
 
         tooltip = self.toolTip()
+        print('tooltip: "%s" , is it True? %s ' % (tooltip, bool(tooltip)))
         if tooltip and not isinstance(element, EmbeddedMultibutton):
             if tooltip_suffix:
+                print(tooltip)
                 element.setStatusTip(tooltip % tooltip_suffix)
-                element.setToolTip(tooltip % tooltip_suffix)
+                if ctrl.main.use_tooltips:
+                    element.setToolTip(tooltip % tooltip_suffix)
             else:
                 element.setStatusTip(tooltip)
-                element.setToolTip(tooltip)
+                if ctrl.main.use_tooltips:
+                    element.setToolTip(tooltip)
             element.setToolTipDuration(2000)
 
         shortcut = self.shortcut()

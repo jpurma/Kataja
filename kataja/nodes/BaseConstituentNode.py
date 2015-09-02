@@ -78,12 +78,13 @@ class BaseConstituentNode(Node):
         self.setAcceptDrops(True)
 
     @staticmethod
-    def create_synobj():
+    def create_synobj(label=None):
         """ ConstituentNodes are wrappers for Constituents. Exact
         implementation/class of constituent is defined in ctrl.
         :return:
         """
-        label = ctrl.forest.get_first_free_constituent_name()
+        if not label:
+            label = ctrl.forest.get_first_free_constituent_name()
         c = ctrl.Constituent(label)
         return c
 

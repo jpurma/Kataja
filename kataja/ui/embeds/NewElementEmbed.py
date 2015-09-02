@@ -4,7 +4,7 @@ from kataja.ui.embeds.UIEmbed import UIEmbed
 from kataja.ui.drawn_icons import arrow, divider
 from kataja.singletons import qt_prefs, ctrl, prefs
 import kataja.globals as g
-from kataja.ui.panels.field_utils import icon_text_button
+from kataja.ui.panels.field_utils import icon_text_button, EmbeddedLineEdit, box_row
 
 __author__ = 'purma'
 
@@ -16,7 +16,6 @@ class MarkerStartPoint(QtWidgets.QGraphicsItem):
         self.setAcceptHoverEvents(True)
         self.draggable = True
         self.clickable = False
-
 
     def paint(self, painter, options, QWidget_widget=None):
         if prefs.touch:
@@ -44,7 +43,8 @@ class MarkerStartPoint(QtWidgets.QGraphicsItem):
 
 
 class NewElementMarker(QtWidgets.QGraphicsItem):
-    """ Element marker is line drawn to graphics scene pointing from place where new element should go to
+    """ Element marker is line drawn to graphics scene pointing from place where new element
+    should go to
     embedded widget.
 
     :param parent:
@@ -64,7 +64,6 @@ class NewElementMarker(QtWidgets.QGraphicsItem):
         self.start_point_cp.show()
         self.draggable = False  # MarkerStartPoint is draggable, not this
         self.clickable = False
-
 
     def paint(self, painter, options, QWidget_widget=None):
         p = QtGui.QPen(ctrl.cm.ui())
@@ -97,24 +96,26 @@ class NewElementEmbed(UIEmbed):
     def __init__(self, parent, ui_manager, ui_key):
         UIEmbed.__init__(self, parent, ui_manager, ui_key, None)
         self.marker = None
-        layout = QtWidgets.QVBoxLayout()
-        self.new_arrow_button = icon_text_button(ui_manager, self.top_row_layout,
-                                                 self, '', '', " &Arrow",
-                                                 'new_arrow',
-                                                 size=QtCore.QSize(48, 24),
+        outer_layout = QtWidgets.QVBoxLayout()
+        outer_layout.setContentsMargins(0, 0, 0, 0)
+        outer_layout.addLayout(self.top_row_layout)
+        inner_layout = QtWidgets.QVBoxLayout()
+        outer_layout.addLayout(inner_layout)
+        inner_layout.setContentsMargins(6, 0, 6, 6)
+        hlayout = box_row(inner_layout)
+        self.new_arrow_button = icon_text_button(ui_manager, hlayout, self, '', '',
+                                                 " &Arrow", 'new_arrow', size=QtCore.QSize(48, 20),
                                                  draw_method=arrow)
-        self.divider_button = icon_text_button(ui_manager, self.top_row_layout,
-                                                 self, '', '', " &Divider",
-                                                 'new_divider',
-                                                 size=QtCore.QSize(48, 24),
-                                                 draw_method=divider)
-        layout.addLayout(self.top_row_layout)
-        layout.addSpacing(12)
-        self.input_line_edit = QtWidgets.QLineEdit(self)
+        self.divider_button = icon_text_button(ui_manager, hlayout, self, '', '',
+                                               " &Divider", 'new_divider',
+                                               size=QtCore.QSize(48, 20), draw_method=divider)
+        self.new_arrow_button.setFlat(False)
+        self.divider_button.setFlat(False)
+        tt = 'Text for new node'
         f = QtGui.QFont(qt_prefs.font(g.MAIN_FONT))
         f.setPointSize(f.pointSize() * 2)
-        self.input_line_edit.setFont(f)
-        layout.addWidget(self.input_line_edit)
+        self.input_line_edit = EmbeddedLineEdit(self, tip=tt, font=f, prefill='label')
+        inner_layout.addWidget(self.input_line_edit)
         hlayout = QtWidgets.QHBoxLayout()
         self.node_type_selector = QtWidgets.QComboBox(self)
 
@@ -123,18 +124,17 @@ class NewElementEmbed(UIEmbed):
             # we have dedicated buttons for arrows and dividers
             if key not in (g.ARROW, g.DIVIDER):
                 nd = prefs.nodes[key]
-                node_types.append((nd['name'], key))
+                node_types.append(('New %s' % nd['name'].lower(), key))
         for name, value in node_types:
             self.node_type_selector.addItem(name, userData=value)
             # 'name' can be translated if necessary
         hlayout.addWidget(self.node_type_selector)
-        self.enter_button = QtWidgets.QPushButton("↩")  # U+21A9 &#8617;
-        self.enter_button.setMaximumWidth(20)
+        self.enter_button = QtWidgets.QPushButton("Create ↩")  # U+21A9 &#8617;
         ui_manager.connect_element_to_action(self.enter_button, 'new_element_enter_text')
 
         hlayout.addWidget(self.enter_button)
-        layout.addLayout(hlayout)
-        self.setLayout(layout)
+        inner_layout.addLayout(hlayout)
+        self.setLayout(outer_layout)
         self.assumed_width = 200
         self.assumed_height = 117
 
@@ -160,7 +160,6 @@ class NewElementEmbed(UIEmbed):
         p1 = self.marker.pos()
         p2 = self.marker.mapToScene(self.marker.end_point)
         return p1, p2
-
 
 # line = new QFrame(w);
 # line->setObjectName(QString::fromUtf8("line"));

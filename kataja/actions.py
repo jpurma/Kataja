@@ -1013,7 +1013,7 @@ def close_embeds(sender):
         embed.blur_away()
 
 
-a['close_embed'] = {'command': 'Cancel', 'method': close_embeds,
+a['close_embed'] = {'command': 'Close panel', 'method': close_embeds,
                     'shortcut': 'Escape', 'undoable': False, 'sender_arg': True,
                     'shortcut_context': 'parent_and_children'}
 
@@ -1045,7 +1045,7 @@ def new_element_accept(sender):
         else:
             node = ctrl.forest.create_node_from_string(text, p2)
     else:
-        ctrl.forest.create_node(None, p2, node_type)
+        ctrl.forest.create_node(None, p2, node_type, text=text)
     embed.blur_away()
 
 
