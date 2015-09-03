@@ -4,21 +4,21 @@ from kataja.ui.embeds.UIEmbed import UIEmbed
 from kataja.singletons import qt_prefs
 import kataja.globals as g
 from kataja.ui.OverlayButton import OverlayButton
-
+from kataja.ui.panels.field_utils import EmbeddedLineEdit
 
 __author__ = 'purma'
 
 
 class EdgeLabelEmbed(UIEmbed):
     def __init__(self, parent, ui_manager, edge, ui_key):
-        UIEmbed.__init__(self, parent, ui_manager, ui_key, edge)
+        UIEmbed.__init__(self, parent, ui_manager, ui_key, edge, 'Edit edge text')
         self.marker = None
         layout = QtWidgets.QVBoxLayout()
         layout.addLayout(self.top_row_layout)  # close-button from UIEmbed
-        self.input_line_edit = QtWidgets.QLineEdit(self)
+        tt = 'Label for arrow'
         f = QtGui.QFont(qt_prefs.font(g.MAIN_FONT))
         f.setPointSize(f.pointSize() * 2)
-        self.input_line_edit.setFont(f)
+        self.input_line_edit = EmbeddedLineEdit(self, tip=tt, font=f, prefill='label')
         hlayout = QtWidgets.QHBoxLayout()
         hlayout.addWidget(self.input_line_edit)
         self.enter_button = QtWidgets.QPushButton("↩")  # U+21A9 &#8617;
@@ -41,10 +41,13 @@ class EdgeLabelEmbed(UIEmbed):
             self.input_line_edit.setPalette(p)
             f = QtGui.QFont(self.host.font)
             f.setPointSize(f.pointSize() * 2)
-            self.input_line_edit.setFont(f)
-            self.input_line_edit.setText(self.host.label_text)
-        UIEmbed.update_embed(focus_point=focus_point)
+            #self.input_line_edit.setFont(f)
+        super().update_embed()
 
-    def update_position(self):
-        UIEmbed.update_embed(focus_point=self.host.label_item.pos())
+    def update_fields(self):
+        self.input_line_edit.setText(self.host.label_text)
+        super().update_fields()
+
+    def update_position(self, focus_point=None):
+        super().update_position(self.host.label_item.pos())
 

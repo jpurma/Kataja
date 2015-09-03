@@ -94,15 +94,13 @@ class NewElementMarker(QtWidgets.QGraphicsItem):
 
 class NewElementEmbed(UIEmbed):
     def __init__(self, parent, ui_manager, ui_key):
-        UIEmbed.__init__(self, parent, ui_manager, ui_key, None)
+        UIEmbed.__init__(self, parent, ui_manager, ui_key, None, 'Create new node')
         self.marker = None
-        outer_layout = QtWidgets.QVBoxLayout()
-        outer_layout.setContentsMargins(0, 0, 0, 0)
-        outer_layout.addLayout(self.top_row_layout)
-        inner_layout = QtWidgets.QVBoxLayout()
-        outer_layout.addLayout(inner_layout)
-        inner_layout.setContentsMargins(6, 0, 6, 6)
-        hlayout = box_row(inner_layout)
+        layout = QtWidgets.QVBoxLayout()
+        #outer_layout.setContentsMargins(0, 0, 0, 0)
+        layout.addLayout(self.top_row_layout)
+        #inner_layout.setContentsMargins(6, 0, 6, 6)
+        hlayout = box_row(layout)
         self.new_arrow_button = icon_text_button(ui_manager, hlayout, self, '', '',
                                                  " &Arrow", 'new_arrow', size=QtCore.QSize(48, 20),
                                                  draw_method=arrow)
@@ -115,7 +113,7 @@ class NewElementEmbed(UIEmbed):
         f = QtGui.QFont(qt_prefs.font(g.MAIN_FONT))
         f.setPointSize(f.pointSize() * 2)
         self.input_line_edit = EmbeddedLineEdit(self, tip=tt, font=f, prefill='label')
-        inner_layout.addWidget(self.input_line_edit)
+        layout.addWidget(self.input_line_edit)
         hlayout = QtWidgets.QHBoxLayout()
         self.node_type_selector = QtWidgets.QComboBox(self)
 
@@ -133,8 +131,8 @@ class NewElementEmbed(UIEmbed):
         ui_manager.connect_element_to_action(self.enter_button, 'new_element_enter_text')
 
         hlayout.addWidget(self.enter_button)
-        inner_layout.addLayout(hlayout)
-        self.setLayout(outer_layout)
+        layout.addLayout(hlayout)
+        self.setLayout(layout)
         self.assumed_width = 200
         self.assumed_height = 117
 

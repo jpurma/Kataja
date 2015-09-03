@@ -24,7 +24,7 @@ class UIEmbed(QtWidgets.QWidget):
     :param scenePos:
     """
 
-    def __init__(self, parent, ui_manager, ui_key, host):
+    def __init__(self, parent, ui_manager, ui_key, host, text):
         QtWidgets.QWidget.__init__(self, parent)
         self.ui_key = ui_key
         self.host = host
@@ -40,6 +40,8 @@ class UIEmbed(QtWidgets.QWidget):
         ui_manager.connect_element_to_action(close_button, 'close_embed')
         self.top_row_layout.addWidget(close_button)
         self.top_row_layout.setAlignment(QtCore.Qt.AlignLeft)
+        self.top_row_layout.addSpacing(8)
+        self.top_row_layout.addWidget(QtWidgets.QLabel(text))
         self.assumed_width = 200
         self.assumed_height = 100
         self._magnet = QtCore.QPoint(0, 0), 1
@@ -68,7 +70,31 @@ class UIEmbed(QtWidgets.QWidget):
         """
         pass
 
+    def margin_x(self):
+        """ Margin around embed edit provides some empty space so that the focus point of embed
+        is not occluded by the embed. e.g. if focus point=(0,0), with margins=(6,6) embed's top
+        left corner would be at (6, 6) and point (0, 0) would still be visible.
+        :return:
+        """
+        return 6
+
+    def margin_y(self):
+        """ Margin around embed edit provides some empty space so that the focus point of embed
+        is not occluded by the embed. e.g. if focus point=(0,0), with margins=(6,6) embed's top
+        left corner would be at (6, 6) and point (0, 0) would still be visible.
+        :return:
+        """
+        return 6
+
     def update_position(self, focus_point=None):
+        """ Position embedded editor to graphics view. The idea is that the embed edit shouldn't
+        occlude the focus point (object being edited or the point on screen where new object will
+        be created, but it should try to fit as whole into the graphics view. So this method
+        computes which corner or edge of editor should be placed closest to focus point and moves
+        the embed accordingly.
+        :param focus_point:
+        :return:
+        """
         if not focus_point:
             if self.host:
                 focus_point = self.host.pos()
@@ -87,32 +113,38 @@ class UIEmbed(QtWidgets.QWidget):
         y = view_pos.y()
         # Magnet placement:
         # 1---2---3
-        # |       |
-        # 4       5
-        # |       |
+        # |+-----+|
+        # 4|     |5
+        # |+-----+|
         # 6---7---8
         #
+        margin_x = self.margin_x()
+        margin_y = self.margin_y()
+
+        w += margin_x
+        h += margin_y
+
         if x + w > vw:
             if y + h > vh:
                 magnet = QtCore.QPoint(w, h), 8
             else:
-                magnet = QtCore.QPoint(w, 0), 3
+                magnet = QtCore.QPoint(w, margin_y), 3
         elif y + (h / 2) > vh:
             if x + (w / 2) > vw:
                 magnet = QtCore.QPoint(w, h), 8
             elif x - (w / 2) < 0:
-                magnet = QtCore.QPoint(0, h), 6
+                magnet = QtCore.QPoint(-margin_x, h), 6
             else:
                 magnet = QtCore.QPoint(w / 2, h), 7
         elif y - (h / 2) < 0:
             if x + (w / 2) > vw:
-                magnet = QtCore.QPoint(w, 0), 3
+                magnet = QtCore.QPoint(w, -margin_y), 3
             elif x - (w / 2) < 0:
-                magnet = QtCore.QPoint(0, 0), 1
+                magnet = QtCore.QPoint(-margin_x, -margin_y), 1
             else:
-                magnet = QtCore.QPoint(w / 2, 0), 2
+                magnet = QtCore.QPoint(w / 2, -margin_y), 2
         else:
-            magnet = QtCore.QPoint(0, h / 2), 4
+            magnet = QtCore.QPoint(-margin_x, h / 2), 4
         self._magnet = magnet
         self.move(view_pos - magnet[0])
         self.updateGeometry()
@@ -130,6 +162,7 @@ class UIEmbed(QtWidgets.QWidget):
             self.hide()
             self.close()
             ctrl.graph_scene.update()
+            ctrl.graph_view.update()
             self.after_close()
         else:
             self.after_appear()

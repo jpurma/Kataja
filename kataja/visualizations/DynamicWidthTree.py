@@ -167,16 +167,17 @@ class DynamicWidthTree(BaseVisualization):
         for edge in node.edges_up:
             if edge.is_visible():
                 other = edge.start
-                other_x, other_y, other_z = other.current_position
-                dist_x = int(node_x - other_x)
-                dist_y = int(node_y - other_y)
-                dist = math.hypot(dist_x, dist_y)
-                if dist == 0:
-                    continue
-                safe_zone = (other.width + node.width) / 2
-                pulling_force = dist - safe_zone
-                x_component = dist_x / dist
-                xvel -= x_component * pulling_force * edge.pull * 0.3
+                if other:
+                    other_x, other_y, other_z = other.current_position
+                    dist_x = int(node_x - other_x)
+                    dist_y = int(node_y - other_y)
+                    dist = math.hypot(dist_x, dist_y)
+                    if dist == 0:
+                        continue
+                    safe_zone = (other.width + node.width) / 2
+                    pulling_force = dist - safe_zone
+                    x_component = dist_x / dist
+                    xvel -= x_component * pulling_force * edge.pull * 0.3
         #
         # pull to center (0, 0)
         xvel += node_x * -0.004

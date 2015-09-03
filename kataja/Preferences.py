@@ -33,23 +33,16 @@ disable_saving_preferences = False
 # Alternatives: Cambria Math, Asana Math, XITS Math
 
 
-color_modes = OrderedDict([('solarized_dk',
-                            {'name': 'Solarized dark', 'fixed': True,
-                             'hsv': [0, 0, 0]}), ('solarized_lt',
-                                                  {'name': 'Solarized light',
-                                                   'fixed': True,
-                                                   'hsv': [0, 0, 0]}), (
-                           'random',
-                           {'name': 'Random for each treeset', 'fixed': False,
-                            'hsv': [0, 0, 0]}), ('print',
-                                                 {'name': 'Print-friendly',
-                                                  'fixed': True,
-                                                  'hsv': [0.2, 0.2, 0.2]}), (
-                           'bw', {'name': 'Black and white', 'fixed': True,
-                                  'hsv': [0, 0, 0]}), ('random-light', {
-    'name': 'Random on a light background', 'fixed': False, 'hsv': [0, 0, 0]}),
-                           ('random-dark', {'name': 'Against a dark background',
-                                            'fixed': False, 'hsv': [0, 0, 0]})])
+color_modes = OrderedDict(
+    [('solarized_dk', {'name': 'Solarized dark', 'fixed': True, 'hsv': [0, 0, 0]}),
+     ('solarized_lt', {'name': 'Solarized light', 'fixed': True, 'hsv': [0, 0, 0]}),
+     ('random', {'name': 'Random for each treeset', 'fixed': False, 'hsv': [0, 0, 0]}),
+     ('print', {'name': 'Print-friendly', 'fixed': True, 'hsv': [0.2, 0.2, 0.2]}),
+     ('bw', {'name': 'Black and white', 'fixed': True, 'hsv': [0, 0, 0]}),
+     ('random-light', {'name': 'Random on a light background', 'fixed': False, 'hsv': [0, 0, 0]}),
+     ('random-dark', {'name': 'Against a dark background', 'fixed': False, 'hsv': [0, 0, 0]})])
+
+
 def extract_bitmaps(filename):
     """
     Helper method to turn 3-color image (blue, black, transparent) into
@@ -185,13 +178,11 @@ class Preferences(object):
 
         # Rest of the edges are defined in their corresponding node classes
         self.edges = {
-            ARROW: {'shape_name': 'linear', 'color': 'accent4', 'pull': 0,
-                    'visible': True, 'arrowhead_at_start': False,
-                    'arrowhead_at_end': True, 'font': SMALL_CAPS,
+            ARROW: {'shape_name': 'linear', 'color': 'accent4', 'pull': 0, 'visible': True,
+                    'arrowhead_at_start': False, 'arrowhead_at_end': True, 'font': SMALL_CAPS,
                     'labeled': True},
-            DIVIDER: {'shape_name': 'linear', 'color': 'accent6', 'pull': 0,
-                      'visible': True, 'arrowhead_at_start': False,
-                      'arrowhead_at_end': False, 'font': SMALL_CAPS,
+            DIVIDER: {'shape_name': 'linear', 'color': 'accent6', 'pull': 0, 'visible': True,
+                      'arrowhead_at_start': False, 'arrowhead_at_end': False, 'font': SMALL_CAPS,
                       'labeled': True, 'style': 'dashed'}}
         # Nodes are defined in their classes and preference dict is generated
         #  from those.
@@ -228,8 +219,7 @@ class Preferences(object):
         :param hsv:
         :param color_settings:
         """
-        self.color_modes[color_key] = {
-            'name': color_settings.get_color_name(hsv), 'fixed': True,
+        self.color_modes[color_key] = {'name': color_settings.get_color_name(hsv), 'fixed': True,
             'hsv': hsv}
 
     # ##### Save & Load ########################################
@@ -404,14 +394,12 @@ class QtPreferences:
             # print(name, font.exactMatch())
             if name == 'Asana Math' and not font.exactMatch():
                 print('Loading Asana Math locally')
-                self.fontdb.addApplicationFont(
-                    resources_path + "Asana-Math.otf")
+                self.fontdb.addApplicationFont(resources_path + "Asana-Math.otf")
                 font = self.fontdb.font(name, style, size)
             if style == 'Italic':
                 font.setItalic(True)
             self.fonts[key] = font
-        font = QtGui.QFontMetrics(
-            self.fonts[MAIN_FONT])  # it takes 2 seconds to get FontMetrics
+        font = QtGui.QFontMetrics(self.fonts[MAIN_FONT])  # it takes 2 seconds to get FontMetrics
         # print('font leading: %s font height: %s ' % (font.leading(),
         # font.height()))
         main = self.fonts[MAIN_FONT]

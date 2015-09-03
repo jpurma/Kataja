@@ -26,14 +26,14 @@ class NodeEditEmbed(UIEmbed):
     """ Node edit embed creates editable fields based on templates provided by Node subclass.
     It allows easy UI generation for user-customized syntactic elements or Kataja Nodes.
 
-    :param parent:
-    :param ui_manager:
-    :param node:
-    :param scene_pos:
+    :param parent: QWidget where this editor lives, QGraphicsView of some sort
+    :param ui_manager: UIManager instance that manages this editor
+    :param ui_key: unique, but predictable key for accessing this editor
+    :param node: node that is to be associated with this editor
     """
 
     def __init__(self, parent, ui_manager, ui_key, node):
-        UIEmbed.__init__(self, parent, ui_manager, ui_key, node)
+        UIEmbed.__init__(self, parent, ui_manager, ui_key, node, 'Edit node')
         layout = QtWidgets.QVBoxLayout()
         self.setLayout(layout)
         layout.addLayout(self.top_row_layout)
@@ -123,6 +123,18 @@ class NodeEditEmbed(UIEmbed):
         self.updateGeometry()
         self.update_embed()
 
+    def margin_x(self):
+        """ Try to keep all of the host node visible, not covered by this editor.
+        :return:
+        """
+        return (self.host.boundingRect().width() / 2) + 12
+
+    def margin_y(self):
+        """ Try to keep all of the host node visible, not covered by this editor.
+        :return:
+        """
+        return self.host.boundingRect().height() / 2
+
     def update_fields(self):
         """ Update field values on embed form based on template """
         ed = self.host.get_editing_template()
@@ -144,10 +156,6 @@ class NodeEditEmbed(UIEmbed):
                 op_func = getattr(self.host, op_func, None) or getattr(self.syntactic_object,
                                                                        op_func, None)
                 field.update_selections(op_func())
-
-    def psizeHint(self):
-        base = QtWidgets.QWidget.sizeHint(self)
-        return base + QtCore.QSize(40, 0)
 
     def after_close(self):
         """ Try to remove this embed after closing
@@ -195,6 +203,3 @@ class NodeEditEmbed(UIEmbed):
         # default to first field in field order
         if self.fields:
             self.fields[ed['field_order'][0]].setFocus()
-
-    def close(self):
-        UIEmbed.close(self)
