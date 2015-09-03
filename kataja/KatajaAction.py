@@ -124,7 +124,6 @@ class KatajaAction(QtWidgets.QAction):
         """
 
         tooltip = self.toolTip()
-        print('tooltip: "%s" , is it True? %s ' % (tooltip, bool(tooltip)))
         if tooltip and not isinstance(element, EmbeddedMultibutton):
             if tooltip_suffix:
                 print(tooltip)

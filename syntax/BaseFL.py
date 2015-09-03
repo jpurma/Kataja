@@ -279,7 +279,6 @@ class FL(BaseModel):
         :return:
 
         """
-        print('connecting, align: ', align)
         if child not in parent.parts:
             if align is None:
                 parent.add_part(child)

@@ -31,7 +31,6 @@ class ProjectionData:
             return
         for i, item in enumerate(self.chain):
             if node in item.get_children():
-                print("inserting: ", i, node)
                 self.chain.insert(i, node)
                 return
         self.chain.append(node)

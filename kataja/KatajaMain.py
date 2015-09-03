@@ -101,7 +101,6 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         import_plugins(prefs, plugins_path)
         self.setWindowIcon(qt_prefs.kataja_icon)
         self.app.setFont(qt_prefs.font(g.UI_FONT))
-        self.app.processEvents()
         print('---- initialized prefs ... ', time.time() - t)
         self.graph_scene = GraphScene(main=self, graph_view=None)
         print('---- scene init ... ', time.time() - t)
