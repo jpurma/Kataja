@@ -27,7 +27,6 @@ from collections import OrderedDict
 from PyQt5 import QtGui, QtCore
 
 from kataja.globals import *
-from kataja.environment import default_userspace_path, resources_path, fonts
 
 disable_saving_preferences = False
 # Alternatives: Cambria Math, Asana Math, XITS Math
@@ -83,7 +82,7 @@ class Preferences(object):
     # so this must support the save protocol.
     not_saved = ['plugins']
 
-    def __init__(self):
+    def __init__(self, running_environment):
         self.save_key = 'preferences'
         self.draw_width = .5
         self.selection_width = 0.8
@@ -147,7 +146,7 @@ class Preferences(object):
 
         # ## Global preferences
         self.color_mode = self.default_color_mode
-        self.fonts = fonts
+        self.fonts = running_environment.fonts
         self.keep_vertical_order = False
         self.use_magnets = True
         self.edge_width = 20  # 20
@@ -166,8 +165,8 @@ class Preferences(object):
         self.feature_nodes = True
         self.show_gloss_text = True  # fixme: is it global preference?
 
-        self.userspace_path = default_userspace_path
-        self.debug_treeset = resources_path + 'trees.txt'
+        self.userspace_path = running_environment.default_userspace_path
+        self.debug_treeset = running_environment.resources_path + 'trees.txt'
         self.file_name = 'savetest.kataja'
         self.print_file_path = ''
         self.print_file_name = 'kataja_print'
@@ -280,14 +279,14 @@ class QtPreferences:
     def __init__(self):  # called to create a placeholder in early imports
         pass
 
-    def late_init(self, preferences, fontdb):  # called when Qt app exists
+    def late_init(self, running_environment, preferences, fontdb):  # called when Qt app exists
         # graphics and fonts can be initiated only when QApplication exists
         """
 
         :param preferences:
         :param fontdb:
         """
-        iconpath = resources_path + 'icons/'
+        iconpath = running_environment.resources_path + 'icons/'
 
         def pixmap(path, width=0):
             """
@@ -315,7 +314,7 @@ class QtPreferences:
         # print("font families:", QtGui.QFontDatabase().families())
         self.easing_curve = []
         self.fontdb = fontdb
-        self.prepare_fonts(preferences.fonts)
+        self.prepare_fonts(preferences.fonts, running_environment)
         self.prepare_easing_curve(preferences.curve, preferences.move_frames)
         self.no_pen = QtGui.QPen()
         self.no_pen.setStyle(QtCore.Qt.NoPen)
@@ -340,12 +339,13 @@ class QtPreferences:
         self.font_icon = icon('text_format48.png')
         self.kataja_icon = icon('kataja.png')
 
-    def update(self, preferences):
+    def update(self, preferences, running_environment):
         """
 
         :param preferences:
         """
-        self.prepare_fonts(preferences.fonts, preferences)
+        print("Is anybody calling this? Qt preferences update.")
+        self.prepare_fonts(preferences.fonts, preferences, running_environment)
         self.prepare_easing_curve(preferences._curve, preferences.move_frames)
 
     def prepare_easing_curve(self, curve_type, frames):
@@ -377,7 +377,7 @@ class QtPreferences:
         s = sum(self.easing_curve)
         self.easing_curve = [x / s for x in self.easing_curve]
 
-    def prepare_fonts(self, fonts_dict):
+    def prepare_fonts(self, fonts_dict, running_environment):
         """
 
 
@@ -394,7 +394,8 @@ class QtPreferences:
             # print(name, font.exactMatch())
             if name == 'Asana Math' and not font.exactMatch():
                 print('Loading Asana Math locally')
-                self.fontdb.addApplicationFont(resources_path + "Asana-Math.otf")
+                self.fontdb.addApplicationFont(running_environment.resources_path +
+                                               "Asana-Math.otf")
                 font = self.fontdb.font(name, style, size)
             if style == 'Italic':
                 font.setItalic(True)

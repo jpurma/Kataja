@@ -37,10 +37,9 @@ import time
 import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
-from kataja.environment import default_userspace_path, plugins_path
 from kataja.managers.KeyPressManager import KeyPressManager
 
-from kataja.singletons import ctrl, prefs, qt_prefs
+from kataja.singletons import ctrl, prefs, qt_prefs, running_environment
 from kataja.Forest import Forest
 from kataja.ForestKeeper import ForestKeeper
 from kataja.GraphScene import GraphScene
@@ -70,7 +69,7 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
 
     short_name = "Kataja"
 
-    def __init__(self, kataja_app, splash, args):
+    def __init__(self, kataja_app, args):
         """ KatajaMain initializes all its children and connects itself to
         be the main window of the given application. """
         t = time.time()
@@ -97,8 +96,8 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         print('---- controller late init ... ', time.time() - t)
 
         prefs.load_preferences()
-        qt_prefs.late_init(prefs, self.fontdb)
-        import_plugins(prefs, plugins_path)
+        qt_prefs.late_init(running_environment, prefs, self.fontdb)
+        import_plugins(prefs, running_environment.plugins_path)
         self.setWindowIcon(qt_prefs.kataja_icon)
         self.app.setFont(qt_prefs.font(g.UI_FONT))
         print('---- initialized prefs ... ', time.time() - t)
@@ -274,7 +273,7 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         self.killTimer(event.timerId())
         # Prepare file and path
         path = prefs.print_file_path or prefs.userspace_path or \
-               default_userspace_path
+               self.running_environment.default_userspace_path
         if not path.endswith('/'):
             path += '/'
         if not os.path.exists(path):

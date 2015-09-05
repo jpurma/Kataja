@@ -4,23 +4,30 @@ import unittest
 import sys
 from kataja.KatajaMain import KatajaMain
 from PyQt5 import QtWidgets, QtPrintSupport, QtGui, QtCore, QtTest
-from kataja.singletons import ctrl, prefs, qt_prefs
+from kataja.singletons import ctrl, prefs, qt_prefs, running_environment
+
+running_environment.switch_to_test_mode()
+
+def prepare_app():
+    app = QtWidgets.QApplication(sys.argv)
+    app.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps)
+    font = QtGui.QFont('Helvetica', 10)
+    app.setFont(font)
+    app.setApplicationName('Kataja')
+    app.setOrganizationName('JPurma-Aalto')
+    app.setOrganizationDomain('jpurma.aalto.fi')
+    app.setStyle('fusion')
+    return app
 
 class TestMainWindowStructure(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls._app = QtWidgets.QApplication(sys.argv)
-        cls._app.setAttribute(QtCore.Qt.AA_UseHighDpiPixmaps)
-        splash = QtWidgets.QSplashScreen(QtGui.QPixmap('../resources/katajalogo.png'))
-        cls._main = KatajaMain(cls._app, splash, sys.argv)
-        splash.finish(cls._main)
+        cls._app = prepare_app()
+        cls._main = KatajaMain(cls._app, sys.argv)
         cls._app.setActiveWindow(cls._main)
         cls._app.processEvents()
         QtTest.QTest.qWaitForWindowActive(cls._main)
-        #.qWaitForWindowShown(window)
-        #QtTest.QTest.qWaitForWindowExposed(window) #.qWaitForWindowShown(window)
-        #app.exec_()
 
     @classmethod
     def tearDownClass(cls):
@@ -52,6 +59,13 @@ class TestMainWindowStructure(unittest.TestCase):
         #self.load_treeset()
         #self.action_finished()
 
+    def test_save_data(self):
+        """ Save data exists -- practically if the creation of save data happens without error
+        :return:
+        """
+        d = self._main.create_save_data()
+        self.assertTrue(d)
+        self.assertGreater(len(d), 200)
 
 if __name__ == '__main__':
     unittest.main()

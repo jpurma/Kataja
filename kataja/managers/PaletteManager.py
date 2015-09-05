@@ -33,8 +33,7 @@ from PyQt5.QtGui import QColor
 from PyQt5.QtCore import Qt
 import PyQt5.QtGui as QtGui
 
-from kataja.environment import resources_path
-from kataja.singletons import ctrl, prefs
+from kataja.singletons import ctrl, prefs, running_environment
 
 
 
@@ -173,7 +172,7 @@ class PaletteManager:
     def __init__(self, hsv_key=None):
         print("*** Creating PaletteManager")
         try:
-            f = open(resources_path + 'colors.json', 'r', encoding='UTF-8')
+            f = open(running_environment.resources_path + 'colors.json', 'r', encoding='UTF-8')
             self.color_map = json.load(f)  # json.load(f, 'utf-8')
 
             f.close()
