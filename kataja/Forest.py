@@ -1519,9 +1519,7 @@ class Forest(BaseModel):
 
         assert (old_node != new_node)  # if this can happen, we'll probably have
         # infinite loop somewhere
-        new_node.current_position = old_node.current_position
-        new_node.adjustment = old_node.adjustment
-        new_node.algo_position = tuple(old_node.algo_position)
+        new_node.copy_position(old_node)
         new_node.update_visibility(active=True, fade=True)
 
         for edge in list(old_node.edges_up):
@@ -1633,7 +1631,8 @@ class Forest(BaseModel):
         # These steps are safe, connect node is smart enough to deal with
         # unary/ binary children.
         new_node = self.create_node(pos=pos)
-        new_node.adjustment = parent.adjustment
+        new_node.copy_position(parent)
+        new_node.current_position = pos
         if head_left:
             main_align = g.LEFT
             other_align = g.RIGHT
@@ -1649,7 +1648,8 @@ class Forest(BaseModel):
             else:
                 ox -= 40
             other_node = self.create_node(pos=(ox, oy, oz))
-            other_node.adjustment = parent.adjustment
+            other_node.copy_position(parent)
+            other_node.current_position = ox, oy, oz
             self.connect_node(parent=parent, child=other_node, direction=other_align)
         # reassigning projection is trickier
         if hasattr(parent, 'head') and parent.head and parent.head is parent:
@@ -1689,7 +1689,8 @@ class Forest(BaseModel):
             right = new
         p = merger_pos[0], merger_pos[1], top.z
         merger_node = self.create_merger_node(left=left, right=right, pos=p)
-        merger_node.adjustment = top.adjustment
+        merger_node.copy_position(top)
+        merger_node.current_position = p
         if self.traces_are_visible():
             self.chain_manager.rebuild_chains()
 
@@ -1741,7 +1742,8 @@ class Forest(BaseModel):
             right = inserted
         p = insertion_pos[0], insertion_pos[1], child.z
         merger_node = self.create_merger_node(left=left, right=right, pos=p)
-        merger_node.adjustment = child.adjustment
+        merger_node.copy_position(child)
+        merger_node.current_position = p
         self.connect_node(parent, merger_node, direction=align)
         if head:
             merger_node.set_projection(head)
@@ -1823,8 +1825,7 @@ class Forest(BaseModel):
         for folded in fold_scope:
             folded.folding_towards = None
             folded.folded_away = False
-            folded.adjustment = node.adjustment
-            folded.fixed_position = None
+            folded.copy_position(node)
             folded.fade_in()
             folded.update_visibility()
             folded.update_bounding_rect()

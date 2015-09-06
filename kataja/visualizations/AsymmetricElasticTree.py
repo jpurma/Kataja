@@ -110,9 +110,9 @@ class AsymmetricElasticTree(BaseVisualization):
         xvel += node_x * -0.008
         yvel += node_y * -0.008
 
-        if not node.dyn_x:
+        if not node.physics_x:
             xvel = 0
-        if not node.dyn_y:
+        if not node.physics_y:
             yvel = 0
         return xvel, yvel, 0
 
@@ -122,9 +122,7 @@ class AsymmetricElasticTree(BaseVisualization):
 
         :param node:
         """
-        node.fixed_position = None
-        node.adjustment = None
-        node.update_label()
-        node.update_visibility()
-        node.dyn_y = True
-        node.dyn_x = True
+        super().reset_node(node)
+        node.physics_x = False
+        node.physics_y = False
+        node.physics_z = False

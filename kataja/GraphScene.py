@@ -32,7 +32,7 @@ import PyQt5.QtWidgets as QtWidgets
 from kataja.Edge import Edge
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.nodes.Node import Node
-from kataja.utils import to_tuple, sub_xyz, div_xyz
+from kataja.utils import to_tuple, sub_xyz, div_xyz, time_me
 from kataja.ui import TouchArea
 import kataja.globals as g
 
@@ -593,7 +593,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                             pass
                         node = ctrl.forest.create_node(pos=event.scenePos(),
                                                        node_type=node_type)
-                        node.set_fixed_position(event.scenePos())
+                        node.current_position = event.scenePos().x(), event.scenePos().y(), node.z
                         node.lock()
                         ctrl.main.action_finished('added %s' % args[0])
                     else:

@@ -28,7 +28,7 @@ from PyQt5 import QtWidgets, QtCore
 
 from kataja.singletons import prefs, qt_prefs, ctrl
 from kataja.BaseModel import BaseModel, Saved
-from kataja.utils import add_xyz, sub_xy, multiply_xyz, div_xyz, sub_xyz
+from kataja.utils import add_xyz, sub_xy, multiply_xyz, div_xyz, sub_xyz, time_me
 
 
 def about_there(pos1, pos2):
@@ -40,59 +40,70 @@ def about_there(pos1, pos2):
     return round(pos1[0]) == round(pos2[0]) and round(pos1[1]) == round(
         pos2[1]) and round(pos1[2]) == round(pos2[2])
 
-
 class Movable(BaseModel):
-    """ Movable objects have support for smooth movement from one point to
-    another with
-        set_target_position, and fade_in and fade_out. Once set,
-        the animation derivation_steps are
-        triggered by timerEvent in GraphScene.
+    """
+Movable items
+-------------
 
-        Class using Movable has to inherit also some kind of QtGraphicsItem,
-        otherwise its positioning methods won't work.
-        """
-    short_name = "Movable"  # shouldn't be used on its own
+Movable items are items on canvas that can be affected by visualisation algorithms.
+There are three types of movement:
 
+set_position(p3):
+item is immediately put to given position.
+
+move_to(p3):
+item slides to given position
+
+use_physics(True|False)
+physics_x = True|False:
+physics_y = True|False:
+physics_z = True|False:
+after move, the item can wander around according to physics, in set dimensions. use_physics sets
+all xyz to True|False.
+Physics is handled by visualization algorithm, Movable only announces if it is responsive for
+physics.
+
+Movements using move_to -are affected by adjustment. Adjustment is a vector that displaces the
+item given amount from the move_to -command.
+
+Movement is triggered manually with move_to. Element may have wandered away from its target
+position: target position should not be used after the movement if node uses physics.
+Adjustment needs to be taken into account always when using target_position
+
+Nodes that use physics disable adjustment after the move_to has ended.
+
+When nodes that use physics are dragged around, they are locked into position. 'Locked' state
+overrides physics: the node stays in those coordinates.
+When nodes that don't use physics are dragged, the adjustment.
+
+"""
     def __init__(self):
-        """ Basic properties for any scene objects
-            positioning can be a bit difficult. There are:
-            saved.algo_position = visualization algorithm provided position
-            saved.adjustment = dragged somewhere
-            .final_position = computed position + adjustment
-            .current_position = real screen position, can be moving towards
-            final position
-            don't adjust final position directly, only change computed
-            position and change
-            adjustment to zero if necessary.
-            always restore adjustment to zero when dealing with dynamic nodes.
-             """
         super().__init__()
-        self._initializing = True
+        # Shared movement-related fields
+        self.current_position = ((random.random() * 150) - 75, (random.random() * 150) - 75, 0)
         self.z = 0
-        self._step = (0, 0, 0)
-        self._current_position = (
-        (random.random() * 150) - 75, (random.random() * 150) - 75, 0)
-        self._target_position = (0, 0, 0)
+        self._dragged = False
+        # MOVE_TO -fields
+        self.target_position = (0, 0, 0)
+        self.adjustment = (0, 0, 0)
         self._move_counter = 0
         self._use_easing = True
+        self._step = None
+        self.after_move_function = None
+        self.use_adjustment = False
+        # PHYSICS -fields
+        self.locked = False
+        self.physics_x = False
+        self.physics_y = False
+        self.physics_z = False
+        # Other
         self._fade_in_counter = 0
         self._fade_out_counter = 0
-        self.use_physics = True
-        self.after_move_function = None
         self.selectable = False
         self.draggable = False
         self.clickable = False
         self._hovering = False
-        self.forced_movement = False
-        self.algo_position = (0, 0, 0)
-        self.adjustment = None
-        self.fixed_position = None
-        self.visible = True  # avoid isVisible for detecting if something is
-        # folded away
-        self.dyn_x = False
-        self.dyn_y = False
-        self.dyn_z = False
-        self._initializing = False
+        self.visible = True
 
     def after_model_update(self, updated_fields, update_type):
         """ This is called after the item's model has been updated, to run
@@ -107,106 +118,161 @@ class Movable(BaseModel):
         """
         self.update_position()
 
-    @property
-    def use_fixed_position(self):
-        """ Element ignores dynamic movement
-        :return: bool
-        """
-        return self.fixed_position is not None
-
-    # ## Not saved properties, but otherwise interesting
-
-    @property
-    def current_position(self):
-        """ Returns Qt position as a triplet with z-dimension
-        :return: tuple (x, y, z)"""
-        return self._current_position
-
-    @current_position.setter
-    def current_position(self, value):
-        """ Sets the QtObjects coordinates, and saves the z-dimension to
-        separate variable
-        :rtype : None
-        :param value: tuple(x, y, z)
-        """
-        assert (len(value) == 3)
-        self._current_position = value
-        self.z = value[2]
-        if isinstance(self, QtWidgets.QGraphicsItem):
-            QtWidgets.QGraphicsItem.setPos(self, value[0], value[1])
-
-    @property
-    def use_adjustment(self):
-        """ Should the relative adjustment counted into position or is the
-        position absolute,
-        because it is updated by dynamic algo and has to use fixed
-        user-determined position.
-        :return:
-        """
-        return self.adjustment and not (self.dyn_x and self.dyn_y)
-
-    def set_fixed_position(self, value):
-        """ Manual setter for fixed position, accepts tuples, triples or
-        QPoint(F)s.
-        :return:
-        """
-        if hasattr(value, 'x'):
-            self.fixed_position = value.x(), value.y(), 0
-        elif len(value) == 2:
-            self.fixed_position = value[0], value[1], 0
-        elif len(value) == 3:
-            self.fixed_position = value
-
-    @property
-    def can_adjust_position(self):
-        """Only those items that get their fixed position from algorithm can
-        be adjusted.
-        Dynamically moving items are just dragged around. Returns if the
-        object gets both x and y
-        coords from algorithm.
-        :return: boolean
-        """
-        return not (self.dyn_x and self.dyn_y)
-
-    def autoupdate_position(self, value):
-        """ update position, callable by if_changed-hooks in properties.
-        doesn't start anything if still initializing the object
-        :param value:
-        :return:
-        """
-        if not self._initializing:
-            self.update_position()
-
-    def update_position(self, instant=False):
-        """ Compute new current_position and target_position
-        :param instant: don't animate (for e.g. dragging)
-        :return: None
-        """
-        if instant:
-            self.current_position = tuple(self._target_position)
-            self.stop_moving()
-            return
-        ct = self._target_position
-        if self.use_fixed_position:
-            self._target_position = self.fixed_position
-        elif self.use_adjustment:
-            self._target_position = add_xyz(self.algo_position, self.adjustment)
-        else:
-            self._target_position = self.algo_position
-        if about_there(self._target_position, ct):
-            if about_there(ct, self.current_position):
-                self.stop_moving()
-        else:
-            if about_there(self._target_position, self.current_position):
-                self.stop_moving()
-            else:
-                self.start_moving()
+    def use_physics(self):
+        return self.physics_x or self.physics_y or self.physics_z
 
     def reset(self):
         """ Remove mode information, eg. hovering
         :return: None
         """
         self._hovering = False
+
+    # ## Movement ##############################################################
+
+    def move_to(self, x, y, z=0):
+        """ Start movement to given position
+        :param x:
+        :param y:
+        :param z:
+        :return:
+        """
+        if (x, y, z) == self.target_position:
+            # already moving there
+            return
+        self.target_position = x, y, z
+        self.start_moving()
+
+    def move(self, md):
+        """ Do one frame of movement: either move towards target position or
+        take a step according to algorithm
+        :param md: movement data dict, collects sum of all movement to help normalize it
+        :return:
+        """
+        # Dragging overrides everything, don't try to move this anywhere
+        if self._dragged:
+            return False, False
+        # MOVE_TO -based movement has priority over physics. This way e.g. triangles work without
+        # additional stipulation
+        elif self._move_counter:
+            if self.use_adjustment:
+                position = sub_xyz(self.current_position, self.adjustment)
+            else:
+                position = self.current_position
+            if about_there(position, self.target_position):
+                self.stop_moving()
+                return False, False
+            if self._use_easing:
+                movement = multiply_xyz(self._step, qt_prefs.easing_curve[
+                    self._move_counter - 1])
+            else:
+                movement = div_xyz(
+                    sub_xyz(self.target_position, position), self._move_counter)
+            self._move_counter -= 1
+            if not self._move_counter:
+                self.stop_moving()
+            self.current_position = add_xyz(self.current_position, movement)
+            return True, False
+        # Locked nodes are immune to physics
+        elif self.locked:
+            return False, False
+        # Physics move node around only if other movement types have not overridden it
+        elif self.use_physics():
+            movement = ctrl.forest.visualization.calculate_movement(self)
+            md['sum'] = add_xyz(movement, md['sum'])
+            md['nodes'].append(self)
+            self.current_position = add_xyz(self.current_position, movement)
+            return abs(movement[0]) + abs(movement[1]) + abs(movement[2]) > 0.6, True
+        return False, False
+
+    def copy_position(self, other, ax=0, ay=0, az=0):
+        """ Helper method for newly created items. Takes other item and copies movement related
+        attributes from it (physics settings, locks, adjustment etc). ax, ay, az can be used to
+        adjust these a little to avoid complete overlap.
+        :param other:
+        :param ax:
+        :param ay:
+        :param az:
+        :return:
+        """
+        shift = (ax, ay, az)
+        self.current_position = add_xyz(other.current_position, shift)
+        self.adjustment = other.adjustment
+        self.target_position = other.target_position
+        self.locked = other.locked
+        self.use_adjustment = other.use_adjustment
+        self.physics_x = other.physics_x
+        self.physics_y = other.physics_y
+        self.physics_z = other.physics_z
+
+    def distance_to(self, movable):
+        """ Return current x,y distance to another movable
+        :param movable:
+        :return: x, y
+        """
+        return sub_xy(self.current_position, movable.current_position)
+
+    def set_original_position(self, pos):
+        """ Sets both current position and computed position to same place,
+        use when first adding items to scene to prevent them wandering from afar
+        :param pos: tuple (x, y, z)
+        """
+        if isinstance(pos, (QtCore.QPoint, QtCore.QPointF)):
+            pos = pos.x(), pos.y(), 0
+        self.target_position = tuple(pos)
+        self.use_adjustment = False
+        self.adjustment = (0, 0, 0)
+        self.current_position = tuple(pos)
+        self._dragged = False
+        self.locked = False
+
+    def start_moving(self):
+        """ Initiate moving animation for object.
+        :return: None
+        """
+        self._use_easing = True
+        self._move_counter = prefs.move_frames or 20
+        self._step = sub_xyz(self.target_position, self.current_position)
+        # adjustment affects both elements in previous subtraction, so it can be ignored
+        ctrl.graph_scene.item_moved()
+
+    def stop_moving(self):
+        """ Kill moving animation for this object.
+        :return: None
+        """
+        if self.after_move_function and callable(self.after_move_function):
+            self.after_move_function()
+            self.after_move_function = None
+        self._move_counter = 0
+
+    def _current_position_changed(self, value):
+        if isinstance(self, QtWidgets.QGraphicsItem):
+            QtWidgets.QGraphicsItem.setPos(self, value[0], value[1])
+
+    def update_position(self):
+        """ Compute new current_position and target_position
+        :return: None
+        """
+        #if (not self.use_physics()) and (not self._move_counter):
+
+        x, y, z = self.current_position
+        if hasattr(self, 'setPos'):
+            self.setPos(x, y)
+
+    def release(self):
+        """ Remove lock and adjustment"""
+        if self.locked:
+            self.locked = False
+        elif self.use_adjustment:
+            self.adjustment = (0, 0, 0)
+            self.use_adjustment = False
+        self.update_position()
+
+    def lock(self):
+        """ Item cannot be moved by physics or it is set to use adjustment"""
+        if self.use_physics():
+            self.locked = True
+        else:
+            self.use_adjustment = True
 
     # ## Opacity ##############################################################
 
@@ -272,128 +338,6 @@ class Movable(BaseModel):
         """
         return self.visible
 
-    # ## Movement ##############################################################
-
-    def move(self, md):
-        """ Do one frame of movement: either move towards target position or
-        take a step according to algorithm
-        :param md: movement data dict
-        :return:
-        """
-        if self.use_fixed_position:
-            self.current_position = self.fixed_position
-            return False, False
-        normalize = False
-        # how to return to undoed state?
-
-        if self.dyn_x and self.dyn_y:
-            # dynamic movement only
-            if self.use_physics and not ctrl.pressed:
-                vel = ctrl.forest.visualization.calculate_movement(self)
-                md['sum'] = add_xyz(vel, md['sum'])
-                md['nodes'].append(self)
-            normalize = True
-        if not (self.dyn_x or self.dyn_y or self.dyn_z):
-            # straight move to target
-            if self._move_counter:
-                if about_there(self.current_position, self._target_position):
-                    self.stop_moving()
-                    return False, False
-                if self._use_easing:
-                    vel = multiply_xyz(self._step, qt_prefs.easing_curve[
-                        self._move_counter - 1])
-                else:
-                    vel = div_xyz(
-                        sub_xyz(self._target_position, self.current_position),
-                        self._move_counter)
-                self._move_counter -= 1
-                if not self._move_counter:
-                    self.stop_moving()
-            else:
-                return False, False
-        else:
-            # combination of move to target and dynamic movement
-            dvel = ctrl.forest.visualization.calculate_movement(self)
-            if self._move_counter:
-                if self._use_easing:  # step * easing_curve
-                    pvel = multiply_xyz(self._step, qt_prefs.easing_curve[
-                        self._move_counter - 1])
-                else:  # (t - c) / move_counter
-                    pvel = div_xyz(
-                        sub_xyz(self._target_position, self.current_position),
-                        self._move_counter)
-                self._move_counter -= 1
-                if not self._move_counter:
-                    self.stop_moving()
-            else:
-                pvel = (0, 0, 0)
-            if self.dyn_x:
-                vx = dvel[0]
-            else:
-                vx = pvel[0]
-            if self.dyn_y:
-                vy = dvel[1]
-            else:
-                vy = pvel[1]
-            if self.dyn_z:
-                vz = dvel[2]
-            else:
-                vz = pvel[2]
-            vel = vx, vy, vz
-
-        self.current_position = add_xyz(self.current_position, vel)
-        return abs(vel[0]) + abs(vel[1]) + abs(vel[2]) > 0.6, normalize
-
-    def moving(self):
-        """ Check if moving trajectory is on """
-        return self._move_counter
-
-    def distance_to(self, movable):
-        """ Return current x,y distance to another movable
-        :param movable:
-        :return: x, y
-        """
-        return sub_xy(self.current_position, movable.current_position)
-
-    def set_original_position(self, pos):
-        """ Sets both current position and computed position to same place,
-        use when first adding items to scene to prevent them wandering from afar
-        :param pos: tuple (x, y, z)
-        """
-        if isinstance(pos, (QtCore.QPoint, QtCore.QPointF)):
-            pos = pos.x(), pos.y(), 0
-        was_initializing = self._initializing
-        self._initializing = True
-        self.algo_position = tuple(pos)
-        self._target_position = tuple(pos)
-        self.adjustment = None
-        self.current_position = tuple(pos)
-        self._initializing = was_initializing
-
-    def start_moving(self):
-        """ Initiate moving animation for object.
-        :return: None
-        """
-        if False and self._move_counter and self._move_counter < (
-            prefs.move_frames or 20):
-            # don't force animation to start again, redirect it instead,
-            # unless we haven't yet moved
-            self._use_easing = True
-        else:
-            self._use_easing = True
-            self._move_counter = prefs.move_frames or 20
-            self._step = sub_xyz(self._target_position, self.current_position)
-        ctrl.graph_scene.item_moved()
-
-    def stop_moving(self):
-        """ Kill moving animation for this object.
-        :return: None
-        """
-        amv = getattr(self, 'after_move_function', None)
-        if amv:
-            amv()
-            self.after_move_function = None
-        self._move_counter = 0
 
     # ## Selection ############################################################
 
@@ -404,6 +348,31 @@ class Movable(BaseModel):
         return ctrl.is_selected(self)
 
     # ## Dragging ############################################################
+
+    def dragged_to(self, now_x, now_y):
+        """ Dragged focus is in now_x, now_y. Move there.
+        :param now_x: current drag focus x
+        :param now_y: current drag focus y
+        :return:
+        """
+        if self.use_physics():
+            self.locked = True
+        else:
+            self.use_adjustment = True
+            ax, ay, az = self.target_position
+            self.adjustment = (now_x - ax, now_y - ay, az)
+        self.current_position = now_x, now_y, self.z
+
+    def dragged_over_by(self, dragged):
+        """
+
+        :param dragged:
+        """
+        if not self._hovering and self.accepts_drops(dragged):
+            if ctrl.latest_hover and not ctrl.latest_hover is self:
+                ctrl.latest_hover.hovering = False
+            ctrl.latest_hover = self
+            self.hovering = True
 
     def drop_to(self, x, y, recipient=None):
         """
@@ -425,6 +394,14 @@ class Movable(BaseModel):
         # print('dropped to:', closest_ma)
         # # ctrl.scene.fit_to_window()
 
+    def accepts_drops(self, dragged):
+        """
+
+        :param dragged:
+        :return:
+        """
+        return False
+
     # ## Existence ############################################################
 
     def update_visibility(self, **kwargs):
@@ -437,38 +414,18 @@ class Movable(BaseModel):
             if not self.isVisible():
                 self.show()
 
-    # ### Locked to position
-
-    def release(self):
-        """ Item can be affected by computed positions """
-        self.adjustment = None
-        self.fixed_position = None
-
-    def lock(self):
-        """ Item cannot be moved to computed positions """
-        # just having self.adjustment or self.fixed_position is enough to
-        # lock it down
-        assert (self.adjustment or self.fixed_position)
-
-    def is_locked(self):
-        """
-        Returns if the item's position can be changed by algorithm, or if it
-        is fixed to position.
-        :return: boolean
-        """
-        return self.fixed_position or self.adjustment
-
     # ############## #
     #                #
     #  Save support  #
     #                #
     # ############## #
 
-    algo_position = Saved("algo_position", if_changed=autoupdate_position)
-    adjustment = Saved("adjustment", if_changed=autoupdate_position)
-    fixed_position = Saved("fixed_position", if_changed=autoupdate_position)
-    visible = Saved(
-        "visible")  # avoid isVisible for detecting if something is folded away
-    dyn_x = Saved("dyn_x")
-    dyn_y = Saved("dyn_y")
-    dyn_z = Saved("dyn_z")
+    current_position = Saved("current_position", if_changed=_current_position_changed)
+    target_position = Saved("target_position")
+    adjustment = Saved("adjustment")
+    use_adjustment = Saved("use_adjustment")
+    visible = Saved("visible")  # avoid isVisible for detecting if something is folded away
+    locked = Saved("locked")
+    physics_x = Saved("physics_x")
+    physics_y = Saved("physics_y")
+    physics_z = Saved("physics_z")

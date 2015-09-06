@@ -409,32 +409,6 @@ syntactic_object: %s
         """
         return False
 
-    def update_position(self, instant=False):
-        """ In addition to Movable's update_position, take account movement
-        to fold nodes into triangle
-        Computes new current_position and target_position.
-        :param instant: don't animate (for e.g. dragging)
-        :return: None
-        """
-        if self.folding_towards:
-            tp = self._target_position
-            self._target_position = self.folding_towards.current_position
-            if tp == self._target_position:
-                if self.current_position == self._target_position:
-                    self.stop_moving()
-                    # don't trigger start moving again if we are already
-                    # going there
-            if instant:
-                self.current_position = tuple(self._target_position)
-                self.stop_moving()
-            else:
-                if self._target_position != self.current_position:
-                    self.start_moving()
-                else:
-                    self.stop_moving()
-        else:
-            super().update_position(instant=instant)
-
     def move(self, md):
         """ Add on Moveable.move the case when node is folding towards
         triangle. It has priority.
@@ -444,19 +418,7 @@ syntactic_object: %s
         """
 
         if self.folding_towards:
-            if self._move_counter:
-                if self._use_easing:
-                    vel = multiply_xyz(self._step, qt_prefs.easing_curve[self._move_counter - 1])
-                else:
-                    vel = div_xyz(sub_xyz(self._target_position, self.current_position),
-                                  self._move_counter)
-                self._move_counter -= 1
-                if not self._move_counter:
-                    self.stop_moving()
-                self.current_position = add_xyz(self.current_position, vel)
-                return True, False
-            else:
-                return False, False
+            return True, False
         else:
             return super().move(md)
 
@@ -893,22 +855,29 @@ syntactic_object: %s
         :param option:
         :param widget:
         nodes it is the label of the node that needs complex painting """
-        p = QtGui.QPen(self.contextual_color)
-        painter.setPen(p)
-        p.setWidth(1)
         if self.triangle:
+            p = QtGui.QPen(self.contextual_color)
+            p.setWidth(1)
+            painter.setPen(p)
             self.paint_triangle(painter)
-        p.setWidth(2)
-        painter.setPen(p)
 
         if self._hovering:
+            p = QtGui.QPen(self.contextual_color)
             p.setColor(ctrl.cm.hover())
+            p.setWidth(2)
             painter.setPen(p)
             painter.drawRoundedRect(self.inner_rect, 5, 5)
-        elif ctrl.pressed is self or ctrl.is_selected(self) or (
-                    self.has_empty_label() and self.node_alone()):
+        elif ctrl.pressed is self or ctrl.is_selected(self):
+            p = QtGui.QPen(self.contextual_color)
+            p.setWidth(2)
+            painter.setPen(p)
             painter.drawRoundedRect(self.inner_rect, 5, 5)
-
+        elif self.has_empty_label() and self.node_alone():
+            p = QtGui.QPen(self.contextual_color)
+            p.setStyle(QtCore.Qt.DotLine)
+            p.setWidth(1)
+            painter.setPen(p)
+            painter.drawRoundedRect(self.inner_rect, 5, 5)
             # x,y,z = self.current_position
             # w2 = self.width/2.0
             # painter.setPen(self.contextual_color())
@@ -970,6 +939,8 @@ syntactic_object: %s
         :return:
         """
         self.folding_towards = node
+        self.use_adjustment = False
+        self.move_to(*node.current_position)
         if ctrl.is_selected(self):
             ctrl.remove_from_selection(self)
         self.fade_out()
@@ -1110,7 +1081,7 @@ syntactic_object: %s
                     item.prepare_children_for_dragging()
                     multidrag = True
         self.prepare_children_for_dragging()
-        self._fixed_position_before_dragging = self.fixed_position
+        self._fixed_position_before_dragging = self.current_position
         self._adjustment_before_dragging = self.adjustment
         self._distance_from_dragged = (self.current_position[0], self.current_position[1])
 
@@ -1127,7 +1098,7 @@ syntactic_object: %s
         ctrl.dragged_set.add(self)
         dx, dy, dummy_z = ctrl.dragged_focus.current_position
         x, y, dummy_z = self.current_position
-        self._fixed_position_before_dragging = self.fixed_position
+        self._fixed_position_before_dragging = self.current_position
         self._adjustment_before_dragging = self.adjustment
         self._distance_from_dragged = (x - dx, y - dy)
 
@@ -1158,31 +1129,18 @@ syntactic_object: %s
         :param now_y: current drag focus y
         :return:
         """
-        if ctrl.dragged_focus is self:
-            if self.can_adjust_position:
-                ax, ay, az = self.algo_position
-                self.adjustment = (now_x - ax, now_y - ay, az)
-            else:
-                self.fixed_position = (now_x, now_y, self.z)
-        else:
+        if ctrl.dragged_focus is not self:
             dx, dy = self._distance_from_dragged
-            if self.can_adjust_position:
-                ax, ay, az = self.algo_position
-                self.adjustment = (now_x - ax + dx, now_y - ay + dy, az)
+            if self.use_physics():
+                self.locked = True
             else:
-                self.fixed_position = (now_x + dx, now_y + dy, self.z)
-        self.update_position(instant=True)
+                self.use_adjustment = True
+                ax, ay, az = self.target_position
+                self.adjustment = (now_x - ax + dx, now_y - ay + dy, az)
+            self.current_position = now_x + dx, now_y + dy, self.z
+        else:
+            super().dragged_to(now_x, now_y)
 
-    def dragged_over_by(self, dragged):
-        """
-
-        :param dragged:
-        """
-        if not self._hovering and self.accepts_drops(dragged):
-            if ctrl.latest_hover and not ctrl.latest_hover is self:
-                ctrl.latest_hover.hovering = False
-            ctrl.latest_hover = self
-            self.hovering = True
 
     def accepts_drops(self, dragged):
         """
@@ -1215,13 +1173,13 @@ syntactic_object: %s
             self.lock()
             for node in ctrl.dragged_set:
                 node.lock()
-            if self.adjustment:
+            if self.use_physics():
+                message = 'moved node to {:.2f}, {:.2f}'.format(self.current_position[0],
+                                                                self.current_position[1])
+            else:
                 message = 'adjusted node to {:.2f}, {:.2f}'.format(self.adjustment[0],
                                                                    self.adjustment[1])
 
-            elif self.fixed_position:
-                message = 'moved node to {:.2f}, {:.2f}'.format(self.fixed_position[0],
-                                                                self.fixed_position[1])
         self.update_position()
         self.finish_dragging()
         return message
@@ -1248,7 +1206,7 @@ syntactic_object: %s
         :return: None
         """
         self.adjustment = self._adjustment_before_dragging
-        self.fixed_position = self._fixed_position_before_dragging
+        self.current_position = self._fixed_position_before_dragging
         self.update_position()
         for node in ctrl.dragged_set:
             node.cancel_dragging()

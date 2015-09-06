@@ -69,16 +69,11 @@ class LeftFirstTree(BaseVisualization):
 
         :param node:
         """
-        node.fixed_position = None
-        node.adjustment = None
-        node.update_label()
-        node.update_visibility()
+        super().reset_node(node)
         if node.node_type == g.CONSTITUENT_NODE:
-            node.dyn_x = False
-            node.dyn_y = False
-        else:
-            node.dyn_x = True
-            node.dyn_y = True
+            node.physics_x = False
+            node.physics_y = False
+            node.physics_z = False
 
     @caller
     def reselect(self):
@@ -200,7 +195,7 @@ class LeftFirstTree(BaseVisualization):
                         extra_width[x_i] = math.ceil(
                             width_spillover / float(edge_width)) * edge_width
                     x += extra_width[x_i]
-                    node.algo_position = (x, y, 0)
+                    node.move_to(x, y, 0)
                     prev_width = node.width
                     if not node in all_nodes:
                         print(

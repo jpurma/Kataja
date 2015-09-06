@@ -2,7 +2,7 @@
 import string
 from collections import namedtuple
 
-from kataja.utils import time_me, caller
+from kataja.utils import time_me, caller, add_xyz
 from kataja.singletons import ctrl
 
 
@@ -158,16 +158,8 @@ class ChainManager:
                     if key not in y_adjust:
                         y_adjust[key] = head.boundingRect().height(), head.boundingRect().height()
                     dx, dy = y_adjust[key]
-                    if head.dyn_x and head.dyn_y:
-                        node.dyn_x = False
-                        node.dyn_y = False
-                        x, y, z = head.current_position
-                    else:
-                        x, y, z = head.algo_position
-                    node.adjustment = head.adjustment
-                    y += dy
-                    x -= dx
-                    node.algo_position = (x, y, z)
+                    node.use_adjustment = False
+                    node.move_to(add_xyz(head.current_position, (-dx, dy, 0)))
                     y_adjust[key] = (dx + node.boundingRect().width(), dy + node.boundingRect().height())
         self.fs.traces_are_grouped_together = True
         self.fs.uses_multidomination = False

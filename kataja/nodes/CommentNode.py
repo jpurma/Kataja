@@ -86,7 +86,6 @@ class CommentNode(Node):
         :param value: str or ITextNode
         """
         self.label = value
-        print('daapadaa ', value)
         self._inode_changed = True
 
     def update_selection_status(self, selected):

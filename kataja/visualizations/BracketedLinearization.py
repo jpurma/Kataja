@@ -67,16 +67,11 @@ class BracketedLinearization(BaseVisualization):
 
         :param node:
         """
-        node.fixed_position = None
-        node.adjustment = None
-        node.update_visibility()
+        super().reset_node(node)
         if node.node_type == g.CONSTITUENT_NODE:
-            node.dyn_x = False
-            node.dyn_y = False
-        else:
-            node.dyn_x = True
-            node.dyn_y = True
-        node.update_label()
+            node.physics_x = False
+            node.physics_y = False
+            node.physics_z = False
 
     def show_edges_for(self, node):
         """ Bracket visualization never shows constituent edges
@@ -119,7 +114,7 @@ class BracketedLinearization(BaseVisualization):
                 # for that reason left and right edges
                 # are more useful than the center.
                 left_edge += self.forest.bracket_manager.count_bracket_space(node, left=True)
-                node.algo_position = (left_edge + node.width / 2, 0, 0)
+                node.move_to(left_edge + node.width / 2, 0, 0)
                 if node.is_visible() and (not node.has_empty_label()):
                     left_edge += node.width
                 for child in node.get_visible_children():

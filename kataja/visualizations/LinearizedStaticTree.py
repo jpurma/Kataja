@@ -62,16 +62,11 @@ class LinearizedStaticTree(BalancedTree):
 
         :param node:
         """
-        node.fixed_position = None
-        node.adjustment = None
-        node.update_label()
-        node.update_visibility()
+        super().reset_node(node)
         if node.node_type == g.CONSTITUENT_NODE:
-            node.dyn_x = False
-            node.dyn_y = False
-        else:
-            node.dyn_x = True
-            node.dyn_y = True
+            node.physics_x = False
+            node.physics_y = False
+            node.physics_z = False
 
     def reselect(self):
         """ Rotate between drawing multidominated elements close to their various parents
@@ -190,5 +185,5 @@ class LinearizedStaticTree(BalancedTree):
             for x, node in enumerate(row):
                 if node and isinstance(node, Movable):
                     node.release()
-                    node.algo_position = (width_now, height_now, 0)
+                    node.move_to(width_now, height_now, 0)
                 width_now += edge_width

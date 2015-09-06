@@ -77,16 +77,11 @@ class LeftFirstHexTree(BaseVisualization):
 
         :param node:
         """
-        node.fixed_position = None
-        node.adjustment = None
-        node.update_label()
-        node.update_visibility()
+        super().reset_node(node)
         if node.node_type == g.CONSTITUENT_NODE:
-            node.dyn_x = False
-            node.dyn_y = False
-        else:
-            node.dyn_x = True
-            node.dyn_y = True
+            node.physics_x = False
+            node.physics_y = False
+            node.physics_z = False
 
 
     @caller
@@ -135,7 +130,7 @@ class LeftFirstHexTree(BaseVisualization):
             else:
                 self.areas[node.save_key] = d['rect']
                 allow_crossing = True
-            node.algo_position = (d['x'], d['y'], 0)
+            node.move_to(d['x'], d['y'], 0)
 
             ch = list(node.get_visible_children())
             for i, child in enumerate(ch):
@@ -185,7 +180,7 @@ class LeftFirstHexTree(BaseVisualization):
                     x = self.start_x
                     translated_rect = node.inner_rect.translated(x, y)
                 angle = math.pi / 2
-            node.algo_position = (x, y, 0)
+            node.move_to(x, y, 0)
             self.areas[node.save_key] = translated_rect
             self.drawn[node.save_key] = {'node': node, 'rect': translated_rect, 'x': x, 'y': y,
                                          'angle': angle, 'child_n': child_n,

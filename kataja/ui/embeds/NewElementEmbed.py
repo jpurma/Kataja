@@ -128,7 +128,7 @@ class NewElementEmbed(UIEmbed):
             # 'name' can be translated if necessary
         hlayout.addWidget(self.node_type_selector)
         self.enter_button = QtWidgets.QPushButton("Create ↩")  # U+21A9 &#8617;
-        ui_manager.connect_element_to_action(self.enter_button, 'new_element_enter_text')
+        ui_manager.connect_element_to_action(self.enter_button, 'create_new_node_from_text')
 
         hlayout.addWidget(self.enter_button)
         layout.addLayout(hlayout)

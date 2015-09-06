@@ -65,17 +65,11 @@ class WindDriftTree(BaseVisualization):
 
         :param node:
         """
-        node.fixed_position = None
-        node.adjustment = None
-        node.update_visibility()
-        if node.node_type == g.CONSTITUENT_NODE:
-            node.dyn_x = True
-            node.dyn_y = True
-        else:
-            node.dyn_y = False
-            node.dyn_x = False
-        node.update_label()
-
+        super().reset_node(node)
+        if node.node_type != g.CONSTITUENT_NODE:
+            node.physics_x = False
+            node.physics_y = False
+            node.physics_z = False
 
     def _draw_wind_drift_tree(self, topmost_node):
 
@@ -98,8 +92,6 @@ class WindDriftTree(BaseVisualization):
                         lx, y, z = self._leftmost.current_position
                         x = lx - self._leftmost.width / 2 - node.width / 2
                     self._leftmost = node
-                    self._last_pos = (x, y)
-                    node.algo_position = (x, y, 0)
                 else:
                     x, y = self._last_pos
                     left = children[0]
@@ -109,8 +101,8 @@ class WindDriftTree(BaseVisualization):
                     else:
                         y -= self._grid_height
                     x += self._grid_height
-                    self._last_pos = (x, y)
-                    node.algo_position = (x, y, 0)
+                self._last_pos = (x, y)
+                node.move_to(x, y, 0)
 
         draw_node(topmost_node, None)
 

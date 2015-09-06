@@ -531,9 +531,8 @@ class BranchingTouchArea(TouchArea):
             return False
         child = self.host.end
         parent = self.host.start
-        ex, ey = child.algo_position[0], child.algo_position[1]
-        new_node = ctrl.forest.create_node(pos=(ex, ey, child.z))
-        new_node.adjustment = child.adjustment
+        new_node = ctrl.forest.create_node(pos=child.current_position)
+        new_node.copy_position(child)
         ctrl.forest.insert_node_between(new_node, parent, child,
                                         self._align_left,
                                         self.start_point)
@@ -711,7 +710,7 @@ class JointedTouchArea(TouchArea):
             ctrl.forest.merge_to_top(self.host,
                                      dropped_node,
                                      merge_to_left=self._align_left,
-                                     merger_node_pos=self.start_point)
+                                     merger_pos=self.start_point)
             for node in ctrl.dragged_set:
                 node.adjustment = self.host.adjustment
             return 'moved node %s to sibling of %s' % (
@@ -725,11 +724,9 @@ class JointedTouchArea(TouchArea):
         if self._drag_hint:
             return False
         root = self.host
-        ex, ey = root.algo_position[0], root.algo_position[1]
-        pos = (ex, ey, root.z)
-        new_node = ctrl.forest.create_node(pos=pos)
-        new_node.adjustment = root.adjustment
-        ctrl.forest.merge_to_top(root, new_node, self._align_left, pos)
+        new_node = ctrl.forest.create_node(pos=root.current_position)
+        new_node.copy_position(root)
+        ctrl.forest.merge_to_top(root, new_node, self._align_left, new_node.current_position)
         ctrl.deselect_objects()
         ctrl.main.action_finished(m='add constituent')
         return True

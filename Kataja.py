@@ -16,7 +16,7 @@ from PyQt5 import QtWidgets, QtPrintSupport, QtGui, QtCore
 ok = QtPrintSupport
 
 
-def launch_app():
+def launch_kataja():
 
     rp = running_environment.resources_path
 
@@ -34,6 +34,7 @@ def launch_app():
     splash.showMessage('%s | Fetching version...' % author, QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter, splash_color)
     splash.show()
 
+    # Update version number in file
     version = None
     if running_environment.code_mode == 'python':
         try:
@@ -87,4 +88,4 @@ def prepare_app():
     return app
 
 if __name__ == '__main__':
-    launch_app()
+    launch_kataja()

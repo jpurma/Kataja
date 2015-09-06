@@ -59,16 +59,15 @@ class BalancedTree(BaseVisualization):
 
         :param node:
         """
-        node.fixed_position = None
-        node.adjustment = None
-        node.update_label()
-        node.update_visibility()
+        super().reset_node(node)
         if node.node_type == g.CONSTITUENT_NODE:
-            node.dyn_x = False
-            node.dyn_y = False
+            node.physics_x = True
+            node.physics_y = True
+            node.physics_z = True
         else:
-            node.dyn_x = True
-            node.dyn_y = True
+            node.physics_x = False
+            node.physics_y = False
+            node.physics_z = False
 
 
     def reselect(self):
@@ -94,7 +93,7 @@ class BalancedTree(BaseVisualization):
             for n, x, width in rows[row]:
                 x_pos += width
             rows[row].append((node, x_pos, node.width))
-            node.algo_position = (x_pos + node.width / 2, row * edge_height * 2, 0)
+            node.move_to(x_pos + node.width / 2, row * edge_height * 2, 0)
             for child in node.get_visible_children():
                 _fill_grid(child, row + 1)
 

@@ -1045,13 +1045,17 @@ def new_element_accept(sender):
         else:
             node = ctrl.forest.create_node_from_string(text, p2)
     else:
-        ctrl.forest.create_node(None, p2, node_type, text=text)
+        node = ctrl.forest.create_node(None, p2, node_type, text=text)
+    if node:
+        print('target_position: %s, current_position: %s' % (str(node.current_position),
+                                                             str(node.target_position)))
+        node.lock()
     embed.blur_away()
 
 
-a['new_element_enter_text'] = {'command': 'Enter', 'method': new_element_accept,
-                               'sender_arg': True, 'shortcut': 'Return',
-                               'shortcut_context': 'parent_and_children'}
+a['create_new_node_from_text'] = {'command': 'Enter', 'method': new_element_accept,
+                                  'sender_arg': True, 'shortcut': 'Return',
+                                  'shortcut_context': 'parent_and_children'}
 
 
 def create_new_arrow(sender):

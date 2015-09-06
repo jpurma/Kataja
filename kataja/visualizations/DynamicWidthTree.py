@@ -71,16 +71,11 @@ class DynamicWidthTree(BaseVisualization):
 
         :param node:
         """
-        node.fixed_position = None
-        node.adjustment = None
-        node.update_label()
-        node.update_visibility()
+        super().reset_node(node)
         if node.node_type == g.CONSTITUENT_NODE:
-            node.dyn_y = False
-            node.dyn_x = True
-        else:
-            node.dyn_x = True
-            node.dyn_y = True
+            node.physics_x = True
+            node.physics_y = False
+            node.physics_z = False
 
 
     def reselect(self):
@@ -111,7 +106,7 @@ class DynamicWidthTree(BaseVisualization):
             return BaseVisualization.calculate_movement(self, node)
 
         xvel = 0.0
-        if not node.dyn_x:
+        if not node.use_physics():
             return 0, 0, 0
 
         node_x, node_y, node_z = node.current_position
@@ -140,7 +135,9 @@ class DynamicWidthTree(BaseVisualization):
                 dist = math.hypot(dist_x, dist_y)
                 if dist == 0 or dist == safe_zone:
                     continue
-                if tree is my_tree and not (other.use_fixed_position or ctrl.pressed or not other.dyn_x): # and node.is_sibling(other):
+                if tree is my_tree and other.physics_x: # and
+                # node.is_sibling(
+                # other):
                     index_diff = my_tree.index(node) - my_tree.index(other)
                     if index_diff < 0 and abs(dist_y) < 10:
                         # node is left to other, so dist_x should be negative
@@ -154,7 +151,6 @@ class DynamicWidthTree(BaseVisualization):
                             # jump to other side of node
                             print('jump right', (-dist_x + safe_zone + 5), dist_x, safe_zone, other)
                             return (-dist_x + safe_zone + 5), 0, 0
-
 
                 required_dist = dist - safe_zone
                 pushing_force = min(random.random()*60, (500 / (required_dist * required_dist)))
@@ -198,7 +194,7 @@ class DynamicWidthTree(BaseVisualization):
             for n, x, width in rows[row]:
                 x_pos += width
             rows[row].append((node, x_pos, node.width))
-            node.algo_position = (x_pos + node.width / 2, row * edge_height * 2, 0)
+            node.move_to(x_pos + node.width / 2, row * edge_height * 2, 0)
             for child in node.get_visible_children():
                 _fill_grid(child, row + 1)
 

@@ -111,7 +111,6 @@ REMOVE_TRIANGLE = 'remove_triangle'
 CREATED = 1
 DELETED = 2
 
-
 FONT_ROLES = [(MAIN_FONT, 'main'), (CONSOLE_FONT, 'console'), (BOLD_FONT, 'bold'),
               (ITALIC_FONT, 'italic'), (UI_FONT, 'ui'), (SMALL_FEATURE, 'small'),
               (SMALL_CAPS, 'small caps')]

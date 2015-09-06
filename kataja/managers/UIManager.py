@@ -896,7 +896,7 @@ class UIManager:
 
         :param node:
         """
-        assert (node.is_locked())
+        assert (node.locked or node.use_adjustment)
         ui_key = node.save_key + '_lock_icon'
         item = FadingSymbol(qt_prefs.lock_pixmap, node, self, ui_key,
                             place='bottom_right')
