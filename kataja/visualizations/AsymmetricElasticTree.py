@@ -123,6 +123,3 @@ class AsymmetricElasticTree(BaseVisualization):
         :param node:
         """
         super().reset_node(node)
-        node.physics_x = False
-        node.physics_y = False
-        node.physics_z = False

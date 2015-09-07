@@ -417,7 +417,8 @@ syntactic_object: %s
         normalization of movement
         """
 
-        if self.folding_towards:
+        if self.folding_towards and not self._move_counter:
+            #self.fold_towards(self.folding_towards)
             return True, False
         else:
             return super().move(md)
@@ -430,13 +431,14 @@ syntactic_object: %s
         :return: bool, is the fade in/out still going on
         """
         active = super().adjust_opacity()
-        o = self.opacity()
         if active:
+            o = self.opacity()
             for edge in self.edges_down:
                 edge.setOpacity(o)
             for edge in self.edges_up:
                 edge.setOpacity(o)
         return active
+
 
     # ### Children and parents
     # ####################################################
@@ -940,11 +942,11 @@ syntactic_object: %s
         """
         self.folding_towards = node
         self.use_adjustment = False
-        self.move_to(*node.current_position)
+        x, y, z = node.current_position
+        self.move_to(x, y, z, after_move_function=self.finish_folding)
         if ctrl.is_selected(self):
             ctrl.remove_from_selection(self)
         self.fade_out()
-        self.after_move_function = self.finish_folding
 
     def finish_folding(self):
         """ Hide, and remember why this is hidden """
@@ -954,6 +956,7 @@ syntactic_object: %s
         # update edge visibility from triangle to its immediate children
         if self.folding_towards in self.get_parents():
             self.folding_towards.update_visibility()
+        self.folding_towards = None
         ctrl.forest.draw()
 
     def paint_triangle(self, painter):

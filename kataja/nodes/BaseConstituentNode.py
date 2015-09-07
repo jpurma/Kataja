@@ -222,14 +222,12 @@ class BaseConstituentNode(Node):
 
     def update_visibility(self, **kw):
         """ Compute visibility-related attributes for this constituent node and update those that
-        depend on this
-        -- meaning features etc.
+        depend on this -- meaning features etc.
 
         :param kw:
         """
-        was_visible = self.visible
+        was_visible = self.is_visible()
         visible = not self.folded_away
-        self.visible = visible
 
         # Fade in / out
         fade = kw.get('fade', False)

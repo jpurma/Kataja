@@ -103,7 +103,6 @@ When nodes that don't use physics are dragged, the adjustment.
         self.draggable = False
         self.clickable = False
         self._hovering = False
-        self.visible = True
 
     def after_model_update(self, updated_fields, update_type):
         """ This is called after the item's model has been updated, to run
@@ -129,17 +128,20 @@ When nodes that don't use physics are dragged, the adjustment.
 
     # ## Movement ##############################################################
 
-    def move_to(self, x, y, z=0):
+    def move_to(self, x, y, z, after_move_function=None):
         """ Start movement to given position
         :param x:
         :param y:
         :param z:
+        :param after_move_function: Function to call when the movement is finished
         :return:
         """
         if (x, y, z) == self.target_position:
             # already moving there
             return
         self.target_position = x, y, z
+        if after_move_function:
+            self.after_move_function = after_move_function
         self.start_moving()
 
     def move(self, md):
@@ -158,16 +160,17 @@ When nodes that don't use physics are dragged, the adjustment.
                 position = sub_xyz(self.current_position, self.adjustment)
             else:
                 position = self.current_position
+            # stop even despite the _move_counter, if we are close enough
             if about_there(position, self.target_position):
                 self.stop_moving()
                 return False, False
+            # move a precalculated step
             if self._use_easing:
-                movement = multiply_xyz(self._step, qt_prefs.easing_curve[
-                    self._move_counter - 1])
+                movement = multiply_xyz(self._step, qt_prefs.easing_curve[self._move_counter - 1])
             else:
-                movement = div_xyz(
-                    sub_xyz(self.target_position, position), self._move_counter)
+                movement = div_xyz(sub_xyz(self.target_position, position), self._move_counter)
             self._move_counter -= 1
+            # if move counter reaches zero, stop and do clean-up.
             if not self._move_counter:
                 self.stop_moving()
             self.current_position = add_xyz(self.current_position, movement)
@@ -230,16 +233,18 @@ When nodes that don't use physics are dragged, the adjustment.
         :return: None
         """
         self._use_easing = True
-        self._move_counter = prefs.move_frames or 20
+        self._move_counter = prefs.move_frames
         self._step = sub_xyz(self.target_position, self.current_position)
-        # adjustment affects both elements in previous subtraction, so it can be ignored
+        # self.adjustment affects both elements in the previous subtraction, so it can be ignored
         ctrl.graph_scene.item_moved()
 
     def stop_moving(self):
         """ Kill moving animation for this object.
         :return: None
         """
-        if self.after_move_function and callable(self.after_move_function):
+        print('stop moving!')
+        if self.after_move_function:
+            print('calling after_move_function')
             self.after_move_function()
             self.after_move_function = None
         self._move_counter = 0
@@ -327,8 +332,9 @@ When nodes that don't use physics are dragged, the adjustment.
                     self.setOpacity(self._fade_out_counter / 10.0)
                 active = True
             else:
-                if hasattr(self, "hide"):
-                    self.hide()
+                print('fade out reached hide')
+                self.hide()
+                self.update_visibility()
         return active
 
     def is_visible(self):
@@ -336,7 +342,7 @@ When nodes that don't use physics are dragged, the adjustment.
         visibility.
         :return: bool
         """
-        return self.visible
+        return self.isVisible()
 
 
     # ## Selection ############################################################
@@ -424,7 +430,6 @@ When nodes that don't use physics are dragged, the adjustment.
     target_position = Saved("target_position")
     adjustment = Saved("adjustment")
     use_adjustment = Saved("use_adjustment")
-    visible = Saved("visible")  # avoid isVisible for detecting if something is folded away
     locked = Saved("locked")
     physics_x = Saved("physics_x")
     physics_y = Saved("physics_y")

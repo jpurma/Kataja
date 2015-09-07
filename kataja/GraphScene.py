@@ -744,3 +744,4 @@ class GraphScene(QtWidgets.QGraphicsScene):
             self.stop_animations()
             self.main.ui_manager.get_activity_marker().hide()
             ctrl.items_moving = False
+        f.edge_visibility_check()

@@ -255,7 +255,7 @@ class Forest(BaseModel):
         """ Any node that is visible. Ignore the type.
         :return:
         """
-        return [x for x in self.nodes.values() if x.is_visible]
+        return [x for x in self.nodes.values() if x.is_visible()]
 
     def update_forest_gloss(self):
         """ Draw the gloss text on screen, if it exists. """
@@ -1143,28 +1143,31 @@ class Forest(BaseModel):
     def edge_visibility_check(self):
         """ Perform check for each edge: hide them if their start/end is
         hidden, show them if necessary.
+        changing edge.visible will cause chain reaction:
+        edge.visible -> edge.if_changed_visible ->  edge.update_visibility
         """
         if self._do_edge_visibility_check:
-            sc = self.settings.shows_constituent_edges
+            show_edges = self.settings.shows_constituent_edges
             for edge in self.edges.values():
                 if edge.edge_type == g.CONSTITUENT_EDGE:
-                    if not sc:
+                    if not show_edges:
                         edge.visible = False
                         continue
                     start = edge.start
-                    sv = False
-                    ev = True
-                    if start:
-                        sv = start.is_visible
-                        if not sv:
-                            ev = False
-                        else:
-                            ev = self.visualization.show_edges_for(start)
-                    edge.visible = ev and (
-                        (edge.end and edge.end.visible) or ((not edge.end) and sv))
+                    end = edge.end
+                    if start and not start.is_visible():
+                        edge.visible = False
+                    elif end and not end.is_visible():
+                        edge.visible = False
+                    elif start and not self.visualization.show_edges_for(start):
+                        edge.visible = False
+                    elif not (start or end):
+                        self.delete_edge(edge)
+                    else:
+                        edge.visible = True
                 else:
                     if edge.start:
-                        edge.visible = edge.start.is_visible
+                        edge.visible = edge.start.is_visible()
                     else:
                         edge.visible = True
             self._do_edge_visibility_check = False
@@ -1187,7 +1190,7 @@ class Forest(BaseModel):
                 v = edge.visible
                 if edge.edge_type == g.CONSTITUENT_EDGE:
                     edge.visible = edges_visible and (
-                        (edge.end and edge.end.visible) or not edge.end)
+                        (edge.end and edge.end.is_visible()) or not edge.end)
                 else:
                     edge.visible = visible
                 if v and not edge.visible:
