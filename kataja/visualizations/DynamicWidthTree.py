@@ -59,10 +59,14 @@ class DynamicWidthTree(BaseVisualization):
         self.push = self.get_vis_data('push')
         self._linear = self.linearize_all()
 
+    #Fixme: crappy linearization
     def linearize_all(self):
+        """
+        :return:
+        """
         l = []
-        for root in self.forest.roots:
-            l.append(self.forest.list_nodes_once(root))
+        for tree in self.forest:
+            l.append(tree.sorted_nodes)
         return l
 
 
@@ -198,6 +202,6 @@ class DynamicWidthTree(BaseVisualization):
             for child in node.get_visible_children():
                 _fill_grid(child, row + 1)
 
-        for root_node in self.forest:
-            _fill_grid(root_node, 0)
-            self._linear.append(self.forest.list_nodes_once(root_node))
+        for tree in self.forest:
+            _fill_grid(tree.top, 0)
+            self._linear.append(tree.sorted_constituents)

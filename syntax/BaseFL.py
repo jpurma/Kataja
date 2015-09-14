@@ -82,7 +82,7 @@ class FL(BaseModel):
 
     def __init__(self):
         super().__init__(self)
-        self.roots = []
+        self.trees = []
         self.constituents = {}
         self.features = {}
         self.lexicon = {}
@@ -93,7 +93,7 @@ class FL(BaseModel):
     def get_roots(self):
         """ List the constituent structures of the workspace, represented by their topmost element
         """
-        return self.roots
+        return self.trees
 
     def get_constituent_from_lexicon(self, identifier):
         """ Fetch constituent from lexicon
@@ -190,8 +190,8 @@ class FL(BaseModel):
             linearization_type = self.rules['linearization_types']
         if linearization_type == 'implicit':
             found = 0
-            for root in self.roots:
-                found, foo, bar = _implicit(root, a, b, found_i=False, found_j=False)
+            for tree_top in self.trees:
+                found, foo, bar = _implicit(tree_top, a, b, found_i=False, found_j=False)
                 if found:
                     break
             return found

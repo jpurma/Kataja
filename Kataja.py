@@ -65,6 +65,7 @@ def launch_kataja():
 
     splash.showMessage('%s | %s | v. %s | %s' % (author, date, running_number, version_name.strip()),
                        QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter, splash_color)
+    app.processEvents()
 
     # importing KatajaMain here because it is slow, and splash screen is now up
     from kataja.KatajaMain import KatajaMain

@@ -26,8 +26,10 @@
 import string
 import collections
 import itertools
+import time
 
-from ProjectionVisual import ProjectionData
+from kataja.ProjectionVisual import ProjectionData
+from kataja.Tree import Tree
 from kataja.errors import ForestError
 from kataja.ForestSettings import ForestSettings, ForestRules
 from kataja.Bracket import Bracket
@@ -46,10 +48,6 @@ from kataja.nodes.FeatureNode import FeatureNode
 from kataja.BaseModel import BaseModel, Saved
 from kataja.utils import time_me
 import kataja.globals as g
-
-ONLY_LEAF_LABELS = 0
-ALL_LABELS = 1
-ALIASES = 2
 
 
 class Forest(BaseModel):
@@ -80,7 +78,7 @@ class Forest(BaseModel):
         self.settings = ForestSettings()
         self.rules = ForestRules()
         self.derivation_steps = DerivationStepManager()
-        self.roots = []  # the current line of trees
+        self.trees = []
         self.nodes = {}
         self.edges = {}
         self.edge_types = set()
@@ -255,7 +253,7 @@ class Forest(BaseModel):
         """ Any node that is visible. Ignore the type.
         :return:
         """
-        return [x for x in self.nodes.values() if x.is_visible()]
+        return (x for x in self.nodes.values() if x.is_visible())
 
     def update_forest_gloss(self):
         """ Draw the gloss text on screen, if it exists. """
@@ -297,30 +295,34 @@ class Forest(BaseModel):
     # ################################################
 
     def __iter__(self):
-        return self.roots.__iter__()
+        return self.trees.__iter__()
 
-    def textual_form(self, root=None):
+    def textual_form(self, tree=None, node=None):
         """ return (unicode) version of linearizations of all trees with
         traces removed --
-            as close to original sentences as possible. If root is given,
+            as close to original sentences as possible. If tree or node is given,
             return linearization of only that.
-        :param root:
+        :param tree: Tree instance
+        :param node: Node instance
         """
 
-        def _tree_as_text(root_node, gap):
+        def _tree_as_text(tree, node, gap):
             """ Cheapo linearization algorithm for Node structures."""
             l = []
-            for node in self.list_nodes_once(root_node):
-                l.append(str(node.syntactic_object))
+            i = tree.sorted_constituents.indexOf(node)
+            for n in tree.sorted_constituents[i:]:
+                l.append(str(n.syntactic_object))
             return gap.join(l)
 
-        if root:
-            return _tree_as_text(root, ' ')
+        if tree:
+            return _tree_as_text(tree, tree.top, ' ')
+        elif node:
+            return _tree_as_text(node.tree[0], node, ' ')
         else:
-            roots = []
-            for root in self.roots:
-                roots.append(_tree_as_text(root, ' '))
-            return '/ '.join(roots)
+            trees = []
+            for tree in self.trees:
+                trees.append(_tree_as_text(tree, tree.top, ' '))
+            return '/ '.join(trees)
 
     def syntax_trees_as_string(self):
         """
@@ -329,9 +331,12 @@ class Forest(BaseModel):
         :return:
         """
         s = []
-        for root in self.roots:
-            s.append(root.syntactic_object.print_tree())
+        for tree in self.trees:
+            if tree.top.is_constituent:
+                s.append(tree.top.syntactic_object.print_tree())
         return '\n'.join(s)
+
+    # Scene and storage ---------------------------------------------------------------
 
     def store(self, item):
         """ Confirm that item is stored in some dictionary or other storage
@@ -369,6 +374,22 @@ class Forest(BaseModel):
             else:
                 print('F trying to store broken type:', item.__class__.__name__)
 
+    def add_all_to_scene(self):
+        """ Put items belonging to this forest to scene """
+        if self.in_display:
+            for item in self.get_all_objects():
+                self.scene.addItem(item)
+
+    def add_to_scene(self, item):
+        """ Put items belonging to this forest to scene
+        :param item:
+        """
+        if self.in_display:
+            if item.scene() != self.scene:
+                self.scene.addItem(item)
+
+    # Getting objects ------------------------------------------------------
+
     def get_all_objects(self):
         """ Just return all objects governed by Forest -- not all scene objects 
         :return: iterator through objects
@@ -385,6 +406,44 @@ class Forest(BaseModel):
         for n in self.bracket_manager.get_brackets():
             yield (n)
 
+    def get_node(self, constituent):
+        """
+        Returns a node corresponding to a constituent
+        :rtype : kataja.BaseConstituentNode
+        :param constituent: syntax.BaseConstituent
+        :return: kataja.ConstituentNode
+        """
+        return self.nodes_from_synobs.get(constituent.save_key, None)
+
+    def get_constituent_edges(self):
+        """ Return generator of constituent edges
+        :return: generator
+        """
+        return (x for x in self.edges.values() if
+                x.edge_type == g.CONSTITUENT_EDGE and x.is_visible())
+
+    def get_constituent_nodes(self):
+        """ Return generator of constituent nodes
+        :return: generator
+        """
+        return (x for x in self.nodes.values() if
+                isinstance(x, BaseConstituentNode) and x.isVisible())
+
+    def get_feature_nodes(self):
+        """ Return generator of feature nodes
+        :return: generator
+        """
+        return (x for x in self.nodes.values() if isinstance(x, FeatureNode))
+
+    def get_attribute_nodes(self):
+        """ Return generator of attribute nodes
+        :return: generator
+        """
+        return (x for x in self.nodes.values() if isinstance(x, AttributeNode))
+
+    # Drawing and updating --------------------------------------------
+
+    @time_me
     def draw(self):
         """ Update all trees in the forest according to current visualization
         """
@@ -392,8 +451,8 @@ class Forest(BaseModel):
             print("Why are we drawing a forest which shouldn't be in scene")
         sc = ctrl.graph_scene
         sc.stop_animations()
-        for root in self.roots:
-            root.update_visibility()
+        for tree in self.trees:
+            tree.top.update_visibility() # fixme
         self.bracket_manager.update_brackets()
         self.update_projections()
         self.update_forest_gloss()
@@ -402,20 +461,6 @@ class Forest(BaseModel):
             sc.fit_to_window()
         sc.start_animations()
         ctrl.graph_view.repaint()
-
-    def add_all_to_scene(self):
-        """ Put items belonging to this forest to scene """
-        if self.in_display:
-            for item in self.get_all_objects():
-                self.scene.addItem(item)
-
-    def add_to_scene(self, item):
-        """ Put items belonging to this forest to scene
-        :param item:
-        """
-        if self.in_display:
-            if item.scene() != self.scene:
-                self.scene.addItem(item)
 
     def update_colors(self):
         """ Update colors to those specified for this Forest."""
@@ -464,7 +509,6 @@ class Forest(BaseModel):
             if node not in pd:
                 pd.add_to_chain(node)
 
-    @time_me
     def update_projection_visual(self, node, new_head):
         """ Take one node and update its projection displays according to current settings
         :param node:
@@ -504,24 +548,22 @@ class Forest(BaseModel):
                 for n in projection.chain:
                     n.set_projection_display(color_id)
 
-    @time_me
     def update_projections(self):
         """ Try to guess projections in the tree based on labels and aliases, and once this is
         done, further updates check that the dict of projections is up to date. Calls to update
         the visual presentation of projections too.
         :return:
         """
-        for root in self.roots:
-            for node in self.list_nodes_once(root):
-                if node.node_type == g.CONSTITUENT_NODE:
-                    if self.guessed_projections:
-                        head = node.head
-                    else:
-                        # don't use set_projection as it will rewrite labels and
-                        # aliases around this node, messing
-                        head = node.guess_projection()
-                    if head:
-                        self.update_projection_map(node, None, head)
+        for tree in self.trees:
+            for node in tree.sorted_constituents:
+                if self.guessed_projections:
+                    head = node.head
+                else:
+                    # don't use set_projection as it will rewrite labels and
+                    # aliases around this node, making a mess
+                    head = node.guess_projection()
+                if head:
+                    self.update_projection_map(node, None, head)
         for key, projection in list(self.projections.items()):
             if not projection.verify_chain():
                 del self.projections[key]
@@ -576,40 +618,6 @@ class Forest(BaseModel):
                     for node in projection.chain:
                         node.set_projection_display(color_id)
 
-    def get_node(self, constituent):
-        """
-        Returns a node corresponding to a constituent
-        :rtype : kataja.BaseConstituentNode
-        :param constituent: syntax.BaseConstituent
-        :return: kataja.ConstituentNode
-        """
-        return self.nodes_from_synobs.get(constituent.save_key, None)
-
-    def get_constituent_edges(self):
-        """ Return generator of constituent edges
-        :return: generator
-        """
-        return (x for x in self.edges.values() if
-                x.edge_type == g.CONSTITUENT_EDGE and x.is_visible())
-
-    def get_constituent_nodes(self):
-        """ Return generator of constituent nodes
-        :return: generator
-        """
-        return (x for x in self.nodes.values() if
-                isinstance(x, BaseConstituentNode) and x.isVisible())
-
-    def get_feature_nodes(self):
-        """ Return generator of feature nodes
-        :return: generator
-        """
-        return (x for x in self.nodes.values() if isinstance(x, FeatureNode))
-
-    def get_attribute_nodes(self):
-        """ Return generator of attribute nodes
-        :return: generator
-        """
-        return (x for x in self.nodes.values() if isinstance(x, AttributeNode))
 
     def add_comment(self, comment):
         """ Add comment item to forest
@@ -643,55 +651,78 @@ class Forest(BaseModel):
         """
         pass
 
-    def update_root_status(self, node):
-        """ Check if a node should be listed as root nodes. Tries to maintain
-        the order of trees:
-        new roots are appended to right. This is called by operations that
-        may change the root status, but
-        there is no global way for updating all of the roots, as then the
-        order of root list is lost.
+    # Trees ---------------------------------------------------------------
+
+    def update_tree_for(self, node):
+        """ Validate or create the trees (containers) for a given node.
         :param node: root to check. Only ConstituentNodes can be roots
         :return:
         """
-        if (not isinstance(node, BaseConstituentNode)) or node.is_placeholder():
-            return
-        has_parents = any(x for x in node.edges_up if x.edge_type is g.CONSTITUENT_EDGE)
-        if node in self.roots:
-            if has_parents:
-                self.poke('roots')
-                self.roots.remove(node)
-        elif not has_parents:
-            self.poke('roots')
-            self.roots.append(node)
+        passed = set()
+        tops = set()
+        def walk_to_top(node):
+            """ Walk upwards in tree(s), starting from this node and find the topmost nodes.
+            :param node:
+            :return:
+            """
+            passed.add(node)
+            parents = node.get_parents(only_similar=False, only_visible=False)
+            if parents:
+                for parent in parents:
+                    if parent not in passed:
+                        walk_to_top(parent)
+            else:
+                tops.add(node)
+        walk_to_top(node)
+        # now we have the topmost nodes, so we can check if there exists trees starting with
+        # these nodes.
+        for top in tops:
+            found = None
+            for tree in list(self.trees):
+                if top is tree.top:
+                    found = tree
+                    break
+                elif not tree.is_valid():
+                    self.remove_tree(tree)
+            if found:
+                found.update_items()
+            else:
+                self.create_tree_for(top)
 
-    # not used
-    def is_higher_in_tree(self, node_a, node_b):
-        """ Compare two nodes, if node_a is higher, return True. Return False
-        if not.
-            Return None if nodes are not in the same tree -- cannot compare.
-            (Be careful with the result,
-            handle None and False differently.)
-        :param node_a:
-        :param node_b:
+    def update_treeset(self, treeset): # fixme - maybe unnecessary
+        """ Update a tree to hold all the relevant items or remove the tree and replace it with
+        the correct tree
+        :param treeset:
         :return:
         """
-        for root in self.roots:
-            nodes = self.list_nodes_once(root)
-            if node_a in nodes and node_b in nodes:
-                return nodes.index(node_a) < nodes.index(node_b)
-        return None
+        result = set()
+        for tree in treeset:
+            # First check that the tree has proper top element.
+            tree.reset_top()
+            # Then check that there doesn't already exist tree with the same top.
+            for other in self.trees:
+                if tree is not other and tree.top is other.top:
+                    # we don't want two similar trees, remove _this_
+                    for node in tree.ordered_nodes:
+                        node.remove_from_tree(tree)
+                    self.remove_tree(tree)
+                    # let the other tree take the responsibility
+                    other.update_items()
+                    result.add(other)
+            # then update this tree
+            tree.update_items()
+            result.add(tree)
+        return result
 
-    # not used
-    def index_in_tree(self, node):
-        """ Find the index of first usage in tree.
-        :param node: node to look for
-        :return: index
-        """
-        for root in self.roots:
-            nodes = self.list_nodes_once(root)
-            if node in nodes:
-                return nodes.index(node)
-        return None
+    def create_tree_for(self, node):
+        tree = Tree(top=node)
+        self.trees.append(tree)
+        tree.update_items()
+
+    def remove_tree(self, tree):
+        for node in tree.sorted_nodes:
+            node.remove_from_tree(tree)
+        self.trees.remove(tree)
 
     def get_first_free_constituent_name(self):
         """ Generate a name for constituent, ABCDEF... and then abcdef...,
@@ -750,7 +781,7 @@ class Forest(BaseModel):
 
         # root status is meaningful to only certain types of nodes, others
         # exit immediately
-        self.update_root_status(node)
+        self.update_tree_for(node)
 
         # resetting node by visualization is equal to initializing node for
         # visualization. e.g. if nodes are locked to position in this vis,
@@ -848,7 +879,7 @@ class Forest(BaseModel):
         node = self.parser.parse_into_forest(text)
         return node
         # self.add_to_scene(root_node)
-        # self.update_root_status(root_node)
+        # self.update_tree_for(root_node)
 
     def create_trees_from_string(self, text):
         """ Use this to initially draw the trees from a bracket notation or
@@ -887,6 +918,7 @@ class Forest(BaseModel):
         assert index
         constituent = ctrl.Constituent(label='t', index=index)
         trace = self.create_node(synobj=constituent)
+        trace.copy_position(node)
         trace.is_trace = True
         # if new_chain:
         # self.chain_manager.rebuild_chains()
@@ -963,9 +995,7 @@ class Forest(BaseModel):
         if node.syntactic_object and node.syntactic_object.save_key in self.nodes_from_synobs:
             del self.nodes_from_synobs[node.syntactic_object.save_key]
 
-        if node in self.roots:
-            self.poke('roots')
-            self.roots.remove(node)
+        self.update_tree_for(node)
         # -- scene --
         sc = node.scene()
         if sc:
@@ -992,7 +1022,7 @@ class Forest(BaseModel):
                 if edge in start_node.edges_up:  # shouldn't happen
                     start_node.poke('edges_up')
                     start_node.edges_up.remove(edge)
-                    self.update_root_status(start_node)
+                    self.update_tree_for(start_node)
             if end_node:
                 if edge in end_node.edges_down:  # shouldn't happen
                     end_node.poke('edges_down')
@@ -1000,7 +1030,7 @@ class Forest(BaseModel):
                 if edge in end_node.edges_up:
                     end_node.poke('edges_up')
                     end_node.edges_up.remove(edge)
-                    self.update_root_status(end_node)
+                    self.update_tree_for(end_node)
         # -- ui elements --
         self.main.ui_manager.remove_ui_for(edge)
         # -- dictionaries --
@@ -1073,13 +1103,13 @@ class Forest(BaseModel):
             edge.end.disconnect_in_syntax(edge)
             edge.end.poke('edges_up')
             edge.end.edges_up.remove(edge)
-            self.update_root_status(edge.end)
+            self.update_tree_for(edge.end)
         edge.connect_end_points(edge.start, new_end)
         new_end.poke('edges_up')
         new_end.edges_up.append(edge)
         new_end.connect_in_syntax(edge)
-        self.update_root_status(new_end)
-        self.update_root_status(edge.start)
+        self.update_tree_for(new_end)
+        self.update_tree_for(edge.start)
 
     def fix_stubs_for(self, node):
         """ Make sure that node (ConstituentNode) has binary children.
@@ -1442,8 +1472,8 @@ class Forest(BaseModel):
             child.edges_up.append(new_edge)
             parent.edges_down.append(new_edge)
         child.connect_in_syntax(new_edge)
-        self.update_root_status(parent)
-        self.update_root_status(child)
+        self.update_tree_for(parent)
+        self.update_tree_for(child)
         # fix other edge aligns: only one left align and one right align,
         # n center aligns, and if only one child, it has center align.
         edges = [edge for edge in parent.edges_down if edge.edge_type == edge_type]
@@ -1465,7 +1495,7 @@ class Forest(BaseModel):
             child.rebuild_brackets()
         parent.update_label()
         child.update_label()
-        self.update_root_status(child)
+        self.update_tree_for(child)
         return new_edge
 
     def disconnect_edge(self, edge):
@@ -1480,7 +1510,7 @@ class Forest(BaseModel):
             edge.end.poke('edges_up')
             edge.end.edges_up.remove(edge)
             edge.end.disconnect_in_syntax(edge)
-        self.update_root_status(edge.end)
+        self.update_tree_for(edge.end)
         self.delete_edge(edge)
 
     def disconnect_node(self, parent, child, edge_type='', ignore_missing=False, keep_head=False):
@@ -1633,7 +1663,7 @@ class Forest(BaseModel):
 
         # These steps are safe, connect node is smart enough to deal with
         # unary/ binary children.
-        new_node = self.create_node(pos=pos)
+        new_node = self.create_node()
         new_node.copy_position(parent)
         new_node.current_position = pos
         if head_left:
@@ -1650,7 +1680,7 @@ class Forest(BaseModel):
                 ox += 40
             else:
                 ox -= 40
-            other_node = self.create_node(pos=(ox, oy, oz))
+            other_node = self.create_node()
             other_node.copy_position(parent)
             other_node.current_position = ox, oy, oz
             self.connect_node(parent=parent, child=other_node, direction=other_align)
@@ -1674,9 +1704,7 @@ class Forest(BaseModel):
             # Internal merge situation and we
             # need to give the new_node an index so it can be reconstructed
             # as a trace structure
-            in_same_tree = self.is_higher_in_tree(new, top)
-            # returns None if they are not in same tree
-            if in_same_tree is not None:
+            if new.tree is top.tree:
                 if not new.index:
                     new.index = self.chain_manager.next_free_index()
                 # replace either the moving node or leftover node with trace
@@ -1715,7 +1743,7 @@ class Forest(BaseModel):
             # Internal merge situation and we
             # need to give the new_node an index so it can be reconstructed
             # as a trace structure
-            moving_was_higher = self.is_higher_in_tree(inserted, child)
+            moving_was_higher = inserted.tree.is_higher_in_tree(inserted, child)
             # returns None if they are not in same tree
             if moving_was_higher is not None:
                 if not inserted.index:
@@ -1763,7 +1791,9 @@ class Forest(BaseModel):
         if not pos:
             pos = (0, 0, 0)
         merger_const = ctrl.FL.merge(left.syntactic_object, right.syntactic_object)
-        merger_node = self.create_node(synobj=merger_const, pos=pos)
+        merger_node = self.create_node(synobj=merger_const)
+        merger_node.copy_position(right)
+        merger_node.current_position = pos
         self.add_merge_counter(merger_node)
         self.connect_node(parent=merger_node, child=left, direction=g.LEFT)
         self.connect_node(parent=merger_node, child=right, direction=g.RIGHT)
@@ -1777,7 +1807,8 @@ class Forest(BaseModel):
         if not node:
             return
         new_c = node.syntactic_object.copy()
-        new_node = self.create_node(new_c, pos=node.current_position)
+        new_node = self.create_node(new_c)
+        new_node.copy_position(node)
         self.add_select_counter(new_node)
         self.main.add_message("Copied %s" % node)
         return new_node
@@ -1864,7 +1895,7 @@ class Forest(BaseModel):
     #                #
     # ############## #
 
-    roots = Saved("roots")  # the current line of trees
+    trees = Saved("trees")  # the current line of trees
     nodes = Saved("nodes")
     edges = Saved("edges")
     others = Saved("others")

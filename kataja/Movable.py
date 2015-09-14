@@ -79,10 +79,13 @@ When nodes that don't use physics are dragged, the adjustment.
 """
     def __init__(self):
         super().__init__()
-        # Shared movement-related fields
+        # Common movement-related fields
         self.current_position = ((random.random() * 150) - 75, (random.random() * 150) - 75, 0)
         self.z = 0
         self._dragged = False
+        self.tree = set() # each Movable belongs to some tree, either formed by Movable alone or set
+        # of Movables. Tree has abstract position adjustment information.
+
         # MOVE_TO -fields
         self.target_position = (0, 0, 0)
         self.adjustment = (0, 0, 0)
@@ -125,6 +128,25 @@ When nodes that don't use physics are dragged, the adjustment.
         :return: None
         """
         self._hovering = False
+
+    # Tree membership ##########################################################
+
+    def pick_any_tree(self):
+        for tree in self.tree:
+            return tree
+
+    def add_to_tree(self, tree):
+        self.tree.add(tree)
+        self.setParentItem(tree)
+
+    def remove_from_tree(self, tree):
+        if tree in self.tree:
+            self.tree.remove(tree)
+            if self.tree:
+                self.setParentItem(self.pick_any_tree())
+            else:
+                self.setParentItem(None)
+
 
     # ## Movement ##############################################################
 
@@ -242,9 +264,7 @@ When nodes that don't use physics are dragged, the adjustment.
         """ Kill moving animation for this object.
         :return: None
         """
-        print('stop moving!')
         if self.after_move_function:
-            print('calling after_move_function')
             self.after_move_function()
             self.after_move_function = None
         self._move_counter = 0
@@ -332,7 +352,6 @@ When nodes that don't use physics are dragged, the adjustment.
                     self.setOpacity(self._fade_out_counter / 10.0)
                 active = True
             else:
-                print('fade out reached hide')
                 self.hide()
                 self.update_visibility()
         return active

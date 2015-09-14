@@ -123,8 +123,8 @@ class BracketedLinearization(BaseVisualization):
             return used, left_edge
 
         start = 0
-        for root in self.forest:
-            if root.node_type == g.CONSTITUENT_NODE:
-                nodes_used, start = draw_node(root, used=set(), left_edge=start)
+        for tree in self.forest:
+            if tree.top.node_type == g.CONSTITUENT_NODE:
+                nodes_used, start = draw_node(tree.top, used=set(), left_edge=start)
                 start += prefs.edge_width
 

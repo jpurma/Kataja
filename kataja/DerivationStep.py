@@ -43,14 +43,14 @@ class DerivationStep(BaseModel):
      """
     short_name = "DStep"
 
-    def __init__(self, msg=None, roots=None, chains=None):
+    def __init__(self, msg=None, trees=None, chains=None):
         super().__init__()
-        if not roots:
-            roots = []
+        if not trees:
+            trees = []
         if not chains:
             chains = {}
         self.msg = msg
-        self.roots = [self.snapshot_of_tree(root) for root in roots]
+        self.trees = [self.snapshot_of_tree(tree) for tree in trees]
         self.chains = self.snapshot_of_chains(chains)
 
     def after_init(self):
@@ -74,14 +74,14 @@ class DerivationStep(BaseModel):
             snapshot[key] = list(item)
         return snapshot
 
-    def snapshot_of_tree(self, root_node):
+    def snapshot_of_tree(self, tree):
         """ create a version of root with shallow copy for each node and a
         simple structure for rebuilding/restoring
         :param root_node:
          them """
         snapshot = []
         done = set()
-        for node in ctrl.forest.list_nodes_once(root_node):
+        for node in tree.sorted_nodes:
             if node not in done:
                 data = {'node': node, 'edges_up': list(node.edges_up),
                         'edges_down': list(node.edges_down)}
@@ -92,19 +92,19 @@ class DerivationStep(BaseModel):
                     data['index'] = None
                 snapshot.append(data)
                 done.add(node)
-        return {'root': snapshot}
+        return {'tree': snapshot}
 
-    def rebuild_tree_from_snapshot(self, snapshot):
+    def rebuild_tree_from_snapshot(self, snapshot): # fixme -- move from roots to trees incomplete
         """ Restores each node to use those connections it had when stored.
         Notice that this is rebuilding in a very limited sense. Probably
         we'll need something deeper soon.
         :param snapshot:
         :param forest:
         """
-        root = snapshot['root']
-        if root:
-            root = root[0]['node']
-        for data in root:
+        tree = snapshot['tree']
+        if tree:
+            tree_top = tree[0]['node']
+        for data in tree:
             node = data['node']
             node.edges_down = []
             for edge_down in data['edges_down']:
@@ -116,17 +116,18 @@ class DerivationStep(BaseModel):
                 ctrl.forest.connect_node(parent=parent, child=node)
             node.index = data['index']
             ctrl.forest.store(node)
-        return root
+        return tree
 
     def restore_from_snapshot(self):
         """ Puts the given forest back to state described in this derivation
         step
         :param forest:
         """
-        ctrl.forest.roots = []
-        for root_data in self.roots:
-            root = self.rebuild_tree_from_snapshot(root_data)
-            ctrl.forest.update_root_status(root)
+        ctrl.forest.trees = [] # fixme: if done like this, we can't find and fix broken trees in
+        # nodes
+        for tree_data in self.trees:
+            top_node = self.rebuild_tree_from_snapshot(tree_data)
+            ctrl.forest.update_tree_for(top_node)
         ctrl.forest.chain_manager.chains = self.chains
 
     # ############## #
@@ -161,7 +162,7 @@ class DerivationStepManager(BaseModel):
         :param msg:
         """
         # print('save_and_create_derivation_step called')
-        roots = ctrl.forest.roots
+        trees = ctrl.forest.trees
         chains = ctrl.forest.chain_manager.chains
         if chains:
             print('saving chains into derivation step: ', chains)

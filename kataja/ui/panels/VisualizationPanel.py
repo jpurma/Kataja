@@ -4,7 +4,7 @@ from kataja.visualizations.available import VISUALIZATIONS
 from kataja.ui.panels.UIPanel import UIPanel
 from kataja.singletons import ctrl, qt_prefs
 import kataja.globals as g
-from ui.OverlayButton import PanelButton
+from kataja.ui.OverlayButton import PanelButton
 
 __author__ = 'purma'
 

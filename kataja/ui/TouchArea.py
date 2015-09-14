@@ -309,11 +309,11 @@ class TouchArea(QtWidgets.QGraphicsItem):
 
     # self, N, R, merge_to_left, new_node_pos, merger_node_pos):
 
-    def calculate_if_can_merge(self, dragged, root, node_list):
+    def calculate_if_can_merge(self, dragged, top, node_list):
         """
 
         :param dragged:
-        :param root:
+        :param top:
         :param node_list:
         :return:
         """
@@ -610,10 +610,10 @@ class JointedTouchArea(TouchArea):
     def __init__(self, host, ttype, ui_key):
         super().__init__(host, ttype, ui_key)
         self._fill_path = False
-        if ttype is g.LEFT_ADD_ROOT:
+        if ttype is g.LEFT_ADD_TOP:
             self.status_tip = "Add new constituent to left of %s" % self.host
             self._align_left = True
-        elif ttype is g.RIGHT_ADD_ROOT:
+        elif ttype is g.RIGHT_ADD_TOP:
             self.status_tip = "Add new constituent to right of %s" % self.host
         if ctrl.main.use_tooltips:
             self.setToolTip(self.status_tip)
@@ -704,7 +704,7 @@ class JointedTouchArea(TouchArea):
             dropped_node = self.make_node_from_string(dropped_node)
         if not dropped_node:
             return
-        if self.type == g.RIGHT_ADD_ROOT or self.type == g.LEFT_ADD_ROOT:
+        if self.type == g.RIGHT_ADD_TOP or self.type == g.LEFT_ADD_TOP:
             # host is a node
             assert isinstance(self.host, Node)
             ctrl.forest.merge_to_top(self.host,
@@ -723,10 +723,10 @@ class JointedTouchArea(TouchArea):
         self._dragging = False
         if self._drag_hint:
             return False
-        root = self.host
-        new_node = ctrl.forest.create_node(pos=root.current_position)
-        new_node.copy_position(root)
-        ctrl.forest.merge_to_top(root, new_node, self._align_left, new_node.current_position)
+        top = self.host
+        new_node = ctrl.forest.create_node(pos=top.current_position)
+        new_node.copy_position(top)
+        ctrl.forest.merge_to_top(top, new_node, self._align_left, new_node.current_position)
         ctrl.deselect_objects()
         ctrl.main.action_finished(m='add constituent')
         return True
@@ -935,7 +935,7 @@ def create_touch_area(host, ttype, ui_key):
     :param ui_key:
     :return:
     """
-    if ttype in [g.RIGHT_ADD_ROOT, g.LEFT_ADD_ROOT]:
+    if ttype in [g.RIGHT_ADD_TOP, g.LEFT_ADD_TOP]:
         return JointedTouchArea(host, ttype, ui_key)
     elif ttype in [g.LEFT_ADD_SIBLING, g.RIGHT_ADD_SIBLING]:
         return BranchingTouchArea(host, ttype, ui_key)

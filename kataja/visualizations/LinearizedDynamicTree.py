@@ -47,7 +47,7 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
         if reset:
             self.forest.settings.show_constituent_edges = True
             self.forest.settings.bracket_style = g.NO_BRACKETS
-            max_height_steps = max([len(list(self.forest.list_nodes_once(root))) for root in self.forest])
+            max_height_steps = max([len(tree.sorted_nodes) for tree in self.forest])
             self.set_vis_data('max_height_steps', max_height_steps)
             self.set_vis_data('height_steps', max_height_steps / 2)
 
@@ -66,7 +66,7 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
                 node.physics_x = False
                 node.physics_y = False
                 node.physics_z = False
-            elif node.is_root_node():
+            elif node.is_top_node():
                 node.physics_x = True
                 node.physics_y = False
                 node.physics_z = False
@@ -90,21 +90,21 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
         y = 0
         start_height = self.get_vis_data('height_steps') * prefs.edge_height
 
-        for root in self.forest:
-            if root.node_type != g.CONSTITUENT_NODE:
+        for tree in self.forest:
+            top = tree.top
+            if top.node_type != g.CONSTITUENT_NODE:
                 continue
             # linearized = ctrl.FL.Linearize(root.syntactic_object)
             depths = []
             total_width = 0
             nodelist = []
-            for node in self.forest.list_nodes_once(root):
-                if node == root:
-                    node.physics_x = True
-                    node.physics_y = False
-                    node.physics_z = False
-                    rx, ry, rz = node.current_position
-                    node.move_to(rx, 0, rz)
-                elif node.is_leaf_node():
+            top.physics_x = True
+            top.physics_y = False
+            top.physics_z = False
+            rx, ry, rz = top.current_position
+            top.move_to(rx, 0, rz)
+            for node in tree.sorted_nodes[1:]:
+                if node.is_leaf_node():
                     if node:
                         node.physics_x = False
                         node.physics_y = False

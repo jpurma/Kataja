@@ -205,6 +205,6 @@ class LeftFirstHexTree(BaseVisualization):
 
         x = 0
 
-        for root in self.forest:
-            draw_node(root, None, allow_crossing=False)
+        for tree in self.forest:
+            draw_node(tree.top, None, allow_crossing=False)
             self.start_x += 100

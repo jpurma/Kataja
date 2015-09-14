@@ -128,28 +128,6 @@ class BaseVisualization:
         """ if there are different modes for one visualization, rotating between different modes is triggered here. """
         pass
 
-    def _count_occurences_of_node(self, root):
-        self._hits = {}
-        self._max_hits = {}
-        for node in root:
-            self._hits[node.save_key] = self._hits.get(node.save_key, 0) + 1
-            self._max_hits[node.save_key] = self._hits[node.save_key]
-
-    def _reduce_node_count(self, node):
-        self._hits[node.save_key] = self._hits.get(node.save_key, 0) - 1
-
-    def _is_last_node(self, node):
-        return self._hits[node.save_key] == 0
-
-    def _is_first_node(self, node):
-        return self._hits[node.save_key] == self._max_hits[node.save_key] - 1
-
-    def _mark_node_as_used(self, node):
-        self._hits[node.save_key] = 0
-
-    def _is_node_used_already(self, node):
-        return self.hits[node.save_key] == 0
-
 
     def calculate_movement(self, node, alpha = 0.2):
         # Sum up all forces pushing this item away.
@@ -327,7 +305,7 @@ class BaseVisualization:
         required_keys = set()
         for tree in self.forest:
             sortable_parents = []
-            ltree = self.forest.list_nodes_once(tree)
+            ltree = tree.sorted_nodes
             for node in ltree:
                 parents = node.get_parents()
                 if len(parents) > 1:

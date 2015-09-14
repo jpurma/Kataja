@@ -102,7 +102,7 @@ class ConstituentStructures:
         """
         return self.dominates(dom, sub) and dom != sub
 
-    def is_root_node(self, a: Constituent, structure: Constituent) -> bool:
+    def is_top_node(self, a: Constituent, structure: Constituent) -> bool:
         """ (5a) Root node: the node that dominates everything, but is dominated by nothing except itself
         (Carnie 2010, p. 29)
         This is a bit stupid way of doing this, since by giving the structure where the evaluation is done we are

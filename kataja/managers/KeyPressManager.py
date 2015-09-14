@@ -134,26 +134,26 @@ class KeyPressManager:
 
         if key == qtkey.Key_Down:
             if not focus:
-                if self.forest.roots:
-                    self.forest.roots[0].take_focus()
+                if self.forest.trees:
+                    self.forest.trees[0].top.take_focus()
             else:
                 focus.move_focus_down()
         elif key == qtkey.Key_Right:
             if not focus:
-                if self.forest.roots:
-                    self.forest.roots[0].take_focus()
+                if self.forest.trees:
+                    self.forest.trees[0].top.take_focus()
             else:
                 focus.move_focus_right()
         elif key == qtkey.Key_Up:
             if not focus:
-                if self.forest.roots:
-                    self.forest.roots[0].take_focus()
+                if self.forest.trees:
+                    self.forest.trees[0].top.take_focus()
             else:
                 focus.move_focus_up()
         elif key == qtkey.Key_Left:
             if not focus:
-                if self.forest.roots:
-                    self.forest.roots[0].take_focus()
+                if self.forest.trees:
+                    self.forest.trees[0].top.take_focus()
             else:
                 focus.move_focus_left()
         elif key == qtkey.Key_Space:
