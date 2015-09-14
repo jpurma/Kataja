@@ -89,16 +89,16 @@ class ConstituentNode(BaseConstituentNode):
     # edges going up. When left empty, touch area is associated with the node.
 
     touch_areas_when_dragging = {
-        g.LEFT_ADD_ROOT: {'condition': ['is_root', 'dragging_constituent']},
-        g.RIGHT_ADD_ROOT: {'condition': ['is_root', 'dragging_constituent']},
+        g.LEFT_ADD_TOP: {'condition': ['is_top', 'dragging_constituent']},
+        g.RIGHT_ADD_TOP: {'condition': ['is_top', 'dragging_constituent']},
         g.LEFT_ADD_SIBLING: {'place': 'edge_up', 'condition': 'dragging_constituent'},
         g.RIGHT_ADD_SIBLING: {'place': 'edge_up', 'condition': 'dragging_constituent'},
         g.TOUCH_CONNECT_COMMENT: {'condition': 'dragging_comment'},
         g.TOUCH_CONNECT_FEATURE: {'condition': 'dragging_feature'},
         g.TOUCH_CONNECT_GLOSS: {'condition': 'dragging_gloss'}}
 
-    touch_areas_when_selected = {g.LEFT_ADD_ROOT: {'condition': 'is_root'},
-                                 g.RIGHT_ADD_ROOT: {'condition': 'is_root'},
+    touch_areas_when_selected = {g.LEFT_ADD_TOP: {'condition': 'is_top'},
+                                 g.RIGHT_ADD_TOP: {'condition': 'is_top'},
                                  g.LEFT_ADD_SIBLING: {'place': 'edge_up'},
                                  g.RIGHT_ADD_SIBLING: {'place': 'edge_up'},
                                  g.LEFT_ADD_CHILD: {'condition': 'is_leaf'},
@@ -272,7 +272,7 @@ class ConstituentNode(BaseConstituentNode):
                 name = "Trace"
             if self.is_leaf_node():
                 name = "Leaf constituent"
-            elif self.is_root_node():
+            elif self.is_top_node():
                 name = "Root constituent"
             else:
                 name = "Inner constituent"

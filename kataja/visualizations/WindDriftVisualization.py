@@ -111,7 +111,30 @@ class WindDriftTree(BaseVisualization):
         """ We should draw recursively starting from right bottom edge and add layers when needed. """
         self._last_pos = (0, 0)
         for tree in self.forest:
-            self._count_occurences_of_node(tree.root)
-            if tree.root.node_type != g.CONSTITUENT_NODE:
+            self._count_occurences_of_node(tree.top)
+            if tree.top.node_type != g.CONSTITUENT_NODE:
                 continue
-            self._draw_wind_drift_tree(tree.root)
+            self._draw_wind_drift_tree(tree.top)
+
+
+    def _count_occurences_of_node(self, top):
+        self._hits = {}
+        self._max_hits = {}
+        for node in root:
+            self._hits[node.save_key] = self._hits.get(node.save_key, 0) + 1
+            self._max_hits[node.save_key] = self._hits[node.save_key]
+
+    def _reduce_node_count(self, node):
+        self._hits[node.save_key] = self._hits.get(node.save_key, 0) - 1
+
+    def _is_last_node(self, node):
+        return self._hits[node.save_key] == 0
+
+    def _is_first_node(self, node):
+        return self._hits[node.save_key] == self._max_hits[node.save_key] - 1
+
+    def _mark_node_as_used(self, node):
+        self._hits[node.save_key] = 0
+
+    def _is_node_used_already(self, node):
+        return self.hits[node.save_key] == 0

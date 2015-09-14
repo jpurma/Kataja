@@ -126,7 +126,6 @@ class KatajaAction(QtWidgets.QAction):
         tooltip = self.toolTip()
         if tooltip and not isinstance(element, EmbeddedMultibutton):
             if tooltip_suffix:
-                print(tooltip)
                 element.setStatusTip(tooltip % tooltip_suffix)
                 if ctrl.main.use_tooltips:
                     element.setToolTip(tooltip % tooltip_suffix)

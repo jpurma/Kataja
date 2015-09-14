@@ -39,6 +39,7 @@ class BaseConstituentNode(Node):
       and not ConstituentNode. """
     width = 20
     height = 20
+    is_constituent = True
     default_edge_type = g.CONSTITUENT_EDGE
     node_type = g.CONSTITUENT_NODE
     short_name = "BCN"
@@ -151,7 +152,7 @@ class BaseConstituentNode(Node):
         if self.syntactic_object:
             if self.is_leaf_node(only_similar=True, only_visible=False):
                 name = "Leaf constituent"
-            elif self.is_root_node():
+            elif self.is_top_node():
                 name = "Root constituent"
             else:
                 name = "Inner constituent"
@@ -510,12 +511,12 @@ class BaseConstituentNode(Node):
 
     # ### Checks for callable actions ####
 
-    def can_root_merge(self):
+    def can_top_merge(self):
         """
         :return:
         """
-        root = self.get_root_node()
-        return self is not root and self not in root.get_children()
+        top = self.get_top_node()
+        return self is not top and self not in top.get_children()
 
     # ### Dragging #####################################################################
 
@@ -525,7 +526,7 @@ class BaseConstituentNode(Node):
         """ Implement this if structure is supposed to drag with the node
         :return:
         """
-        nodes_in_tree = ctrl.forest.list_nodes_once(self.get_root_node())
+        nodes_in_tree = ctrl.forest.list_nodes_once(self.get_top_node())
         parent_index = nodes_in_tree.index(self)
         for node in ctrl.forest.list_nodes_once(self):
             if node is not ctrl.dragged_focus and nodes_in_tree.index(node) > parent_index:

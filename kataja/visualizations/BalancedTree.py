@@ -97,6 +97,6 @@ class BalancedTree(BaseVisualization):
             for child in node.get_visible_children():
                 _fill_grid(child, row + 1)
 
-        for root_node in self.forest:
-            _fill_grid(root_node, 0)
-            self._linear.append(self.forest.list_nodes_once(root_node))
+        for tree in self.forest:
+            _fill_grid(tree.top, 0)
+            self._linear.append(tree.sorted_constituents)

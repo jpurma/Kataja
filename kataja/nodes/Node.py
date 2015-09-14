@@ -55,6 +55,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
     height = 20
     default_edge_type = g.ABSTRACT_EDGE
     node_type = g.ABSTRACT_NODE
+    is_constituent = False
     ordered = False
     ordering_func = None
     name = ('Abstract node', 'Abstract nodes')
@@ -582,7 +583,7 @@ syntactic_object: %s
             return parents[0]
         return None
 
-    def is_root_node(self, only_similar=True, only_visible=True):
+    def is_top_node(self, only_similar=True, only_visible=True):
         """ Root node is the topmost node of a tree
         :param only_similar:
         :param only_visible:
@@ -592,29 +593,22 @@ syntactic_object: %s
         else:
             return True
 
-    def get_root_node(self, only_similar=True, only_visible=False, recursion=False, visited=None):
-        """ Getting the root node is not trivial if there are
-        derivation_steps in the tree.
-        :param only_similar:
-        :param only_visible:
-        :param recursion:
-        :param visited:
-        If a node that is already visited is visited again, this is a
-        derivation_step that
-         should not be followed. """
-        if not recursion:
-            visited = set()
-        if self in visited:
+    def get_top_node(self, return_set=False):
+        """ Getting the top node is easiest by looking from the stored trees. Don't use this if
+        this is about fixing trees!
+        :param return_set: Return result as a set which may contain more than 1 roots.  """
+        s = set()
+
+        for tree in ctrl.forest:
+            if self in tree.sorted_nodes:
+                if return_set:
+                    s.add(tree.top)
+                else:
+                    return tree.top
+        if return_set:
+            return s
+        else:
             return None
-        parents = self.get_parents(only_similar, only_visible)
-        if not parents:
-            return self
-        visited.add(self)
-        for parent in parents:
-            root = parent.get_root_node(only_similar, only_visible, recursion=True, visited=visited)
-            if root:
-                return root
-        return self
 
     def get_edge_to(self, other, edge_type=''):
         """ Returns edge object, not the related node. There should be only

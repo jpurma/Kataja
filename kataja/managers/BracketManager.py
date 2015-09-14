@@ -109,7 +109,7 @@ class BracketManager:
 
         if f.settings.bracket_style != g.NO_BRACKETS:
             for tree in f:
-                for node in f.list_visible_nodes_once(tree):  # not sure if this should use 'once'
+                for node in tree.sorted_nodes:  # not sure if this should use 'once'
                     if node.left_bracket:
                         depth, left = self.find_leftmost(node)
                         k = left.save_key

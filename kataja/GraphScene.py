@@ -230,7 +230,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         best = current.end
                         found = True
                 elif isinstance(current, TouchArea):
-                    if current.type == g.RIGHT_ADD_ROOT and \
+                    if current.type == g.RIGHT_ADD_TOP and \
                             current.host.top_left_touch_area:
                         best = current.host.top_left_touch_area
                         found = True
@@ -269,7 +269,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         best = current.start
                         found = True
                 elif isinstance(current, TouchArea):
-                    if current.type == g.LEFT_ADD_ROOT and \
+                    if current.type == g.LEFT_ADD_TOP and \
                             current.host.top_right_touch_area:
                         best = current.host.top_right_touch_area
                         found = True

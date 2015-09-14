@@ -362,14 +362,14 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
     # return True or False: should the related action be enabled or disabled
 
     # noinspection PyMethodMayBeStatic
-    def can_root_merge(self):
+    def can_top_merge(self):
         """ Check if the selected node can be merged upwards to the root node
         of its current tree.
         :return: bool
         """
         return ctrl.single_selection() and not ctrl.get_single_selected(
 
-        ).is_root_node()
+        ).is_top_node()
 
     # ### Unused two-phase actions
     # ###############################################

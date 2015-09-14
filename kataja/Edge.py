@@ -489,7 +489,6 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
             self._projection_qcolor = ctrl.cm.get(self._projection_color)
         else:
             self._projection_qcolor = None
-        self.make_path()
 
     def make_relative_vector(self):
         """ Relative vector helps to keep the shape of a line when another,

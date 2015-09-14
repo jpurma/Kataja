@@ -156,10 +156,10 @@ class LeftFirstTree(BaseVisualization):
         new_rotation, self.traces_to_draw = self._compute_traces_to_draw(
             self.get_vis_data('rotation'))
         self.set_vis_data('rotation', new_rotation)
-        for root in self.forest:
+        for tree in self.forest:
             grid = Grid()
-            if root.node_type == g.CONSTITUENT_NODE:
-                self._put_to_grid(grid, root, 0, 0)
+            if tree.top.node_type == g.CONSTITUENT_NODE:
+                self._put_to_grid(grid, tree.top, 0, 0)
                 merged_grid.merge_grids(grid, extra_padding=2)
                 # merged_grid = self._merge_grids(grid, merged_grid)
 

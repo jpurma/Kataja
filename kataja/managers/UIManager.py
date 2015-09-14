@@ -782,8 +782,8 @@ class UIManager:
                 return True
             elif cond == 'is_leaf':
                 return node.is_leaf_node(only_similar=True, only_visible=False)
-            elif cond == 'is_root':
-                return node.is_root_node(only_visible=False)
+            elif cond == 'is_top':
+                return node.is_top_node(only_visible=False)
             elif cond == 'edge_down':
                 return list(node.get_edges_down(similar=True, visible=True))
             else:
@@ -838,8 +838,8 @@ class UIManager:
                           cond))
             if not cond:
                 return True
-            elif cond == 'is_root':
-                return node.is_root_node(only_visible=False)
+            elif cond == 'is_top':
+                return node.is_top_node(only_visible=False)
             elif cond == 'dragging_comment':
                 return dragged_type == g.COMMENT_NODE
             elif cond == 'dragging_feature':
