@@ -168,8 +168,7 @@ class Forest(BaseModel):
         """
         scene = self.scene
         for item in self.get_all_objects():
-            if item.scene() is scene:
-                scene.removeItem(item)
+            self.remove_from_scene(item)
         self.in_display = False
 
     def traces_are_visible(self):
@@ -260,13 +259,13 @@ class Forest(BaseModel):
         if self.gloss_text:
             if prefs.show_gloss_text:
                 if not self.gloss:
-                    self.gloss = self.create_node(None, node_type=g.GLOSS_NODE)
+                    self.gloss = self.create_node(synobj=None, node_type=g.GLOSS_NODE)
                     self.gloss.text = self.gloss_text
             elif self.gloss:
-                self.scene.removeItem(self.gloss)
+                self.remove_from_scene(self.gloss)
                 self.gloss = None
         elif self.gloss:
-            self.scene.removeItem(self.gloss)
+            self.remove_from_scene(self.gloss)
             self.gloss = None
 
     def set_visualization(self, name):
@@ -308,10 +307,12 @@ class Forest(BaseModel):
 
         def _tree_as_text(tree, node, gap):
             """ Cheapo linearization algorithm for Node structures."""
+            print('tree_as_text ', tree, node, gap)
             l = []
-            i = tree.sorted_constituents.indexOf(node)
-            for n in tree.sorted_constituents[i:]:
-                l.append(str(n.syntactic_object))
+            if node in tree.sorted_constituents:
+                i = tree.sorted_constituents.index(node)
+                for n in tree.sorted_constituents[i:]:
+                    l.append(str(n.syntactic_object))
             return gap.join(l)
 
         if tree:
@@ -321,7 +322,9 @@ class Forest(BaseModel):
         else:
             trees = []
             for tree in self.trees:
-                trees.append(_tree_as_text(tree, tree.top, ' '))
+                new_line = _tree_as_text(tree, tree.top, ' ')
+                if new_line:
+                    trees.append(new_line)
             return '/ '.join(trees)
 
     def syntax_trees_as_string(self):
@@ -378,15 +381,33 @@ class Forest(BaseModel):
         """ Put items belonging to this forest to scene """
         if self.in_display:
             for item in self.get_all_objects():
-                self.scene.addItem(item)
+                if not item.parentItem():
+                    self.scene.addItem(item)
 
     def add_to_scene(self, item):
         """ Put items belonging to this forest to scene
         :param item:
         """
         if self.in_display:
-            if item.scene() != self.scene:
+            sc = item.scene()
+            if not sc:
                 self.scene.addItem(item)
+            elif sc != self.scene:
+                print('has scene already (%s), but not this scene. Overriding.' % sc)
+                self.scene.addItem(item)
+
+    def remove_from_scene(self, item):
+        """ Remove item from this scene
+        :param item:
+        :return:
+        """
+        sc = item.scene()
+        if sc == self.scene:
+            sc.removeItem(item)
+        elif sc:
+            print('unknown scene for item %s : %s ' % (item, sc))
+            sc.removeItem(item)
+            print(' - removing anyways')
 
     # Getting objects ------------------------------------------------------
 
@@ -394,6 +415,8 @@ class Forest(BaseModel):
         """ Just return all objects governed by Forest -- not all scene objects 
         :return: iterator through objects
         """
+        for n in self.trees:
+            yield (n)
         for n in self.nodes.values():
             yield (n)
         for n in self.edges.values():
@@ -496,9 +519,7 @@ class Forest(BaseModel):
                 if old_head is node:
                     del self.projections[old_head.save_key]
                     if pd.visual:
-                        sc = pd.visual.scene()
-                        if sc:
-                            sc.removeItem(pd.visual)
+                        self.remove_from_scene(pd.visual)
                 else:
                     pd.remove_from_chain(old_head)
         if new_head:
@@ -528,15 +549,11 @@ class Forest(BaseModel):
             if ctrl.fs.projection_highlighter:
                 if not projection.visual:
                     projection.add_visual()
-                    self.add_to_scene(projection.visual)
-                elif projection.visual.scene() != self.scene:
-                    self.add_to_scene(projection.visual)
+                self.add_to_scene(projection.visual)
                 projection.visual.update()
             else:
                 if projection.visual:
-                    sc = projection.visual.scene()
-                    if sc:
-                        sc.removeItem(projection.visual)
+                    self.remove_from_scene(projection.visual)
                     projection.visual = None
             if ctrl.fs.projection_colorized:
                 color_id = projection.color_id
@@ -568,9 +585,7 @@ class Forest(BaseModel):
             if not projection.verify_chain():
                 del self.projections[key]
                 if projection.visual:
-                    sc = projection.visual.scene()
-                    if sc:
-                        sc.removeItem(projection.visual)
+                    self.remove_from_scene(projection.visual)
         # fix labels to follow the guessed projections if we just guessed them.
         if not self.guessed_projections:
             for key, projection in list(self.projections.items()):
@@ -602,9 +617,7 @@ class Forest(BaseModel):
                 projection.visual.update()
             else:
                 if projection.visual:
-                    sc = projection.visual.scene()
-                    if sc:
-                        sc.removeItem(projection.visual)
+                    self.remove_from_scene(projection.visual)
                     projection.visual = None
             if colorized:
                 color_id = projection.color_id
@@ -660,19 +673,20 @@ class Forest(BaseModel):
         """
         passed = set()
         tops = set()
-        def walk_to_top(node):
+
+        def walk_to_top(n):
             """ Walk upwards in tree(s), starting from this node and find the topmost nodes.
-            :param node:
+            :param n:
             :return:
             """
-            passed.add(node)
-            parents = node.get_parents(only_similar=False, only_visible=False)
+            passed.add(n)
+            parents = n.get_parents(only_similar=False, only_visible=False)
             if parents:
                 for parent in parents:
                     if parent not in passed:
                         walk_to_top(parent)
             else:
-                tops.add(node)
+                tops.add(n)
         walk_to_top(node)
         # now we have the topmost nodes, so we can check if there exists trees starting with
         # these nodes.
@@ -698,7 +712,7 @@ class Forest(BaseModel):
         result = set()
         for tree in treeset:
             # First check that the tree has proper top element.
-            tree.reset_top()
+            tree.recalculate_top()
             # Then check that there doesn't already exist tree with the same top.
             for other in self.trees:
                 if tree is not other and tree.top is other.top:
@@ -715,14 +729,28 @@ class Forest(BaseModel):
         return result
 
     def create_tree_for(self, node):
+        """ Create new tree around given node.
+        :param node:
+        :return:
+        """
         tree = Tree(top=node)
+        self.add_to_scene(tree)
         self.trees.append(tree)
+        tree.show()
         tree.update_items()
+        print('added tree, n of trees: ', len(self.trees))
 
     def remove_tree(self, tree):
+        """ Remove tree that has become unnecessary: either because it is subsumed into another
+        tree or because it is empty.
+        :param tree:
+        :return:
+        """
         for node in tree.sorted_nodes:
             node.remove_from_tree(tree)
         self.trees.remove(tree)
+        self.remove_from_scene(tree)
+        print('removed tree, n of trees: ', len(self.trees))
 
     def get_first_free_constituent_name(self):
         """ Generate a name for constituent, ABCDEF... and then abcdef...,
@@ -746,13 +774,15 @@ class Forest(BaseModel):
 
     # ### Primitive creation of forest objects ################################
 
-    def create_node(self, synobj=None, pos=None, node_type=1, text=None):
+    def create_node(self, synobj=None, relative=None, pos=None, node_type=1, text=None):
         """ This is generic method for creating all of the Node subtypes.
         Keep it generic!
         :param synobj: If syntactic object is passed here, the node created
         will be a wrapper around this syntactic object
-        :param node_type:
+        :param relative: node will be relative to given node, pos will be interpreted relative to
+        given node and new node will have the same tree as a parent.
         :param pos:
+        :param node_type:
         :return:
         """
         # First check that the node doesn't exist already
@@ -776,12 +806,11 @@ class Forest(BaseModel):
         if pos:
             node.set_original_position(pos)
             # node.update_position(pos)
-        self.add_to_scene(node)
-        # node.fade_in()
 
-        # root status is meaningful to only certain types of nodes, others
-        # exit immediately
         self.update_tree_for(node)
+        # if node is added to tree, it is implicitly added to scene. if not, this takes care of it:
+        self.add_to_scene(node)
+        #node.fade_in()
 
         # resetting node by visualization is equal to initializing node for
         # visualization. e.g. if nodes are locked to position in this vis,
@@ -917,8 +946,7 @@ class Forest(BaseModel):
             node.index = index
         assert index
         constituent = ctrl.Constituent(label='t', index=index)
-        trace = self.create_node(synobj=constituent)
-        trace.copy_position(node)
+        trace = self.create_node(synobj=constituent, relative=node)
         trace.is_trace = True
         # if new_chain:
         # self.chain_manager.rebuild_chains()
@@ -955,13 +983,10 @@ class Forest(BaseModel):
         :param node:
         :param ignore_consequences: don't try to fix things like connections,
         just delete.
-        Note: This and other complicated revisions assume that the target
-        tree is 'normalized' by
-        replacing multidomination with traces. Each node can have only one
-        parent.
-        This makes calculation easier, just remember to call
-        multidomination_to_traces
-        and traces_to_multidomination after deletions.
+        Note: This and other complicated revisions assume that the target tree is 'normalized' by
+        replacing multidomination with traces. Each node can have only one parent.
+        This makes calculation easier, just remember to call multidomination_to_traces and
+        traces_to_multidomination after deletions.
         """
         # -- connections to other nodes --
         # print('deleting node: ', node)
@@ -997,9 +1022,7 @@ class Forest(BaseModel):
 
         self.update_tree_for(node)
         # -- scene --
-        sc = node.scene()
-        if sc:
-            sc.removeItem(node)
+        self.remove_from_scene(node)
         # -- undo stack --
         node.announce_deletion()
 
@@ -1047,9 +1070,7 @@ class Forest(BaseModel):
         if not found:
             self.edge_types.remove(my_type)
         # -- scene --
-        sc = edge.scene()
-        if sc:
-            sc.removeItem(edge)
+        self.remove_from_scene(edge)
         # -- undo stack --
         edge.announce_deletion()
 
@@ -1134,7 +1155,7 @@ class Forest(BaseModel):
                 placeholder_align == g.RIGHT
             elif align == g.RIGHT:
                 placeholder_align == g.LEFT
-            placeholder = self.create_placeholder_node(node.current_position)
+            placeholder = self.create_placeholder_node(node.current_scene_position)
             self.connect_node(node, placeholder, direction=placeholder_align)
         elif not real_children:
             for ph in placeholders:
@@ -1663,8 +1684,7 @@ class Forest(BaseModel):
 
         # These steps are safe, connect node is smart enough to deal with
         # unary/ binary children.
-        new_node = self.create_node()
-        new_node.copy_position(parent)
+        new_node = self.create_node(relative=parent)
         new_node.current_position = pos
         if head_left:
             main_align = g.LEFT
@@ -1680,8 +1700,7 @@ class Forest(BaseModel):
                 ox += 40
             else:
                 ox -= 40
-            other_node = self.create_node()
-            other_node.copy_position(parent)
+            other_node = self.create_node(relative=parent)
             other_node.current_position = ox, oy, oz
             self.connect_node(parent=parent, child=other_node, direction=other_align)
         # reassigning projection is trickier
@@ -1743,7 +1762,11 @@ class Forest(BaseModel):
             # Internal merge situation and we
             # need to give the new_node an index so it can be reconstructed
             # as a trace structure
-            moving_was_higher = inserted.tree.is_higher_in_tree(inserted, child)
+            moving_was_higher = None
+            for tree in inserted.tree:
+                moving_was_higher = tree.is_higher_in_tree(inserted, child)
+                if moving_was_higher is not None:
+                    break
             # returns None if they are not in same tree
             if moving_was_higher is not None:
                 if not inserted.index:
@@ -1791,8 +1814,7 @@ class Forest(BaseModel):
         if not pos:
             pos = (0, 0, 0)
         merger_const = ctrl.FL.merge(left.syntactic_object, right.syntactic_object)
-        merger_node = self.create_node(synobj=merger_const)
-        merger_node.copy_position(right)
+        merger_node = self.create_node(synobj=merger_const, relative=right)
         merger_node.current_position = pos
         self.add_merge_counter(merger_node)
         self.connect_node(parent=merger_node, child=left, direction=g.LEFT)

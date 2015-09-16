@@ -526,32 +526,13 @@ class BaseConstituentNode(Node):
         """ Implement this if structure is supposed to drag with the node
         :return:
         """
-        trees = self.get_my_tree(return_set=True)
         children = ctrl.forest.list_nodes_once(self)
 
-        for tree in trees:
+        for tree in self.tree:
             dragged_index = tree.sorted_constituents.index(self)
             for i, node in enumerate(tree.sorted_constituents):
                 if node is not self and i > dragged_index and node in children:
                     node.add_to_dragged()
-
-    def get_my_tree(self, return_set=False):
-        """ Return the tree where this node belongs
-        :param return_set:
-        :return:
-        """
-        s = set()
-        for tree in ctrl.forest:
-            if self in tree.sorted_constituents:
-                if return_set:
-                    s.add(tree)
-                else:
-                    return tree
-        if return_set:
-            return s
-        else:
-            return None
-
 
     #################################
 

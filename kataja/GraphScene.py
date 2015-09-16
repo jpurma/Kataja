@@ -38,6 +38,7 @@ import kataja.globals as g
 
 
 # from BlenderExporter import export_visible_items
+from nodes import BaseConstituentNode
 
 
 class GraphScene(QtWidgets.QGraphicsScene):
@@ -691,6 +692,10 @@ class GraphScene(QtWidgets.QGraphicsScene):
         can_normalize = True
         md = {'sum': (0, 0, 0), 'nodes': []}
         ctrl.items_moving = True
+        #print(len(self.items()))
+        #for item in self.items():
+        #    if getattr(item, 'is_constituent', False):
+        #        print('parent check: ', item, item.parentItem())
         if self._fade_steps:
             self.setBackgroundBrush(self._fade_steps_list[self._fade_steps - 1])
             self._fade_steps -= 1
@@ -709,7 +714,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         if ctrl.pressed:
             return
-        d = 0
         for node in f.visible_nodes():
             if node.adjust_opacity():
                 items_fading = True

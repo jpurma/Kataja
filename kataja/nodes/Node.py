@@ -440,20 +440,61 @@ syntactic_object: %s
                 edge.setOpacity(o)
         return active
 
+    # Tree membership ##########################################################
+
+    def pick_tallest_tree(self):
+        """ A node can belong to many trees, but in some cases only one is needed. Choose taller
+        tree. There is no good reason for why to choose that, but it is necessary to at least
+        to have predictable behaviour for complex cases.
+        :return:
+        """
+        max_len = 0
+        bigger = None
+        for tree in self.tree:
+            l = len(tree.sorted_constituents) + len(tree.sorted_nodes)
+            if l > max_len:
+                bigger = tree
+        return bigger
+
+    def update_graphics_parent(self):
+        """ Update GraphicsItem.parentItem for this node. This affects many
+
+        :return:
+        """
+        if self.tree:
+            self.setParentItem(self.pick_tallest_tree())
+        else:
+            self.setParentItem(None)
+        #print('updated parent for %s: %s' % (self, self.parentItem()))
+
+    def add_to_tree(self, tree):
+        """ Add this node to given tree and possibly set it as parent for this graphicsitem.
+        :param tree: Tree
+        :return:
+        """
+        self.tree.add(tree)
+        self.update_graphics_parent()
+
+    def remove_from_tree(self, tree):
+        """ Remove node from tree and remove the (graphicsitem) parenthood-relation.
+        :param tree: Tree
+        :return:
+        """
+        if tree in self.tree:
+            self.tree.remove(tree)
+            self.update_graphics_parent()
 
     # ### Children and parents
     # ####################################################
 
     def get_all_children(self):
-        """
-        Get all types of child nodes of this node.
+        """ Get all types of child nodes of this node.
         :return: iterator of Nodes
         """
         return (edge.end for edge in self.edges_down)
 
     def get_all_visible_children(self):
-        """
-        Get all types of child nodes of this node if they are visible.
+        """ Get all types of child nodes of this node if they are visible.
         :return: iterator of Nodes
         """
         return (edge.end for edge in self.edges_down if edge.end.is_visible())
@@ -493,7 +534,7 @@ syntactic_object: %s
         elif node_type:
             return (edge.end for edge in self.edges_down if isinstance(edge.end, node_type))
 
-    def get_parents(self, only_similar=True, only_visible=False, edge_type=None):
+    def get_parents(self, only_similar=True, only_visible=False, edge_type=None)->list:
         """
         Get parent nodes of this node.
         :param only_similar: boolean, only return nodes of same type (eg.
@@ -996,11 +1037,11 @@ syntactic_object: %s
                 self._magnets = [(-w2, -h2), (-w4, -h2), (0, -h2), (w4, -h2), (w2, -h2), (-w2, 0),
                                  (w2, 0), (-w2, h2), (-w4, h2), (0, h2), (w4, h2), (w2, h2)]
 
-            x1, y1, z1 = self.current_position
+            x1, y1, z1 = self.current_scene_position
             x2, y2 = self._magnets[n]
             return x1 + x2, y1 + y2, z1
         else:
-            return self.current_position
+            return self.current_scene_position
 
     # ### Menus #########################################
 
@@ -1088,8 +1129,7 @@ syntactic_object: %s
 
     def add_to_dragged(self):
         """ Add this node to entourage of dragged node. These nodes will
-        maintain their relative
-         position to dragged node while dragging.
+        maintain their relative position to dragged node while dragging.
         :return: None
         """
         ctrl.dragged_set.add(self)

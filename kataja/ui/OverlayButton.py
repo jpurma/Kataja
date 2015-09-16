@@ -183,12 +183,12 @@ class OverlayButton(PanelButton):
                 QtCore.QPointF(self.host.start_point[0],
                                self.host.start_point[1]) + adjust)
         elif self.role == g.ADD_TRIANGLE:
-            p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(self.host.x(),
-                                                                 self.host.y() + self.host.height / 2))
+            x, y, z = self.host.current_scene_position
+            p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(x, y + self.host.height / 2))
             p -= QtCore.QPoint((self.iconSize().width() / 2) + 4, 0)
         elif self.role == g.REMOVE_TRIANGLE:
-            p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(self.host.x(),
-                                                                 self.host.y() + self.host.height / 2))
+            x, y, z = self.host.current_scene_position
+            p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(x, y + self.host.height / 2))
             p -= QtCore.QPoint((self.iconSize().width() / 2) + 4, 0)
         else:
             raise UIError(

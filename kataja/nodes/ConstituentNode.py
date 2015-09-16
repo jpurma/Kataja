@@ -313,7 +313,8 @@ class ConstituentNode(BaseConstituentNode):
             l = str(label)
         else:
             return "anonymous constituent"
-        return "constituent '%s'" % l
+        return "constituent '%s' at %s in tree at %s " % (l, self.current_position,
+                                                          self.pick_tallest_tree().current_position)
 
     def as_bracket_string(self):
         """ returns a simple bracket string representation """

@@ -129,24 +129,13 @@ When nodes that don't use physics are dragged, the adjustment.
         """
         self._hovering = False
 
-    # Tree membership ##########################################################
-
-    def pick_any_tree(self):
-        for tree in self.tree:
-            return tree
-
-    def add_to_tree(self, tree):
-        self.tree.add(tree)
-        self.setParentItem(tree)
-
-    def remove_from_tree(self, tree):
-        if tree in self.tree:
-            self.tree.remove(tree)
-            if self.tree:
-                self.setParentItem(self.pick_any_tree())
-            else:
-                self.setParentItem(None)
-
+    @property
+    def current_scene_position(self):
+        """ Return current position in scene coordinates and turned to xyz -triple.
+        :return:
+        """
+        xy = self.scenePos()
+        return xy.x(), xy.y(), self.z
 
     # ## Movement ##############################################################
 
@@ -220,6 +209,8 @@ When nodes that don't use physics are dragged, the adjustment.
         :return:
         """
         shift = (ax, ay, az)
+        if other.parentItem():
+            self.setParentItem(other.parentItem())
         self.current_position = add_xyz(other.current_position, shift)
         self.adjustment = other.adjustment
         self.target_position = other.target_position
