@@ -365,19 +365,19 @@ When nodes that don't use physics are dragged, the adjustment.
 
     # ## Dragging ############################################################
 
-    def dragged_to(self, now_x, now_y):
-        """ Dragged focus is in now_x, now_y. Move there.
-        :param now_x: current drag focus x
-        :param now_y: current drag focus y
+    def dragged_to(self, scene_pos):
+        """ Dragged focus is in scene_pos. Move there.
+        :param scene_pos: current drag focus
         :return:
         """
+        nx, ny = scene_pos
         if self.use_physics():
             self.locked = True
         else:
             self.use_adjustment = True
             ax, ay, az = self.target_position
-            self.adjustment = (now_x - ax, now_y - ay, az)
-        self.current_position = now_x, now_y, self.z
+            self.adjustment = (nx - ax, ny - ay, az)
+        self.current_position = nx, ny, self.z
 
     def dragged_over_by(self, dragged):
         """

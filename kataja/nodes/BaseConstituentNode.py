@@ -522,7 +522,7 @@ class BaseConstituentNode(Node):
 
     # ## Most of this is implemented in Node
 
-    def prepare_children_for_dragging(self):
+    def prepare_children_for_dragging(self, scene_pos):
         """ Implement this if structure is supposed to drag with the node
         :return:
         """
@@ -532,7 +532,7 @@ class BaseConstituentNode(Node):
             dragged_index = tree.sorted_constituents.index(self)
             for i, node in enumerate(tree.sorted_constituents):
                 if node is not self and i > dragged_index and node in children:
-                    node.add_to_dragged()
+                    node.start_dragging_tracking(host=False, scene_pos=scene_pos)
 
     #################################
 

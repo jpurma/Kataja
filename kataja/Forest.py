@@ -738,7 +738,6 @@ class Forest(BaseModel):
         self.trees.append(tree)
         tree.show()
         tree.update_items()
-        print('added tree, n of trees: ', len(self.trees))
 
     def remove_tree(self, tree):
         """ Remove tree that has become unnecessary: either because it is subsumed into another
@@ -750,7 +749,6 @@ class Forest(BaseModel):
             node.remove_from_tree(tree)
         self.trees.remove(tree)
         self.remove_from_scene(tree)
-        print('removed tree, n of trees: ', len(self.trees))
 
     def get_first_free_constituent_name(self):
         """ Generate a name for constituent, ABCDEF... and then abcdef...,

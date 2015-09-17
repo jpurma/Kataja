@@ -1,6 +1,7 @@
 # coding=utf-8
 from Movable import Movable
 from kataja.nodes import Node
+from kataja.singletons import ctrl
 from PyQt5 import QtWidgets
 
 __author__ = 'purma'
@@ -14,7 +15,18 @@ def is_constituent(item):
     """
     return item and getattr(item, 'is_constituent', False)
 
-# Tree includes all items that are below given constituent.
+
+class TreeDragData:
+    """ Helper object to contain drag-related data for duration of dragging """
+
+    def __init__(self, tree:'Tree', is_host, mousedown_scene_pos):
+        self.is_host = is_host
+        self.position_before_dragging = tree.current_position
+        self.adjustment_before_dragging = tree.adjustment
+        mx, my = mousedown_scene_pos
+        scx, scy, scz = tree.current_scene_position
+        self.distance_from_pointer = scx - mx, scy - my
+        self.dragged_distance = None
 
 
 class Tree(Movable, QtWidgets.QGraphicsItem):
@@ -33,10 +45,14 @@ class Tree(Movable, QtWidgets.QGraphicsItem):
             self.sorted_constituents = []
         self.sorted_nodes = [top]
         self.current_position = 100, 100, 0
+        self.drag_data = None
 
     def __str__(self):
         return "I'm a tree, in pos (%s, %s) and top '%s'" % (self.current_position[0],
                                                              self.current_position[1], self.top)
+
+    def __contains__(self, item):
+        return item in self.sorted_nodes
 
     def recalculate_top(self):
         """ Verify that self.top is the topmost element of the tree. Doesn't handle consequences,
@@ -117,8 +133,15 @@ class Tree(Movable, QtWidgets.QGraphicsItem):
         :param node_b:
         :return:
         """
-        if node_a in self.sorted_nodes and node_b in self.sorted_nodes:
+        if node_a in self and node_b in self:
             return self.sorted_nodes.index(node_a) < self.sorted_nodes.index(node_b)
         else:
             return None
+
+    def start_dragging_tracking(self, host=False, scene_pos=None):
+        """ Add this *Tree* to entourage of dragged nodes. These nodes will
+        maintain their relative position to drag pointer while dragging.
+        :return: None
+        """
+        self.drag_data = TreeDragData(self, is_host=host, mousedown_scene_pos=scene_pos)
 

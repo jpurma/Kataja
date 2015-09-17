@@ -38,15 +38,21 @@ from kataja.parser.INodes import ITemplateNode
 TRIANGLE_HEIGHT = 10
 
 
+class DragData:
+    """ Helper object to contain drag-related data for duration of dragging """
+
+    def __init__(self, node:'Node', is_host, mousedown_scene_pos):
+        self.is_host = is_host
+        self.position_before_dragging = node.current_position
+        self.adjustment_before_dragging = node.adjustment
+        self.tree_top = node.tree_where_top()
+        mx, my = mousedown_scene_pos
+        scx, scy, scz = node.current_scene_position
+        self.distance_from_pointer = scx - mx, scy - my
+        self.dragged_distance = None
+
+
 # ctrl = Controller object, gives accessa to other modules
-
-# alignment of edges -- in some cases it is good to draw left branches
-# differently than right branches
-
-NO_ALIGN = 0
-LEFT = 1
-RIGHT = 2
-
 
 class Node(Movable, QtWidgets.QGraphicsItem):
     """ Basic class for any visualization elements that can be connected to
@@ -95,9 +101,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self.clickable = False
         self.selectable = True
         self.draggable = True
-        self._fixed_position_before_dragging = None
-        self._adjustment_before_dragging = None
-        self._distance_from_dragged = (0, 0)
+        self.drag_data = None
         self._magnets = []
         self.status_tip = ""
         self.width = 0
@@ -456,6 +460,24 @@ syntactic_object: %s
                 bigger = tree
         return bigger
 
+    def tree_where_top(self):
+        """ Returns a tree where this node is the topmost node. Cannot be topping more than one
+        tree!  (They would be identical trees otherwise.)
+        :return: None if not top, Tree if found
+        """
+        for tree in self.tree:
+            if self is tree.top:
+                return tree
+
+    def shares_tree_with_node(self, other):
+        """ Checks if this node has one or more same tree with other node
+        :param other: node
+        :return:
+        """
+        if other.tree is None or self.tree is None:
+            return False
+        return bool(self.tree & other.tree)
+
     def update_graphics_parent(self):
         """ Update GraphicsItem.parentItem for this node. This affects many
 
@@ -641,7 +663,7 @@ syntactic_object: %s
         s = set()
 
         for tree in ctrl.forest:
-            if self in tree.sorted_nodes:
+            if self in tree:
                 if return_set:
                     s.add(tree.top)
                 else:
@@ -1103,43 +1125,84 @@ syntactic_object: %s
             if editor and editor.isVisible():
                 self.open_embed()
 
-    def start_dragging(self, mx, my):
-        """
+    # Drag flow:
 
-        :param mx:
-        :param my:
+    # 1. start_dragging -- drag is initiated from this node. If the node was already selected,
+    # then other nodes that were selected at the same time are also understood to be dragged.
+    # If the node has unambiguous children, these are also dragged. If node is top node of a tree,
+    # then the tree is the object of dragging, and not node.
+    #
+    # 2. start_dragging_tracking --
+    #
+    #
+    #
+    #
+
+    def start_dragging(self, scene_pos):
+        """ Figure out which nodes belong to the dragged set of nodes.
+        It may be that a whole tree is dragged. If this is the case, drag_to commands to nodes that are tops of trees are directed to tree instead. Node doesn't change its position in tree if the whole tree moves.
+
+        :param scene_pos:
         """
         ctrl.dragged_focus = self
         ctrl.dragged_set = set()
         multidrag = False
-        if ctrl.is_selected(self):
-            for item in ctrl.selected:
-                if item is not self and getattr(item, 'draggable', True):
-                    item.add_to_dragged()
-                    item.prepare_children_for_dragging()
-                    multidrag = True
-        self.prepare_children_for_dragging()
-        self._fixed_position_before_dragging = self.current_position
-        self._adjustment_before_dragging = self.adjustment
-        self._distance_from_dragged = (self.current_position[0], self.current_position[1])
+        dragged_trees = set()
 
-        ctrl.ui.prepare_touch_areas_for_dragging(drag_host=self, moving=ctrl.dragged_set,
+        # if we are working with selection, this is more complicated, as there may be many nodes
+        # and trees dragged at once, with one focus for dragging.
+        if ctrl.is_selected(self):
+            dragged_nodes = set()
+
+            # find tree tops in selection
+            for item in ctrl.selected:
+                tree = item.tree_where_top()
+                if tree:
+                    dragged_trees.add(tree)
+            # include those nodes in selection and their children that are not part of wholly
+            # dragged trees
+            for item in dragged_nodes:
+                if item.drag_data:
+                    continue
+                in_tree = False
+                for tree in dragged_trees:
+                    if item in tree:
+                        in_tree = True
+                        break
+                if in_tree:
+                    continue
+                elif getattr(item, 'draggable', True):
+                    item.start_dragging_tracking(host=False, scene_pos=scene_pos)
+                    item.prepare_children_for_dragging(scene_pos)
+                    multidrag = True
+        # no selection -- drag what is under the pointer
+        else:
+            tree = self.tree_where_top()
+            if tree:
+                dragged_trees.add(tree)
+            else:
+                self.prepare_children_for_dragging(scene_pos)
+            self.start_dragging_tracking(host=True, scene_pos=scene_pos)
+
+        moving = ctrl.dragged_set
+        for tree in dragged_trees:
+            moving = moving.union(tree.sorted_nodes)
+        ctrl.ui.prepare_touch_areas_for_dragging(drag_host=self, moving=moving,
                                                  dragged_type=self.node_type, multidrag=multidrag)
         self.start_moving()
 
-    def add_to_dragged(self):
+    def start_dragging_tracking(self, host=False, scene_pos=None):
         """ Add this node to entourage of dragged node. These nodes will
         maintain their relative position to dragged node while dragging.
         :return: None
         """
         ctrl.dragged_set.add(self)
-        dx, dy, dummy_z = ctrl.dragged_focus.current_position
-        x, y, dummy_z = self.current_position
-        self._fixed_position_before_dragging = self.current_position
-        self._adjustment_before_dragging = self.adjustment
-        self._distance_from_dragged = (x - dx, y - dy)
+        self.drag_data = DragData(self, is_host=host, mousedown_scene_pos=scene_pos)
+        tree = self.tree_where_top()
+        if tree:
+            tree.start_dragging_tracking(host=host, scene_pos=scene_pos)
 
-    def prepare_children_for_dragging(self):
+    def prepare_children_for_dragging(self, scene_pos):
         """ Implement this if structure is supposed to drag with the node
         :return:
         """
@@ -1150,34 +1213,33 @@ syntactic_object: %s
         children etc
         :param event:
         """
-        now_x, now_y = to_tuple(event.scenePos())
+        scene_pos = to_tuple(event.scenePos())
         if not ctrl.dragged_focus:
-            self.start_dragging(now_x, now_y)
+            self.start_dragging(scene_pos)
         # change dragged positions to be based on adjustment instead of
         # distance to main dragged.
         for node in ctrl.dragged_set:
-            node.dragged_to(now_x, now_y)
-        self.dragged_to(now_x, now_y)
+            node.dragged_to(scene_pos)
+        self.dragged_to(scene_pos)
 
-    def dragged_to(self, now_x, now_y):
-        """ Dragged focus is in now_x, now_y. Move there or to position
+    def dragged_to(self, scene_pos):
+        """ Dragged focus is in scene_pos. Move there or to position
         relative to that
-        :param now_x: current drag focus x
-        :param now_y: current drag focus y
+        :param scene_pos: current pos of drag pointer (tuple x,y)
         :return:
         """
-        if ctrl.dragged_focus is not self:
-            dx, dy = self._distance_from_dragged
-            if self.use_physics():
-                self.locked = True
-            else:
-                self.use_adjustment = True
-                ax, ay, az = self.target_position
-                self.adjustment = (now_x - ax + dx, now_y - ay + dy, az)
-            self.current_position = now_x + dx, now_y + dy, self.z
+        d = self.drag_data
+        if d.tree_top:
+            d.tree_top.dragged_to(scene_pos)
         else:
-            super().dragged_to(now_x, now_y)
-
+            dx, dy = d.distance_from_pointer
+            nx, ny = scene_pos
+            p = self.parentItem()
+            if p:
+                px, py, pz = p.current_position
+                super().dragged_to((nx + dx - px, ny + dy - py))
+            else:
+                super().dragged_to((nx + dx, ny + dy))
 
     def accepts_drops(self, dragged):
         """
@@ -1229,12 +1291,11 @@ syntactic_object: %s
         """
         if self is ctrl.dragged_focus:
             for node in ctrl.dragged_set:
-                node.finish_dragging()
+                if node is not self:
+                    node.finish_dragging()
             ctrl.dragged_set = set()
             ctrl.dragged_focus = None
-        self._distance_from_dragged = None
-        self._fixed_position_before_dragging = None
-        self._adjustment_before_dragging = None
+        self.drag_data = None
         self.effect.setEnabled(False)
 
     def cancel_dragging(self):
@@ -1242,13 +1303,15 @@ syntactic_object: %s
         Revert dragged items to their previous positions.
         :return: None
         """
-        self.adjustment = self._adjustment_before_dragging
-        self.current_position = self._fixed_position_before_dragging
-        self.update_position()
-        for node in ctrl.dragged_set:
-            node.cancel_dragging()
-        if self is ctrl.dragged_focus:
-            self.finish_dragging()
+        d = self.drag_data
+        if d:
+            self.adjustment = d.adjustment_before_dragging
+            self.current_position = d.position_before_dragging
+            self.update_position()
+            if d.is_host:
+                for node in ctrl.dragged_set:
+                    node.cancel_dragging()
+            self.drag_data = None
 
     def lock(self):
         """ Display lock, unless already locked. Added functionality to
@@ -1256,8 +1319,9 @@ syntactic_object: %s
          dragging started.
         :return:
         """
+        was_locked = self.locked or self.use_adjustment
         super().lock()
-        if not (self._fixed_position_before_dragging or self._adjustment_before_dragging):
+        if not was_locked:
             ctrl.main.ui_manager.show_anchor(self)  # @UndefinedVariable
 
     # ### Mouse - Qt events ##################################################
