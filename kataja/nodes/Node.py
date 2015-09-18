@@ -1144,6 +1144,11 @@ syntactic_object: %s
 
         :param scene_pos:
         """
+        def in_any_tree(node, treeset):
+            for tree in treeset:
+                if item in tree:
+                    return True
+
         ctrl.dragged_focus = self
         ctrl.dragged_set = set()
         multidrag = False
@@ -1152,8 +1157,6 @@ syntactic_object: %s
         # if we are working with selection, this is more complicated, as there may be many nodes
         # and trees dragged at once, with one focus for dragging.
         if ctrl.is_selected(self):
-            dragged_nodes = set()
-
             # find tree tops in selection
             for item in ctrl.selected:
                 tree = item.tree_where_top()
@@ -1161,15 +1164,10 @@ syntactic_object: %s
                     dragged_trees.add(tree)
             # include those nodes in selection and their children that are not part of wholly
             # dragged trees
-            for item in dragged_nodes:
+            for item in ctrl.selected:
                 if item.drag_data:
                     continue
-                in_tree = False
-                for tree in dragged_trees:
-                    if item in tree:
-                        in_tree = True
-                        break
-                if in_tree:
+                if in_any_tree(item, dragged_trees):
                     continue
                 elif getattr(item, 'draggable', True):
                     item.start_dragging_tracking(host=False, scene_pos=scene_pos)
@@ -1220,7 +1218,6 @@ syntactic_object: %s
         # distance to main dragged.
         for node in ctrl.dragged_set:
             node.dragged_to(scene_pos)
-        self.dragged_to(scene_pos)
 
     def dragged_to(self, scene_pos):
         """ Dragged focus is in scene_pos. Move there or to position
@@ -1229,11 +1226,12 @@ syntactic_object: %s
         :return:
         """
         d = self.drag_data
+        nx, ny = scene_pos
         if d.tree_top:
-            d.tree_top.dragged_to(scene_pos)
+            dx, dy = d.tree_top.drag_data.distance_from_pointer
+            d.tree_top.dragged_to((nx + dx, ny + dy))
         else:
             dx, dy = d.distance_from_pointer
-            nx, ny = scene_pos
             p = self.parentItem()
             if p:
                 px, py, pz = p.current_position
