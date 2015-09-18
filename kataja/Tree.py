@@ -2,7 +2,7 @@
 from Movable import Movable
 from kataja.nodes import Node
 from kataja.singletons import ctrl
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 
 __author__ = 'purma'
 
@@ -28,7 +28,6 @@ class TreeDragData:
         self.distance_from_pointer = scx - mx, scy - my
         self.dragged_distance = None
 
-
 class Tree(Movable, QtWidgets.QGraphicsItem):
     """ Container for nodes that form a single tree. It allows operations that affect
     all nodes in one tree, e.g. translation of position.
@@ -46,6 +45,8 @@ class Tree(Movable, QtWidgets.QGraphicsItem):
         self.sorted_nodes = [top]
         self.current_position = 100, 100, 0
         self.drag_data = None
+        self.tree_changed = True
+        self._cached_bounding_rect = None
 
     def __str__(self):
         return "I'm a tree, in pos (%s, %s) and top '%s'" % (self.current_position[0],
@@ -144,4 +145,33 @@ class Tree(Movable, QtWidgets.QGraphicsItem):
         :return: None
         """
         self.drag_data = TreeDragData(self, is_host=host, mousedown_scene_pos=scene_pos)
+
+    def boundingRect(self):
+        if self.tree_changed or not self._cached_bounding_rect:
+            min_x, min_y = 10000, 10000
+            max_x, max_y = -10000, -10000
+            for node in self.sorted_nodes:
+                nbr = node.boundingRect()
+                x, y = node.x(), node.y()
+                x1, y1, x2, y2 = nbr.getCoords()
+                x1 += x
+                y1 += y
+                x2 += x
+                y2 += y
+                if x1 < min_x:
+                    min_x = x1
+                if x2 > max_x:
+                    max_x = x2
+                if y1 < min_y:
+                    min_y = y1
+                if y2 > max_y:
+                    max_y = y2
+            self._cached_bounding_rect = QtCore.QRectF(min_x, min_y, max_x - min_x, max_y - min_y)
+            self.tree_changed = False
+            return self._cached_bounding_rect
+        else:
+            return self._cached_bounding_rect
+
+    def paint(self, painter, QStyleOptionGraphicsItem, QWidget_widget=None):
+        painter.drawRect(self.boundingRect())
 

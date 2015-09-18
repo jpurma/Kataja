@@ -1387,6 +1387,12 @@ syntactic_object: %s
         for edge in self.edges_up:
             edge.end_node_stopped_moving()
 
+    def itemChange(self, change, value):
+        if change == QtWidgets.QGraphicsItem.ItemPositionHasChanged:
+            for tree in self.tree:
+                tree.tree_changed = True
+        return QtWidgets.QGraphicsItem.itemChange(self, change, value)
+
     # ############## #
     #                #
     #  Save support  #
