@@ -26,7 +26,6 @@
 import string
 import collections
 import itertools
-import time
 
 from kataja.ProjectionVisual import ProjectionData
 from kataja.Tree import Tree
@@ -35,6 +34,7 @@ from kataja.ForestSettings import ForestSettings, ForestRules
 from kataja.Bracket import Bracket
 from kataja.managers.BracketManager import BracketManager
 from kataja.nodes.BaseConstituentNode import BaseConstituentNode
+from kataja.nodes.ConstituentNode import ConstituentNode
 from kataja.nodes.AttributeNode import AttributeNode
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.managers.ChainManager import ChainManager
@@ -46,7 +46,6 @@ from kataja.Edge import Edge
 from kataja.managers.UndoManager import UndoManager
 from kataja.nodes.FeatureNode import FeatureNode
 from kataja.BaseModel import BaseModel, Saved
-from kataja.utils import time_me
 import kataja.globals as g
 
 
@@ -466,7 +465,6 @@ class Forest(BaseModel):
 
     # Drawing and updating --------------------------------------------
 
-    @time_me
     def draw(self):
         """ Update all trees in the forest according to current visualization
         """
@@ -475,7 +473,7 @@ class Forest(BaseModel):
         sc = ctrl.graph_scene
         sc.stop_animations()
         for tree in self.trees:
-            tree.top.update_visibility() # fixme
+            tree.top.update_visibility()  # fixme
         self.bracket_manager.update_brackets()
         self.update_projections()
         self.update_forest_gloss()
@@ -631,7 +629,6 @@ class Forest(BaseModel):
                     for node in projection.chain:
                         node.set_projection_display(color_id)
 
-
     def add_comment(self, comment):
         """ Add comment item to forest
         :param comment: comment item
@@ -672,15 +669,14 @@ class Forest(BaseModel):
         :return:
         """
         passed = set()
-        tops = set()
-        print('updating tree for ', node)
+        my_tops = set()
+        forest_tops = set((x.top for x in self.trees))
 
         def walk_to_top(n):
             """ Walk upwards in tree(s), starting from this node and find the topmost nodes.
             :param n:
             :return:
             """
-            print('^')
             passed.add(n)
             parents = n.get_parents(only_similar=False, only_visible=False)
             if parents:
@@ -688,58 +684,41 @@ class Forest(BaseModel):
                     if parent not in passed:
                         walk_to_top(parent)
             else:
-                tops.add(n)
+                my_tops.add(n)
+
         walk_to_top(node)
-        # now we have the topmost nodes, so we can check if there exists trees starting with
-        # these nodes.
-        print('found these tops: ', tops)
-        for top in tops:
+        # now we have the topmost nodes _for this node_, so we can
+        # check if there exists trees starting with these nodes.
+
+        for my_top_node in my_tops:
             found = None
             for tree in list(self.trees):
-                if top is tree.top:
+                if my_top_node is tree.top:
                     found = tree
                     break
                 elif not tree.is_valid():
-                    print('found invalid tree %s ' % tree)
                     self.remove_tree(tree)
             if found:
                 # found a good tree, ask it to update.
-                print('found good tree, asking it to update')
                 found.update_items()
             else:
-                self.create_tree_for(top)
-        if node not in tops:
-            for tree in list(self.trees):
-                print('checking tree %s with top %s' % (tree, tree.top))
-                if tree.top is node:
-                    print('***** found this node being used as a tree top, though it is not really a top')
-                    self.remove_tree(tree)
-        print('--- done update tree for ', node)
+                self.create_tree_for(my_top_node)
+            # case where node still remains in an old tree but is disconnected and starting another tree
+            for tree in list(my_top_node.tree):
+                if tree.top not in my_tops:
+                    # so we have a tree that is referring to structurally separate nodes (not in
+                    # my_tops, the locally avaialable top nodes). Remove references to it from
+                    # everyone down from here.
+                    my_top_node.remove_from_tree(tree, recursive_down=True)
 
-    def update_treeset(self, treeset): # fixme - maybe unnecessary
-        """ Update a tree to hold all the relevant items or remove the tree and replace it with
-        the correct tree
-        :param treeset:
-        :return:
-        """
-        result = set()
-        for tree in treeset:
-            # First check that the tree has proper top element.
-            tree.recalculate_top()
-            # Then check that there doesn't already exist tree with the same top.
-            for other in self.trees:
-                if tree is not other and tree.top is other.top:
-                    # we don't want two similar trees, remove _this_
-                    for node in tree.ordered_nodes:
-                        node.remove_from_tree(tree)
+        if node not in my_tops:
+            for tree in list(self.trees):
+                if tree.top is node:
                     self.remove_tree(tree)
-                    # let the other tree take the responsibility
-                    other.update_items()
-                    result.add(other)
-            # then update this tree
-            tree.update_items()
-            result.add(tree)
-        return result
+                elif not tree.top.is_top_node():
+                    print('***** found a bad bad tree *****')
+                    ctrl.main.add_message('***** found a bad bad tree *****')
+                    self.remove_tree(tree)
 
     def create_tree_for(self, node):
         """ Create new tree around given node.
@@ -751,7 +730,7 @@ class Forest(BaseModel):
         self.trees.append(tree)
         tree.show()
         tree.update_items()
-        ctrl.add_message('+ created tree %s with %s items: %s' % (tree, len(tree.sorted_nodes), str(tree.sorted_nodes)))
+        return tree
 
     def remove_tree(self, tree):
         """ Remove tree that has become unnecessary: either because it is subsumed into another
@@ -759,7 +738,6 @@ class Forest(BaseModel):
         :param tree:
         :return:
         """
-        ctrl.add_message('- removed tree %s with %s items' % (tree, len(tree.sorted_nodes)))
         for node in tree.sorted_nodes:
             node.remove_from_tree(tree)
         self.trees.remove(tree)
@@ -822,12 +800,11 @@ class Forest(BaseModel):
             node.set_original_position(pos)
             # node.update_position(pos)
 
-        print('creating node %s, updating tree for it.' % node)
-        self.update_tree_for(node)
-        print('new node has new tree: ', node.tree)
+        #if not relative:
+        #    self.update_tree_for(node)
         # if node is added to tree, it is implicitly added to scene. if not, this takes care of it:
         self.add_to_scene(node)
-        #node.fade_in()
+        # node.fade_in()
 
         # resetting node by visualization is equal to initializing node for
         # visualization. e.g. if nodes are locked to position in this vis,
@@ -842,7 +819,7 @@ class Forest(BaseModel):
         :param pos:
         :return:
         """
-        node = BaseConstituentNode(constituent=None)
+        node = ConstituentNode(constituent=None)
         node.set_original_position(pos)
         node.after_init()
         self.add_to_scene(node)
@@ -863,6 +840,7 @@ class Forest(BaseModel):
         """
         AN = AttributeNode(host, attribute_id, attribute_label, show_label=show_label)
         self.connect_node(host, child=AN)
+        host.update_trees()
         self.add_to_scene(AN)
         AN.update_visibility()
         return AN
@@ -1174,6 +1152,7 @@ class Forest(BaseModel):
                 placeholder_align == g.LEFT
             placeholder = self.create_placeholder_node(node.current_scene_position)
             self.connect_node(node, placeholder, direction=placeholder_align)
+            node.update_trees()
         elif not real_children:
             for ph in placeholders:
                 edge = node.get_edge_to(ph, g.CONSTITUENT_EDGE)
@@ -1274,6 +1253,7 @@ class Forest(BaseModel):
         F = feature.syntactic_object
         C.set_feature(F.key, F)
         self.connect_node(parent=node, child=feature)
+        self.update_tree_for(node)
 
     def add_comment_to_node(self, comment, node):
         """ Comments are connected the other way around compared to
@@ -1285,6 +1265,7 @@ class Forest(BaseModel):
         :param node:
         """
         self.connect_node(parent=node, child=comment, edge_type=g.COMMENT_EDGE)
+        self.update_tree_for(node)
 
     def add_gloss_to_node(self, gloss, node):
         """
@@ -1294,6 +1275,7 @@ class Forest(BaseModel):
         """
         self.connect_node(parent=node, child=gloss)
         node.gloss = gloss.label
+        self.update_tree_for(node)
 
     # ## order markers are special nodes added to nodes to signal the order
     # when the node was merged/added to forest
@@ -1478,6 +1460,7 @@ class Forest(BaseModel):
         :param edge_type: optional, force edge to be of given type
         """
 
+        print('--- connecting node %s to %s ' % (child, parent))
         # Check for arguments:
         if parent == child:
             raise ForestError('Connecting to self')
@@ -1510,10 +1493,6 @@ class Forest(BaseModel):
             child.edges_up.append(new_edge)
             parent.edges_down.append(new_edge)
         child.connect_in_syntax(new_edge)
-        print('//// connecting: update tree for parent: ')
-        self.update_tree_for(parent)
-        print('//// connecting: update tree for child: ')
-        self.update_tree_for(child)
         # fix other edge aligns: only one left align and one right align,
         # n center aligns, and if only one child, it has center align.
         edges = [edge for edge in parent.edges_down if edge.edge_type == edge_type]
@@ -1535,10 +1514,12 @@ class Forest(BaseModel):
             child.rebuild_brackets()
         parent.update_label()
         child.update_label()
+        print('--- finished connect')
+
         return new_edge
 
     def disconnect_edge(self, edge):
-        """
+        """ Does the local mechanics of edge removal
         :param edge:
         :return:
         """
@@ -1549,30 +1530,39 @@ class Forest(BaseModel):
             edge.end.poke('edges_up')
             edge.end.edges_up.remove(edge)
             edge.end.disconnect_in_syntax(edge)
-        self.update_tree_for(edge.end)
         self.delete_edge(edge)
 
-    def disconnect_node(self, parent, child, edge_type='', ignore_missing=False, keep_head=False):
-        """ Removes and deletes a edge between two nodes
+    def disconnect_node(self, parent=None, child=None, edge_type='', ignore_missing=False,
+                        edge=None):
+        """ Removes and deletes a edge between two nodes. If asked to do so, can reset
+        projections and tree ownerships, but doesn't do it automatically, as disconnecting is
+        often part of more complex series of operations.
         :param parent:
         :param child:
         :param edge_type:
-        :param ignore_missing:
-        :param keep_head: don't try to cut projection (useful if these nodes will be reconnected
-        soon anyways, as in insertion.
+        :param ignore_missing: raise error if suitable edge is not found
+        :param edge: if the edge that connects nodes is already identified, it can be given directly
         """
         # cut the projection between the nodes
-        if not keep_head:
-            if hasattr(parent, 'head') and hasattr(child, 'head'):
-                if parent.head is child.head:
-                    if hasattr(parent, 'set_projection'):
-                        parent.set_projection(None)
-        # then remove the edge
-        edge = parent.get_edge_to(child, edge_type)
         if edge:
-            self.disconnect_edge(edge)
-        elif not ignore_missing:
-            raise ForestError("Disconnecting nodes, but cannot find the edge between them")
+            parent = edge.start
+            child = edge.end
+        if hasattr(parent, 'head') and hasattr(child, 'head'):
+            if parent.head is child.head:
+                print('trying to cut projection chain...')
+                if hasattr(parent, 'set_projection'):
+                    print('cutting projection chain...')
+                    parent.set_projection(None)
+        # then remove the edge
+        if not edge:
+            edge = parent.get_edge_to(child, edge_type)
+            if not edge:
+                if ignore_missing:
+                    return
+                else:
+                    raise ForestError("Trying to remove edge that doesn't exist")
+        self.disconnect_edge(edge)
+
 
     def replace_node(self, old_node, new_node, only_for_parent=None, replace_children=False,
                      can_delete=True):
@@ -1611,6 +1601,7 @@ class Forest(BaseModel):
                     self.disconnect_node(old_node, child, edge.edge_type)
                     self.connect_node(new_node, child, direction=align)
 
+        self.update_tree_for(new_node)
         if (not old_node.edges_up) and can_delete:
             # old_node.update_visibility(active=False, fade=True)
             self.delete_node(old_node)
@@ -1634,6 +1625,7 @@ class Forest(BaseModel):
         children = list(node.get_children())
         real_children = []
         placeholders = []
+        trees = set(node.tree)
         for child in children:
             if child.is_placeholder():
                 placeholders.append(child)
@@ -1680,6 +1672,8 @@ class Forest(BaseModel):
                 # self.delete_node(right)
                 # if left.is_placeholder():
                 # self.delete_node(left)
+        for tree in trees:
+            tree.update_items()
 
     def add_children_for_constituentnode(self, parent: BaseConstituentNode, pos=None,
                                          head_left=True):
@@ -1723,7 +1717,9 @@ class Forest(BaseModel):
             other_node = self.create_node(relative=parent)
             other_node.current_position = ox, oy, oz
             self.connect_node(parent=parent, child=other_node, direction=other_align)
-        # 3) reassign projections
+        # 3) repair trees to include new nodes
+        parent.update_trees()
+        # 4) reassign projections
         if hasattr(parent, 'head') and parent.head and parent.head is parent:
             new_node.label = parent.label
             new_node.alias = parent.alias
@@ -1815,16 +1811,17 @@ class Forest(BaseModel):
             left = child
             right = inserted
         p = insertion_pos[0], insertion_pos[1], child.z
-        merger_node = self.create_merger_node(left=left, right=right, pos=p)
+        merger_node = self.create_merger_node(left=left, right=right, pos=p, create_tree=False)
         merger_node.copy_position(child)
         merger_node.current_position = p
         self.connect_node(parent, merger_node, direction=align)
+        parent.update_trees()
         if head:
             merger_node.set_projection(head)
         if self.traces_are_visible():
             self.chain_manager.rebuild_chains()
 
-    def create_merger_node(self, left=None, right=None, pos=None):
+    def create_merger_node(self, left=None, right=None, pos=None, create_tree=True):
         """ Gives a merger node of two nodes. Doesn't try to fix their edges
         upwards
         :param left:
@@ -1839,9 +1836,10 @@ class Forest(BaseModel):
         self.add_merge_counter(merger_node)
         self.connect_node(parent=merger_node, child=left, direction=g.LEFT)
         self.connect_node(parent=merger_node, child=right, direction=g.RIGHT)
+        if create_tree:
+            self.update_tree_for(merger_node)
         return merger_node
 
-    # @time_me
     def copy_node(self, node):
         """ Copy a node and make a new tree out of it
         :param node:

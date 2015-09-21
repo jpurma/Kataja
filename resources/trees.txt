@@ -11,9 +11,9 @@
 
 #Siviä oli jo todella jättänyt Lahdenperän, joka vasta tavallisen kursastelun ja säädyllisen estelemisen jälkeen viimeinkin oli suostunut ottamaan toisenkin palasen sokeria astiasta, pistämättä sitä kuitenkaan kokonaisena kahvinsa sekaan, vaan puraisemalla siitä puolikkaan ja pistämällä sen takaisin astiaan.
 
-[.{EvidP} Part-Evid^0 [.{EvidP} [.{NegP} Part-Neg [.{NegP_j} [.{vP_i} Args Verb] [.{Neg} Neg^0 t_i ]]] [.{Evid} Evid0 t_j ]]]
+#[.{EvidP} Part-Evid^0 [.{EvidP} [.{NegP} Part-Neg [.{NegP_j} [.{vP_i} Args Verb] [.{Neg} Neg^0 t_i ]]] [.{Evid} Evid0 t_j ]]]
 
-[.{EvidP} Part-Evid [.{EvidP} [.{NegP_j} Part-Neg [.{NegP} [.{vP_i} Args Verb] [.{Neg} Neg^0 t_i]]] [.{Evid} Evid^0 t_j]]]
+#[.{EvidP} Part-Evid [.{EvidP} [.{NegP_j} Part-Neg [.{NegP} [.{vP_i} Args Verb] [.{Neg} Neg^0 t_i]]] [.{Evid} Evid^0 t_j]]]
 
 #[.{EvidP} Part-Evid [.{EvidP} [.{NegP} Part-Neg [.{NegP_j} [.{vP_i} Args-Verb [.{Neg} Neg0 t_i ]]]] [.{Evid} Evid0 t_j ]]]
 

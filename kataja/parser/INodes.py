@@ -113,7 +113,7 @@ class ITextNode:
         they contain other INodes
         :return:
         """
-        return ''.join([str(x) for x in self.parts])
+        return ''.join((str(x) for x in self.parts))
 
     def tidy(self):
         """ Join string parts into continuous strings when possible, just to
@@ -301,10 +301,10 @@ class ITemplateNode(ITextNode):
 
     def __str__(self):
         if self.values:
-            vals = ';'.join([str(x['value']) for x in self.values.values() if
-                             x.get('value', False)])
+            vals = ';'.join((str(x['value']) for x in self.values.values() if
+                             x.get('value', False)))
         else:
-            vals = '|'.join([str(x) for x in self.rows])
+            vals = '|'.join((str(x) for x in self.rows))
         if self.parts:
             return '[.%s %s]' % (vals, self.parts_as_string())
         else:

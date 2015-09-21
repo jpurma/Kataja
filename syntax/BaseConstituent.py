@@ -63,7 +63,7 @@ class BaseConstituent(IConstituent):
         if self.is_leaf():
             return 'Constituent(id=%s)' % self.label
         else:
-            return "[ %s ]" % (' '.join([x.__repr__() for x in self.parts]))
+            return "[ %s ]" % (' '.join((x.__repr__() for x in self.parts)))
 
     def __contains__(self, c):
         if self == c:

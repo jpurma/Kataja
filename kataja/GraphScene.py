@@ -569,8 +569,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
         QtWidgets.QGraphicsScene.dragLeaveEvent(self, event)
 
     def dropEvent(self, event):
-        """
-
+        """ Support dragging of items from their panel containers, e.g. symbols from symbol panel
+        or new nodes from nodes panel.
         :param event:
         """
         event.ignore()
@@ -603,8 +603,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
         ctrl.ui.remove_touch_areas()
 
     def dragMoveEvent(self, event):
-        """
-
+        """ Support dragging of items from their panel containers, e.g. symbols from symbol panel
+        or new nodes from nodes panel.
         :param event:
         """
         event.ignore()
@@ -642,7 +642,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
     # #################################################################
 
     def fade_background_gradient(self, old_base_color, new_base_color):
-        """
+        """ Fade between colors of two canvases to smoothen the change. Call this only if colors
+        are different and this is worth the effort.
 
         :param old_base_color:
         :param new_base_color:

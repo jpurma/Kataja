@@ -314,17 +314,17 @@ class ConstituentNode(BaseConstituentNode):
         else:
             return "anonymous constituent"
 
-        return "constituent '%s' at %s" % (l, self.current_position)
+        return "constituent '%s' from trees %s" % (l, [t.save_key for t in self.tree])
 
     def as_bracket_string(self):
         """ returns a simple bracket string representation """
         if self.alias:
             if not self.syntactic_object:
                 return '0'
-            children = self.get_children()
+            children = list(self.get_children())
             if children:
-                return '[.%s %s ]' % (
-                self.alias, ' '.join([c.as_bracket_string() for c in children]))
+                return '[.%s %s ]' % \
+                       (self.alias, ' '.join((c.as_bracket_string() for c in children)))
             else:
                 return self.alias
         else:

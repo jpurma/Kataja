@@ -302,7 +302,7 @@ class BaseConstituentNode(Node):
         f = ctrl.forest
         bs = f.settings.bracket_style
         if bs == g.ALL_BRACKETS:
-            if self.get_children():
+            if list(self.get_children()):
                 add_left()
                 add_right()
             else:

@@ -504,7 +504,7 @@ syntactic_object: %s
         self.tree.add(tree)
         self.update_graphics_parent()
 
-    def remove_from_tree(self, tree):
+    def remove_from_tree(self, tree, recursive_down=False):
         """ Remove node from tree and remove the (graphicsitem) parenthood-relation.
         :param tree: Tree
         :return:
@@ -512,7 +512,14 @@ syntactic_object: %s
         if tree in self.tree:
             self.tree.remove(tree)
             self.update_graphics_parent()
-
+        if recursive_down:
+            for child in self.get_children():
+                legit = False
+                for parent in child.get_parents():
+                    if tree in parent.tree:
+                        legit = True
+                if not legit:
+                    child.remove_from_tree(tree, recursive_down=True)
 
     def copy_position(self, other, ax=0, ay=0, az=0):
         """ Helper method for newly created items. Takes other item and copies movement related
@@ -555,7 +562,6 @@ syntactic_object: %s
                 return x, y
             tx, ty, tz = tree.current_position
             return x + tx, y + ty
-
 
     def scene_position_to_tree_position(self, scene_pos):
         """ Return scene position converted to coordinate system used by this node tree. Works for xy and xyz -tuples.
@@ -727,6 +733,14 @@ syntactic_object: %s
             return False
         else:
             return True
+
+    def update_trees(self):
+        """ Make sure that the tree assigned for this node includes all relevant nodes. Assumes that
+        node.tree is correct.
+        :return:
+        """
+        for tree in self.tree:
+            tree.update_items()
 
     def get_top_node(self, return_set=False):
         """ Getting the top node is easiest by looking from the stored trees. Don't use this if
@@ -1013,6 +1027,13 @@ syntactic_object: %s
             # w2 = self.width/2.0
             # painter.setPen(self.contextual_color())
             # painter.drawEllipse(-w2, -w2, w2 + w2, w2 + w2)
+        x = 0
+        p = QtGui.QPen(self.contextual_color)
+        p.setWidth(1)
+        painter.setPen(p)
+        for tree in self.tree:
+            painter.drawEllipse(x, 10, 6, 6)
+            x += 10
 
     def has_visible_label(self):
         """
@@ -1262,7 +1283,7 @@ syntactic_object: %s
         self.start_moving()
 
     def start_dragging_tracking(self, host=False, scene_pos=None):
-        """ Add this node to entourage of dragged node. These nodes will
+        """ Add this node into the entourage of dragged node. These nodes will
         maintain their relative position to dragged node while dragging.
         :return: None
         """
@@ -1280,7 +1301,8 @@ syntactic_object: %s
 
     def drag(self, event):
         """ Drags also elements that are counted to be involved: features,
-        children etc
+        children etc. Drag is called to only one principal drag host element. 'dragged_to' is
+        called for each element.
         :param event:
         """
         scene_pos = to_tuple(event.scenePos())

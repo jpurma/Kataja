@@ -38,6 +38,7 @@ class ChainManager:
         :param chain_key:
         :return: :raise 'F broken chain':
         """
+        print(self.chains)
         chain = self.chains[chain_key]
         for node, parent, is_head in chain:
             if is_head:

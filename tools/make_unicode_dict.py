@@ -57,7 +57,7 @@ def find_characters(dom):
                     unicode_char = chr(int(char_code))
                 else:
                     uchars =  char_code.split('-')
-                    unicode_char = ''.join([chr(int(c)) for c in uchars]) 
+                    unicode_char = ''.join((chr(int(c)) for c in uchars))
                 category = choose_category(latex[1:], description)
                 charmap[latex[1:]] = (unicode_char, description, category)
                 b += 1

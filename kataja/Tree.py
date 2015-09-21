@@ -28,6 +28,7 @@ class TreeDragData:
         self.distance_from_pointer = scx - mx, scy - my
         self.dragged_distance = None
 
+
 class Tree(Movable, QtWidgets.QGraphicsItem):
     """ Container for nodes that form a single tree. It allows operations that affect
     all nodes in one tree, e.g. translation of position.
@@ -50,8 +51,15 @@ class Tree(Movable, QtWidgets.QGraphicsItem):
         self.tree_changed = True
         self._cached_bounding_rect = None
 
+    def __repr__(self):
+        return "Tree '%s' and %s nodes." % (self.top, len(self.sorted_nodes))
+
     def __contains__(self, item):
         return item in self.sorted_nodes
+
+    def rebuild(self):
+        self.recalculate_top()
+        self.update_items()
 
     def recalculate_top(self):
         """ Verify that self.top is the topmost element of the tree. Doesn't handle consequences,
@@ -59,6 +67,7 @@ class Tree(Movable, QtWidgets.QGraphicsItem):
         constituent and node lists.
         :return: new top
         """
+        print('recalculate top for ', self)
         passed = set()
 
         def walk_to_top(node: Node):
@@ -93,8 +102,8 @@ class Tree(Movable, QtWidgets.QGraphicsItem):
         return not self.top.get_parents(only_similar=False, only_visible=False)
 
     def update_items(self):
-        """ Check that all children of top item are included in this tree. Make sure there is a
-        top item!
+        """ Check that all children of top item are included in this tree and create the sorted
+        lists of items. Make sure there is a top item before calling this!
         :return:
         """
         sorted_constituents = []

@@ -36,50 +36,64 @@ class INodeToKatajaConstituent(BaseParser):
         inodes = parse(string)
         # done.
         if isinstance(inodes, list):
-            result = [inode_to_constituentnodes(x, self.forest) for x in inodes]
+            result = [self.parse_inode_into_tree(inode) for inode in inodes]
         else:
-            result = inode_to_constituentnodes(inodes, self.forest)
+            result = self.parse_inode_into_tree(inodes)
         self.should_add_to_scene = old_should_add
         return result
 
+    def parse_inode_into_tree(self, inode):
+        """ Parses inode into constituentnodes, but prepare a temporary tree that can be assigned
+        for created nodes so they don't each end up creating their own tree or get lost.
+        :param inode:
+        :return:
+        """
+        self.forest.temp_tree = None
+        result = self.inode_to_constituentnodes(inode)
+        if self.forest.temp_tree:
+            self.forest.temp_tree.rebuild()
+        return result
 
-# @time_me
-def inode_to_constituentnodes(inode, forest):
-    """ Recursively turn ITemplateNodes into Constituents supported by syntax
-    and further into
-     Kataja's ConstituentNodes.
-    :param inode: should be ITemplateNode.
-    :param forest: forest where ConstituentNodes will be added
-    :return: the root ConstituentNode
-    """
-    if isinstance(inode, ITemplateNode):
-        children = []
-        if inode.parts:
-            right_first = reversed(inode)
-            for nnode in right_first:
-                child = inode_to_constituentnodes(nnode, forest)
-                if child and isinstance(child, BaseConstituentNode):
-                    children.append(child)
-
-        constituent = ctrl.Constituent(str(hash(inode)))
-        cn = forest.create_node(synobj=constituent)
-        if inode.parts:
-            forest.add_merge_counter(cn)
+    def inode_to_constituentnodes(self, inode):
+        """ Recursively turn ITemplateNodes into Constituents supported by syntax
+        and further into
+         Kataja's ConstituentNodes.
+        :param inode: should be ITemplateNode.
+        :param forest: forest where ConstituentNodes will be added
+        :return: the root ConstituentNode
+        """
+        if isinstance(inode, ITemplateNode):
+            children = []
+            if inode.parts:
+                right_first = reversed(inode)
+                for nnode in right_first:
+                    child = self.inode_to_constituentnodes(nnode)
+                    if child and isinstance(child, BaseConstituentNode):
+                        children.append(child)
+            f = self.forest
+            constituent = ctrl.Constituent(str(hash(inode)))
+            cn = f.create_node(synobj=constituent)
+            if not f.temp_tree:
+                f.temp_tree = f.create_tree_for(cn)
+            else:
+                cn.add_to_tree(f.temp_tree)
+            if inode.parts:
+                f.add_merge_counter(cn)
+            else:
+                f.add_select_counter(cn)
+            cn._inode = inode
+            children.reverse()
+            direction = g.LEFT
+            if len(children) == 1:
+                direction = g.NO_ALIGN
+            for child in children:
+                constituent.add_part(child.syntactic_object)
+                f.connect_node(parent=cn, child=child, direction=direction)
+                direction = g.RIGHT
+            cn.impose_order_to_inode()
+            cn.update_values_from_inode()
+            cn.update_label()
+            f.derivation_steps.save_and_create_derivation_step()
+            return cn
         else:
-            forest.add_select_counter(cn)
-        cn._inode = inode
-        children.reverse()
-        direction = g.LEFT
-        if len(children) == 1:
-            direction = g.NO_ALIGN
-        for child in children:
-            constituent.add_part(child.syntactic_object)
-            forest.connect_node(parent=cn, child=child, direction=direction)
-            direction = g.RIGHT
-        cn.impose_order_to_inode()
-        cn.update_values_from_inode()
-        cn.update_label()
-        forest.derivation_steps.save_and_create_derivation_step()
-        return cn
-    else:
-        print('failing here')
+            print('failing here')
