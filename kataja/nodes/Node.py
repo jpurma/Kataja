@@ -275,6 +275,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """
         # This part should be done by all subclasses, call super(
         # ).impose_order_to_inode()
+
         self._inode.values = {}
         self._inode.view_order = []
         if self.syntactic_object and hasattr(self.syntactic_object.__class__, 'visible'):
@@ -479,15 +480,21 @@ syntactic_object: %s
         return bool(self.tree & other.tree)
 
     def update_graphics_parent(self):
-        """ Update GraphicsItem.parentItem for this node. This affects many
-
+        """ Update GraphicsItem.parentItem for this node. When parent is changed, the coordinate system switches to that of parent (or scene, if parent is None). If this happens, compute new position according to new parent so that there is no visible jump.
         :return:
         """
-        if self.tree:
-            self.setParentItem(self.pick_tallest_tree())
-        else:
+        old_parent = self.parentItem()
+        new_parent = self.pick_tallest_tree()
+        if new_parent:
+            if old_parent is not new_parent:
+                scene_position = self.current_scene_position
+                op = self.current_position
+                self.setParentItem(new_parent)
+                self.current_position = self.scene_position_to_tree_position(scene_position)
+                #print('translated node %s from scene_pos %s to scene_pos %s while current pos was %s and is now %s' % (self, str(scene_position), str(self.current_scene_position), str(op), str(self.current_position)))
+        elif old_parent:
+            self.current_position = self.current_scene_position
             self.setParentItem(None)
-        #print('updated parent for %s: %s' % (self, self.parentItem()))
 
     def add_to_tree(self, tree):
         """ Add this node to given tree and possibly set it as parent for this graphicsitem.
@@ -505,6 +512,71 @@ syntactic_object: %s
         if tree in self.tree:
             self.tree.remove(tree)
             self.update_graphics_parent()
+
+
+    def copy_position(self, other, ax=0, ay=0, az=0):
+        """ Helper method for newly created items. Takes other item and copies movement related
+        attributes from it (physics settings, locks, adjustment etc). ax, ay, az can be used to
+        adjust these a little to avoid complete overlap.
+        :param other:
+        :param ax:
+        :param ay:
+        :param az:
+        :return:
+        """
+        shift = (ax, ay, az)
+        csp = other.current_scene_position
+        ctp = other.tree_position_to_scene_position(other.target_position)
+        self.current_position = self.scene_position_to_tree_position(add_xyz(csp, shift))
+        self.adjustment = other.adjustment
+        self.target_position = self.scene_position_to_tree_position(ctp)
+        self.locked = other.locked
+        self.use_adjustment = other.use_adjustment
+        self.physics_x = other.physics_x
+        self.physics_y = other.physics_y
+        self.physics_z = other.physics_z
+
+    def tree_position_to_scene_position(self, position):
+        """ Return tree position converted to scene position. Works for xy and xyz -tuples.
+        :param position:
+        :return:
+        """
+        if len(position) == 3:
+            x, y, z = position
+            tree = self.parentItem()
+            if not tree:
+                return x, y, z
+            tx, ty, tz = tree.current_position
+            return x + tx, y + ty, z + tz
+        elif len(position) == 2:
+            x, y = position
+            tree = self.parentItem()
+            if not tree:
+                return x, y
+            tx, ty, tz = tree.current_position
+            return x + tx, y + ty
+
+
+    def scene_position_to_tree_position(self, scene_pos):
+        """ Return scene position converted to coordinate system used by this node tree. Works for xy and xyz -tuples.
+
+        :param scene_pos:
+        :return:
+        """
+        if len(scene_pos) == 3:
+            x, y, z = scene_pos
+            tree = self.parentItem()
+            if not tree:
+                return x, y, z
+            tx, ty, tz = tree.current_position
+            return x - tx, y - ty, z - tz
+        elif len(scene_pos) == 2:
+            x, y = scene_pos
+            tree = self.parentItem()
+            if not tree:
+                return x, y
+            tx, ty, tz = tree.current_position
+            return x - tx, y - ty
 
     # ### Children and parents
     # ####################################################
@@ -922,7 +994,7 @@ syntactic_object: %s
 
         if self._hovering:
             p = QtGui.QPen(self.contextual_color)
-            p.setColor(ctrl.cm.hover())
+            #p.setColor(ctrl.cm.hover())
             p.setWidth(2)
             painter.setPen(p)
             painter.drawRoundedRect(self.inner_rect, 5, 5)

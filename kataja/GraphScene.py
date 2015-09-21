@@ -93,7 +93,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
     # ####
 
-    # @time_me
     def fit_to_window(self, force=False):
         """ Calls up to graph view and makes it to fit all visible items here
         to view window."""
@@ -105,7 +104,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
             self.graph_view.instant_fit_to_view(vr)
         self._cached_visible_rect = vr
 
-    @time_me
     def visible_rect(self):
         """ Counts all visible items in scene and returns QRectF object
          that contains all of them """
@@ -395,7 +393,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             if closest_item:
                 ctrl.pressed = closest_item
                 draggable = closest_item.draggable
-            success = True
+                success = True
         if not success:
             # It wasn't consumed, continue with other selectables:
             draggables = [i for i in items if getattr(i, 'draggable', False)]
@@ -634,7 +632,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             if hasattr(item, 'double_click'):
                 item.double_click(event)
                 return
-            else:
+            elif getattr(item, 'clickable', False):
                 found = True
         if found:
             return

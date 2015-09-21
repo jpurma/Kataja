@@ -543,10 +543,10 @@ class PaletteManager:
         :param color:
         :return:
         """
-        if self.light_on_dark():
-            return color.lighter(120)
-        else:
-            return color.darker(120)
+        #if self.light_on_dark():
+        return color.lighter(120)
+        #else:
+        #    return color.darker(120)
             # if color.value() > 230:
             # return color.darker(120)
             # else:

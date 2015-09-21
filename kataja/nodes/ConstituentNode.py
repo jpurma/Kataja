@@ -313,8 +313,8 @@ class ConstituentNode(BaseConstituentNode):
             l = str(label)
         else:
             return "anonymous constituent"
-        return "constituent '%s' at %s in tree at %s " % (l, self.current_position,
-                                                          self.pick_tallest_tree().current_position)
+
+        return "constituent '%s' at %s" % (l, self.current_position)
 
     def as_bracket_string(self):
         """ returns a simple bracket string representation """
@@ -489,19 +489,19 @@ class ConstituentNode(BaseConstituentNode):
         """ Drawing color that is sensitive to node's state
         :return: QColor
         """
-        if ctrl.pressed is self:
-            return ctrl.cm.active(ctrl.cm.selection())
-        elif self._hovering:
-            # return ctrl.cm.hover()
-            return self.color
-            # return ctrl.cm.hovering(ctrl.cm.selection())
-        elif ctrl.is_selected(self):
-            return ctrl.cm.selection()
-            # return ctrl.cm.selected(ctrl.cm.selection())
+
+        if ctrl.is_selected(self):
+            base = ctrl.cm.selection()
         elif self._projection_color:
-            return self._projection_qcolor
+            base = self._projection_qcolor
         else:
-            return self.color
+            base = self.color
+        if ctrl.pressed is self:
+            return ctrl.cm.active(base)
+        elif self._hovering:
+            return ctrl.cm.hovering(base)
+        else:
+            return base
 
     # ### Features #########################################
 

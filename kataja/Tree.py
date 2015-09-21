@@ -33,6 +33,8 @@ class Tree(Movable, QtWidgets.QGraphicsItem):
     all nodes in one tree, e.g. translation of position.
     :param top:
     """
+    name = ('Tree', 'Trees')
+    short_name = "Tree"
 
     def __init__(self, top: Node):
         QtWidgets.QGraphicsItem.__init__(self)
@@ -47,10 +49,6 @@ class Tree(Movable, QtWidgets.QGraphicsItem):
         self.drag_data = None
         self.tree_changed = True
         self._cached_bounding_rect = None
-
-    def __str__(self):
-        return "I'm a tree, in pos (%s, %s) and top '%s'" % (self.current_position[0],
-                                                             self.current_position[1], self.top)
 
     def __contains__(self, item):
         return item in self.sorted_nodes
@@ -104,8 +102,7 @@ class Tree(Movable, QtWidgets.QGraphicsItem):
         used = set()
 
         def add_children(node):
-            """ Add node to this tree. Create record of multidominated nodes, because we cannot know
-            during this run if they are wholly part of this tree or shared with another tree.
+            """ Add node to this tree.
             :param node:
             :return:
             """
@@ -173,5 +170,6 @@ class Tree(Movable, QtWidgets.QGraphicsItem):
             return self._cached_bounding_rect
 
     def paint(self, painter, QStyleOptionGraphicsItem, QWidget_widget=None):
-        painter.drawRect(self.boundingRect())
-
+        br = self.boundingRect()
+        painter.drawRect(br)
+        painter.drawText(br.topLeft() + QtCore.QPointF(2, 10), str(self))

@@ -673,12 +673,14 @@ class Forest(BaseModel):
         """
         passed = set()
         tops = set()
+        print('updating tree for ', node)
 
         def walk_to_top(n):
             """ Walk upwards in tree(s), starting from this node and find the topmost nodes.
             :param n:
             :return:
             """
+            print('^')
             passed.add(n)
             parents = n.get_parents(only_similar=False, only_visible=False)
             if parents:
@@ -690,6 +692,7 @@ class Forest(BaseModel):
         walk_to_top(node)
         # now we have the topmost nodes, so we can check if there exists trees starting with
         # these nodes.
+        print('found these tops: ', tops)
         for top in tops:
             found = None
             for tree in list(self.trees):
@@ -697,11 +700,21 @@ class Forest(BaseModel):
                     found = tree
                     break
                 elif not tree.is_valid():
+                    print('found invalid tree %s ' % tree)
                     self.remove_tree(tree)
             if found:
+                # found a good tree, ask it to update.
+                print('found good tree, asking it to update')
                 found.update_items()
             else:
                 self.create_tree_for(top)
+        if node not in tops:
+            for tree in list(self.trees):
+                print('checking tree %s with top %s' % (tree, tree.top))
+                if tree.top is node:
+                    print('***** found this node being used as a tree top, though it is not really a top')
+                    self.remove_tree(tree)
+        print('--- done update tree for ', node)
 
     def update_treeset(self, treeset): # fixme - maybe unnecessary
         """ Update a tree to hold all the relevant items or remove the tree and replace it with
@@ -738,6 +751,7 @@ class Forest(BaseModel):
         self.trees.append(tree)
         tree.show()
         tree.update_items()
+        ctrl.add_message('+ created tree %s with %s items: %s' % (tree, len(tree.sorted_nodes), str(tree.sorted_nodes)))
 
     def remove_tree(self, tree):
         """ Remove tree that has become unnecessary: either because it is subsumed into another
@@ -745,6 +759,7 @@ class Forest(BaseModel):
         :param tree:
         :return:
         """
+        ctrl.add_message('- removed tree %s with %s items' % (tree, len(tree.sorted_nodes)))
         for node in tree.sorted_nodes:
             node.remove_from_tree(tree)
         self.trees.remove(tree)
@@ -801,11 +816,15 @@ class Forest(BaseModel):
         # after_init should take care that syntactic object is properly
         # reflected by node's connections (call node.reflect_synobj()?)
         node.after_init()
+        if relative:
+            node.copy_position(relative)
         if pos:
             node.set_original_position(pos)
             # node.update_position(pos)
 
+        print('creating node %s, updating tree for it.' % node)
         self.update_tree_for(node)
+        print('new node has new tree: ', node.tree)
         # if node is added to tree, it is implicitly added to scene. if not, this takes care of it:
         self.add_to_scene(node)
         #node.fade_in()
@@ -1491,7 +1510,9 @@ class Forest(BaseModel):
             child.edges_up.append(new_edge)
             parent.edges_down.append(new_edge)
         child.connect_in_syntax(new_edge)
+        print('//// connecting: update tree for parent: ')
         self.update_tree_for(parent)
+        print('//// connecting: update tree for child: ')
         self.update_tree_for(child)
         # fix other edge aligns: only one left align and one right align,
         # n center aligns, and if only one child, it has center align.
@@ -1514,7 +1535,6 @@ class Forest(BaseModel):
             child.rebuild_brackets()
         parent.update_label()
         child.update_label()
-        self.update_tree_for(child)
         return new_edge
 
     def disconnect_edge(self, edge):
@@ -1682,6 +1702,7 @@ class Forest(BaseModel):
 
         # These steps are safe, connect node is smart enough to deal with
         # unary/ binary children.
+        # 1) Create the child as asked to do
         new_node = self.create_node(relative=parent)
         new_node.current_position = pos
         if head_left:
@@ -1691,7 +1712,8 @@ class Forest(BaseModel):
             main_align = g.RIGHT
             other_align = g.LEFT
         self.connect_node(parent=parent, child=new_node, direction=main_align)
-        # create pair if necessary
+
+        # 2) create a pair if necessary
         if self.settings.only_binary_trees and not siblings:
             ox, oy, oz = pos
             if other_align == g.RIGHT:
@@ -1701,7 +1723,7 @@ class Forest(BaseModel):
             other_node = self.create_node(relative=parent)
             other_node.current_position = ox, oy, oz
             self.connect_node(parent=parent, child=other_node, direction=other_align)
-        # reassigning projection is trickier
+        # 3) reassign projections
         if hasattr(parent, 'head') and parent.head and parent.head is parent:
             new_node.label = parent.label
             new_node.alias = parent.alias

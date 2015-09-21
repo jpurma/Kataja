@@ -198,28 +198,6 @@ When nodes that don't use physics are dragged, the adjustment.
             return abs(movement[0]) + abs(movement[1]) + abs(movement[2]) > 0.6, True
         return False, False
 
-    def copy_position(self, other, ax=0, ay=0, az=0):
-        """ Helper method for newly created items. Takes other item and copies movement related
-        attributes from it (physics settings, locks, adjustment etc). ax, ay, az can be used to
-        adjust these a little to avoid complete overlap.
-        :param other:
-        :param ax:
-        :param ay:
-        :param az:
-        :return:
-        """
-        shift = (ax, ay, az)
-        if other.parentItem():
-            self.setParentItem(other.parentItem())
-        self.current_position = add_xyz(other.current_position, shift)
-        self.adjustment = other.adjustment
-        self.target_position = other.target_position
-        self.locked = other.locked
-        self.use_adjustment = other.use_adjustment
-        self.physics_x = other.physics_x
-        self.physics_y = other.physics_y
-        self.physics_z = other.physics_z
-
     def distance_to(self, movable):
         """ Return current x,y distance to another movable
         :param movable:
