@@ -1127,6 +1127,16 @@ syntactic_object: %s
         triangle.lineTo(center, top)
         painter.drawPath(triangle)
 
+    def on_press(self, value):
+        """ Testing if we can add some push-depth effect.
+        :param value: pressed or not
+        :return:
+        """
+        if value:
+            self.setScale(0.95)
+        else:
+            self.setScale(1.0)
+
     # ## Magnets
     # ######################################################################
 

@@ -237,6 +237,8 @@ class Controller:
         for o in self.selected:
             o.update_selection_status(False)
         self.selected = [obj]
+        if hasattr(obj, 'on_press'):
+            obj.on_press(False)
         if hasattr(obj, 'syntactic_object'):
             # here is room for constituent specific print information
             self.add_message('selected %s' % str(obj))
@@ -255,6 +257,20 @@ class Controller:
             self.add_message('added to selection %s' % str(obj))
             obj.update_selection_status(True)
             self.call_watchers(self, 'selection_changed', value=self.selected)
+
+    def press(self, obj):
+        """ Mark object to be the last pressed object. If it has on_press -hook, do it.
+        :param obj:
+        :return:
+        """
+        if self.pressed is obj:
+            # better do nothing in this case so that on_press -animations don't freak out
+            return
+        if self.pressed and hasattr(self.pressed, 'on_press'):
+            self.pressed.on_press(False)
+        self.pressed = obj
+        if hasattr(obj, 'on_press'):
+            obj.on_press(True)
 
     def remove_from_selection(self, obj):
         """

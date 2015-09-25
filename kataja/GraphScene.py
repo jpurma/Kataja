@@ -391,7 +391,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         if clickables:
             closest_item = self.get_closest_item(x, y, clickables)
             if closest_item:
-                ctrl.pressed = closest_item
+                ctrl.press(closest_item)
                 draggable = closest_item.draggable
                 success = True
         if not success:
@@ -401,7 +401,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             if draggables:
                 closest_item = self.get_closest_item(x, y, draggables)
                 if closest_item:
-                    ctrl.pressed = closest_item
+                    ctrl.press(closest_item)
                     draggable = True
                 success = True
         if not success:
@@ -410,7 +410,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             if selectables:
                 closest_item = self.get_closest_item(x, y, selectables)
                 if closest_item:
-                    ctrl.pressed = closest_item
+                    ctrl.press(closest_item)
                     draggable = closest_item.draggable
         if draggable:
             self.graph_view.toggle_suppress_drag(True)
@@ -427,7 +427,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         """ Remove all flags and temporary things related to dragging """
         if ctrl.dragged_focus:
             ctrl.dragged_focus.finish_dragging()
-        ctrl.pressed = None
+        ctrl.press(None)
         self._dragging = False
         if ctrl.latest_hover:
             ctrl.latest_hover.hovering = False
@@ -478,7 +478,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             self._dblclick = False
             if self._dragging:
                 print('dblclick while dragging? Unpossible!')
-            ctrl.pressed = None
+            ctrl.press(None)
             return
         elif ctrl.pressed:
             pressed = ctrl.pressed  # : :type pressed: Movable
@@ -497,7 +497,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 if pressed.selectable:
                     pressed.select(event)
                 pressed.update()
-                ctrl.pressed = None
+                ctrl.press(None)
             return None  # this mouseRelease is now consumed
         else:
             if event.modifiers() == Qt.ShiftModifier:
