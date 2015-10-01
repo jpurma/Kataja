@@ -496,7 +496,9 @@ class ConstituentNode(BaseConstituentNode):
             base = self._projection_qcolor
         else:
             base = self.color
-        if ctrl.pressed is self:
+        if self.drag_data:
+            return ctrl.cm.lighter(base)
+        elif ctrl.pressed is self:
             return ctrl.cm.active(base)
         elif self._hovering:
             return ctrl.cm.hovering(base)

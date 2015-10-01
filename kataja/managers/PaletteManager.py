@@ -527,6 +527,9 @@ class PaletteManager:
         else:
             return color.darker(160)
 
+    def lighter(self, color):
+        return color.lighter(110)
+
     def inactive(self, color):
         """
 

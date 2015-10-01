@@ -54,7 +54,7 @@ class DragData:
 
 # ctrl = Controller object, gives accessa to other modules
 
-class Node(Movable, QtWidgets.QGraphicsItem):
+class Node(Movable, QtWidgets.QGraphicsObject):
     """ Basic class for any visualization elements that can be connected to
     each other """
     width = 20
@@ -86,7 +86,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         it should contain all methods to make it work. Inherit and modify
         this for
         Constituents, Features etc. """
-        QtWidgets.QGraphicsItem.__init__(self)
+        QtWidgets.QGraphicsObject.__init__(self)
         Movable.__init__(self)
         self.syntactic_object = syntactic_object
 
@@ -121,9 +121,9 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
         self.setAcceptHoverEvents(True)
         # self.setAcceptDrops(True)
-        self.setFlag(QtWidgets.QGraphicsItem.ItemSendsGeometryChanges)
+        self.setFlag(QtWidgets.QGraphicsObject.ItemSendsGeometryChanges)
         # self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable)
-        self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable)
+        self.setFlag(QtWidgets.QGraphicsObject.ItemIsSelectable)
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.setZValue(10)
         self.fade_in()
@@ -904,7 +904,10 @@ syntactic_object: %s
         """ Drawing color that is sensitive to node's state
         :return: QColor
         """
-        if ctrl.pressed is self:
+
+        if self.drag_data:
+            return ctrl.cm.lighter(ctrl.cm.selection())
+        elif ctrl.pressed is self:
             return ctrl.cm.active(ctrl.cm.selection())
         elif self._hovering:
             # return ctrl.cm.hover()
@@ -1009,12 +1012,12 @@ syntactic_object: %s
         if self._hovering:
             p = QtGui.QPen(self.contextual_color)
             #p.setColor(ctrl.cm.hover())
-            p.setWidth(2)
+            p.setWidth(1)
             painter.setPen(p)
             painter.drawRoundedRect(self.inner_rect, 5, 5)
         elif ctrl.pressed is self or ctrl.is_selected(self):
             p = QtGui.QPen(self.contextual_color)
-            p.setWidth(2)
+            p.setWidth(1)
             painter.setPen(p)
             painter.drawRoundedRect(self.inner_rect, 5, 5)
         elif self.has_empty_label() and self.node_alone():
@@ -1027,13 +1030,13 @@ syntactic_object: %s
             # w2 = self.width/2.0
             # painter.setPen(self.contextual_color())
             # painter.drawEllipse(-w2, -w2, w2 + w2, w2 + w2)
-        x = 0
-        p = QtGui.QPen(self.contextual_color)
-        p.setWidth(1)
-        painter.setPen(p)
-        for tree in self.tree:
-            painter.drawEllipse(x, 10, 6, 6)
-            x += 10
+        #x = 0
+        #p = QtGui.QPen(self.contextual_color)
+        #p.setWidth(1)
+        #painter.setPen(p)
+        #for tree in self.tree:
+        #    painter.drawEllipse(x, 10, 6, 6)
+        #    x += 10
 
     def has_visible_label(self):
         """
@@ -1132,10 +1135,22 @@ syntactic_object: %s
         :param value: pressed or not
         :return:
         """
+        b = QtCore.QByteArray()
+        b.append("scale")
         if value:
-            self.setScale(0.95)
+            self.anim = QtCore.QPropertyAnimation(self, b)
+            self.anim.setDuration(20)
+            self.anim.setStartValue(self.scale())
+            self.anim.setEndValue(0.95)
+            self.anim.start()
+            #self.setScale(0.95)
         else:
-            self.setScale(1.0)
+            self.anim = QtCore.QPropertyAnimation(self, b)
+            self.anim.setDuration(20)
+            self.anim.setStartValue(self.scale())
+            self.anim.setEndValue(1.0)
+            self.anim.start()
+                #self.setScale(1.0)
 
     # ## Magnets
     # ######################################################################
@@ -1290,6 +1305,7 @@ syntactic_object: %s
             moving = moving.union(tree.sorted_nodes)
         ctrl.ui.prepare_touch_areas_for_dragging(drag_host=self, moving=moving,
                                                  dragged_type=self.node_type, multidrag=multidrag)
+
         self.start_moving()
 
     def start_dragging_tracking(self, host=False, scene_pos=None):
@@ -1302,6 +1318,14 @@ syntactic_object: %s
         tree = self.tree_where_top()
         if tree:
             tree.start_dragging_tracking(host=host, scene_pos=scene_pos)
+        b = QtCore.QByteArray()
+        b.append("scale")
+        self.anim = QtCore.QPropertyAnimation(self, b)
+        self.anim.setDuration(100)
+        self.anim.setStartValue(self.scale())
+        self.anim.setEndValue(1.1)
+        self.anim.start()
+
 
     def prepare_children_for_dragging(self, scene_pos):
         """ Implement this if structure is supposed to drag with the node
@@ -1398,6 +1422,14 @@ syntactic_object: %s
             ctrl.dragged_set = set()
             ctrl.dragged_focus = None
         self.drag_data = None
+        b = QtCore.QByteArray()
+        b.append("scale")
+        self.anim = QtCore.QPropertyAnimation(self, b)
+        self.anim.setDuration(100)
+        self.anim.setStartValue(self.scale())
+        self.anim.setEndValue(1.0)
+        self.anim.start()
+
         self.effect.setEnabled(False)
 
     def cancel_dragging(self):
@@ -1433,14 +1465,14 @@ syntactic_object: %s
         :param event:
         """
         self.hovering = True
-        QtWidgets.QGraphicsItem.hoverEnterEvent(self, event)
+        QtWidgets.QGraphicsObject.hoverEnterEvent(self, event)
 
     def hoverLeaveEvent(self, event):
         """ Object needs to be updated
         :param event:
         """
         self.hovering = False
-        QtWidgets.QGraphicsItem.hoverLeaveEvent(self, event)
+        QtWidgets.QGraphicsObject.hoverLeaveEvent(self, event)
 
     def dragEnterEvent(self, event):
         """ Dragging a foreign object (could be from ui) over a node, entering.
@@ -1450,7 +1482,7 @@ syntactic_object: %s
             event.acceptProposedAction()
             self.hovering = True
         else:
-            QtWidgets.QGraphicsItem.dragEnterEvent(self, event)
+            QtWidgets.QGraphicsObject.dragEnterEvent(self, event)
 
     def dragLeaveEvent(self, event):
         """ Dragging a foreign object (could be from ui) over a node, leaving.
@@ -1460,7 +1492,7 @@ syntactic_object: %s
             event.acceptProposedAction()
             self.hovering = False
         else:
-            QtWidgets.QGraphicsItem.dragLeaveEvent(self, event)
+            QtWidgets.QGraphicsObject.dragLeaveEvent(self, event)
 
     def start_moving(self):
         """ Experimental: add glow effect for moving things
@@ -1492,10 +1524,10 @@ syntactic_object: %s
             edge.end_node_stopped_moving()
 
     def itemChange(self, change, value):
-        if change == QtWidgets.QGraphicsItem.ItemPositionHasChanged:
+        if change == QtWidgets.QGraphicsObject.ItemPositionHasChanged:
             for tree in self.tree:
                 tree.tree_changed = True
-        return QtWidgets.QGraphicsItem.itemChange(self, change, value)
+        return QtWidgets.QGraphicsObject.itemChange(self, change, value)
 
     # ############## #
     #                #
