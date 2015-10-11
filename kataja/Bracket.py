@@ -73,12 +73,12 @@ class Bracket(Movable, QtWidgets.QGraphicsSimpleTextItem):
         if self.left:
             depth, leftmost = ctrl.forest.bracket_manager.find_leftmost(
                 self.host)
-            x, y, z = leftmost.current_position
+            x, y, z = leftmost.current_scene_position
             my_x = x + leftmost.boundingRect().left() - depth * adjust
         else:
             depth, rightmost = ctrl.forest.bracket_manager.find_rightmost(
                 self.host)
-            x, y, z = rightmost.current_position
+            x, y, z = rightmost.current_scene_position
             my_x = x + rightmost.boundingRect().right() + (depth - 1) * adjust
         my_y = y - self.boundingRect().height() / 2
         self.current_position = (my_x, my_y, z)

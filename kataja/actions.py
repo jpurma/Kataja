@@ -1045,7 +1045,7 @@ def new_element_accept(sender):
         else:
             node = ctrl.forest.create_node_from_string(text, p2)
     else:
-        node = ctrl.forest.create_node(None, p2, node_type, text=text)
+        node = ctrl.forest.create_node(synobj=None, pos=p2, node_type=node_type, text=text)
     if node:
         print('target_position: %s, current_position: %s' % (str(node.current_position),
                                                              str(node.target_position)))
@@ -1149,6 +1149,8 @@ def edge_disconnect(sender):
         return
     edge = button.host
     role = button.role
+    old_start = edge.start
+    old_end = edge.end
     if not edge:
         return
     # Then do the cutting
@@ -1161,8 +1163,7 @@ def edge_disconnect(sender):
 
     elif role is 'end_cut':
         if edge.edge_type is g.CONSTITUENT_EDGE:
-            old_start = edge.start
-            ctrl.forest.disconnect_edge(edge)
+            ctrl.forest.disconnect_node(edge=edge)
             ctrl.forest.fix_stubs_for(old_start)
         else:
             ctrl.forest.delete_edge(edge)
@@ -1170,6 +1171,11 @@ def edge_disconnect(sender):
         raise ForestError(
             'Trying to disconnect node from unknown edge or unhandled cutting '
             'position')
+    if old_start:
+        ctrl.forest.update_tree_for(old_start)
+    if old_end:
+        ctrl.forest.update_tree_for(old_end)
+
     ctrl.ui.update_selections()
 
 

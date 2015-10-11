@@ -69,7 +69,7 @@ class Controller:
         self.ui_pressed = None  # set() # different coordinates to pressed set
         self.dragged_focus = None
         self.dragged_set = set()
-        self.latest_hover = None  # used only while dragging, because
+        self.drag_hovering_on = None  # used only while dragging, because
         # standard hovering doesn't work while dragging
         self.ui_focus = None
         self.focus_point = None
@@ -237,6 +237,8 @@ class Controller:
         for o in self.selected:
             o.update_selection_status(False)
         self.selected = [obj]
+        if hasattr(obj, 'on_press'):
+            obj.on_press(False)
         if hasattr(obj, 'syntactic_object'):
             # here is room for constituent specific print information
             self.add_message('selected %s' % str(obj))
@@ -256,6 +258,20 @@ class Controller:
             obj.update_selection_status(True)
             self.call_watchers(self, 'selection_changed', value=self.selected)
 
+    def press(self, obj):
+        """ Mark object to be the last pressed object. If it has on_press -hook, do it.
+        :param obj:
+        :return:
+        """
+        if self.pressed is obj:
+            # better do nothing in this case so that on_press -animations don't freak out
+            return
+        if self.pressed and hasattr(self.pressed, 'on_press'):
+            self.pressed.on_press(False)
+        self.pressed = obj
+        if hasattr(obj, 'on_press'):
+            obj.on_press(True)
+
     def remove_from_selection(self, obj):
         """
 
@@ -265,6 +281,18 @@ class Controller:
             self.selected.remove(obj)
             obj.update_selection_status(False)
             self.call_watchers(self, 'selection_changed', value=self.selected)
+
+    def set_drag_hovering(self, item):
+        """ Drag is hovering over one item that can receive drop.
+        :param item: item that can receive drops or None
+        :return:
+        """
+        if self.drag_hovering_on and self.drag_hovering_on is not item:
+            self.drag_hovering_on.hovering = False
+        self.drag_hovering_on = item
+        if item:
+            item.hovering = True
+
 
     # ******** /selection *******
 

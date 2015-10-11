@@ -22,8 +22,7 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
-
-
+import time
 from PyQt5.QtCore import Qt
 import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
@@ -38,6 +37,7 @@ import kataja.globals as g
 
 
 # from BlenderExporter import export_visible_items
+from nodes import BaseConstituentNode
 
 
 class GraphScene(QtWidgets.QGraphicsScene):
@@ -74,6 +74,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         self._bottom_border = 50
         self.manual_zoom = False
         self._cached_visible_rect = None
+        self.prev_time = time.time()
 
         # self.ants = []
         # for n in range(0,1000):
@@ -92,7 +93,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
     # ####
 
-    # @time_me
     def fit_to_window(self, force=False):
         """ Calls up to graph view and makes it to fit all visible items here
         to view window."""
@@ -111,15 +111,15 @@ class GraphScene(QtWidgets.QGraphicsScene):
         y_max = -300
         x_min = 300
         x_max = -300
-        for item in ctrl.forest.visible_nodes():
+        for item in ctrl.forest.trees:
             minx, miny, maxx, maxy = item.sceneBoundingRect().getCoords()
             if minx < x_min:
                 x_min = minx
-            elif maxx > x_max:
+            if maxx > x_max:
                 x_max = maxx
             if miny < y_min:
                 y_min = miny
-            elif maxy > y_max:
+            if maxy > y_max:
                 y_max = maxy
         return QtCore.QRectF(QtCore.QPoint(x_min, y_min),
                              QtCore.QPoint(x_max, y_max))
@@ -138,6 +138,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         """ Stops the move and fade animation timer
         :return: None
         """
+
         self.killTimer(self._timer_id)
         self._timer_id = 0
 
@@ -391,9 +392,9 @@ class GraphScene(QtWidgets.QGraphicsScene):
         if clickables:
             closest_item = self.get_closest_item(x, y, clickables)
             if closest_item:
-                ctrl.pressed = closest_item
+                ctrl.press(closest_item)
                 draggable = closest_item.draggable
-            success = True
+                success = True
         if not success:
             # It wasn't consumed, continue with other selectables:
             draggables = [i for i in items if getattr(i, 'draggable', False)]
@@ -401,7 +402,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             if draggables:
                 closest_item = self.get_closest_item(x, y, draggables)
                 if closest_item:
-                    ctrl.pressed = closest_item
+                    ctrl.press(closest_item)
                     draggable = True
                 success = True
         if not success:
@@ -410,7 +411,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             if selectables:
                 closest_item = self.get_closest_item(x, y, selectables)
                 if closest_item:
-                    ctrl.pressed = closest_item
+                    ctrl.press(closest_item)
                     draggable = closest_item.draggable
         if draggable:
             self.graph_view.toggle_suppress_drag(True)
@@ -427,11 +428,9 @@ class GraphScene(QtWidgets.QGraphicsScene):
         """ Remove all flags and temporary things related to dragging """
         if ctrl.dragged_focus:
             ctrl.dragged_focus.finish_dragging()
-        ctrl.pressed = None
+        ctrl.press(None)
         self._dragging = False
-        if ctrl.latest_hover:
-            ctrl.latest_hover.hovering = False
-            ctrl.latest_hover = None
+        ctrl.set_drag_hovering(None)
         ctrl.main.ui_manager.update_touch_areas()
         self.graph_view.toggle_suppress_drag(False)
 
@@ -445,15 +444,15 @@ class GraphScene(QtWidgets.QGraphicsScene):
             if self._dragging:
                 ctrl.pressed.drag(event)
                 self.item_moved()
-                items = [x for x in self.items(event.scenePos()) if
+                items = (x for x in self.items(event.scenePos()) if
                          hasattr(x, 'dragged_over_by') and x is not
-                         ctrl.pressed]
-                if items:
-                    for item in items:
-                        item.dragged_over_by(ctrl.pressed)
-                elif ctrl.latest_hover:
-                    ctrl.latest_hover.hovering = False
-                    ctrl.latest_hover = None
+                         ctrl.pressed)
+                hovering_over = False
+                for item in items:
+                    if item.dragged_over_by(ctrl.pressed):
+                        hovering_over = True
+                if not hovering_over:
+                    ctrl.set_drag_hovering(None)
                 self.main.ui_manager.update_positions()
             else:
                 if (event.buttonDownScenePos(
@@ -478,7 +477,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             self._dblclick = False
             if self._dragging:
                 print('dblclick while dragging? Unpossible!')
-            ctrl.pressed = None
+            ctrl.press(None)
             return
         elif ctrl.pressed:
             pressed = ctrl.pressed  # : :type pressed: Movable
@@ -497,7 +496,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 if pressed.selectable:
                     pressed.select(event)
                 pressed.update()
-                ctrl.pressed = None
+                ctrl.press(None)
             return None  # this mouseRelease is now consumed
         else:
             if event.modifiers() == Qt.ShiftModifier:
@@ -533,7 +532,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         :param event:
         """
         # redo this to be more generic
-        return ctrl.latest_hover
+        return ctrl.drag_hovering_on
 
     def dragEnterEvent(self, event):
         """
@@ -569,8 +568,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
         QtWidgets.QGraphicsScene.dragLeaveEvent(self, event)
 
     def dropEvent(self, event):
-        """
-
+        """ Support dragging of items from their panel containers, e.g. symbols from symbol panel
+        or new nodes from nodes panel.
         :param event:
         """
         event.ignore()
@@ -603,8 +602,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
         ctrl.ui.remove_touch_areas()
 
     def dragMoveEvent(self, event):
-        """
-
+        """ Support dragging of items from their panel containers, e.g. symbols from symbol panel
+        or new nodes from nodes panel.
         :param event:
         """
         event.ignore()
@@ -632,7 +631,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             if hasattr(item, 'double_click'):
                 item.double_click(event)
                 return
-            else:
+            elif getattr(item, 'clickable', False):
                 found = True
         if found:
             return
@@ -642,7 +641,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
     # #################################################################
 
     def fade_background_gradient(self, old_base_color, new_base_color):
-        """
+        """ Fade between colors of two canvases to smoothen the change. Call this only if colors
+        are different and this is worth the effort.
 
         :param old_base_color:
         :param new_base_color:
@@ -684,6 +684,10 @@ class GraphScene(QtWidgets.QGraphicsScene):
         their position
         :param event: timer event? sent by Qt
         """
+        # Uncomment to check what is the actual framerate:
+        #n_time = time.time()
+        #print((n_time - self.prev_time) * 1000, prefs._fps_in_msec)
+        #self.prev_time = n_time
         items_have_moved = False
         items_fading = False
         frame_has_moved = False
@@ -691,6 +695,10 @@ class GraphScene(QtWidgets.QGraphicsScene):
         can_normalize = True
         md = {'sum': (0, 0, 0), 'nodes': []}
         ctrl.items_moving = True
+        #print(len(self.items()))
+        #for item in self.items():
+        #    if getattr(item, 'is_constituent', False):
+        #        print('parent check: ', item, item.parentItem())
         if self._fade_steps:
             self.setBackgroundBrush(self._fade_steps_list[self._fade_steps - 1])
             self._fade_steps -= 1
@@ -709,7 +717,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         if ctrl.pressed:
             return
-        d = 0
         for node in f.visible_nodes():
             if node.adjust_opacity():
                 items_fading = True

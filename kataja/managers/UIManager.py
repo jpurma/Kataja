@@ -864,7 +864,6 @@ class UIManager:
             moving = []
         if not dragged_type:
             dragged_type = drag_host.node_type
-
         for node in ctrl.forest.nodes.values():
             if not node.is_visible():
                 continue

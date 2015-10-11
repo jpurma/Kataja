@@ -302,7 +302,7 @@ class BaseConstituentNode(Node):
         f = ctrl.forest
         bs = f.settings.bracket_style
         if bs == g.ALL_BRACKETS:
-            if self.get_children():
+            if list(self.get_children()):
                 add_left()
                 add_right()
             else:
@@ -522,36 +522,17 @@ class BaseConstituentNode(Node):
 
     # ## Most of this is implemented in Node
 
-    def prepare_children_for_dragging(self):
+    def prepare_children_for_dragging(self, scene_pos):
         """ Implement this if structure is supposed to drag with the node
         :return:
         """
-        trees = self.get_my_tree(return_set=True)
         children = ctrl.forest.list_nodes_once(self)
 
-        for tree in trees:
+        for tree in self.tree:
             dragged_index = tree.sorted_constituents.index(self)
             for i, node in enumerate(tree.sorted_constituents):
                 if node is not self and i > dragged_index and node in children:
-                    node.add_to_dragged()
-
-    def get_my_tree(self, return_set=False):
-        """ Return the tree where this node belongs
-        :param return_set:
-        :return:
-        """
-        s = set()
-        for tree in ctrl.forest:
-            if self in tree.sorted_constituents:
-                if return_set:
-                    s.add(tree)
-                else:
-                    return tree
-        if return_set:
-            return s
-        else:
-            return None
-
+                    node.start_dragging_tracking(host=False, scene_pos=scene_pos)
 
     #################################
 
@@ -575,7 +556,11 @@ class BaseConstituentNode(Node):
             self.left_bracket.hovering = value
         if self.right_bracket:
             self.right_bracket.hovering = value
-        self._set_hovering(value)
+        if value and not self._hovering:
+            self._start_hover()
+        elif self._hovering and not value:
+            self._stop_hover()
+
 
     # ### Suggestions for completing missing aspects (active for selected nodes)
     def add_completion_suggestions(self):

@@ -527,6 +527,9 @@ class PaletteManager:
         else:
             return color.darker(160)
 
+    def lighter(self, color):
+        return color.lighter(110)
+
     def inactive(self, color):
         """
 
@@ -543,10 +546,10 @@ class PaletteManager:
         :param color:
         :return:
         """
-        if self.light_on_dark():
-            return color.lighter(120)
-        else:
-            return color.darker(120)
+        #if self.light_on_dark():
+        return color.lighter(120)
+        #else:
+        #    return color.darker(120)
             # if color.value() > 230:
             # return color.darker(120)
             # else:

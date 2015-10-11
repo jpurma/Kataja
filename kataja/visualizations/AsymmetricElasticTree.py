@@ -107,14 +107,21 @@ class AsymmetricElasticTree(BaseVisualization):
             yvel += rd_y * edge.pull # / ((i + 1) * (i + 1))
 
         # pull to center (0, 0)
-        xvel += node_x * -0.008
-        yvel += node_y * -0.008
+        # let's remove this from node, and put it to trees instead
+        #xvel += node_x * -0.008
+        #yvel += node_y * -0.008
 
         if not node.physics_x:
             xvel = 0
         if not node.physics_y:
             yvel = 0
         return xvel, yvel, 0
+
+    def calculate_tree_movement(self):
+        """ Make trees to maintain some distance from each other
+        :return:
+        """
+
 
 
     def reset_node(self, node):

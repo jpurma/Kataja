@@ -23,6 +23,7 @@
 # ############################################################################
 from collections import OrderedDict
 
+import itertools
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import Qt
 
@@ -38,17 +39,25 @@ from kataja.parser.INodes import ITemplateNode
 TRIANGLE_HEIGHT = 10
 
 
+class DragData:
+    """ Helper object to contain drag-related data for duration of dragging """
+
+    def __init__(self, node:'Node', is_host, mousedown_scene_pos):
+        self.is_host = is_host
+        self.position_before_dragging = node.current_position
+        self.adjustment_before_dragging = node.adjustment
+        self.tree_top = node.tree_where_top()
+        mx, my = mousedown_scene_pos
+        scx, scy, scz = node.current_scene_position
+        self.distance_from_pointer = scx - mx, scy - my
+        self.dragged_distance = None
+        self.background = ctrl.cm.paper2().lighter(102)
+        self.old_zvalue = node.zValue()
+
+
 # ctrl = Controller object, gives accessa to other modules
 
-# alignment of edges -- in some cases it is good to draw left branches
-# differently than right branches
-
-NO_ALIGN = 0
-LEFT = 1
-RIGHT = 2
-
-
-class Node(Movable, QtWidgets.QGraphicsItem):
+class Node(Movable, QtWidgets.QGraphicsObject):
     """ Basic class for any visualization elements that can be connected to
     each other """
     width = 20
@@ -80,7 +89,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         it should contain all methods to make it work. Inherit and modify
         this for
         Constituents, Features etc. """
-        QtWidgets.QGraphicsItem.__init__(self)
+        QtWidgets.QGraphicsObject.__init__(self)
         Movable.__init__(self)
         self.syntactic_object = syntactic_object
 
@@ -95,9 +104,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         self.clickable = False
         self.selectable = True
         self.draggable = True
-        self._fixed_position_before_dragging = None
-        self._adjustment_before_dragging = None
-        self._distance_from_dragged = (0, 0)
+        self.drag_data = None
         self._magnets = []
         self.status_tip = ""
         self.width = 0
@@ -117,9 +124,9 @@ class Node(Movable, QtWidgets.QGraphicsItem):
 
         self.setAcceptHoverEvents(True)
         # self.setAcceptDrops(True)
-        self.setFlag(QtWidgets.QGraphicsItem.ItemSendsGeometryChanges)
+        self.setFlag(QtWidgets.QGraphicsObject.ItemSendsGeometryChanges)
         # self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable)
-        self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable)
+        self.setFlag(QtWidgets.QGraphicsObject.ItemIsSelectable)
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.setZValue(10)
         self.fade_in()
@@ -271,6 +278,7 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         """
         # This part should be done by all subclasses, call super(
         # ).impose_order_to_inode()
+
         self._inode.values = {}
         self._inode.view_order = []
         if self.syntactic_object and hasattr(self.syntactic_object.__class__, 'visible'):
@@ -355,30 +363,36 @@ class Node(Movable, QtWidgets.QGraphicsItem):
         :param value: bool
         :return:
         """
-        self._set_hovering(value)
+        if value and not self._hovering:
+            self._start_hover()
+        elif self._hovering and not value:
+            self._stop_hover()
 
-    def _set_hovering(self, value):
-        """ Toggle hovering effects and internal bookkeeping
-        :param value: bool
+    def _start_hover(self):
+        """ Start all hovering effects
         :return:
         """
-        if value and not self._hovering:
-            self._hovering = True
-            if ctrl.cm.use_glow():
-                self.effect.setColor(self.contextual_color)
-                self.effect.setEnabled(True)
-            self.prepareGeometryChange()
-            self.update()
+        self._hovering = True
+        if ctrl.cm.use_glow():
+            self.effect.setColor(self.contextual_color)
+            self.effect.setEnabled(True)
+        self.prepareGeometryChange()
+        self.update()
+        if self.zValue() < 150:
             self.setZValue(150)
-            ctrl.set_status(self.status_tip)
-        elif (not value) and self._hovering:
-            # if ctrl.cm.use_glow():
-            #    self.effect.setEnabled(False)
-            self._hovering = False
-            self.prepareGeometryChange()
-            self.setZValue(10)
-            self.update()
-            ctrl.remove_status(self.status_tip)
+        ctrl.set_status(self.status_tip)
+
+    def _stop_hover(self):
+        """ Stop all hovering effects
+        :return:
+        """
+        # if ctrl.cm.use_glow():
+        #    self.effect.setEnabled(False)
+        self._hovering = False
+        self.prepareGeometryChange()
+        self.setZValue(10)
+        self.update()
+        ctrl.remove_status(self.status_tip)
 
     def __repr__(self):
         """ This is a node and this represents this FL item """
@@ -440,20 +454,156 @@ syntactic_object: %s
                 edge.setOpacity(o)
         return active
 
+    # Tree membership ##########################################################
+
+    def pick_tallest_tree(self):
+        """ A node can belong to many trees, but in some cases only one is needed. Choose taller
+        tree. There is no good reason for why to choose that, but it is necessary to at least
+        to have predictable behaviour for complex cases.
+        :return:
+        """
+        max_len = 0
+        bigger = None
+        for tree in self.tree:
+            l = len(tree.sorted_constituents) + len(tree.sorted_nodes)
+            if l > max_len:
+                bigger = tree
+        return bigger
+
+    def tree_where_top(self):
+        """ Returns a tree where this node is the topmost node. Cannot be topping more than one
+        tree!  (They would be identical trees otherwise.)
+        :return: None if not top, Tree if found
+        """
+        for tree in self.tree:
+            if self is tree.top:
+                return tree
+
+    def shares_tree_with_node(self, other):
+        """ Checks if this node has one or more same tree with other node
+        :param other: node
+        :return:
+        """
+        if other.tree is None or self.tree is None:
+            return False
+        return bool(self.tree & other.tree)
+
+    def update_graphics_parent(self):
+        """ Update GraphicsItem.parentItem for this node. When parent is changed, the coordinate system switches to that of parent (or scene, if parent is None). If this happens, compute new position according to new parent so that there is no visible jump.
+        :return:
+        """
+        old_parent = self.parentItem()
+        new_parent = self.pick_tallest_tree()
+        if new_parent:
+            if old_parent is not new_parent:
+                scene_position = self.current_scene_position
+                op = self.current_position
+                self.setParentItem(new_parent)
+                self.current_position = self.scene_position_to_tree_position(scene_position)
+                #print('translated node %s from scene_pos %s to scene_pos %s while current pos was %s and is now %s' % (self, str(scene_position), str(self.current_scene_position), str(op), str(self.current_position)))
+        elif old_parent:
+            self.current_position = self.current_scene_position
+            self.setParentItem(None)
+
+    def add_to_tree(self, tree):
+        """ Add this node to given tree and possibly set it as parent for this graphicsitem.
+        :param tree: Tree
+        :return:
+        """
+        self.tree.add(tree)
+        self.update_graphics_parent()
+
+    def remove_from_tree(self, tree, recursive_down=False):
+        """ Remove node from tree and remove the (graphicsitem) parenthood-relation.
+        :param tree: Tree
+        :return:
+        """
+        if tree in self.tree:
+            self.tree.remove(tree)
+            self.update_graphics_parent()
+        if recursive_down:
+            for child in self.get_children():
+                legit = False
+                for parent in child.get_parents():
+                    if tree in parent.tree:
+                        legit = True
+                if not legit:
+                    child.remove_from_tree(tree, recursive_down=True)
+
+    def copy_position(self, other, ax=0, ay=0, az=0):
+        """ Helper method for newly created items. Takes other item and copies movement related
+        attributes from it (physics settings, locks, adjustment etc). ax, ay, az can be used to
+        adjust these a little to avoid complete overlap.
+        :param other:
+        :param ax:
+        :param ay:
+        :param az:
+        :return:
+        """
+        shift = (ax, ay, az)
+        csp = other.current_scene_position
+        ctp = other.tree_position_to_scene_position(other.target_position)
+        self.current_position = self.scene_position_to_tree_position(add_xyz(csp, shift))
+        self.adjustment = other.adjustment
+        self.target_position = self.scene_position_to_tree_position(ctp)
+        self.locked = other.locked
+        self.use_adjustment = other.use_adjustment
+        self.physics_x = other.physics_x
+        self.physics_y = other.physics_y
+        self.physics_z = other.physics_z
+
+    def tree_position_to_scene_position(self, position):
+        """ Return tree position converted to scene position. Works for xy and xyz -tuples.
+        :param position:
+        :return:
+        """
+        if len(position) == 3:
+            x, y, z = position
+            tree = self.parentItem()
+            if not tree:
+                return x, y, z
+            tx, ty, tz = tree.current_position
+            return x + tx, y + ty, z + tz
+        elif len(position) == 2:
+            x, y = position
+            tree = self.parentItem()
+            if not tree:
+                return x, y
+            tx, ty, tz = tree.current_position
+            return x + tx, y + ty
+
+    def scene_position_to_tree_position(self, scene_pos):
+        """ Return scene position converted to coordinate system used by this node tree. Works for xy and xyz -tuples.
+
+        :param scene_pos:
+        :return:
+        """
+        if len(scene_pos) == 3:
+            x, y, z = scene_pos
+            tree = self.parentItem()
+            if not tree:
+                return x, y, z
+            tx, ty, tz = tree.current_position
+            return x - tx, y - ty, z - tz
+        elif len(scene_pos) == 2:
+            x, y = scene_pos
+            tree = self.parentItem()
+            if not tree:
+                return x, y
+            tx, ty, tz = tree.current_position
+            return x - tx, y - ty
 
     # ### Children and parents
     # ####################################################
 
     def get_all_children(self):
-        """
-        Get all types of child nodes of this node.
+        """ Get all types of child nodes of this node.
         :return: iterator of Nodes
         """
         return (edge.end for edge in self.edges_down)
 
     def get_all_visible_children(self):
-        """
-        Get all types of child nodes of this node if they are visible.
+        """ Get all types of child nodes of this node if they are visible.
         :return: iterator of Nodes
         """
         return (edge.end for edge in self.edges_down if edge.end.is_visible())
@@ -493,7 +643,7 @@ syntactic_object: %s
         elif node_type:
             return (edge.end for edge in self.edges_down if isinstance(edge.end, node_type))
 
-    def get_parents(self, only_similar=True, only_visible=False, edge_type=None):
+    def get_parents(self, only_similar=True, only_visible=False, edge_type=None)->list:
         """
         Get parent nodes of this node.
         :param only_similar: boolean, only return nodes of same type (eg.
@@ -593,6 +743,14 @@ syntactic_object: %s
         else:
             return True
 
+    def update_trees(self):
+        """ Make sure that the tree assigned for this node includes all relevant nodes. Assumes that
+        node.tree is correct.
+        :return:
+        """
+        for tree in self.tree:
+            tree.update_items()
+
     def get_top_node(self, return_set=False):
         """ Getting the top node is easiest by looking from the stored trees. Don't use this if
         this is about fixing trees!
@@ -600,7 +758,7 @@ syntactic_object: %s
         s = set()
 
         for tree in ctrl.forest:
-            if self in tree.sorted_nodes:
+            if self in tree:
                 if return_set:
                     s.add(tree.top)
                 else:
@@ -755,7 +913,10 @@ syntactic_object: %s
         """ Drawing color that is sensitive to node's state
         :return: QColor
         """
-        if ctrl.pressed is self:
+
+        if self.drag_data:
+            return ctrl.cm.lighter(ctrl.cm.selection())
+        elif ctrl.pressed is self:
             return ctrl.cm.active(ctrl.cm.selection())
         elif self._hovering:
             # return ctrl.cm.hover()
@@ -856,16 +1017,26 @@ syntactic_object: %s
             p.setWidth(1)
             painter.setPen(p)
             self.paint_triangle(painter)
-
-        if self._hovering:
+        if self.drag_data:
             p = QtGui.QPen(self.contextual_color)
-            p.setColor(ctrl.cm.hover())
-            p.setWidth(2)
+            #b = QtGui.QBrush(ctrl.cm.paper())
+            #p.setColor(ctrl.cm.hover())
+            p.setWidth(1)
+            painter.setPen(p)
+            painter.setBrush(self.drag_data.background)
+            painter.drawRoundedRect(self.inner_rect, 5, 5)
+            painter.setBrush(Qt.NoBrush)
+
+
+        elif self._hovering:
+            p = QtGui.QPen(self.contextual_color)
+            #p.setColor(ctrl.cm.hover())
+            p.setWidth(1)
             painter.setPen(p)
             painter.drawRoundedRect(self.inner_rect, 5, 5)
         elif ctrl.pressed is self or ctrl.is_selected(self):
             p = QtGui.QPen(self.contextual_color)
-            p.setWidth(2)
+            p.setWidth(1)
             painter.setPen(p)
             painter.drawRoundedRect(self.inner_rect, 5, 5)
         elif self.has_empty_label() and self.node_alone():
@@ -878,6 +1049,13 @@ syntactic_object: %s
             # w2 = self.width/2.0
             # painter.setPen(self.contextual_color())
             # painter.drawEllipse(-w2, -w2, w2 + w2, w2 + w2)
+        #x = 0
+        #p = QtGui.QPen(self.contextual_color)
+        #p.setWidth(1)
+        #painter.setPen(p)
+        #for tree in self.tree:
+        #    painter.drawEllipse(x, 10, 6, 6)
+        #    x += 10
 
     def has_visible_label(self):
         """
@@ -971,6 +1149,28 @@ syntactic_object: %s
         triangle.lineTo(center, top)
         painter.drawPath(triangle)
 
+    def on_press(self, value):
+        """ Testing if we can add some push-depth effect.
+        :param value: pressed or not
+        :return:
+        """
+        b = QtCore.QByteArray()
+        b.append("scale")
+        if value:
+            self.anim = QtCore.QPropertyAnimation(self, b)
+            self.anim.setDuration(20)
+            self.anim.setStartValue(self.scale())
+            self.anim.setEndValue(0.95)
+            self.anim.start()
+            #self.setScale(0.95)
+        else:
+            self.anim = QtCore.QPropertyAnimation(self, b)
+            self.anim.setDuration(20)
+            self.anim.setStartValue(self.scale())
+            self.anim.setEndValue(1.0)
+            self.anim.start()
+                #self.setScale(1.0)
+
     # ## Magnets
     # ######################################################################
 
@@ -996,11 +1196,11 @@ syntactic_object: %s
                 self._magnets = [(-w2, -h2), (-w4, -h2), (0, -h2), (w4, -h2), (w2, -h2), (-w2, 0),
                                  (w2, 0), (-w2, h2), (-w4, h2), (0, h2), (w4, h2), (w2, h2)]
 
-            x1, y1, z1 = self.current_position
+            x1, y1, z1 = self.current_scene_position
             x2, y2 = self._magnets[n]
             return x1 + x2, y1 + y2, z1
         else:
-            return self.current_position
+            return self.current_scene_position
 
     # ### Menus #########################################
 
@@ -1062,44 +1262,93 @@ syntactic_object: %s
             if editor and editor.isVisible():
                 self.open_embed()
 
-    def start_dragging(self, mx, my):
-        """
+    # Drag flow:
 
-        :param mx:
-        :param my:
+    # 1. start_dragging -- drag is initiated from this node. If the node was already selected,
+    # then other nodes that were selected at the same time are also understood to be dragged.
+    # If the node has unambiguous children, these are also dragged. If node is top node of a tree,
+    # then the tree is the object of dragging, and not node.
+    #
+    # 2. start_dragging_tracking --
+    #
+    #
+    #
+    #
+
+    def start_dragging(self, scene_pos):
+        """ Figure out which nodes belong to the dragged set of nodes.
+        It may be that a whole tree is dragged. If this is the case, drag_to commands to nodes that are tops of trees are directed to tree instead. Node doesn't change its position in tree if the whole tree moves.
+
+        :param scene_pos:
         """
+        def in_any_tree(node, treeset):
+            for tree in treeset:
+                if item in tree:
+                    return True
+
         ctrl.dragged_focus = self
         ctrl.dragged_set = set()
         multidrag = False
-        if ctrl.is_selected(self):
-            for item in ctrl.selected:
-                if item is not self and getattr(item, 'draggable', True):
-                    item.add_to_dragged()
-                    item.prepare_children_for_dragging()
-                    multidrag = True
-        self.prepare_children_for_dragging()
-        self._fixed_position_before_dragging = self.current_position
-        self._adjustment_before_dragging = self.adjustment
-        self._distance_from_dragged = (self.current_position[0], self.current_position[1])
+        dragged_trees = set()
+        print('start dragging called')
 
-        ctrl.ui.prepare_touch_areas_for_dragging(drag_host=self, moving=ctrl.dragged_set,
+        # if we are working with selection, this is more complicated, as there may be many nodes
+        # and trees dragged at once, with one focus for dragging.
+        if ctrl.is_selected(self):
+            # find tree tops in selection
+            for item in ctrl.selected:
+                tree = item.tree_where_top()
+                if tree:
+                    dragged_trees.add(tree)
+            # include those nodes in selection and their children that are not part of wholly
+            # dragged trees
+            for item in ctrl.selected:
+                if item.drag_data:
+                    continue
+                if in_any_tree(item, dragged_trees):
+                    continue
+                elif getattr(item, 'draggable', True):
+                    item.start_dragging_tracking(host=False, scene_pos=scene_pos)
+                    item.prepare_children_for_dragging(scene_pos)
+                    multidrag = True
+        # no selection -- drag what is under the pointer
+        else:
+            tree = self.tree_where_top()
+            if tree:
+                dragged_trees.add(tree)
+            else:
+                self.prepare_children_for_dragging(scene_pos)
+            self.start_dragging_tracking(host=True, scene_pos=scene_pos)
+
+        moving = ctrl.dragged_set
+        for tree in dragged_trees:
+            moving = moving.union(tree.sorted_nodes)
+        ctrl.ui.prepare_touch_areas_for_dragging(drag_host=self, moving=moving,
                                                  dragged_type=self.node_type, multidrag=multidrag)
+
         self.start_moving()
 
-    def add_to_dragged(self):
-        """ Add this node to entourage of dragged node. These nodes will
-        maintain their relative
-         position to dragged node while dragging.
+    def start_dragging_tracking(self, host=False, scene_pos=None):
+        """ Add this node into the entourage of dragged node. These nodes will
+        maintain their relative position to dragged node while dragging.
         :return: None
         """
         ctrl.dragged_set.add(self)
-        dx, dy, dummy_z = ctrl.dragged_focus.current_position
-        x, y, dummy_z = self.current_position
-        self._fixed_position_before_dragging = self.current_position
-        self._adjustment_before_dragging = self.adjustment
-        self._distance_from_dragged = (x - dx, y - dy)
+        self.drag_data = DragData(self, is_host=host, mousedown_scene_pos=scene_pos)
+        tree = self.tree_where_top()
+        if tree:
+            tree.start_dragging_tracking(host=host, scene_pos=scene_pos)
+        b = QtCore.QByteArray()
+        b.append("scale")
+        self.anim = QtCore.QPropertyAnimation(self, b)
+        self.anim.setDuration(100)
+        self.anim.setStartValue(self.scale())
+        self.anim.setEndValue(1.1)
+        self.anim.start()
+        self.setZValue(500)
 
-    def prepare_children_for_dragging(self):
+
+    def prepare_children_for_dragging(self, scene_pos):
         """ Implement this if structure is supposed to drag with the node
         :return:
         """
@@ -1107,36 +1356,43 @@ syntactic_object: %s
 
     def drag(self, event):
         """ Drags also elements that are counted to be involved: features,
-        children etc
+        children etc. Drag is called to only one principal drag host element. 'dragged_to' is
+        called for each element.
         :param event:
         """
-        now_x, now_y = to_tuple(event.scenePos())
+        scene_pos = to_tuple(event.scenePos())
         if not ctrl.dragged_focus:
-            self.start_dragging(now_x, now_y)
+            self.start_dragging(scene_pos)
         # change dragged positions to be based on adjustment instead of
         # distance to main dragged.
         for node in ctrl.dragged_set:
-            node.dragged_to(now_x, now_y)
-        self.dragged_to(now_x, now_y)
+            node.dragged_to(scene_pos)
 
-    def dragged_to(self, now_x, now_y):
-        """ Dragged focus is in now_x, now_y. Move there or to position
+    def dragged_to(self, scene_pos):
+        """ Dragged focus is in scene_pos. Move there or to position
         relative to that
-        :param now_x: current drag focus x
-        :param now_y: current drag focus y
+        :param scene_pos: current pos of drag pointer (tuple x,y)
         :return:
         """
-        if ctrl.dragged_focus is not self:
-            dx, dy = self._distance_from_dragged
-            if self.use_physics():
-                self.locked = True
-            else:
-                self.use_adjustment = True
-                ax, ay, az = self.target_position
-                self.adjustment = (now_x - ax + dx, now_y - ay + dy, az)
-            self.current_position = now_x + dx, now_y + dy, self.z
+        d = self.drag_data
+        nx, ny = scene_pos
+        if d.tree_top:
+            dx, dy = d.tree_top.drag_data.distance_from_pointer
+            d.tree_top.dragged_to((nx + dx, ny + dy))
+            for edge in ctrl.forest.edges.values():
+                edge.make_path()
+                edge.update()
         else:
-            super().dragged_to(now_x, now_y)
+            dx, dy = d.distance_from_pointer
+            p = self.parentItem()
+            if p:
+                px, py, pz = p.current_position
+                super().dragged_to((nx + dx - px, ny + dy - py))
+            else:
+                super().dragged_to((nx + dx, ny + dy))
+            for edge in itertools.chain(self.edges_up, self.edges_down):
+                edge.make_path()
+                edge.update()
 
 
     def accepts_drops(self, dragged):
@@ -1189,12 +1445,19 @@ syntactic_object: %s
         """
         if self is ctrl.dragged_focus:
             for node in ctrl.dragged_set:
-                node.finish_dragging()
+                if node is not self:
+                    node.finish_dragging()
             ctrl.dragged_set = set()
             ctrl.dragged_focus = None
-        self._distance_from_dragged = None
-        self._fixed_position_before_dragging = None
-        self._adjustment_before_dragging = None
+        self.setZValue(self.drag_data.old_zvalue)
+        self.drag_data = None
+        b = QtCore.QByteArray()
+        b.append("scale")
+        self.anim = QtCore.QPropertyAnimation(self, b)
+        self.anim.setDuration(100)
+        self.anim.setStartValue(self.scale())
+        self.anim.setEndValue(1.0)
+        self.anim.start()
         self.effect.setEnabled(False)
 
     def cancel_dragging(self):
@@ -1202,13 +1465,15 @@ syntactic_object: %s
         Revert dragged items to their previous positions.
         :return: None
         """
-        self.adjustment = self._adjustment_before_dragging
-        self.current_position = self._fixed_position_before_dragging
-        self.update_position()
-        for node in ctrl.dragged_set:
-            node.cancel_dragging()
-        if self is ctrl.dragged_focus:
-            self.finish_dragging()
+        d = self.drag_data
+        if d:
+            self.adjustment = d.adjustment_before_dragging
+            self.current_position = d.position_before_dragging
+            self.update_position()
+            if d.is_host:
+                for node in ctrl.dragged_set:
+                    node.cancel_dragging()
+            self.drag_data = None
 
     def lock(self):
         """ Display lock, unless already locked. Added functionality to
@@ -1216,8 +1481,9 @@ syntactic_object: %s
          dragging started.
         :return:
         """
+        was_locked = self.locked or self.use_adjustment
         super().lock()
-        if not (self._fixed_position_before_dragging or self._adjustment_before_dragging):
+        if not was_locked:
             ctrl.main.ui_manager.show_anchor(self)  # @UndefinedVariable
 
     # ### Mouse - Qt events ##################################################
@@ -1227,14 +1493,14 @@ syntactic_object: %s
         :param event:
         """
         self.hovering = True
-        QtWidgets.QGraphicsItem.hoverEnterEvent(self, event)
+        QtWidgets.QGraphicsObject.hoverEnterEvent(self, event)
 
     def hoverLeaveEvent(self, event):
         """ Object needs to be updated
         :param event:
         """
         self.hovering = False
-        QtWidgets.QGraphicsItem.hoverLeaveEvent(self, event)
+        QtWidgets.QGraphicsObject.hoverLeaveEvent(self, event)
 
     def dragEnterEvent(self, event):
         """ Dragging a foreign object (could be from ui) over a node, entering.
@@ -1244,7 +1510,7 @@ syntactic_object: %s
             event.acceptProposedAction()
             self.hovering = True
         else:
-            QtWidgets.QGraphicsItem.dragEnterEvent(self, event)
+            QtWidgets.QGraphicsObject.dragEnterEvent(self, event)
 
     def dragLeaveEvent(self, event):
         """ Dragging a foreign object (could be from ui) over a node, leaving.
@@ -1254,7 +1520,7 @@ syntactic_object: %s
             event.acceptProposedAction()
             self.hovering = False
         else:
-            QtWidgets.QGraphicsItem.dragLeaveEvent(self, event)
+            QtWidgets.QGraphicsObject.dragLeaveEvent(self, event)
 
     def start_moving(self):
         """ Experimental: add glow effect for moving things
@@ -1284,6 +1550,12 @@ syntactic_object: %s
             edge.start_node_stopped_moving()
         for edge in self.edges_up:
             edge.end_node_stopped_moving()
+
+    def itemChange(self, change, value):
+        if change == QtWidgets.QGraphicsObject.ItemPositionHasChanged:
+            for tree in self.tree:
+                tree.tree_changed = True
+        return QtWidgets.QGraphicsObject.itemChange(self, change, value)
 
     # ############## #
     #                #

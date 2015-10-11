@@ -129,24 +129,13 @@ When nodes that don't use physics are dragged, the adjustment.
         """
         self._hovering = False
 
-    # Tree membership ##########################################################
-
-    def pick_any_tree(self):
-        for tree in self.tree:
-            return tree
-
-    def add_to_tree(self, tree):
-        self.tree.add(tree)
-        self.setParentItem(tree)
-
-    def remove_from_tree(self, tree):
-        if tree in self.tree:
-            self.tree.remove(tree)
-            if self.tree:
-                self.setParentItem(self.pick_any_tree())
-            else:
-                self.setParentItem(None)
-
+    @property
+    def current_scene_position(self):
+        """ Return current position in scene coordinates and turned to xyz -triple.
+        :return:
+        """
+        xy = self.scenePos()
+        return xy.x(), xy.y(), self.z
 
     # ## Movement ##############################################################
 
@@ -208,26 +197,6 @@ When nodes that don't use physics are dragged, the adjustment.
             self.current_position = add_xyz(self.current_position, movement)
             return abs(movement[0]) + abs(movement[1]) + abs(movement[2]) > 0.6, True
         return False, False
-
-    def copy_position(self, other, ax=0, ay=0, az=0):
-        """ Helper method for newly created items. Takes other item and copies movement related
-        attributes from it (physics settings, locks, adjustment etc). ax, ay, az can be used to
-        adjust these a little to avoid complete overlap.
-        :param other:
-        :param ax:
-        :param ay:
-        :param az:
-        :return:
-        """
-        shift = (ax, ay, az)
-        self.current_position = add_xyz(other.current_position, shift)
-        self.adjustment = other.adjustment
-        self.target_position = other.target_position
-        self.locked = other.locked
-        self.use_adjustment = other.use_adjustment
-        self.physics_x = other.physics_x
-        self.physics_y = other.physics_y
-        self.physics_z = other.physics_z
 
     def distance_to(self, movable):
         """ Return current x,y distance to another movable
@@ -374,30 +343,33 @@ When nodes that don't use physics are dragged, the adjustment.
 
     # ## Dragging ############################################################
 
-    def dragged_to(self, now_x, now_y):
-        """ Dragged focus is in now_x, now_y. Move there.
-        :param now_x: current drag focus x
-        :param now_y: current drag focus y
+    def dragged_to(self, scene_pos):
+        """ Dragged focus is in scene_pos. Move there.
+        :param scene_pos: current drag focus
         :return:
         """
+        nx, ny = scene_pos
         if self.use_physics():
             self.locked = True
         else:
             self.use_adjustment = True
             ax, ay, az = self.target_position
-            self.adjustment = (now_x - ax, now_y - ay, az)
-        self.current_position = now_x, now_y, self.z
+            self.adjustment = (nx - ax, ny - ay, az)
+        self.current_position = nx, ny, self.z
 
     def dragged_over_by(self, dragged):
-        """
+        """ When dragging other items on top of this item, should this item react, e.g. show somehow that item can be dropped on this.
 
         :param dragged:
         """
-        if not self._hovering and self.accepts_drops(dragged):
-            if ctrl.latest_hover and not ctrl.latest_hover is self:
-                ctrl.latest_hover.hovering = False
-            ctrl.latest_hover = self
-            self.hovering = True
+        if ctrl.drag_hovering_on is self:
+            return True
+        elif self.accepts_drops(dragged):
+            ctrl.set_drag_hovering(self)
+            return True
+        else:
+            return False
+
 
     def drop_to(self, x, y, recipient=None):
         """
@@ -420,9 +392,10 @@ When nodes that don't use physics are dragged, the adjustment.
         # # ctrl.scene.fit_to_window()
 
     def accepts_drops(self, dragged):
-        """
+        """ Reimplement this to evaluate if this Movable should accept drops from dragged. Default returns False.
 
-        :param dragged:
+        :param dragged: Item that is being dragged. You may want to look into what kind of object
+        this is and decide from that.
         :return:
         """
         return False

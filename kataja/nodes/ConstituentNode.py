@@ -313,17 +313,18 @@ class ConstituentNode(BaseConstituentNode):
             l = str(label)
         else:
             return "anonymous constituent"
-        return "constituent '%s'" % l
+
+        return "constituent '%s' from trees %s" % (l, [t.save_key for t in self.tree])
 
     def as_bracket_string(self):
         """ returns a simple bracket string representation """
         if self.alias:
             if not self.syntactic_object:
                 return '0'
-            children = self.get_children()
+            children = list(self.get_children())
             if children:
-                return '[.%s %s ]' % (
-                self.alias, ' '.join([c.as_bracket_string() for c in children]))
+                return '[.%s %s ]' % \
+                       (self.alias, ' '.join((c.as_bracket_string() for c in children)))
             else:
                 return self.alias
         else:
@@ -488,19 +489,21 @@ class ConstituentNode(BaseConstituentNode):
         """ Drawing color that is sensitive to node's state
         :return: QColor
         """
-        if ctrl.pressed is self:
-            return ctrl.cm.active(ctrl.cm.selection())
-        elif self._hovering:
-            # return ctrl.cm.hover()
-            return self.color
-            # return ctrl.cm.hovering(ctrl.cm.selection())
-        elif ctrl.is_selected(self):
-            return ctrl.cm.selection()
-            # return ctrl.cm.selected(ctrl.cm.selection())
+
+        if ctrl.is_selected(self):
+            base = ctrl.cm.selection()
         elif self._projection_color:
-            return self._projection_qcolor
+            base = self._projection_qcolor
         else:
-            return self.color
+            base = self.color
+        if self.drag_data:
+            return ctrl.cm.lighter(base)
+        elif ctrl.pressed is self:
+            return ctrl.cm.active(base)
+        elif self._hovering:
+            return ctrl.cm.hovering(base)
+        else:
+            return base
 
     # ### Features #########################################
 

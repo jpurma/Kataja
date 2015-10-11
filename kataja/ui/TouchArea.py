@@ -210,7 +210,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
             x, y, z = self.host.end_point
             self.end_point = x, y
         else:
-            x, y, z = self.host.current_position
+            x, y, z = self.host.current_scene_position
             if self._below_node:
                 y += self.host.height / 2 + end_spot_size
             self.end_point = x, y
@@ -243,7 +243,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
                 except TypeError:
                     pass
                 if hasattr(self.host, 'current_position'):
-                    x, y, z = self.host.current_position
+                    x, y, z = self.host.current_scene_position
                 elif hasattr(self.host, 'start_point'):
                     x, y, z = self.host.start_point
                 else:
@@ -331,11 +331,13 @@ class TouchArea(QtWidgets.QGraphicsItem):
 
         :param dragged:
         """
-        if not self._hovering and self.accepts_drops(dragged):
-            if ctrl.latest_hover and not ctrl.latest_hover is self:
-                ctrl.latest_hover.hovering = False
-            ctrl.latest_hover = self
-            self.hovering = True
+        if ctrl.drag_hovering_on is self:
+            return True
+        elif self.accepts_drops(dragged):
+            ctrl.set_drag_hovering(self)
+            return True
+        else:
+            return False
 
     def accepts_drops(self, dragged):
         """
@@ -531,8 +533,7 @@ class BranchingTouchArea(TouchArea):
             return False
         child = self.host.end
         parent = self.host.start
-        new_node = ctrl.forest.create_node(pos=child.current_position)
-        new_node.copy_position(child)
+        new_node = ctrl.forest.create_node(relative=child)
         ctrl.forest.insert_node_between(new_node, parent, child,
                                         self._align_left,
                                         self.start_point)
@@ -724,8 +725,7 @@ class JointedTouchArea(TouchArea):
         if self._drag_hint:
             return False
         top = self.host
-        new_node = ctrl.forest.create_node(pos=top.current_position)
-        new_node.copy_position(top)
+        new_node = ctrl.forest.create_node(relative=top)
         ctrl.forest.merge_to_top(top, new_node, self._align_left, new_node.current_position)
         ctrl.deselect_objects()
         ctrl.main.action_finished(m='add constituent')

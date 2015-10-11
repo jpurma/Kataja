@@ -485,11 +485,11 @@ def blob_path(start_point=None, end_point=None, curve_adjustment=None,
     :param kwargs:
     """
     if start:
-        scx, scy, scz = start.current_position
+        scx, scy, scz = start.current_scene_position
     else:
         scx, scy, scz = start_point
     if end:
-        ecx, ecy, ecz = end.current_position
+        ecx, ecy, ecz = end.current_scene_position
     else:
         ecx, ecy, ecz = end_point
     if thick:
@@ -607,11 +607,11 @@ def directional_blob_path(start_point=None, end_point=None,
     :param kwargs:
     """
     if start:
-        scx, scy, scz = start.current_position
+        scx, scy, scz = start.current_scene_position
     else:
         scx, scy, scz = start_point
     if end:
-        ecx, ecy, ecz = end.current_position
+        ecx, ecy, ecz = end.current_scene_position
     else:
         ecx, ecy, ecz = end_point
     inner_path = QtGui.QPainterPath(Pf(scx, scy))

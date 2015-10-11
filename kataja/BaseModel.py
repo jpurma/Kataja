@@ -215,6 +215,9 @@ class BaseModel(object):
         """
         return self._sk
 
+    def __str__(self):
+        return self._sk
+
     def poke(self, attribute):
         """ Alert undo system that this (Saved) object is being changed.
         This is used manually for container-type objects in the model before

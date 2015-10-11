@@ -92,7 +92,7 @@ class Preferences(object):
         self.plugins = {}
         self.dpi = 300
         self._dpi_ui = {'tab': 'Print', 'choices': [72, 150, 300, 450, 600]}
-        self.FPS = 30
+        self.FPS = 60
         self._FPS_ui = {'tab': 'Performance'}
 
         self._fps_in_msec = 1000 / self.FPS

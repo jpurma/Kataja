@@ -499,9 +499,9 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
         # print(id(self), self.start_point, self.end_point, self.start,
         # self.end)
         if self.start and not self.end:
-            self._relative_vector = sub_xyz(self.end_point, self.start.current_position)
+            self._relative_vector = sub_xyz(self.end_point, self.start.current_scene_position)
         elif self.end and not self.start:
-            self._relative_vector = sub_xyz(self.end.current_position, self.start_point)
+            self._relative_vector = sub_xyz(self.end.current_scene_position, self.start_point)
             # print(id(self), self.start_point, self.end_point, self.start,
             # self.end)
 
@@ -938,9 +938,11 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
         :return:
         """
         if self.start and not self.end:
-            self._computed_end_point = add_xyz(self.start.current_position, self._relative_vector)
+            self._computed_end_point = add_xyz(self.start.current_scene_position,
+                                               self._relative_vector)
         elif self.end and not self.start:
-            self._computed_start_point = sub_xyz(self.end.current_position, self._relative_vector)
+            self._computed_start_point = sub_xyz(self.end.current_scene_position,
+                                                 self._relative_vector)
         if self.edge_type == g.ARROW:
 
             if self.start:
@@ -983,12 +985,12 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
         :param end:
         """
         if start:
-            self._computed_start_point = start.current_position
+            self._computed_start_point = start.current_scene_position
             self.start = start
         else:
             self.start = None
         if end:
-            self._computed_end_point = end.current_position
+            self._computed_end_point = end.current_scene_position
             self.end = end
         else:
             self.end = None
@@ -1112,7 +1114,7 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
         """
         if value and not self._hovering:
             self._hovering = True
-            self.setZValue(100)
+            #self.setZValue(100)
             # if ctrl.cm.use_glow():
             #    self.effect.setColor(ctrl.cm.selection())
             #    self.effect.setEnabled(True)
