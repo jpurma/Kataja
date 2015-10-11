@@ -69,7 +69,7 @@ class Controller:
         self.ui_pressed = None  # set() # different coordinates to pressed set
         self.dragged_focus = None
         self.dragged_set = set()
-        self.latest_hover = None  # used only while dragging, because
+        self.drag_hovering_on = None  # used only while dragging, because
         # standard hovering doesn't work while dragging
         self.ui_focus = None
         self.focus_point = None
@@ -281,6 +281,18 @@ class Controller:
             self.selected.remove(obj)
             obj.update_selection_status(False)
             self.call_watchers(self, 'selection_changed', value=self.selected)
+
+    def set_drag_hovering(self, item):
+        """ Drag is hovering over one item that can receive drop.
+        :param item: item that can receive drops or None
+        :return:
+        """
+        if self.drag_hovering_on and self.drag_hovering_on is not item:
+            self.drag_hovering_on.hovering = False
+        self.drag_hovering_on = item
+        if item:
+            item.hovering = True
+
 
     # ******** /selection *******
 

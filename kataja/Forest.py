@@ -470,6 +470,7 @@ class Forest(BaseModel):
         """
         if not self.in_display:
             print("Why are we drawing a forest which shouldn't be in scene")
+        print('draw for forest called')
         sc = ctrl.graph_scene
         sc.stop_animations()
         for tree in self.trees:

@@ -358,15 +358,18 @@ When nodes that don't use physics are dragged, the adjustment.
         self.current_position = nx, ny, self.z
 
     def dragged_over_by(self, dragged):
-        """
+        """ When dragging other items on top of this item, should this item react, e.g. show somehow that item can be dropped on this.
 
         :param dragged:
         """
-        if not self._hovering and self.accepts_drops(dragged):
-            if ctrl.latest_hover and not ctrl.latest_hover is self:
-                ctrl.latest_hover.hovering = False
-            ctrl.latest_hover = self
-            self.hovering = True
+        if ctrl.drag_hovering_on is self:
+            return True
+        elif self.accepts_drops(dragged):
+            ctrl.set_drag_hovering(self)
+            return True
+        else:
+            return False
+
 
     def drop_to(self, x, y, recipient=None):
         """
@@ -389,9 +392,10 @@ When nodes that don't use physics are dragged, the adjustment.
         # # ctrl.scene.fit_to_window()
 
     def accepts_drops(self, dragged):
-        """
+        """ Reimplement this to evaluate if this Movable should accept drops from dragged. Default returns False.
 
-        :param dragged:
+        :param dragged: Item that is being dragged. You may want to look into what kind of object
+        this is and decide from that.
         :return:
         """
         return False

@@ -50,6 +50,7 @@ class Tree(Movable, QtWidgets.QGraphicsItem):
         self.drag_data = None
         self.tree_changed = True
         self._cached_bounding_rect = None
+        self.setZValue(12)
 
     def __repr__(self):
         return "Tree '%s' and %s nodes." % (self.top, len(self.sorted_nodes))

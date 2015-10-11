@@ -23,6 +23,7 @@
 # ############################################################################
 from collections import OrderedDict
 
+import itertools
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import Qt
 
@@ -50,6 +51,8 @@ class DragData:
         scx, scy, scz = node.current_scene_position
         self.distance_from_pointer = scx - mx, scy - my
         self.dragged_distance = None
+        self.background = ctrl.cm.paper2().lighter(102)
+        self.old_zvalue = node.zValue()
 
 
 # ctrl = Controller object, gives accessa to other modules
@@ -360,30 +363,36 @@ class Node(Movable, QtWidgets.QGraphicsObject):
         :param value: bool
         :return:
         """
-        self._set_hovering(value)
+        if value and not self._hovering:
+            self._start_hover()
+        elif self._hovering and not value:
+            self._stop_hover()
 
-    def _set_hovering(self, value):
-        """ Toggle hovering effects and internal bookkeeping
-        :param value: bool
+    def _start_hover(self):
+        """ Start all hovering effects
         :return:
         """
-        if value and not self._hovering:
-            self._hovering = True
-            if ctrl.cm.use_glow():
-                self.effect.setColor(self.contextual_color)
-                self.effect.setEnabled(True)
-            self.prepareGeometryChange()
-            self.update()
+        self._hovering = True
+        if ctrl.cm.use_glow():
+            self.effect.setColor(self.contextual_color)
+            self.effect.setEnabled(True)
+        self.prepareGeometryChange()
+        self.update()
+        if self.zValue() < 150:
             self.setZValue(150)
-            ctrl.set_status(self.status_tip)
-        elif (not value) and self._hovering:
-            # if ctrl.cm.use_glow():
-            #    self.effect.setEnabled(False)
-            self._hovering = False
-            self.prepareGeometryChange()
-            self.setZValue(10)
-            self.update()
-            ctrl.remove_status(self.status_tip)
+        ctrl.set_status(self.status_tip)
+
+    def _stop_hover(self):
+        """ Stop all hovering effects
+        :return:
+        """
+        # if ctrl.cm.use_glow():
+        #    self.effect.setEnabled(False)
+        self._hovering = False
+        self.prepareGeometryChange()
+        self.setZValue(10)
+        self.update()
+        ctrl.remove_status(self.status_tip)
 
     def __repr__(self):
         """ This is a node and this represents this FL item """
@@ -1008,8 +1017,18 @@ syntactic_object: %s
             p.setWidth(1)
             painter.setPen(p)
             self.paint_triangle(painter)
+        if self.drag_data:
+            p = QtGui.QPen(self.contextual_color)
+            #b = QtGui.QBrush(ctrl.cm.paper())
+            #p.setColor(ctrl.cm.hover())
+            p.setWidth(1)
+            painter.setPen(p)
+            painter.setBrush(self.drag_data.background)
+            painter.drawRoundedRect(self.inner_rect, 5, 5)
+            painter.setBrush(Qt.NoBrush)
 
-        if self._hovering:
+
+        elif self._hovering:
             p = QtGui.QPen(self.contextual_color)
             #p.setColor(ctrl.cm.hover())
             p.setWidth(1)
@@ -1271,6 +1290,7 @@ syntactic_object: %s
         ctrl.dragged_set = set()
         multidrag = False
         dragged_trees = set()
+        print('start dragging called')
 
         # if we are working with selection, this is more complicated, as there may be many nodes
         # and trees dragged at once, with one focus for dragging.
@@ -1325,6 +1345,7 @@ syntactic_object: %s
         self.anim.setStartValue(self.scale())
         self.anim.setEndValue(1.1)
         self.anim.start()
+        self.setZValue(500)
 
 
     def prepare_children_for_dragging(self, scene_pos):
@@ -1358,6 +1379,9 @@ syntactic_object: %s
         if d.tree_top:
             dx, dy = d.tree_top.drag_data.distance_from_pointer
             d.tree_top.dragged_to((nx + dx, ny + dy))
+            for edge in ctrl.forest.edges.values():
+                edge.make_path()
+                edge.update()
         else:
             dx, dy = d.distance_from_pointer
             p = self.parentItem()
@@ -1366,6 +1390,10 @@ syntactic_object: %s
                 super().dragged_to((nx + dx - px, ny + dy - py))
             else:
                 super().dragged_to((nx + dx, ny + dy))
+            for edge in itertools.chain(self.edges_up, self.edges_down):
+                edge.make_path()
+                edge.update()
+
 
     def accepts_drops(self, dragged):
         """
@@ -1421,6 +1449,7 @@ syntactic_object: %s
                     node.finish_dragging()
             ctrl.dragged_set = set()
             ctrl.dragged_focus = None
+        self.setZValue(self.drag_data.old_zvalue)
         self.drag_data = None
         b = QtCore.QByteArray()
         b.append("scale")
@@ -1429,7 +1458,6 @@ syntactic_object: %s
         self.anim.setStartValue(self.scale())
         self.anim.setEndValue(1.0)
         self.anim.start()
-
         self.effect.setEnabled(False)
 
     def cancel_dragging(self):

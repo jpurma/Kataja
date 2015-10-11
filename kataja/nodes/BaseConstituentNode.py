@@ -556,7 +556,11 @@ class BaseConstituentNode(Node):
             self.left_bracket.hovering = value
         if self.right_bracket:
             self.right_bracket.hovering = value
-        self._set_hovering(value)
+        if value and not self._hovering:
+            self._start_hover()
+        elif self._hovering and not value:
+            self._stop_hover()
+
 
     # ### Suggestions for completing missing aspects (active for selected nodes)
     def add_completion_suggestions(self):

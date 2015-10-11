@@ -331,11 +331,13 @@ class TouchArea(QtWidgets.QGraphicsItem):
 
         :param dragged:
         """
-        if not self._hovering and self.accepts_drops(dragged):
-            if ctrl.latest_hover and not ctrl.latest_hover is self:
-                ctrl.latest_hover.hovering = False
-            ctrl.latest_hover = self
-            self.hovering = True
+        if ctrl.drag_hovering_on is self:
+            return True
+        elif self.accepts_drops(dragged):
+            ctrl.set_drag_hovering(self)
+            return True
+        else:
+            return False
 
     def accepts_drops(self, dragged):
         """

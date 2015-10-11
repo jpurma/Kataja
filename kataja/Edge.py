@@ -1114,7 +1114,7 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
         """
         if value and not self._hovering:
             self._hovering = True
-            self.setZValue(100)
+            #self.setZValue(100)
             # if ctrl.cm.use_glow():
             #    self.effect.setColor(ctrl.cm.selection())
             #    self.effect.setEnabled(True)

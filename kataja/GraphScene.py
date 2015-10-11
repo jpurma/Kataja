@@ -22,8 +22,7 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
-
-
+import time
 from PyQt5.QtCore import Qt
 import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
@@ -75,6 +74,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         self._bottom_border = 50
         self.manual_zoom = False
         self._cached_visible_rect = None
+        self.prev_time = time.time()
 
         # self.ants = []
         # for n in range(0,1000):
@@ -138,6 +138,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         """ Stops the move and fade animation timer
         :return: None
         """
+
         self.killTimer(self._timer_id)
         self._timer_id = 0
 
@@ -429,9 +430,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             ctrl.dragged_focus.finish_dragging()
         ctrl.press(None)
         self._dragging = False
-        if ctrl.latest_hover:
-            ctrl.latest_hover.hovering = False
-            ctrl.latest_hover = None
+        ctrl.set_drag_hovering(None)
         ctrl.main.ui_manager.update_touch_areas()
         self.graph_view.toggle_suppress_drag(False)
 
@@ -445,15 +444,15 @@ class GraphScene(QtWidgets.QGraphicsScene):
             if self._dragging:
                 ctrl.pressed.drag(event)
                 self.item_moved()
-                items = [x for x in self.items(event.scenePos()) if
+                items = (x for x in self.items(event.scenePos()) if
                          hasattr(x, 'dragged_over_by') and x is not
-                         ctrl.pressed]
-                if items:
-                    for item in items:
-                        item.dragged_over_by(ctrl.pressed)
-                elif ctrl.latest_hover:
-                    ctrl.latest_hover.hovering = False
-                    ctrl.latest_hover = None
+                         ctrl.pressed)
+                hovering_over = False
+                for item in items:
+                    if item.dragged_over_by(ctrl.pressed):
+                        hovering_over = True
+                if not hovering_over:
+                    ctrl.set_drag_hovering(None)
                 self.main.ui_manager.update_positions()
             else:
                 if (event.buttonDownScenePos(
@@ -533,7 +532,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         :param event:
         """
         # redo this to be more generic
-        return ctrl.latest_hover
+        return ctrl.drag_hovering_on
 
     def dragEnterEvent(self, event):
         """
@@ -685,6 +684,10 @@ class GraphScene(QtWidgets.QGraphicsScene):
         their position
         :param event: timer event? sent by Qt
         """
+        # Uncomment to check what is the actual framerate:
+        #n_time = time.time()
+        #print((n_time - self.prev_time) * 1000, prefs._fps_in_msec)
+        #self.prev_time = n_time
         items_have_moved = False
         items_fading = False
         frame_has_moved = False
