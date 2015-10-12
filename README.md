@@ -25,7 +25,7 @@ The software is pre-alpha, under development. Daily updates may break features, 
 There are two ways for running Kataja in Mac OS X:
 
 1. As a Kataja.app -- recommended for everyday use, easier to install. 
-2. Running as a python script. Necessary for Kataja development and makes plugin development much easier. Requires installation of Qt5.4, PyQt5, sip. See instructions below.     
+2. Running as a python script. Necessary for Kataja development and makes plugin development much easier. Requires installation of Qt5.5, PyQt5, sip. See instructions below.
 
 Both options can coexist on same system, but in this case they share the user preferences. (fixme: should they?) 
 
@@ -55,17 +55,17 @@ If the version starts with 3.4, good, otherwise run the recommended python insta
 
 ### Install Qt ###
 
-Download Qt 5.4.1 for Mac offline installer (or the latest version available) from http://www.qt.io/download-open-source/#
+Download Qt 5.5 for Mac installer (or the latest version available) from http://www.qt.io/download-open-source/#
 
-Run installer. Installer suggests Qt installation path of form "yourhome/Qt5.4.1"  accept that, and remember it for further use.
+Run installer. Installer suggests Qt installation path of form "yourhome/Qt5.5" or "yourhome/Qt"  accept that, and remember it for further use.
 
 ### Install SIP ###
 
-Download SIP, sip-4.16.6.tar.gz or the latest available from http://www.riverbankcomputing.com/software/sip/download
-Unpack it to your build folder, let's assume that the resulting folder is ~/build/sip-4.16.6
+Download SIP, sip-4.16.9.tar.gz or the latest available from http://www.riverbankcomputing.com/software/sip/download
+Unpack it to your build folder, let's assume that the resulting folder is ~/build/sip-4.16.9
 Move to folder:
 
-    cd sip-4.16.6
+    cd sip-4.16.9
     python3 configure.py 
     make
 (this should take few seconds and result in ~40 lines of text)
@@ -76,11 +76,11 @@ Move to folder:
 
 ### Install PyQt5 ###
 Download PyQt5 source package from http://www.riverbankcomputing.com/software/pyqt/download5
-PyQt-gpl-5.4.1.tar.gz or later
-Unpack it to your build folder, let's assumet that the resulting folder is ~/build/PyQt-gpl-5.4.1
+PyQt-gpl-5.5.tar.gz or later
+Unpack it to your build folder, let's assumet that the resulting folder is ~/build/PyQt-gpl-5.5
 
-    cd PyQt-gpl-5.4.1
-    python3 configure.py --qmake /Users/yourhome/Qt5.4.1/5.4/clang_64/bin/qmake 
+    cd PyQt-gpl-5.5
+    python3 configure.py --qmake /Users/yourhome/Qt5.5/5.5/clang_64/bin/qmake
 
 (notice that --qmake path is the Qt installation path from earlier, and qmake inside it.)
 

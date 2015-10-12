@@ -35,9 +35,7 @@ from kataja.utils import to_tuple, sub_xyz, div_xyz, time_me
 from kataja.ui import TouchArea
 import kataja.globals as g
 
-
 # from BlenderExporter import export_visible_items
-from nodes import BaseConstituentNode
 
 
 class GraphScene(QtWidgets.QGraphicsScene):

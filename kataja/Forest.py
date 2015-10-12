@@ -1461,7 +1461,7 @@ class Forest(BaseModel):
         :param edge_type: optional, force edge to be of given type
         """
 
-        print('--- connecting node %s to %s ' % (child, parent))
+        #print('--- connecting node %s to %s ' % (child, parent))
         # Check for arguments:
         if parent == child:
             raise ForestError('Connecting to self')
@@ -1515,7 +1515,7 @@ class Forest(BaseModel):
             child.rebuild_brackets()
         parent.update_label()
         child.update_label()
-        print('--- finished connect')
+        #print('--- finished connect')
 
         return new_edge
 

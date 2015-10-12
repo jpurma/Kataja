@@ -1,5 +1,5 @@
 # coding=utf-8
-from Movable import Movable
+from kataja.Movable import Movable
 from kataja.nodes import Node
 from kataja.singletons import ctrl
 from PyQt5 import QtWidgets, QtCore
@@ -180,6 +180,7 @@ class Tree(Movable, QtWidgets.QGraphicsItem):
             return self._cached_bounding_rect
 
     def paint(self, painter, QStyleOptionGraphicsItem, QWidget_widget=None):
-        br = self.boundingRect()
-        painter.drawRect(br)
-        painter.drawText(br.topLeft() + QtCore.QPointF(2, 10), str(self))
+        pass
+        #br = self.boundingRect()
+        #painter.drawRect(br)
+        #painter.drawText(br.topLeft() + QtCore.QPointF(2, 10), str(self))

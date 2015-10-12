@@ -21,7 +21,7 @@ import shutil
 
 mainscript = 'Kataja.py'
 create_dmg = True
-qt_mac = '~/Qt5.4.2/'
+qt_mac = '~/Qt/5.5/clang_64/'
 
 DATA_FILES = ['resources']
 
@@ -69,10 +69,10 @@ if sys.platform == 'darwin':
                          data_files=DATA_FILES,
                          options={'py2app': OPTIONS})
     # Check that Qt is available before trying to do anything more:
-    if not os.access(os.path.expanduser(qt_mac + '5.4/clang_64/'), os.F_OK):
+    if not os.access(os.path.expanduser(qt_mac), os.F_OK):
         raise EnvironmentError(
             'Qt not found from given path ( "%s" => "%s" ).' % (
-                qt_mac, os.path.expanduser(qt_mac + '5.4/clang_64/') +
+                qt_mac, os.path.expanduser(qt_mac) +
                 ' Edit qt_mac variable in setup.py to match your Qt directory.'))
 
 elif sys.platform == 'win32':
@@ -105,7 +105,7 @@ setup(name="Kataja", **extra_options)
 
 if sys.platform == 'darwin':
     print('------- Making OS X-specific fixes to application bundle --------')
-    qt_base = os.path.expanduser(qt_mac + '5.4/clang_64/')
+    qt_base = os.path.expanduser(qt_mac)
     setup_dir = os.path.realpath(__file__)
     filename = __file__.split('/')[-1]
     setup_dir = setup_dir[:-len(filename)]
