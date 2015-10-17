@@ -1,8 +1,13 @@
-- Fix: Reset control points doesn't restore the value.
-- Default arrowheads
-* Dragging of edges that are not connected anywhere.
-- Connecting ends by dragging them over
-- Edge-specific embed menu
+- Add visualization specific settings to visualization panel
+- Better add-triangle buttons (make them touchareas)
+- Draw better triangles
+- Fix rare add branch -bug, that creates a node that is not recognized by visualization algorithm.
+- Fix situation where tree is replaced as new node is added on top.
+- Fix parsing of currently broken trees and those that create too many Tree -objects.
++ Replace fade in Movable with QAnimation
++ Make all Movables to use QGraphicsObject (to support QAnimation)
+- Use fade for mouseover rectangles
+
 
 
 

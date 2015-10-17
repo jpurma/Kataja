@@ -320,7 +320,7 @@ class UIManager:
         type is selected """
         # clear all ui pieces
         for item in list(self._items.values()):
-            if item.host:
+            if item.host and not getattr(item, '_fade_out_active', False):
                 self.remove_ui(item)
         # create ui pieces for selected elements
         for item in ctrl.selected:
@@ -384,7 +384,7 @@ class UIManager:
                     self.remove_ui(ui_item)
         else:
             for ui_item in list(self._items.values()):
-                if ui_item.host is item:
+                if ui_item.host is item and not getattr(ui_item, '_fade_out_active', False):
                     self.remove_ui(ui_item)
 
     # ### Actions and Menus
@@ -780,20 +780,26 @@ class UIManager:
                 return all((check_conditions(c, node) for c in cond))
             if not cond:
                 return True
-            elif cond == 'is_leaf':
-                return node.is_leaf_node(only_similar=True, only_visible=False)
-            elif cond == 'is_top':
-                return node.is_top_node(only_visible=False)
-            elif cond == 'edge_down':
-                return list(node.get_edges_down(similar=True, visible=True))
+            cmethod = getattr(node, cond)
+            if cmethod:
+                return cmethod()
             else:
                 raise NotImplementedError(cond)
+
+            # elif cond == 'is_leaf':
+            #     return node.is_leaf_node(only_similar=True, only_visible=False)
+            # elif cond == 'is_top':
+            #     return node.is_top_node(only_visible=False)
+            # elif cond == 'edge_down':
+            #     return list(node.get_edges_down(similar=True, visible=True))
+            # else:
+            #     raise NotImplementedError(cond)
 
         if not node.is_visible():
             return
         d = node.__class__.touch_areas_when_selected
         for key, values in d.items():
-            cond = values.get('condition')
+            cond = values.get('condition', None)
             ok = check_conditions(cond, node)
             if ok:
                 place = values.get('place', '')
@@ -895,13 +901,16 @@ class UIManager:
 
         :param node:
         """
-        assert (node.locked or node.use_adjustment)
+        #assert (node.locked or node.use_adjustment)
         ui_key = node.save_key + '_lock_icon'
+        if ui_key in self._items:
+            return
+
         item = FadingSymbol(qt_prefs.lock_pixmap, node, self, ui_key,
                             place='bottom_right')
         # print u"\U0001F512" , unichr(9875) # unichr(9875)
         self.add_ui(item)
-        item.fade_out('slow')
+        item.fade_out()
 
     # ### Stretchlines
     # ####################################################################
@@ -1035,7 +1044,7 @@ class UIManager:
         self._create_overlay_button(icon=qt_prefs.triangle_icon,
                                     host=node,
                                     role=g.ADD_TRIANGLE,
-                                    key=node.save_key + g.ADD_TRIANGLE,
+                                    key=node.save_key + '_add_triangle',
                                     text='Turn into a triangle',
                                     action='add_triangle', size=(24, 12))
 

@@ -2,23 +2,30 @@
 from PyQt5 import QtCore, QtWidgets
 
 from kataja.singletons import prefs
+qbytes_opacity = QtCore.QByteArray()
+qbytes_opacity.append("opacity")
 
 
-class FadingSymbol(QtWidgets.QGraphicsPixmapItem):
+class FadingSymbol(QtWidgets.QGraphicsObject):
     """
 
     """
 
     def __init__(self, symbol, host, ui_manager, ui_key, place='bottom_right'):
-        QtWidgets.QGraphicsPixmapItem.__init__(self)
+        QtWidgets.QGraphicsObject.__init__(self)
+        self.inner = QtWidgets.QGraphicsPixmapItem()
+        self.inner.setParentItem(self)
         self.ui_key = ui_key
-        self.setPixmap(symbol)
+        self.inner.setPixmap(symbol)
         self.host = host
         self.place = place
         self.ui_manager = ui_manager
         self.update_position()
-        self._fade_out_counter = 0
+        self._fade_out_active = False
+        self._fade_anim = None
         self.setZValue(72)
+        self.show()
+        self.setOpacity(1.0)
         # self.setBrush(colors.ui)
 
     def update_position(self):
@@ -28,46 +35,41 @@ class FadingSymbol(QtWidgets.QGraphicsPixmapItem):
 
         """
         if self.place == 'bottom_right':
-            w2 = self.pixmap().width() / 2
+            w2 = self.inner.pixmap().width() / 2
             br = QtCore.QPointF(self.host.sceneBoundingRect().bottomRight() - QtCore.QPoint(w2, 0))
             self.setPos(br)
 
-    def fade_out(self, speed='slow'):
+    def fade_out(self, s=600):
+        """ Start fade out. The object exists until fade end.
+        :return: None
         """
+        self._fade_out_active = True
+        if self._fade_anim:
+            self._fade_anim.stop()
+        self._fade_anim = QtCore.QPropertyAnimation(self, qbytes_opacity)
+        self._fade_anim.setDuration(s)
+        self._fade_anim.setStartValue(1.0)
+        self._fade_anim.setEndValue(0)
+        self._fade_anim.setEasingCurve(QtCore.QEasingCurve.OutQuad)
+        self._fade_anim.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
+        self._fade_anim.finished.connect(self.fade_out_finished)
 
-        :param speed:
-        """
-        if speed == 'slow':
-            self._fade_out_counter = 30
-        else:
-            self._fade_out_counter = 15
-        self._fade_step = 1.0 / self._fade_out_counter
-
-        self._timer = QtCore.QTimer()
-        self._timer.setInterval(1000 / prefs.FPS)
-        self._timer.timeout.connect(self.timer_ticks)
-        self._timer.start()
-
-    def timer_ticks(self):
-        """ Make sure that every timer lasts for only a certain amount of ticks and 
-            call tick method or final method if this is the last tick. """
-        if self._fade_out_counter:
-            self._fade_out_counter -= 1
-            op = self.opacity()
-            op -= self._fade_step
-            self.setOpacity(op)
-        else:
-            self.stop_timer()
-
-    def stop_timer(self):
-        """
-
-
-        """
-        self._timer.stop()
-        self._timer = None
+    def fade_out_finished(self):
         self.hide()
         self.ui_manager.remove_ui(self)
+        self._fade_out_active = False
+
+    def is_fading(self):
+        """ Fade out is ongoing
+        :return: bool
+        """
+        return self._fade_out_active
+
+    def boundingRect(self):
+        return self.inner.boundingRect()
+
+    def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget_widget=None):
+        return
 
 
 

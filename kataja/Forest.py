@@ -846,7 +846,7 @@ class Forest(BaseModel):
         AN.update_visibility()
         return AN
 
-    def create_edge(self, start=None, end=None, edge_type='', direction=''):
+    def create_edge(self, start=None, end=None, edge_type='', direction='', fade=False):
         # print 'creating edge ', start, end, edge_type
         """
 
@@ -860,6 +860,8 @@ class Forest(BaseModel):
         rel.after_init()
         self.store(rel)
         self.add_to_scene(rel)
+        if fade and self.in_display:
+            rel.fade_in()
         return rel
 
     def create_bracket(self, host=None, left=True):
@@ -1446,7 +1448,7 @@ class Forest(BaseModel):
     # by forest's higher level methods.
     #
 
-    def connect_node(self, parent=None, child=None, direction='', edge_type=None):
+    def connect_node(self, parent=None, child=None, direction='', edge_type=None, fade_in=False):
         """ This is for connecting nodes with a certain edge. Calling this
         once will create the necessary links for both partners.
         Sanity checks:
@@ -1483,7 +1485,7 @@ class Forest(BaseModel):
                         raise ForestError('Connection is circular')
 
         # Create edge and make connections
-        new_edge = self.create_edge(edge_type=edge_type, direction=direction)
+        new_edge = self.create_edge(edge_type=edge_type, direction=direction, fade=fade_in)
         new_edge.connect_end_points(parent, child)
         child.poke('edges_up')
         parent.poke('edges_down')
@@ -1706,7 +1708,7 @@ class Forest(BaseModel):
         else:
             main_align = g.RIGHT
             other_align = g.LEFT
-        self.connect_node(parent=parent, child=new_node, direction=main_align)
+        self.connect_node(parent=parent, child=new_node, direction=main_align, fade_in=True)
 
         # 2) create a pair if necessary
         if self.settings.only_binary_trees and not siblings:
@@ -1717,7 +1719,7 @@ class Forest(BaseModel):
                 ox -= 40
             other_node = self.create_node(relative=parent)
             other_node.current_position = ox, oy, oz
-            self.connect_node(parent=parent, child=other_node, direction=other_align)
+            self.connect_node(parent=parent, child=other_node, direction=other_align, fade_in=True)
         # 3) repair trees to include new nodes
         parent.update_trees()
         # 4) reassign projections
@@ -1755,7 +1757,7 @@ class Forest(BaseModel):
             left = top
             right = new
         p = merger_pos[0], merger_pos[1], top.z
-        merger_node = self.create_merger_node(left=left, right=right, pos=p)
+        merger_node = self.create_merger_node(left=left, right=right, pos=p, new=new)
         merger_node.copy_position(top)
         merger_node.current_position = p
         if self.traces_are_visible():
@@ -1812,7 +1814,7 @@ class Forest(BaseModel):
             left = child
             right = inserted
         p = insertion_pos[0], insertion_pos[1], child.z
-        merger_node = self.create_merger_node(left=left, right=right, pos=p, create_tree=False)
+        merger_node = self.create_merger_node(left=left, right=right, pos=p, create_tree=False, new=inserted)
         merger_node.copy_position(child)
         merger_node.current_position = p
         self.connect_node(parent, merger_node, direction=align)
@@ -1822,7 +1824,7 @@ class Forest(BaseModel):
         if self.traces_are_visible():
             self.chain_manager.rebuild_chains()
 
-    def create_merger_node(self, left=None, right=None, pos=None, create_tree=True):
+    def create_merger_node(self, left=None, right=None, pos=None, create_tree=True, new=None):
         """ Gives a merger node of two nodes. Doesn't try to fix their edges
         upwards
         :param left:
@@ -1835,8 +1837,8 @@ class Forest(BaseModel):
         merger_node = self.create_node(synobj=merger_const, relative=right)
         merger_node.current_position = pos
         self.add_merge_counter(merger_node)
-        self.connect_node(parent=merger_node, child=left, direction=g.LEFT)
-        self.connect_node(parent=merger_node, child=right, direction=g.RIGHT)
+        self.connect_node(parent=merger_node, child=left, direction=g.LEFT, fade_in=new is left)
+        self.connect_node(parent=merger_node, child=right, direction=g.RIGHT, fade_in=new is right)
         if create_tree:
             self.update_tree_for(merger_node)
         return merger_node

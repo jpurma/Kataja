@@ -55,9 +55,13 @@ class DragData:
         self.old_zvalue = node.zValue()
 
 
+qbytes_scale = QtCore.QByteArray()
+qbytes_scale.append("scale")
+
 # ctrl = Controller object, gives accessa to other modules
 
-class Node(Movable, QtWidgets.QGraphicsObject):
+
+class Node(Movable):
     """ Basic class for any visualization elements that can be connected to
     each other """
     width = 20
@@ -89,7 +93,6 @@ class Node(Movable, QtWidgets.QGraphicsObject):
         it should contain all methods to make it work. Inherit and modify
         this for
         Constituents, Features etc. """
-        QtWidgets.QGraphicsObject.__init__(self)
         Movable.__init__(self)
         self.syntactic_object = syntactic_object
 
@@ -331,6 +334,12 @@ class Node(Movable, QtWidgets.QGraphicsObject):
         self._inode_changed = True
         self.triangle_updated(value)
 
+    def has_triangle(self):
+        return self.triangle is self
+
+    def can_have_triangle(self):
+        return self.triangle is not self
+
     def triangle_updated(self, value):
         """ update label positioning here so that offset doesn't need to be
         stored in save files and it
@@ -438,21 +447,17 @@ syntactic_object: %s
         else:
             return super().move(md)
 
-    def adjust_opacity(self):
-        """ Add to Movable.adjust_opacity fading of edges that connect to
-        this node. If node fades
-        away, the edges fade away. There shouldn't be situations where this
-        isn't the case.
-        :return: bool, is the fade in/out still going on
-        """
-        active = super().adjust_opacity()
-        if active:
-            o = self.opacity()
-            for edge in self.edges_down:
-                edge.setOpacity(o)
-            for edge in self.edges_up:
-                edge.setOpacity(o)
-        return active
+    def fade_out(self, s=300):
+        for edge in itertools.chain(self.edges_down, self.edges_up):
+            edge.fade_out(s=s)
+        super().fade_out(s=s)
+
+    def fade_in(self, s=300):
+
+        for edge in itertools.chain(self.edges_down, self.edges_up):
+            edge.fade_in(s=s)
+        super().fade_in(s=s)
+
 
     # Tree membership ##########################################################
 
@@ -733,7 +738,7 @@ syntactic_object: %s
             return parents[0]
         return None
 
-    def is_top_node(self, only_similar=True, only_visible=True):
+    def is_top_node(self, only_similar=True, only_visible=False):
         """ Root node is the topmost node of a tree
         :param only_similar:
         :param only_visible:
@@ -1154,17 +1159,15 @@ syntactic_object: %s
         :param value: pressed or not
         :return:
         """
-        b = QtCore.QByteArray()
-        b.append("scale")
         if value:
-            self.anim = QtCore.QPropertyAnimation(self, b)
+            self.anim = QtCore.QPropertyAnimation(self, qbytes_scale)
             self.anim.setDuration(20)
             self.anim.setStartValue(self.scale())
             self.anim.setEndValue(0.95)
             self.anim.start()
             #self.setScale(0.95)
         else:
-            self.anim = QtCore.QPropertyAnimation(self, b)
+            self.anim = QtCore.QPropertyAnimation(self, qbytes_scale)
             self.anim.setDuration(20)
             self.anim.setStartValue(self.scale())
             self.anim.setEndValue(1.0)
@@ -1173,7 +1176,6 @@ syntactic_object: %s
 
     # ## Magnets
     # ######################################################################
-
 
     def magnet(self, n):
         """
@@ -1338,15 +1340,12 @@ syntactic_object: %s
         tree = self.tree_where_top()
         if tree:
             tree.start_dragging_tracking(host=host, scene_pos=scene_pos)
-        b = QtCore.QByteArray()
-        b.append("scale")
-        self.anim = QtCore.QPropertyAnimation(self, b)
+        self.anim = QtCore.QPropertyAnimation(self, qbytes_scale)
         self.anim.setDuration(100)
         self.anim.setStartValue(self.scale())
         self.anim.setEndValue(1.1)
         self.anim.start()
         self.setZValue(500)
-
 
     def prepare_children_for_dragging(self, scene_pos):
         """ Implement this if structure is supposed to drag with the node
@@ -1451,9 +1450,7 @@ syntactic_object: %s
             ctrl.dragged_focus = None
         self.setZValue(self.drag_data.old_zvalue)
         self.drag_data = None
-        b = QtCore.QByteArray()
-        b.append("scale")
-        self.anim = QtCore.QPropertyAnimation(self, b)
+        self.anim = QtCore.QPropertyAnimation(self, qbytes_scale)
         self.anim.setDuration(100)
         self.anim.setStartValue(self.scale())
         self.anim.setEndValue(1.0)
@@ -1483,8 +1480,8 @@ syntactic_object: %s
         """
         was_locked = self.locked or self.use_adjustment
         super().lock()
-        if not was_locked:
-            ctrl.main.ui_manager.show_anchor(self)  # @UndefinedVariable
+        #if not was_locked:
+        ctrl.main.ui_manager.show_anchor(self)  # @UndefinedVariable
 
     # ### Mouse - Qt events ##################################################
 

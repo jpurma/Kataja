@@ -29,7 +29,7 @@ class TreeDragData:
         self.dragged_distance = None
 
 
-class Tree(Movable, QtWidgets.QGraphicsItem):
+class Tree(Movable):
     """ Container for nodes that form a single tree. It allows operations that affect
     all nodes in one tree, e.g. translation of position.
     :param top:
@@ -38,7 +38,6 @@ class Tree(Movable, QtWidgets.QGraphicsItem):
     short_name = "Tree"
 
     def __init__(self, top: Node):
-        QtWidgets.QGraphicsItem.__init__(self)
         Movable.__init__(self)
         self.top = top
         if is_constituent(top):

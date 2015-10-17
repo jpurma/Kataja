@@ -30,7 +30,7 @@ from kataja.Movable import Movable
 from kataja.singletons import ctrl
 
 
-class Bracket(Movable, QtWidgets.QGraphicsSimpleTextItem):
+class Bracket(Movable):
     """ Brackets are added as separate characters next to nodes. They are
     created dynamically and shouldn't be saved or loaded. """
 
@@ -41,15 +41,16 @@ class Bracket(Movable, QtWidgets.QGraphicsSimpleTextItem):
         :param ConstituentNode host:
         :param boolean left:
         """
-        QtWidgets.QGraphicsSimpleTextItem.__init__(self)
-        Movable.__init__(self)
+        super().__init__()
+        self.inner = QtWidgets.QGraphicsSimpleTextItem(self)
+        self.inner.setParentItem(self)
         self.host = host
         self.setZValue(10)
         self.left = left
         if left:
-            self.setText('[')
+            self.inner.setText('[')
         else:
-            self.setText(']')
+            self.inner.setText(']')
         self.selectable = False
         self.draggable = False
         self.clickable = False
@@ -59,10 +60,11 @@ class Bracket(Movable, QtWidgets.QGraphicsSimpleTextItem):
         else:
             self.key = 'rb_%s' % host.save_key
 
-        self.setBrush(self.host.color)
+        self.inner.setBrush(self.host.color)
         self.update_position()
         self.setAcceptHoverEvents(True)
-        self.setVisible(True)
+        self.inner.setVisible(True)
+        self.fade_in()
 
     def update_position(self):
         """
@@ -137,6 +139,9 @@ class Bracket(Movable, QtWidgets.QGraphicsSimpleTextItem):
         """
         pass
 
+    def boundingRect(self):
+        return self.inner.boundingRect()
+
     def paint(self, painter, option, widget):
         """
         :param painter:Painter
@@ -149,4 +154,3 @@ class Bracket(Movable, QtWidgets.QGraphicsSimpleTextItem):
             painter.setPen(c)
             painter.drawRect(self.boundingRect())
             painter.setPen(Qt.NoPen)
-        QtWidgets.QGraphicsSimpleTextItem.paint(self, painter, option, widget)

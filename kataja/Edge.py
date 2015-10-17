@@ -49,9 +49,11 @@ atan_magnet_map = {-8: 5, -7: 5, -6: 0, -5: 1, -4: 2, -3: 3, -2: 4, -1: 6, 0: 6,
 # helper functions to make code readable
 
 
+qbytes_opacity = QtCore.QByteArray()
+qbytes_opacity.append("opacity")
 
 
-class Edge(QtWidgets.QGraphicsItem, BaseModel):
+class Edge(QtWidgets.QGraphicsObject, BaseModel):
     """ Any connection between nodes: can be represented as curves, branches
     or arrows """
 
@@ -137,6 +139,10 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.effect = None
         self.move_effect = None
+        self._fade_anim = None
+        self._fade_in_active = False
+        self._fade_out_active = False
+
 
     def after_init(self):
         """ After_init is called in 2nd step in process of creating objects:
@@ -1362,6 +1368,69 @@ class Edge(QtWidgets.QGraphicsItem, BaseModel):
         if prefs.move_effect:
             self._use_simple_path = False
             self.move_effect.setEnabled(False)
+
+    def is_fading_away(self):
+        """ Fade animation is ongoing or just finished
+        :return: bool
+        """
+        if self._fade_out_active:
+            return True
+        if hasattr(self, "isVisible"):
+            return not self.isVisible()
+        return False
+
+    def fade_in(self, s=300):
+        """ Simple fade effect. The object exists already when fade starts.
+        :return: None
+        """
+        print('maybe fading in edge... ', self)
+        if self._fade_in_active:
+            return
+        self._fade_in_active = True
+        self.show()
+        if self._fade_out_active:
+            self._fade_anim.stop()
+        print('fading in edge ', self)
+        self._fade_anim = QtCore.QPropertyAnimation(self, qbytes_opacity)
+        self._fade_anim.setDuration(s)
+        self._fade_anim.setStartValue(0.0)
+        self._fade_anim.setEndValue(1.0)
+        self._fade_anim.setEasingCurve(QtCore.QEasingCurve.InQuad)
+        self._fade_anim.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
+        self._fade_anim.finished.connect(self.fade_in_finished)
+
+    def fade_in_finished(self):
+        self._fade_in_active = False
+
+
+    def fade_out(self, s=300):
+        """ Start fade out. The object exists until fade end.
+        :return: None
+        """
+        if self._fade_out_active:
+            return
+        self._fade_out_active = True
+        if self._fade_in_active:
+            self._fade_anim.stop()
+        self._fade_anim = QtCore.QPropertyAnimation(self, qbytes_opacity)
+        self._fade_anim.setDuration(s)
+        self._fade_anim.setStartValue(1.0)
+        self._fade_anim.setEndValue(0)
+        self._fade_anim.setEasingCurve(QtCore.QEasingCurve.OutQuad)
+        self._fade_anim.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
+        self._fade_anim.finished.connect(self.fade_out_finished)
+
+    def fade_out_finished(self):
+        self.hide()
+        self._fade_out_active = False
+        self.update_visibility()
+
+    def is_fading(self):
+        """ Either fade in or fade out is ongoing
+        :return: bool
+        """
+        return self._fade_in_active or self._fade_out_active
+
 
     # ############## #
     #                #

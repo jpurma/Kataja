@@ -37,6 +37,9 @@ TOUCH_CONNECT_COMMENT = 7
 DELETE_ARROW = 8
 LEFT_ADD_CHILD = 9
 RIGHT_ADD_CHILD = 10
+ADD_TRIANGLE = 11
+REMOVE_TRIANGLE = 12
+
 
 # ## Our custom signals
 
@@ -104,8 +107,6 @@ HIGHLIGHT_PROJECTIONS = 2
 REMOVE_MERGER = 'remove_merger'
 START_CUT = 'start_cut'
 END_CUT = 'end_cut'
-ADD_TRIANGLE = 'add_triangle'
-REMOVE_TRIANGLE = 'remove_triangle'
 
 # Creation/Deletion flags
 CREATED = 1

@@ -24,11 +24,15 @@
 
 import random
 
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore, QtGui
 
 from kataja.singletons import prefs, qt_prefs, ctrl
 from kataja.BaseModel import BaseModel, Saved
 from kataja.utils import add_xyz, sub_xy, multiply_xyz, div_xyz, sub_xyz, time_me
+
+
+qbytes_opacity = QtCore.QByteArray()
+qbytes_opacity.append("opacity")
 
 
 def about_there(pos1, pos2):
@@ -40,7 +44,7 @@ def about_there(pos1, pos2):
     return round(pos1[0]) == round(pos2[0]) and round(pos1[1]) == round(
         pos2[1]) and round(pos1[2]) == round(pos2[2])
 
-class Movable(BaseModel):
+class Movable(BaseModel, QtWidgets.QGraphicsObject):
     """
 Movable items
 -------------
@@ -78,7 +82,8 @@ When nodes that don't use physics are dragged, the adjustment.
 
 """
     def __init__(self):
-        super().__init__()
+        BaseModel.__init__(self)
+        QtWidgets.QGraphicsObject.__init__(self)
         # Common movement-related fields
         self.current_position = ((random.random() * 150) - 75, (random.random() * 150) - 75, 0)
         self.z = 0
@@ -100,8 +105,9 @@ When nodes that don't use physics are dragged, the adjustment.
         self.physics_y = False
         self.physics_z = False
         # Other
-        self._fade_in_counter = 0
-        self._fade_out_counter = 0
+        self._fade_anim = None
+        self._fade_in_active = False
+        self._fade_out_active = False
         self.selectable = False
         self.draggable = False
         self.clickable = False
@@ -239,8 +245,7 @@ When nodes that don't use physics are dragged, the adjustment.
         self._move_counter = 0
 
     def _current_position_changed(self, value):
-        if isinstance(self, QtWidgets.QGraphicsItem):
-            QtWidgets.QGraphicsItem.setPos(self, value[0], value[1])
+        self.setPos(value[0], value[1])
 
     def update_position(self):
         """ Compute new current_position and target_position
@@ -274,56 +279,61 @@ When nodes that don't use physics are dragged, the adjustment.
         """ Fade animation is ongoing or just finished
         :return: bool
         """
-        if self._fade_out_counter:
+        if self._fade_out_active:
             return True
         if hasattr(self, "isVisible"):
             return not self.isVisible()
         return False
 
-    def fade_in(self):
+    def fade_in(self, s=300):
         """ Simple fade effect. The object exists already when fade starts.
         :return: None
         """
-        if hasattr(self, "setOpacity"):
-            self.setOpacity(0)
-        if hasattr(self, "show"):
-            self.show()
-        self._fade_in_counter = 10
-        self._fade_out_counter = 0
+        if self._fade_in_active:
+            return
+        self._fade_in_active = True
+        self.show()
+        if self._fade_out_active:
+            self._fade_anim.stop()
+        self._fade_anim = QtCore.QPropertyAnimation(self, qbytes_opacity)
+        self._fade_anim.setDuration(s)
+        self._fade_anim.setStartValue(0.0)
+        self._fade_anim.setEndValue(1.0)
+        self._fade_anim.setEasingCurve(QtCore.QEasingCurve.InQuad)
+        self._fade_anim.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
+        self._fade_anim.finished.connect(self.fade_in_finished)
 
-    def fade_out(self):
+    def fade_in_finished(self):
+        self._fade_in_active = False
+
+
+    def fade_out(self, s=300):
         """ Start fade out. The object exists until fade end.
         :return: None
         """
-        self._fade_out_counter = 10
-        self._fade_in_counter = 0
+        if self._fade_out_active:
+            return
+        self._fade_out_active = True
+        if self._fade_in_active:
+            self._fade_anim.stop()
+        self._fade_anim = QtCore.QPropertyAnimation(self, qbytes_opacity)
+        self._fade_anim.setDuration(s)
+        self._fade_anim.setStartValue(1.0)
+        self._fade_anim.setEndValue(0)
+        self._fade_anim.setEasingCurve(QtCore.QEasingCurve.OutQuad)
+        self._fade_anim.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
+        self._fade_anim.finished.connect(self.fade_out_finished)
+
+    def fade_out_finished(self):
+        self.hide()
+        self._fade_out_active = False
+        self.update_visibility()
 
     def is_fading(self):
         """ Either fade in or fade out is ongoing
         :return: bool
         """
-        return self._fade_in_counter or self._fade_out_counter
-
-    def adjust_opacity(self):
-        """ Takes one step in fading trajectory or finishes fading
-        :return: bool, is the fade in/out still going on
-        """
-        active = False
-        if self._fade_in_counter:
-            self._fade_in_counter -= 1
-            if hasattr(self, "setOpacity"):
-                self.setOpacity((10 - self._fade_in_counter) / 10.0)
-            active = True
-        if self._fade_out_counter:
-            self._fade_out_counter -= 1
-            if self._fade_out_counter:
-                if hasattr(self, "setOpacity"):
-                    self.setOpacity(self._fade_out_counter / 10.0)
-                active = True
-            else:
-                self.hide()
-                self.update_visibility()
-        return active
+        return self._fade_in_active or self._fade_out_active
 
     def is_visible(self):
         """ Our own tracking of object visibility, not based on Qt's scene

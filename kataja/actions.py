@@ -362,8 +362,6 @@ a['prev_derivation_step'] = {'command': 'Animation step backward',
 
 # ## Menu actions ##########################################################
 
-
-
 def toggle_brackets():
     """ Brackets are visible always for non-leaves, never or for important parts
     :return: None

@@ -139,7 +139,7 @@ class TouchArea(QtWidgets.QGraphicsItem):
         self._visible = True
         self._hovering = False
         self._drag_hint = False
-        self.key = TouchArea.create_key(host, type)
+        self.key = TouchArea.create_key(host, self.type)
         self.setAcceptHoverEvents(True)
         self.setAcceptDrops(True)
         self.update_end_points()

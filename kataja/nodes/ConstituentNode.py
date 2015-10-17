@@ -89,20 +89,23 @@ class ConstituentNode(BaseConstituentNode):
     # edges going up. When left empty, touch area is associated with the node.
 
     touch_areas_when_dragging = {
-        g.LEFT_ADD_TOP: {'condition': ['is_top', 'dragging_constituent']},
-        g.RIGHT_ADD_TOP: {'condition': ['is_top', 'dragging_constituent']},
+        g.LEFT_ADD_TOP: {'condition': ['is_top_node', 'dragging_constituent']},
+        g.RIGHT_ADD_TOP: {'condition': ['is_top_node', 'dragging_constituent']},
         g.LEFT_ADD_SIBLING: {'place': 'edge_up', 'condition': 'dragging_constituent'},
         g.RIGHT_ADD_SIBLING: {'place': 'edge_up', 'condition': 'dragging_constituent'},
         g.TOUCH_CONNECT_COMMENT: {'condition': 'dragging_comment'},
         g.TOUCH_CONNECT_FEATURE: {'condition': 'dragging_feature'},
         g.TOUCH_CONNECT_GLOSS: {'condition': 'dragging_gloss'}}
 
-    touch_areas_when_selected = {g.LEFT_ADD_TOP: {'condition': 'is_top'},
-                                 g.RIGHT_ADD_TOP: {'condition': 'is_top'},
+    touch_areas_when_selected = {g.LEFT_ADD_TOP: {'condition': 'is_top_node'},
+                                 g.RIGHT_ADD_TOP: {'condition': 'is_top_node'},
                                  g.LEFT_ADD_SIBLING: {'place': 'edge_up'},
                                  g.RIGHT_ADD_SIBLING: {'place': 'edge_up'},
-                                 g.LEFT_ADD_CHILD: {'condition': 'is_leaf'},
-                                 g.RIGHT_ADD_CHILD: {'condition': 'is_leaf'}}
+                                 g.LEFT_ADD_CHILD: {'condition': 'is_leaf_node'},
+                                 g.RIGHT_ADD_CHILD: {'condition': 'is_leaf_node'}}\
+        #,
+        #                         g.ADD_TRIANGLE: {'condition': 'can_have_triangle'},
+        #                         g.REMOVE_TRIANGLE: {'condition': 'has_triangle'}}
 
     def __init__(self, constituent=None):
         """ Most of the initiation is inherited from Node """
