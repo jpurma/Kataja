@@ -56,13 +56,15 @@ class CommentNode(Node):
     touch_areas_when_dragging = {g.DELETE_ARROW: {'condition':
                                                   'dragging_my_arrow'}}
 
-    touch_areas_when_selected = {g.DELETE_ARROW: {'condition': 'edge_down'}}
+    touch_areas_when_selected = {g.DELETE_ARROW: {'condition': 'get_edges_down'}}
 
 
     def __init__(self, text='comment'):
         Node.__init__(self)
         self.label = text
-        self.use_physics = False
+        self.physics_x = False
+        self.physics_y = False
+        self.physics_z = False
 
     @property
     def hosts(self):
