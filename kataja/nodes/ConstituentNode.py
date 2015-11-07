@@ -24,7 +24,7 @@
 from kataja.nodes.Node import Node
 from kataja.nodes.BaseConstituentNode import BaseConstituentNode
 from kataja.BaseModel import Saved
-from kataja.singletons import ctrl
+from kataja.singletons import ctrl, qt_prefs
 from kataja.parser.INodes import ITextNode
 import kataja.globals as g
 
@@ -102,10 +102,20 @@ class ConstituentNode(BaseConstituentNode):
                                  g.LEFT_ADD_SIBLING: {'place': 'edge_up'},
                                  g.RIGHT_ADD_SIBLING: {'place': 'edge_up'},
                                  g.LEFT_ADD_CHILD: {'condition': 'is_leaf_node'},
-                                 g.RIGHT_ADD_CHILD: {'condition': 'is_leaf_node'}}\
-        #,
-        #                         g.ADD_TRIANGLE: {'condition': 'can_have_triangle'},
-        #                         g.REMOVE_TRIANGLE: {'condition': 'has_triangle'}}
+                                 g.RIGHT_ADD_CHILD: {'condition': 'is_leaf_node'},
+                                 g.ADD_TRIANGLE: {'condition': 'can_have_triangle',
+                                                  'action': 'add_triangle'},
+                                 g.REMOVE_TRIANGLE: {'condition': 'has_triangle',
+                                                     'action': 'remove_triangle'}}
+
+    buttons_when_selected = {g.REMOVE_MERGER: {'condition': 'is_unnecessary_merger'}}
+    button_definitions = {g.REMOVE_MERGER:
+                          {'icon': 'delete_icon',
+                           'host': 'node',
+                           'role': g.REMOVE_TRIANGLE,
+                           'key': g.REMOVE_MERGER,
+                           'text': 'Remove this non-merging node',
+                           'action': 'remove_merger'}}
 
     def __init__(self, constituent=None):
         """ Most of the initiation is inherited from Node """
@@ -332,6 +342,23 @@ class ConstituentNode(BaseConstituentNode):
                 return self.alias
         else:
             return super().as_bracket_string()
+
+    def is_unnecessary_merger(self):
+        """ This merge can be removed, if one or both children are placeholders
+        :return:
+        """
+        children = list(self.get_all_children())
+        lc = len(children)
+        if lc == 0:
+            return False
+        elif lc == 1:
+            return True
+        good_children = 0
+        for child in children:
+            if not child.is_placeholder():
+                good_children += 1
+        return good_children < 2
+
 
     def can_be_projection(self):
         """ Node can be projection from other nodes if it has other nodes

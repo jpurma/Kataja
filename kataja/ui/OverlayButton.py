@@ -25,7 +25,7 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from kataja.errors import UIError
-from kataja.singletons import ctrl
+from kataja.singletons import ctrl, qt_prefs
 import kataja.globals as g
 
 borderstyle = """
@@ -65,6 +65,8 @@ class PanelButton(QtWidgets.QPushButton):
             height = size
         size = QtCore.QSize(width, height)
         self.setIconSize(size)
+        if isinstance(pixmap, str):
+            pixmap = getattr(qt_prefs, pixmap)
         if isinstance(pixmap, QtGui.QIcon):
             self.pixmap = pixmap.pixmap(size)
         else:
@@ -133,7 +135,7 @@ class OverlayButton(PanelButton):
     """
 
     def __init__(self, pixmap, host, role, ui_key, text=None, parent=None,
-                 size=16, color_key='accent8', draw_method=None):
+                 size=16, color_key='accent8', draw_method=None, **kwargs):
         super().__init__(pixmap, text=text, parent=parent, size=size,
                          color_key=color_key, draw_method=draw_method)
         self.host = host

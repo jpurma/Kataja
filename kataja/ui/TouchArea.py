@@ -79,6 +79,13 @@ def draw_x(painter, x, y):
                      x + end_spot_size, y - end_spot_size)
 
 
+def draw_triangle(painter, x, y, w=10):
+    w2 = w / 2
+    painter.drawLine(x - w, y + w2, x, y)
+    painter.drawLine(x, y, x + w, y + w2)
+    painter.drawLine(x + w, y + w2, x - w, y + w2)
+
+
 class TouchArea(QtWidgets.QGraphicsObject):
     """ Mouse sensitive areas connected to either nodes or edges between
     them. """
@@ -93,7 +100,7 @@ class TouchArea(QtWidgets.QGraphicsObject):
         """
         return 'touch_area_%s_%s' % (ttype, host.save_key)
 
-    def __init__(self, host, ttype, ui_key):
+    def __init__(self, host, ttype, ui_key, action=None):
         """
 
         :param ConstituentNode host:
@@ -126,6 +133,7 @@ class TouchArea(QtWidgets.QGraphicsObject):
         self.setAcceptHoverEvents(True)
         self.setAcceptDrops(True)
         self.update_end_points()
+        self.action = action
         self.setCursor(QtCore.Qt.PointingHandCursor)
 
     def is_visible(self):
@@ -256,7 +264,8 @@ class TouchArea(QtWidgets.QGraphicsObject):
         if self._drag_hint:
             return False
         ctrl.deselect_objects()
-        ctrl.main.action_finished(m='add constituent')
+        if self.action:
+            self.action.action_triggered(sender=self)
         return True
 
     # self, N, R, merge_to_left, new_node_pos, merger_node_pos):
@@ -362,8 +371,8 @@ class TouchArea(QtWidgets.QGraphicsObject):
 
 
 class AddConstituentTouchArea(TouchArea):
-    def __init__(self, host, ttype, ui_key):
-        super().__init__(host, ttype, ui_key)
+    def __init__(self, host, ttype, ui_key, action=None):
+        super().__init__(host, ttype, ui_key, action=action)
         self.set_tip("Add a constituent here")
 
     def click(self, event=None):
@@ -420,8 +429,8 @@ class AddBelowTouchArea(TouchArea):
 
 
 class ConnectFeatureTouchArea(AddBelowTouchArea):
-    def __init__(self, host, ttype, ui_key):
-        super().__init__(host, ttype, ui_key)
+    def __init__(self, host, ttype, ui_key, action=None):
+        super().__init__(host, ttype, ui_key, action=action)
         self.set_tip("Add feature for node")
 
     def drop(self, dropped_node):
@@ -437,8 +446,8 @@ class ConnectFeatureTouchArea(AddBelowTouchArea):
 
 
 class ConnectCommentTouchArea(AddBelowTouchArea):
-    def __init__(self, host, ttype, ui_key):
-        super().__init__(host, ttype, ui_key)
+    def __init__(self, host, ttype, ui_key, action=None):
+        super().__init__(host, ttype, ui_key, action=action)
         self.set_tip("Add comment for node")
 
     def drop(self, dropped_node):
@@ -454,8 +463,8 @@ class ConnectCommentTouchArea(AddBelowTouchArea):
 
 
 class ConnectGlossTouchArea(AddBelowTouchArea):
-    def __init__(self, host, ttype, ui_key):
-        super().__init__(host, ttype, ui_key)
+    def __init__(self, host, ttype, ui_key, action=None):
+        super().__init__(host, ttype, ui_key, action=action)
         self.set_tip("Add gloss for node")
 
     def drop(self, dropped_node):
@@ -471,8 +480,8 @@ class ConnectGlossTouchArea(AddBelowTouchArea):
 
 
 class DeleteArrowTouchArea(TouchArea):
-    def __init__(self, host, ttype, ui_key):
-        super().__init__(host, ttype, ui_key)
+    def __init__(self, host, ttype, ui_key, action=None):
+        super().__init__(host, ttype, ui_key, action=action)
         self.set_tip("Remove this arrow")
 
     def paint(self, painter, option, widget):
@@ -496,8 +505,8 @@ class BranchingTouchArea(TouchArea):
     :param ui_key:
     """
 
-    def __init__(self, host, ttype, ui_key):
-        super().__init__(host, ttype, ui_key)
+    def __init__(self, host, ttype, ui_key, action=None):
+        super().__init__(host, ttype, ui_key, action=action)
 
     def boundingRect(self):
         """
@@ -576,8 +585,8 @@ class LeftAddSibling(BranchingTouchArea):
     :param ui_key:
     """
 
-    def __init__(self, host, ttype, ui_key):
-        super().__init__(host, ttype, ui_key)
+    def __init__(self, host, ttype, ui_key, action=None):
+        super().__init__(host, ttype, ui_key, action=action)
         self.set_tip("Add new sibling to left of %s" % self.host.end)
         self._align_left = True
         self.update_end_points()
@@ -652,8 +661,8 @@ class RightAddSibling(BranchingTouchArea):
     :param ui_key:
     """
 
-    def __init__(self, host, ttype, ui_key):
-        super().__init__(host, ttype, ui_key)
+    def __init__(self, host, ttype, ui_key, action=None):
+        super().__init__(host, ttype, ui_key, action=action)
         self.set_tip( "Add new sibling to right of %s" % self.host.end)
         self._align_left = False
         self.update_end_points()
@@ -726,8 +735,8 @@ class JointedTouchArea(TouchArea):
     :param type:
     :param ui_key:
     """
-    def __init__(self, host, ttype, ui_key):
-        super().__init__(host, ttype, ui_key)
+    def __init__(self, host, ttype, ui_key, action=None):
+        super().__init__(host, ttype, ui_key, action=action)
 
 
     def boundingRect(self):
@@ -846,8 +855,8 @@ class JointedTouchArea(TouchArea):
 
 
 class LeftAddTop(JointedTouchArea):
-    def __init__(self, host, ttype, ui_key):
-        super().__init__(host, ttype, ui_key)
+    def __init__(self, host, ttype, ui_key, action=None):
+        super().__init__(host, ttype, ui_key, action=action)
         self.set_tip("Add new constituent to left of %s" % self.host)
         self._align_left = True
         self.update_end_points()
@@ -878,8 +887,8 @@ class LeftAddTop(JointedTouchArea):
 
 
 class RightAddTop(JointedTouchArea):
-    def __init__(self, host, ttype, ui_key):
-        super().__init__(host, ttype, ui_key)
+    def __init__(self, host, ttype, ui_key, action=None):
+        super().__init__(host, ttype, ui_key, action=action)
         self.set_tip("Add new constituent to right of %s" % self.host)
         self._align_left = False
         self.update_end_points()
@@ -917,8 +926,8 @@ class ChildTouchArea(TouchArea):
     :param ui_key:
     """
 
-    def __init__(self, host, ttype, ui_key):
-        super().__init__(host, ttype, ui_key)
+    def __init__(self, host, ttype, ui_key, action=None):
+        super().__init__(host, ttype, ui_key, action=action)
         self.update_end_points()
 
     def boundingRect(self):
@@ -998,8 +1007,8 @@ class LeftAddChild(BranchingTouchArea):
     :param ui_key:
     """
 
-    def __init__(self, host, ttype, ui_key):
-        super().__init__(host, ttype, ui_key)
+    def __init__(self, host, ttype, ui_key, action=None):
+        super().__init__(host, ttype, ui_key, action=action)
         self.set_tip("Add new child for %s" % self.host)
         self._align_left = True
 
@@ -1062,8 +1071,8 @@ class RightAddChild(ChildTouchArea):
     :param ui_key:
     """
 
-    def __init__(self, host, ttype, ui_key):
-        super().__init__(host, ttype, ui_key)
+    def __init__(self, host, ttype, ui_key, action=None):
+        super().__init__(host, ttype, ui_key, action=action)
         self.set_tip("Add new child for %s" % self.host)
         self._align_left = False
 
@@ -1118,6 +1127,43 @@ class RightAddChild(ChildTouchArea):
             draw_plus(painter, 14, 0)
 
 
+class AddTriangleTouchArea(AddBelowTouchArea):
+    def paint(self, painter, option, widget):
+        """
+
+        :param painter:
+        :param option:
+        :param widget:
+        :raise:
+        """
+        if ctrl.pressed is self:
+            pass
+        c = self.contextual_color()
+        painter.setPen(c)
+        draw_triangle(painter, 0, 0)
+        if self._hovering:
+            painter.setPen(c)
+            draw_triangle(painter, 0, -5, 6)
+
+
+class RemoveTriangleTouchArea(AddBelowTouchArea):
+    def paint(self, painter, option, widget):
+        """
+
+        :param painter:
+        :param option:
+        :param widget:
+        :raise:
+        """
+        if ctrl.pressed is self:
+            pass
+        c = self.contextual_color()
+        painter.setPen(c)
+        draw_triangle(painter, 0, 0)
+        if self._hovering:
+            painter.setPen(c)
+            draw_x(painter, 0, 0)
+
 touch_areas = {
     g.LEFT_ADD_TOP: LeftAddTop,
     g.RIGHT_ADD_TOP: RightAddTop,
@@ -1128,11 +1174,13 @@ touch_areas = {
     g.TOUCH_ADD_CONSTITUENT: AddConstituentTouchArea,
     g.TOUCH_CONNECT_COMMENT: ConnectCommentTouchArea,
     g.TOUCH_CONNECT_FEATURE: ConnectFeatureTouchArea,
-    g.TOUCH_CONNECT_GLOSS: ConnectGlossTouchArea
+    g.TOUCH_CONNECT_GLOSS: ConnectGlossTouchArea,
+    g.ADD_TRIANGLE: AddTriangleTouchArea,
+    g.REMOVE_TRIANGLE: RemoveTriangleTouchArea
 }
 
 
-def create_touch_area(host, ttype, ui_key):
+def create_touch_area(host, ttype, ui_key, action):
     """ Factory that saves from knowing which class to use.
     :param host:
     :param type:
@@ -1140,7 +1188,7 @@ def create_touch_area(host, ttype, ui_key):
     :return:
     """
     if ttype in touch_areas:
-        return touch_areas[ttype](host, ttype, ui_key)
+        return touch_areas[ttype](host, ttype, ui_key, action)
     else:
         print('odd touch area type: ', ttype)
-        return TouchArea(host, ttype, ui_key)
+        return TouchArea(host, ttype, ui_key, action)

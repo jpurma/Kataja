@@ -298,7 +298,6 @@ class UIManager:
         """
         print('*** ui update_all_fields called ***')
 
-
     def resize_ui(self, size):
         # self.setSceneRect(0, 0, size.width(), size.height())
         """
@@ -330,10 +329,7 @@ class UIManager:
                 self.add_buttons_for_edge(item)
             elif isinstance(item, Node):
                 self.update_touch_areas_for_selected_node(item)
-                if item.node_type == g.CONSTITUENT_NODE:
-                    self.add_buttons_for_constituent_node(item)
-                #elif item.node_type == g.COMMENT_NODE:
-                #    self.add_buttons_for_comment_node(item)
+                self.update_buttons_for_selected_node(item)
         if ctrl.selected:
             if self.scope != g.SELECTION:
                 self.base_scope = self.scope
@@ -436,6 +432,15 @@ class UIManager:
             main.addAction(action)
         return additional_actions
 
+    def get_action(self, key):
+        """ Returns action method for key, None if no such action
+        :param key:
+        :return: KatajaAction
+        """
+        if key:
+            return self.qt_actions.get(key, None)
+        return None
+
     def create_menus(self, additional_actions):
         """ Put actions to menus. Menu structure is defined at the top of
         this file.
@@ -515,7 +520,8 @@ class UIManager:
             else:
                 self.create_panel(panel_key, **data)
                 checked = True
-            self.qt_actions['toggle_panel_%s' % panel_key].setChecked(checked)
+            toggle_action = self.get_action('toggle_panel_%s' % panel_key)
+            toggle_action.setChecked(checked)
 
     def create_panel(self, id, name='', position=None, folded=False,
                      default=False, **kwargs):
@@ -597,7 +603,7 @@ class UIManager:
         :param tooltip_suffix:
         """
         if isinstance(action, str):
-            action = self.qt_actions[action]
+            action = self.get_action(action)
         action.connect_element(element, tooltip_suffix)
 
     def manage_shortcut(self, key_seq, element, action):
@@ -736,6 +742,7 @@ class UIManager:
     # ### Touch areas
     # #####################################################################
 
+
     def get_touch_area(self, host, type):
         """ Get touch area for specific purpose or create one if it doesn't
         exist.
@@ -744,10 +751,19 @@ class UIManager:
         :return:
         """
         ui_key = host.save_key + '_ta_' + str(type)
-        ta = self.get_ui(ui_key)
-        if not ta:
-            ta = create_touch_area(host, type, ui_key)
-            self.add_ui(ta)
+        return self.get_ui(ui_key)
+
+    def create_touch_area(self, host, type, action):
+        """ Get touch area for specific purpose or create one if it doesn't
+        exist.
+        :param host:
+        :param type:
+        :param action:
+        :return:
+        """
+        ui_key = host.save_key + '_ta_' + str(type)
+        ta = create_touch_area(host, type, ui_key, action)
+        self.add_ui(ta)
         return ta
 
     def remove_touch_areas(self):
@@ -786,29 +802,25 @@ class UIManager:
             else:
                 raise NotImplementedError(cond)
 
-            # elif cond == 'is_leaf':
-            #     return node.is_leaf_node(only_similar=True, only_visible=False)
-            # elif cond == 'is_top':
-            #     return node.is_top_node(only_visible=False)
-            # elif cond == 'edge_down':
-            #     return list(node.get_edges_down(similar=True, visible=True))
-            # else:
-            #     raise NotImplementedError(cond)
-
         if not node.is_visible():
             return
         d = node.__class__.touch_areas_when_selected
         for key, values in d.items():
-            cond = values.get('condition', None)
+            cond = values.get('condition')
             ok = check_conditions(cond, node)
             if ok:
+                action = self.get_action(values.get('action'))
                 place = values.get('place', '')
                 if place == 'edge_up':
                     for edge in node.get_edges_up(similar=True,
                                                   visible=True):
-                        self.get_touch_area(edge, key)
+                        ta = self.get_touch_area(edge, key)
+                        if not ta:
+                            self.create_touch_area(edge, key, action)
                 elif not place:
-                    self.get_touch_area(node, key)
+                    ta = self.get_touch_area(node, key)
+                    if not ta:
+                        self.create_touch_area(node, key, action)
                 else:
                     raise NotImplementedError
 
@@ -821,13 +833,24 @@ class UIManager:
         if edge.edge_type == g.CONSTITUENT_EDGE:
             if edge.has_orphan_ends():
                 if edge.end and (edge.end.is_placeholder()):
-                    self.get_touch_area(edge.end, g.TOUCH_ADD_CONSTITUENT)
+                    ta = self.get_touch_area(edge.end, g.TOUCH_ADD_CONSTITUENT)
+                    if not ta:
+                        self.create_touch_area(edge.end, g.TOUCH_ADD_CONSTITUENT,
+                                               self.get_action('replace_placeholder'))
                 if edge.start and (edge.start.is_placeholder()):
-                    self.get_touch_area(edge.start, g.TOUCH_ADD_CONSTITUENT)
+                    ta = self.get_touch_area(edge.start, g.TOUCH_ADD_CONSTITUENT)
+                    if not ta:
+                        self.create_touch_area(edge.start, g.TOUCH_ADD_CONSTITUENT,
+                                               self.get_action('replace_placeholder'))
             else:
-                self.get_touch_area(edge, g.LEFT_ADD_SIBLING)
-                self.get_touch_area(edge, g.RIGHT_ADD_SIBLING)
-
+                ta = self.get_touch_area(edge, g.LEFT_ADD_SIBLING)
+                if not ta:
+                    self.create_touch_area(edge, g.LEFT_ADD_SIBLING,
+                                           self.get_action('replace_placeholder'))
+                ta = self.get_touch_area(edge, g.RIGHT_ADD_SIBLING)
+                if not ta:
+                    self.create_touch_area(edge, g.RIGHT_ADD_SIBLING,
+                                           self.get_action('replace_placeholder'))
 
     def prepare_touch_areas_for_dragging(self, drag_host=None, moving=None,
                                          dragged_type='', multidrag=False):
@@ -882,13 +905,18 @@ class UIManager:
                 cond = values.get('condition')
                 ok = check_conditions(cond, node, drag_host, dragged_type)
                 if ok:
+                    action = self.get_action(values.get('action'))
                     place = values.get('place', '')
                     if place == 'edge_up':
                         for edge in node.get_edges_up(similar=True,
                                                       visible=True):
-                            self.get_touch_area(edge, key)
+                            ta = self.get_touch_area(edge, key)
+                            if not ta:
+                                self.create_touch_area(edge, key, action)
                     elif not place:
-                        self.get_touch_area(node, key)
+                        ta = self.get_touch_area(node, key)
+                        if not ta:
+                            self.create_touch_area(node, key, action)
                     else:
                         raise NotImplementedError
 
@@ -1013,41 +1041,87 @@ class UIManager:
         else:
             return self._items[key]
 
-    def add_remove_merger_button(self, node):
+    def update_buttons_for_selected_node(self, node):
+        """ Assumes that buttons for this node are empty and that the
+        node is selected
+        :param node: object to update
         """
 
-        :param node:
-        :param edge:
-        """
-        self._create_overlay_button(icon=qt_prefs.delete_icon, host=node,
-                                    role=g.REMOVE_TRIANGLE,
-                                    key=node.save_key + g.REMOVE_MERGER,
-                                    text='Remove this non-merging node',
-                                    action='remove_merger')
+        def check_conditions(cond, node):
+            if isinstance(cond, list):
+                return all((check_conditions(c, node) for c in cond))
+            if not cond:
+                return True
+            cmethod = getattr(node, cond)
+            if cmethod:
+                return cmethod()
+            else:
+                raise NotImplementedError(cond)
 
-    def add_unfold_triangle_button(self, node):
-        """
+        if not node.is_visible():
+            return
+        d = node.__class__.buttons_when_selected
+        for key, values in d.items():
+            cond = values.get('condition', None)
+            ok = check_conditions(cond, node)
+            if ok:
+                self.get_or_create_button(node, key)
 
-        :param node:
-        """
-        self._create_overlay_button(icon=qt_prefs.triangle_close_icon,
-                                    host=node, role=g.REMOVE_TRIANGLE,
-                                    key=node.save_key + g.REMOVE_TRIANGLE,
-                                    text='Reveal nodes inside the triangle',
-                                    action='remove_triangle', size=(24, 12))
+    def get_or_create_button(self, node, role_key):
+        if node:
+            save_key = node.save_key + role_key
+        else:
+            save_key = role_key
+        if save_key in self._items:
+            return self._items[save_key]
+        d = node.__class__.button_definitions
+        data = d[role_key]
+        button = OverlayButton(data.get('icon', None), node, role_key, save_key,
+                               data.get('text', role_key),
+                               parent=self.main.graph_view,
+                               size=data.get('size', 16),
+                               draw_method=data.get('draw_method', None))
+        self.add_ui(button)
+        button.update_position()
+        self.connect_element_to_action(button, data['action'])
+        button.show()
+        return button
 
-    def add_fold_triangle_button(self, node):
-        """
-
-        :param node:
-        """
-        self._create_overlay_button(icon=qt_prefs.triangle_icon,
-                                    host=node,
-                                    role=g.ADD_TRIANGLE,
-                                    key=node.save_key + '_add_triangle',
-                                    text='Turn into a triangle',
-                                    action='add_triangle', size=(24, 12))
-
+    # def add_remove_merger_button(self, node):
+    #     """
+    #
+    #     :param node:
+    #     :param edge:
+    #     """
+    #     self._create_overlay_button(icon=qt_prefs.delete_icon, host=node,
+    #                                 role=g.REMOVE_TRIANGLE,
+    #                                 key=node.save_key + g.REMOVE_MERGER,
+    #                                 text='Remove this non-merging node',
+    #                                 action='remove_merger')
+    #
+    # def add_unfold_triangle_button(self, node):
+    #     """
+    #
+    #     :param node:
+    #     """
+    #     self._create_overlay_button(icon=qt_prefs.triangle_close_icon,
+    #                                 host=node, role=g.REMOVE_TRIANGLE,
+    #                                 key=node.save_key + g.REMOVE_TRIANGLE,
+    #                                 text='Reveal nodes inside the triangle',
+    #                                 action='remove_triangle', size=(24, 12))
+    #
+    # def add_fold_triangle_button(self, node):
+    #     """
+    #
+    #     :param node:
+    #     """
+    #     self._create_overlay_button(icon=qt_prefs.triangle_icon,
+    #                                 host=node,
+    #                                 role=g.ADD_TRIANGLE,
+    #                                 key=node.save_key + '_add_triangle',
+    #                                 text='Turn into a triangle',
+    #                                 action='add_triangle', size=(24, 12))
+    #
     def add_buttons_for_edge(self, edge):
         """ Constituent edges have a button to remove the edge and the node
         in between.
@@ -1071,19 +1145,6 @@ class UIManager:
                                         text='Disconnect from node',
                                         action='disconnect_edge')
 
-    def add_buttons_for_constituent_node(self, node):
-        """
-
-        :param node:
-        """
-        for child in node.get_children():
-            if child.is_placeholder():
-                self.add_remove_merger_button(node)
-                break
-        if node.triangle:
-            self.add_unfold_triangle_button(node)
-        elif ctrl.forest.can_fold(node):
-            self.add_fold_triangle_button(node)
 
     # ### Control points
     # ####################################################################
