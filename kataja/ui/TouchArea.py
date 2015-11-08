@@ -134,6 +134,8 @@ class TouchArea(QtWidgets.QGraphicsObject):
         self.setAcceptDrops(True)
         self.update_end_points()
         self.action = action
+        if action and action.tip:
+            self.set_tip(action.tip)
         self.setCursor(QtCore.Qt.PointingHandCursor)
 
     def is_visible(self):
@@ -538,23 +540,6 @@ class BranchingTouchArea(TouchArea):
         r = QtCore.QRectF(x, y, w, h)
         return r
 
-    def click(self, event=None):
-        """
-        :type event: QMouseEvent
-         """
-        self._dragging = False
-        if self._drag_hint:
-            return False
-        child = self.host.end
-        parent = self.host.start
-        new_node = ctrl.forest.create_node(relative=child)
-        ctrl.forest.insert_node_between(new_node, parent, child,
-                                        self._align_left,
-                                        self.start_point)
-        ctrl.deselect_objects()
-        ctrl.main.action_finished(m='add constituent')
-        return True
-
 
     def drop(self, dropped_node):
         """
@@ -587,7 +572,6 @@ class LeftAddSibling(BranchingTouchArea):
 
     def __init__(self, host, ttype, ui_key, action=None):
         super().__init__(host, ttype, ui_key, action=action)
-        self.set_tip("Add new sibling to left of %s" % self.host.end)
         self._align_left = True
         self.update_end_points()
 
@@ -652,7 +636,6 @@ class LeftAddSibling(BranchingTouchArea):
             draw_plus(painter, 4, 0)
 
 
-
 class RightAddSibling(BranchingTouchArea):
     """ TouchArea that connects to edges and has /-shape. Used to add/merge
     nodes in middle of the tree.
@@ -663,7 +646,6 @@ class RightAddSibling(BranchingTouchArea):
 
     def __init__(self, host, ttype, ui_key, action=None):
         super().__init__(host, ttype, ui_key, action=action)
-        self.set_tip( "Add new sibling to right of %s" % self.host.end)
         self._align_left = False
         self.update_end_points()
 
@@ -735,9 +717,6 @@ class JointedTouchArea(TouchArea):
     :param type:
     :param ui_key:
     """
-    def __init__(self, host, ttype, ui_key, action=None):
-        super().__init__(host, ttype, ui_key, action=action)
-
 
     def boundingRect(self):
         """
@@ -839,25 +818,10 @@ class JointedTouchArea(TouchArea):
         return 'moved node %s to sibling of %s' % (
             dropped_node, self.host)
 
-    def click(self, event=None):
-        """
-        :type event: QMouseEvent
-         """
-        self._dragging = False
-        if self._drag_hint:
-            return False
-        top = self.host
-        new_node = ctrl.forest.create_node(relative=top)
-        ctrl.forest.merge_to_top(top, new_node, self._align_left, new_node.current_position)
-        ctrl.deselect_objects()
-        ctrl.main.action_finished(m='add constituent')
-        return True
-
 
 class LeftAddTop(JointedTouchArea):
     def __init__(self, host, ttype, ui_key, action=None):
         super().__init__(host, ttype, ui_key, action=action)
-        self.set_tip("Add new constituent to left of %s" % self.host)
         self._align_left = True
         self.update_end_points()
 
@@ -889,7 +853,6 @@ class LeftAddTop(JointedTouchArea):
 class RightAddTop(JointedTouchArea):
     def __init__(self, host, ttype, ui_key, action=None):
         super().__init__(host, ttype, ui_key, action=action)
-        self.set_tip("Add new constituent to right of %s" % self.host)
         self._align_left = False
         self.update_end_points()
 
@@ -958,20 +921,6 @@ class ChildTouchArea(TouchArea):
         r = QtCore.QRectF(x, y, w, h)
         return r
 
-    def click(self, event=None):
-        """
-        :type event: QMouseEvent
-         """
-        self._dragging = False
-        if self._drag_hint:
-            return False
-        ctrl.forest.add_children_for_constituentnode(self.host,
-                                                     pos=tuple2_to_tuple3(self.end_point),
-                                                     head_left=self._align_left)
-        ctrl.deselect_objects()
-        ctrl.main.action_finished(m='add constituent')
-        return True
-
     def drag(self, event):
         self._dragging = True
         self.update_end_points(end_point=to_tuple(event.scenePos()))
@@ -1009,7 +958,6 @@ class LeftAddChild(BranchingTouchArea):
 
     def __init__(self, host, ttype, ui_key, action=None):
         super().__init__(host, ttype, ui_key, action=action)
-        self.set_tip("Add new child for %s" % self.host)
         self._align_left = True
 
     def update_end_points(self, end_point=None):
@@ -1073,7 +1021,6 @@ class RightAddChild(ChildTouchArea):
 
     def __init__(self, host, ttype, ui_key, action=None):
         super().__init__(host, ttype, ui_key, action=action)
-        self.set_tip("Add new child for %s" % self.host)
         self._align_left = False
 
     def update_end_points(self, end_point=None):

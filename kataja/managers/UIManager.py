@@ -438,7 +438,10 @@ class UIManager:
         :return: KatajaAction
         """
         if key:
-            return self.qt_actions.get(key, None)
+            a = self.qt_actions.get(key, None)
+            if a:
+                return a
+            print('missing action ', key)
         return None
 
     def create_menus(self, additional_actions):
@@ -751,6 +754,7 @@ class UIManager:
         :return:
         """
         ui_key = host.save_key + '_ta_' + str(type)
+        print(ui_key)
         return self.get_ui(ui_key)
 
     def create_touch_area(self, host, type, action):
@@ -846,11 +850,11 @@ class UIManager:
                 ta = self.get_touch_area(edge, g.LEFT_ADD_SIBLING)
                 if not ta:
                     self.create_touch_area(edge, g.LEFT_ADD_SIBLING,
-                                           self.get_action('replace_placeholder'))
+                                           self.get_action('add_sibling_left'))
                 ta = self.get_touch_area(edge, g.RIGHT_ADD_SIBLING)
                 if not ta:
                     self.create_touch_area(edge, g.RIGHT_ADD_SIBLING,
-                                           self.get_action('replace_placeholder'))
+                                           self.get_action('add_sibling_right'))
 
     def prepare_touch_areas_for_dragging(self, drag_host=None, moving=None,
                                          dragged_type='', multidrag=False):
@@ -1087,41 +1091,6 @@ class UIManager:
         button.show()
         return button
 
-    # def add_remove_merger_button(self, node):
-    #     """
-    #
-    #     :param node:
-    #     :param edge:
-    #     """
-    #     self._create_overlay_button(icon=qt_prefs.delete_icon, host=node,
-    #                                 role=g.REMOVE_TRIANGLE,
-    #                                 key=node.save_key + g.REMOVE_MERGER,
-    #                                 text='Remove this non-merging node',
-    #                                 action='remove_merger')
-    #
-    # def add_unfold_triangle_button(self, node):
-    #     """
-    #
-    #     :param node:
-    #     """
-    #     self._create_overlay_button(icon=qt_prefs.triangle_close_icon,
-    #                                 host=node, role=g.REMOVE_TRIANGLE,
-    #                                 key=node.save_key + g.REMOVE_TRIANGLE,
-    #                                 text='Reveal nodes inside the triangle',
-    #                                 action='remove_triangle', size=(24, 12))
-    #
-    # def add_fold_triangle_button(self, node):
-    #     """
-    #
-    #     :param node:
-    #     """
-    #     self._create_overlay_button(icon=qt_prefs.triangle_icon,
-    #                                 host=node,
-    #                                 role=g.ADD_TRIANGLE,
-    #                                 key=node.save_key + '_add_triangle',
-    #                                 text='Turn into a triangle',
-    #                                 action='add_triangle', size=(24, 12))
-    #
     def add_buttons_for_edge(self, edge):
         """ Constituent edges have a button to remove the edge and the node
         in between.

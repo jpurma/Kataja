@@ -1,5 +1,5 @@
 - Add visualization specific settings to visualization panel
--> Better add-triangle buttons (make them touchareas)
++ Better add-triangle buttons (make them touchareas)
 - Draw better triangles
 - Fix rare add branch -bug, that creates a node that is not recognized by visualization algorithm.
 - Fix situation where tree is replaced as new node is added on top.

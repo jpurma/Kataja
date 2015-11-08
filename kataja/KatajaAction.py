@@ -34,7 +34,7 @@ class KatajaAction(QtWidgets.QAction):
     :param key:
     :param command:
     :param command_alt:
-    :param exclusive_in:
+    :param exclusive:
     :param shortcut:
     :param shortcut_context:
     :param viewgroup:
@@ -61,6 +61,7 @@ class KatajaAction(QtWidgets.QAction):
         self.undoable = undoable
         self.method = method
         self.args = args or []
+        self.tip = tooltip or command
         # when triggered from menu, forward the call to more complex trigger handler
         self.triggered.connect(self.action_triggered)
 

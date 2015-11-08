@@ -1900,6 +1900,7 @@ class Forest(BaseModel):
         node.triangle = False
         fold_scope = (f for f in self.list_nodes_once(node) if f.folding_towards is node)
         for folded in fold_scope:
+            print('unfolding ', folded)
             folded.folding_towards = None
             folded.folded_away = False
             folded.copy_position(node)

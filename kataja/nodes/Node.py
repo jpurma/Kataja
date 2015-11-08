@@ -335,10 +335,10 @@ class Node(Movable):
         self.triangle_updated(value)
 
     def has_triangle(self):
-        return self.triangle is self
+        return self.triangle
 
     def can_have_triangle(self):
-        return self.triangle is not self
+        return not self.triangle
 
     def triangle_updated(self, value):
         """ update label positioning here so that offset doesn't need to be
@@ -1133,7 +1133,6 @@ syntactic_object: %s
         # update edge visibility from triangle to its immediate children
         if self.folding_towards in self.get_parents():
             self.folding_towards.update_visibility()
-        self.folding_towards = None
         ctrl.forest.draw()
 
     def paint_triangle(self, painter):

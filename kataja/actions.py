@@ -17,11 +17,12 @@ import kataja.debug as debug
 from kataja.ui.PreferencesDialog import PreferencesDialog
 from kataja.Edge import Edge
 from kataja.visualizations.available import action_key
+from kataja.utils import tuple2_to_tuple3
+from kataja.singletons import ctrl, prefs
+import kataja.globals as g
 
 __author__ = 'purma'
 
-from kataja.singletons import ctrl, prefs
-import kataja.globals as g
 
 
 def get_ui_container(qt_object):
@@ -67,8 +68,7 @@ def toggle_panel(action, panel_id):
     """
     ctrl.ui.toggle_panel(action, panel_id)
 
-
-#### Actions from actions.py
+# ### Actions from actions.py
 # ######################################################
 
 
@@ -1277,6 +1277,98 @@ def constituent_set_head(sender):
 a['constituent_set_head'] = {'command': 'Set head for inheritance',
                              'method': constituent_set_head,
                              'sender_arg': True}
+
+
+def add_sibling_left(sender):
+    """
+
+    :param sender:
+    :return:
+    """
+    host = get_host(sender)
+    child = host.end
+    parent = host.start
+    new_node = ctrl.forest.create_node(relative=child)
+    ctrl.forest.insert_node_between(new_node, parent, child,
+                                    True,
+                                    sender.start_point)
+a['add_sibling_left'] = {'command': 'Add sibling node to left',
+                         'method': add_sibling_left,
+                         'sender_arg': True}
+
+
+def add_sibling_right(sender):
+    """
+
+    :param sender:
+    :return:
+    """
+    host = get_host(sender)
+    child = host.end
+    parent = host.start
+    new_node = ctrl.forest.create_node(relative=child)
+    ctrl.forest.insert_node_between(new_node, parent, child,
+                                    False,
+                                    sender.start_point)
+a['add_sibling_right'] = {'command': 'Add sibling node to right',
+                         'method': add_sibling_right,
+                         'sender_arg': True}
+
+
+def add_top_left(sender):
+    """
+    :type event: QMouseEvent
+     """
+    top = get_host(sender)
+    new_node = ctrl.forest.create_node(relative=top)
+    ctrl.forest.merge_to_top(top, new_node, True, new_node.current_position)
+
+a['add_top_left'] = {'command': 'Add node to left',
+                     'method': add_top_left,
+                     'sender_arg': True}
+
+
+def add_top_right(sender):
+    """
+    :type event: QMouseEvent
+     """
+    top = get_host(sender)
+    new_node = ctrl.forest.create_node(relative=top)
+    ctrl.forest.merge_to_top(top, new_node, False, new_node.current_position)
+
+a['add_top_right'] = {'command': 'Add node to right',
+                      'method': add_top_right,
+                      'sender_arg': True}
+
+
+def add_child_left(sender):
+    """
+
+    :param sender:
+    :return:
+    """
+    node = get_host(sender)
+    ctrl.forest.add_children_for_constituentnode(node,
+                                                 pos=tuple2_to_tuple3(sender.end_point),
+                                                 head_left=True)
+a['add_child_left'] = {'command': 'Add child node to left',
+                       'method': add_child_left,
+                       'sender_arg': True}
+
+
+def add_child_right(sender):
+    """
+
+    :param sender:
+    :return:
+    """
+    node = get_host(sender)
+    ctrl.forest.add_children_for_constituentnode(node,
+                                                 pos=tuple2_to_tuple3(sender.end_point),
+                                                 head_left=False)
+a['add_child_right'] = {'command': 'Add child node to right',
+                        'method': add_child_right,
+                        'sender_arg': True}
 
 # Generic keys ####
 # 'key_esc'] = {
