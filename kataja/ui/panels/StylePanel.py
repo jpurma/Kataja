@@ -266,7 +266,7 @@ class StylePanel(UIPanel):
 
     def update_panel(self):
         """ Panel update should be necessary when changing ctrl.selection or
-        after the tree has otherwise changed.
+        after the trees has otherwise changed.
         :return:
         """
         self.update_fields()

@@ -529,7 +529,7 @@ class ConstituentStructures:
         return self.c_command(A, B, structure) and not self.c_command(B, A, structure)
 
     def path(self, start, end, structure):
-        """ Let a path P (in tree T) be a sequence of nodes (A_0,... A_i, A_i+1, ... A_n) such that:
+        """ Let a path P (in trees T) be a sequence of nodes (A_0,... A_i, A_i+1, ... A_n) such that:
         (a) all ij, n >= i, j >= 0, A_i = A_j -> i = j.
         (b) all i, n > i >= 0, A_i immediately dominates A_i+1 or A_i+1 immediately dominates A_i.
 
@@ -1217,7 +1217,7 @@ class ConstituentStructures:
         return new
 
     def CCommands(self, A, B, context):
-        """ C-Command edge needs the root constituent of the tree as a context, as
+        """ C-Command edge needs the root constituent of the trees as a context, as
         :param A:
         :param B:
         :param context:

@@ -158,7 +158,7 @@ class IFL(BaseModel):
         raise NotImplementedError
 
     def k_disconnect(self, parent, child):
-        """ Tries to remove parent-child connection. Primitive: may leave binary tree to have empty
+        """ Tries to remove parent-child connection. Primitive: may leave binary trees to have empty
         branch.
         :param parent:
         :param child:

@@ -97,7 +97,7 @@ class NodesPanel(UIPanel):
         self.finish_init()
 
     def update_panel(self):
-        """ Panel update should be necessary when changing ctrl.selection or after the tree has otherwise changed.
+        """ Panel update should be necessary when changing ctrl.selection or after the trees has otherwise changed.
         :return:
         """
         pass

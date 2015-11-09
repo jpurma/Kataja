@@ -20,7 +20,7 @@ class ChainManager:
     should behave differently between the cases.
 
     Chain manager doesn't save its state, its structures are purely derivative from information already existing in
-    the tree.
+    the trees.
     """
 
     def __init__(self, forest):
@@ -46,9 +46,9 @@ class ChainManager:
         raise Exception('F broken chain')
 
     def rebuild_chains(self, stop_count=0):
-        """ Process for building chains depends on if the tree currently is using multidomination or not.
-        Chains shouldn't include elements that are not really in the tree right now.
-        :param stop_count: to avoid infinite recursion if the tree is seriously broken
+        """ Process for building chains depends on if the trees currently is using multidomination or not.
+        Chains shouldn't include elements that are not really in the trees right now.
+        :param stop_count: to avoid infinite recursion if the trees is seriously broken
         :return:
         """
         if self.fs.uses_multidomination:
@@ -71,7 +71,7 @@ class ChainManager:
                     self.rebuild_chains(stop_count=stop_count)
 
     def rebuild_chains_from_traces(self):
-        """ When building chains from traces, usually the first member is the head, but the tree may be given in a
+        """ When building chains from traces, usually the first member is the head, but the trees may be given in a
          form where this isn't the case.
         :return:
         """
@@ -107,7 +107,7 @@ class ChainManager:
 
     def rebuild_chains_from_multidomination(self):
         """ When building chains from multidomination, the end result should consist of list of
-        (node, parent, is_head)-tuples, where the first element is the head, and topmost instance in tree,
+        (node, parent, is_head)-tuples, where the first element is the head, and topmost instance in trees,
         and the rest are other appearances top down. The node remains the same, parent is different. """
 
         #print('rebuild chains from md called')

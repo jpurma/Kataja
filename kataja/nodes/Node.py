@@ -463,35 +463,35 @@ syntactic_object: %s
 
     def pick_tallest_tree(self):
         """ A node can belong to many trees, but in some cases only one is needed. Choose taller
-        tree. There is no good reason for why to choose that, but it is necessary to at least
+        trees. There is no good reason for why to choose that, but it is necessary to at least
         to have predictable behaviour for complex cases.
         :return:
         """
         max_len = 0
         bigger = None
-        for tree in self.tree:
+        for tree in self.trees:
             l = len(tree.sorted_constituents) + len(tree.sorted_nodes)
             if l > max_len:
                 bigger = tree
         return bigger
 
     def tree_where_top(self):
-        """ Returns a tree where this node is the topmost node. Cannot be topping more than one
-        tree!  (They would be identical trees otherwise.)
+        """ Returns a trees where this node is the topmost node. Cannot be topping more than one
+        trees!  (They would be identical trees otherwise.)
         :return: None if not top, Tree if found
         """
-        for tree in self.tree:
+        for tree in self.trees:
             if self is tree.top:
                 return tree
 
     def shares_tree_with_node(self, other):
-        """ Checks if this node has one or more same tree with other node
+        """ Checks if this node has one or more same trees with other node
         :param other: node
         :return:
         """
-        if other.tree is None or self.tree is None:
+        if other.trees is None or self.trees is None:
             return False
-        return bool(self.tree & other.tree)
+        return bool(self.trees & other.tree)
 
     def update_graphics_parent(self):
         """ Update GraphicsItem.parentItem for this node. When parent is changed, the coordinate system switches to that of parent (or scene, if parent is None). If this happens, compute new position according to new parent so that there is no visible jump.
@@ -502,7 +502,6 @@ syntactic_object: %s
         if new_parent:
             if old_parent is not new_parent:
                 scene_position = self.current_scene_position
-                op = self.current_position
                 self.setParentItem(new_parent)
                 self.current_position = self.scene_position_to_tree_position(scene_position)
                 #print('translated node %s from scene_pos %s to scene_pos %s while current pos was %s and is now %s' % (self, str(scene_position), str(self.current_scene_position), str(op), str(self.current_position)))
@@ -511,20 +510,20 @@ syntactic_object: %s
             self.setParentItem(None)
 
     def add_to_tree(self, tree):
-        """ Add this node to given tree and possibly set it as parent for this graphicsitem.
+        """ Add this node to given trees and possibly set it as parent for this graphicsitem.
         :param tree: Tree
         :return:
         """
-        self.tree.add(tree)
+        self.trees.add(tree)
         self.update_graphics_parent()
 
     def remove_from_tree(self, tree, recursive_down=False):
-        """ Remove node from tree and remove the (graphicsitem) parenthood-relation.
+        """ Remove node from trees and remove the (graphicsitem) parenthood-relation.
         :param tree: Tree
         :return:
         """
-        if tree in self.tree:
-            self.tree.remove(tree)
+        if tree in self.trees:
+            self.trees.remove(tree)
             self.update_graphics_parent()
         if recursive_down:
             for child in self.get_children():
@@ -546,11 +545,15 @@ syntactic_object: %s
         :return:
         """
         shift = (ax, ay, az)
-        csp = other.current_scene_position
-        ctp = other.tree_position_to_scene_position(other.target_position)
-        self.current_position = self.scene_position_to_tree_position(add_xyz(csp, shift))
+        if self.parentItem() is other.parentItem():
+            self.current_position = add_xyz(other.current_position, shift)
+            self.target_position = other.target_position
+        else:
+            csp = other.current_scene_position
+            ctp = other.tree_position_to_scene_position(other.target_position)
+            self.current_position = self.scene_position_to_tree_position(add_xyz(csp, shift))
+            self.target_position = self.scene_position_to_tree_position(ctp)
         self.adjustment = other.adjustment
-        self.target_position = self.scene_position_to_tree_position(ctp)
         self.locked = other.locked
         self.use_adjustment = other.use_adjustment
         self.physics_x = other.physics_x
@@ -558,7 +561,7 @@ syntactic_object: %s
         self.physics_z = other.physics_z
 
     def tree_position_to_scene_position(self, position):
-        """ Return tree position converted to scene position. Works for xy and xyz -tuples.
+        """ Return trees position converted to scene position. Works for xy and xyz -tuples.
         :param position:
         :return:
         """
@@ -578,7 +581,7 @@ syntactic_object: %s
             return x + tx, y + ty
 
     def scene_position_to_tree_position(self, scene_pos):
-        """ Return scene position converted to coordinate system used by this node tree. Works for xy and xyz -tuples.
+        """ Return scene position converted to coordinate system used by this node trees. Works for xy and xyz -tuples.
 
         :param scene_pos:
         :return:
@@ -739,7 +742,7 @@ syntactic_object: %s
         return None
 
     def is_top_node(self, only_similar=True, only_visible=False):
-        """ Root node is the topmost node of a tree
+        """ Root node is the topmost node of a trees
         :param only_similar:
         :param only_visible:
         """
@@ -749,11 +752,11 @@ syntactic_object: %s
             return True
 
     def update_trees(self):
-        """ Make sure that the tree assigned for this node includes all relevant nodes. Assumes that
-        node.tree is correct.
+        """ Make sure that the trees assigned for this node includes all relevant nodes. Assumes that
+        node.trees is correct.
         :return:
         """
-        for tree in self.tree:
+        for tree in self.trees:
             tree.update_items()
 
     def get_top_node(self, return_set=False):
@@ -1058,7 +1061,7 @@ syntactic_object: %s
         #p = QtGui.QPen(self.contextual_color)
         #p.setWidth(1)
         #painter.setPen(p)
-        #for tree in self.tree:
+        #for trees in self.trees:
         #    painter.drawEllipse(x, 10, 6, 6)
         #    x += 10
 
@@ -1267,8 +1270,8 @@ syntactic_object: %s
 
     # 1. start_dragging -- drag is initiated from this node. If the node was already selected,
     # then other nodes that were selected at the same time are also understood to be dragged.
-    # If the node has unambiguous children, these are also dragged. If node is top node of a tree,
-    # then the tree is the object of dragging, and not node.
+    # If the node has unambiguous children, these are also dragged. If node is top node of a trees,
+    # then the trees is the object of dragging, and not node.
     #
     # 2. start_dragging_tracking --
     #
@@ -1278,7 +1281,7 @@ syntactic_object: %s
 
     def start_dragging(self, scene_pos):
         """ Figure out which nodes belong to the dragged set of nodes.
-        It may be that a whole tree is dragged. If this is the case, drag_to commands to nodes that are tops of trees are directed to tree instead. Node doesn't change its position in tree if the whole tree moves.
+        It may be that a whole trees is dragged. If this is the case, drag_to commands to nodes that are tops of trees are directed to trees instead. Node doesn't change its position in trees if the whole trees moves.
 
         :param scene_pos:
         """
@@ -1296,7 +1299,7 @@ syntactic_object: %s
         # if we are working with selection, this is more complicated, as there may be many nodes
         # and trees dragged at once, with one focus for dragging.
         if ctrl.is_selected(self):
-            # find tree tops in selection
+            # find trees tops in selection
             for item in ctrl.selected:
                 tree = item.tree_where_top()
                 if tree:
@@ -1549,7 +1552,7 @@ syntactic_object: %s
 
     def itemChange(self, change, value):
         if change == QtWidgets.QGraphicsObject.ItemPositionHasChanged:
-            for tree in self.tree:
+            for tree in self.trees:
                 tree.tree_changed = True
         return QtWidgets.QGraphicsObject.itemChange(self, change, value)
 

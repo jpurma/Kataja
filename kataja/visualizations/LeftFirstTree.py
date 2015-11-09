@@ -37,7 +37,7 @@ class LeftFirstTree(BaseVisualization):
     """ Visualization that draws branches, starting from top and left. Each
     branch takes the space it needs, and may force next branch drawing to
     further down and right. """
-    name = 'Left first tree'
+    name = 'Left first trees'
 
     def __init__(self):
         BaseVisualization.__init__(self)
@@ -147,7 +147,7 @@ class LeftFirstTree(BaseVisualization):
 
     # @time_me
     def draw(self):
-        """ Draws the tree to a table or a grid, much like latex qtree and
+        """ Draws the trees to a table or a grid, much like latex qtree and
         then scales the grid to the scene. """
         edge_height = prefs.edge_height
         edge_width = prefs.edge_width

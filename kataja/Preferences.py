@@ -96,7 +96,7 @@ class Preferences(object):
         self._FPS_ui = {'tab': 'Performance'}
 
         self._fps_in_msec = 1000 / self.FPS
-        self.default_visualization = 'Left first tree'
+        self.default_visualization = 'Left first trees'
 
         # self.blender_app_path =
         # '/Applications/blender.app/Contents/MacOS/blender'

@@ -37,7 +37,7 @@ from kataja.BaseModel import BaseModel, Saved
 
 class DerivationStep(BaseModel):
     """ Packed state of forest for undo -operations and for stepwise
-    animation of tree growth.
+    animation of trees growth.
 
     Needs to be checked and tested, also what to do with saving and loading.
      """
@@ -92,7 +92,7 @@ class DerivationStep(BaseModel):
                     data['index'] = None
                 snapshot.append(data)
                 done.add(node)
-        return {'tree': snapshot}
+        return {'trees': snapshot}
 
     def rebuild_tree_from_snapshot(self, snapshot): # fixme -- move from roots to trees incomplete
         """ Restores each node to use those connections it had when stored.
@@ -101,7 +101,7 @@ class DerivationStep(BaseModel):
         :param snapshot:
         :param forest:
         """
-        tree = snapshot['tree']
+        tree = snapshot['trees']
         if tree:
             tree_top = tree[0]['node']
         for data in tree:

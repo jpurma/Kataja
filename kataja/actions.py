@@ -116,7 +116,7 @@ Text files containing bracket trees (*.txt, *.tex)"""
     filename, filetypes = QtWidgets.QFileDialog.getOpenFileName(ctrl.main,
                                                                 "Open "
                                                                 "KatajaMain "
-                                                                "tree", "",
+                                                                "trees", "",
                                                                 file_help)
     if not filename:
         return
@@ -229,7 +229,7 @@ JSON dumps (*.json);; Packed JSON (*.zjson)
 """
     filename, file_type = QtWidgets.QFileDialog.getSaveFileName(ctrl.main,
                                                                 "Save Kataja "
-                                                                "tree", "",
+                                                                "trees", "",
                                                                 file_help)
     if filename:
         save_kataja_file(filename)
@@ -315,7 +315,7 @@ def next_structure():
     """
     i, forest = ctrl.main.forest_keeper.next_forest()
     ctrl.main.change_forest(forest)
-    ctrl.main.add_message('(.) tree %s: %s' % (i + 1, forest.textual_form()))
+    ctrl.main.add_message('(.) trees %s: %s' % (i + 1, forest.textual_form()))
 
 
 a['next_forest'] = {'command': 'Next forest', 'method': next_structure,
@@ -329,7 +329,7 @@ def previous_structure():
     """
     i, forest = ctrl.main.forest_keeper.prev_forest()
     ctrl.main.change_forest(forest)
-    ctrl.main.add_message('(,) tree %s: %s' % (i + 1, forest.textual_form()))
+    ctrl.main.add_message('(,) trees %s: %s' % (i + 1, forest.textual_form()))
 
 
 a['prev_forest'] = {'command': 'Previous forest', 'method': previous_structure,
@@ -990,7 +990,7 @@ def show_help_message():
     (left arrow/,):previous structure   (right arrow/.):next structure
     (1-9, 0): switch between visualizations
     (f):fullscreen/windowed mode
-    (p):print tree to file
+    (p):print trees to file
     (b):show/hide labels in middle of edges
     (q):quit"""
     ctrl.main.add_message(m)

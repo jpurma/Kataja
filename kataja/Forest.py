@@ -51,7 +51,7 @@ import kataja.globals as g
 
 class Forest(BaseModel):
     """ Forest is a group of trees that together form one view.
-    Often there needs to be more than one tree visible at same time,
+    Often there needs to be more than one trees visible at same time,
      so that they can be compared or to show states of construction
       where some edges are not yet linked to the main root.
       Forest is the container for these.
@@ -298,7 +298,7 @@ class Forest(BaseModel):
     def textual_form(self, tree=None, node=None):
         """ return (unicode) version of linearizations of all trees with
         traces removed --
-            as close to original sentences as possible. If tree or node is given,
+            as close to original sentences as possible. If trees or node is given,
             return linearization of only that.
         :param tree: Tree instance
         :param node: Node instance
@@ -565,7 +565,7 @@ class Forest(BaseModel):
                     n.set_projection_display(color_id)
 
     def update_projections(self):
-        """ Try to guess projections in the tree based on labels and aliases, and once this is
+        """ Try to guess projections in the trees based on labels and aliases, and once this is
         done, further updates check that the dict of projections is up to date. Calls to update
         the visual presentation of projections too.
         :return:
@@ -655,7 +655,7 @@ class Forest(BaseModel):
         copy.
 
         However there is a remote possibility for creating them by merging
-        non-root node from another tree to
+        non-root node from another trees to
         construction, so the option should be there.
 
         :return:
@@ -671,10 +671,10 @@ class Forest(BaseModel):
         """
         passed = set()
         my_tops = set()
-        forest_tops = set((x.top for x in self.trees))
+        #forest_tops = set((x.top for x in self.trees))
 
         def walk_to_top(n):
-            """ Walk upwards in tree(s), starting from this node and find the topmost nodes.
+            """ Walk upwards in trees(s), starting from this node and find the topmost nodes.
             :param n:
             :return:
             """
@@ -700,14 +700,14 @@ class Forest(BaseModel):
                 elif not tree.is_valid():
                     self.remove_tree(tree)
             if found:
-                # found a good tree, ask it to update.
+                # found a good trees, ask it to update.
                 found.update_items()
             else:
                 self.create_tree_for(my_top_node)
-            # case where node still remains in an old tree but is disconnected and starting another tree
-            for tree in list(my_top_node.tree):
+            # case where node still remains in an old trees but is disconnected and starting another trees
+            for tree in list(my_top_node.trees):
                 if tree.top not in my_tops:
-                    # so we have a tree that is referring to structurally separate nodes (not in
+                    # so we have a trees that is referring to structurally separate nodes (not in
                     # my_tops, the locally avaialable top nodes). Remove references to it from
                     # everyone down from here.
                     my_top_node.remove_from_tree(tree, recursive_down=True)
@@ -717,12 +717,12 @@ class Forest(BaseModel):
                 if tree.top is node:
                     self.remove_tree(tree)
                 elif not tree.top.is_top_node():
-                    print('***** found a bad bad tree *****')
-                    ctrl.main.add_message('***** found a bad bad tree *****')
+                    print('***** found a bad bad trees *****')
+                    ctrl.main.add_message('***** found a bad bad trees *****')
                     self.remove_tree(tree)
 
     def create_tree_for(self, node):
-        """ Create new tree around given node.
+        """ Create new trees around given node.
         :param node:
         :return:
         """
@@ -734,8 +734,8 @@ class Forest(BaseModel):
         return tree
 
     def remove_tree(self, tree):
-        """ Remove tree that has become unnecessary: either because it is subsumed into another
-        tree or because it is empty.
+        """ Remove trees that has become unnecessary: either because it is subsumed into another
+        trees or because it is empty.
         :param tree:
         :return:
         """
@@ -772,7 +772,7 @@ class Forest(BaseModel):
         :param synobj: If syntactic object is passed here, the node created
         will be a wrapper around this syntactic object
         :param relative: node will be relative to given node, pos will be interpreted relative to
-        given node and new node will have the same tree as a parent.
+        given node and new node will have the same trees as a parent.
         :param pos:
         :param node_type:
         :return:
@@ -796,6 +796,7 @@ class Forest(BaseModel):
         # reflected by node's connections (call node.reflect_synobj()?)
         node.after_init()
         if relative:
+            print('created node %s relative to %s' % (node, relative))
             node.copy_position(relative)
         if pos:
             node.set_original_position(pos)
@@ -803,7 +804,7 @@ class Forest(BaseModel):
 
         #if not relative:
         #    self.update_tree_for(node)
-        # if node is added to tree, it is implicitly added to scene. if not, this takes care of it:
+        # if node is added to trees, it is implicitly added to scene. if not, this takes care of it:
         self.add_to_scene(node)
         # node.fade_in()
 
@@ -925,7 +926,7 @@ class Forest(BaseModel):
     def read_definitions(self, definitions):
         """
         :param definitions: Try to set features and glosses according to
-        definition strings for nodes in tree.
+        definition strings for nodes in trees.
         :return:
         """
         # todo: can we write feature/gloss definitions into node text fields?
@@ -977,11 +978,11 @@ class Forest(BaseModel):
     # from items that reference to it.
 
     def delete_node(self, node, ignore_consequences=False):
-        """ Delete given node and its children and fix the tree accordingly
+        """ Delete given node and its children and fix the trees accordingly
         :param node:
         :param ignore_consequences: don't try to fix things like connections,
         just delete.
-        Note: This and other complicated revisions assume that the target tree is 'normalized' by
+        Note: This and other complicated revisions assume that the target trees is 'normalized' by
         replacing multidomination with traces. Each node can have only one parent.
         This makes calculation easier, just remember to call multidomination_to_traces and
         traces_to_multidomination after deletions.
@@ -1538,7 +1539,7 @@ class Forest(BaseModel):
     def disconnect_node(self, parent=None, child=None, edge_type='', ignore_missing=False,
                         edge=None):
         """ Removes and deletes a edge between two nodes. If asked to do so, can reset
-        projections and tree ownerships, but doesn't do it automatically, as disconnecting is
+        projections and trees ownerships, but doesn't do it automatically, as disconnecting is
         often part of more complex series of operations.
         :param parent:
         :param child:
@@ -1628,7 +1629,7 @@ class Forest(BaseModel):
         children = list(node.get_children())
         real_children = []
         placeholders = []
-        trees = set(node.tree)
+        trees = set(node.trees)
         for child in children:
             if child.is_placeholder():
                 placeholders.append(child)
@@ -1695,7 +1696,7 @@ class Forest(BaseModel):
 
         siblings = list(parent.get_ordered_children())
         if self.settings.only_binary_trees and len(siblings) > 1:
-            raise ForestError("Trying to add third child for binary tree")
+            raise ForestError("Trying to add third child for binary trees")
 
         # These steps are safe, connect node is smart enough to deal with
         # unary/ binary children.
@@ -1737,12 +1738,12 @@ class Forest(BaseModel):
         :param merger_pos:
         :return:
         """
-        if hasattr(new, 'index'):
-            # if new_node and old_node belong to same tree, this is a Move /
+        if hasattr(new, 'index'): # fixme - this is bad idea
+            # if new_node and old_node belong to same trees, this is a Move /
             # Internal merge situation and we
             # need to give the new_node an index so it can be reconstructed
             # as a trace structure
-            if new.tree is top.tree:
+            if new.trees == top.trees:
                 if not new.index:
                     new.index = self.chain_manager.next_free_index()
                 # replace either the moving node or leftover node with trace
@@ -1757,14 +1758,18 @@ class Forest(BaseModel):
             left = top
             right = new
         p = merger_pos[0], merger_pos[1], top.z
-        merger_node = self.create_merger_node(left=left, right=right, pos=p, new=new)
+        merger_node = self.create_merger_node(left=left, right=right, pos=p, create_tree=False, new=new)
+        for tree in top.trees:
+            tree.recalculate_top()
+            tree.update_items()
         merger_node.copy_position(top)
-        merger_node.current_position = p
+        #merger_node.current_position = merger_node.scene_position_to_tree_position(p)
+
         if self.traces_are_visible():
             self.chain_manager.rebuild_chains()
 
     def insert_node_between(self, inserted, parent, child, merge_to_left, insertion_pos):
-        """ This is an insertion action into a tree: a new merge is created
+        """ This is an insertion action into a trees: a new merge is created
         and inserted between two existing constituents. One connection is
         removed, but three are created.
         This happens when touch area in edge going up from node N is clicked,
@@ -1777,16 +1782,16 @@ class Forest(BaseModel):
         :param insertion_pos:
         """
         if hasattr(inserted, 'index'):
-            # if inserted and child belong to same tree, this is a Move /
+            # if inserted and child belong to same trees, this is a Move /
             # Internal merge situation and we
             # need to give the new_node an index so it can be reconstructed
             # as a trace structure
             moving_was_higher = None
-            for tree in inserted.tree:
+            for tree in inserted.trees:
                 moving_was_higher = tree.is_higher_in_tree(inserted, child)
                 if moving_was_higher is not None:
                     break
-            # returns None if they are not in same tree
+            # returns None if they are not in same trees
             if moving_was_higher is not None:
                 if not inserted.index:
                     inserted.index = self.chain_manager.next_free_index()
@@ -1816,7 +1821,7 @@ class Forest(BaseModel):
         p = insertion_pos[0], insertion_pos[1], child.z
         merger_node = self.create_merger_node(left=left, right=right, pos=p, create_tree=False, new=inserted)
         merger_node.copy_position(child)
-        merger_node.current_position = p
+        merger_node.current_position = merger_node.scene_position_to_tree_position(p)
         self.connect_node(parent, merger_node, direction=align)
         parent.update_trees()
         if head:
@@ -1830,6 +1835,8 @@ class Forest(BaseModel):
         :param left:
         :param right:
         :param pos:
+        :param create_tree: updating the trees may be costly and can be disabled
+        :param new: which one is the new node to add. This connection is animated in.
         """
         if not pos:
             pos = (0, 0, 0)
@@ -1844,7 +1851,7 @@ class Forest(BaseModel):
         return merger_node
 
     def copy_node(self, node):
-        """ Copy a node and make a new tree out of it
+        """ Copy a node and make a new trees out of it
         :param node:
         """
         if not node:

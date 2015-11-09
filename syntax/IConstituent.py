@@ -115,7 +115,7 @@ class IConstituent(BaseModel):
         raise NotImplementedError
 
     def is_leaf(self):
-        """ Check if the constituent is leaf constituent (no children) or inside a tree (has children).
+        """ Check if the constituent is leaf constituent (no children) or inside a trees (has children).
         :return: bool
         """
         raise NotImplementedError

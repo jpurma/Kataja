@@ -30,7 +30,7 @@ import kataja.globals as g
 
 class BracketedLinearization(BaseVisualization):
     """ This should give the commonly used bracket notation, but instead of plain text, the elements are kataja
-    nodes and the structure can be edited like any tree. Reselecting BracketedLinearization switches between different
+    nodes and the structure can be edited like any trees. Reselecting BracketedLinearization switches between different
     modes of showing brackets:
 
     0 - g.NO_BRACKETS - no brackets

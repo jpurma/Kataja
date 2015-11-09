@@ -725,7 +725,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             if not normalizable:
                 can_normalize = False
 
-        # normalize movement so that the tree won't glide away
+        # normalize movement so that the trees won't glide away
         ln = len(md['nodes'])
         if ln and can_normalize:
             avg = div_xyz(md['sum'], ln)

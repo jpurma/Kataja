@@ -87,7 +87,7 @@ class ForestKeeper(BaseModel):
         return treelist
 
     def create_forests(self, treelist):
-        """ This will read list of strings where each line defines a tree or an element of tree. Example:
+        """ This will read list of strings where each line defines a trees or an element of trees. Example:
 
         [.AspP [.Asp\\Ininom] [.vP [.KP [.K\\ng ] [.DP [.D´ [.D ] [.NP\\lola ]] [.KP [.K\\ng]
         [.DP [.D´ [.D ] [.NP\\alila ] ] [.KP\\{ni Maria} ]]]]] [.v´ [.v ] [.VP [.V ] [.KP\\{ang tubig}]]]]]
@@ -100,8 +100,8 @@ class ForestKeeper(BaseModel):
         ang tubig = ANG water
         'Maria's grandmother's servant drank the water'
 
-        :param treelist: list of strings, where a line can be a bracket tree or definition line for element
-        in a tree
+        :param treelist: list of strings, where a line can be a bracket trees or definition line for element
+        in a trees
         """
         # Clear this screen before we start creating a mess
         ctrl.undo_disabled = True  # disable tracking of changes (e.g. undo)
@@ -109,13 +109,13 @@ class ForestKeeper(BaseModel):
             self.forest.retire_from_drawing()
         self.forests = []
 
-        # buildstring is the bracket tree or trees.
+        # buildstring is the bracket trees or trees.
         buildstring = []
-        # definitions includes given definitions for constituents of this tree
+        # definitions includes given definitions for constituents of this trees
         definitions = {}
-        # gloss_text is the gloss for whole tree
+        # gloss_text is the gloss for whole trees
         gloss_text = ''
-        # comments are internal notes about the tree, displayed as help text or something
+        # comments are internal notes about the trees, displayed as help text or something
         comments = []
         started_forest = False
 
@@ -146,14 +146,14 @@ class ForestKeeper(BaseModel):
                                            gloss_text=gloss_text,
                                            comments=comments))
                 started_forest = False
-            # tree definition starts a new forest
+            # trees definition starts a new forest
             elif line and not started_forest:
                 started_forest = True
                 buildstring = line
                 definitions = {}
                 gloss_text = ''
                 comments = []
-            # another tree definition, append to previous
+            # another trees definition, append to previous
             elif line:
                 buildstring += '\n' + line
         if started_forest:  # make sure that the last forest is also added

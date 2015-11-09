@@ -528,7 +528,7 @@ class BaseConstituentNode(Node):
         """
         children = ctrl.forest.list_nodes_once(self)
 
-        for tree in self.tree:
+        for tree in self.trees:
             dragged_index = tree.sorted_constituents.index(self)
             for i, node in enumerate(tree.sorted_constituents):
                 if node is not self and i > dragged_index and node in children:

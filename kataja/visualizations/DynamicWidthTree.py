@@ -33,7 +33,7 @@ class DynamicWidthTree(BaseVisualization):
     """
 
     """
-    name = 'Dynamic width tree'
+    name = 'Dynamic width trees'
 
 
     def __init__(self):
@@ -116,9 +116,9 @@ class DynamicWidthTree(BaseVisualization):
         node_x, node_y, node_z = node.current_position
 
         #vn = list(self.forest.visible_nodes())
-        # for tree in self._linear:
-        #     my_tree = node in tree
-        #     for other in tree:
+        # for trees in self._linear:
+        #     my_tree = node in trees
+        #     for other in trees:
         #         other_x, other_y, other_z = other.current_position
         #         if other is node:
         #             continue
@@ -185,7 +185,7 @@ class DynamicWidthTree(BaseVisualization):
 
 
     def draw(self):
-        """ Draws the tree from bottom to top, trying to fit every horizontal row to as small as possible """
+        """ Draws the trees from bottom to top, trying to fit every horizontal row to as small as possible """
         edge_height = prefs.edge_height
         edge_width = prefs.edge_width
         rows = []

@@ -366,9 +366,9 @@ class LayeredParser(BaseParser):
         # self.forest.
         # print self._layers
 
-        # tree= r'''[ {Hei} [ sana\komento{parametri} {pitempi kokonaisuus_{toinen kokonaisuus}}]]'''
-        # tree= r''' [ Jukka [ {Salla vai}{muuta ei} ] ]'''
+        # trees= r'''[ {Hei} [ sana\komento{parametri} {pitempi kokonaisuus_{toinen kokonaisuus}}]]'''
+        # trees= r''' [ Jukka [ {Salla vai}{muuta ei} ] ]'''
 
         # p=Parser()
-        # out= p.parse(tree)
+        # out= p.parse(trees)
 

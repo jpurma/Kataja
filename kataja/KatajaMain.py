@@ -154,7 +154,7 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
     # #############################################################
 
     def change_forest(self, forest):
-        """ Tells the scene to remove current tree and related data and
+        """ Tells the scene to remove current trees and related data and
         change it to a new one
         :param forest:
         """
@@ -364,7 +364,7 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
     # noinspection PyMethodMayBeStatic
     def can_top_merge(self):
         """ Check if the selected node can be merged upwards to the root node
-        of its current tree.
+        of its current trees.
         :return: bool
         """
         return ctrl.single_selection() and not ctrl.get_single_selected(

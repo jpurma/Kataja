@@ -124,9 +124,9 @@ class AttributeNode(Node):
 
         """
         if self.attribute_id == 'select_order':
-            self.help_text = "'{host}' was Selected {value_ordinal} when constructing the tree."
+            self.help_text = "'{host}' was Selected {value_ordinal} when constructing the trees."
         elif self.attribute_id == 'merge_order':
-            self.help_text = "'{host}' was Merged {value_ordinal} when constructing the tree."
+            self.help_text = "'{host}' was Merged {value_ordinal} when constructing the trees."
 
     def set_help_text(self, text):
         """

@@ -168,7 +168,7 @@ class FL(BaseModel):
                 constituent implements ordered_parts -method that can return [left, right] lists or
                 even [first, second, third... ] lists. Precedence is computed by going through such
                 trees from top down, left first and trying to match i and j. Once both are found from
-                a same tree, their precedence can be stated. """
+                a same trees, their precedence can be stated. """
             o = const.ordered_parts()
             for c in o:
                 result, found_i, found_j = _implicit(c, i, j, found_i, found_j)
@@ -289,7 +289,7 @@ class FL(BaseModel):
 
 
     def k_disconnect(self, parent, child):
-        """ Tries to remove parent-child connection. Primitive: may leave binary tree to have empty
+        """ Tries to remove parent-child connection. Primitive: may leave binary trees to have empty
         branch.
         :param parent:
         :param child:
@@ -437,7 +437,7 @@ class FL(BaseModel):
     #
     #
     # def CCommands(self, A, B, context):
-    #     """ C-Command edge needs the root constituent of the tree as a context, as
+    #     """ C-Command edge needs the root constituent of the trees as a context, as
     #         my implementation of FL tries to do without constituents having access to their parents
     #     :param context:
     #     :param B:

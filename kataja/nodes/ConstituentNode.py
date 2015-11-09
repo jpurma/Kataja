@@ -43,7 +43,7 @@ def strip_xbars(al):
 
 class ConstituentNode(BaseConstituentNode):
     """ ConstituentNode is enriched with few fields that have no syntactic meaning but help with
-     reading the tree aliases, indices and glosses.
+     reading the trees aliases, indices and glosses.
     """
     name = ('Constituent', 'Constituents')
     short_name = "CN"
@@ -73,7 +73,7 @@ class ConstituentNode(BaseConstituentNode):
                     'pull': .24, 'visible': True, 'arrowhead_at_start': False,
                     'arrowhead_at_end': False, 'labeled': False}
 
-    # Touch areas are UI elements that scale with the tree: they can be
+    # Touch areas are UI elements that scale with the trees: they can be
     # temporary shapes suggesting to drag or click here to create the
     # suggested shape.
 
@@ -100,7 +100,7 @@ class ConstituentNode(BaseConstituentNode):
     touch_areas_when_selected = {g.LEFT_ADD_TOP: {'condition': 'is_top_node',
                                                   'action': 'add_top_left'},
                                  g.RIGHT_ADD_TOP: {'condition': 'is_top_node',
-                                                   'action': 'add_top_left'},
+                                                   'action': 'add_top_right'},
                                  g.LEFT_ADD_SIBLING: {'place': 'edge_up',
                                                       'action': 'add_sibling_left'},
                                  g.RIGHT_ADD_SIBLING: {'place': 'edge_up',
@@ -136,7 +136,7 @@ class ConstituentNode(BaseConstituentNode):
         self._projection_qcolor = None
 
         # ### Cycle index stores the order when node was originally merged to structure.
-        # going up in tree, cycle index should go up too
+        # going up in trees, cycle index should go up too
 
         # ## use update_visibility to change these: visibility of particular elements
         # depends on many factors
@@ -333,7 +333,7 @@ class ConstituentNode(BaseConstituentNode):
         else:
             return "anonymous constituent"
 
-        return "constituent '%s' from trees %s" % (l, [t.save_key for t in self.tree])
+        return "constituent '%s' from trees %s" % (l, [t.save_key for t in self.trees])
 
     def as_bracket_string(self):
         """ returns a simple bracket string representation """
@@ -416,7 +416,7 @@ class ConstituentNode(BaseConstituentNode):
         """
 
         def find_original(node, head):
-            """ Go down in tree until the final matching label/alias is found.
+            """ Go down in trees until the final matching label/alias is found.
             :param node: where to start searching
             :param head:
             :return:

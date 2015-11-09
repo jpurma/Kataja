@@ -32,7 +32,7 @@ class BalancedTree(BaseVisualization):
     """
 
     """
-    name = 'Balanced tree'
+    name = 'Balanced trees'
 
     def __init__(self):
         BaseVisualization.__init__(self)
@@ -80,7 +80,7 @@ class BalancedTree(BaseVisualization):
 
     # @time_me
     def draw(self):
-        """ Draws the tree from bottom to top, trying to fit every horizontal row to as small as possible """
+        """ Draws the trees from bottom to top, trying to fit every horizontal row to as small as possible """
         edge_height = prefs.edge_height
         edge_width = prefs.edge_width
         rows = []

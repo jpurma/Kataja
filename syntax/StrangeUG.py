@@ -92,7 +92,7 @@ class UG:
         return new
 
     def CCommands(self, A, B, context):
-        """ C-Command edge needs the root constituent of the tree as a context, as
+        """ C-Command edge needs the root constituent of the trees as a context, as
         :param A:
         :param B:
         :param context:

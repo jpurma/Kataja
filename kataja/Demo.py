@@ -86,7 +86,7 @@ t5 = """
    - Skins / themes
    - Radial menus
    - Three views: 
-        - Classic tree
+        - Classic trees
         - Linearized view
         - Elastic
    - 'Dumb syntax': Merge operation, reading structures from file

@@ -33,7 +33,7 @@ class LinearizedStaticTree(BalancedTree):
     """
 
     """
-    name = 'Linearized static tree'
+    name = 'Linearized static trees'
 
     def __init__(self):
         BalancedTree.__init__(self)

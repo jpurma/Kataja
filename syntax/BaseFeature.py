@@ -69,7 +69,7 @@ class BaseFeature(IFeature):
         d) other string based value
         e) list of strings so that feature can satisfy several roles
         f) list of Features and strings, where strings are the values that this feature is bringing in, and
-            other Features bring recursively their values. (Feature tree)
+            other Features bring recursively their values. (Feature trees)
 
         when accessed with singular -- "value" -- the returned result is bool, str or ITextNode. This is a helper
           feature for syntactic models that have single value for features.
@@ -89,7 +89,7 @@ class BaseFeature(IFeature):
         d) other string based value
         e) list of strings so that feature can satisfy several roles
         f) list of Features and strings, where strings are the values that this feature is bringing in, and
-            other Features bring recursively their values. (Feature tree)
+            other Features bring recursively their values. (Feature trees)
 
         when set with a singular "value" the value cannot be a list (it will be stored in a list anyways)
         :param value: bool, str, ITextNode

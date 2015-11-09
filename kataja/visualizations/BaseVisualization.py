@@ -284,8 +284,8 @@ class BaseVisualization:
         return True
 
     def _compute_traces_to_draw(self, rotator):
-        """ This is complicated, but returns a dictionary that tells for each index key (used by chains) in which position at tree to draw the node. Positions are identified by key of their immediate parent: {'i': ConstituentNode394293, ...} """
-        # highest row = index at tree
+        """ This is complicated, but returns a dictionary that tells for each index key (used by chains) in which position at trees to draw the node. Positions are identified by key of their immediate parent: {'i': ConstituentNode394293, ...} """
+        # highest row = index at trees
         # x = cannot be skipped, last instance of that trace
         # i/j/k = index key
         # rows = rotation

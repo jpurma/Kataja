@@ -501,7 +501,7 @@ class DeleteArrowTouchArea(TouchArea):
 
 class BranchingTouchArea(TouchArea):
     """ TouchArea that connects to edges and has /-shape. Used to add/merge
-    nodes in middle of the tree.
+    nodes in middle of the trees.
     :param host:
     :param type:
     :param ui_key:
@@ -564,7 +564,7 @@ class BranchingTouchArea(TouchArea):
 
 class LeftAddSibling(BranchingTouchArea):
     """ TouchArea that connects to edges and has /-shape. Used to add/merge
-    nodes in middle of the tree.
+    nodes in middle of the trees.
     :param host:
     :param type:
     :param ui_key:
@@ -638,7 +638,7 @@ class LeftAddSibling(BranchingTouchArea):
 
 class RightAddSibling(BranchingTouchArea):
     """ TouchArea that connects to edges and has /-shape. Used to add/merge
-    nodes in middle of the tree.
+    nodes in middle of the trees.
     :param host:
     :param type:
     :param ui_key:
@@ -712,7 +712,7 @@ class RightAddSibling(BranchingTouchArea):
 
 class JointedTouchArea(TouchArea):
     """ TouchArea that connects to nodes and has ^-shape. Used to add nodes
-    to top of the tree.
+    to top of the trees.
     :param host:
     :param type:
     :param ui_key:

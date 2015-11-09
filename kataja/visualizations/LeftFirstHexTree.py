@@ -35,7 +35,7 @@ class LeftFirstHexTree(BaseVisualization):
     """ Visualization that draws branches, starting from top and left.
     Each branching creates 120° angle, so trees are drawn in something resembling a hex grid.
     Each branch takes the space it needs, and may force next branch drawing to further down and right. """
-    name = 'Hexagonal tree'
+    name = 'Hexagonal trees'
 
     def __init__(self):
         BaseVisualization.__init__(self)

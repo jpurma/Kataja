@@ -88,7 +88,7 @@ When nodes that don't use physics are dragged, the adjustment.
         self.current_position = ((random.random() * 150) - 75, (random.random() * 150) - 75, 0)
         self.z = 0
         self._dragged = False
-        self.tree = set() # each Movable belongs to some tree, either formed by Movable alone or set
+        self.trees = set() # each Movable belongs to some trees, either formed by Movable alone or set
         # of Movables. Tree has abstract position adjustment information.
 
         # MOVE_TO -fields

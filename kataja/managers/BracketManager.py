@@ -31,7 +31,7 @@ class BracketManager:
 
     @staticmethod
     def find_leftmost(node):
-        """ Helper method for handling brackets: traverse down a tree and find the leftmost node
+        """ Helper method for handling brackets: traverse down a trees and find the leftmost node
          of branch
         :param node: node to traverse from, only allow this kind of nodes
         :return: tuple (depth, leftmost_node)
@@ -48,7 +48,7 @@ class BracketManager:
 
     @staticmethod
     def find_rightmost(node):
-        """ Helper method for handling brackets: traverse down a tree and find the rightmost node
+        """ Helper method for handling brackets: traverse down a trees and find the rightmost node
          of branch
         :param node: node to traverse from, only allow this kind of nodes
         :return: tuple (depth, rightmost_node)
@@ -100,7 +100,7 @@ class BracketManager:
             Update bracket positions and update their visibility.
             Bracket dict should be temporary reference,
             created only when using brackets and
-            not saved with the tree.
+            not saved with the trees.
         """
         # print('updating brackets')
         self._bracket_slots = {}

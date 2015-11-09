@@ -117,7 +117,7 @@ class FL:
 
 
     def CCommands(self, A, B, context):
-        """ C-Command edge needs the root constituent of the tree as a context, as
+        """ C-Command edge needs the root constituent of the trees as a context, as
             my implementation of FL tries to do without constituents having access to their parents
         :param context:
         :param B:

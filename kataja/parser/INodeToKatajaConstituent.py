@@ -43,8 +43,8 @@ class INodeToKatajaConstituent(BaseParser):
         return result
 
     def parse_inode_into_tree(self, inode):
-        """ Parses inode into constituentnodes, but prepare a temporary tree that can be assigned
-        for created nodes so they don't each end up creating their own tree or get lost.
+        """ Parses inode into constituentnodes, but prepare a temporary trees that can be assigned
+        for created nodes so they don't each end up creating their own trees or get lost.
         :param inode:
         :return:
         """

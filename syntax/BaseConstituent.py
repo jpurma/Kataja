@@ -75,7 +75,7 @@ class BaseConstituent(IConstituent):
             return False
 
     def print_tree(self):
-        """ Bracket tree representation of the constituent structure. Now it is same as str(self).
+        """ Bracket trees representation of the constituent structure. Now it is same as str(self).
         :return: str
         """
         return self.__repr__()
@@ -190,7 +190,7 @@ class BaseConstituent(IConstituent):
             del self.features[key]
 
     def is_leaf(self):
-        """ Check if the constituent is leaf constituent (no children) or inside a tree (has children).
+        """ Check if the constituent is leaf constituent (no children) or inside a trees (has children).
         :return: bool
         """
         return not self.parts
