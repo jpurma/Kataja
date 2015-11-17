@@ -37,8 +37,12 @@ class Label(QtWidgets.QGraphicsTextItem):
         """ Give node as parent. Label asks it to produce text to show here """
         QtWidgets.QGraphicsTextItem.__init__(self, parent)
         self._host = parent
-        self.y_offset = 0
-        self.total_height = 0
+        self.top_y = 0
+        self.top_row_y = 0
+        self.bottom_row_y = 0
+        self.bottom_y = 0
+        self.triangle_is_present = False
+        self.triangle_height = 20
         self.setDocument(LabelDocument())
 
     def update_label(self, font, inode):
@@ -53,14 +57,44 @@ class Label(QtWidgets.QGraphicsTextItem):
         INodeToLabelDocument.parse_inode(inode, doc)
         self.setTextWidth(doc.idealWidth())
         brect = self.boundingRect()
-        self.total_height = brect.height() + self.y_offset
-        self.setPos(brect.width() / -2.0, (self.total_height / -2.0) + self.y_offset)
+        w = brect.width()
+        h = brect.height()
+        h2 = h / 2.0
+        l = self.document().lineCount()
+        self.top_y = -h2
+        #print('label linecount: ', l)
+        if l > 1:
+            if self.triangle_is_present:
+                avg_line_height = (h - self.triangle_height) / float(l)
+                th = (self.triangle_height + avg_line_height) / 2
+                self.top_row_y = -th + 2
+                self.bottom_row_y = th - 2
+            else:
+                avg_line_height = h / float(l)
+                ah = avg_line_height / 2
+                self.top_row_y = -ah + 2
+                self.bottom_row_y = ah - 2
+        else:
+            self.top_row_y = 0
+            self.bottom_row_y = 0
+        #print(self.top_row_y, self.bottom_row_y)
+        self.bottom_y = h2
+        self.setPos(w / -2.0, self.top_y)
+
 
     def is_empty(self):
         """ Turning this node into label would result in an empty label.
         :return: bool
         """
         return not self._host.as_inode()
+
+
+    def get_top_row_y(self):
+        return self.top_row_y
+
+    def get_bottom_row_y(self):
+        return self.bottom_row_y
+
 
     def paint(self, painter, option, widget):
         """ Painting is sensitive to mouse/selection issues, but usually with

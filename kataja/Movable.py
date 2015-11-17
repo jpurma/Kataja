@@ -26,6 +26,7 @@ import random
 
 from PyQt5 import QtWidgets, QtCore, QtGui
 
+from kataja.globals import TOP, TOP_ROW, MIDDLE, BOTTOM_ROW, BOTTOM
 from kataja.singletons import prefs, qt_prefs, ctrl
 from kataja.BaseModel import BaseModel, Saved
 from kataja.utils import add_xyz, sub_xy, multiply_xyz, div_xyz, sub_xyz, time_me
@@ -145,14 +146,28 @@ When nodes that don't use physics are dragged, the adjustment.
 
     # ## Movement ##############################################################
 
-    def move_to(self, x, y, z, after_move_function=None):
+    def move_to(self, x, y, z, after_move_function=None, valign=MIDDLE):
         """ Start movement to given position
         :param x:
         :param y:
         :param z:
         :param after_move_function: Function to call when the movement is finished
+        :param valign: What position inside the moved item should correspond to given coordinates.
+        By default align is in center, but often you may want to move items
+        so that e.g. their top rows are aligned.
+        Values are TOP(0), TOP_ROW(1), MIDDLE(2), BOTTOM_ROW(3) and BOTTOM(4)_
         :return:
         """
+        if valign == MIDDLE:
+            pass
+        elif valign == TOP:
+            y -= self.boundingRect().top()
+        elif valign == TOP_ROW:
+            y -= self.get_top_row_y()
+        elif valign == BOTTOM_ROW:
+            y -= self.get_bottom_row_y()
+        elif valign == BOTTOM:
+            y -= self.boundingRect().bottom()
         if (x, y, z) == self.target_position:
             # already moving there
             return
@@ -160,6 +175,19 @@ When nodes that don't use physics are dragged, the adjustment.
         if after_move_function:
             self.after_move_function = after_move_function
         self.start_moving()
+
+    def get_bottom_row_y(self):
+        """ Implement this if the movable has content where differentiating between bottom row and top row can potentially make sense.
+        :return:
+        """
+        return 0
+
+    def get_top_row_y(self):
+        """ Implement this if the movable has content where differentiating between bottom row and top row can potentially make sense.
+        :return:
+        """
+        return 0
+
 
     def move(self, md):
         """ Do one frame of movement: either move towards target position or

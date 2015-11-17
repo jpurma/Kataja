@@ -176,6 +176,7 @@ class LeftFirstTree(BaseVisualization):
         # same for extra tall nodes. move everything down after that row
 
         all_nodes = set(self.forest.get_constituent_nodes())
+        merged_grid.ascii_dump()
         for y_i, row in enumerate(merged_grid):
             extra_height = 0
             prev_width = 0
@@ -195,7 +196,7 @@ class LeftFirstTree(BaseVisualization):
                         extra_width[x_i] = math.ceil(
                             width_spillover / float(edge_width)) * edge_width
                     x += extra_width[x_i]
-                    node.move_to(x, y, 0)
+                    node.move_to(x, y, 0, valign=g.TOP_ROW)
                     prev_width = node.width
                     if not node in all_nodes:
                         print(

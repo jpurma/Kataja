@@ -61,7 +61,7 @@ class Grid:
                 else:
                     s.append('.')
             print(''.join(s))
-        print('x_adjustment: %s, y_adjustment: %s' % (self.x_adjustment, self.y_adjustment))
+        print('starting coords (%s, %s)' % (-self.x_adjustment, -self.y_adjustment))
 
     def get(self, x, y):
         """ Get object in grid at given coords. None if empty.
@@ -77,7 +77,7 @@ class Grid:
         else:
             return self.rows[y][x]
 
-    def set(self, x, y, item, w=1, h=1, raw=False):
+    def set(self, x, y, item, w=1, h=1, left=0, top=0, raw=False):
         """
         Put object into grid into coords x,y. If object should take several slots, use w and h to give its size.
         The grid is expanded to fit the object.
@@ -86,6 +86,8 @@ class Grid:
         :param item: node
         :param w: int
         :param h: int
+        :param left: int
+        :param top: int
         :param raw: bool -- if raw is True, don't use adjustments.
         :return: x_a, y_a -- if they were negative when given, this is the adjustment required
         """
@@ -104,23 +106,26 @@ class Grid:
             self.y_adjustment += 1
 
         if w > 1 or h > 1:
-            l = x - (w - 1) // 2
-            r = x + (w - 1) // 2
-            u = y - (h - 1) // 2
-            d = y + (h - 1) // 2
+            if left or top:
+                l = x + left
+                u = y + top
+            else:
+                w2 = (w - 1) // 2
+                h2 = (h - 1) // 2
+                l = x - w2
+                u = y - h2
             if l < 0:
-                r -= l
                 x -= l
                 l = 0
             if u < 0:
-                d -= u
                 y -= u
                 u = 0
-            for ny in range(u, d + 1):
-                for nx in range(l, r + 1):
+            for ny in range(u, u + h + 1):
+                for nx in range(l, l + w + 1):
                     self.set(nx, ny, 1)
             self.set(x, y, item)
         else:
+            #print('drawing point to ', x, y)
             while x > self.width - 1:
                 for row in self.rows:
                     row.append(0)

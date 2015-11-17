@@ -112,6 +112,14 @@ END_CUT = 'end_cut'
 CREATED = 1
 DELETED = 2
 
+# Font roles
 FONT_ROLES = [(MAIN_FONT, 'main'), (CONSOLE_FONT, 'console'), (BOLD_FONT, 'bold'),
               (ITALIC_FONT, 'italic'), (UI_FONT, 'ui'), (SMALL_FEATURE, 'small'),
               (SMALL_CAPS, 'small caps')]
+
+# Vertical align
+TOP = 0
+TOP_ROW = 1
+MIDDLE = 2
+BOTTOM_ROW = 3
+BOTTOM = 4

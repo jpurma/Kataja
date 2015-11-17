@@ -1,16 +1,17 @@
 import os
 import shutil
-import tempfile
-from kataja.globals import *
-from pathlib import Path
 import sys
+import tempfile
+from pathlib import Path
+
+from kataja.globals import *
 
 __author__ = 'purma'
 
-
 mac_fonts = {MAIN_FONT: ['Asana Math', 'Normal', 12], CONSOLE_FONT: ['Menlo', 'Normal', 10],
              UI_FONT: ['Helvetica Neue', 'Normal', 10], BOLD_FONT: ['STIX', 'Bold', 12],
-             ITALIC_FONT: ['Asana Math', 'Italic', 12], SMALL_CAPS: ['Helvetica Neue', 'Normal', 10],
+             ITALIC_FONT: ['Asana Math', 'Italic', 12],
+             SMALL_CAPS: ['Helvetica Neue', 'Normal', 10],
              SMALL_FEATURE: ['Helvetica Neue', 'Normal', 7]}
 
 linux_fonts = {MAIN_FONT: ['Asana Math', 'Normal', 12], CONSOLE_FONT: ['Courier', 'Normal', 10],
@@ -80,21 +81,19 @@ class RunningEnvironment:
         This is easier for development and active 'bold' use."""
         prefs_code = os.path.realpath(__file__)
         filename = __file__.split('/')[-1]
-        kataja_root = prefs_code[:-len('kataja/'+filename)]
+        kataja_root = prefs_code[:-len('kataja/' + filename)]
         self.resources_path = kataja_root + 'resources/'
         self.plugins_path = kataja_root + 'kataja/plugins'
         self.default_userspace_path = kataja_root
-
 
     def init_win_exe_paths(self):
         """ Is this enough for windows exe?
         :return:
         """
-        #my_path = Path(sys.argv[0]).parts
+        # my_path = Path(sys.argv[0]).parts
         self.plugins_path = 'plugins'
         self.resources_path = 'resources/'
         self.default_userspace_path = ''
-
 
     def init_mac_app_paths(self):
         """ When runnins as a mac app, the plugins directory is put to Application
@@ -110,11 +109,11 @@ class RunningEnvironment:
         self.default_userspace_path = os.path.expanduser('~/')
         # Make sure that 'plugins'-dir is available in Application Support
         library_kat = os.path.expanduser('~/Library/Application Support/Kataja')
-        self.plugins_path = library_kat+'/plugins'
+        self.plugins_path = library_kat + '/plugins'
         if not os.access(self.plugins_path, os.F_OK):
             os.makedirs(library_kat, exist_ok=True)
             if os.access(library_kat, os.W_OK):
                 local_plugin_path = app_path + '/Contents/Resources/lib/plugins'
                 if (not os.access(self.plugins_path, os.F_OK)) and os.access(local_plugin_path,
-                                                                         os.W_OK):
+                                                                             os.W_OK):
                     shutil.copytree(local_plugin_path, self.plugins_path)

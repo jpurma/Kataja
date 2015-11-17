@@ -601,6 +601,7 @@ syntactic_object: %s
             tx, ty, tz = tree.current_position
             return x - tx, y - ty
 
+
     # ### Children and parents
     # ####################################################
 
@@ -1011,6 +1012,26 @@ syntactic_object: %s
         """ implement if label can be modified by editing it directly """
         pass
 
+
+    def get_bottom_row_y(self):
+        """ Label should answer to this.
+        :return:
+        """
+        if self._label_complex:
+            return self._label_complex.get_bottom_row_y()
+        else:
+            return 0
+
+    def get_top_row_y(self):
+        """ Implement this if the movable has content where differentiating between bottom row and top row can potentially make sense.
+        :return:
+        """
+        if self._label_complex:
+            return self._label_complex.get_top_row_y()
+        else:
+            return 0
+
+
     # ## Qt overrides
     # ######################################################################
 
@@ -1085,7 +1106,7 @@ syntactic_object: %s
             self.label_rect = QtCore.QRectF(self._label_complex.x(), self._label_complex.y(), lbw,
                                             lbh)
             self.width = max((lbw, my_class.width))
-            self.height = max((lbh + self._label_complex.y_offset, my_class.height))
+            self.height = max((lbh, my_class.height))
             y = self.height / -2
             x = self.width / -2
         else:

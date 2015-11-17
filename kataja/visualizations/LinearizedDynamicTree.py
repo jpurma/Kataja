@@ -23,7 +23,7 @@
 # ############################################################################
 
 from kataja.singletons import prefs
-import kataja.globals as g
+from kataja.globals import NO_BRACKETS, BOTTOM_ROW, CONSTITUENT_NODE
 from kataja.visualizations.AsymmetricElasticTree import AsymmetricElasticTree
 
 
@@ -46,7 +46,7 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
         self.forest = forest
         if reset:
             self.forest.settings.show_constituent_edges = True
-            self.forest.settings.bracket_style = g.NO_BRACKETS
+            self.forest.settings.bracket_style = NO_BRACKETS
             max_height_steps = max([len(tree.sorted_nodes) for tree in self.forest])
             self.set_vis_data('max_height_steps', max_height_steps)
             self.set_vis_data('height_steps', max_height_steps / 2)
@@ -61,7 +61,7 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
         :param node:
         """
         super().reset_node(node)
-        if node.node_type == g.CONSTITUENT_NODE:
+        if node.node_type == CONSTITUENT_NODE:
             if node.is_leaf_node():
                 node.physics_x = False
                 node.physics_y = False
@@ -92,7 +92,7 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
 
         for tree in self.forest:
             top = tree.top
-            if top.node_type != g.CONSTITUENT_NODE:
+            if top.node_type != CONSTITUENT_NODE:
                 continue
             # linearized = ctrl.FL.Linearize(root.syntactic_object)
             depths = []
@@ -131,5 +131,5 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
                 node.physics_x = False
                 node.physics_y = False
                 node.physics_z = False
-                node.move_to(x, start_height, node.z)
+                node.move_to(x, start_height, node.z, valign=BOTTOM_ROW)
                 x += (nw / 2) + 10
