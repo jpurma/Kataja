@@ -462,8 +462,8 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         c = 0
         while open_references and c < 10:
             c += 1
-            print(len(savedata))
-            print('---------------------------')
+            #print(len(savedata))
+            #print('---------------------------')
             for obj in list(open_references.values()):
                 if hasattr(obj, 'save_key'):
                     obj.save_object(savedata, open_references)

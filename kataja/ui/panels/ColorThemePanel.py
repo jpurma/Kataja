@@ -45,7 +45,6 @@ class ColorPanel(UIPanel):
         :param mode:
         """
         mode_key = list(prefs.color_modes.keys())[mode]
-        print('changing color mode to:', mode, mode_key)
         ctrl.main.change_color_mode(mode_key)
 
     def create_theme_from_color(self, hsv):

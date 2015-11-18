@@ -60,7 +60,6 @@ class LeftFirstHexTree(BaseVisualization):
         :param forest:Forest
         :param reset:boolean
         """
-        print('preparing LeftFirstHexTree')
         self.forest = forest
         self._hits = {}
         self._max_hits = {}

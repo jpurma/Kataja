@@ -170,7 +170,6 @@ class PaletteManager:
      """
 
     def __init__(self, hsv_key=None):
-        print("*** Creating PaletteManager")
         try:
             f = open(running_environment.resources_path + 'colors.json', 'r', encoding='UTF-8')
             self.color_map = json.load(f)  # json.load(f, 'utf-8')
@@ -231,8 +230,6 @@ class PaletteManager:
                 remembered_value = ctrl.fs.last_key_color_for_mode(mode)
                 if remembered_value and not refresh:
                     self.hsv = list(remembered_value)
-                    print('Using remembered value ', self.hsv,
-                          ' for color mode ', mode)
                     self.compute_palette(self.hsv)
                     return
 
@@ -249,8 +246,6 @@ class PaletteManager:
             if not cold_start:
                 remembered_value = ctrl.fs.last_key_color_for_mode(mode)
                 if remembered_value and not refresh:
-                    print('Using remembered value ', self.hsv,
-                          ' for color mode ', mode)
                     self.hsv = list(remembered_value)
                     self.compute_palette(self.hsv)
                     return
@@ -267,8 +262,6 @@ class PaletteManager:
             if not cold_start:
                 remembered_value = ctrl.fs.last_key_color_for_mode(mode)
                 if remembered_value and not refresh:
-                    print('Using remembered value ', self.hsv,
-                          ' for color mode ', mode)
                     self.hsv = remembered_value
                     self.compute_palette(self.hsv)
                     return
@@ -299,7 +292,6 @@ class PaletteManager:
         if not data:
             data = prefs.custom_color_modes.get(mode, None)
             if not data:
-                print('**** Missing color mode data for "%s" ****' % mode)
                 data = prefs.color_modes['random']
         return data
 

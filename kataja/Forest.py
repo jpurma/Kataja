@@ -233,20 +233,6 @@ class Forest(BaseModel):
         _iterate(first)
         return result
 
-    def info_dump(self):
-        """
-        Show debug info about forest in console
-        """
-        if hasattr(self, 'save_key'):
-            print('----- Forest %s ------' % self.save_key)
-            print('| Nodes: %s' % len(self.nodes))
-            print('| Edges: %s' % len(self.edges))
-            print('| Others: %s' % len(self.others))
-            print('| Visualization: ', self.visualization)
-            print('| Color scheme: ', self.settings.hsv)
-        else:
-            print('odd forest, not initialized.')
-
     def visible_nodes(self):
         """ Any node that is visible. Ignore the type.
         :return:
@@ -306,7 +292,6 @@ class Forest(BaseModel):
 
         def _tree_as_text(tree, node, gap):
             """ Cheapo linearization algorithm for Node structures."""
-            print('tree_as_text ', tree, node, gap)
             l = []
             if node in tree.sorted_constituents:
                 i = tree.sorted_constituents.index(node)
@@ -468,9 +453,9 @@ class Forest(BaseModel):
     def draw(self):
         """ Update all trees in the forest according to current visualization
         """
+        print('------ draw forest ------')
         if not self.in_display:
             print("Why are we drawing a forest which shouldn't be in scene")
-        print('draw for forest called')
         sc = ctrl.graph_scene
         sc.stop_animations()
         for tree in self.trees:
@@ -795,8 +780,13 @@ class Forest(BaseModel):
         # after_init should take care that syntactic object is properly
         # reflected by node's connections (call node.reflect_synobj()?)
         node.after_init()
+        # resetting node by visualization is equal to initializing node for
+        # visualization. e.g. if nodes are locked to position in this vis,
+        # then lock this node.
+        if self.visualization:
+            self.visualization.reset_node(node)
+        # it should however inherit settings from relative, if such are given
         if relative:
-            print('created node %s relative to %s' % (node, relative))
             node.copy_position(relative)
         if pos:
             node.set_original_position(pos)
@@ -808,11 +798,6 @@ class Forest(BaseModel):
         self.add_to_scene(node)
         # node.fade_in()
 
-        # resetting node by visualization is equal to initializing node for
-        # visualization. e.g. if nodes are locked to position in this vis,
-        # then lock this node.
-        if self.visualization:
-            self.visualization.reset_node(node)
         return node
 
     def create_placeholder_node(self, pos):
@@ -1516,8 +1501,8 @@ class Forest(BaseModel):
             parent.rebuild_brackets()
         if hasattr(child, 'rebuild_brackets'):
             child.rebuild_brackets()
-        parent.update_label()
-        child.update_label()
+        parent.update_label(force_update=True)
+        child.update_label(force_update=True)
         #print('--- finished connect')
 
         return new_edge
@@ -1553,9 +1538,7 @@ class Forest(BaseModel):
             child = edge.end
         if hasattr(parent, 'head') and hasattr(child, 'head'):
             if parent.head is child.head:
-                print('trying to cut projection chain...')
                 if hasattr(parent, 'set_projection'):
-                    print('cutting projection chain...')
                     parent.set_projection(None)
         # then remove the edge
         if not edge:
@@ -1702,7 +1685,7 @@ class Forest(BaseModel):
         # unary/ binary children.
         # 1) Create the child as asked to do
         new_node = self.create_node(relative=parent)
-        new_node.current_position = pos
+        #new_node.current_position = pos
         if head_left:
             main_align = g.LEFT
             other_align = g.RIGHT
@@ -1719,7 +1702,7 @@ class Forest(BaseModel):
             else:
                 ox -= 40
             other_node = self.create_node(relative=parent)
-            other_node.current_position = ox, oy, oz
+            #other_node.current_position = ox, oy, oz
             self.connect_node(parent=parent, child=other_node, direction=other_align, fade_in=True)
         # 3) repair trees to include new nodes
         parent.update_trees()
@@ -1907,7 +1890,6 @@ class Forest(BaseModel):
         node.triangle = False
         fold_scope = (f for f in self.list_nodes_once(node) if f.folding_towards is node)
         for folded in fold_scope:
-            print('unfolding ', folded)
             folded.folding_towards = None
             folded.folded_away = False
             folded.copy_position(node)
@@ -1919,7 +1901,9 @@ class Forest(BaseModel):
         # won't be visible either.
         for folded in fold_scope:
             folded.update_visibility()
+        node.update_label(force_update=True)
         node.update_visibility()  # edges from triangle to nodes below
+
 
     def can_fold(self, node):
         """

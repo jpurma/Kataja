@@ -50,9 +50,10 @@ class ConstituentNode(BaseConstituentNode):
     display = True
     wraps = 'constituent'
 
-    visible = {'alias': {'order': 0},
-               'index': {'order': 1, 'align': 'line-end', 'style': 'subscript'},
-               'label': {'order': 2, 'getter': 'triangled_label'}, 'gloss': {'order': 3}, }
+    viewable = {'alias': {'order': 0},
+                'index': {'order': 1, 'align': 'line-end', 'style': 'subscript'},
+                'triangle': {'order': 2, 'special': 'triangle', 'readonly': True},
+                'label': {'order': 3, 'getter': 'triangled_label'}, 'gloss': {'order': 4}, }
     editable = {'alias': dict(name='Alias', order=3, prefill='alias',
                               tooltip='Non-functional readable label of the constituent'),
                 'index': dict(name='Index', order=6, align='line-end', width=20, prefill='i',
@@ -229,12 +230,18 @@ class ConstituentNode(BaseConstituentNode):
         if self._inode_changed:
             self._inode = super().as_inode()
             s = ctrl.forest.settings
+            alias_inode_part = self._inode.values.get('alias', None)
+            label_inode_part = self._inode.values.get('label', None)
             if self.is_leaf_node(only_visible=True) or self.triangle:
-                self._inode.values['alias']['visible'] = s.show_leaf_aliases
-                self._inode.values['label']['visible'] = s.show_leaf_labels
+                if alias_inode_part:
+                    alias_inode_part['visible'] = s.show_leaf_aliases
+                if label_inode_part:
+                    label_inode_part['visible'] = s.show_leaf_labels
             else:
-                self._inode.values['alias']['visible'] = s.show_internal_aliases
-                self._inode.values['label']['visible'] = s.show_internal_labels
+                if alias_inode_part:
+                    alias_inode_part['visible'] = s.show_internal_aliases
+                if label_inode_part:
+                    label_inode_part['visible'] = s.show_internal_labels
         return self._inode
 
     def if_changed_gloss(self, value):
@@ -295,8 +302,10 @@ class ConstituentNode(BaseConstituentNode):
                 name = "Root constituent"
             else:
                 name = "Inner constituent"
-            self.status_tip = "%s Alias: %s Label: %s is_leaf: %s" % (
-            name, alias, self.label, self.is_leaf_node())
+            self.status_tip = "%s Alias: %s Label: %s Target pos: %s, Adjustment: %s (%s), " \
+                              "Cur pos: %s" % (
+            name, alias, self.label, self.target_position, self.adjustment,
+            self.use_adjustment, self.current_position)
         else:
             self.status_tip = "Empty, but mandatory constituent position"
 

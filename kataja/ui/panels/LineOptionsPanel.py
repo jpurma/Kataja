@@ -107,7 +107,6 @@ class LineOptionsPanel(UIPanel):
         """ Choose which selectors to show and update their values
         :return: None
         """
-        print('updating panel')
         if ctrl.ui.scope == g.SELECTION:
             sd = self.build_shape_dict_for_selection()
             self.update_cp1()
@@ -314,7 +313,6 @@ class LineOptionsPanel(UIPanel):
         :param value: value given to the field
         :return:
         """
-        print('LineOptions panel alerted:', signal, field_name, value)
         if signal == 'scope_changed':
             self.update_panel()
         elif signal == 'edge_shape':

@@ -46,9 +46,9 @@ class FeatureNode(Node):
     display = True
     wraps = 'feature'
 
-    visible = {'key': {'order': 0},
-               'value': {'order': 1},
-               'family': {'order': 2}
+    viewable = {'key': {'order': 0},
+                'value': {'order': 1},
+                'family': {'order': 2}
                }
     editable = {'key': dict(name='Name', order=3, prefill='name',
                             tooltip='Name of the feature', syntactic=True),

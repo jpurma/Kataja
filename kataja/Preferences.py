@@ -251,7 +251,6 @@ class Preferences(object):
         if disable_saving_preferences:
             return
 
-        print('loading preferences')
         settings = QtCore.QSettings()
         for key, default_value in vars(self).items():
             if key in Preferences.not_saved:
@@ -344,7 +343,6 @@ class QtPreferences:
 
         :param preferences:
         """
-        print("Is anybody calling this? Qt preferences update.")
         self.prepare_fonts(preferences.fonts, preferences, running_environment)
         self.prepare_easing_curve(preferences._curve, preferences.move_frames)
 
@@ -393,7 +391,6 @@ class QtPreferences:
             font = self.fontdb.font(name, style, size)
             # print(name, font.exactMatch())
             if name == 'Asana Math' and not font.exactMatch():
-                print('Loading Asana Math locally')
                 self.fontdb.addApplicationFont(running_environment.resources_path +
                                                "Asana-Math.otf")
                 font = self.fontdb.font(name, style, size)

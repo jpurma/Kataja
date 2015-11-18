@@ -59,7 +59,6 @@ class DraggableNodeFrame(QtWidgets.QFrame):
         QtWidgets.QFrame.mousePressEvent(self, event)
 
     def mouseReleaseEvent(self, event):
-        print('frame release event')
         self.add_button.setDown(False)
         ctrl.ui.set_scope(self.key)
         ctrl.deselect_objects()

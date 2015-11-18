@@ -146,7 +146,7 @@ When nodes that don't use physics are dragged, the adjustment.
 
     # ## Movement ##############################################################
 
-    def move_to(self, x, y, z, after_move_function=None, valign=MIDDLE):
+    def move_to(self, x, y, z, after_move_function=None, valign=MIDDLE, can_adjust=True):
         """ Start movement to given position
         :param x:
         :param y:
@@ -156,8 +156,14 @@ When nodes that don't use physics are dragged, the adjustment.
         By default align is in center, but often you may want to move items
         so that e.g. their top rows are aligned.
         Values are TOP(0), TOP_ROW(1), MIDDLE(2), BOTTOM_ROW(3) and BOTTOM(4)_
+        :param can_adjust: can use movable's adjustment to adjust the target position
         :return:
         """
+        if self.use_adjustment and can_adjust:
+            ax, ay, az = self.adjustment
+            x += ax
+            y += ay
+            z += az
         if valign == MIDDLE:
             pass
         elif valign == TOP:
@@ -177,17 +183,18 @@ When nodes that don't use physics are dragged, the adjustment.
         self.start_moving()
 
     def get_bottom_row_y(self):
-        """ Implement this if the movable has content where differentiating between bottom row and top row can potentially make sense.
+        """ Implement this if the movable has content where differentiating between bottom row
+        and top row can potentially make sense.
         :return:
         """
         return 0
 
     def get_top_row_y(self):
-        """ Implement this if the movable has content where differentiating between bottom row and top row can potentially make sense.
+        """ Implement this if the movable has content where differentiating between bottom row
+        and top row can potentially make sense.
         :return:
         """
         return 0
-
 
     def move(self, md):
         """ Do one frame of movement: either move towards target position or

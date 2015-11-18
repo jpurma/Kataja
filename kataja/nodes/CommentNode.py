@@ -99,7 +99,6 @@ class CommentNode(Node):
 
 
     def dragging_my_arrow(self, dragged_type, dragged_item):
-        print(dragged_item, dragged_type)
         return True
 
     def __str__(self):

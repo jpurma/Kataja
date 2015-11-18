@@ -34,7 +34,7 @@ class IConstituent(BaseModel):
     """ IConstituent is the interface for constituents in syntax. """
 
     short_name = "I-C"
-    visible = []
+    viewable = []
     editable = []
     addable = []
 

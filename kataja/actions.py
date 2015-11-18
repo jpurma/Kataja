@@ -539,7 +539,6 @@ def change_style_scope(sender):
     :param selection: int scope identifier, from globals
     :return: None
     """
-    print('changing scope: ', sender)
     if sender:
         data = sender.currentData()
         ctrl.ui.scope = data
@@ -1045,8 +1044,6 @@ def new_element_accept(sender):
     else:
         node = ctrl.forest.create_node(synobj=None, pos=p2, node_type=node_type, text=text)
     if node:
-        print('target_position: %s, current_position: %s' % (str(node.current_position),
-                                                             str(node.target_position)))
         node.lock()
     embed.blur_away()
 

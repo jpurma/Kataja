@@ -1383,14 +1383,12 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
         """ Simple fade effect. The object exists already when fade starts.
         :return: None
         """
-        print('maybe fading in edge... ', self)
         if self._fade_in_active:
             return
         self._fade_in_active = True
         self.show()
         if self._fade_out_active:
             self._fade_anim.stop()
-        print('fading in edge ', self)
         self._fade_anim = QtCore.QPropertyAnimation(self, qbytes_opacity)
         self._fade_anim.setDuration(s)
         self._fade_anim.setStartValue(0.0)

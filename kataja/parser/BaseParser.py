@@ -142,7 +142,6 @@ class BaseParser:
                 features[key] = feature
         if gloss:
             features['gloss'] = gloss
-        print('parsed definitions, got ', features)
         return features
 
     def add_local_lexicon(self, C):

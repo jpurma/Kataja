@@ -59,21 +59,23 @@ class Label(QtWidgets.QGraphicsTextItem):
         brect = self.boundingRect()
         w = brect.width()
         h = brect.height()
-        h2 = h / 2.0
-        l = self.document().lineCount()
+        l = doc.lineCount()
+        inner_size = doc.size()
+        ih = inner_size.height()
+        iw = inner_size.width()
+        h2 = ih / 2.0
         self.top_y = -h2
-        #print('label linecount: ', l)
         if l > 1:
             if self.triangle_is_present:
-                avg_line_height = (h - self.triangle_height) / float(l)
-                th = (self.triangle_height + avg_line_height) / 2
-                self.top_row_y = -th + 2
-                self.bottom_row_y = th - 2
+                avg_line_height = (ih - self.triangle_height - 3) / float(l)
+                ah = (self.triangle_height + avg_line_height) / 2
+                self.top_row_y = -ah
+                self.bottom_row_y = ah
             else:
-                avg_line_height = h / float(l)
+                avg_line_height = (ih - 3) / float(l)
                 ah = avg_line_height / 2
-                self.top_row_y = -ah + 2
-                self.bottom_row_y = ah - 2
+                self.top_row_y = -ah
+                self.bottom_row_y = ah
         else:
             self.top_row_y = 0
             self.bottom_row_y = 0

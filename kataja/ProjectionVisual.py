@@ -78,7 +78,6 @@ class ProjectionData:
                 order_problem = True
             prev_node = node
         if order_problem and new_chain:
-            print('sorting the projection chain...')
             lowest = self.head
             sorted_chain = [lowest]
             new_chain = set(new_chain)
@@ -94,7 +93,6 @@ class ProjectionData:
                     lowest = found
                 else:
                     raise IndexError('broken projection chain: %s' % self.chain)
-            print('sorted chain:', sorted_chain)
             self.chain = sorted_chain
         else:
             self.chain = [self.head] + new_chain

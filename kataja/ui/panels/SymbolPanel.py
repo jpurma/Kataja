@@ -172,7 +172,6 @@ class SymbolPanel(UIPanel):
         :param item:
         :return:
         """
-        print("Item clicked")
         focus = ctrl.get_focus_object() or ctrl.main.graph_view.focusWidget()
         if focus and isinstance(focus, QtWidgets.QLineEdit):
             focus.insert(item.data(55)['char'])

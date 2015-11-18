@@ -186,7 +186,6 @@ class BaseVisualization:
             #if dist > 50:
             #    continue
             if dist == 0:
-                print("boing 1")
                 node_x += 5
                 continue
             safe_zone = (other.width + node.width) / 2

@@ -52,7 +52,6 @@ class BracketedLinearization(BaseVisualization):
         :param forest:Forest
         :param reset:boolean
         """
-        print("brackets -- prepare")
         self.forest = forest
         self._hits = {}
         self._max_hits = {}
@@ -82,7 +81,6 @@ class BracketedLinearization(BaseVisualization):
 
     def reselect(self):
         """ if there are different modes for one visualization, rotating between different modes is triggered here. """
-        print("brackets -- reselect")
         if self.forest.settings.bracket_style == g.NO_BRACKETS:
             self.forest.settings.bracket_style = g.MAJOR_BRACKETS
             ctrl.add_message('major brackets')

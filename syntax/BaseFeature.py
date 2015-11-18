@@ -39,7 +39,7 @@ class BaseFeature(IFeature):
     """
 
     short_name = "F"
-    visible = {'key': {'order': 1}, 'value': {'order': 2}, 'family': {'order': 3}}
+    viewable = {'key': {'order': 1}, 'value': {'order': 2}, 'family': {'order': 3}}
     editable = {'key': {'order': 1}, 'value': {'order': 2}, 'family': {'order': 3}}
     addable = {}
 

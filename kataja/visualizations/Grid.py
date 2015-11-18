@@ -135,7 +135,13 @@ class Grid:
                 self.rows.append(new_row)
                 self.height += 1
             try:
-                self.rows[y][x] = item
+                old_item = self.rows[y][x]
+                if old_item and hasattr(old_item, 'node_type'):
+                    print('*** prevented overwriting node in grid (%s, %s)' % (x, y))
+                    self.ascii_dump()
+                    print('** --- please fix the cause ---')
+                else:
+                    self.rows[y][x] = item
             except IndexError:
                 print('catched index error')
                 print(self.rows, len(self.rows), y, x)

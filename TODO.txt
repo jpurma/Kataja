@@ -4,9 +4,13 @@
 - Fix rare add branch -bug, that creates a node that is not recognized by visualization algorithm.
     + add to top right into new tree creates problem -- Fixed
     - Rare children who aren't in tree
-- Fix situation where tree is replaced as new node is added on top.
+        = maybe fixed already, could be caused by set grid overwriting nodes
++ Fix situation where tree is replaced as new node is added on top.
 - Fix parsing of currently broken trees and those that create too many Tree -objects.
 + Replace fade in Movable with QAnimation
 + Make all Movables to use QGraphicsObject (to support QAnimation)
 - Use fade for mouseover rectangles
 - Comments should keep their relative locations to nodes when visualization changes.
++ New branches don't always follow position adjustments of their parents.
++ Triangling an element makes it lose its adjustment
++ Opening a triangle leaves the label visible when it shouldn't

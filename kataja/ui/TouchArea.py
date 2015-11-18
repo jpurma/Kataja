@@ -353,18 +353,15 @@ class TouchArea(QtWidgets.QGraphicsObject):
         QtWidgets.QGraphicsObject.hoverLeaveEvent(self, event)
 
     def dragEnterEvent(self, event):
-        print('dragEnterEvent in TouchArea')
         self.dragged_over_by(event.mimeData().text())
         event.accept()
         QtWidgets.QGraphicsObject.dragEnterEvent(self, event)
 
     def dragLeaveEvent(self, event):
-        print('dragLeaveEvent in TouchArea')
         self.hovering = False
         QtWidgets.QGraphicsObject.dragLeaveEvent(self, event)
 
     def dropEvent(self, event):
-        print("dropEvent")
         self.hovering = False
         event.accept()
         message = self.drop(event.mimeData().text())

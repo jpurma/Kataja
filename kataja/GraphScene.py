@@ -537,7 +537,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         :param event:
         """
-        print('dragEnterEvent in GraphScene!')
         data = event.mimeData()
         if data.hasFormat("application/x-qabstractitemmodeldatalist"):
             event.acceptProposedAction()

@@ -108,8 +108,6 @@ class Equidistant3dTree(BaseVisualization):
                 rd_y = target_d_y - d_y
                 xvel += rd_x * edge.pull / ((i + 1) * (i + 1))  # first branch has strongest pull
                 yvel += rd_y * edge.pull  # / ((i + 1) * (i + 1))
-            else:
-                print('hidden edge ', edge)
 
         return xvel, yvel, 0
 

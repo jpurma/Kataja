@@ -41,7 +41,8 @@ def parse_itemplatenode_for_viewing(inode, document, options):
 
     cursor = QtGui.QTextCursor(document)
     postponed = [None]
-    is_empty = True
+    has_text = False
+    document.lines = []
 
     def write_subscript(index, cursor):
         old_format = QtGui.QTextCharFormat(cursor.charFormat())
@@ -51,7 +52,7 @@ def parse_itemplatenode_for_viewing(inode, document, options):
         write_node_to_document(index, cursor)
         cursor.setCharFormat(old_format)
 
-    def write_field(field_name, cursor, empty_line):
+    def write_field(field_name, cursor, has_text):
         d = inode.values[field_name]
         if not d.get('visible', True):
             return False
@@ -60,15 +61,21 @@ def parse_itemplatenode_for_viewing(inode, document, options):
             return False
         align = d.get('align', 'newline')
         if align == 'newline':
-            if not empty_line:
+            if has_text:
                 cursor.insertBlock()
+                document.lines.append(field_name)
         elif align == 'line-end':
-            if empty_line:
+            if not has_text:
                 postponed[0] = field_name
                 return False
         elif align == 'append':
-            if not empty_line:
+            if has_text:
                 cursor.insertText(' ')
+        special = d.get('special', None)
+        if special:
+            if special == 'triangle':
+                cursor.insertText('\n\n\n')
+                return True
         style = d.get('style', 'normal')
         if style == 'normal':
             write_node_to_document(v, cursor)
@@ -77,14 +84,14 @@ def parse_itemplatenode_for_viewing(inode, document, options):
         return True
 
     for field_name in inode.view_order:
-        if postponed[0] and not is_empty:
-            wrote_something = write_field(postponed[0], cursor, is_empty)
+        if postponed[0] and has_text:
+            wrote_something = write_field(postponed[0], cursor, has_text)
             if wrote_something:
                 postponed[0] = None
-                is_empty = False
-        wrote_something = write_field(field_name, cursor, is_empty)
-        if wrote_something:
-            is_empty = False
+        wrote_something = write_field(field_name, cursor, has_text)
+        if wrote_something and not has_text:
+            has_text = True
+            document.lines.append(field_name)
 
 
 def run_command(command, cursor):

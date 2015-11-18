@@ -179,13 +179,10 @@ class Node(Movable):
                 self.fade_in()
             self.update_visibility()
         if update_type == g.CREATED:
-            print('Node.CREATED. (%s)' % self.save_key)
             for edge in self.edges_up:
-                print('restoring connection up: %s %s %s ' % (edge, edge.start, self))
                 edge.connect_end_points(edge.start, self)
                 edge.update_end_points()
             for edge in self.edges_down:
-                print('restoring connection down: %s %s %s ' % (edge, self, edge.end))
                 edge.connect_end_points(self, edge.end)
                 edge.update_end_points()
         elif update_type == g.DELETED:
@@ -206,11 +203,11 @@ class Node(Movable):
         """
         :return:
         """
-        if self.syntactic_object and hasattr(self.syntactic_object.__class__, 'visible'):
-            synvis = self.syntactic_object.__class__.visible
+        if self.syntactic_object and hasattr(self.syntactic_object.__class__, 'viewable'):
+            synvis = self.syntactic_object.__class__.viewable
         else:
             synvis = {}
-        myvis = getattr(self.__class__, 'visible', {})
+        myvis = getattr(self.__class__, 'viewable', {})
         sortable = []
         for key, value in synvis.items():
             o = value.get('order', 50)
@@ -270,12 +267,9 @@ class Node(Movable):
         return self._editing_template
 
     def impose_order_to_inode(self):
-        """ Prepare inode (ITemplateNode) to match data structure of this
-        type of node
-        ITemplateNode has parsed input from latex trees to rows of text or
-        ITextNodes and
-        these can be mapped to match Node fields, e.g. label or index. The
-        mapping is
+        """ Prepare inode (ITemplateNode) to match data structure of this type of node
+        ITemplateNode has parsed input from latex trees to rows of text or ITextNodes and
+        these can be mapped to match Node fields, e.g. label or index. The mapping is
         implemented here, and subclasses of Node should make their mapping.
         :return:
         """
@@ -284,16 +278,17 @@ class Node(Movable):
 
         self._inode.values = {}
         self._inode.view_order = []
-        if self.syntactic_object and hasattr(self.syntactic_object.__class__, 'visible'):
-            synvis = self.syntactic_object.__class__.visible
+
+        if self.syntactic_object and hasattr(self.syntactic_object.__class__, 'viewable'):
+            syn_obj_viewable_fields = self.syntactic_object.__class__.viewable
         else:
-            synvis = {}
-        myvis = getattr(self.__class__, 'visible', {})
+            syn_obj_viewable_fields = {}
+        my_viewable_fields = getattr(self.__class__, 'viewable', {})
         sortable = []
-        for key, value in synvis.items():
+        for key, value in syn_obj_viewable_fields.items():
             o = value.get('order', 50)
             sortable.append((o, 0, key, value))
-        for key, value in myvis.items():
+        for key, value in my_viewable_fields.items():
             o = value.get('order', 50)
             sortable.append((o, 1, key, value))
         sortable.sort()
@@ -309,8 +304,7 @@ class Node(Movable):
                 self._inode.view_order.append(key)
 
     def update_values_from_inode(self):
-        """ Take values from given inode and set this object to have these
-        values.
+        """ Take values from given inode and set this object to have these values.
         :return:
         """
         for key, value_data in self._inode.values.items():
@@ -494,7 +488,9 @@ syntactic_object: %s
         return bool(self.trees & other.tree)
 
     def update_graphics_parent(self):
-        """ Update GraphicsItem.parentItem for this node. When parent is changed, the coordinate system switches to that of parent (or scene, if parent is None). If this happens, compute new position according to new parent so that there is no visible jump.
+        """ Update GraphicsItem.parentItem for this node. When parent is changed, the coordinate
+        system switches to that of parent (or scene, if parent is None). If this happens, compute
+         new position according to new parent so that there is no visible jump.
         :return:
         """
         old_parent = self.parentItem()
@@ -504,7 +500,6 @@ syntactic_object: %s
                 scene_position = self.current_scene_position
                 self.setParentItem(new_parent)
                 self.current_position = self.scene_position_to_tree_position(scene_position)
-                #print('translated node %s from scene_pos %s to scene_pos %s while current pos was %s and is now %s' % (self, str(scene_position), str(self.current_scene_position), str(op), str(self.current_position)))
         elif old_parent:
             self.current_position = self.current_scene_position
             self.setParentItem(None)
@@ -520,6 +515,7 @@ syntactic_object: %s
     def remove_from_tree(self, tree, recursive_down=False):
         """ Remove node from trees and remove the (graphicsitem) parenthood-relation.
         :param tree: Tree
+        :param recursive_down: bool -- do recursively remove child nodes from tree too
         :return:
         """
         if tree in self.trees:
@@ -553,9 +549,9 @@ syntactic_object: %s
             ctp = other.tree_position_to_scene_position(other.target_position)
             self.current_position = self.scene_position_to_tree_position(add_xyz(csp, shift))
             self.target_position = self.scene_position_to_tree_position(ctp)
-        self.adjustment = other.adjustment
         self.locked = other.locked
         self.use_adjustment = other.use_adjustment
+        self.adjustment = other.adjustment
         self.physics_x = other.physics_x
         self.physics_y = other.physics_y
         self.physics_z = other.physics_z
@@ -940,13 +936,16 @@ syntactic_object: %s
     # ### Labels and identity
     # ###############################################################
 
-    def update_label(self):
+    def update_label(self, force_update=False):
         """
 
+        :param force_update: Force inode recomposition and visibility checks
         :return:
         """
         if not self._label_complex:
             self._label_complex = Label(parent=self)
+        if force_update:
+            self._inode_changed = True
         self._label_complex.update_label(self.font, self.as_inode())
         self.update_label_visibility()
         self.update_bounding_rect()
@@ -1144,7 +1143,7 @@ syntactic_object: %s
         self.folding_towards = node
         self.use_adjustment = False
         x, y, z = node.current_position
-        self.move_to(x, y, z, after_move_function=self.finish_folding)
+        self.move_to(x, y, z, after_move_function=self.finish_folding, can_adjust=False)
         if ctrl.is_selected(self):
             ctrl.remove_from_selection(self)
         self.fade_out()
@@ -1315,8 +1314,6 @@ syntactic_object: %s
         ctrl.dragged_set = set()
         multidrag = False
         dragged_trees = set()
-        print('start dragging called')
-
         # if we are working with selection, this is more complicated, as there may be many nodes
         # and trees dragged at once, with one focus for dragging.
         if ctrl.is_selected(self):

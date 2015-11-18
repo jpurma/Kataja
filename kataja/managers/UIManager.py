@@ -754,7 +754,6 @@ class UIManager:
         :return:
         """
         ui_key = host.save_key + '_ta_' + str(type)
-        print(ui_key)
         return self.get_ui(ui_key)
 
     def create_touch_area(self, host, type, action):

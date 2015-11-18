@@ -44,7 +44,7 @@ class GlossNode(Node):
     short_name = "GNode"
     display = True
 
-    visible = {'label': {'order': 3}}
+    viewable = {'label': {'order': 3}}
     editable = {'label': dict(name='Gloss', order=3, prefill='gloss',
                               tooltip='translation (optional)')}
 

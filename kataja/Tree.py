@@ -67,7 +67,6 @@ class Tree(Movable):
         constituent and node lists.
         :return: new top
         """
-        print('recalculate top for ', self)
         passed = set()
 
         def walk_to_top(node: Node):

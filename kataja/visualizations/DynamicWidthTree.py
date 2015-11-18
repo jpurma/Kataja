@@ -147,13 +147,11 @@ class DynamicWidthTree(BaseVisualization):
                         # node is left to other, so dist_x should be negative
                         if dist_x > 0:
                             # jump to other side of node
-                            print('jump left', -(dist_x + safe_zone + 5), dist_x, safe_zone, other)
                             return -(dist_x + safe_zone + 5), 0, 0
                     elif index_diff > 0 and abs(dist_y) < 10:
                         # node is right to other, so dist_x should be positive
                         if dist_x < 0:
                             # jump to other side of node
-                            print('jump right', (-dist_x + safe_zone + 5), dist_x, safe_zone, other)
                             return (-dist_x + safe_zone + 5), 0, 0
 
                 required_dist = dist - safe_zone

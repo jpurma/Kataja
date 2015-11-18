@@ -45,7 +45,7 @@ class BaseConstituentNode(Node):
     short_name = "BCN"
     wraps = 'constituent'
 
-    visible = {'label': {'order': 1}}
+    viewable = {'label': {'order': 1}}
     editable = {'label': {'order': 1}}
     addable = {}
 

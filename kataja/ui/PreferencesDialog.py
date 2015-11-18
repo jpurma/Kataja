@@ -165,8 +165,8 @@ class PreferencesDialog(QtWidgets.QDialog):
         for key, value in vars(prefs).items():
             if not key.startswith('_'):
                 d = getattr(prefs, '_%s_ui' % key, {})
-                if d:
-                    print(d)
+                #if d:
+                #    print(d)
                 field_type = d.get('type', '')
                 if not field_type:
                     if isinstance(value, float):
@@ -177,7 +177,7 @@ class PreferencesDialog(QtWidgets.QDialog):
                         field_type = 'int_slider'
                     elif isinstance(value, dict):
                         continue
-                print('creating field for ', key, value)
+                #print('creating field for ', key, value)
                 label = d.get('label', '')
                 tab_key = d.get('tab', 'General')
                 widget, layout = self.get_tab(tab_key)

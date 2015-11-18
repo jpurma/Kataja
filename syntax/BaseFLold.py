@@ -86,7 +86,6 @@ class FL:
         """
         selected = self.merge_selects(left, right)
         new_id = selected.label
-        print("Merging with label from left constituent:", new_id)
         # remove index (_i, _j ...) from Merged id so that indexing won't get broken
         #res = re.search(r'[^\\]_\{(.*)\}', new_id) or re.search(r'[^\\]_(.)', new_id)
         #if res:
