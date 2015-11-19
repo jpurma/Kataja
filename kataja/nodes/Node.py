@@ -1146,6 +1146,7 @@ syntactic_object: %s
         self.move_to(x, y, z, after_move_function=self.finish_folding, can_adjust=False)
         if ctrl.is_selected(self):
             ctrl.remove_from_selection(self)
+        ctrl.forest.animation_started(self.save_key+'_fold')
         self.fade_out()
 
     def finish_folding(self):
@@ -1156,7 +1157,8 @@ syntactic_object: %s
         # update edge visibility from triangle to its immediate children
         if self.folding_towards in self.get_parents():
             self.folding_towards.update_visibility()
-        ctrl.forest.draw()
+        ctrl.forest.animation_finished(self.save_key+'_fold')
+        #ctrl.forest.draw()
 
     def paint_triangle(self, painter):
         """ Drawing the triangle, called from paint-method
@@ -1166,8 +1168,8 @@ syntactic_object: %s
         left = br.x()
         center = left + self.width / 2
         right = left + self.width
-        top = br.y()
-        bottom = br.y() + TRIANGLE_HEIGHT
+        top = self._label_complex.triangle_y
+        bottom = top + self._label_complex.triangle_height
 
         triangle = QtGui.QPainterPath()
         triangle.moveTo(center, top)

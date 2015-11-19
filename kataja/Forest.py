@@ -90,6 +90,7 @@ class Forest(BaseModel):
         self.select_counter = 0
         self.comments = []
         self.gloss_text = ''
+        self.ongoing_animations = set()
         self.guessed_projections = False
 
         if buildstring:
@@ -449,6 +450,23 @@ class Forest(BaseModel):
         return (x for x in self.nodes.values() if isinstance(x, AttributeNode))
 
     # Drawing and updating --------------------------------------------
+
+    def animation_started(self, key):
+        """ Announce animation that should be waited before redrawing
+        :param key:
+        :return:
+        """
+        self.ongoing_animations.add(key)
+
+    def animation_finished(self, key):
+        """ Check out animation that was waited for, when all are checked out, redraw forest
+        :param key:
+        :return:
+        """
+        if key in self.ongoing_animations:
+            self.ongoing_animations.remove(key)
+        if not self.ongoing_animations:
+            self.draw()
 
     def draw(self):
         """ Update all trees in the forest according to current visualization

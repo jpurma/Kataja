@@ -43,6 +43,7 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.bottom_y = 0
         self.triangle_is_present = False
         self.triangle_height = 20
+        self.triangle_y = 0
         self.setDocument(LabelDocument())
 
     def update_label(self, font, inode):
@@ -56,10 +57,8 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.setTextWidth(-1)
         INodeToLabelDocument.parse_inode(inode, doc)
         self.setTextWidth(doc.idealWidth())
-        brect = self.boundingRect()
-        w = brect.width()
-        h = brect.height()
         l = doc.lineCount()
+        print(doc.lines)
         inner_size = doc.size()
         ih = inner_size.height()
         iw = inner_size.width()
@@ -77,11 +76,13 @@ class Label(QtWidgets.QGraphicsTextItem):
                 self.top_row_y = -ah
                 self.bottom_row_y = ah
         else:
+            avg_line_height = ih
             self.top_row_y = 0
             self.bottom_row_y = 0
+        self.triangle_y = self.top_row_y + avg_line_height
         #print(self.top_row_y, self.bottom_row_y)
         self.bottom_y = h2
-        self.setPos(w / -2.0, self.top_y)
+        self.setPos(iw / -2.0, self.top_y)
 
 
     def is_empty(self):
