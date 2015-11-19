@@ -42,7 +42,7 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.bottom_row_y = 0
         self.bottom_y = 0
         self.triangle_is_present = False
-        self.triangle_height = 20
+        self.triangle_height = 0
         self.triangle_y = 0
         self.setDocument(LabelDocument())
 
@@ -58,30 +58,48 @@ class Label(QtWidgets.QGraphicsTextItem):
         INodeToLabelDocument.parse_inode(inode, doc)
         self.setTextWidth(doc.idealWidth())
         l = doc.lineCount()
-        print(doc.lines)
         inner_size = doc.size()
         ih = inner_size.height()
         iw = inner_size.width()
         h2 = ih / 2.0
         self.top_y = -h2
-        if l > 1:
-            if self.triangle_is_present:
-                avg_line_height = (ih - self.triangle_height - 3) / float(l)
-                ah = (self.triangle_height + avg_line_height) / 2
-                self.top_row_y = -ah
-                self.bottom_row_y = ah
-            else:
-                avg_line_height = (ih - 3) / float(l)
-                ah = avg_line_height / 2
-                self.top_row_y = -ah
-                self.bottom_row_y = ah
-        else:
-            avg_line_height = ih
+        self.bottom_y = h2
+        if l <= 1:
             self.top_row_y = 0
             self.bottom_row_y = 0
-        self.triangle_y = self.top_row_y + avg_line_height
-        #print(self.top_row_y, self.bottom_row_y)
-        self.bottom_y = h2
+        else:
+            avg_line_height = (ih - 3) / float(l)
+            half_height = avg_line_height / 2
+            if 'triangle' in doc.lines:
+                top_row_found = False
+                triangle_found = False
+                for i, line in enumerate(doc.lines):
+                    if (not top_row_found) and line == 'triangle':
+                        if i < 2:
+                            self.top_row_y = self.top_y + half_height
+                        else:
+                            self.top_row_y = self.top_y + (i * avg_line_height) + half_height
+                        top_row_found = True
+                    if (not triangle_found) and line == 'triangle':
+                        self.triangle_y = self.top_y + (i * avg_line_height) + 2
+                        triangle_found = True
+                    elif triangle_found and line != 'triangle':
+                        self.bottom_row_y = self.top_y + (i * avg_line_height) + half_height
+                        break
+                self.triangle_height = (avg_line_height * 2) - 4
+                self.triangle_is_present = True
+            else:
+                top_row = doc.lines[0]
+                self.top_row_y = self.top_y + half_height
+                bottom_row_found = False
+                for i, line in enumerate(doc.lines):
+                    if line != top_row:
+                        self.bottom_row_y = self.top_y + (i * avg_line_height) + half_height
+                        bottom_row_found = True
+                        break
+                if not bottom_row_found:
+                    self.bottom_row_y = self.top_row_y
+                self.triangle_is_present = False
         self.setPos(iw / -2.0, self.top_y)
 
 

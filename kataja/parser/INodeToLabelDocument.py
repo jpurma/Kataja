@@ -75,6 +75,7 @@ def parse_itemplatenode_for_viewing(inode, document, options):
         if special:
             if special == 'triangle':
                 cursor.insertText('\n')
+                document.lines.append(field_name)
                 return True
         style = d.get('style', 'normal')
         if style == 'normal':
