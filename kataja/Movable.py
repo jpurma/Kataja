@@ -208,10 +208,7 @@ When nodes that don't use physics are dragged, the adjustment.
         # MOVE_TO -based movement has priority over physics. This way e.g. triangles work without
         # additional stipulation
         elif self._move_counter:
-            if self.use_adjustment:
-                position = sub_xyz(self.current_position, self.adjustment)
-            else:
-                position = self.current_position
+            position = self.current_position
             # stop even despite the _move_counter, if we are close enough
             if about_there(position, self.target_position):
                 self.stop_moving()
@@ -393,14 +390,16 @@ When nodes that don't use physics are dragged, the adjustment.
         :param scene_pos: current drag focus
         :return:
         """
-        nx, ny = scene_pos
+        new_pos = scene_pos[0], scene_pos[1], self.z
         if self.use_physics():
             self.locked = True
+            self.current_position = new_pos
         else:
             self.use_adjustment = True
-            ax, ay, az = self.target_position
-            self.adjustment = (nx - ax, ny - ay, az)
-        self.current_position = nx, ny, self.z
+            diff = sub_xyz(new_pos, self.current_position)
+            self.adjustment = add_xyz(self.adjustment, diff)
+            self.target_position = new_pos
+            self.current_position = new_pos
 
     def dragged_over_by(self, dragged):
         """ When dragging other items on top of this item, should this item react, e.g. show somehow that item can be dropped on this.

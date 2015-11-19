@@ -12,6 +12,6 @@
 - Use fade for mouseover rectangles
 - Comments should keep their relative locations to nodes when visualization changes.
 + New branches don't always follow position adjustments of their parents.
-    - Adjusting previously adjusted nodes behaves weirdly
+    + Adjusting previously adjusted nodes behaves weirdly
 + Triangling an element makes it lose its adjustment
 + Opening a triangle leaves the label visible when it shouldn't
