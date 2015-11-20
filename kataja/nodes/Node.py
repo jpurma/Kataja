@@ -1503,7 +1503,8 @@ syntactic_object: %s
         was_locked = self.locked or self.use_adjustment
         super().lock()
         #if not was_locked:
-        ctrl.main.ui_manager.show_anchor(self)  # @UndefinedVariable
+        if self.is_visible():
+            ctrl.main.ui_manager.show_anchor(self)  # @UndefinedVariable
 
     # ### Mouse - Qt events ##################################################
 

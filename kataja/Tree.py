@@ -156,21 +156,22 @@ class Tree(Movable):
             min_x, min_y = 10000, 10000
             max_x, max_y = -10000, -10000
             for node in self.sorted_nodes:
-                nbr = node.boundingRect()
-                x, y = node.x(), node.y()
-                x1, y1, x2, y2 = nbr.getCoords()
-                x1 += x
-                y1 += y
-                x2 += x
-                y2 += y
-                if x1 < min_x:
-                    min_x = x1
-                if x2 > max_x:
-                    max_x = x2
-                if y1 < min_y:
-                    min_y = y1
-                if y2 > max_y:
-                    max_y = y2
+                if node.is_visible():
+                    nbr = node.boundingRect()
+                    x, y = node.x(), node.y()
+                    x1, y1, x2, y2 = nbr.getCoords()
+                    x1 += x
+                    y1 += y
+                    x2 += x
+                    y2 += y
+                    if x1 < min_x:
+                        min_x = x1
+                    if x2 > max_x:
+                        max_x = x2
+                    if y1 < min_y:
+                        min_y = y1
+                    if y2 > max_y:
+                        max_y = y2
             self._cached_bounding_rect = QtCore.QRectF(min_x, min_y, max_x - min_x, max_y - min_y)
             self.tree_changed = False
             return self._cached_bounding_rect

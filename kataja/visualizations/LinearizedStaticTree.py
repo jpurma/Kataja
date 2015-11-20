@@ -184,6 +184,5 @@ class LinearizedStaticTree(BalancedTree):
             width_now = offset_x
             for x, node in enumerate(row):
                 if node and isinstance(node, Movable):
-                    node.release()
                     node.move_to(width_now, height_now, 0, valign=g.TOP_ROW)
                 width_now += edge_width

@@ -2,7 +2,7 @@
 + Better add-triangle buttons (make them touchareas)
 - Draw better triangles
     + Improved them quite a lot
-    - fading locks appear for hidden nodes too, in their old places. And it looks like
+    + fading locks appear for hidden nodes too, in their old places. And it looks like
     viewport resize is also counting hidden nodes
 - Fix rare add branch -bug, that creates a node that is not recognized by visualization algorithm.
     + add to top right into new tree creates problem -- Fixed
@@ -18,3 +18,4 @@
     + Adjusting previously adjusted nodes behaves weirdly
 + Triangling an element makes it lose its adjustment
 + Opening a triangle leaves the label visible when it shouldn't
++ dragging in Linearized static trees doesn't store the position
