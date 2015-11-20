@@ -56,20 +56,27 @@ class Grid:
             for item in row:
                 if hasattr(item, 'node_type'):
                     s.append('O')
-                elif isinstance(item, int) and item == 1:
-                    s.append('|')
+                elif isinstance(item, int):
+                    if item == 1:
+                        s.append('/')
+                    elif item == 2:
+                        s.append('|')
+                    else:
+                        s.append('.')
                 else:
                     s.append('.')
             print(''.join(s))
         print('starting coords (%s, %s)' % (-self.x_adjustment, -self.y_adjustment))
 
-    def get(self, x, y):
+    def get(self, x, y, raw=False):
         """ Get object in grid at given coords. None if empty.
         :param x: int
         :param y: int
+        :param raw: don't use adjustment, coords begin at 0
         """
-        x += self.x_adjustment
-        y += self.y_adjustment
+        if not raw:
+            x += self.x_adjustment
+            y += self.y_adjustment
         if x < 0 or y < 0:
             return None
         if x > self.width - 1 or y > self.height - 1:
@@ -283,9 +290,10 @@ class Grid:
         return False
 
     def fill_path(self, path, marker=1):
-        """ Draws the line in grid given by path. Marker can be given as parameter, we usually use 1 for a line part.
+        """ Draws the line in grid given by path. Marker can be given as parameter, we usually
+        use 1 for a line part.
         :param path:
-        :param marker:
+        :param marker: 1 or 2
         :return:
         """
         for x, y in path:

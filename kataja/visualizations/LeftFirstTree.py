@@ -102,7 +102,10 @@ class LeftFirstTree(BaseVisualization):
                     path = grid.pixelated_path(x, y, nx, ny)
                     blocked = grid.is_path_blocked(path)
                     if not blocked:
-                        grid.fill_path(path)
+                        if nx > x:
+                            grid.fill_path(path, 2)
+                        else:
+                            grid.fill_path(path, 1)
                         self._put_to_grid(grid, child, nx, ny, parent=node)
                 #assert not blocked
                 first = False
@@ -120,6 +123,10 @@ class LeftFirstTree(BaseVisualization):
                     if not blocked:
                         # is the path to the right node position available?
                         path = grid.pixelated_path(x, y, nx, ny)
+                        if nx > x:
+                            path_marker = 2
+                        else:
+                            path_marker = 1
                         blocked = grid.is_path_blocked(path)
                         if not blocked:
                             # is there room for the left child of this node
@@ -141,7 +148,7 @@ class LeftFirstTree(BaseVisualization):
                     if blocked:
                         nx += x_step
                         ny += y_step
-                grid.fill_path(path)
+                grid.fill_path(path, path_marker)
                 self._put_to_grid(grid, child, nx, ny, parent=node)
                 nx += x_step
 
@@ -162,7 +169,7 @@ class LeftFirstTree(BaseVisualization):
                 self._put_to_grid(grid, tree.top, 0, 0)
                 merged_grid.merge_grids(grid, extra_padding=2)
                 # merged_grid = self._merge_grids(grid, merged_grid)
-
+        merged_grid.ascii_dump()
         offset_x = 0  # tree_w/-2
         y = 0
         # Actual drawing: set nodes to their places in scene
@@ -179,28 +186,41 @@ class LeftFirstTree(BaseVisualization):
         for y_i, row in enumerate(merged_grid):
             extra_height = 0
             prev_width = 0
+            prev_height = 0
+            prev_i = 0
+            prev_x = 0
             x = offset_x
             for x_i, node in enumerate(row):
-                if node and getattr(node, 'node_type',
-                                    '') == g.CONSTITUENT_NODE:
+                if node and getattr(node, 'node_type', '') == g.CONSTITUENT_NODE:
                     if not node.inner_rect:
                         node.update_bounding_rect()
                     height_spillover = node.inner_rect.bottom() - edge_height
                     if height_spillover > extra_height:
-                        extra_height = math.ceil(
-                            height_spillover / float(edge_height)) * edge_height
-                    width_spillover = ((node.width + prev_width) / 2) - (
-                    edge_width * 4)
+                        extra_height = math.ceil(height_spillover / float(edge_height)) * edge_height
+                    width_spillover = ((node.width + prev_width) / 2) - (edge_width * 4)
                     if width_spillover > extra_width[x_i]:
-                        extra_width[x_i] = math.ceil(
-                            width_spillover / float(edge_width)) * edge_width
+                        extra_width[x_i] = math.ceil(width_spillover / float(edge_width)) * edge_width
+                    # fix cases where bottom half of tall node is overlapped by edges from smaller
+                    # node beside it.
+                    if prev_height > node.height:
+                        if x_i >= 1 and y_i < merged_grid.height - 2:
+                            edge = merged_grid.get(x_i - 1, y_i + 1, raw=True)
+                            left_neighbor = merged_grid.get(x_i - 2, y_i, raw=True)
+                            if left_neighbor and edge and isinstance(edge, int):
+                                edge_box_left_x = x - node.width / 3 - edge_width
+                                prev_box_right_x = prev_x + (prev_width / 2)
+                                max_overlap = prev_box_right_x - edge_box_left_x
+                                if extra_width[x_i] < max_overlap:
+                                    extra_width[x_i] = max_overlap
+                                if extra_height < max_overlap:
+                                    extra_height = max_overlap
                     x += extra_width[x_i]
                     node.move_to(x, y, 0, valign=g.TOP_ROW)
                     prev_width = node.width
+                    prev_height = node.height
+                    prev_x = x
                     if not node in all_nodes:
-                        print(
-                            'non-visible node included in visualization grid: ',
-                            node)
+                        print('non-visible node included in visualization grid: ', node)
                     else:
                         all_nodes.remove(node)
                 else:

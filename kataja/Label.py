@@ -90,7 +90,7 @@ class Label(QtWidgets.QGraphicsTextItem):
                 self.triangle_is_present = True
             else:
                 top_row = doc.lines[0]
-                self.top_row_y = self.top_y + half_height
+                self.top_row_y = self.top_y + half_height + 3
                 bottom_row_found = False
                 for i, line in enumerate(doc.lines):
                     if line != top_row:
