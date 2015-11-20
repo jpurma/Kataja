@@ -1,6 +1,6 @@
 - Add visualization specific settings to visualization panel
 + Better add-triangle buttons (make them touchareas)
-- Draw better triangles
++ Draw better triangles
     + Improved them quite a lot
     + fading locks appear for hidden nodes too, in their old places. And it looks like
     viewport resize is also counting hidden nodes
@@ -21,3 +21,5 @@
 + dragging in Linearized static trees doesn't store the position
 - Edges and Nodes overlap or are too close in LeftFirstTree visualization
 + Edge shape changing is broken
+- When unfolding triangle containing another triangle, some edges from the contained triangle
+become visible

@@ -1181,18 +1181,28 @@ syntactic_object: %s
             painter.drawPath(triangle)
         else:
             c = self.contextual_color
-            path, lpath, foo = shapes.shaped_cubic_path(start_point=(center, top, self.z),
-                                                        end_point=(right, bottom, self.z),
-                                                        alignment=g.RIGHT)
-            painter.fillPath(path, c)
+            edge_type = self.__class__.default_edge_type
+            shape_name = ctrl.fs.edge_info(edge_type, 'shape_name')
+            presets = shapes.SHAPE_PRESETS[shape_name]
+            method = presets['method']
+            path, lpath, foo = method(start_point=(center, top, self.z),
+                                      end_point=(right, bottom, self.z),
+                                      alignment=g.RIGHT, **presets)
+            if presets['fill']:
+                painter.fillPath(path, c)
+            else:
+                painter.drawPath(path)
             triangle = QtGui.QPainterPath()
             triangle.moveTo(right, bottom)
             triangle.lineTo(left, bottom)
             painter.drawPath(triangle)
-            path, lpath, foo = shapes.shaped_cubic_path(start_point=(center, top, self.z),
-                                                        end_point=(left, bottom, self.z),
-                                                        alignment=g.LEFT)
-            painter.fillPath(path, c)
+            path, lpath, foo = method(start_point=(center, top, self.z),
+                                      end_point=(left, bottom, self.z),
+                                      alignment=g.LEFT, **presets)
+            if presets['fill']:
+                painter.fillPath(path, c)
+            else:
+                painter.drawPath(path)
 
 
     def on_press(self, value):
