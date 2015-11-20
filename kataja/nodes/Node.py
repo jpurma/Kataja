@@ -27,6 +27,7 @@ import itertools
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import Qt
 
+import shapes
 from kataja.ui.ControlPoint import ControlPoint
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.Label import Label
@@ -1170,13 +1171,29 @@ syntactic_object: %s
         right = left + self.width
         top = self._label_complex.triangle_y
         bottom = top + self._label_complex.triangle_height
+        simple = False
+        if simple:
+            triangle = QtGui.QPainterPath()
+            triangle.moveTo(center, top)
+            triangle.lineTo(right, bottom)
+            triangle.lineTo(left, bottom)
+            triangle.lineTo(center, top)
+            painter.drawPath(triangle)
+        else:
+            c = self.contextual_color
+            path, lpath, foo = shapes.shaped_cubic_path(start_point=(center, top, self.z),
+                                                        end_point=(right, bottom, self.z),
+                                                        alignment=g.RIGHT)
+            painter.fillPath(path, c)
+            triangle = QtGui.QPainterPath()
+            triangle.moveTo(right, bottom)
+            triangle.lineTo(left, bottom)
+            painter.drawPath(triangle)
+            path, lpath, foo = shapes.shaped_cubic_path(start_point=(center, top, self.z),
+                                                        end_point=(left, bottom, self.z),
+                                                        alignment=g.LEFT)
+            painter.fillPath(path, c)
 
-        triangle = QtGui.QPainterPath()
-        triangle.moveTo(center, top)
-        triangle.lineTo(right, bottom)
-        triangle.lineTo(left, bottom)
-        triangle.lineTo(center, top)
-        painter.drawPath(triangle)
 
     def on_press(self, value):
         """ Testing if we can add some push-depth effect.

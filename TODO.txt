@@ -20,3 +20,4 @@
 + Opening a triangle leaves the label visible when it shouldn't
 + dragging in Linearized static trees doesn't store the position
 - Edges and Nodes overlap or are too close in LeftFirstTree visualization
++ Edge shape changing is broken

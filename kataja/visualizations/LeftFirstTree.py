@@ -169,7 +169,6 @@ class LeftFirstTree(BaseVisualization):
                 self._put_to_grid(grid, tree.top, 0, 0)
                 merged_grid.merge_grids(grid, extra_padding=2)
                 # merged_grid = self._merge_grids(grid, merged_grid)
-        merged_grid.ascii_dump()
         offset_x = 0  # tree_w/-2
         y = 0
         # Actual drawing: set nodes to their places in scene
@@ -187,7 +186,6 @@ class LeftFirstTree(BaseVisualization):
             extra_height = 0
             prev_width = 0
             prev_height = 0
-            prev_i = 0
             prev_x = 0
             x = offset_x
             for x_i, node in enumerate(row):
@@ -206,14 +204,19 @@ class LeftFirstTree(BaseVisualization):
                         if x_i >= 1 and y_i < merged_grid.height - 2:
                             edge = merged_grid.get(x_i - 1, y_i + 1, raw=True)
                             left_neighbor = merged_grid.get(x_i - 2, y_i, raw=True)
+                            # The problem happens with this kind of constellation:
+                            #  .. /./..
+                            #  ..A.B
+                            #  .../.\ <--- the left edge here can be obstructed by A
                             if left_neighbor and edge and isinstance(edge, int):
                                 edge_box_left_x = x - node.width / 3 - edge_width
                                 prev_box_right_x = prev_x + (prev_width / 2)
-                                max_overlap = prev_box_right_x - edge_box_left_x
-                                if extra_width[x_i] < max_overlap:
-                                    extra_width[x_i] = max_overlap
-                                if extra_height < max_overlap:
-                                    extra_height = max_overlap
+                                width_overlap = prev_box_right_x - edge_box_left_x
+                                height_overlap = prev_height - node.height
+                                if extra_width[x_i] < width_overlap:
+                                    extra_width[x_i] = width_overlap
+                                if extra_height < height_overlap:
+                                    extra_height = height_overlap
                     x += extra_width[x_i]
                     node.move_to(x, y, 0, valign=g.TOP_ROW)
                     prev_width = node.width
