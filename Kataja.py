@@ -30,9 +30,14 @@ def launch_kataja():
     app = prepare_app()
 
     splash_color = QtGui.QColor(238, 232, 213)
-    splash = QtWidgets.QSplashScreen(QtGui.QPixmap(rp + 'katajalogo.png'))
+    splash_pix = QtGui.QPixmap(rp + 'katajalogo.png')
+    splash = QtWidgets.QSplashScreen(splash_pix)
+    splash.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.SplashScreen |
+                          QtCore.Qt.FramelessWindowHint | QtCore.Qt.NoDropShadowWindowHint)
     splash.showMessage('%s | Fetching version...' % author, QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter, splash_color)
+    app.processEvents()
     splash.show()
+    app.processEvents()
 
     # Update version number in file
     version = None
@@ -65,6 +70,7 @@ def launch_kataja():
 
     splash.showMessage('%s | %s | v. %s | %s' % (author, date, running_number, version_name.strip()),
                        QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter, splash_color)
+    splash.repaint()
     app.processEvents()
 
     # importing KatajaMain here because it is slow, and splash screen is now up

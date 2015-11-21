@@ -26,4 +26,4 @@ become visible
 + Fixed printing in Windows
 + Nodes jump into strange places in folding animations
     - Some rare version of this bug is still there
-- Splash screen transparency is broken
++ Splash screen transparency is broken

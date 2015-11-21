@@ -74,6 +74,8 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         be the main window of the given application. """
         t = time.time()
         QtWidgets.QMainWindow.__init__(self)
+        kataja_app.processEvents()
+
         BaseModel.__init__(self, unique=True)
         self.use_tooltips = False
         self.setDockOptions(QtWidgets.QMainWindow.AnimatedDocks)
@@ -124,6 +126,7 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         self.setWindowTitle(self.tr("Kataja"))
         self.show()
         self.raise_()
+        kataja_app.processEvents()
         self.activateWindow()
         self.status_bar = self.statusBar()
         self.add_message('Welcome to Kataja! (h) for help')
