@@ -1373,15 +1373,12 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
         """ Fade animation is ongoing or just finished
         :return: bool
         """
-        if self._fade_out_active:
-            return True
-        if hasattr(self, "isVisible"):
-            return not self.isVisible()
-        return False
+        return self._fade_out_active
 
     def fade_in(self, s=300):
         """ Simple fade effect. The object exists already when fade starts.
         :return: None
+        :param s: speed in ms
         """
         if self._fade_in_active:
             return
@@ -1405,6 +1402,8 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
         """ Start fade out. The object exists until fade end.
         :return: None
         """
+        if not self.is_visible():
+            return
         if self._fade_out_active:
             return
         self._fade_out_active = True
@@ -1419,7 +1418,7 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
         self._fade_anim.finished.connect(self.fade_out_finished)
 
     def fade_out_finished(self):
-        self.hide()
+        self.visible = False
         self._fade_out_active = False
         self.update_visibility()
 

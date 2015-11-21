@@ -228,7 +228,7 @@ class BaseConstituentNode(Node):
         :param kw:
         """
         was_visible = self.is_visible()
-        visible = not self.folded_away
+        visible = not (self.folded_away or self.folding_towards)
 
         # Fade in / out
         fade = kw.get('fade', False)

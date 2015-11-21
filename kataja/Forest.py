@@ -1200,31 +1200,32 @@ class Forest(BaseModel):
         changing edge.visible will cause chain reaction:
         edge.visible -> edge.if_changed_visible ->  edge.update_visibility
         """
-        if self._do_edge_visibility_check:
-            show_edges = self.settings.shows_constituent_edges
-            for edge in self.edges.values():
-                if edge.edge_type == g.CONSTITUENT_EDGE:
-                    if not show_edges:
-                        edge.visible = False
-                        continue
-                    start = edge.start
-                    end = edge.end
-                    if start and not start.is_visible():
-                        edge.visible = False
-                    elif end and not end.is_visible():
-                        edge.visible = False
-                    elif start and not self.visualization.show_edges_for(start):
-                        edge.visible = False
-                    elif not (start or end):
-                        self.delete_edge(edge)
-                    else:
-                        edge.visible = True
+        if not self._do_edge_visibility_check:
+            return
+        show_edges = self.settings.shows_constituent_edges
+        for edge in self.edges.values():
+            if edge.edge_type == g.CONSTITUENT_EDGE:
+                if not show_edges:
+                    edge.visible = False
+                    continue
+                start = edge.start
+                end = edge.end
+                if start and not start.is_visible():
+                    edge.visible = False
+                elif end and not end.is_visible():
+                    edge.visible = False
+                elif start and not self.visualization.show_edges_for(start):
+                    edge.visible = False
+                elif not (start or end):
+                    self.delete_edge(edge)
                 else:
-                    if edge.start:
-                        edge.visible = edge.start.is_visible()
-                    else:
-                        edge.visible = True
-            self._do_edge_visibility_check = False
+                    edge.visible = True
+            else:
+                if edge.start:
+                    edge.visible = edge.start.is_visible()
+                else:
+                    edge.visible = True
+        self._do_edge_visibility_check = False
 
     def adjust_edge_visibility_for_node(self, node, visible):
         """
@@ -1914,6 +1915,7 @@ class Forest(BaseModel):
             folded.fade_in()
             folded.update_visibility()
             folded.update_bounding_rect()
+            folded.after_move_function = None
         # this needs second round of update visibility, as child nodes may
         # yet not be visible, so edges to them
         # won't be visible either.

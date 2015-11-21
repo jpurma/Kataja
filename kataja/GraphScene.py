@@ -714,7 +714,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         if ctrl.pressed:
             return
-        for node in f.visible_nodes():
+        for node in f.nodes.values():
             if node.is_fading():
                 items_fading = True
             # Computed movement

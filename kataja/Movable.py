@@ -311,11 +311,7 @@ When nodes that don't use physics are dragged, the adjustment.
         """ Fade animation is ongoing or just finished
         :return: bool
         """
-        if self._fade_out_active:
-            return True
-        if hasattr(self, "isVisible"):
-            return not self.isVisible()
-        return False
+        return self._fade_out_active
 
     def fade_in(self, s=300):
         """ Simple fade effect. The object exists already when fade starts.
@@ -345,6 +341,8 @@ When nodes that don't use physics are dragged, the adjustment.
         """
         if self._fade_out_active:
             return
+        if not self.is_visible():
+            return
         self._fade_out_active = True
         if self._fade_in_active:
             self._fade_anim.stop()
@@ -357,8 +355,8 @@ When nodes that don't use physics are dragged, the adjustment.
         self._fade_anim.finished.connect(self.fade_out_finished)
 
     def fade_out_finished(self):
-        self.hide()
         self._fade_out_active = False
+        self.hide()
         self.update_visibility()
 
     def is_fading(self):

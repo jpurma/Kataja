@@ -448,9 +448,13 @@ syntactic_object: %s
         super().fade_out(s=s)
 
     def fade_in(self, s=300):
+        for edge in self.edges_up:
+            if (edge.start and edge.start.is_visible()) or not edge.start:
+                edge.fade_in(s=s)
+        for edge in self.edges_down:
+            if edge.end and edge.end.is_visible():
+                edge.fade_in(s=s)
 
-        for edge in itertools.chain(self.edges_down, self.edges_up):
-            edge.fade_in(s=s)
         super().fade_in(s=s)
 
 
@@ -1192,10 +1196,7 @@ syntactic_object: %s
                 painter.fillPath(path, c)
             else:
                 painter.drawPath(path)
-            triangle = QtGui.QPainterPath()
-            triangle.moveTo(right, bottom)
-            triangle.lineTo(left, bottom)
-            painter.drawPath(triangle)
+            painter.drawLine(left, bottom, right, bottom)
             path, lpath, foo = method(start_point=(center, top, self.z),
                                       end_point=(left, bottom, self.z),
                                       alignment=g.LEFT, **presets)
@@ -1203,7 +1204,6 @@ syntactic_object: %s
                 painter.fillPath(path, c)
             else:
                 painter.drawPath(path)
-
 
     def on_press(self, value):
         """ Testing if we can add some push-depth effect.
