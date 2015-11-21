@@ -1146,7 +1146,6 @@ syntactic_object: %s
         :return:
         """
         self.folding_towards = node
-        self.use_adjustment = False
         x, y, z = node.current_position
         self.move_to(x, y, z, after_move_function=self.finish_folding, can_adjust=False)
         if ctrl.is_selected(self):
@@ -1216,14 +1215,12 @@ syntactic_object: %s
             self.anim.setStartValue(self.scale())
             self.anim.setEndValue(0.95)
             self.anim.start()
-            #self.setScale(0.95)
         else:
             self.anim = QtCore.QPropertyAnimation(self, qbytes_scale)
             self.anim.setDuration(20)
             self.anim.setStartValue(self.scale())
             self.anim.setEndValue(1.0)
             self.anim.start()
-                #self.setScale(1.0)
 
     # ## Magnets
     # ######################################################################
