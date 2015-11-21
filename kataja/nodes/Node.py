@@ -27,7 +27,7 @@ import itertools
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import Qt
 
-import shapes
+import kataja.shapes
 from kataja.ui.ControlPoint import ControlPoint
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.Label import Label
@@ -1187,7 +1187,7 @@ syntactic_object: %s
             c = self.contextual_color
             edge_type = self.__class__.default_edge_type
             shape_name = ctrl.fs.edge_info(edge_type, 'shape_name')
-            presets = shapes.SHAPE_PRESETS[shape_name]
+            presets = kataja.shapes.SHAPE_PRESETS[shape_name]
             method = presets['method']
             path, lpath, foo = method(start_point=(center, top, self.z),
                                       end_point=(right, bottom, self.z),

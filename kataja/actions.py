@@ -248,7 +248,6 @@ def print_to_file():
      2nd step is triggered by a timer in main window.
      :return: None
     """
-    debug.keys("Print to file called")
     sc = ctrl.graph_scene
     # hide unwanted components
     no_brush = QtGui.QBrush(Qt.NoBrush)

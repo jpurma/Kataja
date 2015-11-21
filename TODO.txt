@@ -23,3 +23,4 @@
 + Edge shape changing is broken
 + When unfolding triangle containing another triangle, some edges from the contained triangle
 become visible
++ Fixed printing in Windows

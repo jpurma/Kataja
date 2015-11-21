@@ -255,7 +255,6 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         """ Timer event only for printing, for 'snapshot' effect
         :param event:
         """
-
         def find_path(fixed_part, extension, counter=0):
             """ Generate file names until free one is found
             :param fixed_part: blah
@@ -273,7 +272,7 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         self.killTimer(event.timerId())
         # Prepare file and path
         path = prefs.print_file_path or prefs.userspace_path or \
-               self.running_environment.default_userspace_path
+            running_environment.default_userspace_path
         if not path.endswith('/'):
             path += '/'
         if not os.path.exists(path):
@@ -327,7 +326,6 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
                 "printed to %s as PDF with %s dpi." % (full_path, dpi))
 
         # Thank you!
-        print('printing done.')
         # Restore image
         self.graph_scene.setBackgroundBrush(self.color_manager.gradient)
 
