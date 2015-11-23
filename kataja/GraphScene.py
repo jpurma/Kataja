@@ -717,6 +717,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
         for node in f.nodes.values():
             if node.is_fading():
                 items_fading = True
+            if not node.is_visible():
+                continue
             # Computed movement
             moved, normalizable = node.move(md)
             if moved:

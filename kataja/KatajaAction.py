@@ -87,16 +87,15 @@ class KatajaAction(QtWidgets.QAction):
             self.setToolTip(tooltip)
             self.setStatusTip(tooltip)
 
-    def action_triggered(self, data=None, sender=None):
+    def action_triggered(self, **kwargs):
         """ Trigger action with parameters received from action data object and designated UI element
         :param sender: optional sender object if triggered manually
         :return: None
         """
         # -- Redraw and undo flags: these are on by default, can be switched off by action method
         ctrl.action_redraw = True
-
         if self.sender_arg:
-            args = [sender or self.sender()]
+            args = [kwargs.get('sender', None) or self.sender()]
         else:
             args = []
         if self.action_arg:

@@ -88,6 +88,7 @@ class Node(Movable):
                     'labeled': False}
     touch_areas_when_dragging = {}
     touch_areas_when_selected = {}
+    buttons_when_selected = {}
 
     def __init__(self, syntactic_object=None):
         """ Node is an abstract class that shouldn't be used by itself, though

@@ -25,50 +25,15 @@ import math
 import random
 
 from kataja.singletons import prefs, ctrl
-from kataja.visualizations.BaseVisualization import BaseVisualization
+from kataja.visualizations.LinearizedStaticTree import LinearizedStaticTree
 import kataja.globals as g
 
 
-class DynamicWidthTree(BaseVisualization):
+class DynamicWidthTree(LinearizedStaticTree):
     """
 
     """
     name = 'Dynamic width trees'
-
-
-    def __init__(self):
-        BaseVisualization.__init__(self)
-        self.forest = None
-        self._directed = True
-        self._linear = []
-        self.push = 0
-
-    def prepare(self, forest, reset=True):
-        """ If loading a state, don't reset.
-        :param forest:Forest
-        :param reset:boolean
-        """
-        self.forest = forest
-        self._directed = True
-        if reset:
-            self.set_vis_data('push', 20)
-            self.forest.settings.show_constituent_edges = True
-            self.forest.settings.bracket_style = g.NO_BRACKETS
-            for node in self.forest.visible_nodes():
-                self.reset_node(node)
-        self.push = self.get_vis_data('push')
-        self._linear = self.linearize_all()
-
-    #Fixme: crappy linearization
-    def linearize_all(self):
-        """
-        :return:
-        """
-        l = []
-        for tree in self.forest:
-            l.append(tree.sorted_nodes)
-        return l
-
 
     def reset_node(self, node):
         """
@@ -81,125 +46,111 @@ class DynamicWidthTree(BaseVisualization):
             node.physics_y = False
             node.physics_z = False
 
-
-    def reselect(self):
-        """
-
-
-        """
-        push = self.get_vis_data('push')
-        push -= 5
-        if push > 30:
-            push = 10
-        if push < 5:
-            push = 30
-        self.set_vis_data('push', push)
-        self.push = push
-        ctrl.add_message('Push: %s' % push)
-
-
-    def calculate_movement(self, node):
-        # @time_me
+    def calculate_movement(self, node, alpha = 0.1):
         # Sum up all forces pushing this item away.
         """
 
         :param node:
         :return:
         """
-        if node.node_type != g.CONSTITUENT_NODE:
-            return BaseVisualization.calculate_movement(self, node)
-
-        xvel = 0.0
-        if not node.use_physics():
-            return 0, 0, 0
-
         node_x, node_y, node_z = node.current_position
+        old_x, old_y, old_z = node.current_position
 
-        #vn = list(self.forest.visible_nodes())
-        # for trees in self._linear:
-        #     my_tree = node in trees
-        #     for other in trees:
-        #         other_x, other_y, other_z = other.current_position
-        #         if other is node:
-        #             continue
-        #         if node.is_sibling(other):
-        #
-        my_tree = None
-        for tree in self._linear:
-            if node in tree:
-                my_tree = tree
-            for other in tree:
-                if other is node:
-                    continue
+        close_ones = set()
+        # attract
+        down = node.edges_down
+        for edge in down:
+            other = edge.end
+            close_ones.add(other)
+            other_x, other_y, other_z = other.current_position
+            dist_x, dist_y = node_x - other_x, node_y - other_y
+            dist = math.hypot(dist_x, dist_y)
+            radius = (other.width + node.width) / 2
+            if dist - radius > 0:
+                pulling_force = ((dist - radius) * edge.pull * alpha) / dist
+                node_x -= dist_x * pulling_force
+                node_y -= dist_y * pulling_force
+            else:
+                node_x += 1
 
-                other_x, other_y, other_z = other.current_position
-                dist_x = int(node_x - other_x)
-                dist_y = int(node_y - other_y)
-                safe_zone = (other.width + node.width) / 2
-                dist = math.hypot(dist_x, dist_y)
-                if dist == 0 or dist == safe_zone:
-                    continue
-                if tree is my_tree and other.physics_x: # and
-                # node.is_sibling(
-                # other):
-                    index_diff = my_tree.index(node) - my_tree.index(other)
-                    if index_diff < 0 and abs(dist_y) < 10:
-                        # node is left to other, so dist_x should be negative
-                        if dist_x > 0:
-                            # jump to other side of node
-                            return -(dist_x + safe_zone + 5), 0, 0
-                    elif index_diff > 0 and abs(dist_y) < 10:
-                        # node is right to other, so dist_x should be positive
-                        if dist_x < 0:
-                            # jump to other side of node
-                            return (-dist_x + safe_zone + 5), 0, 0
+        up = node.edges_up
+        for edge in up:
+            other = edge.start
+            close_ones.add(other)
+            other_x, other_y, other_z = other.current_position
+            dist_x, dist_y = node_x - other_x, node_y - other_y
+            dist = math.hypot(dist_x, dist_y)
+            radius = ((other.width + node.width) / 2) * 1.4
+            if dist - radius > 0:
+                pulling_force = ((dist - radius) * edge.pull * alpha) / dist
+                node_x -= dist_x * pulling_force
+                node_y -= dist_y * pulling_force
+            else:
+                node_x -= 1
 
-                required_dist = dist - safe_zone
-                pushing_force = min(random.random()*60, (500 / (required_dist * required_dist)))
+        #if not (up or down):
+        #    # pull to center (0, 0)
+        #    node_x += node_x * -0.009
+        #    node_y += node_y * -0.009
+        #elif not down:
+        #    node_y += node._gravity
 
-                x_component = dist_x / dist
-                xvel += pushing_force * x_component
+        all_nodes = set(self.forest.visible_nodes())
+        other_nodes = all_nodes - close_ones
+        other_nodes.remove(node)
+        # repulse strongly
+        alpha_strong = alpha * 5
+        for other in other_nodes:
+            other_x, other_y, other_z = other.current_position  # @UnusedVariable
+            dist_x, dist_y = node_x - other_x, node_y - other_y
+            dist = math.hypot(dist_x, dist_y)
+            #if dist > 50:
+            #    continue
+            if dist == 0:
+                node_x += 5
+                continue
+            safe_zone = ((other.width + node.width) / 2) * 1.4
+            if dist == safe_zone:
+                continue
+            if dist < safe_zone:
+                required_dist = abs(dist - safe_zone)
+                pushing_force = required_dist / (dist * dist * alpha_strong)
+                #pushing_force = min(random.random() * 60, pushing_force)
 
-        # Now subtract all forces pulling items together.
-        #
-        for edge in node.edges_up:
-            if edge.is_visible():
-                other = edge.start
-                if other:
-                    other_x, other_y, other_z = other.current_position
-                    dist_x = int(node_x - other_x)
-                    dist_y = int(node_y - other_y)
-                    dist = math.hypot(dist_x, dist_y)
-                    if dist == 0:
-                        continue
-                    safe_zone = (other.width + node.width) / 2
-                    pulling_force = dist - safe_zone
-                    x_component = dist_x / dist
-                    xvel -= x_component * pulling_force * edge.pull * 0.3
-        #
-        # pull to center (0, 0)
-        xvel += node_x * -0.004
-        return xvel, 0, 0
+                node_x += pushing_force * dist_x
+                node_y += pushing_force * dist_y
+                if dist_x == 0:
+                    node_x -= 1
+        # repulse weakly
+        for other in close_ones:
+            other_x, other_y, other_z = other.current_position  # @UnusedVariable
+            dist_x, dist_y = node_x - other_x, node_y - other_y
+            dist = math.hypot(dist_x, dist_y)
+            #if dist > 50:
+            #    continue
+            if dist == 0:
+                node_x += 5
+                continue
+            safe_zone = ((other.width + node.width) / 2) * 1.4
+            if dist == safe_zone:
+                continue
+            if dist < safe_zone:
+                required_dist = abs(dist - safe_zone)
+                pushing_force = required_dist / (dist * dist * alpha)
+                #pushing_force = min(random.random() * 60, pushing_force)
 
+                node_x += pushing_force * dist_x
+                node_y += pushing_force * dist_y
+                if dist_x == 0:
+                    node_x -= 1
 
-    def draw(self):
-        """ Draws the trees from bottom to top, trying to fit every horizontal row to as small as possible """
-        edge_height = prefs.edge_height
-        edge_width = prefs.edge_width
-        rows = []
-        self._linear = []
+        if node.physics_x:
+            xvel = node_x - old_x
+        else:
+            xvel = 0
+        if node.physics_y:
+            yvel = node_y - old_y
+        else:
+            yvel = 0
+        return xvel, yvel, 0
 
-        def _fill_grid(node, row):
-            if not row < len(rows):
-                rows.append([])
-            x_pos = 0
-            for n, x, width in rows[row]:
-                x_pos += width
-            rows[row].append((node, x_pos, node.width))
-            node.move_to(x_pos + node.width / 2, row * edge_height * 2, 0)
-            for child in node.get_visible_children():
-                _fill_grid(child, row + 1)
-
-        for tree in self.forest:
-            _fill_grid(tree.top, 0)
-            self._linear.append(tree.sorted_constituents)

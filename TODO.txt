@@ -32,7 +32,10 @@ become visible
 + Traces are visible when they shouldn't
     + Trace indices are missing
     + Multidomination / traces switch is working again
-- Some buttons get their trigger argument instead of sender and crash
++ Some buttons get their trigger argument instead of sender and crash
++ Dynamic width visualizations are quite unable to look nice
+    - LinearizedStaticTree creates unnecessary traces
+
 
 
 

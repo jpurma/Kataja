@@ -62,8 +62,8 @@ class BalancedTree(BaseVisualization):
         super().reset_node(node)
         if node.node_type == g.CONSTITUENT_NODE:
             node.physics_x = True
-            node.physics_y = True
-            node.physics_z = True
+            node.physics_y = False
+            node.physics_z = False
         else:
             node.physics_x = False
             node.physics_y = False
@@ -93,7 +93,7 @@ class BalancedTree(BaseVisualization):
             for n, x, width in rows[row]:
                 x_pos += width
             rows[row].append((node, x_pos, node.width))
-            node.move_to(x_pos + node.width / 2, row * edge_height * 2, 0)
+            node.move_to(x_pos + node.width / 2, row * edge_height * 2, 0, valign=g.TOP_ROW)
             for child in node.get_visible_children():
                 _fill_grid(child, row + 1)
 
