@@ -69,7 +69,6 @@ class DynamicWidthTree(LinearizedStaticTree):
             if dist - radius > 0:
                 pulling_force = ((dist - radius) * edge.pull * alpha) / dist
                 node_x -= dist_x * pulling_force
-                node_y -= dist_y * pulling_force
             else:
                 node_x += 1
 
@@ -84,16 +83,8 @@ class DynamicWidthTree(LinearizedStaticTree):
             if dist - radius > 0:
                 pulling_force = ((dist - radius) * edge.pull * alpha) / dist
                 node_x -= dist_x * pulling_force
-                node_y -= dist_y * pulling_force
             else:
                 node_x -= 1
-
-        #if not (up or down):
-        #    # pull to center (0, 0)
-        #    node_x += node_x * -0.009
-        #    node_y += node_y * -0.009
-        #elif not down:
-        #    node_y += node._gravity
 
         all_nodes = set(self.forest.visible_nodes())
         other_nodes = all_nodes - close_ones
@@ -104,8 +95,6 @@ class DynamicWidthTree(LinearizedStaticTree):
             other_x, other_y, other_z = other.current_position  # @UnusedVariable
             dist_x, dist_y = node_x - other_x, node_y - other_y
             dist = math.hypot(dist_x, dist_y)
-            #if dist > 50:
-            #    continue
             if dist == 0:
                 node_x += 5
                 continue
@@ -115,10 +104,7 @@ class DynamicWidthTree(LinearizedStaticTree):
             if dist < safe_zone:
                 required_dist = abs(dist - safe_zone)
                 pushing_force = required_dist / (dist * dist * alpha_strong)
-                #pushing_force = min(random.random() * 60, pushing_force)
-
                 node_x += pushing_force * dist_x
-                node_y += pushing_force * dist_y
                 if dist_x == 0:
                     node_x -= 1
         # repulse weakly
@@ -126,8 +112,6 @@ class DynamicWidthTree(LinearizedStaticTree):
             other_x, other_y, other_z = other.current_position  # @UnusedVariable
             dist_x, dist_y = node_x - other_x, node_y - other_y
             dist = math.hypot(dist_x, dist_y)
-            #if dist > 50:
-            #    continue
             if dist == 0:
                 node_x += 5
                 continue
@@ -137,10 +121,7 @@ class DynamicWidthTree(LinearizedStaticTree):
             if dist < safe_zone:
                 required_dist = abs(dist - safe_zone)
                 pushing_force = required_dist / (dist * dist * alpha)
-                #pushing_force = min(random.random() * 60, pushing_force)
-
                 node_x += pushing_force * dist_x
-                node_y += pushing_force * dist_y
                 if dist_x == 0:
                     node_x -= 1
 
@@ -148,9 +129,5 @@ class DynamicWidthTree(LinearizedStaticTree):
             xvel = node_x - old_x
         else:
             xvel = 0
-        if node.physics_y:
-            yvel = node_y - old_y
-        else:
-            yvel = 0
-        return xvel, yvel, 0
+        return xvel, 0, 0
 

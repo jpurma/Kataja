@@ -123,11 +123,18 @@ class Tree(Movable):
                 for child in node.get_all_children():
                     add_children(child)
 
+        old_nodes = set(self.sorted_nodes)
+
         if is_constituent(self.top):
             add_children(self.top)
 
         self.sorted_constituents = sorted_constituents
         self.sorted_nodes = sorted_nodes
+
+        to_be_removed = old_nodes - set(sorted_nodes)
+        for item in to_be_removed:
+            item.setParentItem(None)
+
 
     def is_higher_in_tree(self, node_a, node_b):
         """ Compare two nodes, if node_a is higher, return True. Return False
