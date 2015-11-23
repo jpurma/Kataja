@@ -222,7 +222,7 @@ class Node(Movable):
             if key not in self.label_display_data:
                 self.label_display_data[key] = dict(value)
             else:
-                old = self._inode.values[key]
+                old = self._inode.fields[key]
                 new = dict(value)
                 new.update(old)
                 self.label_display_data[key] = new
@@ -277,7 +277,7 @@ class Node(Movable):
         # This part should be done by all subclasses, call super(
         # ).impose_order_to_inode()
 
-        self._inode.values = {}
+        self._inode.fields = {}
         self._inode.view_order = []
 
         if self.syntactic_object and hasattr(self.syntactic_object.__class__, 'viewable'):
@@ -293,22 +293,24 @@ class Node(Movable):
             o = value.get('order', 50)
             sortable.append((o, 1, key, value))
         sortable.sort()
-        for foo, bar, key, value in sortable:
-            if key not in self._inode.values:
-                self._inode.values[key] = dict(value)
+        fields = self._inode.fields
+        view_order = self._inode.view_order
+        for foo, bar, field_name, value in sortable:
+            if field_name not in fields:
+                fields[field_name] = dict(value)
             else:
-                old = self._inode.values[key]
+                old = fields[field_name]
                 new = dict(value)
                 new.update(old)
-                self._inode.values[key] = new
-            if key not in self._inode.view_order:
-                self._inode.view_order.append(key)
+                fields[field_name] = new
+            if field_name not in view_order:
+                view_order.append(field_name)
 
     def update_values_from_inode(self):
         """ Take values from given inode and set this object to have these values.
         :return:
         """
-        for key, value_data in self._inode.values.items():
+        for field_name, value_data in self._inode.fields.items():
             if 'value' in value_data:
                 v = value_data['value']
                 if 'readonly' in value_data:
@@ -316,7 +318,7 @@ class Node(Movable):
                 elif 'setter' in value_data:
                     getattr(self, value_data['setter'])(v)
                 else:
-                    setattr(self, key, v)
+                    setattr(self, field_name, v)
 
     def alert_inode(self, value=None):
         """ Setters may announce that inode needs to be updated
@@ -590,7 +592,7 @@ syntactic_object: %s
         if len(scene_pos) == 3:
             x, y, z = scene_pos
             tree = self.parentItem()
-            if not tree:
+            if (not tree) or not hasattr(tree, 'current_position'):
                 return x, y, z
             tx, ty, tz = tree.current_position
             return x - tx, y - ty, z - tz
@@ -983,12 +985,12 @@ syntactic_object: %s
             self.impose_order_to_inode()
             self._inode_changed = True
         if self._inode_changed:
-            iv = self._inode.values
+            iv = self._inode.fields
             for key, value in iv.items():
                 getter = value.get('getter', key)
                 # use 'getter' or default to 'key', assuming that key is the
                 # same as the property it is representing
-                iv[key]['value'] = getattr(self, getter)
+                value['value'] = getattr(self, getter)
             self._inode_str = str(self._inode)
             self._inode_changed = False
         return self._inode

@@ -471,7 +471,7 @@ class Forest(BaseModel):
     def draw(self):
         """ Update all trees in the forest according to current visualization
         """
-        print('------ draw forest ------')
+        #print('------ draw forest ------')
         if not self.in_display:
             print("Why are we drawing a forest which shouldn't be in scene")
         sc = ctrl.graph_scene
@@ -947,9 +947,10 @@ class Forest(BaseModel):
             index = self.chain_manager.next_free_index()
             node.index = index
         assert index
-        constituent = ctrl.Constituent(label='t', index=index)
+        constituent = ctrl.Constituent(label='t')
         trace = self.create_node(synobj=constituent, relative=node)
         trace.is_trace = True
+        trace.index = index
         # if new_chain:
         # self.chain_manager.rebuild_chains()
         # if self.settings.uses_multidomination:
@@ -1022,7 +1023,12 @@ class Forest(BaseModel):
         if node.syntactic_object and node.syntactic_object.save_key in self.nodes_from_synobs:
             del self.nodes_from_synobs[node.syntactic_object.save_key]
 
-        self.update_tree_for(node)
+        old_trees = node.trees
+        for tree in old_trees:
+            if tree.top is node:
+                self.remove_tree(tree)
+            else:
+                tree.update_items()
         # -- scene --
         self.remove_from_scene(node)
         # -- undo stack --
@@ -1132,7 +1138,8 @@ class Forest(BaseModel):
         new_end.edges_up.append(edge)
         new_end.connect_in_syntax(edge)
         self.update_tree_for(new_end)
-        self.update_tree_for(edge.start)
+        if edge.start:
+            self.update_tree_for(edge.start)
 
     def fix_stubs_for(self, node):
         """ Make sure that node (ConstituentNode) has binary children.
@@ -1587,8 +1594,10 @@ class Forest(BaseModel):
 
         assert (old_node != new_node)  # if this can happen, we'll probably have
         # infinite loop somewhere
-        new_node.copy_position(old_node)
-        new_node.update_visibility(active=True, fade=True)
+
+        if not set(new_node.trees) & set(old_node.trees):
+            new_node.copy_position(old_node)
+            new_node.update_visibility(active=True, fade=True)
 
         for edge in list(old_node.edges_up):
             if edge.start:
@@ -1610,7 +1619,7 @@ class Forest(BaseModel):
         self.update_tree_for(new_node)
         if (not old_node.edges_up) and can_delete:
             # old_node.update_visibility(active=False, fade=True)
-            self.delete_node(old_node)
+            self.delete_node(old_node, ignore_consequences=True)
 
     # ########### Complex node operations ##############################
 
@@ -1788,13 +1797,9 @@ class Forest(BaseModel):
             # Internal merge situation and we
             # need to give the new_node an index so it can be reconstructed
             # as a trace structure
-            moving_was_higher = None
-            for tree in inserted.trees:
-                moving_was_higher = tree.is_higher_in_tree(inserted, child)
-                if moving_was_higher is not None:
-                    break
-            # returns None if they are not in same trees
-            if moving_was_higher is not None:
+            shared_trees = set(inserted.trees) & set(child.trees)
+            if shared_trees:
+                moving_was_higher = shared_trees[0].is_higher_in_tree(inserted, child)
                 if not inserted.index:
                     inserted.index = self.chain_manager.next_free_index()
                 # replace either the moving node or leftover node with trace

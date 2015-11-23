@@ -10,6 +10,8 @@
         = maybe fixed already, could be caused by set grid overwriting nodes
 + Fix situation where tree is replaced as new node is added on top.
 - Fix parsing of currently broken trees and those that create too many Tree -objects.
+    + Too many trees -problem is fixed
+
 + Replace fade in Movable with QAnimation
 + Make all Movables to use QGraphicsObject (to support QAnimation)
 - Use fade for mouseover rectangles
@@ -27,3 +29,10 @@ become visible
 + Nodes jump into strange places in folding animations
     - Some rare version of this bug is still there
 + Splash screen transparency is broken
++ Traces are visible when they shouldn't
+    + Trace indices are missing
+    + Multidomination / traces switch is working again
+- Some buttons get their trigger argument instead of sender and crash
+
+
+

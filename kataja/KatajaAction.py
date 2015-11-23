@@ -94,6 +94,7 @@ class KatajaAction(QtWidgets.QAction):
         """
         # -- Redraw and undo flags: these are on by default, can be switched off by action method
         ctrl.action_redraw = True
+
         if self.sender_arg:
             args = [sender or self.sender()]
         else:

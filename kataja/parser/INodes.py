@@ -251,7 +251,7 @@ class ITemplateNode(ITextNode):
         self.indices = []
         self.unanalyzed = None
         self.view_order = []
-        self.values = {}
+        self.fields = {}
 
     def analyze_label_data(self):
         """ Go through label complex and make rows out of it, also pick
@@ -300,8 +300,8 @@ class ITemplateNode(ITextNode):
         return False
 
     def __str__(self):
-        if self.values:
-            vals = ';'.join((str(x['value']) for x in self.values.values() if
+        if self.fields:
+            vals = ';'.join((str(x['value']) for x in self.fields.values() if
                              x.get('value', False)))
         else:
             vals = '|'.join((str(x) for x in self.rows))
@@ -316,17 +316,17 @@ class ITemplateNode(ITextNode):
         """
         if self.rows:
             return False
-        for v in self.values.values():
+        for v in self.fields.values():
             if v.get('value', None):
                 return False
         return True
 
     def is_empty_for_view(self):
-        for v in self.values.values():
+        for v in self.fields.values():
             if v.get('value', None) and v.get('visible', True):
                 return False
         return True
 
     def __repr__(self):
         return 'ITemplateNode(rows=%s, values=%s)' % (
-        repr(self.rows), repr(self.values))
+        repr(self.rows), repr(self.fields))

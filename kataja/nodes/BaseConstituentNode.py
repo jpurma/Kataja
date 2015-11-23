@@ -99,7 +99,7 @@ class BaseConstituentNode(Node):
         super().impose_order_to_inode()
         inode = self._inode
         if inode.rows:
-            inode.values['label']['value'] = inode.rows[0]
+            inode.fields['label']['value'] = inode.rows[0]
 
     def after_init(self):
         """ After_init is called in 2nd step in process of creating objects:
@@ -233,9 +233,9 @@ class BaseConstituentNode(Node):
         # Fade in / out
         fade = kw.get('fade', False)
         if fade:
-            if visible:
+            if visible and not was_visible:
                 self.fade_in()
-            else:
+            elif (not visible) and was_visible:
                 self.fade_out()
         else:
             self.setVisible(visible)

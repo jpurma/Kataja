@@ -127,8 +127,6 @@ class ConstituentNode(BaseConstituentNode):
     def __init__(self, constituent=None):
         """ Most of the initiation is inherited from Node """
         BaseConstituentNode.__init__(self, constituent=constituent)
-        self._index_label = None
-        self._index_visible = True
         self.is_trace = False
         self.merge_order = 0
         self.select_order = 0
@@ -194,11 +192,12 @@ class ConstituentNode(BaseConstituentNode):
         """
         Node.impose_order_to_inode(self)
         inode = self._inode
-        iv = inode.values
+        fields = inode.fields
         alias = ''
         label = ''
         gloss = ''
         index = ''
+
         if inode.indices and inode.indices[0]:
             index = inode.indices[0]
 
@@ -215,10 +214,10 @@ class ConstituentNode(BaseConstituentNode):
             label = inode.rows[0]
         elif lines == 1:
             alias = inode.rows[0]
-        iv['alias']['value'] = alias
-        iv['label']['value'] = label
-        iv['gloss']['value'] = gloss
-        iv['index']['value'] = index
+        fields['alias']['value'] = alias
+        fields['label']['value'] = label
+        fields['gloss']['value'] = gloss
+        fields['index']['value'] = index
 
     def as_inode(self):
         """ Inject visibility information of 'alias' and 'label' to inode, so
@@ -230,8 +229,8 @@ class ConstituentNode(BaseConstituentNode):
         if self._inode_changed:
             self._inode = super().as_inode()
             s = ctrl.forest.settings
-            alias_inode_part = self._inode.values.get('alias', None)
-            label_inode_part = self._inode.values.get('label', None)
+            alias_inode_part = self._inode.fields.get('alias', None)
+            label_inode_part = self._inode.fields.get('label', None)
             if self.is_leaf_node(only_visible=True) or self.triangle:
                 if alias_inode_part:
                     alias_inode_part['visible'] = s.show_leaf_aliases

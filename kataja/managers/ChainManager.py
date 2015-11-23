@@ -159,7 +159,8 @@ class ChainManager:
                         y_adjust[key] = head.boundingRect().height(), head.boundingRect().height()
                     dx, dy = y_adjust[key]
                     node.use_adjustment = False
-                    node.move_to(add_xyz(head.current_position, (-dx, dy, 0)), can_adjust=False)
+                    node.adjustment = (0, 0, 0)
+                    node.move_to(*add_xyz(head.current_position, (-dx, dy, 0)), can_adjust=False)
                     y_adjust[key] = (dx + node.boundingRect().width(), dy + node.boundingRect().height())
         self.fs.traces_are_grouped_together = True
         self.fs.uses_multidomination = False

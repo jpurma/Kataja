@@ -53,7 +53,7 @@ def parse_itemplatenode_for_viewing(inode, document, options):
         cursor.setCharFormat(old_format)
 
     def write_field(field_name, cursor, has_text):
-        d = inode.values[field_name]
+        d = inode.fields[field_name]
         if not d.get('visible', True):
             return False
         v = d['value']
