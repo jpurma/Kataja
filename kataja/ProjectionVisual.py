@@ -67,6 +67,8 @@ class ProjectionData:
         """
         prev_node = None
         new_chain = []
+        if self.head.scene() is None:
+            return False
         if self.head != self.head.head:
             print('obsolete projection chain: ', self.head)
             return False

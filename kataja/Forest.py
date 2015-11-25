@@ -951,10 +951,6 @@ class Forest(BaseModel):
         trace = self.create_node(synobj=constituent, relative=node)
         trace.is_trace = True
         trace.index = index
-        # if new_chain:
-        # self.chain_manager.rebuild_chains()
-        # if self.settings.uses_multidomination:
-        # trace.hide()
         return trace
 
     def create_arrow(self, p1, p2, text=None):
