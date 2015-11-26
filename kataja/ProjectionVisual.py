@@ -109,6 +109,7 @@ class ProjectionVisual(QtWidgets.QGraphicsItem):
         super().__init__()
         self.d = data
         self.color = ctrl.cm.get(self.d.color_tr_id)
+        self.show()
 
     def boundingRect(self):
         br = QtCore.QRectF()
