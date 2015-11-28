@@ -36,7 +36,7 @@ become visible
 + Dynamic width visualizations are quite unable to look nice
     + LinearizedStaticTree creates unnecessary traces
 + Deleting node causes broken chain error
-- Highlighter not visible in LeftFirstTree or LinearizedDynamic. Strange!
++ Highlighter not visible in LeftFirstTree or LinearizedDynamic. Strange!
 
 
 

@@ -114,7 +114,7 @@ class ProjectionVisual(QtWidgets.QGraphicsItem):
     def boundingRect(self):
         br = QtCore.QRectF()
         for node in self.d.chain:
-            br.united(node.sceneBoundingRect())
+            br = br.united(node.sceneBoundingRect())
         return br
 
     def paint(self, painter, style, QWidget_widget=None):
