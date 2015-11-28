@@ -61,30 +61,32 @@ class DynamicWidthTree(LinearizedStaticTree):
         down = node.edges_down
         for edge in down:
             other = edge.end
-            close_ones.add(other)
-            other_x, other_y, other_z = other.current_position
-            dist_x, dist_y = node_x - other_x, node_y - other_y
-            dist = math.hypot(dist_x, dist_y)
-            radius = (other.width + node.width) / 2
-            if dist - radius > 0:
-                pulling_force = ((dist - radius) * edge.pull * alpha) / dist
-                node_x -= dist_x * pulling_force
-            else:
-                node_x += 1
+            if other.is_visible():
+                close_ones.add(other)
+                other_x, other_y, other_z = other.current_position
+                dist_x, dist_y = node_x - other_x, node_y - other_y
+                dist = math.hypot(dist_x, dist_y)
+                radius = (other.width + node.width) / 2
+                if dist - radius > 0:
+                    pulling_force = ((dist - radius) * edge.pull * alpha) / dist
+                    node_x -= dist_x * pulling_force
+                else:
+                    node_x += 1
 
         up = node.edges_up
         for edge in up:
             other = edge.start
-            close_ones.add(other)
-            other_x, other_y, other_z = other.current_position
-            dist_x, dist_y = node_x - other_x, node_y - other_y
-            dist = math.hypot(dist_x, dist_y)
-            radius = ((other.width + node.width) / 2) * 1.4
-            if dist - radius > 0:
-                pulling_force = ((dist - radius) * edge.pull * alpha) / dist
-                node_x -= dist_x * pulling_force
-            else:
-                node_x -= 1
+            if other.is_visible():
+                close_ones.add(other)
+                other_x, other_y, other_z = other.current_position
+                dist_x, dist_y = node_x - other_x, node_y - other_y
+                dist = math.hypot(dist_x, dist_y)
+                radius = ((other.width + node.width) / 2) * 1.4
+                if dist - radius > 0:
+                    pulling_force = ((dist - radius) * edge.pull * alpha) / dist
+                    node_x -= dist_x * pulling_force
+                else:
+                    node_x -= 1
 
         all_nodes = set(self.forest.visible_nodes())
         other_nodes = all_nodes - close_ones

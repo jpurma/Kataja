@@ -107,9 +107,10 @@ class LinearizedStaticTree(BalancedTree):
             node_width = mnode.width
             node_height = mnode.height
             node_top_row = mnode.get_top_row_y()
-            relative_start_height = (node_height / 2.0 - node_top_row) / node_height
+            relative_start_height = (node_height / 2.0 + node_top_row) / node_height
+
             height_in_rows = math.ceil(node_height / float(edge_height))
-            start_height = int(relative_start_height * height_in_rows)
+            start_height = max(int(relative_start_height * height_in_rows), 1)
             width_in_columns = math.ceil(node_width / float(edge_width))
             left_adjust = int(width_in_columns / -2)
             return left_adjust, -start_height, width_in_columns, height_in_rows
@@ -176,7 +177,7 @@ class LinearizedStaticTree(BalancedTree):
         offset_y = tree_height / -2
         height_reduction = (edge_height / 3.0) / (merged_grid.height or 1)
         height_now = offset_y
-
+        merged_grid.ascii_dump()
         # Actual drawing: set nodes to their places in scene
         for y, row in enumerate(merged_grid):
             height_now += edge_height

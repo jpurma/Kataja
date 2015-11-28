@@ -35,8 +35,9 @@ become visible
 + Some buttons get their trigger argument instead of sender and crash
 + Dynamic width visualizations are quite unable to look nice
     + LinearizedStaticTree creates unnecessary traces
+    + Triangles behave oddly in Dynamic width trees
 + Deleting node causes broken chain error
 + Highlighter not visible in LeftFirstTree or LinearizedDynamic. Strange!
-
+- LeftFirstHexTree sometimes draws very long branches
 
 

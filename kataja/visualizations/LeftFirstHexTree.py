@@ -129,7 +129,7 @@ class LeftFirstHexTree(BaseVisualization):
             else:
                 self.areas[node.save_key] = d['rect']
                 allow_crossing = True
-            node.move_to(d['x'], d['y'], 0)
+            node.move_to(d['x'], d['y'], 0, valign=g.TOP_ROW)
 
             ch = list(node.get_visible_children())
             for i, child in enumerate(ch):
@@ -171,6 +171,7 @@ class LeftFirstHexTree(BaseVisualization):
                     else:
                         return redraw_node(parent)
             else:
+                #print('moving topmost node')
                 x = self.start_x
                 y = 0
                 translated_rect = node.inner_rect.translated(x, y)
@@ -179,7 +180,7 @@ class LeftFirstHexTree(BaseVisualization):
                     x = self.start_x
                     translated_rect = node.inner_rect.translated(x, y)
                 angle = math.pi / 2
-            node.move_to(x, y, 0)
+            node.move_to(x, y, 0, valign=g.TOP_ROW)
             self.areas[node.save_key] = translated_rect
             self.drawn[node.save_key] = {'node': node, 'rect': translated_rect, 'x': x, 'y': y,
                                          'angle': angle, 'child_n': child_n,

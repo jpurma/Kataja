@@ -77,7 +77,7 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         kataja_app.processEvents()
 
         BaseModel.__init__(self, unique=True)
-        self.use_tooltips = False
+        self.use_tooltips = True
         self.setDockOptions(QtWidgets.QMainWindow.AnimatedDocks)
         self.setCorner(QtCore.Qt.TopLeftCorner, QtCore.Qt.LeftDockWidgetArea)
         self.setCorner(QtCore.Qt.TopRightCorner, QtCore.Qt.RightDockWidgetArea)
