@@ -38,6 +38,7 @@ become visible
     + Triangles behave oddly in Dynamic width trees
 + Deleting node causes broken chain error
 + Highlighter not visible in LeftFirstTree or LinearizedDynamic. Strange!
-- LeftFirstHexTree sometimes draws very long branches
-
++ LeftFirstHexTree sometimes draws very long branches
+    + Refactored LeftFirstHexTree to SpirallingTree
+    - Branch start points are ugly for many visualisations
 

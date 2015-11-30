@@ -341,7 +341,7 @@ class ConstituentNode(BaseConstituentNode):
         else:
             return "anonymous constituent"
 
-        return "constituent '%s' from trees %s" % (l, [t.save_key for t in self.trees])
+        return "constituent '%s'" % l
 
     def as_bracket_string(self):
         """ returns a simple bracket string representation """

@@ -58,8 +58,9 @@ class SymmetricElasticTree(BaseVisualization):
         """
         node.update_label()
         node.update_visibility()
-        node.force_x = True
-        node.force_y = True
+        node.physics_x = True
+        node.physics_y = True
+        node.physics_z = True
 
     def calculate_movement(self, node):
         # Sum up all forces pushing this item away.
@@ -122,8 +123,8 @@ class SymmetricElasticTree(BaseVisualization):
         xvel += node_x * -0.003
         yvel += node_y * -0.003
 
-        if not node.force_x:
+        if not node.physics_x:
             xvel = 0
-        if not node.force_y:
+        if not node.physics_y:
             yvel = 0
         return xvel, yvel, 0

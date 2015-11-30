@@ -158,7 +158,7 @@ class OverlayButton(PanelButton):
             if not self.edge:
                 edges = [x for x in self.host.edges_down if
                          x.edge_type is g.CONSTITUENT_EDGE and
-                         x.end.is_placeholder()]
+                         x.end.is_visible()]
                 if not edges:
                     raise UIError(
                         "Remove merger suggested for merger with no children")

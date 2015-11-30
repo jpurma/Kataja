@@ -174,7 +174,7 @@ When nodes that don't use physics are dragged, the adjustment.
             y -= self.get_bottom_row_y()
         elif valign == BOTTOM:
             y -= self.boundingRect().bottom()
-        if (x, y, z) == self.target_position:
+        if (x, y, z) == self.target_position and self._move_counter:
             # already moving there
             return
         self.target_position = x, y, z
