@@ -26,7 +26,7 @@
 import math
 
 import kataja.globals as g
-from kataja.singletons import prefs
+from kataja.singletons import prefs, ctrl
 from kataja.utils import caller
 from kataja.visualizations.BaseVisualization import BaseVisualization
 
@@ -44,10 +44,12 @@ class Layer:
         self.layers = []
         self.rect = None
         self.attempts = 0
-        self.max_attempts = 2
+        self.max_attempts = 4
 
     def expand(self):
         if self.attempts > self.max_attempts:
+            return False
+        if not self.has_room(self.rect): # don't push through a node
             return False
         self.attempts += 1
         self.size += 1
@@ -68,33 +70,21 @@ class Layer:
         key = self.focus.save_key
         if key in self.vis.areas:
             del self.vis.areas[key]
+        if self in self.vis.waiting_list:
+            self.vis.waiting_list.remove(self)
         for layer in self.layers:
             layer.remove_areas()
-
-    def should_be_drawn(self):
-        if not self.parent:
-            return True
-        if not self.parent.rect:
-            return False
-        return self.vis.should_we_draw(self.focus, self.parent.focus)
-
-    def someone_must_expand(self):
-        can_expand = self.expand()
-        if can_expand:
-            self.vis.draw_layer(self)
-            return True
-        elif self.parent:
-            print('..... tried to expand ten times retracing to parent from %s ' % self.focus)
-            self.remove_areas()
-            self.parent.someone_must_expand()
-            return False
 
     def try_to_draw(self, n, n_of_children):
         if self.parent:
             if n_of_children > 1:
-                angle_step = ((2 * math.pi) / (self.vis.sides / 2)) / (n_of_children - 1)
-                base_angle = self.parent.angle + (math.pi / (self.vis.sides / 2))
-                self.angle = base_angle - (n * angle_step)
+                if self.vis.sides == 3:
+                    angle_step = ((2 * math.pi) / 3)
+                    self.angle = self.parent.angle + math.pi - ((n + 1) * angle_step)
+                else:
+                    angle_step = ((2 * math.pi) / (self.vis.sides / 2)) / (n_of_children - 1)
+                    base_angle = self.parent.angle + (math.pi / (self.vis.sides / 2))
+                    self.angle = base_angle - (n * angle_step)
             else:
                 self.angle = self.parent.angle
             xstep = math.cos(self.angle) * self.vis.edge
@@ -139,7 +129,6 @@ class SpirallingTree(BaseVisualization):
     name = 'Spiralling trees'
 
     def __init__(self):
-        print('init')
         BaseVisualization.__init__(self)
         self.forest = None
         self._hits = {}
@@ -150,7 +139,7 @@ class SpirallingTree(BaseVisualization):
         self.start_x = 0
         self.iterations = 0
         self.edge = 0
-        self.sides = 12
+        self.sides = 3
 
     def prepare(self, forest, reset=True):
         """ If loading a state, don't reset.
@@ -161,6 +150,7 @@ class SpirallingTree(BaseVisualization):
         self._hits = {}
         self._max_hits = {}
         if reset:
+            self.sides = 3
             self.forest.settings.bracket_style = g.NO_BRACKETS
             self.forest.settings.show_constituent_edges = True
             self.set_vis_data('rotation', 0)
@@ -184,28 +174,44 @@ class SpirallingTree(BaseVisualization):
         is triggered here. """
         self.set_vis_data('rotation', self.get_vis_data('rotation') - 1)
 
-    def draw_layer(self, layer):
-        ch = list(layer.focus.get_visible_children())
+
+    def select_layer(self, layer):
         #ch.reverse()
         self.iterations += 1
-        if self.iterations > 100:
-            return False
+        if self.iterations > 500:
+            print("Reached 500 iterations, quit trying")
+            return None
+        ch = list(layer.focus.get_visible_children())
         layer.layers = []
-        success = True
         for i, child_node in enumerate(ch):
-            child_layer = Layer(child_node, parent=layer, vis=self)
-            if child_layer.should_be_drawn():
+            if self.should_we_draw(child_node, layer.focus):
+                child_layer = Layer(child_node, parent=layer, vis=self)
                 success = child_layer.try_to_draw(i, len(ch))
                 if not success:
-                    layer.someone_must_expand()
-                    return False
-            layer.layers.append(child_layer)
+                    child_layer.remove_areas()
+                    expanded_layer = self.someone_must_expand(layer)
+                    return expanded_layer
+                layer.layers.append(child_layer)
+                self.waiting_list.append(child_layer)
         for child in layer.layers:
-            success = self.draw_layer(child)
-            if not success: # avoid ghosts of recursion
-                break
-        return success
+            if child in self.waiting_list:
+                self.waiting_list.remove(child)
+                return child
+        while layer.parent:
+            layer = layer.parent
+            if self.waiting_list:
+                return self.waiting_list.pop(0)
 
+    def someone_must_expand(self, layer):
+        can_expand = layer.expand()
+        if can_expand:
+            return layer
+        elif layer.parent:
+            layer.remove_areas()
+            return self.someone_must_expand(layer.parent)
+        else:
+            self.sides += 1
+            self.draw()
 
     def draw(self):
         """
@@ -215,11 +221,22 @@ class SpirallingTree(BaseVisualization):
         self.start_x = 0
         self.areas = {}
         self.iterations = 0
+        self.waiting_list = []
 
         self.edge = math.hypot(prefs.edge_width, prefs.edge_height) * 2
         new_rotation, self.traces_to_draw = self._compute_traces_to_draw(
                 self.get_vis_data('rotation'))
         self.set_vis_data('rotation', new_rotation)
+
+        changed = False
+        for tree in self.forest:
+            for node in tree.sorted_nodes:
+                if len(list(node.get_visible_children())) + 1 > self.sides:
+                    self.sides = len(list(node.get_visible_children())) + 1
+                    changed = True
+
+        if changed:
+            ctrl.main.add_message('Need to have at least %s sides to draw this tree.' % self.sides)
 
         for tree in self.forest:
             layer = Layer(tree.top, parent=None, vis=self)
@@ -227,4 +244,5 @@ class SpirallingTree(BaseVisualization):
             while not success:
                 self.start_x += 100
                 success = layer.try_to_draw(0, 1)
-            self.draw_layer(layer)
+            while layer:
+                layer = self.select_layer(layer)
