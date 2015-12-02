@@ -469,7 +469,7 @@ syntactic_object: %s
         to have predictable behaviour for complex cases.
         :return:
         """
-        max_len = 0
+        max_len = -1
         bigger = None
         for tree in self.trees:
             l = len(tree.sorted_constituents) + len(tree.sorted_nodes)

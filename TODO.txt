@@ -47,10 +47,10 @@ become visible
 - Second fat edge shape is missing icon
 - Loading fails
     + Trees are not restored
-    - Ghosting glosses
+    + Ghosting glosses
     - Broken projection chain when changing forest
     - Missing aliases
-    - Zoom level is miscalculated
+    + Zoom level is miscalculated
 
 ADD:
 

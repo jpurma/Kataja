@@ -90,6 +90,7 @@ class Forest(BaseModel):
         self.select_counter = 0
         self.comments = []
         self.gloss_text = ''
+        self.gloss = None
         self.ongoing_animations = set()
         self.guessed_projections = False
 
@@ -166,7 +167,6 @@ class Forest(BaseModel):
          some other forest is occupying the scene now.
         :return:
         """
-        scene = self.scene
         for item in self.get_all_objects():
             self.remove_from_scene(item)
         self.in_display = False
@@ -242,14 +242,12 @@ class Forest(BaseModel):
 
     def update_forest_gloss(self):
         """ Draw the gloss text on screen, if it exists. """
-        if self.gloss_text:
-            if prefs.show_gloss_text:
-                if not self.gloss:
-                    self.gloss = self.create_node(synobj=None, node_type=g.GLOSS_NODE)
-                    self.gloss.text = self.gloss_text
-            elif self.gloss:
-                self.remove_from_scene(self.gloss)
-                self.gloss = None
+        if self.gloss_text and prefs.show_gloss_text:
+            if not self.gloss:
+                self.gloss = self.create_node(synobj=None, node_type=g.GLOSS_NODE)
+                self.gloss.text = self.gloss_text
+            elif self.gloss.text != self.gloss_text:
+                self.gloss.text = self.gloss_text
         elif self.gloss:
             self.remove_from_scene(self.gloss)
             self.gloss = None
@@ -413,6 +411,8 @@ class Forest(BaseModel):
                 yield (n.visual)
         for n in self.bracket_manager.get_brackets():
             yield (n)
+        if self.gloss:
+            yield (self.gloss)
 
     def get_node(self, constituent):
         """
@@ -1963,3 +1963,4 @@ class Forest(BaseModel):
     select_counter = Saved("select_counter")
     comments = Saved("comments")
     gloss_text = Saved("gloss_text")
+    gloss = Saved("gloss")
