@@ -2,9 +2,10 @@ from PyQt5 import QtWidgets
 
 from kataja.singletons import prefs, ctrl
 from kataja.ui.panels.UIPanel import UIPanel
-# from PyQt5 import QtMultimedia, QtMultimediaWidgets
+#from PyQt5 import QtMultimedia, QtMultimediaWidgets
 
 __author__ = 'purma'
+
 
 
 class ColorPanel(UIPanel):

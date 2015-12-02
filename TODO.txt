@@ -1,13 +1,14 @@
-- Add visualization specific settings to visualization panel
+FIX:
+
 + Better add-triangle buttons (make them touchareas)
 + Draw better triangles
     + Improved them quite a lot
     + fading locks appear for hidden nodes too, in their old places. And it looks like
     viewport resize is also counting hidden nodes
-- Fix rare add branch -bug, that creates a node that is not recognized by visualization algorithm.
++ Fix rare add branch -bug, that creates a node that is not recognized by visualization algorithm.
     + add to top right into new tree creates problem -- Fixed
-    - Rare children who aren't in tree
-        = maybe fixed already, could be caused by set grid overwriting nodes
+    + Rare children who aren't in tree
+        + maybe fixed already, could be caused by set grid overwriting nodes
 + Fix situation where tree is replaced as new node is added on top.
 - Fix parsing of currently broken trees and those that create too many Tree -objects.
     + Too many trees -problem is fixed
@@ -41,4 +42,20 @@ become visible
 + LeftFirstHexTree sometimes draws very long branches
     + Refactored LeftFirstHexTree to SpirallingTree
     - Branch start points are ugly for many visualisations
+- Scope selection box in drawing styles is too narrow
+- Line shape selector doesn't update when changing forests.
+- Second fat edge shape is missing icon
+- Loading fails
+    + Trees are not restored
+    - Ghosting glosses
+    - Broken projection chain when changing forest
+    - Missing aliases
+    - Zoom level is miscalculated
 
+ADD:
+
+- Add visualization specific settings to visualization panel
+- Shift-drag to move nodes instead of copying
+- Rotation of node magnets depending on visualization
+- PreferencesDialog
+- Automated test for loading and saving

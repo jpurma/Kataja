@@ -15,10 +15,13 @@ from kataja.Forest import Forest
 from kataja.ForestSettings import ForestSettings, ForestRules
 from kataja.managers.ChainManager import ChainManager
 from kataja.DerivationStep import DerivationStep, DerivationStepManager
+from kataja.Tree import Tree
+
 
 from syntax.ConfigurableConstituent import ConfigurableConstituent
 from syntax.BaseConstituent import BaseConstituent
 from syntax.BaseFeature import BaseFeature
+
 
 # These asserts prevent automated cleanups from removing imports above as unused
 # Node types
@@ -48,7 +51,7 @@ assert BaseFeature
 factory_models = {ConstituentNode, BaseConstituentNode, AttributeNode, FeatureNode, GlossNode,
                   PropertyNode, CommentNode, Edge, Forest,
                   DerivationStep, DerivationStepManager, ForestSettings, ForestRules,
-                  ConfigurableConstituent, BaseConstituent, BaseFeature}
+                  ConfigurableConstituent, BaseConstituent, BaseFeature, Tree}
 factory_dict = {}
 for value in factory_models:
     factory_dict[value.short_name] = value

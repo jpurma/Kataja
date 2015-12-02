@@ -1,4 +1,5 @@
 # coding=utf-8
+from kataja.BaseModel import Saved
 from kataja.Movable import Movable
 from kataja.nodes import Node
 from kataja.singletons import ctrl
@@ -37,14 +38,17 @@ class Tree(Movable):
     name = ('Tree', 'Trees')
     short_name = "Tree"
 
-    def __init__(self, top: Node):
+    def __init__(self, top=None):
         Movable.__init__(self)
         self.top = top
         if is_constituent(top):
             self.sorted_constituents = [top]
         else:
             self.sorted_constituents = []
-        self.sorted_nodes = [top]
+        if top:
+            self.sorted_nodes = [top]
+        else:
+            self.sorted_nodes = []
         self.current_position = 100, 100, 0
         self.drag_data = None
         self.tree_changed = True
@@ -56,6 +60,10 @@ class Tree(Movable):
 
     def __contains__(self, item):
         return item in self.sorted_nodes
+
+    def after_init(self):
+        self.recalculate_top()
+        self.update_items()
 
     def rebuild(self):
         self.recalculate_top()
@@ -190,3 +198,5 @@ class Tree(Movable):
         #br = self.boundingRect()
         #painter.drawRect(br)
         #painter.drawText(br.topLeft() + QtCore.QPointF(2, 10), str(self))
+
+    top = Saved("top")
