@@ -92,25 +92,22 @@ class KatajaAction(QtWidgets.QAction):
         :param sender: optional sender object if triggered manually
         :return: None
         """
+        if not self.isEnabled():
+            return
         # -- Redraw and undo flags: these are on by default, can be switched off by action method
         ctrl.action_redraw = True
         if self.sender_arg:
-            args = [kwargs.get('sender', None) or self.sender()]
-        else:
-            args = []
+            if not 'sender' in kwargs:
+                kwargs['sender'] = self.sender()
         if self.action_arg:
-            args += [self]
-        if self.args:
-            args += self.args
-        #print("Doing action '%s' with method '%s' and with sender %s and args: %s" %
-        #      (self.key, self.method, self.sender(), str(args)))
+            kwargs['action'] = self
         # Disable undo if necessary
         remember_undo_state = ctrl.undo_disabled
         if not self.undoable:
             ctrl.undo_disabled = True
 
         # Call method
-        message = self.method(*args)
+        message = self.method(*self.args, **kwargs)
 
         # Restore undo state to what it was
         if not self.undoable:

@@ -51,6 +51,7 @@ become visible
     + Broken projection chain when changing forest
     + Missing aliases
     + Zoom level is miscalculated
+    -W Some item is added twice to scene
 
 ADD:
 
@@ -58,4 +59,6 @@ ADD:
 - Shift-drag to move nodes instead of copying
 - Rotation of node magnets depending on visualization
 - PreferencesDialog
-- Automated test for loading and saving
++ Automated test for loading and saving
+- New Forest
+- New Treeset

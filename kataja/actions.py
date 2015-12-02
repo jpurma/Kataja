@@ -61,9 +61,10 @@ a = {}
 # these are not necessarily found in actions.py
 
 
-def toggle_panel(action, panel_id):
+def toggle_panel(panel_id, action=None):
     """ Show or hide panel depending if it is visible or not
     :param panel_id: enum of panel identifiers (str)
+    :param action:
     :return: None
     """
     ctrl.ui.toggle_panel(action, panel_id)
@@ -96,8 +97,9 @@ file_extensions = {'pickle': '.kataja', 'pickle.zipped': '.zkataja',
 # windows, if they still use three-letter extensions
 
 
-def open_kataja_file():
+def open_kataja_file(filename=''):
     """ Open file browser to load a kataja data file
+    :param filename: optional filename, if given, no file dialog is displayed
     :return: None
     """
     m = ctrl.main
@@ -113,11 +115,12 @@ Text files containing bracket trees (*.txt, *.tex)"""
     # inspection doesn't recognize that getOpenFileName is static, switch it
     # off:
     # noinspection PyTypeChecker,PyCallByClass
-    filename, filetypes = QtWidgets.QFileDialog.getOpenFileName(ctrl.main,
-                                                                "Open "
-                                                                "KatajaMain "
-                                                                "trees", "",
-                                                                file_help)
+    if not filename:
+        filename, filetypes = QtWidgets.QFileDialog.getOpenFileName(ctrl.main,
+                                                                    "Open "
+                                                                    "KatajaMain "
+                                                                    "trees", "",
+                                                                    file_help)
     if not filename:
         return
     save_format = 'dict'
@@ -185,6 +188,7 @@ def save_kataja_file(filename=None):
     all_data = ctrl.main.create_save_data()
     t = time.time()
     pickle_format = 4
+    print(filename)
 
     if save_format == 'pickle':
         if zipped:
@@ -448,7 +452,7 @@ a['select_order_attribute'] = {'command': 'Show select &Order',
 
 
 
-def toggle_fold_panel(sender):
+def toggle_fold_panel(sender=None):
     """ Fold panel into label line or reveal the whole panel.
     :param panel_id: enum of panel identifiers (str)
     :return: None
@@ -463,7 +467,7 @@ a['toggle_fold_panel'] = {'command': 'Fold panel', 'method': toggle_fold_panel,
                           'undoable': False, 'tooltip': "Minimize this panel"}
 
 
-def pin_panel(sender):
+def pin_panel(sender=None):
     """ Put panel back to panel dock area.
     :param panel_id: enum of panel identifiers (str)
     :return: None
@@ -530,7 +534,7 @@ a['fullscreen_mode'] = {'command': '&Fullscreen', 'method': toggle_full_screen,
                         'shortcut': 'f', 'undoable': False, 'checkable': True}
 
 
-def change_style_scope(sender):
+def change_style_scope(sender=None):
     """ Change drawing panel to work on selected nodes, constituent nodes or
     other available
     nodes
@@ -549,7 +553,7 @@ a['style_scope'] = {'command': 'Select the scope for style changes',
                     'tooltip': 'Select the scope for style changes'}
 
 
-def open_font_selector(sender):
+def open_font_selector(sender=None):
     """ Change drawing panel to work on selected nodes, constituent nodes or
     other available
     nodes
@@ -568,7 +572,7 @@ a['start_font_dialog'] = {'command': 'Use a custom font',
                                                         'for node label'}
 
 
-def select_font(sender):
+def select_font(sender=None):
     """ Change drawing panel to work on selected nodes, constituent nodes or
     other available
     nodes
@@ -586,7 +590,7 @@ a['font_selector'] = {'command': 'Change label font', 'method': select_font,
                                                      'label styles'}
 
 
-def change_edge_shape(sender):
+def change_edge_shape(sender=None):
     """ Change edge shape for selection or in currently active edge type.
     :param shape: shape key (str)
     :return: None
@@ -618,7 +622,7 @@ a['change_edge_shape'] = {'command': 'Change relation shape',
                                      'edges) between objects'}
 
 
-def change_node_color(sender):
+def change_node_color(sender=None):
     """ Change color for selection or in currently active edge type.
     :param color: color key (str)
     :return: None
@@ -639,7 +643,7 @@ a['change_node_color'] = {'command': 'Change node color',
                           'tooltip': 'Change drawing color of nodes'}
 
 
-def change_edge_color(sender):
+def change_edge_color(sender=None):
     """ Change edge shape for selection or in currently active edge type.
     :param color: color key (str)
     :return: None
@@ -834,7 +838,7 @@ a['edge_asymmetry'] = {'command': 'Set left and right to differ significantly',
                        'tooltip': 'Set left and right to differ significantly'}
 
 
-def change_visualization(sender, visualization_key=None):
+def change_visualization(visualization_key=None, sender=None):
     """ Switch the visualization being used.
 
     :return: None
@@ -957,7 +961,7 @@ a['toggle_show_leaf_label'] = {'command': '%s labels in leaf nodes',
 
 
 
-def add_node(sender, ntype=None, pos=None):
+def add_node(sender=None, ntype=None, pos=None):
     """ Generic add node, gets the node type as an argument.
     :param ntype: node type (str/int, see globals), if not provided,
     evaluates which add_node button was clicked.
@@ -996,7 +1000,7 @@ def show_help_message():
 a['help'] = {'command': '&Help', 'method': show_help_message, 'shortcut': 'h'}
 
 
-def close_embeds(sender):
+def close_embeds(sender=None):
     """ If embedded menus (node creation / editing in place, etc.) are open,
     close them.
     This is expected behavior for pressing 'esc'.
@@ -1013,7 +1017,7 @@ a['close_embed'] = {'command': 'Close panel', 'method': close_embeds,
                     'shortcut_context': 'parent_and_children'}
 
 
-def new_element_accept(sender):
+def new_element_accept(sender=None):
     """ Create new element according to fields in this embed. Can create
     constituentnodes,
     features, arrows, etc.
@@ -1051,7 +1055,7 @@ a['create_new_node_from_text'] = {'command': 'Enter', 'method': new_element_acce
                                   'shortcut_context': 'parent_and_children'}
 
 
-def create_new_arrow(sender):
+def create_new_arrow(sender=None):
     """ Create a new arrow into embed menu's location
     :param sender:
     :return: None
@@ -1068,7 +1072,7 @@ a['new_arrow'] = {'command': 'New arrow', 'sender_arg': True,
                   'shortcut_context': 'parent_and_children'}
 
 
-def create_new_divider(sender):
+def create_new_divider(sender=None):
     """ Create a new divider into embed menu's location
     :return: None
     """
@@ -1083,7 +1087,7 @@ a['new_divider'] = {'command': 'New divider', 'method': create_new_divider,
                     'shortcut_context': 'parent_and_children'}
 
 
-def edge_label_accept(sender):
+def edge_label_accept(sender=None):
     """ Accept & update changes to edited edge label
     :param args: don't know? not used
     :return None:
@@ -1129,7 +1133,7 @@ a['change_edge_ending'] = {'command': 'Change edge ending',
                            'method': change_edge_ending}
 
 
-def edge_disconnect(sender):
+def edge_disconnect(sender=None):
     """ Remove connection between two nodes, by either cutting from the start
     or the end. This will result
     in a dangling edge, which should be either connected to another node or
@@ -1176,7 +1180,7 @@ a['disconnect_edge'] = {'command': 'Disconnect', 'sender_arg': True,
                         'method': edge_disconnect}
 
 
-def remove_merger(sender):
+def remove_merger(sender=None):
     """ In cases where there another part of binary merge is removed,
     and a stub edge is left dangling,
     there is an option to remove the unnecessary merge -- it is the
@@ -1194,7 +1198,7 @@ a['remove_merger'] = {'command': 'Remove merger', 'sender_arg': True,
                       'method': remove_merger}
 
 
-def add_triangle(sender):
+def add_triangle(sender=None):
     """ Turn triggering node into triangle node
     :return: None
     """
@@ -1210,7 +1214,7 @@ a['add_triangle'] = {'command': 'Add triangle', 'sender_arg': True,
                      'method': add_triangle}
 
 
-def remove_triangle(sender):
+def remove_triangle(sender=None):
     """ If triggered node is triangle node, restore it to normal
     :return: None
     """
@@ -1226,7 +1230,7 @@ a['remove_triangle'] = {'command': 'Remove triangle', 'sender_arg': True,
                         'method': remove_triangle}
 
 
-def finish_editing_node(sender):
+def finish_editing_node(sender=None):
     """ Set the new values and close the constituent editing embed.
     :return: None
     """
@@ -1256,7 +1260,7 @@ a['raw_editing_toggle'] = {'command': 'Toggle edit mode',
                            'method': toggle_raw_editing}
 
 
-def constituent_set_head(sender):
+def constituent_set_head(sender=None):
     """
 
     :return:
@@ -1274,7 +1278,7 @@ a['constituent_set_head'] = {'command': 'Set head for inheritance',
                              'sender_arg': True}
 
 
-def add_sibling_left(sender):
+def add_sibling_left(sender=None):
     """
 
     :param sender:
@@ -1292,7 +1296,7 @@ a['add_sibling_left'] = {'command': 'Add sibling node to left',
                          'sender_arg': True}
 
 
-def add_sibling_right(sender):
+def add_sibling_right(sender=None):
     """
 
     :param sender:
@@ -1310,7 +1314,7 @@ a['add_sibling_right'] = {'command': 'Add sibling node to right',
                          'sender_arg': True}
 
 
-def add_top_left(sender):
+def add_top_left(sender=None):
     """
     :type event: QMouseEvent
      """
@@ -1323,7 +1327,7 @@ a['add_top_left'] = {'command': 'Add node to left',
                      'sender_arg': True}
 
 
-def add_top_right(sender):
+def add_top_right(sender=None):
     """
     :type event: QMouseEvent
      """
@@ -1336,7 +1340,7 @@ a['add_top_right'] = {'command': 'Add node to right',
                       'sender_arg': True}
 
 
-def add_child_left(sender):
+def add_child_left(sender=None):
     """
 
     :param sender:
@@ -1351,7 +1355,7 @@ a['add_child_left'] = {'command': 'Add child node to left',
                        'sender_arg': True}
 
 
-def add_child_right(sender):
+def add_child_right(sender=None):
     """
 
     :param sender:

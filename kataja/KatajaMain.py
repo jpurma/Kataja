@@ -214,6 +214,15 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         else:
             ctrl.graph_scene.start_animations()
 
+    def trigger_action(self, name, **kwargs):
+        """ Helper for programmatically triggering actions (for tests and plugins)
+        :param name: action name
+        :param kwargs: keyword parameters
+        :return:
+        """
+        action = self.ui_manager.qt_actions[name]
+        action.action_triggered(**kwargs)
+
     def enable_actions(self):
         """ Restores menus """
         for action in self.ui_manager.qt_actions.values():

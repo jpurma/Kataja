@@ -1,3 +1,5 @@
+import tempfile
+
 __author__ = 'purma'
 
 import unittest
@@ -59,13 +61,27 @@ class TestMainWindowStructure(unittest.TestCase):
         #self.load_treeset()
         #self.action_finished()
 
-    def test_save_data(self):
-        """ Save data exists -- practically if the creation of save data happens without error
-        :return:
-        """
-        d = self._main.create_save_data()
-        self.assertTrue(d)
-        self.assertGreater(len(d), 200)
+    def test_action(self):
+        self._main.trigger_action('next_forest')
+
+    def test_save_and_load(self):
+        filename = tempfile.gettempdir() + '/savetest.kataja'
+        self._main.trigger_action('save', filename=filename)
+        size_in_save = len(self._main.forest.nodes)
+        self._main.trigger_action('next_forest')
+        self._main.trigger_action('next_forest')
+        size_now = len(self._main.forest.nodes)
+        self._main.trigger_action('open', filename=filename)
+        size_after_load = len(self._main.forest.nodes)
+        self.assertNotEqual(size_in_save, size_now, "Fix this test: same nodecount in initial "
+                                                    "forest and comparison forest. They need to "
+                                                    "be different.")
+        self.assertNotEqual(size_after_load, size_now, "Nodecount didn't change after load")
+        self.assertEqual(size_in_save, size_after_load, "Nodecount in saved forest "
+                                                        "different to loaded forest")
+
+
+
 
 if __name__ == '__main__':
     unittest.main()
