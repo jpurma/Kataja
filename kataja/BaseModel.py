@@ -576,6 +576,7 @@ class BaseModel(object):
             return restored[obj_key]
         # If the object already exists (e.g. we are doing undo), the loaded
         # values overwrite existing values.
+
         obj = full_map.get(obj_key, None)
         if not obj:
             # print('creating new ', class_key)

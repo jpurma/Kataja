@@ -120,7 +120,7 @@ Text files containing bracket trees (*.txt, *.tex)"""
                                                                 file_help)
     if not filename:
         return
-    save_format = 'pickle'
+    save_format = 'dict'
     zipped = False
     for key, value, in file_extensions.items():
         if filename.endswith(value):
@@ -171,7 +171,6 @@ def save_kataja_file(filename=None):
     Format is deduced from the extension of filename.
     :return: None
     """
-    # action  = self.sender()
     save_format = 'pickle'
     zipped = False
     if not filename:

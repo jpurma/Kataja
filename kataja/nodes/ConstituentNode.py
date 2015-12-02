@@ -127,6 +127,10 @@ class ConstituentNode(BaseConstituentNode):
     def __init__(self, constituent=None):
         """ Most of the initiation is inherited from Node """
         BaseConstituentNode.__init__(self, constituent=constituent)
+        self.index = ''
+        self.alias = ''
+        self.gloss = ''
+        self.head = None
         self.is_trace = False
         self.merge_order = 0
         self.select_order = 0
@@ -151,7 +155,7 @@ class ConstituentNode(BaseConstituentNode):
         a = self.as_inode()
         self.update_features()
         self.update_gloss()
-        self.update_label()
+        self.update_label(force_update=True)
         self.update_visibility()
         self.update_status_tip()
         self.announce_creation()

@@ -45,11 +45,11 @@ become visible
 - Scope selection box in drawing styles is too narrow
 - Line shape selector doesn't update when changing forests.
 - Second fat edge shape is missing icon
-- Loading fails
++ Loading fails
     + Trees are not restored
     + Ghosting glosses
-    - Broken projection chain when changing forest
-    - Missing aliases
+    + Broken projection chain when changing forest
+    + Missing aliases
     + Zoom level is miscalculated
 
 ADD:
