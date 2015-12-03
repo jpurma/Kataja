@@ -146,6 +146,9 @@ Text files containing bracket trees (*.txt, *.tex)"""
             f = gzip.open(filename, 'rt')
         elif save_format == 'pickle':
             f = gzip.open(filename, 'rb')
+        else:
+            ctrl.add_message("Failed to load '%s'. Unknown format." % filename)
+            return
     else:
         if save_format == 'pickle':
             f = open(filename, 'rb')
@@ -162,6 +165,11 @@ Text files containing bracket trees (*.txt, *.tex)"""
         # data = eval(f.read())
     elif save_format == 'json':
         data = json.load(f)
+    else:
+        f.close()
+        ctrl.add_message("Failed to load '%s'. Unknown format." % filename)
+        return
+
     f.close()
     # prefs.update(data['preferences'].__dict__)
     # qt_prefs.update(prefs)
@@ -218,6 +226,11 @@ def save_kataja_file(filename=None):
         else:
             f = open(filename, 'w')
         json.dump(all_data, f, indent="\t", sort_keys=False)
+    else:
+        ctrl.main.add_message(
+            "Failed to save '%s', no proper format given." % filename)
+        return
+
     f.close()
     ctrl.main.add_message(
         "Saved to '%s'. Took %s seconds." % (filename, time.time() - t))
@@ -460,10 +473,9 @@ a['select_order_attribute'] = {'command': 'Show select &Order',
 # View ####
 
 
-
 def toggle_fold_panel(sender=None):
     """ Fold panel into label line or reveal the whole panel.
-    :param panel_id: enum of panel identifiers (str)
+    :param sender: field that called this action
     :return: None
     """
     panel = get_ui_container(sender)
@@ -478,7 +490,7 @@ a['toggle_fold_panel'] = {'command': 'Fold panel', 'method': toggle_fold_panel,
 
 def pin_panel(sender=None):
     """ Put panel back to panel dock area.
-    :param panel_id: enum of panel identifiers (str)
+    :param sender: field that called this action
     :return: None
     """
     panel = get_ui_container(sender)
@@ -547,7 +559,7 @@ def change_style_scope(sender=None):
     """ Change drawing panel to work on selected nodes, constituent nodes or
     other available
     nodes
-    :param selection: int scope identifier, from globals
+    :param sender: field that called this action
     :return: None
     """
     if sender:
@@ -566,7 +578,7 @@ def open_font_selector(sender=None):
     """ Change drawing panel to work on selected nodes, constituent nodes or
     other available
     nodes
-    :param selection: int scope identifier, from globals
+    :param sender: field that called this action
     :return: None
     """
     if sender:
@@ -585,7 +597,7 @@ def select_font(sender=None):
     """ Change drawing panel to work on selected nodes, constituent nodes or
     other available
     nodes
-    :param selection: int scope identifier, from globals
+    :param sender: field that called this action
     :return: None
     """
     if sender:
@@ -601,7 +613,7 @@ a['font_selector'] = {'command': 'Change label font', 'method': select_font,
 
 def change_edge_shape(sender=None):
     """ Change edge shape for selection or in currently active edge type.
-    :param shape: shape key (str)
+    :param sender: field that called this action
     :return: None
     """
     shape = sender.currentData()
@@ -633,7 +645,7 @@ a['change_edge_shape'] = {'command': 'Change relation shape',
 
 def change_node_color(sender=None):
     """ Change color for selection or in currently active edge type.
-    :param color: color key (str)
+    :param sender: field that called this action
     :return: None
     """
 
@@ -654,7 +666,7 @@ a['change_node_color'] = {'command': 'Change node color',
 
 def change_edge_color(sender=None):
     """ Change edge shape for selection or in currently active edge type.
-    :param color: color key (str)
+    :param sender: field that called this action
     :return: None
     """
     if sender:
@@ -669,6 +681,7 @@ def change_edge_color(sender=None):
 a['change_edge_color'] = {'command': 'Change relation color',
                           'method': change_edge_color, 'sender_arg': True,
                           'tooltip': 'Change drawing color of relations'}
+
 
 def adjust_control_point(cp_index, dim, value=0):
     """ Adjusting control point can be done only for selected edges, not for
@@ -867,7 +880,7 @@ a['set_visualization'] = {'command': 'Change visualization algorithm',
                           'tooltip': 'Change visualization algorithm'}
 
 
-def set_projection_style(action, style):
+def set_projection_style(style, action=None):
     """ Toggle projection styles.
     :param action: KatajaAction that is calling this method
     :param style: 'highlighter'|'strong_lines'|'colorized'
@@ -915,11 +928,11 @@ a['toggle_colorized_projection'] = {'command': 'Use colors for projections',
                                                'projecting edges'}
 
 
-def toggle_label_visibility(action, node_location, field):
+def toggle_label_visibility(node_location, field, action=None):
     """ Toggle labels|aliases to be visible in inner|leaf nodes.
-    :param action: KatajaAction that is calling this method
     :param node_location: 'internal'|'leaf'
     :param field: 'label'|'alias'
+    :param action: KatajaAction that is calling this method
     :return: str message
     """
     v = False
@@ -969,9 +982,9 @@ a['toggle_show_leaf_label'] = {'command': '%s labels in leaf nodes',
                                'tooltip': 'Show labels in leaf nodes'}
 
 
-
 def add_node(sender=None, ntype=None, pos=None):
     """ Generic add node, gets the node type as an argument.
+    :param sender: field that called this action
     :param ntype: node type (str/int, see globals), if not provided,
     evaluates which add_node button was clicked.
     :param pos: QPoint for where the node should first appear
@@ -1013,7 +1026,7 @@ def close_embeds(sender=None):
     """ If embedded menus (node creation / editing in place, etc.) are open,
     close them.
     This is expected behavior for pressing 'esc'.
-    :param sender:
+    :param sender: field that called this action
     :return: None
     """
     embed = get_ui_container(sender)
@@ -1030,7 +1043,7 @@ def new_element_accept(sender=None):
     """ Create new element according to fields in this embed. Can create
     constituentnodes,
     features, arrows, etc.
-    :param sender:
+    :param sender: field that called this action
     :return: None
     """
 
@@ -1069,7 +1082,7 @@ a['create_new_node_from_text'] = {'command': 'New node from text', 'method': new
 
 def create_new_arrow(sender=None):
     """ Create a new arrow into embed menu's location
-    :param sender:
+    :param sender: field that called this action
     :return: None
     """
     embed = get_ui_container(sender)
@@ -1086,6 +1099,7 @@ a['new_arrow'] = {'command': 'New arrow', 'sender_arg': True,
 
 def create_new_divider(sender=None):
     """ Create a new divider into embed menu's location
+    :param sender: field that called this action
     :return: None
     """
     embed = get_ui_container(sender)
@@ -1101,7 +1115,7 @@ a['new_divider'] = {'command': 'New divider', 'method': create_new_divider,
 
 def edge_label_accept(sender=None):
     """ Accept & update changes to edited edge label
-    :param args: don't know? not used
+    :param sender: field that called this action
     :return None:
     """
     embed = get_ui_container(sender)

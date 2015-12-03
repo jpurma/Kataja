@@ -43,7 +43,8 @@ class INodeToKatajaConstituent(BaseParser):
                     right = result.pop()
                     while result:
                         left = result.pop()
-                        right = ctrl.forest.create_merger_node(left, right, new=left)
+                        left.head = left
+                        right = ctrl.forest.create_merger_node(left, right, new=left, head=left)
                     result = right
             else:
                 result = [self.parse_inode_into_tree(inode) for inode in inodes]

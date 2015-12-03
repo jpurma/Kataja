@@ -1812,7 +1812,7 @@ class Forest(BaseModel):
             # Internal merge situation and we
             # need to give the new_node an index so it can be reconstructed
             # as a trace structure
-            shared_trees = set(inserted.trees) & set(child.trees)
+            shared_trees = list(set(inserted.trees) & set(child.trees))
             if shared_trees:
                 moving_was_higher = shared_trees[0].is_higher_in_tree(inserted, child)
                 if not inserted.index:
@@ -1851,7 +1851,8 @@ class Forest(BaseModel):
         if self.traces_are_visible():
             self.chain_manager.rebuild_chains()
 
-    def create_merger_node(self, left=None, right=None, pos=None, create_tree=True, new=None):
+    def create_merger_node(self, left=None, right=None, pos=None, create_tree=True, new=None,
+                           head=None):
         """ Gives a merger node of two nodes. Doesn't try to fix their edges
         upwards
         :param left:
@@ -1872,6 +1873,8 @@ class Forest(BaseModel):
             self.update_tree_for(merger_node)
         self.update_tree_for(left)
         self.update_tree_for(right)
+        if head:
+            merger_node.set_projection(head)
         return merger_node
 
     def copy_node(self, node):
