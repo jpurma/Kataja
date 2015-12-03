@@ -117,7 +117,7 @@ class NewElementEmbed(UIEmbed):
         hlayout = QtWidgets.QHBoxLayout()
         self.node_type_selector = QtWidgets.QComboBox(self)
 
-        node_types = []
+        node_types = [('Guess from input', g.GUESS_FROM_INPUT)]
         for key in prefs.node_types_order:
             # we have dedicated buttons for arrows and dividers
             if key not in (g.ARROW, g.DIVIDER):

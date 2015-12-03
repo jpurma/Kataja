@@ -344,7 +344,6 @@ class ConstituentNode(BaseConstituentNode):
             l = str(label)
         else:
             return "anonymous constituent"
-
         return "constituent '%s'" % l
 
     def as_bracket_string(self):

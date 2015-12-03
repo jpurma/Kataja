@@ -676,6 +676,8 @@ class Forest(BaseModel):
         :param node: root to check. Only ConstituentNodes can be roots
         :return:
         """
+        if not node:
+            return
         passed = set()
         my_tops = set()
         #forest_tops = set((x.top for x in self.trees))
@@ -727,6 +729,14 @@ class Forest(BaseModel):
                     print('***** found a bad bad trees *****')
                     ctrl.main.add_message('***** found a bad bad trees *****')
                     self.remove_tree(tree)
+
+        # for child in node.get_children():
+        #
+        #     if child.trees != node.trees:
+        #         missing_trees = node.trees - child.trees
+        #         for tree in missing_trees:
+
+
 
     def create_tree_for(self, node):
         """ Create new trees around given node.
@@ -909,13 +919,14 @@ class Forest(BaseModel):
         self.add_to_scene(im)
         return im
 
-    def create_node_from_string(self, text='', pos=None):
+    def create_node_from_string(self, text='', pos=None, simple_parse=False):
         """
 
         :param text:
         :param pos:
+        :param simple_parse: If several words are given, merge them together
         """
-        node = self.parser.parse_into_forest(text)
+        node = self.parser.parse_into_forest(text, simple_parse=simple_parse)
         return node
         # self.add_to_scene(root_node)
         # self.update_tree_for(root_node)
@@ -1859,6 +1870,8 @@ class Forest(BaseModel):
         self.connect_node(parent=merger_node, child=right, direction=g.RIGHT, fade_in=new is right)
         if create_tree:
             self.update_tree_for(merger_node)
+        self.update_tree_for(left)
+        self.update_tree_for(right)
         return merger_node
 
     def copy_node(self, node):

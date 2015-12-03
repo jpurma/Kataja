@@ -195,8 +195,8 @@ class Tree(Movable):
 
     def paint(self, painter, QStyleOptionGraphicsItem, QWidget_widget=None):
         pass
-        #br = self.boundingRect()
-        #painter.drawRect(br)
-        #painter.drawText(br.topLeft() + QtCore.QPointF(2, 10), str(self))
+        br = self.boundingRect()
+        painter.drawRect(br)
+        painter.drawText(br.topLeft() + QtCore.QPointF(2, 10), str(self))
 
     top = Saved("top")

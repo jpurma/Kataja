@@ -2,7 +2,7 @@ __author__ = 'purma'
 
 from kataja.parser.BaseParser import BaseParser
 from kataja.parser.LatexToINode import parse
-from kataja.parser.INodes import ITemplateNode
+from kataja.parser.INodes import ITemplateNode, ITextNode
 from kataja.singletons import ctrl
 from kataja.nodes.BaseConstituentNode import BaseConstituentNode
 import kataja.globals as g
@@ -23,10 +23,11 @@ class INodeToKatajaConstituent(BaseParser):
      translated when required.
     """
     # @time_me
-    def parse_into_forest(self, string):
+    def parse_into_forest(self, string, simple_parse=False):
         """ Parse the text as new nodes in the current forest.
 
         :param string:
+        :param simple_parse: If several words are given, merge them together
         """
         if not string:
             return None
@@ -36,7 +37,16 @@ class INodeToKatajaConstituent(BaseParser):
         inodes = parse(string)
         # done.
         if isinstance(inodes, list):
-            result = [self.parse_inode_into_tree(inode) for inode in inodes]
+            if simple_parse:
+                result = [self.inode_to_constituentnodes(inode) for inode in inodes]
+                if len(result) > 1:
+                    right = result.pop()
+                    while result:
+                        left = result.pop()
+                        right = ctrl.forest.create_merger_node(left, right, new=left)
+                    result = right
+            else:
+                result = [self.parse_inode_into_tree(inode) for inode in inodes]
         else:
             result = self.parse_inode_into_tree(inodes)
         self.should_add_to_scene = old_should_add
@@ -62,6 +72,7 @@ class INodeToKatajaConstituent(BaseParser):
         :param forest: forest where ConstituentNodes will be added
         :return: the root ConstituentNode
         """
+        f = self.forest
         if isinstance(inode, ITemplateNode):
             children = []
             if inode.parts:
@@ -70,7 +81,6 @@ class INodeToKatajaConstituent(BaseParser):
                     child = self.inode_to_constituentnodes(nnode)
                     if child and isinstance(child, BaseConstituentNode):
                         children.append(child)
-            f = self.forest
             constituent = ctrl.Constituent(str(hash(inode)))
             cn = f.create_node(synobj=constituent, new_tree=False)
             if not f.temp_tree:
@@ -95,5 +105,11 @@ class INodeToKatajaConstituent(BaseParser):
             cn.update_label()
             f.derivation_steps.save_and_create_derivation_step()
             return cn
+        elif isinstance(inode, ITextNode):
+            constituent = ctrl.Constituent(str(hash(inode)))
+            cn = f.create_node(synobj=constituent, new_tree=False)
+            cn.label = inode
+            cn.update_label()
+            return cn
         else:
-            print('failing here')
+            print('failing here: ', inode, type(inode))

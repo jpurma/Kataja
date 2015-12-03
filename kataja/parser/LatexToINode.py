@@ -40,7 +40,7 @@ def parse(text):
         elif c == ']':
             feed.pop(0)
         else:
-            feed, node = parse_word(feed)
+            feed, node = parse_word(feed, end_on_space=True)
             if node:
                 nodes.append(node)
             else:
