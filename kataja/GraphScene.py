@@ -109,7 +109,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         y_max = -300
         x_min = 300
         x_max = -300
-        for item in ctrl.forest.trees:
+        for item in ctrl.forest.nodes.values():
             minx, miny, maxx, maxy = item.sceneBoundingRect().getCoords()
             if minx < x_min:
                 x_min = minx

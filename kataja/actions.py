@@ -88,13 +88,21 @@ def toggle_panel(panel_id, action=None):
 
 file_extensions = {'pickle': '.kataja', 'pickle.zipped': '.zkataja',
                    'dict': '.dict', 'dict.zipped': '.zdict', 'json': '.json',
-                   'json.zipped': '.zjson', }  # Not sure if we need a 
-
-
-# separate set for
-
-
+                   'json.zipped': '.zjson', }
+# Not sure if we need a separate set for
 # windows, if they still use three-letter extensions
+
+
+def new_structure():
+    """ Create new Forest, insert it after the current one and select it.
+    :return: None
+    """
+    i, forest = ctrl.main.forest_keeper.new_forest()
+    ctrl.main.change_forest(forest)
+    ctrl.main.add_message('(Cmd-n) New forest, n.%s' % (i + 1))
+
+a['new_forest'] = {'command': '&New forest', 'method': new_structure, 'undoable': False,
+                   'shortcut': 'Ctrl+n', 'tooltip': 'Create a new forest after the current one'}
 
 
 def open_kataja_file(filename=''):
@@ -310,6 +318,7 @@ a['quit'] = {'command': '&Quit', 'method': close_all_windows,
 
 
 # ### Build ######
+
 
 def next_structure():
     """ Show the next 'slide', aka Forest from a list in ForestKeeper.
@@ -973,7 +982,7 @@ def add_node(sender=None, ntype=None, pos=None):
     if not pos:
         pos = QtCore.QPoint(random.random() * 60 - 25,
                             random.random() * 60 - 25)
-    ctrl.forest.create_node(pos=pos, node_type=ntype)
+    node = ctrl.forest.create_node(pos=pos, node_type=ntype)
     nclass = ctrl.node_classes[ntype]
     ctrl.add_message('Added new %s.' % nclass.name[0])
 
@@ -1045,12 +1054,13 @@ def new_element_accept(sender=None):
             node = ctrl.forest.create_node_from_string(text, p2)
     else:
         node = ctrl.forest.create_node(synobj=None, pos=p2, node_type=node_type, text=text)
+        ctrl.forest.update_tree_for(node)
     if node:
         node.lock()
     embed.blur_away()
 
 
-a['create_new_node_from_text'] = {'command': 'Enter', 'method': new_element_accept,
+a['create_new_node_from_text'] = {'command': 'New node from text', 'method': new_element_accept,
                                   'sender_arg': True, 'shortcut': 'Return',
                                   'shortcut_context': 'parent_and_children'}
 

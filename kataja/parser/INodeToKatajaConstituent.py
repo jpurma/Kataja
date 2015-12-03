@@ -72,7 +72,7 @@ class INodeToKatajaConstituent(BaseParser):
                         children.append(child)
             f = self.forest
             constituent = ctrl.Constituent(str(hash(inode)))
-            cn = f.create_node(synobj=constituent)
+            cn = f.create_node(synobj=constituent, new_tree=False)
             if not f.temp_tree:
                 f.temp_tree = f.create_tree_for(cn)
             else:

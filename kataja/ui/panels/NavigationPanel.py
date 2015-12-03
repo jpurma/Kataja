@@ -99,5 +99,4 @@ class NavigationPanel(UIPanel):
             if keeper is not None:
                 display_index = keeper.current_index + 1
                 max_index = len(keeper.forests)
-                self.treeset_counter.setText('%s/%s' % (display_index,
-                                                        max_index))
+                self.treeset_counter.setText('%s/%s' % (display_index, max_index))

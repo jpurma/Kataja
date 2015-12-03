@@ -93,7 +93,7 @@ panel_classes = {g.LOG: LogPanel, g.TEST: TestPanel,
                      VisualizationOptionsPanel}
 
 menu_structure = OrderedDict([('file_menu', ('&File',
-                                             ['open', 'save', 'save_as', '---',
+                                             ['new_forest', 'open', 'save', 'save_as', '---',
                                               'print_pdf', 'blender_render',
                                               '---', 'preferences', '---',
                                               'quit'])),

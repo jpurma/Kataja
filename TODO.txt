@@ -52,6 +52,8 @@ become visible
     + Missing aliases
     + Zoom level is miscalculated
     -W Some item is added twice to scene
++ Embedded menus start in wrong places and fade and slide into place
++ New nodes are not properly counted in into visualization algorithm, probably Tree problem.
 
 ADD:
 
@@ -60,5 +62,5 @@ ADD:
 - Rotation of node magnets depending on visualization
 - PreferencesDialog
 + Automated test for loading and saving
-- New Forest
++ New Forest
 - New Treeset

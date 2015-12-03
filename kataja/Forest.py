@@ -364,8 +364,12 @@ class Forest(BaseModel):
         """ Put items belonging to this forest to scene """
         if self.in_display:
             for item in self.get_all_objects():
-                if not item.parentItem():
+                sc = item.scene()
+                if not sc:
                     self.scene.addItem(item)
+                #if not item.parentItem():
+                #    print('adding to scene: ', item)
+                #    self.scene.addItem(item)
 
     def add_to_scene(self, item):
         """ Put items belonging to this forest to scene
@@ -399,20 +403,20 @@ class Forest(BaseModel):
         :return: iterator through objects
         """
         for n in self.trees:
-            yield (n)
+            yield n
         for n in self.nodes.values():
-            yield (n)
+            yield n
         for n in self.edges.values():
-            yield (n)
+            yield n
         for n in self.others.values():
-            yield (n)
+            yield n
         for n in self.projections.values():
             if n.visual:
-                yield (n.visual)
+                yield n.visual
         for n in self.bracket_manager.get_brackets():
-            yield (n)
+            yield n
         if self.gloss:
-            yield (self.gloss)
+            yield self.gloss
 
     def get_node(self, constituent):
         """
@@ -769,7 +773,8 @@ class Forest(BaseModel):
 
     # ### Primitive creation of forest objects ################################
 
-    def create_node(self, synobj=None, relative=None, pos=None, node_type=1, text=None):
+    def create_node(self, synobj=None, relative=None, pos=None, node_type=1, text=None,
+                    new_tree=True):
         """ This is generic method for creating all of the Node subtypes.
         Keep it generic!
         :param synobj: If syntactic object is passed here, the node created
@@ -778,6 +783,9 @@ class Forest(BaseModel):
         given node and new node will have the same trees as a parent.
         :param pos:
         :param node_type:
+        :param new_tree: create new tree for this node. Usually this makes sense, but when
+        used as part of complex operation (e.g. replace) this may create more trouble than
+        needed. If 'relative' is given, new tree is never created.
         :return:
         """
         # First check that the node doesn't exist already
@@ -810,8 +818,8 @@ class Forest(BaseModel):
             node.set_original_position(pos)
             # node.update_position(pos)
 
-        #if not relative:
-        #    self.update_tree_for(node)
+        if new_tree and not relative:
+            self.update_tree_for(node)
         # if node is added to trees, it is implicitly added to scene. if not, this takes care of it:
         self.add_to_scene(node)
         # node.fade_in()
@@ -1019,7 +1027,7 @@ class Forest(BaseModel):
         if node.syntactic_object and node.syntactic_object.save_key in self.nodes_from_synobs:
             del self.nodes_from_synobs[node.syntactic_object.save_key]
 
-        old_trees = node.trees
+        old_trees = set(node.trees)
         for tree in old_trees:
             if tree.top is node:
                 self.remove_tree(tree)

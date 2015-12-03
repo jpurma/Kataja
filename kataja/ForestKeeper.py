@@ -45,6 +45,22 @@ class ForestKeeper(BaseModel):
         self.forest = None
         self.create_forests(treelist)
 
+    def new_forest(self):
+        """ Add a new forest after the current one.
+        :return: tuple (current_index (int), selected forest (Forest)
+        """
+        ctrl.undo_pile = set()
+        ctrl.undo_disabled = True
+        if self.forest:
+            self.forest.retire_from_drawing()
+        forest = Forest()
+        self.current_index += 1
+        self.poke('forests')  # <-- announce change in watched list-like attribute
+        self.forests.insert(self.current_index, forest)
+        self.forest = forest  # <-- at this point the signal is sent to update UI
+        ctrl.undo_disabled = False
+        return self.current_index, self.forest
+
     def next_forest(self):
         """ Select the next forest in the list of forests. The list loops at end.
         :return: tuple (current_index (int), selected forest (Forest)

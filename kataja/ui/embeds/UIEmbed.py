@@ -45,10 +45,9 @@ class UIEmbed(QtWidgets.QWidget):
         self.assumed_width = 200
         self.assumed_height = 100
         self._magnet = QtCore.QPoint(0, 0), 1
-        self._effect = QtWidgets.QGraphicsBlurEffect(self)
-        self._effect.setBlurHints(QtWidgets.QGraphicsBlurEffect.AnimationHint)
-        self._timeline = QtCore.QTimeLine(150, self)
-        self._timeline.setFrameRange(50, 0)
+        self._effect = QtWidgets.QGraphicsOpacityEffect(self)
+        self._timeline = QtCore.QTimeLine(100, self)
+        self._timeline.setFrameRange(0, 100)
         self._timeline.frameChanged[int].connect(self.update_frame)
         self._timeline.finished.connect(self.finished_effect_animation)
         self.setGraphicsEffect(self._effect)
@@ -97,7 +96,7 @@ class UIEmbed(QtWidgets.QWidget):
         """
         if not focus_point:
             if self.host:
-                focus_point = self.host.pos()
+                focus_point = self.host.scenePos()
             else:
                 return
         h = self.height()
@@ -153,8 +152,9 @@ class UIEmbed(QtWidgets.QWidget):
         return self._magnet
 
     def update_frame(self, frame):
-        self._effect.setBlurRadius(frame)
-        self.update()
+        self._effect.setOpacity(frame/100.0)
+        self._effect.update()
+        self._effect.updateBoundingRect()
 
     def finished_effect_animation(self):
         self._effect.setEnabled(False)
@@ -191,7 +191,7 @@ class UIEmbed(QtWidgets.QWidget):
 
     def wake_up(self):
         if not self.isVisible():
-            self._effect.setBlurRadius(self._timeline.startFrame())
+            self._effect.setOpacity(self._timeline.startFrame()/100.0)
             self._effect.setEnabled(True)
             self._timeline.setDirection(QtCore.QTimeLine.Forward)
             self._timeline.start()
@@ -203,7 +203,7 @@ class UIEmbed(QtWidgets.QWidget):
 
     def blur_away(self):
         if self.isVisible():
-            self._effect.setBlurRadius(self._timeline.endFrame())
+            self._effect.setOpacity(self._timeline.endFrame()/100.0)
             self._effect.setEnabled(True)
             self._timeline.setDirection(QtCore.QTimeLine.Backward)
             self._timeline.start()
