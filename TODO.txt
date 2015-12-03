@@ -54,7 +54,7 @@ become visible
     -W Some item is added twice to scene
 + Embedded menus start in wrong places and fade and slide into place
 + New nodes are not properly counted in into visualization algorithm, probably Tree problem.
-- Add sibling fails to remove tree from merged node
++ Add sibling fails to remove tree from merged node
 
 ADD:
 

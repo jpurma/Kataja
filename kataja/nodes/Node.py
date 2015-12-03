@@ -533,7 +533,7 @@ syntactic_object: %s
             for child in self.get_children():
                 legit = False
                 for parent in child.get_parents():
-                    if tree in parent.tree:
+                    if tree in parent.trees:
                         legit = True
                 if not legit:
                     child.remove_from_tree(tree, recursive_down=True)

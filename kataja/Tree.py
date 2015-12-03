@@ -127,6 +127,9 @@ class Tree(Movable):
                 if is_constituent(node):
                     sorted_constituents.append(node)
                 sorted_nodes.append(node)
+                for t in set(node.trees):
+                    if t is not self and t.top is node:
+                        ctrl.forest.remove_tree(t)
                 node.add_to_tree(self)
                 for child in node.get_all_children():
                     add_children(child)
