@@ -33,7 +33,8 @@ from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.Label import Label
 from kataja.Movable import Movable
 from kataja.BaseModel import Saved
-from kataja.utils import to_tuple, create_shadow_effect, multiply_xyz, div_xyz, sub_xyz, add_xyz
+from kataja.utils import to_tuple, create_shadow_effect, multiply_xyz, div_xyz, sub_xyz, add_xyz, \
+    time_me
 import kataja.globals as g
 from kataja.parser.INodes import ITemplateNode
 
@@ -517,6 +518,7 @@ syntactic_object: %s
             self.current_position = self.current_scene_position
             self.setParentItem(None)
 
+    @time_me
     def add_to_tree(self, tree):
         """ Add this node to given trees and possibly set it as parent for this graphicsitem.
         :param tree: Tree
@@ -760,14 +762,6 @@ syntactic_object: %s
             return False
         else:
             return True
-
-    def update_trees(self):
-        """ Make sure that the trees assigned for this node includes all relevant nodes. Assumes that
-        node.trees is correct.
-        :return:
-        """
-        for tree in self.trees:
-            tree.update_items()
 
     def get_top_node(self, return_set=False):
         """ Getting the top node is easiest by looking from the stored trees. Don't use this if

@@ -57,7 +57,8 @@ become visible
 + Add sibling fails to remove tree from merged node
 + Lack of headedness makes stupid parse too stupid
 + Fixed action arguments
-- Adding a gloss crashes embed edit
++ Adding a gloss crashes embed edit
+    - gloss exists both as a separate node and a line in label
 + Various tree identity problems in complex operations
 
 

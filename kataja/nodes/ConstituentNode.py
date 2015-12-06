@@ -364,7 +364,7 @@ class ConstituentNode(BaseConstituentNode):
         """ This merge can be removed, if one or both children are placeholders
         :return:
         """
-        children = list(self.get_all_children())
+        children = list(self.get_children())
         lc = len(children)
         if lc == 0:
             return False
