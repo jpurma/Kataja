@@ -83,7 +83,7 @@ class INodeToKatajaConstituent(BaseParser):
                     if child and isinstance(child, BaseConstituentNode):
                         children.append(child)
             constituent = ctrl.Constituent(str(hash(inode)))
-            cn = f.create_node(synobj=constituent, new_tree=False)
+            cn = f.create_node(synobj=constituent)
             if not f.temp_tree:
                 f.temp_tree = f.create_tree_for(cn)
             else:
@@ -108,7 +108,7 @@ class INodeToKatajaConstituent(BaseParser):
             return cn
         elif isinstance(inode, ITextNode):
             constituent = ctrl.Constituent(str(hash(inode)))
-            cn = f.create_node(synobj=constituent, new_tree=False)
+            cn = f.create_node(synobj=constituent)
             cn.label = inode
             cn.update_label()
             return cn

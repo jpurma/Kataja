@@ -1065,11 +1065,8 @@ def new_element_accept(sender=None):
             return
         else:
             node = ctrl.forest.create_node_from_string(text, p2, simple_parse=True)
-            print('new element accept received node', node)
-            ctrl.forest.update_tree_for(node)
     else:
         node = ctrl.forest.create_node(synobj=None, pos=p2, node_type=node_type, text=text)
-        ctrl.forest.update_tree_for(node)
     if node:
         node.lock()
     embed.blur_away()
@@ -1194,11 +1191,6 @@ def edge_disconnect(sender=None):
         raise ForestError(
             'Trying to disconnect node from unknown edge or unhandled cutting '
             'position')
-    if old_start:
-        ctrl.forest.update_tree_for(old_start)
-    if old_end:
-        ctrl.forest.update_tree_for(old_end)
-
     ctrl.ui.update_selections()
 
 

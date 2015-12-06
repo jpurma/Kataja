@@ -469,9 +469,14 @@ syntactic_object: %s
         to have predictable behaviour for complex cases.
         :return:
         """
+        ltrees = list(self.trees)
+        if len(ltrees) == 0:
+            return None
+        elif len(ltrees) == 1:
+            return ltrees[0]
         max_len = -1
         bigger = None
-        for tree in self.trees:
+        for tree in ltrees:
             l = len(tree.sorted_constituents) + len(tree.sorted_nodes)
             if l > max_len:
                 bigger = tree

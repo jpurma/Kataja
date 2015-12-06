@@ -47,6 +47,7 @@ from kataja.managers.UndoManager import UndoManager
 from kataja.nodes.FeatureNode import FeatureNode
 from kataja.BaseModel import BaseModel, Saved
 import kataja.globals as g
+from utils import time_me
 
 
 class Forest(BaseModel):
@@ -480,6 +481,7 @@ class Forest(BaseModel):
             print("Why are we drawing a forest which shouldn't be in scene")
         sc = ctrl.graph_scene
         sc.stop_animations()
+        self.update_trees()
         for tree in self.trees:
             tree.top.update_visibility()  # fixme
         self.bracket_manager.update_brackets()
@@ -671,72 +673,147 @@ class Forest(BaseModel):
 
     # Trees ---------------------------------------------------------------
 
-    def update_tree_for(self, node):
-        """ Validate or create the trees (containers) for a given node.
-        :param node: root to check. Only ConstituentNodes can be roots
+    def get_tree_by_top(self, top_node):
+        """ Return tree where this node is the top node
+        :param top_node:
         :return:
         """
-        if not node:
-            return
-        passed = set()
-        my_tops = set()
-        #forest_tops = set((x.top for x in self.trees))
+        for tree in self.trees:
+            if tree.top is top_node:
+                return tree
 
-        def walk_to_top(n):
-            """ Walk upwards in trees(s), starting from this node and find the topmost nodes.
-            :param n:
-            :return:
-            """
-            passed.add(n)
-            parents = n.get_parents(only_similar=False, only_visible=False)
-            if parents:
-                for parent in parents:
-                    if parent not in passed:
-                        walk_to_top(parent)
+    @time_me
+    def update_trees(self):
+        """ Rebuild all trees, but try to be little smart about it: Tree where one node is added
+        to top should keep its identity, and just reset the top node to be the new node.
+        :return:
+        """
+
+        old_trees = list(self.trees)
+        valid_trees = []
+        invalid_trees = []
+        valid_tops = set()
+        invalid_tops = set()
+        for tree in old_trees:
+            if not tree.top:
+                self.remove_tree(tree)
+            elif not tree.top.is_top_node():
+                invalid_trees.append(tree)
+                invalid_tops.add(tree.top)
             else:
-                my_tops.add(n)
-
-        walk_to_top(node)
-        # now we have the topmost nodes _for this node_, so we can
-        # check if there exists trees starting with these nodes.
-
-        for my_top_node in my_tops:
-            found = None
-            for tree in list(self.trees):
-                if my_top_node is tree.top:
-                    found = tree
-                    break
-                elif not tree.is_valid():
-                    self.remove_tree(tree)
-            if found:
-                # found a good trees, ask it to update.
-                found.update_items()
-            else:
-                self.create_tree_for(my_top_node)
-            # case where node still remains in an old trees but is disconnected and starting another trees
-            for tree in list(my_top_node.trees):
-                if tree.top not in my_tops:
-                    # so we have a trees that is referring to structurally separate nodes (not in
-                    # my_tops, the locally avaialable top nodes). Remove references to it from
-                    # everyone down from here.
-                    my_top_node.remove_from_tree(tree, recursive_down=True)
-
-        if node not in my_tops:
-            for tree in list(self.trees):
-                if tree.top is node:
-                    self.remove_tree(tree)
-                elif not tree.top.is_top_node():
-                    print('***** found a bad bad trees *****')
-                    ctrl.main.add_message('***** found a bad bad trees *****')
-                    self.remove_tree(tree)
-
-        # for child in node.get_children():
+                valid_trees.append(tree)
+                valid_tops.add(tree.top)
+        invalid_tops -= valid_tops
+        top_nodes = set()
+        for node in self.nodes.values():
+            if node.is_top_node():
+                top_nodes.add(node)
+        unassigned_top_nodes = top_nodes - valid_tops
+        # In   (Empty)
+        #       /  \
+        #     TrA  (Empty)
         #
-        #     if child.trees != node.trees:
-        #         missing_trees = node.trees - child.trees
-        #         for tree in missing_trees:
+        # Have TrA to take over the empty nodes
+        print('unassigned top nodes: ', unassigned_top_nodes)
+        for node in list(unassigned_top_nodes):
+            for child in node.get_all_children():
+                if child in invalid_tops:
+                    tree = self.get_tree_by_top(child)
+                    tree.top = child
+                    tree.update_items()
+                    invalid_tops.remove(child)
+                    invalid_trees.remove(tree)
+                    unassigned_top_nodes.remove(node)
+                    break
+        print('after using existing nodes: ', unassigned_top_nodes)
+        # Create new trees for other unassigned nodes:
+        for node in unassigned_top_nodes:
+            print('creating tree for ', node)
+            self.create_tree_for(node)
 
 
+        # Remove trees that are part of some other tree
+        for tree in invalid_trees:
+            self.remove_tree(tree)
+
+        # Remove this if we found it to be unnecessary -- it is slow, and these problems
+        # shouldn't happen -- this is more for debugging
+        # Go through all nodes and check if they are ok.
+        if False:
+            for node in self.nodes.values():
+                if node.is_top_node():
+                    if not self.get_tree_by_top(node):
+                        print('no tree found for potential top node: ', node)
+                else:
+                    # either parent should have the same trees or parents together should have same
+                    # trees
+                    union = set()
+                    for parent in node.get_parents(only_similar=False, only_visible=False):
+                        union |= parent.trees
+                    problems = node.trees ^ union
+                    if problems:
+                        print('problem with trees: node %s belongs to trees %s, but its parents '
+                              'belong to trees %s' % (node, node.trees, union))
+
+    # def update_tree_for_old(self, node):
+    #     """ Take the given node as a starting point and make sure that it and nodes above it
+    #     and below it belong to the trees where they should belong.
+    #     :param node: node to check
+    #     :return:
+    #     """
+    #     if not node:
+    #         return
+    #     passed = set()
+    #     my_tops = set()
+    #     #forest_tops = set((x.top for x in self.trees))
+    #
+    #     def walk_to_top(n):
+    #         """ Walk upwards in trees(s), starting from this node and find the topmost nodes.
+    #         :param n:
+    #         :return:
+    #         """
+    #         passed.add(n)
+    #         parents = n.get_parents(only_similar=False, only_visible=False)
+    #         if parents:
+    #             for parent in parents:
+    #                 if parent not in passed:
+    #                     walk_to_top(parent)
+    #         else:
+    #             my_tops.add(n)
+    #
+    #     walk_to_top(node)
+    #     # now we have the topmost nodes _for this node_, so we can
+    #     # check if there exists trees starting with these nodes.
+    #
+    #     for my_top_node in my_tops:
+    #         found = None
+    #         for tree in list(self.trees):
+    #             if my_top_node is tree.top:
+    #                 found = tree
+    #                 break
+    #             elif not tree.is_valid():
+    #                 self.remove_tree(tree)
+    #         if found:
+    #             # found a good trees, ask it to update.
+    #             found.update_items()
+    #         else:
+    #             self.create_tree_for(my_top_node)
+    #         # case where node still remains in an old trees but is disconnected and starting another trees
+    #         for tree in list(my_top_node.trees):
+    #             if tree.top not in my_tops:
+    #                 # so we have a trees that is referring to structurally separate nodes (not in
+    #                 # my_tops, the locally avaialable top nodes). Remove references to it from
+    #                 # everyone down from here.
+    #                 my_top_node.remove_from_tree(tree, recursive_down=True)
+    #
+    #     if node not in my_tops:
+    #         for tree in list(self.trees):
+    #             if tree.top is node:
+    #                 self.remove_tree(tree)
+    #             elif not tree.top.is_top_node():
+    #                 print('***** found a bad bad trees *****')
+    #                 ctrl.main.add_message('***** found a bad bad trees *****')
+    #                 self.remove_tree(tree)
 
     def create_tree_for(self, node):
         """ Create new trees around given node.
@@ -783,8 +860,7 @@ class Forest(BaseModel):
 
     # ### Primitive creation of forest objects ################################
 
-    def create_node(self, synobj=None, relative=None, pos=None, node_type=1, text=None,
-                    new_tree=True):
+    def create_node(self, synobj=None, relative=None, pos=None, node_type=1, text=None):
         """ This is generic method for creating all of the Node subtypes.
         Keep it generic!
         :param synobj: If syntactic object is passed here, the node created
@@ -827,13 +903,8 @@ class Forest(BaseModel):
         if pos:
             node.set_original_position(pos)
             # node.update_position(pos)
-
-        if new_tree and not relative:
-            self.update_tree_for(node)
-        # if node is added to trees, it is implicitly added to scene. if not, this takes care of it:
         self.add_to_scene(node)
         # node.fade_in()
-
         return node
 
     def create_placeholder_node(self, pos):
@@ -851,6 +922,10 @@ class Forest(BaseModel):
         if self.visualization:
             self.visualization.reset_node(node)
         return node
+
+    def create_gloss_node(self, host):
+        gn = self.create_node(None, host, node_type=g.GLOSS_NODE)
+        self.connect_node(host, child=gn)
 
     def create_attribute_node(self, host, attribute_id, attribute_label, show_label=False):
         """
@@ -1068,7 +1143,6 @@ class Forest(BaseModel):
                 if edge in start_node.edges_up:  # shouldn't happen
                     start_node.poke('edges_up')
                     start_node.edges_up.remove(edge)
-                    self.update_tree_for(start_node)
             if end_node:
                 if edge in end_node.edges_down:  # shouldn't happen
                     end_node.poke('edges_down')
@@ -1076,7 +1150,6 @@ class Forest(BaseModel):
                 if edge in end_node.edges_up:
                     end_node.poke('edges_up')
                     end_node.edges_up.remove(edge)
-                    self.update_tree_for(end_node)
         # -- ui elements --
         self.main.ui_manager.remove_ui_for(edge)
         # -- dictionaries --
@@ -1147,14 +1220,10 @@ class Forest(BaseModel):
             edge.end.disconnect_in_syntax(edge)
             edge.end.poke('edges_up')
             edge.end.edges_up.remove(edge)
-            self.update_tree_for(edge.end)
         edge.connect_end_points(edge.start, new_end)
         new_end.poke('edges_up')
         new_end.edges_up.append(edge)
         new_end.connect_in_syntax(edge)
-        self.update_tree_for(new_end)
-        if edge.start:
-            self.update_tree_for(edge.start)
 
     def fix_stubs_for(self, node):
         """ Make sure that node (ConstituentNode) has binary children.
@@ -1283,7 +1352,6 @@ class Forest(BaseModel):
         F = feature.syntactic_object
         C.set_feature(F.key, F)
         self.connect_node(parent=node, child=feature)
-        self.update_tree_for(node)
 
     def add_comment_to_node(self, comment, node):
         """ Comments are connected the other way around compared to
@@ -1295,7 +1363,6 @@ class Forest(BaseModel):
         :param node:
         """
         self.connect_node(parent=node, child=comment, edge_type=g.COMMENT_EDGE)
-        self.update_tree_for(node)
 
     def add_gloss_to_node(self, gloss, node):
         """
@@ -1305,7 +1372,6 @@ class Forest(BaseModel):
         """
         self.connect_node(parent=node, child=gloss)
         node.gloss = gloss.label
-        self.update_tree_for(node)
 
     # ## order markers are special nodes added to nodes to signal the order
     # when the node was merged/added to forest
@@ -1631,7 +1697,6 @@ class Forest(BaseModel):
                     self.disconnect_node(old_node, child, edge.edge_type)
                     self.connect_node(new_node, child, direction=align)
 
-        self.update_tree_for(new_node)
         if (not old_node.edges_up) and can_delete:
             # old_node.update_visibility(active=False, fade=True)
             self.delete_node(old_node, ignore_consequences=True)
@@ -1869,10 +1934,6 @@ class Forest(BaseModel):
         self.add_merge_counter(merger_node)
         self.connect_node(parent=merger_node, child=left, direction=g.LEFT, fade_in=new is left)
         self.connect_node(parent=merger_node, child=right, direction=g.RIGHT, fade_in=new is right)
-        if create_tree:
-            self.update_tree_for(merger_node)
-        self.update_tree_for(left)
-        self.update_tree_for(right)
         if head:
             merger_node.set_projection(head)
         return merger_node

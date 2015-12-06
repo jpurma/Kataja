@@ -144,8 +144,7 @@ class Tree(Movable):
 
         to_be_removed = old_nodes - set(sorted_nodes)
         for item in to_be_removed:
-            item.setParentItem(None)
-
+            item.remove_from_tree(self)
 
     def is_higher_in_tree(self, node_a, node_b):
         """ Compare two nodes, if node_a is higher, return True. Return False

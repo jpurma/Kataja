@@ -127,7 +127,7 @@ class DerivationStep(BaseModel):
         # nodes
         for tree_data in self.trees:
             top_node = self.rebuild_tree_from_snapshot(tree_data)
-            ctrl.forest.update_tree_for(top_node)
+        ctrl.forest.update_trees()
         ctrl.forest.chain_manager.chains = self.chains
 
     # ############## #
