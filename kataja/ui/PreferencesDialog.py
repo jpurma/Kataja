@@ -24,7 +24,8 @@
 
 from PyQt5 import QtCore, QtWidgets
 
-from kataja.singletons import prefs, qt_prefs
+from kataja.singletons import prefs, qt_prefs, ctrl
+from kataja.managers.PaletteManager import color_modes
 
 
 class DoubleSlider(QtWidgets.QHBoxLayout):
@@ -164,6 +165,9 @@ class Selector(QtWidgets.QComboBox):
             self.choice_values = choices
             self.choice_keys = [str(key) for key in choices]
         self.addItems(self.choice_keys)
+        value = getattr(prefs, self.field_name)
+        if value in self.choice_values:
+            self.setCurrentIndex(self.choice_values.index(value))
         self.currentIndexChanged.connect(self.choice_changed)
 
     def buddy_target(self):
@@ -199,6 +203,7 @@ class PreferencesDialog(QtWidgets.QDialog):
 
     def __init__(self, main):
         QtWidgets.QDialog.__init__(self, parent=None)  # separate window
+        self.setWindowTitle('Preferences')
         self.main = main
         self.listwidget = QtWidgets.QListWidget()
         self.listwidget.setMaximumWidth(150)
@@ -239,51 +244,58 @@ class PreferencesDialog(QtWidgets.QDialog):
             ordered.sort()
             widget, layout = self.get_page(tab)
             for o, key in ordered:
-                d = tabdata[key]
-                field_type = d.get('type', '')
-                value = d['value']
-                if not field_type:
-                    if d.get('choices', ''):
-                        field_type = 'selection'
-                    elif isinstance(value, float):
-                        field_type = 'float_slider'
-                    elif isinstance(value, bool):
-                        field_type = 'checkbox'
-                    elif isinstance(value, int):
-                        field_type = 'int_slider'
-                    elif isinstance(value, dict):
-                        continue
-                label = d.get('label', '')
                 f = None
+                d = tabdata[key]
+                value = d['value']
+                label = d.get('label', '')
                 if not label:
                     label = key.replace('_', ' ').capitalize()
-                if field_type == 'int_slider':
-                    if 'range' in d:
-                        minv, maxv = d['range']
-                    elif value < -10 or value > 10:
-                        minv, maxv = -200, 200
-                    else:
-                        minv, maxv = -10, 10
-                    f = DoubleSlider(key, self, decimals=False)
-                    f.setRange(minv, maxv)
-                elif field_type == 'float_slider':
-                    if 'range' in d:
-                        minv, maxv = d['range']
-                    elif value < -10 or value > 10:
-                        minv, maxv = -200, 200
-                    else:
-                        minv, maxv = -10, 10
-                    f = DoubleSlider(key, self, decimals=True)
-                    f.setRange(minv, maxv)
-                elif field_type == 'checkbox':
-                    f = CheckBox(key, self)
-                elif field_type == 'selection':
-                    f = Selector(key, self, d['choices'])
+                special = d.get('special', '')
+                if special:
+                    print('looking for method: build_' + special)
+                    method = getattr(self, 'build_' + special, None)
+                    if method:
+                        f = method(key, d)
+                else:
+                    field_type = d.get('type', '')
+                    if not field_type:
+                        if d.get('choices', ''):
+                            field_type = 'selection'
+                        elif isinstance(value, float):
+                            field_type = 'float_slider'
+                        elif isinstance(value, bool):
+                            field_type = 'checkbox'
+                        elif isinstance(value, int):
+                            field_type = 'int_slider'
+                        elif isinstance(value, dict):
+                            continue
+                    if field_type == 'int_slider':
+                        if 'range' in d:
+                            minv, maxv = d['range']
+                        elif value < -10 or value > 10:
+                            minv, maxv = -200, 200
+                        else:
+                            minv, maxv = -10, 10
+                        f = DoubleSlider(key, self, decimals=False)
+                        f.setRange(minv, maxv)
+                    elif field_type == 'float_slider':
+                        if 'range' in d:
+                            minv, maxv = d['range']
+                        elif value < -10 or value > 10:
+                            minv, maxv = -200, 200
+                        else:
+                            minv, maxv = -10, 10
+                        f = DoubleSlider(key, self, decimals=True)
+                        f.setRange(minv, maxv)
+                    elif field_type == 'checkbox':
+                        f = CheckBox(key, self)
+                    elif field_type == 'selection':
+                        f = Selector(key, self, d['choices'])
                 if f:
                     self.fields[key] = f
                     on_change = d.get('on_change', None)
                     if isinstance(on_change, str):
-                        on_change = self.get_change_method(on_change)
+                        on_change = getattr(self, on_change)
                     if not on_change:
                         on_change = self.main.redraw
                     f.set_on_change_method(on_change)
@@ -303,17 +315,15 @@ class PreferencesDialog(QtWidgets.QDialog):
         new_page.setLayout(layout)
         return new_page, layout
 
-    def get_change_method(self, method_name):
-        """ Here are on_change -methods that can't be defined in preferences -- they require
-        imports that are impossible there.
-        :param method_name:
-        :return:
-        """
-        if method_name == 'prepare_easing_curve':
-            return self.prepare_easing_curve
+    def build_color_modes(self, key, d):
+        choices = [(key, data['name']) for key, data in color_modes.items()]
+        return Selector(key, self, choices)
 
     def prepare_easing_curve(self):
         qt_prefs.prepare_easing_curve(prefs.curve, prefs.move_frames)
+
+    def update_colors(self):
+        ctrl.main.change_color_mode(prefs.color_mode, force=True)
 
     def update_pens(self):
         """

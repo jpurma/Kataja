@@ -248,7 +248,7 @@ class BaseConstituentNode(Node):
 
         # ## FeatureNodes
         # ctrl.forest.settings.draw_features
-        feat_visible = visible and ctrl.forest.settings.draw_features
+        feat_visible = visible and ctrl.forest.settings.feature_nodes
 
         if feat_visible and not was_visible:
             for feature in self.get_features():

@@ -243,7 +243,7 @@ class Forest(BaseModel):
 
     def update_forest_gloss(self):
         """ Draw the gloss text on screen, if it exists. """
-        if self.gloss_text and prefs.show_gloss_text:
+        if self.gloss_text:
             if not self.gloss:
                 self.gloss = self.create_node(synobj=None, node_type=g.GLOSS_NODE)
                 self.gloss.text = self.gloss_text

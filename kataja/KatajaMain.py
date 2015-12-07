@@ -243,13 +243,13 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         self.forest.settings.hsv = hsv
         self.forest.update_colors()
 
-    def change_color_mode(self, mode):
+    def change_color_mode(self, mode, force=False):
         """
         triggered by color mode selector in colors panel
 
         :param mode:
         """
-        if mode != prefs.color_mode:
+        if mode != prefs.color_mode or force:
             prefs.color_mode = mode
             self.forest.update_colors()
 

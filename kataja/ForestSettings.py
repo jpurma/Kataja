@@ -59,7 +59,7 @@ class ForestSettings(BaseModel):
         self.shows_merge_order = None
         self.shows_select_order = None
         self.only_binary_trees = True
-        self.draw_features = None
+        self.feature_nodes = None
         self.hsv = None
         self.color_mode = None
         self.last_key_colors = {}
@@ -265,7 +265,8 @@ class ForestSettings(BaseModel):
     shows_constituent_edges = SavedSetting("shows_constituent_edges")
     shows_merge_order = SavedSetting("shows_merge_order")
     shows_select_order = SavedSetting("shows_select_order")
-    draw_features = SavedSetting("draw_features")
+    gloss_nodes = SavedSetting("gloss_nodes")
+    feature_nodes = SavedSetting("feature_nodes")
     hsv = SavedSetting("hsv")
     color_mode = SavedSetting("color_mode")
     bracket_style = SavedSetting("bracket_style")

@@ -85,63 +85,72 @@ class Preferences(object):
                            'Performance', 'Plugins', 'Advanced']
 
         self.color_mode = 'solarized_lt'
-        self._color_mode_ui = {'tab': 'General', 'special': 'color_modes'}
+        self._color_mode_ui = {'tab': 'General', 'special': 'color_modes',
+                               'label': 'Default colors',
+                               'help': 'Color theme used for both trees and editor',
+                               'on_change': 'update_colors', 'order': 10}
         self.hsv = None
 
         self.touch = True
-        self._touch_ui = {'tab': 'General'}
+        self._touch_ui = {'tab': 'General', 'order': 20, 'label': 'Touch-friendly UI',
+                          'help': 'Draggable items are larger'}
 
         self.gloss_nodes = True
-        self._gloss_nodes_ui = {'tab': 'General'}
+        self._gloss_nodes_ui = {'tab': 'General', 'order': 30}
 
         self.feature_nodes = True
-        self._feature_nodes_ui = {'tab': 'General'}
+        self._feature_nodes_ui = {'tab': 'General', 'order': 31,
+                                  'help': 'Draw glosses or features as separate nodes, or include '
+                                          'them as lines in constituent nodes.'}
 
         self.fonts = running_environment.fonts
         self._fonts_ui = {'tab': 'General', 'special': 'fonts'}
 
         self.visualization = 'Left first trees'
-        self._visualization_ui = {'tab': 'Drawing', 'special': 'visualizations'}
-
-        self.draw_width = .5
-        self._draw_width_ui = {'tab': 'Drawing', 'range': (0, 12)}
+        self._visualization_ui = {'tab': 'Drawing', 'special': 'visualizations',
+                                  'help': 'Default visualization for new trees.',
+                                  'order': 10}
 
         self.thickness_multiplier = 2
-        self._thickness_multiplier = {'tab': 'Drawing', 'range': (0.5, 6)}
-
-        self.draw_features = True
-        self._draw_features_ui = {'tab': 'Drawing'}
-
-        self.draw_width = 2
-        self._draw_width_ui = {'tab': 'Drawing', 'range': (0.5, 5)}
+        self._thickness_multiplier = {'tab': 'Drawing', 'range': (0.5, 6), 'order': 50, 'help':
+                                      'If the visualization draws some edges as thicker, '
+                                      'this defines how much thicker.'}
 
         self.bracket_style = 0
         self._bracket_style_ui = {'tab': 'Drawing', 'choices':
                                   [(0, 'No brackets'),
                                    (1, 'Non-obvious brackets'),
-                                   (2, 'All brackets')]}
+                                   (2, 'All brackets')],
+                                  'label': 'Draw brackets',
+                                  'help': 'When to draw brackets. Visualizations may override '
+                                          'this.',
+                                  'order': 30}
 
         self.use_magnets = True
-        self._use_magnets_ui = {'tab': 'Drawing'}
+        self._use_magnets_ui = {'tab': 'Drawing',
+                                'help': 'Branches can either link to "magnets" in node borders or '
+                                        'aim at the center of the node.', 'order': 40}
 
         self.edge_width = 20  # 20
-        self._edge_width_ui = {'tab': 'Drawing', 'range': (0, 60)}
+        self._edge_width_ui = {'tab': 'Drawing', 'range': (0, 60), 'order': 20}
 
         self.edge_height = 20
-        self._edge_height_ui = {'tab': 'Drawing', 'range': (0, 60)}
+        self._edge_height_ui = {'tab': 'Drawing', 'range': (0, 60), 'order': 21,
+                                'help': 'Default width and height for branches'}
 
         self.spacing_between_trees = 3
-        self._spacing_between_trees_ui = {'tab': 'Drawing', 'range': (0, 4)}
-
-        self.include_features_to_label = False
-        self._include_features_to_label_ui = {'tab': 'Drawing'}
+        self._spacing_between_trees_ui = {'tab': 'Drawing', 'range': (0, 4),
+                                          'help': 'When there are several trees algorithms try to '
+                                                  'use multiples of "edge width" as padding '
+                                                  'between trees.'}
 
         self.user_palettes = {}
         self.traces_are_grouped_together = False
         self.shows_constituent_edges = True
 
         self.dpi = 300
-        self._dpi_ui = {'tab': 'Printing', 'choices': [72, 150, 300, 450, 600]}
+        self._dpi_ui = {'tab': 'Printing', 'choices': [72, 150, 300, 450, 600], 'label': 'DPI',
+                        'help': 'Dots Per Inch setting when exporting images'}
 
         self.print_file_path = ''
         self._print_file_path_ui = {'tab': 'Printing', 'type': 'folder'}
@@ -196,7 +205,9 @@ class Preferences(object):
                                 'on_change': 'prepare_easing_curve', 'label': 'Animation frames'}
         self.curve = 'InQuad'
         self._curve_ui = {'tab': 'Performance', 'choices': curves,
-                                 'on_change': 'prepare_easing_curve'}
+                                 'on_change': 'prepare_easing_curve',
+                          'help': 'Easing curve used to compute the intermediate steps in '
+                                  'animations. Some options are just silly.'}
         self.my_palettes = {}
 
         self.move_effect = False
@@ -268,7 +279,7 @@ class Preferences(object):
         settings.clear()
         d = vars(self)
         for key, value in d.items():
-            if key in Preferences.not_saved:
+            if key.startswith('_') or key in Preferences.not_saved:
                 continue
             if isinstance(value, dict):
                 settings.beginGroup(key)
