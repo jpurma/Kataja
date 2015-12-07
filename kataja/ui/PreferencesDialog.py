@@ -24,7 +24,7 @@
 
 from PyQt5 import QtCore, QtWidgets
 
-from kataja.singletons import prefs
+from kataja.singletons import prefs, qt_prefs
 
 
 class DoubleSlider(QtWidgets.QHBoxLayout):
@@ -54,6 +54,9 @@ class DoubleSlider(QtWidgets.QHBoxLayout):
         self.spinbox.valueChanged.connect(self.spinbox_changed)
         self.addWidget(self.slider)
         self.addWidget(self.spinbox)
+
+    def buddy_target(self):
+        return self.slider
 
     def set_on_change_method(self, method):
         """
@@ -127,6 +130,9 @@ class CheckBox(QtWidgets.QHBoxLayout):
         self.checkbox.stateChanged.connect(self.checkbox_changed)
         self.addWidget(self.checkbox)
 
+    def buddy_target(self):
+        return self.checkbox
+
     def set_on_change_method(self, method):
         """
 
@@ -145,6 +151,47 @@ class CheckBox(QtWidgets.QHBoxLayout):
             self.on_change_method()
 
 
+class Selector(QtWidgets.QComboBox):
+
+    def __init__(self, field_name, parent, choices):
+        QtWidgets.QComboBox.__init__(self, parent)
+        self.field_name = field_name
+        self.on_change_method = None
+        if isinstance(choices[0], tuple):
+            self.choice_values = [value for value, key in choices]
+            self.choice_keys = [str(key) for value, key in choices]
+        else:
+            self.choice_values = choices
+            self.choice_keys = [str(key) for key in choices]
+        self.addItems(self.choice_keys)
+        self.currentIndexChanged.connect(self.choice_changed)
+
+    def buddy_target(self):
+        return self
+
+    def choice_changed(self, index):
+        setattr(prefs, self.field_name, self.choice_values[index])
+        if self.on_change_method:
+            self.on_change_method()
+
+    def set_on_change_method(self, method):
+        """
+
+        :param method:
+        """
+        self.on_change_method = method
+
+
+class HelpLabel(QtWidgets.QLabel):
+
+    def __init__(self, text, parent=None, buddy=None):
+        QtWidgets.QLabel.__init__(self, text, parent)
+        self.setIndent(10)
+        self.setWordWrap(True)
+        if buddy:
+            self.setBuddy(buddy.buddy_target())
+
+
 class PreferencesDialog(QtWidgets.QDialog):
     """
 
@@ -153,21 +200,52 @@ class PreferencesDialog(QtWidgets.QDialog):
     def __init__(self, main):
         QtWidgets.QDialog.__init__(self, parent=None)  # separate window
         self.main = main
-        self.tabwidget = QtWidgets.QTabWidget(parent=self)
-        lo = QtWidgets.QVBoxLayout()
-        lo.addWidget(self.tabwidget)
+        self.listwidget = QtWidgets.QListWidget()
+        self.listwidget.setMaximumWidth(150)
+        self.stackwidget = QtWidgets.QStackedLayout()
+        self.pages = {}
+
+        for page in prefs._tab_order:
+            self.listwidget.addItem(page)
+            widget, layout = self.get_page(page)
+            self.stackwidget.addWidget(widget)
+
+        self.listwidget.currentRowChanged.connect(self.stackwidget.setCurrentIndex)
+        self.listwidget.setCurrentRow(0)
+        lo = QtWidgets.QHBoxLayout()
+        lo.addWidget(self.listwidget)
+        lo.addLayout(self.stackwidget)
         self.setLayout(lo)
         self.fields = {}
-        self.tabs = {}
 
+        paged = {}
         for key, value in vars(prefs).items():
-            if not key.startswith('_'):
-                d = getattr(prefs, '_%s_ui' % key, {})
-                #if d:
-                #    print(d)
+            if key.startswith('_'):
+                continue
+            d = getattr(prefs, '_%s_ui' % key, {})
+            if not d:
+                continue
+            tab = d.get('tab', 'Advanced')
+            order = d.get('order', 999)
+            d['value'] = value
+            if tab not in paged:
+                paged[tab] = {'ordered':[]}
+            paged[tab][key] = d
+            ordered = paged[tab]['ordered']
+            ordered.append((order, key))
+
+        for tab, tabdata in paged.items():
+            ordered = tabdata['ordered']
+            ordered.sort()
+            widget, layout = self.get_page(tab)
+            for o, key in ordered:
+                d = tabdata[key]
                 field_type = d.get('type', '')
+                value = d['value']
                 if not field_type:
-                    if isinstance(value, float):
+                    if d.get('choices', ''):
+                        field_type = 'selection'
+                    elif isinstance(value, float):
                         field_type = 'float_slider'
                     elif isinstance(value, bool):
                         field_type = 'checkbox'
@@ -175,10 +253,8 @@ class PreferencesDialog(QtWidgets.QDialog):
                         field_type = 'int_slider'
                     elif isinstance(value, dict):
                         continue
-                #print('creating field for ', key, value)
                 label = d.get('label', '')
-                tab_key = d.get('tab', 'General')
-                widget, layout = self.get_tab(tab_key)
+                f = None
                 if not label:
                     label = key.replace('_', ' ').capitalize()
                 if field_type == 'int_slider':
@@ -189,10 +265,7 @@ class PreferencesDialog(QtWidgets.QDialog):
                     else:
                         minv, maxv = -10, 10
                     f = DoubleSlider(key, self, decimals=False)
-                    self.fields[key] = f
                     f.setRange(minv, maxv)
-                    f.set_on_change_method(self.main.redraw)
-                    layout.addRow(label, f)
                 elif field_type == 'float_slider':
                     if 'range' in d:
                         minv, maxv = d['range']
@@ -201,25 +274,46 @@ class PreferencesDialog(QtWidgets.QDialog):
                     else:
                         minv, maxv = -10, 10
                     f = DoubleSlider(key, self, decimals=True)
-                    self.fields[key] = f
                     f.setRange(minv, maxv)
-                    f.set_on_change_method(self.main.redraw)
-                    layout.addRow(label, f)
                 elif field_type == 'checkbox':
                     f = CheckBox(key, self)
+                elif field_type == 'selection':
+                    f = Selector(key, self, d['choices'])
+                if f:
                     self.fields[key] = f
-                    f.set_on_change_method(self.main.redraw)
+                    on_change = d.get('on_change', None)
+                    if isinstance(on_change, str):
+                        on_change = self.get_change_method(on_change)
+                    if not on_change:
+                        on_change = self.main.redraw
+                    f.set_on_change_method(on_change)
                     layout.addRow(label, f)
+                    help = d.get('help', None)
+                    if help:
+                        layout.addRow(HelpLabel(help, self, f))
+                else:
+                    print('couldnt create ui for this: ', key, d)
 
-    def get_tab(self, key):
-        if key in self.tabs:
-            return self.tabs[key], self.tabs[key].layout()
-        new_tab = QtWidgets.QWidget()
+    def get_page(self, key):
+        if key in self.pages:
+            return self.pages[key], self.pages[key].layout()
+        new_page = QtWidgets.QWidget()
         layout = QtWidgets.QFormLayout()
-        self.tabwidget.addTab(new_tab, key)
-        self.tabs[key] = new_tab
-        new_tab.setLayout(layout)
-        return new_tab, layout
+        self.pages[key] = new_page
+        new_page.setLayout(layout)
+        return new_page, layout
+
+    def get_change_method(self, method_name):
+        """ Here are on_change -methods that can't be defined in preferences -- they require
+        imports that are impossible there.
+        :param method_name:
+        :return:
+        """
+        if method_name == 'prepare_easing_curve':
+            return self.prepare_easing_curve
+
+    def prepare_easing_curve(self):
+        qt_prefs.prepare_easing_curve(prefs.curve, prefs.move_frames)
 
     def update_pens(self):
         """

@@ -60,7 +60,8 @@ become visible
 + Adding a gloss crashes embed edit
     - gloss exists both as a separate node and a line in label
 + Various tree identity problems in complex operations
-
+- Keyboard movement crashes
+    - Crashes on edges
 
 ADD:
 

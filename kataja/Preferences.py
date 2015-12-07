@@ -22,8 +22,6 @@
 #
 # ############################################################################
 
-from collections import OrderedDict
-
 from PyQt5 import QtGui, QtCore
 
 from kataja.globals import *
@@ -31,6 +29,13 @@ from kataja.globals import *
 disable_saving_preferences = False
 # Alternatives: Cambria Math, Asana Math, XITS Math
 
+curves = ['Linear', 'InQuad', 'OutQuad', 'InOutQuad', 'OutInQuad', 'InCubic', 'OutCubic',
+          'InOutCubic', 'OutInCubic', 'InQuart', 'OutQuart', 'InOutQuart', 'OutInQuart', 'InQuint',
+          'OutQuint', 'InOutQuint', 'OutInQuint', 'InSine', 'OutSine', 'InOutSine', 'OutInSine',
+          'InExpo', 'OutExpo', 'InOutExpo', 'OutInExpo', 'InCirc', 'OutCirc', 'InOutCirc',
+          'OutInCirc', 'InElastic', 'OutElastic', 'InOutElastic', 'OutInElastic', 'InBack',
+          'OutBack', 'InOutBack', 'OutInBack', 'InBounce', 'OutBounce', 'InOutBounce',
+          'OutInBounce']
 
 def extract_bitmaps(filename):
     """
@@ -76,79 +81,94 @@ class Preferences(object):
 
     def __init__(self, running_environment, immutable=False):
         self.save_key = 'preferences'
-        self._tab_order = ['General', 'Drawing', 'Printing', 'Performance', 'Plugins', 'Advanced']
+        self._tab_order = ['General', 'Drawing', 'Printing', 'Syntax', 'Node styles',
+                           'Performance', 'Plugins', 'Advanced']
+
+        self.color_mode = 'solarized_lt'
+        self._color_mode_ui = {'tab': 'General', 'special': 'color_modes'}
+        self.hsv = None
+
+        self.touch = True
+        self._touch_ui = {'tab': 'General'}
+
+        self.gloss_nodes = True
+        self._gloss_nodes_ui = {'tab': 'General'}
+
+        self.feature_nodes = True
+        self._feature_nodes_ui = {'tab': 'General'}
+
+        self.fonts = running_environment.fonts
+        self._fonts_ui = {'tab': 'General', 'special': 'fonts'}
+
+        self.visualization = 'Left first trees'
+        self._visualization_ui = {'tab': 'Drawing', 'special': 'visualizations'}
+
         self.draw_width = .5
         self._draw_width_ui = {'tab': 'Drawing', 'range': (0, 12)}
-        self.selection_width = 0.8
-        self._selection_width_ui = {'tab': 'Drawing', 'range': (0, 12)}
+
         self.thickness_multiplier = 2
         self._thickness_multiplier = {'tab': 'Drawing', 'range': (0.5, 6)}
+
+        self.draw_features = True
+        self._draw_features_ui = {'tab': 'Drawing'}
+
+        self.draw_width = 2
+        self._draw_width_ui = {'tab': 'Drawing', 'range': (0.5, 5)}
+
+        self.bracket_style = 0
+        self._bracket_style_ui = {'tab': 'Drawing', 'choices':
+                                  [(0, 'No brackets'),
+                                   (1, 'Non-obvious brackets'),
+                                   (2, 'All brackets')]}
+
+        self.use_magnets = True
+        self._use_magnets_ui = {'tab': 'Drawing'}
+
+        self.edge_width = 20  # 20
+        self._edge_width_ui = {'tab': 'Drawing', 'range': (0, 60)}
+
+        self.edge_height = 20
+        self._edge_height_ui = {'tab': 'Drawing', 'range': (0, 60)}
+
+        self.spacing_between_trees = 3
+        self._spacing_between_trees_ui = {'tab': 'Drawing', 'range': (0, 4)}
+
+        self.include_features_to_label = False
+        self._include_features_to_label_ui = {'tab': 'Drawing'}
+
         self.user_palettes = {}
-        self.plugins = {}
+        self.traces_are_grouped_together = False
+        self.shows_constituent_edges = True
+
         self.dpi = 300
-        self._dpi_ui = {'tab': 'Print', 'choices': [72, 150, 300, 450, 600]}
-        self.FPS = 60
-        self._FPS_ui = {'tab': 'Performance'}
+        self._dpi_ui = {'tab': 'Printing', 'choices': [72, 150, 300, 450, 600]}
 
-        self._fps_in_msec = 1000 / self.FPS
-        self.visualization = 'Left first trees'
+        self.print_file_path = ''
+        self._print_file_path_ui = {'tab': 'Printing', 'type': 'folder'}
 
-        # self.blender_app_path =
-        # '/Applications/blender.app/Contents/MacOS/blender'
-        # self.blender_env_path = '/Users/purma/Dropbox/bioling_blender'
+        self.print_file_name = 'kataja_print'
+        self._print_file_name_ui = {'tab': 'Printing', 'type': 'text'}
 
-        self.move_frames = 12
-        self._move_frames_ui = {'tab': 'Performance'}
-        self.curve = 'InQuad'
-
-        self.my_palettes = {}
+        self.include_gloss_to_print = True
+        self._include_gloss_to_print_ui = {'tab': 'Printing'}
 
         self.use_projection = True
+        self._use_projection_ui = {'tab': 'Syntax'}
+
         self.who_projects = 'left_external'
-        self.use_multidomination = True
-        self.binary_branching = False
+        self._who_projects_ui = {'tab': 'Syntax'}
 
-        self.label_style = 2
         self.uses_multidomination = True
-        self.traces_are_grouped_together = 0
-        self.shows_constituent_edges = True
+        self._uses_multidomination_ui = {'tab': 'Syntax'}
+
+        self.binary_branching = False
+        self._binary_branching_ui = {'tab': 'Syntax'}
+
         self.shows_merge_order = False
+        self._shows_merge_order_ui = {'tab': 'Syntax'}
+
         self.shows_select_order = False
-        self.draw_features = True
-        self.draw_width = 2
-        self.color_mode = 'solarized_lt'
-        self.hsv = None
-        self.bracket_style = 0
-
-        # ## Global preferences
-        self.fonts = running_environment.fonts
-        self.keep_vertical_order = False
-        self.use_magnets = True
-        self.edge_width = 20  # 20
-        self.edge_height = 20
-        self.hanging_gloss = True
-        self.spacing_between_trees = 3
-        self.include_features_to_label = False
-        self.constituency_edge_shape = 1
-        self.feature_edge_shape = 3
-        self.move_effect = 0
-        self.ui_speed = 8
-        self.glow_effect = False
-        self._glow_effect_ui = {'tab': 'Performance'}
-        self.touch = True
-        self.gloss_nodes = True
-        self.feature_nodes = True
-        self.show_gloss_text = True  # fixme: is it global preference?
-
-        self.userspace_path = running_environment.default_userspace_path
-        self.debug_treeset = running_environment.resources_path + 'trees.txt'
-        self.file_name = 'savetest.kataja'
-        self.print_file_path = ''
-        self.print_file_name = 'kataja_print'
-        self.include_gloss_to_print = True
-        self._print_file_path_ui = {'tab': 'Print'}
-        self._print_file_name_ui = {'tab': 'Print'}
-        self._include_gloss_to_print_ui = {'tab': 'Print'}
+        self._shows_select_order_ui = {'tab': 'Syntax'}
 
         # Rest of the edges are defined in their corresponding node classes
         self.edges = {
@@ -161,7 +181,42 @@ class Preferences(object):
         # Nodes are defined in their classes and preference dict is generated
         #  from those.
         self.nodes = {}
+        self._nodes_ui = {'tab': 'Node styles', 'special': 'nodes'}
         self.node_types_order = []
+
+        self.plugins = {}
+        self._plugins_ui = {'tab': 'Plugins', 'special': 'plugins'}
+
+        self.FPS = 60
+        self._FPS_ui = {'tab': 'Performance', 'range': (10, 60), 'label': 'Target FPS'}
+        self._fps_in_msec = 1000 / self.FPS
+
+        self.move_frames = 12
+        self._move_frames_ui = {'tab': 'Performance', 'range': (0, 30),
+                                'on_change': 'prepare_easing_curve', 'label': 'Animation frames'}
+        self.curve = 'InQuad'
+        self._curve_ui = {'tab': 'Performance', 'choices': curves,
+                                 'on_change': 'prepare_easing_curve'}
+        self.my_palettes = {}
+
+        self.move_effect = False
+        self._move_effect_ui = {'tab': 'Performance',
+                                'help': "Adds movement blur. Experimental and quite broken, "
+                                        "especially in high DPI displays."}
+        self.glow_effect = False
+        self._glow_effect_ui = {'tab': 'Performance',
+                                "help": "Glow effect for selected nodes. "
+                                        "Doesn't work well on high DPI screens."}
+
+
+        # self.blender_app_path =
+        # '/Applications/blender.app/Contents/MacOS/blender'
+        # self.blender_env_path = '/Users/purma/Dropbox/bioling_blender'
+
+        self.userspace_path = running_environment.default_userspace_path
+        self.debug_treeset = running_environment.resources_path + 'trees.txt'
+        self.file_name = 'savetest.kataja'
+
         self.custom_colors = {}
 
     def import_node_classes(self, ctrl):
@@ -194,8 +249,8 @@ class Preferences(object):
         :param color_settings:
         """
         # Undo support for this?
-        self.user_palettes[color_key] = {'name': color_settings.get_color_name(hsv),
-                                         'fixed': True, 'hsv': hsv}
+        self.user_palettes[color_key] = {'name': color_settings.get_color_name(hsv), 'fixed': True,
+                                         'hsv': hsv}
         color_settings.update_color_modes()
 
     # ##### Save & Load ########################################
@@ -341,7 +396,7 @@ class QtPreferences:
         :param preferences:
         """
         self.prepare_fonts(preferences.fonts, preferences, running_environment)
-        self.prepare_easing_curve(preferences._curve, preferences.move_frames)
+        self.prepare_easing_curve(preferences.curve, preferences.move_frames)
 
     def prepare_easing_curve(self, curve_type, frames):
         """
@@ -388,8 +443,8 @@ class QtPreferences:
             font = self.fontdb.font(name, style, size)
             # print(name, font.exactMatch())
             if name == 'Asana Math' and not font.exactMatch():
-                self.fontdb.addApplicationFont(running_environment.resources_path +
-                                               "Asana-Math.otf")
+                self.fontdb.addApplicationFont(
+                    running_environment.resources_path + "Asana-Math.otf")
                 font = self.fontdb.font(name, style, size)
             if style == 'Italic':
                 font.setItalic(True)

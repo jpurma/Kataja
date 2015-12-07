@@ -53,7 +53,6 @@ class ForestSettings(BaseModel):
 
     def __init__(self):
         super().__init__()
-        self.label_style = None
         self.uses_multidomination = None
         self.traces_are_grouped_together = None
         self.shows_constituent_edges = None
@@ -261,7 +260,6 @@ class ForestSettings(BaseModel):
     #                #
     # ############## #
 
-    label_style = SavedSetting("label_style")
     uses_multidomination = SavedSetting("uses_multidomination")
     traces_are_grouped_together = SavedSetting("traces_are_grouped_together")
     shows_constituent_edges = SavedSetting("shows_constituent_edges")

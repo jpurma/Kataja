@@ -197,10 +197,13 @@ class LeftFirstTree(BaseVisualization):
                         if edge_height:
                             extra_height = math.ceil(height_spillover / float(edge_height)) * edge_height
                         else:
-                            extra_height = math.ceil(height_spillover / 10.0) * 10
+                            extra_height = math.ceil(height_spillover)
                     width_spillover = ((node.width + prev_width) / 2) - (edge_width * 4)
                     if width_spillover > extra_width[x_i]:
-                        extra_width[x_i] = math.ceil(width_spillover / float(edge_width)) * edge_width
+                        if edge_width:
+                            extra_width[x_i] = math.ceil(width_spillover / float(edge_width)) * edge_width
+                        else:
+                            extra_width = math.ceil(width_spillover)
                     # fix cases where bottom half of tall node is overlapped by edges from smaller
                     # node beside it.
                     if prev_height > node.height:
