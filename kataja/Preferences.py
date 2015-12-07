@@ -32,16 +32,6 @@ disable_saving_preferences = False
 # Alternatives: Cambria Math, Asana Math, XITS Math
 
 
-color_modes = OrderedDict(
-    [('solarized_dk', {'name': 'Solarized dark', 'fixed': True, 'hsv': [0, 0, 0]}),
-     ('solarized_lt', {'name': 'Solarized light', 'fixed': True, 'hsv': [0, 0, 0]}),
-     ('random', {'name': 'Random for each treeset', 'fixed': False, 'hsv': [0, 0, 0]}),
-     ('print', {'name': 'Print-friendly', 'fixed': True, 'hsv': [0.2, 0.2, 0.2]}),
-     ('bw', {'name': 'Black and white', 'fixed': True, 'hsv': [0, 0, 0]}),
-     ('random-light', {'name': 'Random on a light background', 'fixed': False, 'hsv': [0, 0, 0]}),
-     ('random-dark', {'name': 'Against a dark background', 'fixed': False, 'hsv': [0, 0, 0]})])
-
-
 def extract_bitmaps(filename):
     """
     Helper method to turn 3-color image (blue, black, transparent) into
@@ -77,18 +67,23 @@ class Preferences(object):
     in elements and in forest settings.
     Preferences it self can be written and read directly.
 
+    preferences with underscore are not saved, they can be used for information about UI drawing
+
     """
     # Prefs are not saved in save command, but changes here are undoable,
     # so this must support the save protocol.
     not_saved = ['plugins']
 
-    def __init__(self, running_environment):
+    def __init__(self, running_environment, immutable=False):
         self.save_key = 'preferences'
+        self._tab_order = ['General', 'Drawing', 'Printing', 'Performance', 'Plugins', 'Advanced']
         self.draw_width = .5
+        self._draw_width_ui = {'tab': 'Drawing', 'range': (0, 12)}
         self.selection_width = 0.8
+        self._selection_width_ui = {'tab': 'Drawing', 'range': (0, 12)}
         self.thickness_multiplier = 2
-        self.color_modes = color_modes
-        self.shared_palettes = {}
+        self._thickness_multiplier = {'tab': 'Drawing', 'range': (0.5, 6)}
+        self.user_palettes = {}
         self.plugins = {}
         self.dpi = 300
         self._dpi_ui = {'tab': 'Print', 'choices': [72, 150, 300, 450, 600]}
@@ -96,7 +91,7 @@ class Preferences(object):
         self._FPS_ui = {'tab': 'Performance'}
 
         self._fps_in_msec = 1000 / self.FPS
-        self.default_visualization = 'Left first trees'
+        self.visualization = 'Left first trees'
 
         # self.blender_app_path =
         # '/Applications/blender.app/Contents/MacOS/blender'
@@ -106,25 +101,7 @@ class Preferences(object):
         self._move_frames_ui = {'tab': 'Performance'}
         self.curve = 'InQuad'
 
-        # ## Default structural rules that apply to new trees
-        self.default_use_projection = True
-        self.default_who_projects = 'left_external'
-        self.default_use_multidomination = True
-        self.default_binary_branching = False
-
-        # ## Default settings for new trees
-        self.default_label_style = 2
-        self.default_uses_multidomination = True
-        self.default_traces_are_grouped_together = 0
-        self.default_shows_constituent_edges = True
-        self.default_shows_merge_order = False
-        self.default_shows_select_order = False
-        self.default_draw_features = True
-        self.default_draw_width = 2
         self.my_palettes = {}
-        self.default_color_mode = 'solarized_lt'
-        self.default_hsv = None
-        self.default_bracket_style = 0
 
         self.use_projection = True
         self.who_projects = 'left_external'
@@ -143,9 +120,7 @@ class Preferences(object):
         self.hsv = None
         self.bracket_style = 0
 
-
         # ## Global preferences
-        self.color_mode = self.default_color_mode
         self.fonts = running_environment.fonts
         self.keep_vertical_order = False
         self.use_magnets = True
@@ -218,8 +193,10 @@ class Preferences(object):
         :param hsv:
         :param color_settings:
         """
-        self.color_modes[color_key] = {'name': color_settings.get_color_name(hsv), 'fixed': True,
-            'hsv': hsv}
+        # Undo support for this?
+        self.user_palettes[color_key] = {'name': color_settings.get_color_name(hsv),
+                                         'fixed': True, 'hsv': hsv}
+        color_settings.update_color_modes()
 
     # ##### Save & Load ########################################
 
@@ -276,7 +253,28 @@ class QtPreferences:
     brushes. """
 
     def __init__(self):  # called to create a placeholder in early imports
-        pass
+        self.easing_curve = []
+        self.fontdb = None
+        self.no_pen = None
+        self.no_brush = None
+        self.lock_icon = None
+        self.lock_pixmap = None
+        self.cut_icon = None
+        self.delete_icon = None
+        self.close_icon = None
+        self.fold_icon = None
+        self.more_icon = None
+        self.pin_drop_icon = None
+        self.left_arrow = None
+        self.right_arrow = None
+        self.add_icon = None
+        self.add_box_icon = None
+        self.settings_icon = None
+        self.settings_pixmap = None
+        self.triangle_icon = None
+        self.triangle_close_icon = None
+        self.font_icon = None
+        self.kataja_icon = None
 
     def late_init(self, running_environment, preferences, fontdb):  # called when Qt app exists
         # graphics and fonts can be initiated only when QApplication exists
@@ -311,7 +309,6 @@ class QtPreferences:
             return p
 
         # print("font families:", QtGui.QFontDatabase().families())
-        self.easing_curve = []
         self.fontdb = fontdb
         self.prepare_fonts(preferences.fonts, running_environment)
         self.prepare_easing_curve(preferences.curve, preferences.move_frames)

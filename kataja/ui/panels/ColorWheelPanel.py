@@ -134,7 +134,8 @@ class ColorWheelPanel(UIPanel):
 
         """
         cm = ctrl.cm
-        color_key = ctrl.ui.ui_panels[COLOR_THEME].create_theme_from_color(cm.hsv)
+        panel = ctrl.ui.get_panel(COLOR_THEME)
+        color_key = panel.create_theme_from_color(cm.hsv)
         ctrl.main.change_color_mode(color_key)
 
     def update_colors(self):

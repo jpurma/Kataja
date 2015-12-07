@@ -67,6 +67,16 @@ accents = [c(181, 137, 0), c(203, 75, 22), c(220, 50, 47), c(211, 54, 130),
            c(108, 113, 196), c(38, 139, 210), c(42, 161, 152), c(133, 153, 0)]
 
 
+color_modes = OrderedDict(
+    [('solarized_dk', {'name': 'Solarized dark', 'fixed': True, 'hsv': [0, 0, 0]}),
+     ('solarized_lt', {'name': 'Solarized light', 'fixed': True, 'hsv': [0, 0, 0]}),
+     ('random', {'name': 'Random for each treeset', 'fixed': False, 'hsv': [0, 0, 0]}),
+     ('print', {'name': 'Print-friendly', 'fixed': True, 'hsv': [0.2, 0.2, 0.2]}),
+     ('bw', {'name': 'Black and white', 'fixed': True, 'hsv': [0, 0, 0]}),
+     ('random-light', {'name': 'Random on a light background', 'fixed': False, 'hsv': [0, 0, 0]}),
+     ('random-dark', {'name': 'Against a dark background', 'fixed': False, 'hsv': [0, 0, 0]})])
+
+
 def rotating_add(base, added):
     """ Adds two numbers, but keeps result between (0,1) rotating over
     :param base:
@@ -191,6 +201,8 @@ class PaletteManager:
         self.transparent = Qt.transparent
         self.gradient = QtGui.QRadialGradient(0, 0, 300)
         self.gradient.setSpread(QtGui.QGradient.PadSpread)
+        self.ordered_color_modes = OrderedDict()
+        self.update_color_modes()
         self.activate_color_mode('solarized_lt', cold_start=True)
         self.color_keys = ['content1', 'content2', 'content3', 'background1',
                            'background2', 'accent1', 'accent2', 'accent3',
@@ -199,12 +211,27 @@ class PaletteManager:
                            'accent4tr', 'accent5tr', 'accent6tr', 'accent7tr',
                            'accent8tr']
 
+
     @property
     def current_color_mode(self):
         """
         :return:
         """
-        return ctrl.fs.color_mode
+        if ctrl.fs:
+            return ctrl.fs.color_mode
+        else:
+            return prefs.color_mode
+
+    def update_color_modes(self):
+        self.ordered_color_modes = color_modes
+        self.ordered_color_modes.update(OrderedDict(sorted(prefs.user_palettes.items())))
+
+    def create_theme_from_color(self, hsv):
+        color_key = str(hsv)
+        modes = self.ordered_color_modes
+        if color_key not in modes:
+            prefs.add_color_mode(color_key, hsv, self)
+        return color_key
 
     def activate_color_mode(self, mode, refresh=False, cold_start=False):
         """
@@ -288,12 +315,11 @@ class PaletteManager:
         :param mode:
         :return:
         """
-        data = prefs.color_modes.get(mode, None)
-        if not data:
-            data = prefs.custom_color_modes.get(mode, None)
-            if not data:
-                data = prefs.color_modes['random']
-        return data
+        if mode in self.ordered_color_modes:
+            return self.ordered_color_modes[mode]
+        else:
+            print('asking for unknown color mode: ', mode)
+            return self.ordered_color_modes['random']
 
     def get(self, key):
         """
@@ -303,7 +329,7 @@ class PaletteManager:
         """
         return self.d.get(key, None)
 
-    def update_colors(self, prefs, settings, refresh=False):
+    def update_colors(self, refresh=False):
         """ Create/get root color and build palette around it
         :param prefs:
         :param settings:

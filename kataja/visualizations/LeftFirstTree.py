@@ -194,7 +194,10 @@ class LeftFirstTree(BaseVisualization):
                         node.update_bounding_rect()
                     height_spillover = node.inner_rect.bottom() - edge_height
                     if height_spillover > extra_height:
-                        extra_height = math.ceil(height_spillover / float(edge_height)) * edge_height
+                        if edge_height:
+                            extra_height = math.ceil(height_spillover / float(edge_height)) * edge_height
+                        else:
+                            extra_height = math.ceil(height_spillover / 10.0) * 10
                     width_spillover = ((node.width + prev_width) / 2) - (edge_width * 4)
                     if width_spillover > extra_width[x_i]:
                         extra_width[x_i] = math.ceil(width_spillover / float(edge_width)) * edge_width

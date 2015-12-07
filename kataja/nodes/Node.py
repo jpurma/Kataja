@@ -518,7 +518,6 @@ syntactic_object: %s
             self.current_position = self.current_scene_position
             self.setParentItem(None)
 
-    @time_me
     def add_to_tree(self, tree):
         """ Add this node to given trees and possibly set it as parent for this graphicsitem.
         :param tree: Tree

@@ -261,7 +261,7 @@ class Forest(BaseModel):
             self.visualization.reselect()
         else:
             vs = self.main.visualizations
-            self.visualization = vs.get(name, vs.get(prefs.default_visualization, None))
+            self.visualization = vs.get(name, vs.get(prefs.visualization, None))
             self.vis_data = {'name': self.visualization.say_my_name()}
             self.visualization.prepare(self)
         self.main.graph_scene.manual_zoom = False
@@ -271,7 +271,7 @@ class Forest(BaseModel):
         the vis_data (saved visualization state)
         :return: None
         """
-        name = self.vis_data.get('name', prefs.default_visualization)
+        name = self.vis_data.get('name', prefs.visualization)
         if (not self.visualization) or name != self.visualization.say_my_name():
             self.set_visualization(name)
 
@@ -498,7 +498,7 @@ class Forest(BaseModel):
         """ Update colors to those specified for this Forest."""
         cm = ctrl.cm
         old_gradient_base = cm.paper()
-        self.main.color_manager.update_colors(prefs, self.settings)
+        self.main.color_manager.update_colors()
         self.main.app.setPalette(cm.get_qt_palette())
         if old_gradient_base != cm.paper() and cm.gradient:
             self.main.graph_scene.fade_background_gradient(old_gradient_base, cm.paper())

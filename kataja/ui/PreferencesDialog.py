@@ -92,7 +92,6 @@ class DoubleSlider(QtWidgets.QHBoxLayout):
             self.on_change_method()
         self.now_changing = False
 
-
     def spinbox_changed(self, value):
         """
 
@@ -161,7 +160,6 @@ class PreferencesDialog(QtWidgets.QDialog):
         self.fields = {}
         self.tabs = {}
 
-
         for key, value in vars(prefs).items():
             if not key.startswith('_'):
                 d = getattr(prefs, '_%s_ui' % key, {})
@@ -213,9 +211,6 @@ class PreferencesDialog(QtWidgets.QDialog):
                     f.set_on_change_method(self.main.redraw)
                     layout.addRow(label, f)
 
-
-
-
     def get_tab(self, key):
         if key in self.tabs:
             return self.tabs[key], self.tabs[key].layout()
@@ -225,7 +220,6 @@ class PreferencesDialog(QtWidgets.QDialog):
         self.tabs[key] = new_tab
         new_tab.setLayout(layout)
         return new_tab, layout
-
 
     def update_pens(self):
         """

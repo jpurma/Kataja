@@ -30,7 +30,7 @@ class ColorMappingPanel(UIPanel):
         self.preferred_size = (200, 220)
         selector = QtWidgets.QComboBox(self)
 
-        selector.addItems([c['name'] for c in prefs.color_modes.values()])
+        selector.addItems([c['name'] for c in ctrl.cm.ordered_color_modes.values()])
         selector.activated.connect(self.change_color_mode)
         self.mode_select = selector
         # selector.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)

@@ -7,6 +7,15 @@ from kataja.ui.panels.UIPanel import UIPanel
 __author__ = 'purma'
 
 
+def change_color_mode(mode):
+    """
+
+    :param mode:
+    """
+    modes = ctrl.cm.ordered_color_modes
+    mode_key = list(modes.keys())[mode]
+    ctrl.main.change_color_mode(mode_key)
+
 
 class ColorPanel(UIPanel):
     """
@@ -29,55 +38,29 @@ class ColorPanel(UIPanel):
         UIPanel.__init__(self, name, key, default_position, parent, ui_manager, folded)
         layout = QtWidgets.QVBoxLayout()
         widget = QtWidgets.QWidget(self)
+        ocm = ctrl.cm.ordered_color_modes
+        self.selector_items = [c['name'] for c in ocm.values()]
         selector = QtWidgets.QComboBox(self)
-        selector.addItems([c['name'] for c in prefs.color_modes.values()])
-        selector.activated.connect(self.change_color_mode)
+        selector.addItems(self.selector_items)
+        selector.activated.connect(change_color_mode)
         self.mode_select = selector
+        self.mode_select.setCurrentIndex(list(ocm.keys()).index(ctrl.cm.current_color_mode))
+
         layout.addWidget(selector)
         # layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
         widget.setLayout(layout)
 
         self.setWidget(widget)
         self.finish_init()
-        # cameras = QtMultimedia.QCameraInfo.availableCameras()
-        # camera = None
-        # for caminfo in cameras:
-        #     camera = QtMultimedia.QCamera(caminfo)
-        #     break
-        # if camera:
-        #     print('adding camera: ', camera)
-        #     viewfinder = QtMultimediaWidgets.QCameraViewfinder()
-        #     viewfinder.setFixedWidth(220)
-        #     viewfinder.setFixedHeight(179)
-        #     camera.setViewfinder(viewfinder)
-        #     layout.addWidget(viewfinder)
-        #     viewfinder.show()
-        #     camera.start()
-        #     self.camera = camera # if the reference is lost, camera shuts down
-
-    def change_color_mode(self, mode):
-        """
-
-        :param mode:
-        """
-        mode_key = list(prefs.color_modes.keys())[mode]
-        ctrl.main.change_color_mode(mode_key)
-
-    def create_theme_from_color(self, hsv):
-        cm = ctrl.cm
-        color_key = str(hsv)
-        if color_key not in prefs.color_modes:
-            prefs.add_color_mode(color_key, hsv, cm)
-            color_item = prefs.color_modes[color_key]
-            self.mode_select.addItem(color_item['name'])
-            self.mode_select.setCurrentIndex(self.mode_select.count() - 1)
-        return color_key
-
 
     def update_colors(self):
         """
 
-
         """
-        self._updating = False
+        ocm = ctrl.cm.ordered_color_modes
+        current_color_modes = [c['name'] for c in ocm.values()]
+        if self.selector_items != current_color_modes:
+            self.mode_select.clear()
+            self.mode_select.addItems(current_color_modes)
+        self.mode_select.setCurrentIndex(list(ocm.keys()).index(ctrl.cm.current_color_mode))
 

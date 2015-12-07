@@ -240,7 +240,7 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
 
         :param hsv:
         """
-        self.forest.settings.hsv(hsv)
+        self.forest.settings.hsv = hsv
         self.forest.update_colors()
 
     def change_color_mode(self, mode):
