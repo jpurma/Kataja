@@ -109,7 +109,8 @@ class Preferences(object):
         self.visualization = 'Left first trees'
         self._visualization_ui = {'tab': 'Drawing', 'special': 'visualizations',
                                   'help': 'Default visualization for new trees.',
-                                  'order': 10}
+                                  'order': 10,
+                                  'on_change': 'update_visualization'}
 
         self.thickness_multiplier = 2
         self._thickness_multiplier = {'tab': 'Drawing', 'range': (0.5, 6), 'order': 50, 'help':
@@ -150,13 +151,22 @@ class Preferences(object):
 
         self.dpi = 300
         self._dpi_ui = {'tab': 'Printing', 'choices': [72, 150, 300, 450, 600], 'label': 'DPI',
-                        'help': 'Dots Per Inch setting when exporting images'}
+                        'help': 'Dots Per Inch setting when exporting images', 'order': 20}
+
+        self.print_format = 'pdf'
+        self._print_format_ui = {'tab': 'Printing', 'choices': ['pdf', 'png'], 'order': 10}
 
         self.print_file_path = ''
-        self._print_file_path_ui = {'tab': 'Printing', 'type': 'folder'}
+        self._print_file_path_ui = {'tab': 'Printing', 'type': 'folder', 'order': 30,
+                                    'label': 'Quick print path'}
 
         self.print_file_name = 'kataja_print'
-        self._print_file_name_ui = {'tab': 'Printing', 'type': 'text'}
+        self._print_file_name_ui = {'tab': 'Printing', 'type': 'text', 'order': 31,
+                                    'label': 'Quick print file name',
+                                    'help': 'Quick print (Ctrl-p) will print a snapshot of the '
+                                            'current tree into a file, file names will be '
+                                            'generated as "katajaprint.pdf", "katajaprint1.pdf", '
+                                            '"katajaprint2.pdf"... and so on.'}
 
         self.include_gloss_to_print = True
         self._include_gloss_to_print_ui = {'tab': 'Printing'}
@@ -271,6 +281,15 @@ class Preferences(object):
         platform-dependant ini/preferences files.
         It doesn't need any parameters,
         """
+        def recursive_write(settings, k, v):
+            k = str(k)
+            if isinstance(v, dict):
+                settings.beginGroup(k)
+                for kk, vv in v.items():
+                    recursive_write(settings, str(kk), vv)
+                settings.endGroup()
+            else:
+                settings.setValue(k, v)
 
         if disable_saving_preferences:
             return
@@ -281,37 +300,43 @@ class Preferences(object):
         for key, value in d.items():
             if key.startswith('_') or key in Preferences.not_saved:
                 continue
-            if isinstance(value, dict):
-                settings.beginGroup(key)
-                for dkey, dvalue in value.items():
-                    settings.setValue(str(dkey), dvalue)
-                settings.endGroup()
-            else:
-                settings.setValue(key, value)
+            recursive_write(settings, key, value)
+        settings.sync()
 
     def load_preferences(self):
+
+        def recursive_load(settings, k, dv, d=None):
+            if isinstance(dv, dict):
+                settings.beginGroup(k)
+                nd = getattr(self, k)
+                for kk in settings.childKeys():
+                    recursive_load(settings, kk, None, nd)
+                if d:
+                    d[k] = nd
+                else:
+                    setattr(self, k, nd)
+                settings.endGroup()
+                return
+            value = settings.value(k, dv)
+            if isinstance(dv, float):
+                value = float(value)
+            elif isinstance(dv, bool):
+                value = bool(value)
+            elif isinstance(dv, int):
+                value = int(value)
+            if d:
+                d[k] = value
+            else:
+                setattr(self, k, value)
 
         if disable_saving_preferences:
             return
 
         settings = QtCore.QSettings()
         for key, default_value in vars(self).items():
-            if key in Preferences.not_saved:
+            if key.startswith('_') or key in Preferences.not_saved:
                 continue
-            if isinstance(default_value, dict):
-                settings.beginGroup(key)
-                d = getattr(self, key)
-                for dkey in settings.childKeys():
-                    d[dkey] = settings.value(dkey, None)
-                setattr(self, key, d)
-            elif isinstance(default_value, float):
-                setattr(self, key, float(settings.value(key, default_value)))
-            elif isinstance(default_value, bool):
-                setattr(self, key, bool(settings.value(key, default_value)))
-            elif isinstance(default_value, int):
-                setattr(self, key, int(settings.value(key, default_value)))
-            else:
-                setattr(self, key, settings.value(key, default_value))
+            recursive_load(settings, key, default_value)
 
 
 class QtPreferences:

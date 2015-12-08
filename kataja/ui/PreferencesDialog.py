@@ -26,6 +26,7 @@ from PyQt5 import QtCore, QtWidgets
 
 from kataja.singletons import prefs, qt_prefs, ctrl
 from kataja.managers.PaletteManager import color_modes
+from kataja.visualizations.available import VISUALIZATIONS
 
 
 class DoubleSlider(QtWidgets.QHBoxLayout):
@@ -186,6 +187,74 @@ class Selector(QtWidgets.QComboBox):
         self.on_change_method = method
 
 
+class FileChooser(QtWidgets.QHBoxLayout):
+
+    def __init__(self, field_name, parent=None, folders_only=False):
+        QtWidgets.QHBoxLayout.__init__(self)
+        self.parent_widget = parent
+        self.folders_only = folders_only
+        self.textbox = QtWidgets.QLineEdit()
+        self.file_button = QtWidgets.QPushButton("Select Folder")
+        self.addWidget(self.textbox)
+        self.addWidget(self.file_button)
+        self.field_name = field_name
+        self.on_change_method = None
+        value = getattr(prefs, self.field_name)
+        self.textbox.setText(value)
+        self.textbox.textChanged.connect(self.textbox_changed)
+        self.file_button.clicked.connect(self.open_file_dialog)
+
+    def open_file_dialog(self):
+        dialog = QtWidgets.QFileDialog(self.parent_widget)
+        if self.folders_only:
+            dialog.setFileMode(QtWidgets.QFileDialog.DirectoryOnly)
+        if dialog.exec_():
+            files = dialog.selectedFiles()
+            if files:
+                self.textbox.setText(files[0])
+
+    def buddy_target(self):
+        return self.textbox
+
+    def set_on_change_method(self, method):
+        """
+
+        :param method:
+        """
+        self.on_change_method = method
+
+    def textbox_changed(self):
+        setattr(prefs, self.field_name, self.textbox.text())
+        if self.on_change_method:
+            self.on_change_method()
+
+
+class TextInput(QtWidgets.QLineEdit):
+
+    def __init__(self, field_name, parent=None, folders_only=False):
+        QtWidgets.QLineEdit.__init__(self, parent)
+        self.field_name = field_name
+        self.on_change_method = None
+        value = getattr(prefs, self.field_name)
+        self.setText(value)
+        self.textChanged.connect(self.textbox_changed)
+
+    def buddy_target(self):
+        return self
+
+    def set_on_change_method(self, method):
+        """
+
+        :param method:
+        """
+        self.on_change_method = method
+
+    def textbox_changed(self):
+        setattr(prefs, self.field_name, self.text())
+        if self.on_change_method:
+            self.on_change_method()
+
+
 class HelpLabel(QtWidgets.QLabel):
 
     def __init__(self, text, parent=None, buddy=None):
@@ -291,6 +360,11 @@ class PreferencesDialog(QtWidgets.QDialog):
                         f = CheckBox(key, self)
                     elif field_type == 'selection':
                         f = Selector(key, self, d['choices'])
+                    elif field_type == 'folder':
+                        f = FileChooser(key, self, folders_only=True)
+                    elif field_type == 'text':
+                        f = TextInput(key, self)
+
                 if f:
                     self.fields[key] = f
                     on_change = d.get('on_change', None)
@@ -319,11 +393,19 @@ class PreferencesDialog(QtWidgets.QDialog):
         choices = [(key, data['name']) for key, data in color_modes.items()]
         return Selector(key, self, choices)
 
+    def build_visualizations(self, key, d):
+        choices = list(VISUALIZATIONS.keys())
+        return Selector(key, self, choices)
+
     def prepare_easing_curve(self):
         qt_prefs.prepare_easing_curve(prefs.curve, prefs.move_frames)
 
     def update_colors(self):
         ctrl.main.change_color_mode(prefs.color_mode, force=True)
+
+    def update_visualization(self):
+        ctrl.forest.set_visualization(prefs.visualization, force=True)
+        self.main.redraw()
 
     def update_pens(self):
         """

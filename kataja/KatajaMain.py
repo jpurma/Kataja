@@ -120,6 +120,7 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         self.visualizations = VISUALIZATIONS
         print('---- visualizations init ... ', time.time() - t)
         self.forest = Forest()
+        self.forest.update_colors()
         print('---- forest init ... ', time.time() - t)
         self.setCentralWidget(self.graph_view)
         self.setGeometry(x, y, w, h)
@@ -293,13 +294,13 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
                 "using '.' instead.")
             path = './'
         filename = prefs.print_file_name
-        if filename.endswith('.pdf'):
+        if filename.endswith(('.pdf', '.png')):
             filename = filename[:-4]
         # Prepare image
         self.graph_scene.removeItem(self.graph_scene.photo_frame)
         self.graph_scene.photo_frame = None
         # Prepare printer
-        png = True
+        png = prefs.print_format == 'png'
         source = self.graph_scene.visible_rect()
         source.adjust(0, 0, 5, 10)
 

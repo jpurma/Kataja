@@ -253,7 +253,7 @@ class Forest(BaseModel):
             self.remove_from_scene(self.gloss)
             self.gloss = None
 
-    def set_visualization(self, name):
+    def set_visualization(self, name, force=False):
         """ Switches the active visualization to visualization with given key
         :param name: string
         """
