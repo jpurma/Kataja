@@ -24,6 +24,8 @@
 from collections import OrderedDict
 
 import itertools
+
+import math
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import Qt
 
@@ -1237,6 +1239,8 @@ syntactic_object: %s
 
         :return:
         """
+
+
         if prefs.use_magnets and self._label_visible:
             if self._update_magnets:
                 self._update_magnets = False
@@ -1249,6 +1253,25 @@ syntactic_object: %s
 
             x1, y1, z1 = self.current_scene_position
             x2, y2 = self._magnets[n]
+            if prefs.use_magnets == 2:
+                parents = list(self.get_parents())
+                # We don't want to rotate multidominated or top nodes
+                if len(parents) == 1:
+                    # Compute angle to parent
+                    px, py, pz = parents[0].current_scene_position
+                    dx, dy = x1 - px, y1 - py
+                    r = -math.atan2(dy, dx) + (math.pi / 2)
+                    # Rotate magnet coordinates according to angle
+                    cos_r = math.cos(r)
+                    sin_r = math.sin(r)
+                    x = x2
+                    y = y2
+                    #if r > 0 and False:
+                    #    x2 = x * cos_r - y * sin_r
+                    #    y2 = x * sin_r + y * cos_r
+                    #else:
+                    x2 = x * cos_r + y * sin_r
+                    y2 = -x * sin_r + y * cos_r
             return x1 + x2, y1 + y2, z1
         else:
             return self.current_scene_position

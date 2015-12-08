@@ -26,7 +26,7 @@ from PyQt5 import QtGui, QtCore
 
 from kataja.globals import *
 
-disable_saving_preferences = False
+disable_saving_preferences = True
 # Alternatives: Cambria Math, Asana Math, XITS Math
 
 curves = ['Linear', 'InQuad', 'OutQuad', 'InOutQuad', 'OutInQuad', 'InCubic', 'OutCubic',
@@ -127,10 +127,14 @@ class Preferences(object):
                                           'this.',
                                   'order': 30}
 
-        self.use_magnets = True
-        self._use_magnets_ui = {'tab': 'Drawing',
-                                'help': 'Branches can either link to "magnets" in node borders or '
-                                        'aim at the center of the node.', 'order': 40}
+        self.use_magnets = 2
+        self._use_magnets_ui = {'tab': 'Drawing', 'choices':
+                                [(0, 'Aim at center of node'),
+                                 (1, 'Magnets at top and bottom'),
+                                 (2, 'Align magnets to parent')],
+                                'help': 'Branches can link to "magnets" in node outlines, '
+                                        'and magnet placement may be affected by parent node',
+                                'order': 40}
 
         self.edge_width = 20  # 20
         self._edge_width_ui = {'tab': 'Drawing', 'range': (0, 60), 'order': 20}

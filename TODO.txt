@@ -67,9 +67,12 @@ ADD:
 
 - Add visualization specific settings to visualization panel
 - Shift-drag to move nodes instead of copying
-- Rotation of node magnets depending on visualization
-- PreferencesDialog
++ Rotation of node magnets depending on visualization
++ PreferencesDialog
+    - Missing some complex settings
 + Automated test for loading and saving
 + New Forest
 - New Treeset
 + Stupid parse for new trees
+- Tee-shaped edge
+- Support for larger UI font
