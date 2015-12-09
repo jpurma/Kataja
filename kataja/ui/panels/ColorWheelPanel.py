@@ -1,6 +1,6 @@
 import math
 
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtWidgets, QtGui, QtCore
 
 from kataja.globals import COLOR_THEME
 from kataja.singletons import ctrl
@@ -28,6 +28,9 @@ class ColorWheelPanel(UIPanel):
         layout = QtWidgets.QVBoxLayout()
         widget = QtWidgets.QWidget(self)
         # color_wheel_layout.setContentsMargins(4, 4, 4, 4)
+        widget.setMinimumHeight(150)
+        widget.setMaximumHeight(220)
+        widget.preferred_size = QtCore.QSize(220, 150)
 
         label_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         button_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.MinimumExpanding)
@@ -79,7 +82,7 @@ class ColorWheelPanel(UIPanel):
         hlayout.addWidget(s_spinner)
         hlayout.addWidget(v_label)
         hlayout.addWidget(v_spinner)
-        layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
+        #layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
         layout.addLayout(hlayout)
         widget.setLayout(layout)
         # Color mapping

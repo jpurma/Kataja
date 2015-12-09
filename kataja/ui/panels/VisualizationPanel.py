@@ -23,6 +23,7 @@ class VisualizationPanel(UIPanel):
         UIPanel.__init__(self, name, key, default_position, parent, ui_manager, folded)
         inner = QtWidgets.QWidget()
         inner.setMinimumHeight(40)
+        inner.setMaximumHeight(50)
         inner.preferred_size = QtCore.QSize(220, 40)
         inner.sizeHint = self.sizeHint
 

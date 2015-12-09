@@ -43,7 +43,6 @@ from kataja.ui.panels.ColorWheelPanel import ColorWheelPanel
 from kataja.ui.panels.StylePanel import TableModelComboBox
 from kataja.ui.panels.LogPanel import LogPanel
 from kataja.ui.panels.NavigationPanel import NavigationPanel
-from kataja.ui.panels.TestPanel import TestPanel
 from kataja.ui.panels.VisualizationPanel import VisualizationPanel
 from kataja.visualizations.available import VISUALIZATIONS, action_key
 from kataja.ui.panels.LineOptionsPanel import LineOptionsPanel
@@ -66,7 +65,6 @@ DRAGGING = 2
 POINTING = 3
 
 PANELS = {g.LOG: {'name': 'Log', 'position': 'bottom'},
-          g.TEST: {'name': 'Test', 'position': 'right'},
           g.NAVIGATION: {'name': 'Trees', 'position': 'right'},
           g.VISUALIZATION: {'name': 'Visualization', 'position': 'right'},
           g.COLOR_THEME: {'name': 'Color theme', 'position': 'right'},
@@ -82,9 +80,9 @@ PANELS = {g.LOG: {'name': 'Log', 'position': 'bottom'},
 
 panel_order = [g.LOG, g.NAVIGATION, g.SYMBOLS, g.NODES, g.STYLE,
                g.VISUALIZATION, g.COLOR_THEME, g.COLOR_WHEEL,
-               g.LINE_OPTIONS, g.VIS_OPTIONS]  # g.TEST
+               g.LINE_OPTIONS, g.VIS_OPTIONS]
 
-panel_classes = {g.LOG: LogPanel, g.TEST: TestPanel,
+panel_classes = {g.LOG: LogPanel,
                  g.NAVIGATION: NavigationPanel,
                  g.VISUALIZATION: VisualizationPanel, g.COLOR_THEME: ColorPanel,
                  g.COLOR_WHEEL: ColorWheelPanel,

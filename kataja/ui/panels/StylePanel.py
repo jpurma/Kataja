@@ -86,9 +86,11 @@ class StylePanel(UIPanel):
         UIPanel.__init__(self, name, key, default_position, parent, ui_manager,
                          folded)
         inner = QtWidgets.QWidget(self)
+        inner.setMinimumHeight(110)
+        inner.setMaximumHeight(150)
+        inner.preferred_size = QtCore.QSize(220, 110)
+
         layout = QtWidgets.QVBoxLayout()
-        layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
-        # layout.setContentsMargins(4, 4, 4, 4)
         self._nodes_in_selection = []
         self._edges_in_selection = []
         self.cached_node_types = set()
@@ -102,24 +104,30 @@ class StylePanel(UIPanel):
         # class.variables
 
         hlayout = QtWidgets.QHBoxLayout()
-        hlayout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
+        #hlayout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
         label = QtWidgets.QLabel('Style for', self)
         hlayout.addWidget(label)
         self.scope_selector = QtWidgets.QComboBox(self)
-        # self.scope_selector.setSizePolicy(QtWidgets.QSizePolicy.Fixed,
-        # QtWidgets.QSizePolicy.Fixed)
-        # self.scope_selector.setMinimumWidth(120)
+        self.scope_selector.setSizePolicy(QtWidgets.QSizePolicy.Fixed,
+        QtWidgets.QSizePolicy.Fixed)
+        self.scope_selector.setMinimumWidth(140)
         ui_manager.connect_element_to_action(self.scope_selector, 'style_scope')
-        hlayout.addWidget(self.scope_selector, 1, QtCore.Qt.AlignLeft)
+        hlayout.addWidget(self.scope_selector)
         layout.addLayout(hlayout)
 
         hlayout = QtWidgets.QHBoxLayout()
-        hlayout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
+        label = QtWidgets.QLabel('Text style', self)
+        hlayout.addWidget(label)
 
         self.font_selector = FontSelector(self)
         ui_manager.connect_element_to_action(self.font_selector,
                                              'font_selector')
         hlayout.addWidget(self.font_selector)
+
+        self.node_color_selector = ColorSelector(self)
+        ui_manager.connect_element_to_action(self.node_color_selector,
+                                             'change_node_color')
+        hlayout.addWidget(self.node_color_selector, 1, QtCore.Qt.AlignLeft)
 
         self.open_font_dialog = PanelButton(qt_prefs.font_icon,
                                             text='Add custom font', parent=self,
@@ -127,15 +135,11 @@ class StylePanel(UIPanel):
         ui_manager.connect_element_to_action(self.open_font_dialog,
                                              'start_font_dialog')
         hlayout.addWidget(self.open_font_dialog, 1, QtCore.Qt.AlignLeft)
-
-        self.node_color_selector = ColorSelector(self)
-        ui_manager.connect_element_to_action(self.node_color_selector,
-                                             'change_node_color')
-        hlayout.addWidget(self.node_color_selector, 1, QtCore.Qt.AlignLeft)
         layout.addLayout(hlayout)
 
         hlayout = QtWidgets.QHBoxLayout()
-        hlayout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
+        label = QtWidgets.QLabel('Line style', self)
+        hlayout.addWidget(label)
 
         self.shape_selector = ShapeSelector(self)
         ui_manager.connect_element_to_action(self.shape_selector,
@@ -276,13 +280,21 @@ class StylePanel(UIPanel):
         """ Redraw scope selector, show only scopes that are used in this
         forest """
         nd = prefs.nodes
-        scope_list = [(key, nd[key]['name_pl']) for key in
-                      prefs.node_types_order]
-        self.scope_selector.clear()
-        if self._nodes_in_selection or self._edges_in_selection:
-            self.scope_selector.addItem('Current selection', g.SELECTION)
-        for key, name in scope_list:
-            self.scope_selector.addItem(name, key)
+        ss = self.scope_selector
+        ss.clear()
+        item = QtGui.QStandardItem('Current selection')
+        item.setData(g.SELECTION, 256)
+        if not (self._nodes_in_selection or self._edges_in_selection):
+            item.setFlags(QtCore.Qt.ItemIsEnabled) #QtCore.Qt.NoItemFlags)
+        items = [item]
+        for key in prefs.node_types_order:
+            name = nd[key]['name_pl']
+            item = QtGui.QStandardItem(name)
+            item.setData(key, 256)
+            items.append(item)
+        model = ss.model()
+        for r, item in enumerate(items):
+            model.setItem(r, item)
 
     def update_fields(self):
         """ Update different fields in the panel to show the correct values

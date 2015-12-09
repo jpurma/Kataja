@@ -563,7 +563,7 @@ def change_style_scope(sender=None):
     :return: None
     """
     if sender:
-        data = sender.currentData()
+        data = sender.currentData(256)
         ctrl.ui.scope = data
         ctrl.call_watchers(sender, 'scope_changed', 'scope', data)
 

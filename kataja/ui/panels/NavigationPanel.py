@@ -19,26 +19,27 @@ class NavigationPanel(UIPanel):
         :param ui_manager: pass a dictionary where buttons from this panel will be added
         """
         UIPanel.__init__(self, name, key, default_position, parent, ui_manager, folded)
-        label_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
-        button_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.MinimumExpanding)
+        #label_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
+        #button_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.MinimumExpanding)
         inner = QtWidgets.QWidget()
-        inner.setMinimumHeight(48)
-        inner.preferred_size = QtCore.QSize(220, 64)
+        inner.setMinimumHeight(96)
+        inner.setMaximumHeight(128)
+        inner.preferred_size = QtCore.QSize(220, 128)
         self.watchlist = ['forest_changed']
         layout = QtWidgets.QGridLayout()
 
         label = QtWidgets.QLabel('Tree set', self)
-        label.setSizePolicy(label_policy)
+        #label.setSizePolicy(label_policy)
         layout.addWidget(label, 0, 0, 1, 1)
 
         treeset_counter = QtWidgets.QLabel('0/0', self)
-        treeset_counter.setSizePolicy(label_policy)
+        #treeset_counter.setSizePolicy(label_policy)
         layout.addWidget(treeset_counter, 0, 1, 1, 1)
         self.treeset_counter = treeset_counter
 
         prev_tree = TwoColorButton(qt_prefs.left_arrow, '', self)
         # prev_tree.setIconSize(QtCore.QSize(24,24))
-        prev_tree.setSizePolicy(button_policy)
+        #prev_tree.setSizePolicy(button_policy)
         prev_tree.setMinimumWidth(72)
         # prev_tree.setMinimumHeight(32)
         layout.addWidget(prev_tree, 1, 0, 1, 1)
@@ -48,7 +49,7 @@ class NavigationPanel(UIPanel):
 
         next_tree = TwoColorButton(qt_prefs.right_arrow, '', self)
         # next_tree.setIconSize(QtCore.QSize(24,24))
-        next_tree.setSizePolicy(button_policy)
+        #next_tree.setSizePolicy(button_policy)
         next_tree.setMinimumWidth(72)
         # next_tree.setMinimumHeight(32)
         layout.addWidget(next_tree, 1, 1, 1, 1)
@@ -57,26 +58,27 @@ class NavigationPanel(UIPanel):
         # next_tree.setDefaultAction(ui_manager.qt_actions['next_forest'])
 
         label = QtWidgets.QLabel('Derivation step', self)
-        label.setSizePolicy(label_policy)
+        #label.setSizePolicy(label_policy)
         layout.addWidget(label, 2, 0, 1, 1)
 
         derivation_counter = QtWidgets.QLabel('0/0', self)
-        derivation_counter.setSizePolicy(label_policy)
+        #derivation_counter.setSizePolicy(label_policy)
         layout.addWidget(derivation_counter, 2, 1, 1, 1)
         self.derivation_counter = derivation_counter
 
         prev_der = TwoColorButton(qt_prefs.left_arrow, '', self)
-        prev_der.setSizePolicy(label_policy)
+        #prev_der.setSizePolicy(label_policy)
         layout.addWidget(prev_der, 3, 0, 1, 1)
         self.prev_der = prev_der
         prev_der.clicked.connect(ui_manager.qt_actions['prev_derivation_step'].triggered)
 
         next_der = TwoColorButton(qt_prefs.right_arrow, '', self)
-        next_der.setSizePolicy(label_policy)
+        #next_der.setSizePolicy(label_policy)
         layout.addWidget(next_der, 3, 1, 1, 1)
         self.next_der = next_der
-        layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
+        #layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
         inner.setLayout(layout)
+        self.preferred_size = inner.preferred_size
         self.setWidget(inner)
         self.widget().setAutoFillBackground(True)
         self.finish_init()

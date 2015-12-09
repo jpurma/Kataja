@@ -62,6 +62,7 @@ become visible
 + Various tree identity problems in complex operations
 - Keyboard movement crashes
     - Crashes on edges
+- Icon for opening additional panels has 'close this panel' for tooltip
 
 ADD:
 
@@ -76,3 +77,9 @@ ADD:
 + Stupid parse for new trees
 - Tee-shaped edge
 - Support for larger UI font
+    + Panels resize properly
+    - Preference option for large UI
+- Dragging a symbol creates a node
+- Dragging text creates a tree
+
+
