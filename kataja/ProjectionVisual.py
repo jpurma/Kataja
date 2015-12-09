@@ -94,7 +94,8 @@ class ProjectionData:
                     new_chain.remove(found)
                     lowest = found
                 else:
-                    raise IndexError('broken projection chain: %s' % self.chain)
+                    print('broken projection chain: %s' % self.chain)
+                    #raise IndexError('broken projection chain: %s' % self.chain)
             self.chain = sorted_chain
         else:
             self.chain = [self.head] + new_chain

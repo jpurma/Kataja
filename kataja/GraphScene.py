@@ -36,6 +36,7 @@ from kataja.ui import TouchArea
 import kataja.globals as g
 
 # from BlenderExporter import export_visible_items
+from ui.panels.SymbolPanel import open_symbol_data
 
 
 class GraphScene(QtWidgets.QGraphicsScene):
@@ -575,7 +576,16 @@ class GraphScene(QtWidgets.QGraphicsScene):
             data = event.mimeData()
             event.accept()
             if data.hasFormat("application/x-qabstractitemmodeldatalist"):
-                event.acceptProposedAction()
+                data = open_symbol_data(event.mimeData())
+                if data and 'char' in data:
+                    event.acceptProposedAction()
+                    node = ctrl.forest.create_node(pos=event.scenePos(),
+                                                   node_type=g.CONSTITUENT_NODE,
+                                                   text=data['char'])
+                    node.current_position = event.scenePos().x(), event.scenePos().y(), node.z
+                    node.lock()
+                    ctrl.main.action_finished('Created constituent "%s"' % node)
+
             elif data.hasFormat("text/plain"):
                 event.acceptProposedAction()
                 command_identifier, *args = data.text().split(':')
@@ -595,7 +605,11 @@ class GraphScene(QtWidgets.QGraphicsScene):
                     else:
                         print('received unknown command:', command, args)
                 else:
-                    print('adding plain text, what to do?')
+                    text = data.text().strip()
+                    node = ctrl.forest.create_node_from_string(text, event.scenePos(),
+                                                               simple_parse=True)
+                    ctrl.main.action_finished('added tree based on "%s"' % text)
+
         ctrl.ui.remove_touch_areas()
 
     def dragMoveEvent(self, event):

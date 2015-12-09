@@ -79,7 +79,8 @@ ADD:
 + Support for larger UI font
     + Panels resize properly
     + Preference option for large UI
-- Dragging a symbol creates a node
-- Dragging text creates a tree
++ Dragging a symbol creates a node
++ Dragging text creates a tree
 + Button for reset to default preferences
+- Copying and pasting nodes and trees
 
