@@ -149,7 +149,7 @@ class CheckBox(QtWidgets.QHBoxLayout):
         :param value:
         :return:
         """
-        setattr(prefs, self.field_name, value)
+        setattr(prefs, self.field_name, bool(value))
         if self.on_change_method:
             self.on_change_method()
 
@@ -275,8 +275,16 @@ class PreferencesDialog(QtWidgets.QDialog):
         QtWidgets.QDialog.__init__(self, parent=None)  # separate window
         self.setWindowTitle('Preferences')
         self.main = main
+        self.left_area = QtWidgets.QWidget()
+        left_layout = QtWidgets.QVBoxLayout()
         self.listwidget = QtWidgets.QListWidget()
         self.listwidget.setMaximumWidth(150)
+        left_layout.addWidget(self.listwidget)
+        self.reset_button = QtWidgets.QPushButton('Reset to defaults')
+        self.reset_button.clicked.connect(ctrl.main.reset_preferences)
+        left_layout.addWidget(self.reset_button)
+        self.left_area.setLayout(left_layout)
+
         self.stackwidget = QtWidgets.QStackedLayout()
         self.pages = {}
 
@@ -288,7 +296,7 @@ class PreferencesDialog(QtWidgets.QDialog):
         self.listwidget.currentRowChanged.connect(self.stackwidget.setCurrentIndex)
         self.listwidget.setCurrentRow(0)
         lo = QtWidgets.QHBoxLayout()
-        lo.addWidget(self.listwidget)
+        lo.addWidget(self.left_area)
         lo.addLayout(self.stackwidget)
         self.setLayout(lo)
         self.fields = {}
@@ -382,7 +390,17 @@ class PreferencesDialog(QtWidgets.QDialog):
                     if help:
                         layout.addRow(HelpLabel(help, self, f))
                 else:
-                    print('couldnt create ui for this: ', key, d)
+                    pass
+                    #print('couldnt create ui for this: ', key, d)
+
+    def trigger_all_updates(self):
+        """ When reseting to defaults, on_change -updaters are not triggered. This method
+        collects all of them and runs them. Good luck!
+        :return:
+        """
+        for method in set(self.triggers.values()):
+            method()
+        self.main.redraw()
 
     def get_page(self, key):
         if key in self.pages:

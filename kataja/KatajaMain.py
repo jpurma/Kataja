@@ -39,7 +39,8 @@ import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
 from kataja.managers.KeyPressManager import KeyPressManager
 
-from kataja.singletons import ctrl, prefs, qt_prefs, running_environment
+from kataja.singletons import ctrl, prefs, qt_prefs, running_environment, \
+    restore_default_preferences
 from kataja.Forest import Forest
 from kataja.ForestKeeper import ForestKeeper
 from kataja.GraphScene import GraphScene
@@ -52,6 +53,7 @@ import kataja.globals as g
 from kataja.utils import time_me, import_plugins
 from kataja.visualizations.available import VISUALIZATIONS
 from kataja.BaseModel import BaseModel, Saved
+from kataja.ui.PreferencesDialog import PreferencesDialog
 
 # only for debugging (Apple-m, memory check), can be commented
 # try:
@@ -94,7 +96,7 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         self.color_manager = PaletteManager()
         print('---- Initialized color manager ... ', time.time() - t)
         ctrl.late_init(self)
-        prefs.import_node_classes(ctrl)
+        prefs.import_node_classes(ctrl.node_classes)
         print('---- controller late init ... ', time.time() - t)
 
         prefs.load_preferences()
@@ -140,6 +142,18 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         # self.addToolBar(toolbar)
         self.action_finished()
         print('---- finished start sequence... ', time.time() - t)
+
+    def reset_preferences(self):
+        """
+
+        :return:
+        """
+        restore_default_preferences(node_classes=ctrl.node_classes)
+        if self.ui_manager.preferences_dialog:
+            self.ui_manager.preferences_dialog.close()
+        self.ui_manager.preferences_dialog = PreferencesDialog(self)
+        self.ui_manager.preferences_dialog.open()
+        self.ui_manager.preferences_dialog.trigger_all_updates()
 
     def load_treeset(self, filename=''):
         """ Loads and initializes a new set of trees. Has to be done before

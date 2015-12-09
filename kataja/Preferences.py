@@ -26,7 +26,7 @@ from PyQt5 import QtGui, QtCore
 
 from kataja.globals import *
 
-disable_saving_preferences = True
+disable_saving_preferences = False
 # Alternatives: Cambria Math, Asana Math, XITS Math
 
 curves = ['Linear', 'InQuad', 'OutQuad', 'InOutQuad', 'OutInQuad', 'InCubic', 'OutCubic',
@@ -250,8 +250,8 @@ class Preferences(object):
 
         self.custom_colors = {}
 
-    def import_node_classes(self, ctrl):
-        for key, nodeclass in ctrl.node_classes.items():
+    def import_node_classes(self, node_classes):
+        for key, nodeclass in node_classes.items():
             nd = nodeclass.default_style.copy()
             nd['name'] = nodeclass.name[0]
             nd['name_pl'] = nodeclass.name[1]
@@ -284,7 +284,11 @@ class Preferences(object):
                                          'hsv': hsv}
         color_settings.update_color_modes()
 
-
+    def copy_preferences_from(self, source):
+        for key, default_value in vars(self).items():
+            if key.startswith('_') or key in Preferences.not_saved:
+                continue
+            setattr(self, key, getattr(source, key))
 
     # ##### Save & Load ########################################
 

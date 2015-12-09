@@ -81,5 +81,5 @@ ADD:
     + Preference option for large UI
 - Dragging a symbol creates a node
 - Dragging text creates a tree
-- Button for reset to default preferences
++ Button for reset to default preferences
 
