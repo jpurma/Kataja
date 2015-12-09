@@ -34,3 +34,7 @@ class LogPanel(UIPanel):
     def sizeHint(self):
         #print("LogPanel asking for sizeHint, ", self.preferred_size)
         return self.preferred_size
+
+    def update(self, *args):
+        self.widget().setFont(qt_prefs.font(g.CONSOLE_FONT))
+        super().update(*args)

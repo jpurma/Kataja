@@ -76,10 +76,10 @@ ADD:
 - New Treeset
 + Stupid parse for new trees
 - Tee-shaped edge
-- Support for larger UI font
++ Support for larger UI font
     + Panels resize properly
-    - Preference option for large UI
+    + Preference option for large UI
 - Dragging a symbol creates a node
 - Dragging text creates a tree
-
+- Button for reset to default preferences
 

@@ -25,6 +25,7 @@
 from PyQt5 import QtCore, QtWidgets
 
 from kataja.singletons import prefs, qt_prefs, ctrl
+import kataja.globals as g
 from kataja.managers.PaletteManager import color_modes
 from kataja.visualizations.available import VISUALIZATIONS
 
@@ -291,6 +292,7 @@ class PreferencesDialog(QtWidgets.QDialog):
         lo.addLayout(self.stackwidget)
         self.setLayout(lo)
         self.fields = {}
+        self.triggers = {}
 
         paged = {}
         for key, value in vars(prefs).items():
@@ -370,7 +372,9 @@ class PreferencesDialog(QtWidgets.QDialog):
                     on_change = d.get('on_change', None)
                     if isinstance(on_change, str):
                         on_change = getattr(self, on_change)
-                    if not on_change:
+                    if on_change:
+                        self.triggers[key] = on_change
+                    else:
                         on_change = self.main.redraw
                     f.set_on_change_method(on_change)
                     layout.addRow(label, f)
@@ -406,6 +410,12 @@ class PreferencesDialog(QtWidgets.QDialog):
     def update_visualization(self):
         ctrl.forest.set_visualization(prefs.visualization, force=True)
         self.main.redraw()
+
+    def resize_ui_font(self):
+        qt_prefs.toggle_large_ui_font(prefs.large_ui_text, prefs.fonts)
+        ctrl.main.app.setFont(qt_prefs.font(g.UI_FONT))
+        ctrl.ui.redraw_panels()
+        self.update()
 
     def update_pens(self):
         """

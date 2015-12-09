@@ -507,6 +507,10 @@ class UIManager:
         """
         return self._panels.get(panel_id, None)
 
+    def redraw_panels(self):
+        for panel in self._panels.values():
+            panel.update()
+
     def create_panels(self):
         """ Put actions to panels. Panel contents are defined at the top of
         this file.

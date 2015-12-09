@@ -106,6 +106,12 @@ class Preferences(object):
         self.fonts = running_environment.fonts
         self._fonts_ui = {'tab': 'General', 'special': 'fonts'}
 
+        self.large_ui_text = False
+        self._large_ui_text_ui = {'tab': 'General',
+                                  'label': 'Big UI',
+                                  'help': 'Force user interface to use at least 14pt font.',
+                                  'on_change': 'resize_ui_font', 'order': 40}
+
         self.visualization = 'Left first trees'
         self._visualization_ui = {'tab': 'Drawing', 'special': 'visualizations',
                                   'help': 'Default visualization for new trees.',
@@ -278,6 +284,8 @@ class Preferences(object):
                                          'hsv': hsv}
         color_settings.update_color_modes()
 
+
+
     # ##### Save & Load ########################################
 
     def save_preferences(self):
@@ -407,6 +415,7 @@ class QtPreferences:
         self.fontdb = fontdb
         self.prepare_fonts(preferences.fonts, running_environment)
         self.prepare_easing_curve(preferences.curve, preferences.move_frames)
+        self.toggle_large_ui_font(preferences.large_ui_text, preferences.fonts)
         self.no_pen = QtGui.QPen()
         self.no_pen.setStyle(QtCore.Qt.NoPen)
         self.no_brush = QtGui.QBrush()
@@ -435,8 +444,10 @@ class QtPreferences:
 
         :param preferences:
         """
-        self.prepare_fonts(preferences.fonts, preferences, running_environment)
+        self.prepare_fonts(preferences.fonts, running_environment)
         self.prepare_easing_curve(preferences.curve, preferences.move_frames)
+        self.toggle_large_ui_font(preferences.large_ui_text, preferences.fonts)
+
 
     def prepare_easing_curve(self, curve_type, frames):
         """
@@ -502,6 +513,17 @@ class QtPreferences:
         # self.font_bracket_height)
         self.fonts[SMALL_CAPS].setCapitalization(QtGui.QFont.SmallCaps)
 
+    def toggle_large_ui_font(self, enabled, fonts_dict):
+        ui_font = self.fonts[UI_FONT]
+        console_font = self.fonts[CONSOLE_FONT]
+        if enabled:
+            if ui_font.pointSize() < 14:
+                ui_font.setPointSize(14)
+            if console_font.pointSize() < 14:
+                console_font.setPointSize(14)
+        else:
+            ui_font.setPointSize(fonts_dict[UI_FONT][2])
+            console_font.setPointSize(fonts_dict[CONSOLE_FONT][2])
     ### Font helper ###
 
     def font(self, name):
