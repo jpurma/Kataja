@@ -42,7 +42,7 @@ become visible
 + LeftFirstHexTree sometimes draws very long branches
     + Refactored LeftFirstHexTree to SpirallingTree
     - Branch start points are ugly for many visualisations
-- Scope selection box in drawing styles is too narrow
++ Scope selection box in drawing styles is too narrow
 - Line shape selector doesn't update when changing forests.
 - Second fat edge shape is missing icon
 + Loading fails
@@ -63,6 +63,9 @@ become visible
 - Keyboard movement crashes
     - Crashes on edges
 - Icon for opening additional panels has 'close this panel' for tooltip
+- New node edit box doesn't stretch for longer texts
++ New node edit box assumes attempt to draw arrow if scale is small or changed enough when the
+edit box is open (two end points move).
 
 ADD:
 

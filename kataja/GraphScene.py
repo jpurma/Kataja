@@ -36,7 +36,7 @@ from kataja.ui import TouchArea
 import kataja.globals as g
 
 # from BlenderExporter import export_visible_items
-from ui.panels.SymbolPanel import open_symbol_data
+from kataja.ui.panels.SymbolPanel import open_symbol_data
 
 
 class GraphScene(QtWidgets.QGraphicsScene):

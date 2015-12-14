@@ -329,6 +329,28 @@ def close_all_windows():
 a['quit'] = {'command': '&Quit', 'method': close_all_windows,
              'shortcut': 'Ctrl+q'}
 
+# ### Edit
+
+
+def cut_method():
+    print('Cut called')
+
+a['cut'] = {'command': 'Cut', 'method': cut_method, 'shortcut': 'Ctrl+x',
+            'tooltip': 'Cut element'}
+
+
+def copy_method():
+    print('Copy called')
+
+a['copy'] = {'command': 'Copy', 'method': copy_method, 'shortcut': 'Ctrl+c',
+             'tooltip': 'Copy element'}
+
+
+def paste_method():
+    print('Paste called')
+
+a['paste'] = {'command': 'Paste', 'method': paste_method, 'shortcut': 'Ctrl+v',
+              'tooltip': 'Paste element'}
 
 # ### Build ######
 
@@ -1053,18 +1075,13 @@ def new_element_accept(sender=None):
     p1, p2 = embed.get_marker_points()
     text = embed.input_line_edit.text()
     ctrl.focus_point = p2
-
-    if node_type == g.GUESS_FROM_INPUT:
-        # we can add a test if line p1 - p2 crosses several edges, then it
-        # can be a divider
-        # Fixme Use screen coordinates instead, as if zoomed out, the default
-        #  line can already be long enough. oops.
-        if (p1 - p2).manhattanLength() > 20 and not text.startswith('['):
-            # It's an Arrow!
-            create_new_arrow(sender)
-            return
-        else:
-            node = ctrl.forest.create_node_from_string(text, p2, simple_parse=True)
+    node = None
+    if node_type == g.ARROW:
+        create_new_arrow(sender)
+    elif node_type == g.DIVIDER:
+        create_new_divider(sender)
+    elif node_type == g.GUESS_FROM_INPUT:
+        node = ctrl.forest.create_node_from_string(text, p2, simple_parse=True)
     else:
         node = ctrl.forest.create_node(synobj=None, pos=p2, node_type=node_type, text=text)
     if node:
@@ -1085,7 +1102,7 @@ def create_new_arrow(sender=None):
     embed = get_ui_container(sender)
     p1, p2 = embed.get_marker_points()
     text = embed.input_line_edit.text()
-    ctrl.forest.create_arrow(p1, p2, text)
+    ctrl.forest.create_arrow(p2, p1, text)
     embed.blur_away()
 
 

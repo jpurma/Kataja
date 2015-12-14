@@ -5,6 +5,7 @@ from kataja.ui.drawn_icons import arrow, divider
 from kataja.singletons import qt_prefs, ctrl, prefs
 import kataja.globals as g
 from kataja.ui.panels.field_utils import icon_text_button, EmbeddedLineEdit, box_row
+from kataja.shapes import draw_arrow_shape_from_points
 
 __author__ = 'purma'
 
@@ -36,7 +37,10 @@ class MarkerStartPoint(QtWidgets.QGraphicsItem):
             return QtCore.QRectF(-2, -2, 4, 4)
 
     def drag(self, event):
-        self.parentItem().update_position(event.scenePos())
+        pi = self.parentItem()
+        if pi:
+            pi.set_dragged(True)
+            pi.update_position(event.scenePos())
 
     def drop_to(self, x, y, recipient=None):
         pass
@@ -64,16 +68,27 @@ class NewElementMarker(QtWidgets.QGraphicsItem):
         self.start_point_cp.show()
         self.draggable = False  # MarkerStartPoint is draggable, not this
         self.clickable = False
+        self.dragged = False
 
     def paint(self, painter, options, QWidget_widget=None):
         p = QtGui.QPen(ctrl.cm.ui())
         p.setWidthF(0.5)
         painter.setPen(p)
-        painter.drawLine(QtCore.QPoint(0, 0), self.end_point)
+        if self.dragged:
+            draw_arrow_shape_from_points(painter, self.end_point.x(), self.end_point.y(), 0, 0, 6)
+        else:
+            painter.drawLine(QtCore.QPoint(0, 0), self.end_point)
         painter.drawRect(self.end_point.x() - 2, self.end_point.y() - 2, 4, 4)
 
     def boundingRect(self):
         return QtCore.QRectF(self.start_point, self.end_point)
+
+    def set_dragged(self, value):
+        if self.dragged and value:
+            return
+        elif value:
+            self.embed.set_node_type(g.ARROW)
+            self.dragged = True
 
     def update_position(self, scenePos=None):
         self.prepareGeometryChange()
@@ -109,6 +124,8 @@ class NewElementEmbed(UIEmbed):
                                                size=QtCore.QSize(48, 20), draw_method=divider)
         self.new_arrow_button.setFlat(False)
         self.divider_button.setFlat(False)
+        self.new_arrow_button.hide()
+        self.divider_button.hide()
         tt = 'Text for new node'
         f = QtGui.QFont(qt_prefs.font(g.MAIN_FONT))
         f.setPointSize(f.pointSize() * 2)
@@ -120,11 +137,14 @@ class NewElementEmbed(UIEmbed):
         node_types = [('Guess from input', g.GUESS_FROM_INPUT)]
         for key in prefs.node_types_order:
             # we have dedicated buttons for arrows and dividers
-            if key not in (g.ARROW, g.DIVIDER):
-                nd = prefs.nodes[key]
-                node_types.append(('New %s' % nd['name'].lower(), key))
-        for name, value in node_types:
-            self.node_type_selector.addItem(name, userData=value)
+            #if key not in (g.ARROW, g.DIVIDER):
+            nd = prefs.nodes[key]
+            node_types.append(('New %s' % nd['name'].lower(), key))
+        node_types.append(('New arrow', g.ARROW))
+        node_types.append(('New divider', g.DIVIDER))
+        for i, (name, value) in enumerate(node_types):
+            self.node_type_selector.addItem(name)
+            self.node_type_selector.setItemData(i, value, 256)
             # 'name' can be translated if necessary
         hlayout.addWidget(self.node_type_selector)
         self.enter_button = QtWidgets.QPushButton("Create ↩")  # U+21A9 &#8617;
@@ -140,6 +160,7 @@ class NewElementEmbed(UIEmbed):
         self.move(self.mapToParent(event.pos()) - self._drag_diff)
         if self.marker:
             self.marker.update_position()
+            self.marker.set_dragged(True)
         QtWidgets.QWidget.mouseMoveEvent(self, event)
 
     def focus_to_main(self):
@@ -158,6 +179,10 @@ class NewElementEmbed(UIEmbed):
         p1 = self.marker.pos()
         p2 = self.marker.mapToScene(self.marker.end_point)
         return p1, p2
+
+    def set_node_type(self, value):
+        print(self.node_type_selector.findData(value, role=256))
+        self.node_type_selector.setCurrentIndex(self.node_type_selector.findData(value, role=256))
 
 # line = new QFrame(w);
 # line->setObjectName(QString::fromUtf8("line"));

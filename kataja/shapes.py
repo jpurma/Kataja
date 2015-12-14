@@ -1,5 +1,5 @@
 from collections import OrderedDict
-from math import sin, cos, pi, acos
+from math import sin, cos, pi, acos, sqrt
 
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import QPointF as Pf
@@ -69,6 +69,29 @@ def draw_arrow_shape(self, painter):
                      (cos(angle - pi + pi / 3) * self._arrow_size) + l2y)
     l2c = Pf(l.dx() * prop + l2x, l.dy() * prop + l2y)
     painter.drawPolygon(QtGui.QPolygonF([l2, destArrowP1, l2c, destArrowP2]))
+
+
+def draw_arrow_shape_from_points(painter, start_x, start_y, end_x, end_y, arrow_size=6):
+    painter.drawLine(start_x, start_y, end_x, end_y)
+    dx = end_x - start_x
+    dy = end_y - start_y
+    length = sqrt(dx * dx + dy * dy)
+    back = arrow_size / -2
+    # Draw the arrows if there's enough room.
+    if length + back > 0:
+        angle = acos(dx / length)
+    else:
+        return
+    prop = back / length
+    if dy >= 0:
+        angle = pipi - angle
+    destArrowP1 = Pf((sin(angle - pi / 3) * arrow_size) + end_x,
+                     (cos(angle - pi / 3) * arrow_size) + end_y)
+    destArrowP2 = Pf((sin(angle - pi + pi / 3) * arrow_size) + end_x,
+                     (cos(angle - pi + pi / 3) * arrow_size) + end_y)
+    l2c = Pf(dx * prop + end_x, dy * prop + end_y)
+    painter.drawPolygon(QtGui.QPolygonF([Pf(end_x, end_y), destArrowP1, l2c, destArrowP2]))
+
 
 
 def arrow_shape_bounding_rect(self):
