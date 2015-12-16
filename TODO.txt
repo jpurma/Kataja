@@ -66,6 +66,7 @@ become visible
 - New node edit box doesn't stretch for longer texts
 + New node edit box assumes attempt to draw arrow if scale is small or changed enough when the
 edit box is open (two end points move).
++ Embeds get focus on creation but lose it immediately.
 
 ADD:
 

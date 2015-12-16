@@ -164,7 +164,7 @@ class NewElementEmbed(UIEmbed):
         QtWidgets.QWidget.mouseMoveEvent(self, event)
 
     def focus_to_main(self):
-        self.input_line_edit.setFocus()
+        self.input_line_edit.setFocus(QtCore.Qt.PopupFocusReason)
 
     def close(self):
         self.input_line_edit.setText('')
@@ -181,7 +181,6 @@ class NewElementEmbed(UIEmbed):
         return p1, p2
 
     def set_node_type(self, value):
-        print(self.node_type_selector.findData(value, role=256))
         self.node_type_selector.setCurrentIndex(self.node_type_selector.findData(value, role=256))
 
 # line = new QFrame(w);
