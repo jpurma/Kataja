@@ -4,7 +4,8 @@ from kataja.ui.embeds.UIEmbed import UIEmbed
 from kataja.ui.drawn_icons import arrow, divider
 from kataja.singletons import qt_prefs, ctrl, prefs
 import kataja.globals as g
-from kataja.ui.panels.field_utils import icon_text_button, EmbeddedLineEdit, box_row
+from kataja.ui.panels.field_utils import icon_text_button, EmbeddedLineEdit, box_row, \
+    ExpandingLineEdit
 from kataja.shapes import draw_arrow_shape_from_points
 
 __author__ = 'purma'
@@ -75,7 +76,7 @@ class NewElementMarker(QtWidgets.QGraphicsItem):
         p.setWidthF(0.5)
         painter.setPen(p)
         if self.dragged:
-            draw_arrow_shape_from_points(painter, self.end_point.x(), self.end_point.y(), 0, 0, 6)
+            draw_arrow_shape_from_points(painter, self.end_point.x(), self.end_point.y(), 0, 0, 10)
         else:
             painter.drawLine(QtCore.QPoint(0, 0), self.end_point)
         painter.drawRect(self.end_point.x() - 2, self.end_point.y() - 2, 4, 4)
@@ -87,13 +88,13 @@ class NewElementMarker(QtWidgets.QGraphicsItem):
         if self.dragged and value:
             return
         elif value:
-            self.embed.set_node_type(g.ARROW)
             self.dragged = True
+            self.embed.marker_dragged()
 
-    def update_position(self, scenePos=None):
+    def update_position(self, scene_pos=None):
         self.prepareGeometryChange()
-        if scenePos:
-            self.start_point = scenePos
+        if scene_pos:
+            self.start_point = scene_pos
         magnet, type = self.embed.magnet()
         end_pos = self.embed.pos() + magnet
         if type in [6, 8]:
@@ -111,10 +112,9 @@ class NewElementEmbed(UIEmbed):
     def __init__(self, parent, ui_manager, ui_key):
         UIEmbed.__init__(self, parent, ui_manager, ui_key, None, 'Create new node')
         self.marker = None
+        self.manual_node_change = False
         layout = QtWidgets.QVBoxLayout()
-        #outer_layout.setContentsMargins(0, 0, 0, 0)
         layout.addLayout(self.top_row_layout)
-        #inner_layout.setContentsMargins(6, 0, 6, 6)
         hlayout = box_row(layout)
         self.new_arrow_button = icon_text_button(ui_manager, hlayout, self, '', '',
                                                  " &Arrow", 'new_arrow', size=QtCore.QSize(48, 20),
@@ -127,12 +127,18 @@ class NewElementEmbed(UIEmbed):
         self.new_arrow_button.hide()
         self.divider_button.hide()
         tt = 'Text for new node'
-        f = QtGui.QFont(qt_prefs.font(g.MAIN_FONT))
-        f.setPointSize(f.pointSize() * 2)
-        self.input_line_edit = EmbeddedLineEdit(self, tip=tt, font=f, prefill='label')
+        smaller_font = qt_prefs.font(g.MAIN_FONT)
+        big_font = QtGui.QFont(smaller_font)
+        big_font.setPointSize(big_font.pointSize() * 2)
+        self.input_line_edit = ExpandingLineEdit(self,
+                                                 tip=tt,
+                                                 big_font=big_font,
+                                                 smaller_font=smaller_font,
+                                                 prefill='label')
         layout.addWidget(self.input_line_edit)
         hlayout = QtWidgets.QHBoxLayout()
         self.node_type_selector = QtWidgets.QComboBox(self)
+        self.node_type_selector.currentIndexChanged.connect(self.changed_node_type)
 
         node_types = [('Guess from input', g.GUESS_FROM_INPUT)]
         for key in prefs.node_types_order:
@@ -163,11 +169,22 @@ class NewElementEmbed(UIEmbed):
             self.marker.set_dragged(True)
         QtWidgets.QWidget.mouseMoveEvent(self, event)
 
+    def changed_node_type(self, *args):
+        print('toggle toggle')
+        self.manual_node_change = True
+
     def focus_to_main(self):
         self.input_line_edit.setFocus(QtCore.Qt.PopupFocusReason)
 
+    def marker_dragged(self):
+        if not self.manual_node_change:
+            self.embed.set_node_type(g.ARROW)
+
+    def update_size(self):
+        self.setMinimumSize(self.layout().minimumSize())
+
     def close(self):
-        self.input_line_edit.setText('')
+        self.input_line_edit.reset()
         UIEmbed.close(self)
 
     def finished_effect_animation(self):
@@ -183,8 +200,3 @@ class NewElementEmbed(UIEmbed):
     def set_node_type(self, value):
         self.node_type_selector.setCurrentIndex(self.node_type_selector.findData(value, role=256))
 
-# line = new QFrame(w);
-# line->setObjectName(QString::fromUtf8("line"));
-# line->setGeometry(QRect(320, 150, 118, 3));
-# line->setFrameShape(QFrame::HLine);
-# line->setFrameShadow(QFrame::Sunken);

@@ -63,11 +63,16 @@ become visible
 - Keyboard movement crashes
     - Crashes on edges
 - Icon for opening additional panels has 'close this panel' for tooltip
-- New node edit box doesn't stretch for longer texts
++ New node edit box doesn't stretch for longer texts
 + New node edit box assumes attempt to draw arrow if scale is small or changed enough when the
 edit box is open (two end points move).
 + Embeds get focus on creation but lose it immediately.
-
+- Clicking top nodes is often impossible as toucharea hitboxes cover the node.
+- Very long node labels break visualizations:
+    - SpirallingTree, maximum recursion depth
+    - LeftFirstTree, setting trees side by side
+- Creating comment with NewElementEmbed leaves the comment text empty
+    - NotImplementedError: QGraphicsObject.paint() is abstract and must be overridden
 ADD:
 
 - Add visualization specific settings to visualization panel
@@ -87,4 +92,5 @@ ADD:
 + Dragging text creates a tree
 + Button for reset to default preferences
 - Copying and pasting nodes and trees
+- Button to remove adjustments for node
 
