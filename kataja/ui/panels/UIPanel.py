@@ -106,6 +106,7 @@ class UIPanel(QtWidgets.QDockWidget):
         self.ui_key = key
         self._watched = False
         self._last_position = None
+        self.resize_grip = None
         self.watchlist = []
         self.ui_manager = ui_manager
         self.default_position = default_position
@@ -180,6 +181,7 @@ class UIPanel(QtWidgets.QDockWidget):
         :param area:
         """
 
+
     def report_top_level(self, floating):
         """
 
@@ -189,8 +191,12 @@ class UIPanel(QtWidgets.QDockWidget):
             if hasattr(self, 'preferred_size'):
                 self.resize(self.preferred_size)
             self.titleBarWidget().pin_button.show()
+            if self.resize_grip:
+                self.resize_grip.show()
         else:
             self.titleBarWidget().pin_button.hide()
+            if self.resize_grip:
+                self.resize_grip.hide()
 
     def update_field(self, field_key, field, value):
         """

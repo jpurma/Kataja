@@ -4,6 +4,7 @@ import kataja.globals as g
 from kataja.parser.latex_to_unicode import latex_to_unicode
 from kataja.singletons import qt_prefs, ctrl
 from kataja.ui.panels.UIPanel import UIPanel
+from kataja.ui.panels.field_utils import box_row
 
 __author__ = 'purma'
 
@@ -89,24 +90,6 @@ more_arrows = ['Angle', 'DownArrowBar', 'DownArrowUpArrow', 'DownLeftRightVector
                'upslopeellipsis', 'urcorner', 'vdash']
 
 
-def open_symbol_data(mimedata):
-    # strange fuckery required
-    ba = mimedata.data("application/x-qabstractitemmodeldatalist")
-    ds = QtCore.QDataStream(ba)
-    data = {}
-    while not ds.atEnd():
-        row = ds.readInt32()
-        column = ds.readInt32()
-        map_items = ds.readInt32()
-        for i in range(map_items):
-            key = ds.readInt32()
-            value = QtCore.QVariant()
-            ds >> value
-            data[key] = value.value()
-    if 55 in data:
-        return data[55]
-
-
 class SymbolPanel(UIPanel):
     """
         Panel for rapid testing of various UI elements that otherwise may be hidden behind
@@ -124,9 +107,9 @@ class SymbolPanel(UIPanel):
         """
         UIPanel.__init__(self, name, key, default_position, parent, ui_manager, folded)
         inner = QtWidgets.QWidget()
-        inner.setMinimumHeight(130)
-        inner.setMaximumHeight(220)
         inner.preferred_size = QtCore.QSize(220, 130)
+        inner.setMinimumSize(160, 130)
+        inner.setMaximumSize(220, 400)
 
         layout = QtWidgets.QVBoxLayout()
         self.selector = QtWidgets.QComboBox()
@@ -136,8 +119,6 @@ class SymbolPanel(UIPanel):
         self.selector.setFocusPolicy(QtCore.Qt.TabFocus)
         layout.addWidget(self.selector)
         self.symlist = QtWidgets.QListWidget()
-        self.symlist.setMinimumWidth(160)
-        self.symlist.setMaximumWidth(220)
         self.symlist.setSizePolicy(QtWidgets.QSizePolicy.Expanding,
          QtWidgets.QSizePolicy.Expanding)
         self.symlist.setSpacing(8)
@@ -150,8 +131,12 @@ class SymbolPanel(UIPanel):
         self.symlist.itemEntered.connect(self.item_entered)
         self.symlist.itemClicked.connect(self.item_clicked)
         layout.addWidget(self.symlist)
+        hlayout = box_row(layout)
         self.info = QtWidgets.QLabel('')
-        layout.addWidget(self.info)
+        hlayout.addWidget(self.info)
+        self.resize_grip = QtWidgets.QSizeGrip(self)
+        self.resize_grip.hide()
+        hlayout.addWidget(self.resize_grip, 0, QtCore.Qt.AlignRight)
         inner.setLayout(layout)
         self.tables = {}
         keys = list(latex_to_unicode.keys())
@@ -169,7 +154,6 @@ class SymbolPanel(UIPanel):
 
         self.prepare_symbols('common')
         self.setWidget(inner)
-        print(self.symlist.minimumWidth(), self.symlist.sizeHint(), self.symlist.size())
         self.finish_init()
 
     def prepare_symbols(self, key):

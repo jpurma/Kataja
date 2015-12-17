@@ -31,7 +31,7 @@ import sys
 import time
 import traceback
 
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 
 from PyQt5.QtCore import QPointF, QPoint
 from kataja.debug import DEBUG_TIME_ME
@@ -461,13 +461,19 @@ def tuple2_to_tuple3(a):
     return a[0], a[1], 0
 
 
-
-
-
-
-
-
-
-
-
-
+def open_symbol_data(mimedata):
+    # strange fuckery required
+    ba = mimedata.data("application/x-qabstractitemmodeldatalist")
+    ds = QtCore.QDataStream(ba)
+    data = {}
+    while not ds.atEnd():
+        row = ds.readInt32()
+        column = ds.readInt32()
+        map_items = ds.readInt32()
+        for i in range(map_items):
+            key = ds.readInt32()
+            value = QtCore.QVariant()
+            ds >> value
+            data[key] = value.value()
+    if 55 in data:
+        return data[55]

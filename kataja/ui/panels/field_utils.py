@@ -4,9 +4,8 @@ from PyQt5.QtCore import QSize
 from kataja.ui.ColorSwatchIconEngine import ColorSwatchIconEngine
 import kataja.globals as g
 from kataja.singletons import ctrl, qt_prefs
-from kataja.utils import time_me
+from kataja.utils import time_me, open_symbol_data
 from kataja.ui.OverlayButton import OverlayButton
-from kataja.ui.panels.SymbolPanel import open_symbol_data
 
 __author__ = 'purma'
 

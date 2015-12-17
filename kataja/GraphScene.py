@@ -31,13 +31,11 @@ import PyQt5.QtWidgets as QtWidgets
 from kataja.Edge import Edge
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.nodes.Node import Node
-from kataja.utils import to_tuple, sub_xyz, div_xyz, time_me
+from kataja.utils import to_tuple, sub_xyz, div_xyz, time_me, open_symbol_data
 from kataja.ui import TouchArea
 import kataja.globals as g
 
 # from BlenderExporter import export_visible_items
-from kataja.ui.panels.SymbolPanel import open_symbol_data
-
 
 class GraphScene(QtWidgets.QGraphicsScene):
     """

@@ -93,4 +93,5 @@ ADD:
 + Button for reset to default preferences
 - Copying and pasting nodes and trees
 - Button to remove adjustments for node
++ Symbol table can be resized when floating
 
