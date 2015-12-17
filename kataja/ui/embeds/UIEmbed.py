@@ -21,7 +21,6 @@ class UIEmbed(QtWidgets.QWidget):
 
     :param parent:
     :param ui_manager:
-    :param scenePos:
     """
 
     def __init__(self, parent, ui_manager, ui_key, host, text):

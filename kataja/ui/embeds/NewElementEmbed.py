@@ -54,17 +54,17 @@ class NewElementMarker(QtWidgets.QGraphicsItem):
 
     :param parent:
     :param ui_manager:
-    :param scenePos:
+    :param scene_pos:
     """
 
-    def __init__(self, scenePos, embed, ui_key):
+    def __init__(self, scene_pos, embed, ui_key):
         QtWidgets.QGraphicsItem.__init__(self)
         self.ui_key = ui_key
         self.host = None
         self.start_point = None
         self.end_point = None
         self.embed = embed
-        self.update_position(scenePos=scenePos)
+        self.update_position(scene_pos=scene_pos)
         self.start_point_cp = MarkerStartPoint(self)
         self.start_point_cp.show()
         self.draggable = False  # MarkerStartPoint is draggable, not this

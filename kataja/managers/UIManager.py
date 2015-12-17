@@ -678,10 +678,10 @@ class UIManager:
     # ### Creation dialog
     # #########################################################
 
-    def create_creation_dialog(self, scenePos):
+    def create_creation_dialog(self, scene_pos):
         """
 
-        :param scenePos:
+        :param scene_pos:
         """
         embed = self.get_ui(NEW_ELEMENT_EMBED)
         marker = self.get_ui(NEW_ELEMENT_MARKER)
@@ -690,11 +690,11 @@ class UIManager:
                                     NEW_ELEMENT_EMBED)
             self.add_ui(embed)
         if not marker:
-            marker = NewElementMarker(scenePos, embed, NEW_ELEMENT_MARKER)
+            marker = NewElementMarker(scene_pos, embed, NEW_ELEMENT_MARKER)
             self.add_ui(marker)
         embed.marker = marker
-        embed.update_embed(focus_point=scenePos)
-        marker.update_position(scenePos=scenePos)
+        embed.update_embed(focus_point=scene_pos)
+        marker.update_position(scene_pos=scene_pos)
         embed.wake_up()
 
     def clean_up_creation_dialog(self):
