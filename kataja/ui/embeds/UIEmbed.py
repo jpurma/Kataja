@@ -40,7 +40,8 @@ class UIEmbed(QtWidgets.QWidget):
         self.top_row_layout.addWidget(close_button)
         self.top_row_layout.setAlignment(QtCore.Qt.AlignLeft)
         self.top_row_layout.addSpacing(8)
-        self.top_row_layout.addWidget(QtWidgets.QLabel(text))
+        self.top_title = QtWidgets.QLabel(text)
+        self.top_row_layout.addWidget(self.top_title)
         self.assumed_width = 200
         self.assumed_height = 100
         self._magnet = QtCore.QPoint(0, 0), 1

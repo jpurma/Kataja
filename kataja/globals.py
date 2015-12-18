@@ -25,6 +25,10 @@ GLOSS_NODE = 3
 PROPERTY_NODE = 5
 COMMENT_NODE = 4
 
+# Special node types used in parsing
+TREE = 100
+GUESS_FROM_INPUT = 99
+
 # Touch area types
 LEFT_ADD_TOP = 0
 RIGHT_ADD_TOP = 1
@@ -45,12 +49,6 @@ REMOVE_TRIANGLE = 12
 
 EDGE_SHAPES_CHANGED = 101
 # EDGE_SHAPES_CHANGED = QtCore.pyqtSignal(int, int)
-
-GUESS_FROM_INPUT = 'guess from input'
-ADD_CONSTITUENT = 'Constituent'
-ADD_FEATURE = 'Feature'
-ADD_GLOSS = 'Gloss'
-ADD_COMMENT = 'Comment'
 
 # EDGE_SHAPES_CHANGED = QtCore.QEvent.registerEventType()
 # print 'EDGE_SHAPES_CHANGED: ', EDGE_SHAPES_CHANGED

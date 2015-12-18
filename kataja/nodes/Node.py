@@ -118,6 +118,7 @@ class Node(Movable):
         self.width = 0
         self.height = 0
         self.inner_rect = None
+        self.anim = None
 
         self.edges_up = []
         self.edges_down = []
@@ -1518,7 +1519,8 @@ syntactic_object: %s
                     node.finish_dragging()
             ctrl.dragged_set = set()
             ctrl.dragged_focus = None
-        self.setZValue(self.drag_data.old_zvalue)
+        if self.drag_data:
+            self.setZValue(self.drag_data.old_zvalue)
         self.drag_data = None
         self.anim = QtCore.QPropertyAnimation(self, qbytes_scale)
         self.anim.setDuration(100)

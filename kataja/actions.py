@@ -17,7 +17,7 @@ import kataja.debug as debug
 from kataja.ui.PreferencesDialog import PreferencesDialog
 from kataja.Edge import Edge
 from kataja.visualizations.available import action_key
-from kataja.utils import tuple2_to_tuple3
+from kataja.utils import tuple2_to_tuple3, guess_node_type
 from kataja.singletons import ctrl, prefs
 import kataja.globals as g
 
@@ -1072,16 +1072,20 @@ def new_element_accept(sender=None):
     embed = get_ui_container(sender)
     ci = embed.node_type_selector.currentIndex()
     node_type = embed.node_type_selector.itemData(ci)
+    guess_mode = embed.guess_mode
     p1, p2 = embed.get_marker_points()
     text = embed.input_line_edit.text()
     ctrl.focus_point = p2
     node = None
+    if guess_mode:
+        node_type = guess_node_type(text)
     if node_type == g.ARROW:
         create_new_arrow(sender)
     elif node_type == g.DIVIDER:
         create_new_divider(sender)
-    elif node_type == g.GUESS_FROM_INPUT:
-        node = ctrl.forest.create_node_from_string(text, p2, simple_parse=True)
+    elif node_type == g.TREE:
+        node = ctrl.forest.create_node_from_string(text, simple_parse=True)
+
     else:
         node = ctrl.forest.create_node(synobj=None, pos=p2, node_type=node_type, text=text)
     if node:

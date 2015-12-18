@@ -938,17 +938,14 @@ class Forest(BaseModel):
         self.add_to_scene(im)
         return im
 
-    def create_node_from_string(self, text='', pos=None, simple_parse=False):
+    def create_node_from_string(self, text='', simple_parse=False):
         """
 
         :param text:
         :param pos:
         :param simple_parse: If several words are given, merge them together
         """
-        node = self.parser.parse_into_forest(text, simple_parse=simple_parse)
-        return node
-        # self.add_to_scene(root_node)
-        # self.update_tree_for(root_node)
+        return self.parser.parse_into_forest(text, simple_parse=simple_parse)
 
     def create_trees_from_string(self, text):
         """ Use this to initially draw the trees from a bracket notation or

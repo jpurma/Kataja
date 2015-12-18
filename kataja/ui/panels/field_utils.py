@@ -633,7 +633,7 @@ class EmbeddedTextarea(QtWidgets.QPlainTextEdit):
 
 class ExpandingLineEdit(QtWidgets.QWidget):
 
-    def __init__(self, parent, tip='', big_font=None, smaller_font=None, prefill=''):
+    def __init__(self, parent, tip='', big_font=None, smaller_font=None, prefill='', on_edit=None):
         QtWidgets.QWidget.__init__(self, parent)
         print('creating expanding line edit')
         layout = QtWidgets.QVBoxLayout()
@@ -642,6 +642,7 @@ class ExpandingLineEdit(QtWidgets.QWidget):
         self.text_area = QtWidgets.QPlainTextEdit(parent)
         self.text_area.setSizeAdjustPolicy(self.text_area.AdjustToContents)
         self.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.MinimumExpanding)
+        self.on_edit = on_edit
         self.text_area.hide()
         self.cut_point = 40
         layout.setContentsMargins(0, 0, 0, 0)
@@ -730,8 +731,10 @@ class ExpandingLineEdit(QtWidgets.QWidget):
             if tw > self.line_edit.width():
                 self.setFixedWidth(tw)
                 self.parentWidget().update_size()
+        if self.on_edit:
+            self.on_edit(text)
 
-    def text_area_check_for_resize(self, *args, **kwargs):
+    def text_area_check_for_resize(self):
         text = self.text_area.toPlainText()
         if len(text) < self.cut_point:
             self.toggle_line_mode()
@@ -746,6 +749,8 @@ class ExpandingLineEdit(QtWidgets.QWidget):
                 self.setFixedWidth(min_width)
             self.setFixedHeight(tot)
             self.parentWidget().update_size()
+        if self.on_edit:
+            self.on_edit(text)
 
     def aaminimumSizeHint(self):
         if self.line_mode:

@@ -64,6 +64,7 @@ become visible
     - Crashes on edges
 - Icon for opening additional panels has 'close this panel' for tooltip
 + New node edit box doesn't stretch for longer texts
+    + New node edit box title doesn't follow its purpose
 + New node edit box assumes attempt to draw arrow if scale is small or changed enough when the
 edit box is open (two end points move).
 + Embeds get focus on creation but lose it immediately.
@@ -73,6 +74,8 @@ edit box is open (two end points move).
     - LeftFirstTree, setting trees side by side
 - Creating comment with NewElementEmbed leaves the comment text empty
     - NotImplementedError: QGraphicsObject.paint() is abstract and must be overridden
+- Node info shows coordinates relative to tree, not to scene
+
 ADD:
 
 - Add visualization specific settings to visualization panel

@@ -34,6 +34,8 @@ import traceback
 from PyQt5 import QtWidgets, QtCore
 
 from PyQt5.QtCore import QPointF, QPoint
+
+import globals as g
 from kataja.debug import DEBUG_TIME_ME
 
 
@@ -477,3 +479,19 @@ def open_symbol_data(mimedata):
             data[key] = value.value()
     if 55 in data:
         return data[55]
+
+
+def guess_node_type(text):
+
+    text = text.strip()
+    if text.startswith('['):
+        return g.TREE
+    if '=' in text:
+        return g.FEATURE_NODE
+    elif ':' in text:
+        return g.FEATURE_NODE
+    spaced = text.split()
+    if len(spaced) > 1:
+        return g.TREE
+    else:
+        return g.CONSTITUENT_NODE

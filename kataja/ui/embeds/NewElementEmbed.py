@@ -1,12 +1,13 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 
-from kataja.ui.embeds.UIEmbed import UIEmbed
-from kataja.ui.drawn_icons import arrow, divider
-from kataja.singletons import qt_prefs, ctrl, prefs
 import kataja.globals as g
-from kataja.ui.panels.field_utils import icon_text_button, EmbeddedLineEdit, box_row, \
-    ExpandingLineEdit
 from kataja.shapes import draw_arrow_shape_from_points
+from kataja.singletons import qt_prefs, ctrl, prefs
+from kataja.ui.drawn_icons import arrow, divider
+from kataja.ui.embeds.UIEmbed import UIEmbed
+from kataja.ui.panels.field_utils import icon_text_button, box_row, \
+    ExpandingLineEdit
+from kataja.utils import guess_node_type
 
 __author__ = 'purma'
 
@@ -112,7 +113,7 @@ class NewElementEmbed(UIEmbed):
     def __init__(self, parent, ui_manager, ui_key):
         UIEmbed.__init__(self, parent, ui_manager, ui_key, None, 'Create new node')
         self.marker = None
-        self.manual_node_change = False
+        self.guess_mode = True
         layout = QtWidgets.QVBoxLayout()
         layout.addLayout(self.top_row_layout)
         hlayout = box_row(layout)
@@ -134,21 +135,22 @@ class NewElementEmbed(UIEmbed):
                                                  tip=tt,
                                                  big_font=big_font,
                                                  smaller_font=smaller_font,
-                                                 prefill='label')
+                                                 prefill='label',
+                                                 on_edit=self.guess_type_for_input)
         layout.addWidget(self.input_line_edit)
         hlayout = QtWidgets.QHBoxLayout()
         self.node_type_selector = QtWidgets.QComboBox(self)
         self.node_type_selector.currentIndexChanged.connect(self.changed_node_type)
 
-        node_types = [('Guess from input', g.GUESS_FROM_INPUT)]
+        self.node_types = [('Guess from input', g.GUESS_FROM_INPUT)]
         for key in prefs.node_types_order:
             # we have dedicated buttons for arrows and dividers
             #if key not in (g.ARROW, g.DIVIDER):
             nd = prefs.nodes[key]
-            node_types.append(('New %s' % nd['name'].lower(), key))
-        node_types.append(('New arrow', g.ARROW))
-        node_types.append(('New divider', g.DIVIDER))
-        for i, (name, value) in enumerate(node_types):
+            self.node_types.append(('New %s' % nd['name'].lower(), key))
+        self.node_types.append(('New arrow', g.ARROW))
+        self.node_types.append(('New divider', g.DIVIDER))
+        for i, (name, value) in enumerate(self.node_types):
             self.node_type_selector.addItem(name)
             self.node_type_selector.setItemData(i, value, 256)
             # 'name' can be translated if necessary
@@ -169,22 +171,38 @@ class NewElementEmbed(UIEmbed):
             self.marker.set_dragged(True)
         QtWidgets.QWidget.mouseMoveEvent(self, event)
 
-    def changed_node_type(self, *args):
-        print('toggle toggle')
-        self.manual_node_change = True
+    def guess_type_for_input(self, text):
+        if not self.guess_mode:
+            return
+        key = guess_node_type(text)
+        if key == 100:
+            self.top_title.setText('Create new tree')
+        else:
+            self.top_title.setText('Create new ' + prefs.nodes[key]['name'].lower())
+
+    def changed_node_type(self, index=-1):
+        if index == 0:
+            self.guess_mode = True
+        elif index > 0:
+            title_text = self.node_type_selector.itemText(index)
+            self.top_title.setText('Create ' + title_text.lower())
+            self.guess_mode = False
 
     def focus_to_main(self):
         self.input_line_edit.setFocus(QtCore.Qt.PopupFocusReason)
 
     def marker_dragged(self):
-        if not self.manual_node_change:
-            self.embed.set_node_type(g.ARROW)
+        if self.guess_mode:
+            self.set_node_type(g.ARROW)
+            self.guess_mode = False
 
     def update_size(self):
         self.setMinimumSize(self.layout().minimumSize())
 
     def close(self):
         self.input_line_edit.reset()
+        self.guess_mode = True
+        self.top_title.setText('Create ' + self.node_types[1][0].lower())
         UIEmbed.close(self)
 
     def finished_effect_animation(self):
