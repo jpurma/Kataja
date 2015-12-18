@@ -728,8 +728,6 @@ class JointedTouchArea(TouchArea):
         rel_sp = sub_xy(self.start_point, self.end_point)
         sx, sy = rel_sp
         ex, ey = 0, 0
-        #ex, ey = self.end_point
-        #sx, sy = self.start_point
         e2 = end_spot_size * 2
         if sx < ex:
             w = max((ex - sx + end_spot_size, e2))
@@ -745,6 +743,34 @@ class JointedTouchArea(TouchArea):
             y = ey - end_spot_size
         r = QtCore.QRectF(x, y, w, h)
         return r.united(self._path.controlPointRect())
+
+    def shape(self):
+        """ Shape is used for collisions and it shouldn't go over the originating node. So use
+        only the last half, starting from the "knee" of the shape.
+        :return:
+        """
+        path = QtGui.QPainterPath()
+        # Bounding rect that includes the tail and end spot ellipse
+        rel_sp = sub_xy(self.start_point, self.end_point)
+        sx, sy = rel_sp
+        sx /= 2.0
+        ex, ey = 0, 0
+        e2 = end_spot_size * 2
+        if sx < ex:
+            w = max((ex - sx + end_spot_size, e2))
+            x = min((sx, ex - end_spot_size))
+        else:
+            w = max((sx - ex + end_spot_size, e2))
+            x = ex - end_spot_size
+        if sy < ey:
+            h = max((ey - sy + end_spot_size, e2))
+            y = min((sy, ey - end_spot_size))
+        else:
+            h = max((sy - ey + end_spot_size, e2))
+            y = ey - end_spot_size
+        r = QtCore.QRectF(x, y, w, h)
+        path.addRect(r)
+        return path
 
     def drag(self, event):
         self._dragging = True
