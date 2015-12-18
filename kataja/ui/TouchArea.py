@@ -1146,7 +1146,8 @@ touch_areas = {
     g.TOUCH_CONNECT_FEATURE: ConnectFeatureTouchArea,
     g.TOUCH_CONNECT_GLOSS: ConnectGlossTouchArea,
     g.ADD_TRIANGLE: AddTriangleTouchArea,
-    g.REMOVE_TRIANGLE: RemoveTriangleTouchArea
+    g.REMOVE_TRIANGLE: RemoveTriangleTouchArea,
+    g.DELETE_ARROW: DeleteArrowTouchArea
 }
 
 

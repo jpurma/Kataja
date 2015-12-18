@@ -40,11 +40,10 @@ class CommentNode(Node):
     short_name = "ComNode"
     display = True
 
-    visible = {'text': {'order': 3}}
+    viewable = {'text': {'order': 3}}
     editable = {'text': dict(name='', order=3, prefill='comment',
                              tooltip='freeform text, invisible for '
                                      'processing', input_type='textarea')}
-
 
     default_style = {'color': 'accent4', 'font': g.MAIN_FONT, 'font-size': 14,
                      'edge': g.COMMENT_EDGE}
@@ -56,7 +55,7 @@ class CommentNode(Node):
     touch_areas_when_dragging = {g.DELETE_ARROW: {'condition':
                                                   'dragging_my_arrow'}}
 
-    touch_areas_when_selected = {g.DELETE_ARROW: {'condition': 'get_edges_down'}}
+    touch_areas_when_selected = {g.DELETE_ARROW: {'condition': 'has_arrow'}}
 
     def __init__(self, text='comment'):
         Node.__init__(self)
@@ -89,6 +88,9 @@ class CommentNode(Node):
         self.label = value
         self._inode_changed = True
 
+    def has_arrow(self):
+        return bool(self.edges_down)
+
     def update_selection_status(self, selected):
         """
 
@@ -97,12 +99,15 @@ class CommentNode(Node):
         """
         super().update_selection_status(selected)
 
-
     def dragging_my_arrow(self, dragged_type, dragged_item):
         return True
 
     def __str__(self):
         return 'comment: %s' % self.text
+
+#    def paint(self, painter, option, widget=None):
+#        Node.paint(self, painter, option, widget)
+
 
     # ############## #
     #                #
@@ -112,4 +117,4 @@ class CommentNode(Node):
 
     # all same as Node
 
-    label = Saved("label", if_changed=Node.alert_inode)
+    #label = Saved("label", if_changed=Node.alert_inode)

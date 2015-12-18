@@ -183,7 +183,7 @@ class UIEmbed(QtWidgets.QWidget):
         key = None
         if self.host and hasattr(self.host, 'get_color_id'):
             key = self.host.get_color_id()
-        if key:
+        if key and False:
             self._palette = ctrl.cm.get_accent_palette(key)
         else:
             self._palette = ctrl.cm.get_qt_palette_for_ui()

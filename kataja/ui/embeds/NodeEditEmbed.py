@@ -5,7 +5,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from kataja.parser.LatexToINode import parse_field
 from kataja.ui.embeds.UIEmbed import UIEmbed
 from kataja.ui.panels.field_utils import EmbeddedTextarea, EmbeddedLineEdit, EmbeddedMultibutton
-from kataja.singletons import qt_prefs, ctrl
+from kataja.singletons import prefs, qt_prefs, ctrl
 from kataja.parser import INodeToLatex
 import kataja.globals as g
 
@@ -33,7 +33,8 @@ class NodeEditEmbed(UIEmbed):
     """
 
     def __init__(self, parent, ui_manager, ui_key, node):
-        UIEmbed.__init__(self, parent, ui_manager, ui_key, node, 'Edit node')
+        nname = prefs.nodes[node.node_type]['name'].lower()
+        UIEmbed.__init__(self, parent, ui_manager, ui_key, node, 'Edit ' + nname)
         layout = QtWidgets.QVBoxLayout()
         self.setLayout(layout)
         layout.addLayout(self.top_row_layout)

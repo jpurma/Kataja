@@ -44,7 +44,7 @@ become visible
     - Branch start points are ugly for many visualisations
 + Scope selection box in drawing styles is too narrow
 - Line shape selector doesn't update when changing forests.
-- Second fat edge shape is missing icon
+- Second fat edge shape is missing an icon
 + Loading fails
     + Trees are not restored
     + Ghosting glosses
@@ -72,8 +72,9 @@ edit box is open (two end points move).
 - Very long node labels break visualizations:
     - SpirallingTree, maximum recursion depth
     - LeftFirstTree, setting trees side by side
-- Creating comment with NewElementEmbed leaves the comment text empty
-    - NotImplementedError: QGraphicsObject.paint() is abstract and must be overridden
++ Creating comment with NewElementEmbed leaves the comment text empty
+    + NotImplementedError: QGraphicsObject.paint() is abstract and must be overridden
+    - Textarea in comment editing updates/paints poorly
 - Node info shows coordinates relative to tree, not to scene
 
 ADD:

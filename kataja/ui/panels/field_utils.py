@@ -591,7 +591,7 @@ class EmbeddedTextarea(QtWidgets.QPlainTextEdit):
         if prefill:
             self.setPlaceholderText(prefill)
         self.setAcceptDrops(True)
-        # self.setDragEnabled(True)
+        self.setSizeAdjustPolicy(QtWidgets.QPlainTextEdit.AdjustToContents)
 
     def dragEnterEvent(self, event):
         """ Announce support for regular ascii drops and drops of characters
@@ -618,6 +618,12 @@ class EmbeddedTextarea(QtWidgets.QPlainTextEdit):
         else:
             return QtWidgets.QPlainTextEdit.dropEvent(self, event)
 
+    def text(self):
+        return self.toPlainText()
+
+    def setText(self, text):
+        return self.setPlainText(text)
+
     def update_visual(self, **kw):
         """
 
@@ -628,7 +634,8 @@ class EmbeddedTextarea(QtWidgets.QPlainTextEdit):
         if 'font' in kw:
             self.setFont(kw['font'])
         if 'text' in kw:
-            self.setText(kw['text'])
+            self.setPlainText(kw['text'])
+
 
 
 class ExpandingLineEdit(QtWidgets.QWidget):
