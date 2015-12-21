@@ -74,7 +74,7 @@ edit box is open (two end points move).
     - LeftFirstTree, setting trees side by side
 + Creating comment with NewElementEmbed leaves the comment text empty
     + NotImplementedError: QGraphicsObject.paint() is abstract and must be overridden
-    - Textarea in comment editing updates/paints poorly
+    + Textarea in comment editing updates/paints poorly
 - Node info shows coordinates relative to tree, not to scene
 
 ADD:

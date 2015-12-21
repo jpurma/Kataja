@@ -6,7 +6,7 @@ from kataja.singletons import qt_prefs, ctrl, prefs
 from kataja.ui.drawn_icons import arrow, divider
 from kataja.ui.embeds.UIEmbed import UIEmbed
 from kataja.ui.panels.field_utils import icon_text_button, box_row, \
-    ExpandingLineEdit
+    ExpandingLineEdit, EmbeddedTextarea
 from kataja.utils import guess_node_type
 
 __author__ = 'purma'
@@ -163,6 +163,7 @@ class NewElementEmbed(UIEmbed):
         self.setLayout(layout)
         self.assumed_width = 200
         self.assumed_height = 117
+        self.hide()
 
     def mouseMoveEvent(self, event):
         self.move(self.mapToParent(event.pos()) - self._drag_diff)
@@ -195,9 +196,6 @@ class NewElementEmbed(UIEmbed):
         if self.guess_mode:
             self.set_node_type(g.ARROW)
             self.guess_mode = False
-
-    def update_size(self):
-        self.setMinimumSize(self.layout().minimumSize())
 
     def close(self):
         self.input_line_edit.reset()

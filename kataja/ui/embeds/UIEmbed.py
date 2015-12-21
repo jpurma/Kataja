@@ -46,22 +46,29 @@ class UIEmbed(QtWidgets.QWidget):
         self.assumed_height = 100
         self._magnet = QtCore.QPoint(0, 0), 1
         self._effect = QtWidgets.QGraphicsOpacityEffect(self)
-        self._timeline = QtCore.QTimeLine(100, self)
+        self._timeline = QtCore.QTimeLine(80, self)
         self._timeline.setFrameRange(0, 100)
         self._timeline.frameChanged[int].connect(self.update_frame)
         self._timeline.finished.connect(self.finished_effect_animation)
+        self._effect.setEnabled(False)
+
+        # it seems that opacityeffect and QTextEdit doesn't work well together
         self.setGraphicsEffect(self._effect)
+        # Effect will be disabled if QTextEdit is used.
+        self.disable_effect = False
         self.setAutoFillBackground(True)
         self.setBackgroundRole(QtGui.QPalette.Window)
-
+        self.hide()
         # Remember to add top_row_layout to your layout
-
-        # Remember Johnny fucking Marr
 
     def update_embed(self, focus_point=None):
         self.update_color()
         self.update_fields()
-        self.update_position(focus_point=focus_point)
+        if focus_point:
+            self.update_position(focus_point=focus_point)
+
+    def update_size(self):
+        self.setMinimumSize(self.layout().minimumSize())
 
     def update_fields(self):
         """ Subclasses implement this if there are fields to update
@@ -99,11 +106,12 @@ class UIEmbed(QtWidgets.QWidget):
                 focus_point = self.host.scenePos()
             else:
                 return
+
         h = self.height()
         w = self.width()
-        if h < 100:
+        if h <= 100:
             h = self.assumed_height
-        if w < 100:
+        if w <= 100:
             w = self.assumed_width
         view_pos = self.parent().mapFromScene(focus_point)
         vw = self.parent().width()
@@ -119,7 +127,6 @@ class UIEmbed(QtWidgets.QWidget):
         #
         margin_x = self.margin_x()
         margin_y = self.margin_y()
-
         w += margin_x
         h += margin_y
 
@@ -183,7 +190,7 @@ class UIEmbed(QtWidgets.QWidget):
         key = None
         if self.host and hasattr(self.host, 'get_color_id'):
             key = self.host.get_color_id()
-        if key and False:
+        if key:
             self._palette = ctrl.cm.get_accent_palette(key)
         else:
             self._palette = ctrl.cm.get_qt_palette_for_ui()
@@ -191,13 +198,12 @@ class UIEmbed(QtWidgets.QWidget):
 
     def wake_up(self):
         if not self.isVisible():
-            self._effect.setOpacity(self._timeline.startFrame()/100.0)
-            self._effect.setEnabled(True)
-            self._timeline.setDirection(QtCore.QTimeLine.Forward)
-            self._timeline.start()
+            if not self.disable_effect:
+                self._effect.setOpacity(self._timeline.startFrame()/100.0)
+                self._effect.setEnabled(True)
+                self._timeline.setDirection(QtCore.QTimeLine.Forward)
+                self._timeline.start()
             self.show()
-            self.update_position() # size is computed properly only after
-            # widget is visible
         self.raise_()
         self.focus_to_main()
 

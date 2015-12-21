@@ -45,6 +45,8 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.triangle_height = 0
         self.triangle_y = 0
         self.setDocument(LabelDocument())
+        self.resizable = False
+        self.line_length = 0
 
     def update_label(self, font, inode):
         """ Asks for node/host to give text and update if changed
@@ -56,7 +58,10 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.prepareGeometryChange()
         self.setTextWidth(-1)
         INodeToLabelDocument.parse_inode(inode, doc)
-        self.setTextWidth(doc.idealWidth())
+        if self.line_length:
+            self.setTextWidth(200)
+        else:
+            self.setTextWidth(doc.idealWidth())
         l = doc.lineCount()
         inner_size = doc.size()
         ih = inner_size.height()

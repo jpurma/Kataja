@@ -109,6 +109,7 @@ class Node(Movable):
         self._inode_changed = True
         self._inode_str = ''
         self._gravity = 0
+        self._label_complex = Label(parent=self)
         self.clickable = False
         self.selectable = True
         self.draggable = True
@@ -215,6 +216,7 @@ class Node(Movable):
             synvis = {}
         myvis = getattr(self.__class__, 'viewable', {})
         sortable = []
+        label_line_length = 0
         for key, value in synvis.items():
             o = value.get('order', 50)
             sortable.append((o, 0, key, value))
@@ -231,6 +233,13 @@ class Node(Movable):
                 new = dict(value)
                 new.update(old)
                 self.label_display_data[key] = new
+            if 'resizable' in value:
+                label_resizable = True
+            if 'line_length' in value:
+                ll = value['line_length']
+                if ll > label_line_length:
+                    label_line_length = ll
+
 
     def get_editing_template(self, refresh=False):
         """ Create or fetch a dictionary template to help building an editing
@@ -281,6 +290,7 @@ class Node(Movable):
         """
         # This part should be done by all subclasses, call super(
         # ).impose_order_to_inode()
+        assert self._label_complex
 
         self._inode.fields = {}
         self._inode.view_order = []
@@ -290,6 +300,7 @@ class Node(Movable):
         else:
             syn_obj_viewable_fields = {}
         my_viewable_fields = getattr(self.__class__, 'viewable', {})
+        label_line_length = 0
         sortable = []
         for key, value in syn_obj_viewable_fields.items():
             o = value.get('order', 50)
@@ -310,6 +321,13 @@ class Node(Movable):
                 fields[field_name] = new
             if field_name not in view_order:
                 view_order.append(field_name)
+            if 'resizable' in value:
+                self._label_complex.resizable = True
+            if 'line_length' in value:
+                ll = value['line_length']
+                if ll > self._label_complex.line_length:
+                    self._label_complex.line_length = ll
+
 
     def update_values_from_inode(self):
         """ Take values from given inode and set this object to have these values.

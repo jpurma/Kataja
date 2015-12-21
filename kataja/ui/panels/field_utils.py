@@ -386,7 +386,7 @@ def icon_text_button(ui_manager, layout, parent, role, key, text, action, size=N
     :param draw_method:
     :return:
     """
-    button = OverlayButton(icon, None, role, key, text, parent=parent,
+    button = OverlayButton(None, key, icon, role, text, parent=parent,
                            size=size or QtCore.QSize(48, 24), draw_method=draw_method)
     button.setText(text)
     ui_manager.connect_element_to_action(button, action)
@@ -591,7 +591,10 @@ class EmbeddedTextarea(QtWidgets.QPlainTextEdit):
         if prefill:
             self.setPlaceholderText(prefill)
         self.setAcceptDrops(True)
-        self.setSizeAdjustPolicy(QtWidgets.QPlainTextEdit.AdjustToContents)
+        self.setSizeAdjustPolicy(QtWidgets.QTextEdit.AdjustToContents)
+        #self.setFixedSize(200, 100)
+        #self.text_area.textChanged.connect(self.text_area_check_for_resize)
+        self.updateGeometry()
 
     def dragEnterEvent(self, event):
         """ Announce support for regular ascii drops and drops of characters
@@ -618,11 +621,28 @@ class EmbeddedTextarea(QtWidgets.QPlainTextEdit):
         else:
             return QtWidgets.QPlainTextEdit.dropEvent(self, event)
 
+    # currently not used
+    def text_area_check_for_resize(self):
+        text = self.text_area.toPlainText()
+        max_height = 400
+        min_width = 400
+        fh = self.text_area.fontMetrics().height()
+        rows = self.text_area.document().size().height()
+        tot = min(fh * rows + 5, max_height)
+        if self.text_area.height() < tot:
+            if self.text_area.width() < min_width:
+                self.setFixedWidth(min_width)
+            self.setFixedHeight(tot)
+            self.parentWidget().update_size()
+        if self.on_edit:
+            self.on_edit(text)
+
+
     def text(self):
         return self.toPlainText()
 
     def setText(self, text):
-        return self.setPlainText(text)
+        self.setPlainText(text)
 
     def update_visual(self, **kw):
         """
@@ -637,7 +657,6 @@ class EmbeddedTextarea(QtWidgets.QPlainTextEdit):
             self.setPlainText(kw['text'])
 
 
-
 class ExpandingLineEdit(QtWidgets.QWidget):
 
     def __init__(self, parent, tip='', big_font=None, smaller_font=None, prefill='', on_edit=None):
@@ -647,6 +666,7 @@ class ExpandingLineEdit(QtWidgets.QWidget):
         self.line_edit = QtWidgets.QLineEdit(parent)
         #self.line_edit.setClearButtonEnabled(True)
         self.text_area = QtWidgets.QPlainTextEdit(parent)
+        self.text_area.setAutoFillBackground(True)
         self.text_area.setSizeAdjustPolicy(self.text_area.AdjustToContents)
         self.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.MinimumExpanding)
         self.on_edit = on_edit
@@ -693,11 +713,11 @@ class ExpandingLineEdit(QtWidgets.QWidget):
             self.toggle_line_mode()
         return self.line_edit.setText(text)
 
-    def setFocus(self, Qt_FocusReason=None):
+    def setFocus(self, *args):
         if self.line_mode:
-            self.line_edit.setFocus(Qt_FocusReason)
+            self.line_edit.setFocus(*args)
         else:
-            self.text_area.setFocus(Qt_FocusReason)
+            self.text_area.setFocus(*args)
 
     def toggle_line_mode(self):
         if not self.line_mode:
@@ -758,14 +778,6 @@ class ExpandingLineEdit(QtWidgets.QWidget):
             self.parentWidget().update_size()
         if self.on_edit:
             self.on_edit(text)
-
-    def aaminimumSizeHint(self):
-        if self.line_mode:
-            tw = self.line_edit.fontMetrics().width(self.line_edit.text())
-            return QtCore.QSize(tw, self.line_edit.height())
-        else:
-            print('(area) going to return: ', self.text_area.minimumSizeHint())
-            return self.text_area.minimumSizeHint()
 
     def dragEnterEvent(self, event):
         """ Announce support for regular ascii drops and drops of characters

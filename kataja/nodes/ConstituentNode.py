@@ -116,13 +116,6 @@ class ConstituentNode(BaseConstituentNode):
                                                      'action': 'remove_triangle'}}
 
     buttons_when_selected = {g.REMOVE_MERGER: {'condition': 'is_unnecessary_merger'}}
-    button_definitions = {g.REMOVE_MERGER:
-                          {'icon': 'delete_icon',
-                           'host': 'node',
-                           'role': g.REMOVE_TRIANGLE,
-                           'key': g.REMOVE_MERGER,
-                           'text': 'Remove this non-merging node',
-                           'action': 'remove_merger'}}
 
     def __init__(self, constituent=None):
         """ Most of the initiation is inherited from Node """

@@ -486,6 +486,8 @@ def guess_node_type(text):
     text = text.strip()
     if text.startswith('['):
         return g.TREE
+    if text.startswith('#'):
+        return g.COMMENT_NODE
     if '=' in text:
         return g.FEATURE_NODE
     elif ':' in text:

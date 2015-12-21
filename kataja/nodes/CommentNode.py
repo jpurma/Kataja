@@ -24,9 +24,9 @@ CommentNode is a non-functional node for freeform text
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from kataja.BaseModel import Saved
+from PyQt5 import QtGui, QtCore
+from kataja.singletons import ctrl
 from kataja.nodes.Node import Node
-from kataja.globals import ARROW, COMMENT_NODE
 import kataja.globals as g
 
 
@@ -34,13 +34,13 @@ class CommentNode(Node):
     """ Node to display comments, annotations etc. syntactically inert information """
     width = 20
     height = 20
-    default_edge_type = ARROW
-    node_type = COMMENT_NODE
+    default_edge_type = g.ARROW
+    node_type = g.COMMENT_NODE
     name = ('Comment', 'Comments')
     short_name = "ComNode"
     display = True
 
-    viewable = {'text': {'order': 3}}
+    viewable = {'text': {'order': 3, 'line_length': 20, 'resizable': True}}
     editable = {'text': dict(name='', order=3, prefill='comment',
                              tooltip='freeform text, invisible for '
                                      'processing', input_type='textarea')}
@@ -70,7 +70,7 @@ class CommentNode(Node):
         'hosts' is a shortcut to get the nodes.
         :return: list of Nodes
         """
-        return self.get_parents(edge_type=ARROW)
+        return self.get_parents(edge_type=g.ARROW)
 
 
     @property
@@ -105,8 +105,45 @@ class CommentNode(Node):
     def __str__(self):
         return 'comment: %s' % self.text
 
-#    def paint(self, painter, option, widget=None):
-#        Node.paint(self, painter, option, widget)
+    def paint(self, painter, option, widget=None):
+        """ Painting is sensitive to mouse/selection issues, but usually with
+        :param painter:
+        :param option:
+        :param widget:
+        nodes it is the label of the node that needs complex painting """
+        if self.triangle:
+            p = QtGui.QPen(self.contextual_color)
+            p.setWidth(1)
+            painter.setPen(p)
+            self.paint_triangle(painter)
+        if self.drag_data:
+            p = QtGui.QPen(self.contextual_color)
+            #b = QtGui.QBrush(ctrl.cm.paper())
+            #p.setColor(ctrl.cm.hover())
+            p.setWidth(1)
+            painter.setPen(p)
+            painter.setBrush(self.drag_data.background)
+            painter.drawRect(self.inner_rect)
+            painter.setBrush(QtCore.Qt.NoBrush)
+
+
+        elif self._hovering:
+            p = QtGui.QPen(self.contextual_color)
+            #p.setColor(ctrl.cm.hover())
+            p.setWidth(1)
+            painter.setPen(p)
+            painter.drawRect(self.inner_rect)
+        elif ctrl.pressed is self or ctrl.is_selected(self):
+            p = QtGui.QPen(self.contextual_color)
+            p.setWidth(1)
+            painter.setPen(p)
+            painter.drawRect(self.inner_rect)
+        elif self.has_empty_label() and self.node_alone():
+            p = QtGui.QPen(self.contextual_color)
+            p.setStyle(QtCore.Qt.DotLine)
+            p.setWidth(1)
+            painter.setPen(p)
+            painter.drawRect(self.inner_rect)
 
 
     # ############## #

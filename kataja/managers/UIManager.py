@@ -49,7 +49,7 @@ from kataja.ui.panels.LineOptionsPanel import LineOptionsPanel
 from kataja.ui.embeds.NewElementEmbed import NewElementEmbed, NewElementMarker
 from kataja.ui.embeds.EdgeLabelEmbed import EdgeLabelEmbed
 from kataja.ui.panels import UIPanel
-from kataja.ui.OverlayButton import OverlayButton
+from kataja.ui.OverlayButton import OverlayButton, button_factory
 from kataja.ui.panels.SymbolPanel import SymbolPanel
 from kataja.ui.panels.NodesPanel import NodesPanel
 from kataja.ui.embeds.NodeEditEmbed import NodeEditEmbed
@@ -233,16 +233,18 @@ class UIManager:
         qt_prefs.fonts[font_id] = font
         return font_id
 
-    def add_ui(self, item):
+    def add_ui(self, item, show=True):
         """
 
         :param item:
+        :param show: by default, show it. Easy to forget otherwise.
         """
         if item.ui_key in self._items:
             raise KeyError
         self._items[item.ui_key] = item
         if isinstance(item, QtWidgets.QGraphicsItem):
             self.scene.addItem(item)
+        if show:
             item.show()
 
     def remove_ui(self, item):
@@ -252,12 +254,11 @@ class UIManager:
         """
         if item.ui_key in self._items:
             del self._items[item.ui_key]
+        item.hide()
         if isinstance(item, QtWidgets.QGraphicsItem):
-            item.hide()
             self.scene.removeItem(item)
         elif isinstance(item, QtWidgets.QWidget):
             item.close()
-            item.hide()
 
     def get_ui(self, ui_key) -> QtCore.QObject:
         """ Return a managed ui item
@@ -265,8 +266,6 @@ class UIManager:
         :return:
         """
         return self._items.get(ui_key, None)
-
-
 
     def watch_alerted(self, obj, signal, field_name, value):
         """ Receives alerts from signals that this object has chosen to
@@ -688,7 +687,7 @@ class UIManager:
         if not embed:
             embed = NewElementEmbed(self.main.graph_view, self,
                                     NEW_ELEMENT_EMBED)
-            self.add_ui(embed)
+            self.add_ui(embed, show=False)
         if not marker:
             marker = NewElementMarker(scene_pos, embed, NEW_ELEMENT_MARKER)
             self.add_ui(marker)
@@ -717,10 +716,10 @@ class UIManager:
         ui_key = node.save_key + '_edit'
         ed = self.get_ui(ui_key)
         if ed:
-            self.remove_ui(ed)
+            self.remove_edit_embed(ed)
 
         ed = NodeEditEmbed(self.main.graph_view, self, ui_key, node)
-        self.add_ui(ed)
+        self.add_ui(ed, show=False)
         self._node_edits.add(ed)
         ed.wake_up()
 
@@ -1009,9 +1008,8 @@ class UIManager:
         """ Create top button row
         :return:
         """
-        fit_to_screen = self._create_overlay_button(icon=None,
-                                                    host=None, role='bottom',
-                                                    key='fit_to_screen',
+        fit_to_screen = self._create_overlay_button(host=None, key='fit_to_screen', icon=None,
+                                                    role='bottom',
                                                     text='Fit to screen',
                                                     action='zoom_to_fit',
                                                     size=(48, 24),
@@ -1034,7 +1032,7 @@ class UIManager:
         :param size:
         """
         if key not in self._items:
-            button = OverlayButton(icon, host, role, key, text,
+            button = OverlayButton(host, key, icon, role, text,
                                    parent=self.main.graph_view,
                                    size=size or 16,
                                    draw_method=draw_method)
@@ -1071,6 +1069,9 @@ class UIManager:
             ok = check_conditions(cond, node)
             if ok:
                 self.get_or_create_button(node, key)
+        if node._label_complex.resizable or True:
+            handle = QtWidgets.QSizeGrip(ctrl.graph_view)
+
 
     def get_or_create_button(self, node, role_key):
         if node:
@@ -1079,16 +1080,10 @@ class UIManager:
             save_key = role_key
         if save_key in self._items:
             return self._items[save_key]
-        d = node.__class__.button_definitions
-        data = d[role_key]
-        button = OverlayButton(data.get('icon', None), node, role_key, save_key,
-                               data.get('text', role_key),
-                               parent=self.main.graph_view,
-                               size=data.get('size', 16),
-                               draw_method=data.get('draw_method', None))
+        button = button_factory(role_key, node, save_key, self.main.graph_view)
         self.add_ui(button)
         button.update_position()
-        self.connect_element_to_action(button, data['action'])
+        self.connect_element_to_action(button, button.action_name)
         button.show()
         return button
 

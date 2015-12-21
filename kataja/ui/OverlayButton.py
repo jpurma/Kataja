@@ -134,7 +134,7 @@ class OverlayButton(PanelButton):
     :param color_key:
     """
 
-    def __init__(self, pixmap, host, role, ui_key, text=None, parent=None,
+    def __init__(self, host, ui_key, pixmap, role, text=None, parent=None,
                  size=16, color_key='accent8', draw_method=None, **kwargs):
         super().__init__(pixmap, text=text, parent=parent, size=size,
                          color_key=color_key, draw_method=draw_method)
@@ -142,7 +142,6 @@ class OverlayButton(PanelButton):
         self.ui_key = ui_key
         self.role = role
         self.edge = None
-        # self.setCursor(Qt.PointingHandCursor)
 
     def update_position(self):
         """
@@ -153,22 +152,7 @@ class OverlayButton(PanelButton):
         if not self.host:
             return
 
-        if self.role == g.REMOVE_MERGER:
-            adjust = QtCore.QPointF(19, -self.host.height / 2)
-            if not self.edge:
-                edges = [x for x in self.host.edges_down if
-                         x.edge_type is g.CONSTITUENT_EDGE and
-                         x.end.is_visible()]
-                if not edges:
-                    raise UIError(
-                        "Remove merger suggested for merger with no children")
-                else:
-                    self.edge = edges[0]
-            p = QtCore.QPointF(self.edge.start_point[0],
-                               self.edge.start_point[1])
-            p = ctrl.main.graph_view.mapFromScene(p) + adjust
-            p = p.toPoint()
-        elif self.role == g.START_CUT:
+        if self.role == g.START_CUT:
             adjust = QtCore.QPointF(self.host.end.width / 2,
                                     self.host.end.height / 2)
             p = ctrl.main.graph_view.mapFromScene(
@@ -197,12 +181,52 @@ class OverlayButton(PanelButton):
                 "Unknown role for OverlayButton, don't know where to put it.")
         self.move(p)
 
+
+class RemoveMergerButton(OverlayButton):
+    """ Button to delete unnecessary node between grandparent and child"""
+
+    def __init__(self, host, ui_key, parent=None):
+
+        super().__init__(host,
+                         ui_key,
+                         'delete_icon',
+                         text='Remove this non-merging node',
+                         parent=parent,
+                         size=16,
+                         color_key='accent8')
+        self.role = g.REMOVE_MERGER
+        self.action_name = 'remove_merger'
+        self.edge = None
+
+    def update_position(self):
+        """ """
+        adjust = QtCore.QPointF(19, -self.host.height / 2)
+        if not self.edge:
+            edges = [x for x in self.host.edges_down if
+                     x.edge_type is g.CONSTITUENT_EDGE and
+                     x.end.is_visible()]
+            if not edges:
+                raise UIError(
+                    "Remove merger suggested for merger with no children")
+            else:
+                self.edge = edges[0]
+        p = QtCore.QPointF(self.edge.start_point[0],
+                           self.edge.start_point[1])
+        p = ctrl.main.graph_view.mapFromScene(p) + adjust
+        p = p.toPoint()
+        self.move(p)
+
     def enterEvent(self, event):
-        if self.role == g.REMOVE_MERGER:
-            self.host.hovering = True
-        PanelButton.enterEvent(self, event)
+        self.host.hovering = True
+        OverlayButton.enterEvent(self, event)
 
     def leaveEvent(self, event):
-        if self.role == g.REMOVE_MERGER:
-            self.host.hovering = False
-        PanelButton.leaveEvent(self, event)
+        self.host.hovering = False
+        OverlayButton.leaveEvent(self, event)
+
+button_definitions = {g.REMOVE_MERGER: RemoveMergerButton}
+
+
+def button_factory(role_key, node, save_key, parent):
+    constructor = button_definitions[role_key]
+    return constructor(node, save_key, parent)

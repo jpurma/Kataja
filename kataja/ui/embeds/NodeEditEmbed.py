@@ -1,10 +1,10 @@
-__author__ = 'purma'
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from kataja.parser.LatexToINode import parse_field
 from kataja.ui.embeds.UIEmbed import UIEmbed
-from kataja.ui.panels.field_utils import EmbeddedTextarea, EmbeddedLineEdit, EmbeddedMultibutton
+from kataja.ui.panels.field_utils import EmbeddedTextarea, EmbeddedLineEdit, EmbeddedMultibutton,\
+    ExpandingLineEdit
 from kataja.singletons import prefs, qt_prefs, ctrl
 from kataja.parser import INodeToLatex
 import kataja.globals as g
@@ -36,15 +36,14 @@ class NodeEditEmbed(UIEmbed):
         nname = prefs.nodes[node.node_type]['name'].lower()
         UIEmbed.__init__(self, parent, ui_manager, ui_key, node, 'Edit ' + nname)
         layout = QtWidgets.QVBoxLayout()
-        self.setLayout(layout)
         layout.addLayout(self.top_row_layout)
         layout.addSpacing(4)
         ui_p = self._palette
         ui_s = QtGui.QPalette(ui_p)
         ui_s.setColor(QtGui.QPalette.Text, ctrl.cm.secondary())
-
-        f = QtGui.QFont(qt_prefs.font(g.MAIN_FONT))
-        f.setPointSize(f.pointSize() * 2)
+        smaller_font = qt_prefs.font(g.MAIN_FONT)
+        big_font = QtGui.QFont(smaller_font)
+        big_font.setPointSize(big_font.pointSize() * 2)
 
         ed = node.get_editing_template()
         field_order = ed['field_order']
@@ -70,14 +69,25 @@ class NodeEditEmbed(UIEmbed):
                         continue
             if itype == 'text':
                 width = d.get('width', 140)
-                field = EmbeddedLineEdit(self, tip=tt, font=f, prefill=prefill)
+                field = EmbeddedLineEdit(self, tip=tt, font=big_font, prefill=prefill)
                 field.setMaximumWidth(width)
                 if syntactic:
                     field.setPalette(ui_s)
             elif itype == 'textarea':
+                self.disable_effect = True
                 width = d.get('width', 200)
-                field = EmbeddedTextarea(self, tip=tt, font=f, prefill=prefill)
+                field = EmbeddedTextarea(self, tip=tt, font=smaller_font, prefill=prefill)
                 field.setMaximumWidth(width)
+                if syntactic:
+                    field.setPalette(ui_s)
+            elif itype == 'expandingtext':
+                #width = d.get('width', 200)
+                field = ExpandingLineEdit(self,
+                                          tip=tt,
+                                          big_font=big_font,
+                                          smaller_font=smaller_font,
+                                          prefill=prefill)
+                #field.setMaximumWidth(width)
                 if syntactic:
                     field.setPalette(ui_s)
             elif itype == 'multibutton':
@@ -115,14 +125,21 @@ class NodeEditEmbed(UIEmbed):
                 make_label(ui_name, self, hlayout, tt, field, palette)
         if hlayout:
             layout.addLayout(hlayout)
-
+        hlayout = QtWidgets.QHBoxLayout()
         self.enter_button = QtWidgets.QPushButton("↩")  # U+21A9 &#8617;
         self.enter_button.setMaximumWidth(20)
         self.enter_button.setParent(self)
         ui_manager.connect_element_to_action(self.enter_button, 'finish_editing_node')
-        layout.addWidget(self.enter_button)
-        self.updateGeometry()
+        hlayout.addWidget(self.enter_button)
+        if node._label_complex.resizable:
+            self.resize_handle = QtWidgets.QSizeGrip(self)
+            hlayout.addWidget(self.resize_handle, 0, QtCore.Qt.AlignRight)
+        layout.addLayout(hlayout)
+        self.setLayout(layout)
         self.update_embed()
+        self.update_position()
+        self.hide()
+
 
     def margin_x(self):
         """ Try to keep all of the host node visible, not covered by this editor.
@@ -146,13 +163,10 @@ class NodeEditEmbed(UIEmbed):
             else:
                 value = getattr(self.host, field_name, '')
             itype = d.get('input_type', 'text')
-            if itype == 'text':
+            if itype in ['text', 'textarea', 'expandingtext']:
                 parsed = INodeToLatex.parse_inode_for_field(value)
                 field.setText(parsed)
-            if itype == 'textarea':
-                parsed = INodeToLatex.parse_inode_for_field(value)
-                field.setPlainText(parsed)
-            if itype == 'multibutton':
+            elif itype == 'multibutton':
                 op_func = d.get('option_function')
                 op_func = getattr(self.host, op_func, None) or getattr(self.syntactic_object,
                                                                        op_func, None)
@@ -172,10 +186,8 @@ class NodeEditEmbed(UIEmbed):
         for field_name, field in self.fields.items():
             d = ed[field_name]
             itype = d.get('input_type', 'text')
-            if itype == 'text':
+            if itype in ['text', 'textarea', 'expandingtext']:
                 value = parse_field(field.text())
-            elif itype == 'textarea':
-                value = parse_field(field.toPlainText())
             elif itype == 'multibutton':
                 # buttons take action immediately when clicked
                 continue
