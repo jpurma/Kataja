@@ -3,11 +3,14 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 
 from kataja.parser.LatexToINode import parse_field
 from kataja.ui.embeds.UIEmbed import UIEmbed
-from kataja.ui.panels.field_utils import EmbeddedTextarea, EmbeddedLineEdit, EmbeddedMultibutton,\
-    ExpandingLineEdit
+from kataja.ui.elements.EmbeddedTextarea import EmbeddedTextarea
+from kataja.ui.elements.ExpandingLineEdit import ExpandingLineEdit
+from kataja.ui.elements.EmbeddedLineEdit import EmbeddedLineEdit
+from kataja.ui.elements.EmbeddedMultibutton import EmbeddedMultibutton
 from kataja.singletons import prefs, qt_prefs, ctrl
 from kataja.parser import INodeToLatex
 import kataja.globals as g
+from kataja.ui.elements.ResizeHandle import ResizeHandle
 
 
 def make_label(text, parent=None, layout=None, tooltip='', buddy=None, palette=None):
@@ -23,7 +26,7 @@ def make_label(text, parent=None, layout=None, tooltip='', buddy=None, palette=N
 
 
 class NodeEditEmbed(UIEmbed):
-    """ Node edit embed creates editable fields based on templates provided by Node subclass.
+    """ Node edit embed creates editable elements based on templates provided by Node subclass.
     It allows easy UI generation for user-customized syntactic elements or Kataja Nodes.
 
     :param parent: QWidget where this editor lives, QGraphicsView of some sort
@@ -50,7 +53,7 @@ class NodeEditEmbed(UIEmbed):
         self.fields = {}
         hlayout = None
 
-        # Generate edit fields based on data, expand this as necessary
+        # Generate edit elements based on data, expand this as necessary
         for field_name in field_order:
             d = ed[field_name]
             if d.get('hidden', False):
@@ -132,7 +135,7 @@ class NodeEditEmbed(UIEmbed):
         ui_manager.connect_element_to_action(self.enter_button, 'finish_editing_node')
         hlayout.addWidget(self.enter_button)
         if node._label_complex.resizable:
-            self.resize_handle = QtWidgets.QSizeGrip(self)
+            self.resize_handle = ResizeHandle(self)
             hlayout.addWidget(self.resize_handle, 0, QtCore.Qt.AlignRight)
         layout.addLayout(hlayout)
         self.setLayout(layout)

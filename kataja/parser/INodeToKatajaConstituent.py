@@ -13,11 +13,11 @@ class INodeToKatajaConstituent(BaseParser):
     are parsed into
      intermediary nodes (INodes) and these can be more easily turned into
      Constituents,
-     ConstituentNodes and their various text fields (RTF documents, raw text,
+     ConstituentNodes and their various text elements (RTF documents, raw text,
      stripped text).
     The benefit of this approach is that parsing raw strings to INodes can be
     used as well
-     with text fields that require parsing LaTeX to Rich Text Format or HTML.
+     with text elements that require parsing LaTeX to Rich Text Format or HTML.
      If the raw
      strings are stored with nodes, INodes can be easily recreated and
      translated when required.

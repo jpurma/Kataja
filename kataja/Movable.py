@@ -85,14 +85,14 @@ When nodes that don't use physics are dragged, the adjustment.
     def __init__(self):
         BaseModel.__init__(self)
         QtWidgets.QGraphicsObject.__init__(self)
-        # Common movement-related fields
+        # Common movement-related elements
         self.current_position = ((random.random() * 150) - 75, (random.random() * 150) - 75, 0)
         self.z = 0
         self._dragged = False
         self.trees = set() # each Movable belongs to some trees, either formed by Movable alone or set
         # of Movables. Tree has abstract position adjustment information.
 
-        # MOVE_TO -fields
+        # MOVE_TO -elements
         self.target_position = (0, 0, 0)
         self.adjustment = (0, 0, 0)
         self._move_counter = 0
@@ -100,7 +100,7 @@ When nodes that don't use physics are dragged, the adjustment.
         self._step = None
         self.after_move_function = None
         self.use_adjustment = False
-        # PHYSICS -fields
+        # PHYSICS -elements
         self.locked = False
         self.physics_x = False
         self.physics_y = False
@@ -118,9 +118,9 @@ When nodes that don't use physics are dragged, the adjustment.
         """ This is called after the item's model has been updated, to run
         the side-effects of various
         setters in an order that makes sense.
-        :param updated_fields: list of names of fields that have been updated.
+        :param updated_fields: list of names of elements that have been updated.
         :param update_type: can be CREATED or DELETED -- in case of DELETED,
-        it may be that fields have
+        it may be that elements have
         not changed, but the object should go the deletion routines. It can
         get a bit complicated.
         :return: None

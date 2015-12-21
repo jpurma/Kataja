@@ -71,7 +71,7 @@ class UIEmbed(QtWidgets.QWidget):
         self.setMinimumSize(self.layout().minimumSize())
 
     def update_fields(self):
-        """ Subclasses implement this if there are fields to update
+        """ Subclasses implement this if there are elements to update
         :return:
         """
         pass

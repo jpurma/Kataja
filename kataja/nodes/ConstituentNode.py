@@ -42,7 +42,7 @@ def strip_xbars(al):
 
 
 class ConstituentNode(BaseConstituentNode):
-    """ ConstituentNode is enriched with few fields that have no syntactic meaning but help with
+    """ ConstituentNode is enriched with few elements that have no syntactic meaning but help with
      reading the trees aliases, indices and glosses.
     """
     name = ('Constituent', 'Constituents')
@@ -157,7 +157,7 @@ class ConstituentNode(BaseConstituentNode):
     def after_model_update(self, updated_fields, update_type):
         """ This is called after the item's model has been updated, to run the side-effects of
          various setters in an order that makes sense.
-        :param updated_fields: list of names of fields that have been updated.
+        :param updated_fields: list of names of elements that have been updated.
         :return: None
         """
         super().after_model_update(updated_fields, update_type)
@@ -183,7 +183,7 @@ class ConstituentNode(BaseConstituentNode):
     def impose_order_to_inode(self):
         """ Prepare inode (ITemplateNode) to match data structure of this type of node.
         ITemplateNode has parsed input from latex trees to rows of text or ITextNodes and
-        these can be mapped to match Node fields, e.g. label or index. The mapping is
+        these can be mapped to match Node elements, e.g. label or index. The mapping is
         implemented here, and subclasses of Node should make their mapping.
         :return:
         """

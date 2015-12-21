@@ -40,7 +40,8 @@ import kataja.globals as g
 from kataja.ui.TouchArea import TouchArea, create_touch_area
 from kataja.ui.panels.ColorThemePanel import ColorPanel
 from kataja.ui.panels.ColorWheelPanel import ColorWheelPanel
-from kataja.ui.panels.StylePanel import TableModelComboBox
+from kataja.ui.elements.ResizeHandle import GraphicsResizeHandle
+from kataja.ui.elements.TableModelComboBox import TableModelComboBox
 from kataja.ui.panels.LogPanel import LogPanel
 from kataja.ui.panels.NavigationPanel import NavigationPanel
 from kataja.ui.panels.VisualizationPanel import VisualizationPanel
@@ -54,7 +55,8 @@ from kataja.ui.panels.SymbolPanel import SymbolPanel
 from kataja.ui.panels.NodesPanel import NodesPanel
 from kataja.ui.embeds.NodeEditEmbed import NodeEditEmbed
 from kataja.ui.panels.StylePanel import StylePanel
-from kataja.ui.panels.field_utils import MyColorDialog, MyFontDialog
+from kataja.ui.elements.MyColorDialog import MyColorDialog
+from kataja.ui.elements.MyFontDialog import MyFontDialog
 from kataja.nodes.Node import Node
 from kataja.ui import drawn_icons
 from kataja.ui.panels.VisualizationOptionsPanel import VisualizationOptionsPanel
@@ -569,7 +571,7 @@ class UIManager:
             self._panel_positions[panel_id] = panel.geometry()
 
     def reset_panel_fields(self):
-        """ Update all panel fields, may be costly -- try to do specific
+        """ Update all panel elements, may be costly -- try to do specific
         updates instead.
         :return:
         """
@@ -1070,7 +1072,7 @@ class UIManager:
             if ok:
                 self.get_or_create_button(node, key)
         if node._label_complex.resizable or True:
-            handle = QtWidgets.QSizeGrip(ctrl.graph_view)
+            handle = GraphicsResizeHandle(ctrl.graph_view, node)
 
 
     def get_or_create_button(self, node, role_key):

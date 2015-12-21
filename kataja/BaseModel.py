@@ -71,7 +71,7 @@ class Saved(object):
 
     The descriptor also supports announcing the changes in values to
     arbitrary Kataja objects.
-    Usually this will be used to reflect changed value in UI fields,
+    Usually this will be used to reflect changed value in UI elements,
     e.g. changing
     numeric values in comboboxes as user drags an element.
 

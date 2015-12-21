@@ -25,7 +25,7 @@ from PyQt5 import QtCore, QtWidgets, QtGui
 
 from kataja.singletons import ctrl
 from kataja.ui.OverlayButton import PanelButton
-from kataja.ui.panels.field_utils import EmbeddedMultibutton
+from kataja.ui.elements.EmbeddedMultibutton import EmbeddedMultibutton
 
 
 class KatajaAction(QtWidgets.QAction):

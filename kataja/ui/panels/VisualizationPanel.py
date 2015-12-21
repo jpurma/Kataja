@@ -55,7 +55,6 @@ class VisualizationPanel(UIPanel):
         self.widget().setAutoFillBackground(True)
         self.finish_init()
 
-
     def watch_alerted(self, obj, signal, field_name, value):
         """ Receives alerts from signals that this object has chosen to listen. These signals
          are declared in 'self.watchlist'.

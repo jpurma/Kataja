@@ -8,8 +8,10 @@ from kataja.singletons import ctrl, qt_prefs, prefs
 import kataja.globals as g
 from kataja.ui.panels.UIPanel import UIPanel
 from kataja.ui.OverlayButton import PanelButton
-from kataja.ui.panels.field_utils import find_list_item, TableModelComboBox, \
-    ColorSelector, set_value, FontSelector
+from kataja.ui.panels.field_utils import find_list_item, set_value
+from kataja.ui.elements.TableModelComboBox import TableModelComboBox
+from kataja.ui.elements.FontSelector import FontSelector
+from kataja.ui.elements.ColorSelector import ColorSelector
 
 __author__ = 'purma'
 
@@ -297,9 +299,9 @@ class StylePanel(UIPanel):
             model.setItem(r, item)
 
     def update_fields(self):
-        """ Update different fields in the panel to show the correct values
+        """ Update different elements in the panel to show the correct values
         based on selection or current scope. Change of scope may remove or
-        add new choices to selectors or do other hard manipulation to fields.
+        add new choices to selectors or do other hard manipulation to elements.
 
         First find what are the properties of the selected edges.
         If they are conflicting, e.g. there are two different colors in selected

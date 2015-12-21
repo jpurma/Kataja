@@ -166,7 +166,7 @@ class Node(Movable):
         """ This is called after the item's model has been updated, to run
         the side-effects of various
         setters in an order that makes sense.
-        :param updated_fields: list of names of fields that have been updated.
+        :param updated_fields: list of names of elements that have been updated.
         :param update_type: g.DELETE or g.CREATE
         :return: None
         """
@@ -249,7 +249,7 @@ class Node(Movable):
         and its subclasses and its syntactic object's templates.
 
         The dictionary includes a special key field_order that gives the
-        order of the fields.
+        order of the elements.
         :param refresh: force recalculation of template
         :return: dict
         """
@@ -284,7 +284,7 @@ class Node(Movable):
     def impose_order_to_inode(self):
         """ Prepare inode (ITemplateNode) to match data structure of this type of node
         ITemplateNode has parsed input from latex trees to rows of text or ITextNodes and
-        these can be mapped to match Node fields, e.g. label or index. The mapping is
+        these can be mapped to match Node elements, e.g. label or index. The mapping is
         implemented here, and subclasses of Node should make their mapping.
         :return:
         """
@@ -1299,7 +1299,7 @@ syntactic_object: %s
 
     def update_selection_status(self, selected):
         """ This is called after item is selected or deselected to update
-        appearance and related local fields.
+        appearance and related local elements.
         :param selected:
         """
         if not selected:

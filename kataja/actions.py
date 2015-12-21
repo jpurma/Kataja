@@ -1062,7 +1062,7 @@ a['close_embed'] = {'command': 'Close panel', 'method': close_embeds,
 
 
 def new_element_accept(sender=None):
-    """ Create new element according to fields in this embed. Can create
+    """ Create new element according to elements in this embed. Can create
     constituentnodes,
     features, arrows, etc.
     :param sender: field that called this action

@@ -34,7 +34,7 @@ from kataja.BaseModel import Synobj
 
 class BaseConstituentNode(Node):
     """ BaseConstituentNodes are minimal graphical representations of constituents.
-    ConstituentNode -class inherits this and adds more fields and features, but if you want to
+    ConstituentNode -class inherits this and adds more elements and features, but if you want to
      create new kind of Constituents in syntax it may be cleaner to build on BaseConstituentNode
       and not ConstituentNode. """
     width = 20
@@ -92,7 +92,7 @@ class BaseConstituentNode(Node):
     def impose_order_to_inode(self):
         """ Prepare inode (ITemplateNode) to match data structure of this type of node
         ITemplateNode has parsed input from latex trees to rows of text or ITextNodes and
-        these can be mapped to match Node fields, e.g. label or index. The mapping is
+        these can be mapped to match Node elements, e.g. label or index. The mapping is
         implemented here, and subclasses of Node should make their mapping.
         :return:
         """
@@ -122,7 +122,7 @@ class BaseConstituentNode(Node):
         """ This is called after the item's model has been updated, to run the side-effects of
         various
         setters in an order that makes sense.
-        :param updated_fields: list of names of fields that have been updated.
+        :param updated_fields: list of names of elements that have been updated.
         :return: None
         """
         super().after_model_update(updated_fields, update_type)

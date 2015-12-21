@@ -47,7 +47,7 @@ class BaseConstituent(IConstituent):
     def __init__(self, label='', parts=None, save_key='', features=None, head=None, **kw):
         """ BaseConstituent is a default constituent used in syntax.
         It is Savable, which means that the actual values are stored in separate object that is easily dumped to file.
-        Extending this needs to take account if new fields should also be treated as savable, e.g. put them into
+        Extending this needs to take account if new elements should also be treated as savable, e.g. put them into
         . and make necessary property and setter.
          """
         super().__init__(**kw)

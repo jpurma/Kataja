@@ -236,7 +236,7 @@ class ICommandNode(ITextNode):
 class ITemplateNode(ITextNode):
     """ Node used for complex visible labels, allowing a template be given
     for the node that
-    describes the displayed fields and their positioning and another for
+    describes the displayed elements and their positioning and another for
     parsing nodes
     """
 

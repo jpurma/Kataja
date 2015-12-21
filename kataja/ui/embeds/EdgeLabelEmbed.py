@@ -4,7 +4,7 @@ from kataja.ui.embeds.UIEmbed import UIEmbed
 from kataja.singletons import qt_prefs
 import kataja.globals as g
 from kataja.ui.OverlayButton import OverlayButton
-from kataja.ui.panels.field_utils import EmbeddedLineEdit
+from kataja.ui.elements.EmbeddedLineEdit import EmbeddedLineEdit
 
 __author__ = 'purma'
 

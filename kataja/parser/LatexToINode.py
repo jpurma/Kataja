@@ -53,7 +53,7 @@ def parse(text):
 
 # @time_me
 def parse_field(text):
-    """ Simpler version of parse, turns values of text fields into INodes
+    """ Simpler version of parse, turns values of text elements into INodes
     (intermediary nodes).  Results are ITextNodes that may contain more
     ITextNodes and ICommandNodes.
         :param text: string to parse.

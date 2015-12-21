@@ -112,7 +112,7 @@ class Forest(BaseModel):
         undo),
         to run the side-effects of various setters in an order that makes sense.
         :param update_type:
-        :param updated_fields: list of names of fields that have been updated.
+        :param updated_fields: list of names of elements that have been updated.
         :return: None
         """
         if 'nodes' in updated_fields:
@@ -967,7 +967,7 @@ class Forest(BaseModel):
         definition strings for nodes in trees.
         :return:
         """
-        # todo: can we write feature/gloss definitions into node text fields?
+        # todo: can we write feature/gloss definitions into node text elements?
         # print('we have following keys:', self.nodes_by_uid.keys())
         pass
 
