@@ -25,41 +25,41 @@ from collections import OrderedDict
 
 from PyQt5 import QtCore, QtWidgets
 
-from kataja.KatajaAction import KatajaAction
-from kataja.managers.KeyPressManager import ShortcutSolver, ButtonShortcutFilter
-from kataja.singletons import ctrl, prefs, qt_prefs
+import kataja.actions as action_methods
+import kataja.globals as g
 from kataja.Edge import Edge
+from kataja.KatajaAction import KatajaAction
+from kataja.actions import actions
+from kataja.managers.KeyPressManager import ShortcutSolver, ButtonShortcutFilter
+from kataja.nodes.Node import Node
+from kataja.singletons import ctrl, prefs, qt_prefs
+from kataja.ui import drawn_icons
 from kataja.ui.ActivityMarker import ActivityMarker
 from kataja.ui.ControlPoint import ControlPoint
 from kataja.ui.FadingSymbol import FadingSymbol
 from kataja.ui.MessageWriter import MessageWriter
-from kataja.ui.StretchLine import StretchLine
-import kataja.actions as action_methods
-from kataja.actions import actions
-import kataja.globals as g
-from kataja.ui.TouchArea import TouchArea, create_touch_area
-from kataja.ui.panels.ColorThemePanel import ColorPanel
-from kataja.ui.panels.ColorWheelPanel import ColorWheelPanel
-from kataja.ui.elements.ResizeHandle import GraphicsResizeHandle
-from kataja.ui.elements.TableModelComboBox import TableModelComboBox
-from kataja.ui.panels.LogPanel import LogPanel
-from kataja.ui.panels.NavigationPanel import NavigationPanel
-from kataja.ui.panels.VisualizationPanel import VisualizationPanel
-from kataja.visualizations.available import VISUALIZATIONS, action_key
-from kataja.ui.panels.LineOptionsPanel import LineOptionsPanel
-from kataja.ui.embeds.NewElementEmbed import NewElementEmbed, NewElementMarker
-from kataja.ui.embeds.EdgeLabelEmbed import EdgeLabelEmbed
-from kataja.ui.panels import UIPanel
 from kataja.ui.OverlayButton import OverlayButton, button_factory
-from kataja.ui.panels.SymbolPanel import SymbolPanel
-from kataja.ui.panels.NodesPanel import NodesPanel
-from kataja.ui.embeds.NodeEditEmbed import NodeEditEmbed
-from kataja.ui.panels.StylePanel import StylePanel
+from kataja.ui.StretchLine import StretchLine
+from kataja.ui.TouchArea import TouchArea, create_touch_area
 from kataja.ui.elements.MyColorDialog import MyColorDialog
 from kataja.ui.elements.MyFontDialog import MyFontDialog
-from kataja.nodes.Node import Node
-from kataja.ui import drawn_icons
+from kataja.ui.elements.ResizeHandle import GraphicsResizeHandle
+from kataja.ui.elements.TableModelComboBox import TableModelComboBox
+from kataja.ui.embeds.EdgeLabelEmbed import EdgeLabelEmbed
+from kataja.ui.embeds.NewElementEmbed import NewElementEmbed, NewElementMarker
+from kataja.ui.embeds.NodeEditEmbed import NodeEditEmbed
+from kataja.ui.panels import UIPanel
+from kataja.ui.panels.ColorThemePanel import ColorPanel
+from kataja.ui.panels.ColorWheelPanel import ColorWheelPanel
+from kataja.ui.panels.LineOptionsPanel import LineOptionsPanel
+from kataja.ui.panels.LogPanel import LogPanel
+from kataja.ui.panels.NavigationPanel import NavigationPanel
+from kataja.ui.panels.NodesPanel import NodesPanel
+from kataja.ui.panels.StylePanel import StylePanel
+from kataja.ui.panels.SymbolPanel import SymbolPanel
 from kataja.ui.panels.VisualizationOptionsPanel import VisualizationOptionsPanel
+from kataja.ui.panels.VisualizationPanel import VisualizationPanel
+from kataja.visualizations.available import VISUALIZATIONS, action_key
 
 NOTHING = 0
 SELECTING_AREA = 1
@@ -70,43 +70,35 @@ PANELS = {g.LOG: {'name': 'Log', 'position': 'bottom'},
           g.NAVIGATION: {'name': 'Trees', 'position': 'right'},
           g.VISUALIZATION: {'name': 'Visualization', 'position': 'right'},
           g.COLOR_THEME: {'name': 'Color theme', 'position': 'right'},
-          g.COLOR_WHEEL: {'name': 'Color theme wheel', 'position': 'right',
-                          'folded': True, 'closed': True},
-          g.LINE_OPTIONS: {'name': 'More line options', 'position': 'float',
-                           'closed': True},
+          g.COLOR_WHEEL: {'name': 'Color theme wheel', 'position': 'right', 'folded': True,
+                          'closed': True},
+          g.LINE_OPTIONS: {'name': 'More line options', 'position': 'float', 'closed': True},
           g.STYLE: {'name': 'Styles', 'position': 'right'},
           g.SYMBOLS: {'name': 'Symbols', 'position': 'right'},
           g.NODES: {'name': 'Nodes', 'position': 'right'},
-          g.VIS_OPTIONS: {'name': 'Visualization options', 'position':
-          'float', 'closed': True}}
+          g.VIS_OPTIONS: {'name': 'Visualization options', 'position': 'float', 'closed': True}}
 
-panel_order = [g.LOG, g.NAVIGATION, g.SYMBOLS, g.NODES, g.STYLE,
-               g.VISUALIZATION, g.COLOR_THEME, g.COLOR_WHEEL,
-               g.LINE_OPTIONS, g.VIS_OPTIONS]
+panel_order = [g.LOG, g.NAVIGATION, g.SYMBOLS, g.NODES, g.STYLE, g.VISUALIZATION, g.COLOR_THEME,
+               g.COLOR_WHEEL, g.LINE_OPTIONS, g.VIS_OPTIONS]
 
-panel_classes = {g.LOG: LogPanel,
-                 g.NAVIGATION: NavigationPanel,
+panel_classes = {g.LOG: LogPanel, g.NAVIGATION: NavigationPanel,
                  g.VISUALIZATION: VisualizationPanel, g.COLOR_THEME: ColorPanel,
-                 g.COLOR_WHEEL: ColorWheelPanel,
-                 g.LINE_OPTIONS: LineOptionsPanel, g.SYMBOLS: SymbolPanel,
-                 g.NODES: NodesPanel, g.STYLE: StylePanel, g.VIS_OPTIONS:
-                     VisualizationOptionsPanel}
+                 g.COLOR_WHEEL: ColorWheelPanel, g.LINE_OPTIONS: LineOptionsPanel,
+                 g.SYMBOLS: SymbolPanel, g.NODES: NodesPanel, g.STYLE: StylePanel,
+                 g.VIS_OPTIONS: VisualizationOptionsPanel}
 
 menu_structure = OrderedDict([('file_menu', ('&File',
                                              ['new_forest', 'open', 'save', 'save_as', '---',
-                                              'print_pdf', 'blender_render',
-                                              '---', 'preferences', '---',
-                                              'quit'])),
-    ('edit_menu', ('&Edit', ['undo', 'redo'])),
-    ('build_menu', ('&Build', ['next_forest', 'prev_forest', 'next_derivation_step',
-                               'prev_derivation_step'])),
-    ('rules_menu', ('&Rules', ['bracket_mode', 'trace_mode',
-                               'merge_order_attribute',
-                               'select_order_attribute'])),
-    ('view_menu', ('&View', ['$visualizations', '---', 'change_colors', 'adjust_colors',
-                             'zoom_to_fit', '---', 'fullscreen_mode'])),
-    ('panels_menu', ('&Panels', ['$panels', '---', 'toggle_all_panels'])),
-    ('help_menu', ('&Help', ['help']))])
+                                              'print_pdf', 'blender_render', '---', 'preferences',
+                                              '---', 'quit'])),
+                              ('edit_menu', ('&Edit', ['undo', 'redo'])), ('build_menu', (
+    '&Build', ['next_forest', 'prev_forest', 'next_derivation_step', 'prev_derivation_step'])), (
+                              'rules_menu', ('&Rules',
+                                             ['bracket_mode', 'trace_mode', 'merge_order_attribute',
+                                              'select_order_attribute'])), ('view_menu', ('&View', [
+        '$visualizations', '---', 'change_colors', 'adjust_colors', 'zoom_to_fit', '---',
+        'fullscreen_mode'])), ('panels_menu', ('&Panels', ['$panels', '---', 'toggle_all_panels'])),
+                              ('help_menu', ('&Help', ['help']))])
 
 NEW_ELEMENT_EMBED = 'new_element_embed'
 NEW_ELEMENT_MARKER = 'new_element_marker'
@@ -166,15 +158,13 @@ class UIManager:
         ctrl.add_watcher('forest_changed', self)
         ctrl.add_watcher('viewport_changed', self)
 
-
     def get_action_group(self, action_group_name):
         """ Get action group with this name, or create one if it doesn't exist
         :param action_group_name:
         :return:
         """
         if action_group_name not in self._action_groups:
-            self._action_groups[action_group_name] = QtWidgets.QActionGroup(
-                self.main)
+            self._action_groups[action_group_name] = QtWidgets.QActionGroup(self.main)
         return self._action_groups[action_group_name]
 
     def set_scope(self, scope):
@@ -186,8 +176,7 @@ class UIManager:
     def edge_scope(self):
         return ctrl.fs.node_info(self.scope, 'edge')
 
-    def start_color_dialog(self, receiver, parent, role,
-                           initial_color='content1'):
+    def start_color_dialog(self, receiver, parent, role, initial_color='content1'):
         """ There can be several color dialogs active at same time. Even when
         closed they are kept in the color_dialogs -dict.
 
@@ -405,8 +394,7 @@ class UIManager:
         for name, vis in VISUALIZATIONS.items():
             key = action_key(name)
             d = {'command': name, 'method': action_methods.change_visualization,
-                 'shortcut': vis.shortcut, 'checkable': True,
-                 'sender_arg': True, 'args': [name],
+                 'shortcut': vis.shortcut, 'checkable': True, 'sender_arg': True, 'args': [name],
                  'viewgroup': 'visualizations', 'exclusive': True}
             self.actions[key] = d
             additional_actions['visualizations'].append(key)
@@ -414,11 +402,9 @@ class UIManager:
         additional_actions['panels'] = []
         for panel_key, panel_data in PANELS.items():
             key = 'toggle_panel_%s' % panel_key
-            d = {'command': panel_data['name'],
-                 'method': action_methods.toggle_panel, 'checkable': True,
-                 'viewgroup': 'Panels', 'args': [panel_key], 'action_arg':
-                     True, 'undoable': False,
-                 'exclusive': False, 'tooltip': "Close this panel"}
+            d = {'command': panel_data['name'], 'method': action_methods.toggle_panel,
+                 'checkable': True, 'viewgroup': 'Panels', 'args': [panel_key], 'action_arg': True,
+                 'undoable': False, 'exclusive': False, 'tooltip': "Close this panel"}
             self.actions[key] = d
             additional_actions['panels'].append(key)
         # ## Create actions
@@ -529,8 +515,7 @@ class UIManager:
             toggle_action = self.get_action('toggle_panel_%s' % panel_key)
             toggle_action.setChecked(checked)
 
-    def create_panel(self, id, name='', position=None, folded=False,
-                     default=False, **kwargs):
+    def create_panel(self, id, name='', position=None, folded=False, default=False, **kwargs):
         """ Create single panel. Panels come in different classes, but we have
         a local dict panel_classes to figure out which kind of panel should
         be created.
@@ -547,9 +532,8 @@ class UIManager:
             folded = data.get('folded', False)
             name = data.get('name', '')
         constructor = panel_classes[id]
-        new_panel = constructor(name, id, default_position=position,
-                                parent=self.main, ui_manager=self,
-                                folded=folded)
+        new_panel = constructor(name, id, default_position=position, parent=self.main,
+                                ui_manager=self, folded=folded)
         self._panels[id] = new_panel
         return new_panel
 
@@ -641,8 +625,7 @@ class UIManager:
             i = element.view().currentIndex()
             args.append(element.model().itemFromIndex(i).data())
         elif isinstance(element, QtWidgets.QComboBox):
-            args.append((element.currentIndex(),
-                         element.itemData(element.currentIndex())))
+            args.append((element.currentIndex(), element.itemData(element.currentIndex())))
         elif isinstance(element, QtWidgets.QCheckBox):
             args.append(element.checkState())
         elif isinstance(element, QtWidgets.QAbstractSpinBox):
@@ -668,8 +651,7 @@ class UIManager:
         """
         lp = edge.label_item.pos()
         if EDGE_LABEL_EMBED not in self._items:
-            embed = EdgeLabelEmbed(self.main.graph_view, self, edge,
-                                   EDGE_LABEL_EMBED)
+            embed = EdgeLabelEmbed(self.main.graph_view, self, edge, EDGE_LABEL_EMBED)
             self.add_ui(embed)
         else:
             embed = self._items[EDGE_LABEL_EMBED]
@@ -687,8 +669,7 @@ class UIManager:
         embed = self.get_ui(NEW_ELEMENT_EMBED)
         marker = self.get_ui(NEW_ELEMENT_MARKER)
         if not embed:
-            embed = NewElementEmbed(self.main.graph_view, self,
-                                    NEW_ELEMENT_EMBED)
+            embed = NewElementEmbed(self.main.graph_view, self, NEW_ELEMENT_EMBED)
             self.add_ui(embed, show=False)
         if not marker:
             marker = NewElementMarker(scene_pos, embed, NEW_ELEMENT_MARKER)
@@ -790,7 +771,6 @@ class UIManager:
             elif isinstance(item, Node):
                 self.update_touch_areas_for_selected_node(item)
 
-
     def update_touch_areas_for_selected_node(self, node):
         """ Assumes that touch areas for this node are empty and that the
         node is selected
@@ -818,8 +798,7 @@ class UIManager:
                 action = self.get_action(values.get('action'))
                 place = values.get('place', '')
                 if place == 'edge_up':
-                    for edge in node.get_edges_up(similar=True,
-                                                  visible=True):
+                    for edge in node.get_edges_up(similar=True, visible=True):
                         ta = self.get_touch_area(edge, key)
                         if not ta:
                             self.create_touch_area(edge, key, action)
@@ -858,19 +837,18 @@ class UIManager:
                     self.create_touch_area(edge, g.RIGHT_ADD_SIBLING,
                                            self.get_action('add_sibling_right'))
 
-    def prepare_touch_areas_for_dragging(self, drag_host=None, moving=None,
-                                         dragged_type='', multidrag=False):
+    def prepare_touch_areas_for_dragging(self, drag_host=None, moving=None, dragged_type='',
+                                         multidrag=False):
         """
         :param drag_host: node that is being dragged
         :param moving: set of moving nodes (does not include drag_host)
         :param dragged_type: If the node doesn't exist yet, node_type can be
         given as a hint of what to expect
         """
+
         def check_conditions(cond, node, drag_host, dragged_type):
             if isinstance(cond, list):
-                return all((check_conditions(c, node, drag_host, dragged_type)
-                            for c in
-                          cond))
+                return all((check_conditions(c, node, drag_host, dragged_type) for c in cond))
             if not cond:
                 return True
             elif cond == 'is_top':
@@ -914,8 +892,7 @@ class UIManager:
                     action = self.get_action(values.get('action'))
                     place = values.get('place', '')
                     if place == 'edge_up':
-                        for edge in node.get_edges_up(similar=True,
-                                                      visible=True):
+                        for edge in node.get_edges_up(similar=True, visible=True):
                             ta = self.get_touch_area(edge, key)
                             if not ta:
                                 self.create_touch_area(edge, key, action)
@@ -926,7 +903,6 @@ class UIManager:
                     else:
                         raise NotImplementedError
 
-
     # ### Flashing symbols
     # ################################################################
 
@@ -935,13 +911,12 @@ class UIManager:
 
         :param node:
         """
-        #assert (node.locked or node.use_adjustment)
+        # assert (node.locked or node.use_adjustment)
         ui_key = node.save_key + '_lock_icon'
         if ui_key in self._items:
             return
 
-        item = FadingSymbol(qt_prefs.lock_pixmap, node, self, ui_key,
-                            place='bottom_right')
+        item = FadingSymbol(qt_prefs.lock_pixmap, node, self, ui_key, place='bottom_right')
         # print u"\U0001F512" , unichr(9875) # unichr(9875)
         self.add_ui(item)
         item.fade_out()
@@ -1011,18 +986,15 @@ class UIManager:
         :return:
         """
         fit_to_screen = self._create_overlay_button(host=None, key='fit_to_screen', icon=None,
-                                                    role='bottom',
-                                                    text='Fit to screen',
-                                                    action='zoom_to_fit',
-                                                    size=(48, 24),
-                                                    draw_method=
-                                                    drawn_icons.fit_to_screen)
+                                                    role='bottom', text='Fit to screen',
+                                                    action='zoom_to_fit', size=(48, 24),
+                                                    draw_method=drawn_icons.fit_to_screen)
         gw = fit_to_screen.parent()
         fit_to_screen.move(gw.width() - fit_to_screen.width() - 2, 2)
         fit_to_screen.show()
 
-    def _create_overlay_button(self, icon, host, role, key, text, action,
-                               size=None, draw_method=None):
+    def _create_overlay_button(self, icon, host, role, key, text, action, size=None,
+                               draw_method=None):
         """
 
         :param icon:
@@ -1034,10 +1006,8 @@ class UIManager:
         :param size:
         """
         if key not in self._items:
-            button = OverlayButton(host, key, icon, role, text,
-                                   parent=self.main.graph_view,
-                                   size=size or 16,
-                                   draw_method=draw_method)
+            button = OverlayButton(host, key, icon, role, text, parent=self.main.graph_view,
+                                   size=size or 16, draw_method=draw_method)
             self.add_ui(button)
             button.update_position()
             self.connect_element_to_action(button, action)
@@ -1073,7 +1043,7 @@ class UIManager:
                 self.get_or_create_button(node, key)
         if node._label_complex.resizable or True:
             handle = GraphicsResizeHandle(ctrl.graph_view, node)
-
+            self.add_ui(handle)
 
     def get_or_create_button(self, node, role_key):
         if node:
@@ -1101,17 +1071,13 @@ class UIManager:
         else:
             key = edge.save_key + "_cut_start"
             if edge.start:
-                self._create_overlay_button(icon=qt_prefs.cut_icon, host=edge,
-                                            role=g.START_CUT, key=key,
-                                            text='Disconnect from node',
+                self._create_overlay_button(icon=qt_prefs.cut_icon, host=edge, role=g.START_CUT,
+                                            key=key, text='Disconnect from node',
                                             action='disconnect_edge')
         key = edge.save_key + "_cut_end"
         if edge.end and not edge.end.is_placeholder():
-            self._create_overlay_button(icon=qt_prefs.cut_icon, host=edge,
-                                        role=g.END_CUT, key=key,
-                                        text='Disconnect from node',
-                                        action='disconnect_edge')
-
+            self._create_overlay_button(icon=qt_prefs.cut_icon, host=edge, role=g.END_CUT, key=key,
+                                        text='Disconnect from node', action='disconnect_edge')
 
     # ### Control points
     # ####################################################################

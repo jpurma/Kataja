@@ -22,7 +22,7 @@
 #
 # ############################################################################
 
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtGui
 
 from kataja.LabelDocument import LabelDocument
 from kataja.parser import INodeToLabelDocument
@@ -46,7 +46,9 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.triangle_y = 0
         self.setDocument(LabelDocument())
         self.resizable = False
+        self.char_width = 0
         self.line_length = 0
+        self._font = None
 
     def update_label(self, font, inode):
         """ Asks for node/host to give text and update if changed
@@ -54,12 +56,16 @@ class Label(QtWidgets.QGraphicsTextItem):
         :param inode: provide inode to parse to label document
         """
         doc = self.document()
-        self.setFont(font)
+        if font != self._font:
+            self.setFont(font)
+            self._font = font
+            fm = QtGui.QFontMetrics(font)
+            self.char_width = fm.maxWidth()
         self.prepareGeometryChange()
         self.setTextWidth(-1)
         INodeToLabelDocument.parse_inode(inode, doc)
         if self.line_length:
-            self.setTextWidth(200)
+            self.setTextWidth(self.line_length * self.char_width)
         else:
             self.setTextWidth(doc.idealWidth())
         l = doc.lineCount()
