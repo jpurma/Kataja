@@ -190,6 +190,7 @@ class RemoveMergerButton(OverlayButton):
         super().__init__(host,
                          ui_key,
                          'delete_icon',
+                         g.REMOVE_MERGER,
                          text='Remove this non-merging node',
                          parent=parent,
                          size=16,

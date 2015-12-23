@@ -22,10 +22,11 @@
 #
 # ############################################################################
 
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtWidgets, QtGui, QtCore
 
 from kataja.LabelDocument import LabelDocument
 from kataja.parser import INodeToLabelDocument
+from kataja.globals import LEFT_ALIGN, CENTER_ALIGN, RIGHT_ALIGN
 
 
 class Label(QtWidgets.QGraphicsTextItem):
@@ -45,7 +46,9 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.triangle_height = 0
         self.triangle_y = 0
         self.setDocument(LabelDocument())
+        self.setTextWidth(-1)
         self.resizable = False
+        self.text_align = CENTER_ALIGN
         self.char_width = 0
         self.line_length = 0
         self._font = None
@@ -61,8 +64,14 @@ class Label(QtWidgets.QGraphicsTextItem):
             self._font = font
             fm = QtGui.QFontMetrics(font)
             self.char_width = fm.maxWidth()
+        align = QtCore.Qt.AlignHCenter
+        if self.text_align == LEFT_ALIGN:
+            align = QtCore.Qt.AlignLeft
+        elif self.text_align == RIGHT_ALIGN:
+            align = QtCore.Qt.AlignRight
+        doc.setDefaultTextOption(QtGui.QTextOption(align))
+
         self.prepareGeometryChange()
-        self.setTextWidth(-1)
         INodeToLabelDocument.parse_inode(inode, doc)
         if self.line_length:
             self.setTextWidth(self.line_length * self.char_width)
@@ -113,20 +122,17 @@ class Label(QtWidgets.QGraphicsTextItem):
                 self.triangle_is_present = False
         self.setPos(iw / -2.0, self.top_y)
 
-
     def is_empty(self):
         """ Turning this node into label would result in an empty label.
         :return: bool
         """
         return not self._host.as_inode()
 
-
     def get_top_row_y(self):
         return self.top_row_y
 
     def get_bottom_row_y(self):
         return self.bottom_row_y
-
 
     def paint(self, painter, option, widget):
         """ Painting is sensitive to mouse/selection issues, but usually with

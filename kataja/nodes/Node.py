@@ -101,7 +101,7 @@ class Node(Movable):
         Movable.__init__(self)
         self.syntactic_object = syntactic_object
 
-        self._label_complex = None
+        self.label_object = None
         self._label_visible = True
         self._label_qdocument = None
         self.label_rect = None
@@ -109,7 +109,7 @@ class Node(Movable):
         self._inode_changed = True
         self._inode_str = ''
         self._gravity = 0
-        self._label_complex = Label(parent=self)
+        self.label_object = Label(parent=self)
         self.clickable = False
         self.selectable = True
         self.draggable = True
@@ -206,6 +206,7 @@ class Node(Movable):
         """
         return None
 
+    # This seems to be not used
     def prepare_schema_for_label_display(self):
         """
         :return:
@@ -290,7 +291,7 @@ class Node(Movable):
         """
         # This part should be done by all subclasses, call super(
         # ).impose_order_to_inode()
-        assert self._label_complex
+        assert self.label_object
 
         self._inode.fields = {}
         self._inode.view_order = []
@@ -322,11 +323,13 @@ class Node(Movable):
             if field_name not in view_order:
                 view_order.append(field_name)
             if 'resizable' in value:
-                self._label_complex.resizable = True
+                self.label_object.resizable = True
             if 'line_length' in value:
                 ll = value['line_length']
-                if ll > self._label_complex.line_length:
-                    self._label_complex.line_length = ll
+                if ll > self.label_object.line_length:
+                    self.label_object.line_length = ll
+            if 'text_align' in value:
+                self.label_object.text_align = value['text_align']
 
 
     def update_values_from_inode(self):
@@ -367,11 +370,11 @@ class Node(Movable):
         :param value: bool
         :return: None
         """
-        if self._label_complex:
+        if self.label_object:
             if value:
-                self._label_complex.y_offset = TRIANGLE_HEIGHT
+                self.label_object.y_offset = TRIANGLE_HEIGHT
             else:
-                self._label_complex.y_offset = 0
+                self.label_object.y_offset = 0
             self.update_label()
 
     def if_changed_folding_towards(self, value):
@@ -969,11 +972,11 @@ syntactic_object: %s
         :param force_update: Force inode recomposition and visibility checks
         :return:
         """
-        if not self._label_complex:
-            self._label_complex = Label(parent=self)
+        if not self.label_object:
+            self.label_object = Label(parent=self)
         if force_update:
             self._inode_changed = True
-        self._label_complex.update_label(self.font, self.as_inode())
+        self.label_object.update_label(self.font, self.as_inode())
         self.update_label_visibility()
         self.update_bounding_rect()
         self.update_status_tip()
@@ -983,10 +986,10 @@ syntactic_object: %s
         displayed. Node itself can be visible even when its label is not.
         :return:
         """
-        if not self._label_complex:
+        if not self.label_object:
             self.update_label()
         self._label_visible = not self.as_inode().is_empty_for_view()
-        self._label_complex.setVisible(self._label_visible)
+        self.label_object.setVisible(self._label_visible)
 
     @property
     def raw_label(self):
@@ -1043,8 +1046,8 @@ syntactic_object: %s
         """ Label should answer to this.
         :return:
         """
-        if self._label_complex:
-            return self._label_complex.get_bottom_row_y()
+        if self.label_object:
+            return self.label_object.get_bottom_row_y()
         else:
             return 0
 
@@ -1052,8 +1055,8 @@ syntactic_object: %s
         """ Implement this if the movable has content where differentiating between bottom row and top row can potentially make sense.
         :return:
         """
-        if self._label_complex:
-            return self._label_complex.get_top_row_y()
+        if self.label_object:
+            return self.label_object.get_top_row_y()
         else:
             return 0
 
@@ -1125,11 +1128,11 @@ syntactic_object: %s
         :return:
         """
         my_class = self.__class__
-        if self._label_visible and self._label_complex:
-            lbr = self._label_complex.boundingRect()
+        if self._label_visible and self.label_object:
+            lbr = self.label_object.boundingRect()
             lbh = lbr.height()
             lbw = lbr.width()
-            self.label_rect = QtCore.QRectF(self._label_complex.x(), self._label_complex.y(), lbw,
+            self.label_rect = QtCore.QRectF(self.label_object.x(), self.label_object.y(), lbw,
                                             lbh)
             self.width = max((lbw, my_class.width))
             self.height = max((lbh, my_class.height))
@@ -1194,8 +1197,8 @@ syntactic_object: %s
         left = br.x()
         center = left + self.width / 2
         right = left + self.width
-        top = self._label_complex.triangle_y
-        bottom = top + self._label_complex.triangle_height
+        top = self.label_object.triangle_y
+        bottom = top + self.label_object.triangle_height
         simple = False
         if simple:
             triangle = QtGui.QPainterPath()

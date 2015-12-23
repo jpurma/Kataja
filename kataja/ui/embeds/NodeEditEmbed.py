@@ -51,6 +51,7 @@ class NodeEditEmbed(UIEmbed):
         ed = node.get_editing_template()
         field_order = ed['field_order']
         self.fields = {}
+        self.resize_target = None
         hlayout = None
 
         # Generate edit elements based on data, expand this as necessary
@@ -78,13 +79,21 @@ class NodeEditEmbed(UIEmbed):
                     field.setPalette(ui_s)
             elif itype == 'textarea':
                 self.disable_effect = True
-                width = d.get('width', 200)
+                fm = QtGui.QFontMetrics(smaller_font)
+                char_width = fm.maxWidth()
                 field = EmbeddedTextarea(self, tip=tt, font=smaller_font, prefill=prefill)
-                field.setMaximumWidth(width)
+                nc = node.label_object
+                if nc.line_length > 0:
+                    field.setFixedWidth(nc.line_length * char_width)
+                else:
+                    # if line_length is not defined, estimate it
+                    w = nc.document().idealWidth()
+                    line_length = w / nc.char_width
+                    field.setFixedWidth(max(200, line_length * char_width))
+                self.resize_target = field
                 if syntactic:
                     field.setPalette(ui_s)
             elif itype == 'expandingtext':
-                #width = d.get('width', 200)
                 field = ExpandingLineEdit(self,
                                           tip=tt,
                                           big_font=big_font,
@@ -134,8 +143,8 @@ class NodeEditEmbed(UIEmbed):
         self.enter_button.setParent(self)
         ui_manager.connect_element_to_action(self.enter_button, 'finish_editing_node')
         hlayout.addWidget(self.enter_button)
-        if node._label_complex.resizable:
-            self.resize_handle = ResizeHandle(self)
+        if self.resize_target:
+            self.resize_handle = ResizeHandle(self, self.resize_target)
             hlayout.addWidget(self.resize_handle, 0, QtCore.Qt.AlignRight)
         layout.addLayout(hlayout)
         self.setLayout(layout)

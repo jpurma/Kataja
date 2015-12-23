@@ -1041,7 +1041,7 @@ class UIManager:
             ok = check_conditions(cond, node)
             if ok:
                 self.get_or_create_button(node, key)
-        if node._label_complex.resizable or True:
+        if node.label_object.resizable:
             handle = GraphicsResizeHandle(ctrl.graph_view, node)
             self.add_ui(handle)
 

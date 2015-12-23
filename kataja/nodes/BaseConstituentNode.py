@@ -216,10 +216,10 @@ class BaseConstituentNode(Node):
         displayed. Node itself can be visible even when its label is not.
         :return:
         """
-        if not self._label_complex:
+        if not self.label_object:
             self.update_label()
         self._label_visible = self.triangle or not self.as_inode().is_empty_for_view()
-        self._label_complex.setVisible(self._label_visible)
+        self.label_object.setVisible(self._label_visible)
 
     def update_visibility(self, **kw):
         """ Compute visibility-related attributes for this constituent node and update those that

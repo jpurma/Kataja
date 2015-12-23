@@ -68,7 +68,7 @@ class UIEmbed(QtWidgets.QWidget):
             self.update_position(focus_point=focus_point)
 
     def update_size(self):
-        self.setMinimumSize(self.layout().minimumSize())
+        self.setFixedSize(self.layout().minimumSize())
 
     def update_fields(self):
         """ Subclasses implement this if there are elements to update
@@ -107,17 +107,65 @@ class UIEmbed(QtWidgets.QWidget):
             else:
                 return
 
-        h = self.height()
-        w = self.width()
+        view = self.parent()
+        top_left = view.mapToScene(self.geometry().topLeft())
+        bottom_right = view.mapToScene(self.geometry().bottomRight())
+        size_in_scene = bottom_right - top_left
+        w = size_in_scene.x()
+        h = size_in_scene.y()
         if h <= 100:
             h = self.assumed_height
         if w <= 100:
             w = self.assumed_width
-        view_pos = self.parent().mapFromScene(focus_point)
-        vw = self.parent().width()
-        vh = self.parent().height()
-        x = view_pos.x()
-        y = view_pos.y()
+        vr = view.sceneRect()
+        view_top = vr.top()
+        view_bottom = vr.bottom()
+        view_left = vr.left()
+        view_right = vr.right()
+        if self.host:
+            br = self.host.sceneBoundingRect()
+            node_top = br.top()
+            node_bottom = br.bottom()
+            node_left = br.left()
+            node_right = br.right()
+        else:
+            fp = view.mapToScene(focus_point.toPoint())
+            node_top = fp.y()
+            node_bottom = fp.y()
+            node_left = fp.x()
+            node_right = fp.x()
+
+        if node_top - view_top > view_bottom - node_bottom:
+            # UP
+            new_y = node_top - h
+            if node_left - view_left > view_right - node_right:
+                # LEFT
+                if node_left + w < view_right:
+                    new_x = node_left
+                else:
+                    new_x = node_left - w
+            else:
+                # RIGHT
+                if node_left - view_left < 100:
+                    new_x = node_right
+                else:
+                    new_x = node_left
+        else:
+            # DOWN
+            new_y = node_bottom
+            if node_left - view_left > view_right - node_right:
+                # LEFT
+                if node_left + w < view_right:
+                    new_x = node_left
+                else:
+                    new_x = node_left - w
+            else:
+                # RIGHT
+                if node_left - view_left < 100:
+                    new_x = node_right
+                else:
+                    new_x = node_left
+        new_pos = QtCore.QPoint(new_x, new_y)
         # Magnet placement:
         # 1---2---3
         # |+-----+|
@@ -125,34 +173,7 @@ class UIEmbed(QtWidgets.QWidget):
         # |+-----+|
         # 6---7---8
         #
-        margin_x = self.margin_x()
-        margin_y = self.margin_y()
-        w += margin_x
-        h += margin_y
-
-        if x + w > vw:
-            if y + h > vh:
-                magnet = QtCore.QPoint(w, h), 8
-            else:
-                magnet = QtCore.QPoint(w, margin_y), 3
-        elif y + (h / 2) > vh:
-            if x + (w / 2) > vw:
-                magnet = QtCore.QPoint(w, h), 8
-            elif x - (w / 2) < 0:
-                magnet = QtCore.QPoint(-margin_x, h), 6
-            else:
-                magnet = QtCore.QPoint(w / 2, h), 7
-        elif y - (h / 2) < 0:
-            if x + (w / 2) > vw:
-                magnet = QtCore.QPoint(w, -margin_y), 3
-            elif x - (w / 2) < 0:
-                magnet = QtCore.QPoint(-margin_x, -margin_y), 1
-            else:
-                magnet = QtCore.QPoint(w / 2, -margin_y), 2
-        else:
-            magnet = QtCore.QPoint(-margin_x, h / 2), 4
-        self._magnet = magnet
-        self.move(view_pos - magnet[0])
+        self.move(view.mapFromScene(new_pos))
         self.updateGeometry()
 
     def magnet(self):

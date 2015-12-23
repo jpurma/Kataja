@@ -4,11 +4,12 @@ from PyQt5 import QtWidgets, QtCore
 from kataja.singletons import ctrl
 from kataja.nodes.Node import Node
 
+
 class ResizeHandle(QtWidgets.QSizeGrip):
 
-    def __init__(self, parent):
+    def __init__(self, parent, resizable):
         super().__init__(parent)
-        self.resizable = parent
+        self.resizable = resizable
         self.pressed = False
         self.adjust = None
 
@@ -34,7 +35,13 @@ class ResizeHandle(QtWidgets.QSizeGrip):
         grandparent = self.resizable.parent()
         bottom_right = grandparent.mapToGlobal(rrect.bottomRight())
         size_diff = bottom_right - gp - self.adjust
-        self.resizable.resize(size.width() - size_diff.x(), size.height() - size_diff.y())
+        nw = max(16, size.width() - size_diff.x())
+        nh = max(16, size.height() - size_diff.y())
+        self.resizable.setMinimumSize(nw, nh)
+        pw = self.parentWidget()
+        if hasattr(pw, 'update_size'):
+            pw.update_size()
+        #self.resizable.resize(size.width() - size_diff.x(), size.height() - size_diff.y())
 
     def eventFilter(self, obj, event):
         """ Remove check for hiding size grip on full screen --
@@ -89,11 +96,11 @@ class GraphicsResizeHandle(QtWidgets.QSizeGrip):
         size_diff = global_bottom_right - gp - self.adjust
         new_width = w - size_diff.x()
         if isinstance(self.host, Node):
-            lc = self.host._label_complex
+            lc = self.host.label_object
             if lc.char_width:
-                lc.line_length = new_width / lc.char_width
-                lc.setTextWidth(new_width)
-                self.host.update_bounding_rect()
+                lc.line_length = max(1, new_width / lc.char_width)
+                self.host.update_label(force_update=True)
+                self.update_position()
             else:
                 print('no char width for label, why?')
 
