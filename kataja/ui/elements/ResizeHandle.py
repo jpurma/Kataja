@@ -67,9 +67,8 @@ class GraphicsResizeHandle(QtWidgets.QSizeGrip):
     def update_position(self):
         v = ctrl.graph_view
         br = self.host.sceneBoundingRect().bottomRight()
-        global_bottom_right = v.mapToGlobal(v.mapFromScene(br))
-        gp = self.mapFromGlobal(global_bottom_right)
-        self.move(gp)
+        bottom_right = v.mapFromScene(br)
+        self.move(bottom_right)
 
     def mousePressEvent(self, e):
         self.pressed = True

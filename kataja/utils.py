@@ -35,7 +35,7 @@ from PyQt5 import QtWidgets, QtCore
 
 from PyQt5.QtCore import QPointF, QPoint
 
-import globals as g
+import kataja.globals as g
 from kataja.debug import DEBUG_TIME_ME
 
 
@@ -398,8 +398,9 @@ def import_plugins(prefs, plugins_path):
     """
     if not plugins_path:
         return
+    os.makedirs(plugins_path, exist_ok=True)
     plugins_dir = os.listdir(plugins_path)
-    print('plugins dir:', plugins_dir)
+
     sys.path.append(plugins_path)
     for plugin_file in plugins_dir:
         if plugin_file.endswith('.py') and not plugin_file.startswith('__'):
