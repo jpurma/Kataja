@@ -23,7 +23,7 @@ from subprocess import call
 mainscript = 'Kataja.py'
 trim_to_64bit = True
 do_signing = True
-create_dmg = False
+create_dmg = True
 developer_cert_config = '../certs/app_developer.txt'
 
 qt_mac = '~/Qt/5.5/clang_64/'

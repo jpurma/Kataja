@@ -21,9 +21,9 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
+import os
 
-
-from kataja.singletons import ctrl
+from kataja.singletons import ctrl, running_environment, prefs
 from kataja.Forest import Forest
 from kataja.BaseModel import BaseModel, Saved
 
@@ -34,10 +34,11 @@ class ForestKeeper(BaseModel):
 
     short_name = "FKeeper"
 
-    def __init__(self, filename=None):
+    def __init__(self, filename=None, treelist_filename=None):
         super().__init__(unique=True)
-        if filename:
-            treelist = self.load_treelist_from_file(filename)
+        self.filename = filename
+        if treelist_filename:
+            treelist = self.load_treelist_from_text_file(treelist_filename)
         else:
             treelist = []
         self.forests = []
@@ -90,7 +91,7 @@ class ForestKeeper(BaseModel):
         return self.current_index, self.forest
 
     @staticmethod
-    def load_treelist_from_file(filename):
+    def load_treelist_from_text_file(filename):
         """ Pretty dumb fileloader, to create a treelist (list of strings)
         :param filename: str, does nothing with the path.
         """

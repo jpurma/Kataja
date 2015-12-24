@@ -184,16 +184,19 @@ a['open'] = {'command': '&Open', 'method': open_kataja_file, 'undoable': False,
              'shortcut': 'Ctrl+o'}
 
 
-def save_kataja_file(filename=None):
+def save_kataja_file():
     """ Save kataja data with an existing file name.
     :param filename: filename received from dialog.
     Format is deduced from the extension of filename.
     :return: None
     """
+    filename = ctrl.main.forest_keeper.filename
+    if not filename:
+        save_as()
+        return
+
     save_format = 'pickle'
     zipped = False
-    if not filename:
-        filename = prefs.file_name
     for key, value, in file_extensions.items():
         if filename.endswith(value):
             i = key.split('.')
@@ -256,7 +259,8 @@ JSON dumps (*.json);; Packed JSON (*.zjson)
                                                                 "trees", "",
                                                                 file_help)
     if filename:
-        save_kataja_file(filename)
+        ctrl.main.forest_keeper.filename = filename
+        save_kataja_file()
 
 
 a['save_as'] = {'command': '&Save as', 'undoable': False, 'method': save_as}
@@ -272,6 +276,21 @@ def print_to_file():
      2nd step is triggered by a timer in main window.
      :return: None
     """
+    if prefs.print_file_path is None:
+        dialog = QtWidgets.QFileDialog(ctrl.main)
+        dialog.setAcceptMode(QtWidgets.QFileDialog.AcceptOpen)
+        dialog.setFileMode(QtWidgets.QFileDialog.DirectoryOnly)
+        dialog.setLabelText(QtWidgets.QFileDialog.Accept, "Select")
+        dialog.setWindowTitle('Select folder where to save your tree graphs (this needs to be done '
+                              'only once)'
+)
+        if dialog.exec_():
+            files = dialog.selectedFiles()
+            if files:
+                prefs.print_file_path = files[0]
+        else:
+            return
+
     sc = ctrl.graph_scene
     # hide unwanted components
     no_brush = QtGui.QBrush(Qt.NoBrush)

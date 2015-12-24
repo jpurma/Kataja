@@ -62,7 +62,7 @@ from kataja.ui.PreferencesDialog import PreferencesDialog
 # objgraph = None
 
 # KatajaMain > UIView > UIManager > GraphView > GraphScene > Leaves etc.
-
+DEBUG_TREESET = 'trees.txt'
 
 class KatajaMain(BaseModel, QtWidgets.QMainWindow):
     """ Qt's main window. When this is closed, application closes. Graphics are
@@ -135,7 +135,7 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         self.add_message('Welcome to Kataja! (h) for help')
 
         print('---- set palette ... ', time.time() - t)
-        self.load_treeset()
+        self.load_initial_treeset()
         print('---- loaded treeset ... ', time.time() - t)
         # toolbar = QtWidgets.QToolBar()
         # toolbar.setFixedSize(480, 40)
@@ -155,14 +155,17 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         self.ui_manager.preferences_dialog.open()
         self.ui_manager.preferences_dialog.trigger_all_updates()
 
-    def load_treeset(self, filename=''):
+    def load_initial_treeset(self):
         """ Loads and initializes a new set of trees. Has to be done before
         the program can do anything sane.
         :param treeset_list:
         """
         print('----- Initializing -----')
-        self.forest_keeper = ForestKeeper(
-            filename=filename or prefs.debug_treeset)
+        if DEBUG_TREESET:
+            filename = running_environment.resources_path + DEBUG_TREESET
+        else:
+            filename = None
+        self.forest_keeper = ForestKeeper(treelist_filename=filename)
         print('----- End Initializing -----')
         print('--- Changing forest ----')
         self.change_forest(self.forest_keeper.forest)

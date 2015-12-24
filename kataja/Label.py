@@ -38,6 +38,7 @@ class Label(QtWidgets.QGraphicsTextItem):
         """ Give node as parent. Label asks it to produce text to show here """
         QtWidgets.QGraphicsTextItem.__init__(self, parent)
         self._host = parent
+        self.has_been_initialized = False
         self.top_y = 0
         self.top_row_y = 0
         self.bottom_row_y = 0
@@ -58,6 +59,7 @@ class Label(QtWidgets.QGraphicsTextItem):
         :param font: provide font to use for label document
         :param inode: provide inode to parse to label document
         """
+        self.has_been_initialized = True
         doc = self.document()
         if font != self._font:
             self.setFont(font)

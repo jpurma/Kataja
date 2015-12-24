@@ -133,7 +133,7 @@ class Preferences(object):
                                           'this.',
                                   'order': 30}
 
-        self.use_magnets = 2
+        self.use_magnets = 1
         self._use_magnets_ui = {'tab': 'Drawing', 'choices':
                                 [(0, 'Aim at center of node'),
                                  (1, 'Magnets at top and bottom'),
@@ -166,7 +166,7 @@ class Preferences(object):
         self.print_format = 'pdf'
         self._print_format_ui = {'tab': 'Printing', 'choices': ['pdf', 'png'], 'order': 10}
 
-        self.print_file_path = ''
+        self.print_file_path = None
         self._print_file_path_ui = {'tab': 'Printing', 'type': 'folder', 'order': 30,
                                     'label': 'Quick print path'}
 
@@ -244,9 +244,8 @@ class Preferences(object):
         # '/Applications/blender.app/Contents/MacOS/blender'
         # self.blender_env_path = '/Users/purma/Dropbox/bioling_blender'
 
-        self.userspace_path = running_environment.default_userspace_path
-        self.debug_treeset = running_environment.resources_path + 'trees.txt'
-        self.file_name = 'savetest.kataja'
+        self.userspace_path = None
+        #self.file_name = 'savetest.kataja'
 
         self.custom_colors = {}
 

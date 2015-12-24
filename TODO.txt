@@ -76,6 +76,8 @@ edit box is open (two end points move).
     + NotImplementedError: QGraphicsObject.paint() is abstract and must be overridden
     + Textarea in comment editing updates/paints poorly
 - Node info shows coordinates relative to tree, not to scene
++ Save without user selection doesn't work in sandboxed app
++ Print image without user selection doesn't work in sandboxed app
 
 ADD:
 

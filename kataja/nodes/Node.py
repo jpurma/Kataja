@@ -375,7 +375,8 @@ class Node(Movable):
                 self.label_object.y_offset = TRIANGLE_HEIGHT
             else:
                 self.label_object.y_offset = 0
-            self.update_label()
+            if self.label_object.has_been_initialized:
+                self.update_label()
 
     def if_changed_folding_towards(self, value):
         self.update_position()
