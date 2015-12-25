@@ -1,61 +1,230 @@
-<!doctype html>
-<html>
+<!DOCTYPE html>
+<html lang="en-us">
   <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta charset="UTF-8">
     <title>Kataja by jpurma</title>
-    <link rel="stylesheet" href="stylesheets/styles.css">
-    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-    <script src="javascripts/respond.js"></script>
-    <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <!--[if lt IE 8]>
-    <link rel="stylesheet" href="stylesheets/ie.css">
-    <![endif]-->
-    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
   </head>
   <body>
-      <div id="header">
-        <nav>
-          <li class="fork"><a href="https://github.com/jpurma/Kataja">View On GitHub</a></li>
-          <li class="downloads"><a href="https://github.com/jpurma/Kataja/zipball/master">ZIP</a></li>
-          <li class="downloads"><a href="https://github.com/jpurma/Kataja/tarball/master">TAR</a></li>
-          <li class="title">DOWNLOADS</li>
-        </nav>
-      </div><!-- end header -->
+    <section class="page-header">
+      <h1 class="project-name">Kataja</h1>
+      <h2 class="project-tagline">Visualizing Biolinguistics</h2>
+      <a href="https://github.com/jpurma/Kataja" class="btn">View on GitHub</a>
+      <a href="https://github.com/jpurma/Kataja/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/jpurma/Kataja/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
 
-    <div class="wrapper">
+    <section class="main-content">
+      <h1>
+<a id="kataja" class="anchor" href="#kataja" aria-hidden="true"><span class="octicon octicon-link"></span></a>Kataja</h1>
 
-      <section>
-        <div id="title">
-          <h1>Kataja</h1>
-          <p>Visualizing Biolinguistics</p>
-          <hr>
-          <span class="credits left">Project maintained by <a href="https://github.com/jpurma">jpurma</a></span>
-          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
-        </div>
-
-        <h1>
-<a name="kataja" class="anchor" href="#kataja"><span class="octicon octicon-link"></span></a>Kataja</h1>
-
-<h2>
-<a name="visualizing-biolinguistics" class="anchor" href="#visualizing-biolinguistics"><span class="octicon octicon-link"></span></a>Visualizing Biolinguistics</h2>
+<p>Visualizing Biolinguistics</p>
 
 <p>Kataja is an open source visualization framework for researchers working with syntax of human languages. 
-Kataja aims to</p>
+Kataja aims to be the best available tool for:</p>
+
+<ul>
+<li>
+<strong>DRAWING</strong> syntactic trees</li>
+<li>
+<strong>PRESENTING</strong> syntactic phenomena</li>
+<li>
+<strong>CRAFTING</strong> syntactic hypotheses</li>
+</ul>
+
+<p>The features will be added to satisfy these needs, in this order.</p>
+
+<p>Kataja is designed and developed by Jukka Purma and it is published under GPL3 license. See COPYING.
+The work here is the production part for PhD (Doctor of Arts) in Aalto University School of Art, Design and Architecture, supervised by doc. Pauli Brattico (University of Helsinki) and prof. Teemu Leinonen (Aalto ARTS). </p>
+
+<p>Kataja is built on Qt5 and Python3.4, using Riverbank Software's PyQt5 to provide Qt bridge for Python.</p>
+
+<h1>
+<a id="about-current-version" class="anchor" href="#about-current-version" aria-hidden="true"><span class="octicon octicon-link"></span></a>About current version</h1>
+
+<p>The software is pre-alpha, under development. Daily updates may break features, and generally are not made in order to publish new features, but to help express and maintain the daily progress with the code base.  </p>
+
+<h1>
+<a id="running-and-installing-on-mac-os-x" class="anchor" href="#running-and-installing-on-mac-os-x" aria-hidden="true"><span class="octicon octicon-link"></span></a>Running and installing on Mac OS X</h1>
+
+<p>There are two ways for running Kataja in Mac OS X:</p>
 
 <ol>
-<li>draw print quality constituent trees for publications, to </li>
-<li>demonstrate operations with constituent structures in presentations or in teaching and to </li>
-<li>test and prototype your own syntax models.</li>
+<li>As a Kataja.app -- recommended for everyday use, easier to install. </li>
+<li>Running as a python script. Necessary for Kataja development and makes plugin development much easier. Requires installation of Qt5.5, PyQt5, sip. See instructions below.</li>
 </ol>
-      </section>
 
-    </div>
-    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
-    
+<p>Both options can coexist on same system, but in this case they share the user preferences. (fixme: should they?) </p>
+
+<h2>
+<a id="option-1-download-install-and-run-katajaapp" class="anchor" href="#option-1-download-install-and-run-katajaapp" aria-hidden="true"><span class="octicon octicon-link"></span></a>Option 1: download, install and run Kataja.app</h2>
+
+<ol>
+<li>Download Kataja.dmg, double click to open it. </li>
+<li>Drag Kataja -application to your Applications-folder. </li>
+<li>Double click Kataja.app to launch it.</li>
+</ol>
+
+<p>Like any well-behaving Mac app, Kataja will on first run create a folder to <code>~/Library/Application Support/Kataja</code> and a preferences file in <code>~/Preferences/fi.aalto.jpurma.Kataja.plist</code>. The Application Support folder will include folder <code>plugins</code>, which is the easiest way to extend Kataja. </p>
+
+<h2>
+<a id="option-2a-run-as-a-python3-script" class="anchor" href="#option-2a-run-as-a-python3-script" aria-hidden="true"><span class="octicon octicon-link"></span></a>Option 2a: run as a Python3 script</h2>
+
+<p>This option means setting up development environment for Kataja. As Kataja is all python code, the development environment can be easily used for daily linguistic work, teaching or studying: there is no separate build phase for launching Kataja, Kataja can always be launched from terminal in Kataja directory with command <code>python3 Kataja.py</code>. It starts faster than Kataja.app-version.</p>
+
+<p>In following the versions mentioned are the latest versions available in 8.3. 2015. Until stabilized, Kataja will be using the latest versions available in order to benefit from performance improvements and bug fixes in build stack components. If the version numbers in this document are dated, use latest PyQt5 version and see its installation guide to find out what are the required versions for SIP and Qt. Usually when a new version of Qt is available, new versions of SIP and PyQt are soon made available.    </p>
+
+<p>Here are the preparations you need to do before Kataja can be run:</p>
+
+<h3>
+<a id="install-python34" class="anchor" href="#install-python34" aria-hidden="true"><span class="octicon octicon-link"></span></a>Install Python3.4</h3>
+
+<p>I'm not sure if this step is necessary and what is the default Python3 provided by OS X, however in terminal do:</p>
+
+<pre><code>python3 --version
+</code></pre>
+
+<p>If the version starts with 3.4, good, otherwise run the recommended python installer from <a href="http://python.org">http://python.org</a> (On Downloads-menu, it should recommend Python 3.4.3 or newer, and Python 2.7.9 or newer, click the 3.4.3 button. Proceed as instructed. </p>
+
+<h3>
+<a id="install-qt" class="anchor" href="#install-qt" aria-hidden="true"><span class="octicon octicon-link"></span></a>Install Qt</h3>
+
+<p>Download Qt 5.5.1 for Mac installer (or the latest version available) from <a href="http://www.qt.io/download-open-source/#">http://www.qt.io/download-open-source/#</a></p>
+
+<p>Run installer. Installer suggests Qt installation path of form "yourhome/Qt5.5" or "yourhome/Qt"  accept that, and remember it for further use.</p>
+
+<h3>
+<a id="install-sip" class="anchor" href="#install-sip" aria-hidden="true"><span class="octicon octicon-link"></span></a>Install SIP</h3>
+
+<p>Download SIP, sip-4.17.tar.gz or the latest available from <a href="http://www.riverbankcomputing.com/software/sip/download">http://www.riverbankcomputing.com/software/sip/download</a>
+Unpack it to your build folder, let's assume that the resulting folder is ~/build/sip-4.17
+Move to folder:</p>
+
+<pre><code>cd sip-4.17
+python3 configure.py 
+make
+</code></pre>
+
+<p>(this should take few seconds and result in ~40 lines of text)</p>
+
+<pre><code>sudo make install
+</code></pre>
+
+<p>(this should take a second and result in ~7 lines of text)</p>
+
+<h3>
+<a id="install-pyqt5" class="anchor" href="#install-pyqt5" aria-hidden="true"><span class="octicon octicon-link"></span></a>Install PyQt5</h3>
+
+<p>Download PyQt5 source package from <a href="http://www.riverbankcomputing.com/software/pyqt/download5">http://www.riverbankcomputing.com/software/pyqt/download5</a>
+PyQt-gpl-5.5.1.tar.gz or later
+Unpack it to your build folder, let's assumet that the resulting folder is ~/build/PyQt-gpl-5.5.1</p>
+
+<pre><code>cd PyQt-gpl-5.5.1
+python3 configure.py --qmake /Users/yourhome/Qt5.5/5.5/clang_64/bin/qmake
+</code></pre>
+
+<p>(notice that --qmake path is the Qt installation path from earlier, and qmake inside it.)</p>
+
+<pre><code>sudo make
+</code></pre>
+
+<p>(this will take several minutes)</p>
+
+<pre><code>sudo make install
+</code></pre>
+
+<p>(several seconds)</p>
+
+<h3>
+<a id="download-kataja-source-and-run-kataja" class="anchor" href="#download-kataja-source-and-run-kataja" aria-hidden="true"><span class="octicon octicon-link"></span></a>Download Kataja source and run Kataja</h3>
+
+<p>get your own copy of Kataja source files with either "Clone in Desktop" or "Download ZIP" in <a href="https://github.com/jpurma/Kataja">https://github.com/jpurma/Kataja</a> .</p>
+
+<p>Navigate to Kataja -folder with terminal, and in there:</p>
+
+<pre><code>python3 Kataja.py
+</code></pre>
+
+<h2>
+<a id="option-2b----building-katajaapp-from-source-for-distribution" class="anchor" href="#option-2b----building-katajaapp-from-source-for-distribution" aria-hidden="true"><span class="octicon octicon-link"></span></a>Option 2b -- Building Kataja.app from source for distribution</h2>
+
+<p>Building Kataja.app is only necessary if you want to distribute your own version of Kataja, and it is necessary to test if you are proposing changes to Kataja that may break the app building, e.g. require new qt dylibs. For normal develop &amp; run -cycle this step is not necessary.</p>
+
+<p>You will need to have Kataja runnable from script (2a). The only new piece required for building Kataja.app is py2app, ( <a href="https://pythonhosted.org/py2app/">https://pythonhosted.org/py2app/</a> ). </p>
+
+<p>The thing to note is that you want to install it for Python3, and the installers often default on Python2-series. Depending on what are the installers available for you, install py2app with either:</p>
+
+<pre><code>sudo pip3 install -U py2app
+</code></pre>
+
+<p>or </p>
+
+<pre><code>sudo easy_install3 -U py2app
+</code></pre>
+
+<p>(To see which one, if either, is available just try if <code>pip3</code> or <code>easy_install3</code> give any response other than "command not found".) </p>
+
+<p>Once py2app is installed, go to Kataja folder and run </p>
+
+<pre><code>python3 setup.py py2app
+</code></pre>
+
+<p>This will take ~10 seconds, and end with <code>------ Done ------</code> if everything is right. At first try, it <code>setup.py</code> may sk you to edit its <code>qt_mac</code> -variable to provide a path to your Qt installation.</p>
+
+<p>The build script will build Kataja.app to <code>dist/</code> and Kataja.dmg to folder where it is run. Building of Kataja.dmg can be toggled off with <code>create_dmg</code> -variable in <code>setup.py</code>. </p>
+
+<h2>
+<a id="windows" class="anchor" href="#windows" aria-hidden="true"><span class="octicon octicon-link"></span></a>Windows</h2>
+
+<p>to be added</p>
+
+<h2>
+<a id="linux" class="anchor" href="#linux" aria-hidden="true"><span class="octicon octicon-link"></span></a>Linux</h2>
+
+<p>I don't have time or expertise for making Linux distributables, as the variance is great and installing the dependencies is anyways easier and more expectable in linux. The same principles as in Option 2a for Mac OS X apply. You'll need Python3.4, Qt5.4, PyQt5 (and compatible SIP).  </p>
+
+<p>When you have Kataja -folder in your preferred place, navigate there and:</p>
+
+<pre><code>python3 Kataja.py
+</code></pre>
+
+<h2>
+<a id="development-roadmap" class="anchor" href="#development-roadmap" aria-hidden="true"><span class="octicon octicon-link"></span></a>Development roadmap</h2>
+
+<p>April 2014: Pre-alpha -- Builds for OS X, Windows and Linux.</p>
+
+<p>May 2014 Alpha -- Drawing features, including loading, saving, undo, preferences and printing as pdf are stable enough for use.</p>
+
+<p>July 2015: Beta1 -- Presenation features, step-by-step derivation and improvements on drawing.</p>
+
+<p>September 2015: Beta2 -- Crafting features: API for making derivation rules, interface for feature and lexicon creation and running derivations for given input files.</p>
+
+<h2>
+<a id="3rd-party-resources" class="anchor" href="#3rd-party-resources" aria-hidden="true"><span class="octicon octicon-link"></span></a>3rd party resources</h2>
+
+<p>There are few things that make Kataja so much better:</p>
+
+<p>Apostolos Syropoulos: Asana Math Font.
+<a href="http://www.ctan.org/pkg/asana-math">http://www.ctan.org/pkg/asana-math</a></p>
+
+<p>Ethan Schoonover: Solarized colors 
+<a href="http://ethanschoonover.com/solarized">http://ethanschoonover.com/solarized</a></p>
+
+<p>W3C: Unicode characters to LaTeX -mapping
+<a href="http://www.w3.org/TR/unicode-xml/">http://www.w3.org/TR/unicode-xml/</a> </p>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/jpurma/Kataja">Kataja</a> is maintained by <a href="https://github.com/jpurma">jpurma</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
   </body>
 </html>
