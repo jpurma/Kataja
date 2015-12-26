@@ -158,35 +158,42 @@ class LeftFirstTree(BaseVisualization):
         then scales the grid to the scene. """
         edge_height = prefs.edge_height
         edge_width = prefs.edge_width
-        merged_grid = Grid()
+        merged_grid = None
         self._indentation = 0
         new_rotation, self.traces_to_draw = self._compute_traces_to_draw(
             self.get_vis_data('rotation'))
         self.set_vis_data('rotation', new_rotation)
+        prev_grid = None
         for tree in self.forest:
             grid = Grid()
             if tree.top.node_type == g.CONSTITUENT_NODE:
                 self._put_to_grid(grid, tree.top, 0, 0)
-                merged_grid.merge_grids(grid, extra_padding=2)
+                if prev_grid:
+                    extra_padding = math.ceil(prev_grid.width / 2)
+                    merged_grid.merge_grids(grid, extra_padding=extra_padding)
+                else:
+                    merged_grid = grid
                 # merged_grid = self._merge_grids(grid, merged_grid)
+            prev_grid = grid
         offset_x = 0  # tree_w/-2
         y = 0
         # Actual drawing: set nodes to their places in scene
         if merged_grid:
             # merged_grid.ascii_dump()
-            extra_width = [0] * merged_grid.width
+            extra_widths = [0] * merged_grid.width
         else:
-            extra_width = [0]
-        # if node is extra wide, then move all columns to right from that
-        # point on
-        # same for extra tall nodes. move everything down after that row
+            extra_widths = [0]
+        extra_heights = []
 
+        # if node is extra wide, then move all columns to right from that point on
+        # same for extra tall nodes. move everything down after that row
         all_nodes = set(self.forest.get_constituent_nodes())
         for y_i, row in enumerate(merged_grid):
             extra_height = 0
             prev_width = 0
             prev_height = 0
             prev_x = 0
+
             x = offset_x
             for x_i, node in enumerate(row):
                 if node and getattr(node, 'node_type', '') == g.CONSTITUENT_NODE:
@@ -198,12 +205,13 @@ class LeftFirstTree(BaseVisualization):
                             extra_height = math.ceil(height_spillover / float(edge_height)) * edge_height
                         else:
                             extra_height = math.ceil(height_spillover)
-                    width_spillover = ((node.width + prev_width) / 2) - (edge_width * 4)
-                    if width_spillover > extra_width[x_i]:
+                    width_spillover = ((node.width + prev_width) / 2) - (edge_width * 2)
+                    if width_spillover > extra_widths[x_i]:
                         if edge_width:
-                            extra_width[x_i] = math.ceil(width_spillover / float(edge_width)) * edge_width
+                            extra_widths[x_i] = math.ceil(width_spillover / float(edge_width)) * \
+                                                edge_width
                         else:
-                            extra_width = math.ceil(width_spillover)
+                            extra_widths[x_i] = math.ceil(width_spillover)
                     # fix cases where bottom half of tall node is overlapped by edges from smaller
                     # node beside it.
                     if prev_height > node.height:
@@ -211,20 +219,19 @@ class LeftFirstTree(BaseVisualization):
                             edge = merged_grid.get(x_i - 1, y_i + 1, raw=True)
                             left_neighbor = merged_grid.get(x_i - 2, y_i, raw=True)
                             # The problem happens with this kind of constellation:
-                            #  .. /./..
-                            #  ..A.B
-                            #  .../.\ <--- the left edge here can be obstructed by A
+                            #  ..././.
+                            #  ..A.B..
+                            #  .../.\. <--- the left edge here can be obstructed by A
                             if left_neighbor and edge and isinstance(edge, int):
                                 edge_box_left_x = x - node.width / 3 - edge_width
                                 prev_box_right_x = prev_x + (prev_width / 2)
                                 width_overlap = prev_box_right_x - edge_box_left_x
                                 height_overlap = prev_height - node.height
-                                if extra_width[x_i] < width_overlap:
-                                    extra_width[x_i] = width_overlap
+                                if extra_widths[x_i] < width_overlap:
+                                    extra_widths[x_i] = width_overlap
                                 if extra_height < height_overlap:
                                     extra_height = height_overlap
-                    x += extra_width[x_i]
-                    node.move_to(x, y, 0, valign=g.TOP_ROW)
+                    x += extra_widths[x_i]
                     prev_width = node.width
                     prev_height = node.height
                     prev_x = x
@@ -233,8 +240,19 @@ class LeftFirstTree(BaseVisualization):
                     else:
                         all_nodes.remove(node)
                 else:
-                    x += extra_width[x_i]
+                    x += extra_widths[x_i]
                 x += edge_width
             y += edge_height + extra_height
+            extra_heights.append(extra_height)
         if all_nodes:
-            vis('nodes left remaining: ', all_nodes)
+            print('nodes left remaining: ', all_nodes)
+        y = 0
+        for y_i, row in enumerate(merged_grid):
+            x = offset_x
+            for x_i, node in enumerate(row):
+                x += extra_widths[x_i]
+                if node and getattr(node, 'node_type', '') == g.CONSTITUENT_NODE:
+                    node.move_to(x, y, 0, valign=g.TOP_ROW)
+                x += edge_width
+            y += edge_height + extra_heights[y_i]
+

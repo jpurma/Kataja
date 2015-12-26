@@ -40,6 +40,7 @@ class ShortcutSolver(QtCore.QObject):
         QtCore.QObject.__init__(self)
         self.ui_manager = ui_manager
         self.clickable_actions = {}
+        self.watched_elements = set()
 
     def eventFilter(self, action, event):
         """
@@ -71,15 +72,22 @@ class ShortcutSolver(QtCore.QObject):
         key = key_seq.toString()
         if key not in self.clickable_actions:
             self.clickable_actions[key] = [element]
+            self.watched_elements.add(element)
         else:
             self.clickable_actions[key].append(element)
+            self.watched_elements.add(element)
+
+    def remove_solvable_action(self, element):
+        if element in self.watched_elements:
+            self.watched_elements.remove(element)
+            for key, value in self.clickable_actions.items():
+                if element in value:
+                    value.remove(element)
+                    self.clickable_actions[key] = value
 
 
 class ButtonShortcutFilter(QtCore.QObject):
-    """ For some reason button shortcut sometimes focuses instead of clicks.
-
-    """
-
+    """ For some reason button shortcut sometimes focuses instead of clicks. """
     def eventFilter(self, button, event):
         if event.type() == QtCore.QEvent.Shortcut:
             button.animateClick()

@@ -9,6 +9,7 @@ class ExpandingLineEdit(QtWidgets.QWidget):
     def __init__(self, parent, tip='', big_font=None, smaller_font=None, prefill='', on_edit=None):
         QtWidgets.QWidget.__init__(self, parent)
         print('creating expanding line edit')
+        self.line_mode = True
         layout = QtWidgets.QVBoxLayout()
         self.line_edit = QtWidgets.QLineEdit(parent)
         #self.line_edit.setClearButtonEnabled(True)
@@ -17,7 +18,10 @@ class ExpandingLineEdit(QtWidgets.QWidget):
         self.text_area.setSizeAdjustPolicy(self.text_area.AdjustToContents)
         self.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.MinimumExpanding)
         self.on_edit = on_edit
+        self.line_edit.show()
         self.text_area.hide()
+        self.text_area.setEnabled(False)
+        self.line_edit.setEnabled(True)
         self.cut_point = 40
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.line_edit)
@@ -37,7 +41,6 @@ class ExpandingLineEdit(QtWidgets.QWidget):
         if prefill:
             self.line_edit.setPlaceholderText(prefill)
             self.text_area.setPlaceholderText(prefill)
-        self.line_mode = True
         self.line_edit.textChanged.connect(self.line_edit_check_for_resize)
         self.text_area.textChanged.connect(self.text_area_check_for_resize)
         self.setAcceptDrops(True)
@@ -72,6 +75,8 @@ class ExpandingLineEdit(QtWidgets.QWidget):
             self.line_edit.setCursorPosition(pos)
         self.line_mode = True
         self.line_edit.show()
+        self.text_area.setEnabled(False)
+        self.line_edit.setEnabled(True)
         self.text_area.hide()
         self.line_edit.setFocus()
 
@@ -85,10 +90,11 @@ class ExpandingLineEdit(QtWidgets.QWidget):
 
     def toggle_area_mode(self):
         pos = self.line_edit.cursorPosition()
-        print('cursor position: ', pos)
         self.line_mode = False
         self.line_edit.hide()
         self.text_area.show()
+        self.text_area.setEnabled(True)
+        self.line_edit.setEnabled(False)
         self.text_area.setFocus()
         cursor = self.text_area.textCursor()
         cursor.setPosition(pos, QtGui.QTextCursor.MoveAnchor)

@@ -24,9 +24,6 @@
 import math
 
 from kataja.utils import caller
-from kataja.nodes.BaseConstituentNode import BaseConstituentNode
-from kataja.nodes.FeatureNode import FeatureNode
-from kataja.nodes.GlossNode import GlossNode
 import kataja.globals as g
 
 LEFT = 1

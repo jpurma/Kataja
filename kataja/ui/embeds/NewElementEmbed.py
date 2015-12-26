@@ -198,12 +198,6 @@ class NewElementEmbed(UIEmbed):
             self.set_node_type(g.ARROW)
             self.guess_mode = False
 
-    def close(self):
-        self.input_line_edit.reset()
-        self.guess_mode = True
-        self.top_title.setText('Create ' + self.node_types[1][0].lower())
-        UIEmbed.close(self)
-
     def finished_effect_animation(self):
         UIEmbed.finished_effect_animation(self)
         if self._timeline.direction() == QtCore.QTimeLine.Backward and self.marker:

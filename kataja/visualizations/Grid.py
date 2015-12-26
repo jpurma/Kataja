@@ -155,6 +155,13 @@ class Grid:
             assert len(self.rows[y]) == self.width
             assert len(self.rows) == self.height
 
+    def normalize(self):
+        """ Restore grid to start from 0,0. It helps to normalize grids before merging them.
+        :return:
+        """
+        self.x_adjustment = 0
+        self.y_adjustment = 0
+
     def row(self, y):
         """
         Return one row from the grid, normalized from possible negative indices
@@ -201,7 +208,7 @@ class Grid:
         for i, item in enumerate(row):
             if item:
                 found = i
-        return found - self.x_adjustment
+        return found # - self.x_adjustment
 
     def first_filled_column(self, y):
         """
@@ -212,7 +219,7 @@ class Grid:
         row = self.raw_row(y)
         for i, item in enumerate(row):
             if item:
-                return i - self.x_adjustment
+                return i #- self.x_adjustment
         return None
 
     def insert_row(self):
@@ -300,15 +307,17 @@ class Grid:
             self.set(x, y, marker)
 
     def merge_grids(self, right_grid, extra_padding=0):
+
         if right_grid and not self:
+            right_grid.normalize()
             self.rows = right_grid.rows
-            self.x_adjustment = right_grid.x_adjustment
-            self.y_adjustment = right_grid.y_adjustment
             self.width = right_grid.width
             self.height = right_grid.height
             return
         elif self and not right_grid:
             return
+        self.normalize()
+        right_grid.normalize()
         paddings = []
         # actual merging of grids begins with calculating the closest fit for two grids
         for row_n, right_side_row in enumerate(right_grid):

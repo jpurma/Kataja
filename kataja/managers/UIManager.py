@@ -248,6 +248,7 @@ class UIManager:
         if isinstance(item, QtWidgets.QGraphicsItem):
             self.scene.removeItem(item)
         elif isinstance(item, QtWidgets.QWidget):
+            self.remove_watched_shortcuts_for(item)
             item.close()
 
     def get_ui(self, ui_key) -> QtCore.QObject:
@@ -609,7 +610,12 @@ class UIManager:
         if isinstance(element, QtWidgets.QAbstractButton):
             element.installEventFilter(self.button_shortcut_filter)
             self.shortcut_solver.add_solvable_action(key_seq, element)
+            element.destroyed.connect(self.remove_watched_shortcuts_for)
         element.setShortcut(key_seq)
+
+    def remove_watched_shortcuts_for(self, element):
+        if self.shortcut_solver:
+            self.shortcut_solver.remove_solvable_action(element)
 
     def get_element_value(self, element):
         """
@@ -687,7 +693,8 @@ class UIManager:
         if marker:
             self.remove_ui(marker)
         if embed:
-            embed.blur_away()
+            self.remove_ui(embed)
+
 
     # ### Node editing #########################################################
 
