@@ -129,11 +129,10 @@ class UIEmbed(QtWidgets.QWidget):
             node_left = br.left()
             node_right = br.right()
         else:
-            fp = view.mapToScene(focus_point.toPoint())
-            node_top = fp.y()
-            node_bottom = fp.y()
-            node_left = fp.x()
-            node_right = fp.x()
+            node_top = focus_point.y()
+            node_bottom = focus_point.y()
+            node_left = focus_point.x()
+            node_right = focus_point.x()
 
         if node_top - view_top > view_bottom - node_bottom:
             # UP

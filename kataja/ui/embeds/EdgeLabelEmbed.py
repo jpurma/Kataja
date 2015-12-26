@@ -30,6 +30,7 @@ class EdgeLabelEmbed(UIEmbed):
         self.setLayout(layout)
         self.assumed_width = 200
         self.assumed_height = 37
+        self.update_position()
 
     def focus_to_main(self):
         self.input_line_edit.setFocus()
@@ -49,5 +50,5 @@ class EdgeLabelEmbed(UIEmbed):
         super().update_fields()
 
     def update_position(self, focus_point=None):
-        super().update_position(self.host.label_item.pos())
+        super().update_position(focus_point=self.host.label_item.scenePos())
 
