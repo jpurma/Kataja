@@ -28,6 +28,78 @@ from kataja.ui.OverlayButton import PanelButton
 from kataja.ui.elements.EmbeddedMultibutton import EmbeddedMultibutton
 
 
+class ShortcutSolver(QtCore.QObject):
+    """ I want to have Shortcuts available in Menus and also to have 'button clicked' effect in
+    panels when the relevant shortcut is pressed. Qt doesn't like ambiguous shortcuts,
+    so we interrupt those and only pseudo-click the button in those cases.
+
+    :param ui_manager:
+    """
+
+    def __init__(self, ui_manager):
+        QtCore.QObject.__init__(self)
+        self.ui_manager = ui_manager
+        self.clickable_actions = {}
+
+    def eventFilter(self, action, event):
+        """
+
+        :param action:
+        :param event:
+        :return:
+        """
+        if event.type() == QtCore.QEvent.Shortcut and event.isAmbiguous():
+            key = event.key().toString()
+            if key in self.clickable_actions:
+                els = self.clickable_actions.get(key, [])
+                for e in els:
+                    if e.isVisible():
+                        e.animateClick()
+                        return True
+                return True
+            else:
+                print('couldnt solve ambiguous action: ', action.command, action.key, event, key,
+                      self.clickable_actions)
+        return False
+
+    def add_solvable_action(self, key_seq, element):
+        """
+
+        :param key_seq: QKeySequence
+        :return:
+        """
+        key = key_seq.toString()
+        if key not in self.clickable_actions:
+            self.clickable_actions[key] = [element]
+        else:
+            self.clickable_actions[key].append(element)
+
+
+class ButtonShortcutFilter(QtCore.QObject):
+    """ For some reason button shortcut sometimes focuses instead of clicks.
+
+    """
+
+    def eventFilter(self, button, event):
+        if event.type() == QtCore.QEvent.Shortcut:
+            button.animateClick()
+            return True
+        return False
+        # events:
+        # paint: 12
+        # WindowActivate: 24
+        # WindowDeactivate: 25
+        # StatusTip: 112
+        # HoverLeave: 127
+        # HoverEnter: 128
+        # Enter: 10
+        # Leave: 11
+        # Timer: 1
+        # Shortcut: 117
+        # ShortcutOerride: 51
+        # Move: 13
+
+
 class KatajaAction(QtWidgets.QAction):
     """
     Command
@@ -69,8 +141,15 @@ class KatajaAction(QtWidgets.QAction):
         # in these cases shortcut is tied to ui_element.
         if shortcut:
             self.setShortcut(QtGui.QKeySequence(shortcut))
+            # those actions that have shortcut context are tied to (possibly nonexisting) UI
+            # widgets and they can resolve ambiguous shortcuts only when the UI widgets are
+            # connected. So disable these actions until the connection has been made.
             if shortcut_context == 'parent_and_children':
                 sc = QtCore.Qt.WidgetWithChildrenShortcut
+                self.setEnabled(False)
+            elif shortcut_context == 'widget':
+                sc = QtCore.Qt.WidgetShortcut
+                self.setEnabled(False)
             else:
                 sc = QtCore.Qt.ApplicationShortcut
             self.setShortcutContext(sc)
@@ -138,6 +217,8 @@ class KatajaAction(QtWidgets.QAction):
         shortcut_context = self.shortcutContext()
         if shortcut and shortcut_context:
             ctrl.ui.manage_shortcut(shortcut, element, self)
+            # shortcuts (or actions in total were disabled before this connection to avoi)
+            self.setEnabled(True)
 
         if isinstance(element, PanelButton):
             element.clicked.connect(self.action_triggered)

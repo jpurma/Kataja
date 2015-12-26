@@ -823,11 +823,11 @@ syntactic_object: %s
 
         return None
 
-    def get_edges_up(self, similar=True, visible=False, align=None):
+    def get_edges_up(self, similar=True, visible=False, alignment=None):
         """ Returns edges up, filtered
         :param similar:
         :param visible:
-        :param align:
+        :param alignment:
         """
 
         def filter_func(rel):
@@ -836,7 +836,7 @@ syntactic_object: %s
             :return: bool """
             if similar and rel.edge_type != self.__class__.default_edge_type:
                 return False
-            if align and rel.align != align:
+            if alignment and rel.alignment != alignment:
                 return False
             if visible and not rel.is_visible():
                 return False
@@ -844,22 +844,22 @@ syntactic_object: %s
 
         return filter(filter_func, self.edges_up)
 
-    def get_edges_down(self, similar=True, visible=False, align=None):
+    def get_edges_down(self, similar=True, visible=False, alignment=None):
         """ Returns edges down, filtered
         :param similar:
         :param visible:
-        :param align:
+        :param alignment:
         """
 
-        def filter_func(rel):
+        def filter_func(edge):
             """
             :param rel:
             :return: bool """
-            if similar and rel.edge_type != self.__class__.default_edge_type:
+            if similar and edge.edge_type != self.__class__.default_edge_type:
                 return False
-            if align and rel.align != align:
+            if alignment and edge.alignment != alignment:
                 return False
-            if visible and not rel.is_visible():
+            if visible and not edge.is_visible():
                 return False
             return True
 

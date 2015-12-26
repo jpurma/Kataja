@@ -164,8 +164,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         # self.addItem(el)
         #
 
-        # ############### Absolute left/right/up/down
-        # ###############################
+        # ############### Absolute left/right/up/down ###############################
         # if nothing is selected, select the edgemost item from given direction
         if not ctrl.selected:
             selectables = [(item, to_tuple(item.sceneBoundingRect().center()))
@@ -188,16 +187,14 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 raise KeyError
             ctrl.select(item)
             return item
-        # ################ Relative left/right/up/down
-        # #############################
+        # ################ Relative left/right/up/down #############################
         else:
             current = ctrl.get_single_selected()
             # ################### Nodes #############################
             if isinstance(current, Node):
                 if direction == 'left':
                     lefts = list(
-                        current.get_edges_down(similar=True, visible=True,
-                                               align=g.LEFT))
+                            current.get_edges_down(similar=True, visible=True, alignment=g.LEFT))
                     if len(lefts) == 1:
                         ctrl.select(lefts[0])
                         return lefts[0]
@@ -216,8 +213,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
             if direction == 'left':
                 found = False
                 if isinstance(current, Node):
-                    edges = current.get_edges_down(similar=True, visible=True)
-                    if len(edges) == 2:
+                    edges = list(current.get_edges_down(similar=True, visible=True))
+                    if edges:
                         best = edges[0]
                         found = True
                 elif isinstance(current, Edge):
@@ -225,6 +222,9 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         best = current.start
                         found = True
                     elif current.end and current.alignment == 1:
+                        best = current.end
+                        found = True
+                    elif current.end and current.alignment == 0:
                         best = current.end
                         found = True
                 elif isinstance(current, TouchArea):
@@ -254,10 +254,9 @@ class GraphScene(QtWidgets.QGraphicsScene):
             if direction == 'right':
                 found = False
                 if isinstance(current, Node):
-                    edges = list(
-                        current.get_edges_down(similar=True, visible=True))
-                    if len(edges) == 2:
-                        best = edges[1]
+                    edges = list(current.get_edges_down(similar=True, visible=True))
+                    if edges:
+                        best = edges[-1]
                         found = True
                 elif isinstance(current, Edge):
                     if current.end and current.alignment == 2:
@@ -265,6 +264,9 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         found = True
                     elif current.start and current.alignment == 1:
                         best = current.start
+                        found = True
+                    elif current.end and current.alignment == 0:
+                        best = current.end
                         found = True
                 elif isinstance(current, TouchArea):
                     if current.type == g.LEFT_ADD_TOP and \
@@ -293,9 +295,13 @@ class GraphScene(QtWidgets.QGraphicsScene):
             if direction == 'up':
                 found = False
                 if isinstance(current, Node):
-                    edges = list(current.get_edges_up(visible=True))
+                    edges = list(current.get_edges_up(similar=True, visible=True))
                     if len(edges) == 1:
                         best = edges[0]
+                        found = True
+                elif isinstance(current, Edge):
+                    if current.start:
+                        best = current.start
                         found = True
                 if not found:
                     for item, pos in selectables:
@@ -313,28 +319,39 @@ class GraphScene(QtWidgets.QGraphicsScene):
                             min_xy = dxy
                             best = item
             if direction == 'down':
-                for item, pos in selectables:
-                    if item == current:
-                        continue
-                    ix, iy = pos
-                    ix, iy = int(ix), int(iy)
-                    dx = ix - x
-                    dy = iy - y
-                    dxy = (dx * dx * 2) + (dy * dy)
-                    # if dy > 0 and ((dy < min_y) or (dy == min_y and (dx > 0
-                    #  and dx < min_x ))):
-                    if (dy > 0 and (dxy < min_xy)) or (
-                                dy == 0 and dx > 0 and (dxy < min_xy)):
-                        min_x = dx
-                        min_y = dy
-                        min_xy = dxy
-                        best = item
+                found = False
+                if isinstance(current, Node):
+                    edges = list(current.get_edges_down(visible=True))
+                    if len(edges) == 1:
+                        best = edges[0]
+                        found = True
+                if isinstance(current, Edge):
+                    if current.end:
+                        best = current.end
+                        found = True
+                if not found:
+                    for item, pos in selectables:
+                        if item == current:
+                            continue
+                        ix, iy = pos
+                        ix, iy = int(ix), int(iy)
+                        dx = ix - x
+                        dy = iy - y
+                        dxy = (dx * dx * 2) + (dy * dy)
+                        # if dy > 0 and ((dy < min_y) or (dy == min_y and (dx > 0
+                        #  and dx < min_x ))):
+                        if (dy > 0 and (dxy < min_xy)) or (
+                                    dy == 0 and dx > 0 and (dxy < min_xy)):
+                            min_x = dx
+                            min_y = dy
+                            min_xy = dxy
+                            best = item
 
-                        # x,y = to_tuple(best.sceneBoundingRect().center())
-                        # el = QtGui.QGraphicsEllipseItem(x-4, y-4, 8, 8)
-                        # self.addItem(el)
-                        # ctrl.ui_manager.info('dx: %s, dy: %s, dxy: %s' % (
-                        # min_x, min_y, min_xy))
+                            # x,y = to_tuple(best.sceneBoundingRect().center())
+                            # el = QtGui.QGraphicsEllipseItem(x-4, y-4, 8, 8)
+                            # self.addItem(el)
+                            # ctrl.ui_manager.info('dx: %s, dy: %s, dxy: %s' % (
+                            # min_x, min_y, min_xy))
         ctrl.select(best)
 
     # ######### MOUSE ##############

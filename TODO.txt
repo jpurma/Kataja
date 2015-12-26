@@ -60,8 +60,8 @@ become visible
 + Adding a gloss crashes embed edit
     - gloss exists both as a separate node and a line in label
 + Various tree identity problems in complex operations
-- Keyboard movement crashes
-    - Crashes on edges
++ Keyboard movement crashes
+    + Crashes on edges
 - Icon for opening additional panels has 'close this panel' for tooltip
 + New node edit box doesn't stretch for longer texts
     + New node edit box title doesn't follow its purpose

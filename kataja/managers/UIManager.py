@@ -28,9 +28,8 @@ from PyQt5 import QtCore, QtWidgets
 import kataja.actions as action_methods
 import kataja.globals as g
 from kataja.Edge import Edge
-from kataja.KatajaAction import KatajaAction
+from kataja.KatajaAction import KatajaAction, ShortcutSolver, ButtonShortcutFilter
 from kataja.actions import actions
-from kataja.managers.KeyPressManager import ShortcutSolver, ButtonShortcutFilter
 from kataja.nodes.Node import Node
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.ui import drawn_icons

@@ -37,7 +37,6 @@ import time
 import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
-from kataja.managers.KeyPressManager import KeyPressManager
 
 from kataja.singletons import ctrl, prefs, qt_prefs, running_environment, \
     restore_default_preferences
@@ -113,7 +112,6 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         self.graph_scene.graph_view = self.graph_view
         self.ui_manager = UIManager(self)
         self.ui_manager.populate_ui_elements()
-        self.key_manager = KeyPressManager(self)
         self.object_factory = kataja.object_factory
         print('---- ui init ... ', time.time() - t)
         self.forest_keeper = ForestKeeper()
