@@ -413,6 +413,7 @@ class Node(Movable):
         self.update()
         if self.zValue() < 150:
             self.setZValue(150)
+        self.update_status_tip()
         ctrl.set_status(self.status_tip)
 
     def _stop_hover(self):

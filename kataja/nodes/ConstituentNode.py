@@ -290,6 +290,10 @@ class ConstituentNode(BaseConstituentNode):
                 alias = '"%s" ' % self.alias
             else:
                 alias = ''
+            if self.label:
+                label = '"%s" ' % self.label
+            else:
+                label = ''
             if self.is_trace:
                 name = "Trace"
             if self.is_leaf_node():
@@ -298,10 +302,17 @@ class ConstituentNode(BaseConstituentNode):
                 name = "Root constituent"
             else:
                 name = "Inner constituent"
-            self.status_tip = "%s Alias: %s Label: %s Target pos: %s, Adjustment: %s (%s), " \
-                              "Cur pos: %s" % (
-            name, alias, self.label, self.target_position, self.adjustment,
-            self.use_adjustment, self.current_position)
+            if self.use_adjustment:
+                self.status_tip = "%s (Alias: %s Label: %s pos: (%.1f, %.1f) w. adjustment (%.1f, " \
+                                  "%.1f))" % (
+                                  name, alias, label, self.current_scene_position[0],
+                                  self.current_scene_position[1],
+                                  self.adjustment[0], self.adjustment[1])
+            else:
+                self.status_tip = "%s (Alias: %s Label: %s pos: (%.1f, %.1f))" % (
+                                  name, alias, label, self.current_scene_position[0],
+                                  self.current_scene_position[1])
+
         else:
             self.status_tip = "Empty, but mandatory constituent position"
 

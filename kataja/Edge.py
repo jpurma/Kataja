@@ -1126,6 +1126,7 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
             #    self.effect.setEnabled(True)
             self.prepareGeometryChange()
             self.update()
+            self.update_status_tip()
             ctrl.set_status(self.status_tip)
         elif (not value) and self._hovering:
             # if ctrl.cm.use_glow():
