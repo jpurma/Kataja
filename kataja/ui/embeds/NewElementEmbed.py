@@ -211,6 +211,40 @@ class NewElementEmbed(UIEmbed):
         self.node_type_selector.setCurrentIndex(self.node_type_selector.findData(value, role=256))
 
     def resizeEvent(self, event):
-        if self.marker:
-            self.update_position(focus_point=self.marker.end_point)
+        self.limited_update_position()
         QtWidgets.QWidget.resizeEvent(self, event)
+
+    def limited_update_position(self):
+        """ Updates the position but tries to minimize the movement of left top
+        corner. This is called on resize, to ensure that all of the embed is in visible area.
+        :return:
+        """
+        view = self.parent()
+        eg = self.geometry()
+        ex, ey, ew, eh = eg.getRect()
+        top_left = view.mapToScene(ex, ey)
+        bottom_right = view.mapToScene(QtCore.QPoint(ex + ew, ey + eh))
+        size_in_scene = bottom_right - top_left
+        x = top_left.x()
+        y = top_left.y()
+        w = size_in_scene.x()
+        h = size_in_scene.y()
+        vr = view.mapToScene(view.geometry()).boundingRect()
+        view_left, view_top, view_right, view_bottom = vr.getRect()
+        view_right += view_left
+        view_bottom += view_top
+
+        w_overlap = (x + w) - view_right
+        h_overlap = (y + h) - view_bottom
+
+        move = False
+        if w_overlap > 0:
+            x = x - w_overlap - 12
+            move = True
+        if h_overlap > 0:
+            y = y - h_overlap - 8
+            move = True
+        if move:
+            new_pos = QtCore.QPoint(x, y)
+            self.move(view.mapFromScene(new_pos))
+            self.updateGeometry()

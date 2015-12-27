@@ -8,7 +8,6 @@ class ExpandingLineEdit(QtWidgets.QWidget):
 
     def __init__(self, parent, tip='', big_font=None, smaller_font=None, prefill='', on_edit=None):
         QtWidgets.QWidget.__init__(self, parent)
-        print('creating expanding line edit')
         self.line_mode = True
         layout = QtWidgets.QVBoxLayout()
         self.line_edit = QtWidgets.QLineEdit(parent)

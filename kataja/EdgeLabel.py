@@ -39,11 +39,17 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         self.clickable = True
         self.placeholder = placeholder
         self.selected = False
+        w = self.document().idealWidth()
+        if w > 200:
+            self.setTextWidth(200)
+        else:
+            self.setTextWidth(-1)
         self._size = self.boundingRect().size()
         self._local_drag_handle_position = None
         self.setFont(self.parentItem().font)
         self.setDefaultTextColor(self.parentItem().color)
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+
 
     def magnet_positions(self):
         w = self._size.width() / 2.0
@@ -79,6 +85,11 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
 
     def update_text(self, value):
         self.setPlainText(value)
+        w = self.document().idealWidth()
+        if w > 200:
+            self.setTextWidth(200)
+        else:
+            self.setTextWidth(-1)
         self._size = self.boundingRect().size()
         if value:
             self.placeholder = False
