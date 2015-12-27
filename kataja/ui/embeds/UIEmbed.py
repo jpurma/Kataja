@@ -31,6 +31,7 @@ class UIEmbed(QtWidgets.QWidget):
         self._palette = None
         self.update_color()
         self._drag_diff = None
+        self.moved_by_hand = False
 
         self.top_row_layout = QtWidgets.QHBoxLayout()
         #close_button = QtWidgets.QPushButton("x")
@@ -101,6 +102,9 @@ class UIEmbed(QtWidgets.QWidget):
         :param focus_point:
         :return:
         """
+        if self.moved_by_hand:
+            return
+
         if not focus_point:
             if self.host:
                 focus_point = self.host.scenePos()
@@ -108,16 +112,18 @@ class UIEmbed(QtWidgets.QWidget):
                 return
 
         view = self.parent()
-        top_left = view.mapToScene(self.geometry().topLeft())
-        bottom_right = view.mapToScene(self.geometry().bottomRight())
-        size_in_scene = bottom_right - top_left
-        w = size_in_scene.x()
-        h = size_in_scene.y()
+        w = self.size().width()
+        h = self.size().height()
         if h <= 100:
             h = self.assumed_height
         if w <= 100:
             w = self.assumed_width
-        vr = view.sceneRect()
+        top_left = view.mapToScene(0, 0)
+        bottom_right = view.mapToScene(QtCore.QPoint(w, h))
+        size_in_scene = bottom_right - top_left
+        w = size_in_scene.x()
+        h = size_in_scene.y()
+        vr = view.mapToScene(view.geometry()).boundingRect()
         view_top = vr.top()
         view_bottom = vr.bottom()
         view_left = vr.left()
@@ -137,33 +143,40 @@ class UIEmbed(QtWidgets.QWidget):
         if node_top - view_top > view_bottom - node_bottom:
             # UP
             new_y = node_top - h
-            if node_left - view_left > view_right - node_right:
-                # LEFT
-                if node_left + w < view_right:
-                    new_x = node_left
-                else:
-                    new_x = node_left - w
-            else:
-                # RIGHT
-                if node_left - view_left < 100:
-                    new_x = node_right
-                else:
-                    new_x = node_left
         else:
             # DOWN
             new_y = node_bottom
-            if node_left - view_left > view_right - node_right:
-                # LEFT
-                if node_left + w < view_right:
-                    new_x = node_left
-                else:
-                    new_x = node_left - w
-            else:
-                # RIGHT
-                if node_left - view_left < 100:
-                    new_x = node_right
-                else:
-                    new_x = node_left
+
+        # Possible positions
+        #   xxx
+        #      n
+        #
+        #   xxx
+        #     n
+        #
+        #   xxx
+        #    n
+        #
+        #   xxx
+        #   n
+        #
+        #    xxx
+        #   n
+
+        new_lefts = [node_left - w, node_right - w, (node_right + node_left - w) / 2, node_left,
+                     node_right]
+
+        new_x = 0
+        min_space = 1000000
+
+        for new_left in new_lefts:
+            if new_left < view_left or new_left + w > view_right:
+                continue
+            space = (new_left - view_left) ** 2 + (view_right - (new_left + w)) ** 2
+            if space < min_space:
+                min_space = space
+                new_x = new_left
+
         new_pos = QtCore.QPoint(new_x, new_y)
         # Magnet placement:
         # 1---2---3
@@ -244,4 +257,9 @@ class UIEmbed(QtWidgets.QWidget):
 
     def mouseMoveEvent(self, event):
         self.move(self.mapToParent(event.pos()) - self._drag_diff)
+        self.moved_by_hand = True
         QtWidgets.QWidget.mouseMoveEvent(self, event)
+
+    def resizeEvent(self, event):
+        self.update_position()
+        QtWidgets.QWidget.resizeEvent(self, event)

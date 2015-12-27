@@ -164,7 +164,6 @@ class NewElementEmbed(UIEmbed):
         self.setLayout(layout)
         self.assumed_width = 200
         self.assumed_height = 117
-        self.hide()
 
     def mouseMoveEvent(self, event):
         self.move(self.mapToParent(event.pos()) - self._drag_diff)
@@ -211,3 +210,7 @@ class NewElementEmbed(UIEmbed):
     def set_node_type(self, value):
         self.node_type_selector.setCurrentIndex(self.node_type_selector.findData(value, role=256))
 
+    def resizeEvent(self, event):
+        if self.marker:
+            self.update_position(focus_point=self.marker.end_point)
+        QtWidgets.QWidget.resizeEvent(self, event)

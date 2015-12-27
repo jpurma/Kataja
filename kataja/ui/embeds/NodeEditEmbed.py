@@ -211,10 +211,6 @@ class NodeEditEmbed(UIEmbed):
                 setattr(self.host, field_name, value)
         self.host.update_label()
 
-    def mouseMoveEvent(self, event):
-        self.move(self.mapToParent(event.pos()) - self._drag_diff)
-        QtWidgets.QWidget.mouseMoveEvent(self, event)
-
     def focus_to_main(self):
         """ Find the main element to focus in this embed.
         :return:
