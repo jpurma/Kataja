@@ -75,10 +75,11 @@ class Label(QtWidgets.QGraphicsTextItem):
 
         self.prepareGeometryChange()
         INodeToLabelDocument.parse_inode(inode, doc)
-        if self.line_length:
+        ideal_width = doc.idealWidth()
+        if self.line_length and self.line_length * self.char_width < ideal_width:
             self.setTextWidth(self.line_length * self.char_width)
         else:
-            self.setTextWidth(doc.idealWidth())
+            self.setTextWidth(ideal_width)
         l = doc.lineCount()
         inner_size = doc.size()
         ih = inner_size.height()

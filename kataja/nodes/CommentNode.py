@@ -40,7 +40,8 @@ class CommentNode(Node):
     short_name = "ComNode"
     display = True
 
-    viewable = {'text': {'order': 3, 'resizable': True, 'text_align': g.LEFT_ALIGN}}
+    viewable = {'text': {'order': 3, 'resizable': True, 'line_length': 24, 'text_align':
+        g.LEFT_ALIGN}}
     editable = {'text': dict(name='', order=3, prefill='comment',
                              tooltip='freeform text, invisible for '
                                      'processing', input_type='textarea')}
