@@ -75,6 +75,7 @@ version = version_file.readlines()
 version_file.close()
 version_long = version[0].strip()
 version_short = version_long.split('|')[1].strip()
+version_pep440 = "0." + version_short[2:].strip()
 
 if sys.platform == 'darwin':
     plist = {'CFBundleVersion': version_long, 'CFBundleShortVersionString': version_short,
@@ -90,20 +91,21 @@ if sys.platform == 'darwin':
                                (qt_mac, os.path.expanduser(qt_mac)))
 
 elif sys.platform == 'win32':
+    import py2exe
     from distutils.core import setup
 
     OPTIONS = {'includes': ['sip'], 'bundle_files': 1, 'compressed': 1}  # 'bundle_files': 1,
     # 'compressed':1
 
     DATA_FILES = [("platforms",
-                   ["C:\\Python34\\lib\\site-packages\\PyQt5\\plugins\\platforms\\qwindows.dll"]), (
+                   ["C:\\Python34\\Lib\\site-packages\\PyQt5\\plugins\\platforms\\qwindows.dll"]), (
                   "imageformats",
-                  ["C:\\Python34\\lib\\site-packages\\PyQt5\\plugins\\imageformats\\qgif.dll"])]
+                  ["C:\\Python34\\Lib\\site-packages\\PyQt5\\plugins\\imageformats\\qgif.dll"])]
     DATA_FILES += make_tuple([], "plugins", "kataja\\plugins", [".pyc", "__pycache__"])
     DATA_FILES += make_tuple([], "resources", "resources", [".pyc", "temp"])
 
     extra_options = dict(setup_requires=['py2exe'], options={'py2exe': OPTIONS},
-                         version=version_long, windows=[{'script': mainscript}],
+                         version=version_pep440, windows=[{'script': mainscript}],
                          data_files=DATA_FILES)
 else:
     extra_options = dict(  # Normally unix-like platforms will use "setup.py install"
