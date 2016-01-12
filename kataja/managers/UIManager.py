@@ -27,6 +27,7 @@ from PyQt5 import QtCore, QtWidgets
 
 import kataja.actions as action_methods
 import kataja.globals as g
+from kataja.Amoeba import Amoeba
 from kataja.Edge import Edge
 from kataja.KatajaAction import KatajaAction, ShortcutSolver, ButtonShortcutFilter
 from kataja.actions import actions
@@ -135,6 +136,7 @@ class UIManager:
 
         self.scope = g.CONSTITUENT_NODE
         self.base_scope = g.CONSTITUENT_NODE
+        self.selection_amoeba = None
 
         self.preferences_dialog = None
         self.color_dialogs = {}
@@ -322,8 +324,18 @@ class UIManager:
             if self.scope != g.SELECTION:
                 self.base_scope = self.scope
             self.scope = g.SELECTION
+            if not self.selection_amoeba:
+                self.selection_amoeba = Amoeba(ctrl.selected)
+                self.add_ui(self.selection_amoeba)
+            else:
+                self.selection_amoeba.update_selection(ctrl.selected)
+                self.selection_amoeba.update_shape()
+
         else:
             self.scope = self.base_scope
+            if self.selection_amoeba:
+                self.remove_ui(self.selection_amoeba)
+                self.selection_amoeba = None
 
     # unused, but sane
     def focusable_elements(self):
