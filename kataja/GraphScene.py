@@ -104,11 +104,13 @@ class GraphScene(QtWidgets.QGraphicsScene):
     def visible_rect(self):
         """ Counts all visible items in scene and returns QRectF object
          that contains all of them """
-        y_min = 300
-        y_max = -300
-        x_min = 300
-        x_max = -300
+        y_min = 6000
+        y_max = -6000
+        x_min = 6000
+        x_max = -6000
         for item in ctrl.forest.nodes.values():
+            if not item.isVisible():
+                continue
             minx, miny, maxx, maxy = item.sceneBoundingRect().getCoords()
             if minx < x_min:
                 x_min = minx

@@ -1,15 +1,18 @@
 # coding=utf-8
 import math
 from PyQt5 import QtWidgets, QtCore, QtGui
+
+from kataja.BaseModel import BaseModel, Saved
 from kataja.singletons import ctrl, prefs, qt_prefs
 
 points = 36
 
-class Amoeba(QtWidgets.QGraphicsItem):
+class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
 
-    def __init__(self, selection, ui_key='sel_amoeba'):
-        QtWidgets.QGraphicsItem.__init__(self)
-        self.ui_key = ui_key
+    def __init__(self, selection):
+        BaseModel.__init__(self)
+        QtWidgets.QGraphicsObject.__init__(self)
+        self.ui_key = self.save_key + '_ui'
         self.host = None
         if selection:
             self.selection = list(selection)
@@ -17,6 +20,7 @@ class Amoeba(QtWidgets.QGraphicsItem):
             self.selection = []
         self.persistent = False
         self.points = []
+        self.color_key = ''
         self.color = None
         self.color_tr = None
         self.color_tr_tr = None
@@ -128,7 +132,11 @@ class Amoeba(QtWidgets.QGraphicsItem):
         return self._br
 
     def update_colors(self):
-        self.color = ctrl.cm.get('accent1')
-        self.color_tr = ctrl.cm.get('accent1tr')
+        self.color_key = 'accent1'
+        self.color = ctrl.cm.get(self.color_key)
+        self.color_tr = ctrl.cm.get(self.color_key + 'tr')
         self.color_tr_tr = QtGui.QColor(self.color)
         self.color_tr_tr.setAlphaF(0.2)
+
+    color_key = Saved("color_key")
+    name = Saved("name")

@@ -330,10 +330,11 @@ class UIManager:
             else:
                 self.selection_amoeba.update_selection(ctrl.selected)
                 self.selection_amoeba.update_shape()
-
+            self.add_buttons_for_amoeba(self.selection_amoeba)
         else:
             self.scope = self.base_scope
             if self.selection_amoeba:
+                self.remove_ui_for(self.selection_amoeba)
                 self.remove_ui(self.selection_amoeba)
                 self.selection_amoeba = None
 
@@ -1076,6 +1077,15 @@ class UIManager:
         self.connect_element_to_action(button, button.action_name)
         button.show()
         return button
+
+    def add_buttons_for_amoeba(self, amoeba):
+        """ Selection amoebas have a button to toggle their editing options
+        :param amoeba:
+        :return:
+        """
+        button = self.get_or_create_button(amoeba, g.AMOEBA_OPTIONS)
+        return button
+
 
     def add_buttons_for_edge(self, edge):
         """ Constituent edges have a button to remove the edge and the node

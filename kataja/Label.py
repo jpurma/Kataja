@@ -74,6 +74,7 @@ class Label(QtWidgets.QGraphicsTextItem):
         doc.setDefaultTextOption(QtGui.QTextOption(align))
 
         self.prepareGeometryChange()
+        doc.setTextWidth(-1)
         INodeToLabelDocument.parse_inode(inode, doc)
         ideal_width = doc.idealWidth()
         if self.line_length and self.line_length * self.char_width < ideal_width:

@@ -225,7 +225,29 @@ class RemoveMergerButton(OverlayButton):
         self.host.hovering = False
         OverlayButton.leaveEvent(self, event)
 
-button_definitions = {g.REMOVE_MERGER: RemoveMergerButton}
+class AmoebaOptionsButton(OverlayButton):
+
+    def __init__(self, host, ui_key, parent=None):
+        super().__init__(host,
+                         ui_key,
+                         qt_prefs.settings_pixmap,
+                         g.AMOEBA_OPTIONS,
+                         text='Name this selection',
+                         parent=parent,
+                         size=16,
+                         color_key=host.color_key)
+        self.role = g.AMOEBA_OPTIONS
+        self.action_name = 'toggle_amoeba_options'
+        self.edge = None
+
+    def update_position(self):
+        """ """
+        adjust = QtCore.QPointF(4, -19)
+        br = self.host.boundingRect()
+        p = ctrl.main.graph_view.mapFromScene(br.topRight()) + adjust
+        self.move(p.toPoint())
+
+button_definitions = {g.REMOVE_MERGER: RemoveMergerButton, g.AMOEBA_OPTIONS: AmoebaOptionsButton}
 
 
 def button_factory(role_key, node, save_key, parent):

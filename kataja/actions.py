@@ -1427,6 +1427,19 @@ a['add_child_right'] = {'command': 'Add child node to right',
                         'method': add_child_right,
                         'sender_arg': True}
 
+def toggle_amoeba_options(sender=None):
+    """
+
+    :param sender:
+    :return:
+    """
+    amoeba = get_host(sender)
+    print(amoeba)
+
+a['toggle_amoeba_options'] = {'command': 'Options for saving this selection',
+                              'method': toggle_amoeba_options,
+                              'sender_arg': True}
+
 # Generic keys ####
 # 'key_esc'] = {
 #     'command': 'key_esc',

@@ -5,6 +5,7 @@ FIX:
     + Improved them quite a lot
     + fading locks appear for hidden nodes too, in their old places. And it looks like
     viewport resize is also counting hidden nodes
+    + Triangled label width is wrong
 + Fix rare add branch -bug, that creates a node that is not recognized by visualization algorithm.
     + add to top right into new tree creates problem -- Fixed
     + Rare children who aren't in tree

@@ -1189,7 +1189,6 @@ syntactic_object: %s
         if self.folding_towards in self.get_parents():
             self.folding_towards.update_visibility()
         ctrl.forest.animation_finished(self.save_key+'_fold')
-        #ctrl.forest.draw()
 
     def paint_triangle(self, painter):
         """ Drawing the triangle, called from paint-method
@@ -1314,7 +1313,7 @@ syntactic_object: %s
         else:
             self.setZValue(200)
             if ctrl.main.use_tooltips:
-                self.setToolTip("Click to edit texts")
+                self.setToolTip("Click to edit labels")
 
             # self.node_info()
         self.update()

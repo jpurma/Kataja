@@ -356,6 +356,9 @@ When nodes that don't use physics are dragged, the adjustment.
 
     def fade_out_finished(self):
         self._fade_out_active = False
+        if self.after_move_function:
+            self.after_move_function()
+            self.after_move_function = None
         self.hide()
         self.update_visibility()
 
