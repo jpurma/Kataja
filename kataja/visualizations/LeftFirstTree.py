@@ -163,26 +163,22 @@ class LeftFirstTree(BaseVisualization):
         new_rotation, self.traces_to_draw = self._compute_traces_to_draw(
             self.get_vis_data('rotation'))
         self.set_vis_data('rotation', new_rotation)
-        prev_grid = None
         for tree in self.forest:
-            grid = Grid()
             if tree.top.node_type == g.CONSTITUENT_NODE:
+                grid = Grid()
                 self._put_to_grid(grid, tree.top, 0, 0)
-                if prev_grid:
+                if merged_grid:
                     extra_padding = math.ceil(prev_grid.width / 2)
                     merged_grid.merge_grids(grid, extra_padding=extra_padding)
                 else:
                     merged_grid = grid
-                # merged_grid = self._merge_grids(grid, merged_grid)
-            prev_grid = grid
         offset_x = 0  # tree_w/-2
         y = 0
+        if not merged_grid:
+            return
+
         # Actual drawing: set nodes to their places in scene
-        if merged_grid:
-            # merged_grid.ascii_dump()
-            extra_widths = [0] * merged_grid.width
-        else:
-            extra_widths = [0]
+        extra_widths = [0] * merged_grid.width
         extra_heights = []
 
         # if node is extra wide, then move all columns to right from that point on

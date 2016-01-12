@@ -17,11 +17,13 @@ class Amoeba(QtWidgets.QGraphicsItem):
             self.selection = []
         self.persistent = False
         self.points = []
-        self.color = ctrl.cm.get('accent1')
-        self.color_tr = ctrl.cm.get('accent1tr')
+        self.color = None
+        self.color_tr = None
+        self.color_tr_tr = None
         self.path = None
         self._br = None
         self.update_shape()
+        self.update_colors()
 
     def update_selection(self, selection):
         if selection:
@@ -117,8 +119,8 @@ class Amoeba(QtWidgets.QGraphicsItem):
 
     def paint(self, painter, style, QWidget_widget=None):
         if self.selection and self.path:
-            painter.setPen(self.color)
-            painter.fillPath(self.path, self.color_tr)
+            painter.setPen(self.color_tr)
+            painter.fillPath(self.path, self.color_tr_tr)
 
     def boundingRect(self):
         if not self._br:
@@ -128,3 +130,5 @@ class Amoeba(QtWidgets.QGraphicsItem):
     def update_colors(self):
         self.color = ctrl.cm.get('accent1')
         self.color_tr = ctrl.cm.get('accent1tr')
+        self.color_tr_tr = QtGui.QColor(self.color)
+        self.color_tr_tr.setAlphaF(0.2)
