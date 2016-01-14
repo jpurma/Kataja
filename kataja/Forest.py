@@ -27,6 +27,7 @@ import string
 import collections
 import itertools
 
+from kataja.Amoeba import Amoeba
 from kataja.ProjectionVisual import ProjectionData
 from kataja.Tree import Tree
 from kataja.errors import ForestError
@@ -83,6 +84,7 @@ class Forest(BaseModel):
         self.edges = {}
         self.edge_types = set()
         self.node_types = set()
+        self.groups = {}
         self.others = {}
         self.vis_data = {}
         self.projections = {}
@@ -1958,6 +1960,29 @@ class Forest(BaseModel):
         """
         return not node.triangle
 
+    # ######## Groups (Amoebas) ################################
+
+    def turn_selection_amoeba_to_group(self, source):
+        """ Take a temporary group into persistent group. Store it in forest. Remember to remove
+        the source after this.
+        :param source: temporary Amoeba to turn
+        :return: Amoeba (persistent)
+        """
+        amoeba = self.create_group()
+        source.hide()
+        amoeba.copy_from(source)
+
+    def create_group(self):
+        amoeba = Amoeba([], persistent=True)
+        self.add_to_scene(amoeba)
+        self.groups[amoeba.save_key] = amoeba
+        return amoeba
+
+    def remove_group(self, amoeba):
+        self.remove_from_scene(amoeba)
+        if amoeba.save_key in self.groups:
+            del self.groups[amoeba.save_key]
+
     # ######## Utility functions ###############################
 
     def parse_features(self, string, node):
@@ -1978,6 +2003,7 @@ class Forest(BaseModel):
     trees = Saved("trees")  # the current line of trees
     nodes = Saved("nodes")
     edges = Saved("edges", if_changed=reserve_update_for_trees)
+    groups = Saved("groups")
     others = Saved("others")
     settings = Saved("settings")
     rules = Saved("rules")

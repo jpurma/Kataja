@@ -661,16 +661,18 @@ class PaletteManager:
         base_tr = c(base)
         base_tr.setAlphaF(0.7)
         bb_tr = QtGui.QBrush(base_tr)
-        base_very_tr = c(base)
-        base_very_tr.setAlphaF(0.3)
-        bb_very_tr = QtGui.QBrush(base_very_tr)
-        bb_lt = QtGui.QBrush(base.lighter())
-        bb_dk = QtGui.QBrush(base.darker())
-        paper = QtGui.QBrush(self.d['background1'])
+        pr, pg, pb, pa = self.paper().getRgb()
+        br, bg, bb, ba = base.getRgb()
+        base_melded = QtGui.QColor.fromRgb((pr + br) / 2, (pg + bg) / 2, (pb + bb) / 2)
+        base_melded.setAlphaF(0.9)
+        bb_melded = QtGui.QBrush(base_melded)
+        bb_lt = QtGui.QBrush(base_melded.lighter())
+        bb_dk = QtGui.QBrush(base_melded.darker())
         paper2 = QtGui.QBrush(self.d['background2'])
-        p = {'windowText': bbase, 'button': paper, 'light': bb_lt,
+        p = {'windowText': self.text(), 'button': self.paper(),
+             'light': bb_lt,
              'dark': bb_dk, 'mid': bbase, 'text': bbase,
-             'bright_text': bb_lt, 'base': paper2, 'window': bb_very_tr}
+             'bright_text': bb_lt, 'base': paper2, 'window': bb_melded}
         self._accent_palettes[key] = QtGui.QPalette(
             p['windowText'], p['button'], p['light'], p['dark'], p['mid'],
             p['text'], p['bright_text'], p['base'], p['window'])
@@ -730,7 +732,6 @@ class PaletteManager:
              'bright_text': QtGui.QBrush(self.d['accent2']),
              'base': QtGui.QBrush(self.d['background2']),
              'window': QtGui.QBrush(self.d['background1'])}
-
         self._ui_palette = QtGui.QPalette(p['windowText'], p['button'],
                                           p['light'], p['dark'], p['mid'],
                                           p['text'], p['bright_text'],

@@ -184,13 +184,13 @@ a['open'] = {'command': '&Open', 'method': open_kataja_file, 'undoable': False,
              'shortcut': 'Ctrl+o'}
 
 
-def save_kataja_file():
+def save_kataja_file(filename=''):
     """ Save kataja data with an existing file name.
     :param filename: filename received from dialog.
     Format is deduced from the extension of filename.
     :return: None
     """
-    filename = ctrl.main.forest_keeper.filename
+    filename = filename or ctrl.main.forest_keeper.filename
     if not filename:
         save_as()
         return
@@ -1434,7 +1434,8 @@ def toggle_amoeba_options(sender=None):
     :return:
     """
     amoeba = get_host(sender)
-    print(amoeba)
+    ctrl.ui.toggle_group_label_editing(amoeba)
+
 
 a['toggle_amoeba_options'] = {'command': 'Options for saving this selection',
                               'method': toggle_amoeba_options,
@@ -1445,6 +1446,152 @@ a['toggle_amoeba_options'] = {'command': 'Options for saving this selection',
 #     'command': 'key_esc',
 #     'method': 'key_esc',
 #     'shortcut': 'Escape'},
+
+def change_amoeba_color(sender=None):
+    """
+
+    :param sender:
+    :return:
+    """
+    if sender:
+        amoeba = get_host(sender)
+        color_key = sender.currentData()
+        sender.model().selected_color = color_key
+        if color_key:
+            amoeba.update_colors(color_key)
+            embed = sender.parent()
+            if embed and hasattr(embed, 'update_color'):
+                embed.update_color()
+            ctrl.main.add_message(
+                'Group color changed to %s' % ctrl.cm.get_color_name(color_key))
+
+a['change_amoeba_color'] = {'command': 'Change color for group',
+                            'method': change_amoeba_color,
+                            'sender_arg': True}
+
+
+def change_amoeba_fill(sender=None):
+    """
+
+    :param sender:
+    :return:
+    """
+    if sender:
+        amoeba = get_host(sender)
+        amoeba.fill = sender.isChecked()
+        amoeba.update()
+
+a['change_amoeba_fill'] = {'command': 'Group area is marked with translucent color',
+                               'method': change_amoeba_fill,
+                               'sender_arg': True}
+
+
+def change_amoeba_outline(sender=None):
+    """
+
+    :param sender:
+    :return:
+    """
+    if sender:
+        amoeba = get_host(sender)
+        amoeba.outline = sender.isChecked()
+        amoeba.update()
+
+a['change_amoeba_outline'] = {'command': 'Group is marked by line drawn around it',
+                              'method': change_amoeba_outline,
+                              'sender_arg': True}
+
+
+def change_amoeba_overlaps(sender=None):
+    """
+
+    :param sender:
+    :return:
+    """
+    if sender:
+        amoeba = get_host(sender)
+        amoeba.allow_overlap = sender.isChecked()
+        amoeba.update_selection(amoeba.selection)
+        amoeba.update_shape()
+        if amoeba.allow_overlap:
+            ctrl.main.add_message('Group can overlap with other groups')
+        else:
+            ctrl.main.add_message('Group cannot overlap with other groups')
+
+
+a['change_amoeba_overlaps'] = {'command': 'Allow group to overlap other groups',
+                               'method': change_amoeba_overlaps,
+                               'sender_arg': True}
+
+
+def change_amoeba_children(sender=None):
+    """
+
+    :param sender:
+    :return:
+    """
+    if sender:
+        amoeba = get_host(sender)
+        amoeba.include_children = sender.isChecked()
+        amoeba.update_selection(amoeba.selection)
+        amoeba.update_shape()
+        if amoeba.include_children:
+            ctrl.main.add_message('Group includes children of its orginal members')
+        else:
+            ctrl.main.add_message('Group does not include children')
+
+
+a['change_amoeba_children'] = {'command': 'Include children of the selected nodes in group',
+                               'method': change_amoeba_children,
+                               'sender_arg': True}
+
+
+def amoeba_remove(sender=None):
+    """
+
+    :param sender:
+    :return:
+    """
+    if sender:
+        amoeba = get_host(sender)
+        amoeba.persistent = False
+        ctrl.ui.toggle_group_label_editing(amoeba)
+        if ctrl.ui.selection_amoeba is amoeba:
+            ctrl.deselect_objects()
+            # deselecting will remove the amoeba
+        else:
+            ctrl.ui.remove_ui_for(amoeba)
+            ctrl.ui.remove_ui(amoeba)
+
+
+a['amoeba_remove'] = {'command': 'Remove this group',
+                      'method': amoeba_remove,
+                      'sender_arg': True}
+
+
+def amoeba_save(sender=None):
+    """
+
+    :param sender:
+    :return:
+    """
+    if sender:
+        embed = sender.parent()
+        amoeba = get_host(sender)
+        ctrl.ui.toggle_group_label_editing(amoeba)
+        amoeba.label_text = embed.input_line_edit.text()
+        name = amoeba.label_text or ctrl.cm.get_color_name(amoeba.color_key)
+        if not amoeba.persistent:
+            new = ctrl.forest.turn_selection_amoeba_to_group(amoeba)
+            ctrl.deselect_objects()
+
+        ctrl.main.add_message("Saved group '%s'" % name)
+
+
+a['amoeba_save'] = {'command': 'Save this group',
+                               'method': amoeba_save,
+                               'sender_arg': True}
+
 
 
 def key_backspace():

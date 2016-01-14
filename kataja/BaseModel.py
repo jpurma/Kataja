@@ -205,7 +205,9 @@ class BaseModel(object):
         self._history = {}
         self._sk = key
         self._cd = 0  # / CREATED / DELETED
-        sys.intern(key)
+        self._can_be_deleted_with_undo = True
+        self._skip_this = False  # temporary "ghost" objects can use this flag to avoid being stored
+        sys.intern(key)  # optimization that may be irrelevant in modern python
 
     @property
     def save_key(self):
@@ -255,7 +257,7 @@ class BaseModel(object):
         """ Flag object to have been deleted in this undo cycle.
         :return:None
         """
-        if ctrl.undo_disabled:
+        if ctrl.undo_disabled or not self._can_be_deleted_with_undo:
             return
         self._cd = DELETED
         ctrl.undo_pile.add(self)

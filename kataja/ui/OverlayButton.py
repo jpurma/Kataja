@@ -244,7 +244,7 @@ class AmoebaOptionsButton(OverlayButton):
         """ """
         adjust = QtCore.QPointF(4, -19)
         br = self.host.boundingRect()
-        p = ctrl.main.graph_view.mapFromScene(br.topRight()) + adjust
+        p = ctrl.main.graph_view.mapFromScene(self.host.top_right_point()) + adjust
         self.move(p.toPoint())
 
 button_definitions = {g.REMOVE_MERGER: RemoveMergerButton, g.AMOEBA_OPTIONS: AmoebaOptionsButton}

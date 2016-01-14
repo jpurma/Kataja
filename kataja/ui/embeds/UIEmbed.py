@@ -35,7 +35,7 @@ class UIEmbed(QtWidgets.QWidget):
 
         self.top_row_layout = QtWidgets.QHBoxLayout()
         #close_button = QtWidgets.QPushButton("x")
-        close_button = PanelButton(qt_prefs.close_icon, text='Close', parent=self, size=12)
+        close_button = PanelButton(qt_prefs.close_icon, text='Close', parent=self, size=12, color_key='content1')
         close_button.setMaximumWidth(16)
         ui_manager.connect_element_to_action(close_button, 'close_embed')
         self.top_row_layout.addWidget(close_button)
@@ -224,8 +224,10 @@ class UIEmbed(QtWidgets.QWidget):
         if self.host and hasattr(self.host, 'get_color_id'):
             key = self.host.get_color_id()
         if key:
+            print('accent palette from key: ', key)
             self._palette = ctrl.cm.get_accent_palette(key)
         else:
+            print('generic ui palette')
             self._palette = ctrl.cm.get_qt_palette_for_ui()
         self.setPalette(self._palette)
 

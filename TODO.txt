@@ -104,8 +104,8 @@ ADD:
 + Symbol table can be resized when floating
 + Amoeba-like selection
     + More transparent colors for selections
-    - Embed panel for naming the selection and giving a color for it
-    - Data structure for named groups
-    - How to deal with children and overlapping groups?
-
+    + Embed panel for naming the selection and giving a color for it
+    + Data structure for named groups
+    + How to deal with children and overlapping groups?
+    - Display group names
 

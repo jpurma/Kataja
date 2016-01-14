@@ -13,15 +13,19 @@ import kataja.globals as g
 from kataja.ui.elements.ResizeHandle import ResizeHandle
 
 
-def make_label(text, parent=None, layout=None, tooltip='', buddy=None, palette=None):
+def make_label(text, parent=None, layout=None, tooltip='', buddy=None, palette=None, align=None):
     label = QtWidgets.QLabel(text, parent=parent)
-    label.setPalette(palette)
+    if palette:
+        label.setPalette(palette)
     label.setFont(qt_prefs.font(g.UI_FONT))
     label.setBuddy(buddy)
     label.setStatusTip(tooltip)
     if ctrl.main.use_tooltips:
         label.setToolTip(tooltip)
-    layout.addWidget(label)
+    if align:
+        layout.addWidget(label, 1, align)
+    else:
+        layout.addWidget(label)
     return label
 
 

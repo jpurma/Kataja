@@ -774,6 +774,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 f.bracket_manager.update_positions()
                 # for area in f.touch_areas:
                 # area.update_position()
+            for group in f.groups.values():
+                group.update_shape()
         if not (items_have_moved or
                 items_fading or
                 frame_has_moved or

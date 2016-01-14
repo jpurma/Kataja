@@ -48,6 +48,7 @@ from kataja.ui.elements.TableModelComboBox import TableModelComboBox
 from kataja.ui.embeds.EdgeLabelEmbed import EdgeLabelEmbed
 from kataja.ui.embeds.NewElementEmbed import NewElementEmbed, NewElementMarker
 from kataja.ui.embeds.NodeEditEmbed import NodeEditEmbed
+from kataja.ui.embeds.GroupLabelEmbed import GroupLabelEmbed
 from kataja.ui.panels import UIPanel
 from kataja.ui.panels.ColorThemePanel import ColorPanel
 from kataja.ui.panels.ColorWheelPanel import ColorWheelPanel
@@ -103,6 +104,7 @@ menu_structure = OrderedDict([('file_menu', ('&File',
 NEW_ELEMENT_EMBED = 'new_element_embed'
 NEW_ELEMENT_MARKER = 'new_element_marker'
 EDGE_LABEL_EMBED = 'edge_label_embed'
+GROUP_LABEL_EMBED = 'group_label_embed'
 STRETCHLINE = 'stretchline'
 ACTIVITY_MARKER = 'activity_marker'
 UI_ACTIVITY_MARKER = 'ui_activity_marker'
@@ -311,8 +313,11 @@ class UIManager:
         for item in list(self._items.values()):
             if item.host and not getattr(item, '_fade_out_active', False):
                 self.remove_ui(item)
-        # create ui pieces for selected elements
-        for item in ctrl.selected:
+        # create ui pieces for selected elements. don't create touchareas and buttons if multiple
+        # selection, it gets confusing fast
+        if len(ctrl.selected) == 1:
+            item = ctrl.selected[0]
+            #for item in ctrl.selected:
             if isinstance(item, Edge):
                 self.update_touch_areas_for_selected_edge(item)
                 self.add_control_points(item)
@@ -325,7 +330,7 @@ class UIManager:
                 self.base_scope = self.scope
             self.scope = g.SELECTION
             if not self.selection_amoeba:
-                self.selection_amoeba = Amoeba(ctrl.selected)
+                self.selection_amoeba = Amoeba(ctrl.selected, persistent=False)
                 self.add_ui(self.selection_amoeba)
             else:
                 self.selection_amoeba.update_selection(ctrl.selected)
@@ -675,6 +680,27 @@ class UIManager:
             embed = self._items[EDGE_LABEL_EMBED]
         embed.update_embed(focus_point=lp)
         embed.wake_up()
+
+    def toggle_group_label_editing(self, amoeba):
+        """ Start group label editing or close it if it's already active.
+        :param amoeba:
+        :return:
+        """
+        lp = amoeba.boundingRect().center()
+        if GROUP_LABEL_EMBED in self._items:
+            embed = self._items[GROUP_LABEL_EMBED]
+            if embed.host is amoeba:
+                embed.close()
+                self.remove_ui(embed)
+                return
+            else:
+                embed.host = amoeba
+        else:
+            embed = GroupLabelEmbed(self.main.graph_view, self, amoeba, GROUP_LABEL_EMBED)
+            self.add_ui(embed)
+        embed.update_embed(focus_point=lp)
+        embed.wake_up()
+
 
     # ### Creation dialog
     # #########################################################

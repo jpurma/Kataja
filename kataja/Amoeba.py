@@ -4,36 +4,80 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 
 from kataja.BaseModel import BaseModel, Saved
 from kataja.singletons import ctrl, prefs, qt_prefs
+from kataja.nodes.Node import Node
 
 points = 36
 
 class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
 
-    def __init__(self, selection):
+    def __init__(self, selection, persistent=False):
         BaseModel.__init__(self)
         QtWidgets.QGraphicsObject.__init__(self)
         self.ui_key = self.save_key + '_ui'
-        self.host = None
-        if selection:
-            self.selection = list(selection)
-        else:
-            self.selection = []
-        self.persistent = False
+        self.host = None # not used, it is here because it is expected for UI elements
+        self.selection = []
+        self.selection_with_children = []
+        self.persistent = persistent
+        self._skip_this = not persistent
         self.points = []
+        self.outline = False
+        self.fill = True
         self.color_key = ''
         self.color = None
         self.color_tr = None
         self.color_tr_tr = None
         self.path = None
+        self.label_text = 'heijaa'
+        self.include_children = False
+        self.allow_overlap = True
         self._br = None
+        self.update_selection(selection)
         self.update_shape()
         self.update_colors()
 
+    def copy_from(self, source):
+        """ Helper method to easily make a similar selection with different identity
+        :param source:
+        :return:
+        """
+        self.selection = source.selection
+        self.selection_with_children = source.selection_with_children
+        self.points = source.points
+        self.outline = source.outline
+        self.fill = source.fill
+        self.color_key = source.color_key
+        self.color = source.color
+        self.color_tr = source.color_tr
+        self.color_tr_tr = source.color_tr_tr
+        self.path = source.path
+        self.label_text = source.label_text
+        self.include_children = source.include_children
+        self.allow_overlap = source.allow_overlap
+
     def update_selection(self, selection):
+        swc = []
+        other_selections = set()
+        if not self.allow_overlap:
+            for amoeba in ctrl.forest.groups.values():
+                other_selections = other_selections | set(amoeba.selection_with_children)
+
+        def recursive_add_children(i):
+            if isinstance(i, Node) and i not in swc and i not in other_selections:
+                swc.append(i)
+                for child in i.get_all_children():
+                    recursive_add_children(child)
+
         if selection:
             self.selection = list(selection)
+            if self.include_children:
+                for item in self.selection:
+                    recursive_add_children(item)
+                self.selection_with_children = swc
+            else:
+                self.selection_with_children = self.selection
         else:
             self.selection = []
+            self.selection_with_children = []
 
     def update_shape(self):
 
@@ -51,12 +95,13 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
                        (x1, y2 + 5),
                        (x1 - 5, y2))
             return x1, y1, x2, y2, corners
+        sel = self.selection_with_children
 
-        if len(self.selection) == 0:
+        if len(sel) == 0:
             self._br = None
             self.path = None
-        elif len(self.selection) == 1:
-            x1, y1, x2, y2, path_points = embellished_corners(self.selection[0])
+        elif len(sel) == 1:
+            x1, y1, x2, y2, path_points = embellished_corners(sel[0])
             self._br = QtCore.QRectF(x1 - 5, y1 - 5, x2 - x1 + 10, y2 - y1 + 10)
             self.path = QtGui.QPainterPath(QtCore.QPointF(path_points[0][0], path_points[0][1]))
             for x, y in path_points[1:]:
@@ -72,7 +117,7 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
             max_x = -50000
             min_y = 50000
             max_y = -50000
-            for item in self.selection:
+            for item in sel:
                 c += 2
                 x1, y1, x2, y2, icorners = embellished_corners(item)
                 x_sum += x1
@@ -123,20 +168,44 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
 
     def paint(self, painter, style, QWidget_widget=None):
         if self.selection and self.path:
-            painter.setPen(self.color_tr)
-            painter.fillPath(self.path, self.color_tr_tr)
+            if self.fill:
+                painter.fillPath(self.path, self.color_tr_tr)
+            if self.outline:
+                painter.setPen(self.color)
+                painter.drawPath(self.path)
+
+    def top_right_point(self):
+        max_x = -30000
+        min_y = 30000
+        for i in range(0, self.path.elementCount()):
+            element = self.path.elementAt(i)
+            if element.y <= min_y and element.x > max_x:
+                min_y = element.y
+                max_x = element.x
+        return QtCore.QPointF(max_x, min_y)
 
     def boundingRect(self):
         if not self._br:
             self.update_shape()
         return self._br
 
-    def update_colors(self):
-        self.color_key = 'accent1'
+    def get_color_id(self):
+        return self.color_key
+
+    def update_colors(self, color_key=''):
+        if not self.color_key:
+            self.color_key = color_key or "accent1"
+        elif color_key:
+            self.color_key = color_key
         self.color = ctrl.cm.get(self.color_key)
         self.color_tr = ctrl.cm.get(self.color_key + 'tr')
         self.color_tr_tr = QtGui.QColor(self.color)
         self.color_tr_tr.setAlphaF(0.2)
 
     color_key = Saved("color_key")
-    name = Saved("name")
+    label_text = Saved("label_text")
+    include_children = Saved("include_children")
+    allow_overlap = Saved("allow_overlap")
+    fill = Saved("fill")
+    outline = Saved("outline")
+    persistent = Saved("persistent")
