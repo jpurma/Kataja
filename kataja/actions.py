@@ -1579,10 +1579,10 @@ def amoeba_save(sender=None):
         embed = sender.parent()
         amoeba = get_host(sender)
         ctrl.ui.toggle_group_label_editing(amoeba)
-        amoeba.label_text = embed.input_line_edit.text()
+        amoeba.set_label_text(embed.input_line_edit.text())
         name = amoeba.label_text or ctrl.cm.get_color_name(amoeba.color_key)
         if not amoeba.persistent:
-            new = ctrl.forest.turn_selection_amoeba_to_group(amoeba)
+            ctrl.forest.turn_selection_amoeba_to_group(amoeba)
             ctrl.deselect_objects()
 
         ctrl.main.add_message("Saved group '%s'" % name)
@@ -1590,6 +1590,7 @@ def amoeba_save(sender=None):
 
 a['amoeba_save'] = {'command': 'Save this group',
                                'method': amoeba_save,
+                               'shortcut': 'Return',
                                'sender_arg': True}
 
 

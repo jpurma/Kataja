@@ -92,7 +92,7 @@ class GroupLabelEmbed(UIEmbed):
         ui_manager.connect_element_to_action(self.delete_button, 'amoeba_remove')
 
         hlayout.addWidget(self.delete_button)
-        self.enter_button = QtWidgets.QPushButton("Keep")  # U+21A9 &#8617;
+        self.enter_button = QtWidgets.QPushButton("Keep ↩")  # U+21A9 &#8617;
         self.enter_button.setMaximumWidth(60)
         ui_manager.connect_element_to_action(self.enter_button, 'amoeba_save')
 

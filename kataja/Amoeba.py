@@ -5,6 +5,7 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 from kataja.BaseModel import BaseModel, Saved
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.nodes.Node import Node
+import kataja.globals as g
 
 points = 36
 
@@ -27,7 +28,8 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
         self.color_tr = None
         self.color_tr_tr = None
         self.path = None
-        self.label_text = 'heijaa'
+        self.label_text = ''
+        self.label_item = None
         self.include_children = False
         self.allow_overlap = True
         self._br = None
@@ -50,9 +52,25 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
         self.color_tr = source.color_tr
         self.color_tr_tr = source.color_tr_tr
         self.path = source.path
-        self.label_text = source.label_text
+        self.set_label_text(source.label_text)
         self.include_children = source.include_children
         self.allow_overlap = source.allow_overlap
+
+    def set_label_text(self, text):
+        self.label_text = text
+        if text:
+            if not self.label_item:
+                self.label_item = QtWidgets.QGraphicsSimpleTextItem(text, self)
+                self.label_item.setFont(qt_prefs.font(g.SMALL_CAPS))
+                self.label_item.setPen(qt_prefs.no_pen)
+                self.label_item.setBrush(self.color)
+            else:
+                self.label_item.setText(text)
+        else:
+            if self.label_item:
+                self.label_item.scene().removeItem(self.label_item)
+                self.label_item = None
+
 
     def update_selection(self, selection):
         swc = []
@@ -62,7 +80,8 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
                 other_selections = other_selections | set(amoeba.selection_with_children)
 
         def recursive_add_children(i):
-            if isinstance(i, Node) and i not in swc and i not in other_selections:
+            if isinstance(i, Node) and i not in swc and \
+                    (i in selection or i not in other_selections):
                 swc.append(i)
                 for child in i.get_all_children():
                     recursive_add_children(child)
@@ -100,13 +119,16 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
         if len(sel) == 0:
             self._br = None
             self.path = None
+            return
         elif len(sel) == 1:
-            x1, y1, x2, y2, path_points = embellished_corners(sel[0])
+            x1, y1, x2, y2, route = embellished_corners(sel[0])
             self._br = QtCore.QRectF(x1 - 5, y1 - 5, x2 - x1 + 10, y2 - y1 + 10)
-            self.path = QtGui.QPainterPath(QtCore.QPointF(path_points[0][0], path_points[0][1]))
-            for x, y in path_points[1:]:
+            self.path = QtGui.QPainterPath(QtCore.QPointF(route[0][0], route[0][1]))
+            for x, y in route[1:]:
                 self.path.lineTo(x, y)
             self.path.closeSubpath()
+            center = self._br.center()
+            cx, cy = center.x(), center.y()
 
         else:
             corners = []
@@ -163,6 +185,39 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
                 self.path.lineTo(x, y)
             self.path.closeSubpath()
 
+        if self.label_item:
+            label_width = self.label_item.boundingRect().width()
+            label_height = self.label_item.boundingRect().height()
+            label_center_x, label_center_y = label_width / 2, label_height / 2
+
+            min_dist = 100000
+            prev_x, prev_y = route[-1]
+            best_x, best_y = 0, 0
+            for x, y in route:
+                mx = (prev_x + x) / 2
+                my = (prev_y + y) / 2
+                d = (cx - mx) ** 2 + (cy - my) ** 2
+                if d < min_dist:
+                    if mx < cx:
+                        mx -= label_width + 2
+                    else:
+                        mx += 2
+                    if my < cy:
+                        my -= label_height + 2
+                    else:
+                        my += 2
+                    items = ctrl.graph_scene.items(QtCore.QPointF(mx + label_center_x,
+                                                   my + label_center_y))
+                    collision = False
+                    for item in items:
+                        if isinstance(item, (Node, Amoeba)):
+                            collision = True
+                    if not collision:
+                        min_dist = d
+                        best_x, best_y = mx, my
+                prev_x, prev_y = x, y
+            self.label_item.setPos(best_x, best_y)
+
     def update_position(self):
         self.update_shape()
 
@@ -201,6 +256,8 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
         self.color_tr = ctrl.cm.get(self.color_key + 'tr')
         self.color_tr_tr = QtGui.QColor(self.color)
         self.color_tr_tr.setAlphaF(0.2)
+        if self.label_item:
+            self.label_item.setBrush(self.color)
 
     color_key = Saved("color_key")
     label_text = Saved("label_text")

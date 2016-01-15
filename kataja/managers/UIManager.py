@@ -331,6 +331,8 @@ class UIManager:
             self.scope = g.SELECTION
             if not self.selection_amoeba:
                 self.selection_amoeba = Amoeba(ctrl.selected, persistent=False)
+                self.selection_amoeba.update_colors(
+                        color_key=ctrl.forest.get_group_color_suggestion())
                 self.add_ui(self.selection_amoeba)
             else:
                 self.selection_amoeba.update_selection(ctrl.selected)

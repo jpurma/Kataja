@@ -1983,6 +1983,14 @@ class Forest(BaseModel):
         if amoeba.save_key in self.groups:
             del self.groups[amoeba.save_key]
 
+    def get_group_color_suggestion(self):
+        color_keys = set()
+        for amoeba in self.groups.values():
+            color_keys.add(amoeba.color_key)
+        for i in range(1,8):
+            if 'accent%s' % i not in color_keys:
+                return 'accent%s' % i
+
     # ######## Utility functions ###############################
 
     def parse_features(self, string, node):

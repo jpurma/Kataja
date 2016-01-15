@@ -80,6 +80,7 @@ edit box is open (two end points move).
 + Node info shows coordinates relative to tree, not to scene
 + Save without user selection doesn't work in sandboxed app
 + Print image without user selection doesn't work in sandboxed app
+- Group overlap algorithm should be improved
 
 ADD:
 
@@ -107,5 +108,5 @@ ADD:
     + Embed panel for naming the selection and giving a color for it
     + Data structure for named groups
     + How to deal with children and overlapping groups?
-    - Display group names
+    + Display group names
 
