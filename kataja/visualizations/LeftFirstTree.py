@@ -168,7 +168,7 @@ class LeftFirstTree(BaseVisualization):
                 grid = Grid()
                 self._put_to_grid(grid, tree.top, 0, 0)
                 if merged_grid:
-                    extra_padding = math.ceil(prev_grid.width / 2)
+                    extra_padding = math.ceil(merged_grid.width / 2)
                     merged_grid.merge_grids(grid, extra_padding=extra_padding)
                 else:
                     merged_grid = grid

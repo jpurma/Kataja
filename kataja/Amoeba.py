@@ -102,17 +102,11 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
 
         def embellished_corners(item):
             x1, y1, x2, y2 = item.sceneBoundingRect().getCoords()
-            # /----\
-            # |    |
-            # \----/
-            corners = ((x1 - 5, y1),
-                       (x1, y1 - 5),
-                       (x2, y1 - 5),
-                       (x2 + 5, y1),
-                       (x2 + 5, y2),
-                       (x2, y2 + 5),
-                       (x1, y2 + 5),
-                       (x1 - 5, y2))
+            corners = [(x1 - 5, y1 - 5),
+                       (x2 + 5, y1 - 5),
+                       (x2 + 5, y2 + 5),
+                       (x1 - 5, y2 + 5)]
+
             return x1, y1, x2, y2, corners
         sel = self.selection_with_children
 
@@ -180,10 +174,6 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
                         if last == closest:
                             continue
                     route.append(closest)
-            self.path = QtGui.QPainterPath(QtCore.QPointF(route[0][0], route[0][1]))
-            for x, y in route[1:]:
-                self.path.lineTo(x, y)
-            self.path.closeSubpath()
 
         if self.label_item:
             label_width = self.label_item.boundingRect().width()
@@ -217,6 +207,11 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
                         best_x, best_y = mx, my
                 prev_x, prev_y = x, y
             self.label_item.setPos(best_x, best_y)
+        curved_path = Amoeba.interpolate_point_with_bezier_curves(route)
+        sx, sy = route[0]
+        self.path = QtGui.QPainterPath(QtCore.QPointF(sx, sy))
+        for fx, fy, sx, sy, ex, ey in curved_path:
+            self.path.cubicTo(fx, fy, sx, sy, ex, ey)
 
     def update_position(self):
         self.update_shape()
@@ -258,6 +253,59 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
         self.color_tr_tr.setAlphaF(0.2)
         if self.label_item:
             self.label_item.setBrush(self.color)
+
+    @staticmethod
+    def interpolate_point_with_bezier_curves(points):
+        """ Curved path algorithm based on example by Raul Otaño Hurtado, from
+        http://www.codeproject.com/Articles/769055/Interpolate-D-points-usign-Bezier-curves-in-WPF
+        :param points:
+        :return:
+        """
+        if len(points) < 3:
+            return None
+        res = []
+
+        # if is close curve then add the first point at the end
+        if points[-1] != points[0]:
+            points.append(points[0])
+
+        for i, (x1, y1) in enumerate(points[:-1]):
+            if i == 0:
+                x0, y0 = points[-2]
+            else:
+                x0, y0 = points[i - 1]
+            x2, y2 = points[i + 1]
+            if i == len(points) - 2:
+                x3, y3 = points[1]
+            else:
+                x3, y3 = points[i + 2]
+
+            xc1 = (x0 + x1) / 2.0
+            yc1 = (y0 + y1) / 2.0
+            xc2 = (x1 + x2) / 2.0
+            yc2 = (y1 + y2) / 2.0
+            xc3 = (x2 + x3) / 2.0
+            yc3 = (y2 + y3) / 2.0
+            len1 = math.hypot(x1 - x0, y1 - y0)
+            len2 = math.hypot(x2 - x1, y2 - y1)
+            len3 = math.hypot(x3 - x2, y3 - y2)
+
+            k1 = len1 / (len1 + len2)
+            k2 = len2 / (len2 + len3)
+
+            xm1 = xc1 + (xc2 - xc1) * k1
+            ym1 = yc1 + (yc2 - yc1) * k1
+
+            xm2 = xc2 + (xc3 - xc2) * k2
+            ym2 = yc2 + (yc3 - yc2) * k2
+
+            smooth = 0.8
+            ctrl1_x = xm1 + (xc2 - xm1) * smooth + x1 - xm1
+            ctrl1_y = ym1 + (yc2 - ym1) * smooth + y1 - ym1
+            ctrl2_x = xm2 + (xc2 - xm2) * smooth + x2 - xm2
+            ctrl2_y = ym2 + (yc2 - ym2) * smooth + y2 - ym2
+            res.append((ctrl1_x, ctrl1_y, ctrl2_x, ctrl2_y, x2, y2))
+        return res
 
     color_key = Saved("color_key")
     label_text = Saved("label_text")
