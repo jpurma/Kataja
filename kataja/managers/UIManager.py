@@ -329,15 +329,18 @@ class UIManager:
             if self.scope != g.SELECTION:
                 self.base_scope = self.scope
             self.scope = g.SELECTION
-            if not self.selection_amoeba:
+            if len(ctrl.selected) == 1 and isinstance(ctrl.get_single_selected(), Amoeba):
+                self.add_buttons_for_amoeba(ctrl.get_single_selected())
+            elif not self.selection_amoeba:
                 self.selection_amoeba = Amoeba(ctrl.selected, persistent=False)
                 self.selection_amoeba.update_colors(
                         color_key=ctrl.forest.get_group_color_suggestion())
                 self.add_ui(self.selection_amoeba)
+                self.add_buttons_for_amoeba(self.selection_amoeba)
             else:
                 self.selection_amoeba.update_selection(ctrl.selected)
                 self.selection_amoeba.update_shape()
-            self.add_buttons_for_amoeba(self.selection_amoeba)
+                self.add_buttons_for_amoeba(self.selection_amoeba)
         else:
             self.scope = self.base_scope
             if self.selection_amoeba:

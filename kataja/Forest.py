@@ -419,6 +419,8 @@ class Forest(BaseModel):
                 yield n.visual
         for n in self.bracket_manager.get_brackets():
             yield n
+        for n in self.groups.values():
+            yield n
         if self.gloss:
             yield self.gloss
 
@@ -1975,12 +1977,14 @@ class Forest(BaseModel):
     def create_group(self):
         amoeba = Amoeba([], persistent=True)
         self.add_to_scene(amoeba)
+        self.poke('groups')
         self.groups[amoeba.save_key] = amoeba
         return amoeba
 
     def remove_group(self, amoeba):
         self.remove_from_scene(amoeba)
         if amoeba.save_key in self.groups:
+            self.poke('groups')
             del self.groups[amoeba.save_key]
 
     def get_group_color_suggestion(self):

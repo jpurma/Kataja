@@ -16,7 +16,7 @@ from kataja.ForestSettings import ForestSettings, ForestRules
 from kataja.managers.ChainManager import ChainManager
 from kataja.DerivationStep import DerivationStep, DerivationStepManager
 from kataja.Tree import Tree
-
+from kataja.Amoeba import Amoeba
 
 from syntax.ConfigurableConstituent import ConfigurableConstituent
 from syntax.BaseConstituent import BaseConstituent
@@ -51,7 +51,7 @@ assert BaseFeature
 factory_models = {ConstituentNode, BaseConstituentNode, AttributeNode, FeatureNode, GlossNode,
                   PropertyNode, CommentNode, Edge, Forest,
                   DerivationStep, DerivationStepManager, ForestSettings, ForestRules,
-                  ConfigurableConstituent, BaseConstituent, BaseFeature, Tree}
+                  ConfigurableConstituent, BaseConstituent, BaseFeature, Tree, Amoeba}
 factory_dict = {}
 for value in factory_models:
     factory_dict[value.short_name] = value

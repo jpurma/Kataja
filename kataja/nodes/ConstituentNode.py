@@ -360,7 +360,7 @@ class ConstituentNode(BaseConstituentNode):
                 return '[.%s %s ]' % \
                        (self.alias, ' '.join((c.as_bracket_string() for c in children)))
             else:
-                return self.alias
+                return str(self.alias)
         else:
             return super().as_bracket_string()
 

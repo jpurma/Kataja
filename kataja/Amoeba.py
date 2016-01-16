@@ -11,7 +11,7 @@ points = 36
 
 class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
 
-    def __init__(self, selection, persistent=False):
+    def __init__(self, selection=None, persistent=True):
         BaseModel.__init__(self)
         QtWidgets.QGraphicsObject.__init__(self)
         self.ui_key = self.save_key + '_ui'
@@ -20,6 +20,7 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
         self.selection_with_children = []
         self.persistent = persistent
         self._skip_this = not persistent
+        self._selected = False
         self.points = []
         self.outline = False
         self.fill = True
@@ -33,7 +34,17 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
         self.include_children = False
         self.allow_overlap = True
         self._br = None
-        self.update_selection(selection)
+        self.selectable = persistent
+        self.clickable = False
+        self.draggable = False
+        if selection:
+            self.update_selection(selection)
+        self.update_shape()
+        self.update_colors()
+
+    def after_init(self):
+        print('after init called, selection: ', self.selection)
+        self.update_selection(self.selection)
         self.update_shape()
         self.update_colors()
 
@@ -61,7 +72,9 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
         if text:
             if not self.label_item:
                 self.label_item = QtWidgets.QGraphicsSimpleTextItem(text, self)
-                self.label_item.setFont(qt_prefs.font(g.SMALL_CAPS))
+                f = QtGui.QFont(qt_prefs.font(g.SMALL_CAPS))
+                f.setPointSize(f.pointSizeF()*2)
+                self.label_item.setFont(f)
                 self.label_item.setPen(qt_prefs.no_pen)
                 self.label_item.setBrush(self.color)
             else:
@@ -70,7 +83,6 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
             if self.label_item:
                 self.label_item.scene().removeItem(self.label_item)
                 self.label_item = None
-
 
     def update_selection(self, selection):
         swc = []
@@ -108,10 +120,10 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
                        (x1 - 5, y2 + 5)]
 
             return x1, y1, x2, y2, corners
-        sel = self.selection_with_children
+        sel = [x for x in self.selection_with_children if x.isVisible()]
 
         if len(sel) == 0:
-            self._br = None
+            self._br = QtCore.QRectF()
             self.path = None
             return
         elif len(sel) == 1:
@@ -216,20 +228,15 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
     def update_position(self):
         self.update_shape()
 
-    def paint(self, painter, style, QWidget_widget=None):
-        if self.selection and self.path:
-            if self.fill:
-                painter.fillPath(self.path, self.color_tr_tr)
-            if self.outline:
-                painter.setPen(self.color)
-                painter.drawPath(self.path)
-
     def top_right_point(self):
         max_x = -30000
         min_y = 30000
         for i in range(0, self.path.elementCount()):
             element = self.path.elementAt(i)
-            if element.y <= min_y and element.x > max_x:
+            if element.y < min_y:
+                min_y = element.y
+                max_x = element.x
+            elif element.y == min_y and element.x > max_x:
                 min_y = element.y
                 max_x = element.x
         return QtCore.QPointF(max_x, min_y)
@@ -253,6 +260,43 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
         self.color_tr_tr.setAlphaF(0.2)
         if self.label_item:
             self.label_item.setBrush(self.color)
+
+    def select(self, event=None, multi=False):
+        """ Scene has decided that this node has been clicked
+        :param event:
+        :param multi: assume multiple selection (append, don't replace)
+        """
+        if (event and event.modifiers() == QtCore.Qt.ShiftModifier) or multi:
+            # multiple selection
+            if ctrl.is_selected(self):
+                ctrl.remove_from_selection(self)
+            else:
+                ctrl.add_to_selection(self)
+            return
+        if ctrl.is_selected(self):
+            self.open_embed()
+        else:
+            ctrl.select(self)
+
+    def update_selection_status(self, value):
+        """
+
+        :param value:
+        :return:
+        """
+        self._selected = value
+
+    def paint(self, painter, style, QWidget_widget=None):
+        if self.selection and self.path:
+            if self.fill:
+                painter.fillPath(self.path, self.color_tr_tr)
+            if self._selected:
+                painter.setPen(ctrl.cm.selection())
+                painter.drawPath(self.path)
+            elif self.outline:
+                painter.setPen(self.color)
+                painter.drawPath(self.path)
+
 
     @staticmethod
     def interpolate_point_with_bezier_curves(points):
@@ -307,6 +351,7 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
             res.append((ctrl1_x, ctrl1_y, ctrl2_x, ctrl2_y, x2, y2))
         return res
 
+    selection = Saved("selection")
     color_key = Saved("color_key")
     label_text = Saved("label_text")
     include_children = Saved("include_children")
