@@ -126,6 +126,11 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         # toolbar = QtWidgets.QToolBar()
         # toolbar.setFixedSize(480, 40)
         # self.addToolBar(toolbar)
+        gestures = [QtCore.Qt.TapGesture, QtCore.Qt.TapAndHoldGesture, QtCore.Qt.PanGesture,
+                    QtCore.Qt.PinchGesture, QtCore.Qt.SwipeGesture, QtCore.Qt.CustomGesture]
+        for gesture in gestures:
+            self.grabGesture(gesture)
+
         self.action_finished()
 
     def reset_preferences(self):

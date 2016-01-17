@@ -469,14 +469,16 @@ class ConstituentNode(BaseConstituentNode):
                     fix_label(parent, level + 1, head)
                     last = False
             node.label = head.label
-            if xbar:
+            if xbar and not node.is_leaf_node(only_similar=True, only_visible=False):
                 if head_base:
                     if last:
                         node.alias = head_base + 'P'
                     elif level > 0:
                         node.alias = head_base + '´'
-                    else:
+                    elif head_base != str(node.label):
                         node.alias = head_base
+                    else:
+                        node.alias = ''
                 else:
                     node.alias = ''
             node.update_label()
@@ -486,6 +488,9 @@ class ConstituentNode(BaseConstituentNode):
             head_base = None
             if h.alias:
                 head_base = str(h.alias)
+                head_base = strip_xbars(head_base)
+            elif h.label:
+                head_base = str(h.label)
                 head_base = strip_xbars(head_base)
             fix_label(h, 0, h)
         else:

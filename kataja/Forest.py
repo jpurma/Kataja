@@ -1716,10 +1716,51 @@ class Forest(BaseModel):
         for tree in trees:
             tree.update_items()
 
-    def add_children_for_constituentnode(self, parent: BaseConstituentNode, pos=None,
-                                         head_left=True):
-        """ User adds children for leaf node. If binary nodes are used, new nodes are added in
-        pairs. Because of this, be careful for using this in other than user-triggered situations.
+    def add_child_for_constituentnode(self, old_node: BaseConstituentNode, pos=None,
+                                      add_left=True):
+        """ User adds child for leaf node. Assuming that binary nodes are used, the new node
+        is actually added as a sibling and new intermediate parent node is created. Have another
+        method for non-binary creation.
+        Because of this, be careful for using this in other than user-triggered situations.
+        If the node where children is added is projecting, new node will take its identity and
+        will become the one projecting.
+        :param parent:
+        :param pos:
+        :param add_left: adding node to left or right -- if binary nodes, this marks which one
+        will be projecting.
+        :return:
+        """
+
+        new_node = self.create_node(relative=old_node)
+        #new_node.current_position = pos
+        if add_left:
+            left = new_node
+            right = old_node
+        else:
+            left = old_node
+            right = new_node
+        parent_info = [(e.start, e.alignment, e.start.head) for e in
+                       old_node.get_edges_up(similar=True, visible=False)]
+
+        for op, align, head in parent_info:
+            self.disconnect_node(parent=op, child=old_node)
+
+        merger_node = self.create_merger_node(left=left, right=right, create_tree=False,
+                                              new=new_node)
+        for op, align, head in parent_info:
+            self.connect_node(parent=op, child=merger_node, direction=align, fade_in=True)
+        merger_node.copy_position(old_node)
+        merger_node.set_projection(old_node)
+        for op, align, head in parent_info:
+            if head == old_node:
+                op.set_projection(head)
+
+    def nonbinary_add_child_for_constituentnode(self, parent: BaseConstituentNode, pos=None,
+                                      head_left=True):
+        """ User adds child for leaf node. Assuming that binary nodes are used, the new node
+        is actually added as a sibling and new intermediate parent node is created. Have another
+        method for non-binary creation.
+        Because of this, be careful for using this in other than user-triggered situations.
         If the node where children is added is projecting, new node will take its identity and
         will become the one projecting.
         :param parent:
@@ -1764,6 +1805,7 @@ class Forest(BaseModel):
             new_node.alias = parent.alias
             new_node.set_projection(new_node)
             parent.set_projection(new_node, replace_up=True)
+
 
     def merge_to_top(self, top, new, merge_to_left, merger_pos):
         """

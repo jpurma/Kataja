@@ -1426,9 +1426,9 @@ def add_child_left(sender=None):
     :return:
     """
     node = get_host(sender)
-    ctrl.forest.add_children_for_constituentnode(node,
-                                                 pos=tuple2_to_tuple3(sender.end_point),
-                                                 head_left=True)
+    ctrl.forest.add_child_for_constituentnode(node,
+                                              pos=tuple2_to_tuple3(sender.end_point),
+                                              add_left=True)
 a['add_child_left'] = {'command': 'Add child node to left',
                        'method': add_child_left,
                        'sender_arg': True}
@@ -1441,9 +1441,9 @@ def add_child_right(sender=None):
     :return:
     """
     node = get_host(sender)
-    ctrl.forest.add_children_for_constituentnode(node,
-                                                 pos=tuple2_to_tuple3(sender.end_point),
-                                                 head_left=False)
+    ctrl.forest.add_child_for_constituentnode(node,
+                                              pos=tuple2_to_tuple3(sender.end_point),
+                                              add_left=False)
 a['add_child_right'] = {'command': 'Add child node to right',
                         'method': add_child_right,
                         'sender_arg': True}
