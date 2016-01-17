@@ -1037,9 +1037,16 @@ class Forest(BaseModel):
                 self.disconnect_edge(edge)
 
         # -- ui elements --
-        self.main.ui_manager.remove_ui_for(node)
+        ctrl.ui.remove_ui_for(node)
         # -- brackets --
         self.bracket_manager.remove_brackets(node)
+        # -- groups --
+        if ctrl.ui.selection_amoeba and node in ctrl.ui.selection_amoeba:
+            ctrl.ui.selection_amoeba.remove_node(node)
+        for group in self.groups.values():
+            if node in group:
+                group.remove_node(node)
+
         # -- dictionaries --
         if node.save_key in self.nodes:
             self.poke('nodes')

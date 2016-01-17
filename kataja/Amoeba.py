@@ -42,6 +42,9 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
         self.update_shape()
         self.update_colors()
 
+    def __contains__(self, item):
+        return item in self.selection_with_children
+
     def after_init(self):
         print('after init called, selection: ', self.selection)
         self.update_selection(self.selection)
@@ -83,6 +86,25 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
             if self.label_item:
                 self.label_item.scene().removeItem(self.label_item)
                 self.label_item = None
+
+    def remove_node(self, node):
+        """ Manual removal of single node, should be called e.g. when node is deleted.
+        :param node:
+        :return:
+        """
+        if node in self.selection:
+            self.poke('selection')
+            self.selection.remove(node)
+        if node in self.selection_with_children:
+            self.selection_with_children.remove(node)
+
+        if self.selection:
+            self.update_shape()
+        else:
+            if self.persistent:
+                ctrl.forest.remove_group(self)
+            else:
+                pass
 
     def update_selection(self, selection):
         swc = []
@@ -229,6 +251,8 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
         self.update_shape()
 
     def top_right_point(self):
+        if not self.path:
+            return QtCore.QPointF(0, 0)  # hope this group will be removed immediately
         max_x = -30000
         min_y = 30000
         for i in range(0, self.path.elementCount()):
