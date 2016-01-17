@@ -133,7 +133,8 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
                     recursive_add_children(child)
 
         if selection:
-            self.selection = list(selection)
+            self.selection = [item for item in selection if isinstance(item, Node) and
+                              item.can_be_in_groups]
             if self.include_children:
                 for item in self.selection:
                     recursive_add_children(item)

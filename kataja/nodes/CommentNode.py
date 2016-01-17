@@ -39,6 +39,7 @@ class CommentNode(Node):
     name = ('Comment', 'Comments')
     short_name = "ComNode"
     display = True
+    can_be_in_groups = False
 
     viewable = {'text': {'order': 3, 'resizable': True, 'line_length': 24, 'text_align':
         g.LEFT_ALIGN}}
@@ -60,10 +61,14 @@ class CommentNode(Node):
 
     def __init__(self, text='comment'):
         Node.__init__(self)
+        if not text:
+            text = 'comment'
         self.label = text
         self.physics_x = False
         self.physics_y = False
         self.physics_z = False
+        self.pos_relative_to_host = -50, -50
+        self.preferred_host = None
 
     @property
     def hosts(self):
@@ -71,7 +76,7 @@ class CommentNode(Node):
         'hosts' is a shortcut to get the nodes.
         :return: list of Nodes
         """
-        return self.get_parents(edge_type=g.ARROW)
+        return self.get_parents(edge_type=g.COMMENT_EDGE)
 
 
     @property
@@ -123,7 +128,7 @@ class CommentNode(Node):
             #p.setColor(ctrl.cm.hover())
             p.setWidth(1)
             painter.setPen(p)
-            painter.setBrush(self.drag_data.background)
+            #painter.setBrush(self.drag_data.background)
             painter.drawRect(self.inner_rect)
             painter.setBrush(QtCore.Qt.NoBrush)
 
@@ -146,6 +151,58 @@ class CommentNode(Node):
             painter.setPen(p)
             painter.drawRect(self.inner_rect)
 
+    def move(self, md):
+        """ Override usual movement if comment is connected to some node. If so, try to keep the
+        given position relative to that node.
+        :return:
+        """
+        if self.preferred_host:
+            x, y, z = self.preferred_host.current_scene_position
+            dx, dy = self.pos_relative_to_host
+            self.current_position = self.scene_position_to_tree_position((x + dx, y + dy, z))
+            return False, False
+        else:
+            return super().move(md)
+
+    def drop_to(self, x, y, recipient=None):
+        """
+
+        :param recipient:
+        :param x:
+        :param y:
+        :return: action finished -message (str)
+        """
+        message = super().drop_to(x, y, recipient=recipient)
+        if self.preferred_host:
+            x, y, z = self.preferred_host.current_scene_position
+            mx, my, mz = self.current_scene_position
+            self.pos_relative_to_host = mx - x, my - y
+            message = "Adjusted comment to be at %s, %s relative to '%s'" % (mx - x, my - y,
+                                                                             self.preferred_host)
+        return message
+
+    def on_connect(self, other):
+        print('on_connect called, hosts:', self.hosts)
+        if other in self.hosts:
+            self.preferred_host = other
+            x, y, z = other.current_scene_position
+            mx, my, mz = self.current_scene_position
+            self.pos_relative_to_host = mx - x, my - y
+
+    def on_disconnect(self, other):
+        print('on_disconnect called')
+        if other is self.preferred_host:
+            for item in self.hosts:
+                if item != other:
+                    self.preferred_host = item
+                    x, y, z = item.current_scene_position
+                    mx, my, mz = self.current_scene_position
+                    self.pos_relative_to_host = mx - x, my - y
+                    return
+            self.preferred_host = None
+
+    def can_connect_with(self, other):
+        return other not in self.hosts
 
     # ############## #
     #                #

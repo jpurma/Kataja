@@ -17,7 +17,7 @@ FIX:
 + Replace fade in Movable with QAnimation
 + Make all Movables to use QGraphicsObject (to support QAnimation)
 - Use fade for mouseover rectangles
-- Comments should keep their relative locations to nodes when visualization changes.
++ Comments should keep their relative locations to nodes when visualization changes.
 + New branches don't always follow position adjustments of their parents.
     + Adjusting previously adjusted nodes behaves weirdly
 + Triangling an element makes it lose its adjustment

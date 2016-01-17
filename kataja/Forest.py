@@ -1563,6 +1563,9 @@ class Forest(BaseModel):
         parent.update_label(force_update=True)
         child.update_label(force_update=True)
         #print('--- finished connect')
+        if hasattr(child, 'on_connect'):
+            child.on_connect(parent)
+
 
         return new_edge
 
@@ -1608,6 +1611,8 @@ class Forest(BaseModel):
                 else:
                     raise ForestError("Trying to remove edge that doesn't exist")
         self.disconnect_edge(edge)
+        if hasattr(child, 'on_disconnect'):
+            child.on_disconnect(parent)
 
 
     def replace_node(self, old_node, new_node, only_for_parent=None, replace_children=False,

@@ -30,7 +30,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from kataja.nodes.Node import Node
 from kataja.errors import TouchAreaError
 from kataja.Edge import Edge
-from kataja.singletons import ctrl, prefs
+from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.utils import to_tuple, tuple2_to_tuple3, sub_xy
 import kataja.globals as g
 
@@ -420,6 +420,10 @@ class AddBelowTouchArea(TouchArea):
         if ctrl.pressed is self:
             pass
         c = self.contextual_color()
+        if self._hovering:
+            painter.setBrush(ctrl.cm.ui_tr())
+        else:
+            painter.setBrush(qt_prefs.no_brush)
         painter.setPen(c)
         draw_leaf(painter, 0, 0)
         if self._hovering:

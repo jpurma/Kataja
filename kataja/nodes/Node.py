@@ -78,6 +78,7 @@ class Node(Movable):
     name = ('Abstract node', 'Abstract nodes')
     short_name = "Node"  # shouldn't be used on its own
     display = False
+    can_be_in_groups = True
 
     # override this if you need to turn inodes into your custom Nodes. See
     # examples in
@@ -870,6 +871,14 @@ syntactic_object: %s
     def node_alone(self):
         return not (self.edges_down or self.edges_up)
 
+    def can_connect_with(self, other):
+        """ Override this in subclasses, checks conditions when other nodes could connect to this
+        node. (This node is child). Generally connection should be refuted if it already exists
+        :param other:
+        :return:
+        """
+        return other not in self.get_parents(only_similar=False, only_visible=False)
+
     # Reflecting structural changes in syntax
     # Nodes are connected and disconnected to each other by user, through UI,
     # and these connections may have different syntactical meaning.
@@ -1487,7 +1496,6 @@ syntactic_object: %s
             for edge in itertools.chain(self.edges_up, self.edges_down):
                 edge.make_path()
                 edge.update()
-
 
     def accepts_drops(self, dragged):
         """

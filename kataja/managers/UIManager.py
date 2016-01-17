@@ -345,7 +345,7 @@ class UIManager:
                         self.selection_amoeba.remove_node(group_member)
                 # check if any selection contains any objects that should be added to group
                 for node in ctrl.selected:
-                    if isinstance(node, Node):
+                    if isinstance(node, Node) and node.can_be_in_groups:
                         if node not in self.selection_amoeba:
                             self.selection_amoeba.add_node(node)
 
@@ -950,13 +950,17 @@ class UIManager:
             elif cond == 'is_top':
                 return node.is_top_node(only_visible=False)
             elif cond == 'dragging_comment':
-                return dragged_type == g.COMMENT_NODE
+                return dragged_type == g.COMMENT_NODE and \
+                       (not drag_host) or (drag_host and drag_host.can_connect_with(node))
             elif cond == 'dragging_feature':
-                return dragged_type == g.FEATURE_NODE
+                return dragged_type == g.FEATURE_NODE and \
+                       (not drag_host) or (drag_host and drag_host.can_connect_with(node))
             elif cond == 'dragging_constituent':
-                return dragged_type == g.CONSTITUENT_NODE
+                return dragged_type == g.CONSTITUENT_NODE and \
+                       (not drag_host) or (drag_host and drag_host.can_connect_with(node))
             elif cond == 'dragging_gloss':
-                return dragged_type == g.GLOSS_NODE
+                return dragged_type == g.GLOSS_NODE and \
+                       (not drag_host) or (drag_host and drag_host.can_connect_with(node))
             elif hasattr(node, cond):
                 ncond = getattr(node, cond)
                 if callable(ncond):
@@ -966,6 +970,7 @@ class UIManager:
             else:
                 raise NotImplementedError
 
+        print(drag_host)
         self.remove_touch_areas()
         if multidrag:
             return
@@ -1257,7 +1262,7 @@ class UIManager:
         """
         if not self._timer_id:
             self._timer_id = self.startTimer(prefs._fps_in_msec)
-            print('ui timer id ', self._timer_id)
+            #print('ui timer id ', self._timer_id)
 
     def timerEvent(self, event):
         """

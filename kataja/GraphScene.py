@@ -130,7 +130,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         """
         if not self._timer_id:
             self._timer_id = self.startTimer(prefs._fps_in_msec)
-            print('item_moved timer id:', self._timer_id)
+            #print('item_moved timer id:', self._timer_id)
 
     start_animations = item_moved
 
@@ -193,6 +193,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
         # ################ Relative left/right/up/down #############################
         else:
             current = ctrl.get_single_selected()
+            if not current:
+                return
             # ################### Nodes #############################
             if isinstance(current, Node):
                 if direction == 'left':
@@ -681,7 +683,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         self._fade_steps = 7
         if not self._timer_id:
             self._timer_id = self.startTimer(prefs._fps_in_msec)
-            print('fade background timer id:', self._timer_id)
+            #print('fade background timer id:', self._timer_id)
 
         self._fade_steps_list = []
         # oh, os, ov, oa = old_base_color.getRgbF()
