@@ -129,7 +129,7 @@ class KatajaAction(QtWidgets.QAction):
                  shortcut_context=None, viewgroup=None, sender_arg=None,
                  exclusive=None, selection=None, checkable=None,
                  tooltip=None, action_arg=None,
-                 undoable=None, method=None, args=None):
+                 undoable=True, method=None, args=None):
         super().__init__(ctrl.main)
         self.key = key
         self.command = command

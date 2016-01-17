@@ -160,8 +160,7 @@ class Forest(BaseModel):
         self.update_visualization()
         self.scene.manual_zoom = False
         ctrl.ui.update_all_fields()
-        self.draw()  # do draw once to avoid having the first draw in undo
-        # stack.
+        self.draw()  # do draw once to avoid having the first draw in undo stack.
         ctrl.undo_disabled = False
 
     def retire_from_drawing(self):

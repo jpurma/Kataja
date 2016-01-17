@@ -113,4 +113,5 @@ ADD:
     + How to deal with children and overlapping groups?
     + Display group names
     + Load and save support for Amoebas
+    - Respect removal/changes in nodes within the selection/group
 - Bones mode

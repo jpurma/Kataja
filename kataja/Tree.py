@@ -130,7 +130,8 @@ class Tree(Movable):
                 if self not in node.trees:
                     node.add_to_tree(self)
                 for child in node.get_all_children():
-                    add_children(child)
+                    if child: # undoing object creation may cause missing edge ends
+                        add_children(child)
 
         old_nodes = set(self.sorted_nodes)
 

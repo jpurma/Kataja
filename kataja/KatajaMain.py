@@ -232,7 +232,7 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         :param undoable: are we supposed to take a snapshot of changes after
         this action.
         """
-        print('=== action finished: ', m)
+        print('=== action finished: ', m, undoable)
         if m:
             self.add_message(m)
         if ctrl.action_redraw:
@@ -295,6 +295,7 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         """ Timer event only for printing, for 'snapshot' effect
         :param event:
         """
+        print('print timer event called')
         def find_path(fixed_part, extension, counter=0):
             """ Generate file names until free one is found
             :param fixed_part: blah

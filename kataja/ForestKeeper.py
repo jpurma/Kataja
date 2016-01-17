@@ -52,7 +52,7 @@ class ForestKeeper(BaseModel):
         :return: tuple (current_index (int), selected forest (Forest)
         """
         ctrl.undo_pile = set()
-        ctrl.undo_disabled = True
+        #ctrl.undo_disabled = True
         if self.forest:
             self.forest.retire_from_drawing()
         forest = Forest()
@@ -60,7 +60,7 @@ class ForestKeeper(BaseModel):
         self.poke('forests')  # <-- announce change in watched list-like attribute
         self.forests.insert(self.current_index, forest)
         self.forest = forest  # <-- at this point the signal is sent to update UI
-        ctrl.undo_disabled = False
+        #ctrl.undo_disabled = False
         return self.current_index, self.forest
 
     def next_forest(self):
