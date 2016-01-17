@@ -87,41 +87,31 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
                        QtCore.Qt.RightDockWidgetArea)
         x, y, w, h = (50, 50, 940, 720)
         self.setMinimumSize(w, h)
-        print('---- initialized MainWindow base class ... ', time.time() - t)
         self.app = kataja_app
         self.forest = None
         self.fontdb = QtGui.QFontDatabase()
-        print('---- set up font db ... ', time.time() - t)
         self.color_manager = PaletteManager()
-        print('---- Initialized color manager ... ', time.time() - t)
         ctrl.late_init(self)
         prefs.import_node_classes(ctrl.node_classes)
-        print('---- controller late init ... ', time.time() - t)
 
         prefs.load_preferences()
         qt_prefs.late_init(running_environment, prefs, self.fontdb)
         import_plugins(prefs, running_environment.plugins_path)
         self.setWindowIcon(qt_prefs.kataja_icon)
         self.app.setFont(qt_prefs.font(g.UI_FONT))
-        print('---- initialized prefs ... ', time.time() - t)
         self.graph_scene = GraphScene(main=self, graph_view=None)
-        print('---- scene init ... ', time.time() - t)
         self.graph_view = GraphView(main=self, graph_scene=self.graph_scene)
 
-        print('---- view init ... ', time.time() - t)
         self.graph_scene.graph_view = self.graph_view
         self.ui_manager = UIManager(self)
         self.ui_manager.populate_ui_elements()
         self.object_factory = kataja.object_factory
-        print('---- ui init ... ', time.time() - t)
-        self.forest_keeper = ForestKeeper()
-        print('---- forest_keeper init ... ', time.time() - t)
+        self.forest_keepers = [ForestKeeper()]
+        self.forest_keeper = self.forest_keepers[0]
         kataja_app.setPalette(self.color_manager.get_qt_palette())
         self.visualizations = VISUALIZATIONS
-        print('---- visualizations init ... ', time.time() - t)
         self.forest = Forest()
         self.forest.update_colors()
-        print('---- forest init ... ', time.time() - t)
         self.setCentralWidget(self.graph_view)
         self.setGeometry(x, y, w, h)
         self.setWindowTitle(self.tr("Kataja"))
@@ -132,14 +122,11 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         self.status_bar = self.statusBar()
         self.add_message('Welcome to Kataja! (h) for help')
 
-        print('---- set palette ... ', time.time() - t)
         self.load_initial_treeset()
-        print('---- loaded treeset ... ', time.time() - t)
         # toolbar = QtWidgets.QToolBar()
         # toolbar.setFixedSize(480, 40)
         # self.addToolBar(toolbar)
         self.action_finished()
-        print('---- finished start sequence... ', time.time() - t)
 
     def reset_preferences(self):
         """
@@ -158,24 +145,44 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         the program can do anything sane.
         :param treeset_list:
         """
-        print('----- Initializing -----')
         if DEBUG_TREESET:
             filename = running_environment.resources_path + DEBUG_TREESET
         else:
             filename = None
-        self.forest_keeper = ForestKeeper(treelist_filename=filename)
-        print('----- End Initializing -----')
-        print('--- Changing forest ----')
-        self.change_forest(self.forest_keeper.forest)
-        print('--- End Changing forest ----')
+        self.forest_keepers = [ForestKeeper(treelist_filename=filename)]
+        self.forest_keeper = self.forest_keepers[0]
+        self.change_forest()
+        self.ui_manager.update_projects_menu(self.forest_keepers, self.forest_keeper)
+
+
+    def create_new_project(self):
+        names = [fk.name for fk in self.forest_keepers]
+        name_base = 'New project'
+        name = 'New project'
+        c = 1
+        while name in names:
+            name = '%s %s' % (name_base, c)
+            c += 1
+        self.forest.retire_from_drawing()
+        self.forest_keepers.append(ForestKeeper(name=name))
+        self.forest_keeper = self.forest_keepers[-1]
+        self.change_forest()
+        self.ui_manager.update_projects_menu(self.forest_keepers, self.forest_keeper)
+        return self.forest_keeper
+
+    def switch_project(self, i):
+        self.forest.retire_from_drawing()
+        self.forest_keeper = self.forest_keepers[i]
+        self.change_forest()
+        self.ui_manager.update_projects_menu(self.forest_keepers, self.forest_keeper)
+        return self.forest_keeper
 
     # ### Visualization
     # #############################################################
 
-    def change_forest(self, forest):
+    def change_forest(self):
         """ Tells the scene to remove current trees and related data and
         change it to a new one
-        :param forest:
         """
         ctrl.undo_disabled = True
         if self.forest:
@@ -380,7 +387,8 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         print('after collection:', gc.get_count())
         if gc.garbage:
             print('garbage:', gc.garbage)
-        self.forest_keeper = ForestKeeper()
+        self.forest_keepers.append(ForestKeeper())
+        self.forest_keeper = self.forest_keepers[-1]
 
     # ### Action preconditions
     # ##################################################

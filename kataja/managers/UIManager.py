@@ -89,16 +89,17 @@ panel_classes = {g.LOG: LogPanel, g.NAVIGATION: NavigationPanel,
                  g.VIS_OPTIONS: VisualizationOptionsPanel}
 
 menu_structure = OrderedDict([('file_menu', ('&File',
-                                             ['new_forest', 'open', 'save', 'save_as', '---',
-                                              'print_pdf', 'blender_render', '---', 'preferences',
-                                              '---', 'quit'])),
+                                             ['new_project', 'new_forest', 'open', 'save',
+                                              'save_as', '---', 'print_pdf', 'blender_render',
+                                              '---', 'preferences', '---', 'quit'])),
                               ('edit_menu', ('&Edit', ['undo', 'redo'])), ('build_menu', (
     '&Build', ['next_forest', 'prev_forest', 'next_derivation_step', 'prev_derivation_step'])), (
                               'rules_menu', ('&Rules',
                                              ['bracket_mode', 'trace_mode', 'merge_order_attribute',
                                               'select_order_attribute'])), ('view_menu', ('&View', [
         '$visualizations', '---', 'change_colors', 'adjust_colors', 'zoom_to_fit', '---',
-        'fullscreen_mode'])), ('panels_menu', ('&Panels', ['$panels', '---', 'toggle_all_panels'])),
+        'fullscreen_mode'])), ('windows_menu', ('&Windows', [('Panels', ['$panels']), '---',
+                                                             'toggle_all_panels', '---'])),
                               ('help_menu', ('&Help', ['help']))])
 
 NEW_ELEMENT_EMBED = 'new_element_embed'
@@ -471,7 +472,7 @@ class UIManager:
             new_menu = QtWidgets.QMenu(menu_label, self.main)
             for item in menu_items:
                 if isinstance(item, tuple):
-                    add_menu(new_menu, item)
+                    add_menu(new_menu, item[0], item[1])
                 elif item == '---':
                     new_menu.addSeparator()
                 else:
@@ -490,7 +491,7 @@ class UIManager:
                 if isinstance(item, str) and item.startswith("$"):
                     exp_items += additional_actions[item[1:]]
                 elif isinstance(item, tuple):
-                    exp_items.append(expand_list(item))
+                    exp_items.append(expand_list(item[0], item[1]))
                 else:
                     exp_items.append(item)
             return label, exp_items
@@ -505,6 +506,32 @@ class UIManager:
         for key, data in expanded_menu_structure.items():
             menu = add_menu(self.main.menuBar(), *data)
             self._top_menus[key] = menu
+
+    def update_projects_menu(self, projects, current_project):
+        d = {'command': '', 'method': action_methods.switch_project,
+             'checkable': True, 'args': [],
+             'exclusive': True, 'undoable': False}
+
+        win_menu = self._top_menus['windows_menu']
+        last_separator = 0
+        for i, item in enumerate(win_menu.actions()):
+            if item.isSeparator():
+                last_separator = i
+        for action in win_menu.actions()[last_separator+1:]:
+            del self.qt_actions[action.key]
+            del self.actions[action.key]
+            win_menu.removeAction(action)
+        for i, project in enumerate(projects):
+            e = d.copy()
+            e['command'] = project.name
+            e['args'] = [i]
+            key = 'project_%s' % project.name
+            self.actions[key] = e
+            action = KatajaAction(key, **e)
+            action.setChecked(project is current_project)
+            self.qt_actions[key] = action
+            win_menu.addAction(action)
+
 
     # ###################################################################
     #                           PANELS

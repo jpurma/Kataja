@@ -98,11 +98,32 @@ def new_structure():
     :return: None
     """
     i, forest = ctrl.main.forest_keeper.new_forest()
-    ctrl.main.change_forest(forest)
+    ctrl.main.change_forest()
     ctrl.main.add_message('(Cmd-n) New forest, n.%s' % (i + 1))
 
 a['new_forest'] = {'command': '&New forest', 'method': new_structure, 'undoable': False,
                    'shortcut': 'Ctrl+n', 'tooltip': 'Create a new forest after the current one'}
+
+
+def new_project():
+    """ Create new project, replaces the current project at the moment.
+    :return: None
+    """
+    project = ctrl.main.create_new_project()
+    ctrl.main.add_message("Starting a new project '%s'" % project.name)
+
+a['new_project'] = {'command': 'New project', 'method': new_project, 'undoable': False,
+                    'tooltip': 'Create a new empty project.'}
+
+
+def switch_project(index):
+    """ Switch to another project. The action description is generated dynamically,
+    not in code below.
+    :param index:
+    :return:
+    """
+    project = ctrl.main.switch_project(index)
+    ctrl.main.add_message("Switched to project '%s'" % project.name)
 
 
 def open_kataja_file(filename=''):
@@ -176,7 +197,7 @@ Text files containing bracket trees (*.txt, *.tex)"""
     ctrl.undo_disabled = True
     m.load_objects(data, m)
     ctrl.undo_disabled = False
-    m.change_forest(m.forest_keeper.forest)
+    m.change_forest()
     ctrl.add_message("Loaded '%s'." % filename)
 
 
@@ -379,7 +400,7 @@ def next_structure():
     :return: None
     """
     i, forest = ctrl.main.forest_keeper.next_forest()
-    ctrl.main.change_forest(forest)
+    ctrl.main.change_forest()
     ctrl.main.add_message('(.) trees %s: %s' % (i + 1, forest.textual_form()))
 
 
@@ -393,7 +414,7 @@ def previous_structure():
     :return: None
     """
     i, forest = ctrl.main.forest_keeper.prev_forest()
-    ctrl.main.change_forest(forest)
+    ctrl.main.change_forest()
     ctrl.main.add_message('(,) trees %s: %s' % (i + 1, forest.textual_form()))
 
 
@@ -1592,7 +1613,6 @@ a['amoeba_save'] = {'command': 'Save this group',
                                'method': amoeba_save,
                                'shortcut': 'Return',
                                'sender_arg': True}
-
 
 
 def key_backspace():

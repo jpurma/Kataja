@@ -81,6 +81,9 @@ edit box is open (two end points move).
 + Save without user selection doesn't work in sandboxed app
 + Print image without user selection doesn't work in sandboxed app
 - Group overlap algorithm should be improved
+- Logic of creating child nodes should be improved, create a sibling and new intermediate
+    node instead
+
 
 ADD:
 
@@ -91,7 +94,7 @@ ADD:
     - Missing some complex settings
 + Automated test for loading and saving
 + New Forest
-- New Treeset
++ New Treeset => New Project
 + Stupid parse for new trees
 - Tee-shaped edge
 + Support for larger UI font
@@ -109,4 +112,5 @@ ADD:
     + Data structure for named groups
     + How to deal with children and overlapping groups?
     + Display group names
-
+    + Load and save support for Amoebas
+- Bones mode

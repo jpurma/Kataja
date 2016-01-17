@@ -34,8 +34,9 @@ class ForestKeeper(BaseModel):
 
     short_name = "FKeeper"
 
-    def __init__(self, filename=None, treelist_filename=None):
+    def __init__(self, name=None, filename=None, treelist_filename=None):
         super().__init__(unique=True)
+        self.name = name or filename or treelist_filename
         self.filename = filename
         if treelist_filename:
             treelist = self.load_treelist_from_text_file(treelist_filename)
@@ -103,8 +104,11 @@ class ForestKeeper(BaseModel):
             treelist = ['[A B]', '[ A [ C B ] ]', '']
         return treelist
 
-    def create_forests(self, treelist):
-        """ This will read list of strings where each line defines a trees or an element of trees. Example:
+    def create_forests(self, treelist=None):
+        """ This will read list of strings where each line defines a trees or an element of trees.
+        This can be used to reset the ForestKeeper if no treeset or an empty treeset is given.
+
+        Example of tree this can read:
 
         [.AspP [.Asp\\Ininom] [.vP [.KP [.K\\ng ] [.DP [.D´ [.D ] [.NP\\lola ]] [.KP [.K\\ng]
         [.DP [.D´ [.D ] [.NP\\alila ] ] [.KP\\{ni Maria} ]]]]] [.v´ [.v ] [.VP [.V ] [.KP\\{ang tubig}]]]]]
@@ -120,6 +124,9 @@ class ForestKeeper(BaseModel):
         :param treelist: list of strings, where a line can be a bracket trees or definition line for element
         in a trees
         """
+        if not treelist:
+            treelist = []
+
         # Clear this screen before we start creating a mess
         ctrl.undo_disabled = True  # disable tracking of changes (e.g. undo)
         if self.forest:
@@ -178,10 +185,13 @@ class ForestKeeper(BaseModel):
                                        definitions=definitions,
                                        gloss_text=gloss_text,
                                        comments=comments))
+        if not self.forests:
+            self.forests.append(Forest(buildstring="",
+                                       definitions=[],
+                                       gloss_text='',
+                                       comments=[]))
         self.current_index = 0
-        if self.forests:
-            self.forest = self.forests[0]
-            # self.save()
+        self.forest = self.forests[0]
         # allow change tracking (undo) again
         ctrl.undo_disabled = False
 
