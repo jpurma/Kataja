@@ -601,6 +601,8 @@ syntactic_object: %s
         :param position:
         :return:
         """
+        #if isinstance(position, (QtCore.QPoint, QtCore.QPointF)):
+        #    position = position.x(), position.y()
         if len(position) == 3:
             x, y, z = position
             tree = self.parentItem()

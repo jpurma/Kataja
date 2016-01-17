@@ -6,6 +6,7 @@ from kataja.BaseModel import BaseModel, Saved
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.nodes.Node import Node
 import kataja.globals as g
+from kataja.utils import time_me
 
 points = 36
 
@@ -246,6 +247,29 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
         self.path = QtGui.QPainterPath(QtCore.QPointF(sx, sy))
         for fx, fy, sx, sy, ex, ey in curved_path:
             self.path.cubicTo(fx, fy, sx, sy, ex, ey)
+        # This is costly
+        if True:
+            for item in self.collidingItems():
+                if isinstance(item, Node) and item not in self.selection_with_children:
+                    x, y, z = item.current_scene_position
+                    subshape = item.shape().translated(x, y)
+                    subshape_points = []
+                    for i in range(0, subshape.elementCount()):
+                        element = subshape.elementAt(i)
+                        subshape_points.append((element.x, element.y))
+                    curved_path = Amoeba.interpolate_point_with_bezier_curves(subshape_points)
+                    sx, sy = subshape_points[0]
+                    subshape = QtGui.QPainterPath(QtCore.QPointF(sx, sy))
+                    for fx, fy, sx, sy, ex, ey in curved_path:
+                        subshape.cubicTo(fx, fy, sx, sy, ex, ey)
+
+                    self.path = self.path.subtracted(subshape)
+
+    def shape(self):
+        if self.path:
+            return self.path
+        else:
+            return self.boundingRect()
 
     def update_position(self):
         self.update_shape()
