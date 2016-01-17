@@ -951,16 +951,16 @@ class UIManager:
                 return node.is_top_node(only_visible=False)
             elif cond == 'dragging_comment':
                 return dragged_type == g.COMMENT_NODE and \
-                       (not drag_host) or (drag_host and drag_host.can_connect_with(node))
+                       ((not drag_host) or (drag_host and drag_host.can_connect_with(node)))
             elif cond == 'dragging_feature':
                 return dragged_type == g.FEATURE_NODE and \
-                       (not drag_host) or (drag_host and drag_host.can_connect_with(node))
+                       ((not drag_host) or (drag_host and drag_host.can_connect_with(node)))
             elif cond == 'dragging_constituent':
                 return dragged_type == g.CONSTITUENT_NODE and \
-                       (not drag_host) or (drag_host and drag_host.can_connect_with(node))
+                       ((not drag_host) or (drag_host and drag_host.can_connect_with(node)))
             elif cond == 'dragging_gloss':
                 return dragged_type == g.GLOSS_NODE and \
-                       (not drag_host) or (drag_host and drag_host.can_connect_with(node))
+                       ((not drag_host) or (drag_host and drag_host.can_connect_with(node)))
             elif hasattr(node, cond):
                 ncond = getattr(node, cond)
                 if callable(ncond):
@@ -970,7 +970,6 @@ class UIManager:
             else:
                 raise NotImplementedError
 
-        print(drag_host)
         self.remove_touch_areas()
         if multidrag:
             return

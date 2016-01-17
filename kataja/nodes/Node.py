@@ -1396,6 +1396,7 @@ syntactic_object: %s
 
         ctrl.dragged_focus = self
         ctrl.dragged_set = set()
+        ctrl.dragged_groups = set()
         multidrag = False
         dragged_trees = set()
         # if we are working with selection, this is more complicated, as there may be many nodes
@@ -1440,6 +1441,7 @@ syntactic_object: %s
         :return: None
         """
         ctrl.dragged_set.add(self)
+        ctrl.add_my_group_to_dragged_groups(self)
         self.drag_data = DragData(self, is_host=host, mousedown_scene_pos=scene_pos)
         tree = self.tree_where_top()
         if tree:
@@ -1470,6 +1472,8 @@ syntactic_object: %s
         # distance to main dragged.
         for node in ctrl.dragged_set:
             node.dragged_to(scene_pos)
+        for group in ctrl.dragged_groups:
+            group.update_shape()
 
     def dragged_to(self, scene_pos):
         """ Dragged focus is in scene_pos. Move there or to position
@@ -1551,6 +1555,7 @@ syntactic_object: %s
                     node.finish_dragging()
             ctrl.dragged_set = set()
             ctrl.dragged_focus = None
+            ctrl.dragged_groups = set()
         if self.drag_data:
             self.setZValue(self.drag_data.old_zvalue)
         self.drag_data = None

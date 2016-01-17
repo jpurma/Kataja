@@ -69,6 +69,7 @@ class Controller:
         self.ui_pressed = None  # set() # different coordinates to pressed set
         self.dragged_focus = None
         self.dragged_set = set()
+        self.dragged_groups = set()
         self.drag_hovering_on = None  # used only while dragging, because
         # standard hovering doesn't work while dragging
         self.ui_focus = None
@@ -313,6 +314,15 @@ class Controller:
         if item:
             item.hovering = True
 
+    def add_my_group_to_dragged_groups(self, item):
+        """
+
+        :param item:
+        :return:
+        """
+        for group in self.forest.groups.values():
+            if item in group:
+                self.dragged_groups.add(group)
 
     # ******** /selection *******
 

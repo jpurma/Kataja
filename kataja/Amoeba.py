@@ -244,11 +244,16 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
                     else:
                         my += 2
                     items = ctrl.graph_scene.items(QtCore.QPointF(mx + label_center_x,
+                                                   my + label_center_y)) + \
+                            ctrl.graph_scene.items(QtCore.QPointF(mx + (label_center_x * 0.80),
+                                                   my + label_center_y)) + \
+                            ctrl.graph_scene.items(QtCore.QPointF(mx + (label_center_x * 0.20),
                                                    my + label_center_y))
                     collision = False
                     for item in items:
                         if isinstance(item, (Node, Amoeba)):
                             collision = True
+                            break
                     if not collision:
                         min_dist = d
                         best_x, best_y = mx, my

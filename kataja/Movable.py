@@ -204,7 +204,7 @@ When nodes that don't use physics are dragged, the adjustment.
         """
         # Dragging overrides everything, don't try to move this anywhere
         if self._dragged:
-            return False, False
+            return True, False
         # MOVE_TO -based movement has priority over physics. This way e.g. triangles work without
         # additional stipulation
         elif self._move_counter:
