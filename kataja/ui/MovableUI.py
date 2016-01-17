@@ -65,6 +65,7 @@ class MovableUI(object):
         self._ticks = ticks
         self._timer.timeout.connect(self.timer_ticks)
         self._timer.start()
+        print('movable timer: ', self._timer.timerId())
         ctrl.main.ui_manager.ui_activity_marker.show()  # @UndefinedVariable
 
 

@@ -86,6 +86,7 @@ class Controller:
         # sure if it is *ever* a good idea
         self.unassigned_objects = {}
         self.items_moving = False
+        self.multiselection_delay = False
         # -- After user action, should the visualization be redrawn and
         # should it make an undo savepoint
         # these are True by default, but action method may toggle them off
@@ -192,6 +193,17 @@ class Controller:
         """
         return len(self.selected) == 1
 
+    def multiselection_start(self):
+        """ Allow delaying of 'selection_changed' signal until all selections are done. Call
+        multiselection_end when done, and 'selection_changed' will be sent.
+        :return:
+        """
+        self.multiselection_delay = True
+
+    def multiselection_end(self):
+        self.multiselection_delay = False
+        self.call_watchers(self, 'selection_changed', value=self.selected)
+
     def multiple_selection(self):
         """
 
@@ -227,7 +239,8 @@ class Controller:
         self.selected = []
         for obj in olds:
             obj.update_selection_status(False)
-        self.call_watchers(self, 'selection_changed', value=self.selected)
+        if not self.multiselection_delay:
+            self.call_watchers(self, 'selection_changed', value=self.selected)
 
     def select(self, obj):
         """
@@ -245,18 +258,22 @@ class Controller:
         else:
             self.add_message('selected %s' % str(obj))
         obj.update_selection_status(True)
-        self.call_watchers(self, 'selection_changed', value=self.selected)
+        if not self.multiselection_delay:
+            self.call_watchers(self, 'selection_changed', value=self.selected)
 
-    def add_to_selection(self, obj):
+    def add_to_selection(self, obj, call_watchers=True):
         """
 
         :param obj:
+        :param call_watchers: Immediately call watchers or if you want to call them manually (
+        after adding multiple items)
         """
         if obj not in self.selected:
             self.selected.append(obj)
             self.add_message('added to selection %s' % str(obj))
             obj.update_selection_status(True)
-            self.call_watchers(self, 'selection_changed', value=self.selected)
+            if not self.multiselection_delay:
+                self.call_watchers(self, 'selection_changed', value=self.selected)
 
     def press(self, obj):
         """ Mark object to be the last pressed object. If it has on_press -hook, do it.
@@ -272,15 +289,18 @@ class Controller:
         if hasattr(obj, 'on_press'):
             obj.on_press(True)
 
-    def remove_from_selection(self, obj):
+    def remove_from_selection(self, obj, call_watchers=True):
         """
 
         :param obj:
+        :param call_watchers: Immediately call watchers or if you want to call them manually (
+        after removing multiple items)
         """
         if obj in self.selected:
             self.selected.remove(obj)
             obj.update_selection_status(False)
-            self.call_watchers(self, 'selection_changed', value=self.selected)
+            if not self.multiselection_delay:
+                self.call_watchers(self, 'selection_changed', value=self.selected)
 
     def set_drag_hovering(self, item):
         """ Drag is hovering over one item that can receive drop.

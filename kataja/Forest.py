@@ -1632,6 +1632,13 @@ class Forest(BaseModel):
             new_node.copy_position(old_node)
             new_node.update_visibility(active=True, fade=True)
 
+        # add new node to relevant groups
+        # and remove old node from them
+        for group in self.groups.values():
+            if old_node in group:
+                group.add_node(new_node)
+                group.remove_node(old_node)
+
         for edge in list(old_node.edges_up):
             if edge.start:
                 align = edge.alignment
@@ -1738,7 +1745,10 @@ class Forest(BaseModel):
         """
 
         new_node = self.create_node(relative=old_node)
-        #new_node.current_position = pos
+
+        # add new node to relevant groups
+        # and remove old node from them
+
         if add_left:
             left = new_node
             right = old_node
@@ -1753,6 +1763,11 @@ class Forest(BaseModel):
 
         merger_node = self.create_merger_node(left=left, right=right, create_tree=False,
                                               new=new_node)
+
+        for group in self.groups.values():
+            if old_node in group:
+                group.add_node(merger_node)
+
         for op, align, head in parent_info:
             self.connect_node(parent=op, child=merger_node, direction=align, fade_in=True)
         merger_node.copy_position(old_node)
@@ -1897,13 +1912,24 @@ class Forest(BaseModel):
         else:
             left = child
             right = inserted
+
+        # connections
         p = insertion_pos[0], insertion_pos[1], child.z
         merger_node = self.create_merger_node(left=left, right=right, pos=p, create_tree=False, new=inserted)
         merger_node.copy_position(child)
         merger_node.current_position = merger_node.scene_position_to_tree_position(p)
         self.connect_node(parent, merger_node, direction=align)
+
+        # groups
+        for group in self.groups.values():
+            if parent in group:
+                group.add_node(merger_node)
+
+        # projections
         if head:
             merger_node.set_projection(head)
+
+        # chains
         if self.traces_are_visible():
             self.chain_manager.rebuild_chains()
 

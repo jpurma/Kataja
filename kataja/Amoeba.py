@@ -107,6 +107,17 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
             else:
                 pass
 
+    def add_node(self, node):
+        """ Manual addition of single node
+        :param node:
+        :return:
+        """
+        if node not in self.selection:
+            self.poke('selection')
+            self.selection.append(node)
+            self.update_selection(self.selection)
+            self.update_shape()
+
     def update_selection(self, selection):
         swc = []
         other_selections = set()
@@ -314,17 +325,23 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
         :param event:
         :param multi: assume multiple selection (append, don't replace)
         """
+        ctrl.multiselection_start()
         if (event and event.modifiers() == QtCore.Qt.ShiftModifier) or multi:
             # multiple selection
             if ctrl.is_selected(self):
                 ctrl.remove_from_selection(self)
             else:
                 ctrl.add_to_selection(self)
-            return
-        if ctrl.is_selected(self):
-            self.open_embed()
+                for item in self.selection:
+                    ctrl.add_to_selection(item)
+        elif ctrl.is_selected(self):
+            ctrl.deselect_objects()
         else:
-            ctrl.select(self)
+            ctrl.deselect_objects()
+            ctrl.add_to_selection(self)
+            for item in self.selection:
+                ctrl.add_to_selection(item)
+        ctrl.multiselection_end()
 
     def update_selection_status(self, value):
         """

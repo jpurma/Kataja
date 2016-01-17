@@ -115,6 +115,7 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         self.setCentralWidget(self.graph_view)
         self.setGeometry(x, y, w, h)
         self.setWindowTitle(self.tr("Kataja"))
+        self.print_started = False
         self.show()
         self.raise_()
         kataja_app.processEvents()
@@ -295,7 +296,7 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         """ Timer event only for printing, for 'snapshot' effect
         :param event:
         """
-        print('print timer event called')
+        print('print timer event called ', event, event.timerId(), event.type())
         def find_path(fixed_part, extension, counter=0):
             """ Generate file names until free one is found
             :param fixed_part: blah
@@ -310,6 +311,10 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
                 fpath = find_path(fixed_part, extension, counter + 1)
             return fpath
 
+        if not self.print_started:
+            return
+        else:
+            self.print_started = False
         self.killTimer(event.timerId())
         # Prepare file and path
         path = prefs.print_file_path or prefs.userspace_path or \

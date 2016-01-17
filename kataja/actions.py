@@ -320,6 +320,7 @@ def print_to_file():
                                 ctrl.cm.selection())
     sc.update()
     ctrl.graph_view.repaint()
+    ctrl.main.print_started = False  # to avoid a bug where other timers end up triggering main's
     ctrl.main.startTimer(50)
 
 
@@ -1598,7 +1599,7 @@ def amoeba_save(sender=None):
     """
     if sender:
         embed = sender.parent()
-        amoeba = get_host(sender)
+        amoeba = get_host(sender) or ctrl.ui.selection_amoeba
         ctrl.ui.toggle_group_label_editing(amoeba)
         amoeba.set_label_text(embed.input_line_edit.text())
         name = amoeba.label_text or ctrl.cm.get_color_name(amoeba.color_key)
@@ -1612,6 +1613,7 @@ def amoeba_save(sender=None):
 a['amoeba_save'] = {'command': 'Save this group',
                                'method': amoeba_save,
                                'shortcut': 'Return',
+                               'shortcut_context': 'parent_and_children',
                                'sender_arg': True}
 
 

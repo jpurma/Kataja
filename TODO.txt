@@ -80,7 +80,7 @@ edit box is open (two end points move).
 + Node info shows coordinates relative to tree, not to scene
 + Save without user selection doesn't work in sandboxed app
 + Print image without user selection doesn't work in sandboxed app
-- Group overlap algorithm should be improved
++ Group overlap algorithm should be improved
 + Logic of creating child nodes should be improved, create a sibling and new intermediate
     node instead
 
@@ -113,5 +113,5 @@ ADD:
     + How to deal with children and overlapping groups?
     + Display group names
     + Load and save support for Amoebas
-    - Respect removal/changes in nodes within the selection/group
+    + Respect removal/changes in nodes within the selection/group
 - Bones mode

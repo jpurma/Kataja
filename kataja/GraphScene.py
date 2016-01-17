@@ -130,6 +130,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         """
         if not self._timer_id:
             self._timer_id = self.startTimer(prefs._fps_in_msec)
+            print('item_moved timer id:', self._timer_id)
 
     start_animations = item_moved
 
@@ -524,6 +525,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         elif ctrl.pressed:
             print('mouseReleaseEvent, but still ctrl.pressed!:', ctrl.pressed)
         if self.graph_view.rubberband_mode():
+            ctrl.multiselection_start()
             ctrl.deselect_objects()
             # prioritize nodes in multiple selection. e.g. if there are nodes
             #  and edges in
@@ -539,6 +541,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 if ((not only_nodes) or isinstance(item, Node)) and \
                         getattr(item, 'selectable', False):
                     item.select(event, multi=True)
+            ctrl.multiselection_end()
         return QtWidgets.QGraphicsScene.mouseReleaseEvent(self, event)
 
     def get_drop_recipient(self, pressed, event):
@@ -678,6 +681,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
         self._fade_steps = 7
         if not self._timer_id:
             self._timer_id = self.startTimer(prefs._fps_in_msec)
+            print('fade background timer id:', self._timer_id)
+
         self._fade_steps_list = []
         # oh, os, ov, oa = old_base_color.getRgbF()
         # nh, ns, nv, na = new_base_color.getRgbF()
