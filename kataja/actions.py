@@ -1602,6 +1602,7 @@ def amoeba_save(sender=None):
         amoeba = get_host(sender) or ctrl.ui.selection_amoeba
         ctrl.ui.toggle_group_label_editing(amoeba)
         amoeba.set_label_text(embed.input_line_edit.text())
+        amoeba.update_shape()
         name = amoeba.label_text or ctrl.cm.get_color_name(amoeba.color_key)
         if not amoeba.persistent:
             ctrl.forest.turn_selection_amoeba_to_group(amoeba)

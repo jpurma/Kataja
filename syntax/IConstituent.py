@@ -108,7 +108,7 @@ class IConstituent(BaseModel):
         """
         raise NotImplementedError
 
-    def del_feature(self, key):
+    def remove_feature(self, key):
         """ Remove feature from a constituent. It's not satisfied, it is just gone.
         :param key: str, the key for finding the feature or for convenience, a feature instance to be removed
         """

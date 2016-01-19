@@ -67,6 +67,10 @@ class LinearizedStaticTree(BalancedTree):
             node.physics_x = False
             node.physics_y = False
             node.physics_z = False
+        else:
+            node.physics_x = True
+            node.physics_y = True
+            node.physics_z = True
 
     def reselect(self):
         """ Rotate between drawing multidominated elements close to their various parents
@@ -118,7 +122,7 @@ class LinearizedStaticTree(BalancedTree):
         def _build_grid(node, parent=None):
             if self.should_we_draw(node, parent):
                 grids = []
-                children = node.get_visible_children()
+                children = node.get_all_visible_children()
                 for child in children:
                     grids.append(_build_grid(child, parent=node))
                 # Recursion base case
@@ -146,7 +150,7 @@ class LinearizedStaticTree(BalancedTree):
         def _add_merger_node(grid, node):
             sx = 0
             size = 0
-            children = list(node.get_visible_children())
+            children = list(node.get_all_visible_children())
             for child in children:
                 size += 1
                 nx, ny = grid.find_in_grid(child)

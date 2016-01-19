@@ -196,6 +196,7 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
                 if y2 > max_y:
                     max_y = y2
                 corners += icorners
+            self.prepareGeometryChange()
             self._br = QtCore.QRectF(min_x, min_y, max_x - min_x, max_y - min_y)
             cx = (min_x + max_x) / 2
             cy = (min_y + max_y) / 2

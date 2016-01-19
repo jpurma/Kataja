@@ -265,7 +265,7 @@ class BaseVisualization:
         :param parent:
         :return:
         """
-        if len(node.get_parents()) > 1:
+        if hasattr(node, 'index') and len(node.get_parents()) > 1:
             key = node.index
             if key in self.traces_to_draw:
                 if parent.save_key != self.traces_to_draw[key]:
@@ -303,6 +303,8 @@ class BaseVisualization:
             sortable_parents = []
             ltree = tree.sorted_nodes
             for node in ltree:
+                if not hasattr(node, 'index'):
+                    continue
                 parents = node.get_parents()
                 if len(parents) > 1:
                     index_key = node.index

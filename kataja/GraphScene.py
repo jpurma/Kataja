@@ -23,6 +23,8 @@
 #
 # ############################################################################
 import time
+from itertools import chain
+
 from PyQt5.QtCore import Qt
 import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
@@ -108,7 +110,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         y_max = -6000
         x_min = 6000
         x_max = -6000
-        for item in ctrl.forest.nodes.values():
+        for item in chain(ctrl.forest.nodes.values(), ctrl.forest.groups.values()):
             if not item.isVisible():
                 continue
             minx, miny, maxx, maxy = item.sceneBoundingRect().getCoords()
