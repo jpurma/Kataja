@@ -83,6 +83,8 @@ edit box is open (two end points move).
 + Group overlap algorithm should be improved
 + Logic of creating child nodes should be improved, create a sibling and new intermediate
     node instead
++ There should be a possibility for one head to start more than one projection chain if it is
+remerged to another position. Projections need to be refactored for that.
 
 
 ADD:

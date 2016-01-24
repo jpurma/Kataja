@@ -28,7 +28,7 @@ import collections
 import itertools
 
 from kataja.Amoeba import Amoeba
-from kataja.ProjectionVisual import ProjectionData
+from kataja.Projection import Projection
 from kataja.Tree import Tree
 from kataja.errors import ForestError
 from kataja.ForestSettings import ForestSettings, ForestRules
@@ -48,6 +48,7 @@ from kataja.managers.UndoManager import UndoManager
 from kataja.nodes.FeatureNode import FeatureNode
 from kataja.BaseModel import BaseModel, Saved
 import kataja.globals as g
+from kataja.utils import time_me
 
 
 class Forest(BaseModel):
@@ -96,6 +97,7 @@ class Forest(BaseModel):
         self.gloss = None
         self.ongoing_animations = set()
         self.guessed_projections = False
+        self._marked_for_deletion = set()
 
         if buildstring:
             self.create_trees_from_string(buildstring)
@@ -241,6 +243,43 @@ class Forest(BaseModel):
         :return:
         """
         return (x for x in self.nodes.values() if x.is_visible())
+
+    # def constituents_grouped_to_trees(self):
+    #     """ Return list of lists, where each list represents a tree and consists of flattened
+    #     list of nodes belonging to that tree. This list of lists can be used to evaluate order
+    #     and tree memberships of a single node, or used as a basis for constructing tree objects
+    #
+    #     Nodes are not necessarily constituent nodes!
+    #     :return:
+    #     """
+    #     result = []
+    #     roots = [n for n in self.nodes.values() if not n.get_parents()]
+    #     for root in roots:
+    #         result.append(Forest.list_nodes_once(root))
+    #     return result
+    #
+    # def order_among_nodes(self, *nodes, source_list=None):
+    #     """ Given iterable nodes, return list of lists that shows the nodes ordered by their
+    #     topmost appearance in tree. e.g. given (A, B) and receiving
+    #     [], [A, B], [A] would mean that there are three trees where in first A, B are not
+    #     present, in second they are in this order and in third tree only A is present.
+    #
+    #     source_list can be given if there will be many similar comparisons, then the method won't
+    #     recreate the source_list on every call
+    #     :param nodes:
+    #     :param source_list:
+    #     :return:
+    #     """
+    #     if not source_list:
+    #         source_list = self.constituents_grouped_to_trees()
+    #     result = []
+    #     for tree in source_list:
+    #         sorted_nodes = []
+    #         for item in tree:
+    #             if item in nodes:
+    #                 sorted_nodes.append(item)
+    #         result.append(sorted_nodes)
+    #     return result
 
     def update_forest_gloss(self):
         """ Draw the gloss text on screen, if it exists. """
@@ -513,96 +552,60 @@ class Forest(BaseModel):
 
     # ##### Projections ##########################################
 
-    def update_projection_map(self, node, old_head, new_head):
-        """ Projection map keeps track of all projections, e.g. chains of nodes, where the head
-        is projected through all of the member nodes. These projections may be displayed in
-        various ways (see update_projection_visual).
+    @staticmethod
+    def compute_projection_chains_for(head):
+        chains = []
+        def chain_up(this_chain, node, head):
+            this_chain.append(node)
+            ends_here = True
+            for parent in node.get_parents(only_similar=True, only_visible=False):
+                if parent.head is head:
+                    ends_here = False
+                    chain_up(list(this_chain), parent, head)
+            if ends_here and len(this_chain) > 1:
+                chains.append(this_chain)
+        chain_up([], head, head)
+        return chains
 
-         This method takes one node which has had its 'head' changed. It updates the projection
-         chain accordingly, or creates a new chain, or deletes one.
-        :param node: node instance with head attribute
-        :param old_head: old value for head, None or node instance
-        :param new_head: new value for head, None or node instance
-        :return:
-        """
-        if old_head and old_head is not new_head:
-            pd = self.projections.get(old_head.save_key, None)
-            if pd:
-                if old_head is node:
-                    del self.projections[old_head.save_key]
-                    if pd.visual:
-                        self.remove_from_scene(pd.visual)
-                else:
-                    pd.remove_from_chain(old_head)
-        if new_head:
-            pd = self.projections.get(new_head.save_key, None)
-            if not pd:
-                pd = ProjectionData(new_head, next(self.projection_rotator))
-                self.projections[new_head.save_key] = pd
-            if node not in pd:
-                pd.add_to_chain(node)
-
-    def update_projection_visual(self, node, new_head):
-        """ Take one node and update its projection displays according to current settings
-        :param node:
-        :param new_head:
-        :return:
-        """
-        strong_lines = ctrl.fs.projection_strong_lines
-
-        node.set_projection_display(None)
-        for edge in node.get_edges_down(similar=True):
-            edge.set_projection_display(None, None)
-        for edge in node.get_edges_up(similar=True):
-            edge.set_projection_display(None, None)
-
-        if new_head:
-            projection = self.projections[new_head.save_key]
-            if ctrl.fs.projection_highlighter:
-                if not projection.visual:
-                    projection.add_visual()
-                self.add_to_scene(projection.visual)
-                projection.visual.update()
-            else:
-                if projection.visual:
-                    self.remove_from_scene(projection.visual)
-                    projection.visual = None
-            if ctrl.fs.projection_colorized:
-                color_id = projection.color_id
-            else:
-                color_id = None
-            for edge in projection.get_edges():
-                edge.set_projection_display(strong_lines, color_id)
-            if len(projection.chain) > 1:
-                for n in projection.chain:
-                    n.set_projection_display(color_id)
+    def remove_projection(self, head):
+        key = head.save_key
+        projection = self.projections.get(key, None)
+        if projection:
+            projection.set_visuals(False, False, False)
+            del self.projections[key]
 
     def update_projections(self):
         """ Try to guess projections in the trees based on labels and aliases, and once this is
-        done, further updates check that the dict of projections is up to date. Calls to update
-        the visual presentation of projections too.
+        done, create Projection objects that match all upward projections. Try to match
+        Projection objects with existing visual markers for projections.
         :return:
         """
-        for tree in self.trees:
-            for node in tree.sorted_constituents:
-                if self.guessed_projections:
-                    head = node.head
-                else:
-                    # don't use set_projection as it will rewrite labels and
-                    # aliases around this node, making a mess
-                    head = node.guess_projection()
-                if head:
-                    self.update_projection_map(node, None, head)
-        for key, projection in list(self.projections.items()):
-            if not projection.verify_chain():
-                del self.projections[key]
-                if projection.visual:
-                    self.remove_from_scene(projection.visual)
-        # fix labels to follow the guessed projections if we just guessed them.
+        # only do this the first time we load a new structure
         if not self.guessed_projections:
-            for key, projection in list(self.projections.items()):
-                projection.head.fix_projection_labels()
-        self.guessed_projections = True
+            for tree in self.trees:
+                for node in tree.sorted_constituents:
+                    node.guess_projection()
+            self.guessed_projections = True
+
+        # We want to keep using existing projection objects as much as possible so they won't change
+        # colors randomly
+        constituent_nodes = [x for x in self.nodes.values() if x.node_type == g.CONSTITUENT_NODE]
+        old_heads = set([x.head for x in self.projections.values()])
+
+        new_heads = set()
+        for node in constituent_nodes:
+            if node.head is node:
+                chains = Forest.compute_projection_chains_for(node)
+                if chains:
+                    new_heads.add(node)
+                    projection = self.projections.get(node.save_key, None)
+                    if projection:
+                        projection.update_chains(chains)
+                    else:
+                        projection = Projection(node, chains, next(self.projection_rotator))
+                        self.projections[node.save_key] = projection
+        for head in old_heads - new_heads:
+            self.remove_projection(head)
         self.update_projection_display()
 
     def update_projection_display(self):
@@ -615,33 +618,10 @@ class Forest(BaseModel):
         strong_lines = ctrl.fs.projection_strong_lines
         colorized = ctrl.fs.projection_colorized
         highlighter = ctrl.fs.projection_highlighter
-        for node in self.get_constituent_nodes():
-            node.set_projection_display(None)
-        for edge in self.get_constituent_edges():
-            edge.set_projection_display(None, None)
-        for key, projection in self.projections.items():
-            if highlighter:
-                if not projection.visual:
-                    projection.add_visual()
-                    self.add_to_scene(projection.visual)
-                elif projection.visual.scene() != self.scene:
-                    self.add_to_scene(projection.visual)
-                projection.visual.update()
-            else:
-                if projection.visual:
-                    self.remove_from_scene(projection.visual)
-                    projection.visual = None
-            if colorized:
-                color_id = projection.color_id
-            else:
-                color_id = None
+        for projection in self.projections.values():
+            projection.set_visuals(strong_lines, colorized, highlighter)
 
-            if strong_lines or colorized:
-                for edge in projection.get_edges():
-                    edge.set_projection_display(strong_lines, color_id)
-                if len(projection.chain) > 1:
-                    for node in projection.chain:
-                        node.set_projection_display(color_id)
+    # #### Comments #########################################
 
     def add_comment(self, comment):
         """ Add comment item to forest
@@ -1025,12 +1005,22 @@ class Forest(BaseModel):
         This makes calculation easier, just remember to call multidomination_to_traces and
         traces_to_multidomination after deletions.
         """
+        # block circular deletion calls
+        if node in self._marked_for_deletion:
+            return
+        else:
+            self._marked_for_deletion.add(node)
+
         # -- connections to other nodes --
-        # print('deleting node: ', node)
         if not ignore_consequences:
             for edge in list(node.edges_down):
                 if edge.end:
-                    self.delete_node(edge.end)  # this will also disconnect node
+                    if edge.end.node_type == node.node_type:
+                        # don't delete children by default, make them their own trees
+                        self.disconnect_edge(edge)
+                    else:
+                        # if deleting node, delete its features, glosses etc. as well
+                        self.delete_node(edge.end)
                 else:
                     self.disconnect_edge(edge)
             for edge in list(node.edges_up):
@@ -1074,6 +1064,8 @@ class Forest(BaseModel):
         self.remove_from_scene(node)
         # -- undo stack --
         node.announce_deletion()
+        # -- remove circularity block
+        self._marked_for_deletion.remove(node)
 
     def delete_edge(self, edge, ignore_consequences=False):
         """ remove from scene and remove references from nodes
@@ -1081,6 +1073,12 @@ class Forest(BaseModel):
         :param ignore_consequences: don't try to fix things like connections,
         just delete.
         """
+        # block circular deletion calls
+        if edge in self._marked_for_deletion:
+            return
+        else:
+            self._marked_for_deletion.add(edge)
+
         # -- connections to host nodes --
         start_node = edge.start
         end_node = edge.end
@@ -1122,6 +1120,8 @@ class Forest(BaseModel):
         self.reserve_update_for_trees()
         # -- undo stack --
         edge.announce_deletion()
+        # -- remove circularity block
+        self._marked_for_deletion.remove(edge)
 
     def delete_item(self, item, ignore_consequences=False):
         """ User-triggered deletion (e.g backspace on selection)

@@ -449,89 +449,14 @@ class ConstituentNode(BaseConstituentNode):
 
         al = self.alias or self.label
         self.head = find_original(self, strip_xbars(str(al))) or self
-        ctrl.forest.update_projection_map(self, None, self.head)
-        # ctrl.forest.update_projection_visual(self, self.head)
         return self.head
 
-    def fix_projection_labels(self):
-        """ If node has head, then start from this node, and
-        move upwards labeling the nodes that also use the same head.
-
-        If head is None, then remove label and alias.
-        :return:
-        """
-        xbar = ctrl.fs.use_xbar_aliases
-
-        def fix_label(node, level, head):
-            last = True
-            for parent in node.get_parents(only_similar=True, only_visible=False):
-                if parent.head is head:
-                    fix_label(parent, level + 1, head)
-                    last = False
-            node.label = head.label
-            if xbar and not node.is_leaf_node(only_similar=True, only_visible=False):
-                if head_base:
-                    if last:
-                        node.alias = head_base + 'P'
-                    elif level > 0:
-                        node.alias = head_base + '´'
-                    elif head_base != str(node.label):
-                        node.alias = head_base
-                    else:
-                        node.alias = ''
-                else:
-                    node.alias = ''
-            node.update_label()
-
-        h = self.head
-        if h:
-            head_base = None
-            if h.alias:
-                head_base = str(h.alias)
-                head_base = strip_xbars(head_base)
-            elif h.label:
-                head_base = str(h.label)
-                head_base = strip_xbars(head_base)
-            fix_label(h, 0, h)
-        else:
-            self.label = ''
-            if xbar:
-                self.alias = ''
-            self.update_label()
-
-    def set_projection(self, new_head, replace_up=False):
-        """ Set this node to be projection from new_head. If the old_head is
-        also used by parent node, propagate the change up to parent (and so
-        on).
+    def set_projection(self, new_head):
+        """ Set this node to be projection from new_head.
         :param new_head:
-        :param replace_up: If True, iterate upwards and change nodes that used this head to use
-        the new head instead. If False, the projection ends here.
         :return:
         """
-        old_head = self.head
-        if old_head:
-            # nodes up from here cannot use old_head as head anymore,
-            # as projection chain is broken.
-            # set those parent heads to None, and they will recursively
-            # fix their parents
-            for parent in self.get_parents(only_similar=True, only_visible=False):
-                if parent.head is old_head:
-                    if replace_up:
-                        parent.set_projection(new_head, True)
-                    else:
-                        parent.set_projection(None, False)
         self.head = new_head
-        # following may look odd, but projecting head node's head should be the node itself.
-        if new_head and new_head.head is not new_head:
-            new_head.head = new_head
-        ctrl.forest.update_projection_map(self, old_head, new_head)
-        # ctrl.forest.update_projection_visual(self, new_head)
-        if new_head:
-            new_head.fix_projection_labels()
-        else:
-            self.fix_projection_labels()
-        if old_head:
-            old_head.fix_projection_labels()
 
     def set_projection_display(self, color_id):
         self._projection_color = color_id
