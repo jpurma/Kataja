@@ -33,6 +33,7 @@ from kataja.Edge import Edge
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.utils import to_tuple, tuple2_to_tuple3, sub_xy
 import kataja.globals as g
+from kataja.nodes.ConstituentNode import ConstituentNode
 
 end_spot_size = 10
 
@@ -608,8 +609,8 @@ class LeftAddSibling(BranchingTouchArea):
         sp = tuple2_to_tuple3(rel_sp)
         adjust = []
         self._path, true_path, control_points = shape_method(sp, (0, 0, 0),
-                                                             align=g.LEFT,
-                                                             adjust=adjust,
+                                                             alignment=g.LEFT,
+                                                             curve_adjustment=adjust,
                                                              **shape_info)
 
     def paint(self, painter, option, widget):
@@ -682,8 +683,8 @@ class RightAddSibling(BranchingTouchArea):
         sp = tuple2_to_tuple3(rel_sp)
         adjust = []
         self._path, true_path, control_points = shape_method(sp, (0, 0, 0),
-                                                             align=g.RIGHT,
-                                                             adjust=adjust,
+                                                             alignment=g.RIGHT,
+                                                             curve_adjustment=adjust,
                                                              **shape_info)
 
     def paint(self, painter, option, widget):
@@ -791,8 +792,10 @@ class JointedTouchArea(TouchArea):
         self._fill_path = shape_info.get('fill', False)
         sx, sy, dummy = self.host.magnet(2)
         self.start_point = sx, sy
+        hw_ratio = float(prefs.edge_height - (ConstituentNode.height / 2)) / prefs.edge_width
+        print(hw_ratio)
         if not end_point:
-            good_width = max((prefs.edge_width * 2, self.host.width))
+            good_width = max((prefs.edge_width * 2, self.host.width / 2 + ConstituentNode.width))
             if self._align_left:
                 self.end_point = sx - good_width, sy
             else:
@@ -801,27 +804,30 @@ class JointedTouchArea(TouchArea):
         rel_sp = sub_xy(self.start_point, self.end_point)
         sx, sy = rel_sp
         ex, ey = 0, 0
-
-        line_middle_point = sx / 2.0, sy - 10
+        line_middle_point = sx / 2.0, sy - hw_ratio * abs(sx)
         mp = tuple2_to_tuple3(line_middle_point)
         adjust = []
         if self._align_left:
             sp = tuple2_to_tuple3((sx, sy))
             ep = tuple2_to_tuple3((ex, ey))
+            first_align = g.RIGHT
+            second_align = g.LEFT
         else:
             sp = tuple2_to_tuple3((ex, ey))
             ep = tuple2_to_tuple3((sx, sy))
+            first_align = g.RIGHT
+            second_align = g.LEFT
 
         self._path, true_path, control_points = shape_method(mp, sp,
-                                                             align=g.RIGHT,
-                                                             adjust=adjust,
+                                                             alignment=first_align,
+                                                             curve_adjustment=adjust,
                                                              **shape_info)
         self._path.moveTo(sp[0], sp[1])
         path2, true_path, control_points = shape_method(mp, ep,
-                                                        align=g.LEFT,
-                                                        adjust=adjust,
+                                                        alignment=second_align,
+                                                        curve_adjustment=adjust,
                                                         **shape_info)
-        self._path = self._path.united(path2)
+        self._path |= path2
 
     def drop(self, dropped_node):
         """
@@ -1009,8 +1015,8 @@ class LeftAddChild(BranchingTouchArea):
         sp = tuple2_to_tuple3(rel_sp)
         adjust = []
         self._path, true_path, control_points = shape_method(sp, (0, 0, 0),
-                                                             align=g.LEFT,
-                                                             adjust=adjust,
+                                                             alignment=g.LEFT,
+                                                             curve_adjustment=adjust,
                                                              **shape_info)
 
     def paint(self, painter, option, widget):
@@ -1072,8 +1078,8 @@ class RightAddChild(ChildTouchArea):
         sp = tuple2_to_tuple3(rel_sp)
         adjust = []
         self._path, true_path, control_points = shape_method(sp, (0, 0, 0),
-                                                             align=g.RIGHT,
-                                                             adjust=adjust,
+                                                             alignment=g.RIGHT,
+                                                             curve_adjustment=adjust,
                                                              **shape_info)
 
     def paint(self, painter, option, widget):

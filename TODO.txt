@@ -85,7 +85,7 @@ edit box is open (two end points move).
     node instead
 + There should be a possibility for one head to start more than one projection chain if it is
 remerged to another position. Projections need to be refactored for that.
-
++ Add node to top -toucharea is ugly with long nodes
 
 ADD:
 
@@ -117,3 +117,4 @@ ADD:
     + Load and save support for Amoebas
     + Respect removal/changes in nodes within the selection/group
 - Bones mode
+- remove z-dimension as unnecessary complication
