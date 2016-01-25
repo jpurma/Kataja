@@ -29,7 +29,7 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 from kataja.globals import TOP, TOP_ROW, MIDDLE, BOTTOM_ROW, BOTTOM
 from kataja.singletons import prefs, qt_prefs, ctrl
 from kataja.BaseModel import BaseModel, Saved
-from kataja.utils import add_xyz, sub_xy, multiply_xyz, div_xyz, sub_xyz, time_me
+from kataja.utils import add_xy, multiply_xy, div_xy, sub_xy, time_me
 
 
 qbytes_opacity = QtCore.QByteArray()
@@ -42,8 +42,8 @@ def about_there(pos1, pos2):
     :param pos2:
     :return:
     """
-    return round(pos1[0]) == round(pos2[0]) and round(pos1[1]) == round(
-        pos2[1]) and round(pos1[2]) == round(pos2[2])
+    return round(pos1[0]) == round(pos2[0]) and round(pos1[1]) == round(pos2[1])
+
 
 class Movable(BaseModel, QtWidgets.QGraphicsObject):
     """
@@ -62,9 +62,8 @@ item slides to given position
 use_physics(True|False)
 physics_x = True|False:
 physics_y = True|False:
-physics_z = True|False:
 after move, the item can wander around according to physics, in set dimensions. use_physics sets
-all xyz to True|False.
+all xy to True|False.
 Physics is handled by visualization algorithm, Movable only announces if it is responsive for
 physics.
 
@@ -86,15 +85,14 @@ When nodes that don't use physics are dragged, the adjustment.
         BaseModel.__init__(self)
         QtWidgets.QGraphicsObject.__init__(self)
         # Common movement-related elements
-        self.current_position = ((random.random() * 150) - 75, (random.random() * 150) - 75, 0)
-        self.z = 0
+        self.current_position = ((random.random() * 150) - 75, (random.random() * 150) - 75)
         self._dragged = False
         self.trees = set() # each Movable belongs to some trees, either formed by Movable alone or set
         # of Movables. Tree has abstract position adjustment information.
 
         # MOVE_TO -elements
-        self.target_position = (0, 0, 0)
-        self.adjustment = (0, 0, 0)
+        self.target_position = (0, 0)
+        self.adjustment = (0, 0)
         self._move_counter = 0
         self._use_easing = True
         self._step = None
@@ -104,7 +102,6 @@ When nodes that don't use physics are dragged, the adjustment.
         self.locked = False
         self.physics_x = False
         self.physics_y = False
-        self.physics_z = False
         # Other
         self._fade_anim = None
         self._fade_in_active = False
@@ -128,7 +125,7 @@ When nodes that don't use physics are dragged, the adjustment.
         self.update_position()
 
     def use_physics(self):
-        return self.physics_x or self.physics_y or self.physics_z
+        return self.physics_x or self.physics_y
 
     def reset(self):
         """ Remove mode information, eg. hovering
@@ -138,19 +135,18 @@ When nodes that don't use physics are dragged, the adjustment.
 
     @property
     def current_scene_position(self):
-        """ Return current position in scene coordinates and turned to xyz -triple.
+        """ Return current position in scene coordinates and turned to xy -tuple.
         :return:
         """
         xy = self.scenePos()
-        return xy.x(), xy.y(), self.z
+        return xy.x(), xy.y()
 
     # ## Movement ##############################################################
 
-    def move_to(self, x, y, z, after_move_function=None, valign=MIDDLE, can_adjust=True):
+    def move_to(self, x, y, after_move_function=None, valign=MIDDLE, can_adjust=True):
         """ Start movement to given position
         :param x:
         :param y:
-        :param z:
         :param after_move_function: Function to call when the movement is finished
         :param valign: What position inside the moved item should correspond to given coordinates.
         By default align is in center, but often you may want to move items
@@ -160,10 +156,9 @@ When nodes that don't use physics are dragged, the adjustment.
         :return:
         """
         if self.use_adjustment and can_adjust:
-            ax, ay, az = self.adjustment
+            ax, ay = self.adjustment
             x += ax
             y += ay
-            z += az
         if valign == MIDDLE:
             pass
         elif valign == TOP:
@@ -174,10 +169,10 @@ When nodes that don't use physics are dragged, the adjustment.
             y -= self.get_bottom_row_y()
         elif valign == BOTTOM:
             y -= self.boundingRect().bottom()
-        if (x, y, z) == self.target_position and self._move_counter:
+        if (x, y) == self.target_position and self._move_counter:
             # already moving there
             return
-        self.target_position = x, y, z
+        self.target_position = x, y
         if after_move_function:
             self.after_move_function = after_move_function
         self.start_moving()
@@ -215,14 +210,14 @@ When nodes that don't use physics are dragged, the adjustment.
                 return False, False
             # move a precalculated step
             if self._use_easing:
-                movement = multiply_xyz(self._step, qt_prefs.easing_curve[self._move_counter - 1])
+                movement = multiply_xy(self._step, qt_prefs.easing_curve[self._move_counter - 1])
             else:
-                movement = div_xyz(sub_xyz(self.target_position, position), self._move_counter)
+                movement = div_xy(sub_xy(self.target_position, position), self._move_counter)
             self._move_counter -= 1
             # if move counter reaches zero, stop and do clean-up.
             if not self._move_counter:
                 self.stop_moving()
-            self.current_position = add_xyz(self.current_position, movement)
+            self.current_position = add_xy(self.current_position, movement)
             return True, False
         # Locked nodes are immune to physics
         elif self.locked:
@@ -230,10 +225,10 @@ When nodes that don't use physics are dragged, the adjustment.
         # Physics move node around only if other movement types have not overridden it
         elif self.use_physics():
             movement = ctrl.forest.visualization.calculate_movement(self)
-            md['sum'] = add_xyz(movement, md['sum'])
+            md['sum'] = add_xy(movement, md['sum'])
             md['nodes'].append(self)
-            self.current_position = add_xyz(self.current_position, movement)
-            return abs(movement[0]) + abs(movement[1]) + abs(movement[2]) > 0.6, True
+            self.current_position = add_xy(self.current_position, movement)
+            return abs(movement[0]) + abs(movement[1]) > 0.6, True
         return False, False
 
     def distance_to(self, movable):
@@ -246,13 +241,13 @@ When nodes that don't use physics are dragged, the adjustment.
     def set_original_position(self, pos):
         """ Sets both current position and computed position to same place,
         use when first adding items to scene to prevent them wandering from afar
-        :param pos: tuple (x, y, z)
+        :param pos: tuple (x, y)
         """
         if isinstance(pos, (QtCore.QPoint, QtCore.QPointF)):
-            pos = pos.x(), pos.y(), 0
+            pos = pos.x(), pos.y()
         self.target_position = tuple(pos)
         self.use_adjustment = False
-        self.adjustment = (0, 0, 0)
+        self.adjustment = (0, 0)
         self.current_position = tuple(pos)
         self._dragged = False
         self.locked = False
@@ -263,7 +258,7 @@ When nodes that don't use physics are dragged, the adjustment.
         """
         self._use_easing = True
         self._move_counter = prefs.move_frames
-        self._step = sub_xyz(self.target_position, self.current_position)
+        self._step = sub_xy(self.target_position, self.current_position)
         # self.adjustment affects both elements in the previous subtraction, so it can be ignored
         ctrl.graph_scene.item_moved()
 
@@ -285,16 +280,15 @@ When nodes that don't use physics are dragged, the adjustment.
         """
         #if (not self.use_physics()) and (not self._move_counter):
 
-        x, y, z = self.current_position
         if hasattr(self, 'setPos'):
-            self.setPos(x, y)
+            self.setPos(*self.current_position)
 
     def release(self):
         """ Remove lock and adjustment"""
         if self.locked:
             self.locked = False
         elif self.use_adjustment:
-            self.adjustment = (0, 0, 0)
+            self.adjustment = (0, 0)
             self.use_adjustment = False
         self.update_position()
 
@@ -391,14 +385,14 @@ When nodes that don't use physics are dragged, the adjustment.
         :param scene_pos: current drag focus
         :return:
         """
-        new_pos = scene_pos[0], scene_pos[1], self.z
+        new_pos = scene_pos[0], scene_pos[1]
         if self.use_physics():
             self.locked = True
             self.current_position = new_pos
         else:
             self.use_adjustment = True
-            diff = sub_xyz(new_pos, self.current_position)
-            self.adjustment = add_xyz(self.adjustment, diff)
+            diff = sub_xy(new_pos, self.current_position)
+            self.adjustment = add_xy(self.adjustment, diff)
             self.target_position = new_pos
             self.current_position = new_pos
 
@@ -470,4 +464,3 @@ When nodes that don't use physics are dragged, the adjustment.
     locked = Saved("locked")
     physics_x = Saved("physics_x")
     physics_y = Saved("physics_y")
-    physics_z = Saved("physics_z")

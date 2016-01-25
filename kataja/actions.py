@@ -17,7 +17,7 @@ import kataja.debug as debug
 from kataja.ui.PreferencesDialog import PreferencesDialog
 from kataja.Edge import Edge
 from kataja.visualizations.available import action_key
-from kataja.utils import tuple2_to_tuple3, guess_node_type
+from kataja.utils import guess_node_type
 from kataja.singletons import ctrl, prefs
 import kataja.globals as g
 
@@ -1428,7 +1428,7 @@ def add_child_left(sender=None):
     """
     node = get_host(sender)
     ctrl.forest.add_child_for_constituentnode(node,
-                                              pos=tuple2_to_tuple3(sender.end_point),
+                                              pos=sender.end_point,
                                               add_left=True)
 a['add_child_left'] = {'command': 'Add child node to left',
                        'method': add_child_left,
@@ -1443,7 +1443,7 @@ def add_child_right(sender=None):
     """
     node = get_host(sender)
     ctrl.forest.add_child_for_constituentnode(node,
-                                              pos=tuple2_to_tuple3(sender.end_point),
+                                              pos=sender.end_point,
                                               add_left=False)
 a['add_child_right'] = {'command': 'Add child node to right',
                         'method': add_child_right,

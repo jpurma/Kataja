@@ -31,7 +31,7 @@ from kataja.nodes.Node import Node
 from kataja.errors import TouchAreaError
 from kataja.Edge import Edge
 from kataja.singletons import ctrl, prefs, qt_prefs
-from kataja.utils import to_tuple, tuple2_to_tuple3, sub_xy
+from kataja.utils import to_tuple, sub_xy
 import kataja.globals as g
 from kataja.nodes.ConstituentNode import ConstituentNode
 
@@ -210,10 +210,10 @@ class TouchArea(QtWidgets.QGraphicsObject):
         if not self.host:
             return
         if isinstance(self.host, Edge):
-            x, y, z = self.host.end_point
+            x, y = self.host.end_point
             self.end_point = x, y
         else:
-            x, y, z = self.host.current_scene_position
+            x, y = self.host.current_scene_position
         self.end_point = x, y
         self.start_point = self.end_point
         self.setPos(self.end_point[0], self.end_point[1])
@@ -243,9 +243,9 @@ class TouchArea(QtWidgets.QGraphicsObject):
                 except TypeError:
                     pass
                 if hasattr(self.host, 'current_position'):
-                    x, y, z = self.host.current_scene_position
+                    x, y = self.host.current_scene_position
                 elif hasattr(self.host, 'start_point'):
-                    x, y, z = self.host.start_point
+                    x, y = self.host.start_point
                 else:
                     return
                 if hasattr(self.host, 'height'):
@@ -404,7 +404,7 @@ class AddBelowTouchArea(TouchArea):
 
         :param end_point: End point can be given or it can be calculated.
         """
-        x, y, z = self.host.current_scene_position
+        x, y = self.host.current_scene_position
         y += self.host.height / 2 + end_spot_size
         self.end_point = x, y
         self.start_point = self.end_point
@@ -606,9 +606,8 @@ class LeftAddSibling(BranchingTouchArea):
             self.end_point = x, y
         self.setPos(self.end_point[0], self.end_point[1])
         rel_sp = sub_xy(self.start_point, self.end_point)
-        sp = tuple2_to_tuple3(rel_sp)
         adjust = []
-        self._path, true_path, control_points = shape_method(sp, (0, 0, 0),
+        self._path, true_path, control_points = shape_method(rel_sp, (0, 0),
                                                              alignment=g.LEFT,
                                                              curve_adjustment=adjust,
                                                              **shape_info)
@@ -680,9 +679,8 @@ class RightAddSibling(BranchingTouchArea):
             self.end_point = x, y
         self.setPos(self.end_point[0], self.end_point[1])
         rel_sp = sub_xy(self.start_point, self.end_point)
-        sp = tuple2_to_tuple3(rel_sp)
         adjust = []
-        self._path, true_path, control_points = shape_method(sp, (0, 0, 0),
+        self._path, true_path, control_points = shape_method(rel_sp, (0, 0),
                                                              alignment=g.RIGHT,
                                                              curve_adjustment=adjust,
                                                              **shape_info)
@@ -790,10 +788,9 @@ class JointedTouchArea(TouchArea):
         shape_info = ctrl.fs.shape_presets(shape_name)
         shape_method = shape_info['method']
         self._fill_path = shape_info.get('fill', False)
-        sx, sy, dummy = self.host.magnet(2)
+        sx, sy = self.host.magnet(2)
         self.start_point = sx, sy
         hw_ratio = float(prefs.edge_height - (ConstituentNode.height / 2)) / prefs.edge_width
-        print(hw_ratio)
         if not end_point:
             good_width = max((prefs.edge_width * 2, self.host.width / 2 + ConstituentNode.width))
             if self._align_left:
@@ -805,28 +802,27 @@ class JointedTouchArea(TouchArea):
         sx, sy = rel_sp
         ex, ey = 0, 0
         line_middle_point = sx / 2.0, sy - hw_ratio * abs(sx)
-        mp = tuple2_to_tuple3(line_middle_point)
         adjust = []
         if self._align_left:
-            sp = tuple2_to_tuple3((sx, sy))
-            ep = tuple2_to_tuple3((ex, ey))
-            first_align = g.RIGHT
-            second_align = g.LEFT
+            self._path, true_path, control_points = shape_method(line_middle_point, (sx, sy),
+                                                                 alignment=g.RIGHT,
+                                                                 curve_adjustment=adjust,
+                                                                 **shape_info)
+            self._path.moveTo(sx, sy)
+            path2, true_path, control_points = shape_method(line_middle_point, (ex, ey),
+                                                            alignment=g.LEFT,
+                                                            curve_adjustment=adjust,
+                                                            **shape_info)
         else:
-            sp = tuple2_to_tuple3((ex, ey))
-            ep = tuple2_to_tuple3((sx, sy))
-            first_align = g.RIGHT
-            second_align = g.LEFT
-
-        self._path, true_path, control_points = shape_method(mp, sp,
-                                                             alignment=first_align,
-                                                             curve_adjustment=adjust,
-                                                             **shape_info)
-        self._path.moveTo(sp[0], sp[1])
-        path2, true_path, control_points = shape_method(mp, ep,
-                                                        alignment=second_align,
-                                                        curve_adjustment=adjust,
-                                                        **shape_info)
+            self._path, true_path, control_points = shape_method(line_middle_point, (ex, ey),
+                                                                 alignment=g.RIGHT,
+                                                                 curve_adjustment=adjust,
+                                                                 **shape_info)
+            self._path.moveTo(ex, ey)
+            path2, true_path, control_points = shape_method(line_middle_point, (sx, sy),
+                                                            alignment=g.LEFT,
+                                                            curve_adjustment=adjust,
+                                                            **shape_info)
         self._path |= path2
 
     def drop(self, dropped_node):
@@ -1002,7 +998,7 @@ class LeftAddChild(BranchingTouchArea):
         shape_info = ctrl.fs.shape_presets(shape_name)
         shape_method = shape_info['method']
         self._fill_path = shape_info.get('fill', False)
-        sx, sy, dummy = self.host.magnet(7)
+        sx, sy = self.host.magnet(7)
         self.start_point = sx, sy
         if end_point:
             self.end_point = end_point
@@ -1012,9 +1008,8 @@ class LeftAddChild(BranchingTouchArea):
             self.end_point = ex, ey
         self.setPos(self.end_point[0], self.end_point[1])
         rel_sp = sub_xy(self.start_point, self.end_point)
-        sp = tuple2_to_tuple3(rel_sp)
         adjust = []
-        self._path, true_path, control_points = shape_method(sp, (0, 0, 0),
+        self._path, true_path, control_points = shape_method(rel_sp, (0, 0),
                                                              alignment=g.LEFT,
                                                              curve_adjustment=adjust,
                                                              **shape_info)
@@ -1065,7 +1060,7 @@ class RightAddChild(ChildTouchArea):
         shape_info = ctrl.fs.shape_presets(shape_name)
         shape_method = shape_info['method']
         self._fill_path = shape_info.get('fill', False)
-        sx, sy, dummy = self.host.magnet(11)
+        sx, sy = self.host.magnet(11)
         self.start_point = sx, sy
         if end_point:
             self.end_point = end_point
@@ -1075,9 +1070,8 @@ class RightAddChild(ChildTouchArea):
             self.end_point = ex, ey
         self.setPos(self.end_point[0], self.end_point[1])
         rel_sp = sub_xy(self.start_point, self.end_point)
-        sp = tuple2_to_tuple3(rel_sp)
         adjust = []
-        self._path, true_path, control_points = shape_method(sp, (0, 0, 0),
+        self._path, true_path, control_points = shape_method(rel_sp, (0, 0),
                                                              alignment=g.RIGHT,
                                                              curve_adjustment=adjust,
                                                              **shape_info)

@@ -1822,13 +1822,12 @@ class Forest(BaseModel):
 
         # 2) create a pair if necessary
         if self.settings.only_binary_trees and not siblings:
-            ox, oy, oz = pos
+            ox, oy = pos
             if other_align == g.RIGHT:
                 ox += 40
             else:
                 ox -= 40
             other_node = self.create_node(relative=parent)
-            #other_node.current_position = ox, oy, oz
             self.connect_node(parent=parent, child=other_node, direction=other_align, fade_in=True)
         # 3) reassign projections
         if hasattr(parent, 'head') and parent.head and parent.head is parent:
@@ -1865,7 +1864,7 @@ class Forest(BaseModel):
         else:
             left = top
             right = new
-        p = merger_pos[0], merger_pos[1], top.z
+        p = merger_pos[0], merger_pos[1]
         merger_node = self.create_merger_node(left=left, right=right, pos=p, create_tree=False, new=new)
         for tree in top.trees:
             tree.recalculate_top()
@@ -1924,7 +1923,7 @@ class Forest(BaseModel):
             right = inserted
 
         # connections
-        p = insertion_pos[0], insertion_pos[1], child.z
+        p = insertion_pos[0], insertion_pos[1]
         merger_node = self.create_merger_node(left=left, right=right, pos=p, create_tree=False, new=inserted)
         merger_node.copy_position(child)
         merger_node.current_position = merger_node.scene_position_to_tree_position(p)
@@ -1954,7 +1953,7 @@ class Forest(BaseModel):
         :param new: which one is the new node to add. This connection is animated in.
         """
         if not pos:
-            pos = (0, 0, 0)
+            pos = (0, 0)
         merger_const = ctrl.FL.merge(left.syntactic_object, right.syntactic_object)
         merger_node = self.create_node(synobj=merger_const, relative=right)
         merger_node.current_position = pos

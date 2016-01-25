@@ -60,7 +60,6 @@ class SymmetricElasticTree(BaseVisualization):
         node.update_visibility()
         node.physics_x = True
         node.physics_y = True
-        node.physics_z = True
 
     def calculate_movement(self, node):
         # Sum up all forces pushing this item away.
@@ -71,11 +70,11 @@ class SymmetricElasticTree(BaseVisualization):
         """
         xvel = 0.0
         yvel = 0.0
-        node_x, node_y, node_z = node.current_position  # @UnusedVariable
+        node_x, node_y = node.current_position  # @UnusedVariable
         for other in self.forest.visible_nodes():
             if other is node:
                 continue
-            other_x, other_y, other_z = other.current_position  # @UnusedVariable
+            other_x, other_y = other.current_position  # @UnusedVariable
             dist_x, dist_y = int(node_x - other_x), int(node_y - other_y)
             safe_zone = (other.width + node.width) / 2
             dist = math.hypot(dist_x, dist_y)
@@ -93,7 +92,7 @@ class SymmetricElasticTree(BaseVisualization):
         # Now subtract all forces pulling items together.
         for edge in node.edges_down:
             other = edge.end
-            other_x, other_y, other_z = other.current_position
+            other_x, other_y = other.current_position
             dist_x, dist_y = int(node_x - other_x), int(node_y - other_y)
             dist = math.hypot(dist_x, dist_y)
             if dist == 0:
@@ -107,7 +106,7 @@ class SymmetricElasticTree(BaseVisualization):
 
         for edge in node.edges_up:
             other = edge.start
-            other_x, other_y, other_z = other.current_position
+            other_x, other_y = other.current_position
             dist_x, dist_y = (node_x - other_x, node_y - other_y)
             dist = math.hypot(dist_x, dist_y)
             if dist == 0:

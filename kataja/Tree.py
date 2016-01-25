@@ -25,7 +25,7 @@ class TreeDragData:
         self.position_before_dragging = tree.current_position
         self.adjustment_before_dragging = tree.adjustment
         mx, my = mousedown_scene_pos
-        scx, scy, scz = tree.current_scene_position
+        scx, scy = tree.current_scene_position
         self.distance_from_pointer = scx - mx, scy - my
         self.dragged_distance = None
 
@@ -49,7 +49,7 @@ class Tree(Movable):
             self.sorted_nodes = [top]
         else:
             self.sorted_nodes = []
-        self.current_position = 100, 100, 0
+        self.current_position = 100, 100
         self.drag_data = None
         self.tree_changed = True
         self._cached_bounding_rect = None

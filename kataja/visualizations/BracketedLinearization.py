@@ -70,7 +70,6 @@ class BracketedLinearization(BaseVisualization):
         if node.node_type == g.CONSTITUENT_NODE:
             node.physics_x = False
             node.physics_y = False
-            node.physics_z = False
 
     def show_edges_for(self, node):
         """ Bracket visualization never shows constituent edges

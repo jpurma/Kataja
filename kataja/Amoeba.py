@@ -269,7 +269,7 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
         if True:
             for item in self.collidingItems():
                 if isinstance(item, Node) and item not in self.selection_with_children:
-                    x, y, z = item.current_scene_position
+                    x, y = item.current_scene_position
                     subshape = item.shape().translated(x, y)
                     subshape_points = []
                     for i in range(0, subshape.elementCount()):

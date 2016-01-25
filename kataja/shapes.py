@@ -149,8 +149,8 @@ def shaped_cubic_path(start_point=None, end_point=None, curve_adjustment=None,
     :param start_point:
     :param kwargs: rest of the args, unused
     """
-    sx, sy, sz = start_point
-    ex, ey, ez = end_point
+    sx, sy = start_point
+    ex, ey = end_point
     # edges that go to wrong direction have stronger curvature
     if thick:
         leaf_x *= 2
@@ -169,9 +169,9 @@ def shaped_cubic_path(start_point=None, end_point=None, curve_adjustment=None,
             dx = fixed_dx
         dy = fixed_dy
     if alignment is LEFT or alignment is RIGHT:
-        control_points = [(sx + dx, sy + dy, sz), (ex, ey - dy, ez)]
+        control_points = [(sx + dx, sy + dy), (ex, ey - dy)]
     else:
-        control_points = [(sx, sy + dy, sz), (ex, ey - dy, ez)]
+        control_points = [(sx, sy + dy), (ex, ey - dy)]
     c = adjusted_control_point_list(control_points, curve_adjustment)
     if inner_only:
         path = None
@@ -223,8 +223,8 @@ def cubic_path(start_point=None, end_point=None, curve_adjustment=None,
     :param fixed_dy:
     :param kwargs:
     """
-    sx, sy, sz = start_point
-    ex, ey, ez = end_point
+    sx, sy = start_point
+    ex, ey = end_point
     # edges that go to wrong direction have stronger curvature
 
     if relative:
@@ -240,9 +240,9 @@ def cubic_path(start_point=None, end_point=None, curve_adjustment=None,
             dx = fixed_dx
         dy = fixed_dy
     if alignment is LEFT or alignment is RIGHT:
-        control_points = [(sx + dx, sy + dy, sz), (ex, ey - dy, ez)]
+        control_points = [(sx + dx, sy + dy), (ex, ey - dy)]
     else:
-        control_points = [(sx, sy + dy, sz), (ex, ey - dy, ez)]
+        control_points = [(sx, sy + dy), (ex, ey - dy)]
     path = QtGui.QPainterPath(Pf(sx, sy))
     c = adjusted_control_point_list(control_points, curve_adjustment)
     path.cubicTo(c[0], c[1], c[2], c[3], ex, ey)
@@ -290,8 +290,8 @@ def shaped_quadratic_path(start_point=None, end_point=None,
     :param kwargs:
     """
 
-    sx, sy, sz = start_point
-    ex, ey, ez = end_point
+    sx, sy = start_point
+    ex, ey = end_point
     if thick:
         leaf_x *= 2
         leaf_y *= 2
@@ -310,9 +310,9 @@ def shaped_quadratic_path(start_point=None, end_point=None,
             dx = fixed_dx
         dy = fixed_dy
     if alignment is LEFT or alignment is RIGHT:
-        control_points = [(sx + dx, sy + dy, sz)]
+        control_points = [(sx + dx, sy + dy)]
     else:
-        control_points = [(sx, sy + dy, sz)]
+        control_points = [(sx, sy + dy)]
     c = adjusted_control_point_list(control_points, curve_adjustment)
     if inner_only:
         path = None
@@ -364,8 +364,8 @@ def quadratic_path(start_point=None, end_point=None, curve_adjustment=None,
     :param fixed_dy:
     :param kwargs:
     """
-    sx, sy, sz = start_point
-    ex, ey, ez = end_point
+    sx, sy = start_point
+    ex, ey = end_point
     if relative:
         dx = rel_dx * (ex - sx)
         dy = rel_dy * (ey - sy)
@@ -380,9 +380,9 @@ def quadratic_path(start_point=None, end_point=None, curve_adjustment=None,
             dx = fixed_dx
         dy = fixed_dy
     if alignment is LEFT or alignment is RIGHT:
-        control_points = [(sx + dx, sy + dy, sz)]
+        control_points = [(sx + dx, sy + dy)]
     else:
-        control_points = [(sx, sy + dy, sz)]
+        control_points = [(sx, sy + dy)]
     path = QtGui.QPainterPath(Pf(sx, sy))
     c = adjusted_control_point_list(control_points, curve_adjustment)
     path.quadTo(c[0], c[1], ex, ey)
@@ -421,14 +421,14 @@ def shaped_linear_path(start_point=None, end_point=None, leaf_x=2, leaf_y=2,
     :param inner_only:
     :param kwargs:
     """
-    sx, sy, sz = start_point
-    dx, dy, dummy = end_point
+    sx, sy = start_point
+    dx, dy = end_point
     if thick:
         leaf_x *= 2
         leaf_y *= 2
 
     control_points = []
-    c = [(dx - leaf_x, dy - leaf_y, sz), (dx + leaf_x, dy - leaf_y, sz)]
+    c = [(dx - leaf_x, dy - leaf_y), (dx + leaf_x, dy - leaf_y)]
     if inner_only:
         path = None
     else:
@@ -468,8 +468,8 @@ def linear_path(start_point=None, end_point=None, curve_adjustment=None,
     :param alignment:
     :param kwargs:
     """
-    sx, sy, dummy = start_point
-    dx, dy, dummy = end_point
+    sx, sy = start_point
+    dx, dy = end_point
     control_points = []
     path = QtGui.QPainterPath(Pf(sx, sy))
     path.lineTo(dx, dy)
@@ -508,19 +508,19 @@ def blob_path(start_point=None, end_point=None, curve_adjustment=None,
     :param kwargs:
     """
     if start:
-        scx, scy, scz = start.current_scene_position
+        scx, scy = start.current_scene_position
     else:
-        scx, scy, scz = start_point
+        scx, scy = start_point
     if end:
-        ecx, ecy, ecz = end.current_scene_position
+        ecx, ecy = end.current_scene_position
     else:
-        ecx, ecy, ecz = end_point
+        ecx, ecy = end_point
     if thick:
         thickness *= 2
     t2 = thickness * 2
 
-    sx, sy, sz = start_point
-    ex, ey, dummy = end_point
+    sx, sy = start_point
+    ex, ey = end_point
 
     inner_path = QtGui.QPainterPath(Pf(sx, sy))
     inner_path.lineTo(ex, ey)
@@ -630,13 +630,13 @@ def directional_blob_path(start_point=None, end_point=None,
     :param kwargs:
     """
     if start:
-        scx, scy, scz = start.current_scene_position
+        scx, scy = start.current_scene_position
     else:
-        scx, scy, scz = start_point
+        scx, scy = start_point
     if end:
-        ecx, ecy, ecz = end.current_scene_position
+        ecx, ecy = end.current_scene_position
     else:
-        ecx, ecy, ecz = end_point
+        ecx, ecy = end_point
     inner_path = QtGui.QPainterPath(Pf(scx, scy))
     inner_path.lineTo(ecx, ecy)
     if inner_only:
@@ -680,7 +680,7 @@ def directional_blob_path(start_point=None, end_point=None,
             path2neg.addEllipse(ex1, ey1, ew, eh)
             path = path.subtracted(path2neg)
     else:
-        sx, sy, sz = start_point
+        sx, sy = start_point
         if end:
             if end.has_visible_label():
                 ex1, ey1, ew, eh = end.boundingRect().getRect()

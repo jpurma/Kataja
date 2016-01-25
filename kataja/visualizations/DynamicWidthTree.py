@@ -44,7 +44,6 @@ class DynamicWidthTree(LinearizedStaticTree):
         if node.node_type == g.CONSTITUENT_NODE:
             node.physics_x = True
             node.physics_y = False
-            node.physics_z = False
 
     def calculate_movement(self, node, alpha = 0.1):
         # Sum up all forces pushing this item away.
@@ -53,8 +52,8 @@ class DynamicWidthTree(LinearizedStaticTree):
         :param node:
         :return:
         """
-        node_x, node_y, node_z = node.current_position
-        old_x, old_y, old_z = node.current_position
+        node_x, node_y = node.current_position
+        old_x, old_y = node.current_position
 
         close_ones = set()
         # attract
@@ -63,7 +62,7 @@ class DynamicWidthTree(LinearizedStaticTree):
             other = edge.end
             if other.is_visible():
                 close_ones.add(other)
-                other_x, other_y, other_z = other.current_position
+                other_x, other_y = other.current_position
                 dist_x, dist_y = node_x - other_x, node_y - other_y
                 dist = math.hypot(dist_x, dist_y)
                 radius = (other.width + node.width) / 2
@@ -78,7 +77,7 @@ class DynamicWidthTree(LinearizedStaticTree):
             other = edge.start
             if other.is_visible():
                 close_ones.add(other)
-                other_x, other_y, other_z = other.current_position
+                other_x, other_y = other.current_position
                 dist_x, dist_y = node_x - other_x, node_y - other_y
                 dist = math.hypot(dist_x, dist_y)
                 radius = ((other.width + node.width) / 2) * 1.4
@@ -94,7 +93,7 @@ class DynamicWidthTree(LinearizedStaticTree):
         # repulse strongly
         alpha_strong = alpha * 5
         for other in other_nodes:
-            other_x, other_y, other_z = other.current_position  # @UnusedVariable
+            other_x, other_y = other.current_position  # @UnusedVariable
             dist_x, dist_y = node_x - other_x, node_y - other_y
             dist = math.hypot(dist_x, dist_y)
             if dist == 0:
@@ -111,7 +110,7 @@ class DynamicWidthTree(LinearizedStaticTree):
                     node_x -= 1
         # repulse weakly
         for other in close_ones:
-            other_x, other_y, other_z = other.current_position  # @UnusedVariable
+            other_x, other_y = other.current_position  # @UnusedVariable
             dist_x, dist_y = node_x - other_x, node_y - other_y
             dist = math.hypot(dist_x, dist_y)
             if dist == 0:

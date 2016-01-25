@@ -66,11 +66,9 @@ class LinearizedStaticTree(BalancedTree):
         if node.node_type == g.CONSTITUENT_NODE:
             node.physics_x = False
             node.physics_y = False
-            node.physics_z = False
         else:
             node.physics_x = True
             node.physics_y = True
-            node.physics_z = True
 
     def reselect(self):
         """ Rotate between drawing multidominated elements close to their various parents

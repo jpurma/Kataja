@@ -117,4 +117,4 @@ ADD:
     + Load and save support for Amoebas
     + Respect removal/changes in nodes within the selection/group
 - Bones mode
-- remove z-dimension as unnecessary complication
++ remove z-dimension as unnecessary complication

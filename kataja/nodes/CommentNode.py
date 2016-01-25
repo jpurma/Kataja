@@ -66,7 +66,6 @@ class CommentNode(Node):
         self.label = text
         self.physics_x = False
         self.physics_y = False
-        self.physics_z = False
         self.pos_relative_to_host = -50, -50
         self.preferred_host = None
 
@@ -157,9 +156,9 @@ class CommentNode(Node):
         :return:
         """
         if self.preferred_host:
-            x, y, z = self.preferred_host.current_scene_position
+            x, y = self.preferred_host.current_scene_position
             dx, dy = self.pos_relative_to_host
-            self.current_position = self.scene_position_to_tree_position((x + dx, y + dy, z))
+            self.current_position = self.scene_position_to_tree_position((x + dx, y + dy))
             return False, False
         else:
             return super().move(md)
@@ -174,8 +173,8 @@ class CommentNode(Node):
         """
         message = super().drop_to(x, y, recipient=recipient)
         if self.preferred_host:
-            x, y, z = self.preferred_host.current_scene_position
-            mx, my, mz = self.current_scene_position
+            x, y = self.preferred_host.current_scene_position
+            mx, my = self.current_scene_position
             self.pos_relative_to_host = mx - x, my - y
             message = "Adjusted comment to be at %s, %s relative to '%s'" % (mx - x, my - y,
                                                                              self.preferred_host)
@@ -185,8 +184,8 @@ class CommentNode(Node):
         print('on_connect called, hosts:', self.hosts)
         if other in self.hosts:
             self.preferred_host = other
-            x, y, z = other.current_scene_position
-            mx, my, mz = self.current_scene_position
+            x, y = other.current_scene_position
+            mx, my = self.current_scene_position
             self.pos_relative_to_host = mx - x, my - y
 
     def on_disconnect(self, other):
@@ -195,8 +194,8 @@ class CommentNode(Node):
             for item in self.hosts:
                 if item != other:
                     self.preferred_host = item
-                    x, y, z = item.current_scene_position
-                    mx, my, mz = self.current_scene_position
+                    x, y = item.current_scene_position
+                    mx, my = self.current_scene_position
                     self.pos_relative_to_host = mx - x, my - y
                     return
             self.preferred_host = None

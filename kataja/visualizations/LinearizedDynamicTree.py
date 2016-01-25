@@ -65,11 +65,9 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
             if node.is_leaf_node():
                 node.physics_x = False
                 node.physics_y = False
-                node.physics_z = False
             elif node.is_top_node():
                 node.physics_x = True
                 node.physics_y = False
-                node.physics_z = False
 
     def reselect(self):
         """ Linearization has  """
@@ -100,15 +98,13 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
             nodelist = []
             top.physics_x = True
             top.physics_y = False
-            top.physics_z = False
-            rx, ry, rz = top.current_position
-            top.move_to(rx, 0, rz)
+            rx, ry = top.current_position
+            top.move_to(rx, 0)
             for node in tree.sorted_nodes[1:]:
                 if node.is_leaf_node():
                     if node:
                         node.physics_x = False
                         node.physics_y = False
-                        node.physics_z = False
                         if node.folding_towards:
                             if node.folding_towards not in nodelist:
                                 nodelist.append(node.folding_towards)
@@ -119,7 +115,6 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
                 else:
                     node.physics_x = True
                     node.physics_y = True
-                    node.physics_z = False
             total_width = sum([node.width for node in nodelist]) + (10 * len(nodelist))
             offset = total_width / -2
             x = offset
@@ -130,6 +125,5 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
                 x += nw / 2
                 node.physics_x = False
                 node.physics_y = False
-                node.physics_z = False
-                node.move_to(x, start_height, node.z, valign=BOTTOM_ROW)
+                node.move_to(x, start_height, valign=BOTTOM_ROW)
                 x += (nw / 2) + 10

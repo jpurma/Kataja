@@ -33,7 +33,7 @@ from kataja.globals import LEFT, RIGHT
 from kataja.shapes import SHAPE_PRESETS, outline_stroker
 from kataja.EdgeLabel import EdgeLabel
 import kataja.utils as utils
-from kataja.utils import to_tuple, add_xyz, add_xy, sub_xy, sub_xyz
+from kataja.utils import to_tuple, add_xy, sub_xy
 from kataja.BaseModel import BaseModel, SavedAndGetter, Saved
 
 # ('shaped_relative_linear',{'method':shapedRelativeLinearPath,'fill':True,
@@ -530,56 +530,37 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
         self.make_relative_vector()
         self.update_shape()
 
-    def set_start_point(self, p, y=None, z=None):
+    def set_start_point(self, p, y=None):
         """ Convenience method for setting start point: accepts QPoint(F)s,
         tuples and x,y coords.
         :param p: first argument, either QPoint, tuple or x coordinate if y
         is also given
         :param y: y coordinate
-        :param z: z coordinate
         :return:
         """
-        if z is None:
-            if self.start_point:
-                z = self.start_point[2]
-            else:
-                z = 0
 
         if y is not None:
-            self.fixed_start_point = p, y, z
+            self.fixed_start_point = p, y
         elif isinstance(p, tuple):
-            if len(p) == 3:
-                self.fixed_start_point = p
-            else:
-                self.fixed_start_point = (p[0], p[1], z)
+            self.fixed_start_point = p
         if isinstance(p, (QtCore.QPoint, QtCore.QPointF)):
-            self.fixed_start_point = (p.x(), p.y(), z)
+            self.fixed_start_point = p.x(), p.y()
         self.make_relative_vector()
 
-    def set_end_point(self, p, y=None, z=None):
+    def set_end_point(self, p, y=None):
         """ Convenience method for setting end point: accepts QPoint(F)s,
         tuples and x,y coords.
         :param p: first argument, either QPoint, tuple or x coordinate if y
         is also given
         :param y: y coordinate
-        :param z: z coordinate
         :return:
         """
-        if z is None:
-            if self.end_point:
-                z = self.end_point[2]
-            else:
-                z = 0
-
         if y is not None:
-            self.fixed_end_point = p, y, z
+            self.fixed_end_point = p, y
         elif isinstance(p, tuple):
-            if len(p) == 3:
-                self.fixed_end_point = p
-            else:
-                self.fixed_end_point = (p[0], p[1], z)
+            self.fixed_end_point = p
         if isinstance(p, (QtCore.QPoint, QtCore.QPointF)):
-            self.fixed_end_point = (p.x(), p.y(), z)
+            self.fixed_end_point = p.x(), p.y()
         self.make_relative_vector()
 
     # Label for arrow etc. ##############################################
@@ -879,9 +860,9 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
         :param index:
         """
         if self.curve_adjustment is None:
-            self.curve_adjustment = [(0, 0, 0)] * (index + 1)
+            self.curve_adjustment = [(0, 0)] * (index + 1)
         elif index >= len(self.curve_adjustment):
-            self.curve_adjustment += [(0, 0, 0)] * (index - len(self.curve_adjustment) + 1)
+            self.curve_adjustment += [(0, 0)] * (index - len(self.curve_adjustment) + 1)
 
     def adjust_control_point(self, index, points, cp=True):
         """ Called from UI, when dragging
@@ -892,8 +873,7 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
         x, y = points
         self.poke('curve_adjustment')
         self.prepare_adjust_array(index)
-        z = self.curve_adjustment[index][2]
-        self.curve_adjustment[index] = (x, y, z)
+        self.curve_adjustment[index] = x, y
         self.call_watchers('edge_adjustment', 'curve_adjustment', self.curve_adjustment)
         self.make_path()
         self.update()
@@ -907,13 +887,11 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
         """
         self.poke('curve_adjustment')
         self.prepare_adjust_array(index)
-        x, y, z = self.curve_adjustment[index]
+        x, y = self.curve_adjustment[index]
         if dim == 'x':
-            self.curve_adjustment[index] = value, y, z
+            self.curve_adjustment[index] = value, y
         elif dim == 'y':
-            self.curve_adjustment[index] = x, value, z
-        elif dim == 'z':
-            self.curve_adjustment[index] = x, y, value
+            self.curve_adjustment[index] = x, value
         self.call_watchers('edge_adjustment', 'curve_adjustment', self.curve_adjustment)
         self.make_path()
         self.update()
@@ -927,7 +905,7 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
         if self.curve_adjustment:
             self.poke('curve_adjustment')
             if self.curve_adjustment and len(self.curve_adjustment) > index:
-                self.curve_adjustment[index] = (0, 0, 0)
+                self.curve_adjustment[index] = (0, 0)
                 self.call_watchers('edge_adjustment', 'curve_adjustment', self.curve_adjustment)
             can_delete = True
             for values in self.curve_adjustment:
@@ -944,10 +922,10 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
         :return:
         """
         if self.start and not self.end:
-            self._computed_end_point = add_xyz(self.start.current_scene_position,
+            self._computed_end_point = add_xy(self.start.current_scene_position,
                                                self._relative_vector)
         elif self.end and not self.start:
-            self._computed_start_point = sub_xyz(self.end.current_scene_position,
+            self._computed_start_point = sub_xy(self.end.current_scene_position,
                                                  self._relative_vector)
         if self.edge_type == g.ARROW:
 
@@ -1265,13 +1243,13 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
             size = self.arrowhead_size_at_start
             if t:
                 size *= t
-            x, y, z = self.start_point
+            x, y = self.start_point
             a = math.radians(-self.get_angle_at(0) + 180)
         elif pos == 'end':
             size = self.arrowhead_size_at_end
             if t:
                 size *= t
-            x, y, z = self.end_point
+            x, y = self.end_point
             a = math.radians(-self.get_angle_at(.95))
         p = QtGui.QPainterPath()
         p.moveTo(x, y)

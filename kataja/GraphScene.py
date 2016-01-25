@@ -33,7 +33,7 @@ import PyQt5.QtWidgets as QtWidgets
 from kataja.Edge import Edge
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.nodes.Node import Node
-from kataja.utils import to_tuple, sub_xyz, div_xyz, time_me, open_symbol_data
+from kataja.utils import to_tuple, sub_xy, div_xy, time_me, open_symbol_data
 from kataja.ui import TouchArea
 import kataja.globals as g
 
@@ -606,7 +606,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                     node = ctrl.forest.create_node(pos=event.scenePos(),
                                                    node_type=g.CONSTITUENT_NODE,
                                                    text=data['char'])
-                    node.current_position = event.scenePos().x(), event.scenePos().y(), node.z
+                    node.current_position = event.scenePos().x(), event.scenePos().y()
                     node.lock()
                     ctrl.main.action_finished('Created constituent "%s"' % node)
 
@@ -623,7 +623,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                             pass
                         node = ctrl.forest.create_node(pos=event.scenePos(),
                                                        node_type=node_type)
-                        node.current_position = event.scenePos().x(), event.scenePos().y(), node.z
+                        node.current_position = event.scenePos().x(), event.scenePos().y()
                         node.lock()
                         ctrl.main.action_finished('added %s' % args[0])
                     else:
@@ -730,7 +730,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         frame_has_moved = False
         background_fade = False
         can_normalize = True
-        md = {'sum': (0, 0, 0), 'nodes': []}
+        md = {'sum': (0, 0), 'nodes': []}
         ctrl.items_moving = True
         #print(len(self.items()))
         #for item in self.items():
@@ -769,9 +769,9 @@ class GraphScene(QtWidgets.QGraphicsScene):
         # normalize movement so that the trees won't glide away
         ln = len(md['nodes'])
         if ln and can_normalize:
-            avg = div_xyz(md['sum'], ln)
+            avg = div_xy(md['sum'], ln)
             for node in md['nodes']:
-                node.current_position = sub_xyz(node.current_position, avg)
+                node.current_position = sub_xy(node.current_position, avg)
         if items_have_moved and \
                 (not self.manual_zoom) and \
                 (not ctrl.dragged_focus):

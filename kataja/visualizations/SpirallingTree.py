@@ -166,7 +166,6 @@ class SpirallingTree(BaseVisualization):
         if node.node_type == g.CONSTITUENT_NODE:
             node.physics_x = False
             node.physics_y = False
-            node.physics_z = False
 
     @caller
     def reselect(self):

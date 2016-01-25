@@ -93,8 +93,7 @@ class BaseVisualization:
         """
         node.physics_x = True
         node.physics_y = True
-        node.physics_z = True
-        node.adjustment = (0, 0, 0)
+        node.adjustment = (0, 0)
         node.use_adjustment = False
         node.locked = False
         node.update_label()
@@ -133,14 +132,14 @@ class BaseVisualization:
         :param node:
         :return:
         """
-        node_x, node_y, node_z = node.current_position
-        old_x, old_y, old_z = node.current_position
+        node_x, node_y = node.current_position
+        old_x, old_y = node.current_position
 
         # attract
         down = node.edges_down
         for edge in down:
             other = edge.end
-            other_x, other_y, other_z = other.current_position
+            other_x, other_y = other.current_position
             dist_x, dist_y = node_x - other_x, node_y - other_y
             dist = math.hypot(dist_x, dist_y)
             radius = (other.width + node.width) / 2
@@ -154,7 +153,7 @@ class BaseVisualization:
         up = node.edges_up
         for edge in up:
             other = edge.start
-            other_x, other_y, other_z = other.current_position
+            other_x, other_y = other.current_position
             dist_x, dist_y = node_x - other_x, node_y - other_y
             dist = math.hypot(dist_x, dist_y)
             radius = (other.width + node.width) / 2
@@ -177,7 +176,7 @@ class BaseVisualization:
         for other in self.forest.visible_nodes():
             if other is node:
                 continue
-            other_x, other_y, other_z = other.current_position  # @UnusedVariable
+            other_x, other_y = other.current_position  # @UnusedVariable
             dist_x, dist_y = node_x - other_x, node_y - other_y
             dist = math.hypot(dist_x, dist_y)
             #if dist > 50:

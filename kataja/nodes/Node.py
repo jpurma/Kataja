@@ -35,8 +35,8 @@ from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.Label import Label
 from kataja.Movable import Movable
 from kataja.BaseModel import Saved
-from kataja.utils import to_tuple, create_shadow_effect, multiply_xyz, div_xyz, sub_xyz, add_xyz, \
-    time_me
+from kataja.utils import to_tuple, create_shadow_effect, multiply_xy, div_xy, sub_xy, add_xy, \
+    time_me, add_xy
 import kataja.globals as g
 from kataja.parser.INodes import ITemplateNode
 
@@ -52,7 +52,7 @@ class DragData:
         self.adjustment_before_dragging = node.adjustment
         self.tree_top = node.tree_where_top()
         mx, my = mousedown_scene_pos
-        scx, scy, scz = node.current_scene_position
+        scx, scy = node.current_scene_position
         self.distance_from_pointer = scx - mx, scy - my
         self.dragged_distance = None
         self.background = ctrl.cm.paper2().lighter(102)
@@ -571,7 +571,7 @@ syntactic_object: %s
                 if not legit:
                     child.remove_from_tree(tree, recursive_down=True)
 
-    def copy_position(self, other, ax=0, ay=0, az=0):
+    def copy_position(self, other, ax=0, ay=0):
         """ Helper method for newly created items. Takes other item and copies movement related
         attributes from it (physics settings, locks, adjustment etc). ax, ay, az can be used to
         adjust these a little to avoid complete overlap.
@@ -581,64 +581,47 @@ syntactic_object: %s
         :param az:
         :return:
         """
-        shift = (ax, ay, az)
+        shift = (ax, ay)
         if self.parentItem() is other.parentItem():
-            self.current_position = add_xyz(other.current_position, shift)
+            self.current_position = add_xy(other.current_position, shift)
             self.target_position = other.target_position
         else:
             csp = other.current_scene_position
             ctp = other.tree_position_to_scene_position(other.target_position)
-            self.current_position = self.scene_position_to_tree_position(add_xyz(csp, shift))
+            self.current_position = self.scene_position_to_tree_position(add_xy(csp, shift))
             self.target_position = self.scene_position_to_tree_position(ctp)
         self.locked = other.locked
         self.use_adjustment = other.use_adjustment
         self.adjustment = other.adjustment
         self.physics_x = other.physics_x
         self.physics_y = other.physics_y
-        self.physics_z = other.physics_z
 
     def tree_position_to_scene_position(self, position):
-        """ Return trees position converted to scene position. Works for xy and xyz -tuples.
+        """ Return trees position converted to scene position. Works for xy -tuples.
         :param position:
         :return:
         """
         #if isinstance(position, (QtCore.QPoint, QtCore.QPointF)):
         #    position = position.x(), position.y()
-        if len(position) == 3:
-            x, y, z = position
-            tree = self.parentItem()
-            if not tree:
-                return x, y, z
-            tx, ty, tz = tree.current_position
-            return x + tx, y + ty, z + tz
-        elif len(position) == 2:
-            x, y = position
-            tree = self.parentItem()
-            if not tree:
-                return x, y
-            tx, ty, tz = tree.current_position
-            return x + tx, y + ty
+        x, y = position
+        tree = self.parentItem()
+        if not tree:
+            return x, y
+        tx, ty = tree.current_position
+        return x + tx, y + ty
 
     def scene_position_to_tree_position(self, scene_pos):
-        """ Return scene position converted to coordinate system used by this node trees. Works for xy and xyz -tuples.
+        """ Return scene position converted to coordinate system used by this node trees. Works for xy  -tuples.
 
         :param scene_pos:
         :return:
         """
-        if len(scene_pos) == 3:
-            x, y, z = scene_pos
-            tree = self.parentItem()
-            if (not tree) or not hasattr(tree, 'current_position'):
-                return x, y, z
-            tx, ty, tz = tree.current_position
-            return x - tx, y - ty, z - tz
-        elif len(scene_pos) == 2:
-            x, y = scene_pos
-            tree = self.parentItem()
-            if not tree:
-                return x, y
-            tx, ty, tz = tree.current_position
-            return x - tx, y - ty
+        x, y = scene_pos
+        tree = self.parentItem()
+        if not tree:
+            return x, y
+        tx, ty = tree.current_position
+        return x - tx, y - ty
 
 
     # ### Children and parents
@@ -1184,8 +1167,8 @@ syntactic_object: %s
         :return:
         """
         self.folding_towards = node
-        x, y, z = node.current_position
-        self.move_to(x, y, z, after_move_function=self.finish_folding, can_adjust=False)
+        x, y = node.current_position
+        self.move_to(x, y, after_move_function=self.finish_folding, can_adjust=False)
         if ctrl.is_selected(self):
             ctrl.remove_from_selection(self)
         ctrl.forest.animation_started(self.save_key+'_fold')
@@ -1225,16 +1208,16 @@ syntactic_object: %s
             shape_name = ctrl.fs.edge_info(edge_type, 'shape_name')
             presets = kataja.shapes.SHAPE_PRESETS[shape_name]
             method = presets['method']
-            path, lpath, foo = method(start_point=(center, top, self.z),
-                                      end_point=(right, bottom, self.z),
+            path, lpath, foo = method(start_point=(center, top),
+                                      end_point=(right, bottom),
                                       alignment=g.RIGHT, **presets)
             if presets['fill']:
                 painter.fillPath(path, c)
             else:
                 painter.drawPath(path)
             painter.drawLine(left, bottom, right, bottom)
-            path, lpath, foo = method(start_point=(center, top, self.z),
-                                      end_point=(left, bottom, self.z),
+            path, lpath, foo = method(start_point=(center, top),
+                                      end_point=(left, bottom),
                                       alignment=g.LEFT, **presets)
             if presets['fill']:
                 painter.fillPath(path, c)
@@ -1285,14 +1268,14 @@ syntactic_object: %s
                 self._magnets = [(-w2, -h2), (-w4, -h2), (0, -h2), (w4, -h2), (w2, -h2), (-w2, 0),
                                  (w2, 0), (-w2, h2), (-w4, h2), (0, h2), (w4, h2), (w2, h2)]
 
-            x1, y1, z1 = self.current_scene_position
+            x1, y1 = self.current_scene_position
             x2, y2 = self._magnets[n]
             if prefs.use_magnets == 2:
                 parents = list(self.get_parents())
                 # We don't want to rotate multidominated or top nodes
                 if len(parents) == 1:
                     # Compute angle to parent
-                    px, py, pz = parents[0].current_scene_position
+                    px, py = parents[0].current_scene_position
                     dx, dy = x1 - px, y1 - py
                     r = -math.atan2(dy, dx) + (math.pi / 2)
                     # Rotate magnet coordinates according to angle
@@ -1306,7 +1289,7 @@ syntactic_object: %s
                     #else:
                     x2 = x * cos_r + y * sin_r
                     y2 = -x * sin_r + y * cos_r
-            return x1 + x2, y1 + y2, z1
+            return x1 + x2, y1 + y2
         else:
             return self.current_scene_position
 
@@ -1493,7 +1476,7 @@ syntactic_object: %s
             dx, dy = d.distance_from_pointer
             p = self.parentItem()
             if p:
-                px, py, pz = p.current_position
+                px, py = p.current_position
                 super().dragged_to((nx + dx - px, ny + dy - py))
             else:
                 super().dragged_to((nx + dx, ny + dy))

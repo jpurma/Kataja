@@ -69,7 +69,6 @@ class WindDriftTree(BaseVisualization):
         if node.node_type != g.CONSTITUENT_NODE:
             node.physics_x = False
             node.physics_y = False
-            node.physics_z = False
 
     def _draw_wind_drift_tree(self, topmost_node):
 
@@ -89,7 +88,7 @@ class WindDriftTree(BaseVisualization):
                 if not children:  # bottom level nodes
                     x, y = self._last_pos
                     if self._leftmost:  # this isn't bottom right node
-                        lx, y, z = self._leftmost.current_position
+                        lx, y = self._leftmost.current_position
                         x = lx - self._leftmost.width / 2 - node.width / 2
                     self._leftmost = node
                 else:

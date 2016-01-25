@@ -59,11 +59,11 @@ class AsymmetricElasticTree(BaseVisualization):
         """
         xvel = 0.0
         yvel = 0.0
-        node_x, node_y, node_z = node.current_position  # @UnusedVariable
+        node_x, node_y = node.current_position  # @UnusedVariable
         for other in self.forest.visible_nodes():
             if other is node:
                 continue
-            other_x, other_y, other_z = other.current_position  # @UnusedVariable
+            other_x, other_y = other.current_position  # @UnusedVariable
             #print 'others: ', other_x, other_y, other_z
             dist_x, dist_y = int(node_x - other_x), int(node_y - other_y)
             dist2 = (dist_x * dist_x) + (dist_y * dist_y)
@@ -80,8 +80,8 @@ class AsymmetricElasticTree(BaseVisualization):
             else:
                 target_d_x = -prefs.edge_width
             target_d_y = -15
-            start_x, start_y, start_z = edge.start_point  # @UnusedVariable
-            end_x, end_y, end_z = edge.end_point  # @UnusedVariable
+            start_x, start_y = edge.start_point  # @UnusedVariable
+            end_x, end_y = edge.end_point  # @UnusedVariable
             d_x = start_x - end_x
             d_y = start_y - end_y
             rd_x = target_d_x - d_x
@@ -97,8 +97,8 @@ class AsymmetricElasticTree(BaseVisualization):
             else:
                 target_d_x = prefs.edge_width
             target_d_y = 15
-            start_x, start_y, start_z = edge.start_point  # @UnusedVariable
-            end_x, end_y, end_z = edge.end_point  # @UnusedVariable
+            start_x, start_y = edge.start_point  # @UnusedVariable
+            end_x, end_y = edge.end_point  # @UnusedVariable
             d_x = end_x - start_x
             d_y = end_y - start_y
             rd_x = target_d_x - d_x

@@ -414,25 +414,11 @@ def import_plugins(prefs, plugins_path):
     print('Modules imported from plugins: %s' % list(prefs.plugins.keys()))
 
 
-def add_xyz(a, b):
-    """
-    :rtype : tuple
-    """
-    return a[0] + b[0], a[1] + b[1], a[2] + b[2]
-
-
 def add_xy(a, b):
     """
     :rtype : tuple
     """
     return a[0] + b[0], a[1] + b[1]
-
-
-def sub_xyz(a, b):
-    """
-    :rtype : tuple
-    """
-    return a[0] - b[0], a[1] - b[1], a[2] - b[2]
 
 
 def sub_xy(a, b):
@@ -442,27 +428,18 @@ def sub_xy(a, b):
     return a[0] - b[0], a[1] - b[1]
 
 
-def div_xyz(a, div):
+def div_xy(a, div):
     """
     :rtype : tuple
     """
-    return a[0] / div, a[1] / div, a[2] / div
+    return a[0] / div, a[1] / div
 
 
-def multiply_xyz(a, mul):
+def multiply_xy(a, mul):
     """
     :rtype : tuple
     """
-    return a[0] * mul, a[1] * mul, a[2] * mul
-
-
-def tuple2_to_tuple3(a):
-    """ Turn 2-tuple to 3-tuple, use 0 for third value.
-    :param a:
-    :rtype: tuple
-    """
-    return a[0], a[1], 0
-
+    return a[0] * mul, a[1] * mul
 
 def open_symbol_data(mimedata):
     # strange fuckery required

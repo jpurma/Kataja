@@ -92,7 +92,7 @@ class FeatureNode(Node):
         If not, then some random noise is added to prevent features sticking together
         :param host:
         """
-        x, y, z = host.current_position
+        x, y = host.current_position
         k = self.syntactic_object.key
         if k in color_map:
             x += color_map[k]
