@@ -73,7 +73,7 @@ edit box is open (two end points move).
 + Clicking top nodes is often impossible as toucharea hitboxes cover the node.
 - Very long node labels break visualizations:
     - SpirallingTree, maximum recursion depth
-    - LeftFirstTree, setting trees side by side
+    + LeftFirstTree, setting trees side by side
 + Creating comment with NewElementEmbed leaves the comment text empty
     + NotImplementedError: QGraphicsObject.paint() is abstract and must be overridden
     + Textarea in comment editing updates/paints poorly

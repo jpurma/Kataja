@@ -555,6 +555,7 @@ class Forest(BaseModel):
     @staticmethod
     def compute_projection_chains_for(head):
         chains = []
+
         def chain_up(this_chain, node, head):
             this_chain.append(node)
             ends_here = True
@@ -564,7 +565,12 @@ class Forest(BaseModel):
                     chain_up(list(this_chain), parent, head)
             if ends_here and len(this_chain) > 1:
                 chains.append(this_chain)
-        chain_up([], head, head)
+        worth_trying = False
+        for parent in head.get_parents(only_similar=True, only_visible=False):
+            if parent.head is head:
+                worth_trying = True
+        if worth_trying:
+            chain_up([], head, head)
         return chains
 
     def remove_projection(self, head):
@@ -589,12 +595,11 @@ class Forest(BaseModel):
 
         # We want to keep using existing projection objects as much as possible so they won't change
         # colors randomly
-        constituent_nodes = [x for x in self.nodes.values() if x.node_type == g.CONSTITUENT_NODE]
         old_heads = set([x.head for x in self.projections.values()])
 
         new_heads = set()
-        for node in constituent_nodes:
-            if node.head is node:
+        for node in self.nodes.values():
+            if node.node_type == g.CONSTITUENT_NODE and node.head is node:
                 chains = Forest.compute_projection_chains_for(node)
                 if chains:
                     new_heads.add(node)
