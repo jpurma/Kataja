@@ -391,7 +391,6 @@ def print_transform(transform):
     print('isRotating:%s isScaling:%s isTranslating:%s' % (t.isRotating(), t.isScaling(), t.isTranslating()))
 
 
-
 def import_plugins(prefs, plugins_path):
     """ Find the plugins dir for the running configuration and import all found modules to plugins -dict.
     :return: None
@@ -440,6 +439,7 @@ def multiply_xy(a, mul):
     :rtype : tuple
     """
     return a[0] * mul, a[1] * mul
+
 
 def open_symbol_data(mimedata):
     # strange fuckery required

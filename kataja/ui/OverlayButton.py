@@ -27,6 +27,8 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from kataja.errors import UIError
 from kataja.singletons import ctrl, qt_prefs
 import kataja.globals as g
+from kataja.ui.TouchArea import TouchArea
+from kataja.utils import time_me
 
 borderstyle = """
 PanelButton {border: 1px transparent none}
@@ -225,6 +227,7 @@ class RemoveMergerButton(OverlayButton):
         self.host.hovering = False
         OverlayButton.leaveEvent(self, event)
 
+
 class AmoebaOptionsButton(OverlayButton):
 
     def __init__(self, host, ui_key, parent=None):
@@ -241,11 +244,24 @@ class AmoebaOptionsButton(OverlayButton):
         self.edge = None
 
     def update_position(self):
-        """ """
-        adjust = QtCore.QPointF(4, -19)
-        br = self.host.boundingRect()
-        p = ctrl.main.graph_view.mapFromScene(self.host.top_right_point()) + adjust
-        self.move(p.toPoint())
+        """ Tries to find an unoccupied position in the radius of the group """
+        candidates = self.host.clockwise_path_points(8)
+        if not candidates:
+            return
+        scene_size = ctrl.main.graph_view.mapToScene(self.width() / 2, self.height() / 2) - ctrl.main.graph_view.mapToScene(0, 0)
+        w2 = scene_size.x()
+        h2 = scene_size.y()
+        for x, y in candidates:
+            overlap = False
+            items = ctrl.graph_scene.items(QtCore.QPointF(x - w2, y - h2))
+            for item in items:
+                if isinstance(item, TouchArea):
+                    overlap = True
+                    break
+            if not overlap:
+                break
+        p = ctrl.main.graph_view.mapFromScene(x - w2, y - h2)
+        self.move(p)
 
 button_definitions = {g.REMOVE_MERGER: RemoveMergerButton, g.AMOEBA_OPTIONS: AmoebaOptionsButton}
 

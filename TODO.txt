@@ -86,6 +86,7 @@ edit box is open (two end points move).
 + There should be a possibility for one head to start more than one projection chain if it is
 remerged to another position. Projections need to be refactored for that.
 + Add node to top -toucharea is ugly with long nodes
++ Sometimes group options button overlaps with add leaf -touchareas
 
 ADD:
 

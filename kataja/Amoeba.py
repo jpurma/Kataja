@@ -10,6 +10,7 @@ from kataja.utils import time_me
 
 points = 36
 
+
 class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
 
     def __init__(self, selection=None, persistent=True):
@@ -23,6 +24,7 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
         self._skip_this = not persistent
         self._selected = False
         self.points = []
+        self.center_point = None
         self.outline = False
         self.fill = True
         self.color_key = ''
@@ -59,7 +61,8 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
         """
         self.selection = source.selection
         self.selection_with_children = source.selection_with_children
-        self.points = source.points
+        self.points = list(source.points)
+        self.center_point = source.center_point
         self.outline = source.outline
         self.fill = source.fill
         self.color_key = source.color_key
@@ -160,6 +163,7 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
         if len(sel) == 0:
             self._br = QtCore.QRectF()
             self.path = None
+            self.center_point = None
             return
         elif len(sel) == 1:
             x1, y1, x2, y2, route = embellished_corners(sel[0])
@@ -169,7 +173,8 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
                 self.path.lineTo(x, y)
             self.path.closeSubpath()
             center = self._br.center()
-            cx, cy = center.x(), center.y()
+            self.center_point = center.x(), center.y()
+            cx, cy = self.center_point
 
         else:
             corners = []
@@ -200,6 +205,7 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
             self._br = QtCore.QRectF(min_x, min_y, max_x - min_x, max_y - min_y)
             cx = (min_x + max_x) / 2
             cy = (min_y + max_y) / 2
+            self.center_point = cx, cy
             r = max(max_x - min_x, max_y - min_y) * 1.1
             dots = 32
             step = 2 * math.pi / dots
@@ -292,20 +298,46 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
     def update_position(self):
         self.update_shape()
 
-    def top_right_point(self):
+    def clockwise_path_points(self, margin=2):
+        """ Return points along the path circling the group. A margin can be provided to make the
+        points be n points away from the path. Points start from the topmost, rightmost point.
+        :param margin:
+        :return:
+        """
         if not self.path:
             return QtCore.QPointF(0, 0)  # hope this group will be removed immediately
         max_x = -30000
         min_y = 30000
+        start_i = 0
+        ppoints = []
+        cx, cy = self.center_point
+        better_path = [] # lets have not only corners, but also points along the edges
+        last_element = self.path.elementAt(self.path.elementCount()-1)
+        last_x = last_element.x
+        last_y = last_element.y
         for i in range(0, self.path.elementCount()):
             element = self.path.elementAt(i)
-            if element.y < min_y:
-                min_y = element.y
-                max_x = element.x
-            elif element.y == min_y and element.x > max_x:
-                min_y = element.y
-                max_x = element.x
-        return QtCore.QPointF(max_x, min_y)
+            x = element.x
+            y = element.y
+            better_path.append(((last_x + x) / 2, (last_y + y) / 2))
+            better_path.append((x, y))
+            last_x = x
+            last_y = y
+
+        for i, (x, y) in enumerate(better_path):
+            if margin != 0:
+                dx = x - cx
+                dy = y - cy
+                d = math.hypot(dx, dy)
+                change = (d + margin) / d  # should return values like 1.08
+                x = cx + (dx * change)
+                y = cy + (dy * change)
+            ppoints.append((x, y))
+            if y < min_y or (y == min_y and x > max_x):
+                min_y = y
+                max_x = x
+                start_i = i
+        return ppoints[start_i:] + ppoints[:start_i]
 
     def boundingRect(self):
         if not self._br:
