@@ -1623,8 +1623,10 @@ def key_backspace():
     for contexts that don't otherwise grab keyboard.
     :return: None
     """
-    for item in ctrl.selected:
+    ctrl.multiselection_start() # don't update selections until all are removed
+    for item in list(ctrl.selected):
         ctrl.forest.delete_item(item)
+    ctrl.multiselection_end() # ok go update
 
 
 a['key_backspace'] = {'command': 'key_backspace', 'method': key_backspace,

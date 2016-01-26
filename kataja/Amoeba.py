@@ -108,7 +108,7 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
             if self.persistent:
                 ctrl.forest.remove_group(self)
             else:
-                pass
+                ctrl.ui.remove_ui_for(self)
 
     def add_node(self, node):
         """ Manual addition of single node

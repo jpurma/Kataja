@@ -262,7 +262,7 @@ class Controller:
         if not self.multiselection_delay:
             self.call_watchers(self, 'selection_changed', value=self.selected)
 
-    def add_to_selection(self, obj, call_watchers=True):
+    def add_to_selection(self, obj):
         """
 
         :param obj:
@@ -290,7 +290,7 @@ class Controller:
         if hasattr(obj, 'on_press'):
             obj.on_press(True)
 
-    def remove_from_selection(self, obj, call_watchers=True):
+    def remove_from_selection(self, obj):
         """
 
         :param obj:

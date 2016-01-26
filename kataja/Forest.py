@@ -1069,6 +1069,8 @@ class Forest(BaseModel):
         self.remove_from_scene(node)
         # -- undo stack --
         node.announce_deletion()
+        # -- remove from selection
+        ctrl.remove_from_selection(node)
         # -- remove circularity block
         self._marked_for_deletion.remove(node)
 
@@ -2066,6 +2068,7 @@ class Forest(BaseModel):
 
     def remove_group(self, amoeba):
         self.remove_from_scene(amoeba)
+        ctrl.ui.remove_ui_for(amoeba)
         if amoeba.save_key in self.groups:
             self.poke('groups')
             del self.groups[amoeba.save_key]

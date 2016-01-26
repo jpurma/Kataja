@@ -61,6 +61,7 @@ from kataja.ui.panels.SymbolPanel import SymbolPanel
 from kataja.ui.panels.VisualizationOptionsPanel import VisualizationOptionsPanel
 from kataja.ui.panels.VisualizationPanel import VisualizationPanel
 from kataja.visualizations.available import VISUALIZATIONS, action_key
+from kataja.utils import time_me
 
 NOTHING = 0
 SELECTING_AREA = 1
