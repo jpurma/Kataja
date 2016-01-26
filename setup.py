@@ -19,6 +19,10 @@ import shutil
 import sys
 from setuptools import setup
 from subprocess import call
+try:
+    import postsetup
+except ImportError:
+    postsetup = None
 
 mainscript = 'Kataja.py'
 trim_to_64bit = True
@@ -233,3 +237,12 @@ if sys.platform == 'darwin':
         call("hdiutil create -srcfolder %s/dist/Kataja.app Kataja.dmg" % setup_dir, shell=True)
 
     print('---- Done ----')
+
+    print('--- If available, run post setup tasks')
+    if postsetup:
+        postsetup.do_post_setup_tasks()
+        print('---- Done ----')
+    else:
+        print('   --- No post setup tasks found ---')
+
+

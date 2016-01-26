@@ -234,3 +234,5 @@ resources/icons/temp/
 *.dmg
 
 kataja_print*.png
+
+postsetup.py

@@ -112,6 +112,12 @@ class Preferences(object):
                                   'help': 'Force user interface to use at least 14pt font.',
                                   'on_change': 'resize_ui_font', 'order': 40}
 
+        self.auto_zoom = False
+        self._auto_zoom_ui = {'tab': 'General',
+                              'label': 'Automatic zoom in',
+                              'help': 'Fit the zoom level to tree size when the tree changes',
+                              'order': 41}
+
         self.visualization = 'Left first trees'
         self._visualization_ui = {'tab': 'Drawing', 'special': 'visualizations',
                                   'help': 'Default visualization for new trees.',

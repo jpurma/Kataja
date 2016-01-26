@@ -296,7 +296,6 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         """ Timer event only for printing, for 'snapshot' effect
         :param event:
         """
-        print('print timer event called ', event, event.timerId(), event.type())
         def find_path(fixed_part, extension, counter=0):
             """ Generate file names until free one is found
             :param fixed_part: blah

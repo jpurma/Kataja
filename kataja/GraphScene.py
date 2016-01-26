@@ -37,6 +37,7 @@ from kataja.utils import to_tuple, sub_xy, div_xy, time_me, open_symbol_data
 from kataja.ui import TouchArea
 import kataja.globals as g
 
+
 # from BlenderExporter import export_visible_items
 
 class GraphScene(QtWidgets.QGraphicsScene):
@@ -95,13 +96,19 @@ class GraphScene(QtWidgets.QGraphicsScene):
     def fit_to_window(self, force=False):
         """ Calls up to graph view and makes it to fit all visible items here
         to view window."""
-        vr = self.visible_rect()
+        mw = prefs.edge_width
+        mh = prefs.edge_height
+        margins = QtCore.QMarginsF(mw, mh, mw, mh)
+        vr = self.visible_rect() + margins
         if self._cached_visible_rect and not force:
             if vr != self._cached_visible_rect:
-                self.graph_view.instant_fit_to_view(vr)
+                if prefs.auto_zoom or vr.width() > self._cached_visible_rect.width() or vr.height() > self._cached_visible_rect.height():
+                    self.graph_view.instant_fit_to_view(vr)
+                    self._cached_visible_rect = vr
+
         else:
             self.graph_view.instant_fit_to_view(vr)
-        self._cached_visible_rect = vr
+            self._cached_visible_rect = vr
 
     def visible_rect(self):
         """ Counts all visible items in scene and returns QRectF object
@@ -122,8 +129,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 y_min = miny
             if maxy > y_max:
                 y_max = maxy
-        return QtCore.QRectF(QtCore.QPoint(x_min, y_min),
-                             QtCore.QPoint(x_max, y_max))
+        return QtCore.QRectF(QtCore.QPoint(x_min, y_min), QtCore.QPoint(x_max, y_max))
         # return self.itemsBoundingRect()
 
     def item_moved(self):
@@ -132,7 +138,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         """
         if not self._timer_id:
             self._timer_id = self.startTimer(prefs._fps_in_msec)
-            #print('item_moved timer id:', self._timer_id)
+            # print('item_moved timer id:', self._timer_id)
 
     start_animations = item_moved
 
@@ -172,10 +178,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
         # ############### Absolute left/right/up/down ###############################
         # if nothing is selected, select the edgemost item from given direction
         if not ctrl.selected:
-            selectables = [(item, to_tuple(item.sceneBoundingRect().center()))
-                           for item in self.items() if
-                           getattr(item, 'selectable',
-                                   False) and item.is_visible()]
+            selectables = [(item, to_tuple(item.sceneBoundingRect().center())) for item in
+                           self.items() if getattr(item, 'selectable', False) and item.is_visible()]
             if direction == 'left':
                 sortable = [(po[0], po[1], it) for it, po in selectables]
                 x, y, item = min(sortable)
@@ -201,7 +205,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             if isinstance(current, Node):
                 if direction == 'left':
                     lefts = list(
-                            current.get_edges_down(similar=True, visible=True, alignment=g.LEFT))
+                        current.get_edges_down(similar=True, visible=True, alignment=g.LEFT))
                     if len(lefts) == 1:
                         ctrl.select(lefts[0])
                         return lefts[0]
@@ -235,12 +239,10 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         best = current.end
                         found = True
                 elif isinstance(current, TouchArea):
-                    if current.type == g.RIGHT_ADD_TOP and \
-                            current.host.top_left_touch_area:
+                    if current.type == g.RIGHT_ADD_TOP and current.host.top_left_touch_area:
                         best = current.host.top_left_touch_area
                         found = True
-                    elif current.type == g.RIGHT_ADD_SIBLING and \
-                            current.host.left_touch_area:
+                    elif current.type == g.RIGHT_ADD_SIBLING and current.host.left_touch_area:
                         best = current.host.left_touch_area
                         found = True
                 if not found:
@@ -252,8 +254,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         dx = ix - x
                         dy = iy - y
                         dxy = (dx * dx) + (2 * dy * dy)
-                        if (dx < 0 and (dxy < min_xy)) or \
-                           (dx == 0 and dy < 0 and (dxy < min_xy)):
+                        if (dx < 0 and (dxy < min_xy)) or (dx == 0 and dy < 0 and (dxy < min_xy)):
                             min_x = dx
                             min_y = dy
                             min_xy = dxy
@@ -276,12 +277,10 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         best = current.end
                         found = True
                 elif isinstance(current, TouchArea):
-                    if current.type == g.LEFT_ADD_TOP and \
-                            current.host.top_right_touch_area:
+                    if current.type == g.LEFT_ADD_TOP and current.host.top_right_touch_area:
                         best = current.host.top_right_touch_area
                         found = True
-                    elif current.type == g.LEFT_ADD_SIBLING and \
-                            current.host.right_touch_area:
+                    elif current.type == g.LEFT_ADD_SIBLING and current.host.right_touch_area:
                         best = current.host.right_touch_area
                         found = True
                 if not found:
@@ -293,8 +292,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         dx = ix - x
                         dy = iy - y
                         dxy = (dx * dx) + (2 * dy * dy)
-                        if (dx > 0 and (dxy < min_xy)) or (
-                                    dx == 0 and dy > 0 and (dxy < min_xy)):
+                        if (dx > 0 and (dxy < min_xy)) or (dx == 0 and dy > 0 and (dxy < min_xy)):
                             min_x = dx
                             min_y = dy
                             min_xy = dxy
@@ -319,8 +317,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         dx = ix - x
                         dy = iy - y
                         dxy = (dx * dx * 2) + (dy * dy)
-                        if (dy < 0 and (dxy < min_xy)) or (
-                                    dy == 0 and dx < 0 and (dxy < min_xy)):
+                        if (dy < 0 and (dxy < min_xy)) or (dy == 0 and dx < 0 and (dxy < min_xy)):
                             min_x = dx
                             min_y = dy
                             min_xy = dxy
@@ -347,8 +344,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         dxy = (dx * dx * 2) + (dy * dy)
                         # if dy > 0 and ((dy < min_y) or (dy == min_y and (dx > 0
                         #  and dx < min_x ))):
-                        if (dy > 0 and (dxy < min_xy)) or (
-                                    dy == 0 and dx > 0 and (dxy < min_xy)):
+                        if (dy > 0 and (dxy < min_xy)) or (dy == 0 and dx > 0 and (dxy < min_xy)):
                             min_x = dx
                             min_y = dy
                             min_xy = dxy
@@ -466,8 +462,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 ctrl.pressed.drag(event)
                 self.item_moved()
                 items = (x for x in self.items(event.scenePos()) if
-                         hasattr(x, 'dragged_over_by') and x is not
-                         ctrl.pressed)
+                         hasattr(x, 'dragged_over_by') and x is not ctrl.pressed)
                 hovering_over = False
                 for item in items:
                     if item.dragged_over_by(ctrl.pressed):
@@ -476,8 +471,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                     ctrl.set_drag_hovering(None)
                 self.main.ui_manager.update_positions()
             else:
-                if (event.buttonDownScenePos(
-                        QtCore.Qt.LeftButton) - event.scenePos(
+                if (event.buttonDownScenePos(QtCore.Qt.LeftButton) - event.scenePos(
 
                 )).manhattanLength() > 6:
                     self.start_dragging()
@@ -504,8 +498,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             pressed = ctrl.pressed  # : :type pressed: Movable
             x, y = to_tuple(event.scenePos())
             if self._dragging:
-                recipient = self.get_drop_recipient(pressed,
-                                                    event)  # @UndefinedVariable
+                recipient = self.get_drop_recipient(pressed, event)  # @UndefinedVariable
                 message = pressed.drop_to(x, y, recipient=recipient)
                 self.kill_dragging()
                 ctrl.ui.update_selections()  # drag operation may have
@@ -542,8 +535,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
                     only_nodes = True
                     break
             for item in self.selectedItems():
-                if ((not only_nodes) or isinstance(item, Node)) and \
-                        getattr(item, 'selectable', False):
+                if ((not only_nodes) or isinstance(item, Node)) and getattr(item, 'selectable',
+                                                                            False):
                     item.select(event, multi=True)
             ctrl.multiselection_end()
         return QtWidgets.QGraphicsScene.mouseReleaseEvent(self, event)
@@ -576,8 +569,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         node_type = int(node_type)
                     except TypeError:
                         pass
-                    ctrl.ui.prepare_touch_areas_for_dragging(
-                        dragged_type=node_type)
+                    ctrl.ui.prepare_touch_areas_for_dragging(dragged_type=node_type)
                 else:
                     print('received unknown command:', command, args)
 
@@ -604,8 +596,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 if data and 'char' in data:
                     event.acceptProposedAction()
                     node = ctrl.forest.create_node(pos=event.scenePos(),
-                                                   node_type=g.CONSTITUENT_NODE,
-                                                   text=data['char'])
+                                                   node_type=g.CONSTITUENT_NODE, text=data['char'])
                     node.current_position = event.scenePos().x(), event.scenePos().y()
                     node.lock()
                     ctrl.main.action_finished('Created constituent "%s"' % node)
@@ -621,8 +612,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                             node_type = int(node_type)
                         except TypeError:
                             pass
-                        node = ctrl.forest.create_node(pos=event.scenePos(),
-                                                       node_type=node_type)
+                        node = ctrl.forest.create_node(pos=event.scenePos(), node_type=node_type)
                         node.current_position = event.scenePos().x(), event.scenePos().y()
                         node.lock()
                         ctrl.main.action_finished('added %s' % args[0])
@@ -646,9 +636,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         if not event.isAccepted():
             data = event.mimeData()
             event.accept()
-            if data.hasFormat(
-                    "application/x-qabstractitemmodeldatalist") or \
-                    data.hasFormat(
+            if data.hasFormat("application/x-qabstractitemmodeldatalist") or data.hasFormat(
                 "text/plain"):
                 event.acceptProposedAction()
 
@@ -685,7 +673,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         self._fade_steps = 7
         if not self._timer_id:
             self._timer_id = self.startTimer(prefs._fps_in_msec)
-            #print('fade background timer id:', self._timer_id)
+            # print('fade background timer id:', self._timer_id)
 
         self._fade_steps_list = []
         # oh, os, ov, oa = old_base_color.getRgbF()
@@ -722,9 +710,9 @@ class GraphScene(QtWidgets.QGraphicsScene):
         :param event: timer event? sent by Qt
         """
         # Uncomment to check what is the actual framerate:
-        #n_time = time.time()
-        #print((n_time - self.prev_time) * 1000, prefs._fps_in_msec)
-        #self.prev_time = n_time
+        # n_time = time.time()
+        # print((n_time - self.prev_time) * 1000, prefs._fps_in_msec)
+        # self.prev_time = n_time
         items_have_moved = False
         items_fading = False
         frame_has_moved = False
@@ -732,8 +720,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
         can_normalize = True
         md = {'sum': (0, 0), 'nodes': []}
         ctrl.items_moving = True
-        #print(len(self.items()))
-        #for item in self.items():
+        # print(len(self.items()))
+        # for item in self.items():
         #    if getattr(item, 'is_constituent', False):
         #        print('parent check: ', item, item.parentItem())
         if self._fade_steps:
@@ -772,9 +760,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             avg = div_xy(md['sum'], ln)
             for node in md['nodes']:
                 node.current_position = sub_xy(node.current_position, avg)
-        if items_have_moved and \
-                (not self.manual_zoom) and \
-                (not ctrl.dragged_focus):
+        if items_have_moved and (not self.manual_zoom) and (not ctrl.dragged_focus):
             self.fit_to_window()
 
         if items_have_moved:
@@ -785,10 +771,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 # area.update_position()
             for group in f.groups.values():
                 group.update_shape()
-        if not (items_have_moved or
-                items_fading or
-                frame_has_moved or
-                background_fade):
+        if not (items_have_moved or items_fading or frame_has_moved or background_fade):
             self.stop_animations()
             self.main.ui_manager.get_activity_marker().hide()
             ctrl.items_moving = False

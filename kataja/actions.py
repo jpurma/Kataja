@@ -320,7 +320,7 @@ def print_to_file():
                                 ctrl.cm.selection())
     sc.update()
     ctrl.graph_view.repaint()
-    ctrl.main.print_started = False  # to avoid a bug where other timers end up triggering main's
+    ctrl.main.print_started = True  # to avoid a bug where other timers end up triggering main's
     ctrl.main.startTimer(50)
 
 

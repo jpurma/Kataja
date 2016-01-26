@@ -87,6 +87,10 @@ edit box is open (two end points move).
 remerged to another position. Projections need to be refactored for that.
 + Add node to top -toucharea is ugly with long nodes
 + Sometimes group options button overlaps with add leaf -touchareas
++ Zoom makes things too big with small trees
++ Too much zoom in small trees. There should be no changes in zooming when doing operations by default.
+- Group options icon visible after deletion
+
 
 ADD:
 
@@ -119,3 +123,4 @@ ADD:
     + Respect removal/changes in nodes within the selection/group
 - Bones mode
 + remove z-dimension as unnecessary complication
++ Improved version changes announcements
