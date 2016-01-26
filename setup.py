@@ -27,7 +27,8 @@ except ImportError:
 mainscript = 'Kataja.py'
 trim_to_64bit = True
 do_signing = True
-create_dmg = True
+create_dmg = False
+run_postsetup = True
 developer_cert_config = '../certs/app_developer.txt'
 
 qt_mac = '~/Qt/5.5/clang_64/'
@@ -81,6 +82,11 @@ version_long = version[0].strip()
 version_short = version_long.split('|')[1].strip()
 version_pep440 = "0." + version_short[2:].strip()
 
+setup_dir = os.path.realpath(__file__)
+filename = __file__.split('/')[-1]
+setup_dir = setup_dir[:-len(filename)]
+print('setup_dir:', setup_dir)
+
 if sys.platform == 'darwin':
     plist = {'CFBundleVersion': version_long, 'CFBundleShortVersionString': version_short,
              'CFBundleIdentifier': 'fi.aalto.jpurma.Kataja', 'NSHumanReadableCopyright': '© 2015 Jukka Purma, GNU General Public License 3'}
@@ -93,6 +99,11 @@ if sys.platform == 'darwin':
         raise EnvironmentError('Qt not found from given path ( "%s" => "%s" ). '
                                'Edit qt_mac variable in setup.py to match your Qt directory.' %
                                (qt_mac, os.path.expanduser(qt_mac)))
+    old_app_dir = setup_dir + 'dist/Kataja.app'
+    if os.access(old_app_dir, os.F_OK):
+        print('Deleting old version... ', old_app_dir)
+        shutil.rmtree(old_app_dir)
+
 
 elif sys.platform == 'win32':
     import py2exe
@@ -124,10 +135,6 @@ setup(name="Kataja", **extra_options)
 if sys.platform == 'darwin':
     print('------- Making OS X-specific fixes to application bundle --------')
     qt_base = os.path.expanduser(qt_mac)
-    setup_dir = os.path.realpath(__file__)
-    filename = __file__.split('/')[-1]
-    setup_dir = setup_dir[:-len(filename)]
-    print('setup_dir:', setup_dir)
     app_contents = setup_dir + 'dist/Kataja.app/Contents/'
     print('qt_base:', qt_base)
     print('app_contents:', app_contents)
@@ -160,6 +167,19 @@ if sys.platform == 'darwin':
             if os.access(path, os.F_OK):
                 print('Deleting... ', path)
                 os.remove(path)
+
+    print('-------deleting Header files of frameworks, if they are included...')
+    header_folders = ['%s.framework/Headers', '%s.framework/Versions/5/Headers']
+    for framework in frameworks + ['QtDBus']:
+        path = '%sFrameworks/%s.framework/Headers' % (app_contents, framework)
+        if os.access(path, os.F_OK):
+            print('Deleting symlink... ', path)
+            os.remove(path)
+        path = '%sFrameworks/%s.framework/Versions/5/Headers' % (app_contents, framework)
+        if os.access(path, os.F_OK):
+            print('Deleting path... ', path)
+            shutil.rmtree(path)
+
 
     os.makedirs(app_contents + 'plugins/platforms', exist_ok=True)
     print('-------Copying libqcocoa.dylib to app...')
@@ -238,11 +258,12 @@ if sys.platform == 'darwin':
 
     print('---- Done ----')
 
-    print('--- If available, run post setup tasks')
-    if postsetup:
-        postsetup.do_post_setup_tasks()
-        print('---- Done ----')
-    else:
-        print('   --- No post setup tasks found ---')
+    if run_postsetup:
+        print('--- If available, run post setup tasks')
+        if postsetup:
+            postsetup.do_post_setup_tasks()
+            print('---- Done ----')
+        else:
+            print('   --- No post setup tasks found ---')
 
 

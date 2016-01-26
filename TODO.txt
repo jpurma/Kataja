@@ -90,7 +90,7 @@ remerged to another position. Projections need to be refactored for that.
 + Zoom makes things too big with small trees
 + Too much zoom in small trees. There should be no changes in zooming when doing operations by default.
 + Group options icon visible after deletion, deleted objects remained in selection
-
++ OS X setup script removes unnecessary header files
 
 ADD:
 
