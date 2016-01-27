@@ -313,10 +313,10 @@ class BaseModel(object):
             #    continue
             old, new = value
             setattr(self, key, old)
-            if len(str(new)) < 80:
-                print('%s  %s: %s <- %s' % (self.save_key, key, old, new))
-            else:
-                print('%s %s: (long) <- (long)' % (self.save_key, key))
+            #if len(str(new)) < 80:
+            #    print('%s  %s: %s <- %s' % (self.save_key, key, old, new))
+            #else:
+            #    print('%s %s: (long) <- (long)' % (self.save_key, key))
 
     def move_to_later(self, transitions):
         """ Move to later version with a given changes -dict
@@ -330,32 +330,19 @@ class BaseModel(object):
             #    continue
             old, new = value
             setattr(self, key, new)
-            if len(str(new)) < 80:
-                print('%s  %s: %s -> %s' % (self.save_key, key, old, new))
-            else:
-                print('%s %s: (long) -> (long)' % (self.save_key, key))
+            #if len(str(new)) < 80:
+            #    print('%s  %s: %s -> %s' % (self.save_key, key, old, new))
+            #else:
+            #    print('%s %s: (long) -> (long)' % (self.save_key, key))
 
-    def update_model(self, changed_fields, transition_type, doing_undo=True):
-        """ Runs the after_model_update that should do the necessary
-        derivative calculations and graphical updates
-        after the model has been changed by redo/undo.
-        updates are run as a batch after all of the objects have had their
-        model values updated.
-        :param changed_fields: dict of changes, same as in revert/move
-        :param transition_type: 0:edit, 1:CREATED, 2:DELETED
-        :param doing_undo: bool - are we doing undo (True) or redo (False),
-        affects how transition_type is
-        interpreted
+
+    def after_model_update(self, changed_fields, transition_type):
+        """ Override this to update derivative values when restoring objects
+        :param changed_fields:
+        :param transition_type:
         :return:
         """
-        updater = getattr(self, 'after_model_update', None)
-        # a little piece of stupidity here
-        if transition_type == CREATED and doing_undo:
-            transition_type = DELETED
-        elif transition_type == DELETED and doing_undo:
-            transition_type = CREATED
-        if updater:
-            updater(changed_fields, transition_type)
+        pass
 
     def save_object(self, saved_objs, open_refs):
         """ Flatten the object to saveable dict and recursively save the

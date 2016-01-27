@@ -47,6 +47,8 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.triangle_height = 0
         self.triangle_y = 0
         self.setDocument(LabelDocument())
+        #self.setAcceptHoverEvents(False)
+        #self.setTextInteractionFlags(QtCore.Qt.TextEditorInteraction) # TextEditable
         self.setTextWidth(-1)
         self.resizable = False
         self.text_align = CENTER_ALIGN
@@ -137,6 +139,29 @@ class Label(QtWidgets.QGraphicsTextItem):
 
     def get_bottom_row_y(self):
         return self.bottom_row_y
+
+    def focusInEvent(self, event):
+        print('focusInEvent for label')
+        self.grabKeyboard()
+        return QtWidgets.QGraphicsTextItem.focusInEvent(self, event)
+
+    def focusOutEvent(self, event):
+        print('focusOutEvent for label')
+        self.ungrabKeyboard()
+        return QtWidgets.QGraphicsTextItem.focusOutEvent(self, event)
+    #
+    # def hoverEnterEvent(self, event):
+    #     print('hoverEnterEvent for label')
+    #     QtWidgets.QGraphicsTextItem.hoverEnterEvent(self, event)
+    #
+    # def hoverMoveEvent(self, event):
+    #     print('hoverMoveEvent for label')
+    #     QtWidgets.QGraphicsTextItem.hoverMoveEvent(self, event)
+    #
+    # def hoverLeaveEvent(self, event):
+    #     print('hoverLeaveEvent for label')
+    #     QtWidgets.QGraphicsTextItem.hoverLeaveEvent(self, event)
+
 
     def paint(self, painter, option, widget):
         """ Painting is sensitive to mouse/selection issues, but usually with

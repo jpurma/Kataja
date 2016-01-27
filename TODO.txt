@@ -91,6 +91,10 @@ remerged to another position. Projections need to be refactored for that.
 + Too much zoom in small trees. There should be no changes in zooming when doing operations by default.
 + Group options icon visible after deletion, deleted objects remained in selection
 + OS X setup script removes unnecessary header files
++ Alignment of child nodes remains the same when sibling is deleted, when it shouldn't
+- Undoed tree behaved oddly: added node above and below, undoed addition and then tree didn’t allow additions
+    + Fixed many undo issues
+    - Undoing switches between visualizations can cause crashes, and generally don't work
 
 ADD:
 
@@ -124,3 +128,4 @@ ADD:
 - Bones mode
 + remove z-dimension as unnecessary complication
 + Improved version changes announcements
++ Siblings can be easily added to monobranch nodes

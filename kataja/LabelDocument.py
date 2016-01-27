@@ -11,7 +11,6 @@ class LabelDocument(QtGui.QTextDocument):
         QtGui.QTextDocument.__init__(self)
         self.lines = []
 
-
     def clear(self):
         QtGui.QTextDocument.clear(self)
         self.clearUndoRedoStacks()

@@ -129,8 +129,8 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         # self.addToolBar(toolbar)
         gestures = [QtCore.Qt.TapGesture, QtCore.Qt.TapAndHoldGesture, QtCore.Qt.PanGesture,
                     QtCore.Qt.PinchGesture, QtCore.Qt.SwipeGesture, QtCore.Qt.CustomGesture]
-        for gesture in gestures:
-            self.grabGesture(gesture)
+        #for gesture in gestures:
+        #    self.grabGesture(gesture)
 
         self.action_finished()
 
@@ -209,20 +209,20 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         """
         self.ui_manager.add_message(msg)
 
-    def mousePressEvent(self, event):
-        """ KatajaMain doesn't do anything with mousePressEvents, it delegates
-        :param event:
-        them downwards. This is for debugging. """
-        QtWidgets.QMainWindow.mousePressEvent(self, event)
+#    def mousePressEvent(self, event):
+#        """ KatajaMain doesn't do anything with mousePressEvents, it delegates
+#        :param event:
+#        them downwards. This is for debugging. """
+#        QtWidgets.QMainWindow.mousePressEvent(self, event)
 
-    def keyPressEvent(self, event):
-        # if not self.key_manager.receive_key_press(event):
-        """
-
-        :param event:
-        :return:
-        """
-        return QtWidgets.QMainWindow.keyPressEvent(self, event)
+#    def keyPressEvent(self, event):
+#        # if not self.key_manager.receive_key_press(event):
+#        """
+#
+#        :param event:
+#        :return:
+#        """
+#        return QtWidgets.QMainWindow.keyPressEvent(self, event)
 
     # ## Menu management #######################################################
 

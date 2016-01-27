@@ -132,7 +132,7 @@ class Node(Movable):
         self._editing_template = {}
 
         self.label_display_data = {}
-
+        self.setFiltersChildEvents(True)
         self.setAcceptHoverEvents(True)
         # self.setAcceptDrops(True)
         self.setFlag(QtWidgets.QGraphicsObject.ItemSendsGeometryChanges)

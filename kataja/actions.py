@@ -1320,7 +1320,7 @@ def finish_editing_node(sender=None):
     embed.blur_away()
 
 
-a['finish_editing_node'] = {'command': 'Apply changes',
+a['finish_editing_node'] = {'command': 'Save changes to node',
                             'method': finish_editing_node, 'shortcut': 'Return',
                             'sender_arg': True,
                             'shortcut_context': 'parent_and_children'}

@@ -471,9 +471,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
                     ctrl.set_drag_hovering(None)
                 self.main.ui_manager.update_positions()
             else:
-                if (event.buttonDownScenePos(QtCore.Qt.LeftButton) - event.scenePos(
-
-                )).manhattanLength() > 6:
+                if (event.buttonDownScenePos(QtCore.Qt.LeftButton) -
+                        event.scenePos()).manhattanLength() > 6:
                     self.start_dragging()
                     ctrl.pressed.drag(event)
                     self.item_moved()
@@ -579,7 +578,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         :param event:
         """
         ctrl.ui.remove_touch_areas()
-        QtWidgets.QGraphicsScene.dragLeaveEvent(self, event)
+        return QtWidgets.QGraphicsScene.dragLeaveEvent(self, event)
 
     def dropEvent(self, event):
         """ Support dragging of items from their panel containers, e.g. symbols from symbol panel

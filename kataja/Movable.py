@@ -85,14 +85,14 @@ When nodes that don't use physics are dragged, the adjustment.
         BaseModel.__init__(self)
         QtWidgets.QGraphicsObject.__init__(self)
         # Common movement-related elements
-        self.current_position = ((random.random() * 150) - 75, (random.random() * 150) - 75)
+        self._current_position = (random.random() * 150) - 75, (random.random() * 150) - 75
         self._dragged = False
         self.trees = set() # each Movable belongs to some trees, either formed by Movable alone or set
         # of Movables. Tree has abstract position adjustment information.
 
         # MOVE_TO -elements
-        self.target_position = (0, 0)
-        self.adjustment = (0, 0)
+        self.target_position = 0, 0
+        self.adjustment = 0, 0
         self._move_counter = 0
         self._use_easing = True
         self._step = None
@@ -132,6 +132,15 @@ When nodes that don't use physics are dragged, the adjustment.
         :return: None
         """
         self._hovering = False
+
+    @property
+    def current_position(self):
+        return self._current_position
+
+    @current_position.setter
+    def current_position(self, value):
+        self._current_position = value
+        self.setPos(value[0], value[1])
 
     @property
     def current_scene_position(self):
@@ -457,7 +466,7 @@ When nodes that don't use physics are dragged, the adjustment.
     #                #
     # ############## #
 
-    current_position = Saved("current_position", if_changed=_current_position_changed)
+    #current_position = Saved("current_position", if_changed=_current_position_changed)
     target_position = Saved("target_position")
     adjustment = Saved("adjustment")
     use_adjustment = Saved("use_adjustment")

@@ -119,19 +119,19 @@ class GraphView(QtWidgets.QGraphicsView):
 
     # ######### MOUSE ##############
 
-    def mouseReleaseEvent(self, event):
-        """
-
-        :param event:
-        """
-        QtWidgets.QGraphicsView.mouseReleaseEvent(self, event)
-
-    def mouseMoveEvent(self, event):
-        """
-
-        :param event:
-        """
-        QtWidgets.QGraphicsView.mouseMoveEvent(self, event)
+    # def mouseReleaseEvent(self, event):
+    #     """
+    #
+    #     :param event:
+    #     """
+    #     QtWidgets.QGraphicsView.mouseReleaseEvent(self, event)
+    #
+    # def mouseMoveEvent(self, event):
+    #     """
+    #
+    #     :param event:
+    #     """
+    #     QtWidgets.QGraphicsView.mouseMoveEvent(self, event)
 
     def timerEvent(self, event):
         self.zoom_timer.stop()

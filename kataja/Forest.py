@@ -516,6 +516,20 @@ class Forest(BaseModel):
         if not self.ongoing_animations:
             self.draw()
 
+    def flush_and_rebuild_temporary_items(self):
+        """ Clean up temporary stuff that may be invalidated by changes made by undo/redo.
+        Notice that draw() does some of this, don't have to do those here.
+        :return:
+        """
+        # Selection and related UI
+        legits = list(self.get_all_objects())
+        ctrl.multiselection_start()
+        for item in ctrl.selected:
+            if item not in legits:
+                ctrl.remove_from_selection(item)
+        ctrl.multiselection_end()
+
+
     def draw(self):
         """ Update all trees in the forest according to current visualization
         """
@@ -1016,6 +1030,9 @@ class Forest(BaseModel):
         else:
             self._marked_for_deletion.add(node)
 
+        # remember parent nodes before we start disconnecting them
+        parents = node.get_parents(only_similar=True, only_visible=False)
+
         # -- connections to other nodes --
         if not ignore_consequences:
             for edge in list(node.edges_down):
@@ -1071,6 +1088,13 @@ class Forest(BaseModel):
         node.announce_deletion()
         # -- remove from selection
         ctrl.remove_from_selection(node)
+        # -- check if parent nodes has have now one child, if so fix the edge to be unaligned
+        for parent in parents:
+            children = list(parent.get_children())
+            if len(children) == 1:
+                edge = parent.get_edge_to(children[0])
+                edge.alignment = g.NO_ALIGN
+
         # -- remove circularity block
         self._marked_for_deletion.remove(node)
 
@@ -1744,12 +1768,13 @@ class Forest(BaseModel):
     def add_child_for_constituentnode(self, old_node: BaseConstituentNode, pos=None,
                                       add_left=True):
         """ User adds child for leaf node. Assuming that binary nodes are used, the new node
-        is actually added as a sibling and new intermediate parent node is created. Have another
+        is actually added as a sibling and new intermediate parent node is created. If we have
+        unary node, then node is added to its sibling.
         method for non-binary creation.
         Because of this, be careful for using this in other than user-triggered situations.
         If the node where children is added is projecting, new node will take its identity and
         will become the one projecting.
-        :param parent:
+        :param old_node:
         :param pos:
         :param add_left: adding node to left or right -- if binary nodes, this marks which one
         will be projecting.
@@ -1757,36 +1782,47 @@ class Forest(BaseModel):
         """
 
         new_node = self.create_node(relative=old_node)
+        children = list(old_node.get_children())
 
-        # add new node to relevant groups
-        # and remove old node from them
+        # Case with 1 child:
+        if len(children) == 1:
+            child = children[0]
+            old_edge = old_node.get_edge_to(child)
+            if add_left:
+                old_edge.alignment = g.RIGHT
+                self.connect_node(parent=old_node, child=new_node, direction=g.LEFT, fade_in=True)
+            else:
+                old_edge.alignment = g.LEFT
+                self.connect_node(parent=old_node, child=new_node, direction=g.RIGHT, fade_in=True)
 
-        if add_left:
-            left = new_node
-            right = old_node
-        else:
-            left = old_node
-            right = new_node
-        parent_info = [(e.start, e.alignment, e.start.head) for e in
-                       old_node.get_edges_up(similar=True, visible=False)]
+        # Case with no children:
+        elif len(children) == 0:
+            if add_left:
+                left = new_node
+                right = old_node
+            else:
+                left = old_node
+                right = new_node
+            parent_info = [(e.start, e.alignment, e.start.head) for e in
+                           old_node.get_edges_up(similar=True, visible=False)]
 
-        for op, align, head in parent_info:
-            self.disconnect_node(parent=op, child=old_node)
+            for op, align, head in parent_info:
+                self.disconnect_node(parent=op, child=old_node)
 
-        merger_node = self.create_merger_node(left=left, right=right, create_tree=False,
-                                              new=new_node)
+            merger_node = self.create_merger_node(left=left, right=right, create_tree=False,
+                                                  new=new_node)
 
-        for group in self.groups.values():
-            if old_node in group:
-                group.add_node(merger_node)
+            for group in self.groups.values():
+                if old_node in group:
+                    group.add_node(merger_node)
 
-        for op, align, head in parent_info:
-            self.connect_node(parent=op, child=merger_node, direction=align, fade_in=True)
-        merger_node.copy_position(old_node)
-        merger_node.set_projection(old_node)
-        for op, align, head in parent_info:
-            if head == old_node:
-                op.set_projection(head)
+            for op, align, head in parent_info:
+                self.connect_node(parent=op, child=merger_node, direction=align, fade_in=True)
+            merger_node.copy_position(old_node)
+            merger_node.set_projection(old_node)
+            for op, align, head in parent_info:
+                if head == old_node:
+                    op.set_projection(head)
 
     def nonbinary_add_child_for_constituentnode(self, parent: BaseConstituentNode, pos=None,
                                       head_left=True):

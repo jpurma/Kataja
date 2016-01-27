@@ -23,7 +23,7 @@
 # ############################################################################
 from kataja.nodes.Node import Node
 from kataja.nodes.BaseConstituentNode import BaseConstituentNode
-from kataja.BaseModel import Saved
+from kataja.BaseModel import Saved, Synobj
 from kataja.singletons import ctrl, qt_prefs
 from kataja.parser.INodes import ITextNode
 import kataja.globals as g
@@ -106,9 +106,9 @@ class ConstituentNode(BaseConstituentNode):
                                                       'action': 'add_sibling_left'},
                                  g.RIGHT_ADD_SIBLING: {'place': 'edge_up',
                                                        'action': 'add_sibling_right'},
-                                 g.LEFT_ADD_CHILD: {'condition': 'is_leaf_node',
+                                 g.LEFT_ADD_CHILD: {'condition': 'can_add_child',
                                                     'action': 'add_child_left'},
-                                 g.RIGHT_ADD_CHILD: {'condition': 'is_leaf_node',
+                                 g.RIGHT_ADD_CHILD: {'condition': 'can_add_child',
                                                      'action': 'add_child_right'},
                                  g.ADD_TRIANGLE: {'condition': 'can_have_triangle',
                                                   'action': 'add_triangle'},
@@ -123,7 +123,7 @@ class ConstituentNode(BaseConstituentNode):
         self.index = ''
         self.alias = ''
         self.gloss = ''
-        self.head = None
+        #self.head = None
         self.is_trace = False
         self.merge_order = 0
         self.select_order = 0
@@ -381,6 +381,15 @@ class ConstituentNode(BaseConstituentNode):
         return good_children < 2
 
 
+    def can_add_child(self):
+        """
+
+        :return:
+        """
+        children = list(self.get_children())
+        return len(children) < 2
+
+
     def can_be_projection(self):
         """ Node can be projection from other nodes if it has other nodes
         below it.
@@ -538,7 +547,7 @@ class ConstituentNode(BaseConstituentNode):
     index = Saved("index", if_changed=BaseConstituentNode.alert_inode)
     alias = Saved("alias", if_changed=BaseConstituentNode.alert_inode)
     gloss = Saved("gloss", if_changed=if_changed_gloss)
-    head = Saved("head")
+    head = Synobj("head")
 
     is_trace = Saved("is_trace")
     merge_order = Saved("merge_order")

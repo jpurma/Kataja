@@ -25,6 +25,7 @@
 # ############################################################################
 import pprint
 
+from syntax.BaseConstituent import BaseConstituent
 from kataja.utils import time_me
 from kataja.singletons import ctrl
 
@@ -40,7 +41,6 @@ class UndoManager:
         self.full_state = {}
         self._stack = []
         self._current = 0
-        self.phase = 'new'
 
     @time_me
     def take_snapshot(self, msg=''):
@@ -62,7 +62,6 @@ class UndoManager:
         ctrl.undo_pile = set()
         ctrl.add_message('took snapshot, undo stack size: %s items %s chars' % (
             len(self._stack), len(str(self._stack))))
-        self.phase = 'new'
         print('stack len:', len(str(self._stack)))
     # def record_full_state(self):
     #     """ Iterates through all items in forest and puts them to the full_state -dict.
@@ -79,22 +78,22 @@ class UndoManager:
     #         for obj in list(open_refs.values()):
     #             obj.model.save_object(self.full_state, open_refs)
 
+    #     0    ,    1
+    #(old, new), (old, new)
+
+
     def undo(self):
         """ Move backward in the undo stack
         :return: None
         """
         if not self._stack:
             return
-        if self.phase == 'old':
-            if self._current > 0:
-                self._current -= 1
-                self.phase = 'new'
-            else:
-                ctrl.add_message('undo [%s]: Cannot undo further' % self._current)
-                return
+        if self._current == 0:
+            ctrl.add_message('undo [%s]: Cannot undo further' % self._current)
+            return
         ctrl.undo_disabled = True
+        ctrl.multiselection_start()
         msg, snapshot = self._stack[self._current]
-        print('undo: ', msg, self._current, self.phase)
         for obj, transitions, transition_type in snapshot.values():
             obj.revert_to_earlier(transitions)
             if transition_type == CREATED:
@@ -104,26 +103,33 @@ class UndoManager:
                 print('undo should undo deletion of object (=>revive)', obj.save_key)
                 ctrl.forest.add_to_scene(obj)
         for obj, transitions, transition_type in snapshot.values():
-            obj.update_model(transitions.keys(), transition_type)
-        self.phase = 'old'
+            if transition_type == CREATED:
+                revtt = DELETED
+            elif transition_type == DELETED:
+                revtt = CREATED
+            else:
+                revtt = transition_type
+            obj.after_model_update(transitions.keys(), revtt)
+        ctrl.forest.flush_and_rebuild_temporary_items()
         ctrl.add_message('undo [%s]: %s' % (self._current, msg))
+        ctrl.multiselection_end()
         ctrl.undo_disabled = False
-        print('undo done: ', self._current, self.phase)
+        self._current -= 1
+        print('undo done: ', self._current)
 
     def redo(self):
         """ Move forward in the undo stack
         :return: None
         """
-        if self.phase == 'new':
-            if self._current < len(self._stack) - 1:
-                self._current += 1
-                self.phase = 'old'
-            else:
-                ctrl.add_message('redo [%s]: In last action' % self._current)
-                return
+        if self._current < len(self._stack) - 1:
+            self._current += 1
+        else:
+            ctrl.add_message('redo [%s]: In last action' % self._current)
+            return
         ctrl.undo_disabled = True
+        ctrl.multiselection_start()
         msg, snapshot = self._stack[self._current]
-        print('redo: ', msg, self._current, self.phase)
+        print('redo: ', msg, self._current)
         for obj, transitions, transition_type in snapshot.values():
             obj.move_to_later(transitions)
             if transition_type == CREATED:
@@ -133,11 +139,11 @@ class UndoManager:
                 print('redo should delete object', obj)
                 ctrl.forest.delete_item(obj, ignore_consequences=True)
         for obj, transitions, transition_type  in snapshot.values():
-            obj.update_model(transitions.keys(), transition_type)
+            obj.after_model_update(transitions.keys(), transition_type)
         ctrl.add_message('redo [%s]: %s' % (self._current, msg))
-        self.phase = 'new'
+        ctrl.multiselection_end()
         ctrl.undo_disabled = False
-        print('redo done: ', self._current, self.phase)
+        print('redo done: ', self._current)
 
 
     @staticmethod
