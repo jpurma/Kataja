@@ -73,6 +73,7 @@ class BaseVisualization:
         """
         old_value = self.forest.vis_data.get(key, None)
         if old_value is None:
+            self.forest.poke("vis_data")
             self.forest.vis_data[key] = value
         elif old_value != value:
             self.forest.poke("vis_data")
@@ -83,6 +84,7 @@ class BaseVisualization:
         :param key: key in vis_data
         :return:
         """
+        print(self.forest.vis_data)
         return self.forest.vis_data[key]
 
 

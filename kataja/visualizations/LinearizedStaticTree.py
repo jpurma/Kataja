@@ -179,7 +179,7 @@ class LinearizedStaticTree(BalancedTree):
         offset_y = tree_height / -2
         height_reduction = (edge_height / 3.0) / (merged_grid.height or 1)
         height_now = offset_y
-        merged_grid.ascii_dump()
+        #merged_grid.ascii_dump()
         # Actual drawing: set nodes to their places in scene
         for y, row in enumerate(merged_grid):
             height_now += edge_height

@@ -125,6 +125,8 @@ class Forest(BaseModel):
             for node in self.nodes.values():
                 if node.syntactic_object:
                     self.nodes_from_synobs[node.syntactic_object.save_key] = node
+        if 'vis_data' in updated_fields:
+            self.restore_visualization()
 
     def after_init(self):
         """ After_init is called in 2nd step in process of creating objects:
@@ -305,6 +307,15 @@ class Forest(BaseModel):
             self.vis_data = {'name': self.visualization.say_my_name()}
             self.visualization.prepare(self)
         self.main.graph_scene.manual_zoom = False
+
+    def restore_visualization(self):
+        name = self.vis_data.get('name', prefs.visualization)
+        if (not self.visualization) or name != self.visualization.say_my_name():
+            v = self.main.visualizations.get(name, None)
+            if v:
+                self.visualization = v
+                v.prepare(self, reset=False)
+                self.main.graph_scene.manual_zoom = False
 
     def update_visualization(self):
         """ Verify that the active visualization is the same as defined in

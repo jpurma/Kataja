@@ -92,9 +92,10 @@ remerged to another position. Projections need to be refactored for that.
 + Group options icon visible after deletion, deleted objects remained in selection
 + OS X setup script removes unnecessary header files
 + Alignment of child nodes remains the same when sibling is deleted, when it shouldn't
-- Undoed tree behaved oddly: added node above and below, undoed addition and then tree didn’t allow additions
++ Undoed tree behaved oddly: added node above and below, undoed addition and then tree didn’t
+allow additions
     + Fixed many undo issues
-    - Undoing switches between visualizations can cause crashes, and generally don't work
+    + Undoing switches between visualizations can cause crashes, and generally don't work
 
 ADD:
 
