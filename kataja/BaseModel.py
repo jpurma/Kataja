@@ -300,7 +300,6 @@ class BaseModel(object):
     # attr_name, False):
     #                    transitions[attr_name] = (True, True)
 
-
     def revert_to_earlier(self, transitions):
         """ Restore to earlier version with a given changes -dict
         :param transitions: dict of changes, values are tuples of (old,
@@ -334,7 +333,6 @@ class BaseModel(object):
             #    print('%s  %s: %s -> %s' % (self.save_key, key, old, new))
             #else:
             #    print('%s %s: (long) -> (long)' % (self.save_key, key))
-
 
     def after_model_update(self, changed_fields, transition_type):
         """ Override this to update derivative values when restoring objects

@@ -338,6 +338,9 @@ class UIManager:
                 if isinstance(item, Amoeba):
                     amoebas.append(item)
             if len(amoebas) == 1:
+
+                if self.selection_amoeba:
+                    self.remove_selection_amoeba()
                 # select this amoeba
                 self.selection_amoeba = amoebas[0]
                 # check if any items in this amoeba's scope are _unselected_
@@ -364,10 +367,14 @@ class UIManager:
         else:
             self.scope = self.base_scope
             if self.selection_amoeba:
-                self.remove_ui_for(self.selection_amoeba)
-                if not self.selection_amoeba.persistent:
-                    self.remove_ui(self.selection_amoeba)
-                self.selection_amoeba = None
+                self.remove_selection_amoeba()
+
+    def remove_selection_amoeba(self):
+        self.remove_ui_for(self.selection_amoeba)
+        if not self.selection_amoeba.persistent:
+            self.remove_ui(self.selection_amoeba)
+        self.selection_amoeba = None
+
 
     # unused, but sane
     def focusable_elements(self):

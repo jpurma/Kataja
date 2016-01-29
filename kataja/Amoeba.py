@@ -49,10 +49,15 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
         return item in self.selection_with_children
 
     def after_init(self):
-        print('after init called, selection: ', self.selection)
         self.update_selection(self.selection)
         self.update_shape()
         self.update_colors()
+
+    def after_model_update(self, changed_fields, transition_type):
+        if changed_fields:
+            self.update_selection(self.selection)
+            self.update_shape()
+            self.update_colors()
 
     def copy_from(self, source):
         """ Helper method to easily make a similar selection with different identity
@@ -293,7 +298,7 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
         if self.path:
             return self.path
         else:
-            return self.boundingRect()
+            return QtGui.QPainterPath()
 
     def update_position(self):
         self.update_shape()

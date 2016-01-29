@@ -162,6 +162,7 @@ class Forest(BaseModel):
         self.update_colors()
         self.add_all_to_scene()
         self.update_visualization()
+        self.scene.keep_updating_visible_area = True
         self.scene.manual_zoom = False
         ctrl.ui.update_all_fields()
         self.draw()  # do draw once to avoid having the first draw in undo stack.
@@ -306,6 +307,7 @@ class Forest(BaseModel):
             self.visualization = vs.get(name, vs.get(prefs.visualization, None))
             self.vis_data = {'name': self.visualization.say_my_name()}
             self.visualization.prepare(self)
+            self.scene.keep_updating_visible_area = True
         self.main.graph_scene.manual_zoom = False
 
     def restore_visualization(self):

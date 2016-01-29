@@ -75,6 +75,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         self.manual_zoom = False
         self._cached_visible_rect = None
         self.prev_time = time.time()
+        self.keep_updating_visible_area = False
 
         # self.ants = []
         # for n in range(0,1000):
@@ -102,10 +103,12 @@ class GraphScene(QtWidgets.QGraphicsScene):
         vr = self.visible_rect() + margins
         if self._cached_visible_rect and not force:
             if vr != self._cached_visible_rect:
-                if prefs.auto_zoom or vr.width() > self._cached_visible_rect.width() or vr.height() > self._cached_visible_rect.height():
+                if self.keep_updating_visible_area or \
+                        prefs.auto_zoom or \
+                        vr.width() > self._cached_visible_rect.width() or \
+                        vr.height() > self._cached_visible_rect.height():
                     self.graph_view.instant_fit_to_view(vr)
                     self._cached_visible_rect = vr
-
         else:
             self.graph_view.instant_fit_to_view(vr)
             self._cached_visible_rect = vr
@@ -770,8 +773,9 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 # area.update_position()
             for group in f.groups.values():
                 group.update_shape()
-        if not (items_have_moved or items_fading or frame_has_moved or background_fade):
+        elif not (items_have_moved or items_fading or frame_has_moved or background_fade):
             self.stop_animations()
             self.main.ui_manager.get_activity_marker().hide()
             ctrl.items_moving = False
+            self.keep_updating_visible_area = False
         f.edge_visibility_check()
