@@ -28,7 +28,7 @@ import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
 from PyQt5.QtCore import Qt
-from kataja.singletons import ctrl
+from kataja.singletons import ctrl, prefs
 import kataja.globals as g
 from kataja.utils import time_me
 
@@ -70,6 +70,7 @@ class GraphView(QtWidgets.QGraphicsView):
         #self.setAcceptDrops(True)
         # self.setTransformationAnchor(QtWidgets.QGraphicsView.NoAnchor)
         self.target_scale = 0
+
         self._rubberband_mode = False
         self._scale_factor = 1.0
         self._fit_scale = 1.0
@@ -81,7 +82,11 @@ class GraphView(QtWidgets.QGraphicsView):
         """ Fit the current scene into view, snugly
         :param target_rect: scene rect that contains all of the items we want to fit into view.
         """
-        self.setSceneRect(target_rect)
+
+        w4 = target_rect.width() / 4
+        h4 = target_rect.height() / 4
+        larger_rect = target_rect + QtCore.QMarginsF(w4, h4, w4, h4)
+        self.setSceneRect(larger_rect)
         self.fitInView(target_rect, 1)
         self._fit_scale = self.transform().m11()
         self.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
@@ -153,16 +158,25 @@ class GraphView(QtWidgets.QGraphicsView):
                 self.centerOn(view_center + change)
             else:
                 self.centerOn(view_center)
-            if self.transform().m11() > self._fit_scale:
-                if self._rubberband_mode:
-                    self._rubberband_mode = False
-                    self.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
-            else:
-                if not self._rubberband_mode:
-                    self.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
-                    self._rubberband_mode = True
+            if prefs.auto_pan_select:
+                if self.transform().m11() > self._fit_scale:
+                    if self._rubberband_mode:
+                        self.change_drag_mode(True)  # Pan mode
+                else:
+                    if not self._rubberband_mode:
+                        self.change_drag_mode(False)  # Select mode
 
         self.graph_scene._manual_zoom = True
+
+    def change_drag_mode(self, pan_mode):
+        if pan_mode:
+            self._rubberband_mode = False
+            self.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
+        else:
+            self._rubberband_mode = True
+            self.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
+        ctrl.ui.update_drag_mode(pan_mode)
+
 
     def toggle_suppress_drag(self, suppress):
         """ ScrollHandDrag or RubberBandDrag shouldn't register if we are dragging one object
@@ -171,12 +185,17 @@ class GraphView(QtWidgets.QGraphicsView):
          """
         if suppress:
             self.setDragMode(QtWidgets.QGraphicsView.NoDrag)
-        elif self.transform().m11() > self._fit_scale:
-            self._rubberband_mode = False
-            self.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
+        elif prefs.auto_pan_select:
+            if self.transform().m11() > self._fit_scale:
+                self.change_drag_mode(True)  # Pan mode
+            else:
+                self.change_drag_mode(False)  # Select mode
         else:
-            self.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
-            self._rubberband_mode = True
+            if self._rubberband_mode:
+                self.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
+            else:
+                self.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
+
 
     def rubberband_mode(self):
         """ helper to access that we really are doing rubberband dragging """

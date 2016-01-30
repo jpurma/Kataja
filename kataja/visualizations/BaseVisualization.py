@@ -84,7 +84,6 @@ class BaseVisualization:
         :param key: key in vis_data
         :return:
         """
-        print(self.forest.vis_data)
         return self.forest.vis_data[key]
 
 

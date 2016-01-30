@@ -33,7 +33,8 @@ from kataja.utils import time_me
 borderstyle = """
 PanelButton {border: 1px transparent none}
 :hover {border: 1px solid %s; border-radius: 3}
-:pressed {border: 2px solid %s; border-radius: 3}
+:pressed {border: 2px solid %s; background-color: %s; border-radius: 3}
+:checked {border: 1px solid %s; background-color: %s; border-radius: 3}
 """
 
 
@@ -81,12 +82,19 @@ class PanelButton(QtWidgets.QPushButton):
         self.setContentsMargins(0, 0, 0, 0)
         self.setFlat(True)
 
+    def contextual_color(self):
+        if self.isDown():
+            return ctrl.cm.get(self.color_key).lighter()
+        else:
+            return ctrl.cm.get(self.color_key)
+
     def compose_icon(self):
         """ Redraw the image to be used as a basis for icon, this is necessary
         to update the overlay color.
         :return:
         """
         c = ctrl.cm.get(self.color_key)
+        paper = ctrl.cm.paper()
         if self.pixmap:
             image = self.pixmap.toImage()
             painter = QtGui.QPainter(image)
@@ -111,7 +119,8 @@ class PanelButton(QtWidgets.QPushButton):
 
         i = QtGui.QIcon(QtGui.QPixmap.fromImage(image))
         self.setIcon(i)
-        self.setStyleSheet(borderstyle % (c.name(), c.lighter().name()))
+        self.setStyleSheet(borderstyle % (c.name(), c.lighter().name(), paper.name(), c.name(),
+                                          paper.name()))
 
     def update_color(self):
         self.compose_icon()

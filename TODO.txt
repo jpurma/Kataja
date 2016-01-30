@@ -97,6 +97,7 @@ remerged to another position. Projections need to be refactored for that.
 allow additions
     + Fixed many undo issues
     + Undoing switches between visualizations can cause crashes, and generally don't work
+- In new project, when child node was created it appeared on top of the previous node and soon crashed
 
 
 ADD:
@@ -132,4 +133,4 @@ ADD:
 + remove z-dimension as unnecessary complication
 + Improved version changes announcements
 + Siblings can be easily added to monobranch nodes
-- Buttons for selection mode and move mode
++ Buttons for selection mode and move mode

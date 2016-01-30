@@ -599,6 +599,28 @@ a['zoom_to_fit'] = {'command': '&Zoom to fit', 'method': fit_to_window,
                     'shortcut': 'z'}
 
 
+def toggle_pan_mode():
+    """
+
+    :return:
+    """
+    ctrl.graph_view.change_drag_mode(True)  # Pan mode
+
+a['toggle_pan_mode'] = {'command': 'Move mode', 'method': toggle_pan_mode,
+                        'shortcut': 'm', 'undoable': False}
+
+
+def toggle_select_mode():
+    """
+
+    :return:
+    """
+    ctrl.graph_view.change_drag_mode(False)  # Select mode
+
+a['toggle_select_mode'] = {'command': 'Select mode', 'method': toggle_select_mode,
+                           'shortcut': 's', 'undoable': False}
+
+
 def toggle_full_screen():
     """ Toggle between fullscreen mode and windowed mode
     :return: None
@@ -1618,6 +1640,7 @@ a['amoeba_save'] = {'command': 'Save this group',
                                'sender_arg': True}
 
 
+
 def key_backspace():
     """ In many contexts this will delete something. Expand this as necessary
     for contexts that don't otherwise grab keyboard.
@@ -1654,15 +1677,6 @@ def redo():
 a['redo'] = {'command': 'redo', 'method': redo, 'undoable': False,
              'shortcut': 'Ctrl+Shift+z'}
 
-
-def key_m():
-    """ Placeholder for keypress
-    :return: None
-    """
-    print('key_m called')
-
-
-a['key_m'] = {'command': 'key_m', 'method': key_m, 'shortcut': 'm'}
 
 a['toggle_all_panels'] = {'command': 'Hide all panels',
                           'command_alt': 'Show all panels',

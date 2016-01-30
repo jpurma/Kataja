@@ -126,6 +126,7 @@ class UIManager:
         self._action_groups = {}
         self.qt_actions = {}
         self._top_menus = {}
+        self._float_buttons = []
 
         self._items = {}
         self._node_edits = set()
@@ -1093,13 +1094,50 @@ class UIManager:
         """ Create top button row
         :return:
         """
+        for item in self._float_buttons:
+            item.close()
+        self._float_buttons = []
         fit_to_screen = self._create_overlay_button(host=None, key='fit_to_screen', icon=None,
                                                     role='bottom', text='Fit to screen',
-                                                    action='zoom_to_fit', size=(48, 24),
+                                                    action='zoom_to_fit', size=(36, 24),
                                                     draw_method=drawn_icons.fit_to_screen)
-        gw = fit_to_screen.parent()
-        fit_to_screen.move(gw.width() - fit_to_screen.width() - 2, 2)
-        fit_to_screen.show()
+        self._float_buttons.append(fit_to_screen)
+        pan_around = self._create_overlay_button(host=None, key='pan_around', icon=None,
+                                                    role='bottom', text='Move mode',
+                                                    action='toggle_pan_mode', size=(36, 24),
+                                                    draw_method=drawn_icons.pan_around)
+        pan_around.setCheckable(True)
+        self._float_buttons.append(pan_around)
+        select_mode = self._create_overlay_button(host=None, key='select_mode', icon=None,
+                                                    role='bottom', text='Move mode',
+                                                    action='toggle_select_mode', size=(36, 24),
+                                                    draw_method=drawn_icons.select_mode)
+        select_mode.setCheckable(True)
+        self._float_buttons.append(select_mode)
+        self.update_float_button_positions()
+        self.update_drag_mode(False) # pan mode
+
+
+    def update_float_button_positions(self):
+        """ Make sure that float buttons are on graph view's top right corner
+        :return:
+        """
+        view = ctrl.graph_view
+        right_x = view.width()
+        for button in self._float_buttons:
+            right_x -= button.width() + 2
+            button.move(right_x, 2)
+            button.show()
+
+    def update_drag_mode(self, pan_mode):
+        pan_around = self.get_ui('pan_around')
+        select_mode = self.get_ui('select_mode')
+        if pan_mode:
+            pan_around.setChecked(True)
+            select_mode.setChecked(False)
+        else:
+            pan_around.setChecked(False)
+            select_mode.setChecked(True)
 
     def _create_overlay_button(self, icon, host, role, key, text, action, size=None,
                                draw_method=None):

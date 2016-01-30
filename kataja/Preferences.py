@@ -112,6 +112,13 @@ class Preferences(object):
                                   'help': 'Force user interface to use at least 14pt font.',
                                   'on_change': 'resize_ui_font', 'order': 40}
 
+        self.auto_pan_select = False
+        self._auto_pan_select_ui = {'tab': 'General',
+                                    'label': 'Switch to pan / select based on zoom level',
+                                    'help': 'Change mouse mode to Move when zoomed in and Select '
+                                            'when zoomed out',
+                                    'order': 42}
+
         self.auto_zoom = False
         self._auto_zoom_ui = {'tab': 'General',
                               'label': 'Automatic zoom in',
