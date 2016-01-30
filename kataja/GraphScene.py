@@ -523,7 +523,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             print('still _dragging!')
         elif ctrl.pressed:
             print('mouseReleaseEvent, but still ctrl.pressed!:', ctrl.pressed)
-        if self.graph_view.rubberband_mode():
+        if self.graph_view.selection_mode():
             ctrl.multiselection_start()
             ctrl.deselect_objects()
             # prioritize nodes in multiple selection. e.g. if there are nodes

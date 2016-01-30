@@ -604,7 +604,7 @@ def toggle_pan_mode():
 
     :return:
     """
-    ctrl.graph_view.change_drag_mode(True)  # Pan mode
+    ctrl.graph_view.set_selection_mode(False)  # Pan mode
 
 a['toggle_pan_mode'] = {'command': 'Move mode', 'method': toggle_pan_mode,
                         'shortcut': 'm', 'undoable': False}
@@ -615,7 +615,7 @@ def toggle_select_mode():
 
     :return:
     """
-    ctrl.graph_view.change_drag_mode(False)  # Select mode
+    ctrl.graph_view.set_selection_mode(True)  # Select mode
 
 a['toggle_select_mode'] = {'command': 'Select mode', 'method': toggle_select_mode,
                            'shortcut': 's', 'undoable': False}

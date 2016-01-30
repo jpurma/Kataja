@@ -55,11 +55,7 @@ class GraphView(QtWidgets.QGraphicsView):
         # self.setResizeAnchor(QtWidgets.QGraphicsView.AnchorViewCenter)
         self.setTransformationAnchor(QtWidgets.QGraphicsView.AnchorViewCenter)
         self.setResizeAnchor(QtWidgets.QGraphicsView.AnchorViewCenter)
-
-        # if ctrl.move_tool:
-        self.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
-        # elif ctrl.selection_tool:
-        # self.setDragMode(QtGui.QGraphicsView.RubberBandDrag)
+        self.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         # self.setViewportUpdateMode(QtWidgets.QGraphicsView.BoundingRectViewportUpdate)
@@ -71,7 +67,9 @@ class GraphView(QtWidgets.QGraphicsView):
         # self.setTransformationAnchor(QtWidgets.QGraphicsView.NoAnchor)
         self.target_scale = 0
 
-        self._rubberband_mode = False
+        self._suppressed_drag_mode = self.dragMode()
+
+        self._selection_mode = True
         self._scale_factor = 1.0
         self._fit_scale = 1.0
         self._target_rect = QtCore.QRectF(-300, -300, 300, 300)
@@ -89,7 +87,6 @@ class GraphView(QtWidgets.QGraphicsView):
         self.setSceneRect(larger_rect)
         self.fitInView(target_rect, 1)
         self._fit_scale = self.transform().m11()
-        self.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
         ctrl.call_watchers(self, 'viewport_changed')
 
     def scale_view_by(self, delta):
@@ -160,22 +157,24 @@ class GraphView(QtWidgets.QGraphicsView):
                 self.centerOn(view_center)
             if prefs.auto_pan_select:
                 if self.transform().m11() > self._fit_scale:
-                    if self._rubberband_mode:
-                        self.change_drag_mode(True)  # Pan mode
+                    if self._selection_mode:
+                        self.set_selection_mode(False)  # Pan mode
                 else:
-                    if not self._rubberband_mode:
-                        self.change_drag_mode(False)  # Select mode
+                    if not self._selection_mode:
+                        self.set_selection_mode(True)  # Select mode
 
         self.graph_scene._manual_zoom = True
 
-    def change_drag_mode(self, pan_mode):
-        if pan_mode:
-            self._rubberband_mode = False
-            self.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
-        else:
-            self._rubberband_mode = True
+    def set_selection_mode(self, selection_mode):
+        if selection_mode:
+            self._selection_mode = True
             self.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
-        ctrl.ui.update_drag_mode(pan_mode)
+        else:
+            self._selection_mode = False
+            self.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
+        self._suppressed_drag_mode = self.dragMode()
+        if ctrl.ui:
+            ctrl.ui.update_drag_mode(selection_mode)
 
 
     def toggle_suppress_drag(self, suppress):
@@ -184,22 +183,14 @@ class GraphView(QtWidgets.QGraphicsView):
          :param suppress: if true, switch to NoDrag, otherwise restore mode suitable to zoom level
          """
         if suppress:
+            self._suppressed_drag_mode = self.dragMode()
             self.setDragMode(QtWidgets.QGraphicsView.NoDrag)
-        elif prefs.auto_pan_select:
-            if self.transform().m11() > self._fit_scale:
-                self.change_drag_mode(True)  # Pan mode
-            else:
-                self.change_drag_mode(False)  # Select mode
         else:
-            if self._rubberband_mode:
-                self.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
-            else:
-                self.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
+            self.setDragMode(self._suppressed_drag_mode)
 
-
-    def rubberband_mode(self):
+    def selection_mode(self):
         """ helper to access that we really are doing rubberband dragging """
-        return self.dragMode() == QtWidgets.QGraphicsView.RubberBandDrag
+        return self._selection_mode
 
         # QtWidgets.QGraphicsView.wheelEvent(self, event)
 

@@ -1115,7 +1115,7 @@ class UIManager:
         select_mode.setCheckable(True)
         self._float_buttons.append(select_mode)
         self.update_float_button_positions()
-        self.update_drag_mode(False) # pan mode
+        self.update_drag_mode(True) # selection mode
 
 
     def update_float_button_positions(self):
@@ -1129,15 +1129,15 @@ class UIManager:
             button.move(right_x, 2)
             button.show()
 
-    def update_drag_mode(self, pan_mode):
+    def update_drag_mode(self, selection_mode):
         pan_around = self.get_ui('pan_around')
         select_mode = self.get_ui('select_mode')
-        if pan_mode:
-            pan_around.setChecked(True)
-            select_mode.setChecked(False)
-        else:
+        if selection_mode:
             pan_around.setChecked(False)
             select_mode.setChecked(True)
+        else:
+            pan_around.setChecked(True)
+            select_mode.setChecked(False)
 
     def _create_overlay_button(self, icon, host, role, key, text, action, size=None,
                                draw_method=None):
