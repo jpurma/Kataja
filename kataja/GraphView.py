@@ -75,6 +75,7 @@ class GraphView(QtWidgets.QGraphicsView):
         self._target_rect = QtCore.QRectF(-300, -300, 300, 300)
         self.zoom_timer = QtCore.QBasicTimer()
 
+
     #@time_me
     def instant_fit_to_view(self, target_rect):
         """ Fit the current scene into view, snugly
@@ -88,6 +89,10 @@ class GraphView(QtWidgets.QGraphicsView):
         self.fitInView(target_rect, 1)
         self._fit_scale = self.transform().m11()
         ctrl.call_watchers(self, 'viewport_changed')
+
+    def scrollContentsBy(self, x, y):
+        ctrl.call_watchers(self, 'viewport_changed')
+        QtWidgets.QGraphicsView.scrollContentsBy(self, x, y)
 
     def scale_view_by(self, delta):
         """

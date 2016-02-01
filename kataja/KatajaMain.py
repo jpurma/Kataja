@@ -112,6 +112,7 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         self.visualizations = VISUALIZATIONS
         self.forest = Forest()
         self.forest.update_colors()
+        self.graph_scene.late_init()
         self.setCentralWidget(self.graph_view)
         self.setGeometry(x, y, w, h)
         self.setWindowTitle(self.tr("Kataja"))

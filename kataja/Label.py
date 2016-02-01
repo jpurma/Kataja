@@ -114,8 +114,6 @@ class Label(QtWidgets.QGraphicsTextItem):
             self.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
             self.clearFocus()
 
-
-
     def doc_changed(self):
         if self._quick_editing:
             self.prepareGeometryChange()
@@ -127,6 +125,26 @@ class Label(QtWidgets.QGraphicsTextItem):
                 ctrl.ui.selection_amoeba.update_shape()
             if self.width != w and self.scene() == ctrl.graph_scene:
                 ctrl.forest.draw()
+
+    def keyReleaseEvent(self, keyevent):
+        c = self.textCursor()
+        next_sel = None
+        if keyevent.matches(QtGui.QKeySequence.MoveToPreviousChar):
+            if c.atStart():
+                next_sel = ctrl.graph_scene.find_next_selection(self._host, 'left')
+        elif keyevent.matches(QtGui.QKeySequence.MoveToNextChar):
+            if c.atEnd():
+                next_sel = ctrl.graph_scene.find_next_selection(self._host, 'right')
+        elif keyevent.matches(QtGui.QKeySequence.MoveToPreviousLine):
+            if c.atStart():
+                next_sel = ctrl.graph_scene.find_next_selection(self._host, 'up')
+        elif keyevent.matches(QtGui.QKeySequence.MoveToNextLine):
+            if c.atEnd():
+                next_sel = ctrl.graph_scene.find_next_selection(self._host, 'down')
+        if next_sel and next_sel != self._host:
+            self.clearFocus()
+            ctrl.select(next_sel)
+            next_sel.setFocus()
 
     def resize_label(self):
         l = self.doc.lineCount()

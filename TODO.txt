@@ -134,3 +134,6 @@ ADD:
 + Improved version changes announcements
 + Siblings can be easily added to monobranch nodes
 + Buttons for selection mode and move mode
++ Groups are created only by selection box in selection mode
++ Embed edits are 'inspectors', active only when double-clicking or clicking edit button
+-+ Node texts can be edited directly, in place
