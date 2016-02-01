@@ -62,7 +62,7 @@ class GraphView(QtWidgets.QGraphicsView):
         self.setViewportUpdateMode(QtWidgets.QGraphicsView.FullViewportUpdate)
         # self.setViewportUpdateMode(QtWidgets.QGraphicsView.NoViewportUpdate)
         self.setMouseTracking(False)
-        self.setFocusPolicy(QtCore.Qt.NoFocus)
+        #self.setFocusPolicy(QtCore.Qt.NoFocus)
         #self.setAcceptDrops(True)
         # self.setTransformationAnchor(QtWidgets.QGraphicsView.NoAnchor)
         self.target_scale = 0
@@ -151,7 +151,7 @@ class GraphView(QtWidgets.QGraphicsView):
             #print('zoom timer started: ', self.zoom_timer.timerId())
             self._scale_factor = self.scale_view_by(delta)
             if delta > 1:
-                change = (pointer_pos - view_center) * (delta - 1) * 0.5
+                change = (pointer_pos - view_center) * (delta - 1) #* 0.5
                 self.centerOn(view_center + change)
             else:
                 self.centerOn(view_center)

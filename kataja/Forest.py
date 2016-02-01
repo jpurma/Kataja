@@ -1778,17 +1778,31 @@ class Forest(BaseModel):
         for tree in trees:
             tree.update_items()
 
-    def add_child_for_constituentnode(self, old_node: BaseConstituentNode, pos=None,
-                                      add_left=True):
-        """ User adds child for leaf node. Assuming that binary nodes are used, the new node
-        is actually added as a sibling and new intermediate parent node is created. If we have
-        unary node, then node is added to its sibling.
-        method for non-binary creation.
-        Because of this, be careful for using this in other than user-triggered situations.
-        If the node where children is added is projecting, new node will take its identity and
-        will become the one projecting.
+    def unary_add_child_for_constituentnode(self, old_node: BaseConstituentNode, add_left=True):
+        """
+
         :param old_node:
-        :param pos:
+        :param add_left:
+        :return:
+        """
+        new_node = self.create_node(relative=old_node)
+        children = list(old_node.get_children())
+
+        if len(children) != 1:
+            return
+        child = children[0]
+        old_edge = old_node.get_edge_to(child)
+        if add_left:
+            old_edge.alignment = g.RIGHT
+            self.connect_node(parent=old_node, child=new_node, direction=g.LEFT, fade_in=True)
+        else:
+            old_edge.alignment = g.LEFT
+            self.connect_node(parent=old_node, child=new_node, direction=g.RIGHT, fade_in=True)
+
+    def add_sibling_for_constituentnode(self, old_node: BaseConstituentNode, add_left=True):
+        """ Create a new merger node to top of this node and have this node and new node as its
+        children.
+        :param old_node:
         :param add_left: adding node to left or right -- if binary nodes, this marks which one
         will be projecting.
         :return:
@@ -1797,96 +1811,32 @@ class Forest(BaseModel):
         new_node = self.create_node(relative=old_node)
         children = list(old_node.get_children())
 
-        # Case with 1 child:
-        if len(children) == 1:
-            child = children[0]
-            old_edge = old_node.get_edge_to(child)
-            if add_left:
-                old_edge.alignment = g.RIGHT
-                self.connect_node(parent=old_node, child=new_node, direction=g.LEFT, fade_in=True)
-            else:
-                old_edge.alignment = g.LEFT
-                self.connect_node(parent=old_node, child=new_node, direction=g.RIGHT, fade_in=True)
-
-        # Case with no children:
-        elif len(children) == 0:
-            if add_left:
-                left = new_node
-                right = old_node
-            else:
-                left = old_node
-                right = new_node
-            parent_info = [(e.start, e.alignment, e.start.head) for e in
-                           old_node.get_edges_up(similar=True, visible=False)]
-
-            for op, align, head in parent_info:
-                self.disconnect_node(parent=op, child=old_node)
-
-            merger_node = self.create_merger_node(left=left, right=right, create_tree=False,
-                                                  new=new_node)
-
-            for group in self.groups.values():
-                if old_node in group:
-                    group.add_node(merger_node)
-
-            for op, align, head in parent_info:
-                self.connect_node(parent=op, child=merger_node, direction=align, fade_in=True)
-            merger_node.copy_position(old_node)
-            merger_node.set_projection(old_node)
-            for op, align, head in parent_info:
-                if head == old_node:
-                    op.set_projection(head)
-
-    def nonbinary_add_child_for_constituentnode(self, parent: BaseConstituentNode, pos=None,
-                                      head_left=True):
-        """ User adds child for leaf node. Assuming that binary nodes are used, the new node
-        is actually added as a sibling and new intermediate parent node is created. Have another
-        method for non-binary creation.
-        Because of this, be careful for using this in other than user-triggered situations.
-        If the node where children is added is projecting, new node will take its identity and
-        will become the one projecting.
-        :param parent:
-        :param pos:
-        :param head_left: adding node to left or right -- if binary nodes, this marks which one
-        will be projecting.
-        :return:
-        """
-        # Let's spend some effort to do sanity check if parent can have
-        # children added to it
-
-        siblings = list(parent.get_ordered_children())
-        if self.settings.only_binary_trees and len(siblings) > 1:
-            raise ForestError("Trying to add third child for binary trees")
-
-        # These steps are safe, connect node is smart enough to deal with
-        # unary/ binary children.
-        # 1) Create the child as asked to do
-        new_node = self.create_node(relative=parent)
-        #new_node.current_position = pos
-        if head_left:
-            main_align = g.LEFT
-            other_align = g.RIGHT
+        if add_left:
+            left = new_node
+            right = old_node
         else:
-            main_align = g.RIGHT
-            other_align = g.LEFT
-        self.connect_node(parent=parent, child=new_node, direction=main_align, fade_in=True)
+            left = old_node
+            right = new_node
+        parent_info = [(e.start, e.alignment, e.start.head) for e in
+                       old_node.get_edges_up(similar=True, visible=False)]
 
-        # 2) create a pair if necessary
-        if self.settings.only_binary_trees and not siblings:
-            ox, oy = pos
-            if other_align == g.RIGHT:
-                ox += 40
-            else:
-                ox -= 40
-            other_node = self.create_node(relative=parent)
-            self.connect_node(parent=parent, child=other_node, direction=other_align, fade_in=True)
-        # 3) reassign projections
-        if hasattr(parent, 'head') and parent.head and parent.head is parent:
-            new_node.label = parent.label
-            new_node.alias = parent.alias
-            new_node.set_projection(new_node)
-            parent.set_projection(new_node, replace_up=True)
+        for op, align, head in parent_info:
+            self.disconnect_node(parent=op, child=old_node)
 
+        merger_node = self.create_merger_node(left=left, right=right, create_tree=False,
+                                              new=new_node)
+
+        for group in self.groups.values():
+            if old_node in group:
+                group.add_node(merger_node)
+
+        for op, align, head in parent_info:
+            self.connect_node(parent=op, child=merger_node, direction=align, fade_in=True)
+        merger_node.copy_position(old_node)
+        merger_node.set_projection(old_node)
+        for op, align, head in parent_info:
+            if head == old_node:
+                op.set_projection(head)
 
     def merge_to_top(self, top, new, merge_to_left, merger_pos):
         """

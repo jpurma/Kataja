@@ -27,6 +27,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from kataja.LabelDocument import LabelDocument
 from kataja.parser import INodeToLabelDocument
 from kataja.globals import LEFT_ALIGN, CENTER_ALIGN, RIGHT_ALIGN
+from kataja.singletons import ctrl
 
 
 class Label(QtWidgets.QGraphicsTextItem):
@@ -46,9 +47,12 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.triangle_is_present = False
         self.triangle_height = 0
         self.triangle_y = 0
-        self.setDocument(LabelDocument())
-        #self.setAcceptHoverEvents(False)
-        #self.setTextInteractionFlags(QtCore.Qt.TextEditorInteraction) # TextEditable
+        self.width = 0
+        self._quick_editing = False
+
+        self.doc = LabelDocument()
+        self.setDocument(self.doc)
+        self.doc.contentsChanged.connect(self.doc_changed)
         self.setTextWidth(-1)
         self.resizable = False
         self.text_align = CENTER_ALIGN
@@ -62,7 +66,6 @@ class Label(QtWidgets.QGraphicsTextItem):
         :param inode: provide inode to parse to label document
         """
         self.has_been_initialized = True
-        doc = self.document()
         if font != self._font:
             self.setFont(font)
             self._font = font
@@ -73,33 +76,77 @@ class Label(QtWidgets.QGraphicsTextItem):
             align = QtCore.Qt.AlignLeft
         elif self.text_align == RIGHT_ALIGN:
             align = QtCore.Qt.AlignRight
-        doc.setDefaultTextOption(QtGui.QTextOption(align))
+        self.doc.setDefaultTextOption(QtGui.QTextOption(align))
 
         self.prepareGeometryChange()
-        doc.setTextWidth(-1)
-        INodeToLabelDocument.parse_inode(inode, doc)
-        ideal_width = doc.idealWidth()
+        self.doc.setTextWidth(-1)
+        INodeToLabelDocument.parse_inode(inode, self.doc)
+        ideal_width = self.doc.idealWidth()
         if self.line_length and self.line_length * self.char_width < ideal_width:
             self.setTextWidth(self.line_length * self.char_width)
         else:
             self.setTextWidth(ideal_width)
-        l = doc.lineCount()
-        inner_size = doc.size()
+        self.resize_label()
+
+    def is_empty(self):
+        """ Turning this node into label would result in an empty label.
+        :return: bool
+        """
+        return not self._host.as_inode()
+
+    def get_top_row_y(self):
+        return self.top_row_y
+
+    def get_bottom_row_y(self):
+        return self.bottom_row_y
+
+    def set_quick_editing(self, value):
+        if value:
+            self._quick_editing = True
+            self.setTextInteractionFlags(QtCore.Qt.TextEditorInteraction)
+            #w = ctrl.main.app.focusWidget()
+            #if w:
+            #    w.clearFocus()
+            ctrl.graph_view.setFocus()
+            self.setFocus()
+        else:
+            self._quick_editing = False
+            self.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
+            self.clearFocus()
+
+
+
+    def doc_changed(self):
+        if self._quick_editing:
+            self.prepareGeometryChange()
+            w = self.width
+            self.setTextWidth(self.doc.idealWidth())
+            self.resize_label()
+            self._host.update_bounding_rect()
+            if ctrl.ui.selection_amoeba:
+                ctrl.ui.selection_amoeba.update_shape()
+            if self.width != w and self.scene() == ctrl.graph_scene:
+                ctrl.forest.draw()
+
+    def resize_label(self):
+        l = self.doc.lineCount()
+        inner_size = self.doc.size()
         ih = inner_size.height()
         iw = inner_size.width()
         h2 = ih / 2.0
         self.top_y = -h2
         self.bottom_y = h2
+        self.width = iw
         if l <= 1:
             self.top_row_y = 0
             self.bottom_row_y = 0
         else:
             avg_line_height = (ih - 3) / float(l)
             half_height = avg_line_height / 2
-            if 'triangle' in doc.lines:
+            if 'triangle' in self.doc.lines:
                 top_row_found = False
                 triangle_found = False
-                for i, line in enumerate(doc.lines):
+                for i, line in enumerate(self.doc.lines):
                     if (not top_row_found) and line == 'triangle':
                         if i < 2:
                             self.top_row_y = self.top_y + half_height
@@ -115,10 +162,10 @@ class Label(QtWidgets.QGraphicsTextItem):
                 self.triangle_height = (avg_line_height * 2) - 4
                 self.triangle_is_present = True
             else:
-                top_row = doc.lines[0]
+                top_row = self.doc.lines[0]
                 self.top_row_y = self.top_y + half_height + 3
                 bottom_row_found = False
-                for i, line in enumerate(doc.lines):
+                for i, line in enumerate(self.doc.lines):
                     if line != top_row:
                         self.bottom_row_y = self.top_y + (i * avg_line_height) + half_height
                         bottom_row_found = True
@@ -128,40 +175,13 @@ class Label(QtWidgets.QGraphicsTextItem):
                 self.triangle_is_present = False
         self.setPos(iw / -2.0, self.top_y)
 
-    def is_empty(self):
-        """ Turning this node into label would result in an empty label.
-        :return: bool
-        """
-        return not self._host.as_inode()
-
-    def get_top_row_y(self):
-        return self.top_row_y
-
-    def get_bottom_row_y(self):
-        return self.bottom_row_y
-
     def focusInEvent(self, event):
-        print('focusInEvent for label')
         self.grabKeyboard()
         return QtWidgets.QGraphicsTextItem.focusInEvent(self, event)
 
     def focusOutEvent(self, event):
-        print('focusOutEvent for label')
         self.ungrabKeyboard()
         return QtWidgets.QGraphicsTextItem.focusOutEvent(self, event)
-    #
-    # def hoverEnterEvent(self, event):
-    #     print('hoverEnterEvent for label')
-    #     QtWidgets.QGraphicsTextItem.hoverEnterEvent(self, event)
-    #
-    # def hoverMoveEvent(self, event):
-    #     print('hoverMoveEvent for label')
-    #     QtWidgets.QGraphicsTextItem.hoverMoveEvent(self, event)
-    #
-    # def hoverLeaveEvent(self, event):
-    #     print('hoverLeaveEvent for label')
-    #     QtWidgets.QGraphicsTextItem.hoverLeaveEvent(self, event)
-
 
     def paint(self, painter, option, widget):
         """ Painting is sensitive to mouse/selection issues, but usually with

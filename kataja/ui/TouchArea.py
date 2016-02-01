@@ -1151,7 +1151,13 @@ touch_areas = {
     g.TOUCH_CONNECT_GLOSS: ConnectGlossTouchArea,
     g.ADD_TRIANGLE: AddTriangleTouchArea,
     g.REMOVE_TRIANGLE: RemoveTriangleTouchArea,
-    g.DELETE_ARROW: DeleteArrowTouchArea
+    g.DELETE_ARROW: DeleteArrowTouchArea,
+    g.INNER_ADD_SIBLING_LEFT: LeftAddSibling,
+    g.INNER_ADD_SIBLING_RIGHT: RightAddSibling,
+    g.UNARY_ADD_CHILD_LEFT: LeftAddChild,
+    g.UNARY_ADD_CHILD_RIGHT: RightAddChild,
+    g.LEAF_ADD_SIBLING_LEFT: LeftAddChild,
+    g.LEAF_ADD_SIBLING_RIGHT: RightAddChild
 }
 
 

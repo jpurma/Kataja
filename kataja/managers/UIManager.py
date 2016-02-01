@@ -312,6 +312,17 @@ class UIManager:
     def update_selections(self):
         """ Many UI elements change mode depending on if object of specific
         type is selected. Also the logic of selection amoebas has to be handled somewhere. """
+
+        def amoeba_in_selection(selection):
+            amoebas = []
+            # check if _one_ of the groups/"amoebas" was selected
+            for item in selection:
+                if isinstance(item, Amoeba):
+                    amoebas.append(item)
+            if len(amoebas) == 1:
+                return amoebas[0]
+            return None
+
         # clear all ui pieces
         for item in list(self._items.values()):
             if item.host and not getattr(item, '_fade_out_active', False):
@@ -333,17 +344,13 @@ class UIManager:
             if self.scope != g.SELECTION:
                 self.base_scope = self.scope
             self.scope = g.SELECTION
-            amoebas = []
-            # check if _one_ of the groups/"amoebas" was selected
-            for item in ctrl.selected:
-                if isinstance(item, Amoeba):
-                    amoebas.append(item)
-            if len(amoebas) == 1:
 
+            selected_amoeba = amoeba_in_selection(ctrl.selected)
+            if selected_amoeba:
                 if self.selection_amoeba:
                     self.remove_selection_amoeba()
                 # select this amoeba
-                self.selection_amoeba = amoebas[0]
+                self.selection_amoeba = selected_amoeba
                 # check if any items in this amoeba's scope are _unselected_
                 for group_member in self.selection_amoeba.selection:
                     if group_member not in ctrl.selected:
@@ -353,18 +360,21 @@ class UIManager:
                     if isinstance(node, Node) and node.can_be_in_groups:
                         if node not in self.selection_amoeba:
                             self.selection_amoeba.add_node(node)
-
+                self.add_buttons_for_amoeba(self.selection_amoeba)
             # draw a selection amoeba around selected nodes
-            elif not self.selection_amoeba:
-                self.selection_amoeba = Amoeba(ctrl.selected, persistent=False)
-                self.selection_amoeba.update_colors(
-                        color_key=ctrl.forest.get_group_color_suggestion())
-                self.add_ui(self.selection_amoeba)
-            # or update existing selection
-            else:
-                self.selection_amoeba.update_selection(ctrl.selected)
-                self.selection_amoeba.update_shape()
-            self.add_buttons_for_amoeba(self.selection_amoeba)
+            elif ctrl.area_selection:
+                if not self.selection_amoeba:
+                    self.selection_amoeba = Amoeba(ctrl.selected, persistent=False)
+                    self.selection_amoeba.update_colors(
+                            color_key=ctrl.forest.get_group_color_suggestion())
+                    self.add_ui(self.selection_amoeba)
+                # or update existing selection
+                else:
+                    self.selection_amoeba.update_selection(ctrl.selected)
+                    self.selection_amoeba.update_shape()
+                self.add_buttons_for_amoeba(self.selection_amoeba)
+            elif self.selection_amoeba:
+                self.remove_selection_amoeba()
         else:
             self.scope = self.base_scope
             if self.selection_amoeba:
@@ -811,7 +821,7 @@ class UIManager:
         self._node_edits.add(ed)
         ed.wake_up()
 
-    def get_editing_node(self, node):
+    def get_editing_embed_for_node(self, node):
         ui_key = node.save_key + '_edit'
         return self.get_ui(ui_key)
 
@@ -907,6 +917,12 @@ class UIManager:
                         ta = self.get_touch_area(edge, key)
                         if not ta:
                             self.create_touch_area(edge, key, action)
+                elif place == 'parent_above':
+                    for parent in node.get_parents(only_similar=True, only_visible=True):
+                        ta = self.get_touch_area(parent, key)
+                        if not ta:
+                            self.create_touch_area(parent, key, action)
+
                 elif not place:
                     ta = self.get_touch_area(node, key)
                     if not ta:
@@ -933,14 +949,14 @@ class UIManager:
                         self.create_touch_area(edge.start, g.TOUCH_ADD_CONSTITUENT,
                                                self.get_action('replace_placeholder'))
             else:
-                ta = self.get_touch_area(edge, g.LEFT_ADD_SIBLING)
+                ta = self.get_touch_area(edge, g.INNER_ADD_SIBLING_LEFT)
                 if not ta:
-                    self.create_touch_area(edge, g.LEFT_ADD_SIBLING,
-                                           self.get_action('add_sibling_left'))
-                ta = self.get_touch_area(edge, g.RIGHT_ADD_SIBLING)
+                    self.create_touch_area(edge, g.INNER_ADD_SIBLING_LEFT,
+                                           self.get_action('inner_add_sibling_left'))
+                ta = self.get_touch_area(edge, g.INNER_ADD_SIBLING_RIGHT)
                 if not ta:
-                    self.create_touch_area(edge, g.RIGHT_ADD_SIBLING,
-                                           self.get_action('add_sibling_right'))
+                    self.create_touch_area(edge, g.INNER_ADD_SIBLING_RIGHT,
+                                           self.get_action('inner_add_sibling_right'))
 
     def prepare_touch_areas_for_dragging(self, drag_host=None, moving=None, dragged_type='',
                                          multidrag=False):

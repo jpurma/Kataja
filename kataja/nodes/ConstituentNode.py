@@ -98,24 +98,35 @@ class ConstituentNode(BaseConstituentNode):
         g.TOUCH_CONNECT_FEATURE: {'condition': 'dragging_feature'},
         g.TOUCH_CONNECT_GLOSS: {'condition': 'dragging_gloss'}}
 
-    touch_areas_when_selected = {g.LEFT_ADD_TOP: {'condition': 'is_top_node',
-                                                  'action': 'add_top_left'},
-                                 g.RIGHT_ADD_TOP: {'condition': 'is_top_node',
-                                                   'action': 'add_top_right'},
-                                 g.LEFT_ADD_SIBLING: {'place': 'edge_up',
-                                                      'action': 'add_sibling_left'},
-                                 g.RIGHT_ADD_SIBLING: {'place': 'edge_up',
-                                                       'action': 'add_sibling_right'},
-                                 g.LEFT_ADD_CHILD: {'condition': 'can_add_child',
-                                                    'action': 'add_child_left'},
-                                 g.RIGHT_ADD_CHILD: {'condition': 'can_add_child',
-                                                     'action': 'add_child_right'},
-                                 g.ADD_TRIANGLE: {'condition': 'can_have_triangle',
-                                                  'action': 'add_triangle'},
-                                 g.REMOVE_TRIANGLE: {'condition': 'has_triangle',
-                                                     'action': 'remove_triangle'}}
+    touch_areas_when_selected = {
+        g.LEFT_ADD_TOP: {'condition': 'is_top_node',
+                         'action': 'add_top_left'},
+        g.RIGHT_ADD_TOP: {'condition': 'is_top_node',
+                          'action': 'add_top_right'},
+        g.INNER_ADD_SIBLING_LEFT: {'condition': 'inner_add_sibling',
+                                   'place': 'edge_up',
+                                   'action': 'inner_add_sibling_left'},
+        g.INNER_ADD_SIBLING_RIGHT: {'condition': 'inner_add_sibling',
+                                    'place': 'edge_up',
+                                    'action': 'inner_add_sibling_right'},
+        g.UNARY_ADD_CHILD_LEFT: {'condition': 'has_one_child',
+                                 'action': 'unary_add_child_left'},
+        g.UNARY_ADD_CHILD_RIGHT: {'condition': 'has_one_child',
+                                  'action': 'unary_add_child_right'},
+        g.LEAF_ADD_SIBLING_LEFT: {'condition': 'is_leaf',
+                                  'action': 'leaf_add_sibling_left'},
+        g.LEAF_ADD_SIBLING_RIGHT: {'condition': 'is_leaf',
+                                   'action': 'leaf_add_sibling_right'},
+        g.ADD_TRIANGLE: {'condition': 'can_have_triangle',
+                         'action': 'add_triangle'},
+        g.REMOVE_TRIANGLE: {'condition': 'has_triangle',
+                            'action': 'remove_triangle'}
+    }
 
-    buttons_when_selected = {g.REMOVE_MERGER: {'condition': 'is_unnecessary_merger'}}
+    buttons_when_selected = {
+        g.REMOVE_MERGER: {'condition': 'is_unnecessary_merger'},
+        g.NODE_EDITOR_BUTTON: {}
+    }
 
     def __init__(self, constituent=None):
         """ Most of the initiation is inherited from Node """
@@ -198,7 +209,7 @@ class ConstituentNode(BaseConstituentNode):
         if inode.indices and inode.indices[0]:
             index = inode.indices[0]
 
-        is_leaf = self.is_leaf_node()
+        is_leaf = self.is_leaf()
         lines = len(inode.rows)
         if lines >= 3:
             alias = inode.rows[0]
@@ -228,7 +239,7 @@ class ConstituentNode(BaseConstituentNode):
             s = ctrl.forest.settings
             alias_inode_part = self._inode.fields.get('alias', None)
             label_inode_part = self._inode.fields.get('label', None)
-            if self.is_leaf_node(only_visible=True) or self.triangle:
+            if self.is_leaf(only_visible=True) or self.triangle:
                 if alias_inode_part:
                     alias_inode_part['visible'] = s.show_leaf_aliases
                 if label_inode_part:
@@ -276,7 +287,7 @@ class ConstituentNode(BaseConstituentNode):
             leaves = ITextNode()
             # todo: Use a better linearization here
             for node in ctrl.forest.list_nodes_once(self):
-                if node.is_leaf_node(only_visible=False) and node.label:
+                if node.is_leaf(only_visible=False) and node.label:
                     leaves += node.label
                     leaves += ' '
             return leaves.tidy()
@@ -296,7 +307,7 @@ class ConstituentNode(BaseConstituentNode):
                 label = ''
             if self.is_trace:
                 name = "Trace"
-            if self.is_leaf_node():
+            if self.is_leaf():
                 name = "Leaf constituent"
             elif self.is_top_node():
                 name = "Root constituent"
@@ -380,15 +391,19 @@ class ConstituentNode(BaseConstituentNode):
                 good_children += 1
         return good_children < 2
 
+    # Conditions ##########################
+    # These are called from templates with getattr, and may appear unused for IDE's analysis.
+    # Check their real usage with string search before removing these.
 
-    def can_add_child(self):
+    def inner_add_sibling(self):
+        """ Node has child and it is not unary child. There are no other reasons preventing
+        adding siblings
+        :return: bool
         """
+        return list(self.get_children()) and not self.is_unary()
 
-        :return:
-        """
-        children = list(self.get_children())
-        return len(children) < 2
-
+    def has_one_child(self):
+        return len(list(self.get_children())) == 1
 
     def can_be_projection(self):
         """ Node can be projection from other nodes if it has other nodes
@@ -398,7 +413,7 @@ class ConstituentNode(BaseConstituentNode):
         :return:
         """
         if ctrl.fs.use_projection:
-            return not self.is_leaf_node(only_similar=True, only_visible=False)
+            return not self.is_leaf(only_similar=True, only_visible=False)
         else:
             return False
 
@@ -423,7 +438,7 @@ class ConstituentNode(BaseConstituentNode):
         for n, child in enumerate(children):
             ch = child.head or child
             potent = child.head or (
-            child.is_leaf_node(only_visible=False) and not child.is_placeholder())
+                child.is_leaf(only_visible=False) and not child.is_placeholder())
             d = {'text': '%s%s' % (prefix[n], ch.short_str()), 'value': ch,
                  'is_checked': ch is self.head, 'enabled': bool(potent),
                  'tooltip': 'inherit head from ' + str(ch)}
@@ -524,7 +539,7 @@ class ConstituentNode(BaseConstituentNode):
     def is_empty_node(self):
         """ Empty nodes can be used as placeholders and deleted or replaced without structural
         worries """
-        return (not (self.alias or self.label or self.index)) and self.is_leaf_node()
+        return (not (self.alias or self.label or self.index)) and self.is_leaf()
 
     # ## Indexes and chains ###################################
 
@@ -535,7 +550,7 @@ class ConstituentNode(BaseConstituentNode):
         :return:
         """
         if self.index:
-            return not (self.is_leaf_node() and self.label == 't')
+            return not (self.is_leaf() and self.label == 't')
         return False
 
     # ############## #

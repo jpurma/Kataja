@@ -726,6 +726,13 @@ syntactic_object: %s
                 return True
         return False
 
+    def is_unary(self):
+        for parent in self.get_parents(only_similar=True):
+            if len(list(parent.get_children())) == 1:
+                return True
+        return False
+
+
     def get_siblings(self):
         """ Return those nodes that are other children of node's parents
         :return:
@@ -737,7 +744,7 @@ syntactic_object: %s
                     sibs.append(child)
         return sibs
 
-    def is_leaf_node(self, only_similar=True, only_visible=False):
+    def is_leaf(self, only_similar=True, only_visible=False):
         """
 
         :param only_similar:
@@ -1304,10 +1311,12 @@ syntactic_object: %s
             self.setZValue(10)
             if ctrl.main.use_tooltips:
                 self.setToolTip("")
+            self.label_object.set_quick_editing(False)
         else:
             self.setZValue(200)
             if ctrl.main.use_tooltips:
-                self.setToolTip("Click to edit labels")
+                self.setToolTip("Edit with keyboard, double click to inspect node")
+            self.label_object.set_quick_editing(True)
 
             # self.node_info()
         self.update()
@@ -1327,10 +1336,11 @@ syntactic_object: %s
         :param event:
         """
         self.hovering = False
-        if ctrl.is_selected(self):
-            self.open_embed()
-        else:
-            ctrl.select(self)
+        ctrl.select(self)
+        self.open_embed()
+
+        #if ctrl.is_selected(self):
+        #else:
 
     def select(self, event=None, multi=False):
         """ Scene has decided that this node has been clicked
@@ -1340,15 +1350,16 @@ syntactic_object: %s
         self.hovering = False
         if (event and event.modifiers() == Qt.ShiftModifier) or multi:
             # multiple selection
+            ctrl.area_selection = True
             if ctrl.is_selected(self):
                 ctrl.remove_from_selection(self)
             else:
                 ctrl.add_to_selection(self)
             return
         if ctrl.is_selected(self):
-            self.open_embed()
+            pass
         else:
-            editor = ctrl.ui.get_editing_node(self)
+            editor = ctrl.ui.get_editing_embed_for_node(self)
             ctrl.select(self)
             if editor and editor.isVisible():
                 self.open_embed()
@@ -1645,6 +1656,7 @@ syntactic_object: %s
         if change == QtWidgets.QGraphicsObject.ItemPositionHasChanged:
             for tree in self.trees:
                 tree.tree_changed = True
+            ctrl.ui.update_position_for(self)
         return QtWidgets.QGraphicsObject.itemChange(self, change, value)
 
     # ############## #

@@ -489,14 +489,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         :return:
         """
         self.graph_view.toggle_suppress_drag(False)
-        if self._dblclick and not ctrl.pressed:
-            # doubleclick sends one release event at the end, swallow that
-            self._dblclick = False
-            if self._dragging:
-                print('dblclick while dragging? Unpossible!')
-            ctrl.press(None)
-            return
-        elif ctrl.pressed:
+        if ctrl.pressed:
             pressed = ctrl.pressed  # : :type pressed: Movable
             x, y = to_tuple(event.scenePos())
             if self._dragging:
@@ -506,7 +499,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 ctrl.ui.update_selections()  # drag operation may have
                 # changed visible affordances
                 ctrl.main.action_finished(message)  # @UndefinedVariable
-            else:
+            else: # This is regular click on 'pressed' object
                 if pressed.clickable:
                     pressed.click(event)
                 if pressed.selectable:
@@ -514,16 +507,26 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 pressed.update()
                 ctrl.press(None)
             return None  # this mouseRelease is now consumed
-        else:
-            if event.modifiers() == Qt.ShiftModifier:
-                pass
-            else:
-                ctrl.deselect_objects()
+        elif self._dblclick:
+            # doubleclick sends one release event at the end, swallow that
+            self._dblclick = False
+            if self._dragging:
+                print('dblclick while dragging? Unpossible!')
+            ctrl.press(None)
+            return
+
+        # No object was pressed -- either clicking on nothing or ending a selection drag
+
+        # click on empty place means select nothing, unless we are shift+selecting
+        if event.modifiers() != Qt.ShiftModifier:
+            ctrl.deselect_objects()
+
+        # It should be impossible to still be dragging while no object is pressed:
         if self._dragging:
             print('still _dragging!')
-        elif ctrl.pressed:
-            print('mouseReleaseEvent, but still ctrl.pressed!:', ctrl.pressed)
+
         if self.graph_view.selection_mode():
+            ctrl.area_selection = True
             ctrl.multiselection_start()
             ctrl.deselect_objects()
             # prioritize nodes in multiple selection. e.g. if there are nodes
@@ -541,6 +544,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                                                                             False):
                     item.select(event, multi=True)
             ctrl.multiselection_end()
+            ctrl.area_selection = False
         return QtWidgets.QGraphicsScene.mouseReleaseEvent(self, event)
 
     def get_drop_recipient(self, pressed, event):

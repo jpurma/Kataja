@@ -150,7 +150,7 @@ class BaseConstituentNode(Node):
     def update_status_tip(self):
         """ Hovering status tip """
         if self.syntactic_object:
-            if self.is_leaf_node(only_similar=True, only_visible=False):
+            if self.is_leaf(only_similar=True, only_visible=False):
                 name = "Leaf constituent"
             elif self.is_top_node():
                 name = "Root constituent"
@@ -394,7 +394,7 @@ class BaseConstituentNode(Node):
     def is_empty_node(self):
         """ Empty nodes can be used as placeholders and deleted or replaced without structural
         worries """
-        return (not self.label) and self.is_leaf_node(only_similar=True, only_visible=False)
+        return (not self.label) and self.is_leaf(only_similar=True, only_visible=False)
 
     def get_features_as_string(self):
         """

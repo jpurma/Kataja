@@ -1379,41 +1379,7 @@ a['constituent_set_head'] = {'command': 'Set head for inheritance',
                              'method': constituent_set_head,
                              'sender_arg': True}
 
-
-def add_sibling_left(sender=None):
-    """
-
-    :param sender:
-    :return:
-    """
-    host = get_host(sender)
-    child = host.end
-    parent = host.start
-    new_node = ctrl.forest.create_node(relative=child)
-    ctrl.forest.insert_node_between(new_node, parent, child,
-                                    True,
-                                    sender.start_point)
-a['add_sibling_left'] = {'command': 'Add sibling node to left',
-                         'method': add_sibling_left,
-                         'sender_arg': True}
-
-
-def add_sibling_right(sender=None):
-    """
-
-    :param sender:
-    :return:
-    """
-    host = get_host(sender)
-    child = host.end
-    parent = host.start
-    new_node = ctrl.forest.create_node(relative=child)
-    ctrl.forest.insert_node_between(new_node, parent, child,
-                                    False,
-                                    sender.start_point)
-a['add_sibling_right'] = {'command': 'Add sibling node to right',
-                         'method': add_sibling_right,
-                         'sender_arg': True}
+# Actions for TouchAreas #######################################
 
 
 def add_top_left(sender=None):
@@ -1442,34 +1408,109 @@ a['add_top_right'] = {'command': 'Add node to right',
                       'sender_arg': True}
 
 
-def add_child_left(sender=None):
+def inner_add_sibling_left(sender=None):
     """
 
     :param sender:
     :return:
     """
     node = get_host(sender)
-    ctrl.forest.add_child_for_constituentnode(node,
-                                              pos=sender.end_point,
-                                              add_left=True)
-a['add_child_left'] = {'command': 'Add child node to left',
-                       'method': add_child_left,
-                       'sender_arg': True}
+    if isinstance(node, Edge):
+        node = node.end
+    ctrl.forest.add_sibling_for_constituentnode(node, add_left=True)
+
+a['inner_add_sibling_left'] = {'command': 'Add sibling node to left',
+                               'method': inner_add_sibling_left,
+                               'sender_arg': True}
 
 
-def add_child_right(sender=None):
+def inner_add_sibling_right(sender=None):
     """
 
     :param sender:
     :return:
     """
     node = get_host(sender)
-    ctrl.forest.add_child_for_constituentnode(node,
-                                              pos=sender.end_point,
-                                              add_left=False)
-a['add_child_right'] = {'command': 'Add child node to right',
-                        'method': add_child_right,
-                        'sender_arg': True}
+    if isinstance(node, Edge):
+        node = node.end
+    ctrl.forest.add_sibling_for_constituentnode(node, add_left=False)
+
+a['inner_add_sibling_right'] = {'command': 'Add sibling node to right',
+                                'method': inner_add_sibling_right,
+                                'sender_arg': True}
+
+
+def unary_add_child_left(sender=None):
+    """
+
+    :param sender:
+    :return:
+    """
+    node = get_host(sender)
+    ctrl.forest.unary_add_child_for_constituentnode(node, add_left=True)
+
+a['unary_add_child_left'] = {'command': 'Add child node to left',
+                               'method': unary_add_child_left,
+                               'sender_arg': True}
+
+
+def unary_add_child_right(sender=None):
+    """
+
+    :param sender:
+    :return:
+    """
+    node = get_host(sender)
+    ctrl.forest.unary_add_child_for_constituentnode(node, add_left=False)
+
+a['unary_add_child_right'] = {'command': 'Add child node to right',
+                                'method': unary_add_child_right,
+                                'sender_arg': True}
+
+
+def leaf_add_sibling_left(sender=None):
+    """
+
+    :param sender:
+    :return:
+    """
+    node = get_host(sender)
+    ctrl.forest.add_sibling_for_constituentnode(node, add_left=True)
+
+a['leaf_add_sibling_left'] = {'command': 'Add sibling node to left',
+                              'method': leaf_add_sibling_left,
+                              'sender_arg': True}
+
+
+def leaf_add_sibling_right(sender=None):
+    """
+
+    :param sender:
+    :return:
+    """
+    node = get_host(sender)
+    ctrl.forest.add_sibling_for_constituentnode(node, add_left=False)
+
+a['leaf_add_sibling_right'] = {'command': 'Add sibling node to right',
+                               'method': leaf_add_sibling_right,
+                               'sender_arg': True}
+
+# Floating buttons ##################################
+
+
+def toggle_node_edit_embed(sender=None):
+    node = get_host(sender)
+    embed = ctrl.ui.get_editing_embed_for_node(node)
+    if embed:
+        embed.close()
+        ctrl.ui.remove_edit_embed(embed)
+    else:
+        ctrl.ui.start_editing_node(node)
+
+a['toggle_node_edit_embed'] = {'command': 'Inspect and edit node',
+                               'method': toggle_node_edit_embed,
+                               'sender_arg': True}
+
 
 def toggle_amoeba_options(sender=None):
     """
@@ -1692,8 +1733,8 @@ def key_left():
         ctrl.graph_scene.move_selection('left')
 
 
-a['key_left'] = {'command': 'key_left', 'undoable': False, 'method': key_left,
-                 'shortcut': 'Left'}
+#a['key_left'] = {'command': 'key_left', 'undoable': False, 'method': key_left,
+#                 'shortcut': 'Left'}
 
 
 def key_right():
@@ -1705,8 +1746,8 @@ def key_right():
         ctrl.graph_scene.move_selection('right')
 
 
-a['key_right'] = {'command': 'key_right', 'undoable': False,
-                  'method': key_right, 'shortcut': 'Right'}
+#a['key_right'] = {'command': 'key_right', 'undoable': False,
+#                  'method': key_right, 'shortcut': 'Right'}
 
 
 def key_up():

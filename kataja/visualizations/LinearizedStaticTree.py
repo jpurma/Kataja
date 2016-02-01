@@ -131,7 +131,6 @@ class LinearizedStaticTree(BalancedTree):
                     return g
                 elif len(grids) == 1:
                     # hmmmm
-                    print('case of 1 grid, ', node)
                     _add_merger_node(grids[0], node)
                     return grids[0]
                 else:

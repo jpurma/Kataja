@@ -272,7 +272,43 @@ class AmoebaOptionsButton(OverlayButton):
         p = ctrl.main.graph_view.mapFromScene(x - w2, y - h2)
         self.move(p)
 
-button_definitions = {g.REMOVE_MERGER: RemoveMergerButton, g.AMOEBA_OPTIONS: AmoebaOptionsButton}
+
+class NodeEditorButton(OverlayButton):
+
+    def __init__(self, host, ui_key, parent=None):
+        super().__init__(host,
+                         ui_key,
+                         qt_prefs.settings_pixmap,
+                         g.NODE_EDITOR_BUTTON,
+                         text='Edit this node',
+                         parent=parent,
+                         size=16,
+                         color_key='accent8')
+        self.role = g.NODE_EDITOR_BUTTON
+        self.action_name = 'toggle_node_edit_embed'
+        self.edge = None
+
+    def update_position(self):
+        """ """
+        adjust = QtCore.QPointF(9, -8)
+        x, y = self.host.current_scene_position
+        p = QtCore.QPointF(x + (self.host.width / 2), y)
+        p = ctrl.main.graph_view.mapFromScene(p) + adjust
+        p = p.toPoint()
+        self.move(p)
+
+    def enterEvent(self, event):
+        self.host.hovering = True
+        OverlayButton.enterEvent(self, event)
+
+    def leaveEvent(self, event):
+        self.host.hovering = False
+        OverlayButton.leaveEvent(self, event)
+
+
+button_definitions = {g.REMOVE_MERGER: RemoveMergerButton,
+                      g.AMOEBA_OPTIONS: AmoebaOptionsButton,
+                      g.NODE_EDITOR_BUTTON: NodeEditorButton}
 
 
 def button_factory(role_key, node, save_key, parent):

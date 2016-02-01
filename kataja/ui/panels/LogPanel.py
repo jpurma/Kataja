@@ -25,6 +25,7 @@ class LogPanel(UIPanel):
         inner.setFont(qt_prefs.font(g.CONSOLE_FONT))  # @UndefinedVariable
         inner.setAutoFillBackground(True)
         inner.sizeHint = self.sizeHint
+        inner.setFocusPolicy(QtCore.Qt.NoFocus)
         self.preferred_size = inner.preferred_size
         self.setWidget(inner)
         ui_manager.log_writer.attach_display_widget(inner)
