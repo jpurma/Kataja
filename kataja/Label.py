@@ -49,7 +49,7 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.triangle_y = 0
         self.width = 0
         self._quick_editing = False
-
+        self._last_blockpos = ()
         self.doc = LabelDocument()
         self.setDocument(self.doc)
         self.doc.contentsChanged.connect(self.doc_changed)
@@ -127,24 +127,32 @@ class Label(QtWidgets.QGraphicsTextItem):
                 ctrl.forest.draw()
 
     def keyReleaseEvent(self, keyevent):
+        """ keyReleaseEvent is received after the keypress is registered by editor, so if we
+        check cursor position here we receive the situation after normal cursor movement. So
+        moving 'up' to first line would also register here as being in first line and moving up.
+        Which is one up too many. So instead we store the last cursor pos and use that to decide
+        if we are eg. in first line and moving up.
+        :param keyevent:
+        :return:
+        """
         c = self.textCursor()
         next_sel = None
-        if keyevent.matches(QtGui.QKeySequence.MoveToPreviousChar):
-            if c.atStart():
+        if self._last_blockpos:
+            first, last, first_line, last_line = self._last_blockpos
+            if first and keyevent.matches(QtGui.QKeySequence.MoveToPreviousChar):
                 next_sel = ctrl.graph_scene.find_next_selection(self._host, 'left')
-        elif keyevent.matches(QtGui.QKeySequence.MoveToNextChar):
-            if c.atEnd():
+            elif last and keyevent.matches(QtGui.QKeySequence.MoveToNextChar):
                 next_sel = ctrl.graph_scene.find_next_selection(self._host, 'right')
-        elif keyevent.matches(QtGui.QKeySequence.MoveToPreviousLine):
-            if c.atStart():
+            elif first_line and keyevent.matches(QtGui.QKeySequence.MoveToPreviousLine):
                 next_sel = ctrl.graph_scene.find_next_selection(self._host, 'up')
-        elif keyevent.matches(QtGui.QKeySequence.MoveToNextLine):
-            if c.atEnd():
+            elif last_line and keyevent.matches(QtGui.QKeySequence.MoveToNextLine):
                 next_sel = ctrl.graph_scene.find_next_selection(self._host, 'down')
-        if next_sel and next_sel != self._host:
-            self.clearFocus()
-            ctrl.select(next_sel)
-            next_sel.setFocus()
+            if next_sel and next_sel != self._host:
+                self.clearFocus()
+                ctrl.select(next_sel)
+                next_sel.setFocus()
+        self._last_blockpos = (c.atStart(), c.atEnd(), c.blockNumber() == 0,
+                               c.blockNumber() == self.doc.blockCount())
 
     def resize_label(self):
         l = self.doc.lineCount()

@@ -204,21 +204,14 @@ class GraphScene(QtWidgets.QGraphicsScene):
                     best = edges[0]
                     found = True
             elif isinstance(current, Edge):
-                if current.start and current.alignment == 2:
+                if current.start and current.alignment == g.RIGHT:
                     best = current.start
                     found = True
-                elif current.end and current.alignment == 1:
+                elif current.end and current.alignment == g.LEFT:
                     best = current.end
                     found = True
-                elif current.end and current.alignment == 0:
+                elif current.end and current.alignment == g.NO_ALIGN:
                     best = current.end
-                    found = True
-            elif isinstance(current, TouchArea):
-                if current.type == g.RIGHT_ADD_TOP and current.host.top_left_touch_area:
-                    best = current.host.top_left_touch_area
-                    found = True
-                elif current.type == g.RIGHT_ADD_SIBLING and current.host.left_touch_area:
-                    best = current.host.left_touch_area
                     found = True
             if not found:
                 for item, pos in selectables:
@@ -242,21 +235,14 @@ class GraphScene(QtWidgets.QGraphicsScene):
                     best = edges[-1]
                     found = True
             elif isinstance(current, Edge):
-                if current.end and current.alignment == 2:
+                if current.end and current.alignment == g.RIGHT:
                     best = current.end
                     found = True
-                elif current.start and current.alignment == 1:
+                elif current.start and current.alignment == g.LEFT:
                     best = current.start
                     found = True
-                elif current.end and current.alignment == 0:
+                elif current.end and current.alignment == g.NO_ALIGN:
                     best = current.end
-                    found = True
-            elif isinstance(current, TouchArea):
-                if current.type == g.LEFT_ADD_TOP and current.host.top_right_touch_area:
-                    best = current.host.top_right_touch_area
-                    found = True
-                elif current.type == g.LEFT_ADD_SIBLING and current.host.right_touch_area:
-                    best = current.host.right_touch_area
                     found = True
             if not found:
                 for item, pos in selectables:

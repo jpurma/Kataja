@@ -1733,8 +1733,8 @@ def key_left():
         ctrl.graph_scene.move_selection('left')
 
 
-#a['key_left'] = {'command': 'key_left', 'undoable': False, 'method': key_left,
-#                 'shortcut': 'Left'}
+a['key_left'] = {'command': 'key_left', 'undoable': False, 'method': key_left,
+                 'shortcut': 'Left'}
 
 
 def key_right():
@@ -1746,8 +1746,8 @@ def key_right():
         ctrl.graph_scene.move_selection('right')
 
 
-#a['key_right'] = {'command': 'key_right', 'undoable': False,
-#                  'method': key_right, 'shortcut': 'Right'}
+a['key_right'] = {'command': 'key_right', 'undoable': False,
+                  'method': key_right, 'shortcut': 'Right'}
 
 
 def key_up():
