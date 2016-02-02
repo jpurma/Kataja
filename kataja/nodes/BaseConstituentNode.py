@@ -190,6 +190,10 @@ class BaseConstituentNode(Node):
 
     def get_ordered_children(self):
         """ Return children by using the ordering method from syntax.
+
+        fixme: A nice behavior would be to return list when children can be ordered and set when
+        they cannot be.
+
         :return:
         """
         if self.syntactic_object:
@@ -200,7 +204,7 @@ class BaseConstituentNode(Node):
     def get_attribute_nodes(self, label_key=''):
         """
 
-        :param label_key:
+        :param label_k ey:
         :return:
         """
         atts = [x.end for x in self.edges_down if x.edge_type == g.ATTRIBUTE_EDGE]

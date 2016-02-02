@@ -51,7 +51,6 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
             self.set_vis_data('max_height_steps', max_height_steps)
             self.set_vis_data('height_steps', max_height_steps / 2)
 
-
         for node in self.forest.visible_nodes():
             self.reset_node(node)
 
@@ -78,7 +77,6 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
         self.set_vis_data('height_steps', hs)
         self.forest.main.add_message('Set height: %s' % hs)
 
-
     def draw(self):
         """
 
@@ -87,14 +85,17 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
         x = 0
         y = 0
         start_height = self.get_vis_data('height_steps') * prefs.edge_height
+        tree_x = 0
 
         for tree in self.forest:
+            old_x, tree_y = tree.current_position
+            tree.move_to(tree_x, tree_y)
+            print('tree moving to: ', tree_x)
             top = tree.top
             if top.node_type != CONSTITUENT_NODE:
                 continue
             # linearized = ctrl.FL.Linearize(root.syntactic_object)
             depths = []
-            total_width = 0
             nodelist = []
             top.physics_x = True
             top.physics_y = False
@@ -116,6 +117,7 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
                     node.physics_x = True
                     node.physics_y = True
             total_width = sum([node.width for node in nodelist]) + (10 * len(nodelist))
+            tree_x += total_width
             offset = total_width / -2
             x = offset
             # measureDepth(rootnode,0)

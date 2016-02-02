@@ -97,7 +97,14 @@ remerged to another position. Projections need to be refactored for that.
 allow additions
     + Fixed many undo issues
     + Undoing switches between visualizations can cause crashes, and generally don't work
-- In new project, when child node was created it appeared on top of the previous node and soon crashed
++ In new project, when child node was created it appeared on top of the previous node and soon
+crashed
+    + New sibling for new tree starting node is drawn on top of the existing node, prob. doesn't
+    belong to any tree.
+- Main text font not included in distribution and it's not standard in macs
+- Icons may appear in wrong size (wheel icon) or partly misdrawn in non-retina macs.
+    - Selection color doesn't update when changing palette for programmatically drawn icons.
+- Linearized Dynamic -visualization draws all trees on same x-position.
 
 
 ADD:

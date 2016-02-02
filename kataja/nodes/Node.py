@@ -490,6 +490,11 @@ syntactic_object: %s
 
 
     # Tree membership ##########################################################
+    #
+    # Note that tree membership is bidirectional: trees keep a record of nodes that belong to
+    # them and nodes keep record of which trees they belong to. This can easily lead to endless
+    # loops, where removal for one calls for removal from another, or same with addition.
+    # To prevent this: LET 'TREE' OBJECTS DO THE CALLING OF ADD/REMOVE METHODS IN HERE
 
     def pick_tallest_tree(self):
         """ A node can belong to many trees, but in some cases only one is needed. Choose taller

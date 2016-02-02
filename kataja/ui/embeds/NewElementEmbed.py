@@ -150,7 +150,7 @@ class NewElementEmbed(UIEmbed):
             nd = prefs.nodes[key]
             self.node_types.append(('New %s' % nd['name'].lower(), key))
         self.node_types.append(('New arrow', g.ARROW))
-        self.node_types.append(('New divider', g.DIVIDER))
+        #self.node_types.append(('New divider', g.DIVIDER))
         for i, (name, value) in enumerate(self.node_types):
             self.node_type_selector.addItem(name)
             self.node_type_selector.setItemData(i, value, 256)

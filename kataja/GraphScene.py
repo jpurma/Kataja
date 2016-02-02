@@ -290,7 +290,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 if len(edges) == 1:
                     best = edges[0]
                     found = True
-            if isinstance(current, Edge):
+            elif isinstance(current, Edge):
                 if current.end:
                     best = current.end
                     found = True

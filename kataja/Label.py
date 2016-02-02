@@ -49,6 +49,7 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.triangle_y = 0
         self.width = 0
         self._quick_editing = False
+        self._recursion_block = False
         self._last_blockpos = ()
         self.doc = LabelDocument()
         self.setDocument(self.doc)
@@ -115,8 +116,10 @@ class Label(QtWidgets.QGraphicsTextItem):
             self.clearFocus()
 
     def doc_changed(self):
-        if self._quick_editing:
+        if self._quick_editing and not self._recursion_block:
+            self._recursion_block = True
             self.prepareGeometryChange()
+            self.doc.interpret_changes(self._host.as_inode())
             w = self.width
             self.setTextWidth(self.doc.idealWidth())
             self.resize_label()
@@ -125,6 +128,7 @@ class Label(QtWidgets.QGraphicsTextItem):
                 ctrl.ui.selection_amoeba.update_shape()
             if self.width != w and self.scene() == ctrl.graph_scene:
                 ctrl.forest.draw()
+            self._recursion_block = False
 
     def keyReleaseEvent(self, keyevent):
         """ keyReleaseEvent is received after the keypress is registered by editor, so if we
@@ -152,7 +156,7 @@ class Label(QtWidgets.QGraphicsTextItem):
                 ctrl.select(next_sel)
                 next_sel.setFocus()
         self._last_blockpos = (c.atStart(), c.atEnd(), c.blockNumber() == 0,
-                               c.blockNumber() == self.doc.blockCount())
+                               c.blockNumber() == self.doc.blockCount() - 1)
 
     def resize_label(self):
         l = self.doc.lineCount()

@@ -1809,7 +1809,6 @@ class Forest(BaseModel):
         """
 
         new_node = self.create_node(relative=old_node)
-        children = list(old_node.get_children())
 
         if add_left:
             left = new_node
@@ -1823,8 +1822,12 @@ class Forest(BaseModel):
         for op, align, head in parent_info:
             self.disconnect_node(parent=op, child=old_node)
 
-        merger_node = self.create_merger_node(left=left, right=right, create_tree=False,
-                                              new=new_node)
+        merger_node = self.create_merger_node(left=left, right=right, new=new_node)
+
+        # Fix trees to include new node and especially the new merger node
+        for tree in set(old_node.trees):
+            tree.recalculate_top()
+            tree.update_items()
 
         for group in self.groups.values():
             if old_node in group:
@@ -1866,8 +1869,10 @@ class Forest(BaseModel):
             left = top
             right = new
         p = merger_pos[0], merger_pos[1]
-        merger_node = self.create_merger_node(left=left, right=right, pos=p, create_tree=False, new=new)
-        for tree in top.trees:
+        merger_node = self.create_merger_node(left=left, right=right, pos=p, new=new)
+
+        # Fix trees to include the new merger node
+        for tree in set(top.trees):
             tree.recalculate_top()
             tree.update_items()
         merger_node.copy_position(top)
@@ -1925,10 +1930,14 @@ class Forest(BaseModel):
 
         # connections
         p = insertion_pos[0], insertion_pos[1]
-        merger_node = self.create_merger_node(left=left, right=right, pos=p, create_tree=False, new=inserted)
+        merger_node = self.create_merger_node(left=left, right=right, pos=p, new=inserted)
         merger_node.copy_position(child)
         merger_node.current_position = merger_node.scene_position_to_tree_position(p)
         self.connect_node(parent, merger_node, direction=align)
+
+        # trees
+        for tree in parent.trees:
+            tree.update_items()
 
         # groups
         for group in self.groups.values():
@@ -1943,7 +1952,7 @@ class Forest(BaseModel):
         if self.traces_are_visible():
             self.chain_manager.rebuild_chains()
 
-    def create_merger_node(self, left=None, right=None, pos=None, create_tree=True, new=None,
+    def create_merger_node(self, left=None, right=None, pos=None, new=None,
                            head=None):
         """ Gives a merger node of two nodes. Doesn't try to fix their edges
         upwards

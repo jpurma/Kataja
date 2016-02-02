@@ -1241,10 +1241,7 @@ a['change_edge_ending'] = {'command': 'Change edge ending',
 
 
 def edge_disconnect(sender=None):
-    """ Remove connection between two nodes, by either cutting from the start
-    or the end. This will result
-    in a dangling edge, which should be either connected to another node or
-    removed.
+    """ Remove connection between two nodes, this is triggered from the edge.
     :return: None
     """
     # Find the triggering edge
@@ -1252,29 +1249,13 @@ def edge_disconnect(sender=None):
     if not button:
         return
     edge = button.host
-    role = button.role
     old_start = edge.start
-    old_end = edge.end
     if not edge:
         return
     # Then do the cutting
-    if role is 'start_cut':
-        if edge.edge_type is g.CONSTITUENT_EDGE:
-            raise ForestError(
-                "Trying edge disconnect at the start of constituent edge")
-        else:
-            ctrl.forest.delete_edge(edge)
-
-    elif role is 'end_cut':
-        if edge.edge_type is g.CONSTITUENT_EDGE:
-            ctrl.forest.disconnect_node(edge=edge)
-            ctrl.forest.fix_stubs_for(old_start)
-        else:
-            ctrl.forest.delete_edge(edge)
-    else:
-        raise ForestError(
-            'Trying to disconnect node from unknown edge or unhandled cutting '
-            'position')
+    ctrl.forest.delete_edge(edge)
+    if edge.edge_type is g.CONSTITUENT_EDGE:
+        old_start.fix_edge_aligns()
     ctrl.ui.update_selections()
 
 
@@ -1681,7 +1662,6 @@ a['amoeba_save'] = {'command': 'Save this group',
                                'sender_arg': True}
 
 
-
 def key_backspace():
     """ In many contexts this will delete something. Expand this as necessary
     for contexts that don't otherwise grab keyboard.
@@ -1728,7 +1708,6 @@ def key_left():
     """ Placeholder for keypress
     :return: None
     """
-    print('key_left called')
     if not ctrl.ui_focus:
         ctrl.graph_scene.move_selection('left')
 
@@ -1741,7 +1720,6 @@ def key_right():
     """ Placeholder for keypress
     :return: None
     """
-    print('key_right called')
     if not ctrl.ui_focus:
         ctrl.graph_scene.move_selection('right')
 
@@ -1754,7 +1732,6 @@ def key_up():
     """ Placeholder for keypress
     :return: None
     """
-    print('key_up called')
     if not ctrl.ui_focus:
         ctrl.graph_scene.move_selection('up')
 
@@ -1767,7 +1744,6 @@ def key_down():
     """ Placeholder for keypress
     :return: None
     """
-    print('key_down called')
     if not ctrl.ui_focus:
         ctrl.graph_scene.move_selection('down')
 
