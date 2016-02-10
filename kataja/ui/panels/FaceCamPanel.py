@@ -21,18 +21,20 @@ class FaceCamPanel(UIPanel):
 
         UIPanel.__init__(self, name, key, default_position, parent, ui_manager, folded)
         self.camera = None
+        self.aspect = 1.333333333
+        self.camera_width = 320
         layout = QtWidgets.QVBoxLayout()
         widget = QtWidgets.QWidget()
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
         self.viewfinder = QtMultimediaWidgets.QCameraViewfinder()
-        self.viewfinder.setFixedWidth(220)
-        self.viewfinder.setFixedHeight(179)
         layout.addWidget(self.viewfinder)
         widget.setLayout(layout)
         self.activate_camera()
         self.setWidget(widget)
         self.finish_init()
         self.releaseMouse()
+
 
     def activate_camera(self):
         cameras = QtMultimedia.QCameraInfo.availableCameras()
@@ -42,6 +44,16 @@ class FaceCamPanel(UIPanel):
             break
         if self.camera:
             self.camera.setViewfinder(self.viewfinder)
+        self.camera.load()
+        sizes = self.camera.supportedViewfinderResolutions()
+        if sizes:
+            size = sizes[-1]
+            self.aspect = float(size.width()) / size.height()
+        else:
+            self.aspect = 1.333333333
+        self.viewfinder.setFixedWidth(self.camera_width)
+        self.viewfinder.setFixedHeight(self.camera_width / self.aspect)
+
 
     def showEvent(self, event):
         self.camera.start()

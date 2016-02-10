@@ -1526,8 +1526,8 @@ def change_amoeba_color(sender=None):
         if color_key:
             amoeba.update_colors(color_key)
             embed = sender.parent()
-            if embed and hasattr(embed, 'update_color'):
-                embed.update_color()
+            if embed and hasattr(embed, 'update_colors'):
+                embed.update_colors()
             ctrl.main.add_message(
                 'Group color changed to %s' % ctrl.cm.get_color_name(color_key))
 

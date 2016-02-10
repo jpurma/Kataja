@@ -29,7 +29,7 @@ class UIEmbed(QtWidgets.QWidget):
         self.host = host
         self.ui_manager = ui_manager
         self._palette = None
-        self.update_color()
+        self.update_colors()
         self._drag_diff = None
         self.moved_by_hand = False
 
@@ -71,7 +71,7 @@ class UIEmbed(QtWidgets.QWidget):
         return 65702
 
     def update_embed(self, focus_point=None):
-        self.update_color()
+        self.update_colors()
         self.update_fields()
         if focus_point:
             self.update_position(focus_point=focus_point)
@@ -227,7 +227,7 @@ class UIEmbed(QtWidgets.QWidget):
         """
         pass
 
-    def update_color(self):
+    def update_colors(self):
         key = None
         if self.host and hasattr(self.host, 'get_color_id'):
             key = self.host.get_color_id()

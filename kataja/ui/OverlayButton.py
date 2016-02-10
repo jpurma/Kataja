@@ -95,6 +95,7 @@ class PanelButton(QtWidgets.QPushButton):
         """
         c = ctrl.cm.get(self.color_key)
         paper = ctrl.cm.paper()
+        paper2 = ctrl.cm.paper2()
         if self.pixmap:
             image = self.pixmap.toImage()
             painter = QtGui.QPainter(image)
@@ -120,9 +121,9 @@ class PanelButton(QtWidgets.QPushButton):
         i = QtGui.QIcon(QtGui.QPixmap.fromImage(image))
         self.setIcon(i)
         self.setStyleSheet(borderstyle % (c.name(), c.lighter().name(), paper.name(), c.name(),
-                                          paper.name()))
+                                          paper2.name()))
 
-    def update_color(self):
+    def update_colors(self):
         self.compose_icon()
 
     def event(self, e):

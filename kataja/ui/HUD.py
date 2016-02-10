@@ -22,7 +22,7 @@ class HUD(QtWidgets.QGraphicsSimpleTextItem):
         """
         return 65654
 
-    def update_color(self):
+    def update_colors(self):
         """
 
 
