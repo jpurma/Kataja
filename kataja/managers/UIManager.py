@@ -62,6 +62,7 @@ from kataja.ui.panels.VisualizationOptionsPanel import VisualizationOptionsPanel
 from kataja.ui.panels.VisualizationPanel import VisualizationPanel
 from kataja.visualizations.available import VISUALIZATIONS, action_key
 from kataja.utils import time_me
+from kataja.ui.panels.FaceCamPanel import FaceCamPanel
 
 NOTHING = 0
 SELECTING_AREA = 1
@@ -78,15 +79,17 @@ PANELS = {g.LOG: {'name': 'Log', 'position': 'bottom'},
           g.STYLE: {'name': 'Styles', 'position': 'right'},
           g.SYMBOLS: {'name': 'Symbols', 'position': 'right'},
           g.NODES: {'name': 'Nodes', 'position': 'right'},
+          g.CAMERA: {'name': 'Camera', 'position': 'float', 'closed': True},
           g.VIS_OPTIONS: {'name': 'Visualization options', 'position': 'float', 'closed': True}}
 
 panel_order = [g.LOG, g.NAVIGATION, g.SYMBOLS, g.NODES, g.STYLE, g.VISUALIZATION, g.COLOR_THEME,
-               g.COLOR_WHEEL, g.LINE_OPTIONS, g.VIS_OPTIONS]
+               g.CAMERA, g.COLOR_WHEEL, g.LINE_OPTIONS, g.VIS_OPTIONS]
 
 panel_classes = {g.LOG: LogPanel, g.NAVIGATION: NavigationPanel,
                  g.VISUALIZATION: VisualizationPanel, g.COLOR_THEME: ColorPanel,
                  g.COLOR_WHEEL: ColorWheelPanel, g.LINE_OPTIONS: LineOptionsPanel,
                  g.SYMBOLS: SymbolPanel, g.NODES: NodesPanel, g.STYLE: StylePanel,
+                 g.CAMERA: FaceCamPanel,
                  g.VIS_OPTIONS: VisualizationOptionsPanel}
 
 menu_structure = OrderedDict([('file_menu', ('&File',

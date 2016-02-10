@@ -21,6 +21,14 @@ class MarkerStartPoint(QtWidgets.QGraphicsItem):
         self.draggable = True
         self.clickable = False
 
+    def type(self):
+        """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
+        need to differentiate between them. List of types is kept as comments in globals.py,
+        but for performance reasons just hardcode it here.
+        :return:
+        """
+        return 65700
+
     def paint(self, painter, options, QWidget_widget=None):
         if prefs.touch:
             p = QtGui.QPen(ctrl.cm.ui_tr())
@@ -72,6 +80,14 @@ class NewElementMarker(QtWidgets.QGraphicsItem):
         self.draggable = False  # MarkerStartPoint is draggable, not this
         self.clickable = False
         self.dragged = False
+
+    def type(self):
+        """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
+        need to differentiate between them. List of types is kept as comments in globals.py,
+        but for performance reasons just hardcode it here.
+        :return:
+        """
+        return 65701
 
     def paint(self, painter, options, QWidget_widget=None):
         p = QtGui.QPen(ctrl.cm.ui())

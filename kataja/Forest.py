@@ -435,7 +435,6 @@ class Forest(BaseModel):
             if not sc:
                 self.scene.addItem(item)
             elif sc != self.scene:
-                print('has scene already (%s), but not this scene. Overriding.' % sc)
                 self.scene.addItem(item)
 
     def remove_from_scene(self, item):

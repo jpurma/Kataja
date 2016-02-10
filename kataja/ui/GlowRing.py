@@ -25,6 +25,14 @@ class GlowRing(QtWidgets.QGraphicsEllipseItem):
         self._max_radius = radius
         self._step_size = radius / 6.0
 
+    def type(self):
+        """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
+        need to differentiate between them. List of types is kept as comments in globals.py,
+        but for performance reasons just hardcode it here.
+        :return:
+        """
+        return 65653
+
     def grow(self):
         """
 

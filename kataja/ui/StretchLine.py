@@ -15,6 +15,14 @@ class StretchLine(QtWidgets.QGraphicsLineItem):
         self.host = host
         QtWidgets.QGraphicsLineItem.__init__(self, line)
 
+    def type(self):
+        """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
+        need to differentiate between them. List of types is kept as comments in globals.py,
+        but for performance reasons just hardcode it here.
+        :return:
+        """
+        return 65655
+
     def remove(self):
         """
 

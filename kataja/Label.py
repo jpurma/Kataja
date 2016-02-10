@@ -61,6 +61,14 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.line_length = 0
         self._font = None
 
+    def type(self):
+        """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
+        need to differentiate between them. List of types is kept as comments in globals.py,
+        but for performance reasons just hardcode it here.
+        :return:
+        """
+        return 65554
+
     def update_label(self, font, inode):
         """ Asks for node/host to give text and update if changed
         :param font: provide font to use for label document

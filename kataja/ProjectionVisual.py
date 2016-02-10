@@ -16,6 +16,14 @@ class ProjectionVisual(QtWidgets.QGraphicsItem):
         self.color = ctrl.cm.get(self.d.color_tr_id)
         self.show()
 
+    def type(self):
+        """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
+        need to differentiate between them. List of types is kept as comments in globals.py,
+        but for performance reasons just hardcode it here.
+        :return:
+        """
+        return 65555
+
     def boundingRect(self):
         br = QtCore.QRectF()
         for chain in self.d.chains:

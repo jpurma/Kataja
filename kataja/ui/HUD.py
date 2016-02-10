@@ -14,6 +14,14 @@ class HUD(QtWidgets.QGraphicsSimpleTextItem):
         self.setPos(14, 4)
         self.setBrush(ctrl.cm.ui())
 
+    def type(self):
+        """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
+        need to differentiate between them. List of types is kept as comments in globals.py,
+        but for performance reasons just hardcode it here.
+        :return:
+        """
+        return 65654
+
     def update_color(self):
         """
 

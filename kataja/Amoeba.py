@@ -48,6 +48,14 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
     def __contains__(self, item):
         return item in self.selection_with_children
 
+    def type(self):
+        """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
+        need to differentiate between them. List of types is kept as comments in globals.py,
+        but for performance reasons just hardcode it here.
+        :return:
+        """
+        return 65550
+
     def after_init(self):
         self.update_selection(self.selection)
         self.update_shape()

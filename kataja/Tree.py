@@ -108,6 +108,14 @@ class Tree(Movable):
         """
         return not self.top.get_parents(only_similar=False, only_visible=False)
 
+    def type(self):
+        """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
+        need to differentiate between them. List of types is kept as comments in globals.py,
+        but for performance reasons just hardcode it here.
+        :return:
+        """
+        return 65556
+
     def update_items(self):
         """ Check that all children of top item are included in this trees and create the sorted
         lists of items. Make sure there is a top item before calling this!

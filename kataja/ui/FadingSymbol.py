@@ -28,6 +28,14 @@ class FadingSymbol(QtWidgets.QGraphicsObject):
         self.setOpacity(1.0)
         # self.setBrush(colors.ui)
 
+    def type(self):
+        """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
+        need to differentiate between them. List of types is kept as comments in globals.py,
+        but for performance reasons just hardcode it here.
+        :return:
+        """
+        return 65652
+
     def update_position(self):
         # br = self.boundingRect()
         """

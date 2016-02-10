@@ -52,6 +52,14 @@ class ControlPoint(QtWidgets.QGraphicsItem):
             self.setToolTip(self.status_tip)
         self.show()
 
+    def type(self):
+        """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
+        need to differentiate between them. List of types is kept as comments in globals.py,
+        but for performance reasons just hardcode it here.
+        :return:
+        """
+        return 65651
+
     def show(self):
         """ Assign as a watcher if necessary and make visible
         :return: None

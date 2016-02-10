@@ -111,6 +111,14 @@ When nodes that don't use physics are dragged, the adjustment.
         self.clickable = False
         self._hovering = False
 
+    def type(self):
+        """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
+        need to differentiate between them. List of types is kept as comments in globals.py,
+        but for performance reasons just hardcode it here.
+        :return:
+        """
+        return 65558
+
     def after_model_update(self, updated_fields, update_type):
         """ This is called after the item's model has been updated, to run
         the side-effects of various

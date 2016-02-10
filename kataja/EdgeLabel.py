@@ -50,6 +50,13 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         self.setDefaultTextColor(self.parentItem().color)
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
 
+    def type(self):
+        """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
+        need to differentiate between them. List of types is kept as comments in globals.py,
+        but for performance reasons just hardcode it here.
+        :return:
+        """
+        return 65553
 
     def magnet_positions(self):
         w = self._size.width() / 2.0

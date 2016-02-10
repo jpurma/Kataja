@@ -1,8 +1,7 @@
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtMultimedia, QtMultimediaWidgets
 
 from kataja.singletons import prefs, ctrl
 from kataja.ui.panels.UIPanel import UIPanel
-from PyQt5 import QtMultimedia, QtMultimediaWidgets
 
 __author__ = 'purma'
 
@@ -19,27 +18,39 @@ class FaceCamPanel(UIPanel):
         :param default_position: 'bottom', 'right'...
         :param parent: self.main
         """
-        UIPanel.__init__(self, name, key, default_position, parent, ui_manager, folded)
-        layout = QtWidgets.QVBoxLayout()
-        widget = QtWidgets.QWidget(self)
-        #layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
-        cameras = QtMultimedia.QCameraInfo.availableCameras()
-        camera = None
-        for caminfo in cameras:
-            camera = QtMultimedia.QCamera(caminfo)
-            break
-        if camera:
-            print('adding camera: ', camera)
-            viewfinder = QtMultimediaWidgets.QCameraViewfinder()
-            viewfinder.setFixedWidth(220)
-            viewfinder.setFixedHeight(179)
-            camera.setViewfinder(viewfinder)
-            layout.addWidget(viewfinder)
-            viewfinder.show()
-            camera.start()
-            self.camera = camera # if the reference is lost, camera shuts down
-        widget.setLayout(layout)
 
+        UIPanel.__init__(self, name, key, default_position, parent, ui_manager, folded)
+        self.camera = None
+        layout = QtWidgets.QVBoxLayout()
+        widget = QtWidgets.QWidget()
+        layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
+        self.viewfinder = QtMultimediaWidgets.QCameraViewfinder()
+        self.viewfinder.setFixedWidth(220)
+        self.viewfinder.setFixedHeight(179)
+        layout.addWidget(self.viewfinder)
+        widget.setLayout(layout)
+        self.activate_camera()
         self.setWidget(widget)
         self.finish_init()
+        self.releaseMouse()
 
+    def activate_camera(self):
+        cameras = QtMultimedia.QCameraInfo.availableCameras()
+        for caminfo in cameras:
+            self.camera = QtMultimedia.QCamera(caminfo)
+            self.camera.setCaptureMode(QtMultimedia.QCamera.CaptureViewfinder)
+            break
+        if self.camera:
+            self.camera.setViewfinder(self.viewfinder)
+
+    def showEvent(self, event):
+        self.camera.start()
+        UIPanel.showEvent(self, event)
+
+    def closeEvent(self, event):
+        self.camera.stop()
+        UIPanel.closeEvent(self, event)
+
+    def hideEvent(self, event):
+        self.camera.stop()
+        UIPanel.hideEvent(self, event)

@@ -105,7 +105,7 @@ crashed
 - Icons may appear in wrong size (wheel icon) or partly misdrawn in non-retina macs.
     - Selection color doesn't update when changing palette for programmatically drawn icons.
 - Linearized Dynamic -visualization draws all trees on same x-position.
-
++ Overlaps in QGraphicsItem's UserType and camera's UserType break some event detection.
 
 ADD:
 
