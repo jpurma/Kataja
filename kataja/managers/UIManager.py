@@ -69,21 +69,21 @@ SELECTING_AREA = 1
 DRAGGING = 2
 POINTING = 3
 
-PANELS = {g.LOG: {'name': 'Log', 'position': 'bottom'},
-          g.NAVIGATION: {'name': 'Trees', 'position': 'right'},
-          g.VISUALIZATION: {'name': 'Visualization', 'position': 'right'},
-          g.COLOR_THEME: {'name': 'Color theme', 'position': 'right'},
-          g.COLOR_WHEEL: {'name': 'Color theme wheel', 'position': 'right', 'folded': True,
-                          'closed': True},
-          g.LINE_OPTIONS: {'name': 'More line options', 'position': 'float', 'closed': True},
-          g.STYLE: {'name': 'Styles', 'position': 'right'},
-          g.SYMBOLS: {'name': 'Symbols', 'position': 'right'},
-          g.NODES: {'name': 'Nodes', 'position': 'right'},
-          g.CAMERA: {'name': 'Camera', 'position': 'float', 'closed': True},
-          g.VIS_OPTIONS: {'name': 'Visualization options', 'position': 'float', 'closed': True}}
+PANELS = OrderedDict([(g.LOG, {'name': 'Log', 'position': 'bottom'}),
+                      (g.NAVIGATION, {'name': 'Trees', 'position': 'right'}),
+                      (g.VISUALIZATION, {'name': 'Visualization', 'position': 'right'}),
+                      (g.COLOR_THEME, {'name': 'Color theme', 'position': 'right'}),
+                      (g.COLOR_WHEEL, {'name': 'Color theme wheel', 'position': 'right',
+                                       'folded': True, 'closed': True}),
+                      (g.LINE_OPTIONS, {'name': 'More line options', 'position': 'float',
+                                        'closed': True}),
+                      (g.STYLE, {'name': 'Styles', 'position': 'right'}),
+                      (g.SYMBOLS, {'name': 'Symbols', 'position': 'right'}),
+                      (g.NODES, {'name': 'Nodes', 'position': 'right'}),
+                      (g.CAMERA, {'name': 'Camera', 'position': 'float', 'closed': True}),
+                      (g.VIS_OPTIONS, {'name': 'Visualization options', 'position': 'float',
+                                       'closed': True})])
 
-panel_order = [g.LOG, g.NAVIGATION, g.SYMBOLS, g.NODES, g.STYLE, g.VISUALIZATION, g.COLOR_THEME,
-               g.CAMERA, g.COLOR_WHEEL, g.LINE_OPTIONS, g.VIS_OPTIONS]
 
 panel_classes = {g.LOG: LogPanel, g.NAVIGATION: NavigationPanel,
                  g.VISUALIZATION: VisualizationPanel, g.COLOR_THEME: ColorPanel,
@@ -96,13 +96,17 @@ menu_structure = OrderedDict([('file_menu', ('&File',
                                              ['new_project', 'new_forest', 'open', 'save',
                                               'save_as', '---', 'print_pdf', 'blender_render',
                                               '---', 'preferences', '---', 'quit'])),
-                              ('edit_menu', ('&Edit', ['undo', 'redo'])), ('build_menu', (
-    '&Build', ['next_forest', 'prev_forest', 'next_derivation_step', 'prev_derivation_step'])), (
-                              'rules_menu', ('&Rules',
-                                             ['bracket_mode', 'trace_mode', 'merge_order_attribute',
-                                              'select_order_attribute'])), ('view_menu', ('&View', [
-        '$visualizations', '---', 'change_colors', 'adjust_colors', 'zoom_to_fit', '---',
-        'fullscreen_mode'])), ('windows_menu', ('&Windows', [('Panels', ['$panels']), '---',
+                              ('edit_menu', ('&Edit', ['undo', 'redo'])),
+                              ('build_menu', ('&Build', ['next_forest', 'prev_forest',
+                                                         'next_derivation_step',
+                                                         'prev_derivation_step'])),
+                              ('rules_menu', ('&Rules', ['bracket_mode', 'trace_mode',
+                                                         'merge_order_attribute',
+                                                         'select_order_attribute'])),
+                              ('view_menu', ('&View', ['$visualizations', '---', 'change_colors',
+                                                       'adjust_colors', 'zoom_to_fit', '---',
+                                                       'fullscreen_mode'])),
+                              ('windows_menu', ('&Windows', [('Panels', ['$panels']), '---',
                                                              'toggle_all_panels', '---'])),
                               ('help_menu', ('&Help', ['help']))])
 
@@ -142,8 +146,10 @@ class UIManager:
         self.button_shortcut_filter = ButtonShortcutFilter()
         self.shortcut_solver = ShortcutSolver(self)
 
-        self.scope = g.CONSTITUENT_NODE
-        self.base_scope = g.CONSTITUENT_NODE
+        self.scope_is_selection = False
+        self.default_node_type = g.CONSTITUENT_NODE
+        self.active_node_type = g.CONSTITUENT_NODE
+        self.active_edge_type = g.CONSTITUENT_EDGE
         self.selection_amoeba = None
 
         self.preferences_dialog = None
@@ -177,13 +183,14 @@ class UIManager:
         return self._action_groups[action_group_name]
 
     def set_scope(self, scope):
-        self.scope = scope
-        if scope != g.SELECTION:
-            self.base_scope = scope
+        if scope == g.SELECTION:
+            self.scope_is_selection = True
+        else:
+            self.scope_is_selection = False
+            self.active_node_type = scope
+            self.active_edge_type = ctrl.fs.node_info(scope, 'edge')
+        ctrl.call_watchers(self, 'scope_changed')
 
-    @property
-    def edge_scope(self):
-        return ctrl.fs.node_info(self.scope, 'edge')
 
     def start_color_dialog(self, receiver, parent, role, initial_color='content1'):
         """ There can be several color dialogs active at same time. Even when
@@ -344,9 +351,7 @@ class UIManager:
                 self.update_buttons_for_selected_node(item)
         if ctrl.selected:
             # note UI panels that they should use scope 'selection' for their activities
-            if self.scope != g.SELECTION:
-                self.base_scope = self.scope
-            self.scope = g.SELECTION
+            self.set_scope(g.SELECTION)
 
             selected_amoeba = amoeba_in_selection(ctrl.selected)
             if selected_amoeba:
@@ -379,7 +384,9 @@ class UIManager:
             elif self.selection_amoeba:
                 self.remove_selection_amoeba()
         else:
-            self.scope = self.base_scope
+            if self.scope_is_selection:
+                self.scope_is_selection = False
+                ctrl.call_watchers(self, 'scope_changed')
             if self.selection_amoeba:
                 self.remove_selection_amoeba()
 
@@ -595,9 +602,7 @@ class UIManager:
         :return: None
         """
         self._panels = {}
-        for panel_key in panel_order:
-            data = PANELS[panel_key]
-
+        for panel_key, data in PANELS.items():
             if data.get('closed', False):
                 checked = False
             else:

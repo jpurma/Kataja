@@ -648,9 +648,8 @@ def change_style_scope(sender=None):
     :return: None
     """
     if sender:
-        data = sender.currentData(256)
-        ctrl.ui.scope = data
-        ctrl.call_watchers(sender, 'scope_changed', 'scope', data)
+        value = sender.currentData(256)
+        ctrl.ui.set_scope(value)
 
 
 a['style_scope'] = {'command': 'Select the scope for style changes',
@@ -704,15 +703,14 @@ def change_edge_shape(sender=None):
     shape = sender.currentData()
     if shape is g.AMBIGUOUS_VALUES:
         return
-    scope = ctrl.ui.scope
-    if scope == g.SELECTION:
+
+    if ctrl.ui.scope_is_selection:
         for edge in ctrl.selected:
             if isinstance(edge, Edge):
                 edge.shape_name = shape
                 edge.update_shape()
-    elif scope:
-        edge_type = ctrl.fs.node_info(scope, 'edge')
-        ctrl.fs.set_edge_info(edge_type, 'shape_name', shape)
+    else:
+        ctrl.fs.set_edge_info(ctrl.ui.active_edge_type, 'shape_name', shape)
         for edge in ctrl.forest.edges.values():
             edge.update_shape()
     line_options = ctrl.ui.get_panel(g.LINE_OPTIONS)
@@ -816,19 +814,17 @@ def change_leaf_shape(dim, value=0):
     # if value is g.AMBIGUOUS_VALUES:
     # if we need this, we'll need to find some impossible ambiguous value to
     # avoid weird, rare incidents
-    # return
-    scope = ctrl.ui.scope
-    if scope == g.SELECTION:
+    if ctrl.ui.scope_is_selection:
         for edge in ctrl.selected:
             if isinstance(edge, Edge):
                 edge.change_leaf_shape(dim, value)
-    elif scope:
+    else:
         if dim == 'w':
-            ctrl.fs.set_shape_info(scope, 'leaf_x', value)
+            ctrl.fs.set_shape_info(ctrl.ui.active_edge_type, 'leaf_x', value)
         elif dim == 'h':
-            ctrl.fs.set_shape_info(scope, 'leaf_y', value)
+            ctrl.fs.set_shape_info(ctrl.ui.active_edge_type, 'leaf_y', value)
         elif dim == 'r':
-            ctrl.fs.reset_shape(scope, 'leaf_x', 'leaf_y')
+            ctrl.fs.reset_shape(ctrl.ui.active_edge_type, 'leaf_x', 'leaf_y')
             options_panel = ctrl.ui.get_panel(g.LINE_OPTIONS)
             options_panel.update_panel()
         else:
@@ -852,18 +848,17 @@ def change_edge_thickness(dim, value=0):
     :param dim: 'r' for reset, otherwise doesn't matter
     :param value: new thickness (float)
     """
-    scope = ctrl.ui.scope
-    if scope == g.SELECTION:
+    if ctrl.ui.scope_is_selection:
         for edge in ctrl.selected:
             if isinstance(edge, Edge):
                 edge.change_thickness(dim, value)
-    elif scope:
+    else:
         if dim == 'r':
-            ctrl.fs.reset_shape(scope, 'thickness')
+            ctrl.fs.reset_shape(ctrl.ui.active_edge_type, 'thickness')
             options_panel = ctrl.ui.get_panel(g.LINE_OPTIONS)
             options_panel.update_panel()
         else:
-            ctrl.fs.set_shape_info(scope, 'thickness', value)
+            ctrl.fs.set_shape_info(ctrl.ui.active_edge_type, 'thickness', value)
 
 
 a['edge_thickness'] = {'command': 'Line thickness',
@@ -883,34 +878,33 @@ def change_curvature(dim, value=0):
     :param value: float
     :raise ValueError:
     """
-    scope = ctrl.ui.scope
-    if scope == g.SELECTION:
+    if ctrl.ui.scope_is_selection:
         for edge in ctrl.selected:
             if isinstance(edge, Edge):
                 edge.change_curvature(dim, value)
         if dim == 'r' or dim == 's':
             options_panel = ctrl.ui.get_panel(g.LINE_OPTIONS)
             options_panel.update_panel()
-    elif scope:
+    else:
         options_panel = ctrl.ui.get_panel(g.LINE_OPTIONS)
         relative = options_panel.relative_curvature()
 
         if dim == 'x':
             if relative:
-                ctrl.fs.set_shape_info(scope, 'rel_dx', value * .01)
+                ctrl.fs.set_shape_info(ctrl.ui.active_edge_type, 'rel_dx', value * .01)
             else:
-                ctrl.fs.set_shape_info(scope, 'fixed_dx', value)
+                ctrl.fs.set_shape_info(ctrl.ui.active_edge_type, 'fixed_dx', value)
         elif dim == 'y':
             if relative:
-                ctrl.fs.set_shape_info(scope, 'rel_dy', value * .01)
+                ctrl.fs.set_shape_info(ctrl.ui.active_edge_type, 'rel_dy', value * .01)
             else:
-                ctrl.fs.set_shape_info(scope, 'fixed_dy', value)
+                ctrl.fs.set_shape_info(ctrl.ui.active_edge_type, 'fixed_dy', value)
         elif dim == 'r':  # reset
-            ctrl.fs.reset_shape(scope, 'rel_dx', 'rel_dy', 'fixed_dx',
+            ctrl.fs.reset_shape(ctrl.ui.active_edge_type, 'rel_dx', 'rel_dy', 'fixed_dx',
                                 'fixed_dy', 'relative')
             options_panel.update_panel()
         elif dim == 's':  # toggle between relative and fixed
-            ctrl.fs.set_shape_info(scope, 'relative', value == 'relative')
+            ctrl.fs.set_shape_info(ctrl.ui.active_edge_type, 'relative', value == 'relative')
             options_panel.update_panel()
         else:
             raise ValueError
@@ -1220,17 +1214,16 @@ def change_edge_ending(self, which_end, value):
     """
     if value is g.AMBIGUOUS_VALUES:
         return
-    scope = ctrl.ui.scope
-    if scope == g.SELECTION:
+    if ctrl.ui.scope_is_selection:
         for edge in ctrl.selected:
             if isinstance(edge, Edge):
                 edge.ending(which_end, value)
                 edge.update_shape()
-    elif scope:
+    else:
         if which_end == 'start':
-            ctrl.fs.set_edge_info(scope, 'arrowhead_at_start', value)
+            ctrl.fs.set_edge_info(ctrl.ui.active_edge_type, 'arrowhead_at_start', value)
         elif which_end == 'end':
-            ctrl.fs.set_edge_info(scope, 'arrowhead_at_end', value)
+            ctrl.fs.set_edge_info(ctrl.ui.active_edge_type, 'arrowhead_at_end', value)
         else:
             print('Invalid place for edge ending: ', which_end)
 

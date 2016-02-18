@@ -181,11 +181,13 @@ class StylePanel(UIPanel):
             elif isinstance(item, Edge):
                 self._edges_in_selection.append(item)
         self.update_scope_selector_options()
-        i = find_list_item(ctrl.ui.scope, self.scope_selector)
+        if ctrl.ui.scope_is_selection:
+            i = find_list_item(g.SELECTION, self.scope_selector)
+        else:
+            i = find_list_item(ctrl.ui.active_node_type, self.scope_selector)
         self.scope_selector.setCurrentIndex(i)
 
     def update_color_for_role(self, role, color=None):
-        scope = ctrl.ui.scope
         if role == 'node_color':
             s = self.node_color_selector
             prev_color = self.cached_node_color
@@ -204,13 +206,13 @@ class StylePanel(UIPanel):
                 ctrl.ui.update_color_dialog('node_color', color_id)
 
             # Update color for selected nodes
-            if scope == g.SELECTION:
+            if ctrl.ui.scope_is_selection:
                 for node in self._nodes_in_selection:
                     node.color_id = color_id
                     node.update_label()
             # ... or update color for all nodes of this type
-            elif scope:
-                ctrl.fs.set_node_info(scope, 'color', color_id)
+            else:
+                ctrl.fs.set_node_info(ctrl.ui.active_node_type, 'color', color_id)
                 for node in ctrl.forest.nodes.values():
                     node.update_label()
             # make sure that selector has correct choice selected
@@ -235,14 +237,13 @@ class StylePanel(UIPanel):
                 ctrl.ui.update_color_dialog('edge_color', color_id)
 
             # Update color for selected edges
-            if scope == g.SELECTION:
+            if ctrl.ui.scope_is_selection:
                 for edge in self._edges_in_selection:
                     edge.color_id = color_id
                     edge.update()
             # ... or update color for all edges of this type
-            elif scope:
-                edge_type = ctrl.fs.edge_type_for(scope)
-                ctrl.fs.set_edge_info(edge_type, 'color', color_id)
+            else:
+                ctrl.fs.set_edge_info(ctrl.ui.active_node_type, 'color', color_id)
                 for edge in ctrl.forest.edges.values():
                     edge.update()
             s.select_data(color_id)
@@ -260,13 +261,13 @@ class StylePanel(UIPanel):
         if not self.font_selector.find_item(font_id):
             self.font_selector.add_font(font_id, qt_prefs.fonts[font_id])
         self.font_selector.select_data(font_id)
-        if ctrl.ui.scope == g.SELECTION:
+        if ctrl.ui.scope_is_selection:
             for node in ctrl.selected:
                 if isinstance(node, Node):
                     node.font_id = font_id
                     node.update_label()
-        elif ctrl.ui.scope:
-            ctrl.fs.set_node_info(ctrl.ui.scope, 'font', font_id)
+        else:
+            ctrl.fs.set_node_info(ctrl.ui.active_node_type, 'font', font_id)
             for node in ctrl.forest.nodes.values():
                 node.update_label()
 
@@ -308,8 +309,7 @@ class StylePanel(UIPanel):
          edges, they cannot be shown in the color selector. They can still be
          overridden with new selection.
         """
-        scope = ctrl.ui.scope
-        if scope == g.SELECTION:
+        if ctrl.ui.scope_is_selection:
             d = self.build_display_values()
             for key, item in d.items():
                 value, enabled, conflict = item
@@ -334,11 +334,10 @@ class StylePanel(UIPanel):
         elif ctrl.forest:
             ns = ctrl.fs.node_info
             es = ctrl.fs.edge_info
-            edge_scope = ns(scope, 'edge')
-            node_color = ns(scope, 'color')
-            node_font = ns(scope, 'font')
-            edge_color = es(edge_scope, 'color')
-            edge_shape = es(edge_scope, 'shape_name')
+            node_color = ns(ctrl.ui.active_node_type, 'color')
+            node_font = ns(ctrl.ui.active_node_type, 'font')
+            edge_color = es(ctrl.ui.active_edge_type, 'color')
+            edge_shape = es(ctrl.ui.active_edge_type, 'shape_name')
             # Color selector - show
             set_value(self.node_color_selector, node_color, False)
             set_value(self.font_selector, node_font, False)

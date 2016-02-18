@@ -101,7 +101,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
         print('late init for graph scene')
         self.sceneRectChanged.connect(ctrl.ui.update_positions)
 
-
     def fit_to_window(self, force=False):
         """ Calls up to graph view and makes it to fit all visible items here
         to view window."""

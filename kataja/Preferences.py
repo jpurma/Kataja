@@ -124,6 +124,12 @@ class Preferences(object):
                               'label': 'Automatic zoom in',
                               'help': 'Fit the zoom level to tree size when the tree changes',
                               'order': 41}
+        self.zoom_to_center = True
+        self._zoom_to_center_ui = {'tab': 'General',
+                                   'label': 'Zoom to center',
+                                   'help': 'Zoom aims to middle of visible region or to '
+                                           'position of mouse pointer',
+                                   'order': 43}
 
         self.visualization = 'Left first trees'
         self._visualization_ui = {'tab': 'Drawing', 'special': 'visualizations',

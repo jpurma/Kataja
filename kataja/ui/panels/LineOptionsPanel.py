@@ -107,13 +107,13 @@ class LineOptionsPanel(UIPanel):
         """ Choose which selectors to show and update their values
         :return: None
         """
-        if ctrl.ui.scope == g.SELECTION:
+        if ctrl.ui.scope_is_selection:
             sd = self.build_shape_dict_for_selection()
             self.update_cp1()
             self.update_cp2()
             selection = True
         else:  # Adjusting how this relation type is drawn
-            sd = ctrl.forest.settings.shape_info(ctrl.ui.edge_scope)
+            sd = ctrl.forest.settings.shape_info(ctrl.ui.active_edge_type)
             # print('shape settings: ', shape_dict)
             selection = False
         if sd:
@@ -191,7 +191,7 @@ class LineOptionsPanel(UIPanel):
             x_conflict = False
             y_conflict = False
             prev_x, prev_y = 0, 0
-            for x, y, z in cps:
+            for x, y in cps:
                 if prev_x and x != prev_x:
                     x_conflict = True
                 prev_x = x
@@ -223,7 +223,7 @@ class LineOptionsPanel(UIPanel):
             x_conflict = False
             y_conflict = False
             prev_x, prev_y = 0, 0
-            for x, y, z in cps:
+            for x, y in cps:
                 if prev_x and x != prev_x:
                     x_conflict = True
                 prev_x = x
@@ -261,7 +261,7 @@ class LineOptionsPanel(UIPanel):
         if not edges:
             return {}
         elif len(edges) == 1:
-            d = edges[0].shape_args().copy()
+            d = edges[0].shape_info().copy()
             d['shape_name'] = edges[0].shape_name
             return d
         else:
@@ -270,7 +270,7 @@ class LineOptionsPanel(UIPanel):
                     'fixed_dy']
             d = {}
             for item in edges:
-                e = item.shape_args()
+                e = item.shape_info()
                 if not d:
                     d = e.copy()
                 if not shape_name:

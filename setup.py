@@ -41,6 +41,7 @@ SIGNED_FILES = ['Kataja.app/Contents/Frameworks/Python.framework',
                 'Kataja.app/Contents/Frameworks/QtWidgets.framework',
                 'Kataja.app/Contents/Frameworks/QtDBus.framework',
                 'Kataja.app/Contents/Frameworks/QtPrintSupport.framework',
+                'Kataja.app/Contents/Frameworks/QtMultimedia.framework',
                 'Kataja.app/Contents/MacOS/python', 'Kataja.app/Contents/MacOS/kataja',
                 'Kataja.app/Contents/plugins/imageformats/libqgif.dylib',
                 'Kataja.app/Contents/plugins/platforms/libqcocoa.dylib', 'Kataja.app']
@@ -91,7 +92,7 @@ if sys.platform == 'darwin':
     plist = {'CFBundleVersion': version_long, 'CFBundleShortVersionString': version_short,
              'CFBundleIdentifier': 'fi.aalto.jpurma.Kataja', 'NSHumanReadableCopyright': '© 2015 Jukka Purma, GNU General Public License 3'}
     OPTIONS = {'argv_emulation': False, 'includes': ['sip'],
-               'iconfile': 'resources/icons/Kataja.icns', 'plist': plist, 'includes': ['sip', 'PyQt5', 'PyQt5.QtCore', 'PyQt5.QtGui']}
+               'iconfile': 'resources/icons/Kataja.icns', 'plist': plist, 'includes': ['sip', 'PyQt5', 'PyQt5.QtCore', 'PyQt5.QtGui', 'PyQt5.QtMultimedia', 'PyQt5.QtNetwork']}
     extra_options = dict(setup_requires=['py2app'], app=[mainscript], data_files=DATA_FILES,
                          options={'py2app': OPTIONS})
     # Check that Qt is available before trying to do anything more:
@@ -139,7 +140,7 @@ if sys.platform == 'darwin':
     print('qt_base:', qt_base)
     print('app_contents:', app_contents)
     print('-------copy frameworks to place ------')
-    frameworks = ['QtCore', 'QtGui', 'QtPrintSupport', 'QtWidgets']
+    frameworks = ['QtCore', 'QtGui', 'QtPrintSupport', 'QtWidgets', 'QtMultimedia', 'QtNetwork']
     qt_frameworks = qt_base + 'lib/%s.framework'
     relative_frameworks = app_contents + 'Frameworks'
     for fr in frameworks + ['QtDBus']:
@@ -156,7 +157,6 @@ if sys.platform == 'darwin':
                 rpath_frameworks % (fr, fr), relative_frameworks % (fr, fr), file)
             print(command)
             call(command, shell=True)
-
 
     print('-------deleting _debug -versions of frameworks, if they are included...')
     debug_versions = ['%s.framework/%s_debug', '%s.framework/%s_debug.prl',
@@ -179,7 +179,6 @@ if sys.platform == 'darwin':
         if os.access(path, os.F_OK):
             print('Deleting path... ', path)
             shutil.rmtree(path)
-
 
     os.makedirs(app_contents + 'plugins/platforms', exist_ok=True)
     print('-------Copying libqcocoa.dylib to app...')

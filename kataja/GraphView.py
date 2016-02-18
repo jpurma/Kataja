@@ -155,7 +155,9 @@ class GraphView(QtWidgets.QGraphicsView):
             self.zoom_timer.start(1000, self)
             #print('zoom timer started: ', self.zoom_timer.timerId())
             self._scale_factor = self.scale_view_by(delta)
-            if delta > 1:
+            if prefs.zoom_to_center:
+                self.centerOn(view_center)
+            elif delta > 1:
                 change = (pointer_pos - view_center) * (delta - 1) #* 0.5
                 self.centerOn(view_center + change)
             else:
