@@ -105,14 +105,14 @@ class PanelButton(QtWidgets.QPushButton):
             painter.end()
         elif self.draw_method:
             size = self.iconSize()
-
-            hidp = self.devicePixelRatio()
-            isize = QtCore.QSize(size.width() * hidp, size.height() * hidp)
+            #hidp = self.devicePixelRatio()
+            isize = QtCore.QSize(size.width() * 2, size.height() * 2)
 
             image = QtGui.QImage(
                 isize, QtGui.QImage.Format_ARGB32_Premultiplied)
             image.fill(QtCore.Qt.transparent)
             painter = QtGui.QPainter(image)
+            #painter.setDevicePixelRatio(2.0)
             painter.setRenderHint(QtGui.QPainter.Antialiasing)
             painter.setPen(c)
             self.draw_method(painter, image.rect(), c)

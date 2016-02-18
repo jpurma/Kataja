@@ -102,13 +102,13 @@ crashed
     + New sibling for new tree starting node is drawn on top of the existing node, prob. doesn't
     belong to any tree.
 - Main text font not included in distribution and it's not standard in macs
-- Icons may appear in wrong size (wheel icon) or partly misdrawn in non-retina macs.
++ Icons may appear in wrong size (wheel icon) or partly misdrawn in non-retina macs.
     - Selection color doesn't update when changing palette for programmatically drawn icons.
 - Linearized Dynamic -visualization draws all trees on same x-position.
 + Overlaps in QGraphicsItem's UserType and camera's UserType break some event detection.
 - Editing labels in middle nodes is confusing if they are not displayed
 - First node in new forest is not displayed properly
-- Drawn icons are wrong size.
++ Drawn icons are wrong size.
 + Zoom should always aim to center of the screen, not be based on pointer position
 + Panels are in random order in menu
 

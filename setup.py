@@ -35,17 +35,11 @@ qt_mac = '~/Qt/5.5/clang_64/'
 
 DATA_FILES = ['resources']
 
-SIGNED_FILES = ['Kataja.app/Contents/Frameworks/Python.framework',
-                'Kataja.app/Contents/Frameworks/QtCore.framework',
-                'Kataja.app/Contents/Frameworks/QtGui.framework',
-                'Kataja.app/Contents/Frameworks/QtWidgets.framework',
-                'Kataja.app/Contents/Frameworks/QtDBus.framework',
-                'Kataja.app/Contents/Frameworks/QtPrintSupport.framework',
-                'Kataja.app/Contents/Frameworks/QtMultimedia.framework',
-                'Kataja.app/Contents/MacOS/python', 'Kataja.app/Contents/MacOS/kataja',
-                'Kataja.app/Contents/plugins/imageformats/libqgif.dylib',
-                'Kataja.app/Contents/plugins/platforms/libqcocoa.dylib', 'Kataja.app']
-
+SIGNED_FILES = []  # + frameworks + plugins
+FINALLY_SIGN = ['Kataja.app/Contents/Frameworks/Python.framework',
+                'Kataja.app/Contents/MacOS/python',
+                'Kataja.app/Contents/MacOS/kataja',
+                'Kataja.app']
 
 def list_files(path, excluded, slash='\\'):
     found_files = []
@@ -92,7 +86,9 @@ if sys.platform == 'darwin':
     plist = {'CFBundleVersion': version_long, 'CFBundleShortVersionString': version_short,
              'CFBundleIdentifier': 'fi.aalto.jpurma.Kataja', 'NSHumanReadableCopyright': '© 2015 Jukka Purma, GNU General Public License 3'}
     OPTIONS = {'argv_emulation': False, 'includes': ['sip'],
-               'iconfile': 'resources/icons/Kataja.icns', 'plist': plist, 'includes': ['sip', 'PyQt5', 'PyQt5.QtCore', 'PyQt5.QtGui', 'PyQt5.QtMultimedia', 'PyQt5.QtNetwork']}
+               'iconfile': 'resources/icons/Kataja.icns', 'plist': plist, 'includes':
+                   ['sip', 'PyQt5', 'PyQt5.QtCore', 'PyQt5.QtGui', 'PyQt5.QtMultimedia',
+                    'PyQt5.QtNetwork', 'PyQt5.QtMultimediaWidgets', 'PyQt5.QtOpenGL']}
     extra_options = dict(setup_requires=['py2app'], app=[mainscript], data_files=DATA_FILES,
                          options={'py2app': OPTIONS})
     # Check that Qt is available before trying to do anything more:
@@ -140,28 +136,35 @@ if sys.platform == 'darwin':
     print('qt_base:', qt_base)
     print('app_contents:', app_contents)
     print('-------copy frameworks to place ------')
-    frameworks = ['QtCore', 'QtGui', 'QtPrintSupport', 'QtWidgets', 'QtMultimedia', 'QtNetwork']
+    frameworks = ['QtCore', 'QtGui', 'QtPrintSupport', 'QtWidgets', 'QtOpenGL', 'QtMultimedia',
+                  'QtNetwork', 'QtMultimediaWidgets', 'QtDBus']
+
     qt_frameworks = qt_base + 'lib/%s.framework'
     relative_frameworks = app_contents + 'Frameworks'
-    for fr in frameworks + ['QtDBus']:
+    for fr in list(frameworks):
         print('%s -> %s' % (qt_frameworks % fr, relative_frameworks))
         call('cp -R %s %s' % (qt_frameworks % fr, relative_frameworks), shell=True)
+        SIGNED_FILES.append('Kataja.app/Contents/Frameworks/%s.framework' % fr)
 
     print('-------fix dylib references to frameworks ------')
     rpath_frameworks = '@rpath/%s.framework/Versions/5/%s'
     relative_frameworks = '@executable_path/../Frameworks/%s.framework/Versions/5/%s'
     for ef in list(frameworks):
-        for fr in list(frameworks) + ['QtDBus']:
+        for fr in list(frameworks):
             file = app_contents + 'Resources/lib/python3.4/lib-dynload/PyQt5/' + ef + '.so'
             command = 'install_name_tool -change %s %s %s' % (
                 rpath_frameworks % (fr, fr), relative_frameworks % (fr, fr), file)
+            call(command, shell=True)
+            file2 = app_contents + 'Frameworks/%s.framework/Versions/5/%s' % (ef, ef)
+            command = 'install_name_tool -change %s %s %s' % (
+                rpath_frameworks % (fr, fr), relative_frameworks % (fr, fr), file2)
             print(command)
             call(command, shell=True)
 
     print('-------deleting _debug -versions of frameworks, if they are included...')
     debug_versions = ['%s.framework/%s_debug', '%s.framework/%s_debug.prl',
                       '%s.framework/Versions/5/%s_debug', '%s.framework/%s.prl']
-    for framework in frameworks + ['QtDBus']:
+    for framework in list(frameworks):
         for debug_version in debug_versions:
             path = '%sFrameworks/%s' % (app_contents, debug_version % (framework, framework))
             if os.access(path, os.F_OK):
@@ -170,7 +173,7 @@ if sys.platform == 'darwin':
 
     print('-------deleting Header files of frameworks, if they are included...')
     header_folders = ['%s.framework/Headers', '%s.framework/Versions/5/Headers']
-    for framework in frameworks + ['QtDBus']:
+    for framework in frameworks:
         path = '%sFrameworks/%s.framework/Headers' % (app_contents, framework)
         if os.access(path, os.F_OK):
             print('Deleting symlink... ', path)
@@ -180,43 +183,31 @@ if sys.platform == 'darwin':
             print('Deleting path... ', path)
             shutil.rmtree(path)
 
-    os.makedirs(app_contents + 'plugins/platforms', exist_ok=True)
-    print('-------Copying libqcocoa.dylib to app...')
-    print(shutil.copy(qt_base + 'plugins/platforms/libqcocoa.dylib',
-                      app_contents + 'plugins/platforms'))
-    print('-------Copying libqcocoa.dylib to app...')
-    os.makedirs(app_contents + 'plugins/imageformats', exist_ok=True)
-    print(shutil.copy(qt_base + 'plugins/imageformats/libqgif.dylib',
-                      app_contents + 'plugins/imageformats'))
-
-    print('-------Fixing libqcocoa.dylib dependencies')
-    libq_relative = '@executable_path/../plugins/platforms/libqcocoa.dylib'
-    libq_file = app_contents + 'plugins/platforms/libqcocoa.dylib'
-    command = 'install_name_tool -id %s %s' % (libq_relative, libq_file)
-    print(command)
-    call(command, shell=True)
-
+    plugins = ['platforms/libqcocoa.dylib', 'imageformats/libqgif.dylib',
+               'mediaservice/libqavfcamera.dylib']
     qt_frameworks = qt_base + 'lib/%s.framework/Versions/5/%s'
     relative_frameworks = '@executable_path/../Frameworks/%s.framework/Versions/5/%s'
-    for fr in frameworks:
-        command = 'install_name_tool -change %s %s %s' % (
-            qt_frameworks % (fr, fr), relative_frameworks % (fr, fr), libq_file)
-        print(command)
-        call(command, shell=True)
 
-    print('-------Fixing libqgif.dylib dependencies')
-    libq_relative = '@executable_path/../plugins/imageformats/libqgif.dylib'
-    libq_file = app_contents + 'plugins/imageformats/libqgif.dylib'
-    command = 'install_name_tool -id %s %s' % (libq_relative, libq_file)
-    print(command)
-    call(command, shell=True)
-    qt_frameworks = qt_base + 'lib/%s.framework/Versions/5/%s'
-    relative_frameworks = '@executable_path/../Frameworks/%s.framework/Versions/5/%s'
-    for fr in ['QtCore', 'QtGui']:
-        command = 'install_name_tool -change %s %s %s' % (
-            qt_frameworks % (fr, fr), relative_frameworks % (fr, fr), libq_file)
-        print(command)
+    for path in plugins:
+        SIGNED_FILES.append('Kataja.app/Contents/plugins/' + path)
+        parts = path.split('/')
+
+        sub_path = parts[0]
+        dylib = parts[1]
+        os.makedirs(app_contents + 'plugins/' + sub_path, exist_ok=True)
+        src_path = qt_base + 'plugins/' + path
+        dest_path = app_contents + 'plugins/' + path
+        print('-------Copying %s to app...' % dylib)
+        print(shutil.copy(src_path, dest_path))
+        print('-------Fixing %s dependencies' % dylib)
+        relative_path = '@executable_path/../plugins/' + path
+        command = 'install_name_tool -id %s %s' % (relative_path, dest_path)
         call(command, shell=True)
+        for fr in frameworks:
+            command = 'install_name_tool -change %s %s %s' % (
+                qt_frameworks % (fr, fr), relative_frameworks % (fr, fr), dest_path)
+            print(command)
+            call(command, shell=True)
 
     print('------- Adding plugins dir inside Kataja.app to enable editable plugins')
     if not os.access(app_contents + 'Resources/lib/plugins', os.F_OK):
@@ -241,7 +232,9 @@ if sys.platform == 'darwin':
         print('-------- Signing package --------------------')
         if os.access(developer_cert_config, os.F_OK):
             cert_name = open(developer_cert_config, 'r').read().strip()
-            for file_name in SIGNED_FILES:
+
+            for file_name in SIGNED_FILES + FINALLY_SIGN:
+                print('signing ', file_name)
                 call('codesign --entitlements %s/Kataja.entitlements -s "%s" -f %sdist/%s' % (
                     setup_dir, cert_name, setup_dir, file_name),
                      shell=True)

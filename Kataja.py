@@ -9,11 +9,10 @@ import datetime
 import os
 import sys
 from kataja.singletons import running_environment
-from PyQt5 import QtWidgets, QtPrintSupport, QtGui, QtCore
+from PyQt5 import QtWidgets, QtPrintSupport, QtGui, QtCore, QtMultimedia, QtMultimediaWidgets, QtDBus
 
 # QtPrintSupport is imported here only because py2app then knows to add it as a framework.
 # libqcocoa.dynlib requires QtPrintSupport.
-ok = QtPrintSupport
 
 
 def launch_kataja():

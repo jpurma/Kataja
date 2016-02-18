@@ -418,7 +418,6 @@ class QtPreferences:
             :return:
             """
             p = QtGui.QPixmap(iconpath + path)
-            p.setDevicePixelRatio(2.0)
             if width:
                 p = p.scaledToWidth(width)
             return p
