@@ -22,9 +22,11 @@ class NavigationPanel(UIPanel):
         #label_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
         #button_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.MinimumExpanding)
         inner = QtWidgets.QWidget()
-        inner.setMinimumHeight(96)
-        inner.setMaximumHeight(128)
-        inner.preferred_size = QtCore.QSize(220, 128)
+        inner.setMinimumWidth(160)
+        #inner.setMinimumWidth(220)
+        #inner.setMinimumHeight(96)
+        #inner.setMaximumHeight(128)
+        #inner.preferred_size = QtCore.QSize(220, 128)
         self.watchlist = ['forest_changed']
         layout = QtWidgets.QGridLayout()
 
@@ -57,9 +59,9 @@ class NavigationPanel(UIPanel):
         ui_manager.connect_element_to_action(next_tree, ui_manager.qt_actions['next_forest'])
         # next_tree.setDefaultAction(ui_manager.qt_actions['next_forest'])
 
-        label = QtWidgets.QLabel('Derivation step', self)
+        self.der_label = QtWidgets.QLabel('Derivation step', self)
         #label.setSizePolicy(label_policy)
-        layout.addWidget(label, 2, 0, 1, 1)
+        layout.addWidget(self.der_label, 2, 0, 1, 1)
 
         derivation_counter = QtWidgets.QLabel('0/0', self)
         #derivation_counter.setSizePolicy(label_policy)
@@ -78,7 +80,12 @@ class NavigationPanel(UIPanel):
         self.next_der = next_der
         #layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
         inner.setLayout(layout)
-        self.preferred_size = inner.preferred_size
+        if True: #ctrl.forest.supports_derivation:
+            self.der_label.hide()
+            self.derivation_counter.hide()
+            self.next_der.hide()
+            self.prev_der.hide()
+        #self.preferred_size = inner.preferred_size
         self.setWidget(inner)
         self.widget().setAutoFillBackground(True)
         self.finish_init()

@@ -37,9 +37,10 @@ class ColorPanel(UIPanel):
         UIPanel.__init__(self, name, key, default_position, parent, ui_manager, folded)
         layout = QtWidgets.QVBoxLayout()
         widget = QtWidgets.QWidget(self)
-        widget.setMinimumHeight(40)
-        widget.setMaximumHeight(50)
-        widget.preferred_size = QtCore.QSize(220, 40)
+        widget.setMinimumWidth(160)
+        #widget.setMinimumHeight(40)
+        #widget.setMaximumHeight(50)
+        #widget.preferred_size = QtCore.QSize(220, 40)
 
         ocm = ctrl.cm.ordered_color_modes
         self.selector_items = [c['name'] for c in ocm.values()]

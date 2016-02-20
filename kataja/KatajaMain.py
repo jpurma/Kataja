@@ -135,6 +135,19 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
 
         self.action_finished()
 
+    def event(self, e):
+        if e.type() == 150:
+            print('EnterEditFocus')
+        elif e.type() == 151:
+            print('LeaveEditFocus')
+        elif e.type() == 8:
+            print('FocusIn')
+        elif e.type() == 9:
+            print('FocusOut')
+        elif e.type() == 23:
+            print('FocusAboutToChange')
+        return QtWidgets.QMainWindow.event(self, e)
+
     def reset_preferences(self):
         """
 

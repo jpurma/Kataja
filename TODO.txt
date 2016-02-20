@@ -111,6 +111,7 @@ crashed
 + Drawn icons are wrong size.
 + Zoom should always aim to center of the screen, not be based on pointer position
 + Panels are in random order in menu
+- Node panel icons don't change their color
 
 ADD:
 

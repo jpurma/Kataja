@@ -107,9 +107,10 @@ class SymbolPanel(UIPanel):
         """
         UIPanel.__init__(self, name, key, default_position, parent, ui_manager, folded)
         inner = QtWidgets.QWidget()
-        inner.preferred_size = QtCore.QSize(220, 130)
+        #inner.preferred_size = QtCore.QSize(220, 130)
         inner.setMinimumSize(160, 130)
         inner.setMaximumSize(220, 400)
+        inner.setMinimumWidth(160)
 
         layout = QtWidgets.QVBoxLayout()
         self.selector = QtWidgets.QComboBox()

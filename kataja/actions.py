@@ -639,6 +639,26 @@ def toggle_full_screen():
 a['fullscreen_mode'] = {'command': '&Fullscreen', 'method': toggle_full_screen,
                         'shortcut': 'f', 'undoable': False, 'checkable': True}
 
+def customize_master_style(sender=None):
+    """
+    """
+    panel = ctrl.ui.get_panel(g.STYLE)
+    panel.toggle_customization(sender.isChecked())
+
+a['customize_master_style'] = {'command': 'Customize style',
+                               'method': customize_master_style, 'sender_arg': True,
+                               'undoable': False,
+                               'tooltip': 'Modify the styles of lines and nodes'}
+
+
+def change_master_style(sender=None):
+    """
+    """
+
+a['change_master_style'] = {'command': 'Change drawing style',
+                            'method': change_master_style, 'sender_arg': True,
+                            'undoable': False,
+                            'tooltip': 'Changes the style of lines and nodes'}
 
 def change_style_scope(sender=None):
     """ Change drawing panel to work on selected nodes, constituent nodes or
@@ -656,6 +676,20 @@ a['style_scope'] = {'command': 'Select the scope for style changes',
                     'method': change_style_scope, 'sender_arg': True,
                     'undoable': False,
                     'tooltip': 'Select the scope for style changes'}
+
+
+def reset_style_in_scope(sender=None):
+    """ Restore style to original
+    :param sender: field that called this action
+    :return: None
+    """
+    pass
+
+
+a['reset_style_in_scope'] = {'command': 'Reset style to original',
+                             'method': reset_style_in_scope, 'sender_arg': True,
+                             'undoable': True,
+                             'tooltip': 'Reset the style to default within the selected scope'}
 
 
 def open_font_selector(sender=None):

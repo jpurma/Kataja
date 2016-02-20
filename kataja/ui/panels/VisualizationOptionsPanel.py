@@ -52,19 +52,19 @@ class VisualizationOptionsPanel(UIPanel):
 
         layout.addLayout(grid)
         label(self, grid, 'For inner nodes show', 0, 0)
-        self.show_internal_alias = mini_button(ui_manager, grid,
+        self.show_internal_alias = mini_button(ui_manager, self, grid,
                                         'aliases', 'toggle_show_internal_alias'
                                         , 3, 0, checkable=True)
-        self.show_internal_label = mini_button(ui_manager, grid,
+        self.show_internal_label = mini_button(ui_manager, self, grid,
                                             'labels',
                                             'toggle_show_internal_label',
                                             3, 1, checkable=True)
         label(self, grid, '╱', 2, 2)
         label(self, grid, 'For leaf nodes show', 0, 3)
-        self.show_leaf_alias = mini_button(ui_manager, grid,
+        self.show_leaf_alias = mini_button(ui_manager, self, grid,
                                         'aliases', 'toggle_show_leaf_alias',
                                         1, 3, checkable=True)
-        self.show_leaf_label = mini_button(ui_manager, grid,
+        self.show_leaf_label = mini_button(ui_manager, self, grid,
                                             'labels', 'toggle_show_leaf_label',
                                             1, 4, checkable=True)
 

@@ -71,15 +71,15 @@ POINTING = 3
 
 PANELS = OrderedDict([(g.LOG, {'name': 'Log', 'position': 'bottom'}),
                       (g.NAVIGATION, {'name': 'Trees', 'position': 'right'}),
+                      (g.NODES, {'name': 'Nodes', 'position': 'right'}),
                       (g.VISUALIZATION, {'name': 'Visualization', 'position': 'right'}),
+                      (g.STYLE, {'name': 'Styles', 'position': 'right'}),
                       (g.COLOR_THEME, {'name': 'Color theme', 'position': 'right'}),
                       (g.COLOR_WHEEL, {'name': 'Color theme wheel', 'position': 'right',
                                        'folded': True, 'closed': True}),
                       (g.LINE_OPTIONS, {'name': 'More line options', 'position': 'float',
                                         'closed': True}),
-                      (g.STYLE, {'name': 'Styles', 'position': 'right'}),
                       (g.SYMBOLS, {'name': 'Symbols', 'position': 'right'}),
-                      (g.NODES, {'name': 'Nodes', 'position': 'right'}),
                       (g.CAMERA, {'name': 'Camera', 'position': 'float', 'closed': True}),
                       (g.VIS_OPTIONS, {'name': 'Visualization options', 'position': 'float',
                                        'closed': True})])
@@ -296,6 +296,7 @@ class UIManager:
             self.create_float_buttons()
         elif signal == 'viewport_changed':
             self.update_positions()
+            self.update_float_button_positions()
 
     def update_all_fields(self):
         """

@@ -36,7 +36,8 @@ class LineOptionsPanel(UIPanel):
         label(self, hlayout, 'Arc adjustment 1')
         self.cp1_x_spinbox = spinbox(ui_manager, self, hlayout, 'X', -400, 400, 'control_point1_x')
         self.cp1_y_spinbox = spinbox(ui_manager, self, hlayout, 'Y', -400, 400, 'control_point1_y')
-        self.cp1_reset_button = mini_button(ui_manager, hlayout, 'Reset', 'control_point1_reset')
+        self.cp1_reset_button = mini_button(ui_manager, self, hlayout, 'Reset',
+                                            'control_point1_reset')
         layout.addWidget(self.cp1_box)
 
         # Control point 2 adjustment
@@ -45,7 +46,8 @@ class LineOptionsPanel(UIPanel):
         label(self, hlayout, 'Arc adjustment 2')
         self.cp2_x_spinbox = spinbox(ui_manager, self, hlayout, 'X', -400, 400, 'control_point2_x')
         self.cp2_y_spinbox = spinbox(ui_manager, self, hlayout, 'Y', -400, 400, 'control_point2_y')
-        self.cp2_reset_button = mini_button(ui_manager, hlayout, 'Reset', 'control_point2_reset')
+        self.cp2_reset_button = mini_button(ui_manager, self, hlayout, 'Reset', \
+                                                            'control_point2_reset')
         layout.addWidget(self.cp2_box)
 
         # Leaf size
@@ -54,7 +56,7 @@ class LineOptionsPanel(UIPanel):
         label(self, hlayout, 'Leaf thickness')
         self.leaf_x_spinbox = spinbox(ui_manager, self, hlayout, 'X', -20, 20, 'leaf_shape_x')
         self.leaf_y_spinbox = spinbox(ui_manager, self, hlayout, 'Y', -20, 20, 'leaf_shape_y')
-        self.leaf_reset_button = mini_button(ui_manager, hlayout, 'Reset', 'leaf_shape_reset')
+        self.leaf_reset_button = mini_button(ui_manager, self, hlayout, 'Reset', 'leaf_shape_reset')
         layout.addWidget(self.leaf_box)
 
         # Curvature
@@ -71,7 +73,7 @@ class LineOptionsPanel(UIPanel):
                                                'edge_curvature_type')
 
         hlayout = box_row(arc_layout)
-        self.arc_reset_button = mini_button(ui_manager, hlayout, 'Reset',
+        self.arc_reset_button = mini_button(ui_manager, self, hlayout, 'Reset',
                                             'edge_curvature_reset')
         hlayout.setAlignment(self.arc_reset_button, QtCore.Qt.AlignRight)
         arc_layout.setContentsMargins(0, 0, 0, 0)
@@ -83,7 +85,7 @@ class LineOptionsPanel(UIPanel):
         hlayout = box_row(self.thickness_box)
         self.thickness_spinbox = decimal_spinbox(ui_manager, self, hlayout, 'Thickness', 0.0,
                                                  10.0, 0.1, 'edge_thickness')
-        self.thickness_reset_button = mini_button(ui_manager, hlayout, 'Reset',
+        self.thickness_reset_button = mini_button(ui_manager, self, hlayout, 'Reset',
                                                   'edge_thickness_reset')
         layout.addWidget(self.thickness_box)
 

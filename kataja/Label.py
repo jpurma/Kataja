@@ -53,6 +53,9 @@ class Label(QtWidgets.QGraphicsTextItem):
         self._last_blockpos = ()
         self.doc = LabelDocument()
         self.setDocument(self.doc)
+        # not acceptin hover events is important, editing focus gets lost if other labels take
+        # hover events. It is unclear why.
+        self.setAcceptHoverEvents(False)
         self.doc.contentsChanged.connect(self.doc_changed)
         self.setTextWidth(-1)
         self.resizable = False
@@ -213,12 +216,14 @@ class Label(QtWidgets.QGraphicsTextItem):
                 self.triangle_is_present = False
         self.setPos(iw / -2.0, self.top_y)
 
-    def focusInEvent(self, event):
-        self.grabKeyboard()
+    def kfocusInEvent(self, event):
+        print('focus in')
+        #self.grabKeyboard()
         return QtWidgets.QGraphicsTextItem.focusInEvent(self, event)
 
-    def focusOutEvent(self, event):
-        self.ungrabKeyboard()
+    def kfocusOutEvent(self, event):
+        print('focus out')
+        #self.ungrabKeyboard()
         return QtWidgets.QGraphicsTextItem.focusOutEvent(self, event)
 
     def paint(self, painter, option, widget):

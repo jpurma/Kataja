@@ -79,9 +79,10 @@ class NodesPanel(UIPanel):
         """
         UIPanel.__init__(self, name, key, default_position, parent, ui_manager, folded)
         inner = QtWidgets.QWidget()
-        inner.setMinimumHeight(120)
-        inner.setMaximumHeight(150)
-        inner.preferred_size = QtCore.QSize(220, 120)
+        inner.setMinimumWidth(160)
+        #inner.setMinimumHeight(120)
+        #inner.setMaximumHeight(150)
+        #inner.preferred_size = QtCore.QSize(220, 120)
 
         layout = QtWidgets.QVBoxLayout()
         self.node_frames = {}

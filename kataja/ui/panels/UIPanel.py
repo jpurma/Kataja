@@ -25,6 +25,7 @@
 from PyQt5 import QtCore, QtWidgets, QtGui
 from kataja.singletons import ctrl, qt_prefs
 from kataja.ui.OverlayButton import PanelButton
+from kataja.ui.panels.field_utils import mini_icon_button, label
 
 
 # Hey! This is only the top row title, not the actual UIPanel(DockWidget)! It is down below.
@@ -47,30 +48,29 @@ class PanelTitle(QtWidgets.QWidget):
         self._watched = False
         self.setBackgroundRole(QtGui.QPalette.Base)
         self.setAutoFillBackground(True)
+        self.setMinimumSize(self.preferred_size)
+        self.setContentsMargins(0, 0, 0, 0)
         layout = QtWidgets.QHBoxLayout()
         layout.setContentsMargins(0, 2, 0, 2)
         layout.setSpacing(0)
         layout.minimumSize = self.sizeHint
-        close_button = PanelButton(qt_prefs.close_icon, text='Close panel', parent=self, size=12)
-        close_button.setMaximumWidth(16)
-        self.panel.ui_manager.connect_element_to_action(close_button, 'toggle_panel_%s' %
-                                                        self.panel.ui_key)
-        layout.addWidget(close_button)
-        self.setMinimumSize(self.preferred_size)
-        self.fold_button = PanelButton(qt_prefs.fold_icon, text='Minimize this panel', parent=self,
-                                       size=12)
-        self.fold_button.setMaximumWidth(16)
-        self.panel.ui_manager.connect_element_to_action(self.fold_button, 'toggle_fold_panel')
-        self.pin_button = PanelButton(qt_prefs.pin_drop_icon, text='Dock this panell', parent=self,
-                                      size=12)
-        self.pin_button.setMaximumWidth(16)
-        self.panel.ui_manager.connect_element_to_action(self.pin_button, 'pin_panel')
-        layout.addWidget(self.pin_button)
+        ui = self.panel.ui_manager
 
-        self.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(self.fold_button)
+        mini_icon_button(ui, self, layout,
+                         icon=qt_prefs.close_icon,
+                         text='Close panel',
+                         action='toggle_panel_' + self.panel.ui_key)
+
+        self.pin_button = mini_icon_button(ui, self, layout,
+                                           icon=qt_prefs.pin_drop_icon,
+                                           text='Dock this panel',
+                                           action='pin_panel')
+        self.fold_button = mini_icon_button(ui, self, layout,
+                                            icon=qt_prefs.fold_icon,
+                                            text='Minimize this panel',
+                                            action='toggle_fold_panel')
         layout.addSpacing(8)
-        layout.addWidget(QtWidgets.QLabel(name))
+        self.title = label(self, layout, name)
         self.setLayout(layout)
 
     def update_fold(self, folded):
@@ -110,6 +110,7 @@ class UIPanel(QtWidgets.QDockWidget):
         self.watchlist = []
         self.ui_manager = ui_manager
         self.default_position = default_position
+
         if default_position == 'bottom':
             parent.addDockWidget(QtCore.Qt.BottomDockWidgetArea, self)
         elif default_position == 'top':
@@ -158,8 +159,6 @@ class UIPanel(QtWidgets.QDockWidget):
         :return:
         """
         pass
-
-
 
     def set_folded(self, folded):
         self.folded = folded

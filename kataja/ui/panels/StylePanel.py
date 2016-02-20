@@ -1,76 +1,14 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
-from PyQt5.QtCore import QSize
-from PyQt5.QtGui import QIcon, QStandardItem
 
-from kataja.nodes.Node import Node
-from kataja.Edge import SHAPE_PRESETS, Edge
-from kataja.singletons import ctrl, qt_prefs, prefs
 import kataja.globals as g
+from kataja.Edge import Edge
+from kataja.nodes.Node import Node
+from kataja.singletons import ctrl, qt_prefs, prefs
 from kataja.ui.panels.UIPanel import UIPanel
-from kataja.ui.OverlayButton import PanelButton
-from kataja.ui.panels.field_utils import find_list_item, set_value
-from kataja.ui.elements.TableModelComboBox import TableModelComboBox
-from kataja.ui.elements.FontSelector import FontSelector
-from kataja.ui.elements.ColorSelector import ColorSelector
+from kataja.ui.panels.field_utils import find_list_item, set_value, box_row, font_selector, \
+    color_selector, icon_button, shape_selector, text_button, selector, mini_button
 
 __author__ = 'purma'
-
-
-class LineStyleIcon(QIcon):
-    def __init__(self, shape_key, panel, size):
-        super().__init__()
-        self.shape_key = shape_key
-        self.panel = panel
-        self.size_hint = size
-        self.compose_icon()
-        # pixmap = QPixmap(60, 20)
-        # pixmap.fill(ctrl.cm.ui())
-        # self.addPixmap(pixmap)
-
-    def compose_icon(self):
-        draw_method = SHAPE_PRESETS[self.shape_key]['icon']
-        c = ctrl.cm.get(self.panel.cached_edge_color or 'content1')
-        size = self.size_hint
-
-        hidp = self.panel.devicePixelRatio()
-        isize = QtCore.QSize(size.width() * hidp, size.height() * hidp)
-
-        image = QtGui.QImage(
-            isize, QtGui.QImage.Format_ARGB32_Premultiplied)
-        image.fill(QtCore.Qt.transparent)
-        painter = QtGui.QPainter(image)
-        painter.setRenderHint(QtGui.QPainter.Antialiasing)
-        painter.setPen(c)
-        draw_method(painter, image.rect(), c)
-        painter.end()
-        self.addPixmap(QtGui.QPixmap.fromImage(image))
-
-    def paint_settings(self):
-        pen = self.panel.cached_edge_color
-        if not pen:
-            pen = 'content1'
-        d = {'color': ctrl.cm.get(pen)}
-        return d
-
-class ShapeSelector(TableModelComboBox):
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.setIconSize(QSize(64, 16))
-        # self.shape_selector.setView(view)
-        items = []
-
-        for lt in SHAPE_PRESETS.keys():
-            item = QStandardItem(LineStyleIcon(lt, parent, self.iconSize()), '')
-            item.setData(lt)
-            if ctrl.main.use_tooltips:
-                item.setToolTip(lt)
-            item.setSizeHint(self.iconSize())
-            items.append(item)
-        model = self.model()
-        model.setRowCount(len(items))
-        for r, item in enumerate(items):
-            model.setItem(r, 0, item)
-        self.view().setModel(model)
 
 
 class StylePanel(UIPanel):
@@ -88,10 +26,7 @@ class StylePanel(UIPanel):
         UIPanel.__init__(self, name, key, default_position, parent, ui_manager,
                          folded)
         inner = QtWidgets.QWidget(self)
-        inner.setMinimumHeight(110)
-        inner.setMaximumHeight(150)
-        inner.preferred_size = QtCore.QSize(220, 110)
-
+        self.setSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred)
         layout = QtWidgets.QVBoxLayout()
         self._nodes_in_selection = []
         self._edges_in_selection = []
@@ -105,66 +40,77 @@ class StylePanel(UIPanel):
         # Other items may be temporarily added, they are defined as
         # class.variables
 
-        hlayout = QtWidgets.QHBoxLayout()
-        #hlayout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
-        label = QtWidgets.QLabel('Style for', self)
-        hlayout.addWidget(label)
-        self.scope_selector = QtWidgets.QComboBox(self)
-        self.scope_selector.setSizePolicy(QtWidgets.QSizePolicy.Fixed,
-        QtWidgets.QSizePolicy.Fixed)
-        self.scope_selector.setMinimumWidth(140)
-        ui_manager.connect_element_to_action(self.scope_selector, 'style_scope')
-        hlayout.addWidget(self.scope_selector)
-        layout.addLayout(hlayout)
+        hlayout = box_row(layout)
+        styles_data = [('fancy', 'fancy'), ('basic', 'basic')]
+        self.overall_style_box = selector(ui_manager, self, hlayout,
+                                          data=styles_data,
+                                          action='change_master_style')
+        self.custom_overall_style = text_button(ui_manager, hlayout,
+                                                text='customize',
+                                                action='customize_master_style',
+                                                checkable=True)
+        self.ostyle = 'fancy'
 
-        hlayout = QtWidgets.QHBoxLayout()
-        label = QtWidgets.QLabel('Text style', self)
-        hlayout.addWidget(label)
+        self.style_widgets = QtWidgets.QWidget(self)
+        sw_layout = QtWidgets.QVBoxLayout()
+        sw_layout.setContentsMargins(0, 0, 0, 0)
+        hlayout = box_row(sw_layout)
+        self.scope_selector = selector(ui_manager, self.style_widgets, hlayout,
+                                       data=[],
+                                       action='style_scope',
+                                       label='Style for')
+        self.style_reset = mini_button(ui_manager, self.style_widgets, hlayout,
+                                       text='reset',
+                                       action='reset_style_in_scope')
 
-        self.font_selector = FontSelector(self)
-        ui_manager.connect_element_to_action(self.font_selector,
-                                             'font_selector')
-        hlayout.addWidget(self.font_selector)
+        hlayout = box_row(sw_layout)
 
-        self.node_color_selector = ColorSelector(self)
-        ui_manager.connect_element_to_action(self.node_color_selector,
-                                             'change_node_color')
-        hlayout.addWidget(self.node_color_selector, 1, QtCore.Qt.AlignLeft)
+        self.font_selector = font_selector(ui_manager, self.style_widgets, hlayout,
+                                           action='font_selector',
+                                           label='Text style')
 
-        self.open_font_dialog = PanelButton(qt_prefs.font_icon,
-                                            text='Add custom font', parent=self,
+        self.node_color_selector = color_selector(ui_manager, self.style_widgets, hlayout,
+                                                  action='change_node_color')
+
+        self.open_font_dialog = icon_button(ui_manager, self.style_widgets, hlayout,
+                                            icon=qt_prefs.font_icon,
+                                            text='Add custom font',
+                                            action='start_font_dialog',
                                             size=20)
-        ui_manager.connect_element_to_action(self.open_font_dialog,
-                                             'start_font_dialog')
-        hlayout.addWidget(self.open_font_dialog, 1, QtCore.Qt.AlignLeft)
-        layout.addLayout(hlayout)
 
-        hlayout = QtWidgets.QHBoxLayout()
-        label = QtWidgets.QLabel('Line style', self)
-        hlayout.addWidget(label)
+        hlayout = box_row(sw_layout)
+        self.shape_selector = shape_selector(ui_manager, self.style_widgets, hlayout,
+                                             action='change_edge_shape',
+                                             label='Edge style')
 
-        self.shape_selector = ShapeSelector(self)
-        ui_manager.connect_element_to_action(self.shape_selector,
-                                             'change_edge_shape')
-        hlayout.addWidget(self.shape_selector, 1, QtCore.Qt.AlignLeft)
+        self.edge_color_selector = color_selector(ui_manager, self.style_widgets, hlayout,
+                                                  action='change_edge_color')
 
-        self.edge_color_selector = ColorSelector(self)
-        ui_manager.connect_element_to_action(self.edge_color_selector,
-                                             'change_edge_color')
-        hlayout.addWidget(self.edge_color_selector, 1, QtCore.Qt.AlignLeft)
-
-        self.edge_options = PanelButton(qt_prefs.settings_icon,
-                                        text='More line options', parent=self,
-                                        size=20)
-        self.edge_options.setCheckable(True)
-        ui_manager.connect_element_to_action(self.edge_options,
-                                             'toggle_panel_%s' % g.LINE_OPTIONS)
-        hlayout.addWidget(self.edge_options, 1, QtCore.Qt.AlignRight)
-        layout.addLayout(hlayout)
-
+        self.edge_options = icon_button(ui_manager, self.style_widgets, hlayout,
+                                        icon=qt_prefs.settings_icon,
+                                        text='More line options',
+                                        action='toggle_panel_%s' % g.LINE_OPTIONS,
+                                        checkable=True)
+        self.style_widgets.setLayout(sw_layout)
+        layout.addWidget(self.style_widgets)
         inner.setLayout(layout)
+        self.style_widgets.hide()
         self.setWidget(inner)
+
         self.finish_init()
+
+    def toggle_customization(self, value):
+        if value:
+            self.style_widgets.show()
+        else:
+            self.style_widgets.hide()
+
+
+        #self.resize(self.sizeHint())
+        self.setFixedSize(self.sizeHint())
+        self.updateGeometry()
+
+        #self.update()
 
     def update_selection(self):
         """ Called after ctrl.selection has changed. Prepare panel to use
