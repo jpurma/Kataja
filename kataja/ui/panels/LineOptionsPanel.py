@@ -1,7 +1,7 @@
 from PyQt5 import QtWidgets, QtCore
 
 from kataja.Edge import Edge
-from kataja.singletons import ctrl
+from kataja.singletons import ctrl, prefs
 import kataja.globals as g
 from kataja.ui.panels.field_utils import *
 from kataja.utils import time_me
@@ -33,21 +33,21 @@ class LineOptionsPanel(UIPanel):
         # Control point 1 adjustment
         self.cp1_box = QtWidgets.QWidget(inner) # box allows hiding clean hide/show for this group
         hlayout = box_row(self.cp1_box)
-        label(self, hlayout, 'Arc adjustment 1')
+        label(self, hlayout, '1st control point')
         self.cp1_x_spinbox = spinbox(ui_manager, self, hlayout, 'X', -400, 400, 'control_point1_x')
         self.cp1_y_spinbox = spinbox(ui_manager, self, hlayout, 'Y', -400, 400, 'control_point1_y')
         self.cp1_reset_button = mini_button(ui_manager, self, hlayout, 'Reset',
-                                            'control_point1_reset')
+                                            'reset_control_points')
+
+        self.cp1_reset_button.hide()
         layout.addWidget(self.cp1_box)
 
         # Control point 2 adjustment
         self.cp2_box = QtWidgets.QWidget(inner) # box allows hiding clean hide/show for this group
         hlayout = box_row(self.cp2_box)
-        label(self, hlayout, 'Arc adjustment 2')
+        label(self, hlayout, '2nd control point')
         self.cp2_x_spinbox = spinbox(ui_manager, self, hlayout, 'X', -400, 400, 'control_point2_x')
         self.cp2_y_spinbox = spinbox(ui_manager, self, hlayout, 'Y', -400, 400, 'control_point2_y')
-        self.cp2_reset_button = mini_button(ui_manager, self, hlayout, 'Reset', \
-                                                            'control_point2_reset')
         layout.addWidget(self.cp2_box)
 
         # Leaf size
@@ -57,44 +57,73 @@ class LineOptionsPanel(UIPanel):
         self.leaf_x_spinbox = spinbox(ui_manager, self, hlayout, 'X', -20, 20, 'leaf_shape_x')
         self.leaf_y_spinbox = spinbox(ui_manager, self, hlayout, 'Y', -20, 20, 'leaf_shape_y')
         self.leaf_reset_button = mini_button(ui_manager, self, hlayout, 'Reset', 'leaf_shape_reset')
+        self.leaf_reset_button.hide()
         layout.addWidget(self.leaf_box)
 
         # Curvature
-        self.arc_box = QtWidgets.QWidget(inner)
+        self.select_arc_box = QtWidgets.QWidget(inner)
         arc_layout = QtWidgets.QVBoxLayout()
         hlayout = box_row(arc_layout)
         label(self, hlayout, 'Curvature')
-        self.arc_dx_spinbox = spinbox(ui_manager, self, hlayout, 'X', -200, 200,
-                                      'edge_curvature_x')
-        self.arc_dy_spinbox = spinbox(ui_manager, self, hlayout, 'Y', -200, 200,
-                                      'edge_curvature_y')
-        self.arc_type_selector = mini_selector(ui_manager, self, hlayout,
-                                               [('pt', 'fixed'), ('%', 'relative')],
-                                               'edge_curvature_type')
-
-        hlayout = box_row(arc_layout)
+        self.arc_type_selector = selector(ui_manager, self, hlayout,
+                                          [('fixed size', 'fixed'),
+                                           ('relative to edge size', 'relative')],
+                                          'edge_curvature_type')
         self.arc_reset_button = mini_button(ui_manager, self, hlayout, 'Reset',
                                             'edge_curvature_reset')
         hlayout.setAlignment(self.arc_reset_button, QtCore.Qt.AlignRight)
+        self.arc_reset_button.hide()
         arc_layout.setContentsMargins(0, 0, 0, 0)
-        self.arc_box.setLayout(arc_layout)
-        layout.addWidget(self.arc_box)
+        self.select_arc_box.setLayout(arc_layout)
+        layout.addWidget(self.select_arc_box)
+
+        self.relative_arc_box = QtWidgets.QWidget(inner)
+        arc_layout = QtWidgets.QVBoxLayout()
+        hlayout = box_row(arc_layout)
+        self.arc_rel_dx_spinbox = spinbox(ui_manager, self, hlayout,
+                                          label='X', range_min=-200, range_max=200,
+                                          action='change_edge_relative_curvature_x',
+                                          suffix='%')
+        self.arc_rel_dy_spinbox = spinbox(ui_manager, self, hlayout,
+                                          label='Y', range_min=-200, range_max=200,
+                                          action='change_edge_relative_curvature_y',
+                                          suffix='%')
+        arc_layout.setContentsMargins(0, 0, 0, 0)
+        self.relative_arc_box.setLayout(arc_layout)
+        layout.addWidget(self.relative_arc_box)
+
+        self.fixed_arc_box = QtWidgets.QWidget(inner)
+        arc_layout = QtWidgets.QVBoxLayout()
+        hlayout = box_row(arc_layout)
+        self.arc_fixed_dx_spinbox = spinbox(ui_manager, self, hlayout,
+                                            label='X', range_min=-200, range_max=200,
+                                            action='change_edge_fixed_curvature_x',
+                                            suffix=' px')
+        self.arc_fixed_dy_spinbox = spinbox(ui_manager, self, hlayout,
+                                            label='Y', range_min=-200, range_max=200,
+                                            action='change_edge_fixed_curvature_y',
+                                            suffix=' px')
+        arc_layout.setContentsMargins(0, 0, 0, 0)
+        self.fixed_arc_box.setLayout(arc_layout)
+        layout.addWidget(self.fixed_arc_box)
 
         # Line thickness
         self.thickness_box = QtWidgets.QWidget(inner)
         hlayout = box_row(self.thickness_box)
-        self.thickness_spinbox = decimal_spinbox(ui_manager, self, hlayout, 'Thickness', 0.0,
-                                                 10.0, 0.1, 'edge_thickness')
+        self.thickness_spinbox = decimal_spinbox(ui_manager, self, hlayout,
+                                                 label='Thickness', range_min=0.0, range_max=10.0,
+                                                 step=0.1, action='edge_thickness', suffix=' px')
         self.thickness_reset_button = mini_button(ui_manager, self, hlayout, 'Reset',
                                                   'edge_thickness_reset')
+        self.thickness_reset_button.hide()
         layout.addWidget(self.thickness_box)
 
         # Edges drawn as asymmetric
-        self.asymmetry_box = QtWidgets.QWidget(inner)
-        hlayout = box_row(self.asymmetry_box)
-        self.asymmetry_checkbox = checkbox(ui_manager, self, hlayout, 'Edge asymmetry',
-                                           'edge_asymmetry')
-        layout.addWidget(self.asymmetry_box)
+        #self.asymmetry_box = QtWidgets.QWidget(inner)
+        #hlayout = box_row(self.asymmetry_box)
+        #self.asymmetry_checkbox = checkbox(ui_manager, self, hlayout, 'Edge asymmetry',
+        #                                   'edge_asymmetry')
+        #layout.addWidget(self.asymmetry_box)
 
         inner.setLayout(layout)
         self.setWidget(inner)
@@ -111,11 +140,20 @@ class LineOptionsPanel(UIPanel):
         """
         if ctrl.ui.scope_is_selection:
             sd = self.build_shape_dict_for_selection()
-            self.update_cp1()
-            self.update_cp2()
+            if sd:
+                if sd['n_of_edges'] == 1:
+                    self.set_title('Edge settings for selected edge')
+                    self.update_cp1()
+                    self.update_cp2()
+                elif sd['n_of_edges'] > 1:
+                    self.set_title('Edge settings for selected edges')
+                    self.cp1_box.hide()
+                    self.cp2_box.hide()
             selection = True
         else:  # Adjusting how this relation type is drawn
             sd = ctrl.forest.settings.shape_info(ctrl.ui.active_edge_type)
+            self.set_title('Edge settings for all ' + prefs.edges[ctrl.ui.active_edge_type][
+                'name_pl'].lower())
             # print('shape settings: ', shape_dict)
             selection = False
         if sd:
@@ -126,15 +164,15 @@ class LineOptionsPanel(UIPanel):
                 rel = sd.get('relative', None)
                 if rel:
                     set_value(self.arc_type_selector, 1)
-                    set_value(self.arc_dx_spinbox, sd['rel_dx'] * 100,
+                    set_value(self.arc_rel_dx_spinbox, sd['rel_dx'] * 100,
                               'rel_dx_conflict' in sd)
-                    set_value(self.arc_dy_spinbox, sd['rel_dy'] * 100,
+                    set_value(self.arc_rel_dy_spinbox, sd['rel_dy'] * 100,
                               'rel_dy_conflict' in sd)
                 elif rel is not None:
                     set_value(self.arc_type_selector, 0)
-                    set_value(self.arc_dx_spinbox, sd['fixed_dx'],
+                    set_value(self.arc_fixed_dx_spinbox, sd['fixed_dx'],
                               'fixed_dx_conflict' in sd)
-                    set_value(self.arc_dy_spinbox, sd['fixed_dy'],
+                    set_value(self.arc_fixed_dy_spinbox, sd['fixed_dy'],
                               'fixed_dy_conflict' in sd)
             # Leaf-shaped lines or solid lines
             if sd['fill']:
@@ -146,10 +184,17 @@ class LineOptionsPanel(UIPanel):
             else:
                 set_value(self.thickness_spinbox, sd['thickness'],
                           'thickness_conflict' in sd)
-        self.widget().updateGeometry()
-        self.widget().update()
-        self.updateGeometry()
-        self.update()
+        else:
+            self.set_title('Edge settings - No edge selected')
+            self.cp1_box.hide()
+            self.cp2_box.hide()
+            self.fixed_arc_box.hide()
+            self.relative_arc_box.hide()
+            self.select_arc_box.hide()
+            self.leaf_box.hide()
+            self.thickness_box.hide()
+            self.setFixedSize(self.sizeHint())
+            self.updateGeometry()
 
     def initial_position(self):
         """
@@ -246,13 +291,17 @@ class LineOptionsPanel(UIPanel):
         self.cp1_box.setVisible(selection and cps > 0)
         self.cp2_box.setVisible(selection and cps > 1)
         # Relative / fixed curvature
-        self.arc_box.setVisible(cps > 0)
+        relative = sd['relative']
+        self.fixed_arc_box.setVisible(cps and not relative)
+        self.relative_arc_box.setVisible(cps and relative)
+        self.select_arc_box.setVisible(cps)
         # Leaf-shaped lines or solid lines
         leaf = sd['fill'] and 'leaf_x' in sd
         self.leaf_box.setVisible(leaf)
         self.thickness_box.setVisible(not leaf)
+        self.setFixedSize(self.sizeHint())
+        self.updateGeometry()
 
-    @time_me
     def build_shape_dict_for_selection(self):
         """ Create a dict of values to show in this panel, add a about conflicting values in
         selection so that they can be shown as special items.
@@ -262,23 +311,16 @@ class LineOptionsPanel(UIPanel):
         edges = [item for item in ctrl.selected if isinstance(item, Edge)]
         if not edges:
             return {}
-        elif len(edges) == 1:
-            d = edges[0].shape_info().copy()
-            d['shape_name'] = edges[0].shape_name
-            return d
-        else:
-            shape_name = None
+        d = edges[0].shape_info.copy()
+        shape_name = edges[0].shape_name
+        d['shape_name'] = shape_name
+        d['n_of_edges'] = len(edges)
+        if len(edges) > 1:
             keys = ['relative', 'leaf_x', 'leaf_y', 'thickness', 'rel_dx', 'rel_dy', 'fixed_dx',
                     'fixed_dy']
-            d = {}
-            for item in edges:
-                e = item.shape_info()
-                if not d:
-                    d = e.copy()
-                if not shape_name:
-                    shape_name = item.shape_name
-                    d['shape_name'] = shape_name
-                elif shape_name != item.shape_name:
+            for item in edges[1:]:
+                e = item.shape_info.shape_info()
+                if shape_name != item.shape_name:
                     d['shape_name_conflict'] = True
                 for key in keys:
                     old = d.get(key, None)
@@ -287,7 +329,7 @@ class LineOptionsPanel(UIPanel):
                         d[key] = new
                     elif old is not None and new is not None and old != new:
                         d[key + '_conflict'] = True
-            return d
+        return d
 
     def close(self):
         """ Untick check box in EDGES panel """

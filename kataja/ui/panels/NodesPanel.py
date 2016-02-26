@@ -6,6 +6,7 @@ from kataja.singletons import qt_prefs, ctrl, prefs
 from kataja.ui.panels.UIPanel import UIPanel
 import kataja.globals as g
 from kataja.ui.OverlayButton import PanelButton
+from kataja.ui.panels.field_utils import icon_button, label
 
 __author__ = 'purma'
 
@@ -26,26 +27,28 @@ class DraggableNodeFrame(QtWidgets.QFrame):
         self.key = key
         self.setPalette(ctrl.cm.palette_from_key(color_key))
         self.setFont(qt_prefs.font(settings[key]['font']))
-
-        self.add_button = PanelButton(qt_prefs.add_icon, text='Add ' + name, parent=self,
-                                      size=24, color_key=color_key)
+        self.add_button = icon_button(ctrl.ui, self, hlayout,
+                                      icon=qt_prefs.add_icon,
+                                      text='Add ' + name,
+                                      action='add_node',
+                                      size=24,
+                                      color_key=color_key,
+                                      tooltip_suffix=name)
         self.add_button.data = key
-        self.add_button.setFixedSize(26, 26)
-        ctrl.ui.connect_element_to_action(self.add_button, 'add_node', tooltip_suffix=name)
-        hlayout.addWidget(self.add_button)
-        self.label = QtWidgets.QLabel(name)
+        self.label = label(self, hlayout, text=name)
         self.label.setBuddy(self.add_button)
-        hlayout.addWidget(self.label)
-        self.conf_button = PanelButton(qt_prefs.settings_pixmap, text='Modify '
-                                                                     '%s behaviour' % name,
-                                       parent=self, size=20)
-        self.conf_button.setFixedSize(26, 26)
-        hlayout.addWidget(self.conf_button, 1, QtCore.Qt.AlignRight)
+
+        self.conf_button = icon_button(ctrl.ui, self, hlayout,
+                                       icon=qt_prefs.settings_pixmap,
+                                       text='Modify %s behavior' % name,
+                                       size=20,
+                                       align=QtCore.Qt.AlignRight)
         self.setLayout(hlayout)
 
     def update_colors(self):
         settings = ctrl.fs.node_info(self.key)
         self.setPalette(ctrl.cm.palette_from_key(settings['color']))
+        self.add_button.update_colors()
         self.setFont(qt_prefs.font(settings['font']))
 
     def mousePressEvent(self, event):

@@ -31,17 +31,15 @@ class PropertyNode(Node):
     """ This is somekind of a microfeature. I don't remember why it exists, but maybe time will tell. """
     width = 20
     height = 20
-    default_edge_type = g.PROPERTY_EDGE
     node_type = g.PROPERTY_NODE
     name = ('Property', 'Properties')
     short_name = "PropN"
     display = False
-    default_style = {'color': 'accent6', 'font': g.SMALL_CAPS, 'font-size': 10,
-                     'edge': g.PROPERTY_EDGE}
+    default_style = {'color': 'accent6', 'font': g.SMALL_CAPS, 'font-size': 10}
 
     default_edge = {'id': g.PROPERTY_EDGE, 'shape_name': 'linear', 'color': 'accent5', 'pull': .40,
                     'visible': True,'arrowhead_at_start': False, 'arrowhead_at_end': False,
-                    'labeled': False}
+                    'labeled': False, 'name_pl': 'Property edges'}
 
     def __init__(self, property=None):
         Node.__init__(self, syntactic_object=property)

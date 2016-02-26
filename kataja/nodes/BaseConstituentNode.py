@@ -40,7 +40,6 @@ class BaseConstituentNode(Node):
     width = 20
     height = 20
     is_constituent = True
-    default_edge_type = g.CONSTITUENT_EDGE
     node_type = g.CONSTITUENT_NODE
     short_name = "BCN"
     wraps = 'constituent'

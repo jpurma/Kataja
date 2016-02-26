@@ -27,7 +27,7 @@ except ImportError:
 mainscript = 'Kataja.py'
 trim_to_64bit = True
 do_signing = True
-create_dmg = False
+create_dmg = True
 run_postsetup = True
 developer_cert_config = '../certs/app_developer.txt'
 

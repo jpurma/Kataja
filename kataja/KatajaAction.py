@@ -21,6 +21,7 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
+import sys
 from PyQt5 import QtCore, QtWidgets, QtGui
 
 from kataja.singletons import ctrl
@@ -128,7 +129,7 @@ class KatajaAction(QtWidgets.QAction):
                  command_alt=None, shortcut=None,
                  shortcut_context=None, viewgroup=None, sender_arg=None,
                  exclusive=None, selection=None, checkable=None,
-                 tooltip=None, action_arg=None,
+                 tooltip=None, action_arg=None, trigger_args=False,
                  undoable=True, method=None, args=None):
         super().__init__(ctrl.main)
         self.key = key
@@ -136,12 +137,14 @@ class KatajaAction(QtWidgets.QAction):
         self.command_alt = command_alt
         self.sender_arg = sender_arg
         self.action_arg = action_arg
+        self.trigger_args = trigger_args
         self.setText(command)
         self.setData(key)
         self.undoable = undoable
         self.method = method
         self.args = args or []
         self.tip = tooltip or command
+        self.disable_undo_and_message = False
         # when triggered from menu, forward the call to more complex trigger handler
         self.triggered.connect(self.action_triggered)
 
@@ -174,11 +177,15 @@ class KatajaAction(QtWidgets.QAction):
             self.setToolTip(tooltip)
             self.setStatusTip(tooltip)
 
-    def action_triggered(self, **kwargs):
+    def action_triggered(self, *args, **kwargs):
         """ Trigger action with parameters received from action data object and designated UI element
         :param sender: optional sender object if triggered manually
         :return: None
         """
+        if self.trigger_args:
+            trigger_args = list(args) + self.args
+        else:
+            trigger_args = self.args
         if not self.isEnabled():
             return
         # -- Redraw and undo flags: these are on by default, can be switched off by action method
@@ -189,18 +196,36 @@ class KatajaAction(QtWidgets.QAction):
         if self.action_arg:
             kwargs['action'] = self
         # Disable undo if necessary
-        remember_undo_state = ctrl.undo_disabled
         if not self.undoable:
+            remember_undo_state = ctrl.undo_disabled
             ctrl.undo_disabled = True
 
         # Call method
-        message = self.method(*self.args, **kwargs)
+        try:
+            message = self.method(*trigger_args, **kwargs)
+        except:
+            e = sys.exc_info()[0]
+            message = str(e)
+            print("Unexpected error:", e)
+            print(sys.exc_info())
 
         # Restore undo state to what it was
         if not self.undoable:
             ctrl.undo_disabled = remember_undo_state
-        ctrl.main.action_finished(m=message or self.command,
-                                  undoable=self.undoable)
+        if self.disable_undo_and_message:
+            ctrl.main.action_finished(undoable=False)
+        else:
+            ctrl.main.action_finished(m=message or self.command,
+                                      undoable=self.undoable and not ctrl.undo_disabled)
+
+    def trigger_but_suppress_undo(self, *args, **kwargs):
+        remember_undo_state = ctrl.undo_disabled
+        ctrl.undo_disabled = True
+        self.disable_undo_and_message = True
+        self.action_triggered(*args, **kwargs)
+        self.disable_undo_and_message = False
+        ctrl.undo_disabled = remember_undo_state
+
 
     def connect_element(self, element, tooltip_suffix=''):
         """
@@ -238,7 +263,8 @@ class KatajaAction(QtWidgets.QAction):
             element.activated.connect(self.action_triggered)
             element.setFocusPolicy(QtCore.Qt.TabFocus)
         elif isinstance(element, QtWidgets.QAbstractSpinBox):
-            element.valueChanged.connect(self.action_triggered)
+            element.valueChanged.connect(self.trigger_but_suppress_undo)
+            element.editingFinished.connect(self.action_triggered)
         elif isinstance(element, QtWidgets.QCheckBox):
             element.stateChanged.connect(self.action_triggered)
         elif isinstance(element, EmbeddedMultibutton):

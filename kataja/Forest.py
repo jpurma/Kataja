@@ -562,6 +562,15 @@ class Forest(BaseModel):
         sc.start_animations()
         ctrl.graph_view.repaint()
 
+    def redraw_edges(self, edge_type=None):
+        if edge_type:
+            for edge in self.edges.values():
+                if edge.edge_type == edge_type:
+                    edge.update_shape()
+        else:
+            for edge in self.edges.values():
+                edge.update_shape()
+
     def update_colors(self):
         """ Update colors to those specified for this Forest."""
         cm = ctrl.cm
@@ -1014,7 +1023,7 @@ class Forest(BaseModel):
         edge.set_start_point(p1)
         edge.set_end_point(p2)
         if text:
-            edge.label_text = text
+            edge.set_label_text(text)
         edge.show()
         ctrl.select(edge)
         return edge
@@ -1560,7 +1569,7 @@ class Forest(BaseModel):
                               'child%s)' % (parent, child))
 
         if not edge_type:
-            edge_type = child.__class__.default_edge_type
+            edge_type = child.edge_type()
 
         # Check for circularity:
         if edge_type is not g.ARROW:

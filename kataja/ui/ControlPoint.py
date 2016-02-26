@@ -143,7 +143,7 @@ class ControlPoint(QtWidgets.QGraphicsItem):
         else:
             self.setPos(event.scenePos())
         if self._index > -1:
-            self.host.adjust_control_point(self._index, self._compute_adjust(), cp=True)
+            self.host.shape_info.adjust_control_point(self._index, self._compute_adjust())
         elif self.role == g.START_POINT:
             self.host.set_start_point(event.scenePos())
             self.host.make_path()

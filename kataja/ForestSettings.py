@@ -132,8 +132,15 @@ class ForestSettings(BaseModel):
         """
         return self.edge_info(edge_type, 'shape_name')
 
+    def reset_edge_style(self, edge_type):
+        """ """
+        if edge_type in self.edge_types:
+            self.poke('edge_types')
+            del self.edge_types[edge_type]
+            self.call_watchers('edge_shape')
+
     def reset_shape(self, edge_type, *keys):
-        """ Delecte local (forest) modifications for edge shapes
+        """ Delete local (forest) modifications for edge shapes
         :param edge_type: edge_type we are resetting
         :param keys: strings of key names
         :return:
@@ -144,6 +151,7 @@ class ForestSettings(BaseModel):
         shape_args = local_edge_type.get('shape_args', None)
         if not shape_args:
             return
+        self.poke('edge_types')
         shape_defaults = SHAPE_PRESETS[self.edge_info(edge_type, 'shape_name')]
         for key in keys:
             if key in shape_args:
@@ -151,6 +159,7 @@ class ForestSettings(BaseModel):
                     shape_args[key] = shape_defaults[key]
                 else:
                     del shape_args[key]
+        self.call_watchers('edge_shape')
 
     def shape_defaults(self, edge_type):
         shape_name = self.edge_info(edge_type, 'shape_name')
@@ -195,8 +204,7 @@ class ForestSettings(BaseModel):
         :param key:
         :return:
         """
-        shape_name = self.edge_info(edge_type, 'shape_name')
-
+        self.poke('edge_types')
         local_edge_type = self.edge_types.get(edge_type, None)
         if not local_edge_type:
             local_edge_type = {}
@@ -206,6 +214,7 @@ class ForestSettings(BaseModel):
             shape_args = self.shape_defaults(edge_type).copy()
             local_edge_type['shape_args'] = shape_args
         shape_args[key] = value
+        self.call_watchers('edge_shape')
 
     # ## Nodes - all require edge type as argument, value is stored in dict
 
@@ -236,6 +245,11 @@ class ForestSettings(BaseModel):
         else:
             return local_node_settings[key]
 
+    def reset_node_style(self, node_type):
+        if node_type in self.node_types:
+            self.poke('node_types')
+            del self.node_types[node_type]
+
     def set_node_info(self, node_type, key, value):
         """ Setter for settings related to various types of nodes.
         If not found here, value is searched from preferences.
@@ -247,6 +261,8 @@ class ForestSettings(BaseModel):
         :param key:
         :param value:
         """
+        self.poke('node_types')
+
         local_node_settings = self.node_types.get(node_type, None)
         if local_node_settings is None:
             self.node_types[node_type] = {key: value}
@@ -272,7 +288,7 @@ class ForestSettings(BaseModel):
     bracket_style = SavedSetting("bracket_style")
     # these have dicts, they don't need SavedSetting check but special care in use
     last_key_colors = Saved("last_key_colors")
-    edge_types = Saved("edge_types")
+    edge_types = Saved("edge_types", watcher='edge_shape')
     node_types = Saved("node_types")
 
 

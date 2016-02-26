@@ -39,7 +39,6 @@ class FeatureNode(Node):
     """
     width = 20
     height = 20
-    default_edge_type = FEATURE_EDGE
     node_type = FEATURE_NODE
     name = ('Feature', 'Features')
     short_name = "FN"
@@ -62,12 +61,11 @@ class FeatureNode(Node):
                                        'phi-features)', syntactic=True)
                 }
 
-    default_style = {'color': 'accent2', 'font': g.SMALL_CAPS, 'font-size': 9,
-                     'edge': g.FEATURE_EDGE}
+    default_style = {'color': 'accent2', 'font': g.SMALL_CAPS, 'font-size': 9}
 
     default_edge = {'id': g.FEATURE_EDGE, 'shape_name': 'cubic', 'color': 'accent2', 'pull': .40,
                     'visible': True, 'arrowhead_at_start': False, 'arrowhead_at_end': False,
-                    'labeled': False}
+                    'labeled': False, 'name_pl': 'Feature edges'}
 
 
     def __init__(self, feature=None):

@@ -538,15 +538,20 @@ class GraphScene(QtWidgets.QGraphicsScene):
             # selected area, select only nodes. If there are multiple edges
             # and no nodes, then
             # take edges
-            only_nodes = False
+
             for item in self.selectedItems():
-                if isinstance(item, Node):
-                    only_nodes = True
-                    break
-            for item in self.selectedItems():
-                if ((not only_nodes) or isinstance(item, Node)) and getattr(item, 'selectable',
-                                                                            False):
+                if getattr(item, 'selectable', False):
                     item.select(event, multi=True)
+
+                #only_nodes = False
+            #for item in self.selectedItems():
+            #    if isinstance(item, Node):
+            #        only_nodes = True
+            #        break
+            #for item in self.selectedItems():
+            #    if ((not only_nodes) or isinstance(item, Node)) and getattr(item, 'selectable',
+            #                                                                False):
+            #        item.select(event, multi=True)
             ctrl.multiselection_end()
             ctrl.area_selection = False
         return QtWidgets.QGraphicsScene.mouseReleaseEvent(self, event)

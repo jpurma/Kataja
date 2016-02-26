@@ -134,20 +134,19 @@ class Saved(object):
                 obj.call_watchers(self.watcher, self.name, value)
 
 
-class SavedAndGetter(Saved):
-    """ Saved, but getter runs provided after_get -method for the returned
-    value. Probably bit slower
-    than regular Saved
+class SavedWithGetter(Saved):
+    """ Saved, but getter runs the provided after_get -method for the returned
+    value. Probably bit slower than regular Saved
     """
 
-    def __init__(self, name, before_set=None, if_changed=None, after_get=None):
+    def __init__(self, name, before_set=None, if_changed=None, getter=None):
         super().__init__(name, before_set=before_set, if_changed=if_changed)
-        self.after_get = after_get
+        self.getter = getter
 
     def __get__(self, obj, objtype=None):
         value = obj._saved[self.name]
-        if self.after_get:
-            return self.after_get(obj, value)
+        if self.getter:
+            return self.getter(obj, value)
         else:
             return value
 
@@ -262,7 +261,7 @@ class BaseModel(object):
         self._cd = DELETED
         ctrl.undo_pile.add(self)
 
-    def call_watchers(self, signal, field_name, value):
+    def call_watchers(self, signal, field_name=None, value=None):
         """ Alert (UI) objects that are watching for changes for given field
         in this object
         :param signal:

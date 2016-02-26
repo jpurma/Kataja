@@ -67,12 +67,11 @@ class ConstituentNode(BaseConstituentNode):
                              check_before='can_be_projection',
                              option_function='projection_options_for_ui', input_type='multibutton',
                              select_action='constituent_set_head')}
-    default_style = {'color': 'content1', 'font': g.MAIN_FONT, 'font-size': 10,
-                     'edge': g.CONSTITUENT_EDGE}
+    default_style = {'color': 'content1', 'font': g.MAIN_FONT, 'font-size': 10}
 
     default_edge = {'id': g.CONSTITUENT_EDGE, 'shape_name': 'shaped_cubic', 'color': 'content1',
                     'pull': .24, 'visible': True, 'arrowhead_at_start': False,
-                    'arrowhead_at_end': False, 'labeled': False}
+                    'arrowhead_at_end': False, 'labeled': False, 'name_pl': 'Constituent edges'}
 
     # Touch areas are UI elements that scale with the trees: they can be
     # temporary shapes suggesting to drag or click here to create the

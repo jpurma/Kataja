@@ -70,7 +70,6 @@ class Node(Movable):
     each other """
     width = 20
     height = 20
-    default_edge_type = g.ABSTRACT_EDGE
     node_type = g.ABSTRACT_NODE
     is_constituent = False
     ordered = False
@@ -84,12 +83,11 @@ class Node(Movable):
     # examples in
     # ConstituentNode or FeatureNode
 
-    default_style = {'color': 'content1', 'font': g.MAIN_FONT, 'font-size': 10,
-                     'edge': g.ABSTRACT_EDGE}
+    default_style = {'color': 'content1', 'font': g.MAIN_FONT, 'font-size': 10}
 
     default_edge = {'id': g.ABSTRACT_EDGE, 'shape_name': 'linear', 'color': 'content1', 'pull': .40,
                     'visible': True, 'arrowhead_at_start': False, 'arrowhead_at_end': False,
-                    'labeled': False}
+                    'labeled': False,  'name_pl': 'Abstract edges'}
     touch_areas_when_dragging = {}
     touch_areas_when_selected = {}
     buttons_when_selected = {}
@@ -146,7 +144,6 @@ class Node(Movable):
         self._update_magnets = True
         self.setGraphicsEffect(self.effect)
 
-
     def type(self):
         """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
         need to differentiate between them. List of types is kept as comments in globals.py,
@@ -154,6 +151,10 @@ class Node(Movable):
         :return:
         """
         return 65557
+
+    def edge_type(self):
+        """ Default edge for this kind of node, as in kataja.globals type ids."""
+        return self.__class__.default_edge['id']
 
     def after_init(self):
         """ After_init is called in 2nd step in process of creating objects:
@@ -658,7 +659,7 @@ syntactic_object: %s
         Get child nodes of this node if they are of the same type as this.
         :return: iterator of Nodes
         """
-        et = self.__class__.default_edge_type
+        et = self.edge_type()
         return (edge.end for edge in self.edges_down if edge.edge_type == et)
 
     def get_reversed_children(self):
@@ -666,7 +667,7 @@ syntactic_object: %s
         Get child nodes of this node if they are of the same type as this.
         :return: iterator of Nodes
         """
-        et = self.__class__.default_edge_type
+        et = self.edge_type()
         return (edge.end for edge in reversed(self.edges_down) if edge.edge_type == et)
 
     def get_visible_children(self):
@@ -674,7 +675,7 @@ syntactic_object: %s
         Get child nodes of this node if they are of the same type as this.
         :return: iterator of Nodes
         """
-        et = self.__class__.default_edge_type
+        et = self.edge_type()
         return (edge.end for edge in self.edges_down if
                 edge.edge_type == et and edge.end and edge.end.is_visible())
 
@@ -701,7 +702,7 @@ syntactic_object: %s
             return []
         if only_similar or edge_type is not None:
             if edge_type is None:
-                edge_type = self.__class__.default_edge_type
+                edge_type = self.edge_type()
             if only_visible:
                 return [edge.start for edge in self.edges_up if
                         edge.edge_type == edge_type and edge.start and edge.start.is_visible()]
@@ -841,7 +842,7 @@ syntactic_object: %s
             """
             :param rel:
             :return: bool """
-            if similar and rel.edge_type != self.__class__.default_edge_type:
+            if similar and rel.edge_type != self.edge_type():
                 return False
             if alignment and rel.alignment != alignment:
                 return False
@@ -862,7 +863,7 @@ syntactic_object: %s
             """
             :param rel:
             :return: bool """
-            if similar and edge.edge_type != self.__class__.default_edge_type:
+            if similar and edge.edge_type != self.edge_type():
                 return False
             if alignment and edge.alignment != alignment:
                 return False
@@ -910,6 +911,11 @@ syntactic_object: %s
         :return:
         """
         pass
+
+    def reset_style(self):
+        self.font_id = None
+        self.color_id = None
+        self.update_label()
 
     # ## Font
     # #####################################################################
@@ -1225,7 +1231,7 @@ syntactic_object: %s
             painter.drawPath(triangle)
         else:
             c = self.contextual_color
-            edge_type = self.__class__.default_edge_type
+            edge_type = self.edge_type()
             shape_name = ctrl.fs.edge_info(edge_type, 'shape_name')
             presets = kataja.shapes.SHAPE_PRESETS[shape_name]
             method = presets['method']

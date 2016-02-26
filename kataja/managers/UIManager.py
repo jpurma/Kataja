@@ -187,8 +187,10 @@ class UIManager:
             self.scope_is_selection = True
         else:
             self.scope_is_selection = False
-            self.active_node_type = scope
-            self.active_edge_type = ctrl.fs.node_info(scope, 'edge')
+            if scope in ctrl.node_classes:
+                self.active_node_type = scope
+                node_class = ctrl.node_classes[scope]
+                self.active_edge_type = node_class.default_edge['id']
         ctrl.call_watchers(self, 'scope_changed')
 
 

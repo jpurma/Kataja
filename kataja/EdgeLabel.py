@@ -216,3 +216,100 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
             QPainter.drawRect(self.boundingRect())
         QtWidgets.QGraphicsTextItem.paint(self, QPainter,
                                           QStyleOptionGraphicsItem, QWidget)
+
+
+
+    @property
+    def font(self):
+        """ Font is the font used for label. What is stored is the kataja
+        internal font name, but what is
+        returned here is the actual QFont.
+        :return: QFont instance
+        """
+        f_name = self.label_data.get('font', None)
+        if f_name:
+            return qt_prefs.font(f_name)
+        else:
+            return qt_prefs.font(ctrl.fs.edge_info(self.edge_type, 'font'))
+
+    @property
+    def font_name(self):
+        """ Font is the font used for label. This returns the kataja internal
+        font name.
+        :return:
+        """
+        f_name = self.label_data.get('font', None)
+        if f_name:
+            return f_name
+        else:
+            return ctrl.fs.edge_info(self.edge_type, 'font')
+
+    @font_name.setter
+    def font_name(self, value=None):
+        """ Font is the font used for label. This sets the font name to be used.
+        :param value: string (font name).
+        """
+        f = self.font_name
+        if value != f:
+            self.poke('label_data')
+            self.label_data['font'] = value
+
+    @property
+    def label_start(self):
+        """
+        label's startpoint in length of an edge (from 0 to 1.0)
+        """
+        return self.label_data.get('start_at', 0.2)
+
+    @label_start.setter
+    def label_start(self, value):
+        """ label's startpoint in length of an edge (from 0 to 1.0)
+        :param value: float (0 - 1.0)
+        """
+        v = self.label_start
+        if v != value:
+            self.poke('label_data')
+            self.label_data['start_at'] = value
+            self.update_label_pos()
+            self.call_watchers('edge_label_adjust', 'start_at', value)
+
+    @property
+    def label_angle(self):
+        """
+        label's angle relative to edge where it is attached
+        """
+        return self.label_data.get('angle', 90)
+
+    @label_angle.setter
+    def label_angle(self, value):
+        """
+        label's angle relative to edge where it is attached
+        :param value:
+        """
+        v = self.label_angle
+        if v != value:
+            self.poke('label_data')
+            self.label_data['angle'] = value
+            self.update_label_pos()
+            self.call_watchers('edge_label_adjust', 'angle', value)
+
+    @property
+    def label_dist(self):
+        """
+        label's distance from edge
+        """
+        return self.label_data.get('dist', 12)
+
+    @label_dist.setter
+    def label_dist(self, value):
+        """
+        label's distance from edge
+        :param value:
+        """
+        v = self.label_dist
+        if v != value:
+            self.poke('label_data')
+            self.label_data['dist'] = value
+            self.update_label_pos()
+            self.call_watchers('edge_label_adjust', 'dist', value)
+

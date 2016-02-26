@@ -154,6 +154,9 @@ class UIPanel(QtWidgets.QDockWidget):
         """
         pass
 
+    def set_title(self, title):
+        self.titleBarWidget().title.setText(title)
+
     def update_colors(self):
         """ Implement if trickier color update than palette change is needed
         :return:

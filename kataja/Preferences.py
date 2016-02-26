@@ -276,7 +276,7 @@ class Preferences(object):
             nd['display'] = nodeclass.display
             nd['short_name'] = nodeclass.short_name
             self.nodes[key] = nd
-            edge_key = nodeclass.default_style['edge']
+            edge_key = nodeclass.default_edge['id']
             if nd['display']:
                 self.node_types_order.append(key)
             self.edges[edge_key] = nodeclass.default_edge.copy()

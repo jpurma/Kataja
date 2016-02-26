@@ -19,7 +19,7 @@ def find_panel(parent):
         return find_panel(parent.parent())
 
 
-def label(panel, layout, text, x=-1, y=-1):
+def label(panel, layout, text='', x=-1, y=-1):
     """
 
     :param panel:
@@ -35,7 +35,7 @@ def label(panel, layout, text, x=-1, y=-1):
     return slabel
 
 
-def spinbox(ui_manager, panel, layout, label='', range_min=0, range_max=0, action=''):
+def spinbox(ui_manager, panel, layout, label='', range_min=0, range_max=0, action='', suffix=''):
     """
 
     :param ui_manager:
@@ -52,6 +52,7 @@ def spinbox(ui_manager, panel, layout, label='', range_min=0, range_max=0, actio
     spinbox = QtWidgets.QSpinBox()
     spinbox.ambiguous = False
     spinbox.setRange(range_min, range_max)
+    spinbox.setSuffix(suffix)
     ui_manager.connect_element_to_action(spinbox, action)
     slabel.setBuddy(spinbox)
     layout.addWidget(slabel)
@@ -60,7 +61,7 @@ def spinbox(ui_manager, panel, layout, label='', range_min=0, range_max=0, actio
 
 
 def decimal_spinbox(ui_manager, panel, layout, label='', range_min=0, range_max=0, step=0,
-                    action=''):
+                    action='', suffix=''):
     """
 
     :param ui_manager:
@@ -78,6 +79,7 @@ def decimal_spinbox(ui_manager, panel, layout, label='', range_min=0, range_max=
     spinbox.setRange(range_min, range_max)
     spinbox.setSingleStep(step)
     spinbox.ambiguous = False
+    spinbox.setSuffix(suffix)
     ui_manager.connect_element_to_action(spinbox, action)
     slabel.setBuddy(spinbox)
     layout.addWidget(slabel)
@@ -107,7 +109,8 @@ def text_button(ui_manager, layout, text='', action='', x=-1, y=-1, checkable=Fa
 
 
 def icon_button(ui_manager, parent, layout, icon=None, text='', action='', x=-1, y=-1,
-                checkable=False, size=20):
+                checkable=False, size=20, color_key='accent8', tooltip_suffix='',
+                align=None):
     """
 
     :param ui_manager:
@@ -118,15 +121,22 @@ def icon_button(ui_manager, parent, layout, icon=None, text='', action='', x=-1,
     :param x
     :param y
     :param checkable
+    :param size
+    :param color_key
+    :param tooltip_suffix
+    :param align
     :return:
     """
 
-    button = PanelButton(icon, text=text, parent=parent, size=size)
+    button = PanelButton(icon, text=text, parent=parent, size=size, color_key=color_key)
     button.ambiguous = False
     button.setCheckable(checkable)
-    ui_manager.connect_element_to_action(button, action)
+    if action:
+        ui_manager.connect_element_to_action(button, action, tooltip_suffix=tooltip_suffix)
     if x != -1:
         layout.addWidget(button, y, x)
+    elif align is not None:
+        layout.addWidget(button, 1, align)
     else:
         layout.addWidget(button)
     return button
@@ -217,14 +227,12 @@ def mini_selector(ui_manager, panel, layout, data=None, action=''):
     if data is None:
         data = []
     selector = QtWidgets.QComboBox(panel)
-    selector.addItems(['pt', '%'])
     i = 0
     selector.addItems([text for text, value in data])
     for text, value in data:
         selector.setItemData(i, value)
         i += 1
     selector.ambiguous = False
-    selector.setItemData(1, 'relative')
     selector.setMinimumSize(QSize(40, 20))
     selector.setMaximumSize(QSize(40, 20))
     ui_manager.connect_element_to_action(selector, action)

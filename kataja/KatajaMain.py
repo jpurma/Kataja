@@ -101,7 +101,6 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         self.app.setFont(qt_prefs.font(g.UI_FONT))
         self.graph_scene = GraphScene(main=self, graph_view=None)
         self.graph_view = GraphView(main=self, graph_scene=self.graph_scene)
-
         self.graph_scene.graph_view = self.graph_view
         self.ui_manager = UIManager(self)
         self.ui_manager.populate_ui_elements()
@@ -123,7 +122,6 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         self.activateWindow()
         self.status_bar = self.statusBar()
         self.add_message('Welcome to Kataja! (h) for help')
-
         self.load_initial_treeset()
         # toolbar = QtWidgets.QToolBar()
         # toolbar.setFixedSize(480, 40)
@@ -134,6 +132,8 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         #    self.grabGesture(gesture)
 
         self.action_finished()
+
+        print('i')
 
     def event(self, e):
         if e.type() == 150:
@@ -247,13 +247,13 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         :param undoable: are we supposed to take a snapshot of changes after
         this action.
         """
-        print('=== action finished: ', m, undoable)
         if m:
             self.add_message(m)
         if ctrl.action_redraw:
             ctrl.forest.draw()
         if undoable:
             ctrl.forest.undo_manager.take_snapshot(m)
+            print('=== action finished: ', m)
         else:
             ctrl.graph_scene.start_animations()
 

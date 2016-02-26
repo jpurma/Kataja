@@ -639,26 +639,28 @@ def toggle_full_screen():
 a['fullscreen_mode'] = {'command': '&Fullscreen', 'method': toggle_full_screen,
                         'shortcut': 'f', 'undoable': False, 'checkable': True}
 
-def customize_master_style(sender=None):
+def customize_master_style(checked):
     """
     """
     panel = ctrl.ui.get_panel(g.STYLE)
-    panel.toggle_customization(sender.isChecked())
+    panel.toggle_customization(checked)
 
 a['customize_master_style'] = {'command': 'Customize style',
-                               'method': customize_master_style, 'sender_arg': True,
+                               'method': customize_master_style, 'trigger_args': True,
                                'undoable': False,
                                'tooltip': 'Modify the styles of lines and nodes'}
 
 
-def change_master_style(sender=None):
+def change_master_style(style_id):
     """
     """
+    print(style_id)
 
 a['change_master_style'] = {'command': 'Change drawing style',
-                            'method': change_master_style, 'sender_arg': True,
+                            'method': change_master_style, 'trigger_args': True,
                             'undoable': False,
                             'tooltip': 'Changes the style of lines and nodes'}
+
 
 def change_style_scope(sender=None):
     """ Change drawing panel to work on selected nodes, constituent nodes or
@@ -683,7 +685,14 @@ def reset_style_in_scope(sender=None):
     :param sender: field that called this action
     :return: None
     """
-    pass
+    if ctrl.ui.scope_is_selection:
+        for item in ctrl.selected:
+            if hasattr(item, 'reset_style'):
+                item.reset_style()
+    else:
+        ctrl.fs.reset_node_style(ctrl.ui.active_node_type)
+        ctrl.fs.reset_edge_style(ctrl.ui.active_edge_type)
+        ctrl.forest.redraw_edges(ctrl.ui.active_edge_type)
 
 
 a['reset_style_in_scope'] = {'command': 'Reset style to original',
@@ -800,162 +809,304 @@ a['change_edge_color'] = {'command': 'Change relation color',
                           'tooltip': 'Change drawing color of relations'}
 
 
-def adjust_control_point(cp_index, dim, value=0):
-    """ Adjusting control point can be done only for selected edges, not for
-    an edge type. So this method is
-    simpler than other adjustments, as it doesn't have to handle both cases.
-    :param cp_index: 1 or 2 = which control point we are adjusting
-    :param dim: 'x', 'y' or 'r' for reset
+def adjust_control_point_x0(value=None):
+    """ Adjust specifix control point
     :param value: new value for given dimension, doesn't matter for reset.
     :return: None
     """
-    cp_index -= 1
+    if value is None:
+        return
     for edge in ctrl.selected:
-        if isinstance(edge, Edge):
-            if dim == 'r':
-                edge.reset_control_point(cp_index)
-            else:
-                edge.adjust_control_point_xy(cp_index, dim, value)
+        edge.shape_info.adjust_control_point_x0(value)
 
 
 a['control_point1_x'] = {'command': 'Adjust curvature, point 1 X',
-                         'method': adjust_control_point, 'args': [1, 'x'],
+                         'method': adjust_control_point_x0,
+                         'trigger_args': True,
                          'tooltip': 'Adjust curvature, point 1 X'}
-a['control_point1_y'] = {'command': 'Adjust curvature, point 1 Y',
-                         'method': adjust_control_point, 'args': [1, 'y'],
-                         'tooltip': 'Adjust curvature, point 1 Y'}
-a['control_point1_reset'] = {'command': 'Reset control point 1',
-                             'method': adjust_control_point, 'args': [1, 'r'],
-                             'tooltip': 'Remove arc adjustments'}
-a['control_point2_x'] = {'command': 'Adjust curvature, point 2 X',
-                         'method': adjust_control_point, 'args': [2, 'x'],
-                         'tooltip': 'Adjust curvature, point 2 X'}
-a['control_point2_y'] = {'command': 'Adjust curvature, point 2 Y',
-                         'method': adjust_control_point, 'args': [2, 'y'],
-                         'tooltip': 'Adjust curvature, point 2 Y'}
-a['control_point2_reset'] = {'command': 'Reset control point 2',
-                             'method': adjust_control_point, 'args': [2, 'r'],
-                             'tooltip': 'Remove arc adjustments'}
 
 
-def change_leaf_shape(dim, value=0):
-    """ Change width or height of leaf-shaped edge.
-    :param dim: 'w' for width, 'h' for height, 'r' for reset
-    :param value: new value (float)
-    :raise ValueError:
-
+def adjust_control_point_x1(value=None):
+    """ Adjust specifix control point
+    :param value: new value for given dimension, doesn't matter for reset.
+    :return: None
     """
-    # if value is g.AMBIGUOUS_VALUES:
-    # if we need this, we'll need to find some impossible ambiguous value to
-    # avoid weird, rare incidents
+    if value is None:
+        return
+    for edge in ctrl.selected:
+        edge.shape_info.adjust_control_point_x1(value)
+
+
+a['control_point2_x'] = {'command': 'Adjust curvature, point 2 X',
+                         'method': adjust_control_point_x1,
+                         'trigger_args': True,
+                         'tooltip': 'Adjust curvature, point 2 X'}
+
+
+def adjust_control_point_y0(value=None):
+    """ Adjust specifix control point
+    :param value: new value for given dimension, doesn't matter for reset.
+    :return: None
+    """
+    if value is None:
+        return
+    for edge in ctrl.selected:
+        edge.shape_info.adjust_control_point_y0(value)
+
+
+a['control_point1_y'] = {'command': 'Adjust curvature, point 1 Y',
+                         'method': adjust_control_point_y0,
+                         'trigger_args': True,
+                         'tooltip': 'Adjust curvature, point 1 Y'}
+
+
+def adjust_control_point_y1(value=None):
+    """ Adjust specifix control point
+    :param value: new value for given dimension, doesn't matter for reset.
+    :return: None
+    """
+    if value is None:
+        return
+    for edge in ctrl.selected:
+        edge.shape_info.adjust_control_point_y1(value)
+
+
+a['control_point2_y'] = {'command': 'Adjust curvature, point 2 Y',
+                         'method': adjust_control_point_y1,
+                         'trigger_args': True,
+                         'tooltip': 'Adjust curvature, point 2 Y'}
+
+
+def reset_control_points():
+    """ Reset all control points
+    :return: None
+    """
+    for edge in ctrl.selected:
+        edge.shape_info.reset_control_points()
+
+
+a['reset_control_points'] = {'command': 'Reset control point 1', 'method': reset_control_points,
+                             'tooltip': 'Remove arc adjustments'}
+
+
+def change_leaf_width(value=None):
+    """ Change width of leaf-shaped edge.
+    :param value: new value (float)
+    """
+    if value is None:
+        return
+    elif ctrl.ui.scope_is_selection:
+        for edge in ctrl.selected:
+            if isinstance(edge, Edge):
+                edge.shape_info.set_leaf_width(value)
+    else:
+        etype = ctrl.ui.active_edge_type
+        ctrl.fs.set_shape_info(etype, 'leaf_x', value)
+        ctrl.forest.redraw_edges(edge_type=etype)
+
+a['leaf_shape_x'] = {'command': 'Leaf shape width', 'method': change_leaf_width,
+                     'trigger_args': True, 'tooltip': 'Leaf shape width'}
+
+
+def change_leaf_height(value=None):
+    """ Change height of leaf-shaped edge.
+    :param value: new value (float)
+    """
+    if value is None:
+        return
     if ctrl.ui.scope_is_selection:
         for edge in ctrl.selected:
             if isinstance(edge, Edge):
-                edge.change_leaf_shape(dim, value)
+                edge.shape_info.set_leaf_height(value)
     else:
-        if dim == 'w':
-            ctrl.fs.set_shape_info(ctrl.ui.active_edge_type, 'leaf_x', value)
-        elif dim == 'h':
-            ctrl.fs.set_shape_info(ctrl.ui.active_edge_type, 'leaf_y', value)
-        elif dim == 'r':
-            ctrl.fs.reset_shape(ctrl.ui.active_edge_type, 'leaf_x', 'leaf_y')
-            options_panel = ctrl.ui.get_panel(g.LINE_OPTIONS)
-            options_panel.update_panel()
-        else:
-            raise ValueError
+        etype = ctrl.ui.active_edge_type
+        ctrl.fs.set_shape_info(etype, 'leaf_y', value)
+        ctrl.forest.redraw_edges(edge_type=etype)
+
+a['leaf_shape_y'] = {'command': 'Leaf shape height', 'method': change_leaf_height,
+                     'trigger_args': True,
+                     'tooltip': 'Leaf shape height'}
 
 
-a['leaf_shape_x'] = {'command': 'Line leaf shape width',
-                     'method': change_leaf_shape, 'args': ['w'],
-                     'tooltip': 'Line leaf shape width'}
-a['leaf_shape_y'] = {'command': 'Line leaf shape height',
-                     'method': change_leaf_shape, 'args': ['h'],
-                     'tooltip': 'Line leaf shape height'}
+def reset_leaf_shape():
+    """ Reset width and height of leaf-shaped edge.
+    """
+    if ctrl.ui.scope_is_selection:
+        for edge in ctrl.selected:
+            if isinstance(edge, Edge):
+                edge.shape_info.reset_leaf_shape()
+    else:
+        etype = ctrl.ui.active_edge_type
+        ctrl.fs.reset_shape(etype, 'leaf_x', 'leaf_y')
+        ctrl.forest.redraw_edges(edge_type=etype)
+    ctrl.ui.get_panel(g.LINE_OPTIONS).update_panel()
+
+
 a['leaf_shape_reset'] = {'command': 'Reset leaf shape settings',
-                         'method': change_leaf_shape, 'args': ['r'],
+                         'method': reset_leaf_shape,
                          'tooltip': 'Reset leaf shape settings'}
 
 
-def change_edge_thickness(dim, value=0):
+def change_edge_thickness(value=None):
     """ If edge is outline (not a leaf shape)
-
-    :param dim: 'r' for reset, otherwise doesn't matter
     :param value: new thickness (float)
+    """
+    if value is None:
+        return
+    if ctrl.ui.scope_is_selection:
+        for edge in ctrl.selected:
+            if isinstance(edge, Edge):
+                edge.shape_info.change_thickness(value)
+    else:
+        etype = ctrl.ui.active_edge_type
+        ctrl.fs.set_shape_info(etype, 'thickness', value)
+        ctrl.forest.redraw_edges(edge_type=etype)
+
+a['edge_thickness'] = {'command': 'Line thickness',
+                       'method': change_edge_thickness, 'trigger_args': True,
+                       'tooltip': 'Line thickness'}
+
+
+def reset_edge_thickness():
+    """ If edge is outline (not a leaf shape)
     """
     if ctrl.ui.scope_is_selection:
         for edge in ctrl.selected:
             if isinstance(edge, Edge):
-                edge.change_thickness(dim, value)
+                edge.shape_info.reset_thickness()
     else:
-        if dim == 'r':
-            ctrl.fs.reset_shape(ctrl.ui.active_edge_type, 'thickness')
-            options_panel = ctrl.ui.get_panel(g.LINE_OPTIONS)
-            options_panel.update_panel()
-        else:
-            ctrl.fs.set_shape_info(ctrl.ui.active_edge_type, 'thickness', value)
+        etype = ctrl.ui.active_edge_type
+        ctrl.fs.reset_shape(etype, 'thickness')
+        ctrl.forest.redraw_edges(edge_type=etype)
+    #ctrl.ui.get_panel(g.LINE_OPTIONS).update_panel()
 
-
-a['edge_thickness'] = {'command': 'Line thickness',
-                       'method': change_edge_thickness, 'args': ['x'],
-                       'tooltip': 'Line thickness'}
 a['edge_thickness_reset'] = {'command': 'Reset line thickness',
-                             'method': change_edge_thickness, 'args': ['r'],
+                             'method': reset_edge_thickness,
                              'tooltip': 'Reset line thickness'}
 
 
-def change_curvature(dim, value=0):
-    """ Change curvature of arching lines. Curvature can be relative or
-    absolute, and that can also be toggled
-    by calling this method (dim: 's'). Curvature can be set for x or y dim.
-
-    :param dim: 'x', 'y', 's' to toggle relative/absolute, 'r' to reset
+def change_edge_relative_curvature_x(value=None):
+    """ Change curvature of arching lines. Curvature is relative to width
     :param value: float
-    :raise ValueError:
+    """
+    if value is None:
+        return
+    if ctrl.ui.scope_is_selection:
+        for edge in ctrl.selected:
+            if isinstance(edge, Edge):
+                edge.shape_info.change_edge_relative_curvature_x(value)
+    else:
+        etype = ctrl.ui.active_edge_type
+        ctrl.fs.set_shape_info(etype, 'rel_dx', value * .01)
+        ctrl.forest.redraw_edges(edge_type=etype)
+
+a['change_edge_relative_curvature_x'] = {'command': 'Change curvature for edge in X',
+                                         'trigger_args': True,
+                                         'method': change_edge_relative_curvature_x,
+                                         'tooltip': 'Curvature as relative to edge width'}
+
+
+def change_edge_relative_curvature_y(value=None):
+    """ Change curvature of arching lines. Curvature is relative to width
+    :param value: float
+    """
+    if value is None:
+        return
+    if ctrl.ui.scope_is_selection:
+        for edge in ctrl.selected:
+            if isinstance(edge, Edge):
+                edge.shape_info.change_edge_relative_curvature_y(value)
+    else:
+        etype = ctrl.ui.active_edge_type
+        ctrl.fs.set_shape_info(etype, 'rel_dy', value * .01)
+        ctrl.forest.redraw_edges(edge_type=etype)
+
+a['change_edge_relative_curvature_y'] = {'command': 'Change curvature for edge in Y',
+                                         'trigger_args': True,
+                                         'method': change_edge_relative_curvature_y,
+                                         'tooltip': 'Curvature as relative to edge height'}
+
+
+def change_edge_fixed_curvature_x(value=None):
+    """ Change curvature of arching lines. Curvature is absolute pixels (X)
+    :param value: float
+    """
+    if value is None:
+        return
+    if ctrl.ui.scope_is_selection:
+        for edge in ctrl.selected:
+            if isinstance(edge, Edge):
+                edge.shape_info.change_edge_fixed_curvature_x(value)
+    else:
+        etype = ctrl.ui.active_edge_type
+        ctrl.fs.set_shape_info(etype, 'fixed_dx', value * .01)
+        ctrl.forest.redraw_edges(edge_type=etype)
+
+a['change_edge_fixed_curvature_x'] = {'command': 'Change curvature for edge in X',
+                                      'trigger_args': True,
+                                      'method': change_edge_fixed_curvature_x,
+                                      'tooltip': 'Curvature in edge, fixed X value in pixels'}
+
+
+def change_edge_fixed_curvature_y(value=None):
+    """ Change curvature of arching lines. Curvature is absolute pixels (X)
+    :param value: float
+    """
+    if value is None:
+        return
+    if ctrl.ui.scope_is_selection:
+        for edge in ctrl.selected:
+            if isinstance(edge, Edge):
+                edge.shape_info.change_edge_fixed_curvature_y(value)
+    else:
+        etype = ctrl.ui.active_edge_type
+        ctrl.fs.set_shape_info(etype, 'fixed_dy', value * .01)
+        ctrl.forest.redraw_edges(edge_type=etype)
+
+a['change_edge_fixed_curvature_y'] = {'command': 'Change curvature for edge in Y',
+                                      'trigger_args': True,
+                                      'method': change_edge_fixed_curvature_y,
+                                      'tooltip': 'Curvature in edge, fixed Y value in pixels'}
+
+
+def change_edge_curvature_reference(index, sender=None):
+    """ Change curvature computation type. Curvature can be 'relative' or 'fixed'
+    :param value: 'relative' or 'fixed'
+    """
+    value = sender.currentData()
+    if ctrl.ui.scope_is_selection:
+        for edge in ctrl.selected:
+            if isinstance(edge, Edge):
+                edge.shape_info.change_edge_curvature_reference(value)
+    else:
+        etype = ctrl.ui.active_edge_type
+        ctrl.fs.set_shape_info(etype, 'relative', value == 'relative')
+        ctrl.forest.redraw_edges(edge_type=etype)
+    ctrl.ui.get_panel(g.LINE_OPTIONS).update_panel()
+
+a['edge_curvature_type'] = {
+    'command': 'Change line curvature to be relative to edge dimensions or a fixed amount',
+    'method': change_edge_curvature_reference, 'trigger_args': True, 'sender_arg': True,
+
+    'tooltip': 'Change line curvature to be relative to edge dimensions or a fixed amount'}
+
+
+def reset_edge_curvature():
+    """ Reset curvature adjustments for edge
     """
     if ctrl.ui.scope_is_selection:
         for edge in ctrl.selected:
             if isinstance(edge, Edge):
-                edge.change_curvature(dim, value)
-        if dim == 'r' or dim == 's':
-            options_panel = ctrl.ui.get_panel(g.LINE_OPTIONS)
-            options_panel.update_panel()
+                edge.shape_info.reset_edge_curvature()
     else:
-        options_panel = ctrl.ui.get_panel(g.LINE_OPTIONS)
-        relative = options_panel.relative_curvature()
+        etype = ctrl.ui.active_edge_type
+        ctrl.fs.reset_shape(etype, 'rel_dx', 'rel_dy', 'fixed_dx',
+                            'fixed_dy', 'relative')
+        ctrl.forest.redraw_edges(edge_type=etype)
+    ctrl.ui.get_panel(g.LINE_OPTIONS).update_panel()
 
-        if dim == 'x':
-            if relative:
-                ctrl.fs.set_shape_info(ctrl.ui.active_edge_type, 'rel_dx', value * .01)
-            else:
-                ctrl.fs.set_shape_info(ctrl.ui.active_edge_type, 'fixed_dx', value)
-        elif dim == 'y':
-            if relative:
-                ctrl.fs.set_shape_info(ctrl.ui.active_edge_type, 'rel_dy', value * .01)
-            else:
-                ctrl.fs.set_shape_info(ctrl.ui.active_edge_type, 'fixed_dy', value)
-        elif dim == 'r':  # reset
-            ctrl.fs.reset_shape(ctrl.ui.active_edge_type, 'rel_dx', 'rel_dy', 'fixed_dx',
-                                'fixed_dy', 'relative')
-            options_panel.update_panel()
-        elif dim == 's':  # toggle between relative and fixed
-            ctrl.fs.set_shape_info(ctrl.ui.active_edge_type, 'relative', value == 'relative')
-            options_panel.update_panel()
-        else:
-            raise ValueError
-
-
-a['edge_curvature_x'] = {'command': 'Line curvature modifier X',
-                         'method': change_curvature, 'args': ['x'],
-                         'tooltip': 'Line curvature modifier X'}
-a['edge_curvature_y'] = {'command': 'Line curvature modifier Y',
-                         'method': change_curvature, 'args': ['y'],
-                         'tooltip': 'Line curvature modifier Y'}
-a['edge_curvature_type'] = {
-    'command': 'Change line curvature to be relative or fixed amount',
-    'method': change_curvature, 'args': ['s'],
-    'tooltip': 'Change line curvature to be relative or fixed amount'}
 a['edge_curvature_reset'] = {'command': 'Reset line curvature to default',
-                             'method': change_curvature, 'args': ['r'],
+                             'method': reset_edge_curvature,
                              'tooltip': 'Reset line curvature to default'}
 
 
@@ -1229,7 +1380,7 @@ def edge_label_accept(sender=None):
     """
     embed = get_ui_container(sender)
     if embed:
-        embed.host.label_text = embed.input_line_edit.text()
+        embed.host.set_label_text(embed.input_line_edit.text())
     embed.blur_away()
 
 

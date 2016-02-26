@@ -595,7 +595,7 @@ class LeftAddSibling(BranchingTouchArea):
         :param end_point: End point can be given or it can be calculated.
         """
         e = self.host
-        shape_info = e.shape_info()
+        shape_info = ctrl.fs.shape_info(e.edge_type)
         shape_method = shape_info['method']
         self._fill_path = e.is_filled()
         sx, sy = to_tuple(e.get_point_at(0.5))
@@ -668,7 +668,7 @@ class RightAddSibling(BranchingTouchArea):
         :param end_point: End point can be given or it can be calculated.
         """
         e = self.host
-        shape_info = e.shape_info()
+        shape_info = ctrl.fs.shape_info(e.edge_type)
         shape_method = shape_info['method']
         self._fill_path = e.is_filled()
         sx, sy = to_tuple(e.get_point_at(0.5))
