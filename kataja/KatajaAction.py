@@ -22,6 +22,8 @@
 #
 # ############################################################################
 import sys
+import traceback
+
 from PyQt5 import QtCore, QtWidgets, QtGui
 
 from kataja.singletons import ctrl
@@ -204,11 +206,10 @@ class KatajaAction(QtWidgets.QAction):
         try:
             message = self.method(*trigger_args, **kwargs)
         except:
-            e = sys.exc_info()[0]
+            e = sys.exc_info()[1]
             message = str(e)
             print("Unexpected error:", e)
-            print(sys.exc_info())
-
+            traceback.print_exc()
         # Restore undo state to what it was
         if not self.undoable:
             ctrl.undo_disabled = remember_undo_state

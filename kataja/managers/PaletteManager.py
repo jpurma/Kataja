@@ -591,9 +591,16 @@ class PaletteManager:
         :return:
         """
         if self.light_on_dark():
-            return color.darker()
+            if isinstance(color, QtGui.QBrush):
+                return QtGui.QBrush(color.color().darker())
+            else:
+                return color.darker()
+
         else:
-            return color.lighter()
+            if isinstance(color, QtGui.QBrush):
+                return QtGui.QBrush(color.color().lighter())
+            else:
+                return color.lighter()
 
     def get_color_name(self, color):
         """
@@ -673,9 +680,11 @@ class PaletteManager:
              'light': bb_lt,
              'dark': bb_dk, 'mid': bbase, 'text': bbase,
              'bright_text': bb_lt, 'base': paper2, 'window': bb_melded}
-        self._accent_palettes[key] = QtGui.QPalette(
+        pal = QtGui.QPalette(
             p['windowText'], p['button'], p['light'], p['dark'], p['mid'],
             p['text'], p['bright_text'], p['base'], p['window'])
+        pal = self.add_disabled_palette(pal, p)
+        self._accent_palettes[key] = pal
 
     def create_accent_palettes(self):
         self._accent_palettes = {}
@@ -710,6 +719,8 @@ class PaletteManager:
         self._palette = QtGui.QPalette(p['windowText'], p['button'], p['light'],
                                        p['dark'], p['mid'], p['text'],
                                        p['bright_text'], p['base'], p['window'])
+
+        self._palette = self.add_disabled_palette(self._palette, p)
         return self._palette
 
     def get_qt_palette_for_ui(self, cached=True):
@@ -731,11 +742,22 @@ class PaletteManager:
              'text': QtGui.QBrush(self.d['accent8']),
              'bright_text': QtGui.QBrush(self.d['accent2']),
              'base': QtGui.QBrush(self.d['background2']),
-             'window': QtGui.QBrush(self.d['background1'])}
+             'window': QtGui.QBrush(self.d['background1'])
+             }
         self._ui_palette = QtGui.QPalette(p['windowText'], p['button'],
                                           p['light'], p['dark'], p['mid'],
                                           p['text'], p['bright_text'],
                                           p['base'], p['window'])
         self._ui_palette.setColor(QtGui.QPalette.AlternateBase,
                                   self.d['background2tr'])
+        self._ui_palette = self.add_disabled_palette(self._ui_palette, p)
         return self._ui_palette
+
+    def add_disabled_palette(self, palette, p):
+
+        palette.setColorGroup(QtGui.QPalette.Disabled, self.broken(p['windowText']),
+                              self.broken(p['button']), self.broken(p['light']),
+                              self.broken(p['dark']), self.broken(p['mid']),
+                              self.broken(p['text']), self.broken(p['bright_text']),
+                              p['base'], p['window'])
+        return palette

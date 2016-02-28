@@ -689,10 +689,9 @@ def reset_style_in_scope(sender=None):
         for item in ctrl.selected:
             if hasattr(item, 'reset_style'):
                 item.reset_style()
-    else:
-        ctrl.fs.reset_node_style(ctrl.ui.active_node_type)
-        ctrl.fs.reset_edge_style(ctrl.ui.active_edge_type)
-        ctrl.forest.redraw_edges(ctrl.ui.active_edge_type)
+    ctrl.fs.reset_node_style(ctrl.ui.active_node_type)
+    ctrl.fs.reset_edge_style(ctrl.ui.active_edge_type)
+    ctrl.forest.redraw_edges(ctrl.ui.active_edge_type)
 
 
 a['reset_style_in_scope'] = {'command': 'Reset style to original',
@@ -817,7 +816,8 @@ def adjust_control_point_x0(value=None):
     if value is None:
         return
     for edge in ctrl.selected:
-        edge.shape_info.adjust_control_point_x0(value)
+        if isinstance(edge, Edge):
+            edge.shape_info.adjust_control_point_x0(value)
 
 
 a['control_point1_x'] = {'command': 'Adjust curvature, point 1 X',
@@ -834,7 +834,8 @@ def adjust_control_point_x1(value=None):
     if value is None:
         return
     for edge in ctrl.selected:
-        edge.shape_info.adjust_control_point_x1(value)
+        if isinstance(edge, Edge):
+            edge.shape_info.adjust_control_point_x1(value)
 
 
 a['control_point2_x'] = {'command': 'Adjust curvature, point 2 X',
@@ -851,7 +852,8 @@ def adjust_control_point_y0(value=None):
     if value is None:
         return
     for edge in ctrl.selected:
-        edge.shape_info.adjust_control_point_y0(value)
+        if isinstance(edge, Edge):
+            edge.shape_info.adjust_control_point_y0(value)
 
 
 a['control_point1_y'] = {'command': 'Adjust curvature, point 1 Y',
@@ -868,7 +870,8 @@ def adjust_control_point_y1(value=None):
     if value is None:
         return
     for edge in ctrl.selected:
-        edge.shape_info.adjust_control_point_y1(value)
+        if isinstance(edge, Edge):
+            edge.shape_info.adjust_control_point_y1(value)
 
 
 a['control_point2_y'] = {'command': 'Adjust curvature, point 2 Y',
@@ -882,7 +885,8 @@ def reset_control_points():
     :return: None
     """
     for edge in ctrl.selected:
-        edge.shape_info.reset_control_points()
+        if isinstance(edge, Edge):
+            edge.shape_info.reset_control_points()
 
 
 a['reset_control_points'] = {'command': 'Reset control point 1', 'method': reset_control_points,
@@ -928,25 +932,6 @@ a['leaf_shape_y'] = {'command': 'Leaf shape height', 'method': change_leaf_heigh
                      'tooltip': 'Leaf shape height'}
 
 
-def reset_leaf_shape():
-    """ Reset width and height of leaf-shaped edge.
-    """
-    if ctrl.ui.scope_is_selection:
-        for edge in ctrl.selected:
-            if isinstance(edge, Edge):
-                edge.shape_info.reset_leaf_shape()
-    else:
-        etype = ctrl.ui.active_edge_type
-        ctrl.fs.reset_shape(etype, 'leaf_x', 'leaf_y')
-        ctrl.forest.redraw_edges(edge_type=etype)
-    ctrl.ui.get_panel(g.LINE_OPTIONS).update_panel()
-
-
-a['leaf_shape_reset'] = {'command': 'Reset leaf shape settings',
-                         'method': reset_leaf_shape,
-                         'tooltip': 'Reset leaf shape settings'}
-
-
 def change_edge_thickness(value=None):
     """ If edge is outline (not a leaf shape)
     :param value: new thickness (float)
@@ -965,24 +950,6 @@ def change_edge_thickness(value=None):
 a['edge_thickness'] = {'command': 'Line thickness',
                        'method': change_edge_thickness, 'trigger_args': True,
                        'tooltip': 'Line thickness'}
-
-
-def reset_edge_thickness():
-    """ If edge is outline (not a leaf shape)
-    """
-    if ctrl.ui.scope_is_selection:
-        for edge in ctrl.selected:
-            if isinstance(edge, Edge):
-                edge.shape_info.reset_thickness()
-    else:
-        etype = ctrl.ui.active_edge_type
-        ctrl.fs.reset_shape(etype, 'thickness')
-        ctrl.forest.redraw_edges(edge_type=etype)
-    #ctrl.ui.get_panel(g.LINE_OPTIONS).update_panel()
-
-a['edge_thickness_reset'] = {'command': 'Reset line thickness',
-                             'method': reset_edge_thickness,
-                             'tooltip': 'Reset line thickness'}
 
 
 def change_edge_relative_curvature_x(value=None):
@@ -1084,44 +1051,60 @@ def change_edge_curvature_reference(index, sender=None):
         ctrl.forest.redraw_edges(edge_type=etype)
     ctrl.ui.get_panel(g.LINE_OPTIONS).update_panel()
 
+def change_edge_curvature_to_relative(value):
+    """ Change curvature computation type. Curvature can be 'relative' or 'fixed'
+    :param value: 'relative' or 'fixed'
+    """
+    if value:
+        ref = 'relative'
+    else:
+        ref = 'fixed'
+    if ctrl.ui.scope_is_selection:
+        for edge in ctrl.selected:
+            if isinstance(edge, Edge):
+                edge.shape_info.change_edge_curvature_reference(ref)
+    else:
+        etype = ctrl.ui.active_edge_type
+        ctrl.fs.set_shape_info(etype, 'relative', value)
+        ctrl.forest.redraw_edges(edge_type=etype)
+    ctrl.ui.get_panel(g.LINE_OPTIONS).update_panel()
+
+
 a['edge_curvature_type'] = {
     'command': 'Change line curvature to be relative to edge dimensions or a fixed amount',
     'method': change_edge_curvature_reference, 'trigger_args': True, 'sender_arg': True,
 
     'tooltip': 'Change line curvature to be relative to edge dimensions or a fixed amount'}
 
+a['edge_curvature_relative'] = {
+    'command': 'Change line curvature to be relative to edge dimensions',
+    'method': change_edge_curvature_to_relative, 'trigger_args': True,
+    'tooltip': 'Change line curvature to be relative to edge dimensions'}
 
-def reset_edge_curvature():
-    """ Reset curvature adjustments for edge
+def change_edge_curvature_to_fixed(value):
+    """ Change curvature computation type. Curvature can be 'relative' or 'fixed'
+    :param value: bool
     """
+    if value:
+        ref = 'fixed'
+    else:
+        ref = 'relative'
     if ctrl.ui.scope_is_selection:
         for edge in ctrl.selected:
             if isinstance(edge, Edge):
-                edge.shape_info.reset_edge_curvature()
+                edge.shape_info.change_edge_curvature_reference(ref)
     else:
         etype = ctrl.ui.active_edge_type
-        ctrl.fs.reset_shape(etype, 'rel_dx', 'rel_dy', 'fixed_dx',
-                            'fixed_dy', 'relative')
+        ctrl.fs.set_shape_info(etype, 'relative', not value)
         ctrl.forest.redraw_edges(edge_type=etype)
     ctrl.ui.get_panel(g.LINE_OPTIONS).update_panel()
 
-a['edge_curvature_reset'] = {'command': 'Reset line curvature to default',
-                             'method': reset_edge_curvature,
-                             'tooltip': 'Reset line curvature to default'}
 
+a['edge_curvature_fixed'] = {
+    'command': 'Change line curvature to be a fixed amount',
+    'method': change_edge_curvature_to_fixed, 'trigger_args': True,
+    'tooltip': 'Change line curvature to be a fixed amount'}
 
-def change_edge_asymmetry(value):
-    """ Toggle between showing different line weights for LEFT and RIGHT
-    aligned edges.
-    :param value: bool
-    :return: None
-    """
-    print('changing asymmetry: ', value)
-
-
-a['edge_asymmetry'] = {'command': 'Set left and right to differ significantly',
-                       'method': change_edge_asymmetry,
-                       'tooltip': 'Set left and right to differ significantly'}
 
 
 def change_visualization(visualization_key=None, sender=None):
