@@ -107,11 +107,11 @@ crashed
 - Linearized Dynamic -visualization draws all trees on same x-position.
 + Overlaps in QGraphicsItem's UserType and camera's UserType break some event detection.
 - Editing labels in middle nodes is confusing if they are not displayed
-- First node in new forest is not displayed properly
++ First node in new forest is not displayed properly
 + Drawn icons are wrong size.
 + Zoom should always aim to center of the screen, not be based on pointer position
 + Panels are in random order in menu
-- Node panel icons don't change their color
++ Node panel icons don't change their color
 
 ADD:
 

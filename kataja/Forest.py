@@ -292,6 +292,7 @@ class Forest(BaseModel):
                 self.gloss.text = self.gloss_text
             elif self.gloss.text != self.gloss_text:
                 self.gloss.text = self.gloss_text
+            self.gloss.update_label()
         elif self.gloss:
             self.remove_from_scene(self.gloss)
             self.gloss = None
@@ -718,7 +719,6 @@ class Forest(BaseModel):
         to top should keep its identity, and just reset the top node to be the new node.
         :return:
         """
-
         invalid_trees = []
         valid_tops = set()
         invalid_tops = set()
@@ -837,9 +837,7 @@ class Forest(BaseModel):
         given node and new node will have the same trees as a parent.
         :param pos:
         :param node_type:
-        :param new_tree: create new tree for this node. Usually this makes sense, but when
-        used as part of complex operation (e.g. replace) this may create more trouble than
-        needed. If 'relative' is given, new tree is never created.
+        :param text: label text for node, behaviour depends on node type
         :return:
         """
         # First check that the node doesn't exist already
@@ -1160,12 +1158,13 @@ class Forest(BaseModel):
         # -- check if it is last of its type --
         found = False
         my_type = edge.edge_type
-        for e in self.edges.values():
-            if e.edge_type == my_type:
-                found = True
-                break
-        if not found:
-            self.edge_types.remove(my_type)
+        if my_type in self.edge_types:
+            for e in self.edges.values():
+                if e.edge_type == my_type:
+                    found = True
+                    break
+            if not found:
+                self.edge_types.remove(my_type)
         # -- scene --
         self.remove_from_scene(edge)
         # -- Order update for trees

@@ -592,6 +592,7 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
     def reset_style(self):
         self.shape_name = None
         self.shape_info.reset_shape_info(*self.local_shape_info.keys())
+        self.curve_adjustment = [(0, 0)] * len(self.control_points)
         self.update_shape()
 
     def get_cached_shape_info(self):

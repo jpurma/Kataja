@@ -93,6 +93,7 @@ class GlossNode(Node):
     @text.setter
     def text(self, value):
         self._label = value
+        self._inode_changed = True
 
     def __str__(self):
         return 'gloss: %s' % self.text

@@ -200,13 +200,9 @@ class LineOptionsPanel(UIPanel):
         dp = self.ui_manager.get_panel(g.STYLE)
         if dp:
             pixel_ratio = dp.devicePixelRatio()
-            print(pixel_ratio)
             p = dp.mapToGlobal(dp.pos())
-            print(p)
-            print(p.x() / pixel_ratio, p.y() / pixel_ratio, dp.width())
             return QtCore.QPoint(p.x() / pixel_ratio + dp.width() + 40, p.y() / pixel_ratio)
         else:
-            print('ok then')
             return UIPanel.initial_position(self)
 
     def update_cp1(self):
@@ -224,23 +220,7 @@ class LineOptionsPanel(UIPanel):
             else:
                 self.cp1_box.setDisabled(True)
         else:
-            cps = (e.curve_adjustment[0] for e in ctrl.selected if isinstance(e, Edge) and
-                   e.curve_adjustment and len(e.control_points) > 0)
-            self.cp1_box.setDisabled(False)
-            x_conflict = False
-            y_conflict = False
-            prev_x, prev_y = 0, 0
-            for x, y in cps:
-                if prev_x and x != prev_x:
-                    x_conflict = True
-                prev_x = x
-                if prev_y and y != prev_y:
-                    y_conflict = True
-                prev_y = y
-                if x_conflict and y_conflict:
-                    break
-            set_value(self.cp1_x_spinbox, prev_x, x_conflict)
-            set_value(self.cp1_y_spinbox, prev_y, y_conflict)
+            self.cp1_box.setDisabled(True)
 
     def update_cp2(self):
         if not ctrl.selected:
@@ -256,32 +236,17 @@ class LineOptionsPanel(UIPanel):
             else:
                 self.cp2_box.setDisabled(True)
         else:
-            cps = (e.curve_adjustment[0] for e in ctrl.selected if isinstance(e, Edge) and
-                   e.curve_adjustment and len(e.control_points) > 1)
-            self.cp2_box.setDisabled(False)
-            x_conflict = False
-            y_conflict = False
-            prev_x, prev_y = 0, 0
-            for x, y in cps:
-                if prev_x and x != prev_x:
-                    x_conflict = True
-                prev_x = x
-                if prev_y and y != prev_y:
-                    y_conflict = True
-                prev_y = y
-                if x_conflict and y_conflict:
-                    break
-            set_value(self.cp2_x_spinbox, prev_x, x_conflict)
-            set_value(self.cp2_y_spinbox, prev_y, y_conflict)
+            self.cp2_box.setDisabled(True)
 
     def update_box_visibility(self, sd, selection):
         """
         :return:
         """
         cps = sd['control_points']
+        edges = [x for x in ctrl.selected if isinstance(x, Edge)]
         # Control points
-        self.cp1_box.setEnabled(selection and cps > 0)
-        self.cp2_box.setEnabled(selection and cps > 1)
+        self.cp1_box.setEnabled(len(edges) == 1 and cps > 0)
+        self.cp2_box.setEnabled(len(edges) == 1 and cps > 1)
         # Relative / fixed curvature
         relative = sd['relative']
         self.fixed_arc_box.setEnabled(cps and not relative)

@@ -107,8 +107,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
         mw = prefs.edge_width
         mh = prefs.edge_height
         margins = QtCore.QMarginsF(mw, mh, mw, mh)
-        vr = self.visible_rect() + margins
         if self._cached_visible_rect and not force:
+            vr = self.visible_rect() + margins
             if vr != self._cached_visible_rect:
                 if self.keep_updating_visible_area or \
                         prefs.auto_zoom or \
@@ -117,6 +117,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                     self.graph_view.instant_fit_to_view(vr)
                     self._cached_visible_rect = vr
         else:
+            vr = self.visible_rect() + margins
             self.graph_view.instant_fit_to_view(vr)
             self._cached_visible_rect = vr
 
@@ -127,9 +128,11 @@ class GraphScene(QtWidgets.QGraphicsScene):
         y_max = -6000
         x_min = 6000
         x_max = -6000
+        empty = True
         for item in chain(ctrl.forest.nodes.values(), ctrl.forest.groups.values()):
             if not item.isVisible():
                 continue
+            empty = False
             minx, miny, maxx, maxy = item.sceneBoundingRect().getCoords()
             if minx < x_min:
                 x_min = minx
@@ -139,7 +142,10 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 y_min = miny
             if maxy > y_max:
                 y_max = maxy
-        return QtCore.QRectF(QtCore.QPoint(x_min, y_min), QtCore.QPoint(x_max, y_max))
+        if empty:
+            return QtCore.QRectF(0, 0, 320, 240)
+        else:
+            return QtCore.QRectF(QtCore.QPoint(x_min, y_min), QtCore.QPoint(x_max, y_max))
         # return self.itemsBoundingRect()
 
     def item_moved(self):
@@ -629,7 +635,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
                             pass
                         node = ctrl.forest.create_node(pos=event.scenePos(), node_type=node_type)
                         node.current_position = event.scenePos().x(), event.scenePos().y()
-                        node.lock()
+                        if node_type != g.CONSTITUENT_NODE:
+                            node.lock()
                         ctrl.main.action_finished('added %s' % args[0])
                     else:
                         print('received unknown command:', command, args)
