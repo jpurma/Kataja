@@ -112,6 +112,8 @@ crashed
 + Zoom should always aim to center of the screen, not be based on pointer position
 + Panels are in random order in menu
 + Node panel icons don't change their color
+- Load & save default locations are app resources -folder.
+- Changing ui text size doesn't resize panels
 
 ADD:
 
@@ -151,3 +153,5 @@ ADD:
 + Embed edits are 'inspectors', active only when double-clicking or clicking edit button
 -+ Node texts can be edited directly, in place
 - Styles should have overall style: 'Custom', 'Plain' and 'Rich'
+- Shuffle button next to random palettes
++ Arrowhead settings to line options panel

@@ -84,7 +84,7 @@ print('setup_dir:', setup_dir)
 
 if sys.platform == 'darwin':
     plist = {'CFBundleVersion': version_long, 'CFBundleShortVersionString': version_short,
-             'CFBundleIdentifier': 'fi.aalto.jpurma.Kataja', 'NSHumanReadableCopyright': '© 2015 Jukka Purma, GNU General Public License 3'}
+             'CFBundleIdentifier': 'fi.purma.Kataja', 'NSHumanReadableCopyright': '© 2015 Jukka Purma, GNU General Public License 3'}
     OPTIONS = {'argv_emulation': False, 'includes': ['sip'],
                'iconfile': 'resources/icons/Kataja.icns', 'plist': plist, 'includes':
                    ['sip', 'PyQt5', 'PyQt5.QtCore', 'PyQt5.QtGui', 'PyQt5.QtMultimedia',

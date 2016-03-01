@@ -100,17 +100,23 @@ class ForestSettings(BaseModel):
         """
         return self.node_info(node_type, 'edge')
 
-    def edge_info(self, edge_type, key):
+    def edge_info(self, edge_type, key=None):
         """ Getter for settings related to various types of edges.
         If not found here, value is searched from preferences. 
         :param edge_type:
         :param key:
         """
         local_edge_settings = self.edge_types.get(edge_type)
-        if local_edge_settings is None or local_edge_settings.get(key, None) is None:
-            return prefs.edges[edge_type].get(key, None)
+        if key:
+            if local_edge_settings is None or local_edge_settings.get(key, None) is None:
+                return prefs.edges[edge_type].get(key, None)
+            else:
+                return local_edge_settings[key]
         else:
-            return local_edge_settings[key]
+            if local_edge_settings is None or local_edge_settings.get(key, None) is None:
+                return prefs.edges[edge_type].get(key, None)
+            else:
+                return local_edge_settings[key]
 
     def set_edge_info(self, edge_type, key, value):
         """ Setter for settings related to various types of edges.

@@ -88,8 +88,8 @@ def prepare_app():
     font = QtGui.QFont('Helvetica', 10)
     app.setFont(font)
     app.setApplicationName('Kataja')
-    app.setOrganizationName('JPurma-Aalto')
-    app.setOrganizationDomain('jpurma.aalto.fi')
+    app.setOrganizationName('Purma')
+    app.setOrganizationDomain('purma.fi')
     app.setStyle('fusion')
     return app
 

@@ -893,6 +893,9 @@ a['reset_control_points'] = {'command': 'Reset control point 1', 'method': reset
                              'tooltip': 'Remove arc adjustments'}
 
 
+
+
+
 def change_leaf_width(value=None):
     """ Change width of leaf-shaped edge.
     :param value: new value (float)
@@ -1035,21 +1038,95 @@ a['change_edge_fixed_curvature_y'] = {'command': 'Change curvature for edge in Y
                                       'method': change_edge_fixed_curvature_y,
                                       'tooltip': 'Curvature in edge, fixed Y value in pixels'}
 
-
-def change_edge_curvature_reference(index, sender=None):
-    """ Change curvature computation type. Curvature can be 'relative' or 'fixed'
-    :param value: 'relative' or 'fixed'
+def toggle_edge_arrowhead_at_start(value):
+    """ Draw arrowheads at start for given edges or edge type
+    :param value: bool
     """
-    value = sender.currentData()
     if ctrl.ui.scope_is_selection:
         for edge in ctrl.selected:
             if isinstance(edge, Edge):
-                edge.shape_info.change_edge_curvature_reference(value)
+                edge.shape_info.set_arrowhead_at_start(value)
     else:
         etype = ctrl.ui.active_edge_type
-        ctrl.fs.set_shape_info(etype, 'relative', value == 'relative')
+        ctrl.fs.set_edge_info(etype, 'arrowhead_at_start', value)
         ctrl.forest.redraw_edges(edge_type=etype)
-    ctrl.ui.get_panel(g.LINE_OPTIONS).update_panel()
+    panel = ctrl.ui.get_panel(g.LINE_OPTIONS)
+    if panel:
+        panel.update_panel()
+
+a['edge_arrowhead_start'] = {
+    'command': 'Draw arrowhead at line start',
+    'method': toggle_edge_arrowhead_at_start, 'trigger_args': True,
+    'tooltip': 'Draw arrowhead at line start'}
+
+
+def toggle_edge_arrowhead_at_end(value):
+    """ Draw arrowheads at end for given edges or edge type
+    :param value: bool
+    """
+    if ctrl.ui.scope_is_selection:
+        for edge in ctrl.selected:
+            if isinstance(edge, Edge):
+                edge.shape_info.set_arrowhead_at_end(value)
+    else:
+        etype = ctrl.ui.active_edge_type
+        ctrl.fs.set_edge_info(etype, 'arrowhead_at_end', value)
+        ctrl.forest.redraw_edges(edge_type=etype)
+    panel = ctrl.ui.get_panel(g.LINE_OPTIONS)
+    if panel:
+        panel.update_panel()
+
+a['edge_arrowhead_end'] = {
+    'command': 'Draw arrowhead at line end',
+    'method': toggle_edge_arrowhead_at_end, 'trigger_args': True,
+    'tooltip': 'Draw arrowhead at line end'}
+
+
+def change_edge_shape_to_filled(value):
+    """ Change edge to draw as filled shape
+    :param value: bool
+    """
+    fill = value
+    if ctrl.ui.scope_is_selection:
+        for edge in ctrl.selected:
+            if isinstance(edge, Edge):
+                edge.shape_info.change_fill(fill)
+    else:
+        etype = ctrl.ui.active_edge_type
+        ctrl.fs.set_shape_info(etype, 'fill', fill)
+        ctrl.forest.redraw_edges(edge_type=etype)
+    panel = ctrl.ui.get_panel(g.LINE_OPTIONS)
+    if panel:
+        panel.update_panel()
+
+a['edge_shape_fill'] = {
+    'command': 'Set edge to be drawn as filled shape',
+    'method': change_edge_shape_to_filled, 'trigger_args': True,
+    'tooltip': 'Set edge to be drawn as filled shape'}
+
+
+def change_edge_shape_to_line(value):
+    """ Change edge to draw as line instead of filled shape
+    :param value: bool
+    """
+    fill = not value
+    if ctrl.ui.scope_is_selection:
+        for edge in ctrl.selected:
+            if isinstance(edge, Edge):
+                edge.shape_info.change_fill(fill)
+    else:
+        etype = ctrl.ui.active_edge_type
+        ctrl.fs.set_shape_info(etype, 'fill', fill)
+        ctrl.forest.redraw_edges(edge_type=etype)
+    panel = ctrl.ui.get_panel(g.LINE_OPTIONS)
+    if panel:
+        panel.update_panel()
+
+a['edge_shape_line'] = {
+    'command': 'Set edge to be drawn as line with fixed width',
+    'method': change_edge_shape_to_line, 'trigger_args': True,
+    'tooltip': 'Set edge to be drawn as line with fixed width'}
+
 
 def change_edge_curvature_to_relative(value):
     """ Change curvature computation type. Curvature can be 'relative' or 'fixed'
@@ -1067,19 +1144,15 @@ def change_edge_curvature_to_relative(value):
         etype = ctrl.ui.active_edge_type
         ctrl.fs.set_shape_info(etype, 'relative', value)
         ctrl.forest.redraw_edges(edge_type=etype)
-    ctrl.ui.get_panel(g.LINE_OPTIONS).update_panel()
-
-
-a['edge_curvature_type'] = {
-    'command': 'Change line curvature to be relative to edge dimensions or a fixed amount',
-    'method': change_edge_curvature_reference, 'trigger_args': True, 'sender_arg': True,
-
-    'tooltip': 'Change line curvature to be relative to edge dimensions or a fixed amount'}
+    panel = ctrl.ui.get_panel(g.LINE_OPTIONS)
+    if panel:
+        panel.update_panel()
 
 a['edge_curvature_relative'] = {
     'command': 'Change line curvature to be relative to edge dimensions',
     'method': change_edge_curvature_to_relative, 'trigger_args': True,
     'tooltip': 'Change line curvature to be relative to edge dimensions'}
+
 
 def change_edge_curvature_to_fixed(value):
     """ Change curvature computation type. Curvature can be 'relative' or 'fixed'
@@ -1097,7 +1170,9 @@ def change_edge_curvature_to_fixed(value):
         etype = ctrl.ui.active_edge_type
         ctrl.fs.set_shape_info(etype, 'relative', not value)
         ctrl.forest.redraw_edges(edge_type=etype)
-    ctrl.ui.get_panel(g.LINE_OPTIONS).update_panel()
+    panel = ctrl.ui.get_panel(g.LINE_OPTIONS)
+    if panel:
+        panel.update_panel()
 
 
 a['edge_curvature_fixed'] = {

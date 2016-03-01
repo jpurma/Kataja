@@ -11,6 +11,49 @@ from kataja.ui.panels.UIPanel import UIPanel
 __author__ = 'purma'
 
 
+def build_shape_dict_for_selection(selection):
+    """ Create a dict of values to show in this panel, add a about conflicting values in
+    selection so that they can be shown as special items.
+    :return: dict with familiar attributes and $varname_conflict: True for conflicts.
+    """
+    # check if selection has conflicting values: these cannot be shown then
+    edges = [item for item in selection if isinstance(item, Edge)]
+    edge_count = len(edges)
+    if not edge_count:
+        return {}, ()
+    sample_edge = edges[0]
+    d = sample_edge.shape_info.copy()
+    shape_name = sample_edge.shape_name
+    d['shape_name'] = shape_name
+    d['edge_count'] = edge_count
+    d['sample_edge'] = sample_edge
+    arrowheads_at_start = sample_edge.shape_info.has_arrowhead_at_start()
+    arrowheads_at_end = sample_edge.shape_info.has_arrowhead_at_end()
+    arrowheads_at_start_conflict = False
+    arrowheads_at_end_conflict = False
+
+    if edge_count > 1:
+        keys = ['relative', 'leaf_x', 'leaf_y', 'thickness', 'rel_dx', 'rel_dy', 'fixed_dx',
+                'fixed_dy', 'fill']
+        for item in edges[1:]:
+            e = item.shape_info.shape_info()
+            if shape_name != item.shape_name:
+                d['shape_name_conflict'] = True
+            if item.shape_info.has_arrowhead_at_start() != arrowheads_at_start:
+                arrowheads_at_start_conflict = True
+            if item.shape_info.has_arrowhead_at_end() != arrowheads_at_end:
+                arrowheads_at_end_conflict = True
+            for key in keys:
+                old = d.get(key, None)
+                new = e.get(key, None)
+                if old is None and new is not None:
+                    d[key] = new
+                elif old is not None and new is not None and old != new:
+                    d[key + '_conflict'] = True
+    return d, (arrowheads_at_start, arrowheads_at_start_conflict, arrowheads_at_end,
+               arrowheads_at_end_conflict)
+
+
 class LineOptionsPanel(UIPanel):
     """ Panel for editing how edges and nodes are drawn. """
 
@@ -54,8 +97,7 @@ class LineOptionsPanel(UIPanel):
         # Curvature
         layout.addSpacing(spac)
         hlayout = box_row(layout)
-        label(self, hlayout, 'Curvature')
-
+        label(self, hlayout, 'General curvature')
 
         hlayout = box_row(layout)
         self.relative_arc_button = mini_button(ui_manager, self, hlayout, 'relative',
@@ -73,7 +115,6 @@ class LineOptionsPanel(UIPanel):
         arc_layout.setContentsMargins(0, 0, 0, 0)
         self.relative_arc_box.setLayout(arc_layout)
         hlayout.addWidget(self.relative_arc_box)
-
 
         hlayout = box_row(layout)
         self.fixed_arc_button = mini_button(ui_manager, self, hlayout, 'fixed',
@@ -99,20 +140,45 @@ class LineOptionsPanel(UIPanel):
         layout.addSpacing(spac)
         hlayout = box_row(layout)
         label(self, hlayout, 'Shape and thickness')
+
+        hlayout = box_row(layout)
+        self.line_button = mini_button(ui_manager, self, hlayout, 'Line',
+                                       'edge_shape_line', checkable=True)
         self.thickness_box = QtWidgets.QWidget(inner)
-        hlayout = box_row(self.thickness_box)
-        self.thickness_spinbox = decimal_spinbox(ui_manager, self, hlayout,
+        box_layout = QtWidgets.QHBoxLayout()
+        box_layout.setContentsMargins(0, 0, 0, 0)
+        self.thickness_spinbox = decimal_spinbox(ui_manager, self, box_layout,
                                                  label='Thickness', range_min=0.0, range_max=10.0,
                                                  step=0.1, action='edge_thickness', suffix=' px')
-        layout.addWidget(self.thickness_box)
+        self.thickness_box.setLayout(box_layout)
+        hlayout.addWidget(self.thickness_box)
 
         # Leaf size
+        hlayout = box_row(layout)
+        self.fill_button = mini_button(ui_manager, self, hlayout, 'Filled',
+                                       'edge_shape_fill', checkable=True)
         self.leaf_box = QtWidgets.QWidget(inner)
-        hlayout = box_row(self.leaf_box)
-        label(self, hlayout, 'Leaf width and height')
-        self.leaf_x_spinbox = spinbox(ui_manager, self, hlayout, 'X', -20, 20, 'leaf_shape_x')
-        self.leaf_y_spinbox = spinbox(ui_manager, self, hlayout, 'Y', -20, 20, 'leaf_shape_y')
-        layout.addWidget(self.leaf_box)
+        box_layout = QtWidgets.QHBoxLayout()
+        box_layout.setContentsMargins(0, 0, 0, 0)
+        label(self, box_layout, 'Spread')
+        self.leaf_x_spinbox = spinbox(ui_manager, self, box_layout, 'X', -20, 20, 'leaf_shape_x')
+        self.leaf_y_spinbox = spinbox(ui_manager, self, box_layout, 'Y', -20, 20, 'leaf_shape_y')
+        self.leaf_box.setLayout(box_layout)
+        hlayout.addWidget(self.leaf_box)
+
+        self.shape_fill_buttons = QtWidgets.QButtonGroup(self)
+        self.shape_fill_buttons.addButton(self.fill_button)
+        self.shape_fill_buttons.addButton(self.line_button)
+
+        layout.addSpacing(spac)
+        hlayout = box_row(layout)
+        label(self, hlayout, 'Arrowheads')
+        self.arrowhead_start_button = mini_button(ui_manager, self, hlayout, 'at start',
+                                                  'edge_arrowhead_start',
+                                                  checkable=True)
+        self.arrowhead_end_button = mini_button(ui_manager, self, hlayout, 'at end',
+                                                'edge_arrowhead_end',
+                                                checkable=True)
         inner.setLayout(layout)
         self.setWidget(inner)
         self.finish_init()
@@ -122,74 +188,126 @@ class LineOptionsPanel(UIPanel):
         self.update_panel()
         self.show()
 
+    @time_me
     def update_panel(self):
         """ Choose which selectors to show and update their values
         :return: None
         """
+        print('updating shape options panel ')
         if ctrl.ui.scope_is_selection:
-            sd = self.build_shape_dict_for_selection()
+            sd, arrowheads = build_shape_dict_for_selection(ctrl.selected)
             if sd:
-                if sd['n_of_edges'] == 1:
+                if sd['edge_count'] == 1:
                     self.set_title('Edge settings for selected edge')
-                    self.update_cp1()
-                    self.update_cp2()
-                elif sd['n_of_edges'] > 1:
+                    self.update_control_points(sd['sample_edge'])
+                else:
                     self.set_title('Edge settings for selected edges')
-                    self.cp1_box.setDisabled(True)
-                    self.cp2_box.setDisabled(True)
-            selection = True
-        else:  # Adjusting how this relation type is drawn
-            sd = ctrl.forest.settings.shape_info(ctrl.ui.active_edge_type)
-            self.set_title('Edge settings for all ' + prefs.edges[ctrl.ui.active_edge_type][
-                'name_pl'].lower())
-            # print('shape settings: ', shape_dict)
-            selection = False
-        if sd:
-            self.fixed_arc_button.setDisabled(False)
-            self.relative_arc_button.setDisabled(False)
-            self.update_box_visibility(sd, selection)
-            cps = sd['control_points']
-            # Relative / fixed curvature
-            if cps > 0:
-                rel = sd.get('relative', None)
-                if rel:
-                    set_value(self.relative_arc_button, True)
-                    set_value(self.arc_rel_dx_spinbox, sd['rel_dx'] * 100,
-                              'rel_dx_conflict' in sd)
-                    set_value(self.arc_rel_dy_spinbox, sd['rel_dy'] * 100,
-                              'rel_dy_conflict' in sd)
-                elif rel is not None:
-                    set_value(self.fixed_arc_button, True)
-                    set_value(self.arc_fixed_dx_spinbox, sd['fixed_dx'],
-                              'fixed_dx_conflict' in sd)
-                    set_value(self.arc_fixed_dy_spinbox, sd['fixed_dy'],
-                              'fixed_dy_conflict' in sd)
-            # Leaf-shaped lines or solid lines
-            if sd['fill']:
-                if 'leaf_x' in sd:
-                    set_value(self.leaf_x_spinbox, sd['leaf_x'],
-                              'leaf_x_conflict' in sd)
-                    set_value(self.leaf_y_spinbox, sd['leaf_y'],
-                              'leaf_y_conflict' in sd)
+                    self.cp1_box.setEnabled(False)
+                    self.cp2_box.setEnabled(False)
+                arrowhead_at_start, foo, arrowhead_at_end, bar = arrowheads
             else:
-                set_value(self.thickness_spinbox, sd['thickness'],
-                          'thickness_conflict' in sd)
+                arrowhead_at_start = False
+                arrowhead_at_end = False
+        else:
+            edge_type = ctrl.ui.active_edge_type
+            sd = ctrl.forest.settings.shape_info(edge_type)
+            arrowhead_at_start = ctrl.forest.settings.edge_info(edge_type, 'arrowhead_at_start')
+            arrowhead_at_end = ctrl.forest.settings.edge_info(edge_type, 'arrowhead_at_end')
+
+            self.set_title('Edge settings for all ' + prefs.edges[edge_type][
+                'name_pl'].lower())
+        if sd:
+            print(sd)
+
+            # Disable control points
+            self.cp1_box.setEnabled(False)
+            self.cp2_box.setEnabled(False)
+
+            # Relative / fixed curvature
+            control_points = sd['control_points']
+            relative = sd.get('relative', None)
+            if relative is None or not control_points:  # linear shape, no arc of any kind
+                self.fixed_arc_box.setEnabled(False)
+                self.relative_arc_box.setEnabled(False)
+                self.fixed_arc_button.setEnabled(False)
+                self.relative_arc_button.setEnabled(False)
+            elif relative:
+                self.fixed_arc_box.setEnabled(False)
+                self.relative_arc_box.setEnabled(True)
+                self.fixed_arc_button.setEnabled(True)
+                self.relative_arc_button.setEnabled(True)
+                set_value(self.relative_arc_button, True)
+                set_value(self.arc_rel_dx_spinbox, sd['rel_dx'] * 100, 'rel_dx_conflict' in sd)
+                set_value(self.arc_rel_dy_spinbox, sd['rel_dy'] * 100, 'rel_dy_conflict' in sd)
+            else:
+                self.fixed_arc_box.setEnabled(True)
+                self.relative_arc_box.setEnabled(False)
+                self.fixed_arc_button.setEnabled(True)
+                self.relative_arc_button.setEnabled(True)
+                set_value(self.fixed_arc_button, True)
+                set_value(self.arc_fixed_dx_spinbox, sd['fixed_dx'], 'fixed_dx_conflict' in sd)
+                set_value(self.arc_fixed_dy_spinbox, sd['fixed_dy'], 'fixed_dy_conflict' in sd)
+
+            # Leaf-shaped lines or solid lines
+            fill = sd.get('fill', None)
+            if fill is None:
+                self.fill_button.setEnabled(False)
+                self.line_button.setEnabled(False)
+                self.leaf_box.setEnabled(False)
+                self.thickness_box.setEnabled(False)
+            elif fill:
+                self.fill_button.setEnabled(True)
+                self.line_button.setEnabled(True)
+                self.thickness_box.setEnabled(False)
+                if 'leaf_x' in sd:
+                    self.leaf_box.setEnabled(True)
+                    set_value(self.leaf_x_spinbox, sd['leaf_x'], 'leaf_x_conflict' in sd)
+                    set_value(self.leaf_y_spinbox, sd['leaf_y'], 'leaf_y_conflict' in sd)
+                    set_value(self.fill_button, True)
+                else:
+                    self.leaf_box.setEnabled(False)
+            else:
+                self.fill_button.setEnabled(True)
+                self.line_button.setEnabled(True)
+                self.leaf_box.setEnabled(False)
+                if sd.get('thickness', None) is not None:
+                    self.thickness_box.setEnabled(True)
+                    set_value(self.thickness_spinbox, sd['thickness'], 'thickness_conflict' in sd)
+                    set_value(self.line_button, True)
+                else:
+                    self.thickness_box.setEnabled(False)
+            # Arrowheads
+            if arrowhead_at_start is None:
+                self.arrowhead_start_button.setEnabled(False)
+            else:
+                self.arrowhead_start_button.setEnabled(True)
+                set_value(self.arrowhead_start_button, arrowhead_at_start)
+            if arrowhead_at_end is None:
+                self.arrowhead_end_button.setEnabled(False)
+            else:
+                self.arrowhead_end_button.setEnabled(True)
+                set_value(self.arrowhead_end_button, arrowhead_at_end)
         else:
             self.set_title('Edge settings - No edge selected')
-            self.cp1_box.setDisabled(True)
-            self.cp2_box.setDisabled(True)
-            self.fixed_arc_box.setDisabled(True)
-            self.relative_arc_box.setDisabled(True)
-            self.fixed_arc_button.setDisabled(True)
-            self.relative_arc_button.setDisabled(True)
-            self.leaf_box.setDisabled(True)
-            self.thickness_box.setDisabled(True)
-            self.setFixedSize(self.sizeHint())
-            self.updateGeometry()
+            self.cp1_box.setEnabled(False)
+            self.cp2_box.setEnabled(False)
+            self.fixed_arc_box.setEnabled(False)
+            self.relative_arc_box.setEnabled(False)
+            self.fixed_arc_button.setEnabled(False)
+            self.relative_arc_button.setEnabled(False)
+            self.leaf_box.setEnabled(False)
+            self.thickness_box.setEnabled(False)
+            self.fill_button.setEnabled(False)
+            self.line_button.setEnabled(False)
+            self.arrowhead_end_button.setEnabled(False)
+            self.arrowhead_start_button.setEnabled(False)
 
-    def disable_option(self, option):
-        if isinstance(option, QSpinBox):
-            option.setDisabled(True)
+        self.setFixedSize(self.sizeHint())
+        self.updateGeometry()
+
+#    def disable_option(self, option):
+#        if isinstance(option, QSpinBox):
+#            option.setDisabled(True)
 
     def initial_position(self):
         """
@@ -200,92 +318,30 @@ class LineOptionsPanel(UIPanel):
         dp = self.ui_manager.get_panel(g.STYLE)
         if dp:
             pixel_ratio = dp.devicePixelRatio()
+            print('panel pixel_ratio:', pixel_ratio)
             p = dp.mapToGlobal(dp.pos())
             return QtCore.QPoint(p.x() / pixel_ratio + dp.width() + 40, p.y() / pixel_ratio)
         else:
             return UIPanel.initial_position(self)
 
-    def update_cp1(self):
-        if not ctrl.selected:
+    def update_control_points(self, edge):
+        if (not edge) or not edge.curve_adjustment:
             self.cp1_box.setDisabled(True)
-            return
-
-        elif len(ctrl.selected) == 1:
-            item = ctrl.selected[0]
-            if isinstance(ctrl.selected[0], Edge) and item.curve_adjustment and len(
-                    item.curve_adjustment) > 0:
-                self.cp1_box.setDisabled(False)
-                set_value(self.cp1_x_spinbox, item.curve_adjustment[0][0])
-                set_value(self.cp1_y_spinbox, item.curve_adjustment[0][1])
-            else:
-                self.cp1_box.setDisabled(True)
-        else:
-            self.cp1_box.setDisabled(True)
-
-    def update_cp2(self):
-        if not ctrl.selected:
             self.cp2_box.setDisabled(True)
             return
-        elif len(ctrl.selected) == 1:
-            item = ctrl.selected[0]
-            if isinstance(ctrl.selected[0], Edge) and item.curve_adjustment and len(
-                    item.curve_adjustment) > 1:
-                set_value(self.cp2_x_spinbox, item.curve_adjustment[1][0])
-                set_value(self.cp2_y_spinbox, item.curve_adjustment[1][1])
-                self.cp2_box.setDisabled(False)
-            else:
-                self.cp2_box.setDisabled(True)
-        else:
+        points = len(edge.curve_adjustment)
+        if points == 1:
+            self.cp1_box.setDisabled(False)
             self.cp2_box.setDisabled(True)
-
-    def update_box_visibility(self, sd, selection):
-        """
-        :return:
-        """
-        cps = sd['control_points']
-        edges = [x for x in ctrl.selected if isinstance(x, Edge)]
-        # Control points
-        self.cp1_box.setEnabled(len(edges) == 1 and cps > 0)
-        self.cp2_box.setEnabled(len(edges) == 1 and cps > 1)
-        # Relative / fixed curvature
-        relative = sd['relative']
-        self.fixed_arc_box.setEnabled(cps and not relative)
-        self.relative_arc_box.setEnabled(cps and relative)
-        # Leaf-shaped lines or solid lines
-        leaf = sd['fill'] and 'leaf_x' in sd
-        self.leaf_box.setEnabled(leaf)
-        self.thickness_box.setEnabled(not leaf)
-        self.setFixedSize(self.sizeHint())
-        self.updateGeometry()
-
-    def build_shape_dict_for_selection(self):
-        """ Create a dict of values to show in this panel, add a about conflicting values in
-        selection so that they can be shown as special items.
-        :return: dict with familiar attributes and $varname_conflict: True for conflicts.
-        """
-        # check if selection has conflicting values: these cannot be shown then
-        edges = [item for item in ctrl.selected if isinstance(item, Edge)]
-        if not edges:
-            return {}
-        d = edges[0].shape_info.copy()
-        shape_name = edges[0].shape_name
-        d['shape_name'] = shape_name
-        d['n_of_edges'] = len(edges)
-        if len(edges) > 1:
-            keys = ['relative', 'leaf_x', 'leaf_y', 'thickness', 'rel_dx', 'rel_dy', 'fixed_dx',
-                    'fixed_dy']
-            for item in edges[1:]:
-                e = item.shape_info.shape_info()
-                if shape_name != item.shape_name:
-                    d['shape_name_conflict'] = True
-                for key in keys:
-                    old = d.get(key, None)
-                    new = e.get(key, None)
-                    if old is None and new is not None:
-                        d[key] = new
-                    elif old is not None and new is not None and old != new:
-                        d[key + '_conflict'] = True
-        return d
+            set_value(self.cp1_x_spinbox, edge.curve_adjustment[0][0])
+            set_value(self.cp1_y_spinbox, edge.curve_adjustment[0][1])
+        elif points == 2:
+            self.cp1_box.setDisabled(False)
+            self.cp2_box.setDisabled(False)
+            set_value(self.cp1_x_spinbox, edge.curve_adjustment[0][0])
+            set_value(self.cp1_y_spinbox, edge.curve_adjustment[0][1])
+            set_value(self.cp2_x_spinbox, edge.curve_adjustment[1][0])
+            set_value(self.cp2_y_spinbox, edge.curve_adjustment[1][1])
 
     def close(self):
         """ Untick check box in EDGES panel """
@@ -320,5 +376,6 @@ class LineOptionsPanel(UIPanel):
         elif signal == 'selection_changed':
             self.update_panel()
         elif signal == 'edge_adjustment':
-            self.update_cp1()
-            self.update_cp2()
+            e = ctrl.get_single_selected()
+            if e and isinstance(e, Edge):
+                self.update_control_points(e)

@@ -30,7 +30,7 @@ class EdgeShape:
         self.host.local_shape_info['arrowhead_at_start'] = value
 
     def has_arrowhead_at_end(self):
-        return self.get_edge_info('arrowhead_at_start')
+        return self.get_edge_info('arrowhead_at_end')
 
     def set_arrowhead_at_end(self, value):
         self.host.poke('local_shape_info')
@@ -78,6 +78,10 @@ class EdgeShape:
 
     def change_thickness(self, value):
         self.set_shape_info('thickness', value)
+        self.host.update_shape()
+
+    def change_fill(self, value):
+        self.set_shape_info('fill', value)
         self.host.update_shape()
 
     def reset_shape_info(self, *args):
