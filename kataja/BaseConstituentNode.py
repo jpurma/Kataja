@@ -22,10 +22,10 @@
 #
 # ############################################################################
 
-from kataja.singletons import ctrl
-from kataja.nodes.Node import Node
 import kataja.globals as g
+from kataja.Node import Node
 from kataja.BaseModel import Synobj
+from kataja.singletons import ctrl, classes
 
 
 # ctrl = Controller object, gives accessa to other modules
@@ -85,7 +85,7 @@ class BaseConstituentNode(Node):
         """
         if not label:
             label = ctrl.forest.get_first_free_constituent_name()
-        c = ctrl.Constituent(label)
+        c = classes.Constituent(label)
         return c
 
     def impose_order_to_inode(self):

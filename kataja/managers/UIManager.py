@@ -27,11 +27,11 @@ from PyQt5 import QtCore, QtWidgets
 
 import kataja.actions as action_methods
 import kataja.globals as g
+from kataja.Node import Node
 from kataja.Amoeba import Amoeba
 from kataja.Edge import Edge
 from kataja.KatajaAction import KatajaAction, ShortcutSolver, ButtonShortcutFilter
 from kataja.actions import actions
-from kataja.nodes.Node import Node
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.ui import drawn_icons
 from kataja.ui.ActivityMarker import ActivityMarker
@@ -46,12 +46,13 @@ from kataja.ui.elements.MyFontDialog import MyFontDialog
 from kataja.ui.elements.ResizeHandle import GraphicsResizeHandle
 from kataja.ui.elements.TableModelComboBox import TableModelComboBox
 from kataja.ui.embeds.EdgeLabelEmbed import EdgeLabelEmbed
+from kataja.ui.embeds.GroupLabelEmbed import GroupLabelEmbed
 from kataja.ui.embeds.NewElementEmbed import NewElementEmbed, NewElementMarker
 from kataja.ui.embeds.NodeEditEmbed import NodeEditEmbed
-from kataja.ui.embeds.GroupLabelEmbed import GroupLabelEmbed
 from kataja.ui.panels import UIPanel
 from kataja.ui.panels.ColorThemePanel import ColorPanel
 from kataja.ui.panels.ColorWheelPanel import ColorWheelPanel
+from kataja.ui.panels.FaceCamPanel import FaceCamPanel
 from kataja.ui.panels.LineOptionsPanel import LineOptionsPanel
 from kataja.ui.panels.LogPanel import LogPanel
 from kataja.ui.panels.NavigationPanel import NavigationPanel
@@ -61,8 +62,6 @@ from kataja.ui.panels.SymbolPanel import SymbolPanel
 from kataja.ui.panels.VisualizationOptionsPanel import VisualizationOptionsPanel
 from kataja.ui.panels.VisualizationPanel import VisualizationPanel
 from kataja.visualizations.available import VISUALIZATIONS, action_key
-from kataja.utils import time_me
-from kataja.ui.panels.FaceCamPanel import FaceCamPanel
 
 NOTHING = 0
 SELECTING_AREA = 1
@@ -187,9 +186,9 @@ class UIManager:
             self.scope_is_selection = True
         else:
             self.scope_is_selection = False
-            if scope in ctrl.node_classes:
+            if scope in classes.nodes:
                 self.active_node_type = scope
-                node_class = ctrl.node_classes[scope]
+                node_class = classes.nodes[scope]
                 self.active_edge_type = node_class.default_edge['id']
         ctrl.call_watchers(self, 'scope_changed')
 
@@ -228,7 +227,7 @@ class UIManager:
             fd = self.font_dialogs[role]
             fd.setCurrentFont(qt_prefs.font(initial_font))
         else:
-            fd = MyFontDialog(parent, role, initial_font)
+            fd = MyFontDialog(parent, initial_font)
             self.font_dialogs[role] = fd
         fd.show()
 

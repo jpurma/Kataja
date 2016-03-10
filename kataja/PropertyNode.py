@@ -22,9 +22,8 @@
 #
 # ############################################################################
 
-from kataja.nodes.Node import Node
 import kataja.globals as g
-
+from kataja.Node import Node
 
 
 class PropertyNode(Node):

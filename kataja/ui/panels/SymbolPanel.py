@@ -187,5 +187,5 @@ class SymbolPanel(UIPanel):
             focus.setFocus()
 
     def change_symbol_set(self):
-        key = self.selector.currentData()
+        key = self.selector.currentData(256)
         self.prepare_symbols(key)

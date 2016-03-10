@@ -24,10 +24,9 @@ GlossNode is a Node to display translation or explanation of a constituent
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from kataja.nodes.Node import Node
-from kataja.globals import GLOSS_EDGE, GLOSS_NODE
 import kataja.globals as g
-
+from kataja.Node import Node
+from kataja.globals import GLOSS_EDGE, GLOSS_NODE
 
 color_map = {'tense': 0, 'person': 2, 'number': 4, 'case': 6, 'unknown': 3}
 

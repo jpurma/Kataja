@@ -54,9 +54,6 @@ class Controller:
         # : :type self.main: KatajaMain
 
         self.main = None
-        self.Constituent = None
-        self.Feature = None
-        self.FL = None
         self.watchers = {}
         self.structure = None
         self.selected = []
@@ -96,8 +93,6 @@ class Controller:
         # set these back on.
         self.action_redraw = True
         self.undo_pile = set()
-        self.node_classes = {}
-        self.edge_class = None
         # ---------------------------
 
     def late_init(self, main):
@@ -105,16 +100,14 @@ class Controller:
 
         :param main: KatajaMain
         """
-        from syntax.ConfigurableConstituent import ConfigurableConstituent
-        from syntax.BaseFL import FL
-        from syntax.BaseFeature import BaseFeature
-        from kataja.object_factory import node_classes, edge_class
-        self.Constituent = ConfigurableConstituent
-        self.Feature = BaseFeature
-        self.FL = FL()
         self.main = main
-        self.node_classes = node_classes
-        self.edge_class = edge_class
+
+    @property
+    def FL(self):
+        """
+        :return: BaseFL
+        """
+        return self.main.FL
 
     @property
     def ui(self):

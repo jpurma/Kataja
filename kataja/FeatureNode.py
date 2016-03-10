@@ -24,11 +24,11 @@
 
 import random
 
-from kataja.BaseModel import Synobj
-from kataja.globals import FEATURE_EDGE, FEATURE_NODE
-from kataja.nodes.Node import Node
-from kataja.singletons import ctrl, qt_prefs
 import kataja.globals as g
+from kataja.Node import Node
+from kataja.BaseModel import Synobj
+from kataja.globals import FEATURE_NODE
+from kataja.singletons import ctrl, qt_prefs, classes
 
 color_map = {'tense': 0, 'order': 1, 'person': 2, 'number': 4, 'case': 6, 'unknown': 3}
 
@@ -82,7 +82,7 @@ class FeatureNode(Node):
         """
         if not label:
             label = 'Feature'
-        return ctrl.Feature(key=label)
+        return classes.Feature(key=label)
 
 
     def compute_start_position(self, host):

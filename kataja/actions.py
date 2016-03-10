@@ -5,21 +5,19 @@ import pickle
 import pprint
 import random
 import shlex
-import time
 import subprocess
+import time
 
 from PyQt5 import QtGui, QtWidgets, QtCore
-
 from PyQt5.QtCore import Qt
 
-from kataja.errors import ForestError
-import kataja.debug as debug
-from kataja.ui.PreferencesDialog import PreferencesDialog
-from kataja.Edge import Edge
-from kataja.visualizations.available import action_key
-from kataja.utils import guess_node_type
-from kataja.singletons import ctrl, prefs
 import kataja.globals as g
+from kataja.Node import Node
+from kataja.Edge import Edge
+from kataja.singletons import ctrl, prefs, classes
+from kataja.ui.PreferencesDialog import PreferencesDialog
+from kataja.utils import guess_node_type
+from kataja.visualizations.available import action_key
 
 __author__ = 'purma'
 
@@ -719,22 +717,30 @@ a['start_font_dialog'] = {'command': 'Use a custom font',
                                                         'for node label'}
 
 
-def select_font(sender=None):
+def select_font():
     """ Change drawing panel to work on selected nodes, constituent nodes or
-    other available
-    nodes
-    :param sender: field that called this action
+    other available nodes
     :return: None
     """
-    if sender:
-        font_key = sender.currentData()
-        panel = get_ui_container(sender)
-        panel.update_font_for_role('node_font', font_key)
+    panel = ctrl.ui.get_panel(g.STYLE)
+    if panel:
+        print('getting current data: ', panel.font_selector.currentData(),
+              panel.font_selector.currentIndex(), panel.cached_font_id)
+        font_id = panel.font_selector.currentData() or panel.cached_font_id
+        print('font_id: ', font_id)
+        panel.update_font_selector(font_id)
+    if ctrl.ui.scope_is_selection:
+        for node in ctrl.selected:
+            if isinstance(node, Node):
+                node.font_id = font_id
+                node.update_label()
+    else:
+        ctrl.fs.set_node_info(ctrl.ui.active_node_type, 'font', font_id)
+        for node in ctrl.forest.nodes.values():
+            node.update_label()
 
-
-a['font_selector'] = {'command': 'Change label font', 'method': select_font,
-                      'sender_arg': True, 'tooltip': 'Select from standard '
-                                                     'label styles'}
+a['select_font'] = {'command': 'Change label font', 'method': select_font,
+                    'tooltip': 'Change font for current selection or for a node type'}
 
 
 def change_edge_shape(sender=None):
@@ -743,8 +749,6 @@ def change_edge_shape(sender=None):
     :return: None
     """
     shape = sender.currentData()
-    if shape is g.AMBIGUOUS_VALUES:
-        return
 
     if ctrl.ui.scope_is_selection:
         for edge in ctrl.selected:
@@ -768,43 +772,85 @@ a['change_edge_shape'] = {'command': 'Change relation shape',
                                      'edges) between objects'}
 
 
-def change_node_color(sender=None):
+def change_node_color():
     """ Change color for selection or in currently active edge type.
-    :param sender: field that called this action
     :return: None
     """
-
-    if sender:
-        sender.model().selected_color = sender.currentData()
-        panel = get_ui_container(sender)
-        color_id = panel.update_color_for_role('node_color')
-        if color_id:
-            ctrl.main.add_message(
-                '(s) Changed node color to: %s' % ctrl.cm.get_color_name(
-                    color_id))
+    panel = ctrl.ui.get_panel(g.STYLE)
+    color_key = panel.node_color_selector.currentData()
+    panel.node_color_selector.model().selected_color = color_key
+    color = ctrl.cm.get(color_key)
+    # launch a color dialog if color_id is unknown or clicking
+    # already selected color
+    prev_color = panel.cached_node_color
+    if not color:
+        color = ctrl.cm.get('content1')
+        ctrl.cm.d[color_key] = color
+        ctrl.ui.start_color_dialog(panel.node_color_selector, panel, 'node', color_key)
+    elif prev_color == color_key:
+        ctrl.ui.start_color_dialog(panel.node_color_selector, panel, 'node', color_key)
+    else:
+        ctrl.ui.update_color_dialog('node', color_key)
+    panel.update_node_color_selector(color_key)
+    # Update color for selected nodes
+    if ctrl.ui.scope_is_selection:
+        for node in ctrl.selected:
+            if isinstance(node, Node):
+                node.color_id = color_key
+                node.update_label()
+    # ... or update color for all nodes of this type
+    else:
+        ctrl.fs.set_node_info(ctrl.ui.active_node_type, 'color', color_key)
+        for node in ctrl.forest.nodes.values():
+            node.update_label()
+    if color_key:
+        ctrl.main.add_message('(s) Changed node color to: %s' % ctrl.cm.get_color_name(color_key))
 
 
 a['change_node_color'] = {'command': 'Change node color',
-                          'method': change_node_color, 'sender_arg': True,
+                          'method': change_node_color,
                           'tooltip': 'Change drawing color of nodes'}
 
 
-def change_edge_color(sender=None):
+def change_edge_color():
     """ Change edge shape for selection or in currently active edge type.
     :param sender: field that called this action
     :return: None
     """
-    if sender:
-        panel = get_ui_container(sender)
-        color_id = panel.update_color_for_role('edge_color')
-        if color_id:
-            ctrl.main.add_message(
-                '(s) Changed relation color to: %s' % ctrl.cm.get_color_name(
-                    color_id))
+    panel = ctrl.ui.get_panel(g.STYLE)
+    color_key = panel.edge_color_selector.currentData()
+    panel.edge_color_selector.model().selected_color = color_key
+    color = ctrl.cm.get(color_key)
+    # launch a color dialog if color_id is unknown or clicking
+    # already selected color
+    prev_color = panel.cached_edge_color
+    if not color:
+        color = ctrl.cm.get('content1')
+        ctrl.cm.d[color_key] = color
+        ctrl.ui.start_color_dialog(panel.edge_color_selector, panel, 'edge', color_key)
+    elif prev_color == color_key:
+        ctrl.ui.start_color_dialog(panel.edge_color_selector, panel, 'edge', color_key)
+    else:
+        ctrl.ui.update_color_dialog('edge', color_key)
+    panel.update_edge_color_selector(color_key)
+    # Update color for selected edges
+    if ctrl.ui.scope_is_selection:
+        for edge in ctrl.selected:
+            if isinstance(edge, Edge):
+                edge.color_id = color_key
+                edge.update()
+    # ... or update color for all edges of this type
+    else:
+        ctrl.fs.set_edge_info(ctrl.ui.active_edge_type, 'color', color_key)
+        for edge in ctrl.forest.edges.values():
+            edge.update()
+    if color_key:
+        ctrl.main.add_message(
+            '(s) Changed relation color to: %s' % ctrl.cm.get_color_name(color_key))
 
 
 a['change_edge_color'] = {'command': 'Change relation color',
-                          'method': change_edge_color, 'sender_arg': True,
+                          'method': change_edge_color,
                           'tooltip': 'Change drawing color of relations'}
 
 
@@ -891,9 +937,6 @@ def reset_control_points():
 
 a['reset_control_points'] = {'command': 'Reset control point 1', 'method': reset_control_points,
                              'tooltip': 'Remove arc adjustments'}
-
-
-
 
 
 def change_leaf_width(value=None):
@@ -1181,7 +1224,6 @@ a['edge_curvature_fixed'] = {
     'tooltip': 'Change line curvature to be a fixed amount'}
 
 
-
 def change_visualization(visualization_key=None, sender=None):
     """ Switch the visualization being used.
 
@@ -1318,7 +1360,7 @@ def add_node(sender=None, ntype=None, pos=None):
         pos = QtCore.QPoint(random.random() * 60 - 25,
                             random.random() * 60 - 25)
     node = ctrl.forest.create_node(pos=pos, node_type=ntype)
-    nclass = ctrl.node_classes[ntype]
+    nclass = classes.nodes[ntype]
     ctrl.add_message('Added new %s.' % nclass.name[0])
 
 
@@ -1455,8 +1497,6 @@ def change_edge_ending(self, which_end, value):
     :param value:
     :return:
     """
-    if value is g.AMBIGUOUS_VALUES:
-        return
     if ctrl.ui.scope_is_selection:
         for edge in ctrl.selected:
             if isinstance(edge, Edge):

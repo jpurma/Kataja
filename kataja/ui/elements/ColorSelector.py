@@ -62,4 +62,5 @@ class ColorSelector(TableModelComboBox):
             self.setModelColumn(item.column())
             self.model().selected_color = data
         else:
+            print('looking for ', data)
             raise hell

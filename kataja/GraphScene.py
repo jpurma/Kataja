@@ -25,17 +25,16 @@
 import time
 from itertools import chain
 
-from PyQt5.QtCore import Qt
 import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
+from PyQt5.QtCore import Qt
 
+import kataja.globals as g
+from kataja.Node import Node
 from kataja.Edge import Edge
 from kataja.singletons import ctrl, prefs, qt_prefs
-from kataja.nodes.Node import Node
-from kataja.utils import to_tuple, sub_xy, div_xy, time_me, open_symbol_data
-from kataja.ui import TouchArea
-import kataja.globals as g
+from kataja.utils import to_tuple, sub_xy, div_xy, open_symbol_data
 
 
 # from BlenderExporter import export_visible_items

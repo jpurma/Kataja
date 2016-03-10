@@ -27,7 +27,7 @@
 import re
 
 from syntax.BaseConstituent import BaseConstituent as Constituent
-from kataja.singletons import ctrl
+from kataja.singletons import ctrl, classes
 import kataja.globals as g
 
 
@@ -241,7 +241,7 @@ class FL(BaseModel):
         :return: IConstituent
         """
 
-        const = ctrl.Constituent(**kw)
+        const = classes.Constituent(**kw)
         self.constituents[const.key] = const
         return const
 

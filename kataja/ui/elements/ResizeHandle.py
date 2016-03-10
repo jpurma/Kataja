@@ -1,8 +1,8 @@
 # coding=utf-8
-import math
 from PyQt5 import QtWidgets, QtCore
+
+from kataja.Node import Node
 from kataja.singletons import ctrl
-from kataja.nodes.Node import Node
 
 
 class ResizeHandle(QtWidgets.QSizeGrip):

@@ -2,7 +2,7 @@ import re
 
 __author__ = 'purma'
 
-from kataja.singletons import ctrl
+from kataja.singletons import ctrl, classes
 import kataja.globals as g
 from kataja.parser.BaseParser import BaseParser
 
@@ -25,7 +25,7 @@ class LayeredParser(BaseParser):
         f = self.forest
         left = None
         right = None
-        constituent = ctrl.Constituent()
+        constituent = classes.Constituent()
         children = []
         alias = None
         for arg in args:
@@ -37,7 +37,7 @@ class LayeredParser(BaseParser):
                         elif item[0] == 'alias':
                             alias = item[1]
 
-            if isinstance(arg, ctrl.Constituent):
+            if isinstance(arg, classes.Constituent):
                 children.append(arg)
             if isinstance(arg, tuple):
                 if arg[0] == 'index':
@@ -70,9 +70,9 @@ class LayeredParser(BaseParser):
         if isinstance(label, list):
             features += label[1:]
             label = label[0]
-        constituent = ctrl.Constituent(label)
+        constituent = classes.Constituent(label)
         for arg in features:
-            if isinstance(arg, ctrl.Feature):
+            if isinstance(arg, classes.Feature):
                 constituent.set_feature(arg.save_key, arg)
             elif isinstance(arg, tuple) and arg[0] == 'index':
                 constituent.index = arg[1]
@@ -93,7 +93,7 @@ class LayeredParser(BaseParser):
         if command in commands:
             pass
         else:
-            feature = ctrl.Feature(command, ''.join(args))
+            feature = classes.Feature(command, ''.join(args))
             return feature
 
     def _new_string(self, args):

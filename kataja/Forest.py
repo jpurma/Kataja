@@ -23,32 +23,31 @@
 # ############################################################################
 
 
-import string
 import collections
 import itertools
+import string
 
+import kataja.globals as g
+from kataja.AttributeNode import AttributeNode
+from kataja.BaseConstituentNode import BaseConstituentNode
+from kataja.ConstituentNode import ConstituentNode
+from kataja.FeatureNode import FeatureNode
+from kataja.Node import Node
 from kataja.Amoeba import Amoeba
+from kataja.BaseModel import BaseModel, Saved
+from kataja.Bracket import Bracket
+from kataja.DerivationStep import DerivationStepManager
+from kataja.Edge import Edge
+from kataja.ForestSettings import ForestSettings, ForestRules
+from kataja.Presentation import TextArea, Image
 from kataja.Projection import Projection
 from kataja.Tree import Tree
 from kataja.errors import ForestError
-from kataja.ForestSettings import ForestSettings, ForestRules
-from kataja.Bracket import Bracket
 from kataja.managers.BracketManager import BracketManager
-from kataja.nodes.BaseConstituentNode import BaseConstituentNode
-from kataja.nodes.ConstituentNode import ConstituentNode
-from kataja.nodes.AttributeNode import AttributeNode
-from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.managers.ChainManager import ChainManager
-from kataja.DerivationStep import DerivationStepManager
-from kataja.nodes.Node import Node
-from kataja.parser.INodeToKatajaConstituent import INodeToKatajaConstituent
-from kataja.Presentation import TextArea, Image
-from kataja.Edge import Edge
 from kataja.managers.UndoManager import UndoManager
-from kataja.nodes.FeatureNode import FeatureNode
-from kataja.BaseModel import BaseModel, Saved
-import kataja.globals as g
-from kataja.utils import time_me
+from kataja.parser.INodeToKatajaConstituent import INodeToKatajaConstituent
+from kataja.singletons import ctrl, prefs, qt_prefs, classes
 
 
 class Forest(BaseModel):
@@ -846,7 +845,7 @@ class Forest(BaseModel):
             if n:
                 return n
 
-        node_class = ctrl.node_classes.get(node_type)
+        node_class = classes.nodes.get(node_type)
         # Create corresponding syntactic object if necessary
         if not synobj:
             if hasattr(node_class, 'create_synobj'):
@@ -1003,7 +1002,7 @@ class Forest(BaseModel):
             index = self.chain_manager.next_free_index()
             node.index = index
         assert index
-        constituent = ctrl.Constituent(label='t')
+        constituent = classes.Constituent(label='t')
         trace = self.create_node(synobj=constituent, relative=node)
         trace.is_trace = True
         trace.index = index

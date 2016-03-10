@@ -114,6 +114,7 @@ crashed
 + Node panel icons don't change their color
 - Load & save default locations are app resources -folder.
 - Changing ui text size doesn't resize panels
+- Updating labels puts bar-markers (X') to separate line
 
 ADD:
 

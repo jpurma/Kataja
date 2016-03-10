@@ -1,12 +1,12 @@
 # coding=utf-8
 import math
+
 from PyQt5 import QtWidgets, QtCore, QtGui
 
-from kataja.BaseModel import BaseModel, Saved
-from kataja.singletons import ctrl, prefs, qt_prefs
-from kataja.nodes.Node import Node
 import kataja.globals as g
-from kataja.utils import time_me
+from kataja.Node import Node
+from kataja.BaseModel import BaseModel, Saved
+from kataja.singletons import ctrl, qt_prefs
 
 points = 36
 

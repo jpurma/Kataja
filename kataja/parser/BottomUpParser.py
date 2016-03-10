@@ -1,7 +1,7 @@
 import re
 
 from kataja.parser.BaseParser import BaseParser
-from kataja.singletons import ctrl
+from kataja.singletons import ctrl, classes
 import kataja.globals as g
 
 
@@ -61,7 +61,7 @@ class BottomUpParser(BaseParser):
             :return:
             """
             label, index = find_index(label)
-            constituent = ctrl.Constituent(label)
+            constituent = classes.Constituent(label)
             # print label, label in self._definitions, self._definitions
             if label in self._definitions:
                 features = self.parse_definition(self._definitions[label])
@@ -89,7 +89,7 @@ class BottomUpParser(BaseParser):
             :return:
             """
             f = self.forest
-            constituent = ctrl.Constituent()
+            constituent = classes.Constituent()
             constituent.left = left.syntactic_object
             constituent.right = right.syntactic_object
             node = self.forest.create_node(synobj=constituent)

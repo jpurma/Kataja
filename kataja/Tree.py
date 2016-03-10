@@ -1,9 +1,8 @@
 # coding=utf-8
+from PyQt5 import QtCore
+
 from kataja.BaseModel import Saved
 from kataja.Movable import Movable
-from kataja.nodes import Node
-from kataja.singletons import ctrl
-from PyQt5 import QtWidgets, QtCore
 
 __author__ = 'purma'
 
@@ -77,7 +76,7 @@ class Tree(Movable):
         """
         passed = set()
 
-        def walk_to_top(node: Node):
+        def walk_to_top(node):
             """ Recursive walk upwards
             :param node:
             :return:

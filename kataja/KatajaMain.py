@@ -38,8 +38,8 @@ import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
 
-from kataja.singletons import ctrl, prefs, qt_prefs, running_environment, \
-    restore_default_preferences
+from kataja.singletons import ctrl, prefs, qt_prefs, running_environment, classes
+import kataja.singletons
 from kataja.Forest import Forest
 from kataja.ForestKeeper import ForestKeeper
 from kataja.GraphScene import GraphScene
@@ -47,7 +47,6 @@ from kataja.GraphView import GraphView
 from kataja.Presentation import TextArea
 from kataja.managers.UIManager import UIManager
 from kataja.managers.PaletteManager import PaletteManager
-import kataja.object_factory
 import kataja.globals as g
 from kataja.utils import time_me, import_plugins
 from kataja.visualizations.available import VISUALIZATIONS
@@ -92,7 +91,9 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         self.fontdb = QtGui.QFontDatabase()
         self.color_manager = PaletteManager()
         ctrl.late_init(self)
-        prefs.import_node_classes(ctrl.node_classes)
+        classes.late_init()
+        self.FL = classes.FL()
+        prefs.import_node_classes(classes)
 
         prefs.load_preferences()
         qt_prefs.late_init(running_environment, prefs, self.fontdb)
@@ -104,7 +105,6 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         self.graph_scene.graph_view = self.graph_view
         self.ui_manager = UIManager(self)
         self.ui_manager.populate_ui_elements()
-        self.object_factory = kataja.object_factory
         self.forest_keepers = [ForestKeeper()]
         self.forest_keeper = self.forest_keepers[0]
         kataja_app.setPalette(self.color_manager.get_qt_palette())
@@ -153,7 +153,7 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
 
         :return:
         """
-        restore_default_preferences(node_classes=ctrl.node_classes)
+        prefs.restore_default_preferences(qt_prefs, running_environment, classes.nodes)
         if self.ui_manager.preferences_dialog:
             self.ui_manager.preferences_dialog.close()
         self.ui_manager.preferences_dialog = PreferencesDialog(self)
@@ -265,6 +265,15 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         """
         action = self.ui_manager.qt_actions[name]
         action.action_triggered(**kwargs)
+
+    def trigger_but_suppress_undo(self, name, **kwargs):
+        """ Helper for programmatically triggering actions (for tests and plugins)
+        :param name: action name
+        :param kwargs: keyword parameters
+        :return:
+        """
+        action = self.ui_manager.qt_actions[name]
+        action.trigger_but_suppress_undo(**kwargs)
 
     def enable_actions(self):
         """ Restores menus """

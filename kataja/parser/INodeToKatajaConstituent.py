@@ -1,11 +1,11 @@
 __author__ = 'purma'
 
-from kataja.parser.BaseParser import BaseParser
-from kataja.parser.LatexToINode import parse
-from kataja.parser.INodes import ITemplateNode, ITextNode
-from kataja.singletons import ctrl
-from kataja.nodes.BaseConstituentNode import BaseConstituentNode
 import kataja.globals as g
+from kataja.BaseConstituentNode import BaseConstituentNode
+from kataja.parser.BaseParser import BaseParser
+from kataja.parser.INodes import ITemplateNode, ITextNode
+from kataja.parser.LatexToINode import parse
+from kataja.singletons import ctrl, classes
 
 
 class INodeToKatajaConstituent(BaseParser):
@@ -82,7 +82,7 @@ class INodeToKatajaConstituent(BaseParser):
                     child = self.inode_to_constituentnodes(nnode)
                     if child and isinstance(child, BaseConstituentNode):
                         children.append(child)
-            constituent = ctrl.Constituent(str(hash(inode)))
+            constituent = classes.Constituent(str(hash(inode)))
             cn = f.create_node(synobj=constituent)
             if not f.temp_tree:
                 f.temp_tree = f.create_tree_for(cn)
@@ -107,7 +107,7 @@ class INodeToKatajaConstituent(BaseParser):
             f.derivation_steps.save_and_create_derivation_step()
             return cn
         elif isinstance(inode, ITextNode):
-            constituent = ctrl.Constituent(str(hash(inode)))
+            constituent = classes.Constituent(str(hash(inode)))
             cn = f.create_node(synobj=constituent)
             cn.label = inode
             cn.update_label()

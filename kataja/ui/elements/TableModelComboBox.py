@@ -13,7 +13,6 @@ class TableModelComboBox(QtWidgets.QComboBox):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.ambiguous = False
 
     def find_item(self, data):
         """ Return the item corresponding to this data
@@ -28,34 +27,6 @@ class TableModelComboBox(QtWidgets.QComboBox):
                     return item
         return None
 
-    def add_and_select_ambiguous_marker(self):
-        """
-
-
-        """
-        item = self.find_item(g.AMBIGUOUS_VALUES)
-        if item:
-            self.setCurrentIndex(item.row())
-            self.setModelColumn(item.column())
-        else:
-            row = []
-            for i in range(0, self.model().rowCount()):
-                item = QtGui.QStandardItem('---')
-                item.setData(g.AMBIGUOUS_VALUES)
-                item.setSizeHint(QSize(22, 20))
-                row.append(item)
-            self.model().insertRow(0, row)
-            self.setCurrentIndex(0)
-            self.setModelColumn(0)
-
-    def remove_ambiguous_marker(self):
-        """
-
-
-        """
-        item = self.find_item(g.AMBIGUOUS_VALUES)
-        if item:
-            self.model().removeRow(item.row())
 
     def select_data(self, data):
         """
@@ -71,7 +42,7 @@ class TableModelComboBox(QtWidgets.QComboBox):
             print("couldn't find data %s from selector model" % data)
             raise hell
 
-    def currentData(self, **kwargs):
+    def currentData(self,  **kwargs):
         """
 
         :param kwargs:

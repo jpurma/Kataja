@@ -21,12 +21,12 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
-from kataja.nodes.Node import Node
-from kataja.nodes.BaseConstituentNode import BaseConstituentNode
-from kataja.BaseModel import Saved, Synobj
-from kataja.singletons import ctrl, qt_prefs
-from kataja.parser.INodes import ITextNode
 import kataja.globals as g
+from kataja.BaseConstituentNode import BaseConstituentNode
+from kataja.Node import Node
+from kataja.BaseModel import Saved, Synobj
+from kataja.parser.INodes import ITextNode
+from kataja.singletons import ctrl
 
 __author__ = 'purma'
 

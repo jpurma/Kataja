@@ -1,8 +1,8 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
 
 import kataja.globals as g
+from kataja.Node import Node
 from kataja.Edge import Edge
-from kataja.nodes.Node import Node
 from kataja.singletons import ctrl, qt_prefs, prefs
 from kataja.ui.panels.UIPanel import UIPanel
 from kataja.ui.panels.field_utils import find_list_item, set_value, box_row, font_selector, \
@@ -32,9 +32,9 @@ class StylePanel(UIPanel):
         self._edges_in_selection = []
         self.cached_node_types = set()
         self.current_color = ctrl.cm.drawing()
-        self.cached_node_color = None
-        self.cached_edge_color = None
-        self.cached_font_id = None
+        self.cached_node_color = 'content1'
+        self.cached_edge_color = 'content1'
+        self.cached_font_id = 'main_font'
         self.watchlist = ['edge_shape', 'edge_color', 'selection_changed',
                           'forest_changed', 'scope_changed']
         # Other items may be temporarily added, they are defined as
@@ -66,7 +66,7 @@ class StylePanel(UIPanel):
         hlayout = box_row(sw_layout)
 
         self.font_selector = font_selector(ui_manager, self.style_widgets, hlayout,
-                                           action='font_selector',
+                                           action='select_font',
                                            label='Text style')
 
         self.node_color_selector = color_selector(ui_manager, self.style_widgets, hlayout,
@@ -133,89 +133,49 @@ class StylePanel(UIPanel):
             i = find_list_item(ctrl.ui.active_node_type, self.scope_selector)
         self.scope_selector.setCurrentIndex(i)
 
-    def update_color_for_role(self, role, color=None):
-        if role == 'node_color':
-            s = self.node_color_selector
-            prev_color = self.cached_node_color
-            color_id = s.currentData()
-            self.cached_node_color = color_id
-            # Replace color in palette with new color
-            if color:
-                ctrl.cm.d[color_id] = color
-            # ... or launch a color dialog if color_id is unknown or if clicking
-            # already selected color
-            elif prev_color == color_id or (not color_id) or (
-                    not ctrl.cm.get(color_id)):
-                ctrl.ui.start_color_dialog(s, self, 'node_color', color_id)
-                return
-            else:
-                ctrl.ui.update_color_dialog('node_color', color_id)
+    def receive_font_from_selector(self, font):
+        font_key = self.cached_font_id
+        print('received font from selector, font_id: ', font_key, self.cached_font_id)
+        print(self.font_selector.currentData(), self.font_selector.currentIndex())
+        ctrl.ui.create_or_set_font(font_key, font)
+        ctrl.main.trigger_action('select_font')
 
-            # Update color for selected nodes
-            if ctrl.ui.scope_is_selection:
-                for node in self._nodes_in_selection:
-                    node.color_id = color_id
-                    node.update_label()
-            # ... or update color for all nodes of this type
-            else:
-                ctrl.fs.set_node_info(ctrl.ui.active_node_type, 'color', color_id)
-                for node in ctrl.forest.nodes.values():
-                    node.update_label()
-            # make sure that selector has correct choice selected
-            s.select_data(color_id)
-            s.update()
-            return color_id
-        elif role == 'edge_color':
-            s = self.edge_color_selector
-            prev_color = self.cached_edge_color
-            color_id = s.currentData()
-            self.cached_edge_color = color_id
-            # Replace color in palette with new color
-            if color:
-                ctrl.cm.d[color_id] = color
-            # ...or launch a color dialog if color_id is unknown or clicking
-            # already selected color
-            elif prev_color == color_id or (not color_id) or (
-                    not ctrl.cm.get(color_id)):
-                ctrl.ui.start_color_dialog(s, self, 'edge_color', color_id)
-                return
-            else:
-                ctrl.ui.update_color_dialog('edge_color', color_id)
-
-            # Update color for selected edges
-            if ctrl.ui.scope_is_selection:
-                for edge in self._edges_in_selection:
-                    edge.color_id = color_id
-                    edge.update()
-            # ... or update color for all edges of this type
-            else:
-                ctrl.fs.set_edge_info(ctrl.ui.active_node_type, 'color', color_id)
-                for edge in ctrl.forest.edges.values():
-                    edge.update()
-            s.select_data(color_id)
-            s.update()
-            self.shape_selector.update()
-            return color_id
-
-    def update_font_for_role(self, role, font_id):
-        """ Make sure that new font_id is updated to all items under the scope.
-        :param role: Not used, only one font dialog currently here
-        :param font_id:
-        :return:
-        """
+    def update_font_selector(self, font_id):
+        print('update font selector called w. font_id ', font_id)
         self.cached_font_id = font_id
         if not self.font_selector.find_item(font_id):
             self.font_selector.add_font(font_id, qt_prefs.fonts[font_id])
-        self.font_selector.select_data(font_id)
-        if ctrl.ui.scope_is_selection:
-            for node in ctrl.selected:
-                if isinstance(node, Node):
-                    node.font_id = font_id
-                    node.update_label()
+            self.font_selector.select_data(font_id)
+
+    def receive_color_from_color_dialog(self, role, color):
+        """ Replace color in palette with new color
+        :param role: 'node' or 'edge'
+        :param color:
+        :return:
+        """
+        if role == 'node':
+            color_key = self.cached_node_color
+            ctrl.cm.d[color_key] = color
+            ctrl.main.trigger_but_suppress_undo('change_node_color')
         else:
-            ctrl.fs.set_node_info(ctrl.ui.active_node_type, 'font', font_id)
-            for node in ctrl.forest.nodes.values():
-                node.update_label()
+            color_key = self.cached_edge_color
+            ctrl.cm.d[color_key] = color
+            ctrl.main.trigger_but_suppress_undo('change_edge_color')
+
+    def update_node_color_selector(self, color_key):
+        s = self.node_color_selector
+        self.cached_node_color = color_key
+        # launch a color dialog if color_id is unknown or if clicking
+        # already selected color
+        s.select_data(color_key)
+        s.update()
+
+    def update_edge_color_selector(self, color_key):
+        s = self.edge_color_selector
+        self.cached_edge_color = color_key
+        s.select_data(color_key)
+        s.update()
+        self.shape_selector.update()
 
     def update_panel(self):
         """ Panel update should be necessary when changing ctrl.selection or
@@ -256,91 +216,54 @@ class StylePanel(UIPanel):
          overridden with new selection.
         """
         if ctrl.ui.scope_is_selection:
-            d = self.build_display_values()
-            for key, item in d.items():
-                value, enabled, conflict = item
-                if key == 'edge_color':
-                    f = self.edge_color_selector
-                elif key == 'node_color':
-                    f = self.node_color_selector
-                elif key == 'node_font':
-                    f = self.font_selector
-                elif key == 'edge_shape':
-                    f = self.shape_selector
-                else:
-                    continue
-                set_value(f, value, conflict=conflict, enabled=enabled)
-            # self.font_selector.setFont(qt_prefs.font(d['node_font'][0]))
-            if d['node_color'][0]:
-                self.cached_node_color = d['node_color'][0]
-            if d['edge_color'][0]:
-                self.cached_edge_color = d['edge_color'][0]
-            if d['node_font'][0]:
-                self.cached_font_id = d['node_font'][0]
+            no_node = True
+            no_edge = True
+            for item in ctrl.selected:
+                if no_node and isinstance(item, Node):
+                    no_node = False
+                    self.node_color_selector.setEnabled(True)
+                    self.cached_node_color = item.get_color_id()
+                    set_value(self.node_color_selector, self.cached_node_color)
+                    self.font_selector.setEnabled(True)
+                    self.cached_font_id = item.get_font_id()
+                    set_value(self.font_selector, self.cached_font_id)
+                elif no_edge and isinstance(item, Edge):
+                    no_edge = False
+                    self.edge_color_selector.setEnabled(True)
+                    self.cached_edge_color = item.color_id
+                    set_value(self.edge_color_selector, item.color_id)
+                    self.shape_selector.setEnabled(True)
+                    set_value(self.shape_selector, item.shape_name)
+                elif not (no_edge or no_node):
+                    break
+            if no_edge:
+                self.edge_color_selector.setEnabled(False)
+                self.shape_selector.setEnabled(False)
+            if no_node:
+                self.node_color_selector.setEnabled(False)
+                self.font_selector.setEnabled(False)
         elif ctrl.forest:
             ns = ctrl.fs.node_info
             es = ctrl.fs.edge_info
-            node_color = ns(ctrl.ui.active_node_type, 'color')
-            node_font = ns(ctrl.ui.active_node_type, 'font')
-            edge_color = es(ctrl.ui.active_edge_type, 'color')
-            edge_shape = es(ctrl.ui.active_edge_type, 'shape_name')
+            node_type = ctrl.ui.active_node_type
+            edge_type = ctrl.ui.active_edge_type
+            node_color = ns(node_type, 'color')
+            node_font = ns(node_type, 'font')
+            edge_color = es(edge_type, 'color')
+            edge_shape = es(edge_type, 'shape_name')
             # Color selector - show
-            set_value(self.node_color_selector, node_color, False)
-            set_value(self.font_selector, node_font, False)
-            set_value(self.edge_color_selector, edge_color, False)
-            set_value(self.shape_selector, edge_shape, False)
+            self.node_color_selector.setEnabled(True)
+            set_value(self.node_color_selector, node_color)
+            self.font_selector.setEnabled(True)
+            set_value(self.font_selector, node_font)
+            self.edge_color_selector.setEnabled(True)
+            set_value(self.edge_color_selector, edge_color)
+            self.shape_selector.setEnabled(True)
+            set_value(self.shape_selector, edge_shape)
             # self.font_selector.setFont(qt_prefs.font(node_font))
             self.cached_node_color = node_color
             self.cached_edge_color = edge_color
             self.cached_font_id = node_font
-
-    def build_display_values(self):
-        d = {}
-        if len(self._edges_in_selection) + len(self._nodes_in_selection) == 1:
-            if self._edges_in_selection:
-                e = self._edges_in_selection[0]
-                d['edge_color'] = (e.color_id, True, False)
-                d['edge_shape'] = (e.shape_name, True, False)
-                d['node_color'] = ('', False, False)
-                d['node_font'] = ('', False, False)
-            elif self._nodes_in_selection:
-                n = self._nodes_in_selection[0]
-                d['edge_color'] = ('', False, False)
-                d['edge_shape'] = ('', False, False)
-                d['node_color'] = (n.get_color_id(), True, False)
-                d['node_font'] = (n.get_font_id(), True, False)
-        else:
-            color_conflict = False
-            shape_conflict = False
-            color = None
-            shape = None
-            for e in self._edges_in_selection:
-                if not color:
-                    color = e.color_id
-                elif e.color_id != color:
-                    color_conflict = True
-                if not shape:
-                    shape = e.shape_name
-                elif e.shape_name != shape:
-                    shape_conflict = True
-            ncolor_conflict = False
-            font_conflict = False
-            ncolor = None
-            font = None
-            for n in self._nodes_in_selection:
-                if not ncolor:
-                    ncolor = n.color_id
-                elif n.color_id != ncolor:
-                    ncolor_conflict = True
-                if not font:
-                    font = n.font_id
-                elif n.font_id != font:
-                    font_conflict = True
-            d['edge_color'] = (color, bool(color), color_conflict)
-            d['edge_shape'] = (shape, bool(shape), shape_conflict)
-            d['node_color'] = (ncolor, bool(ncolor), ncolor_conflict)
-            d['node_font'] = (font, bool(font), font_conflict)
-        return d
 
     def watch_alerted(self, obj, signal, field_name, value):
         """ Receives alerts from signals that this object has chosen to

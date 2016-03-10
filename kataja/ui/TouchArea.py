@@ -23,17 +23,15 @@
 # ############################################################################
 
 import math
-import random
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-from kataja.nodes.Node import Node
-from kataja.errors import TouchAreaError
+import kataja.globals as g
+from kataja.ConstituentNode import ConstituentNode
+from kataja.Node import Node
 from kataja.Edge import Edge
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.utils import to_tuple, sub_xy
-import kataja.globals as g
-from kataja.nodes.ConstituentNode import ConstituentNode
 
 end_spot_size = 10
 

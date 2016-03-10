@@ -79,7 +79,7 @@ class Preferences(object):
     # so this must support the save protocol.
     not_saved = ['plugins']
 
-    def __init__(self, running_environment, immutable=False):
+    def __init__(self, running_environment):
         self.save_key = 'preferences'
         self._tab_order = ['General', 'Drawing', 'Printing', 'Syntax', 'Node styles',
                            'Performance', 'Plugins', 'Advanced']
@@ -268,7 +268,8 @@ class Preferences(object):
 
         self.custom_colors = {}
 
-    def import_node_classes(self, node_classes):
+    def import_node_classes(self, classes):
+        node_classes = classes.nodes
         for key, nodeclass in node_classes.items():
             nd = nodeclass.default_style.copy()
             nd['name'] = nodeclass.name[0]
@@ -281,6 +282,12 @@ class Preferences(object):
                 self.node_types_order.append(key)
             self.edges[edge_key] = nodeclass.default_edge.copy()
         self.node_types_order.sort()
+
+    def restore_default_preferences(self, qt_prefs, running_environment, classes):
+        source_prefs = Preferences(running_environment)
+        self.copy_preferences_from(source_prefs)
+        self.import_node_classes(classes)
+        qt_prefs.update(self, running_environment)
 
     def update(self, update_dict):
         """

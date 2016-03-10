@@ -10,13 +10,11 @@ from kataja.ui.panels.UIPanel import UIPanel
 
 __author__ = 'purma'
 
-
+@time_me
 def build_shape_dict_for_selection(selection):
-    """ Create a dict of values to show in this panel, add a about conflicting values in
-    selection so that they can be shown as special items.
-    :return: dict with familiar attributes and $varname_conflict: True for conflicts.
+    """ Create a dict of values to show in this panel. Use the first edge in selection.
+    :return: dict with shape attributes and tuple for arrowheads in the start and end
     """
-    # check if selection has conflicting values: these cannot be shown then
     edges = [item for item in selection if isinstance(item, Edge)]
     edge_count = len(edges)
     if not edge_count:
@@ -29,29 +27,7 @@ def build_shape_dict_for_selection(selection):
     d['sample_edge'] = sample_edge
     arrowheads_at_start = sample_edge.shape_info.has_arrowhead_at_start()
     arrowheads_at_end = sample_edge.shape_info.has_arrowhead_at_end()
-    arrowheads_at_start_conflict = False
-    arrowheads_at_end_conflict = False
-
-    if edge_count > 1:
-        keys = ['relative', 'leaf_x', 'leaf_y', 'thickness', 'rel_dx', 'rel_dy', 'fixed_dx',
-                'fixed_dy', 'fill']
-        for item in edges[1:]:
-            e = item.shape_info.shape_info()
-            if shape_name != item.shape_name:
-                d['shape_name_conflict'] = True
-            if item.shape_info.has_arrowhead_at_start() != arrowheads_at_start:
-                arrowheads_at_start_conflict = True
-            if item.shape_info.has_arrowhead_at_end() != arrowheads_at_end:
-                arrowheads_at_end_conflict = True
-            for key in keys:
-                old = d.get(key, None)
-                new = e.get(key, None)
-                if old is None and new is not None:
-                    d[key] = new
-                elif old is not None and new is not None and old != new:
-                    d[key + '_conflict'] = True
-    return d, (arrowheads_at_start, arrowheads_at_start_conflict, arrowheads_at_end,
-               arrowheads_at_end_conflict)
+    return d, (arrowheads_at_start, arrowheads_at_end)
 
 
 class LineOptionsPanel(UIPanel):
@@ -204,7 +180,7 @@ class LineOptionsPanel(UIPanel):
                     self.set_title('Edge settings for selected edges')
                     self.cp1_box.setEnabled(False)
                     self.cp2_box.setEnabled(False)
-                arrowhead_at_start, foo, arrowhead_at_end, bar = arrowheads
+                arrowhead_at_start, arrowhead_at_end = arrowheads
             else:
                 arrowhead_at_start = False
                 arrowhead_at_end = False
@@ -217,8 +193,6 @@ class LineOptionsPanel(UIPanel):
             self.set_title('Edge settings for all ' + prefs.edges[edge_type][
                 'name_pl'].lower())
         if sd:
-            print(sd)
-
             # Disable control points
             self.cp1_box.setEnabled(False)
             self.cp2_box.setEnabled(False)
@@ -237,16 +211,16 @@ class LineOptionsPanel(UIPanel):
                 self.fixed_arc_button.setEnabled(True)
                 self.relative_arc_button.setEnabled(True)
                 set_value(self.relative_arc_button, True)
-                set_value(self.arc_rel_dx_spinbox, sd['rel_dx'] * 100, 'rel_dx_conflict' in sd)
-                set_value(self.arc_rel_dy_spinbox, sd['rel_dy'] * 100, 'rel_dy_conflict' in sd)
+                set_value(self.arc_rel_dx_spinbox, sd['rel_dx'] * 100)
+                set_value(self.arc_rel_dy_spinbox, sd['rel_dy'] * 100)
             else:
                 self.fixed_arc_box.setEnabled(True)
                 self.relative_arc_box.setEnabled(False)
                 self.fixed_arc_button.setEnabled(True)
                 self.relative_arc_button.setEnabled(True)
                 set_value(self.fixed_arc_button, True)
-                set_value(self.arc_fixed_dx_spinbox, sd['fixed_dx'], 'fixed_dx_conflict' in sd)
-                set_value(self.arc_fixed_dy_spinbox, sd['fixed_dy'], 'fixed_dy_conflict' in sd)
+                set_value(self.arc_fixed_dx_spinbox, sd['fixed_dx'])
+                set_value(self.arc_fixed_dy_spinbox, sd['fixed_dy'])
 
             # Leaf-shaped lines or solid lines
             fill = sd.get('fill', None)
@@ -261,8 +235,8 @@ class LineOptionsPanel(UIPanel):
                 self.thickness_box.setEnabled(False)
                 if 'leaf_x' in sd:
                     self.leaf_box.setEnabled(True)
-                    set_value(self.leaf_x_spinbox, sd['leaf_x'], 'leaf_x_conflict' in sd)
-                    set_value(self.leaf_y_spinbox, sd['leaf_y'], 'leaf_y_conflict' in sd)
+                    set_value(self.leaf_x_spinbox, sd['leaf_x'])
+                    set_value(self.leaf_y_spinbox, sd['leaf_y'])
                     set_value(self.fill_button, True)
                 else:
                     self.leaf_box.setEnabled(False)
@@ -272,7 +246,7 @@ class LineOptionsPanel(UIPanel):
                 self.leaf_box.setEnabled(False)
                 if sd.get('thickness', None) is not None:
                     self.thickness_box.setEnabled(True)
-                    set_value(self.thickness_spinbox, sd['thickness'], 'thickness_conflict' in sd)
+                    set_value(self.thickness_spinbox, sd['thickness'])
                     set_value(self.line_button, True)
                 else:
                     self.thickness_box.setEnabled(False)
@@ -318,7 +292,6 @@ class LineOptionsPanel(UIPanel):
         dp = self.ui_manager.get_panel(g.STYLE)
         if dp:
             pixel_ratio = dp.devicePixelRatio()
-            print('panel pixel_ratio:', pixel_ratio)
             p = dp.mapToGlobal(dp.pos())
             return QtCore.QPoint(p.x() / pixel_ratio + dp.width() + 40, p.y() / pixel_ratio)
         else:

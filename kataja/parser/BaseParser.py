@@ -27,7 +27,7 @@
 import re
 
 from kataja.debug import parser
-from kataja.singletons import ctrl
+from kataja.singletons import ctrl, classes
 from kataja.Presentation import TextArea, Image
 from kataja.utils import next_free_index
 import kataja.globals as g
@@ -138,7 +138,7 @@ class BaseParser:
             if key in features:
                 features[key].set(value)
             else:
-                feature = ctrl.Feature(key, value)
+                feature = classes.Feature(key, value)
                 features[key] = feature
         if gloss:
             features['gloss'] = gloss
@@ -184,7 +184,7 @@ class BaseParser:
     def _create_constituent(self, features):
         """ Uses parsed dict of features """
         label = features['label']
-        if isinstance(label, ctrl.Feature):
+        if isinstance(label, classes.Feature):
             label = features['label'].value
         else:
             raise Exception("Label is not a proper Feature")
@@ -195,7 +195,7 @@ class BaseParser:
         elif lexicon_entry:
             constituent = lexicon_entry.copy()
         else:
-            constituent = ctrl.Constituent(label)
+            constituent = classes.Constituent(label)
         constituent.set_features(features)
         self.add_local_lexicon(constituent)
         return constituent

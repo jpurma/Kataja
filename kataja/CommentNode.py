@@ -25,9 +25,10 @@ CommentNode is a non-functional node for freeform text
 #
 #############################################################################
 from PyQt5 import QtGui, QtCore
-from kataja.singletons import ctrl
-from kataja.nodes.Node import Node
+
 import kataja.globals as g
+from kataja.Node import Node
+from kataja.singletons import ctrl
 
 
 class CommentNode(Node):

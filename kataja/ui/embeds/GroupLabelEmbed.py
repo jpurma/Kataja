@@ -44,7 +44,6 @@ class GroupLabelEmbed(UIEmbed):
                            align=QtCore.Qt.AlignLeft)
         self.fill_checkbox = QtWidgets.QCheckBox()
         ui_manager.connect_element_to_action(self.fill_checkbox, 'change_amoeba_fill')
-        self.fill_checkbox.ambiguous = False
         hlayout.addWidget(self.fill_checkbox, 1, QtCore.Qt.AlignRight)
         label = make_label('Fill',
                            parent=self,
@@ -54,7 +53,6 @@ class GroupLabelEmbed(UIEmbed):
                            align=QtCore.Qt.AlignLeft)
         self.outline_checkbox = QtWidgets.QCheckBox()
         ui_manager.connect_element_to_action(self.outline_checkbox, 'change_amoeba_outline')
-        self.outline_checkbox.ambiguous = False
         hlayout.addWidget(self.outline_checkbox, 1, QtCore.Qt.AlignRight)
         label = make_label('Outline',
                            parent=self,
@@ -65,7 +63,6 @@ class GroupLabelEmbed(UIEmbed):
 
         self.include_children_checkbox = QtWidgets.QCheckBox()
         ui_manager.connect_element_to_action(self.include_children_checkbox, 'change_amoeba_children')
-        self.include_children_checkbox.ambiguous = False
         hlayout.addWidget(self.include_children_checkbox, 1, QtCore.Qt.AlignRight)
         label = make_label('Include children',
                            parent=self,
@@ -75,7 +72,6 @@ class GroupLabelEmbed(UIEmbed):
                            align=QtCore.Qt.AlignLeft)
         self.allow_overlap_checkbox = QtWidgets.QCheckBox()
         ui_manager.connect_element_to_action(self.allow_overlap_checkbox, 'change_amoeba_overlaps')
-        self.allow_overlap_checkbox.ambiguous = False
         hlayout.addWidget(self.allow_overlap_checkbox, 1, QtCore.Qt.AlignRight)
         label = make_label('Allow groups to overlap',
                            parent=self,

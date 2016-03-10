@@ -131,7 +131,6 @@ class ForestSettings(BaseModel):
         else:
             local_edge_settings[key] = value
 
-
     def shape_for_edge(self, edge_type):
         """ Helper to get the shape name for given edge type.
         :return:

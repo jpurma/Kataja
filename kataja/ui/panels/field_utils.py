@@ -50,7 +50,6 @@ def spinbox(ui_manager, panel, layout, label='', range_min=0, range_max=0, actio
     slabel = QtWidgets.QLabel(label, panel)
     slabel.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
     spinbox = QtWidgets.QSpinBox()
-    spinbox.ambiguous = False
     spinbox.setRange(range_min, range_max)
     spinbox.setSuffix(suffix)
     ui_manager.connect_element_to_action(spinbox, action)
@@ -78,7 +77,6 @@ def decimal_spinbox(ui_manager, panel, layout, label='', range_min=0, range_max=
     spinbox = QtWidgets.QDoubleSpinBox()
     spinbox.setRange(range_min, range_max)
     spinbox.setSingleStep(step)
-    spinbox.ambiguous = False
     spinbox.setSuffix(suffix)
     ui_manager.connect_element_to_action(spinbox, action)
     slabel.setBuddy(spinbox)
@@ -98,7 +96,6 @@ def text_button(ui_manager, layout, text='', action='', x=-1, y=-1, checkable=Fa
     """
     button = QtWidgets.QPushButton(text)
     button.setMaximumHeight(20)
-    button.ambiguous = False
     button.setCheckable(checkable)
     ui_manager.connect_element_to_action(button, action)
     if x != -1:
@@ -129,7 +126,6 @@ def icon_button(ui_manager, parent, layout, icon=None, text='', action='', x=-1,
     """
 
     button = PanelButton(icon, text=text, parent=parent, size=size, color_key=color_key)
-    button.ambiguous = False
     button.setCheckable(checkable)
     if action:
         ui_manager.connect_element_to_action(button, action, tooltip_suffix=tooltip_suffix)
@@ -158,7 +154,6 @@ def mini_icon_button(ui_manager, parent, layout, icon=None, text='', action='', 
     """
     button = PanelButton(icon, text=text, parent=parent, size=12)
     button.setMaximumWidth(max_width)
-    button.ambiguous = False
     button.setCheckable(checkable)
     ui_manager.connect_element_to_action(button, action)
     if x != -1:
@@ -180,7 +175,6 @@ def mini_button(ui_manager, parent, layout, text='', action='', x=-1, y=-1, chec
     button = QtWidgets.QPushButton(text, parent=parent)
     button.setMinimumSize(QSize(40, 20))
     button.setMaximumSize(QSize(40, 20))
-    button.ambiguous = False
     button.setCheckable(checkable)
     ui_manager.connect_element_to_action(button, action)
     if x != -1:
@@ -232,7 +226,6 @@ def mini_selector(ui_manager, panel, layout, data=None, action=''):
     for text, value in data:
         selector.setItemData(i, value)
         i += 1
-    selector.ambiguous = False
     selector.setMinimumSize(QSize(40, 20))
     selector.setMaximumSize(QSize(40, 20))
     ui_manager.connect_element_to_action(selector, action)
@@ -258,7 +251,6 @@ def selector(ui_manager, parent, layout, data=None, action='', label=''):
     for text, value in data:
         selector.setItemData(i, value)
         i += 1
-    selector.ambiguous = False
     ui_manager.connect_element_to_action(selector, action)
     if label:
         labelw = QtWidgets.QLabel(label, parent)
@@ -277,7 +269,6 @@ def font_selector(ui_manager, parent, layout, action='', label=''):
     :return:
     """
     selector = FontSelector(parent)
-    selector.ambiguous = False
     ui_manager.connect_element_to_action(selector, action)
     if label:
         labelw = QtWidgets.QLabel(label, parent)
@@ -296,7 +287,6 @@ def color_selector(ui_manager, parent, layout, action='', label=''):
     :return:
     """
     selector = ColorSelector(parent)
-    selector.ambiguous = False
     ui_manager.connect_element_to_action(selector, action)
     if label:
         labelw = QtWidgets.QLabel(label, parent)
@@ -315,7 +305,6 @@ def shape_selector(ui_manager, parent, layout, action='', label=''):
     :return:
     """
     selector = ShapeSelector(parent)
-    selector.ambiguous = False
     ui_manager.connect_element_to_action(selector, action)
     if label:
         labelw = QtWidgets.QLabel(label, parent)
@@ -337,7 +326,6 @@ def checkbox(ui_manager, parent, layout, label='', action='', x=-1, y=-1):
     slabel = QtWidgets.QLabel(label, parent)
     scheckbox = QtWidgets.QCheckBox()
     ui_manager.connect_element_to_action(scheckbox, action)
-    scheckbox.ambiguous = False
     if x > -1:
         layout.addWidget(slabel, y, x)
         layout.addWidget(scheckbox, y, x + 1)
@@ -363,20 +351,16 @@ def box_row(container):
     return hlayout
 
 
-def set_value(field, value, conflict=False, enabled=True):
-    # print('set_value: %s value: %s conflict: %s enabled: %s ' % (field,
-    # value, conflict, enabled))
-    """
-
+def set_value(field, value):
+    """ Utility method to set value for various kinds of fields with their own typical ways for
+    setting the value. Also some efficiency savings from caching the previous value for quick
+    comparison to decide if the setting is even necessary.
     :param field:
     :param value:
-    :param conflict:
-    :param enabled:
     """
     field.blockSignals(True)
     old_v = getattr(field, 'cached_value', None)
-    field.setEnabled(enabled)
-    if old_v != value and enabled:
+    if old_v != value:
         if isinstance(field, QtWidgets.QSpinBox):
             field.setValue(value)
         elif isinstance(field, TableModelComboBox):
@@ -387,50 +371,8 @@ def set_value(field, value, conflict=False, enabled=True):
             field.setChecked(value)
         elif isinstance(field, QtWidgets.QAbstractButton):
             field.setChecked(value)
-        if conflict and not field.ambiguous:
-            add_and_select_ambiguous_marker(field)
-        elif field.ambiguous and not conflict:
-            remove_ambiguous_marker(field)
         field.cached_value = value
-    field.update()
     field.blockSignals(False)
-
-
-@time_me
-def add_and_select_ambiguous_marker(element):
-    """
-
-    :param element:
-    """
-    if isinstance(element, TableModelComboBox):
-        element.add_and_select_ambiguous_marker()
-    elif isinstance(element, QtWidgets.QComboBox):
-        i = find_list_item(g.AMBIGUOUS_VALUES, element)
-        if i == -1:
-            element.insertItem(0, '---', g.AMBIGUOUS_VALUES)
-            element.setCurrentIndex(0)
-        else:
-            element.setCurrentIndex(i)
-    elif isinstance(element, (QtWidgets.QSpinBox, QtWidgets.QDoubleSpinBox)):
-        element.setSuffix(' (?)')
-    element.ambiguous = True
-
-
-@time_me
-def remove_ambiguous_marker(element):
-    """
-
-    :param element:
-    """
-    if isinstance(element, TableModelComboBox):
-        element.remove_ambiguous_marker()
-    elif isinstance(element, QtWidgets.QComboBox):
-        i = find_list_item(g.AMBIGUOUS_VALUES, element)
-        if i > -1:
-            element.removeItem(i)
-    elif isinstance(element, (QtWidgets.QSpinBox, QtWidgets.QDoubleSpinBox)):
-        element.setSuffix('')
-    element.ambiguous = False
 
 
 def find_list_item(data, selector):
