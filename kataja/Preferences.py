@@ -233,6 +233,7 @@ class Preferences(object):
         self.node_types_order = []
 
         self.plugins = {}
+        self.active_plugins = ['ExamplePlugin']
         self._plugins_ui = {'tab': 'Plugins', 'special': 'plugins'}
 
         self.FPS = 60

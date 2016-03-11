@@ -391,26 +391,6 @@ def print_transform(transform):
     print('isRotating:%s isScaling:%s isTranslating:%s' % (t.isRotating(), t.isScaling(), t.isTranslating()))
 
 
-def import_plugins(prefs, plugins_path):
-    """ Find the plugins dir for the running configuration and import all found modules to plugins -dict.
-    :return: None
-    """
-    if not plugins_path:
-        return
-    os.makedirs(plugins_path, exist_ok=True)
-    plugins_dir = os.listdir(plugins_path)
-
-    sys.path.append(plugins_path)
-    for plugin_file in plugins_dir:
-        if plugin_file.endswith('.py') and not plugin_file.startswith('__'):
-            plugin_name = plugin_file[:-3]
-            if plugin_name not in prefs.plugins:
-                try:
-                    prefs.plugins[plugin_name] = importlib.import_module(plugin_name)
-                except:
-                    print('import error with:', plugin_name)
-
-    print('Modules imported from plugins: %s' % list(prefs.plugins.keys()))
 
 
 def add_xy(a, b):

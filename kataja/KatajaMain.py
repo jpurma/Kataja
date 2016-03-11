@@ -31,12 +31,16 @@
 
 import gc
 # import gzip
+import importlib
+import json
 import os.path
 import time
+import traceback
 
 import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
+import sys
 
 from kataja.singletons import ctrl, prefs, qt_prefs, running_environment, classes
 import kataja.singletons
@@ -48,10 +52,11 @@ from kataja.Presentation import TextArea
 from kataja.managers.UIManager import UIManager
 from kataja.managers.PaletteManager import PaletteManager
 import kataja.globals as g
-from kataja.utils import time_me, import_plugins
+from kataja.utils import time_me
 from kataja.visualizations.available import VISUALIZATIONS
 from kataja.BaseModel import BaseModel, Saved
 from kataja.ui.PreferencesDialog import PreferencesDialog
+from kataja.ui.ErrorDialog import ErrorDialog
 
 # only for debugging (Apple-m, memory check), can be commented
 # try:
@@ -60,6 +65,7 @@ from kataja.ui.PreferencesDialog import PreferencesDialog
 # objgraph = None
 
 # KatajaMain > UIView > UIManager > GraphView > GraphScene > Leaves etc.
+
 DEBUG_TREESET = 'trees.txt'
 
 class KatajaMain(BaseModel, QtWidgets.QMainWindow):
@@ -78,6 +84,7 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
 
         BaseModel.__init__(self, unique=True)
         self.use_tooltips = True
+        self.available_plugins = {}
         self.setDockOptions(QtWidgets.QMainWindow.AnimatedDocks)
         self.setCorner(QtCore.Qt.TopLeftCorner, QtCore.Qt.LeftDockWidgetArea)
         self.setCorner(QtCore.Qt.TopRightCorner, QtCore.Qt.RightDockWidgetArea)
@@ -97,7 +104,8 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
 
         prefs.load_preferences()
         qt_prefs.late_init(running_environment, prefs, self.fontdb)
-        import_plugins(prefs, running_environment.plugins_path)
+        self.find_plugins(running_environment.plugins_path)
+        self.install_plugins()
         self.setWindowIcon(qt_prefs.kataja_icon)
         self.app.setFont(qt_prefs.font(g.UI_FONT))
         self.graph_scene = GraphScene(main=self, graph_view=None)
@@ -147,6 +155,68 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         elif e.type() == 23:
             print('FocusAboutToChange')
         return QtWidgets.QMainWindow.event(self, e)
+
+    def find_plugins(self, plugins_path):
+        """ Find the plugins dir for the running configuration and read the metadata of plugins.
+        Don't try to load actual python code yet
+        :return: None
+        """
+        if not plugins_path:
+            return
+        plugins_path = os.path.normpath(plugins_path)
+        os.makedirs(plugins_path, exist_ok=True)
+        sys.path.append(plugins_path)
+        base_ends = len(plugins_path.split('/'))
+        for root, dirs, files in os.walk(plugins_path):
+            path_parts = root.split('/')
+            if len(path_parts) == base_ends + 1 and not path_parts[base_ends].startswith('__') \
+                    and 'plugin.json' in files:
+                success = False
+                try:
+                    plugin_file = open(root + '/plugin.json', 'r')
+                    data = json.load(plugin_file)
+                    plugin_file.close()
+                    success = True
+                except:
+                    print(sys.exc_info())
+                if success:
+                    mod_name = path_parts[base_ends]
+                    data['module_name'] = mod_name
+                    data['module_path'] = root
+                    self.available_plugins[mod_name] = data
+
+    def install_plugins(self):
+        """ If there are plugins defined in preferences to be used, activate them now.
+        :return: None
+        """
+        for plugin_module in prefs.active_plugins:
+            if plugin_module in self.available_plugins:
+                retry = True
+                plugin_data = self.available_plugins[plugin_module]
+                while retry:
+                    try:
+                        setup = importlib.import_module(plugin_module + ".setup")
+                        if hasattr(setup, 'start_plugin'):
+                            setup.start_plugin(self, ctrl, prefs)
+                        retry = False
+                    except:
+                        e = sys.exc_info()
+                        error_dialog = ErrorDialog(self)
+                        error_dialog.set_error('%s, line %s\n%s: %s' % (plugin_module + ".setup.py",
+                                                                        e[2].tb_lineno,
+                                                                        e[0].__name__,
+                                                                        e[1]))
+                        error_dialog.set_traceback(traceback.format_exc())
+                        retry = error_dialog.exec_()
+                        setup = None
+                    if setup and hasattr(setup, 'plugin_parts'):
+                        for classobj in setup.plugin_parts:
+                            if hasattr(classobj, 'short_name'):
+                                key = classobj.short_name
+                                print('replacing %s (%s) with %s ' % (classes.get(key), key,
+                                                                      classobj))
+                                classes.add_class(classobj.short_name, classobj)
+                        print('installed plugin "%s"' % plugin_data['name'])
 
     def reset_preferences(self):
         """

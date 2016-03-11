@@ -156,3 +156,6 @@ ADD:
 - Styles should have overall style: 'Custom', 'Plain' and 'Rich'
 - Shuffle button next to random palettes
 + Arrowhead settings to line options panel
++ Plugins can replace classes
+    - Plugin preferences
+    - Replacing classes rebuilds existing objects
