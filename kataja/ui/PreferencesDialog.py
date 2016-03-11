@@ -188,6 +188,30 @@ class Selector(QtWidgets.QComboBox):
         self.on_change_method = method
 
 
+class PluginSelector(QtWidgets.QWidget):
+
+    def __init__(self, field_name, parent=None):
+        QtWidgets.QWidget.__init__(self, parent)
+        layout = QtWidgets.QVBoxLayout()
+        for key in sorted(ctrl.main.available_plugins.keys()):
+            item = ctrl.main.available_plugins[key]
+            plugin_widget = QtWidgets.QWidget(self)
+            hlayout = QtWidgets.QHBoxLayout()
+            enabled = QtWidgets.QCheckBox(item['name'], plugin_widget)
+            enabled.setChecked(key in prefs.active_plugins)
+            text = 'v. %s %s \n %s' % (item['version'], item['author'], item['description'])
+            info = QtWidgets.QLabel(text, plugin_widget)
+            hlayout.addWidget(enabled)
+            hlayout.addWidget(info)
+            plugin_widget.setLayout(hlayout)
+            layout.addWidget(plugin_widget)
+        self.setLayout(layout)
+        self.field_name = field_name
+        self.on_change_method = None
+
+    def set_on_change_method(self, method):
+        self.set_on_change_method = method
+
 class FileChooser(QtWidgets.QHBoxLayout):
 
     def __init__(self, field_name, parent=None, folders_only=False):
@@ -324,6 +348,7 @@ class PreferencesDialog(QtWidgets.QDialog):
             widget, layout = self.get_page(tab)
             for o, key in ordered:
                 f = None
+                full_row = False
                 d = tabdata[key]
                 value = d['value']
                 label = d.get('label', '')
@@ -331,10 +356,12 @@ class PreferencesDialog(QtWidgets.QDialog):
                     label = key.replace('_', ' ').capitalize()
                 special = d.get('special', '')
                 if special:
-                    print('looking for method: build_' + special)
                     method = getattr(self, 'build_' + special, None)
                     if method:
-                        f = method(key, d)
+                        f, full_row = method(key, d)
+                    else:
+                        print('looking for method: build_' + special)
+
                 else:
                     field_type = d.get('type', '')
                     if not field_type:
@@ -385,7 +412,11 @@ class PreferencesDialog(QtWidgets.QDialog):
                     else:
                         on_change = self.main.redraw
                     f.set_on_change_method(on_change)
-                    layout.addRow(label, f)
+                    if full_row:
+                        layout.addRow(QtWidgets.QLabel(label))
+                        layout.addRow(f)
+                    else:
+                        layout.addRow(label, f)
                     help = d.get('help', None)
                     if help:
                         layout.addRow(HelpLabel(help, self, f))
@@ -413,11 +444,14 @@ class PreferencesDialog(QtWidgets.QDialog):
 
     def build_color_modes(self, key, d):
         choices = [(key, data['name']) for key, data in color_modes.items()]
-        return Selector(key, self, choices)
+        return Selector(key, self, choices), False
 
     def build_visualizations(self, key, d):
         choices = list(VISUALIZATIONS.keys())
-        return Selector(key, self, choices)
+        return Selector(key, self, choices), False
+
+    def build_plugins(self, key, d):
+        return PluginSelector(key, self), True
 
     def prepare_easing_curve(self):
         qt_prefs.prepare_easing_curve(prefs.curve, prefs.move_frames)

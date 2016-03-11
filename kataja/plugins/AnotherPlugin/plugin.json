@@ -1,0 +1,7 @@
+{
+	"name": "Another plugin",
+	"description": "A simple plugin that adds one unconsequential property for constituents",
+	"author": "Jukka Purma",
+	"version": "0.1",
+	"setup": "setup.py"
+}
