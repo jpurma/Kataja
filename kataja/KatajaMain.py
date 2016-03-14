@@ -163,6 +163,7 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         """
         if not plugins_path:
             return
+        self.available_plugins = {}
         plugins_path = os.path.normpath(plugins_path)
         os.makedirs(plugins_path, exist_ok=True)
         sys.path.append(plugins_path)
@@ -185,38 +186,79 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
                     data['module_path'] = root
                     self.available_plugins[mod_name] = data
 
+    def enable_plugin(self, plugin_key):
+        """ Start one plugin: save data, replace required classes with plugin classes, load data.
+
+        """
+        all_data = self.create_save_data()
+        plugin_data = self.available_plugins[plugin_key]
+        setup = self.load_plugin(plugin_key)
+        self.clear_all()
+        if setup and hasattr(setup, 'plugin_parts'):
+            for classobj in setup.plugin_parts:
+                if hasattr(classobj, 'short_name'):
+                    key = classobj.short_name
+                    print('replacing %s (%s) with %s ' % (classes.get(key), key, classobj))
+                    classes.add_class(classobj.short_name, classobj)
+            print('installed plugin "%s"' % plugin_data['name'])
+        ctrl.undo_disabled = True
+        self.load_objects(all_data, self)
+        ctrl.undo_disabled = False
+        self.change_forest()
+
+    def disable_plugin(self, plugin_key):
+        """ Remove one plugin from use: save data, replace plugin classes with original classes,
+        load data. """
+        all_data = self.create_save_data()
+        plugin_data = self.available_plugins[plugin_key]
+        setup = self.load_plugin(plugin_key)
+        self.clear_all()
+        if setup and hasattr(setup, 'plugin_parts'):
+            for classobj in setup.plugin_parts:
+                if hasattr(classobj, 'short_name'):
+                    key = classobj.short_name
+                    print('restoring %s (%s) ' % (classobj, key))
+                    classes.remove_class(key)
+        ctrl.undo_disabled = True
+        self.load_objects(all_data, self)
+        ctrl.undo_disabled = False
+        self.change_forest()
+
+    def load_plugin(self, plugin_module):
+        if plugin_module in self.available_plugins:
+            retry = True
+            plugin_data = self.available_plugins[plugin_module]
+            while retry:
+                try:
+                    setup = importlib.import_module(plugin_module + ".setup")
+                    if hasattr(setup, 'start_plugin'):
+                        setup.start_plugin(self, ctrl, prefs)
+                    retry = False
+                except:
+                    e = sys.exc_info()
+                    error_dialog = ErrorDialog(self)
+                    error_dialog.set_error('%s, line %s\n%s: %s' % (
+                    plugin_module + ".setup.py", e[2].tb_lineno, e[0].__name__, e[1]))
+                    error_dialog.set_traceback(traceback.format_exc())
+                    retry = error_dialog.exec_()
+                    setup = None
+        return setup
+
     def install_plugins(self):
         """ If there are plugins defined in preferences to be used, activate them now.
         :return: None
         """
-        for plugin_module in prefs.active_plugins:
-            if plugin_module in self.available_plugins:
-                retry = True
-                plugin_data = self.available_plugins[plugin_module]
-                while retry:
-                    try:
-                        setup = importlib.import_module(plugin_module + ".setup")
-                        if hasattr(setup, 'start_plugin'):
-                            setup.start_plugin(self, ctrl, prefs)
-                        retry = False
-                    except:
-                        e = sys.exc_info()
-                        error_dialog = ErrorDialog(self)
-                        error_dialog.set_error('%s, line %s\n%s: %s' % (plugin_module + ".setup.py",
-                                                                        e[2].tb_lineno,
-                                                                        e[0].__name__,
-                                                                        e[1]))
-                        error_dialog.set_traceback(traceback.format_exc())
-                        retry = error_dialog.exec_()
-                        setup = None
-                    if setup and hasattr(setup, 'plugin_parts'):
-                        for classobj in setup.plugin_parts:
-                            if hasattr(classobj, 'short_name'):
-                                key = classobj.short_name
-                                print('replacing %s (%s) with %s ' % (classes.get(key), key,
-                                                                      classobj))
-                                classes.add_class(classobj.short_name, classobj)
-                        print('installed plugin "%s"' % plugin_data['name'])
+        for plugin_module in prefs.active_plugins.keys():
+            plugin_data = self.available_plugins[plugin_module]
+            setup = self.load_plugin(plugin_module)
+            if setup and hasattr(setup, 'plugin_parts'):
+                for classobj in setup.plugin_parts:
+                    if hasattr(classobj, 'short_name'):
+                        key = classobj.short_name
+                        print('replacing %s (%s) with %s ' % (classes.get(key), key,
+                                                              classobj))
+                        classes.add_class(classobj.short_name, classobj)
+                print('installed plugin "%s"' % plugin_data['name'])
 
     def reset_preferences(self):
         """

@@ -232,9 +232,8 @@ class Preferences(object):
         self._nodes_ui = {'tab': 'Node styles', 'special': 'nodes'}
         self.node_types_order = []
 
-        self.plugins = {}
-        self.active_plugins = ['ExamplePlugin']
-        self._plugins_ui = {'tab': 'Plugins', 'special': 'plugins'}
+        self.active_plugins = {}
+        self._active_plugins_ui = {'tab': 'Plugins', 'special': 'plugins', 'label': 'Plugins'}
 
         self.FPS = 60
         self._FPS_ui = {'tab': 'Performance', 'range': (10, 60), 'label': 'Target FPS'}

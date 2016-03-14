@@ -33,7 +33,7 @@ class ConfigurableConstituent(BaseConstituent):
     It inherits mostly everything from BaseConstituent, and overrides those methods that can be
     configured.
     """
-    short_name = "CC"
+    short_name = "BC"
 
     # ############## #
     #                #

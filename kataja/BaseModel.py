@@ -10,7 +10,7 @@ from kataja.utils import to_tuple
 from kataja.parser.INodes import ITextNode
 from kataja.parser.INodeToLatex import parse_inode_for_field
 from kataja.parser.LatexToINode import parse_field
-from kataja.singletons import ctrl
+from kataja.singletons import ctrl, classes
 from kataja.globals import CREATED, DELETED
 
 __author__ = 'purma'

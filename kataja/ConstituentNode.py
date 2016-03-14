@@ -231,6 +231,7 @@ class ConstituentNode(BaseConstituentNode):
         that some ConstituentNodes may have visible labels and others not.
         :return: INodes or str or tuple of them
         """
+        print(type(self.syntactic_object))
         if self._inode is None:
             self._inode = super().as_inode()
         if self._inode_changed:
