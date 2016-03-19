@@ -1036,7 +1036,10 @@ syntactic_object: %s
                 getter = value.get('getter', key)
                 # use 'getter' or default to 'key', assuming that key is the
                 # same as the property it is representing
-                value['value'] = getattr(self, getter)
+                v = getattr(self, getter, None)
+                if v is None:
+                    v = getattr(self.syntactic_object, getter, None)
+                value['value'] = v
             self._inode_str = str(self._inode)
             self._inode_changed = False
         return self._inode

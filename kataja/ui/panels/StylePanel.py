@@ -59,6 +59,9 @@ class StylePanel(UIPanel):
                                        data=[],
                                        action='style_scope',
                                        label='Style for')
+        vline = QtWidgets.QFrame()
+        vline.setFrameShape(QtWidgets.QFrame.VLine)
+        hlayout.addWidget(vline)
         self.style_reset = mini_button(ui_manager, self.style_widgets, hlayout,
                                        text='reset',
                                        action='reset_style_in_scope')

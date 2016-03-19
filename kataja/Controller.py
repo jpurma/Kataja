@@ -78,7 +78,7 @@ class Controller:
         self.rebuild_dict = {}
         self.print_garbage = True
         self.focus = None
-        self.undo_disabled = False  # flag that affects if pickle.load assumes
+        self.undo_disabled = 0  # stacking flag that affects if pickle.load assumes
         # an empty workspace (loading new) or if it tries to compare changes
         # (undo).
         self.watchers_disabled = False # flag to suppress watchers -- not

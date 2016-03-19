@@ -104,7 +104,7 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
 
         prefs.load_preferences()
         qt_prefs.late_init(running_environment, prefs, self.fontdb)
-        self.find_plugins(running_environment.plugins_path)
+        self.find_plugins(prefs.plugins_path or running_environment.plugins_path)
         self.install_plugins()
         self.setWindowIcon(qt_prefs.kataja_icon)
         self.app.setFont(qt_prefs.font(g.UI_FONT))
@@ -193,17 +193,21 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         all_data = self.create_save_data()
         plugin_data = self.available_plugins[plugin_key]
         setup = self.load_plugin(plugin_key)
+        if not setup:
+            return
         self.clear_all()
-        if setup and hasattr(setup, 'plugin_parts'):
+        ctrl.undo_disabled += 1
+        if hasattr(setup, 'start_plugin'):
+            setup.start_plugin(self, ctrl, prefs)
+        if hasattr(setup, 'plugin_parts'):
             for classobj in setup.plugin_parts:
                 if hasattr(classobj, 'short_name'):
                     key = classobj.short_name
                     print('replacing %s (%s) with %s ' % (classes.get(key), key, classobj))
                     classes.add_class(classobj.short_name, classobj)
             print('installed plugin "%s"' % plugin_data['name'])
-        ctrl.undo_disabled = True
         self.load_objects(all_data, self)
-        ctrl.undo_disabled = False
+        ctrl.undo_disabled -= 1
         self.change_forest()
 
     def disable_plugin(self, plugin_key):
@@ -212,16 +216,20 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         all_data = self.create_save_data()
         plugin_data = self.available_plugins[plugin_key]
         setup = self.load_plugin(plugin_key)
+        if not setup:
+            return
+        ctrl.undo_disabled += 1
+        if hasattr(setup, 'tear_down_plugin'):
+            setup.tear_down_plugin(self, ctrl, prefs)
         self.clear_all()
-        if setup and hasattr(setup, 'plugin_parts'):
+        if hasattr(setup, 'plugin_parts'):
             for classobj in setup.plugin_parts:
                 if hasattr(classobj, 'short_name'):
                     key = classobj.short_name
                     print('restoring %s (%s) ' % (classobj, key))
                     classes.remove_class(key)
-        ctrl.undo_disabled = True
         self.load_objects(all_data, self)
-        ctrl.undo_disabled = False
+        ctrl.undo_disabled -= 1
         self.change_forest()
 
     def load_plugin(self, plugin_module):
@@ -316,12 +324,12 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         """ Tells the scene to remove current trees and related data and
         change it to a new one
         """
-        ctrl.undo_disabled = True
+        ctrl.undo_disabled += 1
         if self.forest:
             self.forest.retire_from_drawing()
         self.forest = self.forest_keeper.forest
         self.forest.prepare_for_drawing()
-        ctrl.undo_disabled = False
+        ctrl.undo_disabled -= 1
 
     def redraw(self):
         """ Call for forest redraw
@@ -369,23 +377,23 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         else:
             ctrl.graph_scene.start_animations()
 
-    def trigger_action(self, name, **kwargs):
+    def trigger_action(self, name, *args, **kwargs):
         """ Helper for programmatically triggering actions (for tests and plugins)
         :param name: action name
         :param kwargs: keyword parameters
         :return:
         """
         action = self.ui_manager.qt_actions[name]
-        action.action_triggered(**kwargs)
+        action.action_triggered(*args, **kwargs)
 
-    def trigger_but_suppress_undo(self, name, **kwargs):
+    def trigger_but_suppress_undo(self, name, *args, **kwargs):
         """ Helper for programmatically triggering actions (for tests and plugins)
         :param name: action name
         :param kwargs: keyword parameters
         :return:
         """
         action = self.ui_manager.qt_actions[name]
-        action.trigger_but_suppress_undo(**kwargs)
+        action.trigger_but_suppress_undo(*args, **kwargs)
 
     def enable_actions(self):
         """ Restores menus """

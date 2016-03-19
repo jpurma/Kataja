@@ -232,6 +232,7 @@ class Preferences(object):
         self._nodes_ui = {'tab': 'Node styles', 'special': 'nodes'}
         self.node_types_order = []
 
+        self.plugins_path = ''
         self.active_plugins = {}
         self._active_plugins_ui = {'tab': 'Plugins', 'special': 'plugins', 'label': 'Plugins'}
 

@@ -1,4 +1,4 @@
-
+# coding=utf-8
 from ExamplePlugin.HiConstituent import HiConstituent
 
 # see ExamplePlugin/readme.txt and ExamplePlugin/plugin.json

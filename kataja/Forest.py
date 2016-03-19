@@ -157,7 +157,7 @@ class Forest(BaseModel):
         :return: None
         """
         self.in_display = True
-        ctrl.undo_disabled = True
+        ctrl.undo_disabled += 1
         self.update_colors()
         self.add_all_to_scene()
         self.update_visualization()
@@ -165,7 +165,7 @@ class Forest(BaseModel):
         self.scene.manual_zoom = False
         ctrl.ui.update_all_fields()
         self.draw()  # do draw once to avoid having the first draw in undo stack.
-        ctrl.undo_disabled = False
+        ctrl.undo_disabled -= 1
 
     def retire_from_drawing(self):
         """ Announce that this forest should not try to work with scene

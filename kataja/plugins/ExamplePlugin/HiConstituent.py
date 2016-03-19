@@ -9,10 +9,6 @@ class HiConstituent(BaseConstituent):
 
     # info for kataja engine on how to display the constituent and what is editable
 
-    # short_name should match with the class we inherited, so that the plugin
-    # knows that all "BC":s should be replaced with this version.
-    short_name = "BC"
-
     # 'viewable' names the fields that should be visible in graphical representation of this kind of
     #  element. Syntax for defining viewable and editable fields can be found in ...
     viewable = BaseConstituent.viewable.copy()
@@ -25,7 +21,7 @@ class HiConstituent(BaseConstituent):
         """
          """
         super().__init__(**kw)
-        self.hi = 'hi'
+        self.hi = 'hello'
 
     def __repr__(self):
         if self.is_leaf():

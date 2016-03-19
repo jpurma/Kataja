@@ -35,7 +35,7 @@ qt_mac = '~/Qt/5.5/clang_64/'
 
 DATA_FILES = ['resources']
 
-SIGNED_FILES = []  # + frameworks + plugins
+SIGNED_FILES = []  # + frameworks + qt_plugins
 FINALLY_SIGN = ['Kataja.app/Contents/Frameworks/Python.framework',
                 'Kataja.app/Contents/MacOS/python',
                 'Kataja.app/Contents/MacOS/kataja',
@@ -183,12 +183,12 @@ if sys.platform == 'darwin':
             print('Deleting path... ', path)
             shutil.rmtree(path)
 
-    plugins = ['platforms/libqcocoa.dylib', 'imageformats/libqgif.dylib',
+    qt_plugins = ['platforms/libqcocoa.dylib', 'imageformats/libqgif.dylib',
                'mediaservice/libqavfcamera.dylib']
     qt_frameworks = qt_base + 'lib/%s.framework/Versions/5/%s'
     relative_frameworks = '@executable_path/../Frameworks/%s.framework/Versions/5/%s'
 
-    for path in plugins:
+    for path in qt_plugins:
         SIGNED_FILES.append('Kataja.app/Contents/plugins/' + path)
         parts = path.split('/')
 

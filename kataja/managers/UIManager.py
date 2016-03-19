@@ -25,14 +25,12 @@ from collections import OrderedDict
 
 from PyQt5 import QtCore, QtWidgets
 
-import kataja.actions as action_methods
 import kataja.globals as g
 from kataja.Node import Node
 from kataja.Amoeba import Amoeba
 from kataja.Edge import Edge
 from kataja.KatajaAction import KatajaAction, ShortcutSolver, ButtonShortcutFilter
-from kataja.actions import actions
-from kataja.singletons import ctrl, prefs, qt_prefs
+from kataja.singletons import ctrl, prefs, qt_prefs, classes
 from kataja.ui import drawn_icons
 from kataja.ui.ActivityMarker import ActivityMarker
 from kataja.ui.ControlPoint import ControlPoint
@@ -62,6 +60,11 @@ from kataja.ui.panels.SymbolPanel import SymbolPanel
 from kataja.ui.panels.VisualizationOptionsPanel import VisualizationOptionsPanel
 from kataja.ui.panels.VisualizationPanel import VisualizationPanel
 from kataja.visualizations.available import VISUALIZATIONS, action_key
+
+from kataja.actions import actions_dict
+from kataja.actions.view import change_visualization
+from kataja.actions.window import toggle_panel
+from kataja.actions.file import switch_project
 
 NOTHING = 0
 SELECTING_AREA = 1
@@ -450,7 +453,7 @@ class UIManager:
 
     def create_actions(self):
         """ Build menus and other actions that can be triggered by user based
-        on actions.py"""
+        on actions/ """
 
         main = self.main
 
@@ -462,12 +465,12 @@ class UIManager:
         # eg. additional_actions['visualizations'] = ['vis_1','vis_2',
         # 'vis_3'...]
         additional_actions = {}
-        self.actions = actions
+        self.actions = actions_dict
 
         additional_actions['visualizations'] = []
         for name, vis in VISUALIZATIONS.items():
             key = action_key(name)
-            d = {'command': name, 'method': action_methods.change_visualization,
+            d = {'command': name, 'method': change_visualization,
                  'shortcut': vis.shortcut, 'checkable': True, 'sender_arg': True, 'args': [name],
                  'viewgroup': 'visualizations', 'exclusive': True}
             self.actions[key] = d
@@ -476,7 +479,7 @@ class UIManager:
         additional_actions['panels'] = []
         for panel_key, panel_data in PANELS.items():
             key = 'toggle_panel_%s' % panel_key
-            d = {'command': panel_data['name'], 'method': action_methods.toggle_panel,
+            d = {'command': panel_data['name'], 'method': toggle_panel,
                  'checkable': True, 'viewgroup': 'Panels', 'args': [panel_key], 'action_arg': True,
                  'undoable': False, 'exclusive': False, 'tooltip': "Close this panel"}
             self.actions[key] = d
@@ -558,7 +561,7 @@ class UIManager:
             self._top_menus[key] = menu
 
     def update_projects_menu(self, projects, current_project):
-        d = {'command': '', 'method': action_methods.switch_project,
+        d = {'command': '', 'method': switch_project,
              'checkable': True, 'args': [],
              'exclusive': True, 'undoable': False}
 
