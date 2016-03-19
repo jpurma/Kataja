@@ -128,7 +128,7 @@ class ForestKeeper(BaseModel):
             treelist = []
 
         # Clear this screen before we start creating a mess
-        ctrl.undo_disabled += 1 # disable tracking of changes (e.g. undo)
+        ctrl.disable_undo() # disable tracking of changes (e.g. undo)
         if self.forest:
             self.forest.retire_from_drawing()
         self.forests = []
@@ -193,7 +193,7 @@ class ForestKeeper(BaseModel):
         self.current_index = 0
         self.forest = self.forests[0]
         # allow change tracking (undo) again
-        ctrl.undo_disabled -= 1
+        ctrl.resume_undo()
 
     # ############## #
     #                #

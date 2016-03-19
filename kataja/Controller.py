@@ -386,3 +386,10 @@ class Controller:
                 watcher.watch_alerted(obj, signal, field_name, value)
                 # if not watchers:
                 #    print('no watcher found for signal "%s"' % signal)
+
+    def disable_undo(self):
+        self.undo_disabled += 1
+
+    def resume_undo(self):
+        if self.undo_disabled:
+            self.undo_disabled -= 1

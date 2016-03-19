@@ -127,9 +127,9 @@ Text files containing bracket trees (*.txt, *.tex)"""
     f.close()
     # prefs.update(data['preferences'].__dict__)
     # qt_prefs.update(prefs)
-    ctrl.undo_disabled += 1
+    ctrl.disable_undo()
     m.load_objects(data, m)
-    ctrl.undo_disabled -= 1
+    ctrl.resume_undo()
     m.change_forest()
     ctrl.add_message("Loaded '%s'." % filename)
 

@@ -77,7 +77,7 @@ class Preferences(object):
     """
     # Prefs are not saved in save command, but changes here are undoable,
     # so this must support the save protocol.
-    not_saved = ['plugins']
+    not_saved = []
 
     def __init__(self, running_environment):
         self.save_key = 'preferences'
@@ -326,6 +326,7 @@ class Preferences(object):
         def recursive_write(settings, k, v):
             k = str(k)
             if isinstance(v, dict):
+                print(k, v)
                 settings.beginGroup(k)
                 for kk, vv in v.items():
                     recursive_write(settings, str(kk), vv)
@@ -347,35 +348,69 @@ class Preferences(object):
 
     def load_preferences(self):
 
-        def recursive_load(settings, k, dv, d=None):
-            if isinstance(dv, dict):
-                settings.beginGroup(k)
-                nd = getattr(self, k)
-                for kk in settings.childKeys():
-                    recursive_load(settings, kk, None, nd)
-                if d:
-                    d[k] = nd
-                else:
-                    setattr(self, k, nd)
+        def recursive_load(settings, pref_field, default):
+            if isinstance(default, dict):
+                settings.beginGroup(pref_field)
+                value_dict = getattr(self, pref_field)
+                for plist_key in settings.childKeys():
+                    if plist_key.isdigit():
+                        dict_key = int(plist_key)
+                    else:
+                        dict_key = plist_key
+                    load_value_to_dict(settings, plist_key, dict_key, value_dict)
+                for plist_key in settings.childGroups():
+                    if plist_key.isdigit():
+                        dict_key = int(plist_key)
+                    else:
+                        dict_key = plist_key
+                    load_dict_to_dict(settings, plist_key, dict_key, value_dict)
                 settings.endGroup()
-                return
-            value = settings.value(k, dv)
-            if isinstance(dv, float):
-                value = float(value)
-            elif isinstance(dv, bool):
-                value = bool(value)
-            elif isinstance(dv, int):
-                value = int(value)
-            if d:
-                d[k] = value
+                value = value_dict
+            elif isinstance(default, float):
+                value = float(settings.value(pref_field, default))
+            elif isinstance(default, bool):
+                value = bool(settings.value(pref_field, default))
+            elif isinstance(default, int):
+                value = int(settings.value(pref_field, default))
             else:
-                setattr(self, k, value)
+                value = settings.value(pref_field, default)
+            setattr(self, pref_field, value)
+
+        def load_value_to_dict(settings, plist_key, dict_key, value_dict):
+            default = value_dict.get(dict_key)
+            if isinstance(default, float):
+                value = float(settings.value(plist_key, default))
+            elif isinstance(default, bool):
+                value = bool(settings.value(plist_key, default))
+            elif isinstance(default, int):
+                value = int(settings.value(plist_key, default))
+            else:
+                value = settings.value(plist_key, default)
+            value_dict[dict_key] = value
+
+        def load_dict_to_dict(settings, plist_key, dict_key, value_dict):
+            new_dict = value_dict.get(dict_key, {})
+            settings.beginGroup(plist_key)
+            for iplist_key in settings.childKeys():
+                if iplist_key.isdigit():
+                    idict_key = int(iplist_key)
+                else:
+                    idict_key = iplist_key
+                load_value_to_dict(settings, iplist_key, idict_key, new_dict)
+            for iplist_key in settings.childGroups():
+                if iplist_key.isdigit():
+                    idict_key = int(iplist_key)
+                else:
+                    idict_key = iplist_key
+                load_dict_to_dict(settings, iplist_key, idict_key, new_dict)
+            settings.endGroup()
+            value_dict[dict_key] = new_dict
 
         if disable_saving_preferences:
             return
 
         settings = QtCore.QSettings()
-        for key, default_value in vars(self).items():
+        for key, default_value in list(vars(self).items()):
             if key.startswith('_') or key in Preferences.not_saved:
                 continue
             recursive_load(settings, key, default_value)

@@ -22,8 +22,8 @@ class PluginSelector(QtWidgets.QWidget):
         layout.addStretch(10)
         hlayout = QtWidgets.QHBoxLayout()
         self.plugin_path = QtWidgets.QLabel('Plugin path: %s' % (prefs.plugins_path or
-                                       running_environment.plugins_path),
-                                       self)
+                                            running_environment.plugins_path),
+                                            self)
         self.plugin_path.setMaximumWidth(self.preferred_width - 80)
         self.plugin_path.setWordWrap(True)
         self.plugin_path.setMinimumHeight(self.plugin_path.sizeHint().height() + 20)
@@ -90,10 +90,6 @@ class PluginSelector(QtWidgets.QWidget):
             enabled.plugin_key = key
             ctrl.ui.connect_element_to_action(enabled, 'toggle_plugin')
             vlayout.addWidget(enabled)
-            reapply = QtWidgets.QPushButton('refresh')
-            reapply.setMaximumWidth(48)
-            reapply.setEnabled(activated)
-            vlayout.addWidget(reapply)
             hlayout.addLayout(vlayout)
             plugin_frame.setLayout(hlayout)
             height_sum += plugin_frame.sizeHint().height()
@@ -103,7 +99,9 @@ class PluginSelector(QtWidgets.QWidget):
 
     def open_plugin_path_dialog(self):
         dialog = QtWidgets.QFileDialog(self.parentWidget())
-        dialog.setFileMode(QtWidgets.QFileDialog.DirectoryOnly)
+        dialog.setFileMode(QtWidgets.QFileDialog.Directory)
+        dialog.setOption(QtWidgets.QFileDialog.ShowDirsOnly, True)
+        dialog.setDirectory(prefs.plugins_path or running_environment.plugins_path)
         if dialog.exec_():
             files = dialog.selectedFiles()
             if files:

@@ -199,7 +199,7 @@ class KatajaAction(QtWidgets.QAction):
             kwargs['action'] = self
         # Disable undo if necessary
         if not self.undoable:
-            ctrl.undo_disabled += 1
+            ctrl.disable_undo()
 
         # Call method
         try:
@@ -212,7 +212,7 @@ class KatajaAction(QtWidgets.QAction):
             traceback.print_exc()
         # Restore undo state to what it was
         if not self.undoable:
-            ctrl.undo_disabled -= 1
+            ctrl.resume_undo()
         if self.disable_undo_and_message:
             ctrl.main.action_finished(undoable=False)
         else:
@@ -220,11 +220,11 @@ class KatajaAction(QtWidgets.QAction):
                                       undoable=self.undoable and not ctrl.undo_disabled)
 
     def trigger_but_suppress_undo(self, *args, **kwargs):
-        ctrl.undo_disabled += 1
+        ctrl.disable_undo()
         self.disable_undo_and_message = True
         self.action_triggered(*args, **kwargs)
         self.disable_undo_and_message = False
-        ctrl.undo_disabled -= 1
+        ctrl.resume_undo()
 
 
     def connect_element(self, element, tooltip_suffix=''):

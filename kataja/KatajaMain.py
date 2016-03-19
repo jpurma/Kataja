@@ -191,23 +191,26 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
 
         """
         all_data = self.create_save_data()
-        plugin_data = self.available_plugins[plugin_key]
         setup = self.load_plugin(plugin_key)
         if not setup:
             return
         self.clear_all()
-        ctrl.undo_disabled += 1
+        ctrl.disable_undo()
         if hasattr(setup, 'start_plugin'):
             setup.start_plugin(self, ctrl, prefs)
         if hasattr(setup, 'plugin_parts'):
             for classobj in setup.plugin_parts:
-                if hasattr(classobj, 'short_name'):
-                    key = classobj.short_name
-                    print('replacing %s (%s) with %s ' % (classes.get(key), key, classobj))
-                    classes.add_class(classobj.short_name, classobj)
-            print('installed plugin "%s"' % plugin_data['name'])
+                key = getattr(classobj, 'short_name', None)
+                if key:
+                    if key in classes.classes:
+                        m = "replacing %s with %s " % (classes.classes[key].__name__,
+                                                       classobj.__name__)
+                    else:
+                        m = "adding %s " % classobj.__name__
+                    classes.add_class(key, classobj)
+                    self.add_message(m)
         self.load_objects(all_data, self)
-        ctrl.undo_disabled -= 1
+        ctrl.resume_undo()
         self.change_forest()
 
     def disable_plugin(self, plugin_key):
@@ -218,29 +221,26 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         setup = self.load_plugin(plugin_key)
         if not setup:
             return
-        ctrl.undo_disabled += 1
+        ctrl.disable_undo()
         if hasattr(setup, 'tear_down_plugin'):
             setup.tear_down_plugin(self, ctrl, prefs)
         self.clear_all()
         if hasattr(setup, 'plugin_parts'):
             for classobj in setup.plugin_parts:
-                if hasattr(classobj, 'short_name'):
-                    key = classobj.short_name
-                    print('restoring %s (%s) ' % (classobj, key))
+                key = getattr(classobj, 'short_name', None)
+                if key:
+                    self.add_message('removing %s' % classobj.__name__)
                     classes.remove_class(key)
         self.load_objects(all_data, self)
-        ctrl.undo_disabled -= 1
+        ctrl.resume_undo()
         self.change_forest()
 
     def load_plugin(self, plugin_module):
         if plugin_module in self.available_plugins:
             retry = True
-            plugin_data = self.available_plugins[plugin_module]
             while retry:
                 try:
                     setup = importlib.import_module(plugin_module + ".setup")
-                    if hasattr(setup, 'start_plugin'):
-                        setup.start_plugin(self, ctrl, prefs)
                     retry = False
                 except:
                     e = sys.exc_info()
@@ -256,6 +256,7 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         """ If there are plugins defined in preferences to be used, activate them now.
         :return: None
         """
+        print(prefs.active_plugins)
         for plugin_module in prefs.active_plugins.keys():
             plugin_data = self.available_plugins[plugin_module]
             setup = self.load_plugin(plugin_module)
@@ -283,7 +284,6 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
     def load_initial_treeset(self):
         """ Loads and initializes a new set of trees. Has to be done before
         the program can do anything sane.
-        :param treeset_list:
         """
         if DEBUG_TREESET:
             filename = running_environment.resources_path + DEBUG_TREESET
@@ -324,12 +324,12 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         """ Tells the scene to remove current trees and related data and
         change it to a new one
         """
-        ctrl.undo_disabled += 1
+        ctrl.disable_undo()
         if self.forest:
             self.forest.retire_from_drawing()
         self.forest = self.forest_keeper.forest
         self.forest.prepare_for_drawing()
-        ctrl.undo_disabled -= 1
+        ctrl.resume_undo()
 
     def redraw(self):
         """ Call for forest redraw
@@ -424,16 +424,6 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         if mode != prefs.color_mode or force:
             prefs.color_mode = mode
             self.forest.update_colors()
-
-    def toggle_magnets(self):
-        """ Toggle lines to connect to margins or to centre of node (b)
-        """
-        if self.forest.settings.uses_magnets():
-            self.add_message('(c) 0: Lines connect to node margins')
-            self.forest.settings.uses_magnets(False)
-        else:
-            self.add_message('(c) 1: Lines aim to the center of the node')
-            self.forest.settings.uses_magnets(True)
 
     def timerEvent(self, event):
         """ Timer event only for printing, for 'snapshot' effect
@@ -543,78 +533,64 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         self.forest_keepers.append(ForestKeeper())
         self.forest_keeper = self.forest_keepers[-1]
 
-    # ### Action preconditions
-    # ##################################################
 
-    # return True or False: should the related action be enabled or disabled
-
-    # noinspection PyMethodMayBeStatic
-    def can_top_merge(self):
-        """ Check if the selected node can be merged upwards to the root node
-        of its current trees.
-        :return: bool
-        """
-        return ctrl.single_selection() and not ctrl.get_single_selected(
-
-        ).is_top_node()
-
-    # ### Unused two-phase actions
-    # ###############################################
-
-    def start_pointing_mode(self, event, method=None, data=None):
-        """ Begin pointing mode, mouse pointer draws a line behind it and
-        normal actions are disabled
-        :param event:
-        :param method:
-        :param data:
-        """
-        if not data:
-            data = {}
-        ctrl.pointing_mode = True
-        ctrl.pointing_method = method
-        ctrl.pointing_data = data
-        self.ui_manager.begin_stretchline(data['start'].pos(),
-                                          event.scenePos())  # +data[
-                                          # 'startposF']
-        self.app.setOverrideCursor(QtCore.Qt.CrossCursor)
-        self.graph.setDragMode(QtWidgets.QGraphicsView.NoDrag)
-
-    # noinspection PyUnusedLocal
-    def end_pointing_mode(self, event):
-        """ End pointing mode and return to normal
-        :param event:
-        """
-        ctrl.pointing_mode = False
-        ctrl.pointing_data = {}
-        self.ui_manager.end_stretchline()
-        self.app.restoreOverrideCursor()
-        self.graph.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
-
-    def begin_merge_to(self, event):
-        """ MergeTo is a two phase action. First the target is selected in
-        pointing mode, then 'end_merge_to' is called
-        :param event:
-        """
-        self.start_pointing_mode(event, method=self.end_merge_to,
-                                 data={'start': ctrl.get_single_selected()})
-        return False
-
-    def end_merge_to(self, event):
-        """
-        Merging a node -activity ends.
-        :param event: mouse-event that triggered the end.
-        :return:
-        """
-        node_a = ctrl.pointing_data['target']
-        node_b = None
-        self.forest.merge_nodes(node_a, node_b)
-        node_a.release()
-        # node_A.state =SELECTED # deselect doesn't have effect unless node
-        # is selected
-        self.end_pointing_mode(event)
-        self.action_finished()
-        return True
-
+    # # ### Unused two-phase actions
+    # # ###############################################
+    #
+    # def start_pointing_mode(self, event, method=None, data=None):
+    #     """ Begin pointing mode, mouse pointer draws a line behind it and
+    #     normal actions are disabled
+    #     :param event:
+    #     :param method:
+    #     :param data:
+    #     """
+    #     if not data:
+    #         data = {}
+    #     ctrl.pointing_mode = True
+    #     ctrl.pointing_method = method
+    #     ctrl.pointing_data = data
+    #     self.ui_manager.begin_stretchline(data['start'].pos(),
+    #                                       event.scenePos())  # +data[
+    #                                       # 'startposF']
+    #     self.app.setOverrideCursor(QtCore.Qt.CrossCursor)
+    #     self.graph.setDragMode(QtWidgets.QGraphicsView.NoDrag)
+    #
+    # # noinspection PyUnusedLocal
+    # def end_pointing_mode(self, event):
+    #     """ End pointing mode and return to normal
+    #     :param event:
+    #     """
+    #     ctrl.pointing_mode = False
+    #     ctrl.pointing_data = {}
+    #     self.ui_manager.end_stretchline()
+    #     self.app.restoreOverrideCursor()
+    #     self.graph.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
+    #
+    # def begin_merge_to(self, event):
+    #     """ MergeTo is a two phase action. First the target is selected in
+    #     pointing mode, then 'end_merge_to' is called
+    #     :param event:
+    #     """
+    #     self.start_pointing_mode(event, method=self.end_merge_to,
+    #                              data={'start': ctrl.get_single_selected()})
+    #     return False
+    #
+    # def end_merge_to(self, event):
+    #     """
+    #     Merging a node -activity ends.
+    #     :param event: mouse-event that triggered the end.
+    #     :return:
+    #     """
+    #     node_a = ctrl.pointing_data['target']
+    #     node_b = None
+    #     self.forest.merge_nodes(node_a, node_b)
+    #     node_a.release()
+    #     # node_A.state =SELECTED # deselect doesn't have effect unless node
+    #     # is selected
+    #     self.end_pointing_mode(event)
+    #     self.action_finished()
+    #     return True
+    #
     # ### Other window events
     # ###################################################
 
@@ -662,10 +638,6 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         # print(savedata)
         return savedata
 
-        # f = open('kataja_default.cfg', 'w')
-        # json.dump(prefs.__dict__, f, indent = 1)
-        # f.close()
-
     # ############## #
     #                #
     #  Save support  #
@@ -674,31 +646,3 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
 
     forest_keeper = Saved("forest_keeper")
     forest = Saved("forest")
-
-# def maybeSave(self):
-# if False and self.scribbleArea.isModified():
-# ret  = QtGui.QMessageBox.warning(self, self.tr("Scribble"),
-# self.tr("The image has been modified.\n"
-# "Do you want to save your changes?"),
-# QtGui.QMessageBox.Yes | QtGui.QMessageBox.Default,
-# QtGui.QMessageBox.No,
-# QtGui.QMessageBox.Cancel | QtGui.QMessageBox.Escape)
-# if ret  == QtGui.QMessageBox.Yes:
-# return True # self.saveFile("png")
-# elif ret  == QtGui.QMessageBox.Cancel:
-# return False
-#
-# return True
-#
-# def saveFile(self, fileFormat):
-# initialPath  = QtCore.QDir.currentPath() + "/untitled." + fileFormat
-#
-# fileName  = QtGui.QFileDialog.getSaveFileName(self, self.tr("Save As"),
-# initialPath,
-# self.tr("%1 Files (*.%2);;All Files (*)")
-# .arg(QtCore.QString(fileFormat.toUpper()))
-# .arg(QtCore.QString(fileFormat)))
-# if fileName.isEmpty():
-# return False
-# else:
-# return self.scribbleArea.saveImage(fileName, fileFormat)

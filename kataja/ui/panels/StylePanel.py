@@ -138,13 +138,10 @@ class StylePanel(UIPanel):
 
     def receive_font_from_selector(self, font):
         font_key = self.cached_font_id
-        print('received font from selector, font_id: ', font_key, self.cached_font_id)
-        print(self.font_selector.currentData(), self.font_selector.currentIndex())
         ctrl.ui.create_or_set_font(font_key, font)
         ctrl.main.trigger_action('select_font')
 
     def update_font_selector(self, font_id):
-        print('update font selector called w. font_id ', font_id)
         self.cached_font_id = font_id
         if not self.font_selector.find_item(font_id):
             self.font_selector.add_font(font_id, qt_prefs.fonts[font_id])

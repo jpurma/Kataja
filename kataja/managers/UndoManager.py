@@ -91,7 +91,7 @@ class UndoManager:
         if self._current == 0:
             ctrl.add_message('undo [%s]: Cannot undo further' % self._current)
             return
-        ctrl.undo_disabled += 1
+        ctrl.disable_undo()
         ctrl.multiselection_start()
         msg, snapshot = self._stack[self._current]
         for obj, transitions, transition_type in snapshot.values():
@@ -113,7 +113,7 @@ class UndoManager:
         ctrl.forest.flush_and_rebuild_temporary_items()
         ctrl.add_message('undo [%s]: %s' % (self._current, msg))
         ctrl.multiselection_end()
-        ctrl.undo_disabled -= 1
+        ctrl.resume_undo()
         self._current -= 1
         print('undo done: ', self._current)
 
@@ -126,7 +126,7 @@ class UndoManager:
         else:
             ctrl.add_message('redo [%s]: In last action' % self._current)
             return
-        ctrl.undo_disabled += 1
+        ctrl.disable_undo()
         ctrl.multiselection_start()
         msg, snapshot = self._stack[self._current]
         print('redo: ', msg, self._current)
@@ -142,7 +142,7 @@ class UndoManager:
             obj.after_model_update(transitions.keys(), transition_type)
         ctrl.add_message('redo [%s]: %s' % (self._current, msg))
         ctrl.multiselection_end()
-        ctrl.undo_disabled -= 1
+        ctrl.resume_undo()
         print('redo done: ', self._current)
 
 
