@@ -13,6 +13,8 @@ points = 36
 
 class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
 
+    short_name = 'Group'
+
     def __init__(self, selection=None, persistent=True):
         BaseModel.__init__(self)
         QtWidgets.QGraphicsObject.__init__(self)

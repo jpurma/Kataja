@@ -37,7 +37,7 @@ class BaseConstituent(IConstituent):
     It is a primary datatype, needs to support saving and loading. """
 
     # info for kataja engine
-    short_name = "BC"
+    short_name = "C"
     viewable = {'label': {'order': 10}}
     editable = {'label': {'order': 10}}
     addable = {'features': {'check_before': 'can_add_feature', 'add': 'add_feature', 'order': 20}

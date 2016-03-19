@@ -844,7 +844,6 @@ class Forest(BaseModel):
             n = self.get_node(synobj)
             if n:
                 return n
-
         node_class = classes.nodes.get(node_type)
         # Create corresponding syntactic object if necessary
         if not synobj:

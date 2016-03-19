@@ -105,7 +105,7 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         prefs.load_preferences()
         qt_prefs.late_init(running_environment, prefs, self.fontdb)
         self.find_plugins(prefs.plugins_path or running_environment.plugins_path)
-        self.install_plugins()
+        plugin_messages = self.install_plugins()
         self.setWindowIcon(qt_prefs.kataja_icon)
         self.app.setFont(qt_prefs.font(g.UI_FONT))
         self.graph_scene = GraphScene(main=self, graph_view=None)
@@ -113,6 +113,7 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         self.graph_scene.graph_view = self.graph_view
         self.ui_manager = UIManager(self)
         self.ui_manager.populate_ui_elements()
+        self.add_message(plugin_messages)
         self.forest_keepers = [ForestKeeper()]
         self.forest_keeper = self.forest_keepers[0]
         kataja_app.setPalette(self.color_manager.get_qt_palette())
@@ -256,18 +257,22 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         """ If there are plugins defined in preferences to be used, activate them now.
         :return: None
         """
-        print(prefs.active_plugins)
+        messages = []
         for plugin_module in prefs.active_plugins.keys():
-            plugin_data = self.available_plugins[plugin_module]
+            messages.append('Installing plugin %s...' % plugin_module)
             setup = self.load_plugin(plugin_module)
             if setup and hasattr(setup, 'plugin_parts'):
                 for classobj in setup.plugin_parts:
-                    if hasattr(classobj, 'short_name'):
-                        key = classobj.short_name
-                        print('replacing %s (%s) with %s ' % (classes.get(key), key,
-                                                              classobj))
-                        classes.add_class(classobj.short_name, classobj)
-                print('installed plugin "%s"' % plugin_data['name'])
+                    key = getattr(classobj, 'short_name', None)
+                    if key:
+                        if key in classes.classes:
+                            messages.append("replacing %s with %s " % (
+                                            classes.classes[key].__name__, classobj.__name__))
+                        else:
+                            messages.append("adding %s " % classobj.__name__)
+                        classes.add_class(key, classobj)
+        return '\n'.join(messages)
+
 
     def reset_preferences(self):
         """

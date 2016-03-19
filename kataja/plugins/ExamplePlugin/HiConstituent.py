@@ -17,10 +17,9 @@ class HiConstituent(BaseConstituent):
     editable = BaseConstituent.editable.copy()
     editable['hi'] = {'order': 15}
 
-    def __init__(self, **kw):
-        """
-         """
-        super().__init__(**kw)
+    def __init__(self, *args, **kwargs):
+        """ """
+        super().__init__(*args, **kwargs)
         self.hi = 'hello'
 
     def __repr__(self):

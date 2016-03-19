@@ -326,7 +326,6 @@ class Preferences(object):
         def recursive_write(settings, k, v):
             k = str(k)
             if isinstance(v, dict):
-                print(k, v)
                 settings.beginGroup(k)
                 for kk, vv in v.items():
                     recursive_write(settings, str(kk), vv)
@@ -390,6 +389,8 @@ class Preferences(object):
 
         def load_dict_to_dict(settings, plist_key, dict_key, value_dict):
             new_dict = value_dict.get(dict_key, {})
+            if new_dict is None: # If there are borked preferences, let them be ignored
+                return
             settings.beginGroup(plist_key)
             for iplist_key in settings.childKeys():
                 if iplist_key.isdigit():

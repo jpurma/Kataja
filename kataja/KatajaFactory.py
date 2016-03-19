@@ -11,12 +11,10 @@ class KatajaFactory:
         self.default_models = {}
         self.default_edge_class = None
         self.default_node_classes = {}
-        self.default_synobj_classes = {}
 
         self.classes = {}
         self.nodes = {}
         self.edge_class = None
-        self.synobj_classes = {}
 
     def late_init(self):
         """ Import and set available all of the default classes """
@@ -44,7 +42,8 @@ class KatajaFactory:
         self.default_models = {ConstituentNode, BaseConstituentNode, AttributeNode, FeatureNode,
                                GlossNode, PropertyNode, CommentNode, Edge, Forest, DerivationStep,
                                DerivationStepManager, ForestSettings, ForestRules,
-                               ConfigurableConstituent, BaseConstituent, BaseFeature, Tree, Amoeba}
+                               ConfigurableConstituent, BaseFeature, Tree,
+                               Amoeba, FL}
 
         self.default_node_classes = {g.CONSTITUENT_NODE: ConstituentNode, g.ABSTRACT_NODE: Node,
                                      g.FEATURE_NODE: FeatureNode, g.GLOSS_NODE: GlossNode,
@@ -53,39 +52,33 @@ class KatajaFactory:
 
         self.default_edge_class = Edge
 
-        self.default_synobj_classes = {'FL': FL, 'constituent': ConfigurableConstituent, 'feature':
-            BaseFeature}
-
         self.classes = {}
         for class_object in self.default_models:
             self.classes[class_object.short_name] = class_object
         self.nodes = self.default_node_classes.copy()
         self.edge_class = self.default_edge_class
-        self.synobj_classes = self.default_synobj_classes
 
     @property
     def Constituent(self):
-        return self.synobj_classes['constituent']
+        return self.classes['C']
 
     @property
     def Feature(self):
-        return self.synobj_classes['feature']
+        return self.classes['F']
 
     @property
     def FL(self):
-        return self.synobj_classes['FL']
+        return self.classes['FL']
 
     def add_class(self, key, class_object):
         """ Add or replace class with given key """
         self.classes[key] = class_object
-
 
     def restore_default_classes(self):
         """ Restore all classes to their default implementation """
         self.classes = self.default_models.copy()
         self.nodes = self.default_node_classes.copy()
         self.edge_class = self.default_edge_class
-        self.synobj_classes = self.default_synobj_classes
 
     def get(self, key):
         return self.classes[key]
@@ -99,7 +92,7 @@ class KatajaFactory:
                 self.classes[key] = class_object
                 break
         if key in self.classes and not found:
-            del self.classes['key']
+            del self.classes[key]
 
     def create(self, object_class_name, *args, **kwargs):
         """ Create empty kataja object stubs, to be loaded with correct values.
