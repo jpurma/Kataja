@@ -153,10 +153,18 @@ class GraphView(QtWidgets.QGraphicsView):
         delta = math.pow(2.0, -event.angleDelta().y() / 360.0)
         if delta != 1.0:
             self.zoom_timer.start(1000, self)
-            #print('zoom timer started: ', self.zoom_timer.timerId())
             self._scale_factor = self.scale_view_by(delta)
             if prefs.zoom_to_center:
-                self.centerOn(view_center)
+                if ctrl.selected:
+                    if ctrl.single_selection():
+                        self.centerOn(ctrl.selected[0].sceneBoundingRect().center())
+                    else:
+                        br = QtCore.QRectF()
+                        for item in ctrl.selected:
+                            br = br.united(item.sceneBoundingRect())
+                        self.centerOn(br.center())
+                else:
+                    self.centerOn(view_center)
             elif delta > 1:
                 change = (pointer_pos - view_center) * (delta - 1) #* 0.5
                 self.centerOn(view_center + change)

@@ -110,7 +110,7 @@ crashed
 + First node in new forest is not displayed properly
 + Drawn icons are wrong size.
 + Zoom should always aim to center of the screen, not be based on pointer position
-    - No, zoom should center to selected if there is such item.
+    + No, zoom should center to selected if there is such item.
 + Panels are in random order in menu
 + Node panel icons don't change their color
 - Load & save default locations are app resources -folder.
