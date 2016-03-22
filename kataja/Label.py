@@ -77,7 +77,7 @@ class Label(QtWidgets.QGraphicsTextItem):
         self._last_blockpos = ()
         self.doc = LabelDocument()
 
-        self.focuskeeper = FocusKeeper(self)
+        #self.focuskeeper = FocusKeeper(self)
         #self.installEventFilter(self.focuskeeper)
         self.setDocument(self.doc)
         # not acceptin hover events is important, editing focus gets lost if other labels take
@@ -158,7 +158,7 @@ class Label(QtWidgets.QGraphicsTextItem):
         if self._quick_editing and not self._recursion_block:
             self._recursion_block = True
             self.prepareGeometryChange()
-            self.doc.interpret_changes(self._host.as_inode())
+            lines = self.doc.interpret_changes(self._host.as_inode())
             w = self.width
             self.setTextWidth(self.doc.idealWidth())
             self.resize_label()

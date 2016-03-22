@@ -15,5 +15,7 @@ class LabelDocument(QtGui.QTextDocument):
         QtGui.QTextDocument.clear(self)
         self.clearUndoRedoStacks()
 
-    def interpret_changes(self, inode):
-        pass
+    def interpret_changes(self, old_inode):
+        print('old_inode: ', old_inode, ' lines: ', self.lines, 'lineCount:', self.lineCount())
+        print(self.isModified())
+        return self.lines

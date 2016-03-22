@@ -24,6 +24,8 @@
 
 import random
 import json
+import operator
+import math
 from collections import OrderedDict
 
 from PyQt5.QtGui import QColor as c
@@ -170,6 +172,243 @@ def in_range(h, s, v):
     return h, s, v
 
 
+# HUSL colors and the code for creating them is from here:
+# https://github.com/husl-colors/husl-python
+# License for this portion of code:
+# Copyright (c) 2015 Alexei Boronine
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+m = [
+    [3.240969941904521, -1.537383177570093, -0.498610760293],
+    [-0.96924363628087, 1.87596750150772, 0.041555057407175],
+    [0.055630079696993, -0.20397695888897, 1.056971514242878],
+]
+m_inv = [
+    [0.41239079926595, 0.35758433938387, 0.18048078840183],
+    [0.21263900587151, 0.71516867876775, 0.072192315360733],
+    [0.019330818715591, 0.11919477979462, 0.95053215224966],
+]
+refX = 0.95045592705167
+refY = 1.0
+refZ = 1.089057750759878
+refU = 0.19783000664283
+refV = 0.46831999493879
+kappa = 903.2962962
+epsilon = 0.0088564516
+
+
+# Public API
+
+def husl_to_rgb(h, s, l):
+    return lch_to_rgb(*husl_to_lch([h, s, l]))
+
+
+def rgb_to_husl(r, g, b):
+    return lch_to_husl(rgb_to_lch(r, g, b))
+
+
+def lch_to_rgb(l, c, h):
+    return xyz_to_rgb(luv_to_xyz(lch_to_luv([l, c, h])))
+
+
+def rgb_to_lch(r, g, b):
+    return luv_to_lch(xyz_to_luv(rgb_to_xyz([r, g, b])))
+
+
+def get_bounds(L):
+    sub1 = ((L + 16.0) ** 3.0) / 1560896.0
+    sub2 = sub1 if sub1 > epsilon else L / kappa
+    ret = []
+    for [m1, m2, m3] in m:
+        for t in [0, 1]:
+            top1 = (284517.0 * m1 - 94839.0 * m3) * sub2
+            top2 = (838422.0 * m3 + 769860.0 * m2 + 731718.0 * m1) * L * sub2 - 769860.0 * t * L
+            bottom = (632260.0 * m3 - 126452.0 * m2) * sub2 + 126452.0 * t
+            ret.append((top1 / bottom, top2 / bottom))
+    return ret
+
+
+def intersect_line_line(line1, line2):
+    return (line1[1] - line2[1]) / (line2[0] - line1[0])
+
+
+def length_of_ray_until_intersect(theta, line):
+    m1, b1 = line
+    length = b1 / (math.sin(theta) - m1 * math.cos(theta))
+    if length < 0:
+        return None
+    return length
+
+
+def max_chroma_for_LH(L, H):
+    hrad = H / 360.0 * math.pi * 2.0
+    lengths = []
+    for line in get_bounds(L):
+        l = length_of_ray_until_intersect(hrad, line)
+        if l is not None:
+            lengths.append(l)
+    return min(lengths)
+
+
+def dot_product(a, b):
+    return sum(map(operator.mul, a, b))
+
+
+def f(t):
+    if t > epsilon:
+        return 116 * math.pow((t / refY), 1.0 / 3.0) - 16.0
+    else:
+        return (t / refY) * kappa
+
+
+def f_inv(t):
+    if t > 8:
+        return refY * math.pow((t + 16.0) / 116.0, 3.0)
+    else:
+        return refY * t / kappa
+
+
+def from_linear(c):
+    if c <= 0.0031308:
+        return 12.92 * c
+    else:
+        return (1.055 * math.pow(c, 1.0 / 2.4) - 0.055)
+
+
+def to_linear(c):
+    a = 0.055
+
+    if c > 0.04045:
+        return (math.pow((c + a) / (1.0 + a), 2.4))
+    else:
+        return (c / 12.92)
+
+
+def xyz_to_rgb(triple):
+    xyz = map(lambda row: dot_product(row, triple), m)
+    return list(map(from_linear, xyz))
+
+
+def rgb_to_xyz(triple):
+    rgbl = list(map(to_linear, triple))
+    return list(map(lambda row: dot_product(row, rgbl), m_inv))
+
+
+def xyz_to_luv(triple):
+    X, Y, Z = triple
+
+    if X == Y == Z == 0.0:
+        return [0.0, 0.0, 0.0]
+
+    varU = (4.0 * X) / (X + (15.0 * Y) + (3.0 * Z))
+    varV = (9.0 * Y) / (X + (15.0 * Y) + (3.0 * Z))
+    L = f(Y)
+
+    # Black will create a divide-by-zero error
+    if L == 0.0:
+        return [0.0, 0.0, 0.0]
+
+    U = 13.0 * L * (varU - refU)
+    V = 13.0 * L * (varV - refV)
+
+    return [L, U, V]
+
+
+def luv_to_xyz(triple):
+    L, U, V = triple
+
+    if L == 0:
+        return [0.0, 0.0, 0.0]
+
+    varY = f_inv(L)
+    varU = U / (13.0 * L) + refU
+    varV = V / (13.0 * L) + refV
+    Y = varY * refY
+    X = 0.0 - (9.0 * Y * varU) / ((varU - 4.0) * varV - varU * varV)
+    Z = (9.0 * Y - (15.0 * varV * Y) - (varV * X)) / (3.0 * varV)
+
+    return [X, Y, Z]
+
+
+def luv_to_lch(triple):
+    L, U, V = triple
+
+    C = (math.pow(math.pow(U, 2) + math.pow(V, 2), (1.0 / 2.0)))
+    hrad = (math.atan2(V, U))
+    H = math.degrees(hrad)
+    if H < 0.0:
+        H = 360.0 + H
+
+    return [L, C, H]
+
+
+def lch_to_luv(triple):
+    L, C, H = triple
+
+    Hrad = math.radians(H)
+    U = (math.cos(Hrad) * C)
+    V = (math.sin(Hrad) * C)
+
+    return [L, U, V]
+
+
+def husl_to_lch(triple):
+    H, S, L = triple
+
+    if L > 99.9999999:
+        return [100, 0.0, H]
+    if L < 0.00000001:
+        return [0.0, 0.0, H]
+
+    mx = max_chroma_for_LH(L, H)
+    C = mx / 100.0 * S
+
+    return [L, C, H]
+
+
+def lch_to_husl(triple):
+    L, C, H = triple
+
+    if L > 99.9999999:
+        return [H, 0.0, 100.0]
+    if L < 0.00000001:
+        return [H, 0.0, 0.0]
+
+    mx = max_chroma_for_LH(L, H)
+    S = C / mx * 100.0
+
+    return [H, S, L]
+
+# --- HUSL code ends ---
+
+
+def adjust_lightness(color, amount):
+    r, g, b, a = color.getRgbF()
+    hu, s, l = rgb_to_husl(r, g, b)
+    l += amount
+    c = QColor()
+    r, g, b = husl_to_rgb(hu, s, l)
+    c.setRgbF(min(r, 1), min(g, 1), min(b, 1))
+    return c
+
+
 class PaletteManager:
     """ Selects, creates and gives access to various palettes. The current palette is available in dict d with keys for default names and
         possibility to expand with custom colors. Includes methods for creating new palettes.
@@ -228,8 +467,7 @@ class PaletteManager:
 
     def create_theme_from_color(self, hsv):
         color_key = str(hsv)
-        modes = self.ordered_color_modes
-        if color_key not in modes:
+        if color_key not in self.ordered_color_modes:
             prefs.add_color_mode(color_key, hsv, self)
         return color_key
 
@@ -386,53 +624,48 @@ class PaletteManager:
         self.gradient.setColorAt(0, self.d['background2'])
 
     def compute_palette(self, hsv):
-        """ Create/get root color and build palette around it. 
+        """ Create/get root color and build palette around it.
         :param hsv:
         Leaves custom colors as they are. """
+
         self.hsv = hsv
-        h, s, v = hsv
         # # This is the base color ##
         key = c()
-        h, s, v = in_range(h, s, v)
-        key.setHsvF(h, s, v)
-        light_bg = v < 0.5 or (s > 0.7 and 0.62 < h < 0.95)
+        key.setHsvF(*hsv)
+        r, g, b, a = key.getRgbF()
+        h, s, l = rgb_to_husl(r, g, b)
+        if l > 50:
+            back_l = l - 50
+        else:
+            back_l = l + 50
+        background1 = c()
+        bg_rgb = husl_to_rgb(h, s, back_l)
+        background1.setRgbF(*bg_rgb)
         self.d['content1'] = key
-        content2 = key.lighter(107)
-        content3 = key.darker(107)
+        content2 = adjust_lightness(key, 4)
+        content3 = adjust_lightness(key, -4)
         self.d['content2'] = content2
         self.d['content3'] = content3
-        self.d['accents'] = accents
-        start_index = matching_hue(h, accents)
-        rotated_accents = accents[start_index:] + accents[:start_index]
-        for i, accent in enumerate(rotated_accents):
-            self.d['accent%s' % (i + 1)] = accent
-            tr = c(accent)
+        for i, accent in enumerate(accents):
+            # accent colors have the same luminence as key color
+            adjusted_accent = c(accent)
+            ar, ag, ab, aa = accent.getRgbF()
+            ach, acs, acl = rgb_to_husl(ar, ag, ab)
+            ar, ag, ab = husl_to_rgb(ach, acs, l)
+            adjusted_accent.setRgbF(ar, ag, max(0, ab))
+            self.d['accent%s' % (i + 1)] = adjusted_accent
+            tr = c(adjusted_accent)
             tr.setAlphaF(0.5)
-            tr9 = c(accent)
+            tr9 = c(adjusted_accent)
             tr9.setAlphaF(0.9)
             self.d['accent%str' % (i + 1)] = tr
             self.d['accent%str9' % (i + 1)] = tr9
-        self.d['accents'] = rotated_accents
-
-        background1 = c()
-        hp = h  # -0.1
-        sp = s / 4
-        vp = (1 - v)
-        if light_bg and vp < 0.6:
-            vp += 0.3
-        if abs(v - vp) <= 0.35:
-            if light_bg:
-                vp = limited_add(vp, 0.35)
-            else:
-                vp = limited_add(vp, -0.35)
-        hp, sp, vp = in_range(hp, sp, vp)
-        background1.setHsvF(hp, sp, vp)
         self.d['background1'] = background1
 
-        if vp < 0.7:
-            background2 = background1.darker(107)
+        if l < 0.7:
+            background2 = adjust_lightness(background1, -4)
         else:
-            background2 = background1.lighter(107)
+            background2 = adjust_lightness(background1, 4)
         self.d['background2'] = background2
 
         tr = c(background1)
@@ -445,6 +678,7 @@ class PaletteManager:
         # ## Gradient ###
         self.gradient.setColorAt(1, self.d['background1'])
         self.gradient.setColorAt(0, self.d['background2'])
+
 
     def drawing(self) -> QColor:
         """ Main drawing color for constituent branches
@@ -761,3 +995,5 @@ class PaletteManager:
                               self.broken(p['text']), self.broken(p['bright_text']),
                               p['base'], p['window'])
         return palette
+
+
