@@ -27,18 +27,12 @@ import json
 import operator
 import math
 from collections import OrderedDict
-
 from PyQt5.QtGui import QColor as c
-
 from PyQt5.QtGui import QColor
-
 from PyQt5.QtCore import Qt
 import PyQt5.QtGui as QtGui
 
 from kataja.singletons import ctrl, prefs, running_environment
-
-
-
 
 
 # Solarized colors from http://ethanschoonover.com/solarized  (Ethan Schoonover)
@@ -77,99 +71,6 @@ color_modes = OrderedDict(
      ('bw', {'name': 'Black and white', 'fixed': True, 'hsv': [0, 0, 0]}),
      ('random-light', {'name': 'Random on a light background', 'fixed': False, 'hsv': [0, 0, 0]}),
      ('random-dark', {'name': 'Against a dark background', 'fixed': False, 'hsv': [0, 0, 0]})])
-
-
-def rotating_add(base, added):
-    """ Adds two numbers, but keeps result between (0,1) rotating over
-    :param base:
-    :param added:
-    """
-    result = base + added
-    if result < 0:
-        result += 1
-        # result -= math.ceil(result)
-    elif result > 1:
-        result -= 1
-        # result -= math.floor(result)
-    return result
-
-
-def limited_add(base, added):
-    """ Adds two numbers, but limits result between (0,1) stopping at limits
-    :param base:
-    :param added:
-    """
-    result = base + added
-    if result < 0:
-        return 0
-    if result > 1:
-        return 1
-    return result
-
-
-def colorize(h, s, v):
-    """ checks if color is bright enough to be recognized and adjusts it until it is
-    :param h:
-    :param s:
-    :param v:
-    """
-    ns = s
-    nv = v
-    if ns < 0.3:
-        ns += 0.4
-    if nv < 0.3:
-        nv += 0.4
-    return h, ns, nv
-
-
-def matching_hue(hue, color_list):
-    """
-
-    :param hue:
-    :param color_list:
-    :return:
-    """
-    min_d = 1.0
-    best = 0
-    optimal = 0.39166
-    for i, color in enumerate(color_list):
-        hueF = color.hsvHueF()
-        if hue < optimal:
-            hue += 1
-        d = abs(optimal - (hue - hueF))
-        if d < min_d:
-            min_d = d
-            best = i
-    return best
-
-
-def in_range(h, s, v):
-    """
-
-    :param h:
-    :param s:
-    :param v:
-    :raise:
-    """
-    if h < 0:
-        print("Hue not in range: " + h)
-        h = 0
-    if s < 0:
-        print("Saturation not in range: " + s)
-        s = 0
-    if v < 0:
-        print("Value (lightness) not in range: " + v)
-        v = 0
-    if h > 1:
-        print("Hue not in range: " + h)
-        h = 1
-    if s > 1:
-        print("Saturation not in range: " + s)
-        s = 1
-    if v > 1:
-        print("Value (lightness) not in range: " + v)
-        v = 1
-    return h, s, v
 
 
 # HUSL colors and the code for creating them is from here:
@@ -409,6 +310,11 @@ def adjust_lightness(color, amount):
     return c
 
 
+def shady(color, alpha):
+    c = QColor(color)
+    c.setAlphaF(alpha)
+    return c
+
 class PaletteManager:
     """ Selects, creates and gives access to various palettes. The current palette is available in dict d with keys for default names and
         possibility to expand with custom colors. Includes methods for creating new palettes.
@@ -602,24 +508,14 @@ class PaletteManager:
             self.d['content1'] = sol[4]
             self.d['content2'] = sol[2]
             self.d['content3'] = sol[5]
-        self.d['accents'] = accents
-
         for i, accent in enumerate(accents):
             self.d['accent%s' % (i + 1)] = accent
-            tr = c(accent)
-            tr.setAlphaF(0.5)
-            tr9 = c(accent)
-            tr9.setAlphaF(0.9)
-            self.d['accent%str' % (i + 1)] = tr
-            self.d['accent%str9' % (i + 1)] = tr9
-        self.d['accents'] = accents
-        tr = c(self.d['background1'])
-        tr.setAlphaF(0.7)
-        self.d['background1tr'] = tr
+            self.d['accent%str' % (i + 1)] = shady(accent, 0.5)
+            self.d['accent%str9' % (i + 1)] = shady(accent, 0.9)
+        self.d['background1tr'] = shady(self.d['background1'], 0.7)
         tr = c(self.d['background2'])
         tr.setAlphaF(0.7)
-        self.d['background2tr'] = tr
-
+        self.d['background2tr'] = shady(self.d['background2'], 0.7)
         self.gradient.setColorAt(1, self.d['background1'])
         self.gradient.setColorAt(0, self.d['background2'])
 
@@ -642,10 +538,8 @@ class PaletteManager:
         bg_rgb = husl_to_rgb(h, s, back_l)
         background1.setRgbF(*bg_rgb)
         self.d['content1'] = key
-        content2 = adjust_lightness(key, 4)
-        content3 = adjust_lightness(key, -4)
-        self.d['content2'] = content2
-        self.d['content3'] = content3
+        self.d['content2'] = adjust_lightness(key, 4)
+        self.d['content3'] = adjust_lightness(key, -4)
         for i, accent in enumerate(accents):
             # accent colors have the same luminence as key color
             adjusted_accent = c(accent)
@@ -654,31 +548,19 @@ class PaletteManager:
             ar, ag, ab = husl_to_rgb(ach, acs, l)
             adjusted_accent.setRgbF(ar, ag, max(0, ab))
             self.d['accent%s' % (i + 1)] = adjusted_accent
-            tr = c(adjusted_accent)
-            tr.setAlphaF(0.5)
-            tr9 = c(adjusted_accent)
-            tr9.setAlphaF(0.9)
-            self.d['accent%str' % (i + 1)] = tr
-            self.d['accent%str9' % (i + 1)] = tr9
+            self.d['accent%str' % (i + 1)] = shady(adjusted_accent, 0.5)
+            self.d['accent%str9' % (i + 1)] = shady(adjusted_accent, 0.9)
         self.d['background1'] = background1
-
         if l < 0.7:
             background2 = adjust_lightness(background1, -4)
         else:
             background2 = adjust_lightness(background1, 4)
         self.d['background2'] = background2
-
-        tr = c(background1)
-        tr.setAlphaF(0.7)
-        self.d['background1tr'] = tr
-        tr = c(background2)
-        tr.setAlphaF(0.7)
-        self.d['background2tr'] = tr
-
+        self.d['background1tr'] = shady(background1, 0.7)
+        self.d['background2tr'] = shady(background2, 0.7)
         # ## Gradient ###
         self.gradient.setColorAt(1, self.d['background1'])
         self.gradient.setColorAt(0, self.d['background2'])
-
 
     def drawing(self) -> QColor:
         """ Main drawing color for constituent branches
@@ -798,14 +680,7 @@ class PaletteManager:
         :param color:
         :return:
         """
-        #if self.light_on_dark():
         return color.lighter(120)
-        #else:
-        #    return color.darker(120)
-            # if color.value() > 230:
-            # return color.darker(120)
-            # else:
-            # return color.lighter(120)
 
     def selected(self, color):
         """
@@ -899,9 +774,6 @@ class PaletteManager:
     def create_accent_palette(self, key):
         base = self.d[key]
         bbase = QtGui.QBrush(base)
-        base_tr = c(base)
-        base_tr.setAlphaF(0.7)
-        bb_tr = QtGui.QBrush(base_tr)
         pr, pg, pb, pa = self.paper().getRgb()
         br, bg, bb, ba = base.getRgb()
         base_melded = QtGui.QColor.fromRgb((pr + br) / 2, (pg + bg) / 2, (pb + bb) / 2)
@@ -933,8 +805,6 @@ class PaletteManager:
     def get_qt_palette(self, cached=True):
         """
 
-
-
         :param cached:
         :return:
         """
@@ -959,8 +829,6 @@ class PaletteManager:
 
     def get_qt_palette_for_ui(self, cached=True):
         """
-
-
 
         :param cached:
         :return:
