@@ -27,7 +27,7 @@ import math
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QPointF as Pf, Qt
 
-from kataja.singletons import ctrl
+from kataja.singletons import ctrl, qt_prefs
 import kataja.utils as utils
 
 
@@ -46,7 +46,7 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
             self.setTextWidth(-1)
         self._size = self.boundingRect().size()
         self._local_drag_handle_position = None
-        self.setFont(self.parentItem().font)
+        self.setFont(self.get_font())
         self.setDefaultTextColor(self.parentItem().color)
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
 
@@ -217,10 +217,7 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         QtWidgets.QGraphicsTextItem.paint(self, QPainter,
                                           QStyleOptionGraphicsItem, QWidget)
 
-
-
-    @property
-    def font(self):
+    def get_font(self):
         """ Font is the font used for label. What is stored is the kataja
         internal font name, but what is
         returned here is the actual QFont.

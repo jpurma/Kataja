@@ -75,7 +75,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
         self._cached_visible_rect = None
         self.prev_time = time.time()
         self.keep_updating_visible_area = False
-
+        self.focusItemChanged.connect(self.inspect_focus_change)
+        self.setStickyFocus(True)
         # self.ants = []
         # for n in range(0,1000):
         # ant = QtGui.QGraphicsRectItem(0,0,10,10)
@@ -92,6 +93,10 @@ class GraphScene(QtWidgets.QGraphicsScene):
     # return QtWidgets.QGraphicsScene.event(self, event)
 
     # ####
+
+    def inspect_focus_change(self, new, old, reason):
+        print('focus changed. new: %s old: %s reason: %s, sender: %s' % (new, old, reason,
+                                                                    self.sender()))
 
     def late_init(self):
         """ Initialization that can be done only when ctrl has all the pieces in place

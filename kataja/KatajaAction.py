@@ -203,7 +203,6 @@ class KatajaAction(QtWidgets.QAction):
 
         # Call method
         try:
-            print(trigger_args, kwargs)
             message = self.method(*trigger_args, **kwargs)
         except:
             e = sys.exc_info()[1]

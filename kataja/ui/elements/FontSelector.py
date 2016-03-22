@@ -21,7 +21,6 @@ class FontSelector(TableModelComboBox):
             font = qt_prefs.fonts[key]
             item = QtGui.QStandardItem(role)
             item.setData(key)
-            print(key, item.data())
             if ctrl.main.use_tooltips:
                 item.setToolTip('%s, %spt' % (font.family(), font.pointSize()))
             item.setFont(font)
@@ -32,11 +31,8 @@ class FontSelector(TableModelComboBox):
         for r, item in enumerate(items):
             model.setItem(r, 0, item)
         self.view().setModel(model)
-        print(self.currentIndex(), self.currentData(), self.currentText(), self.itemData(0))
-        print(self.model())
         self.setCurrentIndex(0)
         self.setModelColumn(0)
-        print(self.currentData(), self.currentIndex())
 
     def add_font(self, font_id, font):
         """

@@ -24,7 +24,6 @@ class MyFontDialog(QtWidgets.QFontDialog):
 
         :param font:
         """
-        print('font_changed: ', font)
         panel = self.parent()
         if panel:
             panel.receive_font_from_selector(font)

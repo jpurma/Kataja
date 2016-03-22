@@ -95,10 +95,7 @@ def select_font():
     """
     panel = ctrl.ui.get_panel(g.STYLE)
     if panel:
-        print('getting current data: ', panel.font_selector.currentData(),
-              panel.font_selector.currentIndex(), panel.cached_font_id)
         font_id = panel.font_selector.currentData() or panel.cached_font_id
-        print('font_id: ', font_id)
         panel.update_font_selector(font_id)
     if ctrl.ui.scope_is_selection:
         for node in ctrl.selected:

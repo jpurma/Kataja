@@ -183,7 +183,6 @@ class GraphView(QtWidgets.QGraphicsView):
         if ctrl.ui:
             ctrl.ui.update_drag_mode(selection_mode)
 
-
     def toggle_suppress_drag(self, suppress):
         """ ScrollHandDrag or RubberBandDrag shouldn't register if we are dragging one object
         (GraphScene handles that). This method allows to suppress these drag modes temporarily.

@@ -139,23 +139,7 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
                     QtCore.Qt.PinchGesture, QtCore.Qt.SwipeGesture, QtCore.Qt.CustomGesture]
         #for gesture in gestures:
         #    self.grabGesture(gesture)
-
         self.action_finished()
-
-        print('i')
-
-    def event(self, e):
-        if e.type() == 150:
-            print('EnterEditFocus')
-        elif e.type() == 151:
-            print('LeaveEditFocus')
-        elif e.type() == 8:
-            print('FocusIn')
-        elif e.type() == 9:
-            print('FocusOut')
-        elif e.type() == 23:
-            print('FocusAboutToChange')
-        return QtWidgets.QMainWindow.event(self, e)
 
     def find_plugins(self, plugins_path):
         """ Find the plugins dir for the running configuration and read the metadata of plugins.

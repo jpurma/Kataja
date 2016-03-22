@@ -1330,6 +1330,7 @@ syntactic_object: %s
         appearance and related local elements.
         :param selected:
         """
+        print('update selection status called for %s, selected: %s' % (self, selected))
         if not selected:
             self.setZValue(10)
             if ctrl.main.use_tooltips:

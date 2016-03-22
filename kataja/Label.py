@@ -30,6 +30,30 @@ from kataja.globals import LEFT_ALIGN, CENTER_ALIGN, RIGHT_ALIGN
 from kataja.singletons import ctrl
 
 
+class FocusKeeper(QtCore.QObject):
+
+    def eventFilter(self, obj, event):
+
+        if event.type() == QtCore.QEvent.FocusOut:
+            print('ate focusout', event, event.reason())
+            return True
+        elif event.type() == QtCore.QEvent.FocusIn:
+            print('ate focusin', event, event.reason())
+            return True
+        elif event.type() == QtCore.QEvent.FocusAboutToChange:
+            print('ate focus about to change')
+            return True
+        elif event.type() == QtCore.QEvent.GrabMouse:
+            print('ate mouse grab', event)
+            return True
+        elif event.type() == QtCore.QEvent.UngrabMouse:
+            print('ate mouse ungrab', event)
+            return True
+        else:
+            #print(event.type(), event)
+            return QtCore.QObject.eventFilter(self, obj, event)
+
+
 class Label(QtWidgets.QGraphicsTextItem):
     """ Labels are names of nodes. Node itself handles all the logic of
     deciding what to show in label, label only calls nodes method to ask for
@@ -52,6 +76,9 @@ class Label(QtWidgets.QGraphicsTextItem):
         self._recursion_block = False
         self._last_blockpos = ()
         self.doc = LabelDocument()
+
+        self.focuskeeper = FocusKeeper(self)
+        #self.installEventFilter(self.focuskeeper)
         self.setDocument(self.doc)
         # not acceptin hover events is important, editing focus gets lost if other labels take
         # hover events. It is unclear why.
@@ -113,6 +140,7 @@ class Label(QtWidgets.QGraphicsTextItem):
         return self.bottom_row_y
 
     def set_quick_editing(self, value):
+        print('setting quick editing ', value)
         if value:
             self._quick_editing = True
             self.setTextInteractionFlags(QtCore.Qt.TextEditorInteraction)
@@ -140,6 +168,28 @@ class Label(QtWidgets.QGraphicsTextItem):
             if self.width != w and self.scene() == ctrl.graph_scene:
                 ctrl.forest.draw()
             self._recursion_block = False
+
+    def ksceneEvent(self, event):
+        if event.type() == QtCore.QEvent.FocusOut:
+            print('se ate focusout')
+            return True
+        elif event.type() == QtCore.QEvent.FocusAboutToChange:
+            print('se ate focus about to change')
+            return True
+
+        elif event.type() == QtCore.QEvent.GrabMouse:
+            print('se ate mouse grab', event)
+            return True
+        elif event.type() == QtCore.QEvent.UngrabMouse:
+            print('se ate mouse ungrab', event)
+            return True
+        #elif event.type() == QtCore.QEvent.ShortcutOverride:
+        #    print('rejecting shortcut override', event)
+        #    return False
+        else:
+            print('scene event: ', event.type())
+            return QtWidgets.QGraphicsTextItem.sceneEvent(self, event)
+
 
     def keyReleaseEvent(self, keyevent):
         """ keyReleaseEvent is received after the keypress is registered by editor, so if we
@@ -221,8 +271,8 @@ class Label(QtWidgets.QGraphicsTextItem):
         #self.grabKeyboard()
         return QtWidgets.QGraphicsTextItem.focusInEvent(self, event)
 
-    def kfocusOutEvent(self, event):
-        print('focus out')
+    def focusOutEvent(self, event):
+        print('focus out ', event.reason())
         #self.ungrabKeyboard()
         return QtWidgets.QGraphicsTextItem.focusOutEvent(self, event)
 
