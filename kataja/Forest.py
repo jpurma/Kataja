@@ -163,7 +163,6 @@ class Forest(BaseModel):
         self.update_visualization()
         self.scene.keep_updating_visible_area = True
         self.scene.manual_zoom = False
-        ctrl.ui.update_all_fields()
         self.draw()  # do draw once to avoid having the first draw in undo stack.
         ctrl.resume_undo()
 

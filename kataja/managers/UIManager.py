@@ -65,6 +65,7 @@ from kataja.actions import actions_dict
 from kataja.actions.view import change_visualization
 from kataja.actions.window import toggle_panel
 from kataja.actions.file import switch_project
+from kataja.utils import time_me
 
 NOTHING = 0
 SELECTING_AREA = 1
@@ -301,12 +302,6 @@ class UIManager:
         elif signal == 'viewport_changed':
             self.update_positions()
             self.update_float_button_positions()
-
-    def update_all_fields(self):
-        """
-
-        """
-        print('*** ui update_all_fields called ***')
 
     def resize_ui(self, size):
         # self.setSceneRect(0, 0, size.width(), size.height())

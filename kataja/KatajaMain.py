@@ -132,6 +132,7 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         self.status_bar = self.statusBar()
         self.add_message('Welcome to Kataja! (h) for help')
         self.load_initial_treeset()
+        ctrl.call_watchers(self.forest_keeper, 'forest_changed')
         # toolbar = QtWidgets.QToolBar()
         # toolbar.setFixedSize(480, 40)
         # self.addToolBar(toolbar)
@@ -311,7 +312,7 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
 
     def change_forest(self):
         """ Tells the scene to remove current trees and related data and
-        change it to a new one
+        change it to a new one. Signal 'forest_changed' is already sent by forest keeper.
         """
         ctrl.disable_undo()
         if self.forest:

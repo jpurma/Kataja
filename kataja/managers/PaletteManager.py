@@ -315,6 +315,7 @@ def shady(color, alpha):
     c.setAlphaF(alpha)
     return c
 
+
 class PaletteManager:
     """ Selects, creates and gives access to various palettes. The current palette is available in dict d with keys for default names and
         possibility to expand with custom colors. Includes methods for creating new palettes.
@@ -356,7 +357,6 @@ class PaletteManager:
                            'accent4tr', 'accent5tr', 'accent6tr', 'accent7tr',
                            'accent8tr']
 
-
     @property
     def current_color_mode(self):
         """
@@ -386,7 +386,9 @@ class PaletteManager:
         :param cold_start: bool -- use this if some color palette is required, but ctrl-infrastructure
             is not yet available
         """
-        store_last_hsv = True
+        compute = False
+        lu_min = 25
+        lu_max = 95
 
         if mode == 'solarized_lt':
             base = sol[3]
@@ -397,61 +399,41 @@ class PaletteManager:
             self.hsv = [base.hueF(), base.saturationF(), base.valueF()]
             self.build_solarized(light=False)
         elif mode == 'random':
-            if not cold_start:
-                remembered_value = ctrl.fs.last_key_color_for_mode(mode)
-                if remembered_value and not refresh:
-                    self.hsv = list(remembered_value)
-                    self.compute_palette(self.hsv)
-                    return
-
-            h = random.random()
-            s = random.random()  # *0.2+0.8
-            value_low_limit = int(0.38 * 255)
-            value_high_limit = int(0.7 * 255)
-            v = random.randint(value_low_limit,
-                               value_high_limit) / 255.0  # *0.2+0.8
-            self.hsv = [h, s, v]
-            self.compute_palette(self.hsv)
-
+            compute = True
         elif mode == 'random-light':
-            if not cold_start:
-                remembered_value = ctrl.fs.last_key_color_for_mode(mode)
-                if remembered_value and not refresh:
-                    self.hsv = list(remembered_value)
-                    self.compute_palette(self.hsv)
-                    return
-            h = random.random()
-            s = random.random()  # *0.2+0.8
-            value_low_limit = int(0.12 * 255)
-            value_high_limit = int(0.5 * 255)
-            v = random.randint(value_low_limit,
-                               value_high_limit) / 255.0  # *0.2+0.8
-            self.hsv = [h, s, v]
-            self.compute_palette(self.hsv)
-
+            lu_max = 50
+            compute = True
         elif mode == 'random-dark':
-            if not cold_start:
-                remembered_value = ctrl.fs.last_key_color_for_mode(mode)
-                if remembered_value and not refresh:
-                    self.hsv = remembered_value
-                    self.compute_palette(self.hsv)
-                    return
-            h = random.random()
-            s = random.random()  # *0.2+0.8
-            value_low_limit = int(0.6 * 255)
-            value_high_limit = int(0.8 * 255)
-            v = random.randint(value_low_limit,
-                               value_high_limit) / 255.0  # *0.2+0.8
-            self.hsv = [h, s, v]
-            self.compute_palette(self.hsv)
-
+            lu_min = 50
+            compute = True
+        elif mode == 'bw':
+            self.hsv = list(self.get_color_mode_data(mode)['hsv'])
+            self.compute_palette(self.hsv, contrast=100, bw=True)
+        elif mode == 'print':
+            self.hsv = list(self.get_color_mode_data(mode)['hsv'])
+            self.compute_palette(self.hsv, contrast=72)
         else:
             self.hsv = list(self.get_color_mode_data(mode)['hsv'])
             self.compute_palette(self.hsv)
-            store_last_hsv = False
+        if compute:
+            if not cold_start:
+                remembered_value = ctrl.fs.last_key_color_for_mode(mode)
+                if remembered_value and not refresh:
+                    self.hsv = list(remembered_value)
+                    self.compute_palette(self.hsv)
+                    return
+            lu = 101
+            while lu < lu_min or lu > lu_max:
+                r = random.random()
+                g = random.random()
+                b = random.random()
+                hu, su, lu = rgb_to_husl(r, g, b)
+            key_color = c.fromRgbF(r, g, b)
+            self.hsv = list(key_color.getHsvF())[:3]
+            self.compute_palette(self.hsv)
 
-        if store_last_hsv and not cold_start:
-            ctrl.fs.last_key_color_for_mode(mode, self.hsv)
+            if not cold_start:
+                ctrl.fs.last_key_color_for_mode(mode, self.hsv)
 
     def get_color_mode_data(self, mode):
         """
@@ -519,7 +501,7 @@ class PaletteManager:
         self.gradient.setColorAt(1, self.d['background1'])
         self.gradient.setColorAt(0, self.d['background2'])
 
-    def compute_palette(self, hsv):
+    def compute_palette(self, hsv, contrast=50, bw=False):
         """ Create/get root color and build palette around it.
         :param hsv:
         Leaves custom colors as they are. """
@@ -531,9 +513,11 @@ class PaletteManager:
         r, g, b, a = key.getRgbF()
         h, s, l = rgb_to_husl(r, g, b)
         if l > 50:
-            back_l = l - 50
+            back_l = max(0, l - contrast)
+            accent_l = min(l, 62)
         else:
-            back_l = l + 50
+            back_l = min(99, l + contrast)
+            accent_l = max(45, l)
         background1 = c()
         bg_rgb = husl_to_rgb(h, s, back_l)
         background1.setRgbF(*bg_rgb)
@@ -545,7 +529,9 @@ class PaletteManager:
             adjusted_accent = c(accent)
             ar, ag, ab, aa = accent.getRgbF()
             ach, acs, acl = rgb_to_husl(ar, ag, ab)
-            ar, ag, ab = husl_to_rgb(ach, acs, l)
+            if bw:
+                acs = 0
+            ar, ag, ab = husl_to_rgb(ach, acs, accent_l)
             adjusted_accent.setRgbF(ar, ag, max(0, ab))
             self.d['accent%s' % (i + 1)] = adjusted_accent
             self.d['accent%str' % (i + 1)] = shady(adjusted_accent, 0.5)

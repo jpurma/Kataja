@@ -90,6 +90,12 @@ class NavigationPanel(UIPanel):
         self.widget().setAutoFillBackground(True)
         self.finish_init()
 
+    def update_tree_counter(self):
+        keeper = ctrl.main.forest_keeper
+        if keeper is not None:
+            display_index = keeper.current_index + 1  # indexes start at 0, we want to display 1
+            max_index = len(keeper.forests)
+            self.treeset_counter.setText('%s/%s' % (display_index, max_index))
 
     def watch_alerted(self, obj, signal, field_name, value):
         """ Receives alerts from signals that this object has chosen to listen. These signals
@@ -104,8 +110,4 @@ class NavigationPanel(UIPanel):
         :return:
         """
         if signal == 'forest_changed':
-            keeper = ctrl.main.forest_keeper
-            if keeper is not None:
-                display_index = keeper.current_index + 1
-                max_index = len(keeper.forests)
-                self.treeset_counter.setText('%s/%s' % (display_index, max_index))
+            self.update_tree_counter()
