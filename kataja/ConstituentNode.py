@@ -139,7 +139,6 @@ class ConstituentNode(BaseConstituentNode):
         self.select_order = 0
         self.original_parent = None
         self._projection_color = None
-        self._projection_qcolor = None
 
         # ### Cycle index stores the order when node was originally merged to structure.
         # going up in trees, cycle index should go up too
@@ -515,10 +514,6 @@ class ConstituentNode(BaseConstituentNode):
 
     def set_projection_display(self, color_id):
         self._projection_color = color_id
-        if color_id:
-            self._projection_qcolor = ctrl.cm.get(color_id)
-        else:
-            self._projection_color = None
 
     @property
     def contextual_color(self):
@@ -529,7 +524,7 @@ class ConstituentNode(BaseConstituentNode):
         if ctrl.is_selected(self):
             base = ctrl.cm.selection()
         elif self._projection_color:
-            base = self._projection_qcolor
+            base = ctrl.cm.get(self._projection_color)
         else:
             base = self.color
         if self.drag_data:

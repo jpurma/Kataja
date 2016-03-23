@@ -90,7 +90,6 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
 
         self._projection_thick = False
         self._projection_color = None
-        self._projection_qcolor = None
 
         self._computed_start_point = None
         self._computed_end_point = None
@@ -350,10 +349,6 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
             return
         self._projection_thick = thick
         self._projection_color = color
-        if color:
-            self._projection_qcolor = ctrl.cm.get(self._projection_color)
-        else:
-            self._projection_qcolor = None
 
     def make_relative_vector(self):
         """ Relative vector helps to keep the shape of a line when another,
@@ -493,7 +488,7 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
         elif self.is_broken():
             return ctrl.cm.broken(self.color)
         elif self._projection_color:
-            return self._projection_qcolor
+            return ctrl.cm.get(self._projection_color)
         else:
             return self.color
 

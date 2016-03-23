@@ -706,6 +706,10 @@ class GraphScene(QtWidgets.QGraphicsScene):
         # nh, ns, nv, na = new_base_color.getRgbF()
         oh, os, ov, oa = old_base_color.getHsvF()
         nh, ns, nv, na = new_base_color.getHsvF()
+        if oh < 0:
+            oh = 0
+        if nh < 0:
+            nh = 0
         h_step = (nh - oh) / (self._fade_steps + 1)
         s_step = (ns - os) / (self._fade_steps + 1)
         v_step = (nv - ov) / (self._fade_steps + 1)
