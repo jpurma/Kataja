@@ -45,17 +45,18 @@ class FeatureNode(Node):
     display = True
     wraps = 'feature'
 
-    viewable = {'key': {'order': 0},
-                'value': {'order': 1},
-                'family': {'order': 2}
-               }
-    editable = {'key': dict(name='Name', order=3, prefill='name',
+    visible_in_label = ['key', 'value', 'family']
+    editable_in_label = ['key', 'value', 'family']
+    display_styles = {'key': {'align': 'continous'},
+                      'value': {'align': 'continous'},
+                      'family': {'align': 'continous'}}
+    editable = {'key': dict(name='Name', prefill='name',
                             tooltip='Name of the feature', syntactic=True),
-                'value': dict(name='Value', order=6, align='line-end',
+                'value': dict(name='Value', align='line-end',
                               width=20, prefill='value',
                               tooltip='Value given to this feature',
                               syntactic=True),
-                'family': dict(name='Family', order=9, prefill='family',
+                'family': dict(name='Family', prefill='family',
                                tooltip='Several distinct features can be '
                                        'grouped under one family (e.g. '
                                        'phi-features)', syntactic=True)
@@ -66,7 +67,6 @@ class FeatureNode(Node):
     default_edge = {'id': g.FEATURE_EDGE, 'shape_name': 'cubic', 'color': 'accent2', 'pull': .40,
                     'visible': True, 'arrowhead_at_start': False, 'arrowhead_at_end': False,
                     'labeled': False, 'name_pl': 'Feature edges'}
-
 
     def __init__(self, feature=None):
         Node.__init__(self, syntactic_object=feature)
@@ -84,7 +84,6 @@ class FeatureNode(Node):
             label = 'Feature'
         return classes.Feature(key=label)
 
-
     def compute_start_position(self, host):
         """ Makes features start at somewhat predictable position, if they are of common kinds of features.
         If not, then some random noise is added to prevent features sticking together
@@ -98,8 +97,7 @@ class FeatureNode(Node):
         else:
             x += random.uniform(-4, 4)
             y += random.uniform(-4, 4)
-        self.set_original_position((x, y, z))
-
+        self.set_original_position((x, y))
 
     def paint(self, painter, option, widget=None):
         """ Painting is sensitive to mouse/selection issues, but usually with
@@ -183,6 +181,6 @@ class FeatureNode(Node):
     #                #
     # ############## #
 
-    key = Synobj("key", if_changed=Node.alert_inode)
-    value = Synobj("value", if_changed=Node.alert_inode)
-    family = Synobj("family", if_changed=Node.alert_inode)
+    key = Synobj("key", if_changed=Node.alert_label)
+    value = Synobj("value", if_changed=Node.alert_label)
+    family = Synobj("family", if_changed=Node.alert_label)

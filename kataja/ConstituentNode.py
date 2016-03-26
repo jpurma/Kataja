@@ -49,21 +49,23 @@ class ConstituentNode(BaseConstituentNode):
     short_name = "CN"
     display = True
     wraps = 'constituent'
+    visible_in_label = ['alias', 'index', 'triangle', 'label', 'gloss']
+    editable_in_label = ['alias', 'index', 'label', 'gloss', 'head']
 
-    viewable = {'alias': {'order': 0},
-                'index': {'order': 1, 'align': 'line-end', 'style': 'subscript'},
-                'triangle': {'order': 2, 'special': 'triangle', 'readonly': True},
-                'label': {'order': 3, 'getter': 'triangled_label'}, 'gloss': {'order': 4}, }
-    editable = {'alias': dict(name='Alias', order=3, prefill='alias',
+    display_styles = {'index': {'align': 'line-end', 'start_tag': '<sub>', 'end_tag': '</sub>'},
+                      'triangle': {'special': 'triangle', 'readonly': True},
+                      'label': {'getter': 'triangled_label', 'condition': 'should_show_label'},
+                      'alias': {'condition': 'should_show_alias'}}
+    editable = {'alias': dict(name='Alias', prefill='alias',
                               tooltip='Non-functional readable label of the constituent'),
-                'index': dict(name='Index', order=6, align='line-end', width=20, prefill='i',
+                'index': dict(name='Index', align='line-end', width=20, prefill='i',
                               tooltip='Index to recognize multiple occurences'),
-                'label': dict(name='Label', order=9, prefill='label',
+                'label': dict(name='Label', prefill='label',
                               tooltip='Label of the constituent (functional identifier)', width=200,
                               focus=True, syntactic=True),
-                'gloss': dict(name='Gloss', order=12, prefill='gloss',
+                'gloss': dict(name='Gloss', prefill='gloss',
                               tooltip='translation (optional)', width=200, check_before='is_leaf'),
-                'head': dict(name='Head', order=20, tooltip='inherits from',
+                'head': dict(name='Head', tooltip='inherits from',
                              check_before='can_be_projection',
                              option_function='projection_options_for_ui', input_type='multibutton',
                              select_action='constituent_set_head')}
@@ -133,6 +135,7 @@ class ConstituentNode(BaseConstituentNode):
         self.index = ''
         self.alias = ''
         self.gloss = ''
+
         #self.head = None
         self.is_trace = False
         self.merge_order = 0
@@ -153,8 +156,6 @@ class ConstituentNode(BaseConstituentNode):
         to each other and know their values.
         :return: None
         """
-        self._inode_changed = True
-        a = self.as_inode()
         self.update_features()
         self.update_gloss()
         self.update_label(force_update=True)
@@ -172,13 +173,10 @@ class ConstituentNode(BaseConstituentNode):
         super().after_model_update(updated_fields, update_type)
         update_label = False
         if 'alias' in updated_fields:
-            self._inode_changed = True
             update_label = True
         if 'index' in updated_fields:
-            self._inode_changed = True
             update_label = True
         if 'gloss' in updated_fields:
-            self._inode_changed = True
             self.update_gloss()
             update_label = True
         if 'head' in updated_fields:
@@ -186,78 +184,28 @@ class ConstituentNode(BaseConstituentNode):
         if update_label:
             self.update_label()
 
-    # properties implemented by syntactic node
-    # set_hooks, to be run when values are set
-
-    def impose_order_to_inode(self):
-        """ Prepare inode (ITemplateNode) to match data structure of this type of node.
-        ITemplateNode has parsed input from latex trees to rows of text or ITextNodes and
-        these can be mapped to match Node elements, e.g. label or index. The mapping is
-        implemented here, and subclasses of Node should make their mapping.
+    def load_values_from_parsernode(self, parsernode):
+        """ Update constituentnode with values from parsernode
+        :param parsernode:
         :return:
         """
-        Node.impose_order_to_inode(self)
-        inode = self._inode
-        fields = inode.fields
-        alias = ''
-        label = ''
-        gloss = ''
-        index = ''
-
-        if inode.indices and inode.indices[0]:
-            index = inode.indices[0]
+        if parsernode.indices and parsernode.indices[0]:
+            self.index = parsernode.indices[0]
 
         is_leaf = self.is_leaf()
-        lines = len(inode.rows)
-        if lines >= 3:
-            alias = inode.rows[0]
-            label = inode.rows[1]
-            gloss = inode.rows[2]
-        elif lines == 2:
-            alias = inode.rows[0]
-            label = inode.rows[1]
-        elif lines == 1 and is_leaf:
-            label = inode.rows[0]
-        elif lines == 1:
-            alias = inode.rows[0]
-        fields['alias']['value'] = alias
-        fields['label']['value'] = label
-        fields['gloss']['value'] = gloss
-        fields['index']['value'] = index
-
-    def as_inode(self):
-        """ Inject visibility information of 'alias' and 'label' to inode, so
-        that some ConstituentNodes may have visible labels and others not.
-        :return: INodes or str or tuple of them
-        """
-        if self._inode is None:
-            self._inode = super().as_inode()
-        if self._inode_changed:
-            self._inode = super().as_inode()
-            s = ctrl.forest.settings
-            alias_inode_part = self._inode.fields.get('alias', None)
-            label_inode_part = self._inode.fields.get('label', None)
-            if self.is_leaf(only_visible=True) or self.triangle:
-                if alias_inode_part:
-                    alias_inode_part['visible'] = s.show_leaf_aliases
-                if label_inode_part:
-                    label_inode_part['visible'] = s.show_leaf_labels
-            else:
-                if alias_inode_part:
-                    alias_inode_part['visible'] = s.show_internal_aliases
-                if label_inode_part:
-                    label_inode_part['visible'] = s.show_internal_labels
-        return self._inode
-
-    def if_changed_gloss(self, value):
-        """ Synobj changed, but remind to update inodes here
-        :param value:
-        :return:
-        """
-        self._inode_changed = True
-        self.update_gloss()
-
-    # Saved properties
+        rows = parsernode.rows
+        rowcount = len(rows)
+        features = []
+        if rowcount > 3:
+            self.alias, self.label, self.gloss, *features = rows
+        if rowcount == 3:
+            self.alias, self.label, self.gloss = rows
+        elif rowcount == 2:
+            self.alias, self.label = rows
+        elif rowcount == 1 and is_leaf:
+            self.label = rows[0]
+        elif rowcount == 1:
+            self.alias = rows[0]
 
     # Other properties
 
@@ -291,6 +239,18 @@ class ConstituentNode(BaseConstituentNode):
             return leaves.tidy()
         else:
             return self.label
+
+    def should_show_label(self):
+        if self.is_leaf(only_visible=True) or self.triangle:
+            return ctrl.forest.settings.show_leaf_labels
+        else:
+            return ctrl.forest.settings.show_internal_labels
+
+    def should_show_alias(self):
+        if self.is_leaf(only_visible=True) or self.triangle:
+            return ctrl.forest.settings.show_leaf_aliases
+        else:
+            return ctrl.forest.settings.show_internal_aliases
 
     def update_status_tip(self):
         """ Hovering status tip """
@@ -328,33 +288,24 @@ class ConstituentNode(BaseConstituentNode):
     def short_str(self):
         if not self.syntactic_object:
             return 'empty'
-        alias = self.alias
-        label = self.label
-        if isinstance(alias, ITextNode):
-            alias = alias.plain_string()
-        if isinstance(label, ITextNode):
-            label = label.plain_string()
+        alias = str(self.alias)
+        label = str(self.label)
         if alias and label:
-            l = ' '.join((str(alias), str(label)))
-        elif alias:
-            l = str(alias)
-        elif label:
-            l = str(label)
+            return alias + ' ' + label
         else:
-            return "no label"
-        return l
+            return alias or label or "no label"
 
     def __str__(self):
         if not self.syntactic_object:
             return 'a placeholder for constituent'
-        alias = self.alias
-        label = self.label
+        alias = str(self.alias)
+        label = str(self.label)
         if alias and label:
-            l = ' '.join((str(alias), str(label)))
+            l = alias + ' ' + label
         elif alias:
-            l = str(alias)
+            l = alias
         elif label:
-            l = str(label)
+            l = label
         else:
             return "anonymous constituent"
         return "constituent '%s'" % l
@@ -538,11 +489,12 @@ class ConstituentNode(BaseConstituentNode):
 
     # ### Features #########################################
 
-    def update_gloss(self):
+    def update_gloss(self, value=None):
         """
 
 
         """
+        self.alert_label()
         if not self.syntactic_object:
             return
         syn_gloss = self.gloss
@@ -585,9 +537,9 @@ class ConstituentNode(BaseConstituentNode):
     #                #
     # ############## #
 
-    index = Saved("index", if_changed=BaseConstituentNode.alert_inode)
-    alias = Saved("alias", if_changed=BaseConstituentNode.alert_inode)
-    gloss = Saved("gloss", if_changed=if_changed_gloss)
+    index = Saved("index", if_changed=Node.alert_label)
+    alias = Saved("alias", if_changed=Node.alert_label)
+    gloss = Saved("gloss", if_changed=update_gloss)
     head = Synobj("head")
 
     is_trace = Saved("is_trace")

@@ -457,3 +457,35 @@ def guess_node_type(text):
         return g.CONSTITUENT_NODE
 
 
+def combine_dicts(primary, secondary):
+    """ Take two dicts and return one that key:value pairs from both, but if they share a key,
+    and values are dicts, combine these too.
+    :param primary: dict that overwrites
+    :param secondary: dict that is overwritten
+    :return: combined dict
+    """
+    if not primary:
+        return secondary.copy()
+    elif not secondary:
+        return primary.copy()
+
+    combo = secondary.copy()
+    for key, value in primary.items():
+        if isinstance(value, dict):
+            combo[key] = combine_dicts(value, secondary.get(key, {}))
+        else:
+            combo[key] = value
+    return combo
+
+
+def combine_lists(primary, secondary):
+    """ Take two lists and append the second to first, but don't let it repeat items.
+    :param primary:
+    :param secondary:
+    :return:
+    """
+    combo = list(primary)
+    for item in secondary:
+        if item not in primary:
+            combo.append(item)
+    return combo

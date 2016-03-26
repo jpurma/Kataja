@@ -36,9 +36,8 @@ from kataja.Label import Label
 from kataja.Movable import Movable
 from kataja.BaseModel import Saved
 from kataja.utils import to_tuple, create_shadow_effect, multiply_xy, div_xy, sub_xy, add_xy, \
-    time_me, add_xy
+    time_me, add_xy, combine_dicts, combine_lists
 import kataja.globals as g
-from kataja.parser.INodes import ITemplateNode
 
 TRIANGLE_HEIGHT = 10
 
@@ -78,10 +77,10 @@ class Node(Movable):
     short_name = "Node"  # shouldn't be used on its own
     display = False
     can_be_in_groups = True
-
-    # override this if you need to turn inodes into your custom Nodes. See
-    # examples in
-    # ConstituentNode or FeatureNode
+    visible_in_label = []
+    editable_in_label = []
+    display_styles = {}
+    editable = {}
 
     default_style = {'color': 'content1', 'font': g.MAIN_FONT, 'font-size': 10}
 
@@ -104,9 +103,7 @@ class Node(Movable):
         self._label_visible = True
         self._label_qdocument = None
         self.label_rect = None
-        self._inode = None
-        self._inode_changed = True
-        self._inode_str = ''
+        self._label_changed = True
         self._gravity = 0
         self.label_object = Label(parent=self)
         self.clickable = False
@@ -165,8 +162,7 @@ class Node(Movable):
                 values.
         :return: None
         """
-        self._inode_changed = True
-        a = self.as_inode()
+        self._label_changed = True
         self.update_label()
         self.update_bounding_rect()
         self.update_visibility()
@@ -183,7 +179,7 @@ class Node(Movable):
         """
         super().after_model_update(updated_fields, update_type)
         if 'label' in updated_fields:
-            self._inode_changed = True
+            self._label_changed = True
             self.update_label()
         if 'triangle' in updated_fields:
             self.triangle_updated(self.triangle)
@@ -217,41 +213,6 @@ class Node(Movable):
         """
         return None
 
-    # This seems to be not used
-    def prepare_schema_for_label_display(self):
-        """
-        :return:
-        """
-        if self.syntactic_object and hasattr(self.syntactic_object.__class__, 'viewable'):
-            synvis = self.syntactic_object.__class__.viewable
-        else:
-            synvis = {}
-        myvis = getattr(self.__class__, 'viewable', {})
-        sortable = []
-        label_line_length = 0
-        for key, value in synvis.items():
-            o = value.get('order', 50)
-            sortable.append((o, 0, key, value))
-        for key, value in myvis.items():
-            o = value.get('order', 50)
-            sortable.append((o, 1, key, value))
-        sortable.sort()
-        self.label_display_data = OrderedDict()
-        for foo, bar, key, value in sortable:
-            if key not in self.label_display_data:
-                self.label_display_data[key] = dict(value)
-            else:
-                old = self._inode.fields[key]
-                new = dict(value)
-                new.update(old)
-                self.label_display_data[key] = new
-            if 'resizable' in value:
-                label_resizable = True
-            if 'line_length' in value:
-                ll = value['line_length']
-                if ll > label_line_length:
-                    label_line_length = ll
-
 
     def get_editing_template(self, refresh=False):
         """ Create or fetch a dictionary template to help building an editing
@@ -265,107 +226,16 @@ class Node(Movable):
         :param refresh: force recalculation of template
         :return: dict
         """
-        if self._editing_template and not refresh:
-            return self._editing_template
+        return self.label_object.editable
 
-        self._editing_template = {}
-        if self.syntactic_object and hasattr(self.syntactic_object.__class__, 'editable'):
-            synedit = self.syntactic_object.__class__.editable
-        else:
-            synedit = {}
-        myedit = getattr(self.__class__, 'editable', {})
-        sortable = []
-        for key, value in myedit.items():
-            o = value.get('order', 200)
-            sortable.append((o, 1, key, value))
-        for key, value in synedit.items():
-            o = value.get('order', 200)
-            sortable.append((o, 0, key, value))
-        sortable.sort()
-        order = []
-        for foo, syntactic, key, value in sortable:
-            if key not in self._editing_template:
-                self._editing_template[key] = value
-            if syntactic == 0:
-                self._editing_template[key]['syntactic'] = True
-            if key not in order:
-                order.append(key)
-        self._editing_template['field_order'] = order
-        return self._editing_template
+    def get_editable_field_names(self):
+        return self.label_object.editable_in_label
 
-    def impose_order_to_inode(self):
-        """ Prepare inode (ITemplateNode) to match data structure of this type of node
-        ITemplateNode has parsed input from latex trees to rows of text or ITextNodes and
-        these can be mapped to match Node elements, e.g. label or index. The mapping is
-        implemented here, and subclasses of Node should make their mapping.
-        :return:
-        """
-        # This part should be done by all subclasses, call super(
-        # ).impose_order_to_inode()
-        assert self.label_object
-
-        self._inode.fields = {}
-        self._inode.view_order = []
-
-        if self.syntactic_object and hasattr(self.syntactic_object.__class__, 'viewable'):
-            syn_obj_viewable_fields = self.syntactic_object.__class__.viewable
-        else:
-            syn_obj_viewable_fields = {}
-        my_viewable_fields = getattr(self.__class__, 'viewable', {})
-        label_line_length = 0
-        sortable = []
-        for key, value in syn_obj_viewable_fields.items():
-            o = value.get('order', 50)
-            sortable.append((o, 0, key, value))
-        for key, value in my_viewable_fields.items():
-            o = value.get('order', 50)
-            sortable.append((o, 1, key, value))
-        sortable.sort()
-        fields = self._inode.fields
-        view_order = self._inode.view_order
-        for foo, bar, field_name, value in sortable:
-            if field_name not in fields:
-                fields[field_name] = dict(value)
-            else:
-                old = fields[field_name]
-                new = dict(value)
-                new.update(old)
-                fields[field_name] = new
-            if field_name not in view_order:
-                view_order.append(field_name)
-            if 'resizable' in value:
-                self.label_object.resizable = True
-            if 'line_length' in value:
-                ll = value['line_length']
-                if ll > self.label_object.line_length:
-                    self.label_object.line_length = ll
-            if 'text_align' in value:
-                self.label_object.text_align = value['text_align']
-
-
-    def update_values_from_inode(self):
-        """ Take values from given inode and set this object to have these values.
-        :return:
-        """
-        for field_name, value_data in self._inode.fields.items():
-            if 'value' in value_data:
-                v = value_data['value']
-                if 'readonly' in value_data:
-                    continue
-                elif 'setter' in value_data:
-                    getattr(self, value_data['setter'])(v)
-                else:
-                    setattr(self, field_name, v)
-
-    def alert_inode(self, value=None):
-        """ Setters may announce that inode needs to be updated
-        :param value: don't care about that
-        :return:
-        """
-        self._inode_changed = True
+    def alert_label(self, value=None):
+        self._label_changed = True
 
     def if_changed_triangle(self, value):
-        self._inode_changed = True
+        self._label_changed = True
         self.triangle_updated(value)
 
     def has_triangle(self):
@@ -992,14 +862,14 @@ syntactic_object: %s
     def update_label(self, force_update=False):
         """
 
-        :param force_update: Force inode recomposition and visibility checks
+        :param force_update: Force label recomposition and visibility checks
         :return:
         """
         if not self.label_object:
             self.label_object = Label(parent=self)
         if force_update:
-            self._inode_changed = True
-        self.label_object.update_label(self.font, self.as_inode())
+            self._label_changed = True
+        self.label_object.update_label(self.font)
         self.update_label_visibility()
         self.update_bounding_rect()
         self.update_status_tip()
@@ -1011,7 +881,7 @@ syntactic_object: %s
         """
         if not self.label_object:
             self.update_label()
-        self._label_visible = not self.as_inode().is_empty_for_view()
+        self._label_visible = self.label_object.has_content()
         self.label_object.setVisible(self._label_visible)
 
     @property
@@ -1020,29 +890,6 @@ syntactic_object: %s
         :return:
         """
         return self.label
-
-    def as_inode(self):
-        """
-        :return: INodes or str or tuple of them
-        """
-        if self._inode is None:
-            self._inode = ITemplateNode()
-            self._inode_str = str(self._inode)
-            self.impose_order_to_inode()
-            self._inode_changed = True
-        if self._inode_changed:
-            iv = self._inode.fields
-            for key, value in iv.items():
-                getter = value.get('getter', key)
-                # use 'getter' or default to 'key', assuming that key is the
-                # same as the property it is representing
-                v = getattr(self, getter, None)
-                if v is None:
-                    v = getattr(self.syntactic_object, getter, None)
-                value['value'] = v
-            self._inode_str = str(self._inode)
-            self._inode_changed = False
-        return self._inode
 
     def update_status_tip(self):
         """ implement properly in subclasses, let tooltip tell about the node
@@ -1061,7 +908,7 @@ syntactic_object: %s
 
         :return:
         """
-        return not self._inode_str
+        return not self.label_object.has_content()
 
     def label_edited(self):
         """ implement if label can be modified by editing it directly """
@@ -1691,7 +1538,7 @@ syntactic_object: %s
 
     # Saved properties
     syntactic_object = Saved("syntactic_object")
-    label = Saved("label", if_changed=alert_inode)
+    label = Saved("label", if_changed=alert_label)
     edges_up = Saved("edges_up")
     edges_down = Saved("edges_down")
     triangle = Saved("triangle", if_changed=if_changed_triangle)

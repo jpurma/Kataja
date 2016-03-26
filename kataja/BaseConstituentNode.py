@@ -88,17 +88,16 @@ class BaseConstituentNode(Node):
         c = classes.Constituent(label)
         return c
 
-    def impose_order_to_inode(self):
-        """ Prepare inode (ITemplateNode) to match data structure of this type of node
-        ITemplateNode has parsed input from latex trees to rows of text or ITextNodes and
-        these can be mapped to match Node elements, e.g. label or index. The mapping is
-        implemented here, and subclasses of Node should make their mapping.
+    def load_values_from_parsernode(self, parsernode):
+        """ Update constituentnode with values from parsernode
+        :param parsernode:
         :return:
         """
-        super().impose_order_to_inode()
-        inode = self._inode
-        if inode.rows:
-            inode.fields['label']['value'] = inode.rows[0]
+
+        rows = parsernode.rows
+        rowcount = len(rows)
+        if rowcount > 0:
+            self.label = rows[0]
 
     def after_init(self):
         """ After_init is called in 2nd step in process of creating objects:
@@ -109,8 +108,6 @@ class BaseConstituentNode(Node):
         values.
         :return: None
         """
-        self._inode_changed = True
-        a = self.as_inode()
         self.update_features()
         self.update_label()
         self.update_visibility()
@@ -127,7 +124,6 @@ class BaseConstituentNode(Node):
         super().after_model_update(updated_fields, update_type)
         update_label = False
         if 'features' in updated_fields:
-            self._inode_changed = True
             self.update_features()
             update_label = True
         if update_label:
@@ -137,11 +133,10 @@ class BaseConstituentNode(Node):
     # set_hooks, to be run when values are set
 
     def if_changed_features(self, value):
-        """ Synobj changed, but remind to update inodes here
+        """ Synobj changed, but remind to update label here
         :param value:
         :return:
         """
-        self._inode_changed = True
         self.update_features()
 
     # Other properties
@@ -213,16 +208,6 @@ class BaseConstituentNode(Node):
                     return a
         else:
             return atts
-
-    def update_label_visibility(self):
-        """ Check if the label of the node has any content -- should it be
-        displayed. Node itself can be visible even when its label is not.
-        :return:
-        """
-        if not self.label_object:
-            self.update_label()
-        self._label_visible = self.triangle or not self.as_inode().is_empty_for_view()
-        self.label_object.setVisible(self._label_visible)
 
     def update_visibility(self, **kw):
         """ Compute visibility-related attributes for this constituent node and update those that
@@ -580,5 +565,5 @@ class BaseConstituentNode(Node):
     # ############## #
 
     # Attributes from synobj and their setter hooks
-    label = Synobj("label", if_changed=Node.alert_inode)
+    label = Synobj("label", if_changed=Node.alert_label)
     features = Synobj("features", if_changed=if_changed_features)

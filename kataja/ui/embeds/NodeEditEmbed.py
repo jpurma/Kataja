@@ -8,9 +8,9 @@ from kataja.ui.elements.ExpandingLineEdit import ExpandingLineEdit
 from kataja.ui.elements.EmbeddedLineEdit import EmbeddedLineEdit
 from kataja.ui.elements.EmbeddedMultibutton import EmbeddedMultibutton
 from kataja.singletons import prefs, qt_prefs, ctrl
-from kataja.parser import INodeToLatex
 import kataja.globals as g
 from kataja.ui.elements.ResizeHandle import ResizeHandle
+from kataja.parser.INodes import ITextNode
 
 
 def make_label(text, parent=None, layout=None, tooltip='', buddy=None, palette=None, align=None):
@@ -53,13 +53,13 @@ class NodeEditEmbed(UIEmbed):
         big_font.setPointSize(big_font.pointSize() * 2)
 
         ed = node.get_editing_template()
-        field_order = ed['field_order']
+        field_names = node.get_editable_field_names()
         self.fields = {}
         self.resize_target = None
         hlayout = None
 
         # Generate edit elements based on data, expand this as necessary
-        for field_name in field_order:
+        for field_name in field_names:
             d = ed[field_name]
             if d.get('hidden', False):
                 continue
@@ -180,7 +180,10 @@ class NodeEditEmbed(UIEmbed):
                 value = getattr(self.host, field_name, '')
             itype = d.get('input_type', 'text')
             if itype in ['text', 'textarea', 'expandingtext']:
-                parsed = INodeToLatex.parse_inode_for_field(value)
+                if isinstance(value, ITextNode):
+                    parsed = value.as_latex()
+                else:
+                    parsed = value
                 field.setText(parsed)
             elif itype == 'multibutton':
                 op_func = d.get('option_function')

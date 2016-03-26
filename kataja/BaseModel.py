@@ -8,7 +8,6 @@ from PyQt5.QtCore import QPointF, QPoint
 
 from kataja.utils import to_tuple
 from kataja.parser.INodes import ITextNode
-from kataja.parser.INodeToLatex import parse_inode_for_field
 from kataja.parser.LatexToINode import parse_field
 from kataja.singletons import ctrl, classes
 from kataja.globals import CREATED, DELETED
@@ -364,9 +363,9 @@ class BaseModel(object):
             if isinstance(data, (int, float, str)):
                 return data
             elif isinstance(data, ITextNode):
-                r = parse_inode_for_field(data)
+                r = data.as_latex()
                 if r:
-                    return 'INode', parse_inode_for_field(data)
+                    return 'INode', r
                 else:
                     return ''
 

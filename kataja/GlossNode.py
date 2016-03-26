@@ -42,8 +42,10 @@ class GlossNode(Node):
     short_name = "GNode"
     display = True
 
-    viewable = {'label': {'order': 3}}
-    editable = {'label': dict(name='Gloss', order=3, prefill='gloss',
+    visible_in_label = ['label']
+    editable_in_label = ['label']
+    display_styles = {}
+    editable = {'label': dict(name='Gloss', prefill='gloss',
                               tooltip='translation (optional)')}
 
     default_style = {'color': 'accent5', 'font': g.ITALIC_FONT, 'font-size': 10}

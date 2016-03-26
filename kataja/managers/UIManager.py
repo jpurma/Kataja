@@ -341,7 +341,6 @@ class UIManager:
         # selection, it gets confusing fast
         if len(ctrl.selected) == 1:
             item = ctrl.selected[0]
-            #for item in ctrl.selected:
             if isinstance(item, Edge):
                 self.update_touch_areas_for_selected_edge(item)
                 self.add_control_points(item)

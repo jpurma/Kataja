@@ -3,7 +3,7 @@ __author__ = 'purma'
 import kataja.globals as g
 from kataja.BaseConstituentNode import BaseConstituentNode
 from kataja.parser.BaseParser import BaseParser
-from kataja.parser.INodes import ITemplateNode, ITextNode
+from kataja.parser.INodes import IParserNode, ITextNode
 from kataja.parser.LatexToINode import parse
 from kataja.singletons import ctrl, classes
 
@@ -34,11 +34,12 @@ class INodeToKatajaConstituent(BaseParser):
         old_should_add = self.should_add_to_scene
         self.should_add_to_scene = True
         # the heavy work is done in LatexToINode ###
-        inodes = parse(string)
+        parsernodes = parse(string)
         # done.
-        if isinstance(inodes, list):
+        if isinstance(parsernodes, list):
             if simple_parse:
-                result = [self.inode_to_constituentnodes(inode) for inode in inodes]
+                result = [self.parsernodes_to_constituentnodes(parsernode) for parsernode in
+                          parsernodes]
                 if len(result) > 1:
                     right = result.pop()
                     while result:
@@ -47,25 +48,25 @@ class INodeToKatajaConstituent(BaseParser):
                         right = ctrl.forest.create_merger_node(left, right, new=left, head=left)
                     result = right
             else:
-                result = [self.parse_inode_into_tree(inode) for inode in inodes]
+                result = [self.parsernodes_into_tree(parsernode) for parsernode in parsernodes]
         else:
-            result = self.parse_inode_into_tree(inodes)
+            result = self.parsernodes_into_tree(parsernodes)
         self.should_add_to_scene = old_should_add
         return result
 
-    def parse_inode_into_tree(self, inode):
+    def parsernodes_into_tree(self, parsernode):
         """ Parses inode into constituentnodes, but prepare a temporary trees that can be assigned
         for created nodes so they don't each end up creating their own trees or get lost.
         :param inode:
         :return:
         """
         self.forest.temp_tree = None
-        result = self.inode_to_constituentnodes(inode)
+        result = self.parsernodes_to_constituentnodes(parsernode)
         if self.forest.temp_tree:
             self.forest.temp_tree.rebuild()
         return result
 
-    def inode_to_constituentnodes(self, inode):
+    def parsernodes_to_constituentnodes(self, parsernode):
         """ Recursively turn ITemplateNodes into Constituents supported by syntax
         and further into
          Kataja's ConstituentNodes.
@@ -74,25 +75,24 @@ class INodeToKatajaConstituent(BaseParser):
         :return: the root ConstituentNode
         """
         f = self.forest
-        if isinstance(inode, ITemplateNode):
+        if isinstance(parsernode, IParserNode):
             children = []
-            if inode.parts:
-                right_first = reversed(inode)
+            if parsernode.parts:
+                right_first = reversed(parsernode)
                 for nnode in right_first:
-                    child = self.inode_to_constituentnodes(nnode)
+                    child = self.parsernodes_to_constituentnodes(nnode)
                     if child and isinstance(child, BaseConstituentNode):
                         children.append(child)
-            constituent = classes.Constituent(str(hash(inode)))
+            constituent = classes.Constituent(str(hash(parsernode)))
             cn = f.create_node(synobj=constituent)
             if not f.temp_tree:
                 f.temp_tree = f.create_tree_for(cn)
             else:
                 cn.add_to_tree(f.temp_tree)
-            if inode.parts:
+            if parsernode.parts:
                 f.add_merge_counter(cn)
             else:
                 f.add_select_counter(cn)
-            cn._inode = inode
             children.reverse()
             direction = g.LEFT
             if len(children) == 1:
@@ -101,16 +101,16 @@ class INodeToKatajaConstituent(BaseParser):
                 constituent.add_part(child.syntactic_object)
                 f.connect_node(parent=cn, child=child, direction=direction)
                 direction = g.RIGHT
-            cn.impose_order_to_inode()
-            cn.update_values_from_inode()
+            cn.load_values_from_parsernode(parsernode)
             cn.update_label()
             f.derivation_steps.save_and_create_derivation_step()
             return cn
-        elif isinstance(inode, ITextNode):
-            constituent = classes.Constituent(str(hash(inode)))
+        elif isinstance(parsernode, ITextNode):
+            raise hell
+            constituent = classes.Constituent(str(hash(parsernode)))
             cn = f.create_node(synobj=constituent)
-            cn.label = inode
+            cn.label = parsernode
             cn.update_label()
             return cn
         else:
-            print('failing here: ', inode, type(inode))
+            print('failing here: ', parsernode, type(parsernode))

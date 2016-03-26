@@ -38,6 +38,10 @@ class IFeature(BaseModel):
     """
 
     short_name = "I-F"
+    visible_in_label = []
+    editable_in_label = []
+    display_styles = {}
+    editable = {}
 
     def __init__(self, key=None, value=None, values=None, family='', **kw):
         super().__init__(**kw)

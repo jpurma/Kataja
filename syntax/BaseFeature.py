@@ -39,8 +39,11 @@ class BaseFeature(IFeature):
     """
 
     short_name = "F"
-    viewable = {'key': {'order': 1}, 'value': {'order': 2}, 'family': {'order': 3}}
-    editable = {'key': {'order': 1}, 'value': {'order': 2}, 'family': {'order': 3}}
+
+    visible_in_label = ['key', 'value', 'family']
+    editable_in_label = ['key', 'value', 'family']
+    display_styles = {}
+    editable = {}
     addable = {}
 
     def __init__(self, key=None, value=None, values=None, family=''):

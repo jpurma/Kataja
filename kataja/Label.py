@@ -25,9 +25,10 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from kataja.LabelDocument import LabelDocument
-from kataja.parser import INodeToLabelDocument
 from kataja.globals import LEFT_ALIGN, CENTER_ALIGN, RIGHT_ALIGN
 from kataja.singletons import ctrl
+from kataja.utils import combine_dicts, combine_lists
+from kataja.parser.INodes import ITextNode
 
 
 class FocusKeeper(QtCore.QObject):
@@ -75,6 +76,12 @@ class Label(QtWidgets.QGraphicsTextItem):
         self._quick_editing = False
         self._recursion_block = False
         self._last_blockpos = ()
+        self.display_styles = {}
+        self.visible_in_label = []
+        self.editable = {}
+        self.editable_in_label = []
+        self.actual_parts = []
+        self.prepare_template()
         self.doc = LabelDocument()
 
         #self.focuskeeper = FocusKeeper(self)
@@ -83,7 +90,7 @@ class Label(QtWidgets.QGraphicsTextItem):
         # not acceptin hover events is important, editing focus gets lost if other labels take
         # hover events. It is unclear why.
         self.setAcceptHoverEvents(False)
-        self.doc.contentsChanged.connect(self.doc_changed)
+        self.doc.contentsChange.connect(self.doc_changed)
         self.setTextWidth(-1)
         self.resizable = False
         self.text_align = CENTER_ALIGN
@@ -99,7 +106,7 @@ class Label(QtWidgets.QGraphicsTextItem):
         """
         return 65554
 
-    def update_label(self, font, inode):
+    def update_label(self, font):
         """ Asks for node/host to give text and update if changed
         :param font: provide font to use for label document
         :param inode: provide inode to parse to label document
@@ -119,7 +126,7 @@ class Label(QtWidgets.QGraphicsTextItem):
 
         self.prepareGeometryChange()
         self.doc.setTextWidth(-1)
-        INodeToLabelDocument.parse_inode(inode, self.doc)
+        self.parse_to_document()
         ideal_width = self.doc.idealWidth()
         if self.line_length and self.line_length * self.char_width < ideal_width:
             self.setTextWidth(self.line_length * self.char_width)
@@ -127,11 +134,107 @@ class Label(QtWidgets.QGraphicsTextItem):
             self.setTextWidth(ideal_width)
         self.resize_label()
 
+    def prepare_template(self):
+        my_class = self._host.__class__
+        if self._host.syntactic_object:
+            synclass = self._host.syntactic_object.__class__
+            syn_display_styles = getattr(synclass, 'display_styles', {})
+            syn_visible_in_label = getattr(synclass, 'visible_in_label', [])
+            syn_editable = getattr(synclass, 'editable', {})
+            syn_editable_in_label = getattr(synclass, 'editable_in_label', [])
+            self.display_styles = combine_dicts(syn_display_styles, my_class.display_styles)
+            self.visible_in_label = combine_lists(my_class.visible_in_label, syn_visible_in_label)
+            self.editable = combine_dicts(syn_editable, my_class.editable)
+            self.editable_in_label = combine_lists(my_class.editable_in_label,
+                                                   syn_editable_in_label)
+        else:
+            self.display_styles = my_class.display_styles
+            self.visible_in_label = my_class.visible_in_label
+            self.editable = my_class.editable
+            self.editable_in_label = my_class.editable_in_label
+
+        for style in self.display_styles.values():
+            if 'resizable' in style:
+                self.resizable = True
+            if 'line_length' in style:
+                ll = style['line_length']
+                if ll > self.line_length:
+                    self.line_length = ll
+            if 'text_align' in style:
+                self.text_align = style['text_align']
+
+    def parse_to_document(self):
+
+        def add_part(parts_list, html, count, new_part, field_name):
+            parts_list.append((field_name, count, new_part))
+            html.append(new_part)
+            return count + len(new_part)
+
+        def add_html(html, count, new_html):
+            html.append(new_html)
+            return count + len(new_html)
+
+        styles = self.display_styles
+        h = self._host
+        parts_list = []
+        html = []
+        count = 0
+        waiting = None
+        for field_name in self.visible_in_label:
+            s = styles.get(field_name, {})
+            if 'getter' in s:
+                getter = getattr(h, s.get('getter'), None)
+                if callable(getter):
+                    field_value = getter()
+                else:
+                    field_value = getter
+            else:
+                field_value = getattr(h, field_name, '')
+            if 'condition' in s:
+                condition = getattr(h, s.get('condition'), None)
+                if callable(condition):
+                    if not condition():
+                        continue
+                elif not condition:
+                    continue
+            if 'special' in s:
+                special = s['special']
+                if special == 'triangle':
+                    if h.triangle:
+                        count = add_part(parts_list, html, count, '<br/>', 'triangle')
+                    continue
+            if field_value:
+                if isinstance(field_value, ITextNode):
+                    field_value = field_value.as_html()
+                start_tag = s.get('start_tag', '')
+                if start_tag:
+                    end_tag = s.get('end_tag', '')
+                    field_value = start_tag + field_value + end_tag
+                align = s.get('align', '')
+                if align == 'line-end':
+                    waiting = field_value
+                    continue
+                elif align == 'continue' or align == 'append':
+                    count = add_part(parts_list, html, count, field_value, field_name)
+                else:
+                    count = add_part(parts_list, html, count, field_value, field_name)
+                    if waiting:
+                        count = add_part(parts_list, html, count, waiting, field_name)
+                        waiting = None
+                    count = add_html(html, count, '<br/>')
+        self.html = ''.join(html)
+        self.actual_parts = parts_list
+        print(self.actual_parts)
+        self.doc.setHtml(self.html)
+
     def is_empty(self):
         """ Turning this node into label would result in an empty label.
         :return: bool
         """
-        return not self._host.as_inode()
+        return not self.html
+
+    def has_content(self):
+        return bool(self.html)
 
     def get_top_row_y(self):
         return self.top_row_y
@@ -154,11 +257,14 @@ class Label(QtWidgets.QGraphicsTextItem):
             self.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
             self.clearFocus()
 
-    def doc_changed(self):
+    def doc_changed(self, position, chars_removed, chars_added):
         if self._quick_editing and not self._recursion_block:
             self._recursion_block = True
             self.prepareGeometryChange()
-            lines = self.doc.interpret_changes(self._host.as_inode())
+            lines = self.doc.interpret_changes(self.html,
+                                               position,
+                                               chars_removed,
+                                               chars_added)
             w = self.width
             self.setTextWidth(self.doc.idealWidth())
             self.resize_label()
@@ -168,28 +274,6 @@ class Label(QtWidgets.QGraphicsTextItem):
             if self.width != w and self.scene() == ctrl.graph_scene:
                 ctrl.forest.draw()
             self._recursion_block = False
-
-    def ksceneEvent(self, event):
-        if event.type() == QtCore.QEvent.FocusOut:
-            print('se ate focusout')
-            return True
-        elif event.type() == QtCore.QEvent.FocusAboutToChange:
-            print('se ate focus about to change')
-            return True
-
-        elif event.type() == QtCore.QEvent.GrabMouse:
-            print('se ate mouse grab', event)
-            return True
-        elif event.type() == QtCore.QEvent.UngrabMouse:
-            print('se ate mouse ungrab', event)
-            return True
-        #elif event.type() == QtCore.QEvent.ShortcutOverride:
-        #    print('rejecting shortcut override', event)
-        #    return False
-        else:
-            print('scene event: ', event.type())
-            return QtWidgets.QGraphicsTextItem.sceneEvent(self, event)
-
 
     def keyReleaseEvent(self, keyevent):
         """ keyReleaseEvent is received after the keypress is registered by editor, so if we
@@ -231,6 +315,8 @@ class Label(QtWidgets.QGraphicsTextItem):
         if l <= 1:
             self.top_row_y = 0
             self.bottom_row_y = 0
+        for part in enumerate(self.actual_parts):
+            pass
         else:
             avg_line_height = (ih - 3) / float(l)
             half_height = avg_line_height / 2

@@ -6,7 +6,7 @@
 # This module can be run and tested as it is,
 # from kataja.utils import time_me
 
-from kataja.parser.INodes import ICommandNode, ITextNode, ITemplateNode
+from kataja.parser.INodes import ICommandNode, ITextNode, IParserNode
 
 
 class ParseError(Exception):
@@ -224,7 +224,7 @@ def parse_brackets(feed):
     IConstituentNodes or ITextNodes.
         :param feed: list of chars (strings of length 1)
     """
-    node = ITemplateNode()
+    parsernode = IParserNode()
     assert (feed[0] == '[')
 
     feed.pop(0)
@@ -232,8 +232,8 @@ def parse_brackets(feed):
     while feed:
         c = feed[0]
         if c == '[':
-            feed, new_cnode = parse_brackets(feed)
-            node.append(new_cnode)
+            feed, new_parsernode = parse_brackets(feed)
+            parsernode.append(new_parsernode)
         elif c == ']':
             # Finalize merger
             feed.pop(0)
@@ -242,26 +242,26 @@ def parse_brackets(feed):
             if feed and feed[0] == '.':
                 feed.pop(0)
                 feed, new_node = parse_word(feed)
-                node.unanalyzed = new_node
+                parsernode.unanalyzed = new_node
             break
         elif c.isspace():
             feed.pop(0)
         elif c == '.':
             feed.pop(0)
             feed, new_node = parse_word(feed, end_on_space=True)
-            node.unanalyzed = new_node
+            parsernode.unanalyzed = new_node
         else:
             # Make a new constituent
-            new_cnode = ITemplateNode()
+            new_parsernode = IParserNode()
             # Read simple constituent e.g. A or B in [ A B ]
             feed, new_node = parse_word(feed, end_on_space=True)
             # What we just read was label for that constituent
-            new_cnode.unanalyzed = new_node
-            new_cnode.analyze_label_data()
-            node.append(new_cnode)
-    node.analyze_label_data()
-    node.tidy()
-    return feed, node
+            new_parsernode.unanalyzed = new_node
+            new_parsernode.analyze_label_data()
+            parsernode.append(new_parsernode)
+    parsernode.analyze_label_data()
+    parsernode.tidy()
+    return feed, parsernode
 
 # ### Test cases
 if __name__ == "__main__":

@@ -40,21 +40,31 @@ class CommentNode(Node):
     short_name = "ComNode"
     display = True
     can_be_in_groups = False
+    visible_in_label = ['text']
+    editable_in_label = ['text']
+    display_styles = {'text': {'resizable': True,
+                               'line_length': 24,
+                               'text_align': g.LEFT_ALIGN}}
+    editable = {'text': dict(name='',
+                             prefill='comment',
+                             tooltip='freeform text, invisible for processing',
+                             input_type='textarea')}
 
-    viewable = {'text': {'order': 3, 'resizable': True, 'line_length': 24, 'text_align':
-        g.LEFT_ALIGN}}
-    editable = {'text': dict(name='', order=3, prefill='comment',
-                             tooltip='freeform text, invisible for '
-                                     'processing', input_type='textarea')}
+    default_style = {'color': 'accent4',
+                     'font': g.MAIN_FONT,
+                     'font-size': 14}
 
-    default_style = {'color': 'accent4', 'font': g.MAIN_FONT, 'font-size': 14}
+    default_edge = {'id': g.COMMENT_EDGE,
+                    'shape_name': 'linear',
+                    'color': 'accent4',
+                    'pull': 0,
+                    'visible': True,
+                    'arrowhead_at_start': True,
+                    'arrowhead_at_end': False,
+                    'labeled': False,
+                    'name_pl': 'Comment arrows'}
 
-    default_edge = {'id': g.COMMENT_EDGE,'shape_name': 'linear', 'color': 'accent4', 'pull': 0,
-                    'visible': True, 'arrowhead_at_start': True, 'arrowhead_at_end': False,
-                    'labeled': False, 'name_pl': 'Comment arrows'}
-
-    touch_areas_when_dragging = {g.DELETE_ARROW: {'condition':
-                                                  'dragging_my_arrow'}}
+    touch_areas_when_dragging = {g.DELETE_ARROW: {'condition': 'dragging_my_arrow'}}
 
     touch_areas_when_selected = {g.DELETE_ARROW: {'condition': 'has_arrow'}}
 

@@ -1,3 +1,7 @@
+
+from kataja.parser.latex_to_unicode import latex_to_unicode
+from kataja.utils import time_me
+
 __author__ = 'purma'
 """ INodes can be used to represent strings that have formatting commands and
 to represent constituent structures
@@ -108,32 +112,33 @@ class ITextNode:
                 if isinstance(p, ITextNode):
                     p.find_and_remove_part(part)
 
-    def parts_as_string(self):
-        """ Parts flattened into string, recursively stringifies parts if
-        they contain other INodes
-        :return:
-        """
-        return ''.join((str(x) for x in self.parts))
-
-    def tidy(self):
+    def tidy(self, keep_node=True):
         """ Join string parts into continuous strings when possible, just to
         help readability
         :return:
         """
-        new_part = []
-        new_parts = []
+        merged_parts = []
+        current_section = []
+        plain_string = True
         for part in self.parts:
             if isinstance(part, ITextNode):
-                if new_part:
-                    new_parts.append(''.join(new_part))
-                    new_part = []
-                new_parts.append(part)
+                part = part.tidy(keep_node=False)
+            if isinstance(part, str):
+                if part:
+                    current_section.append(part)
             else:
-                new_part.append(part)
-        if new_part:
-            new_parts.append(''.join(new_part))
-        self.parts = new_parts
-        return self
+                plain_string = False
+                if current_section:
+                    merged_parts.append(''.join(current_section))
+                    current_section = []
+                merged_parts.append(part)
+        if current_section:
+            merged_parts.append(''.join(current_section))
+        self.parts = merged_parts
+        if plain_string and not keep_node:
+            return str(self)
+        else:
+            return self
 
     def is_plain_string(self):
         """ Check if this ITextNode contains only strings or ITextNodes that
@@ -156,34 +161,52 @@ class ITextNode:
         else:
             return self
 
-    def plain_string(self):
-        """ Stringify, but lose commands and other formatting
-        :return:
-        """
-        s = []
-        for part in self.parts:
-            if isinstance(part, str) and part:
-                s.append(part)
-            else:
-                p = part.plain_string()
-                if p:
-                    s.append(p)
-        return ' '.join(s)
-
     def is_empty(self):
         return not self.parts
 
     def is_empty_for_view(self):
         return self.is_empty()
 
+    def as_html(self):
+        s = []
+        for part in self.parts:
+            if isinstance(part, ITextNode):
+                s.append(part.as_html())
+            else:
+                s.append(str(part))
+        return ''.join(s)
+
+    def as_latex(self):
+        s = []
+        for part in self.parts:
+            if isinstance(part, ITextNode):
+                s.append(part.as_latex())
+            else:
+                s.append(str(part))
+        return ''.join(s)
+
     def __str__(self):
-        return self.parts_as_string()
+        return ''.join((str(x) for x in self.parts))
 
     def __repr__(self):
         if self.is_plain_string():
-            return repr(self.parts_as_string())
+            return str(self)
         else:
-            return 'ITextNode(parts=%s)' % repr(self.parts)
+            return 'ITextNode(parts=%r)' % self.parts
+
+
+command_to_html = {
+    'emph': ('<i>', '</i>'),
+    'textit': ('<i>', '</i>'),
+    'textbf': ('<b>', '</b>'),
+    '^': ('<sup>', '</sup>'),
+    '_': ('<sub>', '</sub>'),
+    '$': ('', ''),
+    'underline': ('<u>', '</u>'),
+    'strikeout': ('<s>', '</s>'),
+    'textsc': ('<font face="{textsc}">', '</font>'),
+    '\\': ('<br/>', '')
+}
 
 
 class ICommandNode(ITextNode):
@@ -210,12 +233,40 @@ class ICommandNode(ITextNode):
         """
         return False
 
-    def __str__(self):
+    def as_html(self):
+        s = []
+        start_tag = None
+        end_tag = None
+        if self.command in command_to_html:
+            start_tag, end_tag = command_to_html[self.command]
+        elif self.command in latex_to_unicode:
+            s.append(latex_to_unicode[self.command][0])
+        if start_tag:
+            s.append(start_tag)
         if self.parts:
-            return '(%s)%s(/%s)' % (
-            self.command, self.parts_as_string(), self.command)
-        else:
-            return '(%s/)' % self.command
+            s.append(ITextNode.as_html(self))
+        if end_tag:
+            s.append(end_tag)
+        return ''.join(s)
+
+    def as_latex(self):
+        s = []
+        s.append(self.prefix)
+        s.append(self.command)
+        if not self.parts:
+            return ''.join(s)
+        s.append('{')
+        s.append(ITextNode.as_latex(self))
+        s.append('}')
+        return ''.join(s)
+
+    def tidy(self, keep_node=True):
+        """ Tidy insides, but always maintain identity so that the command remains even if it has
+        empty scope
+        :param keep_node:
+        :return:
+        """
+        return ITextNode.tidy(self, keep_node=True)
 
     def scope(self):
         """ Return the content of command (parts), simplified if possible.
@@ -229,29 +280,31 @@ class ICommandNode(ITextNode):
         return not (self.command or self.parts)
 
     def __repr__(self):
-        return 'ICommandNode(command=%s, prefix=%s, parts=%s)' % (
-        repr(self.command), repr(self.prefix), repr(self.parts))
+        return 'ICommandNode(command=%r, prefix=%r, parts=%r)' % (self.command,
+                                                                  self.prefix,
+                                                                  self.parts)
 
 
-class ITemplateNode(ITextNode):
-    """ Node used for complex visible labels, allowing a template be given
-    for the node that
-    describes the displayed elements and their positioning and another for
-    parsing nodes
+class IParserNode(ITextNode):
+    """ Node used temporarily for parsing latex-style trees. It represents ConstituentNode while
+    parsing, but it is mostly agnostic for what to do with the data about the constituent it has
+    parsed from the bracket structure: when it finds a new row in label complex, it adds it to
+    'rows' and when it finds subscript parts, it adds them to 'indices'. It remains for
+    ConstituentNode implementation to map these rows and indices to fields.
+
+    If IParserNodes are found after the parsing, it is probably an error somewhere.
     """
 
-    def __init__(self, parts=None):
+    def __init__(self, parts=None, rows=None, indices=None):
         """
 
         :param parts:
         :return:
         """
         ITextNode.__init__(self, parts=parts)
-        self.rows = []
-        self.indices = []
+        self.rows = rows or []
+        self.indices = indices or []
         self.unanalyzed = None
-        self.view_order = []
-        self.fields = {}
 
     def analyze_label_data(self):
         """ Go through label complex and make rows out of it, also pick
@@ -293,40 +346,19 @@ class ITemplateNode(ITextNode):
             final_row = container.simplified()
             self.rows.append(final_row)
 
+    def tidy(self, keep_node=True):
+        """ Tidy insides, but always maintain identity so that the template node remains even if it
+        has empty scope
+        :param keep_node:
+        :return:
+        """
+        return ITextNode.tidy(self, keep_node=True)
+
     def is_plain_string(self):
         """ Cannot be represented with just a string.
         :return: bool
         """
         return False
 
-    def __str__(self):
-        if self.fields:
-            vals = ';'.join((str(x['value']) for x in self.fields.values() if
-                             x.get('value', False)))
-        else:
-            vals = '|'.join((str(x) for x in self.rows))
-        if self.parts:
-            return '[.%s %s]' % (vals, self.parts_as_string())
-        else:
-            return vals
-
-    def is_empty(self):
-        """
-        :return:
-        """
-        if self.rows:
-            return False
-        for v in self.fields.values():
-            if v.get('value', None):
-                return False
-        return True
-
-    def is_empty_for_view(self):
-        for v in self.fields.values():
-            if v.get('value', None) and v.get('visible', True):
-                return False
-        return True
-
     def __repr__(self):
-        return 'ITemplateNode(rows=%s, values=%s)' % (
-        repr(self.rows), repr(self.fields))
+        return 'IParserNode(parts=%r, rows=%r, indices=%r)' % (self.parts, self.rows, self.indices)

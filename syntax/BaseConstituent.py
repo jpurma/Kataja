@@ -38,8 +38,11 @@ class BaseConstituent(IConstituent):
 
     # info for kataja engine
     short_name = "C"
-    viewable = {'label': {'order': 10}}
-    editable = {'label': {'order': 10}}
+
+    visible_in_label = ['label']
+    editable_in_label = ['label']
+    display_styles = {}
+    editable = {}
     addable = {'features': {'check_before': 'can_add_feature', 'add': 'add_feature', 'order': 20}
                }
     # 'parts': {'check_before': 'can_add_part', 'add': 'add_part', 'order': 10},

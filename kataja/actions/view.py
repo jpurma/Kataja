@@ -239,7 +239,6 @@ def toggle_label_visibility(node_location, field, action=None):
             v = not ctrl.fs.show_leaf_aliases
             ctrl.fs.show_leaf_aliases = v
     for node in ctrl.forest.nodes.values():
-        node.alert_inode()
         node.update_label()
         node.update_label_visibility()
     if action:
