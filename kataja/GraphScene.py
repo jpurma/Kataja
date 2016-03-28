@@ -95,14 +95,15 @@ class GraphScene(QtWidgets.QGraphicsScene):
     # ####
 
     def inspect_focus_change(self, new, old, reason):
-        print('focus changed. new: %s old: %s reason: %s, sender: %s' % (new, old, reason,
-                                                                    self.sender()))
+        pass
+        #print('focus changed. new: %s old: %s reason: %s, sender: %s' % (new, old, reason,
+        #                                                            self.sender()))
 
     def late_init(self):
         """ Initialization that can be done only when ctrl has all the pieces in place
         :return:
         """
-        print('late init for graph scene')
+        #print('late init for graph scene')
         self.sceneRectChanged.connect(ctrl.ui.update_positions)
 
     def fit_to_window(self, force=False):

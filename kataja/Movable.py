@@ -181,9 +181,9 @@ When nodes that don't use physics are dragged, the adjustment.
         elif valign == TOP:
             y -= self.boundingRect().top()
         elif valign == TOP_ROW:
-            y -= self.get_top_row_y()
+            y -= self.get_top_part_y()
         elif valign == BOTTOM_ROW:
-            y -= self.get_bottom_row_y()
+            y -= self.get_lower_part_y()
         elif valign == BOTTOM:
             y -= self.boundingRect().bottom()
         if (x, y) == self.target_position and self._move_counter:
@@ -194,14 +194,14 @@ When nodes that don't use physics are dragged, the adjustment.
             self.after_move_function = after_move_function
         self.start_moving()
 
-    def get_bottom_row_y(self):
+    def get_lower_part_y(self):
         """ Implement this if the movable has content where differentiating between bottom row
         and top row can potentially make sense.
         :return:
         """
         return 0
 
-    def get_top_row_y(self):
+    def get_top_part_y(self):
         """ Implement this if the movable has content where differentiating between bottom row
         and top row can potentially make sense.
         :return:

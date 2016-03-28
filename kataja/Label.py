@@ -27,32 +27,11 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from kataja.LabelDocument import LabelDocument
 from kataja.globals import LEFT_ALIGN, CENTER_ALIGN, RIGHT_ALIGN
 from kataja.singletons import ctrl
-from kataja.utils import combine_dicts, combine_lists
+from kataja.utils import combine_dicts, combine_lists, time_me
 from kataja.parser.INodes import ITextNode
+import difflib
 
-
-class FocusKeeper(QtCore.QObject):
-
-    def eventFilter(self, obj, event):
-
-        if event.type() == QtCore.QEvent.FocusOut:
-            print('ate focusout', event, event.reason())
-            return True
-        elif event.type() == QtCore.QEvent.FocusIn:
-            print('ate focusin', event, event.reason())
-            return True
-        elif event.type() == QtCore.QEvent.FocusAboutToChange:
-            print('ate focus about to change')
-            return True
-        elif event.type() == QtCore.QEvent.GrabMouse:
-            print('ate mouse grab', event)
-            return True
-        elif event.type() == QtCore.QEvent.UngrabMouse:
-            print('ate mouse ungrab', event)
-            return True
-        else:
-            #print(event.type(), event)
-            return QtCore.QObject.eventFilter(self, obj, event)
+differ = difflib.Differ()
 
 
 class Label(QtWidgets.QGraphicsTextItem):
@@ -66,13 +45,14 @@ class Label(QtWidgets.QGraphicsTextItem):
         self._host = parent
         self.has_been_initialized = False
         self.top_y = 0
-        self.top_row_y = 0
-        self.bottom_row_y = 0
+        self.top_part_y = 0
+        self.lowert_part_y = 0
         self.bottom_y = 0
         self.triangle_is_present = False
         self.triangle_height = 0
         self.triangle_y = 0
         self.width = 0
+        self.html = ''
         self._quick_editing = False
         self._recursion_block = False
         self._last_blockpos = ()
@@ -84,13 +64,11 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.prepare_template()
         self.doc = LabelDocument()
 
-        #self.focuskeeper = FocusKeeper(self)
-        #self.installEventFilter(self.focuskeeper)
         self.setDocument(self.doc)
         # not acceptin hover events is important, editing focus gets lost if other labels take
         # hover events. It is unclear why.
         self.setAcceptHoverEvents(False)
-        self.doc.contentsChange.connect(self.doc_changed)
+        self.doc.contentsChanged.connect(self.doc_changed)
         self.setTextWidth(-1)
         self.resizable = False
         self.text_align = CENTER_ALIGN
@@ -106,13 +84,13 @@ class Label(QtWidgets.QGraphicsTextItem):
         """
         return 65554
 
-    def update_label(self, font):
+    def update_label(self, font=None):
         """ Asks for node/host to give text and update if changed
         :param font: provide font to use for label document
         :param inode: provide inode to parse to label document
         """
         self.has_been_initialized = True
-        if font != self._font:
+        if font and font != self._font:
             self.setFont(font)
             self._font = font
             fm = QtGui.QFontMetrics(font)
@@ -124,10 +102,15 @@ class Label(QtWidgets.QGraphicsTextItem):
             align = QtCore.Qt.AlignRight
         self.doc.setDefaultTextOption(QtGui.QTextOption(align))
 
-        self.prepareGeometryChange()
-        self.doc.setTextWidth(-1)
+        old_html = self.html
         self.parse_to_document()
+        if old_html != self.html:
+            self.prepareGeometryChange()
+            self.doc.setTextWidth(-1)
+            self.setHtml(self.html)
+            self.text = self.toPlainText()
         ideal_width = self.doc.idealWidth()
+
         if self.line_length and self.line_length * self.char_width < ideal_width:
             self.setTextWidth(self.line_length * self.char_width)
         else:
@@ -164,9 +147,15 @@ class Label(QtWidgets.QGraphicsTextItem):
                 self.text_align = style['text_align']
 
     def parse_to_document(self):
+        """ Use 'visible_in_label' and 'display_styles' and the item attributes to compose the
+        document html. Also stores information about the composition to 'actual_parts'.
+        Actual parts is list of tuples where:
+        (field_name, position in html string, line in displayed html, html_snippet)
+        :return:
+        """
 
-        def add_part(parts_list, html, count, new_part, field_name):
-            parts_list.append((field_name, count, new_part))
+        def add_part(parts_list, html, count, row, new_part, field_name):
+            parts_list.append((field_name, count, row, new_part))
             html.append(new_part)
             return count + len(new_part)
 
@@ -178,10 +167,12 @@ class Label(QtWidgets.QGraphicsTextItem):
         h = self._host
         parts_list = []
         html = []
-        count = 0
+        position = 0
+        row = 0
         waiting = None
         for field_name in self.visible_in_label:
             s = styles.get(field_name, {})
+            end_tag = ''
             if 'getter' in s:
                 getter = getattr(h, s.get('getter'), None)
                 if callable(getter):
@@ -201,7 +192,9 @@ class Label(QtWidgets.QGraphicsTextItem):
                 special = s['special']
                 if special == 'triangle':
                     if h.triangle:
-                        count = add_part(parts_list, html, count, '<br/>', 'triangle')
+                        position = add_part(parts_list, html, position, row, '<br/><br/>',
+                                            'triangle')
+                        row += 2
                     continue
             if field_value:
                 if isinstance(field_value, ITextNode):
@@ -212,20 +205,23 @@ class Label(QtWidgets.QGraphicsTextItem):
                     field_value = start_tag + field_value + end_tag
                 align = s.get('align', '')
                 if align == 'line-end':
-                    waiting = field_value
+                    waiting = (field_value, field_name)
                     continue
                 elif align == 'continue' or align == 'append':
-                    count = add_part(parts_list, html, count, field_value, field_name)
+                    position = add_part(parts_list, html, position, row, field_value, field_name)
                 else:
-                    count = add_part(parts_list, html, count, field_value, field_name)
+                    position = add_part(parts_list, html, position, row, field_value, field_name)
                     if waiting:
-                        count = add_part(parts_list, html, count, waiting, field_name)
+                        position = add_part(parts_list, html, position, row, waiting[0], waiting[1])
                         waiting = None
-                    count = add_html(html, count, '<br/>')
+                    position = add_html(html, position, '<br/>')
+                    row += 1
+                if '<br/>' in end_tag:
+                    row += 1
+        if html and html[-1] == '<br/>':
+            html.pop()
         self.html = ''.join(html)
         self.actual_parts = parts_list
-        print(self.actual_parts)
-        self.doc.setHtml(self.html)
 
     def is_empty(self):
         """ Turning this node into label would result in an empty label.
@@ -236,35 +232,84 @@ class Label(QtWidgets.QGraphicsTextItem):
     def has_content(self):
         return bool(self.html)
 
-    def get_top_row_y(self):
-        return self.top_row_y
+    def get_top_part_y(self):
+        return self.top_part_y
 
-    def get_bottom_row_y(self):
-        return self.bottom_row_y
+    def get_lower_part_y(self):
+        return self.lowert_part_y
 
     def set_quick_editing(self, value):
-        print('setting quick editing ', value)
         if value:
             self._quick_editing = True
             self.setTextInteractionFlags(QtCore.Qt.TextEditorInteraction)
-            #w = ctrl.main.app.focusWidget()
-            #if w:
-            #    w.clearFocus()
+            self.setPlainText(self.html.replace('<br/>', '\n'))
+            self.setTextWidth(self.doc.idealWidth())
+            self.resize_label()
             ctrl.graph_view.setFocus()
             self.setFocus()
         else:
+            if self.doc.isModified():
+                self.analyze_changes()
+                self.doc.setModified(False)
+                self.update_label()
             self._quick_editing = False
             self.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
             self.clearFocus()
 
-    def doc_changed(self, position, chars_removed, chars_added):
+    def analyze_changes(self):
+
+        def do_replacements(replace_with, replace_these, c):
+            if replace_with or replace_these:
+                for item in replace_these:
+                    if replace_with:
+                        new_d.append(replace_with.pop(0))
+                    else:
+                        new_d.append('')
+                    c += 1
+                if replace_with:
+                    new_d[c - 1] = '\n'.join([new_d[c - 1]] + replace_with)
+                replace_with.clear()
+                replace_these.clear()
+            return c
+
+        al = self.text.splitlines(keepends=False)
+        bl = self.doc.toPlainText().splitlines(keepends=False)
+        replace_with = []
+        replace_these = []
+        new_d = []
+        i = 0
+
+        for comp in differ.compare(al, bl):
+            word = comp[2:]
+            op = comp[0]
+            if op == ' ':
+                i = do_replacements(replace_with, replace_these, i)
+                new_d.append(word)
+                i += 1
+            elif op == '+':
+                replace_with.append(word)
+            elif op == '-':
+                replace_these.append(word)
+        do_replacements(replace_with, replace_these, i)
+        for i, item in enumerate(self.actual_parts):
+            field_name, count, row, old_part = item
+            new_value = new_d[i]
+            if new_value != old_part:
+                my_editable = self.editable.get(field_name)
+                setter = my_editable.get('setter', None)
+                if setter:
+                    setter_method = getattr(self._host, setter, None)
+                    if setter_method and callable(setter_method):
+                        setter_method(new_value)
+                    else:
+                        print('missing setter!')
+                else:
+                    setattr(self._host, field_name, new_value)
+
+    def doc_changed(self):
         if self._quick_editing and not self._recursion_block:
             self._recursion_block = True
             self.prepareGeometryChange()
-            lines = self.doc.interpret_changes(self.html,
-                                               position,
-                                               chars_removed,
-                                               chars_added)
             w = self.width
             self.setTextWidth(self.doc.idealWidth())
             self.resize_label()
@@ -304,7 +349,7 @@ class Label(QtWidgets.QGraphicsTextItem):
                                c.blockNumber() == self.doc.blockCount() - 1)
 
     def resize_label(self):
-        l = self.doc.lineCount()
+        #l = self.doc.lineCount()
         inner_size = self.doc.size()
         ih = inner_size.height()
         iw = inner_size.width()
@@ -312,55 +357,38 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.top_y = -h2
         self.bottom_y = h2
         self.width = iw
-        if l <= 1:
-            self.top_row_y = 0
-            self.bottom_row_y = 0
-        for part in enumerate(self.actual_parts):
-            pass
-        else:
-            avg_line_height = (ih - 3) / float(l)
-            half_height = avg_line_height / 2
-            if 'triangle' in self.doc.lines:
-                top_row_found = False
-                triangle_found = False
-                for i, line in enumerate(self.doc.lines):
-                    if (not top_row_found) and line == 'triangle':
-                        if i < 2:
-                            self.top_row_y = self.top_y + half_height
-                        else:
-                            self.top_row_y = self.top_y + (i * avg_line_height) + half_height
-                        top_row_found = True
-                    if (not triangle_found) and line == 'triangle':
-                        self.triangle_y = self.top_y + (i * avg_line_height) + 2
-                        triangle_found = True
-                    elif triangle_found and line != 'triangle':
-                        self.bottom_row_y = self.top_y + (i * avg_line_height) + half_height
-                        break
-                self.triangle_height = (avg_line_height * 2) - 4
+        self.triangle_is_present = False
+        second_row = 0
+        triangle_row = 0
+        last_row = 0
+        for field_name, count, row, html in self.actual_parts:
+            if row > last_row:
+                last_row = row
+            if field_name == 'triangle':
                 self.triangle_is_present = True
+                triangle_row = row
+            elif not second_row and row > second_row:
+                second_row = row
+
+        row_count = last_row + 1
+        if row_count == 1:
+            self.top_part_y = 0
+            self.lowert_part_y = 0
+        else:
+            avg_line_height = (ih - 3) / float(row_count)
+            half_height = avg_line_height / 2
+            if self.triangle_is_present:
+                triangle_space = 0
+                if triangle_row > 1:
+                    triangle_space = triangle_row * avg_line_height
+                self.top_part_y = self.top_y + triangle_space + half_height
+                self.triangle_y = self.top_y + (triangle_row * avg_line_height) + 2
+                self.lowert_part_y = self.top_y + (second_row * avg_line_height) + half_height
+                self.triangle_height = (avg_line_height * 2) - 4
             else:
-                top_row = self.doc.lines[0]
-                self.top_row_y = self.top_y + half_height + 3
-                bottom_row_found = False
-                for i, line in enumerate(self.doc.lines):
-                    if line != top_row:
-                        self.bottom_row_y = self.top_y + (i * avg_line_height) + half_height
-                        bottom_row_found = True
-                        break
-                if not bottom_row_found:
-                    self.bottom_row_y = self.top_row_y
-                self.triangle_is_present = False
+                self.top_part_y = self.top_y + half_height + 3
+                self.lowert_part_y = self.top_y + (second_row * avg_line_height) + half_height
         self.setPos(iw / -2.0, self.top_y)
-
-    def kfocusInEvent(self, event):
-        print('focus in')
-        #self.grabKeyboard()
-        return QtWidgets.QGraphicsTextItem.focusInEvent(self, event)
-
-    def focusOutEvent(self, event):
-        print('focus out ', event.reason())
-        #self.ungrabKeyboard()
-        return QtWidgets.QGraphicsTextItem.focusOutEvent(self, event)
 
     def paint(self, painter, option, widget):
         """ Painting is sensitive to mouse/selection issues, but usually with

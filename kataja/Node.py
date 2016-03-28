@@ -915,21 +915,21 @@ syntactic_object: %s
         pass
 
 
-    def get_bottom_row_y(self):
+    def get_lower_part_y(self):
         """ Label should answer to this.
         :return:
         """
         if self.label_object:
-            return self.label_object.get_bottom_row_y()
+            return self.label_object.get_lower_part_y()
         else:
             return 0
 
-    def get_top_row_y(self):
+    def get_top_part_y(self):
         """ Implement this if the movable has content where differentiating between bottom row and top row can potentially make sense.
         :return:
         """
         if self.label_object:
-            return self.label_object.get_top_row_y()
+            return self.label_object.get_top_part_y()
         else:
             return 0
 
@@ -1177,7 +1177,7 @@ syntactic_object: %s
         appearance and related local elements.
         :param selected:
         """
-        print('update selection status called for %s, selected: %s' % (self, selected))
+        #print('update selection status called for %s, selected: %s' % (self, selected))
         if not selected:
             self.setZValue(10)
             if ctrl.main.use_tooltips:
