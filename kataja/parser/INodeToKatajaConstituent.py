@@ -106,7 +106,6 @@ class INodeToKatajaConstituent(BaseParser):
             f.derivation_steps.save_and_create_derivation_step()
             return cn
         elif isinstance(parsernode, ITextNode):
-            raise hell
             constituent = classes.Constituent(str(hash(parsernode)))
             cn = f.create_node(synobj=constituent)
             cn.label = parsernode

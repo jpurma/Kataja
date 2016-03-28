@@ -647,8 +647,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         print('received unknown command:', command, args)
                 else:
                     text = data.text().strip()
-                    node = ctrl.forest.create_node_from_string(text, event.scenePos(),
-                                                               simple_parse=True)
+                    node = ctrl.forest.create_node_from_string(text, simple_parse=True)
                     ctrl.main.action_finished('added tree based on "%s"' % text)
 
         ctrl.ui.remove_touch_areas()

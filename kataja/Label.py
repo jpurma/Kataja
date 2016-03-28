@@ -27,7 +27,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from kataja.LabelDocument import LabelDocument
 from kataja.globals import LEFT_ALIGN, CENTER_ALIGN, RIGHT_ALIGN
 from kataja.singletons import ctrl
-from kataja.utils import combine_dicts, combine_lists, time_me
+from kataja.utils import combine_dicts, combine_lists, time_me, open_symbol_data
 from kataja.parser.INodes import ITextNode
 import difflib
 
@@ -67,6 +67,7 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.setDocument(self.doc)
         # not acceptin hover events is important, editing focus gets lost if other labels take
         # hover events. It is unclear why.
+        self.setAcceptDrops(False)
         self.setAcceptHoverEvents(False)
         self.doc.contentsChanged.connect(self.doc_changed)
         self.setTextWidth(-1)
@@ -239,21 +240,37 @@ class Label(QtWidgets.QGraphicsTextItem):
         return self.lowert_part_y
 
     def set_quick_editing(self, value):
+        """  Toggle quick editing on and off for this label. Quick editing is toggled on when
+        the label is clicked or navigated into with the keyboard. The label and its editor takes
+        focus and many things behave differently while editing, so please keep make sure that
+        quick editing is switched off properly, using this method.
+        :param value:
+        :return:
+        """
         if value:
             self._quick_editing = True
             self.setTextInteractionFlags(QtCore.Qt.TextEditorInteraction)
+            self.prepareGeometryChange()
+            self.doc.setTextWidth(-1)
             self.setPlainText(self.html.replace('<br/>', '\n'))
             self.setTextWidth(self.doc.idealWidth())
             self.resize_label()
+            self.setAcceptDrops(True)
             ctrl.graph_view.setFocus()
+            ctrl.text_editor_focus = self
             self.setFocus()
-        else:
+        elif self._quick_editing:
             if self.doc.isModified():
                 self.analyze_changes()
                 self.doc.setModified(False)
                 self.update_label()
+            else:
+                self.setHtml(self.html)
             self._quick_editing = False
+            self.setAcceptDrops(False)
+            print('toggled off accept drops')
             self.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
+            ctrl.text_editor_focus = None
             self.clearFocus()
 
     def analyze_changes(self):
@@ -389,6 +406,47 @@ class Label(QtWidgets.QGraphicsTextItem):
                 self.top_part_y = self.top_y + half_height + 3
                 self.lowert_part_y = self.top_y + (second_row * avg_line_height) + half_height
         self.setPos(iw / -2.0, self.top_y)
+
+    def dropEvent(self, event):
+        mim = event.mimeData()
+        if mim.hasFormat("application/x-qabstractitemmodeldatalist"):
+            event.accept()
+            data = open_symbol_data(event.mimeData())
+            if data and 'char' in data:
+                self.textCursor().insertText(data['char'])
+                event.acceptProposedAction()
+        elif mim.hasFormat("text/plain"):
+            event.accept()
+            event.acceptProposedAction()
+            QtWidgets.QGraphicsTextItem.dropEvent(self, event)
+        else:
+            QtWidgets.QGraphicsTextItem.dropEvent(self, event)
+
+    def dragEnterEvent(self, event):
+        """ Support dragging of items from their panel containers, e.g. symbols from symbol panel
+        or new nodes from nodes panel.
+        :param event:
+        """
+        data = event.mimeData()
+        if data.hasFormat("application/x-qabstractitemmodeldatalist") or data.hasFormat(
+                "text/plain"):
+            event.acceptProposedAction()
+            event.accept()
+        else:
+            QtWidgets.QGraphicsTextItem.dragEnterEvent(self, event)
+
+    def dragfMoveEvent(self, event):
+        """ Support dragging of items from their panel containers, e.g. symbols from symbol panel
+        or new nodes from nodes panel.
+        :param event:
+        """
+        data = event.mimeData()
+        if data.hasFormat("application/x-qabstractitemmodeldatalist") or data.hasFormat(
+                "text/plain"):
+            event.accept()
+            event.acceptProposedAction()
+        else:
+            QtWidgets.QGraphicsTextItem.dragMoveEvent(self, event)
 
     def paint(self, painter, option, widget):
         """ Painting is sensitive to mouse/selection issues, but usually with

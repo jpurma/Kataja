@@ -75,7 +75,7 @@ class BaseConstituentNode(Node):
         else:
             self._visibility_brackets = 0
 
-        self.setAcceptDrops(True)
+        #self.setAcceptDrops(True)
 
     @staticmethod
     def create_synobj(label=None):
