@@ -116,6 +116,7 @@ crashed
 - Load & save default locations are app resources -folder.
 - Changing ui text size doesn't resize panels
 + Updating labels puts bar-markers (X') to separate line
++ Indexes display correctly and are editable in quick edit.
 
 ADD:
 

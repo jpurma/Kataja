@@ -1,13 +1,8 @@
 
-[.TP [.AdvP [.Adv\\usually ] ] [.TP [.DP [.D\\{\O} ] [.NP\\John ] ] [.T\1 [.T\\\emph{PRESENT} ] [.VP [.VP [.V\\goes ] [.PP [.P\\to ] [.DP [.D\\the ] [.NP\\park ] ] ] ] [.PP [.P\\on ] [.DP [.D\\{\O} ] [.NP\\Tuesdays ] ] ] ] ] ] ]
+[.{CP} [.{YP_k} [.{XP_j} [.{whP_i} kenen nimmaria ] [ ilman t_i ] ]  [ jäätyään t_j ] ] [.{CP} [.{C} {} ] [.{TP} {Merja palasi suruissaan kotiin} t_k ] ] ]
+kenen = Q:force
 
-#%demo/kielitiede_valkotaulu.jpg
-#%demo/examples.png
-#%demo/hemoglobin.png
-#%demo/goals.png
-#%demo/nodes.png
-#%demo/nodeforms.png
-#%demo/features.png
+[.TP [.AdvP [.Adv\\usually ] ] [.TP [.DP [.D\\{\O} ] [.NP\\John ] ] [.T\1 [.T\\\emph{PRESENT} ] [.VP [.VP [.V\\goes ] [.PP [.P\\to ] [.DP [.D\\the ] [.NP\\park ] ] ] ] [.PP [.P\\on ] [.DP [.D\\{\O} ] [.NP\\Tuesdays ] ] ] ] ] ] ]
 
 #Siviä oli jo todella jättänyt Lahdenperän, joka vasta tavallisen kursastelun ja säädyllisen estelemisen jälkeen viimeinkin oli suostunut ottamaan toisenkin palasen sokeria astiasta, pistämättä sitä kuitenkaan kokonaisena kahvinsa sekaan, vaan puraisemalla siitä puolikkaan ja pistämällä sen takaisin astiaan.
 
@@ -40,9 +35,6 @@ ni Maria = 'NG Maria'
 ang tubig = 'ANG water'
 'Maria's grandmother's servant drank the water'
 
-
-[.{CP} [.{YP_k} [.{XP_j} [.{whP_i} kenen nimmaria ] [ ilman t_i ] ]  [ jäätyään t_j ] ] [.{CP} [.{C} {} ] [.{TP} {Merja palasi suruissaan kotiin} t_k ] ] ]
-kenen = Q:force
 
 [.{FP} t_i [.{F'} t_j [.{TP} t_i [.{T'} t_j [.{AuxP} on_j [.{PrtP} t_k [.{VP} {Graham Greene_i} [.{V'} kirjoittanut_k [.{DP} tämän kirjan ] ] ] ] ] ] ] ] ]
 kirjoittanut = 3rd:person, perf:tense

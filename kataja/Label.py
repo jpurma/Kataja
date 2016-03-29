@@ -53,14 +53,16 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.triangle_y = 0
         self.width = 0
         self.html = ''
+        self.editable_html = ''
         self._quick_editing = False
         self._recursion_block = False
         self._last_blockpos = ()
         self.display_styles = {}
         self.visible_in_label = []
+        self.visible_parts = []
         self.editable = {}
         self.editable_in_label = []
-        self.actual_parts = []
+        self.editable_parts = []
         self.prepare_template()
         self.doc = LabelDocument()
 
@@ -149,27 +151,19 @@ class Label(QtWidgets.QGraphicsTextItem):
 
     def parse_to_document(self):
         """ Use 'visible_in_label' and 'display_styles' and the item attributes to compose the
-        document html. Also stores information about the composition to 'actual_parts'.
+        document html. Also stores information about the composition to 'viewable_parts'
         Actual parts is list of tuples where:
         (field_name, position in html string, line in displayed html, html_snippet)
         :return:
         """
 
-        def add_part(parts_list, html, count, row, new_part, field_name):
-            parts_list.append((field_name, count, row, new_part))
-            html.append(new_part)
-            return count + len(new_part)
-
-        def add_html(html, count, new_html):
-            html.append(new_html)
-            return count + len(new_html)
-
         styles = self.display_styles
         h = self._host
-        parts_list = []
-        html = []
-        position = 0
+        editable_parts = []
         row = 0
+        visible_parts = []
+        html = []
+        editable = []
         waiting = None
         for field_name in self.visible_in_label:
             s = styles.get(field_name, {})
@@ -193,8 +187,8 @@ class Label(QtWidgets.QGraphicsTextItem):
                 special = s['special']
                 if special == 'triangle':
                     if h.triangle:
-                        position = add_part(parts_list, html, position, row, '<br/><br/>',
-                                            'triangle')
+                        html.append('<br/><br/>')
+                        visible_parts.append(('triangle', row, '<br/><br/>'))
                         row += 2
                     continue
             if field_value:
@@ -203,26 +197,50 @@ class Label(QtWidgets.QGraphicsTextItem):
                 start_tag = s.get('start_tag', '')
                 if start_tag:
                     end_tag = s.get('end_tag', '')
-                    field_value = start_tag + field_value + end_tag
+                    styled_field_value = start_tag + field_value + end_tag
+                else:
+                    styled_field_value = field_value
                 align = s.get('align', '')
                 if align == 'line-end':
-                    waiting = (field_value, field_name)
+                    editable_parts.append((field_name, field_value))
+                    editable.append(field_value)
+                    editable.append('\n')
+                    if visible_parts and visible_parts[-1][0] != 'triangle':
+                        if html[-1] == '<br/>':
+                            html.pop()
+                        html.append(styled_field_value)
+                        visible_parts.append((field_name, row, styled_field_value))
+                        html.append('<br/>')
+                        row += 1
+                    else:
+                        waiting = (styled_field_value, field_name)
                     continue
                 elif align == 'continue' or align == 'append':
-                    position = add_part(parts_list, html, position, row, field_value, field_name)
+                    editable_parts.append((field_name, field_value))
+                    html.append(styled_field_value)
+                    visible_parts.append((field_name, row, styled_field_value))
+                    editable.append(field_value)
+                    editable.append('\n')
                 else:
-                    position = add_part(parts_list, html, position, row, field_value, field_name)
+                    editable_parts.append((field_name, field_value))
+                    html.append(styled_field_value)
+                    visible_parts.append((field_name, row, styled_field_value))
+                    editable.append(field_value)
                     if waiting:
-                        position = add_part(parts_list, html, position, row, waiting[0], waiting[1])
+                        html.append(waiting[0])
+                        visible_parts.append((waiting[0], row, waiting[1]))
                         waiting = None
-                    position = add_html(html, position, '<br/>')
+                    html.append('<br/>')
                     row += 1
-                if '<br/>' in end_tag:
-                    row += 1
+                    editable.append('\n')
         if html and html[-1] == '<br/>':
             html.pop()
+        if editable and editable[-1] == '\n':
+            editable.pop()
         self.html = ''.join(html)
-        self.actual_parts = parts_list
+        self.editable_html = ''.join(editable)
+        self.editable_parts = editable_parts
+        self.visible_parts = visible_parts
 
     def is_empty(self):
         """ Turning this node into label would result in an empty label.
@@ -258,7 +276,7 @@ class Label(QtWidgets.QGraphicsTextItem):
             self.setTextInteractionFlags(QtCore.Qt.TextEditorInteraction)
             self.prepareGeometryChange()
             self.doc.setTextWidth(-1)
-            self.setPlainText(self.html.replace('<br/>', '\n'))
+            self.setPlainText(self.editable_html)
             self.setTextWidth(self.doc.idealWidth())
             self.resize_label()
             self.setAcceptDrops(True)
@@ -278,7 +296,9 @@ class Label(QtWidgets.QGraphicsTextItem):
             self.clearFocus()
 
     def analyze_changes(self):
-
+        """ Use difflib to get a robust idea on what has changed
+        :return:
+        """
         def do_replacements(replace_with, replace_these, c):
             if replace_with or replace_these:
                 for item in replace_these:
@@ -293,7 +313,7 @@ class Label(QtWidgets.QGraphicsTextItem):
                 replace_these.clear()
             return c
 
-        al = self.text.splitlines(keepends=False)
+        al = self.editable_html.splitlines(keepends=False)
         bl = self.doc.toPlainText().splitlines(keepends=False)
         replace_with = []
         replace_these = []
@@ -312,8 +332,8 @@ class Label(QtWidgets.QGraphicsTextItem):
             elif op == '-':
                 replace_these.append(word)
         do_replacements(replace_with, replace_these, i)
-        for i, item in enumerate(self.actual_parts):
-            field_name, count, row, old_part = item
+        for i, item in enumerate(self.editable_parts):
+            field_name, old_part = item
             new_value = new_d[i]
             if new_value != old_part:
                 my_editable = self.editable.get(field_name, {})
@@ -382,7 +402,7 @@ class Label(QtWidgets.QGraphicsTextItem):
         second_row = 0
         triangle_row = 0
         last_row = 0
-        for field_name, count, row, html in self.actual_parts:
+        for field_name, row, html in self.visible_parts:
             if row > last_row:
                 last_row = row
             if field_name == 'triangle':
