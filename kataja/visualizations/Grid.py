@@ -41,7 +41,7 @@ class Grid:
             collist = []
             for item in column:
                 if item.node_type == g.CONSTITUENT_NODE:
-                    collist.append(item.label or 'Placeholder')
+                    collist.append(item.label or 'Anon')
                 else:
                     collist.append(str(item))
             rowlist.append(', '.join(collist))

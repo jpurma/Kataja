@@ -298,7 +298,7 @@ class ConstituentNode(BaseConstituentNode):
 
     def __str__(self):
         if not self.syntactic_object:
-            return 'a placeholder for constituent'
+            return 'const with missing synobj'
         alias = str(self.alias)
         label = str(self.label)
         if alias and label:
@@ -326,20 +326,10 @@ class ConstituentNode(BaseConstituentNode):
             return super().as_bracket_string()
 
     def is_unnecessary_merger(self):
-        """ This merge can be removed, if one or both children are placeholders
+        """ This merge can be removed, if it has only one child
         :return:
         """
-        children = list(self.get_children())
-        lc = len(children)
-        if lc == 0:
-            return False
-        elif lc == 1:
-            return True
-        good_children = 0
-        for child in children:
-            if not child.is_placeholder():
-                good_children += 1
-        return good_children < 2
+        return len(list(self.get_children())) == 1
 
     def fix_edge_aligns(self):
         aligns = []
@@ -419,8 +409,7 @@ class ConstituentNode(BaseConstituentNode):
             prefix = [''] * l
         for n, child in enumerate(children):
             ch = child.head or child
-            potent = child.head or (
-                child.is_leaf(only_visible=False) and not child.is_placeholder())
+            potent = child.head or child.is_leaf(only_visible=False)
             d = {'text': '%s%s' % (prefix[n], ch.short_str()), 'value': ch,
                  'is_checked': ch is self.head, 'enabled': bool(potent),
                  'tooltip': 'inherit head from ' + str(ch)}

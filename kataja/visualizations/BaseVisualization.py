@@ -311,10 +311,9 @@ class BaseVisualization:
                     required_keys.add(index_key)
                     my_parents = []
                     for parent in parents:
-                        if not parent.is_placeholder():
-                            if parent in ltree:
-                                i = ltree.index(parent)
-                                my_parents.append((i, index_key, parent, True))
+                        if parent in ltree:
+                            i = ltree.index(parent)
+                            my_parents.append((i, index_key, parent, True))
                     my_parents.sort()
                     a, b, c, d = my_parents[-1]  # @UnusedVariable
                     my_parents[-1] = a, b, c, False

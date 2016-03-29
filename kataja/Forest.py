@@ -870,22 +870,6 @@ class Forest(BaseModel):
         # node.fade_in()
         return node
 
-    def create_placeholder_node(self, pos):
-        """
-
-        :param pos:
-        :return:
-        """
-        node = ConstituentNode(constituent=None)
-        node.set_original_position(pos)
-        node.after_init()
-        self.add_to_scene(node)
-        # for key, feature in C.get_features().items():
-        # self.create_feature_node(node, feature)
-        if self.visualization:
-            self.visualization.reset_node(node)
-        return node
-
     def create_gloss_node(self, host):
         gn = self.create_node(None, host, node_type=g.GLOSS_NODE)
         self.connect_node(host, child=gn)
@@ -1235,48 +1219,11 @@ class Forest(BaseModel):
         """
         if not isinstance(node, BaseConstituentNode):
             return
-        real_children = []
-        placeholders = []
-        for child in node.get_children():
-            if child.is_placeholder():
-                placeholders.append(child)
-            else:
-                real_children.append(child)
-        if len(real_children) == 1 and len(placeholders) == 0:
-            align = node.get_edge_to(real_children[0]).alignment
-            placeholder_align = g.NO_ALIGN
-            if align == g.LEFT:
-                placeholder_align == g.RIGHT
-            elif align == g.RIGHT:
-                placeholder_align == g.LEFT
-            placeholder = self.create_placeholder_node(node.current_scene_position)
-            self.connect_node(node, placeholder, direction=placeholder_align)
-        elif not real_children:
-            for ph in placeholders:
-                edge = node.get_edge_to(ph, g.CONSTITUENT_EDGE)
-                if edge:
-                    self.delete_edge(edge)
-                self.delete_node(ph)
-
-    def add_placeholder_to_edge_start(self, edge):
-        """
-
-        :param edge:
-        """
-        assert (not edge.start)
-        pos = edge.start_point
-        placeholder = self.create_placeholder_node(pos)
-        self.set_edge_start(edge, placeholder)
-
-    def add_placeholder_to_edge_end(self, edge):
-        """
-
-        :param edge:
-        """
-        assert (not edge.end)
-        pos = edge.end_point
-        placeholder = self.create_placeholder_node(pos)
-        self.set_edge_end(edge, placeholder)
+        children = list(node.get_children())
+        if len(children) == 1:
+            edge = node.get_edge_to(children[0])
+            if edge:
+                edge.alignment = g.NO_ALIGN
 
     def order_edge_visibility_check(self):
         """ Make sure that all edges are checked to update their visibility.
@@ -1618,6 +1565,7 @@ class Forest(BaseModel):
         return new_edge
 
     def partial_disconnect(self, edge, start=True, end=True):
+        print('partial disconnect called')
         if start and edge.start:
             edge.start.poke('edges_down')
             edge.start.edges_down.remove(edge)
@@ -1741,15 +1689,8 @@ class Forest(BaseModel):
         else:
             i = ''
         children = list(node.get_children())
-        real_children = []
-        placeholders = []
         trees = set(node.trees)
         for child in children:
-            if child.is_placeholder():
-                placeholders.append(child)
-            else:
-                real_children.append(child)
-        for child in real_children:
             parents = node.get_parents()
             parents_children = set()
             bad_parents = []

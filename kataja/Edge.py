@@ -112,7 +112,7 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
         self.setZValue(10)
         self.status_tip = ""
         self._cached_shape_info = {}
-        self.connect_end_points(start, end)
+        #self.connect_end_points(start, end)
         self.arrowhead_size_at_start = 6
         self.arrowhead_size_at_end = 6
         self._arrow_cut_point_start = None
@@ -148,9 +148,9 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
                 values.
         :return: None
         """
-        # print("after-initing edge ", self)
         self.connect_end_points(self.start, self.end)
         self.make_relative_vector()
+        self.update_end_points()
         self.effect = utils.create_shadow_effect(self.color)
         self.move_effect = utils.create_blur_effect()
         self.setGraphicsEffect(self.effect)
@@ -166,7 +166,6 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
         if 'visible' in updated_fields:
             self.update_visibility()
         self.connect_end_points(self.start, self.end)
-        self.make_relative_vector()
 
     @property
     def start_point(self) -> tuple:
@@ -274,7 +273,6 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
         shortcut for it.
         :return:
         """
-        print(self.label_data)
         return self.label_data.get('text', '')
 
     def set_label_text(self, value):
@@ -347,14 +345,10 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
          It applies only to lines where the other end is attached to node.
         :return:
         """
-        # print(id(self), self.start_point, self.end_point, self.start,
-        # self.end)
         if self.start and not self.end:
             self._relative_vector = sub_xy(self.end_point, self.start.current_scene_position)
         elif self.end and not self.start:
             self._relative_vector = sub_xy(self.end.current_scene_position, self.start_point)
-            # print(id(self), self.start_point, self.end_point, self.start,
-            # self.end)
 
     def connect_start_to(self, node):
         """
@@ -364,7 +358,6 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
         ctrl.forest.set_edge_start(self, node)
         self.make_relative_vector()
         self.update_shape()
-        # self.update()
 
     def connect_end_to(self, node):
         """
@@ -416,9 +409,7 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
         """
         if self.edge_type == g.ARROW:
             return False
-        if not (self.start and self.end):
-            return True
-        return self.start.is_placeholder() or self.end.is_placeholder()
+        return self.start and self.end
 
     # ### Color ############################################################
 
@@ -552,11 +543,15 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
             ctrl.ui.update_control_points()
         self.update()
 
-    def update_end_points(self):
+    def update_end_points(self, foo=None):
         """
 
         :return:
         """
+        if not self._relative_vector:
+            self.make_relative_vector()
+            self.update_status_tip()
+
         if self.start and not self.end:
             self._computed_end_point = add_xy(self.start.current_scene_position,
                                                self._relative_vector)
@@ -597,6 +592,7 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
                     self._computed_start_point = self.start.magnet(9)
             if self.end:
                 self._computed_end_point = self.end.magnet(2)
+
 
     def connect_end_points(self, start, end):
         """
@@ -678,13 +674,6 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
         """
         return self.edge_type is g.ARROW or self.edge_type is g.DIVIDER
 
-    def has_orphan_ends(self):
-        """
-
-        :return:
-        """
-        return (self.end and (self.end.is_placeholder())) or (
-            self.start and (self.start.is_placeholder()))
 
     def update_selection_status(self, selected):
         """ Switch
@@ -692,12 +681,11 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
         :param selected:
         """
         if selected:
-            if self.allow_orphan_ends() or not self.has_orphan_ends():
-                if self.uses_labels:
-                    if not self.label_item:
-                        self.label_item = EdgeLabel('', self, placeholder=True)
-                        self.label_item.update_position()
-                    self.label_item.selected = True
+            if self.uses_labels:
+                if not self.label_item:
+                    self.label_item = EdgeLabel('', self, placeholder=True)
+                    self.label_item.update_position()
+                self.label_item.selected = True
         else:
             if self.label_item:
                 if self.label_item.placeholder:
@@ -716,7 +704,7 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
         """
         if not self._path:
             self.make_path()
-        return self._cached_cp_rect
+        return self._cached_cp_rect or QtCore.QRectF()
 
     # ### Mouse - Qt events ##################################################
 

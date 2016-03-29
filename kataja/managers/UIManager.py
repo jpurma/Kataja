@@ -965,26 +965,14 @@ class UIManager:
         :param edge: object to update
         """
         if edge.edge_type == g.CONSTITUENT_EDGE:
-            if edge.has_orphan_ends():
-                if edge.end and (edge.end.is_placeholder()):
-                    ta = self.get_touch_area(edge.end, g.TOUCH_ADD_CONSTITUENT)
-                    if not ta:
-                        self.create_touch_area(edge.end, g.TOUCH_ADD_CONSTITUENT,
-                                               self.get_action('replace_placeholder'))
-                if edge.start and (edge.start.is_placeholder()):
-                    ta = self.get_touch_area(edge.start, g.TOUCH_ADD_CONSTITUENT)
-                    if not ta:
-                        self.create_touch_area(edge.start, g.TOUCH_ADD_CONSTITUENT,
-                                               self.get_action('replace_placeholder'))
-            else:
-                ta = self.get_touch_area(edge, g.INNER_ADD_SIBLING_LEFT)
-                if not ta:
-                    self.create_touch_area(edge, g.INNER_ADD_SIBLING_LEFT,
-                                           self.get_action('inner_add_sibling_left'))
-                ta = self.get_touch_area(edge, g.INNER_ADD_SIBLING_RIGHT)
-                if not ta:
-                    self.create_touch_area(edge, g.INNER_ADD_SIBLING_RIGHT,
-                                           self.get_action('inner_add_sibling_right'))
+            ta = self.get_touch_area(edge, g.INNER_ADD_SIBLING_LEFT)
+            if not ta:
+                self.create_touch_area(edge, g.INNER_ADD_SIBLING_LEFT,
+                                       self.get_action('inner_add_sibling_left'))
+            ta = self.get_touch_area(edge, g.INNER_ADD_SIBLING_RIGHT)
+            if not ta:
+                self.create_touch_area(edge, g.INNER_ADD_SIBLING_RIGHT,
+                                       self.get_action('inner_add_sibling_right'))
 
     def prepare_touch_areas_for_dragging(self, drag_host=None, moving=None, dragged_type='',
                                          multidrag=False):
@@ -1269,18 +1257,15 @@ class UIManager:
         in between.
         :param edge:
         """
-        if edge.edge_type is g.CONSTITUENT_EDGE:
-            if edge.end and edge.end.is_placeholder():
-                self.add_remove_merger_button(edge.start)
         # Constituent edges don't have cut-button at the start
-        else:
+        if edge.edge_type is not g.CONSTITUENT_EDGE:
             key = edge.save_key + "_cut_start"
             if edge.start:
                 self._create_overlay_button(icon=qt_prefs.cut_icon, host=edge, role=g.START_CUT,
                                             key=key, text='Disconnect from node',
                                             action='disconnect_edge')
         key = edge.save_key + "_cut_end"
-        if edge.end and not edge.end.is_placeholder():
+        if edge.end:
             self._create_overlay_button(icon=qt_prefs.cut_icon, host=edge, role=g.END_CUT, key=key,
                                         text='Disconnect from node', action='disconnect_edge')
 
@@ -1300,9 +1285,9 @@ class UIManager:
         key_base = edge.save_key + '_cp_'
         for i, point in enumerate(edge.control_points):
             _add_cp(key_base + str(i), i, '')
-        if not edge.start:  # or edge.start.is_placeholder():
+        if not edge.start:
             _add_cp(key_base + g.START_POINT, -1, g.START_POINT)
-        if not edge.end:  # or edge.end.is_placeholder():
+        if not edge.end:
             _add_cp(key_base + g.END_POINT, -1, g.END_POINT)
         if edge.label_item:
             _add_cp(key_base + g.LABEL_START, -1, g.LABEL_START)

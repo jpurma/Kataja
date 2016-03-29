@@ -156,7 +156,7 @@ class BaseConstituentNode(Node):
 
     def __str__(self):
         if not self.syntactic_object:
-            return 'a placeholder for constituent'
+            return 'const with missing synobj'
         else:
             l = str(self.label)
             if l:
@@ -173,14 +173,6 @@ class BaseConstituentNode(Node):
             return '[ ' + inside + ' ]'
         else:
             return str(self.syntactic_object)
-
-    def is_placeholder(self):
-        """ Constituent structure may assume a constituent to be somewhere, before the user has
-        intentionally created one there. These are shown as placeholders, which are nodes,
-        but with limited presence.
-        :return: boolean
-        """
-        return not self.syntactic_object
 
     def get_ordered_children(self):
         """ Return children by using the ordering method from syntax.
@@ -548,15 +540,6 @@ class BaseConstituentNode(Node):
             self._start_hover()
         elif self._hovering and not value:
             self._stop_hover()
-
-
-    # ### Suggestions for completing missing aspects (active for selected nodes)
-    def add_completion_suggestions(self):
-        """ Node has selected and if it is a placeholder or otherwise lacking, it may suggest an
-         option to add a proper node here.
-        """
-        if self.is_placeholder():
-            ctrl.ui.get_or_create_touch_area(self, g.TOUCH_ADD_CONSTITUENT)
 
     # ############## #
     #                #

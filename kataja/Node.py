@@ -329,15 +329,6 @@ saved: %s
 syntactic_object: %s
 -----------------------''' % (self._saved, so))
 
-    def is_placeholder(self):
-        """ Constituent structure may assume a constituent to be somewhere,
-        before the user has intentionally created
-        one there. These are shown as placeholders, which are nodes, but with
-        limited presence.
-        :return: boolean
-        """
-        return False
-
     def move(self, md):
         """ Add on Moveable.move the case when node is folding towards
         triangle. It has priority.
