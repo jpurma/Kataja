@@ -37,18 +37,12 @@ import kataja.utils as utils
 from kataja.utils import to_tuple, add_xy, sub_xy
 from kataja.BaseModel import BaseModel, SavedWithGetter, Saved
 
-# ('shaped_relative_linear',{'method':shapedRelativeLinearPath,'fill':True,
-# 'pen':'thin'}),
 
 angle_magnet_map = {0: 6, 1: 6, 2: 4, 3: 3, 4: 2, 5: 1, 6: 0, 7: 5, 8: 5, 9: 5, 10: 7, 11: 8, 12: 9,
                     13: 10, 14: 11, 15: 6, 16: 6}
 
 atan_magnet_map = {-8: 5, -7: 5, -6: 0, -5: 1, -4: 2, -3: 3, -2: 4, -1: 6, 0: 6, 1: 6, 2: 11, 3: 10,
                    4: 9, 5: 8, 6: 7, 7: 5, 8: 5}
-
-
-# helper functions to make code readable
-
 
 qbytes_opacity = QtCore.QByteArray()
 qbytes_opacity.append("opacity")
@@ -127,13 +121,7 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
         self._arrowhead_end_path = None
         self._cached_cp_rect = None
         self._use_labels = None
-        self._label_text = None
-        self._label_rect = None
         self._relative_vector = None
-        self._cached_label_start = None
-        # self.setAcceptedMouseButtons(QtCore.Qt.NoButton)
-        # self.setFlag(QtGui.QGraphicsItem.ItemIsMovable)
-        # self.setFlag(QtGui.QGraphicsItem.ItemIsSelectable)
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable)
         self.setAcceptHoverEvents(True)
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
@@ -286,6 +274,7 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
         shortcut for it.
         :return:
         """
+        print(self.label_data)
         return self.label_data.get('text', '')
 
     def set_label_text(self, value):
@@ -296,7 +285,10 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
                 self.label_data['text'] = value
                 self.label_item.update_text(value)
         else:
-             self.label_item = EdgeLabel(value, parent=self)
+            self.label_item = EdgeLabel(value, parent=self)
+            self.poke('label_data')
+            self.label_data['text'] = value
+
     # ## Signal handling ####
 
     def receive_signal(self, signal, *args):
@@ -416,52 +408,6 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
             self.fixed_end_point = p.x(), p.y()
         self.make_relative_vector()
 
-    # Label for arrow etc. ##############################################
-
-    def get_label_line_positions(self):
-        """ When editing edge labels, there is a line connecting the edge to
-        label. This one provides the
-        end- and start points for such line.
-        :return: None
-        """
-        label = self.label_item
-        start = self.get_point_at(label.label_start)
-        angle = (360 - self.get_angle_at(label.label_start)) + label.label_angle
-        if angle > 360:
-            angle -= 360
-        if angle < 0:
-            angle += 360
-        angle = math.radians(angle)
-        end_x = start.x() + (label.label_dist * math.cos(angle))
-        end_y = start.y() + (label.label_dist * math.sin(angle))
-        end = QtCore.QPointF(end_x, end_y)
-        return start, end
-
-    def update_label_pos(self):
-        """ Compute and set position for edge label. Make sure that path is
-        up to date before doing this.
-        :return:
-        """
-        if not self.label_item:
-            return
-        start, end = self.get_label_line_positions()
-        mx, my = self.label_item.find_suitable_magnet(start, end)
-        # mx, my = self._label_item.find_closest_magnet(start, end)
-        label_pos = end - QtCore.QPointF(mx, my)
-        self._cached_label_start = start
-        self.label_item.setPos(label_pos)
-
-    @property
-    def cached_label_start(self):
-        """ Get the cached (absolute) label starting position. This has to be
-        visible outside, because
-        control points may need it.
-        :return: QPos
-        """
-        if not self._cached_label_start:
-            self.update_label_pos()
-        return self._cached_label_start
-
     def is_broken(self):
         """ If this edge should be a connection between two nodes and either
         node is missing, the edge
@@ -568,7 +514,8 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
             self._fat_path = self._path
         self._cached_cp_rect = self._path.controlPointRect()
         #
-        self.update_label_pos()
+        if self.label_item:
+            self.label_item.update_position()
         if ctrl.is_selected(self):
             ctrl.ui.update_position_for(self)
 
@@ -604,7 +551,6 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
         if cpl != len(self.control_points):
             ctrl.ui.update_control_points()
         self.update()
-
 
     def update_end_points(self):
         """
@@ -715,11 +661,15 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
         """
         self._local_drag_handle_position = None
 
-    def can_be_disconnected(self):
-        """
+    def delete_on_disconnect(self):
+        """ Some edges are not real edges, but can have sensible existence without being
+        connected to nodes. Some are better to destroy at that point.
         :return:
         """
-        return True
+        if self.edge_type is g.ARROW or self.edge_type is g.DIVIDER:
+            return False
+        else:
+            return True
 
     def allow_orphan_ends(self):
         """
@@ -737,7 +687,7 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
             self.start and (self.start.is_placeholder()))
 
     def update_selection_status(self, selected):
-        """
+        """ Switch
 
         :param selected:
         """
@@ -746,7 +696,7 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
                 if self.uses_labels:
                     if not self.label_item:
                         self.label_item = EdgeLabel('', self, placeholder=True)
-                        self.update_label_pos()
+                        self.label_item.update_position()
                     self.label_item.selected = True
         else:
             if self.label_item:
@@ -769,7 +719,6 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
         return self._cached_cp_rect
 
     # ### Mouse - Qt events ##################################################
-
 
     @property
     def hovering(self):
@@ -825,8 +774,8 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
     # ## Scene-managed call
 
     def select(self, event=None, multi=False):
-        """ Scene has decided that this node has been selected
-        (update
+        """ This is identical with node/movable selection, but edges don't inherit these.
+        Actual selection activation stuff is in update_selection_status.
         :param event:
         :param multi: force multiple selection (append, not replace)
         """
@@ -1066,7 +1015,6 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
     def fade_in_finished(self):
         self._fade_in_active = False
 
-
     def fade_out(self, s=300):
         """ Start fade out. The object exists until fade end.
         :return: None
@@ -1096,7 +1044,6 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
         :return: bool
         """
         return self._fade_in_active or self._fade_out_active
-
 
     # ############## #
     #                #

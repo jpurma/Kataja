@@ -1617,6 +1617,17 @@ class Forest(BaseModel):
 
         return new_edge
 
+    def partial_disconnect(self, edge, start=True, end=True):
+        if start and edge.start:
+            edge.start.poke('edges_down')
+            edge.start.edges_down.remove(edge)
+            edge.start = None
+        if end and edge.end:
+            edge.end.poke('edges_up')
+            edge.end.edges_up.remove(edge)
+            edge.end = None
+        edge.update_end_points()
+
     def disconnect_edge(self, edge):
         """ Does the local mechanics of edge removal
         :param edge:

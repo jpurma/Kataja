@@ -79,6 +79,8 @@ class PanelButton(QtWidgets.QPushButton):
             if ctrl.main.use_tooltips:
                 self.setToolTip(text)
             self.setStatusTip(text)
+        self.w2 = self.iconSize().width() / 2
+        self.h2 = self.iconSize().height() / 2
         self.setContentsMargins(0, 0, 0, 0)
         self.setFlat(True)
 
@@ -165,29 +167,29 @@ class OverlayButton(PanelButton):
             return
 
         if self.role == g.START_CUT:
-            adjust = QtCore.QPointF(self.host.end.width / 2,
-                                    self.host.end.height / 2)
+            adjust = QtCore.QPointF(self.host.start.width - self.w2,
+                                    self.host.start.height / 2 - self.h2)
             p = ctrl.main.graph_view.mapFromScene(
                 QtCore.QPointF(self.host.start_point[0],
                                self.host.start_point[1]) + adjust)
         elif self.role == g.END_CUT:
             if self.host.alignment == g.LEFT:
-                adjust = QtCore.QPointF(-self.host.end.width / 2,
-                                        -self.host.end.height / 2)
+                adjust = QtCore.QPointF(-self.host.end.width - self.w2,
+                                        -self.host.end.height / 2- self.h2)
             else:
-                adjust = QtCore.QPointF(self.host.end.width / 2,
-                                        -self.host.end.height / 2)
+                adjust = QtCore.QPointF(self.host.end.width - self.w2,
+                                        -self.host.end.height / 2 - self.h2)
             p = ctrl.main.graph_view.mapFromScene(
-                QtCore.QPointF(self.host.start_point[0],
-                               self.host.start_point[1]) + adjust)
+                QtCore.QPointF(self.host.end_point[0],
+                               self.host.end_point[1]) + adjust)
         elif self.role == g.ADD_TRIANGLE:
             x, y = self.host.current_scene_position
             p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(x, y + self.host.height / 2))
-            p -= QtCore.QPoint((self.iconSize().width() / 2) + 4, 0)
+            p -= QtCore.QPoint(self.w2 + 4, 0)
         elif self.role == g.REMOVE_TRIANGLE:
             x, y = self.host.current_scene_position
             p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(x, y + self.host.height / 2))
-            p -= QtCore.QPoint((self.iconSize().width() / 2) + 4, 0)
+            p -= QtCore.QPoint(self.w2 + 4, 0)
         else:
             raise UIError(
                 "Unknown role for OverlayButton, don't know where to put it.")

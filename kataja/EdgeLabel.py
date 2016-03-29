@@ -33,6 +33,14 @@ import kataja.utils as utils
 
 class EdgeLabel(QtWidgets.QGraphicsTextItem):
     def __init__(self, text, parent=None, placeholder=False):
+        """ EdgeLabel takes care of (optional) label for the edge and related UI. All of the data
+        required is stored at label_data -dict of host. This dict is saved with Edge,
+        but EdgeLabels are always created anew.
+
+        :param text:
+        :param parent:
+        :param placeholder:
+        """
         QtWidgets.QGraphicsTextItem.__init__(self, text, parent=parent)
         self._host = self.parentItem()
         self.draggable = not placeholder
@@ -47,6 +55,7 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
             self.setTextWidth(-1)
         self._size = self.boundingRect().size()
         self._local_drag_handle_position = None
+        self._label_start_pos = None
         self.setFont(self.get_font())
         self.setDefaultTextColor(self.parentItem().color)
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
@@ -59,6 +68,123 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         """
         return 65553
 
+    @property
+    def label_text(self):
+        return self._host.get_label_text()
+
+    @label_text.setter
+    def label_text(self, value):
+        self._host.set_label_text(value)
+
+    def get_font(self):
+        """ Font is the font used for label. What is stored is the kataja
+        internal font name, but what is
+        returned here is the actual QFont.
+        :return: QFont instance
+        """
+        f_name = self._host.label_data.get('font', None)
+        if f_name:
+            return qt_prefs.font(f_name)
+        else:
+            return qt_prefs.font(ctrl.fs.edge_info(self._host.edge_type, 'font'))
+
+    @property
+    def font_name(self):
+        """ Font is the font used for label. This returns the kataja internal
+        font name.
+        :return:
+        """
+        f_name = self._host.label_data.get('font', None)
+        if f_name:
+            return f_name
+        else:
+            return ctrl.fs.edge_info(self._host.edge_type, 'font')
+
+    @font_name.setter
+    def font_name(self, value=None):
+        """ Font is the font used for label. This sets the font name to be used.
+        :param value: string (font name).
+        """
+        f = self.font_name
+        if value != f:
+            self._host.poke('label_data')
+            self._host.label_data['font'] = value
+
+    @property
+    def label_start(self):
+        """
+        label's startpoint in length of an edge (from 0 to 1.0)
+        """
+        return self._host.label_data.get('start_at', 0.2)
+
+    @label_start.setter
+    def label_start(self, value):
+        """ label's startpoint in length of an edge (from 0 to 1.0)
+        :param value: float (0 - 1.0)
+        """
+        v = self.label_start
+        if v != value:
+            self._host.poke('label_data')
+            self._host.label_data['start_at'] = value
+            self.update_position()
+            self._host.call_watchers('edge_label_adjust', 'start_at', value)
+
+    def update_position(self):
+        """ Compute and set position for edge label. Make sure that path is
+        up to date before doing this.
+        :return:
+        """
+        start, end = self.get_label_line_positions()
+        mx, my = self.find_suitable_magnet(start, end)
+        label_pos = end - QtCore.QPointF(mx, my)
+        self._label_start_pos = start
+        self.setPos(label_pos)
+
+    def get_label_start_pos(self):
+        if not self._label_start_pos:
+            self.update_position()
+        return self._label_start_pos
+
+    @property
+    def label_angle(self):
+        """
+        label's angle relative to edge where it is attached
+        """
+        return self._host.label_data.get('angle', 90)
+
+    @label_angle.setter
+    def label_angle(self, value):
+        """
+        label's angle relative to edge where it is attached
+        :param value:
+        """
+        v = self.label_angle
+        if v != value:
+            self._host.poke('label_data')
+            self._host.label_data['angle'] = value
+            self.update_position()
+            self._host.call_watchers('edge_label_adjust', 'angle', value)
+
+    @property
+    def label_dist(self):
+        """
+        label's distance from edge
+        """
+        return self._host.label_data.get('dist', 12)
+
+    @label_dist.setter
+    def label_dist(self, value):
+        """
+        label's distance from edge
+        :param value:
+        """
+        v = self.label_dist
+        if v != value:
+            self._host.poke('label_data')
+            self._host.label_data['dist'] = value
+            self.update_position()
+            self._host.call_watchers('edge_label_adjust', 'dist', value)
+
     def magnet_positions(self):
         w = self._size.width() / 2.0
         h = self._size.height() / 2.0
@@ -66,13 +192,17 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
                 (w, h + h), (w + w, h + h)]
 
     def drag(self, event):
+        """
+        :param event:
+        :return:
+        """
+        print('dragging edge label')
         if self.placeholder:
             return
         if not self._local_drag_handle_position:
             self._local_drag_handle_position = self.mapFromScene(
                 event.buttonDownScenePos(Qt.LeftButton))
-        self.compute_angle_for_pos(event.scenePos(),
-                                   self._local_drag_handle_position)
+        self.compute_angle_for_pos(event.scenePos(), self._local_drag_handle_position)
         self.update()
 
     def being_dragged(self):
@@ -90,6 +220,25 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
 
     def select(self, event, multi=False):
         self.click(event)
+
+
+    def get_label_line_positions(self):
+        """ When editing edge labels, there is a line connecting the edge to
+        label. This one provides the
+        end- and start points for such line.
+        :return: None
+        """
+        start = self._host.get_point_at(self.label_start)
+        angle = (360 - self._host.get_angle_at(self.label_start)) + self.label_angle
+        if angle > 360:
+            angle -= 360
+        if angle < 0:
+            angle += 360
+        angle = math.radians(angle)
+        end_x = start.x() + (self.label_dist * math.cos(angle))
+        end_y = start.y() + (self.label_dist * math.sin(angle))
+        end = QtCore.QPointF(end_x, end_y)
+        return start, end
 
     def update_text(self, value):
         self.setPlainText(value)
@@ -164,8 +313,8 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
 
         :param top_left:
         """
-        edge = self.parentItem()
-        start_pos, end_point = edge.get_label_line_positions()
+        edge = self._host
+        start_pos, end_point = self.get_label_line_positions()
         # closest_magnet = self.find_closest_magnet(top_left, start_pos)
         # line_x = top_left.x() + closest_magnet[0] - start_pos.x()
         # line_y = top_left.y() + closest_magnet[1] - start_pos.y()
@@ -182,9 +331,9 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
             new_angle = a1
         else:
             new_angle = a2
-        edge.label_angle = new_angle
-        edge.label_dist = math.hypot(line_x, line_y)
-        ctrl.call_watchers(self, 'edge_label_adjust', 'adjustment', adjustment)
+        self.label_angle = new_angle
+        self.label_dist = math.hypot(line_x, line_y)
+        ctrl.call_watchers(edge, 'edge_label_adjust', 'adjustment', adjustment)
 
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget):
         if self.being_dragged():
@@ -192,7 +341,7 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
             # p.setWidthF(0.5)
             # QPainter.setPen(p)
             pos = self.pos()
-            sp, end_point = self.parentItem().get_label_line_positions()
+            sp, end_point = self.get_label_line_positions()
             ex, ey = utils.to_tuple(self.mapFromScene(pos))
             epx, epy = utils.to_tuple(self.mapFromScene(end_point))
             sx, sy = utils.to_tuple(self.mapFromScene(sp))
@@ -217,105 +366,4 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         QtWidgets.QGraphicsTextItem.paint(self, QPainter,
                                           QStyleOptionGraphicsItem, QWidget)
 
-
-    @property
-    def label_text(self):
-        return self._host.get_label_text()
-
-    @label_text.setter
-    def label_text(self, value):
-        self._host.set_label_text(value)
-
-    def get_font(self):
-        """ Font is the font used for label. What is stored is the kataja
-        internal font name, but what is
-        returned here is the actual QFont.
-        :return: QFont instance
-        """
-        f_name = self._host.label_data.get('font', None)
-        if f_name:
-            return qt_prefs.font(f_name)
-        else:
-            return qt_prefs.font(ctrl.fs.edge_info(self._host.edge_type, 'font'))
-
-    @property
-    def font_name(self):
-        """ Font is the font used for label. This returns the kataja internal
-        font name.
-        :return:
-        """
-        f_name = self._host.label_data.get('font', None)
-        if f_name:
-            return f_name
-        else:
-            return ctrl.fs.edge_info(self._host.edge_type, 'font')
-
-    @font_name.setter
-    def font_name(self, value=None):
-        """ Font is the font used for label. This sets the font name to be used.
-        :param value: string (font name).
-        """
-        f = self.font_name
-        if value != f:
-            self._host.poke('label_data')
-            self._host.label_data['font'] = value
-
-    @property
-    def label_start(self):
-        """
-        label's startpoint in length of an edge (from 0 to 1.0)
-        """
-        return self._host.label_data.get('start_at', 0.2)
-
-    @label_start.setter
-    def label_start(self, value):
-        """ label's startpoint in length of an edge (from 0 to 1.0)
-        :param value: float (0 - 1.0)
-        """
-        v = self.label_start
-        if v != value:
-            self._host.poke('label_data')
-            self._host.label_data['start_at'] = value
-            self.update_label_pos()
-            self._host.call_watchers('edge_label_adjust', 'start_at', value)
-
-    @property
-    def label_angle(self):
-        """
-        label's angle relative to edge where it is attached
-        """
-        return self._host.label_data.get('angle', 90)
-
-    @label_angle.setter
-    def label_angle(self, value):
-        """
-        label's angle relative to edge where it is attached
-        :param value:
-        """
-        v = self.label_angle
-        if v != value:
-            self._host.poke('label_data')
-            self._host.label_data['angle'] = value
-            self.update_label_pos()
-            self._host.call_watchers('edge_label_adjust', 'angle', value)
-
-    @property
-    def label_dist(self):
-        """
-        label's distance from edge
-        """
-        return self._host.label_data.get('dist', 12)
-
-    @label_dist.setter
-    def label_dist(self, value):
-        """
-        label's distance from edge
-        :param value:
-        """
-        v = self.label_dist
-        if v != value:
-            self._host.poke('label_data')
-            self._host.label_data['dist'] = value
-            self.update_label_pos()
-            self._host.call_watchers('edge_label_adjust', 'dist', value)
 

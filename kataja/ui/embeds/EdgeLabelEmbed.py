@@ -58,6 +58,7 @@ class EdgeLabelEmbed(UIEmbed):
 
     def update_fields(self):
         self.input_line_edit.setText(self.label.label_text)
+        print('updated, got ', self.label.label_text)
         super().update_fields()
 
     def update_position(self, focus_point=None):

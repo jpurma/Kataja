@@ -370,17 +370,26 @@ class UIManager:
                 self.add_buttons_for_amoeba(self.selection_amoeba)
             # draw a selection amoeba around selected nodes
             elif ctrl.area_selection:
-                if not self.selection_amoeba:
-                    self.selection_amoeba = Amoeba(ctrl.selected, persistent=False)
-                    self.selection_amoeba.update_colors(
-                            color_key=ctrl.forest.get_group_color_suggestion())
-                    self.add_ui(self.selection_amoeba)
-                # or update existing selection
-                else:
-                    self.selection_amoeba.update_selection(ctrl.selected)
-                    self.selection_amoeba.update_shape()
-                self.add_buttons_for_amoeba(self.selection_amoeba)
+                # Verify that selection contains nodes that can be in amoeba
+                amoebable_nodes = [item for item in ctrl.selected if
+                                   isinstance(item, Node) and item.can_be_in_groups]
+                if amoebable_nodes:
+                    # Create new amoeba for this selection
+                    if not self.selection_amoeba:
+                        self.selection_amoeba = Amoeba(amoebable_nodes, persistent=False)
+                        self.selection_amoeba.update_colors(
+                                color_key=ctrl.forest.get_group_color_suggestion())
+                        self.add_ui(self.selection_amoeba)
+                    # or update existing selection
+                    else:
+                        self.selection_amoeba.update_selection(amoebable_nodes)
+                        self.selection_amoeba.update_shape()
+                    self.add_buttons_for_amoeba(self.selection_amoeba)
+                elif self.selection_amoeba:
+                    # Selection had only items that don't fit inside amoeba, there is one already
+                    self.remove_selection_amoeba()
             elif self.selection_amoeba:
+                # Selection was empty, but there is existing selection amoeba visible
                 self.remove_selection_amoeba()
         else:
             if self.scope_is_selection:

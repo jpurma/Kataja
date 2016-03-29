@@ -90,7 +90,7 @@ class ControlPoint(QtWidgets.QGraphicsItem):
         elif self.role == g.END_POINT:
             p = Pf(self.host.end_point[0], self.host.end_point[1])
         elif self.role == g.LABEL_START:
-            c = self.host.cached_label_start
+            c = self.host.label_item.get_label_start_pos()
             p = Pf(c.x(), c.y())
         else:
             return False
@@ -137,9 +137,7 @@ class ControlPoint(QtWidgets.QGraphicsItem):
         """
         if self.role == g.LABEL_START:
             d, point = self.host.get_closest_path_point(event.scenePos())
-            # self.setPos(point)
-            self.host.label_start = d
-            # self.update()
+            self.host.label_item.label_start = d
         else:
             self.setPos(event.scenePos())
         if self._index > -1:
@@ -218,3 +216,6 @@ class ControlPoint(QtWidgets.QGraphicsItem):
                 pen = cm.ui()
             painter.setPen(pen)
             painter.drawRect(self._xy, self._xy, self._wh, self._wh)
+
+    def watch_alerted(self, obj, signal, field_name, value):
+        print(obj, signal, field_name, value)

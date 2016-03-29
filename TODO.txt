@@ -115,7 +115,7 @@ crashed
 + Node panel icons don't change their color
 - Load & save default locations are app resources -folder.
 - Changing ui text size doesn't resize panels
-- Updating labels puts bar-markers (X') to separate line
++ Updating labels puts bar-markers (X') to separate line
 
 ADD:
 
@@ -158,5 +158,5 @@ ADD:
 - Shuffle button next to random palettes
 + Arrowhead settings to line options panel
 + Plugins can replace classes
-    - Plugin preferences
-    - Replacing classes rebuilds existing objects
+    + Plugin preferences
+    + Replacing classes rebuilds existing objects

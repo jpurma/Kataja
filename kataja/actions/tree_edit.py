@@ -172,11 +172,20 @@ def edge_disconnect(sender=None):
     if not button:
         return
     edge = button.host
+    if button.role == g.START_CUT:
+        start = True
+        end = False
+    elif button.role == g.END_CUT:
+        start = False
+        end = True
     old_start = edge.start
     if not edge:
         return
     # Then do the cutting
-    ctrl.forest.delete_edge(edge)
+    if edge.delete_on_disconnect():
+        ctrl.forest.disconnect_edge(edge)
+    else:
+        ctrl.forest.partial_disconnect(edge, start=start, end=end)
     if edge.edge_type is g.CONSTITUENT_EDGE:
         old_start.fix_edge_aligns()
     ctrl.ui.update_selections()
