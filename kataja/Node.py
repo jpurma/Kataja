@@ -1187,7 +1187,8 @@ syntactic_object: %s
             self.setZValue(200)
             if ctrl.main.use_tooltips:
                 self.setToolTip("Edit with keyboard, double click to inspect node")
-            self.label_object.set_quick_editing(True)
+            if not (ctrl.multiple_selection() or ctrl.multiselection_delay):
+                self.label_object.set_quick_editing(True)
 
             # self.node_info()
         self.update()
