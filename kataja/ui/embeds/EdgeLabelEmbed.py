@@ -11,8 +11,18 @@ __author__ = 'purma'
 
 class EdgeLabelEmbed(UIEmbed):
     def __init__(self, parent, ui_manager, edge, ui_key):
+        """ EdgeLabelEmbed is for editing edge labels, but it takes Edge as its host,
+        because there may be problems if the host item is not subclass of Saved. Use self.label
+        to get access to edge.label_item.
+        :param parent:
+        :param ui_manager:
+        :param edge:
+        :param ui_key:
+        """
+
         UIEmbed.__init__(self, parent, ui_manager, ui_key, edge, 'Edit edge text')
         self.marker = None
+        self.label = edge.label_item
         layout = QtWidgets.QVBoxLayout()
         layout.addLayout(self.top_row_layout)  # close-button from UIEmbed
         tt = 'Label for arrow'
@@ -39,16 +49,17 @@ class EdgeLabelEmbed(UIEmbed):
         if self.host:
             p = QtGui.QPalette()
             p.setColor(QtGui.QPalette.Text, self.host.color)
+            self.label = self.host.label_item
             self.input_line_edit.setPalette(p)
-            f = QtGui.QFont(self.host.font)
+            f = QtGui.QFont(self.label.get_font())
             f.setPointSize(f.pointSize() * 2)
             #self.input_line_edit.setFont(f)
         super().update_embed()
 
     def update_fields(self):
-        self.input_line_edit.setText(self.host.label_text)
+        self.input_line_edit.setText(self.label.label_text)
         super().update_fields()
 
     def update_position(self, focus_point=None):
-        super().update_position(focus_point=self.host.label_item.scenePos())
+        super().update_position(focus_point=self.label.scenePos())
 

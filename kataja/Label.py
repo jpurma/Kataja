@@ -239,6 +239,9 @@ class Label(QtWidgets.QGraphicsTextItem):
     def get_lower_part_y(self):
         return self.lowert_part_y
 
+    def release_editor_focus(self):
+        self.set_quick_editing(False)
+
     def set_quick_editing(self, value):
         """  Toggle quick editing on and off for this label. Quick editing is toggled on when
         the label is clicked or navigated into with the keyboard. The label and its editor takes
@@ -247,8 +250,12 @@ class Label(QtWidgets.QGraphicsTextItem):
         :param value:
         :return:
         """
+        print('set_quick_editing ', value)
         if value:
             self._quick_editing = True
+            if ctrl.text_editor_focus:
+                ctrl.text_editor_focus.release_editor_focus()
+            ctrl.text_editor_focus = self
             self.setTextInteractionFlags(QtCore.Qt.TextEditorInteraction)
             self.prepareGeometryChange()
             self.doc.setTextWidth(-1)
@@ -257,7 +264,6 @@ class Label(QtWidgets.QGraphicsTextItem):
             self.resize_label()
             self.setAcceptDrops(True)
             ctrl.graph_view.setFocus()
-            ctrl.text_editor_focus = self
             self.setFocus()
         elif self._quick_editing:
             if self.doc.isModified():

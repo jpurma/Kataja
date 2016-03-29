@@ -130,7 +130,6 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
         self._label_text = None
         self._label_rect = None
         self._relative_vector = None
-        self._label_font = None  # inherited from settings
         self._cached_label_start = None
         # self.setAcceptedMouseButtons(QtCore.Qt.NoButton)
         # self.setFlag(QtGui.QGraphicsItem.ItemIsMovable)
@@ -425,15 +424,16 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
         end- and start points for such line.
         :return: None
         """
-        start = self.get_point_at(self.label_start)
-        angle = (360 - self.get_angle_at(self.label_start)) + self.label_angle
+        label = self.label_item
+        start = self.get_point_at(label.label_start)
+        angle = (360 - self.get_angle_at(label.label_start)) + label.label_angle
         if angle > 360:
             angle -= 360
         if angle < 0:
             angle += 360
         angle = math.radians(angle)
-        end_x = start.x() + (self.label_dist * math.cos(angle))
-        end_y = start.y() + (self.label_dist * math.sin(angle))
+        end_x = start.x() + (label.label_dist * math.cos(angle))
+        end_y = start.y() + (label.label_dist * math.sin(angle))
         end = QtCore.QPointF(end_x, end_y)
         return start, end
 

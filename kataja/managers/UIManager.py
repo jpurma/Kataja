@@ -741,7 +741,17 @@ class UIManager:
         i = selector.currentIndex()
         return selector.itemData(i)
 
-    # ### Label edge editin dialog
+    # Embedded dialogs, general methods
+    ##########################################################
+
+    def release_editor_focus(self):
+        """ Make sure that quick editing is turned off before opening new editors
+        :return:
+        """
+        if ctrl.text_editor_focus:
+            ctrl.text_editor_focus.release_editor_focus()
+
+    # ### Label edge editing dialog
     # #########################################################
 
     def start_edge_label_editing(self, edge):
@@ -749,6 +759,7 @@ class UIManager:
 
         :param edge:
         """
+        self.release_editor_focus()
         lp = edge.label_item.pos()
         if EDGE_LABEL_EMBED not in self._items:
             embed = EdgeLabelEmbed(self.main.graph_view, self, edge, EDGE_LABEL_EMBED)
@@ -763,6 +774,7 @@ class UIManager:
         :param amoeba:
         :return:
         """
+        self.release_editor_focus()
         lp = amoeba.boundingRect().center()
         if GROUP_LABEL_EMBED in self._items:
             embed = self._items[GROUP_LABEL_EMBED]
@@ -787,6 +799,7 @@ class UIManager:
 
         :param scene_pos:
         """
+        self.release_editor_focus()
         embed = self.get_ui(NEW_ELEMENT_EMBED)
         marker = self.get_ui(NEW_ELEMENT_MARKER)
         if not embed:
@@ -818,6 +831,7 @@ class UIManager:
         """
         :param node:
         """
+        self.release_editor_focus()
         ui_key = node.save_key + '_edit'
         ed = self.get_ui(ui_key)
         if ed:

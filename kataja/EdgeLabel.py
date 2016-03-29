@@ -34,6 +34,7 @@ import kataja.utils as utils
 class EdgeLabel(QtWidgets.QGraphicsTextItem):
     def __init__(self, text, parent=None, placeholder=False):
         QtWidgets.QGraphicsTextItem.__init__(self, text, parent=parent)
+        self._host = self.parentItem()
         self.draggable = not placeholder
         self.selectable = True
         self.clickable = True
@@ -81,11 +82,11 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         self._local_drag_handle_position = None
 
     def click(self, event):
-        p = self.parentItem()
-        if p and ctrl.is_selected(p):
-            ctrl.ui.start_edge_label_editing(self.parentItem())
+
+        if self._host and ctrl.is_selected(self._host):
+            ctrl.ui.start_edge_label_editing(self._host)
         else:
-            p.select(event)
+            self._host.select(event)
 
     def select(self, event, multi=False):
         self.click(event)
@@ -101,9 +102,8 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         if value:
             self.placeholder = False
             self.draggable = True
-        p = self.parentItem()
-        if p:
-            p.update_selection_status(ctrl.is_selected(p))
+        if self._host:
+            self._host.update_selection_status(ctrl.is_selected(self._host))
 
     def find_closest_magnet(self, top_left, start_pos):
         spx, spy = start_pos.x(), start_pos.y()
@@ -172,7 +172,7 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         line_x = event_pos.x() - start_pos.x()
         line_y = event_pos.y() - start_pos.y()
         rad = math.atan2(line_y, line_x)
-        edge_angle = (360 - edge.get_angle_at(edge.label_start))
+        edge_angle = (360 - edge.get_angle_at(self.label_start))
         my_angle = math.degrees(rad)
         if my_angle < 0:
             my_angle += 360
@@ -217,17 +217,26 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         QtWidgets.QGraphicsTextItem.paint(self, QPainter,
                                           QStyleOptionGraphicsItem, QWidget)
 
+
+    @property
+    def label_text(self):
+        return self._host.get_label_text()
+
+    @label_text.setter
+    def label_text(self, value):
+        self._host.set_label_text(value)
+
     def get_font(self):
         """ Font is the font used for label. What is stored is the kataja
         internal font name, but what is
         returned here is the actual QFont.
         :return: QFont instance
         """
-        f_name = self.label_data.get('font', None)
+        f_name = self._host.label_data.get('font', None)
         if f_name:
             return qt_prefs.font(f_name)
         else:
-            return qt_prefs.font(ctrl.fs.edge_info(self.edge_type, 'font'))
+            return qt_prefs.font(ctrl.fs.edge_info(self._host.edge_type, 'font'))
 
     @property
     def font_name(self):
@@ -235,11 +244,11 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         font name.
         :return:
         """
-        f_name = self.label_data.get('font', None)
+        f_name = self._host.label_data.get('font', None)
         if f_name:
             return f_name
         else:
-            return ctrl.fs.edge_info(self.edge_type, 'font')
+            return ctrl.fs.edge_info(self._host.edge_type, 'font')
 
     @font_name.setter
     def font_name(self, value=None):
@@ -248,15 +257,15 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         """
         f = self.font_name
         if value != f:
-            self.poke('label_data')
-            self.label_data['font'] = value
+            self._host.poke('label_data')
+            self._host.label_data['font'] = value
 
     @property
     def label_start(self):
         """
         label's startpoint in length of an edge (from 0 to 1.0)
         """
-        return self.label_data.get('start_at', 0.2)
+        return self._host.label_data.get('start_at', 0.2)
 
     @label_start.setter
     def label_start(self, value):
@@ -265,17 +274,17 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         """
         v = self.label_start
         if v != value:
-            self.poke('label_data')
-            self.label_data['start_at'] = value
+            self._host.poke('label_data')
+            self._host.label_data['start_at'] = value
             self.update_label_pos()
-            self.call_watchers('edge_label_adjust', 'start_at', value)
+            self._host.call_watchers('edge_label_adjust', 'start_at', value)
 
     @property
     def label_angle(self):
         """
         label's angle relative to edge where it is attached
         """
-        return self.label_data.get('angle', 90)
+        return self._host.label_data.get('angle', 90)
 
     @label_angle.setter
     def label_angle(self, value):
@@ -285,17 +294,17 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         """
         v = self.label_angle
         if v != value:
-            self.poke('label_data')
-            self.label_data['angle'] = value
+            self._host.poke('label_data')
+            self._host.label_data['angle'] = value
             self.update_label_pos()
-            self.call_watchers('edge_label_adjust', 'angle', value)
+            self._host.call_watchers('edge_label_adjust', 'angle', value)
 
     @property
     def label_dist(self):
         """
         label's distance from edge
         """
-        return self.label_data.get('dist', 12)
+        return self._host.label_data.get('dist', 12)
 
     @label_dist.setter
     def label_dist(self, value):
@@ -305,8 +314,8 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         """
         v = self.label_dist
         if v != value:
-            self.poke('label_data')
-            self.label_data['dist'] = value
+            self._host.poke('label_data')
+            self._host.label_data['dist'] = value
             self.update_label_pos()
-            self.call_watchers('edge_label_adjust', 'dist', value)
+            self._host.call_watchers('edge_label_adjust', 'dist', value)
 
