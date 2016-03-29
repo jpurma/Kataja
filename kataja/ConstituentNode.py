@@ -126,7 +126,8 @@ class ConstituentNode(BaseConstituentNode):
 
     buttons_when_selected = {
         g.REMOVE_MERGER: {'condition': 'is_unnecessary_merger'},
-        g.NODE_EDITOR_BUTTON: {}
+        g.NODE_EDITOR_BUTTON: {},
+        g.REMOVE_NODE: {'condition': 'not:is_unnecessary_merger'}
     }
 
     def __init__(self, constituent=None):

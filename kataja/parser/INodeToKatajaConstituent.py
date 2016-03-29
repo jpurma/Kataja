@@ -83,7 +83,7 @@ class INodeToKatajaConstituent(BaseParser):
                     child = self.parsernodes_to_constituentnodes(nnode)
                     if child and isinstance(child, BaseConstituentNode):
                         children.append(child)
-            constituent = classes.Constituent(str(hash(parsernode)))
+            constituent = classes.Constituent()
             cn = f.create_node(synobj=constituent)
             if not f.temp_tree:
                 f.temp_tree = f.create_tree_for(cn)

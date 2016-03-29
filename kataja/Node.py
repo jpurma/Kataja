@@ -89,7 +89,10 @@ class Node(Movable):
                     'labeled': False,  'name_pl': 'Abstract edges'}
     touch_areas_when_dragging = {}
     touch_areas_when_selected = {}
-    buttons_when_selected = {}
+
+    buttons_when_selected = {g.NODE_EDITOR_BUTTON: {},
+                             g.REMOVE_NODE: {}}
+
 
     def __init__(self, syntactic_object=None):
         """ Node is an abstract class that shouldn't be used by itself, though
@@ -213,16 +216,12 @@ class Node(Movable):
         """
         return None
 
-
     def get_editing_template(self, refresh=False):
         """ Create or fetch a dictionary template to help building an editing
         UI for Node.
         The template is based on 'editable'-class variable and combines
         templates from Node
         and its subclasses and its syntactic object's templates.
-
-        The dictionary includes a special key field_order that gives the
-        order of the elements.
         :param refresh: force recalculation of template
         :return: dict
         """

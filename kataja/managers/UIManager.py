@@ -404,7 +404,6 @@ class UIManager:
             self.remove_ui(self.selection_amoeba)
         self.selection_amoeba = None
 
-
     # unused, but sane
     def focusable_elements(self):
         """ Return those UI elements that are flagged focusable (Kataja's
@@ -874,7 +873,6 @@ class UIManager:
     # ### Touch areas
     # #####################################################################
 
-
     def get_touch_area(self, host, type):
         """ Get touch area for specific purpose or create one if it doesn't
         exist.
@@ -1163,7 +1161,6 @@ class UIManager:
         self.update_float_button_positions()
         self.update_drag_mode(True) # selection mode
 
-
     def update_float_button_positions(self):
         """ Make sure that float buttons are on graph view's top right corner
         :return:
@@ -1219,11 +1216,18 @@ class UIManager:
                 return all((check_conditions(c, node) for c in cond))
             if not cond:
                 return True
-            cmethod = getattr(node, cond)
-            if cmethod:
-                return cmethod()
+            if cond.startswith('not:'):
+                cmethod = getattr(node, cond[4:], None)
+                if cmethod:
+                    return not cmethod()
+                else:
+                    raise NotImplementedError(cond)
             else:
-                raise NotImplementedError(cond)
+                cmethod = getattr(node, cond, None)
+                if cmethod:
+                    return cmethod()
+                else:
+                    raise NotImplementedError(cond)
 
         if not node.is_visible():
             return

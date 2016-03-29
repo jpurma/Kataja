@@ -161,3 +161,4 @@ ADD:
 + Plugins can replace classes
     + Plugin preferences
     + Replacing classes rebuilds existing objects
++ No delete node available? Much needed!

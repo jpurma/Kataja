@@ -213,6 +213,17 @@ a['remove_merger'] = {'command': 'Remove merger', 'sender_arg': True,
                       'method': remove_merger}
 
 
+def remove_node(sender=None):
+    """ Remove selected node
+    :param sender:
+    :return:
+    """
+    node = get_host(sender)
+    ctrl.remove_from_selection(node)
+    ctrl.forest.delete_node(node, ignore_consequences=False)
+
+a['remove_node'] = {'command': 'Delete node', 'sender_arg': True, 'method': remove_node}
+
 def add_triangle(sender=None):
     """ Turn triggering node into triangle node
     :return: None

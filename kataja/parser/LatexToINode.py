@@ -15,6 +15,7 @@ class ParseError(Exception):
 
 one_character_commands = ['&', '~', '#', '%', '$', '^', '_']
 
+
 # @time_me
 def parse(text):
     """ Turn text into INodes (intermediary nodes). These can be ITemplateNodes,
@@ -81,9 +82,6 @@ def parse_word(feed, end_on_space=False):
     """
 
     node = ITextNode()
-
-    def eat_char():
-        feed.pop(0)
 
     while feed:
         c = feed[0]

@@ -230,4 +230,4 @@ class NodeEditEmbed(UIEmbed):
                 return
         # default to first field in field order
         if self.fields:
-            self.fields[ed['field_order'][0]].setFocus()
+            self.fields[self.host.get_editable_field_names()[0]].setFocus()

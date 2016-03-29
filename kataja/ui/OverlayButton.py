@@ -215,20 +215,10 @@ class RemoveMergerButton(OverlayButton):
 
     def update_position(self):
         """ """
-        adjust = QtCore.QPointF(19, -self.host.height / 2)
-        if not self.edge:
-            edges = [x for x in self.host.edges_down if
-                     x.edge_type is g.CONSTITUENT_EDGE and
-                     x.end.is_visible()]
-            if not edges:
-                raise UIError(
-                    "Remove merger suggested for merger with no children")
-            else:
-                self.edge = edges[0]
-        p = QtCore.QPointF(self.edge.start_point[0],
-                           self.edge.start_point[1])
-        p = ctrl.main.graph_view.mapFromScene(p) + adjust
-        p = p.toPoint()
+        x, y = self.host.current_scene_position
+        p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(x + self.host.width / 2,
+                                                             y - self.host.height / 2))
+        p += QtCore.QPoint(4, -self.height())
         self.move(p)
 
     def enterEvent(self, event):
@@ -238,6 +228,41 @@ class RemoveMergerButton(OverlayButton):
     def leaveEvent(self, event):
         self.host.hovering = False
         OverlayButton.leaveEvent(self, event)
+
+class RemoveNodeButton(OverlayButton):
+    """ Button to delete unnecessary node between grandparent and child"""
+
+    def __init__(self, host, ui_key, parent=None):
+
+        super().__init__(host,
+                         ui_key,
+                         'delete_icon',
+                         g.REMOVE_NODE,
+                         text='Remove node',
+                         parent=parent,
+                         size=16,
+                         color_key='accent3')
+        self.role = g.REMOVE_NODE
+        self.action_name = 'remove_node'
+        self.edge = None
+
+    def update_position(self):
+        """ """
+        x, y = self.host.current_scene_position
+        p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(x + self.host.width / 2,
+                                                             y - self.host.height / 2))
+        p += QtCore.QPoint(4, -self.height())
+        self.move(p)
+
+    def enterEvent(self, event):
+
+        self.host.hovering = True
+        OverlayButton.enterEvent(self, event)
+
+    def leaveEvent(self, event):
+        self.host.hovering = False
+        OverlayButton.leaveEvent(self, event)
+
 
 
 class AmoebaOptionsButton(OverlayButton):
@@ -311,7 +336,8 @@ class NodeEditorButton(OverlayButton):
 
 button_definitions = {g.REMOVE_MERGER: RemoveMergerButton,
                       g.AMOEBA_OPTIONS: AmoebaOptionsButton,
-                      g.NODE_EDITOR_BUTTON: NodeEditorButton}
+                      g.NODE_EDITOR_BUTTON: NodeEditorButton,
+                      g.REMOVE_NODE: RemoveNodeButton}
 
 
 def button_factory(role_key, node, save_key, parent):

@@ -114,6 +114,7 @@ START_CUT = 'start_cut'
 END_CUT = 'end_cut'
 AMOEBA_OPTIONS = 'amoeba_options'
 NODE_EDITOR_BUTTON = 'node_editor'
+REMOVE_NODE = 'delete'
 
 # Creation/Deletion flags
 CREATED = 1
