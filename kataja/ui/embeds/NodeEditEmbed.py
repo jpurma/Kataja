@@ -60,7 +60,7 @@ class NodeEditEmbed(UIEmbed):
 
         # Generate edit elements based on data, expand this as necessary
         for field_name in field_names:
-            d = ed[field_name]
+            d = ed.get(field_name, {})
             if d.get('hidden', False):
                 continue
             tt = d.get('tooltip', '')
@@ -173,7 +173,7 @@ class NodeEditEmbed(UIEmbed):
         """ Update field values on embed form based on template """
         ed = self.host.get_editing_template()
         for field_name, field in self.fields.items():
-            d = ed[field_name]
+            d = ed.get(field_name, {})
             if 'getter' in d:
                 value = getattr(self.host, d['getter'])()
             else:
@@ -203,7 +203,7 @@ class NodeEditEmbed(UIEmbed):
         """
         ed = self.host.get_editing_template()
         for field_name, field in self.fields.items():
-            d = ed[field_name]
+            d = ed.get(field_name, {})
             itype = d.get('input_type', 'text')
             if itype in ['text', 'textarea', 'expandingtext']:
                 value = parse_field(field.text())

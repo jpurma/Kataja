@@ -9,13 +9,11 @@ class HiConstituent(BaseConstituent):
 
     # info for kataja engine on how to display the constituent and what is editable
 
-    # 'viewable' names the fields that should be visible in graphical representation of this kind of
-    #  element. Syntax for defining viewable and editable fields can be found in ...
-    viewable = BaseConstituent.viewable.copy()
-    viewable['hi'] = {'order': 15}
-    # 'editable' names the fields that should be editable.
-    editable = BaseConstituent.editable.copy()
-    editable['hi'] = {'order': 15}
+    # 'visible_in_label' names the fields that should be visible in graphical representation of
+    # this kind of element. Syntax for defining viewable and editable fields can be found in ...
+
+    visible_in_label = BaseConstituent.visible_in_label + ['hi']
+    editable_in_label = BaseConstituent.editable_in_label + ['hi']
 
     def __init__(self, *args, **kwargs):
         """ """

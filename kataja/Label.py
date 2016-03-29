@@ -250,7 +250,6 @@ class Label(QtWidgets.QGraphicsTextItem):
         :param value:
         :return:
         """
-        print('set_quick_editing ', value)
         if value:
             self._quick_editing = True
             if ctrl.text_editor_focus:
@@ -274,7 +273,6 @@ class Label(QtWidgets.QGraphicsTextItem):
                 self.setHtml(self.html)
             self._quick_editing = False
             self.setAcceptDrops(False)
-            print('toggled off accept drops')
             self.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
             ctrl.text_editor_focus = None
             self.clearFocus()
@@ -318,7 +316,7 @@ class Label(QtWidgets.QGraphicsTextItem):
             field_name, count, row, old_part = item
             new_value = new_d[i]
             if new_value != old_part:
-                my_editable = self.editable.get(field_name)
+                my_editable = self.editable.get(field_name, {})
                 setter = my_editable.get('setter', None)
                 if setter:
                     setter_method = getattr(self._host, setter, None)
