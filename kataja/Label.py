@@ -194,6 +194,7 @@ class Label(QtWidgets.QGraphicsTextItem):
             if field_value:
                 if isinstance(field_value, ITextNode):
                     field_value = field_value.as_html()
+                field_value = field_value.replace('\n', '<br/>')
                 start_tag = s.get('start_tag', '')
                 if start_tag:
                     end_tag = s.get('end_tag', '')
@@ -227,7 +228,6 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.html = ''.join(html)
         self.visible_parts = visible_parts
 
-    @time_me
     def compose_html_for_editing(self):
         """ Use 'visible_in_label' and 'display_styles' and the item attributes to compose the
         document html. Also stores information about the composition to 'viewable_parts'
@@ -243,7 +243,6 @@ class Label(QtWidgets.QGraphicsTextItem):
         for field_name in self.visible_in_label:
             s = styles.get(field_name, {})
             e = edit_styles.get(field_name, {})
-            end_tag = ''
             if 'getter' in e:
                 getter = getattr(h, e.get('getter'), None)
                 if callable(getter):
@@ -252,25 +251,41 @@ class Label(QtWidgets.QGraphicsTextItem):
                     field_value = getter
             else:
                 field_value = getattr(h, field_name, '')
-            if 'condition' in s:
-                condition = getattr(h, s.get('condition'), None)
-                if callable(condition):
-                    if not condition():
-                        continue
-                elif not condition:
-                    continue
+            #if 'condition' in s:
+            #    condition = getattr(h, s.get('condition'), None)
+            #    if callable(condition):
+            #        if not condition():
+            #            continue
+            #    elif not condition:
+            #        continue
             if 'special' in s:
                 if s['special'] == 'triangle':
                     continue
             if field_value:
                 if isinstance(field_value, ITextNode):
                     field_value = field_value.as_html()
-                editable_parts.append((field_name, field_value))
+                editable_parts.append((field_name,
+                                       field_value,
+                                       len(field_value.splitlines(keepends=False))))
                 editable.append(field_value)
                 editable.append('\n')
         if editable and editable[-1] == '\n':
             editable.pop()
         self.editable_html = ''.join(editable)
+
+        # if there are no previous value to compare with, use the field defined as *focus* in
+        # class.editable -dict
+        if not editable_parts:
+            for key, value in self.editable.items():
+                if value.get('focus', False):
+                    editable_parts = [(key, '', 1)]
+                    break
+
+        # if there was no focus declared, use the first field from class.editable_in_label
+        if not editable_parts:
+            if self.editable_in_label:
+                editable_parts = [(self.editable_in_label[0], '', 1)]
+
         self.editable_parts = editable_parts
 
     def should_draw_triangle(self):
@@ -315,6 +330,10 @@ class Label(QtWidgets.QGraphicsTextItem):
             self.doc.setTextWidth(-1)
             self.compose_html_for_editing()
             self.setPlainText(self.editable_html)
+            #opt = QtGui.QTextOption()
+            #opt.setFlags(QtGui.QTextOption.ShowLineAndParagraphSeparators |
+            #             QtGui.QTextOption.AddSpaceForLineAndParagraphSeparators)
+            #self.doc.setDefaultTextOption(opt)
             self.setTextWidth(self.doc.idealWidth())
             self.resize_label()
             self.setAcceptDrops(True)
@@ -344,66 +363,90 @@ class Label(QtWidgets.QGraphicsTextItem):
         """ Use difflib to get a robust idea on what has changed
         :return:
         """
-        def do_replacements(replace_with, replace_these, c):
-            if replace_with or replace_these:
-                for item in replace_these:
-                    if replace_with:
-                        new_d.append(replace_with.pop(0))
-                    else:
-                        new_d.append('')
-                    c += 1
-                if replace_with:
-                    if new_d:
-                        # append to last item to create entry that spans multiple lines
-                        new_d[-1] = '\n'.join([new_d[-1]] + replace_with)
-                    else:
-                        new_d.append('\n'.join(replace_with))
-                replace_with.clear()
-                replace_these.clear()
-            return c
+        if not self.editable_parts:
+            return []
 
-        # if there are no previous value to compare with, use the field defined as *focus* in
-        # class.editable -dict
-        parts_mapping = self.editable_parts
-        if not parts_mapping:
-            for key, value in self.editable.items():
-                if value.get('focus', False):
-                    parts_mapping = [(key, '')]
-                    break
+        def safe_field_name(c):
+            if len(field_names) > c:
+                return field_names[c]
+            else:
+                return field_names[-1]
 
-        # if there was no focus declared, use the first field from class.editable_in_label
-        if not parts_mapping:
-            if self.editable_in_label:
-                parts_mapping = [(self.editable_in_label[0], '')]
+        def do_replacements(fname):
+            # print('replacements:', replacements)
+            # print('replace_these:', replace_these)
+            for fname in replace_these:
+                if replacements:
+                    new_d.append((fname, replacements.pop(0)))
+                else:
+                    new_d.append((fname, ''))
+            for fvalue in replacements:
+                new_d.append((fname, fvalue))
+            replace_these.clear()
+            replacements.clear()
 
         al = self.editable_html.splitlines(keepends=False)
         bl = self.doc.toPlainText().splitlines(keepends=False)
-        replace_with = []
+        replacements = []
         replace_these = []
         new_d = []
-        i = 0
-        changed = []
+        field_names = []
+        old_fields = {}
 
+        # Prepare a list that has equal length to old html split into lines. Each item in the list
+        # is name of the field at that point in the old html. This list is a schema for recognizing
+        # where changed lines belong to.
+        for field_name, old_part, linespan in self.editable_parts:
+            field_names += [field_name] * linespan
+            old_fields[field_name] = old_part
+        # print('field_names: ', field_names)
+        if not field_names:
+            return []
+
+        # Use diff to find out which lines have been (- ) deleted and which have been (+ )added. If
+        # there are deleted lines followed by added lines, these lines should replace each other.
+        # So every time a deleted line is found, the field name for that line is stored, and when
+        # the continuous series of deleted and added lines is finished, replace deleted lines with
+        # the corresponding added lines.
+        # Lists of deleted and added lines can have different lengths. If there are more
+        # additions, the additions continue to the last available field, or the first, if starting
+        # with an added line.
+        c = 0
         for comp in differ.compare(al, bl):
+            # print('comp: "%s"' % comp)
             word = comp[2:]
             op = comp[0]
             if op == ' ':
-                i = do_replacements(replace_with, replace_these, i)
-                new_d.append(word)
-                i += 1
+                do_replacements(safe_field_name(c))
+                new_d.append((safe_field_name(c), word))
+                c += 1
             elif op == '+':
-                replace_with.append(word)
+                replacements.append(word)
             elif op == '-':
-                replace_these.append(word)
-        do_replacements(replace_with, replace_these, i)
+                replace_these.append(safe_field_name(c))
+                c += 1
+        if field_names:
+            do_replacements(field_names[-1])
+        # print('new_d:', new_d)
 
-        for i, item in enumerate(parts_mapping):
-            field_name, old_part = item
-            if len(new_d) > i:
-                new_value = new_d[i]
-            else:
-                new_value = ''
-            if new_value != old_part:
+        # Merge all lines that belong to same field into one string and save it to new_fields
+        current_field = ''
+        current_stack = []
+        new_fields = {}
+
+        for field_name, value in new_d:
+            if field_name and current_field and current_field != field_name:
+                new_fields[current_field] = '\n'.join(current_stack).rstrip()
+                current_stack = []
+            current_field = field_name
+            current_stack.append(value)
+        if current_field:
+            new_fields[current_field] = '\n'.join(current_stack).rstrip()
+
+        # Write changed values to label's host object and return list of changed field names
+        changed = []
+        for field_name, new_value in new_fields.items():
+            if new_value != old_fields.get(field_name, ''):
                 changed.append(field_name)
                 my_editable = self.editable.get(field_name, {})
                 setter = my_editable.get('setter', None)

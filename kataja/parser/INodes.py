@@ -174,7 +174,8 @@ class ITextNode:
                 s.append(part.as_html())
             else:
                 s.append(str(part))
-        return ''.join(s)
+        ss = ''.join(s)
+        return ss.replace('\n', '<br/>')
 
     def as_latex(self):
         s = []
@@ -183,7 +184,8 @@ class ITextNode:
                 s.append(part.as_latex())
             else:
                 s.append(str(part))
-        return ''.join(s)
+        ss = ''.join(s)
+        return ss.replace('\n', '\\')
 
     def __str__(self):
         return ''.join((str(x) for x in self.parts))
