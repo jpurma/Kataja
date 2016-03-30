@@ -78,6 +78,7 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.char_width = 0
         self.line_length = 0
         self._font = None
+        self.set_font(self._host.font)
 
     def type(self):
         """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
@@ -87,17 +88,17 @@ class Label(QtWidgets.QGraphicsTextItem):
         """
         return 65554
 
-    def update_label(self, font=None):
+    def set_font(self, font):
+        self.setFont(font)
+        self._font = font
+        fm = QtGui.QFontMetrics(font)
+        self.char_width = fm.maxWidth()
+
+    def update_label(self):
         """ Asks for node/host to give text and update if changed
         :param font: provide font to use for label document
-        :param inode: provide inode to parse to label document
         """
         self.has_been_initialized = True
-        if font and font != self._font:
-            self.setFont(font)
-            self._font = font
-            fm = QtGui.QFontMetrics(font)
-            self.char_width = fm.maxWidth()
         align = QtCore.Qt.AlignHCenter
         if self.text_align == LEFT_ALIGN:
             align = QtCore.Qt.AlignLeft
@@ -106,7 +107,7 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.doc.setDefaultTextOption(QtGui.QTextOption(align))
 
         old_html = self.html
-        self.parse_to_document()
+        self.compose_html_for_viewing()
         if old_html != self.html:
             self.prepareGeometryChange()
             self.doc.setTextWidth(-1)
@@ -149,7 +150,7 @@ class Label(QtWidgets.QGraphicsTextItem):
             if 'text_align' in style:
                 self.text_align = style['text_align']
 
-    def parse_to_document(self):
+    def compose_html_for_viewing(self):
         """ Use 'visible_in_label' and 'display_styles' and the item attributes to compose the
         document html. Also stores information about the composition to 'viewable_parts'
         Actual parts is list of tuples where:
@@ -159,11 +160,9 @@ class Label(QtWidgets.QGraphicsTextItem):
 
         styles = self.display_styles
         h = self._host
-        editable_parts = []
         row = 0
         visible_parts = []
         html = []
-        editable = []
         waiting = None
         for field_name in self.visible_in_label:
             s = styles.get(field_name, {})
@@ -176,6 +175,7 @@ class Label(QtWidgets.QGraphicsTextItem):
                     field_value = getter
             else:
                 field_value = getattr(h, field_name, '')
+
             if 'condition' in s:
                 condition = getattr(h, s.get('condition'), None)
                 if callable(condition):
@@ -197,50 +197,84 @@ class Label(QtWidgets.QGraphicsTextItem):
                 start_tag = s.get('start_tag', '')
                 if start_tag:
                     end_tag = s.get('end_tag', '')
-                    styled_field_value = start_tag + field_value + end_tag
-                else:
-                    styled_field_value = field_value
+                    field_value = start_tag + field_value + end_tag
                 align = s.get('align', '')
                 if align == 'line-end':
-                    editable_parts.append((field_name, field_value))
-                    editable.append(field_value)
-                    editable.append('\n')
                     if visible_parts and visible_parts[-1][0] != 'triangle':
                         if html[-1] == '<br/>':
                             html.pop()
-                        html.append(styled_field_value)
-                        visible_parts.append((field_name, row, styled_field_value))
+                        html.append(field_value)
+                        visible_parts.append((field_name, row, field_value))
                         html.append('<br/>')
                         row += 1
                     else:
-                        waiting = (styled_field_value, field_name)
+                        waiting = (field_value, field_name)
                     continue
                 elif align == 'continue' or align == 'append':
-                    editable_parts.append((field_name, field_value))
-                    html.append(styled_field_value)
-                    visible_parts.append((field_name, row, styled_field_value))
-                    editable.append(field_value)
-                    editable.append('\n')
+                    html.append(field_value)
+                    visible_parts.append((field_name, row, field_value))
                 else:
-                    editable_parts.append((field_name, field_value))
-                    html.append(styled_field_value)
-                    visible_parts.append((field_name, row, styled_field_value))
-                    editable.append(field_value)
+                    html.append(field_value)
+                    visible_parts.append((field_name, row, field_value))
                     if waiting:
                         html.append(waiting[0])
                         visible_parts.append((waiting[0], row, waiting[1]))
                         waiting = None
                     html.append('<br/>')
                     row += 1
-                    editable.append('\n')
         if html and html[-1] == '<br/>':
             html.pop()
+        self.html = ''.join(html)
+        self.visible_parts = visible_parts
+
+    @time_me
+    def compose_html_for_editing(self):
+        """ Use 'visible_in_label' and 'display_styles' and the item attributes to compose the
+        document html. Also stores information about the composition to 'viewable_parts'
+        Actual parts is list of tuples where:
+        (field_name, position in html string, line in displayed html, html_snippet)
+        :return:
+        """
+        styles = self.display_styles
+        edit_styles = self.editable
+        h = self._host
+        editable_parts = []
+        editable = []
+        for field_name in self.visible_in_label:
+            s = styles.get(field_name, {})
+            e = edit_styles.get(field_name, {})
+            end_tag = ''
+            if 'getter' in e:
+                getter = getattr(h, e.get('getter'), None)
+                if callable(getter):
+                    field_value = getter()
+                else:
+                    field_value = getter
+            else:
+                field_value = getattr(h, field_name, '')
+            if 'condition' in s:
+                condition = getattr(h, s.get('condition'), None)
+                if callable(condition):
+                    if not condition():
+                        continue
+                elif not condition:
+                    continue
+            if 'special' in s:
+                if s['special'] == 'triangle':
+                    continue
+            if field_value:
+                if isinstance(field_value, ITextNode):
+                    field_value = field_value.as_html()
+                editable_parts.append((field_name, field_value))
+                editable.append(field_value)
+                editable.append('\n')
         if editable and editable[-1] == '\n':
             editable.pop()
-        self.html = ''.join(html)
         self.editable_html = ''.join(editable)
         self.editable_parts = editable_parts
-        self.visible_parts = visible_parts
+
+    def should_draw_triangle(self):
+        return self.triangle_is_present and not self._quick_editing
 
     def is_empty(self):
         """ Turning this node into label would result in an empty label.
@@ -260,6 +294,9 @@ class Label(QtWidgets.QGraphicsTextItem):
     def release_editor_focus(self):
         self.set_quick_editing(False)
 
+    def is_quick_editing(self):
+        return self._quick_editing
+
     def set_quick_editing(self, value):
         """  Toggle quick editing on and off for this label. Quick editing is toggled on when
         the label is clicked or navigated into with the keyboard. The label and its editor takes
@@ -276,6 +313,7 @@ class Label(QtWidgets.QGraphicsTextItem):
             self.setTextInteractionFlags(QtCore.Qt.TextEditorInteraction)
             self.prepareGeometryChange()
             self.doc.setTextWidth(-1)
+            self.compose_html_for_editing()
             self.setPlainText(self.editable_html)
             self.setTextWidth(self.doc.idealWidth())
             self.resize_label()
@@ -284,11 +322,18 @@ class Label(QtWidgets.QGraphicsTextItem):
             self.setFocus()
         elif self._quick_editing:
             if self.doc.isModified():
-                self.analyze_changes()
+                fields = self.analyze_changes()
                 self.doc.setModified(False)
                 self.update_label()
+                if len(fields) == 1:
+                    ctrl.main.action_finished("Edited field %s in %s" % (fields[0], self._host))
+                else:
+                    ctrl.main.action_finished(
+                        "Edited fields %s in %s" % (str(fields), self._host))
+
             else:
                 self.setHtml(self.html)
+                self.resize_label()
             self._quick_editing = False
             self.setAcceptDrops(False)
             self.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
@@ -308,10 +353,28 @@ class Label(QtWidgets.QGraphicsTextItem):
                         new_d.append('')
                     c += 1
                 if replace_with:
-                    new_d[c - 1] = '\n'.join([new_d[c - 1]] + replace_with)
+                    if new_d:
+                        # append to last item to create entry that spans multiple lines
+                        new_d[-1] = '\n'.join([new_d[-1]] + replace_with)
+                    else:
+                        new_d.append('\n'.join(replace_with))
                 replace_with.clear()
                 replace_these.clear()
             return c
+
+        # if there are no previous value to compare with, use the field defined as *focus* in
+        # class.editable -dict
+        parts_mapping = self.editable_parts
+        if not parts_mapping:
+            for key, value in self.editable.items():
+                if value.get('focus', False):
+                    parts_mapping = [(key, '')]
+                    break
+
+        # if there was no focus declared, use the first field from class.editable_in_label
+        if not parts_mapping:
+            if self.editable_in_label:
+                parts_mapping = [(self.editable_in_label[0], '')]
 
         al = self.editable_html.splitlines(keepends=False)
         bl = self.doc.toPlainText().splitlines(keepends=False)
@@ -319,6 +382,7 @@ class Label(QtWidgets.QGraphicsTextItem):
         replace_these = []
         new_d = []
         i = 0
+        changed = []
 
         for comp in differ.compare(al, bl):
             word = comp[2:]
@@ -332,10 +396,15 @@ class Label(QtWidgets.QGraphicsTextItem):
             elif op == '-':
                 replace_these.append(word)
         do_replacements(replace_with, replace_these, i)
-        for i, item in enumerate(self.editable_parts):
+
+        for i, item in enumerate(parts_mapping):
             field_name, old_part = item
-            new_value = new_d[i]
+            if len(new_d) > i:
+                new_value = new_d[i]
+            else:
+                new_value = ''
             if new_value != old_part:
+                changed.append(field_name)
                 my_editable = self.editable.get(field_name, {})
                 setter = my_editable.get('setter', None)
                 if setter:
@@ -346,9 +415,10 @@ class Label(QtWidgets.QGraphicsTextItem):
                         print('missing setter!')
                 else:
                     setattr(self._host, field_name, new_value)
+        return changed
 
     def doc_changed(self):
-        if self._quick_editing and not self._recursion_block:
+        if not self._recursion_block: # self._quick_editing and
             self._recursion_block = True
             self.prepareGeometryChange()
             w = self.width
@@ -458,19 +528,6 @@ class Label(QtWidgets.QGraphicsTextItem):
             event.accept()
         else:
             QtWidgets.QGraphicsTextItem.dragEnterEvent(self, event)
-
-    def dragfMoveEvent(self, event):
-        """ Support dragging of items from their panel containers, e.g. symbols from symbol panel
-        or new nodes from nodes panel.
-        :param event:
-        """
-        data = event.mimeData()
-        if data.hasFormat("application/x-qabstractitemmodeldatalist") or data.hasFormat(
-                "text/plain"):
-            event.accept()
-            event.acceptProposedAction()
-        else:
-            QtWidgets.QGraphicsTextItem.dragMoveEvent(self, event)
 
     def paint(self, painter, option, widget):
         """ Painting is sensitive to mouse/selection issues, but usually with

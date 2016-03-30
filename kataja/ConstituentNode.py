@@ -159,7 +159,7 @@ class ConstituentNode(BaseConstituentNode):
         """
         self.update_features()
         self.update_gloss()
-        self.update_label(force_update=True)
+        self.update_label()
         self.update_visibility()
         self.update_status_tip()
         self.announce_creation()
@@ -171,19 +171,8 @@ class ConstituentNode(BaseConstituentNode):
         :param updated_fields: list of names of elements that have been updated.
         :return: None
         """
+        # update_label will be called by Node.after_model_update
         super().after_model_update(updated_fields, update_type)
-        update_label = False
-        if 'alias' in updated_fields:
-            update_label = True
-        if 'index' in updated_fields:
-            update_label = True
-        if 'gloss' in updated_fields:
-            self.update_gloss()
-            update_label = True
-        if 'head' in updated_fields:
-            pass
-        if update_label:
-            self.update_label()
 
     def load_values_from_parsernode(self, parsernode):
         """ Update constituentnode with values from parsernode

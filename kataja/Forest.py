@@ -1555,8 +1555,8 @@ class Forest(BaseModel):
             parent.rebuild_brackets()
         if hasattr(child, 'rebuild_brackets'):
             child.rebuild_brackets()
-        parent.update_label(force_update=True)
-        child.update_label(force_update=True)
+        parent.update_label()
+        child.update_label()
         #print('--- finished connect')
         if hasattr(child, 'on_connect'):
             child.on_connect(parent)
@@ -1999,7 +1999,7 @@ class Forest(BaseModel):
         # won't be visible either.
         for folded in fold_scope:
             folded.update_visibility()
-        node.update_label(force_update=True)
+        node.update_label()
         node.update_visibility()  # edges from triangle to nodes below
 
 

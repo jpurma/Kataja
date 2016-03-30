@@ -98,7 +98,7 @@ class GraphicsResizeHandle(QtWidgets.QSizeGrip):
             lc = self.host.label_object
             if lc.char_width:
                 lc.line_length = max(1, new_width / lc.char_width)
-                self.host.update_label(force_update=True)
+                self.host.update_label()
                 self.update_position()
             else:
                 print('no char width for label, why?')

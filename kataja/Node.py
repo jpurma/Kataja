@@ -181,9 +181,6 @@ class Node(Movable):
         :return: None
         """
         super().after_model_update(updated_fields, update_type)
-        if 'label' in updated_fields:
-            self._label_changed = True
-            self.update_label()
         if 'triangle' in updated_fields:
             self.triangle_updated(self.triangle)
         if 'folding_towards' in updated_fields:
@@ -205,6 +202,7 @@ class Node(Movable):
         elif update_type == g.DELETED:
             print('Node.DELETED. (%s) should I be reverting deletion or have we '
                   'just been deleted?' % self.save_key)
+        self.update_label()
 
     @staticmethod
     def create_synobj(label=None):
@@ -237,11 +235,18 @@ class Node(Movable):
         self._label_changed = True
         self.triangle_updated(value)
 
+    def should_draw_triangle(self):
+        return self.label_object and self.label_object.should_draw_triangle()
+
     def has_triangle(self):
         return self.triangle
 
     def can_have_triangle(self):
         return not self.triangle
+
+    def if_changed_font(self, value):
+        if self.label_object:
+            self.label_object.set_font(qt_prefs.font(value))
 
     def triangle_updated(self, value):
         """ update label positioning here so that offset doesn't need to be
@@ -835,7 +840,7 @@ syntactic_object: %s
         if self.drag_data:
             return ctrl.cm.lighter(ctrl.cm.selection())
         elif ctrl.pressed is self:
-            return ctrl.cm.active(ctrl.cm.selection())
+            return ctrl.cm.selection() #ctrl.cm.active(ctrl.cm.selection())
         elif self._hovering:
             # return ctrl.cm.hover()
             return self.color
@@ -849,7 +854,7 @@ syntactic_object: %s
     # ### Labels and identity
     # ###############################################################
 
-    def update_label(self, force_update=False):
+    def update_label(self):
         """
 
         :param force_update: Force label recomposition and visibility checks
@@ -857,9 +862,9 @@ syntactic_object: %s
         """
         if not self.label_object:
             self.label_object = Label(parent=self)
-        if force_update:
-            self._label_changed = True
-        self.label_object.update_label(self.font)
+        #if force_update:
+        #    self._label_changed = True
+        self.label_object.update_label()
         self.update_label_visibility()
         self.update_bounding_rect()
         self.update_status_tip()
@@ -933,7 +938,7 @@ syntactic_object: %s
         :param option:
         :param widget:
         nodes it is the label of the node that needs complex painting """
-        if self.triangle:
+        if self.should_draw_triangle():
             p = QtGui.QPen(self.contextual_color)
             p.setWidth(1)
             painter.setPen(p)
@@ -1009,6 +1014,7 @@ syntactic_object: %s
             x = self.width / -2
         self.inner_rect = QtCore.QRectF(x, y, self.width, self.height)
         self._update_magnets = True
+
         return self.inner_rect
 
     def boundingRect(self):
@@ -1096,7 +1102,10 @@ syntactic_object: %s
         :param value: pressed or not
         :return:
         """
-        if value:
+        # push-animation is unwanted if we are already editing the text:
+        if self.label_object and self.label_object.is_quick_editing():
+            pass
+        elif value:
             self.anim = QtCore.QPropertyAnimation(self, qbytes_scale)
             self.anim.setDuration(20)
             self.anim.setStartValue(self.scale())
@@ -1176,7 +1185,7 @@ syntactic_object: %s
         else:
             self.setZValue(200)
             if ctrl.main.use_tooltips:
-                self.setToolTip("Edit with keyboard, double click to inspect node")
+                self.setToolTip("Edit with keyboard, click the cog to inspect the node")
             if not (ctrl.multiple_selection() or ctrl.multiselection_delay):
                 self.label_object.set_quick_editing(True)
 
@@ -1197,9 +1206,13 @@ syntactic_object: %s
         """ Scene has decided that this node has been clicked
         :param event:
         """
-        self.hovering = False
-        ctrl.select(self)
-        self.open_embed()
+        # double-click is reserved for selecting words when quick-editing.
+        if self.label_object and self.label_object.is_quick_editing():
+            pass
+        else:
+            self.hovering = False
+            ctrl.select(self)
+            self.open_embed()
 
         #if ctrl.is_selected(self):
         #else:
@@ -1536,4 +1549,4 @@ syntactic_object: %s
     folded_away = Saved("folded_away")
     folding_towards = Saved("folding_towards", if_changed=if_changed_folding_towards)
     color_id = Saved("color_id")
-    font_id = Saved("font_id")
+    font_id = Saved("font_id", if_changed=if_changed_font)
