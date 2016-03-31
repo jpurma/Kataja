@@ -3,8 +3,8 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 import kataja.globals as g
 from kataja.parser.latex_to_unicode import latex_to_unicode
 from kataja.singletons import qt_prefs, ctrl
-from ui_items.Panel import Panel
-from ui_items.panels import box_row
+from kataja.ui_items.Panel import Panel
+from kataja.ui_support.panel_utils import box_row
 
 __author__ = 'purma'
 

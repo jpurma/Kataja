@@ -4,7 +4,7 @@ from PyQt5.QtGui import QStandardItem, QIcon
 
 from kataja.shapes import SHAPE_PRESETS
 from kataja.singletons import ctrl
-from ui_support.TableModelComboBox import TableModelComboBox
+from kataja.ui_support.TableModelComboBox import TableModelComboBox
 
 
 def find_panel(parent):

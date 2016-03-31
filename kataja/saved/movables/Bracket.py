@@ -26,7 +26,7 @@ from PyQt5 import QtWidgets
 
 # noinspection PyUnresolvedReferences
 from PyQt5.QtCore import Qt
-from saved.Movable import Movable
+from kataja.saved.Movable import Movable
 from kataja.singletons import ctrl
 
 

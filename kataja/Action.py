@@ -27,8 +27,8 @@ import traceback
 from PyQt5 import QtCore, QtWidgets, QtGui
 
 from kataja.singletons import ctrl
-from ui_items.OverlayButton import PanelButton
-from ui_support.EmbeddedMultibutton import EmbeddedMultibutton
+from kataja.ui_items.OverlayButton import PanelButton
+from kataja.ui_support.EmbeddedMultibutton import EmbeddedMultibutton
 
 
 class ShortcutSolver(QtCore.QObject):

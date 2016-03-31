@@ -28,7 +28,7 @@ import kataja.globals as g
 from kataja.UIItem import UIItem
 from kataja.errors import UIError
 from kataja.singletons import ctrl, qt_prefs
-from ui_items.TouchArea import TouchArea
+from kataja.ui_items.TouchArea import TouchArea
 
 borderstyle = """
 PanelButton {border: 1px transparent none}

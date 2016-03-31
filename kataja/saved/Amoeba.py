@@ -6,7 +6,7 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 import kataja.globals as g
 from kataja.Saved import Saved, SavedField
 from kataja.singletons import ctrl, qt_prefs
-from saved.movables.Node import Node
+from kataja.saved.movables.Node import Node
 
 points = 36
 

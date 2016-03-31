@@ -1,15 +1,14 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
-from kataja.ui_support.elements.EmbeddedLineEdit import EmbeddedLineEdit
-from kataja.ui_support.elements.EmbeddedMultibutton import EmbeddedMultibutton
-from kataja.ui_support.elements.ExpandingLineEdit import ExpandingLineEdit
-from kataja.ui_support.elements.ResizeHandle import ResizeHandle
-
-import kataja.globals as g
+from kataja.ui_support.EmbeddedLineEdit import EmbeddedLineEdit
+from kataja.ui_support.EmbeddedMultibutton import EmbeddedMultibutton
+from kataja.ui_support.ExpandingLineEdit import ExpandingLineEdit
+from kataja.ui_support.ResizeHandle import ResizeHandle
+from kataja.ui_support.EmbeddedTextarea import EmbeddedTextarea
 from kataja.parser.INodes import ITextNode
 from kataja.parser.LatexToINode import parse_field
 from kataja.singletons import prefs, qt_prefs, ctrl
-from ui_support.EmbeddedTextarea import EmbeddedTextarea
-from ui_items.UIEmbed import UIEmbed
+from kataja.ui_items.UIEmbed import UIEmbed
+import kataja.globals as g
 
 
 def make_label(text, parent=None, layout=None, tooltip='', buddy=None, palette=None, align=None):

@@ -29,9 +29,9 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 import kataja.globals as g
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.utils import to_tuple, sub_xy
-from saved.Edge import Edge
-from saved.movables.Node import Node
-from saved.movables.nodes.ConstituentNode import ConstituentNode
+from kataja.saved.Edge import Edge
+from kataja.saved.movables.Node import Node
+from kataja.saved.movables.nodes.ConstituentNode import ConstituentNode
 from kataja.UIItem import UIItem
 
 end_spot_size = 10

@@ -34,8 +34,8 @@ from kataja.Label import Label
 from kataja.Saved import SavedField
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.utils import to_tuple, create_shadow_effect, add_xy
-from saved.Movable import Movable
-from ui_items.ControlPoint import ControlPoint
+from kataja.saved.Movable import Movable
+from kataja.ui_items.ControlPoint import ControlPoint
 
 
 class DragData:

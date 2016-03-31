@@ -3,8 +3,8 @@ from PyQt5 import QtWidgets, QtCore
 import kataja.globals as g
 from kataja.singletons import ctrl, qt_prefs
 from kataja.visualizations.available import VISUALIZATIONS
-from ui_items.OverlayButton import PanelButton
-from ui_items.Panel import Panel
+from kataja.ui_items.OverlayButton import PanelButton
+from kataja.ui_items.Panel import Panel
 
 __author__ = 'purma'
 

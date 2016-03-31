@@ -28,25 +28,25 @@ import itertools
 import string
 
 import kataja.globals as g
-from BracketManager import BracketManager
-from ChainManager import ChainManager
-from UndoManager import UndoManager
+from kataja.BracketManager import BracketManager
+from kataja.ChainManager import ChainManager
+from kataja.UndoManager import UndoManager
 from kataja.Projection import Projection
 from kataja.Saved import Saved, SavedField
 from kataja.errors import ForestError
 from kataja.parser.INodeToKatajaConstituent import INodeToKatajaConstituent
 from kataja.singletons import ctrl, prefs, qt_prefs, classes
-from saved.Amoeba import Amoeba
-from saved.DerivationStep import DerivationStepManager
-from saved.Edge import Edge
-from saved.ForestSettings import ForestSettings, ForestRules
-from saved.movables.Bracket import Bracket
-from saved.movables.Node import Node
-from saved.movables.Presentation import TextArea, Image
-from saved.movables.Tree import Tree
-from saved.movables.nodes import AttributeNode
-from saved.movables.nodes import BaseConstituentNode
-from saved.movables.nodes.FeatureNode import FeatureNode
+from kataja.saved.Amoeba import Amoeba
+from kataja.saved.DerivationStep import DerivationStepManager
+from kataja.saved.Edge import Edge
+from kataja.saved.ForestSettings import ForestSettings, ForestRules
+from kataja.saved.movables.Bracket import Bracket
+from kataja.saved.movables.Node import Node
+from kataja.saved.movables.Presentation import TextArea, Image
+from kataja.saved.movables.Tree import Tree
+from kataja.saved.movables.nodes.AttributeNode import AttributeNode
+from kataja.saved.movables.nodes.BaseConstituentNode import BaseConstituentNode
+from kataja.saved.movables.nodes.FeatureNode import FeatureNode
 
 
 class Forest(Saved):

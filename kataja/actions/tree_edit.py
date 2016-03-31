@@ -7,7 +7,7 @@ import kataja.globals as g
 from kataja.actions._utils import get_ui_container, get_host
 from kataja.singletons import ctrl, classes
 from kataja.utils import guess_node_type
-from saved.Edge import Edge
+from kataja.saved.Edge import Edge
 
 a = {}
 

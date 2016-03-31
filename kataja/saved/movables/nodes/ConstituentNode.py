@@ -25,7 +25,7 @@ import kataja.globals as g
 from kataja.Saved import SavedField, SavedSynField
 from kataja.parser.INodes import ITextNode
 from kataja.singletons import ctrl
-from kataja.saved.movables.nodes import BaseConstituentNode
+from kataja.saved.movables.nodes.BaseConstituentNode import BaseConstituentNode
 
 __author__ = 'purma'
 

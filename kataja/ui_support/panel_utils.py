@@ -1,11 +1,10 @@
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtCore import QSize
-from kataja.ui_support.elements.ColorSelector import ColorSelector
-from kataja.ui_support.elements.ShapeSelector import ShapeSelector
-from kataja.ui_support.elements.TableModelComboBox import TableModelComboBox
-
-from ui_items.OverlayButton import OverlayButton, PanelButton
-from ui_support.FontSelector import FontSelector
+from kataja.ui_support.ColorSelector import ColorSelector
+from kataja.ui_support.ShapeSelector import ShapeSelector
+from kataja.ui_support.TableModelComboBox import TableModelComboBox
+from kataja.ui_items.OverlayButton import OverlayButton, PanelButton
+from kataja.ui_support.FontSelector import FontSelector
 
 __author__ = 'purma'
 

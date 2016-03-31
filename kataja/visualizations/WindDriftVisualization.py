@@ -23,7 +23,7 @@
 # ############################################################################
 
 import kataja.globals as g
-from Visualization import BaseVisualization
+from kataja.Visualization import BaseVisualization
 from kataja.singletons import prefs
 
 

@@ -2,8 +2,8 @@ from PyQt5 import QtWidgets, QtGui
 
 import kataja.globals as g
 from kataja.singletons import qt_prefs
-from ui_support.EmbeddedLineEdit import EmbeddedLineEdit
-from ui_items.UIEmbed import UIEmbed
+from kataja.ui_support.EmbeddedLineEdit import EmbeddedLineEdit
+from kataja.ui_items.UIEmbed import UIEmbed
 
 __author__ = 'purma'
 

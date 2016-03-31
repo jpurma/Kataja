@@ -2,7 +2,7 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 
 from kataja.UIItem import UIItem
 from kataja.singletons import ctrl, qt_prefs
-from ui_items.OverlayButton import PanelButton
+from kataja.ui_items.OverlayButton import PanelButton
 
 __author__ = 'purma'
 

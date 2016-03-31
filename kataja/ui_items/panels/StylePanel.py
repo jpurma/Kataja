@@ -2,10 +2,10 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 
 import kataja.globals as g
 from kataja.singletons import ctrl, qt_prefs, prefs
-from saved.Edge import Edge
-from saved.movables.Node import Node
-from ui_items.Panel import Panel
-from ui_items.panels import find_list_item, set_value, box_row, font_selector, \
+from kataja.saved.Edge import Edge
+from kataja.saved.movables.Node import Node
+from kataja.ui_items.Panel import Panel
+from kataja.ui_support.panel_utils import find_list_item, set_value, box_row, font_selector, \
     color_selector, icon_button, shape_selector, text_button, selector, mini_button
 
 __author__ = 'purma'

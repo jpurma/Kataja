@@ -2,7 +2,7 @@
 from PyQt5 import QtCore
 
 from kataja.Saved import SavedField
-from saved.Movable import Movable
+from kataja.saved.Movable import Movable
 
 __author__ = 'purma'
 

@@ -24,7 +24,7 @@
 
 from kataja.Saved import Saved, SavedField
 from kataja.singletons import ctrl
-from saved.Forest import Forest
+from kataja.saved.Forest import Forest
 
 
 class ForestKeeper(Saved):

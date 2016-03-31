@@ -1,7 +1,7 @@
 from kataja.singletons import ctrl, prefs
 from kataja.utils import time_me
-from saved.Edge import Edge
-from ui_items.Panel import Panel
+from kataja.saved.Edge import Edge
+from kataja.ui_items.Panel import Panel
 
 __author__ = 'purma'
 

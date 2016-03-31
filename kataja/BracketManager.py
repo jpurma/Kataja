@@ -1,7 +1,7 @@
 # coding=utf-8
 import kataja.globals as g
 from kataja.singletons import qt_prefs
-from saved.movables.Bracket import Bracket
+from kataja.saved.movables.Bracket import Bracket
 
 
 class BracketManager:

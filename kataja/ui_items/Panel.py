@@ -25,7 +25,7 @@
 from PyQt5 import QtCore, QtWidgets, QtGui
 
 from kataja.singletons import ctrl, qt_prefs
-from ui_items.panels import mini_icon_button, label
+from kataja.ui_support.panel_utils import mini_icon_button, label
 from kataja.UIItem import UIItem
 
 

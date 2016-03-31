@@ -1,8 +1,8 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
 
 from kataja.singletons import qt_prefs, ctrl, prefs
-from ui_items.Panel import Panel
-from ui_items.panels import icon_button, label
+from kataja.ui_items.Panel import Panel
+from kataja.ui_support.panel_utils import icon_button, label
 
 __author__ = 'purma'
 

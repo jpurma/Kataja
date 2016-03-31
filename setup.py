@@ -113,7 +113,7 @@ elif sys.platform == 'win32':
                    ["C:\\Python34\\Lib\\site-packages\\PyQt5\\plugins\\platforms\\qwindows.dll"]), (
                   "imageformats",
                   ["C:\\Python34\\Lib\\site-packages\\PyQt5\\plugins\\imageformats\\qgif.dll"])]
-    DATA_FILES += make_tuple([], "plugins", "kataja\\plugins", [".pyc", "__pycache__"])
+    DATA_FILES += make_tuple([], "plugins", "plugins", [".pyc", "__pycache__"])
     DATA_FILES += make_tuple([], "resources", "resources", [".pyc", "temp"])
 
     extra_options = dict(setup_requires=['py2exe'], options={'py2exe': OPTIONS},
@@ -211,8 +211,8 @@ if sys.platform == 'darwin':
 
     print('------- Adding plugins dir inside Kataja.app to enable editable plugins')
     if not os.access(app_contents + 'Resources/lib/plugins', os.F_OK):
-        shutil.copytree(setup_dir + 'kataja/plugins', app_contents + 'Resources/lib/plugins')
-        print('copying ', setup_dir + 'kataja/plugins', ' to ',
+        shutil.copytree(setup_dir + 'plugins', app_contents + 'Resources/lib/plugins')
+        print('copying ', setup_dir + 'plugins', ' to ',
               app_contents + 'Resources/lib/plugins')
     cache_path = app_contents + 'Resources/lib/plugins/__pycache__'
     if os.access(cache_path, os.F_OK):

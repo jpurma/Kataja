@@ -5,7 +5,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from kataja.globals import COLOR_THEME
 from kataja.singletons import ctrl
 from kataja.utils import to_tuple
-from ui_items.Panel import FLAG, CIRCLE, Panel
+from kataja.ui_items.Panel import FLAG, CIRCLE, Panel
 
 
 __author__ = 'purma'

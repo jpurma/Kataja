@@ -24,7 +24,7 @@
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-from saved.Movable import Movable
+from kataja.saved.Movable import Movable
 
 
 class TextArea(Movable, QtWidgets.QGraphicsTextItem):

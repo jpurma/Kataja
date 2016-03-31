@@ -1,7 +1,7 @@
 import kataja.globals as g
 from kataja.ProjectionVisual import rotating_colors, ProjectionVisual
 from kataja.singletons import ctrl
-from saved.movables.nodes.ConstituentNode import strip_xbars
+from kataja.saved.movables.nodes.ConstituentNode import strip_xbars
 
 
 class Projection:

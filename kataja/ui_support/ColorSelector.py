@@ -1,9 +1,8 @@
 from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtCore import QSize
-from kataja.ui_support.elements.TableModelComboBox import TableModelComboBox
-
+from kataja.ui_support.TableModelComboBox import TableModelComboBox
 from kataja.singletons import ctrl
-from ui_support.LineColorIcon import LineColorIcon
+from kataja.ui_support.LineColorIcon import LineColorIcon
 
 
 class ColorSelector(TableModelComboBox):

@@ -21,8 +21,6 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
-import importlib
-import os
 
 from types import FrameType
 import gc

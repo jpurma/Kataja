@@ -25,7 +25,6 @@
 # ############################################################################
 import pprint
 
-from syntax.BaseConstituent import BaseConstituent
 from kataja.utils import time_me
 from kataja.singletons import ctrl
 

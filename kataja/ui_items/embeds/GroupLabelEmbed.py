@@ -1,11 +1,11 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
-from kataja.ui_support.elements.ColorSelector import ColorSelector
+from kataja.ui_support.ColorSelector import ColorSelector
 
 import kataja.globals as g
 from kataja.singletons import qt_prefs
-from ui_support.ExpandingLineEdit import ExpandingLineEdit
-from ui_items.UIEmbed import UIEmbed
-from ui_items.embeds import make_label
+from kataja.ui_support.ExpandingLineEdit import ExpandingLineEdit
+from kataja.ui_items.UIEmbed import UIEmbed
+from kataja.ui_items.embeds.NodeEditEmbed import make_label
 
 __author__ = 'purma'
 

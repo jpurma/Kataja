@@ -43,12 +43,12 @@ import PyQt5.QtWidgets as QtWidgets
 import sys
 
 from kataja.singletons import ctrl, prefs, qt_prefs, running_environment, classes
-from saved.Forest import Forest
-from saved.ForestKeeper import ForestKeeper
+from kataja.saved.Forest import Forest
+from kataja.saved.ForestKeeper import ForestKeeper
 from kataja.GraphScene import GraphScene
 from kataja.GraphView import GraphView
-from UIManager import UIManager
-from PaletteManager import PaletteManager
+from kataja.UIManager import UIManager
+from kataja.PaletteManager import PaletteManager
 import kataja.globals as g
 from kataja.utils import time_me
 from kataja.visualizations.available import VISUALIZATIONS

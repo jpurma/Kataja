@@ -83,7 +83,7 @@ class RunningEnvironment:
         filename = __file__.split('/')[-1]
         kataja_root = prefs_code[:-len('kataja/' + filename)]
         self.resources_path = kataja_root + 'resources/'
-        self.plugins_path = kataja_root + 'kataja/plugins'
+        self.plugins_path = kataja_root + 'plugins'
         self.default_userspace_path = kataja_root
 
     def init_win_exe_paths(self):

@@ -19,20 +19,20 @@ class KatajaFactory:
     def late_init(self):
         """ Import and set available all of the default classes """
 
-        from saved.movables.nodes import AttributeNode
-        from saved.movables.nodes import BaseConstituentNode
-        from saved.movables.nodes.CommentNode import CommentNode
-        from saved.movables.nodes.ConstituentNode import ConstituentNode
-        from saved.movables.nodes.FeatureNode import FeatureNode
-        from saved.movables.nodes.GlossNode import GlossNode
-        from saved.movables.Node import Node
-        from saved.movables.nodes.PropertyNode import PropertyNode
-        from saved.Amoeba import Amoeba
-        from saved.DerivationStep import DerivationStep, DerivationStepManager
-        from saved.Edge import Edge
-        from saved.Forest import Forest
-        from saved.ForestSettings import ForestSettings, ForestRules
-        from saved.movables.Tree import Tree
+        from kataja.saved.movables.nodes.AttributeNode import AttributeNode
+        from kataja.saved.movables.nodes.BaseConstituentNode import BaseConstituentNode
+        from kataja.saved.movables.nodes.CommentNode import CommentNode
+        from kataja.saved.movables.nodes.ConstituentNode import ConstituentNode
+        from kataja.saved.movables.nodes.FeatureNode import FeatureNode
+        from kataja.saved.movables.nodes.GlossNode import GlossNode
+        from kataja.saved.movables.Node import Node
+        from kataja.saved.movables.nodes.PropertyNode import PropertyNode
+        from kataja.saved.Amoeba import Amoeba
+        from kataja.saved.DerivationStep import DerivationStep, DerivationStepManager
+        from kataja.saved.Edge import Edge
+        from kataja.saved.Forest import Forest
+        from kataja.saved.ForestSettings import ForestSettings, ForestRules
+        from kataja.saved.movables.Tree import Tree
         from syntax.BaseFeature import BaseFeature
         from syntax.ConfigurableConstituent import ConfigurableConstituent
         from syntax.BaseFL import FL

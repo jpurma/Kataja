@@ -24,19 +24,19 @@
 from collections import OrderedDict
 
 from PyQt5 import QtCore, QtWidgets
-from kataja.ui_support.elements.MyFontDialog import MyFontDialog
-from kataja.ui_support.elements.ResizeHandle import GraphicsResizeHandle
-from kataja.ui_support.elements.TableModelComboBox import TableModelComboBox
-from kataja.ui_support.panels.ColorThemePanel import ColorPanel
-from kataja.ui_support.panels.ColorWheelPanel import ColorWheelPanel
-from kataja.ui_support.panels.FaceCamPanel import FaceCamPanel
-from kataja.ui_support.panels.LineOptionsPanel import LineOptionsPanel
-from kataja.ui_support.panels.LogPanel import LogPanel
-from kataja.ui_support.panels.NavigationPanel import NavigationPanel
-from kataja.ui_support.panels.NodesPanel import NodesPanel
-from kataja.ui_support.panels.StylePanel import StylePanel
-from kataja.ui_support.panels.VisualizationOptionsPanel import VisualizationOptionsPanel
-from kataja.ui_support.panels.VisualizationPanel import VisualizationPanel
+from kataja.ui_support.MyFontDialog import MyFontDialog
+from kataja.ui_support.ResizeHandle import GraphicsResizeHandle
+from kataja.ui_support.TableModelComboBox import TableModelComboBox
+from kataja.ui_items.panels.ColorThemePanel import ColorPanel
+from kataja.ui_items.panels.ColorWheelPanel import ColorWheelPanel
+from kataja.ui_items.panels.FaceCamPanel import FaceCamPanel
+from kataja.ui_items.panels.LineOptionsPanel import LineOptionsPanel
+from kataja.ui_items.panels.LogPanel import LogPanel
+from kataja.ui_items.panels.NavigationPanel import NavigationPanel
+from kataja.ui_items.panels.NodesPanel import NodesPanel
+from kataja.ui_items.panels.StylePanel import StylePanel
+from kataja.ui_items.panels.VisualizationOptionsPanel import VisualizationOptionsPanel
+from kataja.ui_items.panels.VisualizationPanel import VisualizationPanel
 
 import kataja.globals as g
 from kataja.Action import Action, ShortcutSolver, ButtonShortcutFilter
@@ -48,22 +48,22 @@ from kataja.singletons import ctrl, prefs, qt_prefs, classes
 from kataja.ui_support import drawn_icons
 from kataja.ui_support.MessageWriter import MessageWriter
 from kataja.visualizations.available import VISUALIZATIONS, action_key
-from saved.Amoeba import Amoeba
-from saved.Edge import Edge
-from saved.movables.Node import Node
-from ui_items import Panel
-from ui_items.ActivityMarker import ActivityMarker
-from ui_items.ControlPoint import ControlPoint
-from ui_items.FadingSymbol import FadingSymbol
-from ui_items.OverlayButton import OverlayButton, button_factory
-from ui_items.StretchLine import StretchLine
-from ui_items.TouchArea import TouchArea, create_touch_area
-from ui_items.embeds import EdgeLabelEmbed
-from ui_items.embeds import GroupLabelEmbed
-from ui_items.embeds import NewElementEmbed, NewElementMarker
-from ui_items.embeds import NodeEditEmbed
-from ui_items.panels.SymbolPanel import SymbolPanel
-from ui_support.MyColorDialog import MyColorDialog
+from kataja.saved.Amoeba import Amoeba
+from kataja.saved.Edge import Edge
+from kataja.saved.movables.Node import Node
+from kataja.ui_items.Panel import Panel
+from kataja.ui_items.ActivityMarker import ActivityMarker
+from kataja.ui_items.ControlPoint import ControlPoint
+from kataja.ui_items.FadingSymbol import FadingSymbol
+from kataja.ui_items.OverlayButton import OverlayButton, button_factory
+from kataja.ui_items.StretchLine import StretchLine
+from kataja.ui_items.TouchArea import TouchArea, create_touch_area
+from kataja.ui_items.embeds.EdgeLabelEmbed import EdgeLabelEmbed
+from kataja.ui_items.embeds.GroupLabelEmbed import GroupLabelEmbed
+from kataja.ui_items.embeds.NewElementEmbed import NewElementEmbed, NewElementMarker
+from kataja.ui_items.embeds.NodeEditEmbed import NodeEditEmbed
+from kataja.ui_items.panels.SymbolPanel import SymbolPanel
+from kataja.ui_support.MyColorDialog import MyColorDialog
 
 NOTHING = 0
 SELECTING_AREA = 1

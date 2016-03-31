@@ -2,7 +2,7 @@ from PyQt5 import QtWidgets, QtCore
 
 import kataja.globals as g
 from kataja.singletons import qt_prefs
-from ui_items.Panel import Panel
+from kataja.ui_items.Panel import Panel
 
 
 __author__ = 'purma'

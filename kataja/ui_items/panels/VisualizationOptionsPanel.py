@@ -1,5 +1,5 @@
 from kataja.singletons import ctrl
-from ui_items.Panel import Panel
+from kataja.ui_items.Panel import Panel
 
 __author__ = 'purma'
 

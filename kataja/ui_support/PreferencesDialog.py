@@ -25,10 +25,10 @@
 from PyQt5 import QtCore, QtWidgets
 
 import kataja.globals as g
-from PaletteManager import color_modes
+from kataja.PaletteManager import color_modes
 from kataja.singletons import prefs, qt_prefs, ctrl
 from kataja.visualizations.available import VISUALIZATIONS
-from ui_support.PluginSelector import PluginSelector
+from kataja.ui_support.PluginSelector import PluginSelector
 
 class DoubleSlider(QtWidgets.QHBoxLayout):
     """

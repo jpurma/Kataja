@@ -5,9 +5,9 @@ from kataja.shapes import draw_arrow_shape_from_points
 from kataja.singletons import qt_prefs, ctrl, prefs
 from kataja.ui_support.drawn_icons import arrow, divider
 from kataja.utils import guess_node_type
-from ui_support.ExpandingLineEdit import ExpandingLineEdit
-from ui_items.UIEmbed import UIEmbed
-from ui_items.panels import icon_text_button, box_row
+from kataja.ui_support.ExpandingLineEdit import ExpandingLineEdit
+from kataja.ui_items.UIEmbed import UIEmbed
+from kataja.ui_support.panel_utils import icon_text_button, box_row
 
 __author__ = 'purma'
 

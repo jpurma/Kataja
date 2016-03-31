@@ -76,7 +76,7 @@ def launch_kataja():
     app.processEvents()
 
     # importing KatajaMain here because it is slow, and splash screen is now up
-    from saved.KatajaMain import KatajaMain
+    from kataja.saved.KatajaMain import KatajaMain
 
     window = KatajaMain(app, sys.argv)
     splash.finish(window)
