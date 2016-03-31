@@ -181,6 +181,6 @@ class FeatureNode(Node):
     #                #
     # ############## #
 
-    key = Synobj("key", if_changed=Node.alert_label)
-    value = Synobj("value", if_changed=Node.alert_label)
-    family = Synobj("family", if_changed=Node.alert_label)
+    key = Synobj("key")
+    value = Synobj("value")
+    family = Synobj("family")

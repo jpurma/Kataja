@@ -37,6 +37,7 @@ class IFeature(BaseModel):
     meaning. Family property can be used e.g. to mark phi-features or LF features.
     """
 
+    syntactic_object = True
     short_name = "I-F"
     visible_in_label = []
     editable_in_label = []

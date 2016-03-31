@@ -38,6 +38,7 @@ class BaseFeature(IFeature):
     meaning. Family property can be used e.g. to mark phi-features or LF features.
     """
 
+    syntactic_object = True
     short_name = "F"
 
     visible_in_label = ['key', 'value', 'family']

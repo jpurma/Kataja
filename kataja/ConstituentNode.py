@@ -473,7 +473,6 @@ class ConstituentNode(BaseConstituentNode):
 
 
         """
-        self.alert_label()
         if not self.syntactic_object:
             return
         syn_gloss = self.gloss
@@ -516,8 +515,8 @@ class ConstituentNode(BaseConstituentNode):
     #                #
     # ############## #
 
-    index = Saved("index", if_changed=Node.alert_label)
-    alias = Saved("alias", if_changed=Node.alert_label)
+    index = Saved("index")
+    alias = Saved("alias")
     gloss = Saved("gloss", if_changed=update_gloss)
     head = Synobj("head")
 

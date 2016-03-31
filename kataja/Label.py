@@ -38,6 +38,7 @@ class Label(QtWidgets.QGraphicsTextItem):
     """ Labels are names of nodes. Node itself handles all the logic of
     deciding what to show in label, label only calls nodes method to ask for
     text. """
+    max_width = 400
 
     def __init__(self, parent=None):
         """ Give node as parent. Label asks it to produce text to show here """
@@ -113,12 +114,15 @@ class Label(QtWidgets.QGraphicsTextItem):
             self.doc.setTextWidth(-1)
             self.setHtml(self.html)
             self.text = self.toPlainText()
-        ideal_width = self.doc.idealWidth()
+        proposed_width = self.doc.idealWidth()
+        self.setTextWidth(min(proposed_width, Label.max_width))
 
-        if self.line_length and self.line_length * self.char_width < ideal_width:
+        if self.line_length and self.line_length * self.char_width < proposed_width:
             self.setTextWidth(self.line_length * self.char_width)
+        elif proposed_width < Label.max_width:
+            self.setTextWidth(proposed_width)
         else:
-            self.setTextWidth(ideal_width)
+            self.setTextWidth(Label.max_width)
         self.resize_label()
 
     def prepare_template(self):
@@ -329,12 +333,14 @@ class Label(QtWidgets.QGraphicsTextItem):
             self.prepareGeometryChange()
             self.doc.setTextWidth(-1)
             self.compose_html_for_editing()
+            self.setCursor(QtGui.QCursor(QtCore.Qt.IBeamCursor))
             self.setPlainText(self.editable_html)
             #opt = QtGui.QTextOption()
             #opt.setFlags(QtGui.QTextOption.ShowLineAndParagraphSeparators |
             #             QtGui.QTextOption.AddSpaceForLineAndParagraphSeparators)
             #self.doc.setDefaultTextOption(opt)
-            self.setTextWidth(self.doc.idealWidth())
+            proposed_width = self.doc.idealWidth()
+            self.setTextWidth(min(proposed_width, Label.max_width))
             self.resize_label()
             self.setAcceptDrops(True)
             ctrl.graph_view.setFocus()
@@ -343,17 +349,16 @@ class Label(QtWidgets.QGraphicsTextItem):
             if self.doc.isModified():
                 fields = self.analyze_changes()
                 self.doc.setModified(False)
-                self.update_label()
                 if len(fields) == 1:
                     ctrl.main.action_finished("Edited field %s in %s" % (fields[0], self._host))
                 else:
                     ctrl.main.action_finished(
                         "Edited fields %s in %s" % (str(fields), self._host))
 
-            else:
-                self.setHtml(self.html)
-                self.resize_label()
             self._quick_editing = False
+            self.update_label()
+            self._host.update_bounding_rect()
+            self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
             self.setAcceptDrops(False)
             self.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
             ctrl.text_editor_focus = None
@@ -439,7 +444,8 @@ class Label(QtWidgets.QGraphicsTextItem):
                 new_fields[current_field] = '\n'.join(current_stack).rstrip()
                 current_stack = []
             current_field = field_name
-            current_stack.append(value)
+            if value:
+                current_stack.append(value)
         if current_field:
             new_fields[current_field] = '\n'.join(current_stack).rstrip()
 
@@ -465,7 +471,8 @@ class Label(QtWidgets.QGraphicsTextItem):
             self._recursion_block = True
             self.prepareGeometryChange()
             w = self.width
-            self.setTextWidth(self.doc.idealWidth())
+            proposed_width = self.doc.idealWidth()
+            self.setTextWidth(min(proposed_width, Label.max_width))
             self.resize_label()
             self._host.update_bounding_rect()
             if ctrl.ui.selection_amoeba:
@@ -511,6 +518,7 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.top_y = -h2
         self.bottom_y = h2
         self.width = iw
+
         self.triangle_is_present = False
         second_row = 0
         triangle_row = 0

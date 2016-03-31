@@ -39,8 +39,6 @@ from kataja.utils import to_tuple, create_shadow_effect, multiply_xy, div_xy, su
     time_me, add_xy, combine_dicts, combine_lists
 import kataja.globals as g
 
-TRIANGLE_HEIGHT = 10
-
 
 class DragData:
     """ Helper object to contain drag-related data for duration of dragging """
@@ -106,7 +104,6 @@ class Node(Movable):
         self._label_visible = True
         self._label_qdocument = None
         self.label_rect = None
-        self._label_changed = True
         self._gravity = 0
         self.label_object = Label(parent=self)
         self.clickable = False
@@ -165,7 +162,6 @@ class Node(Movable):
                 values.
         :return: None
         """
-        self._label_changed = True
         self.update_label()
         self.update_bounding_rect()
         self.update_visibility()
@@ -181,8 +177,6 @@ class Node(Movable):
         :return: None
         """
         super().after_model_update(updated_fields, update_type)
-        if 'triangle' in updated_fields:
-            self.triangle_updated(self.triangle)
         if 'folding_towards' in updated_fields:
             # do the animation and its after triggers.
             if self.folding_towards:
@@ -228,13 +222,6 @@ class Node(Movable):
     def get_editable_field_names(self):
         return self.label_object.editable_in_label
 
-    def alert_label(self, value=None):
-        self._label_changed = True
-
-    def if_changed_triangle(self, value):
-        self._label_changed = True
-        self.triangle_updated(value)
-
     def should_draw_triangle(self):
         return self.label_object and self.label_object.should_draw_triangle()
 
@@ -247,21 +234,6 @@ class Node(Movable):
     def if_changed_font(self, value):
         if self.label_object:
             self.label_object.set_font(qt_prefs.font(value))
-
-    def triangle_updated(self, value):
-        """ update label positioning here so that offset doesn't need to be
-        stored in save files and it
-            still will be updated correctly
-        :param value: bool
-        :return: None
-        """
-        if self.label_object:
-            if value:
-                self.label_object.y_offset = TRIANGLE_HEIGHT
-            else:
-                self.label_object.y_offset = 0
-            if self.label_object.has_been_initialized:
-                self.update_label()
 
     def if_changed_folding_towards(self, value):
         self.update_position()
@@ -1542,10 +1514,10 @@ syntactic_object: %s
 
     # Saved properties
     syntactic_object = Saved("syntactic_object")
-    label = Saved("label", if_changed=alert_label)
+    label = Saved("label")
     edges_up = Saved("edges_up")
     edges_down = Saved("edges_down")
-    triangle = Saved("triangle", if_changed=if_changed_triangle)
+    triangle = Saved("triangle")
     folded_away = Saved("folded_away")
     folding_towards = Saved("folding_towards", if_changed=if_changed_folding_towards)
     color_id = Saved("color_id")

@@ -189,8 +189,9 @@ class BaseModel(object):
     should go.
     Also makes it neater to check if item is Savable.
     """
-    short_name = "Override this!"
+    short_name = "Missing shortname!"
     _sk = Saved("_sk")
+    syntactic_object = False
 
     def __init__(self, unique=False, save_key='', **kw):
         if save_key:

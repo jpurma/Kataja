@@ -33,6 +33,7 @@ from syntax.BaseFeature import BaseFeature
 class IConstituent(BaseModel):
     """ IConstituent is the interface for constituents in syntax. """
 
+    syntactic_object = True
     short_name = "I-C"
     visible_in_label = []
     editable_in_label = []

@@ -37,6 +37,7 @@ class BaseConstituent(IConstituent):
     It is a primary datatype, needs to support saving and loading. """
 
     # info for kataja engine
+    syntactic_object = True
     short_name = "C"
 
     visible_in_label = ['label']

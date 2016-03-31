@@ -548,5 +548,5 @@ class BaseConstituentNode(Node):
     # ############## #
 
     # Attributes from synobj and their setter hooks
-    label = Synobj("label", if_changed=Node.alert_label)
+    label = Synobj("label")
     features = Synobj("features", if_changed=if_changed_features)

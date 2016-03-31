@@ -94,14 +94,16 @@ class UndoManager:
         ctrl.disable_undo()
         ctrl.multiselection_start()
         msg, snapshot = self._stack[self._current]
+        affected = set()
         for obj, transitions, transition_type in snapshot.values():
             obj.revert_to_earlier(transitions)
             if transition_type == CREATED:
-                print('undo should undo creation of object (=>cancel) ', obj.save_key)
+                #print('undo should undo creation of object (=>cancel) ', obj.save_key)
                 ctrl.forest.delete_item(obj, ignore_consequences=True)
             elif transition_type == DELETED:
-                print('undo should undo deletion of object (=>revive)', obj.save_key)
+                #print('undo should undo deletion of object (=>revive)', obj.save_key)
                 ctrl.forest.add_to_scene(obj)
+            affected.add(obj)
         for obj, transitions, transition_type in snapshot.values():
             if transition_type == CREATED:
                 revtt = DELETED
@@ -110,6 +112,10 @@ class UndoManager:
             else:
                 revtt = transition_type
             obj.after_model_update(transitions.keys(), revtt)
+            if getattr(obj.__class__, 'syntactic_object', False):
+                node = ctrl.forest.nodes_from_synobs.get(obj.save_key, None)
+                if node and node not in affected:
+                    node.after_model_update([], revtt)
         ctrl.forest.flush_and_rebuild_temporary_items()
         ctrl.add_message('undo [%s]: %s' % (self._current, msg))
         ctrl.multiselection_end()
@@ -129,17 +135,23 @@ class UndoManager:
         ctrl.disable_undo()
         ctrl.multiselection_start()
         msg, snapshot = self._stack[self._current]
+        affected = set()
         print('redo: ', msg, self._current)
         for obj, transitions, transition_type in snapshot.values():
             obj.move_to_later(transitions)
             if transition_type == CREATED:
-                print('redo should recreate object ', obj)
+                #print('redo should recreate object ', obj)
                 ctrl.forest.add_to_scene(obj)
             elif transition_type == DELETED:
-                print('redo should delete object', obj)
+                #print('redo should delete object', obj)
                 ctrl.forest.delete_item(obj, ignore_consequences=True)
-        for obj, transitions, transition_type  in snapshot.values():
+            affected.add(obj)
+        for obj, transitions, transition_type in snapshot.values():
             obj.after_model_update(transitions.keys(), transition_type)
+            if getattr(obj.__class__, 'syntactic_object', False):
+                node = ctrl.forest.nodes_from_synobs.get(obj.save_key, None)
+                if node and node not in affected:
+                    node.after_model_update([], transition_type)
         ctrl.add_message('redo [%s]: %s' % (self._current, msg))
         ctrl.multiselection_end()
         ctrl.resume_undo()
