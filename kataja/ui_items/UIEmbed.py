@@ -24,10 +24,9 @@ class UIEmbed(UIItem, QtWidgets.QWidget):
     :param ui_manager:
     """
 
-    def __init__(self, parent, ui_manager, ui_key, host, text):
+    def __init__(self, parent, ui_key, host, text):
         UIItem.__init__(self, ui_key, host)
         QtWidgets.QWidget.__init__(self, parent)
-        self.ui_manager = ui_manager
         self._palette = None
         self.update_colors()
         self._drag_diff = None
@@ -37,7 +36,7 @@ class UIEmbed(UIItem, QtWidgets.QWidget):
         #close_button = QtWidgets.QPushButton("x")
         close_button = PanelButton(qt_prefs.close_icon, text='Close', parent=self, size=12, color_key='content1')
         close_button.setMaximumWidth(16)
-        ui_manager.connect_element_to_action(close_button, 'close_embed')
+        self.ui_manager.connect_element_to_action(close_button, 'close_embed')
         self.top_row_layout.addWidget(close_button)
         self.top_row_layout.setAlignment(QtCore.Qt.AlignLeft)
         self.top_row_layout.addSpacing(8)

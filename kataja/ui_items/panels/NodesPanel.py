@@ -68,7 +68,7 @@ class DraggableNodeFrame(QtWidgets.QFrame):
 class NodesPanel(Panel):
     """ Switch between trees or derivation steps """
 
-    def __init__(self, name, key, default_position='bottom', parent=None, ui_manager=None, folded=False):
+    def __init__(self, name, key, default_position='bottom', parent=None, folded=False):
         """
         All of the panel constructors follow the same format so that the construction can be automated.
         :param name: Title of the panel and the key for accessing it
@@ -76,7 +76,7 @@ class NodesPanel(Panel):
         :param parent: self.main
         :param ui_manager: pass a dictionary where buttons from this panel will be added
         """
-        Panel.__init__(self, name, key, default_position, parent, ui_manager, folded)
+        Panel.__init__(self, name, key, default_position, parent, folded)
         inner = QtWidgets.QWidget()
         inner.setMinimumWidth(160)
         #inner.setMinimumHeight(120)

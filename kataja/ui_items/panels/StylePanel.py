@@ -14,8 +14,7 @@ __author__ = 'purma'
 class StylePanel(Panel):
     """ Panel for editing how edges and nodes are drawn. """
 
-    def __init__(self, name, key, default_position='right', parent=None,
-                 ui_manager=None, folded=False):
+    def __init__(self, name, key, default_position='right', parent=None, folded=False):
         """
         All of the panel constructors follow the same format so that the
         construction can be automated.
@@ -23,8 +22,7 @@ class StylePanel(Panel):
         :param default_position: 'bottom', 'right'...
         :param parent: self.main
         """
-        Panel.__init__(self, name, key, default_position, parent, ui_manager,
-                       folded)
+        Panel.__init__(self, name, key, default_position, parent, folded)
         inner = QtWidgets.QWidget(self)
         self.setSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred)
         layout = QtWidgets.QVBoxLayout()
@@ -39,13 +37,13 @@ class StylePanel(Panel):
                           'forest_changed', 'scope_changed']
         # Other items may be temporarily added, they are defined as
         # class.variables
-
+        ui = self.ui_manager
         hlayout = box_row(layout)
         styles_data = [('fancy', 'fancy'), ('basic', 'basic')]
-        self.overall_style_box = selector(ui_manager, self, hlayout,
+        self.overall_style_box = selector(ui, self, hlayout,
                                           data=styles_data,
                                           action='change_master_style')
-        self.custom_overall_style = text_button(ui_manager, hlayout,
+        self.custom_overall_style = text_button(ui, hlayout,
                                                 text='customize',
                                                 action='customize_master_style',
                                                 checkable=True)
@@ -55,41 +53,41 @@ class StylePanel(Panel):
         sw_layout = QtWidgets.QVBoxLayout()
         sw_layout.setContentsMargins(0, 0, 0, 0)
         hlayout = box_row(sw_layout)
-        self.scope_selector = selector(ui_manager, self.style_widgets, hlayout,
+        self.scope_selector = selector(ui, self.style_widgets, hlayout,
                                        data=[],
                                        action='style_scope',
                                        label='Style for')
         vline = QtWidgets.QFrame()
         vline.setFrameShape(QtWidgets.QFrame.VLine)
         hlayout.addWidget(vline)
-        self.style_reset = mini_button(ui_manager, self.style_widgets, hlayout,
+        self.style_reset = mini_button(ui, self.style_widgets, hlayout,
                                        text='reset',
                                        action='reset_style_in_scope')
 
         hlayout = box_row(sw_layout)
 
-        self.font_selector = font_selector(ui_manager, self.style_widgets, hlayout,
+        self.font_selector = font_selector(ui, self.style_widgets, hlayout,
                                            action='select_font',
                                            label='Text style')
 
-        self.node_color_selector = color_selector(ui_manager, self.style_widgets, hlayout,
+        self.node_color_selector = color_selector(ui, self.style_widgets, hlayout,
                                                   action='change_node_color')
 
-        self.open_font_dialog = icon_button(ui_manager, self.style_widgets, hlayout,
+        self.open_font_dialog = icon_button(ui, self.style_widgets, hlayout,
                                             icon=qt_prefs.font_icon,
                                             text='Add custom font',
                                             action='start_font_dialog',
                                             size=20)
 
         hlayout = box_row(sw_layout)
-        self.shape_selector = shape_selector(ui_manager, self.style_widgets, hlayout,
+        self.shape_selector = shape_selector(ui, self.style_widgets, hlayout,
                                              action='change_edge_shape',
                                              label='Edge style')
 
-        self.edge_color_selector = color_selector(ui_manager, self.style_widgets, hlayout,
+        self.edge_color_selector = color_selector(ui, self.style_widgets, hlayout,
                                                   action='change_edge_color')
 
-        self.edge_options = icon_button(ui_manager, self.style_widgets, hlayout,
+        self.edge_options = icon_button(ui, self.style_widgets, hlayout,
                                         icon=qt_prefs.settings_icon,
                                         text='More line options',
                                         action='toggle_panel_%s' % g.LINE_OPTIONS,

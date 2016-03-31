@@ -12,14 +12,13 @@ class FadingSymbol(UIItem, QtWidgets.QGraphicsObject):
 
     """
 
-    def __init__(self, symbol, host, ui_manager, ui_key, place='bottom_right'):
+    def __init__(self, symbol, host, ui_key, place='bottom_right'):
         UIItem.__init__(self, ui_key, host)
         QtWidgets.QGraphicsObject.__init__(self)
         self.inner = QtWidgets.QGraphicsPixmapItem()
         self.inner.setParentItem(self)
         self.inner.setPixmap(symbol)
         self.place = place
-        self.ui_manager = ui_manager
         self.update_position()
         self._fade_out_active = False
         self._fade_anim = None

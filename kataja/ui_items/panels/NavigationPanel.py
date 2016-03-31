@@ -10,7 +10,7 @@ __author__ = 'purma'
 class NavigationPanel(Panel):
     """ Switch between trees or derivation steps """
 
-    def __init__(self, name, key, default_position='bottom', parent=None, ui_manager=None, folded=False):
+    def __init__(self, name, key, default_position='bottom', parent=None, folded=False):
         """
         All of the panel constructors follow the same format so that the construction can be automated.
         :param name: Title of the panel and the key for accessing it
@@ -18,7 +18,7 @@ class NavigationPanel(Panel):
         :param parent: self.main
         :param ui_manager: pass a dictionary where buttons from this panel will be added
         """
-        Panel.__init__(self, name, key, default_position, parent, ui_manager, folded)
+        Panel.__init__(self, name, key, default_position, parent, folded)
         #label_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Minimum)
         #button_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.MinimumExpanding)
         inner = QtWidgets.QWidget()
@@ -46,7 +46,8 @@ class NavigationPanel(Panel):
         # prev_tree.setMinimumHeight(32)
         layout.addWidget(prev_tree, 1, 0, 1, 1)
         self.prev_tree = prev_tree
-        ui_manager.connect_element_to_action(prev_tree, ui_manager.qt_actions['prev_forest'])
+        ui = self.ui_manager
+        ui.connect_element_to_action(prev_tree, ui.qt_actions['prev_forest'])
         # prev_tree.setDefaultAction(ui_manager.qt_actions['prev_forest'])
 
         next_tree = TwoColorButton(qt_prefs.right_arrow, '', self)
@@ -56,7 +57,7 @@ class NavigationPanel(Panel):
         # next_tree.setMinimumHeight(32)
         layout.addWidget(next_tree, 1, 1, 1, 1)
         self.next_tree = next_tree
-        ui_manager.connect_element_to_action(next_tree, ui_manager.qt_actions['next_forest'])
+        ui.connect_element_to_action(next_tree, ui.qt_actions['next_forest'])
         # next_tree.setDefaultAction(ui_manager.qt_actions['next_forest'])
 
         self.der_label = QtWidgets.QLabel('Derivation step', self)
@@ -72,7 +73,7 @@ class NavigationPanel(Panel):
         #prev_der.setSizePolicy(label_policy)
         layout.addWidget(prev_der, 3, 0, 1, 1)
         self.prev_der = prev_der
-        prev_der.clicked.connect(ui_manager.qt_actions['prev_derivation_step'].triggered)
+        prev_der.clicked.connect(ui.qt_actions['prev_derivation_step'].triggered)
 
         next_der = TwoColorButton(qt_prefs.right_arrow, '', self)
         #next_der.setSizePolicy(label_policy)

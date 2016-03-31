@@ -25,10 +25,10 @@
 import math
 
 import kataja.globals as g
+from kataja.Grid import Grid
+from kataja.saved.Movable import Movable
 from kataja.singletons import prefs
 from kataja.visualizations.BalancedTree import BalancedTree
-from kataja.visualizations.Grid import Grid
-from kataja.saved.Movable import Movable
 
 
 class LinearizedStaticTree(BalancedTree):

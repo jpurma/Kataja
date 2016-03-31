@@ -11,9 +11,10 @@ __author__ = 'purma'
 
 
 class GroupLabelEmbed(UIEmbed):
-    def __init__(self, parent, ui_manager, edge, ui_key):
-        UIEmbed.__init__(self, parent, ui_manager, ui_key, edge, 'Highlight a group of nodes')
+    def __init__(self, parent, edge, ui_key):
+        UIEmbed.__init__(self, parent, ui_key, edge, 'Highlight a group of nodes')
         self.marker = None
+        ui = self.ui_manager
         layout = QtWidgets.QVBoxLayout()
         layout.addLayout(self.top_row_layout)  # close-button from UIEmbed
         smaller_font = qt_prefs.font(g.ITALIC_FONT)
@@ -33,7 +34,7 @@ class GroupLabelEmbed(UIEmbed):
         layout.addLayout(hlayout)
         hlayout = QtWidgets.QHBoxLayout()
         self.color_select = ColorSelector(self)
-        ui_manager.connect_element_to_action(self.color_select, 'change_amoeba_color')
+        ui.connect_element_to_action(self.color_select, 'change_amoeba_color')
         hlayout.addWidget(self.color_select, 1, QtCore.Qt.AlignRight)
         label = make_label('Color',
                            parent=self,
@@ -42,7 +43,7 @@ class GroupLabelEmbed(UIEmbed):
                            buddy=self.color_select,
                            align=QtCore.Qt.AlignLeft)
         self.fill_checkbox = QtWidgets.QCheckBox()
-        ui_manager.connect_element_to_action(self.fill_checkbox, 'change_amoeba_fill')
+        ui.connect_element_to_action(self.fill_checkbox, 'change_amoeba_fill')
         hlayout.addWidget(self.fill_checkbox, 1, QtCore.Qt.AlignRight)
         label = make_label('Fill',
                            parent=self,
@@ -51,7 +52,7 @@ class GroupLabelEmbed(UIEmbed):
                            buddy=self.fill_checkbox,
                            align=QtCore.Qt.AlignLeft)
         self.outline_checkbox = QtWidgets.QCheckBox()
-        ui_manager.connect_element_to_action(self.outline_checkbox, 'change_amoeba_outline')
+        ui.connect_element_to_action(self.outline_checkbox, 'change_amoeba_outline')
         hlayout.addWidget(self.outline_checkbox, 1, QtCore.Qt.AlignRight)
         label = make_label('Outline',
                            parent=self,
@@ -61,7 +62,7 @@ class GroupLabelEmbed(UIEmbed):
                            align=QtCore.Qt.AlignLeft)
 
         self.include_children_checkbox = QtWidgets.QCheckBox()
-        ui_manager.connect_element_to_action(self.include_children_checkbox, 'change_amoeba_children')
+        ui.connect_element_to_action(self.include_children_checkbox, 'change_amoeba_children')
         hlayout.addWidget(self.include_children_checkbox, 1, QtCore.Qt.AlignRight)
         label = make_label('Include children',
                            parent=self,
@@ -70,7 +71,7 @@ class GroupLabelEmbed(UIEmbed):
                            buddy=self.include_children_checkbox,
                            align=QtCore.Qt.AlignLeft)
         self.allow_overlap_checkbox = QtWidgets.QCheckBox()
-        ui_manager.connect_element_to_action(self.allow_overlap_checkbox, 'change_amoeba_overlaps')
+        ui.connect_element_to_action(self.allow_overlap_checkbox, 'change_amoeba_overlaps')
         hlayout.addWidget(self.allow_overlap_checkbox, 1, QtCore.Qt.AlignRight)
         label = make_label('Allow groups to overlap',
                            parent=self,
@@ -84,12 +85,12 @@ class GroupLabelEmbed(UIEmbed):
         hlayout = QtWidgets.QHBoxLayout()
         self.delete_button = QtWidgets.QPushButton("Delete")  # U+21A9 &#8617;
         self.delete_button.setMaximumWidth(60)
-        ui_manager.connect_element_to_action(self.delete_button, 'amoeba_remove')
+        ui.connect_element_to_action(self.delete_button, 'amoeba_remove')
 
         hlayout.addWidget(self.delete_button)
         self.enter_button = QtWidgets.QPushButton("Keep ↩")  # U+21A9 &#8617;
         self.enter_button.setMaximumWidth(60)
-        ui_manager.connect_element_to_action(self.enter_button, 'amoeba_save')
+        ui.connect_element_to_action(self.enter_button, 'amoeba_save')
 
         hlayout.addWidget(self.enter_button)
         layout.addLayout(hlayout)

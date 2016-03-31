@@ -126,17 +126,18 @@ class NewElementMarker(QtWidgets.QGraphicsItem):
 
 
 class NewElementEmbed(UIEmbed):
-    def __init__(self, parent, ui_manager, ui_key):
-        UIEmbed.__init__(self, parent, ui_manager, ui_key, None, 'Create new node')
+    def __init__(self, parent, ui_key):
+        UIEmbed.__init__(self, parent,  ui_key, None, 'Create new node')
         self.marker = None
         self.guess_mode = True
         layout = QtWidgets.QVBoxLayout()
         layout.addLayout(self.top_row_layout)
         hlayout = box_row(layout)
-        self.new_arrow_button = icon_text_button(ui_manager, hlayout, self, '', '',
+        ui = self.ui_manager
+        self.new_arrow_button = icon_text_button(ui, hlayout, self, '', '',
                                                  " &Arrow", 'new_arrow', size=QtCore.QSize(48, 20),
                                                  draw_method=arrow)
-        self.divider_button = icon_text_button(ui_manager, hlayout, self, '', '',
+        self.divider_button = icon_text_button(ui, hlayout, self, '', '',
                                                " &Divider", 'new_divider',
                                                size=QtCore.QSize(48, 20), draw_method=divider)
         self.new_arrow_button.setFlat(False)
@@ -172,7 +173,7 @@ class NewElementEmbed(UIEmbed):
             # 'name' can be translated if necessary
         hlayout.addWidget(self.node_type_selector)
         self.enter_button = QtWidgets.QPushButton("Create ↩")  # U+21A9 &#8617;
-        ui_manager.connect_element_to_action(self.enter_button, 'create_new_node_from_text')
+        ui.connect_element_to_action(self.enter_button, 'create_new_node_from_text')
 
         hlayout.addWidget(self.enter_button)
         layout.addLayout(hlayout)

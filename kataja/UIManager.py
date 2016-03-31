@@ -634,7 +634,7 @@ class UIManager:
             name = data.get('name', '')
         constructor = panel_classes[id]
         new_panel = constructor(name, id, default_position=position, parent=self.main,
-                                ui_manager=self, folded=folded)
+                                folded=folded)
         self._panels[id] = new_panel
         return new_panel
 
@@ -768,7 +768,7 @@ class UIManager:
         self.release_editor_focus()
         lp = edge.label_item.pos()
         if EDGE_LABEL_EMBED not in self._items:
-            embed = EdgeLabelEmbed(self.main.graph_view, self, edge, EDGE_LABEL_EMBED)
+            embed = EdgeLabelEmbed(self.main.graph_view, edge, EDGE_LABEL_EMBED)
             self.add_ui(embed)
         else:
             embed = self._items[EDGE_LABEL_EMBED]
@@ -791,7 +791,7 @@ class UIManager:
             else:
                 embed.host = amoeba
         else:
-            embed = GroupLabelEmbed(self.main.graph_view, self, amoeba, GROUP_LABEL_EMBED)
+            embed = GroupLabelEmbed(self.main.graph_view, amoeba, GROUP_LABEL_EMBED)
             self.add_ui(embed)
         embed.update_embed(focus_point=lp)
         embed.wake_up()
@@ -809,7 +809,7 @@ class UIManager:
         embed = self.get_ui(NEW_ELEMENT_EMBED)
         marker = self.get_ui(NEW_ELEMENT_MARKER)
         if not embed:
-            embed = NewElementEmbed(self.main.graph_view, self, NEW_ELEMENT_EMBED)
+            embed = NewElementEmbed(self.main.graph_view, NEW_ELEMENT_EMBED)
             self.add_ui(embed, show=False)
         if not marker:
             marker = NewElementMarker(scene_pos, embed, NEW_ELEMENT_MARKER)
@@ -843,7 +843,7 @@ class UIManager:
         if ed:
             self.remove_edit_embed(ed)
 
-        ed = NodeEditEmbed(self.main.graph_view, self, ui_key, node)
+        ed = NodeEditEmbed(self.main.graph_view, ui_key, node)
         self.add_ui(ed, show=False)
         self._node_edits.add(ed)
         ed.wake_up()
@@ -1055,7 +1055,7 @@ class UIManager:
         if ui_key in self._items:
             return
 
-        item = FadingSymbol(qt_prefs.lock_pixmap, node, self, ui_key, place='bottom_right')
+        item = FadingSymbol(qt_prefs.lock_pixmap, node, ui_key, place='bottom_right')
         # print u"\U0001F512" , unichr(9875) # unichr(9875)
         self.add_ui(item)
         item.fade_out()

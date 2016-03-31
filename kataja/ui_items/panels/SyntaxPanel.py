@@ -11,7 +11,7 @@ __author__ = 'purma'
 class SyntaxPanel(Panel):
     """ Switch between trees or derivation steps """
 
-    def __init__(self, name, key, default_position='bottom', parent=None, ui_manager=None, folded=False):
+    def __init__(self, name, key, default_position='bottom', parent=None, folded=False):
         """
         All of the panel constructors follow the same format so that the construction can be automated.
         :param name: Title of the panel and the key for accessing it
@@ -19,7 +19,7 @@ class SyntaxPanel(Panel):
         :param parent: self.main
         :param ui_manager: pass a dictionary where buttons from this panel will be added
         """
-        Panel.__init__(self, name, key, default_position, parent, ui_manager, folded)
+        Panel.__init__(self, name, key, default_position, parent, folded)
         inner = QtWidgets.QWidget()
         inner.setMinimumHeight(40)
         inner.setMaximumHeight(50)
@@ -35,7 +35,7 @@ class SyntaxPanel(Panel):
         for key, item in []:
             selector.addItem('%s (%s)' % (key, item.shortcut), key)
 
-        ui_manager.connect_element_to_action(selector, 'set_visualization')
+        self.ui_manager.connect_element_to_action(selector, 'set_visualization')
         hlayout.addWidget(selector)
         self.toggle_options = PanelButton(qt_prefs.settings_pixmap, text='Visualization settings',
                                           parent=self, size=20)

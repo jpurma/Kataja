@@ -1,5 +1,8 @@
 from kataja.singletons import ctrl
 from kataja.ui_items.Panel import Panel
+from PyQt5 import QtWidgets, QtCore
+from kataja.ui_support.panel_utils import mini_button, text_button, set_value, label
+import kataja.globals as g
 
 __author__ = 'purma'
 
@@ -7,7 +10,7 @@ __author__ = 'purma'
 class VisualizationOptionsPanel(Panel):
     """ Panel for editing how visualizations are drawn. """
 
-    def __init__(self, name, key, default_position='float', parent=None, ui_manager=None, folded=False):
+    def __init__(self, name, key, default_position='float', parent=None, folded=False):
         """
         BUild all advanced line options. Then in update filter what to show based on the line type.
 
@@ -16,7 +19,7 @@ class VisualizationOptionsPanel(Panel):
         :param default_position: 'bottom', 'right'...
         :param parent: self.main
         """
-        Panel.__init__(self, name, key, default_position, parent, ui_manager, folded)
+        Panel.__init__(self, name, key, default_position, parent, folded)
         self.watchlist = []
         inner = QtWidgets.QWidget(self)
         layout = QtWidgets.QVBoxLayout()
@@ -45,37 +48,38 @@ class VisualizationOptionsPanel(Panel):
         #                                     'toggle_show_internal_label', 1, 3)
 
         layout.addLayout(grid)
+        ui = self.ui_manager
         label(self, grid, 'For inner nodes show', 0, 0)
-        self.show_internal_alias = mini_button(ui_manager, self, grid,
-                                        'aliases', 'toggle_show_internal_alias'
-                                        , 3, 0, checkable=True)
-        self.show_internal_label = mini_button(ui_manager, self, grid,
-                                            'labels',
-                                            'toggle_show_internal_label',
-                                            3, 1, checkable=True)
+        self.show_internal_alias = mini_button(ui, self, grid,
+                                               'aliases', 'toggle_show_internal_alias'
+                                                , 3, 0, checkable=True)
+        self.show_internal_label = mini_button(ui, self, grid,
+                                               'labels',
+                                               'toggle_show_internal_label',
+                                               3, 1, checkable=True)
         label(self, grid, '╱', 2, 2)
         label(self, grid, 'For leaf nodes show', 0, 3)
-        self.show_leaf_alias = mini_button(ui_manager, self, grid,
-                                        'aliases', 'toggle_show_leaf_alias',
-                                        1, 3, checkable=True)
-        self.show_leaf_label = mini_button(ui_manager, self, grid,
-                                            'labels', 'toggle_show_leaf_label',
-                                            1, 4, checkable=True)
+        self.show_leaf_alias = mini_button(ui, self, grid,
+                                           'aliases', 'toggle_show_leaf_alias',
+                                           1, 3, checkable=True)
+        self.show_leaf_label = mini_button(ui, self, grid,
+                                           'labels', 'toggle_show_leaf_label',
+                                           1, 4, checkable=True)
 
         layout.addLayout(grid)
         grid = QtWidgets.QGridLayout()
         grid.setContentsMargins(0, 0, 0, 0)
 
         label(self, grid, 'Show projections', 0, 0)
-        self.highlighter_button = text_button(ui_manager, grid,
+        self.highlighter_button = text_button(ui, grid,
                                               'with highlighter',
                                               'toggle_highlighter_projection',
                                               1, 0, checkable=True)
-        self.strong_lines_button = text_button(ui_manager, grid,
+        self.strong_lines_button = text_button(ui, grid,
                                                'with stronger lines',
                                                'toggle_strong_lines_projection',
                                                1, 1, checkable=True)
-        self.colorize_button = text_button(ui_manager, grid,
+        self.colorize_button = text_button(ui, grid,
                                            'with colorized lines',
                                            'toggle_colorized_projection',
                                            1, 2, checkable=True)

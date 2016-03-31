@@ -109,7 +109,6 @@ class Panel(UIItem, QtWidgets.QDockWidget):
         self._last_position = None
         self.resize_grip = None
         self.watchlist = []
-        self.ui_manager = ui_manager
         self.default_position = default_position
 
         if default_position == 'bottom':

@@ -1,7 +1,11 @@
+from PyQt5 import QtWidgets, QtCore
 from kataja.singletons import ctrl, prefs
 from kataja.utils import time_me
 from kataja.saved.Edge import Edge
 from kataja.ui_items.Panel import Panel
+from kataja.ui_support.panel_utils import box_row, spinbox, label, decimal_spinbox, mini_button, \
+    set_value
+import kataja.globals as g
 
 __author__ = 'purma'
 
@@ -28,7 +32,7 @@ def build_shape_dict_for_selection(selection):
 class LineOptionsPanel(Panel):
     """ Panel for editing how edges and nodes are drawn. """
 
-    def __init__(self, name, key, default_position='float', parent=None, ui_manager=None, folded=False):
+    def __init__(self, name, key, default_position='float', parent=None, folded=False):
         """
         BUild all advanced line options. Then in update filter what to show based on the line type.
 
@@ -37,7 +41,7 @@ class LineOptionsPanel(Panel):
         :param default_position: 'bottom', 'right'...
         :param parent: self.main
         """
-        Panel.__init__(self, name, key, default_position, parent, ui_manager, folded)
+        Panel.__init__(self, name, key, default_position, parent, folded)
         inner = QtWidgets.QWidget(self)
         layout = QtWidgets.QVBoxLayout()
         layout.setSizeConstraint(QtWidgets.QLayout.SetMinimumSize)
@@ -53,16 +57,17 @@ class LineOptionsPanel(Panel):
         self.cp1_box = QtWidgets.QWidget(inner) # box allows hiding clean hide/show for this group
         hlayout = box_row(self.cp1_box)
         label(self, hlayout, '1st control point')
-        self.cp1_x_spinbox = spinbox(ui_manager, self, hlayout, 'X', -400, 400, 'control_point1_x')
-        self.cp1_y_spinbox = spinbox(ui_manager, self, hlayout, 'Y', -400, 400, 'control_point1_y')
+        ui = self.ui_manager
+        self.cp1_x_spinbox = spinbox(ui, self, hlayout, 'X', -400, 400, 'control_point1_x')
+        self.cp1_y_spinbox = spinbox(ui, self, hlayout, 'Y', -400, 400, 'control_point1_y')
         layout.addWidget(self.cp1_box)
 
         # Control point 2 adjustment
         self.cp2_box = QtWidgets.QWidget(inner) # box allows hiding clean hide/show for this group
         hlayout = box_row(self.cp2_box)
         label(self, hlayout, '2nd control point')
-        self.cp2_x_spinbox = spinbox(ui_manager, self, hlayout, 'X', -400, 400, 'control_point2_x')
-        self.cp2_y_spinbox = spinbox(ui_manager, self, hlayout, 'Y', -400, 400, 'control_point2_y')
+        self.cp2_x_spinbox = spinbox(ui, self, hlayout, 'X', -400, 400, 'control_point2_x')
+        self.cp2_y_spinbox = spinbox(ui, self, hlayout, 'Y', -400, 400, 'control_point2_y')
         layout.addWidget(self.cp2_box)
 
         # Curvature
@@ -71,15 +76,15 @@ class LineOptionsPanel(Panel):
         label(self, hlayout, 'General curvature')
 
         hlayout = box_row(layout)
-        self.relative_arc_button = mini_button(ui_manager, self, hlayout, 'relative',
+        self.relative_arc_button = mini_button(ui, self, hlayout, 'relative',
                                                'edge_curvature_relative', checkable=True)
         self.relative_arc_box = QtWidgets.QWidget(inner)
         arc_layout = QtWidgets.QHBoxLayout()
-        self.arc_rel_dx_spinbox = spinbox(ui_manager, self, arc_layout,
+        self.arc_rel_dx_spinbox = spinbox(ui, self, arc_layout,
                                           label='X', range_min=-200, range_max=200,
                                           action='change_edge_relative_curvature_x',
                                           suffix='%')
-        self.arc_rel_dy_spinbox = spinbox(ui_manager, self, arc_layout,
+        self.arc_rel_dy_spinbox = spinbox(ui, self, arc_layout,
                                           label='Y', range_min=-200, range_max=200,
                                           action='change_edge_relative_curvature_y',
                                           suffix='%')
@@ -88,15 +93,15 @@ class LineOptionsPanel(Panel):
         hlayout.addWidget(self.relative_arc_box)
 
         hlayout = box_row(layout)
-        self.fixed_arc_button = mini_button(ui_manager, self, hlayout, 'fixed',
+        self.fixed_arc_button = mini_button(ui, self, hlayout, 'fixed',
                                             'edge_curvature_fixed', checkable=True)
         self.fixed_arc_box = QtWidgets.QWidget(inner)
         arc_layout = QtWidgets.QHBoxLayout()
-        self.arc_fixed_dx_spinbox = spinbox(ui_manager, self, arc_layout,
+        self.arc_fixed_dx_spinbox = spinbox(ui, self, arc_layout,
                                             label='X', range_min=-200, range_max=200,
                                             action='change_edge_fixed_curvature_x',
                                             suffix=' px')
-        self.arc_fixed_dy_spinbox = spinbox(ui_manager, self, arc_layout,
+        self.arc_fixed_dy_spinbox = spinbox(ui, self, arc_layout,
                                             label='Y', range_min=-200, range_max=200,
                                             action='change_edge_fixed_curvature_y',
                                             suffix=' px')
@@ -113,12 +118,12 @@ class LineOptionsPanel(Panel):
         label(self, hlayout, 'Shape and thickness')
 
         hlayout = box_row(layout)
-        self.line_button = mini_button(ui_manager, self, hlayout, 'Line',
+        self.line_button = mini_button(ui, self, hlayout, 'Line',
                                        'edge_shape_line', checkable=True)
         self.thickness_box = QtWidgets.QWidget(inner)
         box_layout = QtWidgets.QHBoxLayout()
         box_layout.setContentsMargins(0, 0, 0, 0)
-        self.thickness_spinbox = decimal_spinbox(ui_manager, self, box_layout,
+        self.thickness_spinbox = decimal_spinbox(ui, self, box_layout,
                                                  label='Thickness', range_min=0.0, range_max=10.0,
                                                  step=0.1, action='edge_thickness', suffix=' px')
         self.thickness_box.setLayout(box_layout)
@@ -126,14 +131,14 @@ class LineOptionsPanel(Panel):
 
         # Leaf size
         hlayout = box_row(layout)
-        self.fill_button = mini_button(ui_manager, self, hlayout, 'Filled',
+        self.fill_button = mini_button(ui, self, hlayout, 'Filled',
                                        'edge_shape_fill', checkable=True)
         self.leaf_box = QtWidgets.QWidget(inner)
         box_layout = QtWidgets.QHBoxLayout()
         box_layout.setContentsMargins(0, 0, 0, 0)
         label(self, box_layout, 'Spread')
-        self.leaf_x_spinbox = spinbox(ui_manager, self, box_layout, 'X', -20, 20, 'leaf_shape_x')
-        self.leaf_y_spinbox = spinbox(ui_manager, self, box_layout, 'Y', -20, 20, 'leaf_shape_y')
+        self.leaf_x_spinbox = spinbox(ui, self, box_layout, 'X', -20, 20, 'leaf_shape_x')
+        self.leaf_y_spinbox = spinbox(ui, self, box_layout, 'Y', -20, 20, 'leaf_shape_y')
         self.leaf_box.setLayout(box_layout)
         hlayout.addWidget(self.leaf_box)
 
@@ -144,10 +149,10 @@ class LineOptionsPanel(Panel):
         layout.addSpacing(spac)
         hlayout = box_row(layout)
         label(self, hlayout, 'Arrowheads')
-        self.arrowhead_start_button = mini_button(ui_manager, self, hlayout, 'at start',
+        self.arrowhead_start_button = mini_button(ui, self, hlayout, 'at start',
                                                   'edge_arrowhead_start',
                                                   checkable=True)
-        self.arrowhead_end_button = mini_button(ui_manager, self, hlayout, 'at end',
+        self.arrowhead_end_button = mini_button(ui, self, hlayout, 'at end',
                                                 'edge_arrowhead_end',
                                                 checkable=True)
         inner.setLayout(layout)

@@ -26,7 +26,8 @@ import kataja.globals as g
 
 
 class Grid:
-    """ 2-dimensional grid to help drawing nodes and avoiding overlaps """
+    """ 2-dimensional grid to help drawing nodes and avoiding overlaps. This is used by
+    some of the visualization methods. """
 
     def __init__(self):
         self.rows = []

@@ -16,14 +16,14 @@ class ColorWheelPanel(Panel):
 
     """
 
-    def __init__(self, name, key, default_position='right', parent=None, ui_manager=None, folded=False):
+    def __init__(self, name, key, default_position='right', parent=None, folded=False):
         """
         All of the panel constructors follow the same format so that the construction can be automated.
         :param name: Title of the panel and the key for accessing it
         :param default_position: 'bottom', 'right'...
         :param parent: self.main
         """
-        Panel.__init__(self, name, key, default_position, parent, ui_manager, folded)
+        Panel.__init__(self, name, key, default_position, parent, folded)
         # ### Color wheel
         layout = QtWidgets.QVBoxLayout()
         widget = QtWidgets.QWidget(self)
@@ -85,9 +85,6 @@ class ColorWheelPanel(Panel):
         #layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
         layout.addLayout(hlayout)
         widget.setLayout(layout)
-        # Color mapping
-
-
         self.setWidget(widget)
         self.finish_init()
 
