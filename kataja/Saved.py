@@ -24,7 +24,7 @@ class SaveError(Exception):
     # return repr(self.value)
 
 
-class Saved(object):
+class SavedField(object):
     """ Descriptor to use together with the BaseModel -class.
     if class variables are created as varname = Saved("varname"),
     when the same variable name is used in instances it will store the
@@ -133,7 +133,7 @@ class Saved(object):
                 obj.call_watchers(self.watcher, self.name, value)
 
 
-class SavedWithGetter(Saved):
+class SavedFieldWithGetter(SavedField):
     """ Saved, but getter runs the provided after_get -method for the returned
     value. Probably bit slower than regular Saved
     """
@@ -150,7 +150,7 @@ class SavedWithGetter(Saved):
             return value
 
 
-class Synobj(Saved):
+class SavedSynField(SavedField):
     """ Descriptor that delegates attribute requests to syntactic_object.
     can be given before_set, a method in object that is run when value is set
     and if property has different name in synobj than here it can be provided as
@@ -184,13 +184,13 @@ class Synobj(Saved):
             super().__set__(obj, value)
 
 
-class BaseModel(object):
+class Saved(object):
     """ Make the object to have internal .saved -object where saved data
     should go.
     Also makes it neater to check if item is Savable.
     """
     short_name = "Missing shortname!"
-    _sk = Saved("_sk")
+    _sk = SavedField("_sk")
     syntactic_object = False
 
     def __init__(self, unique=False, save_key='', **kw):

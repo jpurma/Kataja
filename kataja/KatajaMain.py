@@ -54,7 +54,7 @@ from kataja.managers.PaletteManager import PaletteManager
 import kataja.globals as g
 from kataja.utils import time_me
 from kataja.visualizations.available import VISUALIZATIONS
-from kataja.BaseModel import BaseModel, Saved
+from kataja.Saved import Saved, SavedField
 from kataja.ui.PreferencesDialog import PreferencesDialog
 from kataja.ui.ErrorDialog import ErrorDialog
 
@@ -68,7 +68,7 @@ from kataja.ui.ErrorDialog import ErrorDialog
 
 DEBUG_TREESET = 'trees.txt'
 
-class KatajaMain(BaseModel, QtWidgets.QMainWindow):
+class KatajaMain(Saved, QtWidgets.QMainWindow):
     """ Qt's main window. When this is closed, application closes. Graphics are
     inside this, in scene objects with view widgets. This window also manages
     keypresses and menus. """
@@ -82,7 +82,7 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
         QtWidgets.QMainWindow.__init__(self)
         kataja_app.processEvents()
 
-        BaseModel.__init__(self, unique=True)
+        Saved.__init__(self, unique=True)
         self.use_tooltips = True
         self.available_plugins = {}
         self.setDockOptions(QtWidgets.QMainWindow.AnimatedDocks)
@@ -634,5 +634,5 @@ class KatajaMain(BaseModel, QtWidgets.QMainWindow):
     #                #
     # ############## #
 
-    forest_keeper = Saved("forest_keeper")
-    forest = Saved("forest")
+    forest_keeper = SavedField("forest_keeper")
+    forest = SavedField("forest")

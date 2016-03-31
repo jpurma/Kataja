@@ -26,7 +26,7 @@ import random
 
 import kataja.globals as g
 from kataja.Node import Node
-from kataja.BaseModel import Synobj
+from kataja.Saved import SavedSynField
 from kataja.globals import FEATURE_NODE
 from kataja.singletons import ctrl, qt_prefs, classes
 
@@ -181,6 +181,6 @@ class FeatureNode(Node):
     #                #
     # ############## #
 
-    key = Synobj("key")
-    value = Synobj("value")
-    family = Synobj("family")
+    key = SavedSynField("key")
+    value = SavedSynField("value")
+    family = SavedSynField("family")

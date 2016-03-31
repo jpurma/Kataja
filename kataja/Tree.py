@@ -1,7 +1,7 @@
 # coding=utf-8
 from PyQt5 import QtCore
 
-from kataja.BaseModel import Saved
+from kataja.Saved import SavedField
 from kataja.Movable import Movable
 
 __author__ = 'purma'
@@ -207,4 +207,4 @@ class Tree(Movable):
         #painter.drawRect(br)
         #painter.drawText(br.topLeft() + QtCore.QPointF(2, 10), str(self))
 
-    top = Saved("top")
+    top = SavedField("top")

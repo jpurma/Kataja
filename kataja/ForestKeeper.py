@@ -25,10 +25,10 @@ import os
 
 from kataja.singletons import ctrl, running_environment, prefs
 from kataja.Forest import Forest
-from kataja.BaseModel import BaseModel, Saved
+from kataja.Saved import Saved, SavedField
 
 
-class ForestKeeper(BaseModel):
+class ForestKeeper(Saved):
     """ Container and loader for Forest objects. Remember to not enable undo for any of the actions in here,
     as scope of undo should be a single Forest. """
 
@@ -201,6 +201,6 @@ class ForestKeeper(BaseModel):
     #                #
     # ############## #
 
-    forests = Saved("forests")
-    current_index = Saved("current_index")
-    forest = Saved("forest", watcher="forest_changed")
+    forests = SavedField("forests")
+    current_index = SavedField("current_index")
+    forest = SavedField("forest", watcher="forest_changed")

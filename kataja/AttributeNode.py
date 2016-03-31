@@ -27,7 +27,7 @@ import random
 
 import kataja.globals as g
 from kataja.Node import Node
-from kataja.BaseModel import Saved
+from kataja.Saved import SavedField
 from kataja.globals import ATTRIBUTE_NODE
 
 color_map = {'S': 0, 'order': 1, 'M': 2, 'unknown': 3}
@@ -181,7 +181,7 @@ class AttributeNode(Node):
     #                #
     # ############## #
 
-    host = Saved("host")
-    attribute_label = Saved("attribute_label")
-    attribute_id = Saved("attribute_id")
+    host = SavedField("host")
+    attribute_label = SavedField("attribute_label")
+    attribute_id = SavedField("attribute_id")
 

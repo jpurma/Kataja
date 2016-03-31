@@ -24,7 +24,7 @@
 
 import kataja.globals as g
 from kataja.Node import Node
-from kataja.BaseModel import Synobj
+from kataja.Saved import SavedSynField
 from kataja.singletons import ctrl, classes
 
 
@@ -548,5 +548,5 @@ class BaseConstituentNode(Node):
     # ############## #
 
     # Attributes from synobj and their setter hooks
-    label = Synobj("label")
-    features = Synobj("features", if_changed=if_changed_features)
+    label = SavedSynField("label")
+    features = SavedSynField("features", if_changed=if_changed_features)

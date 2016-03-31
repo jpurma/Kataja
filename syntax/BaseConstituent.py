@@ -26,7 +26,7 @@ It is a primary datatype, needs to support saving and loading. """
 # ############################################################################
 
 
-from kataja.BaseModel import Saved
+from kataja.Saved import SavedField
 from syntax.IConstituent import IConstituent
 from syntax.BaseFeature import BaseFeature
 # from copy import deepcopy
@@ -233,8 +233,8 @@ class BaseConstituent(IConstituent):
     #                #
     # ############## #
 
-    features = Saved("features")
-    sourcestring = Saved("sourcestring")
-    label = Saved("label")
-    parts = Saved("parts")
-    head = Saved("head")
+    features = SavedField("features")
+    sourcestring = SavedField("sourcestring")
+    label = SavedField("label")
+    parts = SavedField("parts")
+    head = SavedField("head")

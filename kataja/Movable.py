@@ -28,7 +28,7 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 
 from kataja.globals import TOP, TOP_ROW, MIDDLE, BOTTOM_ROW, BOTTOM
 from kataja.singletons import prefs, qt_prefs, ctrl
-from kataja.BaseModel import BaseModel, Saved
+from kataja.Saved import Saved, SavedField
 from kataja.utils import add_xy, multiply_xy, div_xy, sub_xy, time_me
 
 
@@ -45,7 +45,7 @@ def about_there(pos1, pos2):
     return round(pos1[0]) == round(pos2[0]) and round(pos1[1]) == round(pos2[1])
 
 
-class Movable(BaseModel, QtWidgets.QGraphicsObject):
+class Movable(Saved, QtWidgets.QGraphicsObject):
     """
 Movable items
 -------------
@@ -82,7 +82,7 @@ When nodes that don't use physics are dragged, the adjustment.
 
 """
     def __init__(self):
-        BaseModel.__init__(self)
+        Saved.__init__(self)
         QtWidgets.QGraphicsObject.__init__(self)
         # Common movement-related elements
         self._current_position = (random.random() * 150) - 75, (random.random() * 150) - 75
@@ -475,9 +475,9 @@ When nodes that don't use physics are dragged, the adjustment.
     # ############## #
 
     #current_position = Saved("current_position", if_changed=_current_position_changed)
-    target_position = Saved("target_position")
-    adjustment = Saved("adjustment")
-    use_adjustment = Saved("use_adjustment")
-    locked = Saved("locked")
-    physics_x = Saved("physics_x")
-    physics_y = Saved("physics_y")
+    target_position = SavedField("target_position")
+    adjustment = SavedField("adjustment")
+    use_adjustment = SavedField("use_adjustment")
+    locked = SavedField("locked")
+    physics_x = SavedField("physics_x")
+    physics_y = SavedField("physics_y")

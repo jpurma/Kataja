@@ -24,7 +24,7 @@
 
 from kataja.globals import *
 from kataja.shapes import SHAPE_PRESETS
-from kataja.BaseModel import BaseModel, Saved
+from kataja.Saved import Saved, SavedField
 from kataja.singletons import prefs
 
 ONLY_LEAF_LABELS = 0
@@ -32,13 +32,13 @@ ALL_LABELS = 1
 ALIASES = 2
 
 
-class SavedSetting(Saved):
+class SavedSetting(SavedField):
     """ Descriptor like Saved, but if getter doesn't find local version, takes one from preferences. """
 #    def __init__(self, name, before_set=None, if_changed=None, after_get=None):
 #        super().__init__(name, before_set=before_set, if_changed=if_changed)
 #        self.after_get = after_get
 
-    def __get__(self, obj: BaseModel, objtype=None):
+    def __get__(self, obj: Saved, objtype=None):
         value = obj._saved[self.name]
         if value is None:
             return getattr(prefs, self.name)
@@ -46,7 +46,7 @@ class SavedSetting(Saved):
             return value
 
 
-class ForestSettings(BaseModel):
+class ForestSettings(Saved):
     """ Settings specific for this forest -- a level between global preferences and settings specific for object. """
 
     short_name = "FSettings"
@@ -292,12 +292,12 @@ class ForestSettings(BaseModel):
     color_mode = SavedSetting("color_mode")
     bracket_style = SavedSetting("bracket_style")
     # these have dicts, they don't need SavedSetting check but special care in use
-    last_key_colors = Saved("last_key_colors")
-    edge_types = Saved("edge_types", watcher='edge_shape')
-    node_types = Saved("node_types")
+    last_key_colors = SavedField("last_key_colors")
+    edge_types = SavedField("edge_types", watcher='edge_shape')
+    node_types = SavedField("node_types")
 
 
-class ForestRules(BaseModel):
+class ForestRules(Saved):
     """ Rules that affect trees in one forest in a form that can be easily pickled """
 
     short_name = "FRules"

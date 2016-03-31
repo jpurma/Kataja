@@ -56,10 +56,10 @@ import kataja.globals as g
 #
 # ############################################################################
 
-from kataja.BaseModel import BaseModel
+from kataja.Saved import Saved
 
 
-class FL(BaseModel):
+class FL(Saved):
     """ Interface for Faculty of Language, implementation should be able to perform the operations
      sent here."""
 

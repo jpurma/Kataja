@@ -24,7 +24,7 @@
 import kataja.globals as g
 from kataja.BaseConstituentNode import BaseConstituentNode
 from kataja.Node import Node
-from kataja.BaseModel import Saved, Synobj
+from kataja.Saved import SavedField, SavedSynField
 from kataja.parser.INodes import ITextNode
 from kataja.singletons import ctrl
 
@@ -515,12 +515,12 @@ class ConstituentNode(BaseConstituentNode):
     #                #
     # ############## #
 
-    index = Saved("index")
-    alias = Saved("alias")
-    gloss = Saved("gloss", if_changed=update_gloss)
-    head = Synobj("head")
+    index = SavedField("index")
+    alias = SavedField("alias")
+    gloss = SavedField("gloss", if_changed=update_gloss)
+    head = SavedSynField("head")
 
-    is_trace = Saved("is_trace")
-    merge_order = Saved("merge_order")
-    select_order = Saved("select_order")
-    original_parent = Saved("original_parent")
+    is_trace = SavedField("is_trace")
+    merge_order = SavedField("merge_order")
+    select_order = SavedField("select_order")
+    original_parent = SavedField("original_parent")

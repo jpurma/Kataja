@@ -34,7 +34,7 @@ from kataja.ui.ControlPoint import ControlPoint
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.Label import Label
 from kataja.Movable import Movable
-from kataja.BaseModel import Saved
+from kataja.Saved import SavedField
 from kataja.utils import to_tuple, create_shadow_effect, multiply_xy, div_xy, sub_xy, add_xy, \
     time_me, add_xy, combine_dicts, combine_lists
 import kataja.globals as g
@@ -1516,12 +1516,12 @@ syntactic_object: %s
     # ############## #
 
     # Saved properties
-    syntactic_object = Saved("syntactic_object")
-    label = Saved("label")
-    edges_up = Saved("edges_up")
-    edges_down = Saved("edges_down")
-    triangle = Saved("triangle", if_changed=if_changed_triangle)
-    folded_away = Saved("folded_away")
-    folding_towards = Saved("folding_towards", if_changed=if_changed_folding_towards)
-    color_id = Saved("color_id")
-    font_id = Saved("font_id", if_changed=if_changed_font)
+    syntactic_object = SavedField("syntactic_object")
+    label = SavedField("label")
+    edges_up = SavedField("edges_up")
+    edges_down = SavedField("edges_down")
+    triangle = SavedField("triangle", if_changed=if_changed_triangle)
+    folded_away = SavedField("folded_away")
+    folding_towards = SavedField("folding_towards", if_changed=if_changed_folding_towards)
+    color_id = SavedField("color_id")
+    font_id = SavedField("font_id", if_changed=if_changed_font)

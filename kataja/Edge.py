@@ -35,7 +35,7 @@ from kataja.shapes import SHAPE_PRESETS, outline_stroker
 from kataja.EdgeLabel import EdgeLabel
 import kataja.utils as utils
 from kataja.utils import to_tuple, add_xy, sub_xy
-from kataja.BaseModel import BaseModel, SavedWithGetter, Saved
+from kataja.Saved import Saved, SavedFieldWithGetter, SavedField
 
 
 angle_magnet_map = {0: 6, 1: 6, 2: 4, 3: 3, 4: 2, 5: 1, 6: 0, 7: 5, 8: 5, 9: 5, 10: 7, 11: 8, 12: 9,
@@ -48,7 +48,7 @@ qbytes_opacity = QtCore.QByteArray()
 qbytes_opacity.append("opacity")
 
 
-class Edge(QtWidgets.QGraphicsObject, BaseModel):
+class Edge(QtWidgets.QGraphicsObject, Saved):
     """ Any connection between nodes: can be represented as curves, branches
     or arrows """
 
@@ -61,7 +61,7 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
         :param string edge_type:
         :param string direction:
         """
-        BaseModel.__init__(self)
+        Saved.__init__(self)
         QtWidgets.QGraphicsItem.__init__(self)
 
         self.label_item = None
@@ -1040,18 +1040,18 @@ class Edge(QtWidgets.QGraphicsObject, BaseModel):
     # ############## #
 
     # Saved properties
-    fixed_start_point = Saved("fixed_start_point")
-    fixed_end_point = Saved("fixed_end_point")
-    edge_type = Saved("edge_type")
-    curve_adjustment = Saved("curve_adjustment", watcher="edge_adjustment")
-    alignment = Saved("alignment")
-    start = Saved("start")
-    end = Saved("end")
-    label_data = Saved("label_data", watcher="edge_label")
-    local_shape_info = Saved("local_shape_info", watcher="edge_shape")
-    color_id = SavedWithGetter("color_id", if_changed=if_changed_color_id,
-                               getter=after_get_color_id)
-    shape_name = SavedWithGetter("shape_name", if_changed=if_changed_shape_name,
-                                 getter=after_get_shape_name)
-    pull = SavedWithGetter("pull", getter=after_get_pull)
-    visible = Saved("visible", if_changed=if_changed_visible)
+    fixed_start_point = SavedField("fixed_start_point")
+    fixed_end_point = SavedField("fixed_end_point")
+    edge_type = SavedField("edge_type")
+    curve_adjustment = SavedField("curve_adjustment", watcher="edge_adjustment")
+    alignment = SavedField("alignment")
+    start = SavedField("start")
+    end = SavedField("end")
+    label_data = SavedField("label_data", watcher="edge_label")
+    local_shape_info = SavedField("local_shape_info", watcher="edge_shape")
+    color_id = SavedFieldWithGetter("color_id", if_changed=if_changed_color_id,
+                                    getter=after_get_color_id)
+    shape_name = SavedFieldWithGetter("shape_name", if_changed=if_changed_shape_name,
+                                      getter=after_get_shape_name)
+    pull = SavedFieldWithGetter("pull", getter=after_get_pull)
+    visible = SavedField("visible", if_changed=if_changed_visible)

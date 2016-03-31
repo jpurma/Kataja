@@ -34,7 +34,7 @@ from kataja.ConstituentNode import ConstituentNode
 from kataja.FeatureNode import FeatureNode
 from kataja.Node import Node
 from kataja.Amoeba import Amoeba
-from kataja.BaseModel import BaseModel, Saved
+from kataja.Saved import Saved, SavedField
 from kataja.Bracket import Bracket
 from kataja.DerivationStep import DerivationStepManager
 from kataja.Edge import Edge
@@ -50,7 +50,7 @@ from kataja.parser.INodeToKatajaConstituent import INodeToKatajaConstituent
 from kataja.singletons import ctrl, prefs, qt_prefs, classes
 
 
-class Forest(BaseModel):
+class Forest(Saved):
     """ Forest is a group of trees that together form one view.
     Often there needs to be more than one trees visible at same time,
      so that they can be compared or to show states of construction
@@ -2062,17 +2062,17 @@ class Forest(BaseModel):
     #                #
     # ############## #
 
-    trees = Saved("trees")  # the current line of trees
-    nodes = Saved("nodes")
-    edges = Saved("edges", if_changed=reserve_update_for_trees)
-    groups = Saved("groups")
-    others = Saved("others")
-    settings = Saved("settings")
-    rules = Saved("rules")
-    vis_data = Saved("vis_data", watcher="visualization")
-    derivation_steps = Saved("derivation_steps")
-    merge_counter = Saved("merge_counter")
-    select_counter = Saved("select_counter")
-    comments = Saved("comments")
-    gloss_text = Saved("gloss_text")
-    gloss = Saved("gloss")
+    trees = SavedField("trees")  # the current line of trees
+    nodes = SavedField("nodes")
+    edges = SavedField("edges", if_changed=reserve_update_for_trees)
+    groups = SavedField("groups")
+    others = SavedField("others")
+    settings = SavedField("settings")
+    rules = SavedField("rules")
+    vis_data = SavedField("vis_data", watcher="visualization")
+    derivation_steps = SavedField("derivation_steps")
+    merge_counter = SavedField("merge_counter")
+    select_counter = SavedField("select_counter")
+    comments = SavedField("comments")
+    gloss_text = SavedField("gloss_text")
+    gloss = SavedField("gloss")

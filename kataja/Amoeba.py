@@ -5,18 +5,18 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 
 import kataja.globals as g
 from kataja.Node import Node
-from kataja.BaseModel import BaseModel, Saved
+from kataja.Saved import Saved, SavedField
 from kataja.singletons import ctrl, qt_prefs
 
 points = 36
 
 
-class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
+class Amoeba(Saved, QtWidgets.QGraphicsObject):
 
     short_name = 'Group'
 
     def __init__(self, selection=None, persistent=True):
-        BaseModel.__init__(self)
+        Saved.__init__(self)
         QtWidgets.QGraphicsObject.__init__(self)
         self.ui_key = self.save_key + '_ui'
         self.host = None # not used, it is here because it is expected for UI elements
@@ -470,11 +470,11 @@ class Amoeba(BaseModel, QtWidgets.QGraphicsObject):
             res.append((ctrl1_x, ctrl1_y, ctrl2_x, ctrl2_y, x2, y2))
         return res
 
-    selection = Saved("selection")
-    color_key = Saved("color_key")
-    label_text = Saved("label_text")
-    include_children = Saved("include_children")
-    allow_overlap = Saved("allow_overlap")
-    fill = Saved("fill")
-    outline = Saved("outline")
-    persistent = Saved("persistent")
+    selection = SavedField("selection")
+    color_key = SavedField("color_key")
+    label_text = SavedField("label_text")
+    include_children = SavedField("include_children")
+    allow_overlap = SavedField("allow_overlap")
+    fill = SavedField("fill")
+    outline = SavedField("outline")
+    persistent = SavedField("persistent")

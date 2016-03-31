@@ -23,7 +23,7 @@
 #
 # ############################################################################
 
-from kataja.BaseModel import Saved
+from kataja.Saved import SavedField
 from syntax.IFeature import IFeature
 
 
@@ -153,9 +153,9 @@ class BaseFeature(IFeature):
     #                #
     # ############## #
 
-    key = Saved("key")
-    values = Saved("values")
-    family = Saved("family")
+    key = SavedField("key")
+    values = SavedField("values")
+    family = SavedField("family")
 
 
 if __name__ == "__main__":

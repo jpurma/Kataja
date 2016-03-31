@@ -23,10 +23,10 @@
 #
 # ############################################################################
 
-from kataja.BaseModel import BaseModel
+from kataja.Saved import Saved
 
 
-class IFL(BaseModel):
+class IFL(Saved):
     """ Interface for Faculty of Language, implementation should be able to perform the operations
      sent here."""
 

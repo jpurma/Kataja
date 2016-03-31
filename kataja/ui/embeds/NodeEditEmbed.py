@@ -181,7 +181,7 @@ class NodeEditEmbed(UIEmbed):
             itype = d.get('input_type', 'text')
             if itype in ['text', 'textarea', 'expandingtext']:
                 if isinstance(value, ITextNode):
-                    parsed = value.as_latex()
+                    parsed = value.as_html()
                 else:
                     parsed = value
                 field.setText(parsed)

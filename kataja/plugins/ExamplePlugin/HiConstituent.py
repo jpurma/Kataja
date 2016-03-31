@@ -1,5 +1,5 @@
 # coding=utf-8
-from kataja.BaseModel import Saved
+from kataja.Saved import SavedField
 from syntax.BaseConstituent import BaseConstituent
 
 
@@ -40,4 +40,4 @@ class HiConstituent(BaseConstituent):
     #                #
     # ############## #
 
-    hi = Saved("hi")
+    hi = SavedField("hi")

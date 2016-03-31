@@ -23,10 +23,10 @@
 #
 # ############################################################################
 
-from kataja.BaseModel import BaseModel, Saved
+from kataja.Saved import Saved, SavedField
 
 
-class IFeature(BaseModel):
+class IFeature(Saved):
     """ Features are primitive comparable and compatible parts. The class supports several kinds of features:
     Features have property "key" which is used to look for certain exact kind of features, e.g. 'number', 'gender', or
     'case'.
@@ -100,7 +100,7 @@ class IFeature(BaseModel):
     #                #
     # ############## #
 
-    key = Saved("key")
-    values = Saved("values")
-    family = Saved("family")
+    key = SavedField("key")
+    values = SavedField("values")
+    family = SavedField("family")
 
