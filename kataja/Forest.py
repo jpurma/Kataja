@@ -1241,7 +1241,7 @@ class Forest(BaseModel):
         if not self._do_edge_visibility_check:
             return
         show_edges = self.settings.shows_constituent_edges
-        for edge in self.edges.values():
+        for edge in list(self.edges.values()):
             if edge.edge_type == g.CONSTITUENT_EDGE:
                 if not show_edges:
                     edge.visible = False
@@ -1352,7 +1352,7 @@ class Forest(BaseModel):
 
         :param key:
         """
-        for node in self.get_attribute_nodes():
+        for node in list(self.get_attribute_nodes()):
             if node.attribute_label == key:
                 self.delete_node(node)
 
@@ -1646,7 +1646,7 @@ class Forest(BaseModel):
 
         # add new node to relevant groups
         # and remove old node from them
-        for group in self.groups.values():
+        for group in list(self.groups.values()):
             if old_node in group:
                 group.add_node(new_node)
                 group.remove_node(old_node)
@@ -1690,12 +1690,12 @@ class Forest(BaseModel):
             i = ''
         children = list(node.get_children())
         trees = set(node.trees)
-        for child in children:
+        for child in list(children):
             parents = node.get_parents()
             parents_children = set()
             bad_parents = []
             good_parents = []
-            for parent in parents:
+            for parent in list(parents):
                 if child in parent.get_children():
                     bad_parents.append(parent)
                 else:
@@ -1709,8 +1709,8 @@ class Forest(BaseModel):
                         "both left and right child. " + "Removing parent too."
                     ctrl.add_message(m)
                     self.disconnect_node(node, child)
-                    for parent in bad_parents:
-                        for grandparent in parent.get_parents():
+                    for parent in list(bad_parents):
+                        for grandparent in list(parent.get_parents()):
                             self.disconnect_node(grandparent, parent)
                             self.disconnect_node(parent, child)
                             self.connect_node(grandparent, child)
@@ -1718,20 +1718,20 @@ class Forest(BaseModel):
                 if good_parents:
                     # normal case
                     self.disconnect_node(node, child, ignore_missing=True)
-                    for parent in good_parents:
+                    for parent in list(good_parents):
                         edge = parent.get_edge_to(node)
                         self.disconnect_node(parent, node)
                         self.connect_node(parent, child, direction=edge.alignment)
             if i:
                 child.set_index(i)
             self.delete_node(node)
-            for parent in bad_parents:
+            for parent in list(bad_parents):
                 self.delete_node(parent)
                 # if right.is_placeholder():
                 # self.delete_node(right)
                 # if left.is_placeholder():
                 # self.delete_node(left)
-        for tree in trees:
+        for tree in list(trees):
             tree.update_items()
 
     def unary_add_child_for_constituentnode(self, old_node: BaseConstituentNode, add_left=True):
@@ -1892,7 +1892,7 @@ class Forest(BaseModel):
         self.connect_node(parent, merger_node, direction=align)
 
         # trees
-        for tree in parent.trees:
+        for tree in list(parent.trees):
             tree.update_items()
 
         # groups
