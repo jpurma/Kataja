@@ -103,7 +103,7 @@ def change_colors():
         ctrl.fs._hsv = None
         ctrl.forest.update_colors()
         ctrl.main.activateWindow()
-        # self.ui.add_message('Color seed: H: %.2f S: %.2f L: %.2f' % ( h, s,
+        # self.ui_support.add_message('Color seed: H: %.2f S: %.2f L: %.2f' % ( h, s,
         #  l))
 
 

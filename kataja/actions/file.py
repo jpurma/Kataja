@@ -11,7 +11,7 @@ from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtCore import Qt
 
 from kataja.singletons import ctrl, prefs
-from kataja.ui.PreferencesDialog import PreferencesDialog
+from kataja.ui_support.PreferencesDialog import PreferencesDialog
 
 
 

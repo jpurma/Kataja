@@ -25,12 +25,12 @@
 
 import math
 
+import kataja.globals as g
+from Visualization import BaseVisualization
 from kataja.debug import vis
 from kataja.singletons import prefs
 from kataja.utils import caller
-from kataja.visualizations.BaseVisualization import BaseVisualization
 from kataja.visualizations.Grid import Grid
-import kataja.globals as g
 
 
 class LeftFirstTree(BaseVisualization):

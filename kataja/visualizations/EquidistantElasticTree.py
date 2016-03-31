@@ -25,8 +25,8 @@
 
 import math
 
-from kataja.visualizations.BaseVisualization import BaseVisualization
 import kataja.globals as g
+from Visualization import BaseVisualization
 
 
 class EquidistantElasticTree(BaseVisualization):

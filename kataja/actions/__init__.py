@@ -4,8 +4,8 @@
 # that is on startup added into the one big dict of actions. So the order and hierarchy in these
 # actions is not maintained: actions are split into many files just to avoid it growing
 # too cumbersome. _utils.py is the only exception, it doesn't define actions but has helper methods
-# generally useful for action methods: reaching the ui-object that triggered the action,
-# or the panel where the ui-object is.
+# generally useful for action methods: reaching the ui_support-object that triggered the action,
+# or the panel where the ui_support-object is.
 
 import kataja.actions.edit
 import kataja.actions.file

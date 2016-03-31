@@ -23,10 +23,11 @@
 # ############################################################################
 
 
-from kataja.visualizations.BaseVisualization import BaseVisualization
-import kataja.globals as g
-from kataja.singletons import prefs
 import math
+
+import kataja.globals as g
+from Visualization import BaseVisualization
+from kataja.singletons import prefs
 
 
 def border_distance(n1x, n1y, n1w2, n1h2, n2x, n2y, n2w2, n2h2):

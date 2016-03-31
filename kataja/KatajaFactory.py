@@ -19,22 +19,20 @@ class KatajaFactory:
     def late_init(self):
         """ Import and set available all of the default classes """
 
-        from kataja.AttributeNode import AttributeNode
-        from kataja.BaseConstituentNode import BaseConstituentNode
-        from kataja.CommentNode import CommentNode
-        from kataja.ConstituentNode import ConstituentNode
-        from kataja.FeatureNode import FeatureNode
-        from kataja.GlossNode import GlossNode
-        from kataja.Node import Node
-        from kataja.PropertyNode import PropertyNode
-        from kataja.Amoeba import Amoeba
-        from kataja.DerivationStep import DerivationStep, DerivationStepManager
-        from kataja.Edge import Edge
-        from kataja.Forest import Forest
-        from kataja.ForestSettings import ForestSettings, ForestRules
-        from kataja.Tree import Tree
-        from kataja.managers.ChainManager import ChainManager
-        from syntax.BaseConstituent import BaseConstituent
+        from saved.movables.nodes import AttributeNode
+        from saved.movables.nodes import BaseConstituentNode
+        from saved.movables.nodes.CommentNode import CommentNode
+        from saved.movables.nodes.ConstituentNode import ConstituentNode
+        from saved.movables.nodes.FeatureNode import FeatureNode
+        from saved.movables.nodes.GlossNode import GlossNode
+        from saved.movables.Node import Node
+        from saved.movables.nodes.PropertyNode import PropertyNode
+        from saved.Amoeba import Amoeba
+        from saved.DerivationStep import DerivationStep, DerivationStepManager
+        from saved.Edge import Edge
+        from saved.Forest import Forest
+        from saved.ForestSettings import ForestSettings, ForestRules
+        from saved.movables.Tree import Tree
         from syntax.BaseFeature import BaseFeature
         from syntax.ConfigurableConstituent import ConfigurableConstituent
         from syntax.BaseFL import FL

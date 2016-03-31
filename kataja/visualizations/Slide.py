@@ -22,7 +22,7 @@
 #
 # ############################################################################
 
-from kataja.visualizations.BaseVisualization import BaseVisualization
+from Visualization import BaseVisualization
 
 
 class Slide(BaseVisualization):

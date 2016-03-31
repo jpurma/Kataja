@@ -8,8 +8,11 @@ Created on 28.8.2013
 import datetime
 import os
 import sys
+
+from PyQt5 import QtWidgets, QtGui, QtCore
+
 from kataja.singletons import running_environment
-from PyQt5 import QtWidgets, QtPrintSupport, QtGui, QtCore, QtMultimedia, QtMultimediaWidgets, QtDBus
+
 
 # QtPrintSupport is imported here only because py2app then knows to add it as a framework.
 # libqcocoa.dynlib requires QtPrintSupport.
@@ -73,7 +76,7 @@ def launch_kataja():
     app.processEvents()
 
     # importing KatajaMain here because it is slow, and splash screen is now up
-    from kataja.KatajaMain import KatajaMain
+    from saved.KatajaMain import KatajaMain
 
     window = KatajaMain(app, sys.argv)
     splash.finish(window)

@@ -23,9 +23,9 @@
 # ############################################################################
 
 
-from kataja.singletons import prefs
-from kataja.visualizations.BaseVisualization import BaseVisualization
 import kataja.globals as g
+from Visualization import BaseVisualization
+from kataja.singletons import prefs
 
 
 class BalancedTree(BaseVisualization):

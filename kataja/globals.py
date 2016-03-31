@@ -122,7 +122,7 @@ DELETED = 2
 
 # Font roles
 FONT_ROLES = [(MAIN_FONT, 'main'), (CONSOLE_FONT, 'console'), (BOLD_FONT, 'bold'),
-              (ITALIC_FONT, 'italic'), (UI_FONT, 'ui'), (SMALL_FEATURE, 'small'),
+              (ITALIC_FONT, 'italic'), (UI_FONT, 'ui_support'), (SMALL_FEATURE, 'small'),
               (SMALL_CAPS, 'small caps')]
 
 # Vertical align

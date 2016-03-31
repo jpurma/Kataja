@@ -31,10 +31,10 @@ import PyQt5.QtWidgets as QtWidgets
 from PyQt5.QtCore import Qt
 
 import kataja.globals as g
-from kataja.Node import Node
-from kataja.Edge import Edge
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.utils import to_tuple, sub_xy, div_xy, open_symbol_data
+from saved.Edge import Edge
+from saved.movables.Node import Node
 
 
 # from BlenderExporter import export_visible_items

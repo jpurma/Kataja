@@ -1,11 +1,11 @@
 __author__ = 'purma'
 
 import kataja.globals as g
-from kataja.BaseConstituentNode import BaseConstituentNode
 from kataja.parser.BaseParser import BaseParser
 from kataja.parser.INodes import IParserNode, ITextNode
 from kataja.parser.LatexToINode import parse
 from kataja.singletons import ctrl, classes
+from saved.movables.nodes import BaseConstituentNode
 
 
 class INodeToKatajaConstituent(BaseParser):

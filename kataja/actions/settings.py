@@ -1,9 +1,9 @@
 # coding=utf-8
-from kataja.Edge import Edge
-from kataja.singletons import ctrl
-from kataja.actions._utils import get_ui_container
-from kataja.Node import Node
 import kataja.globals as g
+from kataja.actions._utils import get_ui_container
+from kataja.singletons import ctrl
+from saved.Edge import Edge
+from saved.movables.Node import Node
 
 a = {}
 

@@ -1,12 +1,13 @@
 # coding=utf-8
 import random
+
 from PyQt5 import QtCore
 
-from kataja.Edge import Edge
+import kataja.globals as g
 from kataja.actions._utils import get_ui_container, get_host
 from kataja.singletons import ctrl, classes
 from kataja.utils import guess_node_type
-import kataja.globals as g
+from saved.Edge import Edge
 
 a = {}
 

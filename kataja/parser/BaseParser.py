@@ -24,14 +24,8 @@
 # ############################################################################
 
 
-import re
-
-from kataja.debug import parser
 from kataja.singletons import ctrl, classes
-from kataja.Presentation import TextArea, Image
-from kataja.utils import next_free_index
-import kataja.globals as g
-
+from saved.movables.Presentation import TextArea, Image
 
 latex_symbols_to_unicode = {'bar': '\u00AF', 'abar': '\u0100',  # small greek alphabet
                             'alpha': '\u03b1', 'beta': '\u03b2', 'gamma': '\u03b3', 'delta': '\u03b4',

@@ -44,7 +44,7 @@ class Controller:
     d) capability to send announcements, which are announcement_id + argument
     that is sent to all objects that listen
     to such announcements. These can be used to e.g. send requests to update
-    ui elements without having to know what
+    ui_support elements without having to know what
     elements there are.
     e) capability to send Qt signals as main application.
     """
@@ -323,7 +323,7 @@ class Controller:
 
     # ******** Focus *********
     # focus is used only for UI objects. scene objects use selection. only
-    # one ui object or its part can have focus
+    # one ui_support object or its part can have focus
 
     def get_focus_object(self):
         """

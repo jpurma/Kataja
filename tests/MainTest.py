@@ -4,9 +4,9 @@ __author__ = 'purma'
 
 import unittest
 import sys
-from kataja.KatajaMain import KatajaMain
-from PyQt5 import QtWidgets, QtPrintSupport, QtGui, QtCore, QtTest
-from kataja.singletons import ctrl, prefs, qt_prefs, running_environment
+from saved.KatajaMain import KatajaMain
+from PyQt5 import QtWidgets, QtGui, QtCore, QtTest
+from kataja.singletons import running_environment
 
 running_environment.switch_to_test_mode()
 
@@ -51,7 +51,7 @@ class TestMainWindowStructure(unittest.TestCase):
         self.assertTrue(m.graph_scene, "No graph scene")
         self.assertTrue(m.graph_view, "No graph view")
         self.assertTrue(m.graph_scene.graph_view, "No graph view in graph scene")
-        self.assertTrue(m.ui_manager, "No ui manager")
+        self.assertTrue(m.ui_manager, "No ui_support manager")
         #self.ui_manager.populate_ui_elements()
         self.assertTrue(m.forest_keeper, "No forest keeper")
         self.assertTrue(m.visualizations, "No visualizations")
