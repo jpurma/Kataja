@@ -346,23 +346,25 @@ class Label(QtWidgets.QGraphicsTextItem):
             ctrl.graph_view.setFocus()
             self.setFocus()
         elif self._quick_editing:
+            fields = []
             if self.doc.isModified():
                 fields = self.analyze_changes()
                 self.doc.setModified(False)
-                if len(fields) == 1:
-                    ctrl.main.action_finished("Edited field %s in %s" % (fields[0], self._host))
-                else:
-                    ctrl.main.action_finished(
-                        "Edited fields %s in %s" % (str(fields), self._host))
-
+            ctrl.text_editor_focus = None
             self._quick_editing = False
-            self.update_label()
-            self._host.update_bounding_rect()
+            self.html = ''
+            self._host.update_label()
             self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
             self.setAcceptDrops(False)
             self.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
-            ctrl.text_editor_focus = None
             self.clearFocus()
+            if len(fields) == 0:
+                ctrl.main.action_finished("Finished editing %s, no changes." % self._host,
+                                          undoable=False)
+            elif len(fields) == 1:
+                ctrl.main.action_finished("Edited field %s in %s" % (fields[0], self._host))
+            else:
+                ctrl.main.action_finished("Edited fields %s in %s" % (str(fields), self._host))
 
     def analyze_changes(self):
         """ Use difflib to get a robust idea on what has changed

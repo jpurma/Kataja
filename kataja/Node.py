@@ -228,6 +228,9 @@ class Node(Movable):
     def has_triangle(self):
         return self.triangle
 
+    def if_changed_triangle(self, value):
+        self.update_label()
+
     def can_have_triangle(self):
         return not self.triangle
 
@@ -1517,7 +1520,7 @@ syntactic_object: %s
     label = Saved("label")
     edges_up = Saved("edges_up")
     edges_down = Saved("edges_down")
-    triangle = Saved("triangle")
+    triangle = Saved("triangle", if_changed=if_changed_triangle)
     folded_away = Saved("folded_away")
     folding_towards = Saved("folding_towards", if_changed=if_changed_folding_towards)
     color_id = Saved("color_id")
