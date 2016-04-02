@@ -143,7 +143,7 @@ class NodeEditEmbed(UIEmbed):
         self.enter_button = QtWidgets.QPushButton("↩")  # U+21A9 &#8617;
         self.enter_button.setMaximumWidth(20)
         self.enter_button.setParent(self)
-        ui_manager.connect_element_to_action(self.enter_button, 'finish_editing_node')
+        self.ui_manager.connect_element_to_action(self.enter_button, 'finish_editing_node')
         hlayout.addWidget(self.enter_button)
         if self.resize_target:
             self.resize_handle = ResizeHandle(self, self.resize_target)

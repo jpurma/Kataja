@@ -411,7 +411,7 @@ class Edge(QtWidgets.QGraphicsObject, Saved):
         """
         if self.edge_type == g.ARROW:
             return False
-        return self.start and self.end
+        return not (self.start and self.end)
 
     # ### Color ############################################################
 

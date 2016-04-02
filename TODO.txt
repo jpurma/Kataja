@@ -117,7 +117,7 @@ crashed
 - Changing ui text size doesn't resize panels
 + Updating labels puts bar-markers (X') to separate line
 + Indexes display correctly and are editable in quick edit.
-- Adding node to top, then undoing it and redoing it breaks something.
++ Adding node to top, then undoing it and redoing it breaks something.
 
 ADD:
 
