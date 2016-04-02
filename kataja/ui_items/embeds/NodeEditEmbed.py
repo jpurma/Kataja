@@ -113,7 +113,7 @@ class NodeEditEmbed(UIEmbed):
                 field.setMaximumWidth(width)
                 action = d.get('select_action')
                 if action:
-                    ui_manager.connect_element_to_action(field, action)
+                    self.ui_manager.connect_element_to_action(field, action)
 
                 if syntactic:
                     field.setPalette(ui_s)

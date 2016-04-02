@@ -82,7 +82,9 @@ class FeatureNode(Node):
         """
         if not label:
             label = 'Feature'
-        return classes.Feature(key=label)
+        obj = classes.Feature(key=label)
+        obj.after_init()
+        return obj
 
     def compute_start_position(self, host):
         """ Makes features start at somewhat predictable position, if they are of common kinds of features.

@@ -115,6 +115,8 @@ class Node(Movable):
         self.inner_rect = None
         self.anim = None
 
+        self.in_scene = False
+
         self.edges_up = []
         self.edges_down = []
         self.triangle = None
@@ -160,6 +162,7 @@ class Node(Movable):
                 values.
         :return: None
         """
+        self.in_scene = True
         self.update_label()
         self.update_bounding_rect()
         self.update_visibility()
@@ -175,6 +178,11 @@ class Node(Movable):
         :return: None
         """
         super().after_model_update(updated_fields, update_type)
+
+        if update_type == 1:
+            ctrl.forest.store(self)
+            ctrl.forest.add_to_scene(self)
+
         if 'folding_towards' in updated_fields:
             # do the animation and its after triggers.
             if self.folding_towards:
@@ -183,17 +191,7 @@ class Node(Movable):
                 self.folded_away = False
                 self.update_position()
                 self.fade_in()
-            self.update_visibility()
-        if update_type == g.CREATED:
-            for edge in self.edges_up:
-                edge.connect_end_points(edge.start, self)
-                edge.update_end_points()
-            for edge in self.edges_down:
-                edge.connect_end_points(self, edge.end)
-                edge.update_end_points()
-        elif update_type == g.DELETED:
-            print('Node.DELETED. (%s) should I be reverting deletion or have we '
-                  'just been deleted?' % self.save_key)
+        self.update_visibility()
         self.update_label()
 
     @staticmethod
@@ -498,7 +496,8 @@ syntactic_object: %s
         :return: iterator of Nodes
         """
         et = self.edge_type()
-        return (edge.end for edge in self.edges_down if edge.edge_type == et)
+        return (edge.end for edge in self.edges_down if edge.edge_type == et and not
+        edge.end.deleted)
 
     def get_reversed_children(self):
         """
@@ -506,7 +505,8 @@ syntactic_object: %s
         :return: iterator of Nodes
         """
         et = self.edge_type()
-        return (edge.end for edge in reversed(self.edges_down) if edge.edge_type == et)
+        return (edge.end for edge in reversed(self.edges_down) if edge.edge_type == et and not
+        edge.end.deleted)
 
     def get_visible_children(self):
         """
@@ -523,9 +523,11 @@ syntactic_object: %s
         :return: iterator of Nodes
         """
         if edge_type:
-            return (edge.end for edge in self.edges_down if edge.edge_type == edge_type)
+            return (edge.end for edge in self.edges_down if edge.edge_type == edge_type and
+                    not edge.end.deleted)
         elif node_type:
-            return (edge.end for edge in self.edges_down if isinstance(edge.end, node_type))
+            return (edge.end for edge in self.edges_down if isinstance(edge.end, node_type) and
+                    not edge.end.deleted)
 
     def get_parents(self, only_similar=True, only_visible=False, edge_type=None)->list:
         """
@@ -546,13 +548,14 @@ syntactic_object: %s
                         edge.edge_type == edge_type and edge.start and edge.start.is_visible()]
             else:
                 return [edge.start for edge in self.edges_up if
-                        edge.edge_type == edge_type and edge.start]
+                        edge.edge_type == edge_type and edge.start and not edge.start.deleted]
         else:
             if only_visible:
                 return [edge.start for edge in self.edges_up if
                         edge.start and edge.start.is_visible()]
             else:
-                return [edge.start for edge in self.edges_up if edge.start]
+                return [edge.start for edge in self.edges_up if edge.start and not
+                edge.start.deleted]
 
     def is_connected_to(self, other):
         """ Generic check for having direct connection to some other node
@@ -629,7 +632,7 @@ syntactic_object: %s
         :param only_similar:
         :param only_visible:
         """
-        if self.get_parents(only_similar, only_visible):
+        if self.deleted or self.get_parents(only_similar, only_visible):
             return False
         else:
             return True

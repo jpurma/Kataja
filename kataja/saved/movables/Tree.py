@@ -39,6 +39,7 @@ class Tree(Movable):
 
     def __init__(self, top=None):
         Movable.__init__(self)
+        print('creating a tree, ', id(self))
         self.top = top
         if is_constituent(top):
             self.sorted_constituents = [top]
@@ -63,6 +64,11 @@ class Tree(Movable):
     def after_init(self):
         self.recalculate_top()
         self.update_items()
+        self.announce_creation()
+
+    def after_model_update(self, updated_fields, update_type):
+        super().after_model_update(updated_fields, update_type)
+        self.update_items()
 
     def rebuild(self):
         self.recalculate_top()
@@ -83,7 +89,7 @@ class Tree(Movable):
             """
             passed.add(node)
             for parent in node.get_parents(only_similar=False, only_visible=False):
-                if parent not in passed:
+                if (not parent.deleted) and parent not in passed:
                     return walk_to_top(parent)
             return node
         if self.top: # hopefully it is a short walk
@@ -131,18 +137,19 @@ class Tree(Movable):
             """
             if node not in used:
                 used.add(node)
-                if is_constituent(node):
-                    sorted_constituents.append(node)
-                sorted_nodes.append(node)
-                if self not in node.trees:
-                    node.add_to_tree(self)
-                for child in node.get_all_children():
-                    if child: # undoing object creation may cause missing edge ends
-                        add_children(child)
+                if not node.deleted:
+                    if is_constituent(node):
+                        sorted_constituents.append(node)
+                    sorted_nodes.append(node)
+                    if self not in node.trees:
+                        node.add_to_tree(self)
+                    for child in node.get_all_children():
+                        if child: # undoing object creation may cause missing edge ends
+                            add_children(child)
 
         old_nodes = set(self.sorted_nodes)
 
-        if is_constituent(self.top):
+        if is_constituent(self.top) and not self.top.deleted:
             add_children(self.top)
 
         self.sorted_constituents = sorted_constituents

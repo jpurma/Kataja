@@ -98,6 +98,7 @@ When nodes that don't use physics are dragged, the adjustment.
         self._step = None
         self.after_move_function = None
         self.use_adjustment = False
+        self.deleted = False
         # PHYSICS -elements
         self.locked = False
         self.physics_x = False
@@ -384,7 +385,7 @@ When nodes that don't use physics are dragged, the adjustment.
         visibility.
         :return: bool
         """
-        return self.isVisible()
+        return self.isVisible() and not self.deleted
 
 
     # ## Selection ############################################################

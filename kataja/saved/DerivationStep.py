@@ -123,6 +123,7 @@ class DerivationStep(Saved):
         step
         :param forest:
         """
+        print('???? restore from snapshot')
         ctrl.forest.trees = [] # fixme: if done like this, we can't find and fix broken trees in
         # nodes
         for tree_data in self.trees:

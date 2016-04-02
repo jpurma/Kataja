@@ -92,17 +92,27 @@ class UndoManager:
             return
         ctrl.disable_undo()
         ctrl.multiselection_start()
+        ctrl.forest.halt_drawing = True
         msg, snapshot = self._stack[self._current]
         affected = set()
+
+        print('-------undo: ', self._current)
         for obj, transitions, transition_type in snapshot.values():
             obj.revert_to_earlier(transitions)
             if transition_type == CREATED:
-                #print('undo should undo creation of object (=>cancel) ', obj.save_key)
+                print('deleting from scene ', obj, obj.save_key)
                 ctrl.forest.delete_item(obj, ignore_consequences=True)
             elif transition_type == DELETED:
-                #print('undo should undo deletion of object (=>revive)', obj.save_key)
+                print('restoring to scene ', obj, obj.save_key)
                 ctrl.forest.add_to_scene(obj)
+            #else:
+            #    print('undoing ', type(obj), transitions)
             affected.add(obj)
+            if hasattr(obj, 'update_visibility'):
+                obj.update_visibility()
+        print('----- edge visibility check')
+        ctrl.forest.edge_visibility_check()
+        print('----- second round')
         for obj, transitions, transition_type in snapshot.values():
             if transition_type == CREATED:
                 revtt = DELETED
@@ -120,7 +130,9 @@ class UndoManager:
         ctrl.multiselection_end()
         ctrl.resume_undo()
         self._current -= 1
-        print('undo done: ', self._current)
+        ctrl.forest.halt_drawing = False
+
+        print('-------undo finished', self._current)
 
     def redo(self):
         """ Move forward in the undo stack
@@ -133,29 +145,37 @@ class UndoManager:
             return
         ctrl.disable_undo()
         ctrl.multiselection_start()
+        ctrl.forest.halt_drawing = True
         msg, snapshot = self._stack[self._current]
         affected = set()
-        print('redo: ', msg, self._current)
+        print('-------redo: ', msg, self._current)
         for obj, transitions, transition_type in snapshot.values():
             obj.move_to_later(transitions)
             if transition_type == CREATED:
-                #print('redo should recreate object ', obj)
+                print('restoring to scene ', obj, obj.save_key)
                 ctrl.forest.add_to_scene(obj)
             elif transition_type == DELETED:
-                #print('redo should delete object', obj)
+                print('deleting from scene ', obj, obj.save_key)
                 ctrl.forest.delete_item(obj, ignore_consequences=True)
             affected.add(obj)
+            #if hasattr(obj, 'update_visibility'):
+            #    obj.update_visibility()
+        print('----- edge visibility check')
+        ctrl.forest.edge_visibility_check()
+        print('----- second round')
         for obj, transitions, transition_type in snapshot.values():
             obj.after_model_update(transitions.keys(), transition_type)
             if getattr(obj.__class__, 'syntactic_object', False):
                 node = ctrl.forest.nodes_from_synobs.get(obj.save_key, None)
                 if node and node not in affected:
                     node.after_model_update([], transition_type)
+        ctrl.forest.flush_and_rebuild_temporary_items()
         ctrl.add_message('redo [%s]: %s' % (self._current, msg))
         ctrl.multiselection_end()
         ctrl.resume_undo()
-        print('redo done: ', self._current)
+        ctrl.forest.halt_drawing = False
 
+        print('------redo finished: ', msg, self._current)
 
     @staticmethod
     def dump_dict_to_file(undo_dict, filename='undo_dump'):

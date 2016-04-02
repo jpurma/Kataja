@@ -78,7 +78,7 @@ class BaseConstituentNode(Node):
         #self.setAcceptDrops(True)
 
     @staticmethod
-    def create_synobj(label=None):
+    def create_synobj(label=''):
         """ ConstituentNodes are wrappers for Constituents. Exact
         implementation/class of constituent is defined in ctrl.
         :return:
@@ -86,6 +86,7 @@ class BaseConstituentNode(Node):
         if not label:
             label = ctrl.forest.get_first_free_constituent_name()
         c = classes.Constituent(label)
+        c.after_init()
         return c
 
     def load_values_from_parsernode(self, parsernode):
@@ -122,12 +123,8 @@ class BaseConstituentNode(Node):
         :return: None
         """
         super().after_model_update(updated_fields, update_type)
-        update_label = False
         if 'features' in updated_fields:
             self.update_features()
-            update_label = True
-        if update_label:
-            self.update_label()
 
     # properties implemented by syntactic node
     # set_hooks, to be run when values are set

@@ -27,6 +27,8 @@ import collections
 import itertools
 import string
 
+from PyQt5 import QtWidgets
+
 import kataja.globals as g
 from kataja.BracketManager import BracketManager
 from kataja.ChainManager import ChainManager
@@ -95,6 +97,7 @@ class Forest(Saved):
         self.gloss = None
         self.ongoing_animations = set()
         self.guessed_projections = False
+        self.halt_drawing = False
         self._marked_for_deletion = set()
 
         if buildstring:
@@ -123,6 +126,8 @@ class Forest(Saved):
             for node in self.nodes.values():
                 if node.syntactic_object:
                     self.nodes_from_synobs[node.syntactic_object.save_key] = node
+            for tree in self.trees:
+                tree.update_items()
         if 'vis_data' in updated_fields:
             self.restore_visualization()
 
@@ -410,6 +415,7 @@ class Forest(Saved):
             if key and key not in self.others:
                 self.poke('others')
                 self.others[key] = item
+                print(self.others)
             else:
                 print('F trying to store broken type:', item.__class__.__name__)
 
@@ -429,24 +435,33 @@ class Forest(Saved):
         :param item:
         """
         if self.in_display:
-            sc = item.scene()
-            if not sc:
-                self.scene.addItem(item)
-            elif sc != self.scene:
-                self.scene.addItem(item)
+            if isinstance(item, QtWidgets.QGraphicsItem):
+                sc = item.scene()
+                if not sc:
+                    #print('..adding to scene ', item.save_key )
+                    self.scene.addItem(item)
+                elif sc != self.scene:
+                    #print('..adding to scene ', item.save_key )
+                    self.scene.addItem(item)
+            if hasattr(item, 'deleted'):
+                item.deleted = False
 
     def remove_from_scene(self, item):
         """ Remove item from this scene
         :param item:
         :return:
         """
-        sc = item.scene()
-        if sc == self.scene:
-            sc.removeItem(item)
-        elif sc:
-            print('unknown scene for item %s : %s ' % (item, sc))
-            sc.removeItem(item)
-            print(' - removing anyways')
+        if isinstance(item, QtWidgets.QGraphicsItem):
+            sc = item.scene()
+            if sc == self.scene:
+                #print('..removing from scene ', item.save_key)
+                sc.removeItem(item)
+            elif sc:
+                print('unknown scene for item %s : %s ' % (item, sc))
+                sc.removeItem(item)
+                print(' - removing anyways')
+        else:
+            print(type(item))
 
     # Getting objects ------------------------------------------------------
 
@@ -524,6 +539,7 @@ class Forest(Saved):
         if key in self.ongoing_animations:
             self.ongoing_animations.remove(key)
         if not self.ongoing_animations:
+            print('animation finished!')
             self.draw()
 
     def flush_and_rebuild_temporary_items(self):
@@ -543,7 +559,9 @@ class Forest(Saved):
     def draw(self):
         """ Update all trees in the forest according to current visualization
         """
-        #print('------ draw forest ------')
+        if self.halt_drawing:
+            return
+        print('------ draw forest ------')
         if not self.in_display:
             print("Why are we drawing a forest which shouldn't be in scene")
         sc = ctrl.graph_scene
@@ -716,13 +734,18 @@ class Forest(Saved):
         to top should keep its identity, and just reset the top node to be the new node.
         :return:
         """
+        print(' --|| update trees called ||--')
         invalid_trees = []
         valid_tops = set()
         invalid_tops = set()
         for tree in self.trees:
             if not tree.top:
+                print('tree without top, removing it')
                 self.remove_tree(tree)
             elif not tree.top.is_top_node():
+                invalid_trees.append(tree)
+                invalid_tops.add(tree.top)
+            elif tree.top.deleted:
                 invalid_trees.append(tree)
                 invalid_tops.add(tree.top)
             else:
@@ -753,6 +776,7 @@ class Forest(Saved):
             self.create_tree_for(node)
         # Remove trees that are part of some other tree
         for tree in invalid_trees:
+            print('removing invalid tree: ', tree)
             self.remove_tree(tree)
 
         if self._update_trees:
@@ -800,7 +824,8 @@ class Forest(Saved):
         """
         for node in tree.sorted_nodes:
             node.remove_from_tree(tree)
-        self.trees.remove(tree)
+        if tree in self.trees:
+            self.trees.remove(tree)
         self.remove_from_scene(tree)
 
     def get_first_free_constituent_name(self):
@@ -825,7 +850,7 @@ class Forest(Saved):
 
     # ### Primitive creation of forest objects ################################
 
-    def create_node(self, synobj=None, relative=None, pos=None, node_type=1, text=None):
+    def create_node(self, synobj=None, relative=None, pos=None, node_type=1, text=''):
         """ This is generic method for creating all of the Node subtypes.
         Keep it generic!
         :param synobj: If syntactic object is passed here, the node created
@@ -889,7 +914,6 @@ class Forest(Saved):
         return AN
 
     def create_edge(self, start=None, end=None, edge_type='', direction='', fade=False):
-        # print 'creating edge ', start, end, edge_type
         """
 
         :param start:
@@ -1028,7 +1052,7 @@ class Forest(Saved):
             return
         else:
             self._marked_for_deletion.add(node)
-
+        node.deleted = True
         # remember parent nodes before we start disconnecting them
         parents = node.get_parents(only_similar=True, only_visible=False)
 
@@ -1075,14 +1099,15 @@ class Forest(Saved):
         if node.syntactic_object and node.syntactic_object.save_key in self.nodes_from_synobs:
             del self.nodes_from_synobs[node.syntactic_object.save_key]
 
+        # -- scene --
+        self.remove_from_scene(node)
+        # -- trees --
         old_trees = set(node.trees)
         for tree in old_trees:
             if tree.top is node:
-                self.remove_tree(tree)
+                node.remove_from_tree(tree, recursive_down=False)
             else:
                 tree.update_items()
-        # -- scene --
-        self.remove_from_scene(node)
         # -- undo stack --
         node.announce_deletion()
         # -- remove from selection
@@ -1524,8 +1549,11 @@ class Forest(Saved):
                         raise ForestError('Connection is circular')
 
         # Create edge and make connections
-        new_edge = self.create_edge(edge_type=edge_type, direction=direction, fade=fade_in)
-        new_edge.connect_end_points(parent, child)
+        new_edge = self.create_edge(start=parent,
+                                    end=child,
+                                    edge_type=edge_type,
+                                    direction=direction,
+                                    fade=fade_in)
         child.poke('edges_up')
         parent.poke('edges_down')
         if direction == g.LEFT:
@@ -1920,6 +1948,7 @@ class Forest(Saved):
         if not pos:
             pos = (0, 0)
         merger_const = ctrl.FL.merge(left.syntactic_object, right.syntactic_object)
+        merger_const.after_init()
         merger_node = self.create_node(synobj=merger_const, relative=right)
         merger_node.current_position = pos
         self.add_merge_counter(merger_node)

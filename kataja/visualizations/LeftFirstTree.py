@@ -231,7 +231,8 @@ class LeftFirstTree(BaseVisualization):
                     prev_height = node.height
                     prev_x = x
                     if node not in all_nodes:
-                        print('non-visible node included in visualization grid: ', node)
+                        print('non-visible node included in visualization grid: ', node,
+                              node.isVisible())
                     else:
                         all_nodes.remove(node)
                 else:

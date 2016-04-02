@@ -305,7 +305,7 @@ class Saved(object):
         new) -pairs
         :return: None
         """
-        # print('--- restore to earlier for ', self, ' ----------')
+        #print('--- restore to earlier for ', self, ' ----------')
         for key, value in transitions.items():
             # if key.startswith('_') and key.endswith('_synobj'):
             #    continue
@@ -315,6 +315,7 @@ class Saved(object):
             #    print('%s  %s: %s <- %s' % (self.save_key, key, old, new))
             #else:
             #    print('%s %s: (long) <- (long)' % (self.save_key, key))
+        #print('--- restore done -----')
 
     def move_to_later(self, transitions):
         """ Move to later version with a given changes -dict
@@ -340,6 +341,12 @@ class Saved(object):
         :return:
         """
         pass
+
+    def after_init(self):
+        """ Override this to do preparations necessary for object creation
+        :return:
+        """
+        self.announce_creation()
 
     def save_object(self, saved_objs, open_refs):
         """ Flatten the object to saveable dict and recursively save the

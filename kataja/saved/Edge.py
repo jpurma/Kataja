@@ -67,13 +67,12 @@ class Edge(QtWidgets.QGraphicsObject, Saved):
         self.label_item = None
         self.shape_info = EdgeShape(self)
         self._shape_method = None
-
         self.edge_type = edge_type
         self.alignment = direction or g.NO_ALIGN
         self.start = start
         self.end = end
-        self.fixed_start_point = None
-        self.fixed_end_point = None
+        self.fixed_start_point = (0, 0)
+        self.fixed_end_point = (0, 0)
         self.curve_adjustment = None
         self.label_data = {}
         self.local_shape_info = {}
@@ -149,7 +148,6 @@ class Edge(QtWidgets.QGraphicsObject, Saved):
         :return: None
         """
         self.connect_end_points(self.start, self.end)
-        self.make_relative_vector()
         self.update_end_points()
         self.effect = utils.create_shadow_effect(self.color)
         self.move_effect = utils.create_blur_effect()
@@ -163,9 +161,13 @@ class Edge(QtWidgets.QGraphicsObject, Saved):
         :param update_type: 0:edit, 1:CREATED, 2:DELETED
         :return: None
         """
-        if 'visible' in updated_fields:
-            self.update_visibility()
+        if update_type == 1:
+            ctrl.forest.store(self)
+            ctrl.forest.add_to_scene(self)
+        #if 'visible' in updated_fields:
+        self.update_visibility()
         self.connect_end_points(self.start, self.end)
+        self.update_end_points()
 
     @property
     def start_point(self) -> tuple:
@@ -174,7 +176,7 @@ class Edge(QtWidgets.QGraphicsObject, Saved):
         :return: tuple (x, y, z)
         """
         if self.start:
-            return self._computed_start_point
+            return self._computed_start_point or self.fixed_start_point
         else:
             return self.fixed_start_point
 
@@ -185,7 +187,7 @@ class Edge(QtWidgets.QGraphicsObject, Saved):
         :return: tuple (x, y, z)
         """
         if self.end:
-            return self._computed_end_point
+            return self._computed_end_point or self.fixed_end_point
         else:
             return self.fixed_end_point
 
