@@ -476,12 +476,13 @@ class ConstituentNode(BaseConstituentNode):
             return
         syn_gloss = self.gloss
         gloss_node = self.gloss_node
-        if gloss_node and not syn_gloss:
-            ctrl.forest.delete_node(gloss_node)
-        elif syn_gloss and not gloss_node:
-            ctrl.forest.create_gloss_node(self)
-        elif syn_gloss and gloss_node:
-            gloss_node.update_label()
+        if not ctrl.undo_disabled:
+            if gloss_node and not syn_gloss:
+                ctrl.forest.delete_node(gloss_node)
+            elif syn_gloss and not gloss_node:
+                ctrl.forest.create_gloss_node(self)
+            elif syn_gloss and gloss_node:
+                gloss_node.update_label()
 
     # ### Labels #############################################
     # things to do with traces:

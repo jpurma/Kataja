@@ -62,24 +62,6 @@ class UndoManager:
         ctrl.add_message('took snapshot, undo stack size: %s items %s chars' % (
             len(self._stack), len(str(self._stack))))
         print('stack len:', len(str(self._stack)))
-    # def record_full_state(self):
-    #     """ Iterates through all items in forest and puts them to the full_state -dict.
-    #     This needs to be done before undo, in order to get the objects that may be affected into one place.
-    #     :return: None
-    #     """
-    #     self.full_state = {'stack_index': self._current}
-    #     open_refs = {}
-    #     self.forest.model.save_object(self.full_state, open_refs)
-    #     self.full_state['start_key'] = self.forest.save_key
-    #     c = 0
-    #     while open_refs and c < 10:
-    #         c += 1
-    #         for obj in list(open_refs.values()):
-    #             obj.model.save_object(self.full_state, open_refs)
-
-    #     0    ,    1
-    #(old, new), (old, new)
-
 
     def undo(self):
         """ Move backward in the undo stack
@@ -96,23 +78,16 @@ class UndoManager:
         msg, snapshot = self._stack[self._current]
         affected = set()
 
-        print('-------undo: ', self._current)
         for obj, transitions, transition_type in snapshot.values():
             obj.revert_to_earlier(transitions)
             if transition_type == CREATED:
-                print('deleting from scene ', obj, obj.save_key)
                 ctrl.forest.delete_item(obj, ignore_consequences=True)
             elif transition_type == DELETED:
-                print('restoring to scene ', obj, obj.save_key)
                 ctrl.forest.add_to_scene(obj)
-            #else:
-            #    print('undoing ', type(obj), transitions)
             affected.add(obj)
             if hasattr(obj, 'update_visibility'):
                 obj.update_visibility()
-        print('----- edge visibility check')
         ctrl.forest.edge_visibility_check()
-        print('----- second round')
         for obj, transitions, transition_type in snapshot.values():
             if transition_type == CREATED:
                 revtt = DELETED
@@ -148,21 +123,14 @@ class UndoManager:
         ctrl.forest.halt_drawing = True
         msg, snapshot = self._stack[self._current]
         affected = set()
-        print('-------redo: ', msg, self._current)
         for obj, transitions, transition_type in snapshot.values():
             obj.move_to_later(transitions)
             if transition_type == CREATED:
-                print('restoring to scene ', obj, obj.save_key)
                 ctrl.forest.add_to_scene(obj)
             elif transition_type == DELETED:
-                print('deleting from scene ', obj, obj.save_key)
                 ctrl.forest.delete_item(obj, ignore_consequences=True)
             affected.add(obj)
-            #if hasattr(obj, 'update_visibility'):
-            #    obj.update_visibility()
-        print('----- edge visibility check')
         ctrl.forest.edge_visibility_check()
-        print('----- second round')
         for obj, transitions, transition_type in snapshot.values():
             obj.after_model_update(transitions.keys(), transition_type)
             if getattr(obj.__class__, 'syntactic_object', False):
@@ -174,7 +142,6 @@ class UndoManager:
         ctrl.multiselection_end()
         ctrl.resume_undo()
         ctrl.forest.halt_drawing = False
-
         print('------redo finished: ', msg, self._current)
 
     @staticmethod

@@ -1,6 +1,7 @@
 import copy
 import sys
 import types
+from collections import Iterable
 
 from PyQt5 import QtGui, QtCore
 
@@ -283,7 +284,11 @@ class Saved(object):
         # print('item %s history: %s' % (self.save_key, self._history))
         for key, old_value in self._history.items():
             new_value = self._saved[key]
-            transitions[key] = old_value, new_value
+            if old_value != new_value:
+                if isinstance(new_value, Iterable):
+                    transitions[key] = old_value, copy.copy(new_value)
+                else:
+                    transitions[key] = old_value, new_value
         return transitions, self._cd
 
     def flush_history(self):

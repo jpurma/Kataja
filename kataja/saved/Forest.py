@@ -415,7 +415,6 @@ class Forest(Saved):
             if key and key not in self.others:
                 self.poke('others')
                 self.others[key] = item
-                print(self.others)
             else:
                 print('F trying to store broken type:', item.__class__.__name__)
 
@@ -561,7 +560,6 @@ class Forest(Saved):
         """
         if self.halt_drawing:
             return
-        print('------ draw forest ------')
         if not self.in_display:
             print("Why are we drawing a forest which shouldn't be in scene")
         sc = ctrl.graph_scene

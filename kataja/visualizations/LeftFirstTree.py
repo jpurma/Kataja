@@ -183,6 +183,9 @@ class LeftFirstTree(BaseVisualization):
         # if node is extra wide, then move all columns to right from that point on
         # same for extra tall nodes. move everything down after that row
         all_nodes = set(self.forest.get_constituent_nodes())
+        for item in all_nodes:
+            if item.deleted:
+                print('deleted item in forest.nodes: ', item.save_key)
         for y_i, row in enumerate(merged_grid):
             extra_height = 0
             prev_width = 0
@@ -242,6 +245,8 @@ class LeftFirstTree(BaseVisualization):
             extra_heights.append(extra_height)
         if all_nodes:
             print('nodes left remaining: ', all_nodes)
+            for node in all_nodes:
+                print(node, node.save_key, node.deleted, node.parentObject(), node.trees)
         y = 0
         for y_i, row in enumerate(merged_grid):
             x = offset_x
