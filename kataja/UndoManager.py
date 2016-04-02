@@ -77,7 +77,6 @@ class UndoManager:
         ctrl.forest.halt_drawing = True
         msg, snapshot = self._stack[self._current]
         affected = set()
-
         for obj, transitions, transition_type in snapshot.values():
             obj.revert_to_earlier(transitions)
             if transition_type == CREATED:

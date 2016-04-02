@@ -312,15 +312,11 @@ class Saved(object):
         """
         #print('--- restore to earlier for ', self, ' ----------')
         for key, value in transitions.items():
-            # if key.startswith('_') and key.endswith('_synobj'):
-            #    continue
             old, new = value
-            setattr(self, key, old)
-            #if len(str(new)) < 80:
-            #    print('%s  %s: %s <- %s' % (self.save_key, key, old, new))
-            #else:
-            #    print('%s %s: (long) <- (long)' % (self.save_key, key))
-        #print('--- restore done -----')
+            if isinstance(old, Iterable):
+                setattr(self, key, copy.copy(old))
+            else:
+                setattr(self, key, old)
 
     def move_to_later(self, transitions):
         """ Move to later version with a given changes -dict
@@ -330,14 +326,11 @@ class Saved(object):
         """
         # print('--- move to later for ', self, ' ----------')
         for key, value in transitions.items():
-            # if key.startswith('_') and key.endswith('_synobj'):
-            #    continue
             old, new = value
-            setattr(self, key, new)
-            #if len(str(new)) < 80:
-            #    print('%s  %s: %s -> %s' % (self.save_key, key, old, new))
-            #else:
-            #    print('%s %s: (long) -> (long)' % (self.save_key, key))
+            if isinstance(new, Iterable):
+                setattr(self, key, copy.copy(new))
+            else:
+                setattr(self, key, new)
 
     def after_model_update(self, changed_fields, transition_type):
         """ Override this to update derivative values when restoring objects

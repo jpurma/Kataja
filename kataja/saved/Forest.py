@@ -732,7 +732,6 @@ class Forest(Saved):
         to top should keep its identity, and just reset the top node to be the new node.
         :return:
         """
-        print(' --|| update trees called ||--')
         invalid_trees = []
         valid_tops = set()
         invalid_tops = set()
@@ -771,6 +770,7 @@ class Forest(Saved):
                     break
         # Create new trees for other unassigned nodes:
         for node in unassigned_top_nodes:
+            print('unassigned top node needing for tree')
             self.create_tree_for(node)
         # Remove trees that are part of some other tree
         for tree in invalid_trees:
