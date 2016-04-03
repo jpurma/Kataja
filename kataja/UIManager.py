@@ -24,6 +24,8 @@
 from collections import OrderedDict
 
 from PyQt5 import QtCore, QtWidgets
+
+from kataja.UIItem import UIItem
 from kataja.ui_support.MyFontDialog import MyFontDialog
 from kataja.ui_support.ResizeHandle import GraphicsResizeHandle
 from kataja.ui_support.TableModelComboBox import TableModelComboBox
@@ -64,6 +66,7 @@ from kataja.ui_items.embeds.NewElementEmbed import NewElementEmbed, NewElementMa
 from kataja.ui_items.embeds.NodeEditEmbed import NodeEditEmbed
 from kataja.ui_items.panels.SymbolPanel import SymbolPanel
 from kataja.ui_support.MyColorDialog import MyColorDialog
+from kataja.ui_items.ModeLabel import ModeLabel
 
 NOTHING = 0
 SELECTING_AREA = 1
@@ -135,8 +138,10 @@ class UIManager:
         self.qt_actions = {}
         self._top_menus = {}
         self._float_buttons = []
+        self._free_edit_mode_label = None
 
         self._items = {}
+        self._items_by_host = {}
         self._node_edits = set()
         self.log_writer = MessageWriter()
 
@@ -252,6 +257,12 @@ class UIManager:
         if item.ui_key in self._items:
             raise KeyError
         self._items[item.ui_key] = item
+        if item.host:
+            key = item.host.save_key
+            if key in self._items_by_host:
+                self._items_by_host[key].append(item)
+            else:
+                self._items_by_host[key] = [item]
         if isinstance(item, QtWidgets.QGraphicsItem):
             self.scene.addItem(item)
         if show:
@@ -264,6 +275,14 @@ class UIManager:
         """
         if item.ui_key in self._items:
             del self._items[item.ui_key]
+        if item.host:
+            key = item.host.save_key
+            if key in self._items_by_host:
+                parts = self._items_by_host.get(item, [])
+                if item in parts:
+                    parts.remove(item)
+                    if not parts:
+                        del self._items_by_host[key]
         item.hide()
         if isinstance(item, QtWidgets.QGraphicsItem):
             self.scene.removeItem(item)
@@ -277,6 +296,13 @@ class UIManager:
         :return:
         """
         return self._items.get(ui_key, None)
+
+    def get_uis_for(self, obj):
+        """ Return ui_items that have this object as host, generally objects related to given object
+        :param obj:
+        :return:
+        """
+        return self._items_by_host.get(obj.save_key, [])
 
     def watch_alerted(self, obj, signal, field_name, value):
         """ Receives alerts from signals that this object has chosen to
@@ -312,10 +338,7 @@ class UIManager:
     def update_colors(self):
         """ Update colors in all ui_support elements that understand that demand."""
         for item in self._items.values():
-            if hasattr(item, 'update_colors'):
-                item.update_colors()
-        for panel in self._panels.values():
-            panel.update_colors()
+            item.update_colors()
 
     def update_selections(self):
         """ Many UI elements change mode depending on if object of specific
@@ -416,37 +439,31 @@ class UIManager:
         """
         ctrl.deselect_objects()
         for item in list(self._items.values()):
-            self.remove_ui(item)
+            if not item.permanent_ui:
+                self.remove_ui(item)
 
     def update_positions(self):
         """ UI has elements that point to graph scene elements, and when
         something moves there
         UI has to update its elements too."""
         for item in self._items.values():
-            if hasattr(item, 'update_position'):
-                item.update_position()
+            item.update_position()
 
     def update_position_for(self, obj):
         """ Update position of ui_support-elements for selected (non-ui_support) object.
         :param obj:
         :return:
         """
-        for item in self._items.values():
-            if item.host is obj:
-                item.update_position()
+        for ui_item in self.get_uis_for(obj):
+            ui_item.update_position()
 
-    def remove_ui_for(self, item):
+    def remove_ui_for(self, obj):
+        """ Remove ui_support-elements for given(non-ui_support) object.
+        :param obj: Saved item, needs to have save_key
         """
-        :param item: item or iterable of items
-        """
-        if isinstance(item, (tuple, list, set)):
-            for ui_item in list(self._items.values()):
-                if ui_item.host in item:
-                    self.remove_ui(ui_item)
-        else:
-            for ui_item in list(self._items.values()):
-                if ui_item.host is item and not getattr(ui_item, '_fade_out_active', False):
-                    self.remove_ui(ui_item)
+        for ui_item in list(self.get_uis_for(obj)):
+            if not getattr(ui_item, '_fade_out_active', False):
+                ui_item.update_position()
 
     # ### Actions and Menus
     # ####################################################
@@ -636,6 +653,7 @@ class UIManager:
         new_panel = constructor(name, id, default_position=position, parent=self.main,
                                 folded=folded)
         self._panels[id] = new_panel
+        self.add_ui(new_panel)
         return new_panel
 
     def restore_panel_positions(self):
@@ -1117,6 +1135,10 @@ class UIManager:
         """ Show '>>>_' in log """
         self.log_writer.add('>>>_')
 
+    # Mode HUD
+    def update_edit_mode(self):
+        pass
+
     # ### Embedded buttons ############################
 
 
@@ -1133,17 +1155,23 @@ class UIManager:
                                                     draw_method=drawn_icons.fit_to_screen)
         self._float_buttons.append(fit_to_screen)
         pan_around = self._create_overlay_button(host=None, key='pan_around', icon=None,
-                                                    role='bottom', text='Move mode',
-                                                    action='toggle_pan_mode', size=(36, 24),
-                                                    draw_method=drawn_icons.pan_around)
+                                                 role='bottom', text='Move mode',
+                                                 action='toggle_pan_mode', size=(36, 24),
+                                                 draw_method=drawn_icons.pan_around)
         pan_around.setCheckable(True)
         self._float_buttons.append(pan_around)
         select_mode = self._create_overlay_button(host=None, key='select_mode', icon=None,
-                                                    role='bottom', text='Move mode',
-                                                    action='toggle_select_mode', size=(36, 24),
-                                                    draw_method=drawn_icons.select_mode)
+                                                  role='bottom', text='Move mode',
+                                                  action='toggle_select_mode', size=(36, 24),
+                                                  draw_method=drawn_icons.select_mode)
         select_mode.setCheckable(True)
         self._float_buttons.append(select_mode)
+        self._free_edit_mode_label = ModeLabel('Free edit mode', ui_key='edit_mode_label',
+                                                parent=ctrl.graph_view)
+        self.add_ui(self._free_edit_mode_label)
+        self._free_edit_mode_label.update_position()
+        self.connect_element_to_action(self._free_edit_mode_label, 'switch_edit_mode')
+
         self.update_float_button_positions()
         self.update_drag_mode(True) # selection mode
 
@@ -1157,6 +1185,8 @@ class UIManager:
             right_x -= button.width() + 2
             button.move(right_x, 2)
             button.show()
+
+
 
     def update_drag_mode(self, selection_mode):
         pan_around = self.get_ui('pan_around')

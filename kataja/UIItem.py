@@ -7,6 +7,7 @@ class UIItem:
     updating, e.g. change palette colors or update field values.  UI Items can also announce
     signals that they will receive, these signals can be sent by any object.
     """
+    permanent_ui = False
 
     def __init__(self, ui_key, host=None):
         self.ui_key = ui_key
@@ -15,4 +16,10 @@ class UIItem:
         self.ui_manager = ctrl.ui
 
     def watch_alerted(self, obj, signal, field_name, value):
+        pass
+
+    def update_position(self):
+        pass
+
+    def update_colors(self):
         pass

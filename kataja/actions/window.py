@@ -57,8 +57,7 @@ def toggle_full_screen():
         ctrl.ui.store_panel_positions()
         ctrl.main.showFullScreen()
         ctrl.main.add_message('(f) fullscreen')
-    ctrl.graph_scene.fit_to_window()
-
+    ctrl.graph_scene.fit_to_window(force=True)
 
 a['fullscreen_mode'] = {'command': '&Fullscreen', 'method': toggle_full_screen,
                         'shortcut': 'f', 'undoable': False, 'checkable': True}

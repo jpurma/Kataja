@@ -595,7 +595,6 @@ class Edge(QtWidgets.QGraphicsObject, Saved):
             if self.end:
                 self._computed_end_point = self.end.magnet(2)
 
-
     def connect_end_points(self, start, end):
         """
 

@@ -92,6 +92,7 @@ class PanelTitle(QtWidgets.QWidget):
 class Panel(UIItem, QtWidgets.QDockWidget):
     """ UI windows that can be docked to main window or separated.
     Gives some extra control and helper methods on QDockWidget. """
+    permanent_ui = True
 
     def __init__(self, name, key, default_position='bottom', parent=None, ui_manager=None, folded=False):
         """

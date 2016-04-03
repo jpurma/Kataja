@@ -4,6 +4,23 @@ from kataja.singletons import ctrl
 
 a = {}
 
+
+def switch_edit_mode(free_edit=None):
+    """ Switch between visualisation mode and free edit mode
+    :type free_edit: None to toggle between modes, True for free_edit_mode, False for visualization
+    :return:
+    """
+    if free_edit is None:
+        ctrl.free_edit_mode = not ctrl.free_edit_mode
+    else:
+        ctrl.free_edit_mode = free_edit
+    ctrl.ui.update_edit_mode()
+
+a['switch_edit_mode'] = {'command': 'Toggle edit mode', 'method': switch_edit_mode,
+                         'undoable': False, #'shortcut': 'Ctrl+Space',
+                         'tooltip': 'Switch between free editing and derivation-based '
+                                    'visualisation'}
+
 def next_structure():
     """ Show the next 'slide', aka Forest from a list in ForestKeeper.
     :return: None
