@@ -100,7 +100,6 @@ class CommentNode(Node):
         :param value: str or ITextNode
         """
         self.label = value
-        self._inode_changed = True
 
     def has_arrow(self):
         return bool(self.edges_down)
@@ -219,5 +218,3 @@ class CommentNode(Node):
     # ############## #
 
     # all same as Node
-
-    #label = Saved("label", if_changed=Node.alert_inode)

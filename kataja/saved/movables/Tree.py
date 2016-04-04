@@ -39,7 +39,6 @@ class Tree(Movable):
 
     def __init__(self, top=None):
         Movable.__init__(self)
-        print('creating a tree, ', id(self))
         self.top = top
         if is_constituent(top):
             self.sorted_constituents = [top]

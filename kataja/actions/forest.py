@@ -17,9 +17,9 @@ def switch_edit_mode(free_edit=None):
     ctrl.ui.update_edit_mode()
 
 a['switch_edit_mode'] = {'command': 'Toggle edit mode', 'method': switch_edit_mode,
-                         'undoable': False, #'shortcut': 'Ctrl+Space',
+                         'undoable': False, 'shortcut': 'Shift+Space',
                          'tooltip': 'Switch between free editing and derivation-based '
-                                    'visualisation'}
+                                    'visualisation (Shift+Space)'}
 
 def next_structure():
     """ Show the next 'slide', aka Forest from a list in ForestKeeper.

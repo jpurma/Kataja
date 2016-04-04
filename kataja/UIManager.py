@@ -138,7 +138,7 @@ class UIManager:
         self.qt_actions = {}
         self._top_menus = {}
         self._float_buttons = []
-        self._free_edit_mode_label = None
+        self._edit_mode_button = None
 
         self._items = {}
         self._items_by_host = {}
@@ -1137,7 +1137,14 @@ class UIManager:
 
     # Mode HUD
     def update_edit_mode(self):
-        pass
+        if ctrl.free_edit_mode:
+            text = 'Free edit mode'
+            checked = False
+        else:
+            text = 'Visualisation mode'
+            checked = True
+        self._edit_mode_button.set_text(text)
+        self._edit_mode_button.setChecked(checked)
 
     # ### Embedded buttons ############################
 
@@ -1166,11 +1173,11 @@ class UIManager:
                                                   draw_method=drawn_icons.select_mode)
         select_mode.setCheckable(True)
         self._float_buttons.append(select_mode)
-        self._free_edit_mode_label = ModeLabel('Free edit mode', ui_key='edit_mode_label',
-                                                parent=ctrl.graph_view)
-        self.add_ui(self._free_edit_mode_label)
-        self._free_edit_mode_label.update_position()
-        self.connect_element_to_action(self._free_edit_mode_label, 'switch_edit_mode')
+        self._edit_mode_button = ModeLabel('Free edit mode', ui_key='edit_mode_label',
+                                           parent=ctrl.graph_view)
+        self.add_ui(self._edit_mode_button)
+        self._edit_mode_button.update_position()
+        self.connect_element_to_action(self._edit_mode_button, 'switch_edit_mode')
 
         self.update_float_button_positions()
         self.update_drag_mode(True) # selection mode

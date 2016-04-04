@@ -56,7 +56,6 @@ class GlossNode(Node):
 
     def __init__(self, text=''):
         Node.__init__(self)
-        self._label = text or 'gloss'
 
     @property
     def hosts(self):
@@ -71,21 +70,6 @@ class GlossNode(Node):
         for host in self.hosts:
             host.gloss = value
         self.label = value
-        self._inode_changed = True
-
-    @property
-    def label(self):
-        for host in self.hosts:
-            if host.gloss:
-                return host.gloss
-        return self._label
-
-    @label.setter
-    def label(self, value):
-        for host in self.hosts:
-            host.gloss = value
-        self._label = value
-        self._inode_changed = True
 
     @property
     def text(self):
@@ -93,11 +77,10 @@ class GlossNode(Node):
 
     @text.setter
     def text(self, value):
-        self._label = value
-        self._inode_changed = True
+        self.label = value
 
     def __str__(self):
-        return 'gloss: %s' % self.text
+        return 'gloss: %s' % self.label
 
     # ############## #
     #                #
