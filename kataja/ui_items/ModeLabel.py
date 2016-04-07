@@ -7,6 +7,9 @@ from kataja.ui_items.OverlayButton import PanelButton
 
 
 class ModeLabel(UIItem, PanelButton):
+
+    permanent_ui = True
+
     def __init__(self, text, ui_key, parent=None):
         UIItem.__init__(self, ui_key, None)
         PanelButton.__init__(self, None, text, size=24, parent=parent) # qt_prefs.v_refresh_small_icon

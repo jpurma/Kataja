@@ -55,6 +55,9 @@ class PanelButton(QtWidgets.QPushButton):
         QtWidgets.QPushButton.__init__(self, parent)
         self.draw_method = draw_method
         self.color_key = color_key
+        self.base_image = None
+        self.normal_icon = None
+        self.hover_icon = None
         if isinstance(size, QtCore.QSize):
             width = size.width()
             height = size.height()
@@ -72,7 +75,15 @@ class PanelButton(QtWidgets.QPushButton):
             self.pixmap = pixmap.pixmap(size)
         else:
             self.pixmap = pixmap
+        if self.pixmap:
+            self.base_image = self.pixmap.toImage()
+        elif self.draw_method:
+            isize = QtCore.QSize(size.width() * 2, size.height() * 2)
+            self.base_image = QtGui.QImage(
+                isize, QtGui.QImage.Format_ARGB32_Premultiplied)
+            self.base_image.fill(QtCore.Qt.transparent)
         self.compose_icon()
+
         if text:
             self.setText(text)
         if tooltip:
@@ -100,29 +111,42 @@ class PanelButton(QtWidgets.QPushButton):
         """
         c = ctrl.cm.get(self.color_key)
         if self.pixmap:
-            image = self.pixmap.toImage()
+            image = QtGui.QImage(self.base_image)
             painter = QtGui.QPainter(image)
             painter.setRenderHint(QtGui.QPainter.Antialiasing)
             painter.setCompositionMode(QtGui.QPainter.CompositionMode_SourceIn)
             painter.fillRect(image.rect(), c)
             painter.end()
-        elif self.draw_method:
-            size = self.iconSize()
-            #hidp = self.devicePixelRatio()
-            isize = QtCore.QSize(size.width() * 2, size.height() * 2)
+            image2 = QtGui.QImage(self.base_image)
+            painter = QtGui.QPainter(image2)
+            painter.setRenderHint(QtGui.QPainter.Antialiasing)
+            painter.setCompositionMode(QtGui.QPainter.CompositionMode_SourceIn)
+            painter.fillRect(image2.rect(), c.lighter())
+            painter.end()
 
-            image = QtGui.QImage(
-                isize, QtGui.QImage.Format_ARGB32_Premultiplied)
-            image.fill(QtCore.Qt.transparent)
+        elif self.draw_method:
+
+            image = QtGui.QImage(self.base_image)
+            image2 = QtGui.QImage(self.base_image)
+
             painter = QtGui.QPainter(image)
             #painter.setDevicePixelRatio(2.0)
             painter.setRenderHint(QtGui.QPainter.Antialiasing)
             painter.setPen(c)
             self.draw_method(painter, image.rect(), c)
             painter.end()
+            painter = QtGui.QPainter(image2)
+            painter.setRenderHint(QtGui.QPainter.Antialiasing)
+            cl = c.lighter()
+            painter.setPen(cl)
+            self.draw_method(painter, image2.rect(), cl)
+            painter.end()
+        else:
+            return
+        self.normal_icon = QtGui.QIcon(QtGui.QPixmap.fromImage(image))
+        self.hover_icon = QtGui.QIcon(QtGui.QPixmap.fromImage(image2))
 
-        i = QtGui.QIcon(QtGui.QPixmap.fromImage(image))
-        self.setIcon(i)
+        self.setIcon(self.normal_icon)
 
     def update_style_sheet(self):
         paper = ctrl.cm.paper()
@@ -167,6 +191,14 @@ class OverlayButton(UIItem, PanelButton):
 
     def update_colors(self):
         PanelButton.update_colors(self)
+
+    def mousePressEvent(self, event):
+        self.setIcon(self.hover_icon)
+        PanelButton.mousePressEvent(self, event)
+
+    def mouseReleaseEvent(self, event):
+        self.setIcon(self.normal_icon)
+        PanelButton.mouseReleaseEvent(self, event)
 
 
 class TopRowButton(OverlayButton):
