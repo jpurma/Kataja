@@ -443,7 +443,15 @@ class QtPreferences:
         self.triangle_icon = None
         self.triangle_close_icon = None
         self.font_icon = None
+        self.v_refresh_icon = None
+        self.v_refresh_small_icon = None
+        self.h_refresh_icon = None
+        self.h_refresh_small_icon = None
+        self.camera_icon = None
+        self.undo_icon = None
+        self.redo_icon = None
         self.kataja_icon = None
+
 
     def late_init(self, running_environment, preferences, fontdb):  # called when Qt app exists
         # graphics and fonts can be initiated only when QApplication exists
@@ -502,6 +510,13 @@ class QtPreferences:
         self.triangle_icon = icon('triangle48.png')
         self.triangle_close_icon = icon('triangle_close48.png')
         self.font_icon = icon('text_format48.png')
+        self.v_refresh_icon = icon('v_refresh48.png')
+        self.v_refresh_small_icon = icon('v_refresh24.png')
+        self.h_refresh_icon = icon('h_refresh48.png')
+        self.h_refresh_small_icon = icon('h_refresh24.png')
+        self.camera_icon = icon('camera48.png')
+        self.undo_icon = icon('undo48.png')
+        self.redo_icon = icon('redo48.png')
         self.kataja_icon = icon('kataja.png')
 
     def update(self, preferences, running_environment):

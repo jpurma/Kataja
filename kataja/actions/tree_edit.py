@@ -164,7 +164,7 @@ a['change_edge_ending'] = {'command': 'Change edge ending',
                            'method': change_edge_ending}
 
 
-def edge_disconnect(sender=None):
+def disconnect_edge_start(sender=None):
     """ Remove connection between two nodes, this is triggered from the edge.
     :return: None
     """
@@ -173,12 +173,6 @@ def edge_disconnect(sender=None):
     if not button:
         return
     edge = button.host
-    if button.role == g.START_CUT:
-        start = True
-        end = False
-    elif button.role == g.END_CUT:
-        start = False
-        end = True
     old_start = edge.start
     if not edge:
         return
@@ -186,14 +180,38 @@ def edge_disconnect(sender=None):
     if edge.delete_on_disconnect():
         ctrl.forest.disconnect_edge(edge)
     else:
-        ctrl.forest.partial_disconnect(edge, start=start, end=end)
+        ctrl.forest.partial_disconnect(edge, start=True, end=False)
     if edge.edge_type is g.CONSTITUENT_EDGE:
         old_start.fix_edge_aligns()
     ctrl.ui.update_selections()
 
+a['disconnect_edge_start'] = {'command': 'Disconnect edge start', 'sender_arg': True,
+                              'method': disconnect_edge_start}
 
-a['disconnect_edge'] = {'command': 'Disconnect', 'sender_arg': True,
-                        'method': edge_disconnect}
+
+def disconnect_edge_end(sender=None):
+    """ Remove connection between two nodes, this is triggered from the edge.
+    :return: None
+    """
+    # Find the triggering edge
+    button = get_ui_container(sender)
+    if not button:
+        return
+    edge = button.host
+    old_start = edge.start
+    if not edge:
+        return
+    # Then do the cutting
+    if edge.delete_on_disconnect():
+        ctrl.forest.disconnect_edge(edge)
+    else:
+        ctrl.forest.partial_disconnect(edge, start=False, end=True)
+    if edge.edge_type is g.CONSTITUENT_EDGE:
+        old_start.fix_edge_aligns()
+    ctrl.ui.update_selections()
+
+a['disconnect_edge_end'] = {'command': 'Disconnect edge end', 'sender_arg': True,
+                            'method': disconnect_edge_end}
 
 
 def remove_merger(sender=None):

@@ -50,13 +50,11 @@ class PanelButton(QtWidgets.QPushButton):
         individually.
      """
 
-    def __init__(self, pixmap, text=None, parent=None, size=16,
-                 color_key='accent8', draw_method=None):
+    def __init__(self, pixmap=None, text=None, parent=None, size=16,
+                 color_key='accent8', draw_method=None, tooltip=None):
         QtWidgets.QPushButton.__init__(self, parent)
         self.draw_method = draw_method
         self.color_key = color_key
-        if not (pixmap or draw_method):
-            raise TypeError('Button needs either pixmap/icon or draw_method')
         if isinstance(size, QtCore.QSize):
             width = size.width()
             height = size.height()
@@ -76,13 +74,18 @@ class PanelButton(QtWidgets.QPushButton):
             self.pixmap = pixmap
         self.compose_icon()
         if text:
+            self.setText(text)
+        if tooltip:
             if ctrl.main.use_tooltips:
                 self.setToolTip(text)
+            self.setStatusTip(text)
+        else:
             self.setStatusTip(text)
         self.w2 = self.iconSize().width() / 2
         self.h2 = self.iconSize().height() / 2
         self.setContentsMargins(0, 0, 0, 0)
         self.setFlat(True)
+        self.update_colors()
 
     def contextual_color(self):
         if self.isDown():
@@ -96,8 +99,6 @@ class PanelButton(QtWidgets.QPushButton):
         :return:
         """
         c = ctrl.cm.get(self.color_key)
-        paper = ctrl.cm.paper()
-        paper2 = ctrl.cm.paper2()
         if self.pixmap:
             image = self.pixmap.toImage()
             painter = QtGui.QPainter(image)
@@ -122,11 +123,22 @@ class PanelButton(QtWidgets.QPushButton):
 
         i = QtGui.QIcon(QtGui.QPixmap.fromImage(image))
         self.setIcon(i)
-        self.setStyleSheet(borderstyle % (c.name(), c.lighter().name(), paper.name(), c.name(),
-                                          paper2.name()))
+
+    def update_style_sheet(self):
+        paper = ctrl.cm.paper()
+        paper2 = ctrl.cm.paper2()
+        c = ctrl.cm.get(self.color_key)
+        ss = """
+PanelButton {border: 1px transparent none}
+:hover {border: 1px solid %s; border-radius: 3}
+:pressed {border: 2px solid %s; background-color: %s; border-radius: 3}
+:checked {border: 1px solid %s; background-color: %s; border-radius: 3}
+""" % (c.name(), c.lighter().name(), paper.name(), c.name(), paper2.name())
+        self.setStyleSheet(ss)
 
     def update_colors(self):
         self.compose_icon()
+        self.update_style_sheet()
 
     def event(self, e):
         if e.type() == QtCore.QEvent.PaletteChange:
@@ -140,7 +152,6 @@ class OverlayButton(UIItem, PanelButton):
 
     :param pixmap:
     :param host:
-    :param role:
     :param ui_key:
     :param text:
     :param parent:
@@ -148,51 +159,109 @@ class OverlayButton(UIItem, PanelButton):
     :param color_key:
     """
 
-    def __init__(self, host, ui_key, pixmap, role, text=None, parent=None,
-                 size=16, color_key='accent8', draw_method=None, **kwargs):
+    def __init__(self, host, ui_key, pixmap=None, text=None, parent=None,
+                 size=16, color_key='accent8', draw_method=None, tooltip=None, **kwargs):
         UIItem.__init__(self, ui_key, host)
-        PanelButton.__init__(self, pixmap, text=text, parent=parent, size=size,
-                         color_key=color_key, draw_method=draw_method)
-        self.role = role
-        self.edge = None
+        PanelButton.__init__(self, pixmap=pixmap, text=text, parent=parent, size=size,
+                             color_key=color_key, draw_method=draw_method, tooltip=tooltip)
+
+    def update_colors(self):
+        PanelButton.update_colors(self)
+
+
+class TopRowButton(OverlayButton):
+
+    permanent_ui = True
+
+    def __init__(self, ui_key, parent=None, pixmap=None, text=None, draw_method=None,
+                 size=24, tooltip=None):
+        super().__init__(None, ui_key,
+                         parent=parent,
+                         pixmap=pixmap,
+                         text=text,
+                         draw_method=draw_method,
+                         tooltip=tooltip,
+                         size=size,
+                         color_key='accent8')
+
+
+class CutFromStartButton(OverlayButton):
+
+    def __init__(self, host, ui_key, parent=None):
+        super().__init__(host, ui_key, pixmap=qt_prefs.cut_icon,
+                         tooltip='Disconnect edge from the start',
+                         parent=parent,
+                         size=16,
+                         color_key='accent8')
 
     def update_position(self):
+        """ Put button left and below the starting point of edge.
         """
+        if self.host and self.host.start:
+            x, y = self.host.start_point
+            x += self.host.start.width - self.w2
+            y += self.host.start.height / 2 - self.h2
+            self.move(ctrl.main.graph_view.mapFromScene(
+                QtCore.QPointF(x, y)))
 
 
-        :raise UIError:
+class CutFromEndButton(OverlayButton):
+
+    def __init__(self, host, ui_key, parent=None):
+        super().__init__(host, ui_key, pixmap=qt_prefs.cut_icon,
+                         tooltip='Disconnect edge from the end',
+                         parent=parent,
+                         size=16,
+                         color_key='accent8')
+
+    def update_position(self):
+        """ Put button left and below the starting point of edge.
         """
-        if not self.host:
-            return
-
-        if self.role == g.START_CUT:
-            adjust = QtCore.QPointF(self.host.start.width - self.w2,
-                                    self.host.start.height / 2 - self.h2)
-            p = ctrl.main.graph_view.mapFromScene(
-                QtCore.QPointF(self.host.start_point[0],
-                               self.host.start_point[1]) + adjust)
-        elif self.role == g.END_CUT:
+        if self.host and self.host.end:
+            x, y = self.host.end_point
             if self.host.alignment == g.LEFT:
-                adjust = QtCore.QPointF(-self.host.end.width - self.w2,
-                                        -self.host.end.height / 2- self.h2)
+                x += -self.host.end.width - self.w2
             else:
-                adjust = QtCore.QPointF(self.host.end.width - self.w2,
-                                        -self.host.end.height / 2 - self.h2)
-            p = ctrl.main.graph_view.mapFromScene(
-                QtCore.QPointF(self.host.end_point[0],
-                               self.host.end_point[1]) + adjust)
-        elif self.role == g.ADD_TRIANGLE:
+                x += self.host.end.width - self.w2
+            y += self.host.end.height / 2 - self.h2
+            self.move(ctrl.main.graph_view.mapFromScene(
+                QtCore.QPointF(x, y)))
+
+
+class AddTriangleButton(OverlayButton):
+
+    def __init__(self, host, ui_key, parent=None):
+        super().__init__(host, ui_key, pixmap=qt_prefs.cut_icon,
+                         tooltip='Disconnect edge from the end',
+                         parent=parent,
+                         size=16,
+                         color_key='accent8')
+
+    def update_position(self):
+        """ Put button left and below the starting point of edge.
+        """
+        if self.host:
             x, y = self.host.current_scene_position
-            p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(x, y + self.host.height / 2))
-            p -= QtCore.QPoint(self.w2 + 4, 0)
-        elif self.role == g.REMOVE_TRIANGLE:
+            p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(x, y + self.h2))
+            self.move(p - QtCore.QPoint(self.w2 + 4, 0))
+
+
+class RemoveTriangleButton(OverlayButton):
+
+    def __init__(self, host, ui_key, parent=None):
+        super().__init__(host, ui_key, pixmap=qt_prefs.cut_icon,
+                         tooltip='Disconnect edge from the end',
+                         parent=parent,
+                         size=16,
+                         color_key='accent8')
+
+    def update_position(self):
+        """ Put button left and below the starting point of edge.
+        """
+        if self.host:
             x, y = self.host.current_scene_position
-            p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(x, y + self.host.height / 2))
-            p -= QtCore.QPoint(self.w2 + 4, 0)
-        else:
-            raise UIError(
-                "Unknown role for OverlayButton, don't know where to put it.")
-        self.move(p)
+            p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(x, y + self.h2))
+            self.move(p - QtCore.QPoint(self.w2 + 4, 0))
 
 
 class RemoveMergerButton(OverlayButton):
@@ -202,15 +271,11 @@ class RemoveMergerButton(OverlayButton):
 
         super().__init__(host,
                          ui_key,
-                         'delete_icon',
-                         g.REMOVE_MERGER,
-                         text='Remove this non-merging node',
+                         pixmap='delete_icon',
+                         tooltip='Remove this non-merging node',
                          parent=parent,
                          size=16,
                          color_key='accent8')
-        self.role = g.REMOVE_MERGER
-        self.action_name = 'remove_merger'
-        self.edge = None
 
     def update_position(self):
         """ """
@@ -227,6 +292,7 @@ class RemoveMergerButton(OverlayButton):
     def leaveEvent(self, event):
         self.host.hovering = False
         OverlayButton.leaveEvent(self, event)
+
 
 class RemoveNodeButton(OverlayButton):
     """ Button to delete unnecessary node between grandparent and child"""
@@ -235,15 +301,11 @@ class RemoveNodeButton(OverlayButton):
 
         super().__init__(host,
                          ui_key,
-                         'delete_icon',
-                         g.REMOVE_NODE,
-                         text='Remove node',
+                         pixmap='delete_icon',
+                         tooltip='Remove node',
                          parent=parent,
                          size=16,
                          color_key='accent3')
-        self.role = g.REMOVE_NODE
-        self.action_name = 'remove_node'
-        self.edge = None
 
     def update_position(self):
         """ """
@@ -263,21 +325,16 @@ class RemoveNodeButton(OverlayButton):
         OverlayButton.leaveEvent(self, event)
 
 
-
 class AmoebaOptionsButton(OverlayButton):
 
     def __init__(self, host, ui_key, parent=None):
         super().__init__(host,
                          ui_key,
-                         qt_prefs.settings_pixmap,
-                         g.AMOEBA_OPTIONS,
-                         text='Name this selection',
+                         pixmap=qt_prefs.settings_pixmap,
+                         tooltip='Name this selection',
                          parent=parent,
                          size=16,
                          color_key=host.color_key)
-        self.role = g.AMOEBA_OPTIONS
-        self.action_name = 'toggle_amoeba_options'
-        self.edge = None
 
     def update_position(self):
         """ Tries to find an unoccupied position in the radius of the group """
@@ -305,15 +362,11 @@ class NodeEditorButton(OverlayButton):
     def __init__(self, host, ui_key, parent=None):
         super().__init__(host,
                          ui_key,
-                         qt_prefs.settings_pixmap,
-                         g.NODE_EDITOR_BUTTON,
-                         text='Edit this node',
+                         pixmap=qt_prefs.settings_pixmap,
+                         tooltip='Edit this node',
                          parent=parent,
                          size=16,
                          color_key='accent8')
-        self.role = g.NODE_EDITOR_BUTTON
-        self.action_name = 'toggle_node_edit_embed'
-        self.edge = None
 
     def update_position(self):
         """ """

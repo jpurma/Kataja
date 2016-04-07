@@ -86,9 +86,8 @@ class Node(Movable):
     touch_areas_when_dragging = {}
     touch_areas_when_selected = {}
 
-    buttons_when_selected = {g.NODE_EDITOR_BUTTON: {},
-                             g.REMOVE_NODE: {}}
-
+    buttons_when_selected = {g.NODE_EDITOR_BUTTON: {'action': 'toggle_node_edit_embed'},
+                             g.REMOVE_NODE: {'action': 'remove_merger'}}
 
     def __init__(self, syntactic_object=None):
         """ Node is an abstract class that shouldn't be used by itself, though

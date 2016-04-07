@@ -122,7 +122,7 @@ def icon_button(ui_manager, parent, layout, icon=None, text='', action='', x=-1,
     :return:
     """
 
-    button = PanelButton(icon, text=text, parent=parent, size=size, color_key=color_key)
+    button = PanelButton(pixmap=icon, tooltip=text, parent=parent, size=size, color_key=color_key)
     button.setCheckable(checkable)
     if action:
         ui_manager.connect_element_to_action(button, action, tooltip_suffix=tooltip_suffix)
@@ -149,7 +149,7 @@ def mini_icon_button(ui_manager, parent, layout, icon=None, text='', action='', 
     :param checkable
     :return:
     """
-    button = PanelButton(icon, text=text, parent=parent, size=12)
+    button = PanelButton(pixmap=icon, tooltip=text, parent=parent, size=12)
     button.setMaximumWidth(max_width)
     button.setCheckable(checkable)
     ui_manager.connect_element_to_action(button, action)

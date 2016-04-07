@@ -57,7 +57,8 @@ from kataja.ui_items.Panel import Panel
 from kataja.ui_items.ActivityMarker import ActivityMarker
 from kataja.ui_items.ControlPoint import ControlPoint
 from kataja.ui_items.FadingSymbol import FadingSymbol
-from kataja.ui_items.OverlayButton import OverlayButton, button_factory
+from kataja.ui_items.OverlayButton import OverlayButton, button_factory, TopRowButton, \
+    CutFromEndButton, CutFromStartButton
 from kataja.ui_items.StretchLine import StretchLine
 from kataja.ui_items.TouchArea import TouchArea, create_touch_area
 from kataja.ui_items.embeds.EdgeLabelEmbed import EdgeLabelEmbed
@@ -322,7 +323,6 @@ class UIManager:
             self.update_selections()
         elif signal == 'forest_changed':
             self.clear_items()
-            self.create_float_buttons()
         elif signal == 'viewport_changed':
             self.update_positions()
             self.update_float_button_positions()
@@ -713,6 +713,8 @@ class UIManager:
         """
         if isinstance(action, str):
             action = self.get_action(action)
+        if not action:
+            print('missing action: ', action)
         action.connect_element(element, tooltip_suffix)
 
     def manage_shortcut(self, key_seq, element, action):
@@ -1138,16 +1140,15 @@ class UIManager:
     # Mode HUD
     def update_edit_mode(self):
         if ctrl.free_edit_mode:
-            text = 'Free edit mode'
+            text = 'Free drawing mode'
             checked = False
         else:
-            text = 'Visualisation mode'
+            text = 'Derivation mode'
             checked = True
         self._edit_mode_button.set_text(text)
         self._edit_mode_button.setChecked(checked)
 
     # ### Embedded buttons ############################
-
 
     def create_float_buttons(self):
         """ Create top button row
@@ -1156,28 +1157,59 @@ class UIManager:
         for item in self._float_buttons:
             item.close()
         self._float_buttons = []
-        fit_to_screen = self._create_overlay_button(host=None, key='fit_to_screen', icon=None,
-                                                    role='bottom', text='Fit to screen',
-                                                    action='zoom_to_fit', size=(36, 24),
-                                                    draw_method=drawn_icons.fit_to_screen)
+        view = ctrl.graph_view
+        fit_to_screen = TopRowButton('fit_to_screen',
+                                     parent=view,
+                                     tooltip='Fit to screen',
+                                     size=(36, 24),
+                                     draw_method=drawn_icons.fit_to_screen)
+        self.add_button(fit_to_screen, action='zoom_to_fit')
         self._float_buttons.append(fit_to_screen)
-        pan_around = self._create_overlay_button(host=None, key='pan_around', icon=None,
-                                                 role='bottom', text='Move mode',
-                                                 action='toggle_pan_mode', size=(36, 24),
-                                                 draw_method=drawn_icons.pan_around)
+
+        pan_around = TopRowButton('pan_around',
+                                  parent=view,
+                                  tooltip='Move mode',
+                                  size=(36, 24),
+                                  draw_method=drawn_icons.pan_around)
+        self.add_button(pan_around, action='toggle_pan_mode')
         pan_around.setCheckable(True)
         self._float_buttons.append(pan_around)
-        select_mode = self._create_overlay_button(host=None, key='select_mode', icon=None,
-                                                  role='bottom', text='Move mode',
-                                                  action='toggle_select_mode', size=(36, 24),
-                                                  draw_method=drawn_icons.select_mode)
+
+        select_mode = TopRowButton('select_mode',
+                                   parent=view,
+                                   tooltip='Move mode',
+                                   size=(36, 24),
+                                   draw_method=drawn_icons.select_mode)
         select_mode.setCheckable(True)
+        self.add_button(select_mode, action='toggle_select_mode')
         self._float_buttons.append(select_mode)
-        self._edit_mode_button = ModeLabel('Free edit mode', ui_key='edit_mode_label',
-                                           parent=ctrl.graph_view)
+
+        camera = TopRowButton('print_button', parent=view, tooltip='Print to file',
+                              pixmap=qt_prefs.camera_icon,
+                              size=(24, 24))
+
+        self.add_button(camera, action='print_pdf')
+        self._float_buttons.append(camera)
+
+        undo = TopRowButton('undo_button',
+                            parent=view,
+                            tooltip='Undo last action',
+                            pixmap=qt_prefs.undo_icon)
+        self.add_button(undo, action='undo')
+        self._float_buttons.append(undo)
+
+        redo = TopRowButton('redo_button', parent=view, tooltip='Redo action',
+                            pixmap=qt_prefs.redo_icon)
+
+        self.add_button(redo, action='redo')
+        self._float_buttons.append(redo)
+
+        self._edit_mode_button = ModeLabel('Free drawing mode', ui_key='edit_mode_label',
+                                           parent=view)
         self.add_ui(self._edit_mode_button)
         self._edit_mode_button.update_position()
         self.connect_element_to_action(self._edit_mode_button, 'switch_edit_mode')
+        self.update_edit_mode()
 
         self.update_float_button_positions()
         self.update_drag_mode(True) # selection mode
@@ -1193,8 +1225,6 @@ class UIManager:
             button.move(right_x, 2)
             button.show()
 
-
-
     def update_drag_mode(self, selection_mode):
         pan_around = self.get_ui('pan_around')
         select_mode = self.get_ui('select_mode')
@@ -1205,7 +1235,15 @@ class UIManager:
             pan_around.setChecked(True)
             select_mode.setChecked(False)
 
-    def _create_overlay_button(self, icon, host, role, key, text, action, size=None,
+    def add_button(self, button, action):
+        if button.ui_key not in self._items:
+            self.add_ui(button)
+            button.update_position()
+            self.connect_element_to_action(button, action)
+            button.show()
+        return button
+
+    def _create_overlay_button(self, icon, host, role, key, tooltip, action, size=None,
                                draw_method=None):
         """
 
@@ -1218,7 +1256,8 @@ class UIManager:
         :param size:
         """
         if key not in self._items:
-            button = OverlayButton(host, key, icon, role, text, parent=self.main.graph_view,
+            button = OverlayButton(host, key, role, pixmap=icon, tooltip=text,
+                                   parent=self.main.graph_view,
                                    size=size or 16, draw_method=draw_method)
             self.add_ui(button)
             button.update_position()
@@ -1258,13 +1297,14 @@ class UIManager:
         for key, values in d.items():
             cond = values.get('condition', None)
             ok = check_conditions(cond, node)
+            action = values.get('action', '')
             if ok:
-                self.get_or_create_button(node, key)
+                self.get_or_create_button(node, key, action)
         if node.label_object.resizable:
             handle = GraphicsResizeHandle(ctrl.graph_view, node)
             self.add_ui(handle)
 
-    def get_or_create_button(self, node, role_key):
+    def get_or_create_button(self, node, role_key, action):
         if node:
             save_key = node.save_key + role_key
         else:
@@ -1274,7 +1314,10 @@ class UIManager:
         button = button_factory(role_key, node, save_key, self.main.graph_view)
         self.add_ui(button)
         button.update_position()
-        self.connect_element_to_action(button, button.action_name)
+        if action:
+            self.connect_element_to_action(button, action)
+        else:
+            print('missing action for button ', button, save_key)
         button.show()
         return button
 
@@ -1283,7 +1326,7 @@ class UIManager:
         :param amoeba:
         :return:
         """
-        button = self.get_or_create_button(amoeba, g.AMOEBA_OPTIONS)
+        button = self.get_or_create_button(amoeba, g.AMOEBA_OPTIONS, 'toggle_amoeba_options')
         return button
 
 
@@ -1293,16 +1336,15 @@ class UIManager:
         :param edge:
         """
         # Constituent edges don't have cut-button at the start
-        if edge.edge_type is not g.CONSTITUENT_EDGE:
-            key = edge.save_key + "_cut_start"
-            if edge.start:
-                self._create_overlay_button(icon=qt_prefs.cut_icon, host=edge, role=g.START_CUT,
-                                            key=key, text='Disconnect from node',
-                                            action='disconnect_edge')
+        #if edge.edge_type is not g.CONSTITUENT_EDGE:
+        key = edge.save_key + "_cut_start"
+        if edge.start:
+            self.add_button(CutFromStartButton(host=edge, ui_key=key, parent=ctrl.graph_view),
+                            'disconnect_edge_start')
         key = edge.save_key + "_cut_end"
         if edge.end:
-            self._create_overlay_button(icon=qt_prefs.cut_icon, host=edge, role=g.END_CUT, key=key,
-                                        text='Disconnect from node', action='disconnect_edge')
+            self.add_button(CutFromEndButton(host=edge, ui_key=key, parent=ctrl.graph_view),
+                            'disconnect_edge_end')
 
     # ### Control points
     # ####################################################################

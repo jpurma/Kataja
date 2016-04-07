@@ -38,8 +38,8 @@ class VisualizationPanel(Panel):
 
         self.ui_manager.connect_element_to_action(selector, 'set_visualization')
         hlayout.addWidget(selector)
-        self.toggle_options = PanelButton(qt_prefs.settings_pixmap,
-                                          text='Visualization settings',
+        self.toggle_options = PanelButton(pixmap=qt_prefs.settings_pixmap,
+                                          tooltip='Visualization settings',
                                           parent=self, size=20)
         self.toggle_options.setFixedSize(26, 26)
         self.toggle_options.setCheckable(True)

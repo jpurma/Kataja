@@ -258,7 +258,7 @@ def print_to_file():
 
 
 a['print_pdf'] = {'command': '&Print', 'method': print_to_file,
-                  'undoable': False, 'shortcut': 'Ctrl+p'}
+                  'undoable': False, 'shortcut': 'Ctrl+p', 'tooltip': 'Print to file'}
 
 
 def render_in_blender():
