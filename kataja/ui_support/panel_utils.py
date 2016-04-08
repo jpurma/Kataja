@@ -197,7 +197,7 @@ def icon_text_button(ui_manager, layout, parent, role='', key='', text='', actio
     :param draw_method:
     :return:
     """
-    button = OverlayButton(None, key, icon, role, text, parent=parent,
+    button = OverlayButton(None, key, pixmap=icon, text=text, parent=parent,
                            size=size or QtCore.QSize(48, 24), draw_method=draw_method)
     button.setText(text)
     ui_manager.connect_element_to_action(button, action)

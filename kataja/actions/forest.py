@@ -15,6 +15,12 @@ def switch_edit_mode(free_edit=None):
     else:
         ctrl.free_edit_mode = free_edit
     ctrl.ui.update_edit_mode()
+    if ctrl.free_edit_mode:
+        return 'Free drawing mode: draw as you will, but there is no access to derivation ' \
+               'history for the structure.'
+    else:
+        return 'Derivation mode: you can edit the visualisation and browse the derivation ' \
+               'history, but the underlying structure cannot be changed.'
 
 a['switch_edit_mode'] = {'command': 'Toggle edit mode', 'method': switch_edit_mode,
                          'undoable': False, 'shortcut': 'Shift+Space',
@@ -27,7 +33,7 @@ def next_structure():
     """
     i, forest = ctrl.main.forest_keeper.next_forest()
     ctrl.main.change_forest()
-    ctrl.main.add_message('(.) trees %s: %s' % (i + 1, forest.textual_form()))
+    return 'Next forest (.): %s: %s' % (i + 1, forest.textual_form())
 
 
 a['next_forest'] = {'command': 'Next forest', 'method': next_structure,
@@ -41,7 +47,7 @@ def previous_structure():
     """
     i, forest = ctrl.main.forest_keeper.prev_forest()
     ctrl.main.change_forest()
-    ctrl.main.add_message('(,) trees %s: %s' % (i + 1, forest.textual_form()))
+    return 'Previous forest (,): %s: %s' % (i + 1, forest.textual_form())
 
 
 a['prev_forest'] = {'command': 'Previous forest', 'method': previous_structure,
