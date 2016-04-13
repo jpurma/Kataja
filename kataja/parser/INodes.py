@@ -281,6 +281,9 @@ class ICommandNode(ITextNode):
     def is_empty(self):
         return not (self.command or self.parts)
 
+    def __str__(self):
+        return self.as_html()
+
     def __repr__(self):
         return 'ICommandNode(command=%r, prefix=%r, parts=%r)' % (self.command,
                                                                   self.prefix,

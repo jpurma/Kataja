@@ -44,7 +44,7 @@ class INodeToKatajaConstituent(BaseParser):
                     right = result.pop()
                     while result:
                         left = result.pop()
-                        left.set_projection(left)
+                        left.set_projection(None)
                         right = ctrl.forest.create_merger_node(left, right, new=left, head=left)
                     result = right
             else:
