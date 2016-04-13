@@ -48,6 +48,17 @@ class Grid:
             rowlist.append(', '.join(collist))
         return '\n'.join(rowlist)
 
+    def __len__(self):
+        return len(self.rows)
+
+    def insert_columns(self, n):
+        new_rows = []
+        for row in list(self.rows):
+            new_row = ([0] * n) + row
+            new_rows.append(new_row)
+        self.rows = new_rows
+        self.width += n
+
     def ascii_dump(self):
         """
         Give an ascii presentation of the grid for debugging.

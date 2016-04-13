@@ -122,9 +122,11 @@ class LinearizedStaticTree(BalancedTree):
         def _build_grid(node, parent=None):
             if self.should_we_draw(node, parent):
                 grids = []
-                children = node.get_all_visible_children()
+                children = list(node.get_all_visible_children())
                 for child in children:
-                    grids.append(_build_grid(child, parent=node))
+                    grid = _build_grid(child, parent=node)
+                    if grid:
+                        grids.append(grid)
                 # Recursion base case
                 if not grids:
                     g = Grid()
@@ -149,15 +151,29 @@ class LinearizedStaticTree(BalancedTree):
         def _add_merger_node(grid, node):
             sx = 0
             size = 0
-            children = list(node.get_all_visible_children())
-            for child in children:
-                size += 1
-                nx, ny = grid.find_in_grid(child)
-                sx += nx
-            x = sx // size
             nleft, ntop, nw, nh = _get_grid_size(node)
+            children = list(node.get_all_visible_children())
+            if len(children) == 1:
+                cleft, ctop, cw, ch = _get_grid_size(children[0])
+                cx, cy = grid.find_in_grid(children[0])
+                if cw >= nw:
+                    x = cx
+                else:
+                    x = cx - ((nw - cw) // 2)
+                    if x < 0:
+                        grid.insert_columns(-x)
+                        nleft -= x
+                        x = 0
+            else:
+                for child in children:
+                    size += 1
+                    nx, ny = grid.find_in_grid(child)
+                    sx += nx
+                if size:
+                    x = sx // size
+                else:
+                    x = 0
             grid.insert_row()
-            #grid.insert_row()
             need_rows = nh + ntop
             while need_rows:
                 grid.insert_row()
@@ -180,7 +196,6 @@ class LinearizedStaticTree(BalancedTree):
         offset_y = tree_height / -2
         height_reduction = (edge_height / 3.0) / (merged_grid.height or 1)
         height_now = offset_y
-        #merged_grid.ascii_dump()
         # Actual drawing: set nodes to their places in scene
         for y, row in enumerate(merged_grid):
             height_now += edge_height
