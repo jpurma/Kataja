@@ -91,65 +91,48 @@ class LeftFirstTree(BaseVisualization):
         x_shift = (len(children) // 2) * -2
         x_step = 2
         y_step = 2
-        first = True
         nx = x + x_shift
         ny = y + y_step
         for child in children:
-            if first:
+            blocked = True
+            grandchildren = list(child.get_visible_children())
+            while blocked:
+                # is the right node position available?
                 blocked = grid.get(nx, ny)
                 if not blocked:
+                    # is the path to the right node position available?
                     path = grid.pixelated_path(x, y, nx, ny)
+                    if nx > x:
+                        path_marker = 2
+                    else:
+                        path_marker = 1
                     blocked = grid.is_path_blocked(path)
                     if not blocked:
-                        if nx > x:
-                            grid.fill_path(path, 2)
-                        else:
-                            grid.fill_path(path, 1)
-                        self._put_to_grid(grid, child, nx, ny, parent=node)
-                #assert not blocked
-                first = False
-                if len(children) > 2:
+                        # is there room for the left child of this node
+                        if grandchildren:
+                            if len(grandchildren) == 1:
+                                child_pos_x, child_pos_y = nx, \
+                                                           ny + y_step  #
+                                                           #  middle
+                            else:
+                                child_pos_x, child_pos_y = nx - x_step, \
+                                                           ny + y_step  #
+                                                           #  reach left
+                            blocked = grid.get(child_pos_x, child_pos_y)
+                            if not blocked:
+                                cpath = grid.pixelated_path(nx, ny,
+                                                            child_pos_x,
+                                                            child_pos_y)
+                                blocked = grid.is_path_blocked(cpath)
+                if blocked:
                     nx += x_step
-                else:
-                    nx += x_step * 2
-
-            else:
-                blocked = True
-                grandchildren = list(child.get_visible_children())
-                while blocked:
-                    # is the right node position available?
-                    blocked = grid.get(nx, ny)
-                    if not blocked:
-                        # is the path to the right node position available?
-                        path = grid.pixelated_path(x, y, nx, ny)
-                        if nx > x:
-                            path_marker = 2
-                        else:
-                            path_marker = 1
-                        blocked = grid.is_path_blocked(path)
-                        if not blocked:
-                            # is there room for the left child of this node
-                            if grandchildren:
-                                if len(grandchildren) == 1:
-                                    child_pos_x, child_pos_y = nx, \
-                                                               ny + y_step  #
-                                                               #  middle
-                                else:
-                                    child_pos_x, child_pos_y = nx - x_step, \
-                                                               ny + y_step  #
-                                                               #  reach left
-                                blocked = grid.get(child_pos_x, child_pos_y)
-                                if not blocked:
-                                    cpath = grid.pixelated_path(nx, ny,
-                                                                child_pos_x,
-                                                                child_pos_y)
-                                    blocked = grid.is_path_blocked(cpath)
-                    if blocked:
-                        nx += x_step
-                        ny += y_step
-                grid.fill_path(path, path_marker)
-                self._put_to_grid(grid, child, nx, ny, parent=node)
+                    ny += y_step
+            grid.fill_path(path, path_marker)
+            self._put_to_grid(grid, child, nx, ny, parent=node)
+            if len(children) > 2:
                 nx += x_step
+            elif len(children) == 2:
+                nx += x_step * 2
 
     # @time_me
     def draw(self):

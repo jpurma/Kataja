@@ -6,7 +6,7 @@ from kataja.ui_support.ExpandingLineEdit import ExpandingLineEdit
 from kataja.ui_support.ResizeHandle import ResizeHandle
 from kataja.ui_support.EmbeddedTextarea import EmbeddedTextarea
 from kataja.parser.INodes import ITextNode
-from kataja.parser.LatexToINode import parse_field
+from kataja.parser.LatexToINode import FieldParser
 from kataja.singletons import prefs, qt_prefs, ctrl
 from kataja.ui_items.UIEmbed import UIEmbed
 import kataja.globals as g
@@ -227,7 +227,8 @@ class NodeEditEmbed(UIEmbed):
             d = ed.get(field_name, {})
             itype = d.get('input_type', 'text')
             if itype in ['text', 'textarea', 'expandingtext']:
-                value = parse_field(field.text())
+                parser = FieldParser(field.text())
+                value = parser.node
             elif itype == 'multibutton' or itype == 'radiobutton':
                 # buttons take action immediately when clicked
                 continue

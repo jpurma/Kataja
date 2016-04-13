@@ -1,3 +1,4 @@
+import html
 
 from kataja.parser.latex_to_unicode import latex_to_unicode
 from kataja.utils import time_me

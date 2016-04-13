@@ -1,11 +1,11 @@
 
-# [.CP C\\$[$-Q,-WH$]$ [.TP [.T'
-#  [.T\\$[$+past$]$\\$[$NOM$]$ ]
-#  [.VP [.VP \qroof{Donald}.DP$_j$\\$[$NOM$]$ [.V' [.V Met$_i$\\$[$+past$]$ ]
-#    [.vP [.DP\\$<\Theta>$ t~$_j$ ]
-#      [.v [.v\\$[$ACC$]$\\$<\Theta>$$<\Theta>$ t~$_i$ ]
-#      \qroof{Dustin}.DP\\$[$ACC$]$\\$<\Theta>$  ]  ]  ]  ]
-#  [.AP  [.A' today ] ] ] ] ] ]
+ [.CP C\\$[$-Q,-WH$]$ [.TP [.T'
+  [.T\\$[$+past$]$\\$[$NOM$]$ ]
+  [.VP [.VP \qroof{Donald}.DP$_j$\\$[$NOM$]$ [.V' [.V Met$_i$\\$[$+past$]$ ]
+    [.vP [.DP\\$<\Theta>$ t~$_j$ ]
+      [.v [.v\\$[$ACC$]$\\$<\Theta>$$<\Theta>$ t~$_i$ ]
+      \qroof{Dustin}.DP\\$[$ACC$]$\\$<\Theta>$  ]  ]  ]  ]
+  [.AP  [.A' today ] ] ] ] ] ]
 
 
 [.{CP} [.{YP_k} [.{XP_j} [.{whP_i} kenen nimmaria ] [ ilman t_i ] ]  [ jäätyään t_j ] ] [.{CP} [.{C} {} ] [.{TP} {Merja palasi suruissaan kotiin} t_k ] ] ]

@@ -3,7 +3,7 @@ __author__ = 'purma'
 import kataja.globals as g
 from kataja.parser.BaseParser import BaseParser
 from kataja.parser.INodes import IParserNode, ITextNode
-from kataja.parser.LatexToINode import parse
+from kataja.parser.LatexToINode import Parser
 from kataja.singletons import ctrl, classes
 from kataja.saved.movables.nodes.BaseConstituentNode import BaseConstituentNode
 
@@ -34,12 +34,13 @@ class INodeToKatajaConstituent(BaseParser):
         old_should_add = self.should_add_to_scene
         self.should_add_to_scene = True
         # the heavy work is done in LatexToINode ###
-        parsernodes = parse(string)
+        parser = Parser(string)
+        parsernodes = parser.nodes #parse(string)
         # done.
-        if isinstance(parsernodes, list):
+        if len(parser.nodes) > 1:
             if simple_parse:
                 result = [self.parsernodes_to_constituentnodes(parsernode) for parsernode in
-                          parsernodes]
+                          parser.nodes]
                 if len(result) > 1:
                     right = result.pop()
                     while result:
@@ -49,8 +50,10 @@ class INodeToKatajaConstituent(BaseParser):
                     result = right
             else:
                 result = [self.parsernodes_into_tree(parsernode) for parsernode in parsernodes]
+        elif parser.nodes:
+            result = self.parsernodes_into_tree(parser.nodes[0])
         else:
-            result = self.parsernodes_into_tree(parsernodes)
+            result = None
         self.should_add_to_scene = old_should_add
         return result
 
