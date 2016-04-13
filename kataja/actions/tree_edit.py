@@ -310,8 +310,11 @@ def constituent_set_head(sender=None):
 
     :return:
     """
+    print('constituent set head')
     checked = sender.checkedButton()
+    print('checked:', checked)
     head = checked.my_value
+    print('my_value:', head)
     host = get_host(sender)
     host.set_projection(head)
     embed = get_ui_container(sender)

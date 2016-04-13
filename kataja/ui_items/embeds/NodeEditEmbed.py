@@ -1,6 +1,7 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 from kataja.ui_support.EmbeddedLineEdit import EmbeddedLineEdit
 from kataja.ui_support.EmbeddedMultibutton import EmbeddedMultibutton
+from kataja.ui_support.EmbeddedRadiobutton import EmbeddedRadiobutton
 from kataja.ui_support.ExpandingLineEdit import ExpandingLineEdit
 from kataja.ui_support.ResizeHandle import ResizeHandle
 from kataja.ui_support.EmbeddedTextarea import EmbeddedTextarea
@@ -73,6 +74,7 @@ class NodeEditEmbed(UIEmbed):
                     if not func():
                         # func is something like 'can_be_projection(self)'
                         continue
+            field_first = False
             if itype == 'text':
                 width = d.get('width', 140)
                 field = EmbeddedLineEdit(self, tip=tt, font=big_font, prefill=prefill)
@@ -105,6 +107,7 @@ class NodeEditEmbed(UIEmbed):
                 if syntactic:
                     field.setPalette(ui_s)
             elif itype == 'multibutton':
+                # currently not used, radio button is better
                 width = d.get('width', 200)
                 op_func = d.get('option_function')
                 op_func = getattr(self.host, op_func, None) or getattr(self.syntactic_object,
@@ -119,6 +122,23 @@ class NodeEditEmbed(UIEmbed):
                     field.setPalette(ui_s)
                 else:
                     field.setPalette(ui_p)
+            elif itype == 'radiobutton':
+                width = d.get('width', 200)
+                op_func = d.get('option_function')
+                op_func = getattr(self.host, op_func, None) or getattr(self.syntactic_object,
+                                                                       op_func, None)
+                field = EmbeddedRadiobutton(self, options=op_func())
+                field.setMaximumWidth(width)
+                action = d.get('select_action')
+                if action:
+                    print('plz connect radio button')
+                    self.ui_manager.connect_element_to_action(field, action)
+
+                if syntactic:
+                    field.setPalette(ui_s)
+                else:
+                    field.setPalette(ui_p)
+                field_first = False
             else:
                 raise NotImplementedError
             align = d.get('align', 'newline')
@@ -128,8 +148,9 @@ class NodeEditEmbed(UIEmbed):
                 if hlayout:
                     layout.addLayout(hlayout)
                 hlayout = QtWidgets.QHBoxLayout()
-            hlayout.addWidget(field)
             self.fields[field_name] = field
+            if field_first:
+                hlayout.addWidget(field)
             ui_name = d.get('name', field_name)
             if ui_name:
                 if syntactic:
@@ -137,6 +158,8 @@ class NodeEditEmbed(UIEmbed):
                 else:
                     palette = ui_p
                 make_label(ui_name, self, hlayout, tt, field, palette)
+            if not field_first:
+                hlayout.addWidget(field)
         if hlayout:
             layout.addLayout(hlayout)
         hlayout = QtWidgets.QHBoxLayout()
@@ -205,7 +228,7 @@ class NodeEditEmbed(UIEmbed):
             itype = d.get('input_type', 'text')
             if itype in ['text', 'textarea', 'expandingtext']:
                 value = parse_field(field.text())
-            elif itype == 'multibutton':
+            elif itype == 'multibutton' or itype == 'radiobutton':
                 # buttons take action immediately when clicked
                 continue
             else:

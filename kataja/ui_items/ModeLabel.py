@@ -19,7 +19,6 @@ class ModeLabel(UIItem, PanelButton):
         self.setFont(f)
         self.setPalette(ctrl.cm.get_qt_palette_for_ui())
         self.setFlat(True)
-        self.setContentsMargins(2, 2, 2, 2)
         self.update_style_sheet()
 
     def update_position(self):
@@ -27,12 +26,9 @@ class ModeLabel(UIItem, PanelButton):
 
     def set_text(self, text):
         self.setText(text)
-        self.setContentsMargins(2, 2, 2, 2)
-        w = self.minimumSizeHint().width()
-        self.setMinimumWidth(w + 4)
+        self.setMinimumSize(self.minimumSizeHint() + QtCore.QSize(4, 4))
         self.updateGeometry()
         self.update_position()
-        #self.resize(self.minimumSizeHint()) # + QtCore.QSize(4, 4))
 
     def compose_icon(self):
         """ Redraw the image to be used as a basis for icon, this is necessary

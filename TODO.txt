@@ -118,7 +118,8 @@ crashed
 + Updating labels puts bar-markers (X') to separate line
 + Indexes display correctly and are editable in quick edit.
 + Adding node to top, then undoing it and redoing it breaks something.
-
++ Projections seem to mix constituents as heads and nodes as heads.
+    + Replaced UI for setting projection with radio button with better help texts
 ADD:
 
 - Add visualization specific settings to visualization panel

@@ -29,6 +29,7 @@ from PyQt5 import QtCore, QtWidgets, QtGui
 from kataja.singletons import ctrl
 from kataja.ui_items.OverlayButton import PanelButton
 from kataja.ui_support.EmbeddedMultibutton import EmbeddedMultibutton
+from kataja.ui_support.EmbeddedRadiobutton import EmbeddedRadiobutton
 
 
 class ShortcutSolver(QtCore.QObject):
@@ -251,10 +252,17 @@ class Action(QtWidgets.QAction):
             ctrl.ui.manage_shortcut(shortcut, element, self)
             # shortcuts (or actions in total were disabled before this connection to avoi)
             self.setEnabled(True)
+        element.setFocusPolicy(QtCore.Qt.TabFocus)
 
         if isinstance(element, PanelButton):
             element.clicked.connect(self.action_triggered)
             element.setFocusPolicy(QtCore.Qt.TabFocus)
+        elif isinstance(element, EmbeddedMultibutton):
+            element.bgroup.buttonToggled.connect(self.action_triggered)
+        elif isinstance(element, EmbeddedRadiobutton):
+            element.bgroup.buttonToggled.connect(self.action_triggered)
+        elif isinstance(element, QtWidgets.QCheckBox):
+            element.stateChanged.connect(self.action_triggered)
         elif isinstance(element, QtWidgets.QAbstractButton):
             element.clicked.connect(self.action_triggered)
             element.setFocusPolicy(QtCore.Qt.TabFocus)
@@ -264,9 +272,5 @@ class Action(QtWidgets.QAction):
         elif isinstance(element, QtWidgets.QAbstractSpinBox):
             element.valueChanged.connect(self.trigger_but_suppress_undo)
             element.editingFinished.connect(self.action_triggered)
-        elif isinstance(element, QtWidgets.QCheckBox):
-            element.stateChanged.connect(self.action_triggered)
-        elif isinstance(element, EmbeddedMultibutton):
-            element.bgroup.buttonToggled.connect(self.action_triggered)
 
 

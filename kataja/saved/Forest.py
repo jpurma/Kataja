@@ -602,28 +602,30 @@ class Forest(Saved):
     # ##### Projections ##########################################
 
     @staticmethod
-    def compute_projection_chains_for(head):
+    def compute_projection_chains_for(head_node) -> list:
+        """ Takes a node and looks at its parents trying to find if they are projections of this
+        node. This doesn't rely on projection objects: this is the computation that builds
+        chains necessary for creating projection objects.
+        :param head_node:
+        """
         chains = []
 
-        def chain_up(this_chain, node, head):
-            this_chain.append(node)
+        def is_head_projecting_upwards(chain, node, head_node) -> None:
+            chain.append(node)
             ends_here = True
             for parent in node.get_parents(only_similar=True, only_visible=False):
-                if parent.head is head:
+                if parent is head_node or parent.head_node is head_node:
                     ends_here = False
-                    chain_up(list(this_chain), parent, head)
-            if ends_here and len(this_chain) > 1:
-                chains.append(this_chain)
-        worth_trying = False
-        for parent in head.get_parents(only_similar=True, only_visible=False):
-            if parent.head is head:
-                worth_trying = True
-        if worth_trying:
-            chain_up([], head, head)
+                    # create a copy of chain so that when the chain ends it will be added
+                    # as separate chain to another projection branch
+                    is_head_projecting_upwards(list(chain), parent, head_node)
+            if ends_here and len(chain) > 1:
+                chains.append(chain)
+        is_head_projecting_upwards([], head_node, head_node)
         return chains
 
-    def remove_projection(self, head):
-        key = head.save_key
+    def remove_projection(self, head_node):
+        key = head_node.save_key
         projection = self.projections.get(key, None)
         if projection:
             projection.set_visuals(False, False, False)
@@ -648,7 +650,7 @@ class Forest(Saved):
 
         new_heads = set()
         for node in self.nodes.values():
-            if node.node_type == g.CONSTITUENT_NODE and node.head is node:
+            if node.node_type == g.CONSTITUENT_NODE and node.head_node is None:
                 chains = Forest.compute_projection_chains_for(node)
                 if chains:
                     new_heads.add(node)
@@ -1631,7 +1633,7 @@ class Forest(Saved):
             parent = edge.start
             child = edge.end
         if hasattr(parent, 'head') and hasattr(child, 'head'):
-            if parent.head is child.head:
+            if parent.head is child.head or parent.head_node is child:
                 if hasattr(parent, 'set_projection'):
                     parent.set_projection(None)
         # then remove the edge
@@ -1797,7 +1799,7 @@ class Forest(Saved):
         else:
             left = old_node
             right = new_node
-        parent_info = [(e.start, e.alignment, e.start.head) for e in
+        parent_info = [(e.start, e.alignment, e.start.head_node) for e in
                        old_node.get_edges_up(similar=True, visible=False)]
 
         for op, align, head in parent_info:
@@ -1818,9 +1820,9 @@ class Forest(Saved):
             self.connect_node(parent=op, child=merger_node, direction=align, fade_in=True)
         merger_node.copy_position(old_node)
         merger_node.set_projection(old_node)
-        for op, align, head in parent_info:
-            if head == old_node:
-                op.set_projection(head)
+        for op, align, head_node in parent_info:
+            if head_node == old_node:
+                op.set_projection(head_node)
 
     def merge_to_top(self, top, new, merge_to_left, merger_pos):
         """
@@ -1897,7 +1899,8 @@ class Forest(Saved):
         edge = parent.get_edge_to(child)
         # store the projection and alignment info before disconnecting the edges
         head = None
-        if hasattr(parent, 'head') and hasattr(child, 'head') and parent.head is child.head:
+        if hasattr(parent, 'head') and hasattr(child, 'head') and parent.head is child.head or \
+                parent.head_node is child:
             head = parent.head
 
         align = edge.alignment

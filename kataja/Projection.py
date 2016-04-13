@@ -16,7 +16,7 @@ class Projection:
         self.colorized = False
         self.strong_lines = False
         self.highlighter = False
-        self.head = head
+        self.head = head # head in a projection is head node, not syntactic object
         self.chains = chains or []
         self.visual = None
         self._changes = False

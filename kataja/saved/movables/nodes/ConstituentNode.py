@@ -23,6 +23,7 @@
 # ############################################################################
 import kataja.globals as g
 from kataja.Saved import SavedField, SavedSynField
+from kataja.saved.movables.Node import Node
 from kataja.parser.INodes import ITextNode
 from kataja.singletons import ctrl
 from kataja.saved.movables.nodes.BaseConstituentNode import BaseConstituentNode
@@ -64,9 +65,12 @@ class ConstituentNode(BaseConstituentNode):
                               focus=True, syntactic=True),
                 'gloss': dict(name='Gloss', prefill='gloss',
                               tooltip='translation (optional)', width=200, check_before='is_leaf'),
-                'head': dict(name='Head', tooltip='inherits from',
-                             check_before='can_be_projection',
-                             option_function='projection_options_for_ui', input_type='multibutton',
+                'head': dict(name='Projection from',
+                             tooltip='Inherit label from another node and rewrite alias to '
+                                     'reflect this',
+                             check_before='can_be_projection_of_another_node',
+                             option_function='build_projection_options_for_ui',
+                             input_type='radiobutton',
                              select_action='constituent_set_head')}
     default_style = {'color': 'content1', 'font': g.MAIN_FONT, 'font-size': 10}
 
@@ -136,7 +140,6 @@ class ConstituentNode(BaseConstituentNode):
         self.alias = ''
         self.gloss = ''
 
-        #self.head = None
         self.is_trace = False
         self.merge_order = 0
         self.select_order = 0
@@ -365,7 +368,7 @@ class ConstituentNode(BaseConstituentNode):
     def has_one_child(self):
         return len(list(self.get_children())) == 1
 
-    def can_be_projection(self):
+    def can_be_projection_of_another_node(self):
         """ Node can be projection from other nodes if it has other nodes
         below it.
         It may be necessary to move this check to syntactic level at some
@@ -373,38 +376,49 @@ class ConstituentNode(BaseConstituentNode):
         :return:
         """
         if ctrl.fs.use_projection:
-            return not self.is_leaf(only_similar=True, only_visible=False)
+            if self.is_leaf(only_similar=True, only_visible=False):
+                return False
+            else:
+                return True
         else:
             return False
 
-    def projection_options_for_ui(self):
+    def build_projection_options_for_ui(self):
         """ Build tuples for showing projection options
         :return: (text, value, checked, disabled, tooltip) -tuples
         """
         r = []
         children = list(self.get_children())
         l = len(children)
-        # chr(2193) = down arrow
-        # chr(2198) = right down arrow
-        # chr(2199) = left down arrow
         if l == 1:
+            # down arrow
             prefix = [chr(0x2193)]
         elif l == 2:
+            # left down arrow, right down arrow
             prefix = [chr(0x2199), chr(0x2198)]
         elif l == 3:
+            # left down arrow, down arrow, right down arrow
             prefix = [chr(0x2199), chr(0x2193), chr(0x2198)]
-        else:  # don't use arrows for
+        else:
+            # don't use arrows if more than 3
             prefix = [''] * l
         for n, child in enumerate(children):
-            ch = child.head or child
-            potent = child.head or child.is_leaf(only_visible=False)
-            d = {'text': '%s%s' % (prefix[n], ch.short_str()), 'value': ch,
-                 'is_checked': ch is self.head, 'enabled': bool(potent),
-                 'tooltip': 'inherit head from ' + str(ch)}
+            head_node_of_child = child.head_node or child
+            enabled = True #bool(child.head_node or child.is_leaf(only_visible=False))
+            d = {'text': '%s%s' % (prefix[n], head_node_of_child.short_str()),
+                 'value': head_node_of_child,
+                 'is_checked': head_node_of_child == self.head_node,
+                 'enabled': enabled,
+                 'tooltip': 'inherit label from ' + str(head_node_of_child)}
             r.append(d)
-        d = {'text': 'None', 'value': None, 'is_checked': not self.head, 'enabled': True,
+        print('self.head_node:', self.head_node, self.head_node == self)
+        d = {'text': 'Undefined',
+             'value': None,
+             'is_checked': not self.head_node,
+             'enabled': True,
              'tooltip': "doesn't inherit head"}
         r.append(d)
+        print(r)
         return r
 
     def guess_projection(self):
@@ -413,7 +427,7 @@ class ConstituentNode(BaseConstituentNode):
         :return:
         """
 
-        def find_original(node, head):
+        def find_original(node, head_node):
             """ Go down in trees until the final matching label/alias is found.
             :param node: where to start searching
             :param head:
@@ -422,8 +436,8 @@ class ConstituentNode(BaseConstituentNode):
             for child in node.get_children():
                 al = child.alias or child.label
                 al = str(al)
-                if strip_xbars(al) == head:
-                    found_below = find_original(child, head)
+                if strip_xbars(al) == head_node:
+                    found_below = find_original(child, head_node)
                     if found_below:
                         return found_below
                     else:
@@ -431,18 +445,35 @@ class ConstituentNode(BaseConstituentNode):
             return None
 
         al = self.alias or self.label
-        self.head = find_original(self, strip_xbars(str(al))) or self
-        return self.head
+        head_node = find_original(self, strip_xbars(str(al)))
+        self.set_projection(head_node)
 
     def set_projection(self, new_head):
         """ Set this node to be projection from new_head.
         :param new_head:
         :return:
         """
-        self.head = new_head
+        if new_head == self or new_head == self.syntactic_object:
+            raise hell
+        if isinstance(new_head, Node):
+            self.head = new_head.syntactic_object
+        else:
+            self.head = new_head
 
     def set_projection_display(self, color_id):
         self._projection_color = color_id
+
+    @property
+    def head_node(self):
+        """ Heads are syntactic objects, not nodes. This is helper to get the node instead.
+        :return:
+        """
+        if self.head is self.syntactic_object:
+            return self
+        elif self.head:
+            return ctrl.forest.get_node(self.head)
+        else:
+            return None
 
     @property
     def contextual_color(self):
