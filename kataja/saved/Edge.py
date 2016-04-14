@@ -1034,6 +1034,15 @@ class Edge(QtWidgets.QGraphicsObject, Saved):
         """
         return self._fade_in_active or self._fade_out_active
 
+    def free_drawing_mode(self, *args, **kwargs):
+        """ Utility method for checking conditions for editing operations
+        :param args: ignored
+        :param kwargs: ignored
+        :return:
+        """
+        return ctrl.free_drawing_mode
+
+
     # ############## #
     #                #
     #  Save support  #

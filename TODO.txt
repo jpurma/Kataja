@@ -120,6 +120,10 @@ crashed
 + Adding node to top, then undoing it and redoing it breaks something.
 + Projections seem to mix constituents as heads and nodes as heads.
     + Replaced UI for setting projection with radio button with better help texts
+- Quick editing doesn't work for comments
++ Disabling editing when in derivation mode
+
+
 ADD:
 
 - Add visualization specific settings to visualization panel

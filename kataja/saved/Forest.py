@@ -895,8 +895,15 @@ class Forest(Saved):
         return node
 
     def create_gloss_node(self, host):
-        gn = self.create_node(None, host, node_type=g.GLOSS_NODE)
+        gn = self.create_node(None, relative=host, node_type=g.GLOSS_NODE)
         self.connect_node(host, child=gn)
+        return gn
+
+    def create_comment_node(self, text, host=None):
+        cn = self.create_node(None, relative=host, text=text, node_type=g.COMMENT_NODE)
+        if host:
+            self.connect_node(host, child=cn)
+        return cn
 
     def create_attribute_node(self, host, attribute_id, attribute_label, show_label=False):
         """

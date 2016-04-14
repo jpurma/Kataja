@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
 
-from kataja.singletons import qt_prefs, ctrl, prefs
+from kataja.singletons import qt_prefs, ctrl, prefs, classes
 from kataja.ui_items.Panel import Panel
 from kataja.ui_support.panel_utils import icon_button, label
 
@@ -47,21 +47,31 @@ class DraggableNodeFrame(QtWidgets.QFrame):
         self.add_button.update_colors()
         self.setFont(qt_prefs.font(settings['font']))
 
+    def update_frame(self):
+        node_class = classes.nodes.get(self.key, None)
+        if ctrl.free_drawing_mode:
+            value = bool(node_class)
+        else:
+            value = node_class and not node_class.is_syntactic
+        self.setEnabled(value)
+
     def mousePressEvent(self, event):
-        self.add_button.setDown(True)
-        data = QtCore.QMimeData()
-        data.setText('kataja:new_node:%s' % self.key)
-        drag = QtGui.QDrag(self)
-        drag.setMimeData(data)
-        drag.exec_(QtCore.Qt.CopyAction)
-        self.add_button.setDown(False)
+        if self.isEnabled():
+            self.add_button.setDown(True)
+            data = QtCore.QMimeData()
+            data.setText('kataja:new_node:%s' % self.key)
+            drag = QtGui.QDrag(self)
+            drag.setMimeData(data)
+            drag.exec_(QtCore.Qt.CopyAction)
+            self.add_button.setDown(False)
         QtWidgets.QFrame.mousePressEvent(self, event)
 
     def mouseReleaseEvent(self, event):
-        self.add_button.setDown(False)
-        ctrl.ui.set_scope(self.key)
-        ctrl.deselect_objects()
-        ctrl.call_watchers(self, 'scope_changed')
+        if self.isEnabled():
+            self.add_button.setDown(False)
+            ctrl.ui.set_scope(self.key)
+            ctrl.deselect_objects()
+            ctrl.call_watchers(self, 'scope_changed')
         QtWidgets.QFrame.mouseReleaseEvent(self, event)
 
 
@@ -79,6 +89,8 @@ class NodesPanel(Panel):
         Panel.__init__(self, name, key, default_position, parent, folded)
         inner = QtWidgets.QWidget()
         inner.setMinimumWidth(160)
+        self.watchlist = ['forest_changed', 'mode_changed']
+
         #inner.setMinimumHeight(120)
         #inner.setMaximumHeight(150)
         #inner.preferred_size = QtCore.QSize(220, 120)
@@ -103,7 +115,8 @@ class NodesPanel(Panel):
         """ Panel update should be necessary when changing ctrl.selection or after the trees has otherwise changed.
         :return:
         """
-        pass
+        for frame in self.node_frames.values():
+            frame.update_frame()
 
     def update_colors(self):
         """
@@ -111,3 +124,24 @@ class NodesPanel(Panel):
         """
         for frame in self.node_frames.values():
             frame.update_colors()
+
+
+    def watch_alerted(self, obj, signal, field_name, value):
+        """ Receives alerts from signals that this object has chosen to
+        listen. These signals
+         are declared in 'self.watchlist'.
+
+         This method will try to sort out the received signals and act
+         accordingly.
+
+        :param obj: the object causing the alarm
+        :param signal: identifier for type of the alarm
+        :param field_name: name of the field of the object causing the alarm
+        :param value: value given to the field
+        :return:
+        """
+        # print('StylePanel alerted: ', obj, signal, field_name, value)
+        if signal == 'mode_changed':
+            self.update_panel()
+        elif signal == 'forest_changed':
+            self.update_panel()

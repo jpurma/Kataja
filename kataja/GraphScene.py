@@ -621,11 +621,20 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 data = open_symbol_data(event.mimeData())
                 if data and 'char' in data:
                     event.acceptProposedAction()
-                    node = ctrl.forest.create_node(pos=event.scenePos(),
-                                                   node_type=g.CONSTITUENT_NODE, text=data['char'])
-                    node.current_position = event.scenePos().x(), event.scenePos().y()
-                    node.lock()
-                    ctrl.main.action_finished('Created constituent "%s"' % node)
+                    if ctrl.free_drawing_mode:
+                        node = ctrl.forest.create_node(pos=event.scenePos(),
+                                                       node_type=g.CONSTITUENT_NODE, text=data['char'])
+                        node.current_position = event.scenePos().x(), event.scenePos().y()
+                        node.lock()
+                        ctrl.main.action_finished('Created constituent "%s"' % node)
+                    else:
+                        node = ctrl.forest.create_comment_node(data['char'])
+                                                               #pos=event.scenePos())
+                        node.current_position = event.scenePos().x(), event.scenePos().y()
+                        node.lock()
+                        ctrl.main.action_finished('Added "%s" as comment since we are in '
+                                                  'derivation mode and cannot change trees'
+                                                  % data['char'])
 
             elif data.hasFormat("text/plain"):
                 event.acceptProposedAction()
@@ -647,8 +656,13 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         print('received unknown command:', command, args)
                 else:
                     text = data.text().strip()
-                    node = ctrl.forest.create_node_from_string(text, simple_parse=True)
-                    ctrl.main.action_finished('added tree based on "%s"' % text)
+                    if ctrl.free_drawing_mode:
+                        node = ctrl.forest.create_node_from_string(text, simple_parse=True)
+                        ctrl.main.action_finished('Added tree based on "%s".' % text)
+                    else:
+                        node = ctrl.forest.create_comment_node(text)
+                        ctrl.main.action_finished('Added text as comment node since we are in '
+                                                  'derivation mode and cannot change trees.')
 
         ctrl.ui.remove_touch_areas()
 

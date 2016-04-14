@@ -94,32 +94,33 @@ class ConstituentNode(BaseConstituentNode):
     # edges going up. When left empty, touch area is associated with the node.
 
     touch_areas_when_dragging = {
-        g.LEFT_ADD_TOP: {'condition': ['is_top_node', 'dragging_constituent']},
-        g.RIGHT_ADD_TOP: {'condition': ['is_top_node', 'dragging_constituent']},
-        g.LEFT_ADD_SIBLING: {'place': 'edge_up', 'condition': 'dragging_constituent'},
-        g.RIGHT_ADD_SIBLING: {'place': 'edge_up', 'condition': 'dragging_constituent'},
+        g.LEFT_ADD_TOP: {'condition': ['is_top_node', 'dragging_constituent', 'free_drawing_mode']},
+        g.RIGHT_ADD_TOP: {'condition': ['is_top_node', 'dragging_constituent', 'free_drawing_mode']},
+        g.LEFT_ADD_SIBLING: {'place': 'edge_up', 'condition': ['dragging_constituent', 'free_drawing_mode']},
+        g.RIGHT_ADD_SIBLING: {'place': 'edge_up', 'condition': ['dragging_constituent',
+                                                                'free_drawing_mode']},
         g.TOUCH_CONNECT_COMMENT: {'condition': 'dragging_comment'},
-        g.TOUCH_CONNECT_FEATURE: {'condition': 'dragging_feature'},
+        g.TOUCH_CONNECT_FEATURE: {'condition': ['dragging_feature', 'free_drawing_mode']},
         g.TOUCH_CONNECT_GLOSS: {'condition': 'dragging_gloss'}}
 
     touch_areas_when_selected = {
-        g.LEFT_ADD_TOP: {'condition': 'is_top_node',
+        g.LEFT_ADD_TOP: {'condition': ['is_top_node', 'free_drawing_mode'],
                          'action': 'add_top_left'},
-        g.RIGHT_ADD_TOP: {'condition': 'is_top_node',
+        g.RIGHT_ADD_TOP: {'condition': ['is_top_node', 'free_drawing_mode'],
                           'action': 'add_top_right'},
-        g.INNER_ADD_SIBLING_LEFT: {'condition': 'inner_add_sibling',
+        g.INNER_ADD_SIBLING_LEFT: {'condition': ['inner_add_sibling', 'free_drawing_mode'],
                                    'place': 'edge_up',
                                    'action': 'inner_add_sibling_left'},
-        g.INNER_ADD_SIBLING_RIGHT: {'condition': 'inner_add_sibling',
+        g.INNER_ADD_SIBLING_RIGHT: {'condition': ['inner_add_sibling', 'free_drawing_mode'],
                                     'place': 'edge_up',
                                     'action': 'inner_add_sibling_right'},
-        g.UNARY_ADD_CHILD_LEFT: {'condition': 'has_one_child',
+        g.UNARY_ADD_CHILD_LEFT: {'condition': ['has_one_child', 'free_drawing_mode'],
                                  'action': 'unary_add_child_left'},
-        g.UNARY_ADD_CHILD_RIGHT: {'condition': 'has_one_child',
+        g.UNARY_ADD_CHILD_RIGHT: {'condition': ['has_one_child', 'free_drawing_mode'],
                                   'action': 'unary_add_child_right'},
-        g.LEAF_ADD_SIBLING_LEFT: {'condition': 'is_leaf',
+        g.LEAF_ADD_SIBLING_LEFT: {'condition': ['is_leaf', 'free_drawing_mode'],
                                   'action': 'leaf_add_sibling_left'},
-        g.LEAF_ADD_SIBLING_RIGHT: {'condition': 'is_leaf',
+        g.LEAF_ADD_SIBLING_RIGHT: {'condition': ['is_leaf', 'free_drawing_mode'],
                                    'action': 'leaf_add_sibling_right'},
         g.ADD_TRIANGLE: {'condition': 'can_have_triangle',
                          'action': 'add_triangle'},
@@ -128,9 +129,9 @@ class ConstituentNode(BaseConstituentNode):
     }
 
     buttons_when_selected = {
-        g.REMOVE_MERGER: {'condition': 'is_unnecessary_merger', 'action': 'remove_merger'},
+        g.REMOVE_MERGER: {'condition': ['is_unnecessary_merger', 'free_drawing_mode'], 'action': 'remove_merger'},
         g.NODE_EDITOR_BUTTON: {'action': 'toggle_node_edit_embed'},
-        g.REMOVE_NODE: {'condition': 'not:is_unnecessary_merger', 'action': 'remove_node'}
+        g.REMOVE_NODE: {'condition': ['not:is_unnecessary_merger', 'free_drawing_mode'], 'action': 'remove_node'}
     }
 
     def __init__(self, constituent=None):

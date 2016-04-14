@@ -53,6 +53,11 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.triangle_height = 0
         self.triangle_y = 0
         self.width = 0
+        self.resizable = False
+        self.text_align = CENTER_ALIGN
+        self.char_width = 0
+        self.line_length = 0
+        self._font = None
         self.html = ''
         self.editable_html = ''
         self._quick_editing = False
@@ -74,11 +79,6 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.setAcceptHoverEvents(False)
         self.doc.contentsChanged.connect(self.doc_changed)
         self.setTextWidth(-1)
-        self.resizable = False
-        self.text_align = CENTER_ALIGN
-        self.char_width = 0
-        self.line_length = 0
-        self._font = None
         self.set_font(self._host.font)
 
     def type(self):

@@ -39,6 +39,7 @@ class CommentNode(Node):
     name = ('Comment', 'Comments')
     short_name = "ComNode"
     display = True
+    is_syntactic = False
     can_be_in_groups = False
     visible_in_label = ['text']
     editable_in_label = ['text']

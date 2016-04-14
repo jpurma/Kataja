@@ -41,6 +41,7 @@ class GlossNode(Node):
     name = ('Gloss', 'Glosses')
     short_name = "GNode"
     display = True
+    is_syntactic = False
 
     visible_in_label = ['label']
     editable_in_label = ['label']

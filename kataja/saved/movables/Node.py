@@ -67,6 +67,7 @@ class Node(Movable):
     height = 20
     node_type = g.ABSTRACT_NODE
     is_constituent = False
+    is_syntactic = True
     ordered = False
     ordering_func = None
     name = ('Abstract node', 'Abstract nodes')
@@ -87,7 +88,8 @@ class Node(Movable):
     touch_areas_when_selected = {}
 
     buttons_when_selected = {g.NODE_EDITOR_BUTTON: {'action': 'toggle_node_edit_embed'},
-                             g.REMOVE_NODE: {'action': 'remove_merger'}}
+                             g.REMOVE_NODE: {'action': 'remove_merger',
+                                             'condition': 'free_drawing_mode'}}
 
     def __init__(self, syntactic_object=None):
         """ Node is an abstract class that shouldn't be used by itself, though
@@ -1508,6 +1510,14 @@ syntactic_object: %s
                 tree.tree_changed = True
             ctrl.ui.update_position_for(self)
         return QtWidgets.QGraphicsObject.itemChange(self, change, value)
+
+    def free_drawing_mode(self, *args, **kwargs):
+        """ Utility method for checking conditions for editing operations
+        :param args: ignored
+        :param kwargs: ignored
+        :return:
+        """
+        return ctrl.free_drawing_mode
 
     # ############## #
     #                #

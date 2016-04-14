@@ -2,7 +2,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 
 import kataja.globals as g
 from kataja.shapes import draw_arrow_shape_from_points
-from kataja.singletons import qt_prefs, ctrl, prefs
+from kataja.singletons import qt_prefs, ctrl, prefs, classes
 from kataja.ui_support.drawn_icons import arrow, divider
 from kataja.utils import guess_node_type
 from kataja.ui_support.ExpandingLineEdit import ExpandingLineEdit
@@ -164,6 +164,10 @@ class NewElementEmbed(UIEmbed):
             # we have dedicated buttons for arrows and dividers
             #if key not in (g.ARROW, g.DIVIDER):
             nd = prefs.nodes[key]
+            if not ctrl.free_drawing_mode:
+                node_class = classes.nodes.get(key, None)
+                if node_class and node_class.is_syntactic:
+                    continue
             self.node_types.append(('New %s' % nd['name'].lower(), key))
         self.node_types.append(('New arrow', g.ARROW))
         #self.node_types.append(('New divider', g.DIVIDER))

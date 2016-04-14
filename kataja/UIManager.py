@@ -982,7 +982,7 @@ class UIManager:
         edge is selected
         :param edge: object to update
         """
-        if edge.edge_type == g.CONSTITUENT_EDGE:
+        if self.free_drawing_mode() and edge.edge_type == g.CONSTITUENT_EDGE:
             ta = self.get_touch_area(edge, g.INNER_ADD_SIBLING_LEFT)
             if not ta:
                 self.create_touch_area(edge, g.INNER_ADD_SIBLING_LEFT,
@@ -1139,7 +1139,7 @@ class UIManager:
 
     # Mode HUD
     def update_edit_mode(self):
-        if ctrl.free_edit_mode:
+        if ctrl.free_drawing_mode:
             text = 'Free drawing mode'
             checked = False
         else:
@@ -1147,6 +1147,7 @@ class UIManager:
             checked = True
         self._edit_mode_button.set_text(text)
         self._edit_mode_button.setChecked(checked)
+        ctrl.call_watchers(self, 'mode_changed', value=not checked)
 
     # ### Embedded buttons ############################
 
@@ -1436,3 +1437,12 @@ class UIManager:
             self.get_ui_activity_marker().hide()
             self.killTimer(self._timer_id)
             self._timer_id = 0
+
+
+    def free_drawing_mode(self, *args, **kwargs):
+        """ Utility method for checking conditions for editing operations
+        :param args: ignored
+        :param kwargs: ignored
+        :return:
+        """
+        return ctrl.free_drawing_mode

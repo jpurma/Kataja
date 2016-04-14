@@ -7,15 +7,15 @@ a = {}
 
 def switch_edit_mode(free_edit=None):
     """ Switch between visualisation mode and free edit mode
-    :type free_edit: None to toggle between modes, True for free_edit_mode, False for visualization
+    :type free_edit: None to toggle between modes, True for free_drawing_mode, False for visualization
     :return:
     """
     if free_edit is None:
-        ctrl.free_edit_mode = not ctrl.free_edit_mode
+        ctrl.free_drawing_mode = not ctrl.free_drawing_mode
     else:
-        ctrl.free_edit_mode = free_edit
+        ctrl.free_drawing_mode = free_edit
     ctrl.ui.update_edit_mode()
-    if ctrl.free_edit_mode:
+    if ctrl.free_drawing_mode:
         return 'Free drawing mode: draw as you will, but there is no access to derivation ' \
                'history for the structure.'
     else:
