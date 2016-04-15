@@ -64,11 +64,11 @@ class ConstituentNode(BaseConstituentNode):
                               tooltip='Label of the constituent (functional identifier)', width=200,
                               focus=True, syntactic=True),
                 'gloss': dict(name='Gloss', prefill='gloss',
-                              tooltip='translation (optional)', width=200, check_before='is_leaf'),
+                              tooltip='translation (optional)', width=200, condition='is_leaf'),
                 'head': dict(name='Projection from',
                              tooltip='Inherit label from another node and rewrite alias to '
                                      'reflect this',
-                             check_before='can_be_projection_of_another_node',
+                             condition='can_be_projection_of_another_node',
                              option_function='build_projection_options_for_ui',
                              input_type='radiobutton',
                              select_action='constituent_set_head')}
@@ -540,6 +540,44 @@ class ConstituentNode(BaseConstituentNode):
         if self.index:
             return not (self.is_leaf() and self.label == 't')
         return False
+
+    ### UI support
+
+    def is_dragging_this_type(self, dtype):
+        """ Check if the currently dragged item is in principle compatible with self.
+        :return:
+        """
+        if ctrl.dragged_focus:
+            return ctrl.dragged_focus.node_type == dtype and \
+                   ctrl.dragged_focus.can_connect_with(self)
+        elif ctrl.dragged_text:
+            return ctrl.dragged_text == dtype
+        return False
+
+    def dragging_constituent(self):
+        """ Check if the currently dragged item is constituent and can connect with me
+        :return:
+        """
+        return self.is_dragging_this_type(g.CONSTITUENT_NODE)
+
+    def dragging_feature(self):
+        """ Check if the currently dragged item is feature and can connect with me
+        :return:
+        """
+        return self.is_dragging_this_type(g.FEATURE_NODE)
+
+    def dragging_gloss(self):
+        """ Check if the currently dragged item is gloss and can connect with me
+        :return:
+        """
+        return self.is_dragging_this_type(g.GLOSS_NODE)
+
+    def dragging_comment(self):
+        """ Check if the currently dragged item is comment and can connect with me
+        :return:
+        """
+        return self.is_dragging_this_type(g.COMMENT_NODE)
+
 
     # ############## #
     #                #

@@ -52,6 +52,10 @@ class ModeLabel(UIItem, PanelButton):
             i.addPixmap(QtGui.QPixmap.fromImage(image2), state=QtGui.QIcon.On)
             self.setIcon(i)
 
+    def update_colors(self):
+        self.compose_icon()
+        self.update_style_sheet()
+
     def update_style_sheet(self):
         paper = ctrl.cm.paper()
         c = ctrl.cm.get(self.color_key)

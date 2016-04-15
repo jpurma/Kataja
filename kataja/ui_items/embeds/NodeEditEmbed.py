@@ -66,14 +66,9 @@ class NodeEditEmbed(UIEmbed):
             itype = d.get('input_type', 'text')
             prefill = d.get('prefill', '')
             syntactic = d.get('syntactic', False)
-            check_before = d.get('check_before', None)
-            if check_before:
-                func = getattr(self.host, check_before, None) or getattr(self.host.syntactic_object,
-                    check_before, None)
-                if func:
-                    if not func():
-                        # func is something like 'can_be_projection(self)'
-                        continue
+            condition = d.get('condition', None)
+            if not self.host.check_conditions(condition):
+                continue
             field_first = False
             if itype == 'text':
                 width = d.get('width', 140)

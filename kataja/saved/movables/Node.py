@@ -1276,8 +1276,7 @@ syntactic_object: %s
         moving = ctrl.dragged_set
         for tree in dragged_trees:
             moving = moving.union(tree.sorted_nodes)
-        ctrl.ui.prepare_touch_areas_for_dragging(drag_host=self, moving=moving,
-                                                 dragged_type=self.node_type, multidrag=multidrag)
+        ctrl.ui.prepare_touch_areas_for_dragging(drag_host=self, moving=moving, multidrag=multidrag)
 
         self.start_moving()
 
@@ -1402,6 +1401,7 @@ syntactic_object: %s
             ctrl.dragged_set = set()
             ctrl.dragged_focus = None
             ctrl.dragged_groups = set()
+            ctrl.dragged_text = None
         if self.drag_data:
             self.setZValue(self.drag_data.old_zvalue)
         self.drag_data = None
@@ -1518,6 +1518,29 @@ syntactic_object: %s
         :return:
         """
         return ctrl.free_drawing_mode
+
+    def check_conditions(self, cond):
+        """ Various templates may need to check that all conditions apply before doing things.
+        this method takes str with method name or list of such strings and returns True if the
+        method/s return True. It also accepts 'not:methodname' to negate the result.
+        :param cond:
+        :return:
+        """
+        if not cond:
+            return True
+        if isinstance(cond, list):
+            return all((self.check_conditions(c) for c in cond))
+        if cond.startswith('not:'):
+            return not self.check_conditions(cond[4:])
+        else:
+            cmethod = getattr(self, cond)
+            if cmethod:
+                return cmethod()
+            elif self.syntactic_object:
+                cmethod = getattr(self.syntactic_object, cond)
+                if cmethod:
+                    return cmethod()
+            raise NotImplementedError(cond)
 
     # ############## #
     #                #

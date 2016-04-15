@@ -67,6 +67,7 @@ class Controller:
         self.text_editor_focus = None
         self.free_drawing_mode = True
         self.dragged_focus = None
+        self.dragged_text = None
         self.dragged_set = set()
         self.dragged_groups = set()
         self.drag_hovering_on = None  # used only while dragging, because

@@ -463,6 +463,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         """ Remove all flags and temporary things related to dragging """
         if ctrl.dragged_focus:
             ctrl.dragged_focus.finish_dragging()
+        ctrl.dragged_text = None
         ctrl.press(None)
         self._dragging = False
         ctrl.set_drag_hovering(None)
@@ -591,11 +592,10 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 command, *args = args
                 if command == "new_node":
                     node_type = args[0]
-                    try:
+                    if node_type.isdigit():
                         node_type = int(node_type)
-                    except TypeError:
-                        pass
-                    ctrl.ui.prepare_touch_areas_for_dragging(dragged_type=node_type)
+                    ctrl.dragged_text = node_type
+                    ctrl.ui.prepare_touch_areas_for_dragging()
                 else:
                     print('received unknown command:', command, args)
 

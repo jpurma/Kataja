@@ -180,13 +180,9 @@ class Label(QtWidgets.QGraphicsTextItem):
             else:
                 field_value = getattr(h, field_name, '')
 
-            if 'condition' in s:
-                condition = getattr(h, s.get('condition'), None)
-                if callable(condition):
-                    if not condition():
-                        continue
-                elif not condition:
-                    continue
+            if not h.check_conditions(s.get('condition', None)):
+                continue
+
             if 'special' in s:
                 special = s['special']
                 if special == 'triangle':
@@ -255,13 +251,6 @@ class Label(QtWidgets.QGraphicsTextItem):
                     field_value = getter
             else:
                 field_value = getattr(h, field_name, '')
-            #if 'condition' in s:
-            #    condition = getattr(h, s.get('condition'), None)
-            #    if callable(condition):
-            #        if not condition():
-            #            continue
-            #    elif not condition:
-            #        continue
             if 'special' in s:
                 if s['special'] == 'triangle':
                     continue

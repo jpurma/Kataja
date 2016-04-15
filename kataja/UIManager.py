@@ -937,25 +937,11 @@ class UIManager:
         node is selected
         :param node: object to update
         """
-
-        def check_conditions(cond, node):
-            if isinstance(cond, list):
-                return all((check_conditions(c, node) for c in cond))
-            if not cond:
-                return True
-            cmethod = getattr(node, cond)
-            if cmethod:
-                return cmethod()
-            else:
-                raise NotImplementedError(cond)
-
         if not node.is_visible():
             return
         d = node.__class__.touch_areas_when_selected
         for key, values in d.items():
-            cond = values.get('condition')
-            ok = check_conditions(cond, node)
-            if ok:
+            if node.check_conditions(values.get('condition')):
                 action = self.get_action(values.get('action'))
                 place = values.get('place', '')
                 if place == 'edge_up':
@@ -992,8 +978,7 @@ class UIManager:
                 self.create_touch_area(edge, g.INNER_ADD_SIBLING_RIGHT,
                                        self.get_action('inner_add_sibling_right'))
 
-    def prepare_touch_areas_for_dragging(self, drag_host=None, moving=None, dragged_type='',
-                                         multidrag=False):
+    def prepare_touch_areas_for_dragging(self, drag_host=None, moving=None, multidrag=False):
         """
         :param drag_host: node that is being dragged
         :param moving: set of moving nodes (does not include drag_host)
@@ -1001,41 +986,11 @@ class UIManager:
         given as a hint of what to expect
         """
 
-        def check_conditions(cond, node, drag_host, dragged_type):
-            if isinstance(cond, list):
-                return all((check_conditions(c, node, drag_host, dragged_type) for c in cond))
-            if not cond:
-                return True
-            elif cond == 'is_top':
-                return node.is_top_node(only_visible=False)
-            elif cond == 'dragging_comment':
-                return dragged_type == g.COMMENT_NODE and \
-                       ((not drag_host) or (drag_host and drag_host.can_connect_with(node)))
-            elif cond == 'dragging_feature':
-                return dragged_type == g.FEATURE_NODE and \
-                       ((not drag_host) or (drag_host and drag_host.can_connect_with(node)))
-            elif cond == 'dragging_constituent':
-                return dragged_type == g.CONSTITUENT_NODE and \
-                       ((not drag_host) or (drag_host and drag_host.can_connect_with(node)))
-            elif cond == 'dragging_gloss':
-                return dragged_type == g.GLOSS_NODE and \
-                       ((not drag_host) or (drag_host and drag_host.can_connect_with(node)))
-            elif hasattr(node, cond):
-                ncond = getattr(node, cond)
-                if callable(ncond):
-                    return ncond(dragged_type, drag_host)
-                else:
-                    return ncond
-            else:
-                raise NotImplementedError
-
         self.remove_touch_areas()
         if multidrag:
             return
         if not moving:
             moving = []
-        if not dragged_type:
-            dragged_type = drag_host.node_type
         for node in ctrl.forest.nodes.values():
             if not node.is_visible():
                 continue
@@ -1046,7 +1001,7 @@ class UIManager:
             d = node.__class__.touch_areas_when_dragging
             for key, values in d.items():
                 cond = values.get('condition')
-                ok = check_conditions(cond, node, drag_host, dragged_type)
+                ok = node.check_conditions(cond)
                 if ok:
                     action = self.get_action(values.get('action'))
                     place = values.get('place', '')
@@ -1273,33 +1228,14 @@ class UIManager:
         node is selected
         :param node: object to update
         """
-
-        def check_conditions(cond, node):
-            if isinstance(cond, list):
-                return all((check_conditions(c, node) for c in cond))
-            if not cond:
-                return True
-            if cond.startswith('not:'):
-                cmethod = getattr(node, cond[4:], None)
-                if cmethod:
-                    return not cmethod()
-                else:
-                    raise NotImplementedError(cond)
-            else:
-                cmethod = getattr(node, cond, None)
-                if cmethod:
-                    return cmethod()
-                else:
-                    raise NotImplementedError(cond)
-
         if not node.is_visible():
             return
         d = node.__class__.buttons_when_selected
         for key, values in d.items():
             cond = values.get('condition', None)
-            ok = check_conditions(cond, node)
-            action = values.get('action', '')
+            ok = node.check_conditions(cond)
             if ok:
+                action = values.get('action', '')
                 self.get_or_create_button(node, key, action)
         if node.label_object.resizable:
             handle = GraphicsResizeHandle(ctrl.graph_view, node)
