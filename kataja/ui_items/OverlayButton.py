@@ -215,6 +215,12 @@ class TopRowButton(OverlayButton):
                          tooltip=tooltip,
                          size=size,
                          color_key='accent8')
+        if isinstance(size, tuple):
+            self.setMinimumSize(size[0]+2, size[1])
+            self.setMaximumSize(size[0]+2, size[1])
+        else:
+            self.setMinimumSize(size+2, size)
+            self.setMaximumSize(size+2, size)
 
 
 class CutFromStartButton(OverlayButton):

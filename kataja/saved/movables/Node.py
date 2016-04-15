@@ -1248,14 +1248,16 @@ syntactic_object: %s
         # if we are working with selection, this is more complicated, as there may be many nodes
         # and trees dragged at once, with one focus for dragging.
         if ctrl.is_selected(self):
+            selected_nodes = [x for x in ctrl.selected if isinstance(x, Node)]
             # find trees tops in selection
-            for item in ctrl.selected:
-                tree = item.tree_where_top()
-                if tree:
-                    dragged_trees.add(tree)
+            for item in selected_nodes:
+                if hasattr(item, 'tree_where_top'):
+                    tree = item.tree_where_top()
+                    if tree:
+                        dragged_trees.add(tree)
             # include those nodes in selection and their children that are not part of wholly
             # dragged trees
-            for item in ctrl.selected:
+            for item in selected_nodes:
                 if item.drag_data:
                     continue
                 if in_any_tree(item, dragged_trees):

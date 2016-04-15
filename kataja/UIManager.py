@@ -29,6 +29,7 @@ from kataja.UIItem import UIItem
 from kataja.ui_support.MyFontDialog import MyFontDialog
 from kataja.ui_support.ResizeHandle import GraphicsResizeHandle
 from kataja.ui_support.TableModelComboBox import TableModelComboBox
+from kataja.ui_support.TopBarButtons import TopBarButtons
 from kataja.ui_items.panels.ColorThemePanel import ColorPanel
 from kataja.ui_items.panels.ColorWheelPanel import ColorWheelPanel
 from kataja.ui_items.panels.FaceCamPanel import FaceCamPanel
@@ -138,7 +139,7 @@ class UIManager:
         self._action_groups = {}
         self.qt_actions = {}
         self._top_menus = {}
-        self._float_buttons = []
+        self.top_bar_buttons = None
         self._edit_mode_button = None
 
         self._items = {}
@@ -325,10 +326,10 @@ class UIManager:
             self.clear_items()
         elif signal == 'viewport_changed':
             self.update_positions()
-            self.update_float_button_positions()
+            if self.top_bar_buttons:
+                self.top_bar_buttons.update_position()
 
     def resize_ui(self, size):
-        # self.setSceneRect(0, 0, size.width(), size.height())
         """
 
         :param size:
@@ -1106,76 +1107,19 @@ class UIManager:
         """ Create top button row
         :return:
         """
-        for item in self._float_buttons:
-            item.close()
-        self._float_buttons = []
-        view = ctrl.graph_view
-        fit_to_screen = TopRowButton('fit_to_screen',
-                                     parent=view,
-                                     tooltip='Fit to screen',
-                                     size=(24, 24),
-                                     pixmap=qt_prefs.full_icon)
-                                     #draw_method=drawn_icons.fit_to_screen)
-        self.add_button(fit_to_screen, action='zoom_to_fit')
-        self._float_buttons.append(fit_to_screen)
+        #for item in self._float_buttons:
+        #    item.close()
+        self.top_bar_buttons = TopBarButtons(ctrl.graph_view, self)
 
-        pan_around = TopRowButton('pan_around',
-                                  parent=view,
-                                  tooltip='Move mode',
-                                  size=(24, 24),
-                                  pixmap=qt_prefs.pan_icon) # draw_method=drawn_icons.pan_around
-        self.add_button(pan_around, action='toggle_pan_mode')
-        pan_around.setCheckable(True)
-        self._float_buttons.append(pan_around)
-
-        select_mode = TopRowButton('select_mode',
-                                   parent=view,
-                                   tooltip='Move mode',
-                                   pixmap=qt_prefs.select_all_icon,
-                                   size=(24, 24)) # draw_method=drawn_icons.select_mode
-        select_mode.setCheckable(True)
-        self.add_button(select_mode, action='toggle_select_mode')
-        self._float_buttons.append(select_mode)
-
-        undo = TopRowButton('undo_button',
-                            parent=view,
-                            tooltip='Undo last action',
-                            pixmap=qt_prefs.undo_icon)
-        self.add_button(undo, action='undo')
-        self._float_buttons.append(undo)
-
-        redo = TopRowButton('redo_button', parent=view, tooltip='Redo action',
-                            pixmap=qt_prefs.redo_icon)
-
-        self.add_button(redo, action='redo')
-        self._float_buttons.append(redo)
-
-        self._edit_mode_button = ModeLabel('Free drawing mode', ui_key='edit_mode_label',
-                                           parent=view)
+        self._edit_mode_button = ModeLabel('Free drawing mode',
+                                           ui_key='edit_mode_label',
+                                           parent=ctrl.graph_view)
         self.add_ui(self._edit_mode_button)
         self._edit_mode_button.update_position()
         self.connect_element_to_action(self._edit_mode_button, 'switch_edit_mode')
         self.update_edit_mode()
-
-        camera = TopRowButton('print_button', parent=view, tooltip='Print to file',
-                              pixmap=qt_prefs.camera_icon, size=(24, 24))
-
-        self.add_button(camera, action='print_pdf')
-        self._float_buttons.append(camera)
-
-        self.update_float_button_positions()
+        self.top_bar_buttons.update_position()
         self.update_drag_mode(True) # selection mode
-
-    def update_float_button_positions(self):
-        """ Make sure that float buttons are on graph view's top right corner
-        :return:
-        """
-        view = ctrl.graph_view
-        right_x = view.width()
-        for button in self._float_buttons:
-            right_x -= button.width() + 2
-            button.move(right_x, 2)
-            button.show()
 
     def update_drag_mode(self, selection_mode):
         pan_around = self.get_ui('pan_around')
