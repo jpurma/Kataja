@@ -2,9 +2,9 @@ import re
 
 __author__ = 'purma'
 
-from kataja.singletons import ctrl, classes
+from kataja.singletons import classes
 import kataja.globals as g
-from kataja.parser.BaseParser import BaseParser
+from parser.deprecated.BaseParser import BaseParser
 
 # Deprecated -- INodeToKatajaConstituent is the one currently used
 

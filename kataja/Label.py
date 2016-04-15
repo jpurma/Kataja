@@ -180,7 +180,7 @@ class Label(QtWidgets.QGraphicsTextItem):
             else:
                 field_value = getattr(h, field_name, '')
 
-            if not h.check_conditions(s.get('condition', None)):
+            if not h.check_conditions(s):
                 continue
 
             if 'special' in s:

@@ -1,6 +1,6 @@
 __author__ = 'purma'
 
-from kataja.parser.LatexToINode import FieldParser
+from kataja.parser.LatexToINode import LatexFieldToINode
 
 # INode-based parsers are tested by converting latex qtrees into INodes, then back to qtrees.
 
@@ -17,7 +17,7 @@ fields = [
 
 for field in fields:
     print("Entered: ", field)
-    parser = FieldParser(field)
+    parser = LatexFieldToINode(field)
     print("As node: ", repr(parser.node))
     text = parser.node.as_latex()
     print("Turned back: ", text)

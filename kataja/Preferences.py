@@ -438,6 +438,9 @@ class QtPreferences:
         self.right_arrow = None
         self.add_icon = None
         self.add_box_icon = None
+        self.pan_icon = None
+        self.select_all_icon = None
+        self.full_icon = None
         self.settings_icon = None
         self.settings_pixmap = None
         self.triangle_icon = None
@@ -514,6 +517,9 @@ class QtPreferences:
         self.v_refresh_small_icon = icon('v_refresh24.png')
         self.h_refresh_icon = icon('h_refresh48.png')
         self.h_refresh_small_icon = icon('h_refresh24.png')
+        self.pan_icon = icon('pan48.png')
+        self.select_all_icon = icon('select_all48.png')
+        self.full_icon = icon('full48.png')
         self.camera_icon = icon('camera48.png')
         self.undo_icon = icon('undo48.png')
         self.redo_icon = icon('redo48.png')

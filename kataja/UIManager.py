@@ -816,7 +816,6 @@ class UIManager:
         embed.update_embed(focus_point=lp)
         embed.wake_up()
 
-
     # ### Creation dialog
     # #########################################################
 
@@ -849,7 +848,6 @@ class UIManager:
             self.remove_ui(marker)
         if embed:
             self.remove_ui(embed)
-
 
     # ### Node editing #########################################################
 
@@ -941,7 +939,7 @@ class UIManager:
             return
         d = node.__class__.touch_areas_when_selected
         for key, values in d.items():
-            if node.check_conditions(values.get('condition')):
+            if node.check_conditions(values):
                 action = self.get_action(values.get('action'))
                 place = values.get('place', '')
                 if place == 'edge_up':
@@ -978,7 +976,7 @@ class UIManager:
                 self.create_touch_area(edge, g.INNER_ADD_SIBLING_RIGHT,
                                        self.get_action('inner_add_sibling_right'))
 
-    def prepare_touch_areas_for_dragging(self, drag_host=None, moving=None, multidrag=False):
+    def prepare_touch_areas_for_dragging(self, moving=None, multidrag=False):
         """
         :param drag_host: node that is being dragged
         :param moving: set of moving nodes (does not include drag_host)
@@ -996,13 +994,11 @@ class UIManager:
                 continue
             if node in moving:
                 continue
-            if node is drag_host:
+            if node is ctrl.dragged_focus:
                 continue
             d = node.__class__.touch_areas_when_dragging
             for key, values in d.items():
-                cond = values.get('condition')
-                ok = node.check_conditions(cond)
-                if ok:
+                if node.check_conditions(values):
                     action = self.get_action(values.get('action'))
                     place = values.get('place', '')
                     if place == 'edge_up':
@@ -1117,16 +1113,17 @@ class UIManager:
         fit_to_screen = TopRowButton('fit_to_screen',
                                      parent=view,
                                      tooltip='Fit to screen',
-                                     size=(36, 24),
-                                     draw_method=drawn_icons.fit_to_screen)
+                                     size=(24, 24),
+                                     pixmap=qt_prefs.full_icon)
+                                     #draw_method=drawn_icons.fit_to_screen)
         self.add_button(fit_to_screen, action='zoom_to_fit')
         self._float_buttons.append(fit_to_screen)
 
         pan_around = TopRowButton('pan_around',
                                   parent=view,
                                   tooltip='Move mode',
-                                  size=(36, 24),
-                                  draw_method=drawn_icons.pan_around)
+                                  size=(24, 24),
+                                  pixmap=qt_prefs.pan_icon) # draw_method=drawn_icons.pan_around
         self.add_button(pan_around, action='toggle_pan_mode')
         pan_around.setCheckable(True)
         self._float_buttons.append(pan_around)
@@ -1134,18 +1131,11 @@ class UIManager:
         select_mode = TopRowButton('select_mode',
                                    parent=view,
                                    tooltip='Move mode',
-                                   size=(36, 24),
-                                   draw_method=drawn_icons.select_mode)
+                                   pixmap=qt_prefs.select_all_icon,
+                                   size=(24, 24)) # draw_method=drawn_icons.select_mode
         select_mode.setCheckable(True)
         self.add_button(select_mode, action='toggle_select_mode')
         self._float_buttons.append(select_mode)
-
-        camera = TopRowButton('print_button', parent=view, tooltip='Print to file',
-                              pixmap=qt_prefs.camera_icon,
-                              size=(24, 24))
-
-        self.add_button(camera, action='print_pdf')
-        self._float_buttons.append(camera)
 
         undo = TopRowButton('undo_button',
                             parent=view,
@@ -1166,6 +1156,12 @@ class UIManager:
         self._edit_mode_button.update_position()
         self.connect_element_to_action(self._edit_mode_button, 'switch_edit_mode')
         self.update_edit_mode()
+
+        camera = TopRowButton('print_button', parent=view, tooltip='Print to file',
+                              pixmap=qt_prefs.camera_icon, size=(24, 24))
+
+        self.add_button(camera, action='print_pdf')
+        self._float_buttons.append(camera)
 
         self.update_float_button_positions()
         self.update_drag_mode(True) # selection mode
@@ -1232,9 +1228,7 @@ class UIManager:
             return
         d = node.__class__.buttons_when_selected
         for key, values in d.items():
-            cond = values.get('condition', None)
-            ok = node.check_conditions(cond)
-            if ok:
+            if node.check_conditions(values):
                 action = values.get('action', '')
                 self.get_or_create_button(node, key, action)
         if node.label_object.resizable:

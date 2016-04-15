@@ -9,7 +9,7 @@ from PyQt5.QtCore import QPointF, QPoint
 
 from kataja.utils import to_tuple
 from kataja.parser.INodes import ITextNode
-from kataja.parser.LatexToINode import FieldParser
+from kataja.parser.LatexToINode import LatexFieldToINode
 from kataja.singletons import ctrl, classes
 from kataja.globals import CREATED, DELETED
 
@@ -530,7 +530,7 @@ class Saved(object):
                 if data and isinstance(data[0], str):
                     data_type = data[0]
                     if data_type == 'INode':
-                        parser = FieldParser(data[1])
+                        parser = LatexFieldToINode(data[1])
                         return parser.node
                     elif data_type == 'QPointF':
                         return QPointF(data[1], data[2])

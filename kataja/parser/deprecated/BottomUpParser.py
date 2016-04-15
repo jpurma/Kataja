@@ -1,8 +1,8 @@
 import re
 
-from kataja.parser.BaseParser import BaseParser
-from kataja.singletons import ctrl, classes
 import kataja.globals as g
+from kataja.singletons import classes
+from parser.deprecated.BaseParser import BaseParser
 
 
 __author__ = 'purma'

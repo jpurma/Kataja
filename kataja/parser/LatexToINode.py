@@ -17,7 +17,7 @@ class ParseError(Exception):
 one_character_commands = ['&', '#', '%', '^', '_'] # '~',
 
 
-class Parser:
+class LatexToINode:
 
     def __init__(self, text):
         """ Turn text into INodes (intermediary nodes). These can be ITemplateNodes,
@@ -259,7 +259,7 @@ class Parser:
         return parsernode
 
 
-class FieldParser(Parser):
+class LatexFieldToINode(LatexToINode):
 
     def __init__(self, text):
         """ Simpler version of parse, turns values of text elements into INodes
@@ -267,6 +267,7 @@ class FieldParser(Parser):
         ITextNodes and ICommandNodes.
             :param text: string to parse.
         """
+        print('LatexFieldToINode called with "%s"' % text)
         self.math_mode = False
         self.node = None
         if not text:
@@ -277,12 +278,22 @@ class FieldParser(Parser):
         self.feed = list(text)
         nodes = []
         while self.feed:
+            feed_progress = len(self.feed)
             node = self.parse_word()
-            nodes.append(node)
+            if len(self.feed) < feed_progress:
+                nodes.append(node)
+            else:
+                # ensure that we are not stuck in endless loop
+                self.feed.pop(0)
+
         if len(nodes) == 1:
             self.node = nodes[0]
-        else:
+        elif nodes:
             self.node = ITextNode(parts=nodes)
+            self.node.tidy()
+        else:
+            self.node = ""
+        print(self.node)
 
 # ### Test cases
 if __name__ == "__main__":
@@ -312,7 +323,7 @@ if __name__ == "__main__":
 
     s = r"""[.TP [.AdvP [.Adv\\usually ] ] [.TP [.DP [.D\\{\O} ] [.NP\\John ] ] [.T\1 [.T\\\emph{PRESENT} ] [.VP [.VP [.V\\goes ] [.PP [.P\\to ] [.DP [.D\\the ] [.NP\\park ] ] ] ] [.PP [.P\\on ] [.DP [.D\\{\O} ] [.NP\\Tuesdays ] ] ] ] ] ] ] ]"""
 
-    n = Parser(s)
+    n = LatexToINode(s)
 
     print(n.nodes)
 

@@ -977,7 +977,7 @@ class Forest(Saved):
         :param pos:
         :param simple_parse: If several words are given, merge them together
         """
-        return self.parser.parse_into_forest(text, simple_parse=simple_parse)
+        return self.parser.string_into_forest(text, simple_parse=simple_parse)
 
     def create_trees_from_string(self, text):
         """ Use this to initially draw the trees from a bracket notation or
@@ -987,7 +987,7 @@ class Forest(Saved):
         :param text: string that the parser can handle
         """
         text = text.strip()
-        self.parser.parse_into_forest(text)
+        self.parser.string_into_forest(text)
         if self.settings.uses_multidomination:
             self.settings.uses_multidomination = False
             self.traces_to_multidomination()
@@ -1438,7 +1438,7 @@ class Forest(Saved):
         :param text:
         :param node:
         """
-        new_nodes = self.parser.parse_into_forest(text)
+        new_nodes = self.parser.string_into_forest(text)
         if new_nodes:
             self.replace_node(node, new_nodes[0])
 
@@ -2083,14 +2083,14 @@ class Forest(Saved):
 
     # ######## Utility functions ###############################
 
-    def parse_features(self, string, node):
-        """
-
-        :param string:
-        :param node:
-        :return:
-        """
-        return self.parser.parse_definition(string, node)
+    # def parse_features(self, string, node):
+    #     """
+    #
+    #     :param string:
+    #     :param node:
+    #     :return:
+    #     """
+    #     return self.parser.parse_definition(string, node)
 
     # ############## #
     #                #
