@@ -46,7 +46,10 @@ class FaceCamPanel(Panel):
         sizes = self.camera.supportedViewfinderResolutions()
         if sizes:
             size = sizes[-1]
-            self.aspect = float(size.width()) / size.height()
+            if size.height() and size.width():
+                self.aspect = float(size.width()) / size.height()
+            else:
+                self.aspect = 1.333333333
         else:
             self.aspect = 1.333333333
         self.viewfinder.setFixedWidth(self.camera_width)

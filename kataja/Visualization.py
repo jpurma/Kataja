@@ -144,7 +144,7 @@ class BaseVisualization:
             dist_x, dist_y = node_x - other_x, node_y - other_y
             dist = math.hypot(dist_x, dist_y)
             radius = (other.width + node.width) / 2
-            if dist - radius > 0:
+            if dist != 0 and dist - radius > 0:
                 pulling_force = ((dist - radius) * edge.pull * alpha) / dist
                 node_x -= dist_x * pulling_force
                 node_y -= dist_y * pulling_force
@@ -158,7 +158,7 @@ class BaseVisualization:
             dist_x, dist_y = node_x - other_x, node_y - other_y
             dist = math.hypot(dist_x, dist_y)
             radius = (other.width + node.width) / 2
-            if dist - radius > 0:
+            if dist != 0 and dist - radius > 0:
                 pulling_force = ((dist - radius) * edge.pull * alpha) / dist
                 node_x -= dist_x * pulling_force
                 node_y -= dist_y * pulling_force

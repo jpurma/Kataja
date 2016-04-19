@@ -142,10 +142,11 @@ class AsymmetricElasticTree(BaseVisualization):
             d, dx, dy, overlap = border_distance(node_x, node_y, nw2, nh2, other_x, other_y,
                                                  other_br.width() / 2,
                                                  other_br.height() / 2)
-            if d != 0:
-                l = -3.0 / (d * d)
-                xvel += dx * l
-                yvel += dy * l
+            if d == 0:
+                continue
+            l = -3.0 / (d * d)
+            xvel += dx * l
+            yvel += dy * l
         # Now subtract all forces pulling items together.
         for edge in node.edges_down:
             if not edge.is_visible():
@@ -215,10 +216,11 @@ class AsymmetricElasticTree(BaseVisualization):
             #print 'others: ', other_x, other_y, other_z
             dist_x, dist_y = int(node_x - other_x), int(node_y - other_y)
             dist2 = (dist_x * dist_x) + (dist_y * dist_y)
-            if dist2 > 0:
-                l = 72.0 / dist2
-                xvel += dist_x * l
-                yvel += dist_y * l
+            if dist2 == 0:
+                continue
+            l = 72.0 / dist2
+            xvel += dist_x * l
+            yvel += dist_y * l
         # Now subtract all forces pulling items together.
         for edge in node.edges_down:
             if not edge.is_visible():

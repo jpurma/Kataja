@@ -66,11 +66,11 @@ class DynamicWidthTree(LinearizedStaticTree):
                 dist_x, dist_y = node_x - other_x, node_y - other_y
                 dist = math.hypot(dist_x, dist_y)
                 radius = (other.width + node.width) / 2
-                if dist - radius > 0:
+                if dist == 0 or dist - radius <= 0:
+                    node_x += 1
+                else:
                     pulling_force = ((dist - radius) * edge.pull * alpha) / dist
                     node_x -= dist_x * pulling_force
-                else:
-                    node_x += 1
 
         up = node.edges_up
         for edge in up:
@@ -81,17 +81,18 @@ class DynamicWidthTree(LinearizedStaticTree):
                 dist_x, dist_y = node_x - other_x, node_y - other_y
                 dist = math.hypot(dist_x, dist_y)
                 radius = ((other.width + node.width) / 2) * 1.4
-                if dist - radius > 0:
+                if dist == 0 or dist - radius <= 0:
+                    node_x -= 1
+                else:
                     pulling_force = ((dist - radius) * edge.pull * alpha) / dist
                     node_x -= dist_x * pulling_force
-                else:
-                    node_x -= 1
 
         all_nodes = set(self.forest.visible_nodes())
         other_nodes = all_nodes - close_ones
         other_nodes.remove(node)
         # repulse strongly
-        alpha_strong = alpha * 5
+        alpha_strong = (alpha * 5) or 0.5
+        alpha = alpha or 0.1
         for other in other_nodes:
             other_x, other_y = other.current_position  # @UnusedVariable
             dist_x, dist_y = node_x - other_x, node_y - other_y

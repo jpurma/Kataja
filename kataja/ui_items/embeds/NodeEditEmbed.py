@@ -77,6 +77,8 @@ class NodeEditEmbed(UIEmbed):
                 self.disable_effect = True
                 fm = QtGui.QFontMetrics(smaller_font)
                 char_width = fm.maxWidth()
+                if not char_width:
+                    char_width = 1
                 field = EmbeddedTextarea(self, tip=tt, font=smaller_font, prefill=prefill)
                 nc = node.label_object
                 if nc.line_length > 0:

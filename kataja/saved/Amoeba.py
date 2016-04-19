@@ -344,7 +344,10 @@ class Amoeba(Saved, QtWidgets.QGraphicsObject):
                 dx = x - cx
                 dy = y - cy
                 d = math.hypot(dx, dy)
-                change = (d + margin) / d  # should return values like 1.08
+                if d == 0:
+                    change = 0
+                else:
+                    change = (d + margin) / d  # should return values like 1.08
                 x = cx + (dx * change)
                 y = cy + (dy * change)
             ppoints.append((x, y))

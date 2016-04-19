@@ -113,9 +113,9 @@ class LinearizedStaticTree(BalancedTree):
             node_top_row = mnode.get_top_part_y()
             relative_start_height = (node_height / 2.0 + node_top_row) / node_height
 
-            height_in_rows = math.ceil(node_height / float(edge_height))
+            height_in_rows = math.ceil(node_height / float(edge_height or 1))
             start_height = max(int(relative_start_height * height_in_rows), 1)
-            width_in_columns = math.ceil(node_width / float(edge_width))
+            width_in_columns = math.ceil(node_width / float(edge_width or 1))
             left_adjust = int(width_in_columns / -2)
             return left_adjust, -start_height, width_in_columns, height_in_rows
 

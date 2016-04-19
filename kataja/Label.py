@@ -522,7 +522,8 @@ class Label(QtWidgets.QGraphicsTextItem):
                 triangle_row = row
             elif not second_row and row > second_row:
                 second_row = row
-
+        if last_row < 0:
+            last_row = 0
         row_count = last_row + 1
         if row_count == 1:
             self.top_part_y = 0

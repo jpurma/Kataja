@@ -293,7 +293,10 @@ class LineOptionsPanel(Panel):
         if dp:
             pixel_ratio = dp.devicePixelRatio()
             p = dp.mapToGlobal(dp.pos())
-            return QtCore.QPoint(p.x() / pixel_ratio + dp.width() + 40, p.y() / pixel_ratio)
+            if pixel_ratio:
+                return QtCore.QPoint(p.x() / pixel_ratio + dp.width() + 40, p.y() / pixel_ratio)
+            else:
+                return Panel.initial_position(self)
         else:
             return Panel.initial_position(self)
 

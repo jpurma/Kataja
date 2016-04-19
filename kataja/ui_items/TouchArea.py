@@ -795,7 +795,7 @@ class JointedTouchArea(TouchArea):
         self._fill_path = shape_info.get('fill', False)
         sx, sy = self.host.magnet(2)
         self.start_point = sx, sy
-        hw_ratio = float(prefs.edge_height - (ConstituentNode.height / 2)) / prefs.edge_width
+        hw_ratio = float(prefs.edge_height - (ConstituentNode.height / 2)) / (prefs.edge_width or 1)
         if not end_point:
             good_width = max((prefs.edge_width * 2, self.host.width / 2 + ConstituentNode.width))
             if self._align_left:

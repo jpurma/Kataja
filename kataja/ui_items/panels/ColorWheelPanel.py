@@ -283,6 +283,8 @@ class ColorWheelInner(QtWidgets.QWidget):
             :param y:
             :return:
             """
+            if self._radius == 0:
+                return 0
             dv = (self._radius - (y - self._lum_box_y)) / self._radius
             if dv < 0:
                 dv = 0
@@ -300,7 +302,10 @@ class ColorWheelInner(QtWidgets.QWidget):
             dx = self._origin_x - x
             dy = self._origin_y - y
             hyp = math.sqrt(dx * dx + dy * dy)
-            s = hyp / self._radius
+            if self._radius == 0:
+                s = 1.0
+            else:
+                s = hyp / self._radius
             if s > 1:
                 s = 1.0
             h = (math.atan2(dy, dx) + math.pi) / (math.pi * 2)

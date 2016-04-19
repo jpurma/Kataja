@@ -127,7 +127,11 @@ class VisualizationOptionsPanel(Panel):
         dp = self.ui_manager.get_panel(g.VISUALIZATION)
         if dp:
             p = dp.mapToGlobal(dp.pos())
-            return QtCore.QPoint(p.x() / dp.devicePixelRatio() + dp.width(), p.y() / dp.devicePixelRatio())
+            dpr = dp.devicePixelRatio()
+            if dpr:
+                return QtCore.QPoint(p.x() / dpr + dp.width(), p.y() / dpr)
+            else:
+                return Panel.initial_position(self)
         else:
             return Panel.initial_position(self)
 

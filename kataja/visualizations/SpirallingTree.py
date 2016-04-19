@@ -81,7 +81,7 @@ class Layer:
                 if self.vis.sides == 3:
                     angle_step = ((2 * math.pi) / 3)
                     self.angle = self.parent.angle + math.pi - ((n + 1) * angle_step)
-                else:
+                elif self.vis.sides:
                     angle_step = ((2 * math.pi) / (self.vis.sides / 2)) / (n_of_children - 1)
                     base_angle = self.parent.angle + (math.pi / (self.vis.sides / 2))
                     self.angle = base_angle - (n * angle_step)

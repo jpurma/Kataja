@@ -97,6 +97,8 @@ def select_mode(painter, rect, color=None, paper=None):
 def arrow(painter, rect, color=None):
     w = rect.width()
     h = rect.height()
+    if w == 0 or h == 0:
+        return
     path = QtGui.QPainterPath(QtCore.QPointF(0, h - 4))
     path.lineTo(w, 4)
     p = painter.pen()

@@ -56,11 +56,12 @@ def draw_arrow_shape(self, painter):
     l2y = l.p2().y()
     back = self._arrow_size / -2
     # Draw the arrows if there's enough room.
-    if l.length() + back > 0:
-        angle = acos(l.dx() / l.length())
+    ll = l.length()
+    if ll >= 1 and ll + back > 0:
+        angle = acos(l.dx() / ll) # acos has to be <= 1.0
     else:
         return
-    prop = back / l.length()
+    prop = back / ll
     if l.dy() >= 0:
         angle = pipi - angle
     destArrowP1 = Pf((sin(angle - pi / 3) * self._arrow_size) + l2x,
@@ -78,7 +79,7 @@ def draw_arrow_shape_from_points(painter, start_x, start_y, end_x, end_y, arrow_
     length = sqrt(dx * dx + dy * dy)
     back = arrow_size / -2
     # Draw the arrows if there's enough room.
-    if length + back > 0:
+    if length >= 1 and length + back > 0:
         angle = acos(dx / length)
     else:
         return
@@ -91,7 +92,6 @@ def draw_arrow_shape_from_points(painter, start_x, start_y, end_x, end_y, arrow_
                      (cos(angle - pi + pi / 3) * arrow_size) + end_y)
     l2c = Pf(dx * prop + end_x, dy * prop + end_y)
     painter.drawPolygon(QtGui.QPolygonF([Pf(end_x, end_y), destArrowP1, l2c, destArrowP2]))
-
 
 
 def arrow_shape_bounding_rect(self):
