@@ -115,6 +115,7 @@ class Node(Movable):
         self.height = 0
         self.inner_rect = None
         self.anim = None
+        self.magnet_mapper = None
 
         self.in_scene = False
 
@@ -139,7 +140,6 @@ class Node(Movable):
         self.fade_in()
         self.effect = create_shadow_effect(ctrl.cm.selection())
         # self.effect = create_shadow_effect(self.color)
-        self._update_magnets = True
         self.setGraphicsEffect(self.effect)
 
     def type(self):
@@ -990,7 +990,12 @@ syntactic_object: %s
             y = self.height / -2
             x = self.width / -2
         self.inner_rect = QtCore.QRectF(x, y, self.width, self.height)
-        self._update_magnets = True
+        w4 = (self.width - 2) / 4.0
+        w2 = (self.width - 2) / 2.0
+        h2 = (self.height - 2) / 2.0
+
+        self._magnets = [(-w2, -h2), (-w4, -h2), (0, -h2), (w4, -h2), (w2, -h2), (-w2, 0), (w2, 0),
+                         (-w2, h2), (-w4, h2), (0, h2), (w4, h2), (w2, h2)]
 
         return self.inner_rect
 
@@ -1098,6 +1103,18 @@ syntactic_object: %s
     # ## Magnets
     # ######################################################################
 
+    def top_center_magnet(self):
+        return self.magnet(2)
+
+    def bottom_left_magnet(self):
+        return self.magnet(8)
+
+    def bottom_center_magnet(self):
+        return self.magnet(9)
+
+    def bottom_right_magnet(self):
+        return self.magnet(10)
+
     def magnet(self, n):
         """
         :param n: index of magnets. There are five magnets in top and bottom
@@ -1109,42 +1126,35 @@ syntactic_object: %s
 
         :return:
         """
-
-
-        if prefs.use_magnets and self._label_visible:
-            if self._update_magnets:
-                self._update_magnets = False
-                w4 = (self.width - 2) / 4.0
-                w2 = (self.width - 2) / 2.0
-                h2 = (self.height - 2) / 2.0
-
-                self._magnets = [(-w2, -h2), (-w4, -h2), (0, -h2), (w4, -h2), (w2, -h2), (-w2, 0),
-                                 (w2, 0), (-w2, h2), (-w4, h2), (0, h2), (w4, h2), (w2, h2)]
-
-            x1, y1 = self.current_scene_position
-            x2, y2 = self._magnets[n]
-            if prefs.use_magnets == 2:
-                parents = list(self.get_parents())
-                # We don't want to rotate multidominated or top nodes
-                if len(parents) == 1:
-                    # Compute angle to parent
-                    px, py = parents[0].current_scene_position
-                    dx, dy = x1 - px, y1 - py
-                    r = -math.atan2(dy, dx) + (math.pi / 2)
-                    # Rotate magnet coordinates according to angle
-                    cos_r = math.cos(r)
-                    sin_r = math.sin(r)
-                    x = x2
-                    y = y2
-                    #if r > 0 and False:
-                    #    x2 = x * cos_r - y * sin_r
-                    #    y2 = x * sin_r + y * cos_r
-                    #else:
-                    x2 = x * cos_r + y * sin_r
-                    y2 = -x * sin_r + y * cos_r
-            return x1 + x2, y1 + y2
-        else:
+        if not (prefs.use_magnets or self._label_visible):
             return self.current_scene_position
+        elif not self._magnets:
+            self.update_bounding_rect()
+        if self.magnet_mapper:
+            n = self.magnet_mapper(n)
+
+        x1, y1 = self.current_scene_position
+        x2, y2 = self._magnets[n]
+        if prefs.use_magnets == 2:
+            parents = list(self.get_parents())
+            # We don't want to rotate multidominated or top nodes
+            if len(parents) == 1:
+                # Compute angle to parent
+                px, py = parents[0].current_scene_position
+                dx, dy = x1 - px, y1 - py
+                r = -math.atan2(dy, dx) + (math.pi / 2)
+                # Rotate magnet coordinates according to angle
+                cos_r = math.cos(r)
+                sin_r = math.sin(r)
+                x = x2
+                y = y2
+                #if r > 0 and False:
+                #    x2 = x * cos_r - y * sin_r
+                #    y2 = x * sin_r + y * cos_r
+                #else:
+                x2 = x * cos_r + y * sin_r
+                y2 = -x * sin_r + y * cos_r
+        return x1 + x2, y1 + y2
 
     # ### Menus #########################################
 

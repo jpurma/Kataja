@@ -99,6 +99,7 @@ class BaseVisualization:
         node.locked = False
         node.update_label()
         node.update_visibility()
+        node.magnet_mapper = None
 
 
     def draw(self):

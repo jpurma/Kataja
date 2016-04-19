@@ -30,6 +30,28 @@ from kataja.Grid import Grid
 from kataja.saved.Movable import Movable
 
 
+def left_bottom_is_bottom_center(i):
+    """ Map left bottom magnet to bottom center
+    :param i:
+    :return:
+    """
+    if i == 8:
+        return 9
+    else:
+        return i
+
+
+def right_bottom_is_bottom_center(i):
+    """ Map right bottom magnet to bottom center
+    :param i:
+    :return:
+    """
+    if i == 10:
+        return 9
+    else:
+        return i
+
+
 class HeadDownTree(BaseVisualization):
     """
 
@@ -70,6 +92,7 @@ class HeadDownTree(BaseVisualization):
         else:
             node.physics_x = True
             node.physics_y = True
+
 
     def reselect(self):
         """ Rotate between drawing multidominated elements close to their various parents
@@ -116,15 +139,15 @@ class HeadDownTree(BaseVisualization):
                 relative_start_height = (node_height / 2.0 + node_top_row) / node_height
 
             if edge_height == 0:
-                height_in_rows = node_height
+                height_in_rows = 1
             else:
                 height_in_rows = math.ceil(node_height / float(edge_height))
             start_height = max(int(relative_start_height * height_in_rows), 1)
 
             if edge_width == 0:
-                width_in_columns = math.ceil(node_width / float(edge_width))
+                width_in_columns = 1
             else:
-                width_in_columns = node_width
+                width_in_columns = math.ceil(node_width / float(edge_width))
             left_adjust = int(width_in_columns / -2)
             return left_adjust, -start_height, width_in_columns, height_in_rows
 
@@ -187,6 +210,11 @@ class HeadDownTree(BaseVisualization):
                         projecting_child = child
                 if not projecting_child:
                     projecting_child = children[0]
+                edge = node.get_edge_to(projecting_child)
+                if edge.alignment == g.LEFT:
+                    node.magnet_mapper = left_bottom_is_bottom_center
+                elif edge.alignment == g.RIGHT:
+                    node.magnet_mapper = right_bottom_is_bottom_center
                 x, ny = grid.find_in_grid(projecting_child)
             grid.insert_row()
             need_rows = nh + ntop

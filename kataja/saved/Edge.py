@@ -587,13 +587,13 @@ class Edge(QtWidgets.QGraphicsObject, Saved):
         else:
             if self.start:
                 if self.alignment == LEFT:
-                    self._computed_start_point = self.start.magnet(8)
+                    self._computed_start_point = self.start.bottom_left_magnet()
                 elif self.alignment == RIGHT:
-                    self._computed_start_point = self.start.magnet(10)
+                    self._computed_start_point = self.start.bottom_right_magnet()
                 else:
-                    self._computed_start_point = self.start.magnet(9)
+                    self._computed_start_point = self.start.bottom_center_magnet()
             if self.end:
-                self._computed_end_point = self.end.magnet(2)
+                self._computed_end_point = self.end.top_center_magnet()
 
     def connect_end_points(self, start, end):
         """
