@@ -98,8 +98,8 @@ class NodesPanel(Panel):
         layout = QtWidgets.QVBoxLayout()
         self.node_frames = {}
 
-        for key in prefs.node_types_order:
-            nd = prefs.node_info[key]
+        for key in classes.node_types_order:
+            nd = classes.node_info[key]
             frame = DraggableNodeFrame(key, nd['name'], parent=inner)
             self.node_frames[key] = frame
             layout.addWidget(frame)

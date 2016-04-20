@@ -1,7 +1,7 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
 
 import kataja.globals as g
-from kataja.singletons import ctrl, qt_prefs, prefs
+from kataja.singletons import ctrl, qt_prefs, prefs, classes
 from kataja.saved.Edge import Edge
 from kataja.saved.movables.Node import Node
 from kataja.ui_items.Panel import Panel
@@ -192,7 +192,7 @@ class StylePanel(Panel):
     def update_scope_selector_options(self):
         """ Redraw scope selector, show only scopes that are used in this
         forest """
-        ni = prefs.node_info
+        ni = classes.node_info
         ss = self.scope_selector
         ss.clear()
         item = QtGui.QStandardItem('Current selection')
@@ -200,7 +200,7 @@ class StylePanel(Panel):
         if not (self._nodes_in_selection or self._edges_in_selection):
             item.setFlags(QtCore.Qt.ItemIsEnabled) #QtCore.Qt.NoItemFlags)
         items = [item]
-        for key in prefs.node_types_order:
+        for key in classes.node_types_order:
             name = ni[key]['name_pl']
             item = QtGui.QStandardItem(name)
             item.setData(key, 256)

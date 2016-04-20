@@ -1,7 +1,6 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 import kataja.globals as g
-from kataja.shapes import draw_arrow_shape_from_points
 from kataja.singletons import qt_prefs, ctrl, prefs, classes
 from kataja.ui_support.drawn_icons import arrow, divider
 from kataja.utils import guess_node_type
@@ -10,119 +9,6 @@ from kataja.ui_items.UIEmbed import UIEmbed
 from kataja.ui_support.panel_utils import icon_text_button, box_row
 
 __author__ = 'purma'
-
-
-class MarkerStartPoint(QtWidgets.QGraphicsItem):
-    def __init__(self, parent):
-        QtWidgets.QGraphicsItem.__init__(self, parent)
-        self.setCursor(QtCore.Qt.CrossCursor)
-        self.setAcceptHoverEvents(True)
-        self.draggable = True
-        self.clickable = False
-
-    def type(self):
-        """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
-        need to differentiate between them. List of types is kept as comments in globals.py,
-        but for performance reasons just hardcode it here.
-        :return:
-        """
-        return 65700
-
-    def paint(self, painter, options, QWidget_widget=None):
-        if prefs.touch:
-            p = QtGui.QPen(ctrl.cm.ui_tr())
-            p.setWidth(2)
-            painter.setPen(p)
-            painter.drawEllipse(-6, -6, 12, 12)
-        else:
-            p = QtGui.QPen(ctrl.cm.ui())
-            p.setWidthF(0.5)
-            painter.setPen(p)
-            painter.drawRect(-2, -2, 4, 4)
-
-    def boundingRect(self):
-        if prefs.touch:
-            return QtCore.QRectF(-6, -6, 12, 12)
-        else:
-            return QtCore.QRectF(-2, -2, 4, 4)
-
-    def drag(self, event):
-        pi = self.parentItem()
-        if pi:
-            pi.set_dragged(True)
-            pi.update_position(event.scenePos())
-
-    def drop_to(self, x, y, recipient=None):
-        pass
-
-
-class NewElementMarker(QtWidgets.QGraphicsItem):
-    """ Element marker is line drawn to graphics scene pointing from place where new element
-    should go to
-    embedded widget.
-
-    :param parent:
-    :param ui_manager:
-    :param scene_pos:
-    """
-
-    def __init__(self, scene_pos, embed, ui_key):
-        QtWidgets.QGraphicsItem.__init__(self)
-        self.ui_key = ui_key
-        self.host = None
-        self.start_point = None
-        self.end_point = None
-        self.embed = embed
-        self.update_position(scene_pos=scene_pos)
-        self.start_point_cp = MarkerStartPoint(self)
-        self.start_point_cp.show()
-        self.draggable = False  # MarkerStartPoint is draggable, not this
-        self.clickable = False
-        self.dragged = False
-
-    def type(self):
-        """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
-        need to differentiate between them. List of types is kept as comments in globals.py,
-        but for performance reasons just hardcode it here.
-        :return:
-        """
-        return 65701
-
-    def paint(self, painter, options, QWidget_widget=None):
-        p = QtGui.QPen(ctrl.cm.ui())
-        p.setWidthF(0.5)
-        painter.setPen(p)
-        if self.dragged:
-            draw_arrow_shape_from_points(painter, self.end_point.x(), self.end_point.y(), 0, 0, 10)
-        else:
-            painter.drawLine(QtCore.QPoint(0, 0), self.end_point)
-        painter.drawRect(self.end_point.x() - 2, self.end_point.y() - 2, 4, 4)
-
-    def boundingRect(self):
-        return QtCore.QRectF(self.start_point, self.end_point)
-
-    def set_dragged(self, value):
-        if self.dragged and value:
-            return
-        elif value:
-            self.dragged = True
-            self.embed.marker_dragged()
-
-    def update_position(self, scene_pos=None):
-        self.prepareGeometryChange()
-        if scene_pos:
-            self.start_point = scene_pos
-        magnet, type = self.embed.magnet()
-        end_pos = self.embed.pos() + magnet
-        if type in [6, 8]:
-            end_pos -= QtCore.QPoint(0, 20)
-        elif type in [1, 3, 4, 5]:
-            end_pos += QtCore.QPoint(0, 20)
-        elif type in [2, 7]:
-            end_pos += QtCore.QPoint(20, 0)
-        v = self.embed.parentWidget()
-        self.setPos(self.start_point)
-        self.end_point = self.mapFromScene(v.mapToScene(end_pos)).toPoint()
 
 
 class NewElementEmbed(UIEmbed):
@@ -160,15 +46,16 @@ class NewElementEmbed(UIEmbed):
         self.node_type_selector.currentIndexChanged.connect(self.changed_node_type)
 
         self.node_types = [('Guess from input', g.GUESS_FROM_INPUT)]
-        for key in prefs.node_types_order:
+        for key in classes.node_types_order:
             # we have dedicated buttons for arrows and dividers
             #if key not in (g.ARROW, g.DIVIDER):
-            nd = prefs.nodes[key]
+            node_class = classes.nodes.get(key, None)
+            if not node_class:
+                continue
             if not ctrl.free_drawing_mode:
-                node_class = classes.nodes.get(key, None)
-                if node_class and node_class.is_syntactic:
+                if node_class.is_syntactic:
                     continue
-            self.node_types.append(('New %s' % nd['name'].lower(), key))
+            self.node_types.append(('New %s' % node_class.name[0].lower(), key))
         self.node_types.append(('New arrow', g.ARROW))
         #self.node_types.append(('New divider', g.DIVIDER))
         for i, (name, value) in enumerate(self.node_types):
@@ -199,7 +86,7 @@ class NewElementEmbed(UIEmbed):
         if key == 100:
             self.top_title.setText('Create new tree')
         else:
-            self.top_title.setText('Create new ' + prefs.nodes[key]['name'].lower())
+            self.top_title.setText('Create new ' + classes.node_info[key]['name'].lower())
 
     def changed_node_type(self, index=-1):
         if index == 0:

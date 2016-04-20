@@ -297,15 +297,6 @@ class Node(Movable):
         self.update_bounding_rect()
         ctrl.ui.remove_touch_areas_for(self)
 
-    def node_info(self):
-        so = self.syntactic_object
-        if so:
-            so = so._saved
-        print('''-----------Node saved data-----------
-saved: %s
-syntactic_object: %s
------------------------''' % (self._saved, so))
-
     def move(self, md):
         """ Add on Moveable.move the case when node is folding towards
         triangle. It has priority.
@@ -1175,8 +1166,6 @@ syntactic_object: %s
                 self.setToolTip("Edit with keyboard, click the cog to inspect the node")
             if not (ctrl.multiple_selection() or ctrl.multiselection_delay):
                 self.label_object.set_quick_editing(True)
-
-            # self.node_info()
         self.update()
 
     # ### MOUSE - kataja

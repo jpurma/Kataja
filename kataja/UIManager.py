@@ -64,7 +64,8 @@ from kataja.ui_items.StretchLine import StretchLine
 from kataja.ui_items.TouchArea import TouchArea, create_touch_area
 from kataja.ui_items.embeds.EdgeLabelEmbed import EdgeLabelEmbed
 from kataja.ui_items.embeds.GroupLabelEmbed import GroupLabelEmbed
-from kataja.ui_items.embeds.NewElementEmbed import NewElementEmbed, NewElementMarker
+from kataja.ui_items.embeds.NewElementEmbed import NewElementEmbed
+from kataja.ui_items.NewElementMarker import NewElementMarker
 from kataja.ui_items.embeds.NodeEditEmbed import NodeEditEmbed
 from kataja.ui_items.panels.SymbolPanel import SymbolPanel
 from kataja.ui_support.MyColorDialog import MyColorDialog

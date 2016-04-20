@@ -32,6 +32,9 @@ from kataja.singletons import ctrl
 CREATED = 1
 DELETED = 2
 
+max_stack = 24
+
+
 class UndoManager:
     """ Holds the undo stack and manages the undo- and redo-activities. """
 
@@ -59,6 +62,10 @@ class UndoManager:
             self._stack.append((msg, snapshot))
             self._current = len(self._stack) - 1
         ctrl.undo_pile = set()
+        if len(self._stack) > max_stack:
+            self._stack.pop(0)
+            self._current -= 1
+
         ctrl.add_message('took snapshot, undo stack size: %s items %s chars' % (
             len(self._stack), len(str(self._stack))))
         print('stack len:', len(str(self._stack)))

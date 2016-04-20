@@ -14,6 +14,8 @@ class KatajaFactory:
 
         self.classes = {}
         self.nodes = {}
+        self.node_info = {}
+        self.node_types_order = []
         self.edge_class = None
 
     def late_init(self):
@@ -55,6 +57,7 @@ class KatajaFactory:
             self.classes[class_object.short_name] = class_object
         self.nodes = self.default_node_classes.copy()
         self.edge_class = self.default_edge_class
+        self.update_node_info()
 
     @property
     def Constituent(self):
@@ -77,6 +80,20 @@ class KatajaFactory:
         self.classes = self.default_models.copy()
         self.nodes = self.default_node_classes.copy()
         self.edge_class = self.default_edge_class
+        self.update_node_info()
+
+    def update_node_info(self):
+        self.node_info = {}
+        self.node_types_order = []
+        for key, nodeclass in self.nodes.items():
+            self.node_info[key] = {'name': nodeclass.name[0],
+                                   'name_pl': nodeclass.name[1],
+                                   'display': nodeclass.display,
+                                   'short_name': nodeclass.short_name}
+            if nodeclass.display:
+                self.node_types_order.append(key)
+        self.node_types_order.sort()
+
 
     def get(self, key):
         return self.classes[key]

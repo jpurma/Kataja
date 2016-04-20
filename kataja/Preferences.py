@@ -244,9 +244,6 @@ class Preferences(object):
         #  from those.
         self.node_styles = {}
         self._node_styles_ui = {'tab': 'Node styles', 'special': 'nodes'}
-        # node info is generated into preferences (should it move into object factory?)
-        self.node_info = {}
-        self.node_types_order = []
 
         self.plugins_path = ''
         self.active_plugins = {}
@@ -289,15 +286,8 @@ class Preferences(object):
         node_classes = classes.nodes
         for key, nodeclass in node_classes.items():
             self.node_styles[key] = nodeclass.default_style.copy()
-            self.node_info[key] = {'name': nodeclass.name[0],
-                                   'name_pl': nodeclass.name[1],
-                                   'display': nodeclass.display,
-                                   'short_name': nodeclass.short_name}
-            if nodeclass.display:
-                self.node_types_order.append(key)
             edge_key = nodeclass.default_edge['id']
             self.edge_styles[edge_key] = nodeclass.default_edge.copy()
-        self.node_types_order.sort()
 
     def restore_default_preferences(self, qt_prefs, running_environment, classes):
         source_prefs = Preferences(running_environment)
