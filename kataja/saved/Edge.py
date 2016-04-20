@@ -472,8 +472,12 @@ class Edge(QtWidgets.QGraphicsObject, Saved):
         if not self._shape_method:
             self.update_shape()
         c = self._cached_shape_info
-        c['start_point'] = self.start_point
-        c['end_point'] = self.end_point
+        sx, sy = self.start_point
+        ex, ey = self.end_point
+        if sx == ex:
+            ex += 0.001 # fix disappearing vertical paths
+        c['start_point'] = sx, sy
+        c['end_point'] = ex, ey
         c['curve_adjustment'] = self.curve_adjustment
         c['thick'] = self._projection_thick
         c['alignment'] = self.alignment
@@ -586,12 +590,15 @@ class Edge(QtWidgets.QGraphicsObject, Saved):
             pass
         else:
             if self.start:
-                if self.alignment == LEFT:
-                    self._computed_start_point = self.start.bottom_left_magnet()
-                elif self.alignment == RIGHT:
-                    self._computed_start_point = self.start.bottom_right_magnet()
-                else:
+                if prefs.style == 'plain': # stupid hack to test how it looks
                     self._computed_start_point = self.start.bottom_center_magnet()
+                else:
+                    if self.alignment == LEFT:
+                        self._computed_start_point = self.start.bottom_left_magnet()
+                    elif self.alignment == RIGHT:
+                        self._computed_start_point = self.start.bottom_right_magnet()
+                    else:
+                        self._computed_start_point = self.start.bottom_center_magnet()
             if self.end:
                 self._computed_end_point = self.end.top_center_magnet()
 
@@ -675,7 +682,6 @@ class Edge(QtWidgets.QGraphicsObject, Saved):
         """
         return self.edge_type is g.ARROW or self.edge_type is g.DIVIDER
 
-
     def update_selection_status(self, selected):
         """ Switch
 
@@ -726,17 +732,11 @@ class Edge(QtWidgets.QGraphicsObject, Saved):
         """
         if value and not self._hovering:
             self._hovering = True
-            #self.setZValue(100)
-            # if ctrl.cm.use_glow():
-            #    self.effect.setColor(ctrl.cm.selection())
-            #    self.effect.setEnabled(True)
             self.prepareGeometryChange()
             self.update()
             self.update_status_tip()
             ctrl.set_status(self.status_tip)
         elif (not value) and self._hovering:
-            # if ctrl.cm.use_glow():
-            #    self.effect.setEnabled(False)
             self._hovering = False
             self.prepareGeometryChange()
             self.setZValue(10)
@@ -798,10 +798,13 @@ class Edge(QtWidgets.QGraphicsObject, Saved):
             if width:
                 p = QtGui.QPen()
                 p.setColor(c)
+                p.setCapStyle(QtCore.Qt.RoundCap)
                 if self._projection_thick:
                     width *= 2
                 p.setWidthF(width)
                 painter.setPen(p)
+                if self._path.length() == 0 or self._path.isEmpty():
+                    print(self, self._path.length(), self._path.isEmpty())
                 painter.drawPath(self._path)
 
             if self.is_filled():

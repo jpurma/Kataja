@@ -470,10 +470,9 @@ def linear_path(start_point=None, end_point=None, curve_adjustment=None,
     """
     sx, sy = start_point
     dx, dy = end_point
-    control_points = []
     path = QtGui.QPainterPath(Pf(sx, sy))
     path.lineTo(dx, dy)
-    return path, path, control_points
+    return path, path, []  # [] = control_points
 
 
 def linear_icon(painter, rect, color=None):
@@ -756,13 +755,13 @@ od = [('shaped_cubic',
             fixed_dx=20, fixed_dy=0, thickness=1)),
       ('shaped_linear',
        dict(method=shaped_linear_path, fill=True, icon=shaped_linear_icon,
-            control_points=0, leaf_x=1, leaf_y=2.5)),
+            control_points=0, leaf_x=1, leaf_y=1.5)),
       ('linear',
        dict(method=linear_path,
             fill=False,
             icon=linear_icon,
             control_points=0,
-            thickness=2)),
+            thickness=1)),
       ('blob',
        dict(method=blob_path, fill=True, icon=blob_icon, control_points=1,
             thickness=0)),

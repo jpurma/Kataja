@@ -67,16 +67,16 @@ class ForestSettings(Saved):
         self.use_projection = True
         self.use_xbar_aliases = True
         self.projection_highlighter = False
-        self.projection_strong_lines = True
+        self.projection_strong_lines = False
         self.projection_colorized = True
         self.show_leaf_labels = True
         self.show_leaf_aliases = True
         self.show_internal_labels = False
         self.show_internal_aliases = True
         # ## Edges - take edge type as argument ###########################
-        self.edge_types = {}
+        self.edge_styles_data = {}
         # ## Nodes - take node type as argument ###########################
-        self.node_types = {}
+        self.node_styles_data = {}
 
 
     def last_key_color_for_mode(self, mode_key, value=None):
@@ -93,28 +93,21 @@ class ForestSettings(Saved):
 
     # ## Edges - all require edge type as argument, value is stored in dict ###########
 
-    def edge_type_for(self, node_type):
-        """ Helper for easy access to edge_type
-        :param node_type:
-        :return:
-        """
-        return self.node_info(node_type, 'edge')
-
     def edge_info(self, edge_type, key=None):
         """ Getter for settings related to various types of edges.
         If not found here, value is searched from preferences. 
         :param edge_type:
         :param key:
         """
-        local_edge_settings = self.edge_types.get(edge_type)
+        local_edge_settings = self.edge_styles_data.get(edge_type)
         if key:
             if local_edge_settings is None or local_edge_settings.get(key, None) is None:
-                return prefs.edges[edge_type].get(key, None)
+                return prefs.edge_styles[edge_type][prefs.style].get(key, None)
             else:
                 return local_edge_settings[key]
         else:
             if local_edge_settings is None or local_edge_settings.get(key, None) is None:
-                return prefs.edges[edge_type].get(key, None)
+                return prefs.edge_styles[edge_type][prefs.style].get(key, None)
             else:
                 return local_edge_settings[key]
 
@@ -125,9 +118,9 @@ class ForestSettings(Saved):
         :param key:
         :param value:
         """
-        local_edge_settings = self.edge_types.get(edge_type)
+        local_edge_settings = self.edge_styles_data.get(edge_type)
         if local_edge_settings is None:
-            self.edge_types[edge_type] = {key: value}
+            self.edge_styles_data[edge_type] = {key: value}
         else:
             local_edge_settings[key] = value
 
@@ -139,9 +132,9 @@ class ForestSettings(Saved):
 
     def reset_edge_style(self, edge_type):
         """ """
-        if edge_type in self.edge_types:
-            self.poke('edge_types')
-            del self.edge_types[edge_type]
+        if edge_type in self.edge_styles_data:
+            self.poke('edge_styles_data')
+            del self.edge_styles_data[edge_type]
             self.call_watchers('edge_shape')
 
     def reset_shape(self, edge_type, *keys):
@@ -150,13 +143,13 @@ class ForestSettings(Saved):
         :param keys: strings of key names
         :return:
         """
-        local_edge_type = self.edge_types.get(edge_type, None)
+        local_edge_type = self.edge_styles_data.get(edge_type, None)
         if not local_edge_type:
             return
         shape_args = local_edge_type.get('shape_args', None)
         if not shape_args:
             return
-        self.poke('edge_types')
+        self.poke('edge_styles')
         shape_defaults = SHAPE_PRESETS[self.edge_info(edge_type, 'shape_name')]
         for key in keys:
             if key in shape_args:
@@ -171,7 +164,7 @@ class ForestSettings(Saved):
         return SHAPE_PRESETS[shape_name]
 
     def local_shape_args(self, edge_type):
-        local_edge_type = self.edge_types.get(edge_type, None)
+        local_edge_type = self.edge_styles_data.get(edge_type, None)
         if local_edge_type:
             return local_edge_type.get('shape_args', None)
 
@@ -209,11 +202,11 @@ class ForestSettings(Saved):
         :param key:
         :return:
         """
-        self.poke('edge_types')
-        local_edge_type = self.edge_types.get(edge_type, None)
+        self.poke('edge_styles')
+        local_edge_type = self.edge_styles_data.get(edge_type, None)
         if not local_edge_type:
             local_edge_type = {}
-            self.edge_types[edge_type] = local_edge_type
+            self.edge_styles_data[edge_type] = local_edge_type
         shape_args = local_edge_type.get('shape_args', None)
         if not shape_args:
             shape_args = self.shape_defaults(edge_type).copy()
@@ -223,54 +216,50 @@ class ForestSettings(Saved):
 
     # ## Nodes - all require edge type as argument, value is stored in dict
 
-    def node_info(self, node_type=None, key=None):
-        """ Getter/setter for settings related to various types of nodes. 
+    def node_style(self, node_type, key=None):
+        """ Getter for display styles for certain node type.
         If not found here, value is searched from preferences. 
-        If called with value, the value is set here and it overrides 
-        the preference setting.
         :param node_type:
         :param key:
-        :param value:
         """
-        if not node_type:
-            # Return settings for all node types
-            settings = {}
-            settings.update(prefs.nodes)
-            settings.update(self.node_types)
-            return settings
-        elif not key:
+        if not key:
             # Return all settings of certain node type
             settings = {}
-            settings.update(prefs.nodes[node_type])
-            settings.update(self.node_types.get(node_type, {}))
+            settings.update(prefs.node_styles[node_type][prefs.style])
+            settings.update(self.node_styles_data.get(node_type, {}))
             return settings
-        local_node_settings = self.node_types.get(node_type, None)
+        local_node_settings = self.node_styles_data.get(node_type, None)
         if local_node_settings is None or local_node_settings.get(key) is None:
-            return prefs.nodes[node_type][key]
+            return prefs.node_styles[node_type][prefs.style][key]
         else:
             return local_node_settings[key]
 
-    def reset_node_style(self, node_type):
-        if node_type in self.node_types:
-            self.poke('node_types')
-            del self.node_types[node_type]
+    def node_styles(self):
+        """ Get all node styles according to currently active style (plain|fancy)
+        """
+        settings = {}
+        s = prefs.style
+        for key in prefs.node_styles.keys():
+            settings[key] = prefs.node_styles[key][s].copy()
+        settings.update(self.node_styles_data)
+        return settings
 
-    def set_node_info(self, node_type, key, value):
-        """ Setter for settings related to various types of nodes.
-        If not found here, value is searched from preferences.
-        If called with value, the value is set here and it overrides
-        the preference setting.
-        This cannot be used to create new node_types. Only to locally modify
-        existing settings
+    def reset_node_style(self, node_type):
+        if node_type in self.node_styles_data:
+            self.poke('node_styles_data')
+            del self.node_styles_data[node_type]
+
+    def set_node_style(self, node_type, key, value):
+        """ Setter for style settings for specific type of nodes.
         :param node_type:
         :param key:
         :param value:
         """
-        self.poke('node_types')
+        self.poke('node_styles_data')
 
-        local_node_settings = self.node_types.get(node_type, None)
+        local_node_settings = self.node_styles_data.get(node_type, None)
         if local_node_settings is None:
-            self.node_types[node_type] = {key: value}
+            self.node_styles_data[node_type] = {key: value}
         else:
             local_node_settings[key] = value
 
@@ -293,8 +282,8 @@ class ForestSettings(Saved):
     bracket_style = SavedSetting("bracket_style")
     # these have dicts, they don't need SavedSetting check but special care in use
     last_key_colors = SavedField("last_key_colors")
-    edge_types = SavedField("edge_types", watcher='edge_shape')
-    node_types = SavedField("node_types")
+    edge_styles_data = SavedField("edge_styles_data", watcher='edge_shape')
+    node_styles_data = SavedField("node_styles_data")
 
 
 class ForestRules(Saved):

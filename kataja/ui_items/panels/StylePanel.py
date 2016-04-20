@@ -39,15 +39,21 @@ class StylePanel(Panel):
         # class.variables
         ui = self.ui_manager
         hlayout = box_row(layout)
-        styles_data = [('fancy', 'fancy'), ('basic', 'basic')]
+
+        styles_data = []
+        current_style_i = 0
+        for i, value in enumerate(prefs.available_styles):
+            if value == prefs.style:
+                current_style_i = i
+            styles_data.append((value, value))
         self.overall_style_box = selector(ui, self, hlayout,
                                           data=styles_data,
                                           action='change_master_style')
+        self.overall_style_box.setCurrentIndex(current_style_i)
         self.custom_overall_style = text_button(ui, hlayout,
                                                 text='customize',
                                                 action='customize_master_style',
                                                 checkable=True)
-        self.ostyle = 'fancy'
 
         self.style_widgets = QtWidgets.QWidget(self)
         sw_layout = QtWidgets.QVBoxLayout()
@@ -186,7 +192,7 @@ class StylePanel(Panel):
     def update_scope_selector_options(self):
         """ Redraw scope selector, show only scopes that are used in this
         forest """
-        nd = prefs.nodes
+        ni = prefs.node_info
         ss = self.scope_selector
         ss.clear()
         item = QtGui.QStandardItem('Current selection')
@@ -195,7 +201,7 @@ class StylePanel(Panel):
             item.setFlags(QtCore.Qt.ItemIsEnabled) #QtCore.Qt.NoItemFlags)
         items = [item]
         for key in prefs.node_types_order:
-            name = nd[key]['name_pl']
+            name = ni[key]['name_pl']
             item = QtGui.QStandardItem(name)
             item.setData(key, 256)
             items.append(item)
@@ -241,7 +247,7 @@ class StylePanel(Panel):
                 self.node_color_selector.setEnabled(False)
                 self.font_selector.setEnabled(False)
         elif ctrl.forest:
-            ns = ctrl.fs.node_info
+            ns = ctrl.fs.node_style
             es = ctrl.fs.edge_info
             node_type = ctrl.ui.active_node_type
             edge_type = ctrl.ui.active_edge_type

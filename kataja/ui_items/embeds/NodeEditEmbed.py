@@ -39,7 +39,7 @@ class NodeEditEmbed(UIEmbed):
     """
 
     def __init__(self, parent, ui_key, node):
-        nname = prefs.nodes[node.node_type]['name'].lower()
+        nname = node.name[0].lower()
         UIEmbed.__init__(self, parent, ui_key, node, 'Edit ' + nname)
         layout = QtWidgets.QVBoxLayout()
         layout.addLayout(self.top_row_layout)

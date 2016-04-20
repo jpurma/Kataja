@@ -51,19 +51,32 @@ class CommentNode(Node):
                              tooltip='freeform text, invisible for processing',
                              input_type='textarea')}
 
-    default_style = {'color': 'accent4',
-                     'font': g.MAIN_FONT,
-                     'font-size': 14}
+    default_style = {'fancy': {'color': 'accent4',
+                               'font': g.MAIN_FONT,
+                               'font-size': 14},
+                     'plain': {'color': 'accent4',
+                               'font': g.MAIN_FONT,
+                               'font-size': 14}
+                    }
 
-    default_edge = {'id': g.COMMENT_EDGE,
-                    'shape_name': 'linear',
-                    'color': 'accent4',
-                    'pull': 0,
-                    'visible': True,
-                    'arrowhead_at_start': True,
-                    'arrowhead_at_end': False,
-                    'labeled': False,
-                    'name_pl': 'Comment arrows'}
+
+    default_edge = {'fancy': {'shape_name': 'linear',
+                              'color': 'accent4',
+                              'pull': 0,
+                              'visible': True,
+                              'arrowhead_at_start': True,
+                              'arrowhead_at_end': False,
+                              'labeled': False},
+                    'plain': {'shape_name': 'linear',
+                              'color': 'accent4',
+                              'pull': 0,
+                              'visible': True,
+                              'arrowhead_at_start': True,
+                              'arrowhead_at_end': False,
+                              'labeled': False},
+                    'id': g.COMMENT_EDGE,
+                    'name_pl': 'Comment arrows'
+                    }
 
     touch_areas_when_dragging = {g.DELETE_ARROW: {'condition': 'dragging_my_arrow'}}
 

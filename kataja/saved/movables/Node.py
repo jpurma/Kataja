@@ -777,7 +777,7 @@ syntactic_object: %s
         if self.font_id:
             return self.font_id
         else:
-            return ctrl.fs.node_info(self.node_type, 'font')
+            return ctrl.fs.node_style(self.node_type, 'font')
 
     # ### Colors and drawing settings
     # ############################################################
@@ -794,7 +794,7 @@ syntactic_object: %s
         :return:
         """
         if self.color_id is None:
-            c = ctrl.fs.node_info(self.__class__.node_type, 'color')
+            c = ctrl.fs.node_style(self.__class__.node_type, 'color')
             return c
         else:
             return self.color_id

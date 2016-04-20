@@ -26,7 +26,7 @@ from PyQt5 import QtGui, QtCore
 
 from kataja.globals import *
 
-disable_saving_preferences = False
+disable_saving_preferences = True
 # Alternatives: Cambria Math, Asana Math, XITS Math
 
 curves = ['Linear', 'InQuad', 'OutQuad', 'InOutQuad', 'OutInQuad', 'InCubic', 'OutCubic',
@@ -90,6 +90,9 @@ class Preferences(object):
                                'help': 'Color theme used for both trees and editor',
                                'on_change': 'update_colors', 'order': 10}
         self.hsv = None
+
+        self.style = 'plain'
+        self.available_styles = ['plain', 'fancy']
 
         self.touch = True
         self._touch_ui = {'tab': 'General', 'order': 20, 'label': 'Touch-friendly UI',
@@ -219,17 +222,30 @@ class Preferences(object):
         self._shows_select_order_ui = {'tab': 'Syntax'}
 
         # Rest of the edges are defined in their corresponding node classes
-        self.edges = {
-            ARROW: {'shape_name': 'linear', 'color': 'accent4', 'pull': 0, 'visible': True,
-                    'arrowhead_at_start': False, 'arrowhead_at_end': True, 'font': SMALL_CAPS,
-                    'labeled': True},
-            DIVIDER: {'shape_name': 'linear', 'color': 'accent6', 'pull': 0, 'visible': True,
-                      'arrowhead_at_start': False, 'arrowhead_at_end': False, 'font': SMALL_CAPS,
-                      'labeled': True, 'style': 'dashed'}}
+        self.edge_styles = {
+            ARROW: {'fancy': {'shape_name': 'linear', 'color': 'accent4', 'pull': 0,
+                              'visible': True, 'arrowhead_at_start': False,
+                              'arrowhead_at_end': True, 'font': SMALL_CAPS, 'labeled': True},
+                    'plain': {'shape_name': 'linear', 'color': 'accent4', 'pull': 0,
+                              'visible': True, 'arrowhead_at_start': False,
+                              'arrowhead_at_end': True, 'font': SMALL_CAPS, 'labeled': True}
+                    },
+            DIVIDER: {'fancy': {'shape_name': 'linear', 'color': 'accent6', 'pull': 0,
+                                'visible': True, 'arrowhead_at_start': False,
+                                'arrowhead_at_end': False, 'font': SMALL_CAPS,
+                                'labeled': True, 'style': 'dashed'},
+                      'plain': {'shape_name': 'linear', 'color': 'accent6', 'pull': 0,
+                                'visible': True, 'arrowhead_at_start': False,
+                                'arrowhead_at_end': False, 'font': SMALL_CAPS,
+                                'labeled': True, 'style': 'dashed'}
+                      }
+        }
         # Nodes are defined in their classes and preference dict is generated
         #  from those.
-        self.nodes = {}
-        self._nodes_ui = {'tab': 'Node styles', 'special': 'nodes'}
+        self.node_styles = {}
+        self._node_styles_ui = {'tab': 'Node styles', 'special': 'nodes'}
+        # node info is generated into preferences (should it move into object factory?)
+        self.node_info = {}
         self.node_types_order = []
 
         self.plugins_path = ''
@@ -272,16 +288,15 @@ class Preferences(object):
     def import_node_classes(self, classes):
         node_classes = classes.nodes
         for key, nodeclass in node_classes.items():
-            nd = nodeclass.default_style.copy()
-            nd['name'] = nodeclass.name[0]
-            nd['name_pl'] = nodeclass.name[1]
-            nd['display'] = nodeclass.display
-            nd['short_name'] = nodeclass.short_name
-            self.nodes[key] = nd
-            edge_key = nodeclass.default_edge['id']
-            if nd['display']:
+            self.node_styles[key] = nodeclass.default_style.copy()
+            self.node_info[key] = {'name': nodeclass.name[0],
+                                   'name_pl': nodeclass.name[1],
+                                   'display': nodeclass.display,
+                                   'short_name': nodeclass.short_name}
+            if nodeclass.display:
                 self.node_types_order.append(key)
-            self.edges[edge_key] = nodeclass.default_edge.copy()
+            edge_key = nodeclass.default_edge['id']
+            self.edge_styles[edge_key] = nodeclass.default_edge.copy()
         self.node_types_order.sort()
 
     def restore_default_preferences(self, qt_prefs, running_environment, classes):

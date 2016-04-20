@@ -49,11 +49,26 @@ class GlossNode(Node):
     editable = {'label': dict(name='Gloss', prefill='gloss',
                               tooltip='translation (optional)')}
 
-    default_style = {'color': 'accent5', 'font': g.ITALIC_FONT, 'font-size': 10}
+    default_style = {'fancy': {'color': 'accent5', 'font': g.ITALIC_FONT, 'font-size': 10},
+                     'plain': {'color': 'accent5', 'font': g.ITALIC_FONT, 'font-size': 10}}
 
-    default_edge = {'id': g.GLOSS_EDGE, 'shape_name': 'cubic', 'color': 'accent5', 'pull': .40,
-                    'visible': True, 'arrowhead_at_start': False, 'arrowhead_at_end': False,
-                    'labeled': False, 'name_pl': 'Gloss edges'}
+    default_edge = {'fancy': {'shape_name': 'cubic',
+                              'color': 'accent5',
+                              'pull': .40,
+                              'visible': True,
+                              'arrowhead_at_start': False,
+                              'arrowhead_at_end': False,
+                              'labeled': False},
+                    'plain': {'shape_name': 'linear',
+                              'color': 'accent5',
+                              'pull': .40,
+                              'visible': True,
+                              'arrowhead_at_start': False,
+                              'arrowhead_at_end': False,
+                              'labeled': False},
+                    'id': g.GLOSS_EDGE,
+                    'name_pl': 'Gloss edges'
+                    }
 
     def __init__(self, text=''):
         Node.__init__(self)

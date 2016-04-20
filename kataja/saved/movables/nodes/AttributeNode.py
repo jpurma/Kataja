@@ -72,11 +72,18 @@ class AttributeNode(Node):
     short_name = "ANode"
     display = False
 
-    default_style = {'color': 'accent4', 'font': g.SMALL_CAPS, 'font-size': 10}
+    default_style = {'fancy': {'color': 'accent4', 'font': g.SMALL_CAPS, 'font-size': 10},
+                     'plain': {'color': 'accent4', 'font': g.SMALL_CAPS, 'font-size': 10}}
 
-    default_edge = {'id': g.ATTRIBUTE_EDGE, 'shape_name': 'linear', 'color': 'content1',
-                    'pull': .50, 'visible': True, 'arrowhead_at_start': False,
-                    'arrowhead_at_end': False, 'labeled': False, 'name_pl': 'Attribute edges'}
+    default_edge = {'fancy': { 'shape_name': 'linear', 'color': 'content1',
+                              'pull': .50, 'visible': True, 'arrowhead_at_start': False,
+                              'arrowhead_at_end': False, 'labeled': False},
+                    'plain': {'shape_name': 'linear', 'color': 'content1',
+                              'pull': .50, 'visible': True, 'arrowhead_at_start': False,
+                              'arrowhead_at_end': False, 'labeled': False},
+                    'id': g.ATTRIBUTE_EDGE,
+                    'name_pl': 'Attribute edges'
+                    }
 
     def __init__(self, host, attribute_id, attribute_label='', show_label=False, restoring=False):
         """

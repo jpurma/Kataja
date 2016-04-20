@@ -62,11 +62,27 @@ class FeatureNode(Node):
                                        'phi-features)', syntactic=True)
                 }
 
-    default_style = {'color': 'accent2', 'font': g.SMALL_CAPS, 'font-size': 9}
+    default_style = {'fancy': {'color': 'accent2', 'font': g.SMALL_CAPS, 'font-size': 9},
+                     'plain': {'color': 'accent2', 'font': g.SMALL_CAPS, 'font-size': 9}}
 
-    default_edge = {'id': g.FEATURE_EDGE, 'shape_name': 'cubic', 'color': 'accent2', 'pull': .40,
-                    'visible': True, 'arrowhead_at_start': False, 'arrowhead_at_end': False,
-                    'labeled': False, 'name_pl': 'Feature edges'}
+    default_edge = {'fancy': {'shape_name': 'cubic',
+                              'color': 'accent2',
+                              'pull': .40,
+                              'visible': True,
+                              'arrowhead_at_start': False,
+                              'arrowhead_at_end': False,
+                              'labeled': False},
+                    'plain': {
+                              'shape_name': 'linear',
+                              'color': 'accent2',
+                              'pull': .40,
+                              'visible': True,
+                              'arrowhead_at_start': False,
+                              'arrowhead_at_end': False,
+                              'labeled': False},
+                    'id': g.FEATURE_EDGE,
+                    'name_pl': 'Feature edges'
+                    }
 
     def __init__(self, feature=None):
         Node.__init__(self, syntactic_object=feature)

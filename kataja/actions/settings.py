@@ -1,7 +1,7 @@
 # coding=utf-8
 import kataja.globals as g
 from kataja.actions._utils import get_ui_container
-from kataja.singletons import ctrl
+from kataja.singletons import ctrl, prefs
 from kataja.saved.Edge import Edge
 from kataja.saved.movables.Node import Node
 
@@ -20,13 +20,17 @@ a['customize_master_style'] = {'command': 'Customize style',
                                'tooltip': 'Modify the styles of lines and nodes'}
 
 
-def change_master_style(style_id):
+def change_master_style(sender=None):
     """
     """
-    print(style_id)
+    if sender:
+        value = sender.currentData(256)
+        prefs.style = value
+    ctrl.forest.redraw_edges()
+    return "Changed master style to '%s'" % value
 
 a['change_master_style'] = {'command': 'Change drawing style',
-                            'method': change_master_style, 'trigger_args': True,
+                            'method': change_master_style, 'sender_arg': True,
                             'undoable': False,
                             'tooltip': 'Changes the style of lines and nodes'}
 
@@ -103,7 +107,7 @@ def select_font():
                 node.font_id = font_id
                 node.update_label()
     else:
-        ctrl.fs.set_node_info(ctrl.ui.active_node_type, 'font', font_id)
+        ctrl.fs.set_node_style(ctrl.ui.active_node_type, 'font', font_id)
         for node in ctrl.forest.nodes.values():
             node.update_label()
 
@@ -168,7 +172,7 @@ def change_node_color():
                 node.update_label()
     # ... or update color for all nodes of this type
     else:
-        ctrl.fs.set_node_info(ctrl.ui.active_node_type, 'color', color_key)
+        ctrl.fs.set_node_style(ctrl.ui.active_node_type, 'color', color_key)
         for node in ctrl.forest.nodes.values():
             node.update_label()
     if color_key:

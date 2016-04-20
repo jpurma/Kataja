@@ -190,7 +190,7 @@ class LineOptionsPanel(Panel):
             arrowhead_at_start = ctrl.forest.settings.edge_info(edge_type, 'arrowhead_at_start')
             arrowhead_at_end = ctrl.forest.settings.edge_info(edge_type, 'arrowhead_at_end')
 
-            self.set_title('Edge settings for all ' + prefs.edges[edge_type][
+            self.set_title('Edge settings for all ' + prefs.edge_styles[edge_type][
                 'name_pl'].lower())
         if sd:
             # Disable control points

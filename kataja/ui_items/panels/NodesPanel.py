@@ -14,15 +14,15 @@ class DraggableNodeFrame(QtWidgets.QFrame):
         self.setAutoFillBackground(True)
 
         if ctrl.forest:
-            settings = ctrl.fs.node_info()
+            style = ctrl.fs.node_style(key)
         else:
-            settings = prefs.nodes
+            style = prefs.node_styles[key][prefs.style]
         hlayout = QtWidgets.QHBoxLayout()
         hlayout.setContentsMargins(0, 0, 0, 0)
-        color_key = settings[key]['color']
+        color_key = style['color']
         self.key = key
         self.setPalette(ctrl.cm.palette_from_key(color_key))
-        self.setFont(qt_prefs.font(settings[key]['font']))
+        self.setFont(qt_prefs.font(style['font']))
         self.add_button = icon_button(ctrl.ui, self, hlayout,
                                       icon=qt_prefs.add_icon,
                                       text='Add ' + name,
@@ -42,7 +42,7 @@ class DraggableNodeFrame(QtWidgets.QFrame):
         self.setLayout(hlayout)
 
     def update_colors(self):
-        settings = ctrl.fs.node_info(self.key)
+        settings = ctrl.fs.node_style(self.key)
         self.setPalette(ctrl.cm.palette_from_key(settings['color']))
         self.add_button.update_colors()
         self.setFont(qt_prefs.font(settings['font']))
@@ -99,7 +99,7 @@ class NodesPanel(Panel):
         self.node_frames = {}
 
         for key in prefs.node_types_order:
-            nd = prefs.nodes[key]
+            nd = prefs.node_info[key]
             frame = DraggableNodeFrame(key, nd['name'], parent=inner)
             self.node_frames[key] = frame
             layout.addWidget(frame)

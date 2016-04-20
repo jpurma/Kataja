@@ -34,11 +34,26 @@ class PropertyNode(Node):
     name = ('Property', 'Properties')
     short_name = "PropN"
     display = False
-    default_style = {'color': 'accent6', 'font': g.SMALL_CAPS, 'font-size': 10}
+    default_style = {'fancy': {'color': 'accent6', 'font': g.SMALL_CAPS, 'font-size': 10},
+                     'plain': {'color': 'accent6', 'font': g.SMALL_CAPS, 'font-size': 10}}
 
-    default_edge = {'id': g.PROPERTY_EDGE, 'shape_name': 'linear', 'color': 'accent5', 'pull': .40,
-                    'visible': True,'arrowhead_at_start': False, 'arrowhead_at_end': False,
-                    'labeled': False, 'name_pl': 'Property edges'}
+    default_edge = {'fancy': {'shape_name': 'linear',
+                              'color': 'accent5',
+                              'pull': .40,
+                              'visible': True,
+                              'arrowhead_at_start': False,
+                              'arrowhead_at_end': False,
+                              'labeled': False},
+                    'plain': {'shape_name': 'linear',
+                              'color': 'accent5',
+                              'pull': .40,
+                              'visible': True,
+                              'arrowhead_at_start': False,
+                              'arrowhead_at_end': False,
+                              'labeled': False},
+                    'id': g.PROPERTY_EDGE,
+                    'name_pl': 'Property edges'
+                    }
 
     def __init__(self, property=None):
         Node.__init__(self, syntactic_object=property)
