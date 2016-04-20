@@ -110,7 +110,8 @@ menu_structure = OrderedDict([('file_menu', ('&File',
                               ('rules_menu', ('&Rules', ['bracket_mode', 'trace_mode',
                                                          'merge_order_attribute',
                                                          'select_order_attribute'])),
-                              ('view_menu', ('&View', ['$visualizations', '---', 'change_colors',
+                              ('view_menu', ('&View', ['$visualizations', '---',
+                                                       'toggle_bones_mode', 'change_colors',
                                                        'adjust_colors', 'zoom_to_fit', '---',
                                                        'fullscreen_mode'])),
                               ('windows_menu', ('&Windows', [('Panels', ['$panels']), '---',
@@ -549,6 +550,12 @@ class UIManager:
                     new_menu.addSeparator()
                 else:
                     new_menu.addAction(self.qt_actions[item])
+                    #if item in self.actions:
+                    #    getter = self.actions[item].get('check_state', None)
+                    #    if getter:
+                    #        self.qt_actions[item].setChecked(getter())
+
+
             parent.addMenu(new_menu)
             return new_menu
 

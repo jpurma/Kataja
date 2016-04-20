@@ -51,6 +51,16 @@ class TopBarButtons(QtWidgets.QFrame):
 
         self._float_buttons.append(select_mode)
 
+        bones_mode = TopRowButton('bones_mode', parent=self,
+                                  tooltip='Show only syntactic objects',
+                                  pixmap=qt_prefs.eye_icon,
+                                  size=(24, 24))
+        bones_mode.setCheckable(True)
+        bones_mode.setChecked(ui.qt_actions['toggle_bones_mode'].check_state())
+        ui.add_button(bones_mode, action='toggle_bones_mode')
+        layout.addWidget(bones_mode)
+        self._float_buttons.append(bones_mode)
+
         fit_to_screen = TopRowButton('fit_to_screen', parent=self,
                                      tooltip='Fit to screen', size=(24, 24),
                                      pixmap=qt_prefs.full_icon)

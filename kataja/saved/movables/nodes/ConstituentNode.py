@@ -25,7 +25,7 @@ import kataja.globals as g
 from kataja.Saved import SavedField, SavedSynField
 from kataja.saved.movables.Node import Node
 from kataja.parser.INodes import ITextNode
-from kataja.singletons import ctrl
+from kataja.singletons import ctrl, prefs
 from kataja.saved.movables.nodes.BaseConstituentNode import BaseConstituentNode
 
 __author__ = 'purma'
@@ -54,7 +54,9 @@ class ConstituentNode(BaseConstituentNode):
 
     display_styles = {'index': {'align': 'line-end', 'start_tag': '<sub>', 'end_tag': '</sub>'},
                       'triangle': {'special': 'triangle', 'readonly': True},
-                      'label': {'getter': 'triangled_label', 'condition': 'should_show_label'},
+                      'label': {'getter': 'triangled_label',
+                                'condition': 'should_show_label',
+                                'syntactic': True},
                       'alias': {'condition': 'should_show_alias'}}
     editable = {'alias': dict(name='Alias', prefill='alias',
                               tooltip='Non-functional readable label of the constituent'),
@@ -242,7 +244,9 @@ class ConstituentNode(BaseConstituentNode):
             return self.label
 
     def should_show_label(self):
-        if self.is_leaf(only_visible=True) or self.triangle:
+        if prefs.bones_mode:
+            return True
+        elif self.is_leaf(only_visible=True) or self.triangle:
             return ctrl.forest.settings.show_leaf_labels
         else:
             return ctrl.forest.settings.show_internal_labels

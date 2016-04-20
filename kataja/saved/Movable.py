@@ -47,48 +47,48 @@ def about_there(pos1, pos2):
 
 class Movable(Saved, QtWidgets.QGraphicsObject):
     """
-Movable items
--------------
+    Movable items
+    -------------
 
-Movable items are items on canvas that can be affected by visualisation algorithms.
-There are three types of movement:
+    Movable items are items on canvas that can be affected by visualisation algorithms.
+    There are three types of movement:
 
-set_position(p3):
-item is immediately put to given position.
+    set_position(p3):
+    item is immediately put to given position.
 
-move_to(p3):
-item slides to given position
+    move_to(p3):
+    item slides to given position
 
-use_physics(True|False)
-physics_x = True|False:
-physics_y = True|False:
-after move, the item can wander around according to physics, in set dimensions. use_physics sets
-all xy to True|False.
-Physics is handled by visualization algorithm, Movable only announces if it is responsive for
-physics.
+    use_physics(True|False)
+    physics_x = True|False:
+    physics_y = True|False:
+    after move, the item can wander around according to physics, in set dimensions. use_physics sets
+    all xy to True|False.
+    Physics is handled by visualization algorithm, Movable only announces if it is responsive for
+    physics.
 
-Movements using move_to -are affected by adjustment. Adjustment is a vector that displaces the
-item given amount from the move_to -command.
+    Movements using move_to -are affected by adjustment. Adjustment is a vector that displaces the
+    item given amount from the move_to -command.
 
-Movement is triggered manually with move_to. Element may have wandered away from its target
-position: target position should not be used after the movement if node uses physics.
-Adjustment needs to be taken into account always when using target_position
+    Movement is triggered manually with move_to. Element may have wandered away from its target
+    position: target position should not be used after the movement if node uses physics.
+    Adjustment needs to be taken into account always when using target_position
 
-Nodes that use physics disable adjustment after the move_to has ended.
+    Nodes that use physics disable adjustment after the move_to has ended.
 
-When nodes that use physics are dragged around, they are locked into position. 'Locked' state
-overrides physics: the node stays in those coordinates.
-When nodes that don't use physics are dragged, the adjustment.
+    When nodes that use physics are dragged around, they are locked into position. 'Locked' state
+    overrides physics: the node stays in those coordinates.
+    When nodes that don't use physics are dragged, the adjustment.
 
-"""
+    """
     def __init__(self):
         Saved.__init__(self)
         QtWidgets.QGraphicsObject.__init__(self)
         # Common movement-related elements
         self._current_position = (random.random() * 150) - 75, (random.random() * 150) - 75
         self._dragged = False
-        self.trees = set() # each Movable belongs to some trees, either formed by Movable alone or set
-        # of Movables. Tree has abstract position adjustment information.
+        self.trees = set() # each Movable belongs to some trees, either formed by Movable
+        # alone or set of Movables. Tree has abstract position adjustment information.
 
         # MOVE_TO -elements
         self.target_position = 0, 0

@@ -26,7 +26,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 
 from kataja.LabelDocument import LabelDocument
 from kataja.globals import LEFT_ALIGN, CENTER_ALIGN, RIGHT_ALIGN
-from kataja.singletons import ctrl
+from kataja.singletons import ctrl, prefs
 from kataja.utils import combine_dicts, combine_lists, time_me, open_symbol_data
 from kataja.parser.INodes import ITextNode
 import difflib
@@ -168,8 +168,12 @@ class Label(QtWidgets.QGraphicsTextItem):
         visible_parts = []
         html = []
         waiting = None
+        bones_mode = prefs.bones_mode
         for field_name in self.visible_in_label:
             s = styles.get(field_name, {})
+            syntactic = s.get('syntactic', False)
+            if bones_mode and not syntactic:
+                continue
             end_tag = ''
             if 'getter' in s:
                 getter = getattr(h, s.get('getter'), None)
@@ -240,9 +244,14 @@ class Label(QtWidgets.QGraphicsTextItem):
         h = self._host
         editable_parts = []
         editable = []
+        bones_mode = prefs.bones_mode
         for field_name in self.visible_in_label:
             s = styles.get(field_name, {})
             e = edit_styles.get(field_name, {})
+            syntactic = s.get('syntactic', False)
+            if bones_mode and not syntactic:
+                continue
+
             if 'getter' in e:
                 getter = getattr(h, e.get('getter'), None)
                 if callable(getter):

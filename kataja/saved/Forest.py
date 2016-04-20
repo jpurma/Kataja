@@ -649,7 +649,7 @@ class Forest(Saved):
         old_heads = set([x.head for x in self.projections.values()])
 
         new_heads = set()
-        for node in self.nodes.values():
+        for node in list(self.nodes.values()):
             if node.node_type == g.CONSTITUENT_NODE and node.head_node is None:
                 chains = Forest.compute_projection_chains_for(node)
                 if chains:

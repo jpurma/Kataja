@@ -133,7 +133,7 @@ class Action(QtWidgets.QAction):
                  shortcut_context=None, viewgroup=None, sender_arg=None,
                  exclusive=None, selection=None, checkable=None,
                  tooltip=None, action_arg=None, trigger_args=False,
-                 undoable=True, method=None, args=None):
+                 undoable=True, method=None, check_state=None, args=None):
         super().__init__(ctrl.main)
         self.key = key
         self.command = command
@@ -147,6 +147,7 @@ class Action(QtWidgets.QAction):
         self.method = method
         self.args = args or []
         self.tip = tooltip or command
+        self.check_state = check_state
         self.disable_undo_and_message = False
         # when triggered from menu, forward the call to more complex trigger handler
         self.triggered.connect(self.action_triggered)
@@ -179,6 +180,8 @@ class Action(QtWidgets.QAction):
             #if ctrl.main.use_tooltips:
             self.setToolTip(tooltip)
             self.setStatusTip(tooltip)
+        if check_state:
+            self.setChecked(self.check_state())
 
     def action_triggered(self, *args, **kwargs):
         """ Trigger action with parameters received from action data object and designated UI element

@@ -1520,6 +1520,16 @@ class Node(Movable):
         """
         return ctrl.free_drawing_mode
 
+    def update_visibility(self, **kwargs):
+        """
+        :param kwargs: dict of arguments, which are ignored
+        """
+        if prefs.bones_mode:
+            if self.is_syntactic:
+                self.show()
+            else:
+                self.hide()
+
     def check_conditions(self, cond):
         """ Various templates may need to check that all conditions apply before doing things.
         Conditions are methods in this node or in syntactic object of this node.
