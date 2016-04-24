@@ -162,7 +162,7 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         if v != value:
             self._host.poke('label_data')
             self._host.label_data['angle'] = value
-            self.update_label_pos()
+            self.update_position()
             self._host.call_watchers('edge_label_adjust', 'angle', value)
 
     @property
@@ -182,7 +182,7 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         if v != value:
             self._host.poke('label_data')
             self._host.label_data['dist'] = value
-            self.update_label_pos()
+            self.update_position()
             self._host.call_watchers('edge_label_adjust', 'dist', value)
 
     def magnet_positions(self):
@@ -196,7 +196,6 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         :param event:
         :return:
         """
-        print('dragging edge label')
         if self.placeholder:
             return
         if not self._local_drag_handle_position:

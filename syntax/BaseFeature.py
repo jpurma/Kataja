@@ -23,7 +23,7 @@
 #
 # ############################################################################
 
-from kataja.Saved import SavedField
+from kataja.SavedField import SavedField
 from syntax.IFeature import IFeature
 
 

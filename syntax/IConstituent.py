@@ -26,11 +26,12 @@ It is a primary datatype, needs to support saving and loading. """
 # ############################################################################
 
 
-from kataja.Saved import Saved, SavedField
+from kataja.SavedObject import SavedObject
+from kataja.SavedField import SavedField
 from syntax.BaseFeature import BaseFeature
 # from copy import deepcopy
 
-class IConstituent(Saved):
+class IConstituent(SavedObject):
     """ IConstituent is the interface for constituents in syntax. """
 
     syntactic_object = True

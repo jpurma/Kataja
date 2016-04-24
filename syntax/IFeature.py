@@ -23,10 +23,11 @@
 #
 # ############################################################################
 
-from kataja.Saved import Saved, SavedField
+from kataja.SavedObject import SavedObject
+from kataja.SavedField import SavedField
 
 
-class IFeature(Saved):
+class IFeature(SavedObject):
     """ Features are primitive comparable and compatible parts. The class supports several kinds of features:
     Features have property "key" which is used to look for certain exact kind of features, e.g. 'number', 'gender', or
     'case'.

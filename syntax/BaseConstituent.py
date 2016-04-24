@@ -26,7 +26,7 @@ It is a primary datatype, needs to support saving and loading. """
 # ############################################################################
 
 
-from kataja.Saved import SavedField
+from kataja.SavedField import SavedField
 from syntax.IConstituent import IConstituent
 from syntax.BaseFeature import BaseFeature
 # from copy import deepcopy

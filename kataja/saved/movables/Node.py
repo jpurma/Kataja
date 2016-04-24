@@ -31,7 +31,7 @@ from PyQt5.QtCore import Qt
 import kataja.globals as g
 import kataja.shapes
 from kataja.Label import Label
-from kataja.Saved import SavedField
+from kataja.SavedField import SavedField
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.utils import to_tuple, create_shadow_effect, add_xy
 from kataja.saved.Movable import Movable

@@ -24,7 +24,8 @@
 
 from kataja.globals import *
 from kataja.shapes import SHAPE_PRESETS
-from kataja.Saved import Saved, SavedField
+from kataja.SavedObject import SavedObject
+from kataja.SavedField import SavedField
 from kataja.singletons import prefs
 
 ONLY_LEAF_LABELS = 0
@@ -38,7 +39,7 @@ class SavedSetting(SavedField):
 #        super().__init__(name, before_set=before_set, if_changed=if_changed)
 #        self.after_get = after_get
 
-    def __get__(self, obj: Saved, objtype=None):
+    def __get__(self, obj: SavedObject, objtype=None):
         value = obj._saved[self.name]
         if value is None:
             return getattr(prefs, self.name)
@@ -46,7 +47,7 @@ class SavedSetting(SavedField):
             return value
 
 
-class ForestSettings(Saved):
+class ForestSettings(SavedObject):
     """ Settings specific for this forest -- a level between global preferences and settings specific for object. """
 
     short_name = "FSettings"
@@ -286,7 +287,7 @@ class ForestSettings(Saved):
     node_styles_data = SavedField("node_styles_data")
 
 
-class ForestRules(Saved):
+class ForestRules(SavedObject):
     """ Rules that affect trees in one forest in a form that can be easily pickled """
 
     short_name = "FRules"

@@ -22,12 +22,13 @@
 #
 # ############################################################################
 
-from kataja.Saved import Saved, SavedField
+from kataja.SavedObject import SavedObject
+from kataja.SavedField import SavedField
 from kataja.singletons import ctrl
 from kataja.saved.Forest import Forest
 
 
-class ForestKeeper(Saved):
+class ForestKeeper(SavedObject):
     """ Container and loader for Forest objects. Remember to not enable undo for any of the actions in here,
     as scope of undo should be a single Forest. """
 

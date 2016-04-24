@@ -28,7 +28,8 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 
 from kataja.globals import TOP, TOP_ROW, MIDDLE, BOTTOM_ROW, BOTTOM
 from kataja.singletons import prefs, qt_prefs, ctrl
-from kataja.Saved import Saved, SavedField
+from kataja.SavedObject import SavedObject
+from kataja.SavedField import SavedField
 from kataja.utils import add_xy, multiply_xy, div_xy, sub_xy, time_me
 
 
@@ -45,7 +46,7 @@ def about_there(pos1, pos2):
     return round(pos1[0]) == round(pos2[0]) and round(pos1[1]) == round(pos2[1])
 
 
-class Movable(Saved, QtWidgets.QGraphicsObject):
+class Movable(SavedObject, QtWidgets.QGraphicsObject):
     """
     Movable items
     -------------
@@ -82,7 +83,7 @@ class Movable(Saved, QtWidgets.QGraphicsObject):
 
     """
     def __init__(self):
-        Saved.__init__(self)
+        SavedObject.__init__(self)
         QtWidgets.QGraphicsObject.__init__(self)
         # Common movement-related elements
         self._current_position = (random.random() * 150) - 75, (random.random() * 150) - 75

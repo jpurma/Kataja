@@ -1,7 +1,7 @@
 # coding=utf-8
 from PyQt5 import QtCore
 
-from kataja.Saved import SavedField
+from kataja.SavedField import SavedField
 from kataja.saved.Movable import Movable
 
 __author__ = 'purma'

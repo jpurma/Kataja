@@ -4,19 +4,20 @@ import math
 from PyQt5 import QtWidgets, QtCore, QtGui
 
 import kataja.globals as g
-from kataja.Saved import Saved, SavedField
+from kataja.SavedObject import SavedObject
+from kataja.SavedField import SavedField
 from kataja.singletons import ctrl, qt_prefs
 from kataja.saved.movables.Node import Node
 
 points = 36
 
 
-class Amoeba(Saved, QtWidgets.QGraphicsObject):
+class Amoeba(SavedObject, QtWidgets.QGraphicsObject):
 
     short_name = 'Group'
 
     def __init__(self, selection=None, persistent=True):
-        Saved.__init__(self)
+        SavedObject.__init__(self)
         QtWidgets.QGraphicsObject.__init__(self)
         self.ui_key = self.save_key + '_ui'
         self.host = None # not used, it is here because it is expected for UI elements

@@ -22,7 +22,7 @@
 #
 # ############################################################################
 import kataja.globals as g
-from kataja.Saved import SavedField, SavedSynField
+from kataja.SavedField import SavedField, SavedSynField
 from kataja.saved.movables.Node import Node
 from kataja.parser.INodes import ITextNode
 from kataja.singletons import ctrl, prefs

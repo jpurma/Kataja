@@ -25,7 +25,7 @@
 import random
 
 import kataja.globals as g
-from kataja.Saved import SavedSynField
+from kataja.SavedField import SavedSynField
 from kataja.globals import FEATURE_NODE
 from kataja.singletons import ctrl, qt_prefs, classes
 from kataja.saved.movables.Node import Node

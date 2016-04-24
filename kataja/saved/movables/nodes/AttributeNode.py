@@ -26,7 +26,7 @@ import collections
 import random
 
 import kataja.globals as g
-from kataja.Saved import SavedField
+from kataja.SavedField import SavedField
 from kataja.globals import ATTRIBUTE_NODE
 from kataja.saved.movables.Node import Node
 

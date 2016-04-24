@@ -35,7 +35,8 @@ from kataja.shapes import SHAPE_PRESETS, outline_stroker
 from kataja.EdgeLabel import EdgeLabel
 import kataja.utils as utils
 from kataja.utils import to_tuple, add_xy, sub_xy
-from kataja.Saved import Saved, SavedFieldWithGetter, SavedField
+from kataja.SavedObject import SavedObject
+from kataja.SavedField import SavedField, SavedFieldWithGetter
 
 
 angle_magnet_map = {0: 6, 1: 6, 2: 4, 3: 3, 4: 2, 5: 1, 6: 0, 7: 5, 8: 5, 9: 5, 10: 7, 11: 8, 12: 9,
@@ -48,7 +49,7 @@ qbytes_opacity = QtCore.QByteArray()
 qbytes_opacity.append("opacity")
 
 
-class Edge(QtWidgets.QGraphicsObject, Saved):
+class Edge(QtWidgets.QGraphicsObject, SavedObject):
     """ Any connection between nodes: can be represented as curves, branches
     or arrows """
 
@@ -61,7 +62,7 @@ class Edge(QtWidgets.QGraphicsObject, Saved):
         :param string edge_type:
         :param string direction:
         """
-        Saved.__init__(self)
+        SavedObject.__init__(self)
         QtWidgets.QGraphicsItem.__init__(self)
 
         self.label_item = None

@@ -29,6 +29,8 @@ import re
 from syntax.BaseConstituent import BaseConstituent as Constituent
 from kataja.singletons import ctrl, classes
 import kataja.globals as g
+from kataja.SavedObject import SavedObject
+from kataja.SavedField import SavedField
 
 
 # coding=utf-8
@@ -56,10 +58,8 @@ import kataja.globals as g
 #
 # ############################################################################
 
-from kataja.Saved import Saved
 
-
-class FL(Saved):
+class FL(SavedObject):
     """ Interface for Faculty of Language, implementation should be able to perform the operations
      sent here."""
 

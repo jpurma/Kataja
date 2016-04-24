@@ -25,7 +25,8 @@
 ### NEED TO RETHINK DERIVATION STEP SYSTEM  -- PEN AND PAPER TIME ###
 
 from kataja.singletons import ctrl
-from kataja.Saved import Saved, SavedField
+from kataja.SavedObject import SavedObject
+from kataja.SavedField import SavedField
 
 
 # Thinking about undo system. It should be a common class Undoable inherited
@@ -35,7 +36,7 @@ from kataja.Saved import Saved, SavedField
 # would announce the item and the field.
 
 
-class DerivationStep(Saved):
+class DerivationStep(SavedObject):
     """ Packed state of forest for undo -operations and for stepwise
     animation of trees growth.
 
@@ -142,7 +143,7 @@ class DerivationStep(Saved):
     chains = SavedField("chains")
 
 
-class DerivationStepManager(Saved):
+class DerivationStepManager(SavedObject):
     """ Stores derivation steps for one forest and takes care of related
     logic """
 

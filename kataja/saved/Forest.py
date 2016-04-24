@@ -34,7 +34,8 @@ from kataja.BracketManager import BracketManager
 from kataja.ChainManager import ChainManager
 from kataja.UndoManager import UndoManager
 from kataja.Projection import Projection
-from kataja.Saved import Saved, SavedField
+from kataja.SavedObject import SavedObject
+from kataja.SavedField import SavedField
 from kataja.errors import ForestError
 from kataja.parser.INodeToKatajaConstituent import INodeToKatajaConstituent
 from kataja.singletons import ctrl, prefs, qt_prefs, classes
@@ -51,7 +52,7 @@ from kataja.saved.movables.nodes.BaseConstituentNode import BaseConstituentNode
 from kataja.saved.movables.nodes.FeatureNode import FeatureNode
 
 
-class Forest(Saved):
+class Forest(SavedObject):
     """ Forest is a group of trees that together form one view.
     Often there needs to be more than one trees visible at same time,
      so that they can be compared or to show states of construction
