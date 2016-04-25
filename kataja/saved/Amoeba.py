@@ -8,6 +8,7 @@ from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
 from kataja.singletons import ctrl, qt_prefs
 from kataja.saved.movables.Node import Node
+from kataja.AmoebaLabel import AmoebaLabel
 
 points = 36
 
@@ -32,11 +33,10 @@ class Amoeba(SavedObject, QtWidgets.QGraphicsObject):
         self.fill = True
         self.color_key = ''
         self.color = None
-        self.color_tr = None
         self.color_tr_tr = None
         self.path = None
-        self.label_text = ''
         self.label_item = None
+        self.label_data = {}
         self.include_children = False
         self.allow_overlap = True
         self._br = None
@@ -83,29 +83,57 @@ class Amoeba(SavedObject, QtWidgets.QGraphicsObject):
         self.fill = source.fill
         self.color_key = source.color_key
         self.color = source.color
-        self.color_tr = source.color_tr
         self.color_tr_tr = source.color_tr_tr
         self.path = source.path
-        self.set_label_text(source.label_text)
+        text = source.get_label_text()
+        if text:
+            self.set_label_text(text)
         self.include_children = source.include_children
         self.allow_overlap = source.allow_overlap
 
-    def set_label_text(self, text):
-        self.label_text = text
-        if text:
-            if not self.label_item:
-                self.label_item = QtWidgets.QGraphicsSimpleTextItem(text, self)
-                f = QtGui.QFont(qt_prefs.font(g.SMALL_CAPS))
-                f.setPointSize(f.pointSizeF()*2)
-                self.label_item.setFont(f)
-                self.label_item.setPen(qt_prefs.no_pen)
-                self.label_item.setBrush(self.color)
-            else:
-                self.label_item.setText(text)
+    # def set_label_text(self, text):
+    #     self.label_text = text
+    #     if text:
+    #         if not self.label_item:
+    #             self.label_item = QtWidgets.QGraphicsSimpleTextItem(text, self)
+    #             f = QtGui.QFont(qt_prefs.font(g.SMALL_CAPS))
+    #             f.setPointSize(f.pointSizeF()*2)
+    #             self.label_item.setFont(f)
+    #             self.label_item.setPen(qt_prefs.no_pen)
+    #             self.label_item.setBrush(self.color)
+    #         else:
+    #             self.label_item.setText(text)
+    #     else:
+    #         if self.label_item:
+    #             self.label_item.scene().removeItem(self.label_item)
+    #             self.label_item = None
+
+    def get_label_text(self):
+        """ Label text is actually stored in model.label_data, but this is a
+        shortcut for it.
+        :return:
+        """
+        return self.label_data.get('text', '')
+
+    def set_label_text(self, value):
+        if self.label_item:
+            old = self.get_label_text()
+            if old != value:
+                self.poke('label_data')
+                self.label_data['text'] = value
+                self.label_item.update_text(value)
         else:
-            if self.label_item:
-                self.label_item.scene().removeItem(self.label_item)
-                self.label_item = None
+            self.label_item = AmoebaLabel(value, parent=self)
+            self.poke('label_data')
+            self.label_data['text'] = value
+
+    def if_changed_color_id(self, value):
+        """ Set edge color, uses palette id strings as values.
+        :param value: string
+        """
+        if self.label_item:
+            self.label_item.setDefaultTextColor(ctrl.cm.get(value))
+
 
     def remove_node(self, node):
         """ Manual removal of single node, should be called e.g. when node is deleted.
@@ -372,7 +400,6 @@ class Amoeba(SavedObject, QtWidgets.QGraphicsObject):
         elif color_key:
             self.color_key = color_key
         self.color = ctrl.cm.get(self.color_key)
-        self.color_tr = ctrl.cm.get(self.color_key + 'tr')
         self.color_tr_tr = QtGui.QColor(self.color)
         self.color_tr_tr.setAlphaF(0.2)
         if self.label_item:
@@ -476,7 +503,7 @@ class Amoeba(SavedObject, QtWidgets.QGraphicsObject):
 
     selection = SavedField("selection")
     color_key = SavedField("color_key")
-    label_text = SavedField("label_text")
+    label_data = SavedField("label_data")
     include_children = SavedField("include_children")
     allow_overlap = SavedField("allow_overlap")
     fill = SavedField("fill")

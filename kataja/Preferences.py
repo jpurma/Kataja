@@ -224,20 +224,20 @@ class Preferences(object):
 
         # Rest of the edges are defined in their corresponding node classes
         self.edge_styles = {
-            ARROW: {'fancy': {'shape_name': 'linear', 'color': 'accent4', 'pull': 0,
+            ARROW: {'fancy': {'shape_name': 'linear', 'color_id': 'accent4', 'pull': 0,
                               'visible': True, 'arrowhead_at_start': False,
-                              'arrowhead_at_end': True, 'font': SMALL_CAPS, 'labeled': True},
+                              'arrowhead_at_end': True, 'font': MAIN_FONT, 'labeled': True},
                     'plain': {'shape_name': 'linear', 'color': 'accent4', 'pull': 0,
                               'visible': True, 'arrowhead_at_start': False,
-                              'arrowhead_at_end': True, 'font': SMALL_CAPS, 'labeled': True}
+                              'arrowhead_at_end': True, 'font': MAIN_FONT, 'labeled': True}
                     },
-            DIVIDER: {'fancy': {'shape_name': 'linear', 'color': 'accent6', 'pull': 0,
+            DIVIDER: {'fancy': {'shape_name': 'linear', 'color_id': 'accent6', 'pull': 0,
                                 'visible': True, 'arrowhead_at_start': False,
-                                'arrowhead_at_end': False, 'font': SMALL_CAPS,
+                                'arrowhead_at_end': False, 'font': MAIN_FONT,
                                 'labeled': True, 'style': 'dashed'},
-                      'plain': {'shape_name': 'linear', 'color': 'accent6', 'pull': 0,
+                      'plain': {'shape_name': 'linear', 'color_id': 'accent6', 'pull': 0,
                                 'visible': True, 'arrowhead_at_start': False,
-                                'arrowhead_at_end': False, 'font': SMALL_CAPS,
+                                'arrowhead_at_end': False, 'font': MAIN_FONT,
                                 'labeled': True, 'style': 'dashed'}
                       }
         }

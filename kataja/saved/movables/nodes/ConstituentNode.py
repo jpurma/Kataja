@@ -78,11 +78,11 @@ class ConstituentNode(BaseConstituentNode):
                      'fancy': {'color': 'accent3', 'font': g.MAIN_FONT, 'font-size': 10}}
 
     default_edge = {'plain': {'shape_name': 'linear',
-                              'color': 'content1', 'pull': .24, 'visible': True,
+                              'color_id': 'content1', 'pull': .24, 'visible': True,
                               'arrowhead_at_start': False, 'arrowhead_at_end': False,
                               'labeled': False},
                     'fancy': {'shape_name': 'shaped_cubic',
-                              'color': 'content1', 'pull': .24, 'visible': True,
+                              'color_id': 'content1', 'pull': .24, 'visible': True,
                               'arrowhead_at_start': False, 'arrowhead_at_end': False,
                               'labeled': False},
                     'id': g.CONSTITUENT_EDGE,

@@ -75,10 +75,10 @@ class AttributeNode(Node):
     default_style = {'fancy': {'color': 'accent4', 'font': g.SMALL_CAPS, 'font-size': 10},
                      'plain': {'color': 'accent4', 'font': g.SMALL_CAPS, 'font-size': 10}}
 
-    default_edge = {'fancy': { 'shape_name': 'linear', 'color': 'content1',
+    default_edge = {'fancy': { 'shape_name': 'linear', 'color_id': 'content1',
                               'pull': .50, 'visible': True, 'arrowhead_at_start': False,
                               'arrowhead_at_end': False, 'labeled': False},
-                    'plain': {'shape_name': 'linear', 'color': 'content1',
+                    'plain': {'shape_name': 'linear', 'color_id': 'content1',
                               'pull': .50, 'visible': True, 'arrowhead_at_start': False,
                               'arrowhead_at_end': False, 'labeled': False},
                     'id': g.ATTRIBUTE_EDGE,

@@ -27,16 +27,16 @@ import math
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QPointF as Pf, Qt
 
-from kataja.singletons import ctrl, qt_prefs
-import kataja.utils as utils
+from kataja.singletons import ctrl, qt_prefs, prefs
 import kataja.globals as g
+import kataja.utils as utils
 
 
-class EdgeLabel(QtWidgets.QGraphicsTextItem):
+class AmoebaLabel(QtWidgets.QGraphicsTextItem):
     def __init__(self, text, parent=None, placeholder=False):
-        """ EdgeLabel takes care of (optional) label for the edge and related UI. All of the data
-        required is stored at label_data -dict of host. This dict is saved with Edge,
-        but EdgeLabels are always created anew.
+        """ AmoebaLabel takes care of (optional) label for groups and related UI. All of the data
+        required is stored at label_data -dict of host. This dict is saved with Amoeba,
+        but AmoebaLabels are always created anew.
 
         :param text:
         :param parent:
@@ -67,7 +67,7 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         but for performance reasons just hardcode it here.
         :return:
         """
-        return 65553
+        return 65559
 
     def get_label_data(self, key):
         value = self._host.label_data.get(key, None)

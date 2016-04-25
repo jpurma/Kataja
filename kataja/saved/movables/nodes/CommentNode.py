@@ -61,14 +61,14 @@ class CommentNode(Node):
 
 
     default_edge = {'fancy': {'shape_name': 'linear',
-                              'color': 'accent4',
+                              'color_id': 'accent4',
                               'pull': 0,
                               'visible': True,
                               'arrowhead_at_start': True,
                               'arrowhead_at_end': False,
                               'labeled': False},
                     'plain': {'shape_name': 'linear',
-                              'color': 'accent4',
+                              'color_id': 'accent4',
                               'pull': 0,
                               'visible': True,
                               'arrowhead_at_start': True,

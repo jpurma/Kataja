@@ -253,7 +253,7 @@ class StylePanel(Panel):
             edge_type = ctrl.ui.active_edge_type
             node_color = ns(node_type, 'color')
             node_font = ns(node_type, 'font')
-            edge_color = es(edge_type, 'color')
+            edge_color = es(edge_type, 'color_id')
             edge_shape = es(edge_type, 'shape_name')
             # Color selector - show
             self.node_color_selector.setEnabled(True)

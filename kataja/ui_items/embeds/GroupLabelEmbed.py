@@ -107,7 +107,7 @@ class GroupLabelEmbed(UIEmbed):
         a = self.host
         self.allow_overlap_checkbox.setChecked(a.allow_overlap)
         self.include_children_checkbox.setChecked(a.include_children)
-        self.input_line_edit.setText(a.label_text)
+        self.input_line_edit.setText(a.get_label_text())
         self.outline_checkbox.setChecked(a.outline)
         self.fill_checkbox.setChecked(a.fill)
         s = self.color_select

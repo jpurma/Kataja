@@ -53,14 +53,14 @@ class GlossNode(Node):
                      'plain': {'color': 'accent5', 'font': g.ITALIC_FONT, 'font-size': 10}}
 
     default_edge = {'fancy': {'shape_name': 'cubic',
-                              'color': 'accent5',
+                              'color_id': 'accent5',
                               'pull': .40,
                               'visible': True,
                               'arrowhead_at_start': False,
                               'arrowhead_at_end': False,
                               'labeled': False},
                     'plain': {'shape_name': 'linear',
-                              'color': 'accent5',
+                              'color_id': 'accent5',
                               'pull': .40,
                               'visible': True,
                               'arrowhead_at_start': False,

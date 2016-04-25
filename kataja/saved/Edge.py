@@ -36,7 +36,7 @@ from kataja.EdgeLabel import EdgeLabel
 import kataja.utils as utils
 from kataja.utils import to_tuple, add_xy, sub_xy
 from kataja.SavedObject import SavedObject
-from kataja.SavedField import SavedField, SavedFieldWithGetter
+from kataja.SavedField import SavedField
 
 
 angle_magnet_map = {0: 6, 1: 6, 2: 4, 3: 3, 4: 2, 5: 1, 6: 0, 7: 5, 8: 5, 9: 5, 10: 7, 11: 8, 12: 9,
@@ -48,6 +48,21 @@ atan_magnet_map = {-8: 5, -7: 5, -6: 0, -5: 1, -4: 2, -3: 3, -2: 4, -1: 6, 0: 6,
 qbytes_opacity = QtCore.QByteArray()
 qbytes_opacity.append("opacity")
 
+
+class SavedEdgeSetting(SavedField):
+    """ Saved, but getter runs the provided after_get -method for the returned
+    value. Probably bit slower than regular Saved
+    """
+
+    def __init__(self, name, before_set=None, if_changed=None):
+        super().__init__(name, before_set=before_set, if_changed=if_changed)
+
+    def __get__(self, obj, objtype=None):
+        value = obj._saved[self.name]
+        if value is None:
+            return ctrl.fs.edge_info(obj.edge_type, self.name)
+        else:
+            return value
 
 class Edge(QtWidgets.QGraphicsObject, SavedObject):
     """ Any connection between nodes: can be represented as curves, branches
@@ -230,26 +245,12 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         """
         return ctrl.cm.get(self.color_id)
 
-    def after_get_color_id(self, value):
-        """ Get palette id of the edge color.
-        :return: str
-        """
-        return value or ctrl.fs.edge_info(self.edge_type, 'color')
-
     def if_changed_color_id(self, value):
         """ Set edge color, uses palette id strings as values.
         :param value: string
         """
         if self.label_item:
             self.label_item.setDefaultTextColor(ctrl.cm.get(value))
-
-    def after_get_shape_name(self, value):
-        """ Get the shape name key for this edge. These keys are used to get
-        the shape drawing settings, amount of
-        control points, whether the shape is filled etc.
-        :return:
-        """
-        return value or ctrl.fs.edge_info(self.edge_type, 'shape_name')
 
     def if_changed_shape_name(self, value):
         """ Set the shape name key for this edge. These keys are used to get
@@ -260,14 +261,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         """
         if value:
             self._shape_method = SHAPE_PRESETS[value]['method']
-
-    def after_get_pull(self, value):
-        """ The strength of connection between nodes. Think of edge as a
-        rubber band between nodes, and this is how
-        strongly it pulls the nodes together. Pull is typically between 0 - 1.0
-        :return: float
-        """
-        return value or ctrl.fs.edge_info(self.edge_type, 'pull')
 
     # ## Label data and its shortcut properties
 
@@ -1063,9 +1056,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
     end = SavedField("end")
     label_data = SavedField("label_data", watcher="edge_label")
     local_shape_info = SavedField("local_shape_info", watcher="edge_shape")
-    color_id = SavedFieldWithGetter("color_id", if_changed=if_changed_color_id,
-                                    getter=after_get_color_id)
-    shape_name = SavedFieldWithGetter("shape_name", if_changed=if_changed_shape_name,
-                                      getter=after_get_shape_name)
-    pull = SavedFieldWithGetter("pull", getter=after_get_pull)
     visible = SavedField("visible", if_changed=if_changed_visible)
+
+    color_id = SavedEdgeSetting("color_id", if_changed=if_changed_color_id)
+    shape_name = SavedEdgeSetting("shape_name", if_changed=if_changed_shape_name)
+    pull = SavedEdgeSetting("pull")

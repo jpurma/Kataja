@@ -66,7 +66,7 @@ class FeatureNode(Node):
                      'plain': {'color': 'accent2', 'font': g.SMALL_CAPS, 'font-size': 9}}
 
     default_edge = {'fancy': {'shape_name': 'cubic',
-                              'color': 'accent2',
+                              'color_id': 'accent2',
                               'pull': .40,
                               'visible': True,
                               'arrowhead_at_start': False,
@@ -74,7 +74,7 @@ class FeatureNode(Node):
                               'labeled': False},
                     'plain': {
                               'shape_name': 'linear',
-                              'color': 'accent2',
+                              'color_id': 'accent2',
                               'pull': .40,
                               'visible': True,
                               'arrowhead_at_start': False,

@@ -149,6 +149,7 @@ RIGHT_ALIGN = 2
 # Tree              65556
 # Node              65557
 # Movable           65558
+# AmoebaLabel       65559
 #
 # UI:
 # ActivityMarker    65650
