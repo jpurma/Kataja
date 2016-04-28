@@ -227,7 +227,7 @@ class Preferences(object):
             ARROW: {'fancy': {'shape_name': 'linear', 'color_id': 'accent4', 'pull': 0,
                               'visible': True, 'arrowhead_at_start': False,
                               'arrowhead_at_end': True, 'font': MAIN_FONT, 'labeled': True},
-                    'plain': {'shape_name': 'linear', 'color': 'accent4', 'pull': 0,
+                    'plain': {'shape_name': 'linear', 'color_id': 'accent4', 'pull': 0,
                               'visible': True, 'arrowhead_at_start': False,
                               'arrowhead_at_end': True, 'font': MAIN_FONT, 'labeled': True}
                     },

@@ -33,21 +33,19 @@ import kataja.utils as utils
 
 
 class AmoebaLabel(QtWidgets.QGraphicsTextItem):
-    def __init__(self, text, parent=None, placeholder=False):
+    def __init__(self, text, parent=None):
         """ AmoebaLabel takes care of (optional) label for groups and related UI. All of the data
         required is stored at label_data -dict of host. This dict is saved with Amoeba,
         but AmoebaLabels are always created anew.
 
         :param text:
         :param parent:
-        :param placeholder:
         """
         QtWidgets.QGraphicsTextItem.__init__(self, text, parent=parent)
         self._host = self.parentItem()
-        self.draggable = not placeholder
+        self.draggable = True
         self.selectable = True
         self.clickable = True
-        self.placeholder = placeholder
         self.selected = False
         w = self.document().idealWidth()
         if w > 200:
@@ -55,6 +53,8 @@ class AmoebaLabel(QtWidgets.QGraphicsTextItem):
         else:
             self.setTextWidth(-1)
         self._size = self.boundingRect().size()
+        self._w2 = self._size.width() / 2
+        self._h2 = self._size.height() / 2
         self._local_drag_handle_position = None
         self._label_start_pos = None
         self.setFont(self.get_font())
@@ -74,7 +74,7 @@ class AmoebaLabel(QtWidgets.QGraphicsTextItem):
         if value:
             return value
         else:
-            return ctrl.fs.edge_info(self._host.edge_type, value)
+            return ctrl.fs.edge_info(g.COMMENT_EDGE, value)
 
     def set_label_data(self, key, value):
         old_value = self.get_label_data(key)
@@ -138,10 +138,8 @@ class AmoebaLabel(QtWidgets.QGraphicsTextItem):
         :return:
         """
         start, end = self.get_label_line_positions()
-        mx, my = self.find_suitable_magnet(start, end)
-        label_pos = end - QtCore.QPointF(mx, my)
         self._label_start_pos = start
-        self.setPos(label_pos)
+        self.setPos(end - QtCore.QPointF(self._w2, self._h2))
 
     def get_label_start_pos(self):
         if not self._label_start_pos:
@@ -182,19 +180,30 @@ class AmoebaLabel(QtWidgets.QGraphicsTextItem):
             self.update_position()
             self._host.call_watchers('edge_label_adjust', 'dist', value)
 
-    def magnet_positions(self):
-        w = self._size.width() / 2.0
-        h = self._size.height() / 2.0
-        return [(0, 0), (w, 0), (w + w, 0), (0, h), (w + w, h), (0, h + h),
-                (w, h + h), (w + w, h + h)]
+    @property
+    def automatic_position(self):
+        """ Try to find the best suitable position for label.
+        If false, user has dragged this to place.
+
+        :return:
+        """
+        return self._host.label_data.get('automatic_position', False)
+
+    @automatic_position.setter
+    def automatic_position(self, value):
+        """ Try to find the best suitable position for label.
+        If false, user has dragged this to place.
+
+        :return:
+        """
+        if self.set_label_data('automatic_position', value):
+            self.update_position()
 
     def drag(self, event):
         """
         :param event:
         :return:
         """
-        if self.placeholder:
-            return
         if not self._local_drag_handle_position:
             self._local_drag_handle_position = self.mapFromScene(
                 event.buttonDownScenePos(Qt.LeftButton))
@@ -205,12 +214,13 @@ class AmoebaLabel(QtWidgets.QGraphicsTextItem):
         return self._local_drag_handle_position
 
     def drop_to(self, x, y, recipient=None):
+        self.automatic_position = False
         self._local_drag_handle_position = None
 
     def click(self, event):
 
         if self._host and ctrl.is_selected(self._host):
-            ctrl.ui.start_edge_label_editing(self._host)
+            ctrl.ui.toggle_group_label_editing(self._host)
         else:
             self._host.select(event)
 
@@ -218,22 +228,17 @@ class AmoebaLabel(QtWidgets.QGraphicsTextItem):
         self.click(event)
 
     def get_label_line_positions(self):
-        """ When editing edge labels, there is a line connecting the edge to
+        """ When editing amoeba labels, there is a line connecting the edge to
         label. This one provides the
         end- and start points for such line.
         :return: None
         """
-        start = self._host.get_point_at(self.label_start)
-        angle = (360 - self._host.get_angle_at(self.label_start)) + self.label_angle
-        if angle > 360:
-            angle -= 360
-        if angle < 0:
-            angle += 360
-        angle = math.radians(angle)
-        end_x = start.x() + (self.label_dist * math.cos(angle))
-        end_y = start.y() + (self.label_dist * math.sin(angle))
+        start_x, start_y = self._host.center_point
+        angle = math.radians(self.label_angle)
+        end_x = start_x + (self.label_dist * math.cos(angle))
+        end_y = start_y + (self.label_dist * math.sin(angle))
         end = QtCore.QPointF(end_x, end_y)
-        return start, end
+        return QtCore.QPointF(start_x, start_y), end
 
     def update_text(self, value):
         self.setPlainText(value)
@@ -243,111 +248,76 @@ class AmoebaLabel(QtWidgets.QGraphicsTextItem):
         else:
             self.setTextWidth(-1)
         self._size = self.boundingRect().size()
-        if value:
-            self.placeholder = False
-            self.draggable = True
+        self._w2 = self._size.width() / 2
+        self._h2 = self._size.height() / 2
         if self._host:
             self._host.update_selection_status(ctrl.is_selected(self._host))
-
-    def find_closest_magnet(self, top_left, start_pos):
-        spx, spy = start_pos.x(), start_pos.y()
-        tlx, tly = top_left.x(), top_left.y()
-        smallest_d = 10000
-        closest_magnet = None
-        for x, y in self.magnet_positions():
-            d = abs((tlx + x) - spx) + abs((tly + y) - spy)
-            if d < smallest_d:
-                smallest_d = d
-                closest_magnet = (x, y)
-        return closest_magnet
-
-    def find_suitable_magnet(self, start_pos, end_pos):
-        spx, spy = start_pos.x(), start_pos.y()
-        epx, epy = end_pos.x(), end_pos.y()
-        dx = spx - epx
-        dy = spy - epy
-        angle = math.degrees(math.atan2(dy, dx)) + 180
-        if angle < 22.5 or angle >= 327.5:
-            i = 3  # left middle
-        elif 22.5 <= angle < 67.5:
-            i = 0  # left top
-        elif 67.5 <= angle < 112.5:
-            i = 1  # center top
-        elif 112.5 <= angle < 147.5:
-            i = 2  #
-        elif 147.5 <= angle < 202.5:
-            i = 4
-        elif 202.5 <= angle < 247.5:
-            i = 7
-        elif 247.5 <= angle < 292.5:
-            i = 6
-        elif 292.5 <= angle < 327.5:
-            i = 5
-        return self.magnet_positions()[i]
-
-    def compute_magnet(self, rad_angle):
-        s = self._size
-        if self.being_dragged() or True:
-            return Pf(0, 0)
-        angle = math.degrees(rad_angle)
-        if angle > 315 or angle <= 45:
-            # left middle
-            return Pf(0, s.height() / 2)
-        elif 45 < angle <= 135:
-            # center top
-            return Pf(s.width() / 2, 0)
-        elif 135 < angle <= 225:
-            # right middle
-            return Pf(s.width(), s.height() / 2)
-        elif 225 < angle <= 315:
-            # center bottom
-            return Pf(s.width() / 2, s.height())
 
     def compute_angle_for_pos(self, event_pos, adjustment):
         """
 
         :param top_left:
         """
-        edge = self._host
+        epos = event_pos - adjustment + QtCore.QPointF(self._w2, self._h2)
+        amoeba = self._host
         start_pos, end_point = self.get_label_line_positions()
-        # closest_magnet = self.find_closest_magnet(top_left, start_pos)
-        # line_x = top_left.x() + closest_magnet[0] - start_pos.x()
-        # line_y = top_left.y() + closest_magnet[1] - start_pos.y()
-        line_x = event_pos.x() - start_pos.x()
-        line_y = event_pos.y() - start_pos.y()
+        line_x = epos.x() - start_pos.x()
+        line_y = epos.y() - start_pos.y()
         rad = math.atan2(line_y, line_x)
-        edge_angle = (360 - edge.get_angle_at(self.label_start))
         my_angle = math.degrees(rad)
         if my_angle < 0:
             my_angle += 360
-        a1 = my_angle - edge_angle
-        a2 = my_angle - edge_angle + 360
-        if abs(a1) < abs(a2):
-            new_angle = a1
-        else:
-            new_angle = a2
-        self.label_angle = new_angle
+        self.label_angle = my_angle
         self.label_dist = math.hypot(line_x, line_y)
-        ctrl.call_watchers(edge, 'edge_label_adjust', 'adjustment', adjustment)
+        ctrl.call_watchers(amoeba, 'amoeba_label_adjust', 'adjustment', adjustment)
+
+    def compute_best_position(self, route):
+        label_width = self._size.width()
+        label_height = self._size.height()
+        label_center_x, label_center_y = self._w2, self._h2
+        cx, cy = self.center_point
+        min_dist = 100000
+        prev_x, prev_y = route[-1]
+        best_x, best_y = 0, 0
+        for x, y in route:
+            mx = (prev_x + x) / 2
+            my = (prev_y + y) / 2
+            d = (cx - mx) ** 2 + (cy - my) ** 2
+            if d < min_dist:
+                if mx < cx:
+                    mx -= label_width + 2
+                else:
+                    mx += 2
+                if my < cy:
+                    my -= label_height + 2
+                else:
+                    my += 2
+                items = ctrl.graph_scene.items(QtCore.QPointF(mx + label_center_x,
+                                                              my + label_center_y)) + \
+                        ctrl.graph_scene.items(
+                    QtCore.QPointF(mx + (label_center_x * 0.80),
+                                   my + label_center_y)) + ctrl.graph_scene.items(
+                    QtCore.QPointF(mx + (label_center_x * 0.20), my + label_center_y))
+                collision = False
+                for item in items:
+                    if isinstance(item, (Node, Amoeba)):
+                        collision = True
+                        break
+                if not collision:
+                    min_dist = d
+                    best_x, best_y = mx, my
+            prev_x, prev_y = x, y
+        self.setPos(best_x, best_y)
 
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget):
         if self.being_dragged():
-            # p = QtGui.QPen(ctrl.cm.ui_tr())
-            # p.setWidthF(0.5)
-            # QPainter.setPen(p)
-            pos = self.pos()
             sp, end_point = self.get_label_line_positions()
-            ex, ey = utils.to_tuple(self.mapFromScene(pos))
-            epx, epy = utils.to_tuple(self.mapFromScene(end_point))
+            ex, ey = utils.to_tuple(self.mapFromScene(end_point))
             sx, sy = utils.to_tuple(self.mapFromScene(sp))
-            # for mx, my in self.magnet_positions():
-            # QPainter.drawLine(sx, sy, ex + mx, ey + my)
-            mx, my = self.find_closest_magnet(pos, sp)
             p = QtGui.QPen(ctrl.cm.ui_tr())
             p.setWidthF(0.5)
             QPainter.setPen(p)
-            QPainter.drawLine(sx, sy, ex + mx, ey + my)
-            QPainter.drawLine(sx, sy, epx, epy)
+            QPainter.drawLine(sx, sy, ex, ey)
             p = QtGui.QPen(ctrl.cm.ui_tr())
             p.setWidthF(2.0)
             QPainter.setPen(p)

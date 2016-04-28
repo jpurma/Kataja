@@ -182,6 +182,7 @@ def position(a, in_b):
                 if add_path(i):
                     found = True
                 if not found:
+                    pass
 
         return False
 

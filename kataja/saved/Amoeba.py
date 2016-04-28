@@ -274,42 +274,11 @@ class Amoeba(SavedObject, QtWidgets.QGraphicsObject):
                     route.append(closest)
 
         if self.label_item:
-            label_width = self.label_item.boundingRect().width()
-            label_height = self.label_item.boundingRect().height()
-            label_center_x, label_center_y = label_width / 2, label_height / 2
+            if self.label_item.automatic_position:
+                self.label_item.compute_best_position(route)
+            else:
+                self.label_item.update_position()
 
-            min_dist = 100000
-            prev_x, prev_y = route[-1]
-            best_x, best_y = 0, 0
-            for x, y in route:
-                mx = (prev_x + x) / 2
-                my = (prev_y + y) / 2
-                d = (cx - mx) ** 2 + (cy - my) ** 2
-                if d < min_dist:
-                    if mx < cx:
-                        mx -= label_width + 2
-                    else:
-                        mx += 2
-                    if my < cy:
-                        my -= label_height + 2
-                    else:
-                        my += 2
-                    items = ctrl.graph_scene.items(QtCore.QPointF(mx + label_center_x,
-                                                   my + label_center_y)) + \
-                            ctrl.graph_scene.items(QtCore.QPointF(mx + (label_center_x * 0.80),
-                                                   my + label_center_y)) + \
-                            ctrl.graph_scene.items(QtCore.QPointF(mx + (label_center_x * 0.20),
-                                                   my + label_center_y))
-                    collision = False
-                    for item in items:
-                        if isinstance(item, (Node, Amoeba)):
-                            collision = True
-                            break
-                    if not collision:
-                        min_dist = d
-                        best_x, best_y = mx, my
-                prev_x, prev_y = x, y
-            self.label_item.setPos(best_x, best_y)
         curved_path = Amoeba.interpolate_point_with_bezier_curves(route)
         sx, sy = route[0]
         self.path = QtGui.QPainterPath(QtCore.QPointF(sx, sy))
