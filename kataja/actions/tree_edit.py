@@ -399,8 +399,8 @@ def unary_add_child_left(sender=None):
     ctrl.forest.unary_add_child_for_constituentnode(node, add_left=True)
 
 a['unary_add_child_left'] = {'command': 'Add child node to left',
-                               'method': unary_add_child_left,
-                               'sender_arg': True}
+                             'method': unary_add_child_left,
+                             'sender_arg': True}
 
 
 def unary_add_child_right(sender=None):
@@ -461,18 +461,18 @@ a['toggle_node_edit_embed'] = {'command': 'Inspect and edit node',
                                'sender_arg': True}
 
 
-def toggle_amoeba_options(sender=None):
+def toggle_group_options(sender=None):
     """
 
     :param sender:
     :return:
     """
-    amoeba = get_host(sender)
-    ctrl.ui.toggle_group_label_editing(amoeba)
+    group = get_host(sender)
+    ctrl.ui.toggle_group_label_editing(group)
 
 
-a['toggle_amoeba_options'] = {'command': 'Options for saving this selection',
-                              'method': toggle_amoeba_options,
+a['toggle_group_options'] = {'command': 'Options for saving this selection',
+                              'method': toggle_group_options,
                               'sender_arg': True}
 
 # Generic keys ####
@@ -481,58 +481,58 @@ a['toggle_amoeba_options'] = {'command': 'Options for saving this selection',
 #     'method': 'key_esc',
 #     'shortcut': 'Escape'},
 
-def change_amoeba_color(sender=None):
+def change_group_color(sender=None):
     """
 
     :param sender:
     :return:
     """
     if sender:
-        amoeba = get_host(sender)
+        group = get_host(sender)
         color_key = sender.currentData()
         sender.model().selected_color = color_key
         if color_key:
-            amoeba.update_colors(color_key)
+            group.update_colors(color_key)
             embed = sender.parent()
             if embed and hasattr(embed, 'update_colors'):
                 embed.update_colors()
             ctrl.main.add_message(
                 'Group color changed to %s' % ctrl.cm.get_color_name(color_key))
 
-a['change_amoeba_color'] = {'command': 'Change color for group',
-                            'method': change_amoeba_color,
+a['change_group_color'] = {'command': 'Change color for group',
+                            'method': change_group_color,
                             'sender_arg': True}
 
 
-def change_amoeba_fill(sender=None):
+def change_group_fill(sender=None):
     """
 
     :param sender:
     :return:
     """
     if sender:
-        amoeba = get_host(sender)
-        amoeba.fill = sender.isChecked()
-        amoeba.update()
+        group = get_host(sender)
+        group.fill = sender.isChecked()
+        group.update()
 
-a['change_amoeba_fill'] = {'command': 'Group area is marked with translucent color',
-                               'method': change_amoeba_fill,
+a['change_group_fill'] = {'command': 'Group area is marked with translucent color',
+                               'method': change_group_fill,
                                'sender_arg': True}
 
 
-def change_amoeba_outline(sender=None):
+def change_group_outline(sender=None):
     """
 
     :param sender:
     :return:
     """
     if sender:
-        amoeba = get_host(sender)
-        amoeba.outline = sender.isChecked()
-        amoeba.update()
+        group = get_host(sender)
+        group.outline = sender.isChecked()
+        group.update()
 
-a['change_amoeba_outline'] = {'command': 'Group is marked by line drawn around it',
-                              'method': change_amoeba_outline,
+a['change_group_outline'] = {'command': 'Group is marked by line drawn around it',
+                              'method': change_group_outline,
                               'sender_arg': True}
 
 
@@ -543,67 +543,67 @@ def change_amoeba_overlaps(sender=None):
     :return:
     """
     if sender:
-        amoeba = get_host(sender)
-        amoeba.allow_overlap = sender.isChecked()
-        amoeba.update_selection(amoeba.selection)
-        amoeba.update_shape()
-        if amoeba.allow_overlap:
+        group = get_host(sender)
+        group.allow_overlap = sender.isChecked()
+        group.update_selection(group.selection)
+        group.update_shape()
+        if group.allow_overlap:
             ctrl.main.add_message('Group can overlap with other groups')
         else:
             ctrl.main.add_message('Group cannot overlap with other groups')
 
 
-a['change_amoeba_overlaps'] = {'command': 'Allow group to overlap other groups',
-                               'method': change_amoeba_overlaps,
-                               'sender_arg': True}
+a['change_group_overlaps'] = {'command': 'Allow group to overlap other groups',
+                              'method': change_group_overlaps,
+                              'sender_arg': True}
 
 
-def change_amoeba_children(sender=None):
+def change_group_children(sender=None):
     """
 
     :param sender:
     :return:
     """
     if sender:
-        amoeba = get_host(sender)
-        amoeba.include_children = sender.isChecked()
-        amoeba.update_selection(amoeba.selection)
-        amoeba.update_shape()
-        if amoeba.include_children:
+        group = get_host(sender)
+        group.include_children = sender.isChecked()
+        group.update_selection(group.selection)
+        group.update_shape()
+        if group.include_children:
             ctrl.main.add_message('Group includes children of its orginal members')
         else:
             ctrl.main.add_message('Group does not include children')
 
 
-a['change_amoeba_children'] = {'command': 'Include children of the selected nodes in group',
-                               'method': change_amoeba_children,
-                               'sender_arg': True}
+a['change_group_children'] = {'command': 'Include children of the selected nodes in group',
+                              'method': change_group_children,
+                              'sender_arg': True}
 
 
-def amoeba_remove(sender=None):
+def group_remove(sender=None):
     """
 
     :param sender:
     :return:
     """
     if sender:
-        amoeba = get_host(sender)
-        amoeba.persistent = False
-        ctrl.ui.toggle_group_label_editing(amoeba)
-        if ctrl.ui.selection_amoeba is amoeba:
+        group = get_host(sender)
+        group.persistent = False
+        ctrl.ui.toggle_group_label_editing(group)
+        if ctrl.ui.selection_amoeba is group:
             ctrl.deselect_objects()
             # deselecting will remove the amoeba
         else:
-            ctrl.ui.remove_ui_for(amoeba)
-            ctrl.ui.remove_ui(amoeba)
+            ctrl.ui.remove_ui_for(group)
+            ctrl.ui.remove_ui(group)
 
 
-a['amoeba_remove'] = {'command': 'Remove this group',
-                      'method': amoeba_remove,
-                      'sender_arg': True}
+a['group_remove'] = {'command': 'Remove this group',
+                     'method': group_remove,
+                     'sender_arg': True}
 
 
-def amoeba_save(sender=None):
+def group_save(sender=None):
     """
 
     :param sender:
@@ -611,21 +611,21 @@ def amoeba_save(sender=None):
     """
     if sender:
         embed = sender.parent()
-        amoeba = get_host(sender) or ctrl.ui.selection_amoeba
-        ctrl.ui.toggle_group_label_editing(amoeba)
-        amoeba.set_label_text(embed.input_line_edit.text())
-        amoeba.update_shape()
-        name = amoeba.get_label_text() or ctrl.cm.get_color_name(amoeba.color_key)
-        if not amoeba.persistent:
-            ctrl.forest.turn_selection_amoeba_to_group(amoeba)
+        group = get_host(sender) or ctrl.ui.selection_amoeba
+        ctrl.ui.toggle_group_label_editing(group)
+        group.set_label_text(embed.input_line_edit.text())
+        group.update_shape()
+        name = group.get_label_text() or ctrl.cm.get_color_name(group.color_key)
+        if not group.persistent:
+            ctrl.forest.turn_selection_amoeba_to_group(group)
             ctrl.deselect_objects()
 
         ctrl.main.add_message("Saved group '%s'" % name)
 
 
-a['amoeba_save'] = {'command': 'Save this group',
-                               'method': amoeba_save,
-                               'shortcut': 'Return',
-                               'shortcut_context': 'parent_and_children',
-                               'sender_arg': True}
+a['group_save'] = {'command': 'Save this group',
+                              'method': group_save,
+                              'shortcut': 'Return',
+                              'shortcut_context': 'parent_and_children',
+                              'sender_arg': True}
 

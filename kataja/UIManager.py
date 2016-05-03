@@ -51,7 +51,7 @@ from kataja.singletons import ctrl, prefs, qt_prefs, classes
 from kataja.ui_support import drawn_icons
 from kataja.ui_support.MessageWriter import MessageWriter
 from kataja.visualizations.available import VISUALIZATIONS, action_key
-from kataja.saved.Amoeba import Amoeba
+from kataja.saved.Group import Group
 from kataja.saved.Edge import Edge
 from kataja.saved.movables.Node import Node
 from kataja.ui_items.Panel import Panel
@@ -160,7 +160,7 @@ class UIManager:
         self.default_node_type = g.CONSTITUENT_NODE
         self.active_node_type = g.CONSTITUENT_NODE
         self.active_edge_type = g.CONSTITUENT_EDGE
-        self.selection_amoeba = None
+        self.selection_group = None
 
         self.preferences_dialog = None
         self.color_dialogs = {}
@@ -345,16 +345,16 @@ class UIManager:
 
     def update_selections(self):
         """ Many UI elements change mode depending on if object of specific
-        type is selected. Also the logic of selection amoebas has to be handled somewhere. """
+        type is selected. Also the logic of selection groups has to be handled somewhere. """
 
-        def amoeba_in_selection(selection):
-            amoebas = []
-            # check if _one_ of the groups/"amoebas" was selected
+        def groups_in_selection(selection):
+            groups = []
+            # check if _one_ of the groups was selected
             for item in selection:
-                if isinstance(item, Amoeba):
-                    amoebas.append(item)
-            if len(amoebas) == 1:
-                return amoebas[0]
+                if isinstance(item, Group):
+                    groups.append(item)
+            if len(groups) == 1:
+                return groups[0]
             return None
 
         # clear all ui_support pieces
@@ -376,57 +376,57 @@ class UIManager:
             # note UI panels that they should use scope 'selection' for their activities
             self.set_scope(g.SELECTION)
 
-            selected_amoeba = amoeba_in_selection(ctrl.selected)
-            if selected_amoeba:
-                if self.selection_amoeba:
-                    self.remove_selection_amoeba()
-                # select this amoeba
-                self.selection_amoeba = selected_amoeba
-                # check if any items in this amoeba's scope are _unselected_
-                for group_member in self.selection_amoeba.selection:
+            selected_group = groups_in_selection(ctrl.selected)
+            if selected_group:
+                if self.selection_group:
+                    self.remove_selection_group()
+                # select this group
+                self.selection_group = selected_group
+                # check if any items in this group's scope are _unselected_
+                for group_member in self.selection_group.selection:
                     if group_member not in ctrl.selected:
-                        self.selection_amoeba.remove_node(group_member)
+                        self.selection_group.remove_node(group_member)
                 # check if any selection contains any objects that should be added to group
                 for node in ctrl.selected:
                     if isinstance(node, Node) and node.can_be_in_groups:
-                        if node not in self.selection_amoeba:
-                            self.selection_amoeba.add_node(node)
-                self.add_buttons_for_amoeba(self.selection_amoeba)
-            # draw a selection amoeba around selected nodes
+                        if node not in self.selection_group:
+                            self.selection_group.add_node(node)
+                self.add_buttons_for_group(self.selection_group)
+            # draw a selection group around selected nodes
             elif ctrl.area_selection:
-                # Verify that selection contains nodes that can be in amoeba
-                amoebable_nodes = [item for item in ctrl.selected if
+                # Verify that selection contains nodes that can be in group
+                groupable_nodes = [item for item in ctrl.selected if
                                    isinstance(item, Node) and item.can_be_in_groups]
-                if amoebable_nodes:
-                    # Create new amoeba for this selection
-                    if not self.selection_amoeba:
-                        self.selection_amoeba = Amoeba(amoebable_nodes, persistent=False)
-                        self.selection_amoeba.update_colors(
+                if groupable_nodes:
+                    # Create new group for this selection
+                    if not self.selection_group:
+                        self.selection_group = Group(groupable_nodes, persistent=False)
+                        self.selection_group.update_colors(
                                 color_key=ctrl.forest.get_group_color_suggestion())
-                        self.add_ui(self.selection_amoeba)
+                        self.add_ui(self.selection_group)
                     # or update existing selection
                     else:
-                        self.selection_amoeba.update_selection(amoebable_nodes)
-                        self.selection_amoeba.update_shape()
-                    self.add_buttons_for_amoeba(self.selection_amoeba)
-                elif self.selection_amoeba:
-                    # Selection had only items that don't fit inside amoeba, there is one already
-                    self.remove_selection_amoeba()
-            elif self.selection_amoeba:
-                # Selection was empty, but there is existing selection amoeba visible
-                self.remove_selection_amoeba()
+                        self.selection_group.update_selection(groupable_nodes)
+                        self.selection_group.update_shape()
+                    self.add_buttons_for_group(self.selection_group)
+                elif self.selection_group:
+                    # Selection had only items that don't fit inside group, there is one already
+                    self.remove_selection_group()
+            elif self.selection_group:
+                # Selection was empty, but there is existing selection group visible
+                self.remove_selection_group()
         else:
             if self.scope_is_selection:
                 self.scope_is_selection = False
                 ctrl.call_watchers(self, 'scope_changed')
-            if self.selection_amoeba:
-                self.remove_selection_amoeba()
+            if self.selection_group:
+                self.remove_selection_group()
 
-    def remove_selection_amoeba(self):
-        self.remove_ui_for(self.selection_amoeba)
-        if not self.selection_amoeba.persistent:
-            self.remove_ui(self.selection_amoeba)
-        self.selection_amoeba = None
+    def remove_selection_group(self):
+        self.remove_ui_for(self.selection_group)
+        if not self.selection_group.persistent:
+            self.remove_ui(self.selection_group)
+        self.selection_group = None
 
     # unused, but sane
     def focusable_elements(self):
@@ -804,23 +804,23 @@ class UIManager:
         embed.update_embed(focus_point=lp)
         embed.wake_up()
 
-    def toggle_group_label_editing(self, amoeba):
+    def toggle_group_label_editing(self, group):
         """ Start group label editing or close it if it's already active.
-        :param amoeba:
+        :param group:
         :return:
         """
         self.release_editor_focus()
-        lp = amoeba.boundingRect().center()
+        lp = group.boundingRect().center()
         if GROUP_LABEL_EMBED in self._items:
             embed = self._items[GROUP_LABEL_EMBED]
-            if embed.host is amoeba:
+            if embed.host is group:
                 embed.close()
                 self.remove_ui(embed)
                 return
             else:
-                embed.host = amoeba
+                embed.host = group
         else:
-            embed = GroupLabelEmbed(self.main.graph_view, amoeba, GROUP_LABEL_EMBED)
+            embed = GroupLabelEmbed(self.main.graph_view, group, GROUP_LABEL_EMBED)
             self.add_ui(embed)
         embed.update_embed(focus_point=lp)
         embed.wake_up()
@@ -1204,12 +1204,12 @@ class UIManager:
         button.show()
         return button
 
-    def add_buttons_for_amoeba(self, amoeba):
-        """ Selection amoebas have a button to toggle their editing options
-        :param amoeba:
+    def add_buttons_for_group(self, group):
+        """ Selection groups have a button to toggle their editing options
+        :param group:
         :return:
         """
-        button = self.get_or_create_button(amoeba, g.AMOEBA_OPTIONS, 'toggle_amoeba_options')
+        button = self.get_or_create_button(group, g.GROUP_OPTIONS, 'toggle_group_options')
         return button
 
 

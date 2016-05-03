@@ -32,7 +32,7 @@ import kataja.globals as g
 import kataja.utils as utils
 
 
-class AmoebaLabel(QtWidgets.QGraphicsTextItem):
+class GroupLabel(QtWidgets.QGraphicsTextItem):
     def __init__(self, text, parent=None):
         """ AmoebaLabel takes care of (optional) label for groups and related UI. All of the data
         required is stored at label_data -dict of host. This dict is saved with Amoeba,
@@ -259,7 +259,7 @@ class AmoebaLabel(QtWidgets.QGraphicsTextItem):
         :param top_left:
         """
         epos = event_pos - adjustment + QtCore.QPointF(self._w2, self._h2)
-        amoeba = self._host
+        group = self._host
         start_pos, end_point = self.get_label_line_positions()
         line_x = epos.x() - start_pos.x()
         line_y = epos.y() - start_pos.y()
@@ -269,7 +269,7 @@ class AmoebaLabel(QtWidgets.QGraphicsTextItem):
             my_angle += 360
         self.label_angle = my_angle
         self.label_dist = math.hypot(line_x, line_y)
-        ctrl.call_watchers(amoeba, 'amoeba_label_adjust', 'adjustment', adjustment)
+        ctrl.call_watchers(group, 'group_label_adjust', 'adjustment', adjustment)
 
     def compute_best_position(self, route):
         label_width = self._size.width()

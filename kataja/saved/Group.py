@@ -8,12 +8,12 @@ from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
 from kataja.singletons import ctrl, qt_prefs
 from kataja.saved.movables.Node import Node
-from kataja.AmoebaLabel import AmoebaLabel
+from kataja.GroupLabel import GroupLabel
 
 points = 36
 
 
-class Amoeba(SavedObject, QtWidgets.QGraphicsObject):
+class Group(SavedObject, QtWidgets.QGraphicsObject):
 
     short_name = 'Group'
 
@@ -123,7 +123,7 @@ class Amoeba(SavedObject, QtWidgets.QGraphicsObject):
                 self.label_data['text'] = value
                 self.label_item.update_text(value)
         else:
-            self.label_item = AmoebaLabel(value, parent=self)
+            self.label_item = GroupLabel(value, parent=self)
             self.poke('label_data')
             self.label_data['text'] = value
 
@@ -279,7 +279,7 @@ class Amoeba(SavedObject, QtWidgets.QGraphicsObject):
             else:
                 self.label_item.update_position()
 
-        curved_path = Amoeba.interpolate_point_with_bezier_curves(route)
+        curved_path = Group.interpolate_point_with_bezier_curves(route)
         sx, sy = route[0]
         self.path = QtGui.QPainterPath(QtCore.QPointF(sx, sy))
         for fx, fy, sx, sy, ex, ey in curved_path:
@@ -294,7 +294,7 @@ class Amoeba(SavedObject, QtWidgets.QGraphicsObject):
                     for i in range(0, subshape.elementCount()):
                         element = subshape.elementAt(i)
                         subshape_points.append((element.x, element.y))
-                    curved_path = Amoeba.interpolate_point_with_bezier_curves(subshape_points)
+                    curved_path = Group.interpolate_point_with_bezier_curves(subshape_points)
                     sx, sy = subshape_points[0]
                     subshape = QtGui.QPainterPath(QtCore.QPointF(sx, sy))
                     for fx, fy, sx, sy, ex, ey in curved_path:

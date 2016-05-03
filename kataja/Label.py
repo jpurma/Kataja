@@ -475,8 +475,6 @@ class Label(QtWidgets.QGraphicsTextItem):
             self.setTextWidth(min(proposed_width, Label.max_width))
             self.resize_label()
             self._host.update_bounding_rect()
-            if ctrl.ui.selection_amoeba:
-                ctrl.ui.selection_amoeba.update_shape()
             if self.width != w and self.scene() == ctrl.graph_scene:
                 ctrl.forest.draw()
             self._recursion_block = False

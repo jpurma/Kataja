@@ -39,7 +39,7 @@ from kataja.SavedField import SavedField
 from kataja.errors import ForestError
 from kataja.parser.INodeToKatajaConstituent import INodeToKatajaConstituent
 from kataja.singletons import ctrl, prefs, qt_prefs, classes
-from kataja.saved.Amoeba import Amoeba
+from kataja.saved.Group import Group
 from kataja.saved.DerivationStep import DerivationStepManager
 from kataja.saved.Edge import Edge
 from kataja.saved.ForestSettings import ForestSettings, ForestRules
@@ -2061,7 +2061,7 @@ class Forest(SavedObject):
         amoeba.copy_from(source)
 
     def create_group(self):
-        amoeba = Amoeba([], persistent=True)
+        amoeba = Group([], persistent=True)
         self.add_to_scene(amoeba)
         self.poke('groups')
         self.groups[amoeba.save_key] = amoeba

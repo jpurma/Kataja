@@ -29,7 +29,7 @@ class KatajaFactory:
         from kataja.saved.movables.nodes.GlossNode import GlossNode
         from kataja.saved.movables.Node import Node
         from kataja.saved.movables.nodes.PropertyNode import PropertyNode
-        from kataja.saved.Amoeba import Amoeba
+        from kataja.saved.Group import Group
         from kataja.saved.DerivationStep import DerivationStep, DerivationStepManager
         from kataja.saved.Edge import Edge
         from kataja.saved.Forest import Forest
@@ -43,7 +43,7 @@ class KatajaFactory:
                                GlossNode, PropertyNode, CommentNode, Edge, Forest, DerivationStep,
                                DerivationStepManager, ForestSettings, ForestRules,
                                ConfigurableConstituent, BaseFeature, Tree,
-                               Amoeba, FL}
+                               Group, FL}
 
         self.default_node_classes = {g.CONSTITUENT_NODE: ConstituentNode, g.ABSTRACT_NODE: Node,
                                      g.FEATURE_NODE: FeatureNode, g.GLOSS_NODE: GlossNode,

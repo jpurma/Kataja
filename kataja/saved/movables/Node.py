@@ -987,6 +987,8 @@ class Node(Movable):
 
         self._magnets = [(-w2, -h2), (-w4, -h2), (0, -h2), (w4, -h2), (w2, -h2), (-w2, 0), (w2, 0),
                          (-w2, h2), (-w4, h2), (0, h2), (w4, h2), (w2, h2)]
+        if ctrl.ui.selection_group and self in ctrl.ui.selection_group.selection:
+            ctrl.ui.selection_group.update_shape()
 
         return self.inner_rect
 
