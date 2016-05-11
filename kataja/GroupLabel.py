@@ -34,9 +34,9 @@ import kataja.utils as utils
 
 class GroupLabel(QtWidgets.QGraphicsTextItem):
     def __init__(self, text, parent=None):
-        """ AmoebaLabel takes care of (optional) label for groups and related UI. All of the data
-        required is stored at label_data -dict of host. This dict is saved with Amoeba,
-        but AmoebaLabels are always created anew.
+        """ GroupLabel takes care of (optional) label for groups and related UI. All of the data
+        required is stored at label_data -dict of host. This dict is saved with Group,
+        but GroupLabels are always created anew.
 
         :param text:
         :param parent:
@@ -58,8 +58,8 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
         self._local_drag_handle_position = None
         self._label_start_pos = None
         self.setFont(self.get_font())
-        self.setDefaultTextColor(self.parentItem().color)
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.update_color()
 
     def type(self):
         """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
@@ -140,6 +140,9 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
         start, end = self.get_label_line_positions()
         self._label_start_pos = start
         self.setPos(end - QtCore.QPointF(self._w2, self._h2))
+
+    def update_color(self):
+        self.setDefaultTextColor(self.parentItem().color)
 
     def get_label_start_pos(self):
         if not self._label_start_pos:
@@ -228,7 +231,7 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
         self.click(event)
 
     def get_label_line_positions(self):
-        """ When editing amoeba labels, there is a line connecting the edge to
+        """ When editing group labels, there is a line connecting the edge to
         label. This one provides the
         end- and start points for such line.
         :return: None
@@ -300,9 +303,8 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
                     QtCore.QPointF(mx + (label_center_x * 0.20), my + label_center_y))
                 collision = False
                 for item in items:
-                    if isinstance(item, (Node, Amoeba)):
-                        collision = True
-                        break
+                    print('collision with ', item)
+                    collision = True
                 if not collision:
                     min_dist = d
                     best_x, best_y = mx, my

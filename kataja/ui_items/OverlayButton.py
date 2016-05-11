@@ -363,7 +363,7 @@ class RemoveNodeButton(OverlayButton):
         OverlayButton.leaveEvent(self, event)
 
 
-class AmoebaOptionsButton(OverlayButton):
+class GroupOptionsButton(OverlayButton):
 
     def __init__(self, host, ui_key, parent=None):
         super().__init__(host,
@@ -425,7 +425,7 @@ class NodeEditorButton(OverlayButton):
 
 
 button_definitions = {g.REMOVE_MERGER: RemoveMergerButton,
-                      g.AMOEBA_OPTIONS: AmoebaOptionsButton,
+                      g.GROUP_OPTIONS: GroupOptionsButton,
                       g.NODE_EDITOR_BUTTON: NodeEditorButton,
                       g.REMOVE_NODE: RemoveNodeButton}
 

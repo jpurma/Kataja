@@ -75,7 +75,7 @@ class ConstituentNode(BaseConstituentNode):
                              input_type='radiobutton',
                              select_action='constituent_set_head')}
     default_style = {'plain': {'color': 'content1', 'font': g.MAIN_FONT, 'font-size': 10},
-                     'fancy': {'color': 'accent3', 'font': g.MAIN_FONT, 'font-size': 10}}
+                     'fancy': {'color': 'content1', 'font': g.MAIN_FONT, 'font-size': 10}}
 
     default_edge = {'plain': {'shape_name': 'linear',
                               'color_id': 'content1', 'pull': .24, 'visible': True,

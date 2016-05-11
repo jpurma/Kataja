@@ -1084,8 +1084,8 @@ class Forest(SavedObject):
         # -- brackets --
         self.bracket_manager.remove_brackets(node)
         # -- groups --
-        if ctrl.ui.selection_amoeba and node in ctrl.ui.selection_amoeba:
-            ctrl.ui.selection_amoeba.remove_node(node)
+        if ctrl.ui.selection_group and node in ctrl.ui.selection_group:
+            ctrl.ui.selection_group.remove_node(node)
         for group in self.groups.values():
             if node in group:
                 group.remove_node(node)
@@ -2050,34 +2050,34 @@ class Forest(SavedObject):
 
     # ######## Groups (Amoebas) ################################
 
-    def turn_selection_amoeba_to_group(self, source):
+    def turn_selection_group_to_group(self, selection_group):
         """ Take a temporary group into persistent group. Store it in forest. Remember to remove
-        the source after this.
-        :param source: temporary Amoeba to turn
-        :return: Amoeba (persistent)
+        the source after this (selection groups are removed when selection changes).
+        :param selection_group: temporary Group to turn
+        :return: Group (persistent)
         """
-        amoeba = self.create_group()
-        source.hide()
-        amoeba.copy_from(source)
+        group = self.create_group()
+        selection_group.hide()
+        group.copy_from(selection_group)
 
     def create_group(self):
-        amoeba = Group([], persistent=True)
-        self.add_to_scene(amoeba)
+        group = Group([], persistent=True)
+        self.add_to_scene(group)
         self.poke('groups')
-        self.groups[amoeba.save_key] = amoeba
-        return amoeba
+        self.groups[group.save_key] = group
+        return group
 
-    def remove_group(self, amoeba):
-        self.remove_from_scene(amoeba)
-        ctrl.ui.remove_ui_for(amoeba)
-        if amoeba.save_key in self.groups:
+    def remove_group(self, group):
+        self.remove_from_scene(group)
+        ctrl.ui.remove_ui_for(group)
+        if group.save_key in self.groups:
             self.poke('groups')
-            del self.groups[amoeba.save_key]
+            del self.groups[group.save_key]
 
     def get_group_color_suggestion(self):
         color_keys = set()
-        for amoeba in self.groups.values():
-            color_keys.add(amoeba.color_key)
+        for group in self.groups.values():
+            color_keys.add(group.color_key)
         for i in range(1,8):
             if 'accent%s' % i not in color_keys:
                 return 'accent%s' % i

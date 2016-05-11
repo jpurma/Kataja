@@ -169,8 +169,8 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         swc = []
         other_selections = set()
         if not self.allow_overlap:
-            for amoeba in ctrl.forest.groups.values():
-                other_selections = other_selections | set(amoeba.selection_with_children)
+            for group in ctrl.forest.groups.values():
+                other_selections = other_selections | set(group.selection_with_children)
 
         def recursive_add_children(i):
             if isinstance(i, Node) and i not in swc and \
@@ -372,7 +372,7 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         self.color_tr_tr = QtGui.QColor(self.color)
         self.color_tr_tr.setAlphaF(0.2)
         if self.label_item:
-            self.label_item.setBrush(self.color)
+            self.label_item.update_color()
 
     def select(self, event=None, multi=False):
         """ Scene has decided that this node has been clicked

@@ -70,15 +70,15 @@ class Feature:
         # have integers to represent feature type and value for faster comparisons.
         self.int_type = ftypes.index(type) # temporarily, it is ok to raise error here.
         # We need a better way to deal with missing types anyways
-        if known_feature_values is None:
-            self.int_value = hash(self.value)  # this will do, but output can be brutal :)
-        elif value not in known_feature_values:
-            known_feature_values.append(value)
-        self.int_value = known_feature_values.index(value)
+        #if known_feature_values is None:
+        #    self.int_value = hash(self.value)  # this will do, but output can be brutal :)
+        #elif value not in known_feature_values:
+        #    known_feature_values.append(value)
+        #self.int_value = known_feature_values.index(value)
 
     def __eq__(self, other):
         if isinstance(other, Feature):
-            return self.int_type == other.int_type and self.int_value == other.int_value
+            return self.type == other.type and self.value == other.value
         else:
             return False
 
@@ -90,19 +90,25 @@ class Feature:
 
     def __lt__(self, other):
         if isinstance(other, Feature):
-            return (self.int_type, self.int_value) < (other.int_type, other.int_value)
+            return (self.int_type, self.value) < (other.int_type, other.value)
         elif isinstance(other, str):  # emulate python2's behavior for tuple < str -evaluation
             return False
         else:
-            return (self.int_type, self.int_value) < other
+            return (self.int_type, self.value) < other
 
     def __gt__(self, other):
         if isinstance(other, Feature):
-            return (self.int_type, self.int_value) > (other.int_type, other.int_value)
+            return (self.int_type, self.value) > (other.int_type, other.value)
         elif isinstance(other, str):  # emulate python2's behavior for tuple > str -evaluation
             return True
         else:
-            return (self.int_type, self.int_value) > other
+            return (self.int_type, self.value) > other
+
+
+# What is relationship between LexItems and Constituents?
+# What is relationship between IndexedCategories and Constituents?
+#   Are they just computational intermediate objects typical for beam parsers,
+#   or can they be restored to something theoretically relevant?
 
 
 class LexItem:
@@ -122,9 +128,15 @@ class IndexedCategory:
         self.mover_index = mover_index
 
     def __gt__(self, other):
+        print('gt comp: ', (self.head, self.mover, self.head_index, self.mover_index) > other)
+        print('self: ', self)
+        print('other: ', other)
         return (self.head, self.mover, self.head_index, self.mover_index) > other
 
     def __lt__(self, other):
+        print('lt comp: ', (self.head, self.mover, self.head_index, self.mover_index) < other)
+        print('self: ', self)
+        print('other: ', other)
         return (self.head, self.mover, self.head_index, self.mover_index) < other
 
     def __repr__(self):
@@ -176,9 +188,12 @@ class DerivationQueue(IQueue):
 
 
 def member_has_feature_value(i, lst):
+    #print('%s has value %s' % (lst, i))
     for e in lst:
-        if e[0].int_value == i:
+        if e[0].value == i:
+            #print('yes')
             return e
+    #print('no')
     return None
 
 
@@ -198,7 +213,7 @@ class Grammar:
         self.min_p = 0.001
         self.lex_items = []
         self.known_feature_values = []
-        self.lex_array = []
+        self.lex_array = {}
         self.input_string = []
         self.derivations = None
         self.ic = None
@@ -220,11 +235,9 @@ class Grammar:
 
         # We put those lexTrees in order, so that the subtree
         # with root type (i,j) appears in lA[j] and has feature type tA[j]=i.
-        self.lex_array = [[]] * len(self.known_feature_values)
         for root, *rest in lex_trees:
             if isinstance(root, Feature):
-                j = root.int_value
-                self.lex_array[j] = rest
+                self.lex_array[root.value] = rest
         # it could be more readable as a dict, see how it is used in actual derivation.
 
     @staticmethod
@@ -261,12 +274,12 @@ class Grammar:
         recognize(mg0,'C',0.001,inpt0)
         """
         self.min_p = min_p
-        start_int = self.known_feature_values.index(start)
-        head = self.lex_array[start_int]
+        #start_int = self.known_feature_values.index(start)
+        head = self.lex_array[start]
         n = len(self.known_feature_values)
-        mover = [[]] * n
-        mover_index = [[]] * n
-        ic = IndexedCategory(head, mover, [], mover_index)
+        #mover = [[]] * n
+        #mover_index = [[]] * n
+        ic = IndexedCategory(head, {}, [], {})
         iq = IQueue(([], ic))
         self.derivations = DerivationQueue((-1.0, input_string, iq))
         t0 = time.time()
@@ -277,6 +290,7 @@ class Grammar:
         # p = 1.0
         while self.derivations:
             (p, self.input_string, iq) = self.derivations.heappop()
+            print('\n\n\n', self.count)
             print('# of parses in beam=', len(self.derivations) + 1, ', p(best parse)=', (-1 * p))
             if iq:
                 indices, self.ic = iq.heappop()
@@ -298,20 +312,19 @@ class Grammar:
         for tree in self.ic.head:
             if tree and isinstance(tree[0], Feature):
                 trigger_feature, *rest = tree
-                feature_value = trigger_feature.int_value
                 if trigger_feature.type == 'selects':
                     terminals, nonterminals = terminals_of(rest)
                     if terminals:
-                        expansions += self.merge1(terminals, feature_value)
+                        expansions += self.merge1(terminals, trigger_feature)
                     if nonterminals:
-                        expansions += self.merge2(nonterminals, feature_value)
+                        expansions += self.merge2(nonterminals, trigger_feature)
                     if terminals:
-                        expansions += self.merge3(terminals, feature_value)
+                        expansions += self.merge3(terminals, trigger_feature)
                     if nonterminals:
-                        expansions += self.merge4(nonterminals, feature_value)
+                        expansions += self.merge4(nonterminals, trigger_feature)
                 elif trigger_feature.type == 'positive':
-                    expansions += self.move1(rest, feature_value)
-                    expansions += self.move2(rest, feature_value)
+                    expansions += self.move1(rest, trigger_feature)
+                    expansions += self.move2(rest, trigger_feature)
                 else:
                     raise RuntimeError('exps')
             elif not any(expansions):
@@ -324,7 +337,6 @@ class Grammar:
     def insert_new_parses(self, expansions, p, new_p, iq):
         for exp in expansions:
             # scan is a special case, identifiable by empty head
-            # (inpt,[(([],m),([],mx))]) <-- we check for that empty head
             inpt, ics = exp
             if not ics[0].head:
                 new_parse = (p, inpt, iq)
@@ -334,28 +346,36 @@ class Grammar:
                     # min_index should only check indices of filled mover positions.
                     # No mover has an empty index, so we can ignore them.
                     min_index = ic.head_index
-                    for x in ic.mover_index:
-                        if x and x < min_index:
+                    for x in ic.mover_index.values():
+                        if x < min_index:
                             min_index = x
                     new_iq.heappush((min_index, ic))
                 new_parse = (new_p, inpt, new_iq)
             self.count += 1
             #print('\n\n%s adding new parse to derivations: %s' % (self.count, new_parse))
+            #print('*** heappush:',  new_parse[2]._q[0])
             self.derivations.heappush(new_parse)
+            #print('result: ', self.derivations._q[0][2]._q[0])
+            if self.count > 50:
+                raise hell
+
 
     def scan(self, w):
+        print('scan!')
         if len(w) == 1:
-            if w[0] == self.input_string[0]: #  w not a prefix of input
-                ic1 = IndexedCategory([], self.ic.mover, [], self.ic.mover_index)
-                leaf = (self.input_string[1:], [ic1])
+            input_word, *tail_words = self.input_string
+            if w[0] == input_word: #  w not a prefix of input
+                ic1 = IndexedCategory([], self.ic.mover.copy(), [], self.ic.mover_index.copy())
+                leaf = (tail_words, [ic1])
                 return [leaf]
         else: # i'm keeping this more complex case if we need it at some point.
             # for me it seems that word list has always size 1 or 0
-            if w == self.input_string[:len(w)]:
-                remainder_int = len(w)
-                ic1 = IndexedCategory([], self.ic.mover, [], self.ic.mover_index)
-                leaf = (self.input_string[remainder_int:], [ic1])
-                return [leaf]
+            raise hell
+            # if w == self.input_string[:len(w)]:
+            #     remainder_int = len(w)
+            #     ic1 = IndexedCategory([], self.ic.mover, [], self.ic.mover_index)
+            #     leaf = (self.input_string[remainder_int:], [ic1])
+            #     return [leaf]
         return []
 
     def empty_scan(self):
@@ -364,72 +384,77 @@ class Grammar:
         return [leaf]
 
 
-    def merge1(self, terms, fval):
+    def merge1(self, terms, feature):
+        print('merge1')
         head_index = self.ic.head_index + [0]
         complement_index = self.ic.head_index + [1]
-        empty_m = [[]] * len(self.ic.mover)
-        empty_mx = [[]] * len(self.ic.mover_index)
-        ic1 = IndexedCategory(terms, empty_m, head_index, empty_mx)
-        ic2 = IndexedCategory(self.lex_array[fval], self.ic.mover, complement_index,
-                              self.ic.mover_index)
+        # empty_m = {} #[[]] * len(self.ic.mover)
+        # empty_mx = {} #[[]] * len(self.ic.mover_index)
+        ic1 = IndexedCategory(terms, {}, head_index, {})
+        ic2 = IndexedCategory(self.lex_array[feature.value], self.ic.mover.copy(), complement_index,
+                              self.ic.mover_index.copy())
         # movers to complement only
         merge_result = (self.input_string, [ic1, ic2])
         return [merge_result]
 
-    def merge2(self, nonterms, fval):
+    def merge2(self, nonterms, feature):
         head_index = self.ic.head_index + [1]
         complement_index = self.ic.head_index + [0]
-        empty_m = [[]] * len(self.ic.mover)
-        empty_mx = [[]] * len(self.ic.mover_index)
-        ic1 = IndexedCategory(nonterms, self.ic.mover, head_index, self.ic.mover_index)  # movers to
-        #  head
-        ic2 = IndexedCategory(self.lex_array[fval], empty_m, complement_index, empty_mx)
+        print('merge2')
+        #empty_m = [[]] * len(self.ic.mover)
+        #empty_mx = [[]] * len(self.ic.mover_index)
+        ic1 = IndexedCategory(nonterms, self.ic.mover.copy(), head_index, self.ic.mover_index.copy())
+        # movers to head
+        ic2 = IndexedCategory(self.lex_array[feature.value], {}, complement_index, {})
         # no spec movers
         merge_result = (self.input_string, [ic1, ic2])
         return [merge_result]
 
-    def merge3(self, terms, fval):
-        for nxt, mtree in enumerate(self.ic.mover):
-            matching_tree = member_has_feature_value(fval, mtree)
+    def merge3(self, terms, feature):
+        for nxt, mtree in self.ic.mover.items():
+            matching_tree = member_has_feature_value(feature.value, mtree)
             if not matching_tree:
                 continue
+            print('merge3')
             ts = matching_tree[1:]
-            tsx = self.ic.mover_index[nxt]
-            empty_m = [[]] * len(self.ic.mover)
-            empty_mx = [[]] * len(self.ic.mover_index)
+            # hmm. what is nxt?
+            tsx = self.ic.mover_index[nxt].copy()
+            #empty_m = [[]] * len(self.ic.mover)
+            #empty_mx = [[]] * len(self.ic.mover_index)
             complement_m = self.ic.mover.copy()
             complement_mx = self.ic.mover_index.copy()
             complement_m[nxt] = []  # we used the "next" licensee, so now empty
             complement_mx[nxt] = []
-            ic1 = IndexedCategory(terms, empty_m, self.ic.head_index, empty_mx)
+            ic1 = IndexedCategory(terms, {}, self.ic.head_index, {})
             ic2 = IndexedCategory(ts, complement_m, tsx, complement_mx)
             # movers passed to complement
             merge_result = (self.input_string, [ic1, ic2])
             return [merge_result]
         return []
 
-    def merge4(self, nonterms, fval):
-        for nxt, mtree in enumerate(self.ic.mover):
-            matching_tree = member_has_feature_value(fval, mtree)
+    def merge4(self, nonterms, feature):
+        for nxt, mtree in self.ic.mover.items():
+            matching_tree = member_has_feature_value(feature.value, mtree)
             if not matching_tree:
                 continue
+            print('merge4')
             ts = matching_tree[1:]
-            tsx = self.ic.mover_index[nxt]
-            empty_m = [[]] * len(self.ic.mover)
-            empty_mx = [[]] * len(self.ic.mover_index)
+            tsx = self.ic.mover_index[nxt].copy()
             complement_m = self.ic.mover.copy()
-            complement_m[nxt] = []  # we used the "next" licensee, so now empty
+            del complement_m[nxt]  # we used the "next" licensee, so now empty
             complement_mx = self.ic.mover_index.copy()
-            complement_mx[nxt] = []
-            ic1 = IndexedCategory(nonterms, empty_m, self.ic.head_index, empty_mx)
+            del complement_mx[nxt]
+            ic1 = IndexedCategory(nonterms, {}, self.ic.head_index.copy(), {})
             ic2 = IndexedCategory(ts, complement_m, tsx, complement_mx)  # movers passed to complement
             merge_result = (self.input_string, [ic1, ic2])
             return [merge_result]
         return []
 
-    def move1(self, ts, fval):
-        if self.ic.mover[fval]:  # SMC
+    def move1(self, ts, feature):
+        fval = feature.value
+        if fval in self.ic.mover and self.ic.mover[fval]:  # SMC
             return []
+        print('move1')
         mover_m = self.ic.mover.copy()
         mover_mx = self.ic.mover_index.copy()
         mover_m[fval] = self.lex_array[fval]
@@ -441,21 +466,24 @@ class Grammar:
         move_result = (self.input_string, [ic1])
         return [move_result]
 
-    def move2(self, ts, fval):
-        for nxt, mtree in enumerate(self.ic.mover):
+    def move2(self, ts, feature):
+        fval = feature.value
+        for nxt, mtree in self.ic.mover.items():
             matching_tree = member_has_feature_value(fval, mtree)
             if matching_tree:
-                root_f = matching_tree[0].int_value # value of rootLabel
+                print('move2: ', self.ic.mover)
+                raise hell
+                root_f = matching_tree[0].value # value of rootLabel
                 if root_f == nxt or not self.ic.mover[root_f]:  # SMC
                     mts = matching_tree[1:]
                     mtsx = self.ic.mover_index[nxt]
                     new_m = self.ic.mover.copy()
-                    new_m[nxt] = []  # we used the "next" licensee, so now empty
+                    del new_m[nxt]  # we used the "next" licensee, so now empty
                     new_m[root_f] = mts
                     new_mx = self.ic.mover_index.copy()
-                    new_mx[nxt] = []
+                    del new_mx[nxt]
                     new_mx[root_f] = mtsx
-                    ic1 = IndexedCategory(ts, new_m, self.ic.head_index, new_mx)
+                    ic1 = IndexedCategory(ts, new_m, self.ic.head_index.copy(), new_mx)
                     move_result = (self.input_string, [ic1])
                     return [move_result]
         return []
@@ -463,3 +491,12 @@ class Grammar:
 inpt0=['the', 'king', 'knows', 'which', 'wine', 'the', 'queen', 'prefers']
 g = Grammar(mg0)
 g.recognize('C', 0.001, inpt0)
+
+#inpt0=['the','king','knows','which','queen','prefers','the','wine']
+#g = Grammar(mg0)
+#g.recognize('C', 0.001, inpt0)
+
+#inpt0 = ['the', 'queen', 'says', 'the', 'king', 'knows', 'which', 'queen', 'prefers', 'the',
+# 'wine']
+#g = Grammar(mg0)
+#g.recognize('C', 0.001, inpt0)

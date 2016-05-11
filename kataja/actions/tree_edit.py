@@ -536,7 +536,7 @@ a['change_group_outline'] = {'command': 'Group is marked by line drawn around it
                               'sender_arg': True}
 
 
-def change_amoeba_overlaps(sender=None):
+def change_group_overlaps(sender=None):
     """
 
     :param sender:
@@ -580,7 +580,7 @@ a['change_group_children'] = {'command': 'Include children of the selected nodes
                               'sender_arg': True}
 
 
-def group_remove(sender=None):
+def delete_group(sender=None):
     """
 
     :param sender:
@@ -590,20 +590,20 @@ def group_remove(sender=None):
         group = get_host(sender)
         group.persistent = False
         ctrl.ui.toggle_group_label_editing(group)
-        if ctrl.ui.selection_amoeba is group:
+        if ctrl.ui.selection_group is group:
             ctrl.deselect_objects()
-            # deselecting will remove the amoeba
+            # deselecting will remove the (temporary) selection group
         else:
             ctrl.ui.remove_ui_for(group)
             ctrl.ui.remove_ui(group)
 
 
-a['group_remove'] = {'command': 'Remove this group',
-                     'method': group_remove,
+a['delete_group'] = {'command': 'Remove this group',
+                     'method': delete_group,
                      'sender_arg': True}
 
 
-def group_save(sender=None):
+def save_group_changes(sender=None):
     """
 
     :param sender:
@@ -611,20 +611,20 @@ def group_save(sender=None):
     """
     if sender:
         embed = sender.parent()
-        group = get_host(sender) or ctrl.ui.selection_amoeba
+        group = get_host(sender) or ctrl.ui.selection_group
         ctrl.ui.toggle_group_label_editing(group)
         group.set_label_text(embed.input_line_edit.text())
         group.update_shape()
         name = group.get_label_text() or ctrl.cm.get_color_name(group.color_key)
         if not group.persistent:
-            ctrl.forest.turn_selection_amoeba_to_group(group)
+            ctrl.forest.turn_selection_group_to_group(group)
             ctrl.deselect_objects()
 
         ctrl.main.add_message("Saved group '%s'" % name)
 
 
-a['group_save'] = {'command': 'Save this group',
-                              'method': group_save,
+a['save_group_changes'] = {'command': 'Save this group',
+                              'method': save_group_changes,
                               'shortcut': 'Return',
                               'shortcut_context': 'parent_and_children',
                               'sender_arg': True}

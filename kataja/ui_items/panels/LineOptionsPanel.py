@@ -170,6 +170,8 @@ class LineOptionsPanel(Panel):
         :return: None
         """
         print('updating shape options panel ')
+        if not ctrl.forest.settings:
+            return
         if ctrl.ui.scope_is_selection:
             sd, arrowheads = build_shape_dict_for_selection(ctrl.selected)
             if sd:
