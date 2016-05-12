@@ -1119,7 +1119,9 @@ class Node(Movable):
 
         :return:
         """
-        if not (prefs.use_magnets or self._label_visible):
+        if not prefs.use_magnets:
+            return self.current_scene_position
+        elif not self.has_visible_label():
             return self.current_scene_position
         elif not self._magnets:
             self.update_bounding_rect()
@@ -1156,7 +1158,6 @@ class Node(Movable):
         appearance and related local elements.
         :param selected:
         """
-        #print('update selection status called for %s, selected: %s' % (self, selected))
         if not selected:
             self.setZValue(10)
             if ctrl.main.use_tooltips:
