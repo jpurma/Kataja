@@ -160,7 +160,7 @@ class BaseConstituent(IConstituent):
         """
         if isinstance(feature, BaseFeature):
             self.poke('features')
-            self.features[feature.key] = feature
+            self.features[feature.type] = feature
         else:
             raise TypeError
 
@@ -179,7 +179,7 @@ class BaseConstituent(IConstituent):
             if f:
                 f.set(value)
             else:
-                f = BaseFeature(key, value)
+                f = BaseFeature(type=key, value=value)
                 self.poke('features')
             self.features[key] = f
 
@@ -188,7 +188,7 @@ class BaseConstituent(IConstituent):
         :param key: str, the key for finding the feature or for convenience, a feature instance to be removed
         """
         if isinstance(key, BaseFeature):
-            key = key.key
+            key = key.type
         if hasattr(self.features, key):
             self.poke('features')
             del self.features[key]

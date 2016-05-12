@@ -28,6 +28,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QPointF as Pf, Qt
 
 from kataja.singletons import ctrl, qt_prefs, prefs
+from kataja.saved.movables.Tree import Tree
 import kataja.globals as g
 import kataja.utils as utils
 
@@ -47,6 +48,7 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
         self.selectable = True
         self.clickable = True
         self.selected = False
+        self.automatic_position = True
         w = self.document().idealWidth()
         if w > 200:
             self.setTextWidth(200)
@@ -116,24 +118,8 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
         """
         self.set_label_data('font', value)
 
-    @property
-    def label_start(self):
-        """
-        label's startpoint in length of an edge (from 0 to 1.0)
-        """
-        return self._host.label_data.get('start_at', 0.2)
-
-    @label_start.setter
-    def label_start(self, value):
-        """ label's startpoint in length of an edge (from 0 to 1.0)
-        :param value: float (0 - 1.0)
-        """
-        if self.set_label_data('start_at', value):
-            self.update_position()
-            self._host.call_watchers('edge_label_adjust', 'start_at', value)
-
     def update_position(self):
-        """ Compute and set position for edge label. Make sure that path is
+        """ Compute and set position for group label. Make sure that path is
         up to date before doing this.
         :return:
         """
@@ -152,36 +138,36 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
     @property
     def label_angle(self):
         """
-        label's angle relative to edge where it is attached
+        label's angle to group blob
         """
         return self._host.label_data.get('angle', 90)
 
     @label_angle.setter
     def label_angle(self, value):
         """
-        label's angle relative to edge where it is attached
+        label's angle to group blob
         :param value:
         """
         if self.set_label_data('angle', value):
             self.update_position()
-            self._host.call_watchers('edge_label_adjust', 'angle', value)
+            self._host.call_watchers('group_label_adjust', 'angle', value)
 
     @property
     def label_dist(self):
         """
-        label's distance from edge
+        label's distance from group
         """
         return self._host.label_data.get('dist', 12)
 
     @label_dist.setter
     def label_dist(self, value):
         """
-        label's distance from edge
+        label's distance from group
         :param value:
         """
         if self.set_label_data('dist', value):
             self.update_position()
-            self._host.call_watchers('edge_label_adjust', 'dist', value)
+            self._host.call_watchers('group_label_adjust', 'dist', value)
 
     @property
     def automatic_position(self):
@@ -199,8 +185,7 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
 
         :return:
         """
-        if self.set_label_data('automatic_position', value):
-            self.update_position()
+        self.set_label_data('automatic_position', value)
 
     def drag(self, event):
         """
@@ -231,7 +216,7 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
         self.click(event)
 
     def get_label_line_positions(self):
-        """ When editing group labels, there is a line connecting the edge to
+        """ When editing group labels, there is a line connecting the group to
         label. This one provides the
         end- and start points for such line.
         :return: None
@@ -277,8 +262,7 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
     def compute_best_position(self, route):
         label_width = self._size.width()
         label_height = self._size.height()
-        label_center_x, label_center_y = self._w2, self._h2
-        cx, cy = self.center_point
+        cx, cy = self._host.center_point
         min_dist = 100000
         prev_x, prev_y = route[-1]
         best_x, best_y = 0, 0
@@ -295,20 +279,16 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
                     my -= label_height + 2
                 else:
                     my += 2
-                items = ctrl.graph_scene.items(QtCore.QPointF(mx + label_center_x,
-                                                              my + label_center_y)) + \
-                        ctrl.graph_scene.items(
-                    QtCore.QPointF(mx + (label_center_x * 0.80),
-                                   my + label_center_y)) + ctrl.graph_scene.items(
-                    QtCore.QPointF(mx + (label_center_x * 0.20), my + label_center_y))
+                items = ctrl.graph_scene.items(QtCore.QRectF(mx, my, label_width, label_height))
                 collision = False
                 for item in items:
-                    print('collision with ', item)
-                    collision = True
+                    if not isinstance(item, Tree):
+                        collision = True
                 if not collision:
                     min_dist = d
                     best_x, best_y = mx, my
             prev_x, prev_y = x, y
+        print('best pos: ', best_x, best_y, cx, cy)
         self.setPos(best_x, best_y)
 
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget):

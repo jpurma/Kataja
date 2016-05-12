@@ -93,7 +93,7 @@ class LayeredParser(BaseParser):
         if command in commands:
             pass
         else:
-            feature = classes.Feature(command, ''.join(args))
+            feature = classes.Feature(type=command, value=''.join(args))
             return feature
 
     def _new_string(self, args):

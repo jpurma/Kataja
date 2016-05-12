@@ -132,7 +132,7 @@ class BaseParser:
             if key in features:
                 features[key].set(value)
             else:
-                feature = classes.Feature(key, value)
+                feature = classes.Feature(type=key, value=value)
                 features[key] = feature
         if gloss:
             features['gloss'] = gloss

@@ -384,7 +384,7 @@ class GroupOptionsButton(OverlayButton):
         h2 = scene_size.y()
         for x, y in candidates:
             overlap = False
-            items = ctrl.graph_scene.items(QtCore.QPointF(x - w2, y - h2))
+            items = ctrl.graph_scene.items(QtCore.QRectF(x - w2, y - h2, w2 + w2, h2 + h2))
             for item in items:
                 if isinstance(item, TouchArea):
                     overlap = True

@@ -98,7 +98,7 @@ class FeatureNode(Node):
         """
         if not label:
             label = 'Feature'
-        obj = classes.Feature(key=label)
+        obj = classes.Feature(type=label)
         obj.after_init()
         return obj
 

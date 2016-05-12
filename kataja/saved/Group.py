@@ -128,7 +128,7 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
             self.label_data['text'] = value
 
     def if_changed_color_id(self, value):
-        """ Set edge color, uses palette id strings as values.
+        """ Set group color, uses palette id strings as values.
         :param value: string
         """
         if self.label_item:
