@@ -43,7 +43,7 @@ class ProjectionVisual(QtWidgets.QGraphicsItem):
             sx = 0
             sy = 0
             start_x, start_y = vis_chain[0].current_scene_position
-            # shape will be one continous filled polygon, so when we iterate
+            # shape will be one continuous filled polygon, so when we iterate
             # through nodes it needs to go through we make list of positions for
             # polygon going there (forward) and for its return trip (back).
             for node in vis_chain:

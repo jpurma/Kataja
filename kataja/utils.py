@@ -200,7 +200,7 @@ def load_lexicon(filename, Constituent, Feature):
             splitted = line.split(split_char, 1)
             key, value_list = splitted[0].strip(), splitted[1].strip().split(' ')
             base_value = split_char
-            feature = Feature(type=key, value=base_value)
+            feature = Feature(fname=key, value=base_value)
             constituent.set_feature(key, feature)
             print("added feature %s:%s to '%s'" % (key, base_value, constituent.id))
 

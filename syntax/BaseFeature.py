@@ -29,8 +29,7 @@ from kataja.SavedField import SavedField
 
 class BaseFeature(SavedObject):
     """ BaseFeatures are the simplest feature implementation.
-    BaseFeatures have type, which is the name of the feature used to identify and discriminate
-    between features.
+    BaseFeatures have name, which is used to identify and discriminate between features.
     BaseFeatures can have simple comparable items as values, generally assumed to be booleans or
     strings.
     Distinguishing between assigned and unassigned features is such a common property in
@@ -42,16 +41,16 @@ class BaseFeature(SavedObject):
     syntactic_object = True
     short_name = "F"
 
-    visible_in_label = ['key', 'value', 'assigned', 'family']
-    editable_in_label = ['key', 'value', 'assigned', 'family']
-    display_styles = {}
+    visible_in_label = ['fname', 'value', 'family']
+    editable_in_label = ['fname', 'value', 'family']
+    display_styles = {'fname': {'getter': 'name_with_u_prefix'}}
     editable = {}
     addable = {}
 
-    def __init__(self, type='Feature', value=None, assigned=True, family=''):
+    def __init__(self, fname='Feature', value=None, assigned=True, family=''):
         super().__init__()
         self.assigned = assigned
-        self.type = type
+        self.fname = fname
         self.value = value
         self.assigned = assigned
         self.family = family
@@ -63,25 +62,32 @@ class BaseFeature(SavedObject):
     def unassigned(self):
         return not self.assigned
 
+    def name_with_u_prefix(self):
+        print('name with u-prefix called')
+        if not self.assigned:
+            return 'u' + self.fname
+        else:
+            return self.fname
+
     def satisfies(self, feature):
-        return feature.unassigned and feature.type == self.type and self.assigned
+        return feature.unassigned and feature.fname == self.fname and self.assigned
 
     def __repr__(self):
-        return "BaseFeature(type=%r, value=%r, assigned=%r, family=%r)" % (self.type,
-                                                                           self.value,
-                                                                           self.assigned,
-                                                                           self.family)
+        return "BaseFeature(fname=%r, value=%r, assigned=%r, family=%r)" % (self.fname,
+                                                                            self.value,
+                                                                            self.assigned,
+                                                                            self.family)
 
     def __str__(self):
         s = []
         if self.family:
-            s.append(self.family)
+            s.append(str(self.family))
         if self.assigned:
-            s.append(self.type)
+            s.append(str(self.fname))
         else:
-            s.append('u' + self.type)
+            s.append('u' + str(self.fname))
         if self.value:
-            s.append(self.value)
+            s.append(str(self.value))
         return ":".join(s)
 
     # ############## #
@@ -90,7 +96,7 @@ class BaseFeature(SavedObject):
     #                #
     # ############## #
 
-    type = SavedField("type")
+    fname = SavedField("fname")
     value = SavedField("value")
     assigned = SavedField("assigned")
     family = SavedField("family")

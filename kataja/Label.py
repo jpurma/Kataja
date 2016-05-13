@@ -169,6 +169,7 @@ class Label(QtWidgets.QGraphicsTextItem):
         html = []
         waiting = None
         bones_mode = prefs.bones_mode
+        delimiter = ''
         for field_name in self.visible_in_label:
             s = styles.get(field_name, {})
             syntactic = s.get('syntactic', False)
@@ -183,9 +184,10 @@ class Label(QtWidgets.QGraphicsTextItem):
                     field_value = getter
             else:
                 field_value = getattr(h, field_name, '')
-
             if not h.check_conditions(s):
                 continue
+            if 'delimiter' in s:
+                delimiter = s['delimiter']
 
             if 'special' in s:
                 special = s['special']
@@ -198,7 +200,7 @@ class Label(QtWidgets.QGraphicsTextItem):
             if field_value:
                 if isinstance(field_value, ITextNode):
                     field_value = field_value.as_html()
-                field_value = field_value.replace('\n', '<br/>')
+                field_value = str(field_value).replace('\n', '<br/>')
                 start_tag = s.get('start_tag', '')
                 if start_tag:
                     end_tag = s.get('end_tag', '')
@@ -216,8 +218,11 @@ class Label(QtWidgets.QGraphicsTextItem):
                         waiting = (field_value, field_name)
                     continue
                 elif align == 'continue' or align == 'append':
+                    print('align continue: ', field_value)
                     html.append(field_value)
                     visible_parts.append((field_name, row, field_value))
+                    if delimiter:
+                        html.append(delimiter)
                 else:
                     html.append(field_value)
                     visible_parts.append((field_name, row, field_value))
@@ -227,7 +232,7 @@ class Label(QtWidgets.QGraphicsTextItem):
                         waiting = None
                     html.append('<br/>')
                     row += 1
-        if html and html[-1] == '<br/>':
+        if html and html[-1] == '<br/>' or (delimiter and html[-1] == delimiter):
             html.pop()
         self.html = ''.join(html)
         self.visible_parts = visible_parts

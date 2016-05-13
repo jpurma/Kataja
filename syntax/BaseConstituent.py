@@ -160,7 +160,7 @@ class BaseConstituent(IConstituent):
         """
         if isinstance(feature, BaseFeature):
             self.poke('features')
-            self.features[feature.type] = feature
+            self.features[feature.fname] = feature
         else:
             raise TypeError
 
@@ -179,19 +179,19 @@ class BaseConstituent(IConstituent):
             if f:
                 f.set(value)
             else:
-                f = BaseFeature(type=key, value=value)
+                f = BaseFeature(fname=key, value=value)
                 self.poke('features')
             self.features[key] = f
 
-    def remove_feature(self, key):
+    def remove_feature(self, fname):
         """ Remove feature from a constituent. It's not satisfied, it is just gone.
-        :param key: str, the key for finding the feature or for convenience, a feature instance to be removed
+        :param fname: str, the name for finding the feature or for convenience, a feature instance to be removed
         """
-        if isinstance(key, BaseFeature):
-            key = key.type
-        if hasattr(self.features, key):
+        if isinstance(fname, BaseFeature):
+            fname = fname.fname
+        if hasattr(self.features, fname):
             self.poke('features')
-            del self.features[key]
+            del self.features[fname]
 
     def is_leaf(self):
         """ Check if the constituent is leaf constituent (no children) or inside a trees (has children).

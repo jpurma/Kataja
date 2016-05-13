@@ -214,8 +214,8 @@ class Grammar:
         # values that features can take into 'known_feature_values'.
         for word, features in lex:
             feature_items = []
-            for type, value in features:
-                f = Feature(type, value, self.known_feature_values)
+            for name, value in features:
+                f = Feature(fname, value, self.known_feature_values)
                 feature_items.append(f)
             li = LexItem(word, feature_items)
             self.lex_items.append(li)

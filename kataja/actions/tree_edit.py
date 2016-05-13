@@ -472,8 +472,8 @@ def toggle_group_options(sender=None):
 
 
 a['toggle_group_options'] = {'command': 'Options for saving this selection',
-                              'method': toggle_group_options,
-                              'sender_arg': True}
+                             'method': toggle_group_options,
+                             'sender_arg': True}
 
 # Generic keys ####
 # 'key_esc'] = {
@@ -500,8 +500,8 @@ def change_group_color(sender=None):
                 'Group color changed to %s' % ctrl.cm.get_color_name(color_key))
 
 a['change_group_color'] = {'command': 'Change color for group',
-                            'method': change_group_color,
-                            'sender_arg': True}
+                           'method': change_group_color,
+                           'sender_arg': True}
 
 
 def change_group_fill(sender=None):
@@ -516,8 +516,8 @@ def change_group_fill(sender=None):
         group.update()
 
 a['change_group_fill'] = {'command': 'Group area is marked with translucent color',
-                               'method': change_group_fill,
-                               'sender_arg': True}
+                          'method': change_group_fill,
+                          'sender_arg': True}
 
 
 def change_group_outline(sender=None):
@@ -532,8 +532,8 @@ def change_group_outline(sender=None):
         group.update()
 
 a['change_group_outline'] = {'command': 'Group is marked by line drawn around it',
-                              'method': change_group_outline,
-                              'sender_arg': True}
+                             'method': change_group_outline,
+                             'sender_arg': True}
 
 
 def change_group_overlaps(sender=None):
@@ -628,4 +628,25 @@ a['save_group_changes'] = {'command': 'Save this group',
                               'shortcut': 'Return',
                               'shortcut_context': 'parent_and_children',
                               'sender_arg': True}
+
+
+def set_assigned_feature(sender=None):
+    """
+
+    :param sender:
+    :return:
+    """
+    if sender:
+        featurenode = get_host(sender)
+        value = sender.isChecked()
+        featurenode.set_assigned(value)
+        featurenode.update_label()
+        if value:
+            return "Feature '%s' set to assigned" % featurenode.fname
+        else:
+            return "Feature '%s' set to unassigned" % featurenode.fname
+
+a['set_assigned_feature'] = {'command': 'Set feature as assigned',
+                             'method': set_assigned_feature,
+                             'sender_arg': True}
 

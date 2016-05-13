@@ -1329,7 +1329,7 @@ class Forest(SavedObject):
         """
         C = node.syntactic_object
         F = feature.syntactic_object
-        C.set_feature(F.type, F)
+        C.set_feature(F.fname, F)
         self.connect_node(parent=node, child=feature)
 
     def add_comment_to_node(self, comment, node):

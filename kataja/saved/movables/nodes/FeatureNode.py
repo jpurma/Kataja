@@ -45,21 +45,29 @@ class FeatureNode(Node):
     display = True
     wraps = 'feature'
 
-    visible_in_label = ['key', 'value', 'family']
-    editable_in_label = ['key', 'value', 'family']
-    display_styles = {'key': {'align': 'continous'},
-                      'value': {'align': 'continous'},
-                      'family': {'align': 'continous'}}
-    editable = {'key': dict(name='Name', prefill='name',
-                            tooltip='Name of the feature', syntactic=True),
-                'value': dict(name='Value', align='line-end',
-                              width=20, prefill='value',
+    visible_in_label = ['fname', 'value', 'family']
+    editable_in_label = ['fname', 'value', 'assigned', 'family']
+    display_styles = {'fname': {'align': 'continue', 'getter': 'name_with_u_prefix',
+                                'delimiter':':'},
+                      'value': {'align': 'continue'},
+                      'family': {'align': 'continue'}}
+    editable = {'fname': dict(name='Name', prefill='name',
+                              tooltip='Name of the feature, used as identifier',
+                              syntactic=True),
+                'value': dict(name='Value',
+                              prefill='value',
                               tooltip='Value given to this feature',
                               syntactic=True),
+                'assigned': dict(name='Assigned', input_type='checkbox',
+                                 select_action='set_assigned_feature',
+                                 tooltip="If feature is unassigned ('uFeature') "
+                                         "it is looking for a value",
+                                 syntactic=True),
                 'family': dict(name='Family', prefill='family',
                                tooltip='Several distinct features can be '
                                        'grouped under one family (e.g. '
-                                       'phi-features)', syntactic=True)
+                                       'phi-features)',
+                               syntactic=True)
                 }
 
     default_style = {'fancy': {'color': 'accent2', 'font': g.SMALL_CAPS, 'font-size': 9},
@@ -98,7 +106,7 @@ class FeatureNode(Node):
         """
         if not label:
             label = 'Feature'
-        obj = classes.Feature(type=label)
+        obj = classes.Feature(fname=label)
         obj.after_init()
         return obj
 
@@ -116,6 +124,10 @@ class FeatureNode(Node):
             x += random.uniform(-4, 4)
             y += random.uniform(-4, 4)
         self.set_original_position((x, y))
+
+    def name_with_u_prefix(self):
+        return self.syntactic_object.name_with_u_prefix()
+
 
     def paint(self, painter, option, widget=None):
         """ Painting is sensitive to mouse/selection issues, but usually with
@@ -190,6 +202,9 @@ class FeatureNode(Node):
             if constituent.has_feature(feature):
                 constituent.remove_feature(feature)
 
+    def set_assigned(self, value):
+        self.assigned = value
+
     def __str__(self):
         return 'feature %s' % self.syntactic_object
 
@@ -199,6 +214,7 @@ class FeatureNode(Node):
     #                #
     # ############## #
 
-    key = SavedSynField("key")
+    fname = SavedSynField("fname")
+    assigned = SavedSynField("assigned")
     value = SavedSynField("value")
     family = SavedSynField("family")
