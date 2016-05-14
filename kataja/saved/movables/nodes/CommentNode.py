@@ -126,7 +126,7 @@ class CommentNode(Node):
         """
         super().update_selection_status(selected)
 
-    def dragging_my_arrow(self, dragged_type, dragged_item):
+    def dragging_my_arrow(self):
         return True
 
     def __str__(self):

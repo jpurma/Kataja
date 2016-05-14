@@ -74,6 +74,7 @@ class ForestSettings(SavedObject):
         self.show_leaf_aliases = True
         self.show_internal_labels = False
         self.show_internal_aliases = True
+        self.show_glosses = 2 # show as separate nodes
         # ## Edges - take edge type as argument ###########################
         self.edge_styles_data = {}
         # ## Nodes - take node type as argument ###########################

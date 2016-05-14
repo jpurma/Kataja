@@ -1,6 +1,6 @@
 # coding=utf-8
 
-from kataja.singletons import ctrl
+from kataja.singletons import ctrl, prefs
 
 a = {}
 
@@ -26,6 +26,44 @@ a['switch_edit_mode'] = {'command': 'Toggle edit mode', 'method': switch_edit_mo
                          'undoable': False, 'shortcut': 'Shift+Space',
                          'tooltip': 'Switch between free editing and derivation-based '
                                     'visualisation (Shift+Space)'}
+
+def switch_view_mode(bones_mode=None):
+    """ Switch between showing only syntactic objects and showing richer representation
+    :type bones_mode: None to toggle between modes, True for syntactic only, False for
+    all items
+    :return:
+    """
+    if bones_mode is None:
+        prefs.bones_mode = not prefs.bones_mode
+    else:
+        prefs.bones_mode = bones_mode
+    ctrl.ui.update_view_mode()
+    if prefs.bones_mode:
+        return 'Show only syntactic objects.'
+    else:
+        return 'Show all elements, including those that have no computational effects.'
+
+a['switch_view_mode'] = {'command': 'Toggle view mode', 'method': switch_view_mode,
+                         'undoable': False, 'shortcut': 'Shift+b',
+                         'tooltip': 'Show only syntactic objects or show all objects (Shift+b)'}
+
+def toggle_bones_mode():
+    """
+    :return:
+    """
+    prefs.bones_mode = not prefs.bones_mode
+    for node in ctrl.forest.nodes.values():
+        node.update_label()
+        node.update_label_visibility()
+        node.update_visibility()
+
+def get_bones_mode():
+    return prefs.bones_mode
+
+a['toggle_bones_mode'] = {'command': 'Show only &syntactic objects', 'method': toggle_bones_mode,
+                          'shortcut': 's', 'checkable': True, 'check_state': get_bones_mode}
+
+
 
 def next_structure():
     """ Show the next 'slide', aka Forest from a list in ForestKeeper.

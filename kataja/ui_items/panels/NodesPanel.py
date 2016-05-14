@@ -53,6 +53,8 @@ class DraggableNodeFrame(QtWidgets.QFrame):
             value = bool(node_class)
         else:
             value = node_class and not node_class.is_syntactic
+        if value and prefs.bones_mode:
+            value = node_class.is_syntactic
         self.setEnabled(value)
 
     def mousePressEvent(self, event):
@@ -92,7 +94,7 @@ class NodesPanel(Panel):
         Panel.__init__(self, name, key, default_position, parent, folded)
         inner = QtWidgets.QWidget()
         inner.setMinimumWidth(160)
-        self.watchlist = ['forest_changed', 'mode_changed']
+        self.watchlist = ['forest_changed', 'view_mode_changed', 'edit_mode_changed']
 
         #inner.setMinimumHeight(120)
         #inner.setMaximumHeight(150)
@@ -144,7 +146,7 @@ class NodesPanel(Panel):
         :return:
         """
         # print('StylePanel alerted: ', obj, signal, field_name, value)
-        if signal == 'mode_changed':
+        if signal == 'view_mode_changed' or signal == 'edit_mode_changed':
             self.update_panel()
         elif signal == 'forest_changed':
             self.update_panel()

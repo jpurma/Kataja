@@ -20,9 +20,7 @@ class ModeLabel(UIItem, PanelButton):
         self.setPalette(ctrl.cm.get_qt_palette_for_ui())
         self.setFlat(True)
         self.update_style_sheet()
-
-    def update_position(self):
-        self.move(6, 4)
+        self.setMinimumWidth(96)
 
     def set_text(self, text):
         self.setText(text)

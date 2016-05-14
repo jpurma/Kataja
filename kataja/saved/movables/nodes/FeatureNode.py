@@ -48,9 +48,9 @@ class FeatureNode(Node):
     visible_in_label = ['fname', 'value', 'family']
     editable_in_label = ['fname', 'value', 'assigned', 'family']
     display_styles = {'fname': {'align': 'continue', 'getter': 'name_with_u_prefix',
-                                'delimiter':':'},
-                      'value': {'align': 'continue'},
-                      'family': {'align': 'continue'}}
+                                'delimiter':':', 'syntactic': True},
+                      'value': {'align': 'continue', 'syntactic': True},
+                      'family': {'align': 'continue', 'syntactic': True}}
     editable = {'fname': dict(name='Name', prefill='name',
                               tooltip='Name of the feature, used as identifier',
                               syntactic=True),

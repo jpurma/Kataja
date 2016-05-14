@@ -69,7 +69,6 @@ from kataja.ui_items.NewElementMarker import NewElementMarker
 from kataja.ui_items.embeds.NodeEditEmbed import NodeEditEmbed
 from kataja.ui_items.panels.SymbolPanel import SymbolPanel
 from kataja.ui_support.MyColorDialog import MyColorDialog
-from kataja.ui_items.ModeLabel import ModeLabel
 
 NOTHING = 0
 SELECTING_AREA = 1
@@ -1105,9 +1104,26 @@ class UIManager:
         else:
             text = 'Derivation mode'
             checked = True
-        self._edit_mode_button.set_text(text)
-        self._edit_mode_button.setChecked(checked)
-        ctrl.call_watchers(self, 'mode_changed', value=not checked)
+        self.top_bar_buttons._edit_mode_button.set_text(text)
+        self.top_bar_buttons._edit_mode_button.setChecked(checked)
+        ctrl.call_watchers(self, 'edit_mode_changed', value=not checked)
+
+    def update_view_mode(self):
+        if prefs.bones_mode:
+            text = 'Show only syntactic objects'
+            checked = True
+        else:
+            text = 'Show all objects'
+            checked = False
+        self.top_bar_buttons._view_mode_button.set_text(text)
+        self.top_bar_buttons._view_mode_button.setChecked(checked)
+        for node in ctrl.forest.nodes.values():
+            node.update_label()
+            node.update_label_visibility()
+            node.update_visibility()
+
+        ctrl.call_watchers(self, 'view_mode_changed', value=not checked)
+
 
     # ### Embedded buttons ############################
 
@@ -1119,14 +1135,8 @@ class UIManager:
         #    item.close()
         self.top_bar_buttons = TopBarButtons(ctrl.graph_view, self)
 
-        self._edit_mode_button = ModeLabel('Free drawing mode',
-                                           ui_key='edit_mode_label',
-                                           parent=ctrl.graph_view)
-        self.add_ui(self._edit_mode_button)
-        self._edit_mode_button.update_position()
-        self.connect_element_to_action(self._edit_mode_button, 'switch_edit_mode')
-        self.update_edit_mode()
         self.top_bar_buttons.update_position()
+        self.update_edit_mode()
         self.update_drag_mode(True) # selection mode
 
     def update_drag_mode(self, selection_mode):

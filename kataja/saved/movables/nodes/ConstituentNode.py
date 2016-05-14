@@ -57,7 +57,8 @@ class ConstituentNode(BaseConstituentNode):
                       'label': {'getter': 'triangled_label',
                                 'condition': 'should_show_label',
                                 'syntactic': True},
-                      'alias': {'condition': 'should_show_alias'}}
+                      'alias': {'condition': 'should_show_alias'},
+                      'gloss': {'condition': 'should_show_gloss_in_label'}}
     editable = {'alias': dict(name='Alias', prefill='alias',
                               tooltip='Non-functional readable label of the constituent'),
                 'index': dict(name='Index', align='line-end', width=20, prefill='i',
@@ -256,6 +257,10 @@ class ConstituentNode(BaseConstituentNode):
             return ctrl.forest.settings.show_leaf_aliases
         else:
             return ctrl.forest.settings.show_internal_aliases
+
+    def should_show_gloss_in_label(self):
+        return ctrl.forest.settings.show_glosses == 1
+
 
     def update_status_tip(self):
         """ Hovering status tip """
