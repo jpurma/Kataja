@@ -27,63 +27,15 @@ import math
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 import kataja.globals as g
-from kataja.singletons import ctrl, prefs, qt_prefs
-from kataja.utils import to_tuple, sub_xy
+from kataja.UIItem import UIItem
 from kataja.saved.Edge import Edge
 from kataja.saved.movables.Node import Node
 from kataja.saved.movables.nodes.ConstituentNode import ConstituentNode
-from kataja.UIItem import UIItem
+from kataja.singletons import ctrl, prefs, qt_prefs
+from kataja.utils import to_tuple, sub_xy
+from kataja.shapes import draw_plus, draw_leaf, draw_x, draw_triangle, draw_tailed_leaf
 
 end_spot_size = 10
-
-
-def draw_circle(painter, x, y):
-    painter.setBrush(ctrl.cm.paper())
-    painter.drawEllipse(x - end_spot_size + 1,
-                        y - end_spot_size + 1,
-                        2 * end_spot_size, 2 * end_spot_size)
-
-
-def draw_plus(painter, x, y):
-    painter.drawLine(x - 1, y + 1,
-                     x + 3, y + 1)
-    painter.drawLine(x + 1, y - 1,
-                     x + 1, y + 3)
-
-
-def draw_leaf(painter, x, y):
-    x -= 4
-    path = QtGui.QPainterPath(QtCore.QPointF(x, y - end_spot_size))
-
-    path.cubicTo(x + 1.2 * end_spot_size, y - end_spot_size,
-                 x, y,
-                 x + 0.2 * end_spot_size, y + end_spot_size)
-    path.cubicTo(x - 4, y + end_spot_size,
-                 x - end_spot_size, y - end_spot_size,
-                 x, y - end_spot_size)
-    painter.fillPath(path, painter.brush())
-    painter.drawPath(path)
-    path = QtGui.QPainterPath(QtCore.QPointF(x + 4, y - end_spot_size - 4))
-    path.cubicTo(x, y - end_spot_size,
-                 x - 0.2 * end_spot_size, y,
-                 x + 0.2 * end_spot_size, y + end_spot_size)
-    painter.setBrush(QtCore.Qt.NoBrush)
-    painter.drawPath(path)
-
-
-
-def draw_x(painter, x, y):
-    painter.drawLine(x - end_spot_size, y - end_spot_size,
-                     x + end_spot_size, y + end_spot_size)
-    painter.drawLine(x - end_spot_size, y + end_spot_size,
-                     x + end_spot_size, y - end_spot_size)
-
-
-def draw_triangle(painter, x, y, w=10):
-    w2 = w / 2
-    painter.drawLine(x - w, y + w2, x, y)
-    painter.drawLine(x, y, x + w, y + w2)
-    painter.drawLine(x + w, y + w2, x - w, y + w2)
 
 
 class TouchArea(UIItem, QtWidgets.QGraphicsObject):
@@ -301,6 +253,7 @@ class TouchArea(UIItem, QtWidgets.QGraphicsObject):
         :param dragged:
         """
         if ctrl.drag_hovering_on is self:
+            self.hovering = True
             return True
         elif self.accepts_drops(dragged):
             ctrl.set_drag_hovering(self)
@@ -365,6 +318,7 @@ class TouchArea(UIItem, QtWidgets.QGraphicsObject):
 
     def dragLeaveEvent(self, event):
         self.hovering = False
+        event.accept()
         QtWidgets.QGraphicsObject.dragLeaveEvent(self, event)
 
     def dropEvent(self, event):
@@ -431,7 +385,7 @@ class AddBelowTouchArea(TouchArea):
         else:
             painter.setBrush(qt_prefs.no_brush)
         painter.setPen(c)
-        draw_leaf(painter, 0, 0)
+        draw_tailed_leaf(painter, 0, 0, end_spot_size)
         if self._hovering:
             painter.setPen(c)
             draw_plus(painter, 4, 0)
@@ -503,7 +457,7 @@ class DeleteArrowTouchArea(TouchArea):
         if ctrl.pressed is self:
             pass
         painter.setPen(self.contextual_color())
-        draw_x(painter, 0, 0)
+        draw_x(painter, 0, 0, end_spot_size)
 
 
 class BranchingTouchArea(TouchArea):
@@ -637,7 +591,7 @@ class LeftAddSibling(BranchingTouchArea):
             painter.save()
             painter.setBrush(ctrl.cm.ui())
             painter.rotate(20)
-            draw_leaf(painter, 0, end_spot_size / 2)
+            draw_leaf(painter, 0, end_spot_size / 2, end_spot_size)
             painter.restore()
             draw_plus(painter, 4, 0)
 
@@ -710,7 +664,7 @@ class RightAddSibling(BranchingTouchArea):
             painter.save()
             painter.setBrush(ctrl.cm.ui())
             painter.rotate(-160)
-            draw_leaf(painter, 0, end_spot_size / 2)
+            draw_leaf(painter, 0, end_spot_size / 2, end_spot_size)
             painter.restore()
             draw_plus(painter, 14, 0)
 
@@ -879,7 +833,7 @@ class LeftAddTop(JointedTouchArea):
             painter.save()
             painter.setBrush(ctrl.cm.ui())
             painter.rotate(20)
-            draw_leaf(painter, 0, end_spot_size / 2)
+            draw_leaf(painter, 0, end_spot_size / 2, end_spot_size)
             painter.restore()
             draw_plus(painter, 4, 0)
 
@@ -910,7 +864,7 @@ class RightAddTop(JointedTouchArea):
             painter.save()
             painter.setBrush(ctrl.cm.ui())
             painter.rotate(-160)
-            draw_leaf(painter, 0, end_spot_size / 2)
+            draw_leaf(painter, 0, end_spot_size / 2, end_spot_size)
             painter.restore()
             draw_plus(painter, 14, 0)
 
@@ -1039,7 +993,7 @@ class LeftAddChild(BranchingTouchArea):
             painter.save()
             painter.setBrush(ctrl.cm.ui())
             painter.rotate(20)
-            draw_leaf(painter, 0, end_spot_size / 2)
+            draw_leaf(painter, 0, end_spot_size / 2, end_spot_size)
             painter.restore()
             draw_plus(painter, 4, 0)
 
@@ -1101,7 +1055,7 @@ class RightAddChild(ChildTouchArea):
             painter.save()
             painter.setBrush(ctrl.cm.ui())
             painter.rotate(-160)
-            draw_leaf(painter, 0, end_spot_size / 2)
+            draw_leaf(painter, 0, end_spot_size / 2, end_spot_size)
             painter.restore()
             draw_plus(painter, 14, 0)
 
@@ -1141,7 +1095,7 @@ class RemoveTriangleTouchArea(AddBelowTouchArea):
         draw_triangle(painter, 0, 0)
         if self._hovering:
             painter.setPen(c)
-            draw_x(painter, 0, 0)
+            draw_x(painter, 0, 0, end_spot_size)
 
 touch_areas = {
     g.LEFT_ADD_TOP: LeftAddTop,

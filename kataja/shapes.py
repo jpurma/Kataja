@@ -5,6 +5,7 @@ from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import QPointF as Pf
 
 from kataja.globals import LEFT, RIGHT
+from singletons import ctrl
 
 __author__ = 'purma'
 
@@ -272,8 +273,7 @@ def cubic_icon(painter, rect, color=None, rel_dx=0.2, rel_dy=0.8):
 def shaped_quadratic_path(start_point=None, end_point=None,
                           curve_adjustment=None, alignment=LEFT, relative=True,
                           rel_dx=0.2, rel_dy=0, fixed_dx=20, fixed_dy=0,
-                          leaf_x=3, leaf_y=3, thick=False, inner_only=False,
-**kwargs):
+                          leaf_x=3, leaf_y=3, thick=False, inner_only=False, **kwargs):
     """ One point leaf-shaped curve with curvature relative to line length
     :param start_point:
     :param end_point:
@@ -745,10 +745,10 @@ od = [('shaped_cubic',
             relative=True, rel_dx=0.2, rel_dy=0.2, fixed_dx=20, fixed_dy=15,
             thickness=1)),
       ('shaped_quadratic',
-        dict(method=shaped_quadratic_path, fill=True,
-             icon=shaped_quadratic_icon, control_points=1,
-             relative=True, rel_dx=0.2, rel_dy=0, fixed_dx=20,
-             fixed_dy=0, leaf_x=2, leaf_y=2.5)),
+       dict(method=shaped_quadratic_path, fill=True,
+            icon=shaped_quadratic_icon, control_points=1,
+            relative=True, rel_dx=0.2, rel_dy=0, fixed_dx=20,
+            fixed_dy=0, leaf_x=2, leaf_y=2.5)),
       ('quadratic',
        dict(method=quadratic_path, fill=False, icon=quadratic_icon,
             control_points=1, relative=True, rel_dx=0.2, rel_dy=0,
@@ -775,5 +775,75 @@ od = [('shaped_cubic',
             icon=no_path_icon,
             control_points=0,
             thickness=0))]
+
+
+def draw_circle(painter, x, y, end_spot_size):
+    painter.setBrush(ctrl.cm.paper())
+    painter.drawEllipse(x - end_spot_size + 1,
+                        y - end_spot_size + 1,
+                        2 * end_spot_size, 2 * end_spot_size)
+
+
+def draw_plus(painter, x, y):
+    painter.drawLine(x - 1, y + 1,
+                     x + 3, y + 1)
+    painter.drawLine(x + 1, y - 1,
+                     x + 1, y + 3)
+
+
+def draw_leaf(painter, x, y, end_spot_size):
+    x -= 4
+    path = QtGui.QPainterPath(QtCore.QPointF(x, y - end_spot_size))
+
+    path.cubicTo(x + 1.2 * end_spot_size, y - end_spot_size,
+                 x, y,
+                 x + 0.2 * end_spot_size, y + end_spot_size)
+    path.cubicTo(x - 4, y + end_spot_size,
+                 x - end_spot_size, y - end_spot_size,
+                 x, y - end_spot_size)
+    painter.fillPath(path, painter.brush())
+    painter.drawPath(path)
+    path = QtGui.QPainterPath(QtCore.QPointF(x + 4, y - end_spot_size - 4))
+    path.cubicTo(x, y - end_spot_size,
+                 x - 0.2 * end_spot_size, y,
+                 x + 0.2 * end_spot_size, y + end_spot_size)
+    painter.setBrush(QtCore.Qt.NoBrush)
+    painter.drawPath(path)
+
+
+def draw_tailed_leaf(painter, x, y, end_spot_size):
+    x -= 4
+    leaf_top = y - end_spot_size / 2.0
+    path = QtGui.QPainterPath(QtCore.QPointF(x, leaf_top))
+
+    path.cubicTo(x + 1.2 * end_spot_size, leaf_top ,
+                 x, y,
+                 x + 0.2 * end_spot_size, y + end_spot_size)
+    path.cubicTo(x - 4, y + end_spot_size,
+                 x - end_spot_size, leaf_top,
+                 x, leaf_top)
+    painter.fillPath(path, painter.brush())
+    painter.drawPath(path)
+    path = QtGui.QPainterPath(QtCore.QPointF(x + 4, y - end_spot_size - 4))
+    path.cubicTo(x, y - end_spot_size,
+                 x - 0.3 * end_spot_size, y + 6,
+                 x + 0.2 * end_spot_size, y + end_spot_size)
+    painter.setBrush(QtCore.Qt.NoBrush)
+    painter.drawPath(path)
+
+
+def draw_x(painter, x, y, end_spot_size):
+    painter.drawLine(x - end_spot_size, y - end_spot_size,
+                     x + end_spot_size, y + end_spot_size)
+    painter.drawLine(x - end_spot_size, y + end_spot_size,
+                     x + end_spot_size, y - end_spot_size)
+
+
+def draw_triangle(painter, x, y, w=10):
+    w2 = w / 2
+    painter.drawLine(x - w, y + w2, x, y)
+    painter.drawLine(x, y, x + w, y + w2)
+    painter.drawLine(x + w, y + w2, x - w, y + w2)
+
 
 SHAPE_PRESETS = OrderedDict(od)

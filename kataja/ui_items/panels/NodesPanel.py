@@ -61,6 +61,9 @@ class DraggableNodeFrame(QtWidgets.QFrame):
             data = QtCore.QMimeData()
             data.setText('kataja:new_node:%s' % self.key)
             drag = QtGui.QDrag(self)
+            drag.setPixmap(qt_prefs.leaf_pixmap)
+            drag.setHotSpot(QtCore.QPoint(qt_prefs.leaf_pixmap.width() / 2,
+                            qt_prefs.leaf_pixmap.height() / 2))
             drag.setMimeData(data)
             drag.exec_(QtCore.Qt.CopyAction)
             self.add_button.setDown(False)

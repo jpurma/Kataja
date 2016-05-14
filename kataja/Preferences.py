@@ -444,6 +444,7 @@ class QtPreferences:
         self.right_arrow = None
         self.add_icon = None
         self.add_box_icon = None
+        self.leaf_pixmap = None
         self.pan_icon = None
         self.select_all_icon = None
         self.full_icon = None
@@ -488,7 +489,6 @@ class QtPreferences:
             """
 
             :param path:
-            :param width:
             :return:
             """
             p = QtGui.QIcon(iconpath + path)
@@ -514,6 +514,7 @@ class QtPreferences:
         self.left_arrow = extract_bitmaps(iconpath + 'left_2c.gif')
         self.right_arrow = extract_bitmaps(iconpath + 'right_2c.gif')
         self.add_icon = icon('add_box48.png')
+        self.leaf_pixmap = pixmap('leaf.png')
         self.add_box_icon = icon('add_box24.png')
         self.settings_icon = icon('settings48.png')
         self.settings_pixmap = pixmap('settings48.png')
@@ -537,11 +538,11 @@ class QtPreferences:
         """
 
         :param preferences:
+        :param running_environment:
         """
         self.prepare_fonts(preferences.fonts, running_environment)
         self.prepare_easing_curve(preferences.curve, preferences.move_frames)
         self.toggle_large_ui_font(preferences.large_ui_text, preferences.fonts)
-
 
     def prepare_easing_curve(self, curve_type, frames):
         """
@@ -574,11 +575,8 @@ class QtPreferences:
 
     def prepare_fonts(self, fonts_dict, running_environment):
         """
-
-
-        :param preferences:
         :param fonts_dict:
-        :param fontdb:
+        :param running_environment:
         """
         # print('preparing fonts...')
         self.fonts = {}
