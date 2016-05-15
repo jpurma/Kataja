@@ -51,8 +51,17 @@ class DragData:
         scx, scy = node.current_scene_position
         self.distance_from_pointer = scx - mx, scy - my
         self.dragged_distance = None
-        self.background = ctrl.cm.paper2().lighter(102)
+        bg = ctrl.cm.paper2().lighter(102)
+        bg.setAlphaF(.65)
+        self.background = bg
         self.old_zvalue = node.zValue()
+        parent = node.parentItem()
+        if parent:
+            self.parent = parent
+            self.parent_old_zvalue = parent.zValue()
+        else:
+            self.parent = None
+            self.parent_old_zvalue = 0
 
 
 qbytes_scale = QtCore.QByteArray()
@@ -1288,15 +1297,19 @@ class Node(Movable):
         ctrl.dragged_set.add(self)
         ctrl.add_my_group_to_dragged_groups(self)
         self.drag_data = DragData(self, is_host=host, mousedown_scene_pos=scene_pos)
+
         tree = self.tree_where_top()
         if tree:
             tree.start_dragging_tracking(host=host, scene_pos=scene_pos)
+        parent = self.parentItem()
+        if parent:
+            print('parent z: ', parent.zValue())
+            parent.setZValue(500)
         self.anim = QtCore.QPropertyAnimation(self, qbytes_scale)
         self.anim.setDuration(100)
         self.anim.setStartValue(self.scale())
         self.anim.setEndValue(1.1)
         self.anim.start()
-        self.setZValue(500)
 
     def prepare_children_for_dragging(self, scene_pos):
         """ Implement this if structure is supposed to drag with the node
@@ -1404,6 +1417,8 @@ class Node(Movable):
             ctrl.dragged_text = None
         if self.drag_data:
             self.setZValue(self.drag_data.old_zvalue)
+            if self.drag_data.parent:
+                self.drag_data.parent.setZValue(self.drag_data.parent_old_zvalue)
         self.drag_data = None
         self.anim = QtCore.QPropertyAnimation(self, qbytes_scale)
         self.anim.setDuration(100)

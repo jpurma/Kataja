@@ -95,7 +95,6 @@ class Forest(SavedObject):
         self.select_counter = 0
         self.comments = []
         self.gloss_text = ''
-        self.gloss = None
         self.ongoing_animations = set()
         self.guessed_projections = False
         self.halt_drawing = False
@@ -896,7 +895,7 @@ class Forest(SavedObject):
         return node
 
     def create_gloss_node(self, host):
-        gn = self.create_node(None, relative=host, node_type=g.GLOSS_NODE)
+        gn = self.create_node(None, relative=host, node_type=g.GLOSS_NODE, text='gloss')
         self.connect_node(host, child=gn)
         return gn
 

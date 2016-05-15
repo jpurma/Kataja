@@ -74,6 +74,9 @@ class GlossNode(Node):
 
     def __init__(self, text=''):
         Node.__init__(self)
+        if not text:
+            text = 'gloss'
+        self.label = text
 
     @property
     def hosts(self):

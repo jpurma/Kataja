@@ -202,7 +202,7 @@ class HeadDownTree(BaseVisualization):
                         grid.insert_columns(-x)
                         nleft -= x
                         x = 0
-            else:
+            elif hasattr(node, 'head_node'):
                 my_head = node.head_node
                 projecting_child = None
                 for child in children:
