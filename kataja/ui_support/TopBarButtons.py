@@ -16,14 +16,17 @@ class TopBarButtons(QtWidgets.QFrame):
         self._right_buttons = []
 
         # Left side
-        self._edit_mode_button = ModeLabel('Free drawing mode', ui_key='edit_mode_label',
+
+        self._edit_mode_button = ModeLabel(['Free drawing mode', 'Derivation mode'],
+                                           ui_key='edit_mode_label',
                                            parent=self)
         layout.addWidget(self._edit_mode_button)
         ui.add_ui(self._edit_mode_button)
         self._left_buttons.append(self._edit_mode_button)
         ui.connect_element_to_action(self._edit_mode_button, 'switch_edit_mode')
 
-        self._view_mode_button = ModeLabel('Show all objects', ui_key='view_mode_label',
+        self._view_mode_button = ModeLabel(['Show all objects', 'Show only syntactic objects'],
+                                           ui_key='view_mode_label',
                                            parent=self)
         layout.addWidget(self._view_mode_button)
         ui.add_ui(self._view_mode_button)

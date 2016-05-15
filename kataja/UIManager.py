@@ -1098,31 +1098,18 @@ class UIManager:
 
     # Mode HUD
     def update_edit_mode(self):
-        if ctrl.free_drawing_mode:
-            text = 'Free drawing mode'
-            checked = False
-        else:
-            text = 'Derivation mode'
-            checked = True
-        self.top_bar_buttons._edit_mode_button.set_text(text)
-        self.top_bar_buttons._edit_mode_button.setChecked(checked)
-        ctrl.call_watchers(self, 'edit_mode_changed', value=not checked)
+        val = ctrl.free_drawing_mode
+        self.top_bar_buttons._edit_mode_button.set_checked(val)
+        ctrl.call_watchers(self, 'edit_mode_changed', value=val)
 
     def update_view_mode(self):
-        if prefs.bones_mode:
-            text = 'Show only syntactic objects'
-            checked = True
-        else:
-            text = 'Show all objects'
-            checked = False
-        self.top_bar_buttons._view_mode_button.set_text(text)
-        self.top_bar_buttons._view_mode_button.setChecked(checked)
+        val = not prefs.bones_mode
+        self.top_bar_buttons._view_mode_button.set_checked(val)
         for node in ctrl.forest.nodes.values():
             node.update_label()
             node.update_label_visibility()
             node.update_visibility()
-
-        ctrl.call_watchers(self, 'view_mode_changed', value=not checked)
+        ctrl.call_watchers(self, 'view_mode_changed', value=val)
 
 
     # ### Embedded buttons ############################

@@ -1209,9 +1209,11 @@ class Node(Movable):
                 ctrl.remove_from_selection(self)
             else:
                 ctrl.add_to_selection(self)
-            return
-        if ctrl.is_selected(self):
-            pass
+        elif ctrl.is_selected(self):
+            if len(ctrl.selected) > 1:
+                ctrl.select(self)
+            else:
+                pass
         else:
             editor = ctrl.ui.get_editing_embed_for_node(self)
             ctrl.select(self)
