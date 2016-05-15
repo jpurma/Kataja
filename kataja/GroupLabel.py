@@ -150,9 +150,9 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
         label's angle to group blob
         :param value:
         """
+
         if self.set_label_data('angle', value):
             self.update_position()
-            self._host.call_watchers('group_label_adjust', 'angle', value)
 
     @property
     def label_dist(self):
@@ -169,7 +169,6 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
         """
         if self.set_label_data('dist', value):
             self.update_position()
-            self._host.call_watchers('group_label_adjust', 'dist', value)
 
     @property
     def automatic_position(self):
@@ -198,7 +197,7 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
             self._local_drag_handle_position = self.mapFromScene(
                 event.buttonDownScenePos(Qt.LeftButton))
         self.compute_angle_for_pos(event.scenePos(), self._local_drag_handle_position)
-        self.update()
+        self.update_position()
 
     def being_dragged(self):
         return self._local_drag_handle_position
@@ -243,13 +242,15 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
         if self._host:
             self._host.update_selection_status(ctrl.is_selected(self._host))
 
-    def compute_angle_for_pos(self, event_pos, adjustment):
+    def compute_angle_for_pos(self, event_pos, adjustment=None):
         """
 
         :param top_left:
         """
-        epos = event_pos - adjustment + QtCore.QPointF(self._w2, self._h2)
-        group = self._host
+        if adjustment:
+            epos = event_pos - adjustment + QtCore.QPointF(self._w2, self._h2)
+        else:
+            epos = event_pos + QtCore.QPointF(self._w2, self._h2)
         start_pos, end_point = self.get_label_line_positions()
         line_x = epos.x() - start_pos.x()
         line_y = epos.y() - start_pos.y()
@@ -257,9 +258,8 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
         my_angle = math.degrees(rad)
         if my_angle < 0:
             my_angle += 360
-        self.label_angle = my_angle
-        self.label_dist = math.hypot(line_x, line_y)
-        ctrl.call_watchers(group, 'group_label_adjust', 'adjustment', adjustment)
+        self.set_label_data('angle', my_angle)
+        self.set_label_data('dist', math.hypot(line_x, line_y))
 
     def compute_best_position(self, route):
         label_width = self._size.width()
@@ -290,8 +290,9 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
                     min_dist = d
                     best_x, best_y = mx, my
             prev_x, prev_y = x, y
-        print('best pos: ', best_x, best_y, cx, cy)
+        self.prepareGeometryChange()
         self.setPos(best_x, best_y)
+        self.compute_angle_for_pos(QtCore.QPointF(best_x, best_y))
 
     def paint(self, QPainter, QStyleOptionGraphicsItem, QWidget):
         if self.being_dragged():

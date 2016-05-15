@@ -276,8 +276,10 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
 
         if self.label_item:
             if self.label_item.automatic_position:
+                print('*** counting best position for label item w. group')
                 self.label_item.compute_best_position(route)
             else:
+                print('*** no automatic position, update manual position for label item')
                 self.label_item.update_position()
 
         curved_path = Group.interpolate_point_with_bezier_curves(route)
