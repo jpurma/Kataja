@@ -94,9 +94,9 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
     # ####
 
-    def inspect_focus_change(self, new, old, reason):
-        print('focus changed. new: %s old: %s reason: %s, sender: %s' % (new, old, reason,
-                                                                    self.sender()))
+#    def inspect_focus_change(self, new, old, reason):
+#        print('focus changed. new: %s old: %s reason: %s, sender: %s' % (new, old, reason,
+#                                                                    self.sender()))
 
     def late_init(self):
         """ Initialization that can be done only when ctrl has all the pieces in place

@@ -62,7 +62,7 @@ class GraphView(QtWidgets.QGraphicsView):
         self.setViewportUpdateMode(QtWidgets.QGraphicsView.FullViewportUpdate)
         # self.setViewportUpdateMode(QtWidgets.QGraphicsView.NoViewportUpdate)
         self.setMouseTracking(False)
-        #self.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.setFocusPolicy(QtCore.Qt.NoFocus)
         #self.setAcceptDrops(True)
         # self.setTransformationAnchor(QtWidgets.QGraphicsView.NoAnchor)
         self.target_scale = 0
@@ -205,35 +205,3 @@ class GraphView(QtWidgets.QGraphicsView):
     def selection_mode(self):
         """ helper to access that we really are doing rubberband dragging """
         return self._selection_mode
-
-        # QtWidgets.QGraphicsView.wheelEvent(self, event)
-
-    # def event(self, ev):
-    # if ev.type() == QtCore.QEvent.Gesture:
-    # print ev, ev.type()
-    # elif ev.type() == QtCore.QEvent.Wheel:
-    # print 'wheel!'
-    #             print ev.pixelDelta().y()
-    #             wel = QtGui.QWheelEvent(ev) #.QWheelEvent(ev)
-    #             print wel.angleDelta().y()
-    #         elif ev.type() == QtCore.QEvent.GraphicsSceneWheel:
-    #             print 'gs wheel!'
-    #
-    #         return QtWidgets.QGraphicsView.event(self, ev)
-
-    # def leaveEvent(self, event):
-    #     # ctrl.scene.kill_dragging()
-    #     """
-    #
-    #     :param event:
-    #     """
-    #     QtWidgets.QGraphicsView.leaveEvent(self, event)
-    #
-    # def enterEvent(self, event):
-    #     # ctrl.scene.kill_dragging()
-    #     """
-    #
-    #     :param event:
-    #     """
-    #     QtWidgets.QGraphicsView.enterEvent(self, event)
-    #

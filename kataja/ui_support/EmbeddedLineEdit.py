@@ -31,7 +31,7 @@ class EmbeddedLineEdit(QtWidgets.QLineEdit):
         self.setDragEnabled(True)
 
     def check_for_resize(self, *args, **kwargs):
-        print('textChanged: ', args, kwargs)
+        pass
 
     def dragEnterEvent(self, event):
         """ Announce support for regular ascii drops and drops of characters
