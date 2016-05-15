@@ -2,12 +2,14 @@
 from PyQt5 import QtWidgets
 
 from kataja.singletons import ctrl
+from kataja.qtype_generator import next_available_type_id
 
 
 class HUD(QtWidgets.QGraphicsSimpleTextItem):
     """
 
     """
+    __qt_type_id__ = next_available_type_id()
 
     def __init__(self, parent=None):
         QtWidgets.QGraphicsSimpleTextItem.__init__(self, 'HUD')  # , scene = parent)
@@ -16,11 +18,10 @@ class HUD(QtWidgets.QGraphicsSimpleTextItem):
 
     def type(self):
         """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
-        need to differentiate between them. List of types is kept as comments in globals.py,
-        but for performance reasons just hardcode it here.
+        need to differentiate between them. These are set when the program starts.
         :return:
         """
-        return 65654
+        return self.__qt_type_id__
 
     def update_colors(self):
         """

@@ -34,6 +34,7 @@ from kataja.saved.movables.nodes.ConstituentNode import ConstituentNode
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.utils import to_tuple, sub_xy
 from kataja.shapes import draw_plus, draw_leaf, draw_x, draw_triangle, draw_tailed_leaf
+from kataja.qtype_generator import next_available_type_id
 
 end_spot_size = 10
 
@@ -41,6 +42,7 @@ end_spot_size = 10
 class TouchArea(UIItem, QtWidgets.QGraphicsObject):
     """ Mouse sensitive areas connected to either nodes or edges between
     them. """
+    __qt_type_id__ = next_available_type_id()
 
     @staticmethod
     def create_key(host, ttype):
@@ -90,11 +92,10 @@ class TouchArea(UIItem, QtWidgets.QGraphicsObject):
 
     def type(self):
         """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
-        need to differentiate between them. List of types is kept as comments in globals.py,
-        but for performance reasons just hardcode it here.
+        need to differentiate between them. These are set when the program starts.
         :return:
         """
-        return 65656
+        return self.__qt_type_id__
 
     def is_visible(self):
         """
@@ -330,6 +331,9 @@ class TouchArea(UIItem, QtWidgets.QGraphicsObject):
 
 
 class AddConstituentTouchArea(TouchArea):
+
+    __qt_type_id__ = next_available_type_id()
+
     def __init__(self, host, ttype, ui_key, action=None):
         super().__init__(host, ttype, ui_key, action=action)
         self.set_tip("Add a constituent here")
@@ -356,6 +360,8 @@ class AddConstituentTouchArea(TouchArea):
 
 
 class AddBelowTouchArea(TouchArea):
+
+    __qt_type_id__ = next_available_type_id()
 
     def update_end_points(self):
         # start
@@ -392,6 +398,9 @@ class AddBelowTouchArea(TouchArea):
 
 
 class ConnectFeatureTouchArea(AddBelowTouchArea):
+
+    __qt_type_id__ = next_available_type_id()
+
     def __init__(self, host, ttype, ui_key, action=None):
         super().__init__(host, ttype, ui_key, action=action)
         self.set_tip("Add feature for node")
@@ -409,6 +418,9 @@ class ConnectFeatureTouchArea(AddBelowTouchArea):
 
 
 class ConnectCommentTouchArea(AddBelowTouchArea):
+
+    __qt_type_id__ = next_available_type_id()
+
     def __init__(self, host, ttype, ui_key, action=None):
         super().__init__(host, ttype, ui_key, action=action)
         self.set_tip("Add comment for node")
@@ -426,6 +438,9 @@ class ConnectCommentTouchArea(AddBelowTouchArea):
 
 
 class ConnectGlossTouchArea(AddBelowTouchArea):
+
+    __qt_type_id__ = next_available_type_id()
+
     def __init__(self, host, ttype, ui_key, action=None):
         super().__init__(host, ttype, ui_key, action=action)
         self.set_tip("Add gloss for node")
@@ -443,6 +458,9 @@ class ConnectGlossTouchArea(AddBelowTouchArea):
 
 
 class DeleteArrowTouchArea(TouchArea):
+
+    __qt_type_id__ = next_available_type_id()
+
     def __init__(self, host, ttype, ui_key, action=None):
         super().__init__(host, ttype, ui_key, action=action)
         self.set_tip("Remove this arrow")
@@ -467,6 +485,8 @@ class BranchingTouchArea(TouchArea):
     :param type:
     :param ui_key:
     """
+
+    __qt_type_id__ = next_available_type_id()
 
     def __init__(self, host, ttype, ui_key, action=None):
         super().__init__(host, ttype, ui_key, action=action)
@@ -530,6 +550,7 @@ class LeftAddSibling(BranchingTouchArea):
     :param type:
     :param ui_key:
     """
+    __qt_type_id__ = next_available_type_id()
 
     def __init__(self, host, ttype, ui_key, action=None):
         super().__init__(host, ttype, ui_key, action=action)
@@ -603,6 +624,7 @@ class RightAddSibling(BranchingTouchArea):
     :param type:
     :param ui_key:
     """
+    __qt_type_id__ = next_available_type_id()
 
     def __init__(self, host, ttype, ui_key, action=None):
         super().__init__(host, ttype, ui_key, action=action)
@@ -676,6 +698,7 @@ class JointedTouchArea(TouchArea):
     :param type:
     :param ui_key:
     """
+    __qt_type_id__ = next_available_type_id()
 
     def boundingRect(self):
         """
@@ -808,6 +831,9 @@ class JointedTouchArea(TouchArea):
 
 
 class LeftAddTop(JointedTouchArea):
+
+    __qt_type_id__ = next_available_type_id()
+
     def __init__(self, host, ttype, ui_key, action=None):
         super().__init__(host, ttype, ui_key, action=action)
         self._align_left = True
@@ -839,6 +865,9 @@ class LeftAddTop(JointedTouchArea):
 
 
 class RightAddTop(JointedTouchArea):
+
+    __qt_type_id__ = next_available_type_id()
+
     def __init__(self, host, ttype, ui_key, action=None):
         super().__init__(host, ttype, ui_key, action=action)
         self._align_left = False
@@ -876,6 +905,7 @@ class ChildTouchArea(TouchArea):
     :param type:
     :param ui_key:
     """
+    __qt_type_id__ = next_available_type_id()
 
     def __init__(self, host, ttype, ui_key, action=None):
         super().__init__(host, ttype, ui_key, action=action)
@@ -943,6 +973,7 @@ class LeftAddChild(BranchingTouchArea):
     :param type:
     :param ui_key:
     """
+    __qt_type_id__ = next_available_type_id()
 
     def __init__(self, host, ttype, ui_key, action=None):
         super().__init__(host, ttype, ui_key, action=action)
@@ -1005,6 +1036,7 @@ class RightAddChild(ChildTouchArea):
     :param type:
     :param ui_key:
     """
+    __qt_type_id__ = next_available_type_id()
 
     def __init__(self, host, ttype, ui_key, action=None):
         super().__init__(host, ttype, ui_key, action=action)
@@ -1061,6 +1093,9 @@ class RightAddChild(ChildTouchArea):
 
 
 class AddTriangleTouchArea(AddBelowTouchArea):
+
+    __qt_type_id__ = next_available_type_id()
+
     def paint(self, painter, option, widget):
         """
 
@@ -1080,6 +1115,9 @@ class AddTriangleTouchArea(AddBelowTouchArea):
 
 
 class RemoveTriangleTouchArea(AddBelowTouchArea):
+
+    __qt_type_id__ = next_available_type_id()
+
     def paint(self, painter, option, widget):
         """
 

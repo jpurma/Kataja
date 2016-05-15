@@ -30,9 +30,13 @@ from PyQt5.QtCore import QPointF as Pf, Qt
 from kataja.singletons import ctrl, qt_prefs
 import kataja.utils as utils
 import kataja.globals as g
+from kataja.qtype_generator import next_available_type_id
 
 
 class EdgeLabel(QtWidgets.QGraphicsTextItem):
+
+    __qt_type_id__ = next_available_type_id()
+
     def __init__(self, text, parent=None, placeholder=False):
         """ EdgeLabel takes care of (optional) label for the edge and related UI. All of the data
         required is stored at label_data -dict of host. This dict is saved with Edge,
@@ -63,11 +67,10 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
 
     def type(self):
         """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
-        need to differentiate between them. List of types is kept as comments in globals.py,
-        but for performance reasons just hardcode it here.
+        need to differentiate between them. These are set when the program starts.
         :return:
         """
-        return 65553
+        return self.__qt_type_id__
 
     def get_label_data(self, key):
         value = self._host.label_data.get(key, None)

@@ -8,12 +8,14 @@ from kataja.singletons import prefs, ctrl
 from kataja.utils import to_tuple
 from kataja.UIItem import UIItem
 import kataja.globals as g
+from kataja.qtype_generator import next_available_type_id
 
 
 class ControlPoint(UIItem, QtWidgets.QGraphicsItem):
     """
 
     """
+    __qt_type_id__ = next_available_type_id()
 
     def __init__(self, edge, ui_key, index=-1, role=''):
         UIItem.__init__(self, ui_key, host=edge)
@@ -54,11 +56,10 @@ class ControlPoint(UIItem, QtWidgets.QGraphicsItem):
 
     def type(self):
         """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
-        need to differentiate between them. List of types is kept as comments in globals.py,
-        but for performance reasons just hardcode it here.
+        need to differentiate between them. These are set when the program starts.
         :return:
         """
-        return 65651
+        return self.__qt_type_id__
 
     def show(self):
         """ Assign as a watcher if necessary and make visible

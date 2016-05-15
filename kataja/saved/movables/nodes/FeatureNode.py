@@ -29,6 +29,7 @@ from kataja.SavedField import SavedSynField
 from kataja.globals import FEATURE_NODE
 from kataja.singletons import ctrl, qt_prefs, classes
 from kataja.saved.movables.Node import Node
+from kataja.qtype_generator import next_available_type_id
 
 color_map = {'tense': 0, 'order': 1, 'person': 2, 'number': 4, 'case': 6, 'unknown': 3}
 
@@ -37,6 +38,7 @@ class FeatureNode(Node):
     """
     Node to express a feature of a constituent
     """
+    __qt_type_id__ = next_available_type_id()
     width = 20
     height = 20
     node_type = FEATURE_NODE

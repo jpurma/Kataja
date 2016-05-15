@@ -29,7 +29,7 @@ from kataja.saved.movables.Node import Node
 
 
 # ctrl = Controller object, gives accessa to other modules
-
+from kataja.qtype_generator import next_available_type_id
 
 
 class BaseConstituentNode(Node):
@@ -37,6 +37,7 @@ class BaseConstituentNode(Node):
     ConstituentNode -class inherits this and adds more elements and features, but if you want to
      create new kind of Constituents in syntax it may be cleaner to build on BaseConstituentNode
       and not ConstituentNode. """
+    __qt_type_id__ = next_available_type_id()
     width = 20
     height = 20
     is_constituent = True

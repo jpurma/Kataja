@@ -137,30 +137,3 @@ LEFT_ALIGN = 0
 CENTER_ALIGN = 1
 RIGHT_ALIGN = 2
 
-
-# TYPE CODES FOR CUSTOM QGRAPHICSITEMS
-#
-# Amoeba            65550
-# Bracket           65551
-# Edge              65552
-# EdgeLabel         65553
-# Label             65554
-# ProjectionVisual  65555
-# Tree              65556
-# Node              65557
-# Movable           65558
-# AmoebaLabel       65559
-#
-# UI:
-# ActivityMarker    65650
-# ControlPoint      65651
-# FadingSymbol      65652
-# GlowRing          65653
-# HUD               65654
-# StretchLine       65655
-# TouchArea         65656
-#
-# UI/embeds:
-# MarkerStartPoint  65700
-# NewElementMarker  65701
-# UIEmbed           65702

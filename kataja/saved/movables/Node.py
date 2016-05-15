@@ -36,6 +36,7 @@ from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.utils import to_tuple, create_shadow_effect, add_xy
 from kataja.saved.Movable import Movable
 from kataja.ui_items.ControlPoint import ControlPoint
+from kataja.qtype_generator import next_available_type_id
 
 
 class DragData:
@@ -63,6 +64,7 @@ qbytes_scale.append("scale")
 class Node(Movable):
     """ Basic class for any visualization elements that can be connected to
     each other """
+    __qt_type_id__ = next_available_type_id()
     width = 20
     height = 20
     node_type = g.ABSTRACT_NODE
@@ -141,14 +143,6 @@ class Node(Movable):
         self.effect = create_shadow_effect(ctrl.cm.selection())
         # self.effect = create_shadow_effect(self.color)
         self.setGraphicsEffect(self.effect)
-
-    def type(self):
-        """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
-        need to differentiate between them. List of types is kept as comments in globals.py,
-        but for performance reasons just hardcode it here.
-        :return:
-        """
-        return 65557
 
     def edge_type(self):
         """ Default edge for this kind of node, as in kataja.globals type ids."""

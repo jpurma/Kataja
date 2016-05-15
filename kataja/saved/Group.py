@@ -9,6 +9,7 @@ from kataja.SavedField import SavedField
 from kataja.singletons import ctrl, qt_prefs
 from kataja.saved.movables.Node import Node
 from kataja.GroupLabel import GroupLabel
+from kataja.qtype_generator import next_available_type_id
 
 points = 36
 
@@ -16,6 +17,7 @@ points = 36
 class Group(SavedObject, QtWidgets.QGraphicsObject):
 
     short_name = 'Group'
+    __qt_type_id__ = next_available_type_id()
 
     def __init__(self, selection=None, persistent=True):
         SavedObject.__init__(self)
@@ -53,11 +55,10 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
 
     def type(self):
         """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
-        need to differentiate between them. List of types is kept as comments in globals.py,
-        but for performance reasons just hardcode it here.
+        need to differentiate between them. These are set when the program starts.
         :return:
         """
-        return 65550
+        return self.__qt_type_id__
 
     def after_init(self):
         self.update_selection(self.selection)

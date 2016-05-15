@@ -53,7 +53,6 @@ class NodeEditEmbed(UIEmbed):
 
         ed = node.get_editing_template()
         field_names = node.get_editable_field_names()
-        print(field_names)
         self.fields = {}
         self.resize_target = None
         hlayout = None

@@ -27,6 +27,7 @@ from kataja.saved.movables.Node import Node
 from kataja.parser.INodes import ITextNode
 from kataja.singletons import ctrl, prefs
 from kataja.saved.movables.nodes.BaseConstituentNode import BaseConstituentNode
+from kataja.qtype_generator import next_available_type_id
 
 __author__ = 'purma'
 
@@ -45,6 +46,7 @@ class ConstituentNode(BaseConstituentNode):
     """ ConstituentNode is enriched with few elements that have no syntactic meaning but help with
      reading the trees aliases, indices and glosses.
     """
+    __qt_type_id__ = next_available_type_id()
     name = ('Constituent', 'Constituents')
     short_name = "CN"
     display = True

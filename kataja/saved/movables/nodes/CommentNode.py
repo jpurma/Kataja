@@ -29,10 +29,12 @@ from PyQt5 import QtGui, QtCore
 import kataja.globals as g
 from kataja.singletons import ctrl
 from kataja.saved.movables.Node import Node
+from kataja.qtype_generator import next_available_type_id
 
 
 class CommentNode(Node):
     """ Node to display comments, annotations etc. syntactically inert information """
+    __qt_type_id__ = next_available_type_id()
     width = 20
     height = 20
     node_type = g.COMMENT_NODE

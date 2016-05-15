@@ -3,6 +3,7 @@ from PyQt5 import QtCore
 
 from kataja.SavedField import SavedField
 from kataja.saved.Movable import Movable
+from qtype_generator import next_available_type_id
 
 __author__ = 'purma'
 
@@ -34,6 +35,7 @@ class Tree(Movable):
     all nodes in one trees, e.g. translation of position.
     :param top:
     """
+    __qt_type_id__ = next_available_type_id()
     name = ('Tree', 'Trees')
     short_name = "Tree"
 
@@ -111,14 +113,6 @@ class Tree(Movable):
         :return:
         """
         return not self.top.get_parents(only_similar=False, only_visible=False)
-
-    def type(self):
-        """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
-        need to differentiate between them. List of types is kept as comments in globals.py,
-        but for performance reasons just hardcode it here.
-        :return:
-        """
-        return 65556
 
     def update_items(self):
         """ Check that all children of top item are included in this trees and create the sorted

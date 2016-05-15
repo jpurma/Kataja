@@ -27,6 +27,7 @@ GlossNode is a Node to display translation or explanation of a constituent
 import kataja.globals as g
 from kataja.globals import GLOSS_EDGE, GLOSS_NODE
 from kataja.saved.movables.Node import Node
+from kataja.qtype_generator import next_available_type_id
 
 color_map = {'tense': 0, 'person': 2, 'number': 4, 'case': 6, 'unknown': 3}
 
@@ -35,6 +36,7 @@ class GlossNode(Node):
     """
     Node to display translation of a constituent
     """
+    __qt_type_id__ = next_available_type_id()
     width = 20
     height = 20
     node_type = GLOSS_NODE

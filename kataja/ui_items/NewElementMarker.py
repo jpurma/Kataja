@@ -4,9 +4,12 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from kataja.singletons import prefs, ctrl
 from kataja.UIItem import UIItem
 from kataja.shapes import draw_arrow_shape_from_points
+from kataja.qtype_generator import next_available_type_id
 
 
 class MarkerStartPoint(QtWidgets.QGraphicsItem):
+    __qt_type_id__ = next_available_type_id()
+
     def __init__(self, parent):
         QtWidgets.QGraphicsItem.__init__(self, parent)
         self.setCursor(QtCore.Qt.CrossCursor)
@@ -16,11 +19,10 @@ class MarkerStartPoint(QtWidgets.QGraphicsItem):
 
     def type(self):
         """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
-        need to differentiate between them. List of types is kept as comments in globals.py,
-        but for performance reasons just hardcode it here.
+        need to differentiate between them. These are set when the program starts.
         :return:
         """
-        return 65700
+        return self.__qt_type_id__
 
     def paint(self, painter, options, QWidget_widget=None):
         if prefs.touch:
@@ -59,6 +61,7 @@ class NewElementMarker(UIItem, QtWidgets.QGraphicsItem):
     :param ui_manager:
     :param scene_pos:
     """
+    __qt_type_id__ = next_available_type_id()
 
     def __init__(self, scene_pos, embed, ui_key):
         UIItem.__init__(self, ui_key, None)
@@ -75,11 +78,10 @@ class NewElementMarker(UIItem, QtWidgets.QGraphicsItem):
 
     def type(self):
         """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
-        need to differentiate between them. List of types is kept as comments in globals.py,
-        but for performance reasons just hardcode it here.
+        need to differentiate between them. These are set when the program starts.
         :return:
         """
-        return 65701
+        return self.__qt_type_id__
 
     def paint(self, painter, options, QWidget_widget=None):
         p = QtGui.QPen(ctrl.cm.ui())

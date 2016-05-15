@@ -24,10 +24,12 @@
 
 import kataja.globals as g
 from kataja.saved.movables.Node import Node
+from kataja.qtype_generator import next_available_type_id
 
 
 class PropertyNode(Node):
     """ This is somekind of a microfeature. I don't remember why it exists, but maybe time will tell. """
+    __qt_type_id__ = next_available_type_id()
     width = 20
     height = 20
     node_type = g.PROPERTY_NODE

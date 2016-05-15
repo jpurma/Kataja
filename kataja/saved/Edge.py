@@ -37,7 +37,7 @@ import kataja.utils as utils
 from kataja.utils import to_tuple, add_xy, sub_xy
 from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
-
+from kataja.qtype_generator import next_available_type_id
 
 angle_magnet_map = {0: 6, 1: 6, 2: 4, 3: 3, 4: 2, 5: 1, 6: 0, 7: 5, 8: 5, 9: 5, 10: 7, 11: 8, 12: 9,
                     13: 10, 14: 11, 15: 6, 16: 6}
@@ -68,6 +68,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
     """ Any connection between nodes: can be represented as curves, branches
     or arrows """
 
+    __qt_type_id__ = next_available_type_id()
     short_name = "E"
 
     def __init__(self, start=None, end=None, edge_type='', direction=''):
@@ -148,11 +149,10 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
 
     def type(self):
         """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
-        need to differentiate between them. List of types is kept as comments in globals.py,
-        but for performance reasons just hardcode it here.
+        need to differentiate between them. These are set when the program starts.
         :return:
         """
-        return 65552
+        return self.__qt_type_id__
 
     def after_init(self):
         """ After_init is called in 2nd step in process of creating objects:

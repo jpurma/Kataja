@@ -3,6 +3,7 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 from kataja.UIItem import UIItem
 from kataja.singletons import ctrl, qt_prefs
 from kataja.ui_items.OverlayButton import PanelButton
+from kataja.qtype_generator import next_available_type_id
 
 __author__ = 'purma'
 
@@ -23,6 +24,7 @@ class UIEmbed(UIItem, QtWidgets.QWidget):
     :param parent:
     :param ui_manager:
     """
+    __qt_type_id__ = next_available_type_id()
 
     def __init__(self, parent, ui_key, host, text):
         UIItem.__init__(self, ui_key, host)
@@ -64,11 +66,10 @@ class UIEmbed(UIItem, QtWidgets.QWidget):
 
     def type(self):
         """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
-        need to differentiate between them. List of types is kept as comments in globals.py,
-        but for performance reasons just hardcode it here.
+        need to differentiate between them. These are set when the program starts.
         :return:
         """
-        return 65702
+        return self.__qt_type_id__
 
     def update_embed(self, focus_point=None):
         self.update_colors()
@@ -232,10 +233,8 @@ class UIEmbed(UIItem, QtWidgets.QWidget):
         if self.host and hasattr(self.host, 'get_color_id'):
             key = self.host.get_color_id()
         if key:
-            print('accent palette from key: ', key)
             self._palette = ctrl.cm.get_accent_palette(key)
         else:
-            print('generic ui_support palette')
             self._palette = ctrl.cm.get_qt_palette_for_ui()
         self.setPalette(self._palette)
 

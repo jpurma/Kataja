@@ -29,6 +29,7 @@ from kataja.globals import LEFT_ALIGN, CENTER_ALIGN, RIGHT_ALIGN
 from kataja.singletons import ctrl, prefs
 from kataja.utils import combine_dicts, combine_lists, time_me, open_symbol_data
 from kataja.parser.INodes import ITextNode
+from kataja.qtype_generator import next_available_type_id
 import difflib
 
 differ = difflib.Differ()
@@ -39,6 +40,7 @@ class Label(QtWidgets.QGraphicsTextItem):
     deciding what to show in label, label only calls nodes method to ask for
     text. """
     max_width = 400
+    __qt_type_id__ = next_available_type_id()
 
     def __init__(self, parent=None):
         """ Give node as parent. Label asks it to produce text to show here """
@@ -83,11 +85,10 @@ class Label(QtWidgets.QGraphicsTextItem):
 
     def type(self):
         """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
-        need to differentiate between them. List of types is kept as comments in globals.py,
-        but for performance reasons just hardcode it here.
+        need to differentiate between them. These are set when the program starts.
         :return:
         """
-        return 65554
+        return self.__qt_type_id__
 
     def set_font(self, font):
         self.setFont(font)
@@ -218,7 +219,6 @@ class Label(QtWidgets.QGraphicsTextItem):
                         waiting = (field_value, field_name)
                     continue
                 elif align == 'continue' or align == 'append':
-                    print('align continue: ', field_value)
                     html.append(field_value)
                     visible_parts.append((field_name, row, field_value))
                     if delimiter:

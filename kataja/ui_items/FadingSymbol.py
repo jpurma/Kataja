@@ -3,6 +3,8 @@ from PyQt5 import QtCore, QtWidgets
 from kataja.UIItem import UIItem
 
 from kataja.singletons import prefs
+from kataja.qtype_generator import next_available_type_id
+
 qbytes_opacity = QtCore.QByteArray()
 qbytes_opacity.append("opacity")
 
@@ -11,6 +13,7 @@ class FadingSymbol(UIItem, QtWidgets.QGraphicsObject):
     """
 
     """
+    __qt_type_id__ = next_available_type_id()
 
     def __init__(self, symbol, host, ui_key, place='bottom_right'):
         UIItem.__init__(self, ui_key, host)
@@ -29,11 +32,10 @@ class FadingSymbol(UIItem, QtWidgets.QGraphicsObject):
 
     def type(self):
         """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
-        need to differentiate between them. List of types is kept as comments in globals.py,
-        but for performance reasons just hardcode it here.
+        need to differentiate between them. These are set when the program starts.
         :return:
         """
-        return 65652
+        return self.__qt_type_id__
 
     def update_position(self):
         # br = self.boundingRect()
