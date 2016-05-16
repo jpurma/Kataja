@@ -72,9 +72,9 @@ class BracketManager:
         :return:
         """
         if left:
-            key = 'lb_%s' % host.save_key
+            key = 'lb_%s' % host.uid
         else:
-            key = 'rb_%s' % host.save_key
+            key = 'rb_%s' % host.uid
         if key in self.brackets:
             # print('bracket exists already')
             return self.brackets[key]
@@ -113,7 +113,7 @@ class BracketManager:
                 for node in tree.sorted_nodes:  # not sure if this should use 'once'
                     if node.left_bracket:
                         depth, left = self.find_leftmost(node)
-                        k = left.save_key
+                        k = left.uid
                         if k in self._bracket_slots:
                             left_brackets, right_brackets = self._bracket_slots[k]
                             left_brackets.append(node)
@@ -121,7 +121,7 @@ class BracketManager:
                         else:
                             self._bracket_slots[k] = ([node], [])
                         depth, right = self.find_rightmost(node)
-                        k = right.save_key
+                        k = right.uid
                         if k in self._bracket_slots:
                             left_brackets, right_brackets = self._bracket_slots[k]
                             right_brackets.append(node)
@@ -140,8 +140,8 @@ class BracketManager:
         :param left:
         :return:
         """
-        if node.save_key in self._bracket_slots:
-            left_brackets, right_brackets = self._bracket_slots[node.save_key]
+        if node.uid in self._bracket_slots:
+            left_brackets, right_brackets = self._bracket_slots[node.uid]
             if left:
                 return len(left_brackets) * (qt_prefs.font_bracket_width + 2)
             else:

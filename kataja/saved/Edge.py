@@ -37,7 +37,7 @@ import kataja.utils as utils
 from kataja.utils import to_tuple, add_xy, sub_xy
 from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
-from kataja.qtype_generator import next_available_type_id
+from kataja.uniqueness_generator import next_available_type_id
 
 angle_magnet_map = {0: 6, 1: 6, 2: 4, 3: 3, 4: 2, 5: 1, 6: 0, 7: 5, 8: 5, 9: 5, 10: 7, 11: 8, 12: 9,
                     13: 10, 14: 11, 15: 6, 16: 6}

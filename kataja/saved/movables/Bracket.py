@@ -28,7 +28,7 @@ from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 from kataja.saved.Movable import Movable
 from kataja.singletons import ctrl
-from kataja.qtype_generator import next_available_type_id
+from kataja.uniqueness_generator import next_available_type_id
 
 
 class Bracket(Movable):
@@ -60,9 +60,9 @@ class Bracket(Movable):
         self.clickable = False
         self._hovering = False
         if left:
-            self.key = 'lb_%s' % host.save_key
+            self.key = 'lb_%s' % host.uid
         else:
-            self.key = 'rb_%s' % host.save_key
+            self.key = 'rb_%s' % host.uid
 
         self.inner.setBrush(self.host.color)
         self.update_position()

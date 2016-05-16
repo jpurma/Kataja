@@ -11,7 +11,7 @@ a = {}
 def customize_master_style(checked):
     """
     """
-    panel = ctrl.ui.get_panel(g.STYLE)
+    panel = ctrl.ui.get_panel('StylePanel')
     panel.toggle_customization(checked)
 
 a['customize_master_style'] = {'command': 'Customize style',
@@ -97,7 +97,7 @@ def select_font():
     other available nodes
     :return: None
     """
-    panel = ctrl.ui.get_panel(g.STYLE)
+    panel = ctrl.ui.get_panel('StylePanel')
     if panel:
         font_id = panel.font_selector.currentData() or panel.cached_font_id
         panel.update_font_selector(font_id)
@@ -131,7 +131,7 @@ def change_edge_shape(sender=None):
         ctrl.fs.set_edge_info(ctrl.ui.active_edge_type, 'shape_name', shape)
         for edge in ctrl.forest.edges.values():
             edge.update_shape()
-    line_options = ctrl.ui.get_panel(g.LINE_OPTIONS)
+    line_options = ctrl.ui.get_panel('LineOptionsPanel')
 
     if line_options:
         line_options.update_panel()
@@ -148,7 +148,7 @@ def change_node_color():
     """ Change color for selection or in currently active edge type.
     :return: None
     """
-    panel = ctrl.ui.get_panel(g.STYLE)
+    panel = ctrl.ui.get_panel('StylePanel')
     color_key = panel.node_color_selector.currentData()
     panel.node_color_selector.model().selected_color = color_key
     color = ctrl.cm.get(color_key)
@@ -189,7 +189,7 @@ def change_edge_color():
     :param sender: field that called this action
     :return: None
     """
-    panel = ctrl.ui.get_panel(g.STYLE)
+    panel = ctrl.ui.get_panel('StylePanel')
     color_key = panel.edge_color_selector.currentData()
     panel.edge_color_selector.model().selected_color = color_key
     color = ctrl.cm.get(color_key)
@@ -465,7 +465,7 @@ def toggle_edge_arrowhead_at_start(value):
         etype = ctrl.ui.active_edge_type
         ctrl.fs.set_edge_info(etype, 'arrowhead_at_start', value)
         ctrl.forest.redraw_edges(edge_type=etype)
-    panel = ctrl.ui.get_panel(g.LINE_OPTIONS)
+    panel = ctrl.ui.get_panel('LineOptionsPanel')
     if panel:
         panel.update_panel()
 
@@ -487,7 +487,7 @@ def toggle_edge_arrowhead_at_end(value):
         etype = ctrl.ui.active_edge_type
         ctrl.fs.set_edge_info(etype, 'arrowhead_at_end', value)
         ctrl.forest.redraw_edges(edge_type=etype)
-    panel = ctrl.ui.get_panel(g.LINE_OPTIONS)
+    panel = ctrl.ui.get_panel('LineOptionsPanel')
     if panel:
         panel.update_panel()
 
@@ -510,7 +510,7 @@ def change_edge_shape_to_filled(value):
         etype = ctrl.ui.active_edge_type
         ctrl.fs.set_shape_info(etype, 'fill', fill)
         ctrl.forest.redraw_edges(edge_type=etype)
-    panel = ctrl.ui.get_panel(g.LINE_OPTIONS)
+    panel = ctrl.ui.get_panel('LineOptionsPanel')
     if panel:
         panel.update_panel()
 
@@ -533,7 +533,7 @@ def change_edge_shape_to_line(value):
         etype = ctrl.ui.active_edge_type
         ctrl.fs.set_shape_info(etype, 'fill', fill)
         ctrl.forest.redraw_edges(edge_type=etype)
-    panel = ctrl.ui.get_panel(g.LINE_OPTIONS)
+    panel = ctrl.ui.get_panel('LineOptionsPanel')
     if panel:
         panel.update_panel()
 
@@ -559,7 +559,7 @@ def change_edge_curvature_to_relative(value):
         etype = ctrl.ui.active_edge_type
         ctrl.fs.set_shape_info(etype, 'relative', value)
         ctrl.forest.redraw_edges(edge_type=etype)
-    panel = ctrl.ui.get_panel(g.LINE_OPTIONS)
+    panel = ctrl.ui.get_panel('LineOptionsPanel')
     if panel:
         panel.update_panel()
 
@@ -585,7 +585,7 @@ def change_edge_curvature_to_fixed(value):
         etype = ctrl.ui.active_edge_type
         ctrl.fs.set_shape_info(etype, 'relative', not value)
         ctrl.forest.redraw_edges(edge_type=etype)
-    panel = ctrl.ui.get_panel(g.LINE_OPTIONS)
+    panel = ctrl.ui.get_panel('LineOptionsPanel')
     if panel:
         panel.update_panel()
 

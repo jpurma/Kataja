@@ -57,13 +57,13 @@ class TopBarButtons(QtWidgets.QFrame):
         self._right_buttons.append(redo)
         layout.addWidget(redo)
 
-        pan_around = TopRowButton('pan_around', parent=self, tooltip='Move mode', size=(24, 24),
-                                  pixmap=qt_prefs.pan_icon)  # draw_method=drawn_icons.pan_around
+        pan_mode = TopRowButton('pan_mode', parent=self, tooltip='Move mode', size=(24, 24),
+                                pixmap=qt_prefs.pan_icon)  # draw_method=drawn_icons.pan_around
 
-        ui.add_button(pan_around, action='toggle_pan_mode')
-        pan_around.setCheckable(True)
-        layout.addWidget(pan_around)
-        self._right_buttons.append(pan_around)
+        ui.add_button(pan_mode, action='toggle_pan_mode')
+        pan_mode.setCheckable(True)
+        layout.addWidget(pan_mode)
+        self._right_buttons.append(pan_mode)
 
         select_mode = TopRowButton('select_mode', parent=self, tooltip='Move mode',
                                    pixmap=qt_prefs.select_all_icon,

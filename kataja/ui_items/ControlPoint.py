@@ -8,7 +8,7 @@ from kataja.singletons import prefs, ctrl
 from kataja.utils import to_tuple
 from kataja.UIItem import UIItem
 import kataja.globals as g
-from kataja.qtype_generator import next_available_type_id
+from kataja.uniqueness_generator import next_available_type_id
 
 
 class ControlPoint(UIItem, QtWidgets.QGraphicsItem):
@@ -17,8 +17,8 @@ class ControlPoint(UIItem, QtWidgets.QGraphicsItem):
     """
     __qt_type_id__ = next_available_type_id()
 
-    def __init__(self, edge, ui_key, index=-1, role=''):
-        UIItem.__init__(self, ui_key, host=edge)
+    def __init__(self, edge, index=-1, role=''):
+        UIItem.__init__(self, host=edge, role=role)
         QtWidgets.QGraphicsItem.__init__(self)
         if prefs.touch:
             self._wh = 12
@@ -30,7 +30,6 @@ class ControlPoint(UIItem, QtWidgets.QGraphicsItem):
             self._xy = -2
             self.round = True
             self.setCursor(Qt.CrossCursor)
-        self.role = role
         self._index = index
         self.focusable = True
         self.draggable = True

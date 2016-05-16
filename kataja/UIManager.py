@@ -58,10 +58,9 @@ from kataja.ui_items.Panel import Panel
 from kataja.ui_items.ActivityMarker import ActivityMarker
 from kataja.ui_items.ControlPoint import ControlPoint
 from kataja.ui_items.FadingSymbol import FadingSymbol
-from kataja.ui_items.OverlayButton import OverlayButton, button_factory, TopRowButton, \
-    CutFromEndButton, CutFromStartButton
+import kataja.ui_items.OverlayButton
 from kataja.ui_items.StretchLine import StretchLine
-from kataja.ui_items.TouchArea import TouchArea, create_touch_area
+import kataja.ui_items.TouchArea
 from kataja.ui_items.embeds.EdgeLabelEmbed import EdgeLabelEmbed
 from kataja.ui_items.embeds.GroupLabelEmbed import GroupLabelEmbed
 from kataja.ui_items.embeds.NewElementEmbed import NewElementEmbed
@@ -75,28 +74,20 @@ SELECTING_AREA = 1
 DRAGGING = 2
 POINTING = 3
 
-PANELS = OrderedDict([(g.LOG, {'name': 'Log', 'position': 'bottom'}),
-                      (g.NAVIGATION, {'name': 'Trees', 'position': 'right'}),
-                      (g.NODES, {'name': 'Nodes', 'position': 'right'}),
-                      (g.VISUALIZATION, {'name': 'Visualization', 'position': 'right'}),
-                      (g.STYLE, {'name': 'Styles', 'position': 'right'}),
-                      (g.COLOR_THEME, {'name': 'Color theme', 'position': 'right'}),
-                      (g.COLOR_WHEEL, {'name': 'Color theme wheel', 'position': 'right',
-                                       'folded': True, 'closed': True}),
-                      (g.LINE_OPTIONS, {'name': 'More line options', 'position': 'float',
-                                        'closed': True}),
-                      (g.SYMBOLS, {'name': 'Symbols', 'position': 'right'}),
-                      (g.CAMERA, {'name': 'Camera', 'position': 'float', 'closed': True}),
-                      (g.VIS_OPTIONS, {'name': 'Visualization options', 'position': 'float',
-                                       'closed': True})])
-
-
-panel_classes = {g.LOG: LogPanel, g.NAVIGATION: NavigationPanel,
-                 g.VISUALIZATION: VisualizationPanel, g.COLOR_THEME: ColorPanel,
-                 g.COLOR_WHEEL: ColorWheelPanel, g.LINE_OPTIONS: LineOptionsPanel,
-                 g.SYMBOLS: SymbolPanel, g.NODES: NodesPanel, g.STYLE: StylePanel,
-                 g.CAMERA: FaceCamPanel,
-                 g.VIS_OPTIONS: VisualizationOptionsPanel}
+PANELS = [{'class': LogPanel, 'name': 'Log', 'position': 'bottom'},
+          {'class': NavigationPanel, 'name': 'Trees', 'position': 'right'},
+          {'class': NodesPanel, 'name': 'Nodes', 'position': 'right'},
+          {'class': VisualizationPanel, 'name': 'Visualization', 'position': 'right'},
+          {'class': StylePanel, 'name': 'Styles', 'position': 'right'},
+          {'class': ColorPanel, 'name': 'Color theme', 'position': 'right'},
+          {'class': ColorWheelPanel, 'name': 'Color theme wheel', 'position': 'right',
+           'folded': True, 'closed': True },
+          {'class': LineOptionsPanel, 'name': 'More line options', 'position': 'float',
+           'closed': True },
+          {'class': SymbolPanel, 'name': 'Symbols', 'position': 'right'},
+          {'class': FaceCamPanel, 'name': 'Camera', 'position': 'float', 'closed': True},
+          {'class': VisualizationOptionsPanel, 'name': 'Visualization options',
+           'position': 'float', 'closed': True }]
 
 menu_structure = OrderedDict([('file_menu', ('&File',
                                              ['new_project', 'new_forest', 'open', 'save',
@@ -116,14 +107,6 @@ menu_structure = OrderedDict([('file_menu', ('&File',
                               ('windows_menu', ('&Windows', [('Panels', ['$panels']), '---',
                                                              'toggle_all_panels', '---'])),
                               ('help_menu', ('&Help', ['help']))])
-
-NEW_ELEMENT_EMBED = 'new_element_embed'
-NEW_ELEMENT_MARKER = 'new_element_marker'
-EDGE_LABEL_EMBED = 'edge_label_embed'
-GROUP_LABEL_EMBED = 'group_label_embed'
-STRETCHLINE = 'stretchline'
-ACTIVITY_MARKER = 'activity_marker'
-UI_ACTIVITY_MARKER = 'ui_activity_marker'
 
 
 class UIManager:
@@ -164,6 +147,8 @@ class UIManager:
         self.preferences_dialog = None
         self.color_dialogs = {}
         self.font_dialogs = {}
+        self.activity_marker = None
+        self.ui_activity_marker = None
 
     def populate_ui_elements(self):
         """ These cannot be created in __init__, as individual panels etc.
@@ -261,7 +246,7 @@ class UIManager:
             raise KeyError
         self._items[item.ui_key] = item
         if item.host:
-            key = item.host.save_key
+            key = item.host.uid
             if key in self._items_by_host:
                 self._items_by_host[key].append(item)
             else:
@@ -279,9 +264,9 @@ class UIManager:
         if item.ui_key in self._items:
             del self._items[item.ui_key]
         if item.host:
-            key = item.host.save_key
+            key = item.host.uid
             if key in self._items_by_host:
-                parts = self._items_by_host.get(item, [])
+                parts = self._items_by_host.get(key, [])
                 if item in parts:
                     parts.remove(item)
                     if not parts:
@@ -300,12 +285,30 @@ class UIManager:
         """
         return self._items.get(ui_key, None)
 
+    def get_ui_by_type(self, host=None, ui_type=None):
+        if host is not None:
+            items = self.get_uis_for(host)
+        else:
+            items = self._items.values()
+        for item in items:
+            if item.ui_type == ui_type:
+                return item
+
+    def get_ui_by_role(self, host=None, role=None):
+        if host is not None:
+            items = self.get_uis_for(host)
+        else:
+            items = self._items.values()
+        for item in items:
+            if item.role == role:
+                return item
+
     def get_uis_for(self, obj):
         """ Return ui_items that have this object as host, generally objects related to given object
         :param obj:
         :return:
         """
-        return self._items_by_host.get(obj.save_key, [])
+        return self._items_by_host.get(obj.uid, [])
 
     def watch_alerted(self, obj, signal, field_name, value):
         """ Receives alerts from signals that this object has chosen to
@@ -461,11 +464,12 @@ class UIManager:
 
     def remove_ui_for(self, obj):
         """ Remove ui_support-elements for given(non-ui_support) object.
-        :param obj: Saved item, needs to have save_key
+        :param obj: Saved item, needs to have uid
         """
         for ui_item in list(self.get_uis_for(obj)):
             if not getattr(ui_item, '_fade_out_active', False):
                 ui_item.update_position()
+                self.remove_ui(ui_item)
 
     # ### Actions and Menus
     # ####################################################
@@ -496,7 +500,8 @@ class UIManager:
             additional_actions['visualizations'].append(key)
 
         additional_actions['panels'] = []
-        for panel_key, panel_data in PANELS.items():
+        for panel_data in PANELS:
+            panel_key = panel_data['class'].__name__
             key = 'toggle_panel_%s' % panel_key
             d = {'command': panel_data['name'], 'method': toggle_panel,
                  'checkable': True, 'viewgroup': 'Panels', 'args': [panel_key], 'action_arg': True,
@@ -632,16 +637,18 @@ class UIManager:
         :return: None
         """
         self._panels = {}
-        for panel_key, data in PANELS.items():
-            if data.get('closed', False):
+        for panel_data in PANELS:
+            panel_key = panel_data['class'].__name__
+
+            if panel_data.get('closed', False):
                 checked = False
             else:
-                self.create_panel(panel_key, **data)
+                self.create_panel(panel_data)
                 checked = True
             toggle_action = self.get_action('toggle_panel_%s' % panel_key)
             toggle_action.setChecked(checked)
 
-    def create_panel(self, id, name='', position=None, folded=False, default=False, **kwargs):
+    def create_panel(self, data):
         """ Create single panel. Panels come in different classes, but we have
         a local dict panel_classes to figure out which kind of panel should
         be created.
@@ -652,15 +659,13 @@ class UIManager:
         :param default: bool -- use the PANELS settings
         :return:
         """
-        if default:
-            data = PANELS[id]
-            position = data.get('position', None)
-            folded = data.get('folded', False)
-            name = data.get('name', '')
-        constructor = panel_classes[id]
-        new_panel = constructor(name, id, default_position=position, parent=self.main,
+        constructor = data['class']
+        position = data.get('position', 'float')
+        folded = data.get('folded', False)
+        name = data.get('name', 'New panel')
+        new_panel = constructor(name, default_position=position, parent=self.main,
                                 folded=folded)
-        self._panels[id] = new_panel
+        self._panels[constructor.__name__] = new_panel
         self.add_ui(new_panel)
         return new_panel
 
@@ -705,7 +710,10 @@ class UIManager:
                 panel.set_folded(False)
                 action.setChecked(True)
         else:
-            panel = self.create_panel(panel_id, default=True)
+            for panel_data in PANELS:
+                if panel_data['class'].__name__ == panel_id:
+                    break
+            panel = self.create_panel(panel_data)
             panel.setVisible(True)
             panel.set_folded(False)
             action.setChecked(True)
@@ -795,11 +803,10 @@ class UIManager:
         """
         self.release_editor_focus()
         lp = edge.label_item.pos()
-        if EDGE_LABEL_EMBED not in self._items:
-            embed = EdgeLabelEmbed(self.main.graph_view, edge, EDGE_LABEL_EMBED)
+        embed = self.get_ui('EdgeLabelEmbed')
+        if not embed:
+            embed = EdgeLabelEmbed(self.main.graph_view, edge)
             self.add_ui(embed)
-        else:
-            embed = self._items[EDGE_LABEL_EMBED]
         embed.update_embed(focus_point=lp)
         embed.wake_up()
 
@@ -810,8 +817,8 @@ class UIManager:
         """
         self.release_editor_focus()
         lp = group.boundingRect().center()
-        if GROUP_LABEL_EMBED in self._items:
-            embed = self._items[GROUP_LABEL_EMBED]
+        embed = self.get_ui('GroupLabelEmbed')
+        if embed:
             if embed.host is group:
                 embed.close()
                 self.remove_ui(embed)
@@ -819,7 +826,7 @@ class UIManager:
             else:
                 embed.host = group
         else:
-            embed = GroupLabelEmbed(self.main.graph_view, group, GROUP_LABEL_EMBED)
+            embed = GroupLabelEmbed(self.main.graph_view, group)
             self.add_ui(embed)
         embed.update_embed(focus_point=lp)
         embed.wake_up()
@@ -833,13 +840,13 @@ class UIManager:
         :param scene_pos:
         """
         self.release_editor_focus()
-        embed = self.get_ui(NEW_ELEMENT_EMBED)
-        marker = self.get_ui(NEW_ELEMENT_MARKER)
+        embed = self.get_ui('NewElementEmbed')
+        marker = self.get_ui('NewElementMarker')
         if not embed:
-            embed = NewElementEmbed(self.main.graph_view, NEW_ELEMENT_EMBED)
+            embed = NewElementEmbed(self.main.graph_view)
             self.add_ui(embed, show=False)
         if not marker:
-            marker = NewElementMarker(scene_pos, embed, NEW_ELEMENT_MARKER)
+            marker = NewElementMarker(scene_pos, embed)
             self.add_ui(marker)
         embed.marker = marker
         embed.update_embed(focus_point=scene_pos)
@@ -850,8 +857,8 @@ class UIManager:
         """ Remove both
         :return:
         """
-        embed = self.get_ui(NEW_ELEMENT_EMBED)
-        marker = self.get_ui(NEW_ELEMENT_MARKER)
+        embed = self.get_ui('NewElementEmbed')
+        marker = self.get_ui('NewElementMarker')
         if marker:
             self.remove_ui(marker)
         if embed:
@@ -864,19 +871,19 @@ class UIManager:
         :param node:
         """
         self.release_editor_focus()
-        ui_key = node.save_key + '_edit'
-        ed = self.get_ui(ui_key)
+        ed = self.get_ui('NodeEditEmbed')
         if ed:
             self.remove_edit_embed(ed)
 
-        ed = NodeEditEmbed(self.main.graph_view, ui_key, node)
+        ed = NodeEditEmbed(self.main.graph_view, node)
         self.add_ui(ed, show=False)
         self._node_edits.add(ed)
         ed.wake_up()
 
     def get_editing_embed_for_node(self, node):
-        ui_key = node.save_key + '_edit'
-        return self.get_ui(ui_key)
+        embed = self.get_ui('NodeEditEmbed')
+        if embed and embed.host == node:
+            return embed
 
     def close_all_edits(self):
         """ Remove all node edit embeds from UI. e.g. when changing forests
@@ -897,35 +904,39 @@ class UIManager:
     # ### Touch areas
     # #####################################################################
 
-    def get_touch_area(self, host, type):
+    def get_or_create_touch_area(self, host, subtype, action=None):
+        ta = self.get_ui_by_type(host=host, ui_type=subtype)
+        if not ta:
+            ta = self.create_touch_area(host, subtype, action)
+        return ta
+
+    def get_touch_area(self, host, ta_type):
         """ Get touch area for specific purpose or create one if it doesn't
         exist.
         :param host:
         :param type:
         :return:
         """
-        ui_key = host.save_key + '_ta_' + str(type)
-        return self.get_ui(ui_key)
+        return self.get_ui_by_type(host=host, ui_type=ta_type)
 
-    def create_touch_area(self, host, type, action):
+    def create_touch_area(self, host, ta_type, action):
         """ Get touch area for specific purpose or create one if it doesn't
         exist.
         :param host:
-        :param type:
+        :param ttype:
         :param action:
         :return:
         """
-        ui_key = host.save_key + '_ta_' + str(type)
-        ta = create_touch_area(host, type, ui_key, action)
+        ta_class = getattr(kataja.ui_items.TouchArea, ta_type)
+        ta = ta_class(host, action)
         self.add_ui(ta)
         return ta
 
     def remove_touch_areas(self):
         """ Remove all touch areas from UI. Needs to be done when changing
-        selection or starting
-         dragging, or generally before touch areas are recalculated """
+        selection or starting dragging, or generally before touch areas are recalculated """
         for item in list(self._items.values()):
-            if isinstance(item, TouchArea):
+            if isinstance(item, kataja.ui_items.TouchArea.TouchArea):
                 self.remove_ui(item)
 
     def update_touch_areas(self):
@@ -946,27 +957,18 @@ class UIManager:
         if not node.is_visible():
             return
         d = node.__class__.touch_areas_when_selected
-        for key, values in d.items():
+        for ta_type, values in d.items():
             if node.check_conditions(values):
                 action = self.get_action(values.get('action'))
                 place = values.get('place', '')
                 if place == 'edge_up':
-                    for edge in node.get_edges_up(similar=True, visible=True):
-                        ta = self.get_touch_area(edge, key)
-                        if not ta:
-                            self.create_touch_area(edge, key, action)
+                    hosts = node.get_edges_up(similar=True, visible=True)
                 elif place == 'parent_above':
-                    for parent in node.get_parents(only_similar=True, only_visible=True):
-                        ta = self.get_touch_area(parent, key)
-                        if not ta:
-                            self.create_touch_area(parent, key, action)
-
-                elif not place:
-                    ta = self.get_touch_area(node, key)
-                    if not ta:
-                        self.create_touch_area(node, key, action)
+                    hosts = node.get_parents(only_similar=True, only_visible=True)
                 else:
-                    raise NotImplementedError
+                    hosts = [node]
+                for host in hosts:
+                    self.get_or_create_touch_area(host, ta_type, action)
 
     # hmmmm.....
     def update_touch_areas_for_selected_edge(self, edge):
@@ -975,14 +977,10 @@ class UIManager:
         :param edge: object to update
         """
         if self.free_drawing_mode() and edge.edge_type == g.CONSTITUENT_EDGE:
-            ta = self.get_touch_area(edge, g.INNER_ADD_SIBLING_LEFT)
-            if not ta:
-                self.create_touch_area(edge, g.INNER_ADD_SIBLING_LEFT,
-                                       self.get_action('inner_add_sibling_left'))
-            ta = self.get_touch_area(edge, g.INNER_ADD_SIBLING_RIGHT)
-            if not ta:
-                self.create_touch_area(edge, g.INNER_ADD_SIBLING_RIGHT,
-                                       self.get_action('inner_add_sibling_right'))
+            self.get_or_create_touch_area(edge, g.INNER_ADD_SIBLING_LEFT,
+                                          self.get_action('inner_add_sibling_left'))
+            self.get_or_create_touch_area(edge, g.INNER_ADD_SIBLING_RIGHT,
+                                          self.get_action('inner_add_sibling_right'))
 
     def prepare_touch_areas_for_dragging(self, moving=None, multidrag=False):
         """
@@ -1005,19 +1003,15 @@ class UIManager:
             if node is ctrl.dragged_focus:
                 continue
             d = node.__class__.touch_areas_when_dragging
-            for key, values in d.items():
+            for ta_type, values in d.items():
                 if node.check_conditions(values):
                     action = self.get_action(values.get('action'))
                     place = values.get('place', '')
                     if place == 'edge_up':
                         for edge in node.get_edges_up(similar=True, visible=True):
-                            ta = self.get_touch_area(edge, key)
-                            if not ta:
-                                self.create_touch_area(edge, key, action)
+                            self.get_or_create_touch_area(edge, ta_type, action)
                     elif not place:
-                        ta = self.get_touch_area(node, key)
-                        if not ta:
-                            self.create_touch_area(node, key, action)
+                        self.get_or_create_touch_area(node, ta_type, action)
                     else:
                         raise NotImplementedError
 
@@ -1030,14 +1024,12 @@ class UIManager:
         :param node:
         """
         # assert (node.locked or node.use_adjustment)
-        ui_key = node.save_key + '_lock_icon'
-        if ui_key in self._items:
-            return
-
-        item = FadingSymbol(qt_prefs.lock_pixmap, node, ui_key, place='bottom_right')
-        # print u"\U0001F512" , unichr(9875) # unichr(9875)
-        self.add_ui(item)
-        item.fade_out()
+        anchor = self.get_ui_by_type(node, 'FadingSymbol')
+        if not anchor:
+            anchor = FadingSymbol(qt_prefs.lock_pixmap, node, place='bottom_right')
+            # print u"\U0001F512" , unichr(9875) # unichr(9875)
+            self.add_ui(anchor)
+            anchor.fade_out()
 
     # ### Stretchlines
     # ####################################################################
@@ -1047,14 +1039,14 @@ class UIManager:
         :param start:
         :param end:
         """
-        sl = self.get_ui(STRETCHLINE)
+        sl = self.get_ui('StretchLine')
         if sl:
             line = sl.line()
             line.setPoints(start, end)
             sl.setLine(line)
         else:
             line = QtCore.QLineF(start, end)
-            sl = StretchLine(line, STRETCHLINE)
+            sl = StretchLine(line)
             sl.setPen(ctrl.cm.ui())
             self.add_ui(sl)
         sl.show()
@@ -1063,7 +1055,7 @@ class UIManager:
         """
         :param end:
         """
-        sl = self.get_ui(STRETCHLINE)
+        sl = self.get_ui('StretchLine')
         if sl:
             line = sl.line()
             line.setP2(end)
@@ -1073,7 +1065,7 @@ class UIManager:
         """
         :return:
         """
-        sl = self.get_ui(STRETCHLINE)
+        sl = self.get_ui('StretchLine')
         if sl:
             self.remove_ui(sl)
 
@@ -1127,7 +1119,7 @@ class UIManager:
         self.update_drag_mode(True) # selection mode
 
     def update_drag_mode(self, selection_mode):
-        pan_around = self.get_ui('pan_around')
+        pan_around = self.get_ui('pan_mode')
         select_mode = self.get_ui('select_mode')
         if selection_mode:
             pan_around.setChecked(False)
@@ -1143,30 +1135,6 @@ class UIManager:
             self.connect_element_to_action(button, action)
             button.show()
         return button
-
-    def _create_overlay_button(self, icon, host, role, key, tooltip, action, size=None,
-                               draw_method=None):
-        """
-
-        :param icon:
-        :param host:
-        :param role:
-        :param key:
-        :param text:
-        :param action:
-        :param size:
-        """
-        if key not in self._items:
-            button = OverlayButton(host, key, role, pixmap=icon, tooltip=text,
-                                   parent=self.main.graph_view,
-                                   size=size or 16, draw_method=draw_method)
-            self.add_ui(button)
-            button.update_position()
-            self.connect_element_to_action(button, action)
-            button.show()
-            return button
-        else:
-            return self._items[key]
 
     def update_buttons_for_selected_node(self, node):
         """ Assumes that buttons for this node are empty and that the
@@ -1184,20 +1152,19 @@ class UIManager:
             handle = GraphicsResizeHandle(ctrl.graph_view, node)
             self.add_ui(handle)
 
-    def get_or_create_button(self, node, role_key, action):
-        if node:
-            save_key = node.save_key + role_key
-        else:
-            save_key = role_key
-        if save_key in self._items:
-            return self._items[save_key]
-        button = button_factory(role_key, node, save_key, self.main.graph_view)
+    def get_or_create_button(self, node, class_key, action):
+        button = self.get_ui_by_type(host=node, ui_type=class_key)
+        if button:
+            return button
+        constructor = getattr(kataja.ui_items.OverlayButton, class_key)
+        button = constructor(node, self.main.graph_view)
+
         self.add_ui(button)
         button.update_position()
         if action:
             self.connect_element_to_action(button, action)
         else:
-            print('missing action for button ', button, save_key)
+            print('missing action for button ', button, class_key)
         button.show()
         return button
 
@@ -1217,14 +1184,10 @@ class UIManager:
         """
         # Constituent edges don't have cut-button at the start
         #if edge.edge_type is not g.CONSTITUENT_EDGE:
-        key = edge.save_key + "_cut_start"
         if edge.start:
-            self.add_button(CutFromStartButton(host=edge, ui_key=key, parent=ctrl.graph_view),
-                            'disconnect_edge_start')
-        key = edge.save_key + "_cut_end"
+            self.get_or_create_button(edge, g.CUT_FROM_START_BUTTON, 'disconnect_edge_start')
         if edge.end:
-            self.add_button(CutFromEndButton(host=edge, ui_key=key, parent=ctrl.graph_view),
-                            'disconnect_edge_end')
+            self.get_or_create_button(edge, g.CUT_FROM_END_BUTTON, 'disconnect_edge_end')
 
     # ### Control points
     # ####################################################################
@@ -1234,20 +1197,19 @@ class UIManager:
         :param edge:
         """
 
-        def _add_cp(key, index, role):
-            cp = ControlPoint(edge, key, index=index, role=role)
+        def _add_cp(index, role):
+            cp = ControlPoint(edge, index=index, role=role)
             self.add_ui(cp)
             cp.update_position()
 
-        key_base = edge.save_key + '_cp_'
         for i, point in enumerate(edge.control_points):
-            _add_cp(key_base + str(i), i, '')
+            _add_cp(i, '')
         if not edge.start:
-            _add_cp(key_base + g.START_POINT, -1, g.START_POINT)
+            _add_cp(-1, g.START_POINT)
         if not edge.end:
-            _add_cp(key_base + g.END_POINT, -1, g.END_POINT)
+            _add_cp(-1, g.END_POINT)
         if edge.label_item:
-            _add_cp(key_base + g.LABEL_START, -1, g.LABEL_START)
+            _add_cp(-1, g.LABEL_START)
 
     def update_control_points(self):
         """ Create all necessary control points
@@ -1273,22 +1235,18 @@ class UIManager:
 
         :return:
         """
-        am = self.get_ui(ACTIVITY_MARKER)
-        if not am:
-            am = ActivityMarker(0, ACTIVITY_MARKER)
-            self.add_ui(am)
-        return am
+        if not self.activity_marker:
+            self.activity_marker = ActivityMarker(role=0)
+        return self.activity_marker
 
     def get_ui_activity_marker(self):
         """
 
         :return:
         """
-        am = self.get_ui(UI_ACTIVITY_MARKER)
-        if not am:
-            am = ActivityMarker(1, UI_ACTIVITY_MARKER)
-            self.add_ui(am)
-        return am
+        if not self.ui_activity_marker:
+            self.ui_activity_marker = ActivityMarker(role=0)
+        return self.ui_activity_marker
 
     # ### Timer ########################################################
 

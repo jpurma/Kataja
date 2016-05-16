@@ -2,7 +2,7 @@ import math
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
-from kataja.globals import COLOR_THEME
+import kataja.globals as g
 from kataja.singletons import ctrl
 from kataja.utils import to_tuple
 from kataja.ui_items.Panel import FLAG, CIRCLE, Panel
@@ -16,14 +16,14 @@ class ColorWheelPanel(Panel):
 
     """
 
-    def __init__(self, name, key, default_position='right', parent=None, folded=False):
+    def __init__(self, name, default_position='right', parent=None, folded=False):
         """
         All of the panel constructors follow the same format so that the construction can be automated.
         :param name: Title of the panel and the key for accessing it
         :param default_position: 'bottom', 'right'...
         :param parent: self.main
         """
-        Panel.__init__(self, name, key, default_position, parent, folded)
+        Panel.__init__(self, name, default_position, parent, folded)
         # ### Color wheel
         layout = QtWidgets.QVBoxLayout()
         widget = QtWidgets.QWidget(self)
@@ -134,7 +134,7 @@ class ColorWheelPanel(Panel):
 
         """
         cm = ctrl.cm
-        panel = ctrl.ui.get_panel(COLOR_THEME)
+        panel = ctrl.ui.get_panel('ColorThemePanel')
         color_key = panel.create_theme_from_color(cm.hsv)
         ctrl.main.change_color_mode(color_key)
 

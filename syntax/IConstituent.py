@@ -42,7 +42,7 @@ class IConstituent(SavedObject):
     editable = {}
     addable = []
 
-    def __init__(self, label='', parts=None, save_key='', features=None, head=None, **kw):
+    def __init__(self, label='', parts=None, uid='', features=None, head=None, **kw):
         super().__init__(**kw)
         self.label = None
         self.parts = None

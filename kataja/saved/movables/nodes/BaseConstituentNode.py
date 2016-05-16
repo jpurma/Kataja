@@ -29,7 +29,7 @@ from kataja.saved.movables.Node import Node
 
 
 # ctrl = Controller object, gives accessa to other modules
-from kataja.qtype_generator import next_available_type_id
+from kataja.uniqueness_generator import next_available_type_id
 
 
 class BaseConstituentNode(Node):

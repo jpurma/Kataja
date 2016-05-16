@@ -61,7 +61,7 @@ class GraphicsResizeHandle(QtWidgets.QSizeGrip):
         self.pressed = False
         self.adjust = None
         self.update_position()
-        self.ui_key = host.save_key + '_resize_handle'
+        self.ui_key = host.uid + '_resize_handle'
         self.show()
 
     def update_position(self):

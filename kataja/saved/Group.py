@@ -9,7 +9,7 @@ from kataja.SavedField import SavedField
 from kataja.singletons import ctrl, qt_prefs
 from kataja.saved.movables.Node import Node
 from kataja.GroupLabel import GroupLabel
-from kataja.qtype_generator import next_available_type_id
+from kataja.uniqueness_generator import next_available_type_id, next_available_ui_key
 
 points = 36
 
@@ -22,8 +22,14 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
     def __init__(self, selection=None, persistent=True):
         SavedObject.__init__(self)
         QtWidgets.QGraphicsObject.__init__(self)
-        self.ui_key = self.save_key + '_ui'
-        self.host = None # not used, it is here because it is expected for UI elements
+        # -- Fake as UIItem to make selection groups part of UI:
+        self.ui_key = next_available_ui_key()
+        self.ui_type = self.__class__.__name__
+        self.ui_manager = ctrl.ui
+        self.role = None
+        self.host = None
+        self.watchlist = []
+        # -- end faking as UIItem
         self.selection = []
         self.selection_with_children = []
         self.persistent = persistent

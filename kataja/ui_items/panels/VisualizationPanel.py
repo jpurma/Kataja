@@ -13,14 +13,14 @@ class VisualizationPanel(Panel):
     """ Switch visualizations and adjust their settings """
 
 
-    def __init__(self, name, key, default_position='right', parent=None, folded=False):
+    def __init__(self, name, default_position='right', parent=None, folded=False):
         """
         All of the panel constructors follow the same format so that the construction can be automated.
         :param name: Title of the panel and the key for accessing it
         :param default_position: 'bottom', 'right'...
         :param parent: self.main
         """
-        Panel.__init__(self, name, key, default_position, parent, folded)
+        Panel.__init__(self, name, default_position, parent, folded)
         inner = QtWidgets.QWidget()
         inner.setMinimumHeight(40)
         inner.setMaximumHeight(50)
@@ -44,7 +44,7 @@ class VisualizationPanel(Panel):
         self.toggle_options.setFixedSize(26, 26)
         self.toggle_options.setCheckable(True)
         ctrl.ui.connect_element_to_action(self.toggle_options,
-                                          'toggle_panel_%s' % g.VIS_OPTIONS)
+                                          'toggle_panel_VisualizationOptionsPanel')
         hlayout.addWidget(self.toggle_options, 1, QtCore.Qt.AlignRight)
 
         layout.addLayout(hlayout)

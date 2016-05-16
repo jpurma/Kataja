@@ -29,7 +29,7 @@ import kataja.globals as g
 from kataja.SavedField import SavedField
 from kataja.globals import ATTRIBUTE_NODE
 from kataja.saved.movables.Node import Node
-from kataja.qtype_generator import next_available_type_id
+from kataja.uniqueness_generator import next_available_type_id
 
 color_map = {'S': 0, 'order': 1, 'M': 2, 'unknown': 3}
 

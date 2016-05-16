@@ -3,7 +3,8 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 from kataja.UIItem import UIItem
 from kataja.singletons import ctrl, qt_prefs
 from kataja.ui_items.OverlayButton import PanelButton
-from kataja.qtype_generator import next_available_type_id
+from kataja.uniqueness_generator import next_available_type_id
+import kataja.globals as g
 
 __author__ = 'purma'
 
@@ -26,8 +27,8 @@ class UIEmbed(UIItem, QtWidgets.QWidget):
     """
     __qt_type_id__ = next_available_type_id()
 
-    def __init__(self, parent, ui_key, host, text):
-        UIItem.__init__(self, ui_key, host)
+    def __init__(self, parent, host, text):
+        UIItem.__init__(self, host, unique=True)
         QtWidgets.QWidget.__init__(self, parent)
         self._palette = None
         self.update_colors()

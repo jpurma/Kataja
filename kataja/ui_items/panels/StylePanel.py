@@ -14,7 +14,7 @@ __author__ = 'purma'
 class StylePanel(Panel):
     """ Panel for editing how edges and nodes are drawn. """
 
-    def __init__(self, name, key, default_position='right', parent=None, folded=False):
+    def __init__(self, name, default_position='right', parent=None, folded=False):
         """
         All of the panel constructors follow the same format so that the
         construction can be automated.
@@ -22,7 +22,7 @@ class StylePanel(Panel):
         :param default_position: 'bottom', 'right'...
         :param parent: self.main
         """
-        Panel.__init__(self, name, key, default_position, parent, folded)
+        Panel.__init__(self, name, default_position, parent, folded)
         inner = QtWidgets.QWidget(self)
         self.setSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred)
         layout = QtWidgets.QVBoxLayout()
@@ -96,7 +96,7 @@ class StylePanel(Panel):
         self.edge_options = icon_button(ui, self.style_widgets, hlayout,
                                         icon=qt_prefs.settings_icon,
                                         text='More line options',
-                                        action='toggle_panel_%s' % g.LINE_OPTIONS,
+                                        action='toggle_panel_LineOptionsPanel',
                                         checkable=True)
         self.style_widgets.setLayout(sw_layout)
         layout.addWidget(self.style_widgets)

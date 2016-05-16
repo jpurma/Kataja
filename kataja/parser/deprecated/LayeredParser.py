@@ -73,7 +73,7 @@ class LayeredParser(BaseParser):
         constituent = classes.Constituent(label)
         for arg in features:
             if isinstance(arg, classes.Feature):
-                constituent.set_feature(arg.save_key, arg)
+                constituent.set_feature(arg.uid, arg)
             elif isinstance(arg, tuple) and arg[0] == 'index':
                 constituent.index = arg[1]
         if label in self._definitions:

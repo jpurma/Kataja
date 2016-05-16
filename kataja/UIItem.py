@@ -1,5 +1,6 @@
 # coding=utf-8
 from kataja.singletons import ctrl
+from kataja.uniqueness_generator import next_available_ui_key
 
 
 class UIItem:
@@ -9,11 +10,18 @@ class UIItem:
     """
     permanent_ui = False
 
-    def __init__(self, ui_key, host=None):
-        self.ui_key = ui_key
+    def __init__(self, host=None, ui_key=None, unique=False, role=None):
+        if ui_key:
+            self.ui_key = ui_key
+        elif unique:
+            self.ui_key = self.__class__.__name__
+        else:
+            self.ui_key = next_available_ui_key()
+        self.ui_type = self.__class__.__name__
+        self.ui_manager = ctrl.ui
+        self.role = role  # optional way to identify if cannot be distinguished w. class
         self.host = host
         self.watchlist = []
-        self.ui_manager = ctrl.ui
 
     def watch_alerted(self, obj, signal, field_name, value):
         pass

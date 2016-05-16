@@ -3,6 +3,7 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 from kataja.singletons import qt_prefs, ctrl, prefs, classes
 from kataja.ui_items.Panel import Panel
 from kataja.ui_support.panel_utils import icon_button, label
+import kataja.globals as g
 
 __author__ = 'purma'
 
@@ -83,7 +84,7 @@ class DraggableNodeFrame(QtWidgets.QFrame):
 class NodesPanel(Panel):
     """ Switch between trees or derivation steps """
 
-    def __init__(self, name, key, default_position='bottom', parent=None, folded=False):
+    def __init__(self, name, default_position='bottom', parent=None, folded=False):
         """
         All of the panel constructors follow the same format so that the construction can be automated.
         :param name: Title of the panel and the key for accessing it
@@ -91,7 +92,7 @@ class NodesPanel(Panel):
         :param parent: self.main
         :param ui_manager: pass a dictionary where buttons from this panel will be added
         """
-        Panel.__init__(self, name, key, default_position, parent, folded)
+        Panel.__init__(self, name, default_position, parent, folded)
         inner = QtWidgets.QWidget()
         inner.setMinimumWidth(160)
         self.watchlist = ['forest_changed', 'view_mode_changed', 'edit_mode_changed']

@@ -36,7 +36,7 @@ from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.utils import to_tuple, create_shadow_effect, add_xy
 from kataja.saved.Movable import Movable
 from kataja.ui_items.ControlPoint import ControlPoint
-from kataja.qtype_generator import next_available_type_id
+from kataja.uniqueness_generator import next_available_type_id
 
 
 class DragData:
@@ -290,7 +290,7 @@ class Node(Movable):
 
     def __repr__(self):
         """ This is a node and this represents this FL item """
-        return '%s-%s' % (self.syntactic_object, self.save_key)
+        return '%s-%s' % (self.syntactic_object, self.uid)
 
     def reset(self):
         """
@@ -1022,7 +1022,7 @@ class Node(Movable):
         self.move_to(x, y, after_move_function=self.finish_folding, can_adjust=False)
         if ctrl.is_selected(self):
             ctrl.remove_from_selection(self)
-        ctrl.forest.animation_started(self.save_key+'_fold')
+        ctrl.forest.animation_started(self.uid + '_fold')
         self.fade_out()
 
     def finish_folding(self):
@@ -1033,7 +1033,7 @@ class Node(Movable):
         # update edge visibility from triangle to its immediate children
         if self.folding_towards in self.get_parents():
             self.folding_towards.update_visibility()
-        ctrl.forest.animation_finished(self.save_key+'_fold')
+        ctrl.forest.animation_finished(self.uid + '_fold')
 
     def paint_triangle(self, painter):
         """ Drawing the triangle, called from paint-method

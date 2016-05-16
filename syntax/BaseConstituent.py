@@ -48,7 +48,7 @@ class BaseConstituent(IConstituent):
                }
     # 'parts': {'check_before': 'can_add_part', 'add': 'add_part', 'order': 10},
 
-    def __init__(self, label='', parts=None, save_key='', features=None, head=None, **kw):
+    def __init__(self, label='', parts=None, uid='', features=None, head=None, **kw):
         """ BaseConstituent is a default constituent used in syntax.
         It is Savable, which means that the actual values are stored in separate object that is easily dumped to file.
         Extending this needs to take account if new elements should also be treated as savable, e.g. put them into

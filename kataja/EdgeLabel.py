@@ -30,7 +30,7 @@ from PyQt5.QtCore import QPointF as Pf, Qt
 from kataja.singletons import ctrl, qt_prefs
 import kataja.utils as utils
 import kataja.globals as g
-from kataja.qtype_generator import next_available_type_id
+from kataja.uniqueness_generator import next_available_type_id
 
 
 class EdgeLabel(QtWidgets.QGraphicsTextItem):

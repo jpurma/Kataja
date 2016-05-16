@@ -1,6 +1,7 @@
 from PyQt5 import QtWidgets, QtMultimedia, QtMultimediaWidgets
 
 from kataja.ui_items.Panel import Panel
+import kataja.globals as g
 
 __author__ = 'purma'
 
@@ -9,7 +10,7 @@ class FaceCamPanel(Panel):
     """ Experimental panel for having a face cam window for screen casting. Not used for now.
     """
 
-    def __init__(self, name, key, default_position='float', parent=None, folded=False):
+    def __init__(self, name, default_position='float', parent=None, folded=False):
         """
         All of the panel constructors follow the same format so that the construction can be automated.
         :param name: Title of the panel and the key for accessing it
@@ -17,7 +18,7 @@ class FaceCamPanel(Panel):
         :param parent: self.main
         """
 
-        Panel.__init__(self, name, key, default_position, parent, folded)
+        Panel.__init__(self, name, default_position, parent, folded)
         self.camera = None
         self.aspect = 1.333333333
         self.camera_width = 320

@@ -4,6 +4,7 @@ from kataja.singletons import qt_prefs, ctrl
 from kataja.ui_support.TwoColorButton import TwoColorButton
 from kataja.ui_support.panel_utils import text_button
 from kataja.ui_items.Panel import Panel
+import kataja.globals as g
 
 __author__ = 'purma'
 
@@ -11,15 +12,14 @@ __author__ = 'purma'
 class NavigationPanel(Panel):
     """ Switch between trees or derivation steps """
 
-    def __init__(self, name, key, default_position='bottom', parent=None, folded=False):
+    def __init__(self, name, default_position='bottom', parent=None, folded=False):
         """
         All of the panel constructors follow the same format so that the construction can be automated.
         :param name: Title of the panel and the key for accessing it
         :param default_position: 'bottom', 'right'...
         :param parent: self.main
-        :param ui_manager: pass a dictionary where buttons from this panel will be added
         """
-        Panel.__init__(self, name, key, default_position, parent, folded)
+        Panel.__init__(self, name, default_position, parent, folded)
         inner = QtWidgets.QWidget()
         inner.setMinimumWidth(160)
         self.watchlist = ['forest_changed']

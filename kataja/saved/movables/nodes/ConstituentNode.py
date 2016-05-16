@@ -27,7 +27,7 @@ from kataja.saved.movables.Node import Node
 from kataja.parser.INodes import ITextNode
 from kataja.singletons import ctrl, prefs
 from kataja.saved.movables.nodes.BaseConstituentNode import BaseConstituentNode
-from kataja.qtype_generator import next_available_type_id
+from kataja.uniqueness_generator import next_available_type_id
 
 __author__ = 'purma'
 

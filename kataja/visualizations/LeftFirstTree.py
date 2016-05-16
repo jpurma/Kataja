@@ -168,7 +168,7 @@ class LeftFirstTree(BaseVisualization):
         all_nodes = set(self.forest.get_constituent_nodes())
         for item in all_nodes:
             if item.deleted:
-                print('deleted item in forest.nodes: ', item.save_key)
+                print('deleted item in forest.nodes: ', item.uid)
         for y_i, row in enumerate(merged_grid):
             extra_height = 0
             prev_width = 0
@@ -222,7 +222,7 @@ class LeftFirstTree(BaseVisualization):
                               node.isVisible())
                         else:
                             print('whats wrong with node ', node)
-                            print(node, node.save_key, node.deleted, node.parentObject(),
+                            print(node, node.uid, node.deleted, node.parentObject(),
                                   node.trees)
                     else:
                         all_nodes.remove(node)
@@ -234,7 +234,7 @@ class LeftFirstTree(BaseVisualization):
         if all_nodes:
             print('nodes left remaining: ', all_nodes)
             for node in all_nodes:
-                print(node, node.save_key, node.deleted, node.parentObject(), node.trees)
+                print(node, node.uid, node.deleted, node.parentObject(), node.trees)
         y = 0
         for y_i, row in enumerate(merged_grid):
             x = offset_x

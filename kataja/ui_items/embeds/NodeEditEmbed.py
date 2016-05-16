@@ -38,9 +38,9 @@ class NodeEditEmbed(UIEmbed):
     :param node: node that is to be associated with this editor
     """
 
-    def __init__(self, parent, ui_key, node):
+    def __init__(self, parent, node):
         nname = node.name[0].lower()
-        UIEmbed.__init__(self, parent, ui_key, node, 'Edit ' + nname)
+        UIEmbed.__init__(self, parent, node, 'Edit ' + nname)
         layout = QtWidgets.QVBoxLayout()
         layout.addLayout(self.top_row_layout)
         layout.addSpacing(4)

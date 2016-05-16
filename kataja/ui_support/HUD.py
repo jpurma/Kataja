@@ -2,7 +2,7 @@
 from PyQt5 import QtWidgets
 
 from kataja.singletons import ctrl
-from kataja.qtype_generator import next_available_type_id
+from kataja.uniqueness_generator import next_available_type_id
 
 
 class HUD(QtWidgets.QGraphicsSimpleTextItem):

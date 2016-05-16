@@ -269,7 +269,7 @@ class BaseVisualization:
         if hasattr(node, 'index') and len(node.get_parents()) > 1:
             key = node.index
             if key in self.traces_to_draw:
-                if parent.save_key != self.traces_to_draw[key]:
+                if parent.uid != self.traces_to_draw[key]:
                     return False
         return True
 
@@ -327,7 +327,7 @@ class BaseVisualization:
         for i, index_key, parent, can_be_skipped in sorted_parents:
             if index_key in required_keys:
                 if skips == rotator or not can_be_skipped:
-                    trace_dict[index_key] = parent.save_key
+                    trace_dict[index_key] = parent.uid
                     required_keys.remove(index_key)
                 else:
                     skips += 1

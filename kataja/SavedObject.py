@@ -12,6 +12,7 @@ from kataja.parser.INodes import ITextNode
 from kataja.parser.LatexToINode import LatexFieldToINode
 from kataja.singletons import ctrl, classes
 from kataja.utils import to_tuple
+from kataja.uniqueness_generator import next_available_uid
 
 __author__ = 'purma'
 
@@ -31,34 +32,21 @@ class SavedObject(object):
     Also makes it neater to check if item is Savable.
     """
     short_name = "Missing shortname!"
-    _sk = SavedField("_sk")
+    uid = SavedField("uid")
     syntactic_object = False
 
-    def __init__(self, unique=False, save_key='', **kw):
-        if save_key:
-            key = save_key
-        elif unique:
-            key = self.__class__.short_name
-        else:
-            key = str(id(self))[-6:] + '|' + self.__class__.short_name
+    def __init__(self, uid=None, **kw):
+        if uid is None:
+            uid = next_available_uid()
         self._saved = {}
         self._history = {}
-        self._sk = key
+        self.uid = uid
         self._cd = 0  # / CREATED / DELETED
         self._can_be_deleted_with_undo = True
         self._skip_this = False  # temporary "ghost" objects can use this flag to avoid being stored
-        sys.intern(key)  # optimization that may be irrelevant in modern python
-
-    @property
-    def save_key(self):
-        """ Unique key for retrieving the object and identifying it in
-        save/load/undo systems
-        :return:
-        """
-        return self._sk
 
     def __str__(self):
-        return self._sk
+        return self.short_name + str(self.uid)
 
     def poke(self, attribute):
         """ Alert undo system that this (Saved) object is being changed.
@@ -121,7 +109,7 @@ class SavedObject(object):
         2=DELETED)
         """
         transitions = {}
-        # print('item %s history: %s' % (self.save_key, self._history))
+        # print('item %s history: %s' % (self.uid, self._history))
         for key, old_value in self._history.items():
             new_value = self._saved[key]
             if old_value != new_value:
@@ -202,8 +190,7 @@ class SavedObject(object):
             are found, replaces them
             with basic python tuples.
 
-            If object is one of Kataja's own data classes, then save its
-            save_key
+            If object is one of Kataja's own data classes, then save its uid
             """
 
             if isinstance(data, (int, float, str)):
@@ -260,28 +247,28 @@ class SavedObject(object):
                 return 'QRect', data.x(), data.y(), data.width(), data.height()
             elif isinstance(data, QtGui.QFont):
                 raise SaveError("We shouldn't save QFonts!: ", data)
-            elif hasattr(data, 'save_key'):
-                k = getattr(data, 'save_key')
+            elif hasattr(data, 'uid'):
+                k = getattr(data, 'uid')
                 if k not in saved_objs and k not in open_refs:
                     # print('in %s adding open reference %s' % (
-                    # self.save_key, k))
+                    # self.uid, k))
                     open_refs[k] = data
                 return '|'.join(('*r*', str(k)))
             else:
                 raise SaveError("simplifying unknown data type:", data,
                                 type(data))
 
-        if self.save_key in saved_objs:
+        if self.uid in saved_objs:
             return
 
         obj_data = {}
         for key, item in self._saved.items():
             obj_data[key] = _simplify(item)
 
-        # print('saving obj: ', self.save_key, obj_data)
-        saved_objs[self.save_key] = obj_data
-        if self.save_key in open_refs:
-            del open_refs[self.save_key]
+        # print('saving obj: ', self.uid, obj_data)
+        saved_objs[self.uid] = obj_data
+        if self.uid in open_refs:
+            del open_refs[self.uid]
 
     def load_objects(self, data, kataja_main):
         """ Load and restore objects starting from given obj (probably Forest
@@ -314,7 +301,7 @@ class SavedObject(object):
                     map_existing(item)
                 return
             # objects that support saving
-            key = getattr(obj, 'save_key', '')
+            key = getattr(obj, 'uid', '')
             if key and key not in full_map:
                 full_map[key] = obj
                 for item in obj._saved.values():
@@ -323,7 +310,7 @@ class SavedObject(object):
         # Restore either takes existing object or creates a new 'stub' object
         #  and then loads it with given data
         map_existing(self)
-        self.restore(self.save_key)
+        self.restore(self.uid)
         del full_map, restored, full_data, main
 
     def restore(self, obj_key, class_key=''):

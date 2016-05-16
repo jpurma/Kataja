@@ -617,7 +617,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
             #print(len(savedata))
             #print('---------------------------')
             for obj in list(open_references.values()):
-                if hasattr(obj, 'save_key'):
+                if hasattr(obj, 'uid'):
                     obj.save_object(savedata, open_references)
                 else:
                     print('cannot save open reference object ', obj)

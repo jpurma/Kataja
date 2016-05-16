@@ -12,8 +12,8 @@ __author__ = 'purma'
 
 
 class NewElementEmbed(UIEmbed):
-    def __init__(self, parent, ui_key):
-        UIEmbed.__init__(self, parent,  ui_key, None, 'Create new node')
+    def __init__(self, parent):
+        UIEmbed.__init__(self, parent, None, 'Create new node')
         self.marker = None
         self.guess_mode = True
         layout = QtWidgets.QVBoxLayout()

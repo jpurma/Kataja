@@ -9,7 +9,7 @@ __author__ = 'purma'
 
 
 class EdgeLabelEmbed(UIEmbed):
-    def __init__(self, parent, edge, ui_key):
+    def __init__(self, parent, edge):
         """ EdgeLabelEmbed is for editing edge labels, but it takes Edge as its host,
         because there may be problems if the host item is not subclass of Saved. Use self.label
         to get access to edge.label_item.
@@ -19,7 +19,7 @@ class EdgeLabelEmbed(UIEmbed):
         :param ui_key:
         """
 
-        UIEmbed.__init__(self, parent, ui_key, edge, 'Edit edge text')
+        UIEmbed.__init__(self, parent, edge, 'Edit edge text')
         self.marker = None
         self.label = edge.label_item
         layout = QtWidgets.QVBoxLayout()

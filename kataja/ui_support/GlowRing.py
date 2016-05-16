@@ -7,7 +7,7 @@ Created on 28.8.2013
 from PyQt5 import QtGui, QtCore, QtWidgets
 
 from kataja.singletons import ctrl
-from kataja.qtype_generator import next_available_type_id
+from kataja.uniqueness_generator import next_available_type_id
 
 
 class GlowRing(QtWidgets.QGraphicsEllipseItem):

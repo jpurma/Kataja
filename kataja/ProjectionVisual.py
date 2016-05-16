@@ -1,7 +1,7 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
 
 from kataja.singletons import ctrl
-from kataja.qtype_generator import next_available_type_id
+from kataja.uniqueness_generator import next_available_type_id
 __author__ = 'purma'
 
 rotating_colors = [('accent%s' % i, 'accent%str' % i) for i in range(1, 9)]

@@ -120,20 +120,20 @@ class WindDriftTree(BaseVisualization):
         self._hits = {}
         self._max_hits = {}
         for node in root:
-            self._hits[node.save_key] = self._hits.get(node.save_key, 0) + 1
-            self._max_hits[node.save_key] = self._hits[node.save_key]
+            self._hits[node.uid] = self._hits.get(node.uid, 0) + 1
+            self._max_hits[node.uid] = self._hits[node.uid]
 
     def _reduce_node_count(self, node):
-        self._hits[node.save_key] = self._hits.get(node.save_key, 0) - 1
+        self._hits[node.uid] = self._hits.get(node.uid, 0) - 1
 
     def _is_last_node(self, node):
-        return self._hits[node.save_key] == 0
+        return self._hits[node.uid] == 0
 
     def _is_first_node(self, node):
-        return self._hits[node.save_key] == self._max_hits[node.save_key] - 1
+        return self._hits[node.uid] == self._max_hits[node.uid] - 1
 
     def _mark_node_as_used(self, node):
-        self._hits[node.save_key] = 0
+        self._hits[node.uid] = 0
 
     def _is_node_used_already(self, node):
-        return self.hits[node.save_key] == 0
+        return self.hits[node.uid] == 0

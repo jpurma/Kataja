@@ -10,7 +10,7 @@ __author__ = 'purma'
 class VisualizationOptionsPanel(Panel):
     """ Panel for editing how visualizations are drawn. """
 
-    def __init__(self, name, key, default_position='float', parent=None, folded=False):
+    def __init__(self, name, default_position='float', parent=None, folded=False):
         """
         BUild all advanced line options. Then in update filter what to show based on the line type.
 
@@ -19,7 +19,7 @@ class VisualizationOptionsPanel(Panel):
         :param default_position: 'bottom', 'right'...
         :param parent: self.main
         """
-        Panel.__init__(self, name, key, default_position, parent, folded)
+        Panel.__init__(self, name, default_position, parent, folded)
         self.watchlist = []
         inner = QtWidgets.QWidget(self)
         layout = QtWidgets.QVBoxLayout()
@@ -124,7 +124,7 @@ class VisualizationOptionsPanel(Panel):
 
         :return:
         """
-        dp = self.ui_manager.get_panel(g.VISUALIZATION)
+        dp = self.ui_manager.get_panel('VisualizationOptionsPanel')
         if dp:
             p = dp.mapToGlobal(dp.pos())
             dpr = dp.devicePixelRatio()
@@ -137,14 +137,14 @@ class VisualizationOptionsPanel(Panel):
 
     def close(self):
         """ Raise button in VISUALIZATION panel """
-        vp = self.ui_manager.get_panel(g.VISUALIZATION)
+        vp = self.ui_manager.get_panel('VisualizationPanel')
         if vp:
             vp.toggle_options.setChecked(False)
         Panel.close(self)
 
     def show(self):
         """ Depress button in VISUALIZATION panel """
-        vp = self.ui_manager.get_panel(g.VISUALIZATION)
+        vp = self.ui_manager.get_panel('VisualizationPanel')
         if vp:
             vp.toggle_options.setChecked(True)
         Panel.show(self)

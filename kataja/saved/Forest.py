@@ -125,7 +125,7 @@ class Forest(SavedObject):
             self.nodes_from_synobs = {}
             for node in self.nodes.values():
                 if node.syntactic_object:
-                    self.nodes_from_synobs[node.syntactic_object.save_key] = node
+                    self.nodes_from_synobs[node.syntactic_object.uid] = node
             for tree in self.trees:
                 tree.update_items()
         if 'vis_data' in updated_fields:
@@ -146,7 +146,7 @@ class Forest(SavedObject):
         # self.bracket_manager.rebuild_brackets()
         # for node in self.nodes.values():
         # if node.syntactic_object:
-        # self.nodes_by_uid[node.syntactic_object.save_key] = node
+        # self.nodes_by_uid[node.syntactic_object.uid] = node
 
     @property
     def scene(self):
@@ -393,25 +393,25 @@ class Forest(SavedObject):
 
         if isinstance(item, Node):
             self.poke('nodes')
-            self.nodes[item.save_key] = item
+            self.nodes[item.uid] = item
             self.node_types.add(item.node_type)
             if item.syntactic_object:
                 # remember to rebuild nodes_by_uid in undo/redo, as it is not
                 #  stored in model
-                self.nodes_from_synobs[item.syntactic_object.save_key] = item
+                self.nodes_from_synobs[item.syntactic_object.uid] = item
         elif isinstance(item, Edge):
             self.poke('edges')
-            self.edges[item.save_key] = item
+            self.edges[item.uid] = item
             self.reserve_update_for_trees()
             self.edge_types.add(item.edge_type)
         elif isinstance(item, TextArea):
             self.poke('others')
-            self.others[item.save_key] = item
+            self.others[item.uid] = item
         elif isinstance(item, Bracket):
             self.bracket_manager.store(item)
 
         else:
-            key = getattr(item, 'save_key', '') or getattr(item, 'key', '')
+            key = getattr(item, 'uid', '') or getattr(item, 'key', '')
             if key and key not in self.others:
                 self.poke('others')
                 self.others[key] = item
@@ -437,10 +437,10 @@ class Forest(SavedObject):
             if isinstance(item, QtWidgets.QGraphicsItem):
                 sc = item.scene()
                 if not sc:
-                    #print('..adding to scene ', item.save_key )
+                    #print('..adding to scene ', item.uid )
                     self.scene.addItem(item)
                 elif sc != self.scene:
-                    #print('..adding to scene ', item.save_key )
+                    #print('..adding to scene ', item.uid )
                     self.scene.addItem(item)
             if hasattr(item, 'deleted'):
                 item.deleted = False
@@ -453,7 +453,7 @@ class Forest(SavedObject):
         if isinstance(item, QtWidgets.QGraphicsItem):
             sc = item.scene()
             if sc == self.scene:
-                #print('..removing from scene ', item.save_key)
+                #print('..removing from scene ', item.uid)
                 sc.removeItem(item)
             elif sc:
                 print('unknown scene for item %s : %s ' % (item, sc))
@@ -493,7 +493,7 @@ class Forest(SavedObject):
         :param constituent: syntax.BaseConstituent
         :return: kataja.ConstituentNode
         """
-        return self.nodes_from_synobs.get(constituent.save_key, None)
+        return self.nodes_from_synobs.get(constituent.uid, None)
 
     def get_constituent_edges(self):
         """ Return generator of constituent edges
@@ -625,7 +625,7 @@ class Forest(SavedObject):
         return chains
 
     def remove_projection(self, head_node):
-        key = head_node.save_key
+        key = head_node.uid
         projection = self.projections.get(key, None)
         if projection:
             projection.set_visuals(False, False, False)
@@ -654,12 +654,12 @@ class Forest(SavedObject):
                 chains = Forest.compute_projection_chains_for(node)
                 if chains:
                     new_heads.add(node)
-                    projection = self.projections.get(node.save_key, None)
+                    projection = self.projections.get(node.uid, None)
                     if projection:
                         projection.update_chains(chains)
                     else:
                         projection = Projection(node, chains, next(self.projection_rotator))
-                        self.projections[node.save_key] = projection
+                        self.projections[node.uid] = projection
         for head in old_heads - new_heads:
             self.remove_projection(head)
         self.update_projection_display()
@@ -966,7 +966,7 @@ class Forest(SavedObject):
         :return:
         """
         im = Image(image_path)
-        self.others[im.save_key] = im
+        self.others[im.uid] = im
         self.add_to_scene(im)
         return im
 
@@ -1090,9 +1090,9 @@ class Forest(SavedObject):
                 group.remove_node(node)
 
         # -- dictionaries --
-        if node.save_key in self.nodes:
+        if node.uid in self.nodes:
             self.poke('nodes')
-            del self.nodes[node.save_key]
+            del self.nodes[node.uid]
         # -- check if it is last of its type --
         found = False
         my_type = node.node_type
@@ -1103,8 +1103,8 @@ class Forest(SavedObject):
         if not found:
             self.node_types.remove(my_type)
         # -- synobj-to-node -mapping (is it used anymore?)
-        if node.syntactic_object and node.syntactic_object.save_key in self.nodes_from_synobs:
-            del self.nodes_from_synobs[node.syntactic_object.save_key]
+        if node.syntactic_object and node.syntactic_object.uid in self.nodes_from_synobs:
+            del self.nodes_from_synobs[node.syntactic_object.uid]
 
         # -- scene --
         self.remove_from_scene(node)
@@ -1164,9 +1164,9 @@ class Forest(SavedObject):
         # -- ui_support elements --
         self.main.ui_manager.remove_ui_for(edge)
         # -- dictionaries --
-        if edge.save_key in self.edges:
+        if edge.uid in self.edges:
             self.poke('edges')
-            del self.edges[edge.save_key]
+            del self.edges[edge.uid]
         # -- check if it is last of its type --
         found = False
         my_type = edge.edge_type
@@ -1213,7 +1213,7 @@ class Forest(SavedObject):
         :param edge:
         :param new_start:
         """
-        assert new_start.save_key in self.nodes
+        assert new_start.uid in self.nodes
         if edge.start:
             edge.start.poke('edges_down')
             edge.start.edges_down.remove(edge)
@@ -1231,7 +1231,7 @@ class Forest(SavedObject):
         :param edge:
         :param new_end:
         """
-        assert new_end.save_key in self.nodes
+        assert new_end.uid in self.nodes
         if edge.end:
             edge.end.disconnect_in_syntax(edge)
             edge.end.poke('edges_up')
@@ -2063,15 +2063,15 @@ class Forest(SavedObject):
         group = Group([], persistent=True)
         self.add_to_scene(group)
         self.poke('groups')
-        self.groups[group.save_key] = group
+        self.groups[group.uid] = group
         return group
 
     def remove_group(self, group):
         self.remove_from_scene(group)
         ctrl.ui.remove_ui_for(group)
-        if group.save_key in self.groups:
+        if group.uid in self.groups:
             self.poke('groups')
-            del self.groups[group.save_key]
+            del self.groups[group.uid]
 
     def get_group_color_suggestion(self):
         color_keys = set()

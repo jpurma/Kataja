@@ -2,6 +2,7 @@ from PyQt5 import QtWidgets
 
 from kataja.singletons import ctrl
 from kataja.ui_items.Panel import Panel
+import kataja.globals as g
 
 __author__ = 'purma'
 
@@ -26,14 +27,14 @@ class ColorPanel(Panel):
         ⚅	U+2685	&#9861;
     """
 
-    def __init__(self, name, key, default_position='float', parent=None, folded=False):
+    def __init__(self, name, default_position='float', parent=None, folded=False):
         """
         All of the panel constructors follow the same format so that the construction can be automated.
         :param name: Title of the panel and the key for accessing it
         :param default_position: 'bottom', 'right'...
         :param parent: self.main
         """
-        Panel.__init__(self, name, key, default_position, parent, folded)
+        Panel.__init__(self, name, default_position, parent, folded)
         layout = QtWidgets.QVBoxLayout()
         widget = QtWidgets.QWidget(self)
         widget.setMinimumWidth(160)

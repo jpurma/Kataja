@@ -29,7 +29,7 @@ from kataja.globals import LEFT_ALIGN, CENTER_ALIGN, RIGHT_ALIGN
 from kataja.singletons import ctrl, prefs
 from kataja.utils import combine_dicts, combine_lists, time_me, open_symbol_data
 from kataja.parser.INodes import ITextNode
-from kataja.qtype_generator import next_available_type_id
+from kataja.uniqueness_generator import next_available_type_id
 import difflib
 
 differ = difflib.Differ()

@@ -112,7 +112,7 @@ def change_colors():
     """ DEPRECATED change colors -action (shift-c)
     :return: None
     """
-    color_panel = ctrl.ui.get_panel(g.COLOR_THEME)
+    color_panel = ctrl.ui.get_panel('ColorThemePanel')
     if not color_panel.isVisible():
         color_panel.show()
     else:

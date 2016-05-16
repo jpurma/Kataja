@@ -3,7 +3,7 @@ from PyQt5 import QtCore, QtWidgets
 from kataja.UIItem import UIItem
 
 from kataja.singletons import prefs
-from kataja.qtype_generator import next_available_type_id
+from kataja.uniqueness_generator import next_available_type_id
 
 qbytes_opacity = QtCore.QByteArray()
 qbytes_opacity.append("opacity")
@@ -15,8 +15,8 @@ class FadingSymbol(UIItem, QtWidgets.QGraphicsObject):
     """
     __qt_type_id__ = next_available_type_id()
 
-    def __init__(self, symbol, host, ui_key, place='bottom_right'):
-        UIItem.__init__(self, ui_key, host)
+    def __init__(self, symbol, host, place='bottom_right'):
+        UIItem.__init__(self, host=host)
         QtWidgets.QGraphicsObject.__init__(self)
         self.inner = QtWidgets.QGraphicsPixmapItem()
         self.inner.setParentItem(self)

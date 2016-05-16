@@ -63,11 +63,11 @@ class Layer:
         return True
 
     def add_area(self):
-        key = self.focus.save_key
+        key = self.focus.uid
         self.vis.areas[key] = self.rect
 
     def remove_areas(self):
-        key = self.focus.save_key
+        key = self.focus.uid
         if key in self.vis.areas:
             del self.vis.areas[key]
         if self in self.vis.waiting_list:

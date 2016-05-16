@@ -17,8 +17,9 @@ class ModeLabel(UIItem, PanelButton):
     permanent_ui = True
 
     def __init__(self, text_options, ui_key, parent=None):
-        UIItem.__init__(self, ui_key, None)
+        UIItem.__init__(self, ui_key=ui_key)
         PanelButton.__init__(self, None, text_options[0], size=24, parent=parent) #
+        self.ui_key = ui_key
         # qt_prefs.v_refresh_small_icon
         self.setCheckable(True)
         self.text_options = text_options

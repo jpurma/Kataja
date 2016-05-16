@@ -29,27 +29,34 @@ COMMENT_NODE = 4
 TREE = 100
 GUESS_FROM_INPUT = 99
 
-# Touch area types
-LEFT_ADD_TOP = 0
-RIGHT_ADD_TOP = 1
-LEFT_ADD_SIBLING = 2
-RIGHT_ADD_SIBLING = 3
-TOUCH_ADD_CONSTITUENT = 4
-TOUCH_CONNECT_FEATURE = 5
-TOUCH_CONNECT_GLOSS = 6
-TOUCH_CONNECT_COMMENT = 7
-DELETE_ARROW = 8
-LEFT_ADD_CHILD = 9
-RIGHT_ADD_CHILD = 10
-ADD_TRIANGLE = 11
-REMOVE_TRIANGLE = 12
-INNER_ADD_SIBLING_LEFT = 13
-INNER_ADD_SIBLING_RIGHT = 14
-UNARY_ADD_CHILD_LEFT = 15
-UNARY_ADD_CHILD_RIGHT = 16
-LEAF_ADD_SIBLING_LEFT = 17
-LEAF_ADD_SIBLING_RIGHT = 18
+# Touch area types -- values have to match class names in TouchArea.py
+LEFT_ADD_TOP = 'LeftAddTop'
+RIGHT_ADD_TOP = 'RightAddTop'
+LEFT_ADD_SIBLING = 'LeftAddSibling'
+RIGHT_ADD_SIBLING = 'RightAddSibling'
+TOUCH_ADD_CONSTITUENT = 'AddConstituentTouchArea'
+TOUCH_CONNECT_FEATURE = 'ConnectFeatureTouchArea'
+TOUCH_CONNECT_GLOSS = 'ConnectGlossTouchArea'
+TOUCH_CONNECT_COMMENT = 'ConnectCommentTouchArea'
+DELETE_ARROW = 'DeleteArrowTouchArea'
+LEFT_ADD_CHILD = 'LeftAddChild'
+RIGHT_ADD_CHILD = 'RightAddChild'
+ADD_TRIANGLE = 'AddTriangleTouchArea'
+REMOVE_TRIANGLE = 'RemoveTriangleTouchArea'
+INNER_ADD_SIBLING_LEFT = 'LeftAddInnerSibling'
+INNER_ADD_SIBLING_RIGHT = 'RightAddInnerSibling'
+UNARY_ADD_CHILD_LEFT = 'LeftAddUnaryChild'
+UNARY_ADD_CHILD_RIGHT = 'RightAddUnaryChild'
+LEAF_ADD_SIBLING_LEFT = 'LeftAddLeafSibling'
+LEAF_ADD_SIBLING_RIGHT = 'RightAddLeafSibling'
 
+# Overlay buttons -- These refer to class names in OverlayButton.py
+REMOVE_MERGER = 'RemoveMergerButton'
+GROUP_OPTIONS = 'GroupOptionsButton'
+NODE_EDITOR_BUTTON = 'NodeEditorButton'
+REMOVE_NODE = 'RemoveNodeButton'
+CUT_FROM_START_BUTTON = 'CutFromStartButton'
+CUT_FROM_END_BUTTON = 'CutFromEndButton'
 
 # ## Our custom signals
 
@@ -59,20 +66,6 @@ EDGE_SHAPES_CHANGED = 101
 # EDGE_SHAPES_CHANGED = QtCore.QEvent.registerEventType()
 # print 'EDGE_SHAPES_CHANGED: ', EDGE_SHAPES_CHANGED
 
-# UI_PANELS
-LOG = 'log'
-TEST = 'test'
-NAVIGATION = 'navigation'
-VISUALIZATION = 'visualization'
-COLOR_THEME = 'color_theme'
-COLOR_WHEEL = 'color_wheel'
-EDGES = 'drawing'
-LINE_OPTIONS = 'line_options'
-VIS_OPTIONS = 'visualization_options'
-SYMBOLS = 'symbols'
-NODES = 'nodes'
-STYLE = 'style'
-CAMERA = 'camera'
 
 # Alignment of edges
 NO_ALIGN = 0  # default
@@ -107,14 +100,6 @@ ALL_BRACKETS = 2
 NO_PROJECTIONS = 0
 COLORIZE_PROJECTIONS = 1
 HIGHLIGHT_PROJECTIONS = 2
-
-# Overlay buttons
-REMOVE_MERGER = 'remove_merger'
-START_CUT = 'start_cut'
-END_CUT = 'end_cut'
-GROUP_OPTIONS = 'group_options'
-NODE_EDITOR_BUTTON = 'node_editor'
-REMOVE_NODE = 'delete'
 
 # Creation/Deletion flags
 CREATED = 1

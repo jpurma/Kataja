@@ -32,7 +32,7 @@ def build_shape_dict_for_selection(selection):
 class LineOptionsPanel(Panel):
     """ Panel for editing how edges and nodes are drawn. """
 
-    def __init__(self, name, key, default_position='float', parent=None, folded=False):
+    def __init__(self, name, default_position='float', parent=None, folded=False):
         """
         BUild all advanced line options. Then in update filter what to show based on the line type.
 
@@ -41,7 +41,7 @@ class LineOptionsPanel(Panel):
         :param default_position: 'bottom', 'right'...
         :param parent: self.main
         """
-        Panel.__init__(self, name, key, default_position, parent, folded)
+        Panel.__init__(self, name, default_position, parent, folded)
         inner = QtWidgets.QWidget(self)
         layout = QtWidgets.QVBoxLayout()
         layout.setSizeConstraint(QtWidgets.QLayout.SetMinimumSize)
@@ -291,7 +291,7 @@ class LineOptionsPanel(Panel):
 
         :return:
         """
-        dp = self.ui_manager.get_panel(g.STYLE)
+        dp = self.ui_manager.get_panel('StylePanel')
         if dp:
             pixel_ratio = dp.devicePixelRatio()
             p = dp.mapToGlobal(dp.pos())
@@ -323,14 +323,14 @@ class LineOptionsPanel(Panel):
 
     def close(self):
         """ Untick check box in EDGES panel """
-        dp = self.ui_manager.get_panel(g.EDGES)
+        dp = self.ui_manager.get_panel('StylePanel')
         if dp:
             dp.edge_options.setChecked(False)
         Panel.close(self)
 
     def show(self):
         """ Tick check box in EDGES panel """
-        dp = self.ui_manager.get_panel(g.EDGES)
+        dp = self.ui_manager.get_panel('StylePanel')
         if dp:
             dp.edge_options.setChecked(True)
         Panel.show(self)

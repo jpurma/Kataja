@@ -11,14 +11,14 @@ __author__ = 'purma'
 class LogPanel(Panel):
     """ Dump window """
 
-    def __init__(self, name, key, default_position='bottom', parent=None, folded=False):
+    def __init__(self, name, default_position='bottom', parent=None, folded=False):
         """
         All of the panel constructors follow the same format so that the construction can be automated.
         :param name: Title of the panel and the key for accessing it
         :param default_position: 'bottom', 'right'...
         :param parent: self.main
         """
-        Panel.__init__(self, name, key, default_position, parent, folded)
+        Panel.__init__(self, name, default_position, parent, folded)
         inner = QtWidgets.QTextBrowser()
         inner.setMinimumHeight(48)
         inner.preferred_size = QtCore.QSize(940, 64)

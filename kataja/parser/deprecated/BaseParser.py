@@ -160,7 +160,7 @@ class BaseParser:
         if text.startswith("'"):
             text = text[1:]
         ta = TextArea(text)
-        self.forest.others[ta.save_key] = ta
+        self.forest.others[ta.uid] = ta
         return ta
 
     def image_parser(self, text):
@@ -172,7 +172,7 @@ class BaseParser:
         else:
             image_path = text
         im = Image(image_path)
-        self.forest.others[im.save_key] = im
+        self.forest.others[im.uid] = im
         return im
 
     def _create_constituent(self, features):

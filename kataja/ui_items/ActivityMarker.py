@@ -3,17 +3,17 @@
 from PyQt5 import QtWidgets
 from kataja.singletons import qt_prefs, ctrl
 from kataja.UIItem import UIItem
-from kataja.qtype_generator import next_available_type_id
+from kataja.uniqueness_generator import next_available_type_id
 
 
 class ActivityMarker(UIItem, QtWidgets.QGraphicsRectItem):
     """ Blinky thing to announce that computing is going on. """
     __qt_type_id__ = next_available_type_id()
 
-    def __init__(self, role, ui_key):
-        UIItem.__init__(self, ui_key, None)
+    def __init__(self, role=0, ui_key=None):
+        UIItem.__init__(self, ui_key=ui_key)
         QtWidgets.QGraphicsRectItem.__init__(self, 0, 0, 4, 4)  # , scene = parent)
-        self.role = role
+        self.role = int(role)
         self.setZValue(100)
         self.setBrush(ctrl.cm.get('accent%s' % str(self.role + 1)))
         self.setPen(qt_prefs.no_pen)  # QtCore.Qt.NoPen

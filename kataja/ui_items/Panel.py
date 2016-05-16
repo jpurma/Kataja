@@ -60,7 +60,7 @@ class PanelTitle(QtWidgets.QWidget):
         mini_icon_button(ui, self, layout,
                          icon=qt_prefs.close_icon,
                          text='Close panel',
-                         action='toggle_panel_' + self.panel.ui_key)
+                         action='toggle_panel_' + self.panel.ui_type)
 
         self.pin_button = mini_icon_button(ui, self, layout,
                                            icon=qt_prefs.pin_drop_icon,
@@ -94,16 +94,17 @@ class Panel(UIItem, QtWidgets.QDockWidget):
     Gives some extra control and helper methods on QDockWidget. """
     permanent_ui = True
 
-    def __init__(self, name, key, default_position='bottom', parent=None, ui_manager=None, folded=False):
+    def __init__(self, name, default_position='bottom', parent=None, ui_manager=None, folded=False):
         """
 
         :param name:
         :param default_position:
         :param parent:
         """
-        UIItem.__init__(self, key, host=None)
+        UIItem.__init__(self, unique=True)
         QtWidgets.QDockWidget.__init__(self, name, parent=parent)
         # self.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed))
+        self.ui_type == 'Panel'
         self.folded = folded
         self.name = name
         self._watched = False

@@ -54,7 +54,7 @@ class UndoManager:
         snapshot = {}
         for obj in ctrl.undo_pile:
             transitions, transition_type = obj.transitions()
-            snapshot[obj.save_key] = (obj, transitions, transition_type)
+            snapshot[obj.uid] = (obj, transitions, transition_type)
             obj.flush_history()
         # ...
         if snapshot:
@@ -103,7 +103,7 @@ class UndoManager:
                 revtt = transition_type
             obj.after_model_update(transitions.keys(), revtt)
             if getattr(obj.__class__, 'syntactic_object', False):
-                node = ctrl.forest.nodes_from_synobs.get(obj.save_key, None)
+                node = ctrl.forest.nodes_from_synobs.get(obj.uid, None)
                 if node and node not in affected:
                     node.after_model_update([], revtt)
         ctrl.forest.flush_and_rebuild_temporary_items()
@@ -140,7 +140,7 @@ class UndoManager:
         for obj, transitions, transition_type in snapshot.values():
             obj.after_model_update(transitions.keys(), transition_type)
             if getattr(obj.__class__, 'syntactic_object', False):
-                node = ctrl.forest.nodes_from_synobs.get(obj.save_key, None)
+                node = ctrl.forest.nodes_from_synobs.get(obj.uid, None)
                 if node and node not in affected:
                     node.after_model_update([], transition_type)
         ctrl.forest.flush_and_rebuild_temporary_items()

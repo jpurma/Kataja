@@ -183,9 +183,9 @@ class OverlayButton(UIItem, PanelButton):
     :param color_key:
     """
 
-    def __init__(self, host, ui_key, pixmap=None, text=None, parent=None,
+    def __init__(self, host, ui_key=None, pixmap=None, text=None, parent=None,
                  size=16, color_key='accent8', draw_method=None, tooltip=None, **kwargs):
-        UIItem.__init__(self, ui_key, host)
+        UIItem.__init__(self, ui_key=ui_key, host=host)
         PanelButton.__init__(self, pixmap=pixmap, text=text, parent=parent, size=size,
                              color_key=color_key, draw_method=draw_method, tooltip=tooltip)
 
@@ -207,7 +207,7 @@ class TopRowButton(OverlayButton):
 
     def __init__(self, ui_key, parent=None, pixmap=None, text=None, draw_method=None,
                  size=24, tooltip=None):
-        super().__init__(None, ui_key,
+        super().__init__(None, ui_key=ui_key,
                          parent=parent,
                          pixmap=pixmap,
                          text=text,
@@ -225,8 +225,8 @@ class TopRowButton(OverlayButton):
 
 class CutFromStartButton(OverlayButton):
 
-    def __init__(self, host, ui_key, parent=None):
-        super().__init__(host, ui_key, pixmap=qt_prefs.cut_icon,
+    def __init__(self, host, parent=None):
+        super().__init__(host, pixmap=qt_prefs.cut_icon,
                          tooltip='Disconnect edge from the start',
                          parent=parent,
                          size=16,
@@ -245,8 +245,8 @@ class CutFromStartButton(OverlayButton):
 
 class CutFromEndButton(OverlayButton):
 
-    def __init__(self, host, ui_key, parent=None):
-        super().__init__(host, ui_key, pixmap=qt_prefs.cut_icon,
+    def __init__(self, host, parent=None):
+        super().__init__(host, pixmap=qt_prefs.cut_icon,
                          tooltip='Disconnect edge from the end',
                          parent=parent,
                          size=16,
@@ -268,8 +268,8 @@ class CutFromEndButton(OverlayButton):
 
 class AddTriangleButton(OverlayButton):
 
-    def __init__(self, host, ui_key, parent=None):
-        super().__init__(host, ui_key, pixmap=qt_prefs.cut_icon,
+    def __init__(self, host, parent=None):
+        super().__init__(host, pixmap=qt_prefs.cut_icon,
                          tooltip='Disconnect edge from the end',
                          parent=parent,
                          size=16,
@@ -286,8 +286,8 @@ class AddTriangleButton(OverlayButton):
 
 class RemoveTriangleButton(OverlayButton):
 
-    def __init__(self, host, ui_key, parent=None):
-        super().__init__(host, ui_key, pixmap=qt_prefs.cut_icon,
+    def __init__(self, host, parent=None):
+        super().__init__(host, pixmap=qt_prefs.cut_icon,
                          tooltip='Disconnect edge from the end',
                          parent=parent,
                          size=16,
@@ -305,10 +305,9 @@ class RemoveTriangleButton(OverlayButton):
 class RemoveMergerButton(OverlayButton):
     """ Button to delete unnecessary node between grandparent and child"""
 
-    def __init__(self, host, ui_key, parent=None):
+    def __init__(self, host, parent=None):
 
         super().__init__(host,
-                         ui_key,
                          pixmap='delete_icon',
                          tooltip='Remove this non-merging node',
                          parent=parent,
@@ -335,10 +334,9 @@ class RemoveMergerButton(OverlayButton):
 class RemoveNodeButton(OverlayButton):
     """ Button to delete unnecessary node between grandparent and child"""
 
-    def __init__(self, host, ui_key, parent=None):
+    def __init__(self, host, parent=None):
 
         super().__init__(host,
-                         ui_key,
                          pixmap='delete_icon',
                          tooltip='Remove node',
                          parent=parent,
@@ -365,9 +363,8 @@ class RemoveNodeButton(OverlayButton):
 
 class GroupOptionsButton(OverlayButton):
 
-    def __init__(self, host, ui_key, parent=None):
+    def __init__(self, host, parent=None):
         super().__init__(host,
-                         ui_key,
                          pixmap=qt_prefs.settings_pixmap,
                          tooltip='Name this selection',
                          parent=parent,
@@ -397,9 +394,8 @@ class GroupOptionsButton(OverlayButton):
 
 class NodeEditorButton(OverlayButton):
 
-    def __init__(self, host, ui_key, parent=None):
+    def __init__(self, host, parent=None):
         super().__init__(host,
-                         ui_key,
                          pixmap=qt_prefs.settings_pixmap,
                          tooltip='Edit this node',
                          parent=parent,
@@ -424,12 +420,4 @@ class NodeEditorButton(OverlayButton):
         OverlayButton.leaveEvent(self, event)
 
 
-button_definitions = {g.REMOVE_MERGER: RemoveMergerButton,
-                      g.GROUP_OPTIONS: GroupOptionsButton,
-                      g.NODE_EDITOR_BUTTON: NodeEditorButton,
-                      g.REMOVE_NODE: RemoveNodeButton}
 
-
-def button_factory(role_key, node, save_key, parent):
-    constructor = button_definitions[role_key]
-    return constructor(node, save_key, parent)

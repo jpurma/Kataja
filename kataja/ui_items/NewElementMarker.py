@@ -4,7 +4,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from kataja.singletons import prefs, ctrl
 from kataja.UIItem import UIItem
 from kataja.shapes import draw_arrow_shape_from_points
-from kataja.qtype_generator import next_available_type_id
+from kataja.uniqueness_generator import next_available_type_id
 
 
 class MarkerStartPoint(QtWidgets.QGraphicsItem):
@@ -63,8 +63,8 @@ class NewElementMarker(UIItem, QtWidgets.QGraphicsItem):
     """
     __qt_type_id__ = next_available_type_id()
 
-    def __init__(self, scene_pos, embed, ui_key):
-        UIItem.__init__(self, ui_key, None)
+    def __init__(self, scene_pos, embed):
+        UIItem.__init__(self, unique=True)
         QtWidgets.QGraphicsItem.__init__(self)
         self.start_point = None
         self.end_point = None

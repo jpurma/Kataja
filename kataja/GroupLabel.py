@@ -31,7 +31,7 @@ from kataja.singletons import ctrl, qt_prefs, prefs
 from kataja.saved.movables.Tree import Tree
 import kataja.globals as g
 import kataja.utils as utils
-from kataja.qtype_generator import next_available_type_id
+from kataja.uniqueness_generator import next_available_type_id
 
 
 class GroupLabel(QtWidgets.QGraphicsTextItem):

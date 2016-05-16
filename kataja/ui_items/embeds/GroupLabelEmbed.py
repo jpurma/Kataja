@@ -11,8 +11,8 @@ __author__ = 'purma'
 
 
 class GroupLabelEmbed(UIEmbed):
-    def __init__(self, parent, edge, ui_key):
-        UIEmbed.__init__(self, parent, ui_key, edge, 'Highlight a group of nodes')
+    def __init__(self, parent, edge):
+        UIEmbed.__init__(self, parent, edge, 'Highlight a group of nodes')
         self.marker = None
         ui = self.ui_manager
         layout = QtWidgets.QVBoxLayout()
