@@ -30,8 +30,6 @@ class IFL(SavedObject):
     """ Interface for Faculty of Language, implementation should be able to perform the operations
      sent here."""
 
-    short_name = "I-FL"
-
     def __init__(self):
         super().__init__(self)
         raise NotImplementedError

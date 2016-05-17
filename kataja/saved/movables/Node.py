@@ -82,7 +82,6 @@ class Node(Movable):
     ordered = False
     ordering_func = None
     name = ('Abstract node', 'Abstract nodes')
-    short_name = "Node"  # shouldn't be used on its own
     display = False
     can_be_in_groups = True
     visible_in_label = []
@@ -491,8 +490,8 @@ class Node(Movable):
         :return: iterator of Nodes
         """
         et = self.edge_type()
-        return (edge.end for edge in self.edges_down if edge.edge_type == et and not
-        edge.end.deleted)
+        return (edge.end for edge in self.edges_down if edge.edge_type == et and (edge.end and not
+        edge.end.deleted))
 
     def get_reversed_children(self):
         """
@@ -500,8 +499,8 @@ class Node(Movable):
         :return: iterator of Nodes
         """
         et = self.edge_type()
-        return (edge.end for edge in reversed(self.edges_down) if edge.edge_type == et and not
-        edge.end.deleted)
+        return (edge.end for edge in reversed(self.edges_down) if edge.edge_type == et and (
+            edge.end and not edge.end.deleted))
 
     def get_visible_children(self):
         """

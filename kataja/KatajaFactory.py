@@ -11,6 +11,8 @@ class KatajaFactory:
         self.default_models = {}
         self.default_edge_class = None
         self.default_node_classes = {}
+        self.base_name_to_plugin_class = {}
+        self.plugin_name_to_base_class = {}
 
         self.classes = {}
         self.nodes = {}
@@ -34,16 +36,18 @@ class KatajaFactory:
         from kataja.saved.Edge import Edge
         from kataja.saved.Forest import Forest
         from kataja.saved.ForestSettings import ForestSettings, ForestRules
+        from kataja.saved.ForestKeeper import ForestKeeper
         from kataja.saved.movables.Tree import Tree
         from syntax.BaseFeature import BaseFeature
         from syntax.ConfigurableConstituent import ConfigurableConstituent
+        from syntax.BaseConstituent import BaseConstituent
         from syntax.BaseFL import FL
 
         self.default_models = {ConstituentNode, BaseConstituentNode, AttributeNode, FeatureNode,
                                GlossNode, PropertyNode, CommentNode, Edge, Forest, DerivationStep,
                                DerivationStepManager, ForestSettings, ForestRules,
                                ConfigurableConstituent, BaseFeature, Tree,
-                               Group, FL}
+                               Group, FL, ForestKeeper, BaseConstituent}
 
         self.default_node_classes = {g.CONSTITUENT_NODE: ConstituentNode, g.ABSTRACT_NODE: Node,
                                      g.FEATURE_NODE: FeatureNode, g.GLOSS_NODE: GlossNode,
@@ -54,30 +58,40 @@ class KatajaFactory:
 
         self.classes = {}
         for class_object in self.default_models:
-            self.classes[class_object.short_name] = class_object
+            self.classes[class_object.__name__] = class_object
         self.nodes = self.default_node_classes.copy()
         self.edge_class = self.default_edge_class
+        self.base_name_to_plugin_class = {}
+        self.plugin_name_to_base_class = {}
         self.update_node_info()
 
     @property
     def Constituent(self):
-        return self.classes['C']
+        return self.get('ConfigurableConstituent')
 
     @property
     def Feature(self):
-        return self.classes['F']
+        return self.get('BaseFeature')
 
     @property
     def FL(self):
-        return self.classes['FL']
+        return self.get('FL')
 
-    def add_class(self, key, class_object):
-        """ Add or replace class with given key """
-        self.classes[key] = class_object
+    def add_mapping(self, base_class, plugin_class):
+        if base_class:
+            self.base_name_to_plugin_class[base_class.__name__] = plugin_class
+            self.plugin_name_to_base_class[plugin_class.__name__] = base_class
+        else:
+            self.base_name_to_plugin_class[plugin_class.__name__] = plugin_class
+            self.plugin_name_to_base_class[plugin_class.__name__] = plugin_class
 
     def restore_default_classes(self):
         """ Restore all classes to their default implementation """
-        self.classes = self.default_models.copy()
+        self.classes = {}
+        for class_object in self.default_models:
+            self.classes[class_object.__name__] = class_object
+        self.base_name_to_plugin_class = {}
+        self.plugin_name_to_base_class = {}
         self.nodes = self.default_node_classes.copy()
         self.edge_class = self.default_edge_class
         self.update_node_info()
@@ -88,26 +102,37 @@ class KatajaFactory:
         for key, nodeclass in self.nodes.items():
             self.node_info[key] = {'name': nodeclass.name[0],
                                    'name_pl': nodeclass.name[1],
-                                   'display': nodeclass.display,
-                                   'short_name': nodeclass.short_name}
+                                   'display': nodeclass.display}
             if nodeclass.display:
                 self.node_types_order.append(key)
         self.node_types_order.sort()
 
+    def get(self, class_name):
+        if class_name in self.base_name_to_plugin_class:
+            return self.base_name_to_plugin_class[class_name]
+        else:
+            return self.classes[class_name]
 
-    def get(self, key):
-        return self.classes[key]
+    def get_original(self, class_name):
+        if class_name in self.classes:
+            return self.classes[class_name]
+        elif class_name in self.plugin_name_to_base_class:
+            return self.plugin_name_to_base_class[class_name]
 
-    def remove_class(self, key):
+    def find_base_model(self, class_item):
+        if class_item in self.default_models:
+            return class_item
+        else:
+            return self.find_base_model(super(class_item))
+
+    def remove_class(self, class_name):
         """ Restore single class to its default implementation """
-        found = False
-        for class_object in self.default_models:
-            if class_object.short_name == key:
-                found = True
-                self.classes[key] = class_object
-                break
-        if key in self.classes and not found:
-            del self.classes[key]
+        class_item = self.get(class_name)
+        for tclass_name, tclass_item in list(self.base_name_to_plugin_class.items()):
+            if tclass_item == class_item:
+                del self.base_name_to_plugin_class[tclass_name]
+        if class_name in self.plugin_name_to_base_class:
+            del self.plugin_name_to_base_class[class_name]
 
     def create(self, object_class_name, *args, **kwargs):
         """ Create empty kataja object stubs, to be loaded with correct values.
@@ -116,7 +141,7 @@ class KatajaFactory:
         :param kwargs: any kwargs delivered for the object's __init__ -method
         :return: :raise TypeError:
         """
-        class_object = self.classes.get(object_class_name, None)
+        class_object = self.get(object_class_name)
         if class_object and callable(class_object):
             # print('creating obj %s with args %s and kwargs %s ' % (object_class_name, str(args), str(kwargs)))
             new_object = class_object(*args, **kwargs)

@@ -63,7 +63,6 @@ class FL(SavedObject):
     """ Interface for Faculty of Language, implementation should be able to perform the operations
      sent here."""
 
-    short_name = "FL"
     available_rules = {"merge_types": dict(options=["set_merge", "pair_merge"], default="set_merge"),
                        "linearization_types": dict(options=["merge_asymmetry", "kayne"]),
                        "binary_branching_for_constituents": dict(options=[True, False], default=True),

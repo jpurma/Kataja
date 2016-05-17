@@ -41,7 +41,6 @@ class GlossNode(Node):
     height = 20
     node_type = GLOSS_NODE
     name = ('Gloss', 'Glosses')
-    short_name = "GNode"
     display = True
     is_syntactic = False
 

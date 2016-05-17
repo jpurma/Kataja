@@ -39,7 +39,6 @@ class CommentNode(Node):
     height = 20
     node_type = g.COMMENT_NODE
     name = ('Comment', 'Comments')
-    short_name = "ComNode"
     display = True
     is_syntactic = False
     can_be_in_groups = False

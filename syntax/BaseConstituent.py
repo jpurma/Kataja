@@ -38,7 +38,6 @@ class BaseConstituent(IConstituent):
 
     # info for kataja engine
     syntactic_object = True
-    short_name = "C"
 
     visible_in_label = ['label']
     editable_in_label = ['label']

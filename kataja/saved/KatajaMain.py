@@ -71,8 +71,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
     """ Qt's main window. When this is closed, application closes. Graphics are
     inside this, in scene objects with view widgets. This window also manages
     keypresses and menus. """
-
-    short_name = "Kataja"
+    unique = True
 
     def __init__(self, kataja_app, args):
         """ KatajaMain initializes all its children and connects itself to
@@ -81,7 +80,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         QtWidgets.QMainWindow.__init__(self)
         kataja_app.processEvents()
 
-        SavedObject.__init__(self, unique=True)
+        SavedObject.__init__(self)
         self.use_tooltips = True
         self.available_plugins = {}
         self.setDockOptions(QtWidgets.QMainWindow.AnimatedDocks)
@@ -185,15 +184,14 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
             setup.start_plugin(self, ctrl, prefs)
         if hasattr(setup, 'plugin_parts'):
             for classobj in setup.plugin_parts:
-                key = getattr(classobj, 'short_name', None)
-                if key:
-                    if key in classes.classes:
-                        m = "replacing %s with %s " % (classes.classes[key].__name__,
-                                                       classobj.__name__)
-                    else:
-                        m = "adding %s " % classobj.__name__
-                    classes.add_class(key, classobj)
-                    self.add_message(m)
+                base_class = classes.find_base_model(classobj)
+                if base_class:
+                    classes.add_mapping(base_class, classobj)
+                    m = "replacing %s with %s " % (base_class.__name__, classobj.__name__)
+                else:
+                    m = "adding %s " % classobj.__name__
+                classes.add_class(classobj)
+                self.add_message(m)
         self.load_objects(all_data, self)
         ctrl.resume_undo()
         self.change_forest()
@@ -202,7 +200,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         """ Remove one plugin from use: save data, replace plugin classes with original classes,
         load data. """
         all_data = self.create_save_data()
-        plugin_data = self.available_plugins[plugin_key]
+        #plugin_data = self.available_plugins[plugin_key]
         setup = self.load_plugin(plugin_key)
         if not setup:
             return
@@ -212,10 +210,10 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.clear_all()
         if hasattr(setup, 'plugin_parts'):
             for classobj in setup.plugin_parts:
-                key = getattr(classobj, 'short_name', None)
-                if key:
-                    self.add_message('removing %s' % classobj.__name__)
-                    classes.remove_class(key)
+                class_name = classobj.__name__
+                if class_name:
+                    self.add_message('removing %s' % class_name)
+                    classes.remove_class(class_name)
         self.load_objects(all_data, self)
         ctrl.resume_undo()
         self.change_forest()

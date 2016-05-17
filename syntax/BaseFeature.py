@@ -39,7 +39,6 @@ class BaseFeature(SavedObject):
     """
 
     syntactic_object = True
-    short_name = "F"
 
     visible_in_label = ['fname', 'value', 'family']
     editable_in_label = ['fname', 'value', 'family']

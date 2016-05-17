@@ -93,6 +93,7 @@ class Panel(UIItem, QtWidgets.QDockWidget):
     """ UI windows that can be docked to main window or separated.
     Gives some extra control and helper methods on QDockWidget. """
     permanent_ui = True
+    unique = True
 
     def __init__(self, name, default_position='bottom', parent=None, ui_manager=None, folded=False):
         """
@@ -101,7 +102,7 @@ class Panel(UIItem, QtWidgets.QDockWidget):
         :param default_position:
         :param parent:
         """
-        UIItem.__init__(self, unique=True)
+        UIItem.__init__(self)
         QtWidgets.QDockWidget.__init__(self, name, parent=parent)
         # self.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed))
         self.ui_type == 'Panel'

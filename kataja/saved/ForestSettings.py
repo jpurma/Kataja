@@ -50,8 +50,6 @@ class SavedSetting(SavedField):
 class ForestSettings(SavedObject):
     """ Settings specific for this forest -- a level between global preferences and settings specific for object. """
 
-    short_name = "FSettings"
-
     def __init__(self):
         super().__init__()
         self.uses_multidomination = None
@@ -290,8 +288,6 @@ class ForestSettings(SavedObject):
 
 class ForestRules(SavedObject):
     """ Rules that affect trees in one forest in a form that can be easily pickled """
-
-    short_name = "FRules"
 
     def __init__(self):
         super().__init__()

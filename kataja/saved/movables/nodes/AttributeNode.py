@@ -70,7 +70,6 @@ class AttributeNode(Node):
     height = 20
     node_type = ATTRIBUTE_NODE
     name = ('Attribute', 'Attributes')
-    short_name = "ANode"
     display = False
     __qt_type_id__ = next_available_type_id()
 

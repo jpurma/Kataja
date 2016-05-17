@@ -69,7 +69,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
     or arrows """
 
     __qt_type_id__ = next_available_type_id()
-    short_name = "E"
 
     def __init__(self, start=None, end=None, edge_type='', direction=''):
         """

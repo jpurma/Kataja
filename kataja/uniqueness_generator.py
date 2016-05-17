@@ -1,8 +1,8 @@
 
 
 type_id = 65536
-uid = 1
-ui_key = 1
+uid = 0
+ui_key = 0
 
 
 def next_available_type_id():
@@ -15,6 +15,11 @@ def next_available_uid():
     global uid
     uid += 1
     return uid
+
+
+def reset_uid_counter():
+    global uid
+    uid = 0
 
 
 def next_available_ui_key():

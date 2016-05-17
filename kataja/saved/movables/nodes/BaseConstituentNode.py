@@ -42,7 +42,6 @@ class BaseConstituentNode(Node):
     height = 20
     is_constituent = True
     node_type = g.CONSTITUENT_NODE
-    short_name = "BCN"
     wraps = 'constituent'
 
     viewable = {'label': {'order': 1}}

@@ -10,9 +10,10 @@ from kataja.uniqueness_generator import next_available_type_id
 class StretchLine(UIItem, QtWidgets.QGraphicsLineItem):
     """ Temporary arrow for dragging and pointing """
     __qt_type_id__ = next_available_type_id()
+    unique = True
 
     def __init__(self, line, host):
-        UIItem.__init__(unique=True, host=host)
+        UIItem.__init__(host=host)
         QtWidgets.QGraphicsLineItem.__init__(self, line)
         self._arrow_size = 5.0
         self.setZValue(52)

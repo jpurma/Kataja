@@ -16,7 +16,6 @@ points = 36
 
 class Group(SavedObject, QtWidgets.QGraphicsObject):
 
-    short_name = 'Group'
     __qt_type_id__ = next_available_type_id()
 
     def __init__(self, selection=None, persistent=True):

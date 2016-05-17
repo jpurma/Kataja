@@ -9,10 +9,6 @@ class HiConstituent(BaseConstituent):
 
     # info for kataja engine on how to display the constituent and what is editable
 
-    # short_name should match with the class we inherited, so that the plugin
-    # knows that all "BC":s should be replaced with this version.
-    short_name = "BC"
-
     # 'visible_in_label' names the fields that should be visible in graphical representation of
     # this kind of element. Syntax for defining viewable and editable fields can be found in ...
 

@@ -50,8 +50,6 @@ def _closest_parents(A, context, is_not=None, parent_list=None):
 class FL:
     """ Faculty of Language, collects Lexicon and Interfaces so that they can operate together."""
 
-    short_name = "FL"
-
     def __init__(self, lexicon='testlexicon.txt', constituent=Constituent, feature=BaseFeature):
         self.Constituent = constituent
         self.Feature = feature

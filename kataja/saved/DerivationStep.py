@@ -42,7 +42,6 @@ class DerivationStep(SavedObject):
 
     Needs to be checked and tested, also what to do with saving and loading.
      """
-    short_name = "DStep"
 
     def __init__(self, msg=None, trees=None, chains=None):
         super().__init__()
@@ -147,10 +146,8 @@ class DerivationStepManager(SavedObject):
     """ Stores derivation steps for one forest and takes care of related
     logic """
 
-    short_name = "DStepManager"
-
     def __init__(self):
-        super().__init__(unique=False)
+        super().__init__()
         self.derivation_steps = []
         self.derivation_step_index = 0
 

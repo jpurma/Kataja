@@ -37,7 +37,6 @@ class Tree(Movable):
     """
     __qt_type_id__ = next_available_type_id()
     name = ('Tree', 'Trees')
-    short_name = "Tree"
 
     def __init__(self, top=None):
         Movable.__init__(self)

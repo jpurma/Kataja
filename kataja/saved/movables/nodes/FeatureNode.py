@@ -43,7 +43,6 @@ class FeatureNode(Node):
     height = 20
     node_type = FEATURE_NODE
     name = ('Feature', 'Features')
-    short_name = "FN"
     display = True
     wraps = 'feature'
 

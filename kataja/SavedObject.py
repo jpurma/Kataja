@@ -11,7 +11,7 @@ from kataja.globals import CREATED, DELETED
 from kataja.parser.INodes import ITextNode
 from kataja.parser.LatexToINode import LatexFieldToINode
 from kataja.singletons import ctrl, classes
-from kataja.utils import to_tuple
+from kataja.utils import to_tuple, time_me
 from kataja.uniqueness_generator import next_available_uid
 
 __author__ = 'purma'
@@ -31,22 +31,26 @@ class SavedObject(object):
     should go.
     Also makes it neater to check if item is Savable.
     """
-    short_name = "Missing shortname!"
     uid = SavedField("uid")
+    class_name = SavedField("class_name")
     syntactic_object = False
+    unique = False
 
     def __init__(self, uid=None, **kw):
-        if uid is None:
+        if self.unique:
+            uid = self.__class__.__name__
+        elif uid is None:
             uid = next_available_uid()
         self._saved = {}
         self._history = {}
         self.uid = uid
+        self.class_name = self.__class__.__name__
         self._cd = 0  # / CREATED / DELETED
         self._can_be_deleted_with_undo = True
         self._skip_this = False  # temporary "ghost" objects can use this flag to avoid being stored
 
     def __str__(self):
-        return self.short_name + str(self.uid)
+        return self.class_name + str(self.uid)
 
     def poke(self, attribute):
         """ Alert undo system that this (Saved) object is being changed.
@@ -277,12 +281,9 @@ class SavedObject(object):
         :param kataja_main:
         :param self:
         """
-
-        global full_map, restored, full_data, main
         full_map = {}
         restored = {}
         full_data = data
-        main = kataja_main
 
         # First we need a full index of objects that already exist within the
         #  existing objects.
@@ -301,26 +302,30 @@ class SavedObject(object):
                     map_existing(item)
                 return
             # objects that support saving
-            key = getattr(obj, 'uid', '')
-            if key and key not in full_map:
-                full_map[key] = obj
-                for item in obj._saved.values():
-                    map_existing(item)
+
+            if getattr(obj, 'unique', False):
+                key = getattr(obj, 'uid', '')
+                if key and key not in full_map:
+                    full_map[key] = obj
+                    for item in obj._saved.values():
+                        map_existing(item)
 
         # Restore either takes existing object or creates a new 'stub' object
         #  and then loads it with given data
         map_existing(self)
-        self.restore(self.uid)
-        del full_map, restored, full_data, main
+        self.restore(self.uid, full_data, full_map, restored, kataja_main, root=True)
 
-    def restore(self, obj_key, class_key=''):
+    @time_me
+    def restore(self, obj_key, full_data, full_map, restored, kataja_main, root=False):
         """ Recursively restore objects inside the scope of current obj. Used
         for loading kataja files.
         :param obj_key:
-        :param class_key:
+        :param root:
         :return:
         """
-        global full_map, restored, full_data, main
+
+        if obj_key.isdigit():
+            obj_key = int(obj_key)
 
         def inflate(data):
             """ Recursively turn QObject descriptions back into actual
@@ -346,11 +351,8 @@ class SavedObject(object):
                 return result
             elif isinstance(data, str):
                 if data.startswith('*r*'):
-                    parts = data.split('|')
-                    if len(parts) > 2:
-                        return self.restore(parts[1] + '|' + parts[2], parts[2])
-                    else:
-                        return self.restore(parts[1], parts[1])
+                    r, uid = data.split('|', 1)
+                    return self.restore(uid, full_data, full_map, restored, kataja_main)
                 else:
                     return data
             elif isinstance(data, tuple):
@@ -397,10 +399,15 @@ class SavedObject(object):
         # values overwrite existing values.
 
         obj = full_map.get(obj_key, None)
+
+        # new data that the object should have
+        new_data = full_data[obj_key]
+        class_key = new_data['class_name']
+
         if not obj:
-            # print('creating new ', class_key)
+            #print('creating new ', class_key)
             obj = classes.create(class_key)
-            # print('created new ', obj)
+            #print('created new ', obj)
         else:
             # print('found obj: ', obj)
             pass
@@ -409,20 +416,21 @@ class SavedObject(object):
 
         # forest, or otherwise things go awry
         if class_key == 'Forest':
-            main.forest = obj
+            kataja_main.forest = obj
 
         # keep track of which objects have been restored
         restored[obj_key] = obj
 
-        # new data that the object should have
-        new_data = full_data[obj_key]
         for key, old_value in obj._saved.items():
             new_value = new_data.get(key, None)
             if new_value is not None:
                 new_value = inflate(new_value)
             if new_value != old_value:
                 setattr(obj, key, new_value)
-        # object needs to be finalized after setting values
-        if hasattr(obj, 'after_init'):
-            obj.after_init()
+
+        # objects need to be finalized after setting values, do this only once per load.
+        if root:
+            for item in restored.values():
+                if hasattr(item, 'after_init'):
+                    item.after_init()
         return obj

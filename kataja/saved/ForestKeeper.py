@@ -32,10 +32,10 @@ class ForestKeeper(SavedObject):
     """ Container and loader for Forest objects. Remember to not enable undo for any of the actions in here,
     as scope of undo should be a single Forest. """
 
-    short_name = "FKeeper"
+    unique = True
 
     def __init__(self, name=None, filename=None, treelist_filename=None):
-        super().__init__(unique=True)
+        super().__init__()
         self.name = name or filename or treelist_filename
         self.filename = filename
         if treelist_filename:

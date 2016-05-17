@@ -26,9 +26,10 @@ class UIEmbed(UIItem, QtWidgets.QWidget):
     :param ui_manager:
     """
     __qt_type_id__ = next_available_type_id()
+    unique = True
 
     def __init__(self, parent, host, text):
-        UIItem.__init__(self, host, unique=True)
+        UIItem.__init__(self, host)
         QtWidgets.QWidget.__init__(self, parent)
         self._palette = None
         self.update_colors()

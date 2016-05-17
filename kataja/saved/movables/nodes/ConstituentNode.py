@@ -48,7 +48,6 @@ class ConstituentNode(BaseConstituentNode):
     """
     __qt_type_id__ = next_available_type_id()
     name = ('Constituent', 'Constituents')
-    short_name = "CN"
     display = True
     wraps = 'constituent'
     visible_in_label = ['alias', 'index', 'triangle', 'label', 'gloss']

@@ -60,8 +60,6 @@ class ConstituentStructures:
     These are not used yet, but keep them in case we find a way to use them.
      """
 
-    short_name = "ConfFL"
-
     def __init__(self, config_path='kataja.cfg'):
         self.config = ConfigParser()
         # self.config.readfp(io.BytesIO(DEFAULT))

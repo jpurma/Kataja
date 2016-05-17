@@ -61,8 +61,6 @@ class Forest(SavedObject):
       Forest also takes care of the operations manipulating, creating and
       removing trees. """
 
-    short_name = "Forest"
-
     def __init__(self, buildstring='', definitions=None, gloss_text='', comments=None):
         """ Create an empty forest """
         super().__init__()

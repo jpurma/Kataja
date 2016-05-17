@@ -62,9 +62,10 @@ class NewElementMarker(UIItem, QtWidgets.QGraphicsItem):
     :param scene_pos:
     """
     __qt_type_id__ = next_available_type_id()
+    unique = True
 
     def __init__(self, scene_pos, embed):
-        UIItem.__init__(self, unique=True)
+        UIItem.__init__(self)
         QtWidgets.QGraphicsItem.__init__(self)
         self.start_point = None
         self.end_point = None

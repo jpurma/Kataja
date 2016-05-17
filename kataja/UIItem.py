@@ -9,11 +9,12 @@ class UIItem:
     signals that they will receive, these signals can be sent by any object.
     """
     permanent_ui = False
+    unique = False
 
-    def __init__(self, host=None, ui_key=None, unique=False, role=None):
+    def __init__(self, host=None, ui_key=None, role=None):
         if ui_key:
             self.ui_key = ui_key
-        elif unique:
+        elif self.unique:
             self.ui_key = self.__class__.__name__
         else:
             self.ui_key = next_available_ui_key()
