@@ -83,8 +83,8 @@ class CommentNode(Node):
 
     touch_areas_when_selected = {g.DELETE_ARROW: {'condition': 'has_arrow'}}
 
-    def __init__(self, text='comment'):
-        Node.__init__(self)
+    def __init__(self, text='comment', forest=None):
+        Node.__init__(self, forest=forest)
         if not text:
             text = 'comment'
         self.label = text

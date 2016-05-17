@@ -38,14 +38,14 @@ class Bracket(Movable):
     __qt_type_id__ = next_available_type_id()
 
 
-    def __init__(self, host=None, left=True):
+    def __init__(self, forest=None, host=None, left=True):
         """
 
         :param Forest forest:
         :param ConstituentNode host:
         :param boolean left:
         """
-        super().__init__()
+        super().__init__(forest=forest)
         self.inner = QtWidgets.QGraphicsSimpleTextItem(self)
         self.inner.setParentItem(self)
         self.host = host
@@ -84,12 +84,12 @@ class Bracket(Movable):
         """
         adjust = self.boundingRect().width()
         if self.left:
-            depth, leftmost = ctrl.forest.bracket_manager.find_leftmost(
+            depth, leftmost = self.forest.bracket_manager.find_leftmost(
                 self.host)
             x, y = leftmost.current_scene_position
             my_x = x + leftmost.boundingRect().left() - depth * adjust
         else:
-            depth, rightmost = ctrl.forest.bracket_manager.find_rightmost(
+            depth, rightmost = self.forest.bracket_manager.find_rightmost(
                 self.host)
             x, y = rightmost.current_scene_position
             my_x = x + rightmost.boundingRect().right() + (depth - 1) * adjust

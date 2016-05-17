@@ -93,14 +93,14 @@ class FeatureNode(Node):
                     'name_pl': 'Feature edges'
                     }
 
-    def __init__(self, feature=None):
-        Node.__init__(self, syntactic_object=feature)
+    def __init__(self, forest=None, syntactic_object=None):
+        Node.__init__(self, syntactic_object=syntactic_object, forest=forest)
         self._gravity = 1
 
     # implement color() to map one of the d['rainbow_%'] colors here. Or if bw mode is on, then something else.
 
     @staticmethod
-    def create_synobj(label=None):
+    def create_synobj(label, forest):
         """ FeatureNodes are wrappers for Features. Exact
         implementation/class of feature is defined in ctrl.
         :return:

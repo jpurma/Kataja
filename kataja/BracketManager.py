@@ -78,7 +78,7 @@ class BracketManager:
         if key in self.brackets:
             # print('bracket exists already')
             return self.brackets[key]
-        br = Bracket(host=host, left=left)
+        br = Bracket(forest=self.forest, host=host, left=left)
         assert (br.key == key)  # don't modify the key creation in Bracket...
         self.brackets[key] = br
         return br

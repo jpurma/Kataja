@@ -87,7 +87,8 @@ class AttributeNode(Node):
                     'name_pl': 'Attribute edges'
                     }
 
-    def __init__(self, host, attribute_id, attribute_label='', show_label=False, restoring=False):
+    def __init__(self, forest=None, host=None, attribute_id=None, attribute_label='',
+                 show_label=False, restoring=False):
         """
 
         :param host: 
@@ -98,7 +99,7 @@ class AttributeNode(Node):
         :param restoring: 
         :raise: 
         """
-        Node.__init__(self, syntactic_object=None)
+        Node.__init__(self, forest=forest, syntactic_object=None)
         self.host = host
         self.attribute_label = attribute_label or attribute_id
         self.attribute_id = attribute_id

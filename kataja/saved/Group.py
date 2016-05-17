@@ -18,7 +18,7 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
 
     __qt_type_id__ = next_available_type_id()
 
-    def __init__(self, selection=None, persistent=True):
+    def __init__(self, forest=None, selection=None, persistent=True):
         SavedObject.__init__(self)
         QtWidgets.QGraphicsObject.__init__(self)
         # -- Fake as UIItem to make selection groups part of UI:
@@ -29,6 +29,7 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         self.host = None
         self.watchlist = []
         # -- end faking as UIItem
+        self.forest = forest
         self.selection = []
         self.selection_with_children = []
         self.persistent = persistent
@@ -156,7 +157,7 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
             self.update_shape()
         else:
             if self.persistent:
-                ctrl.forest.remove_group(self)
+                self.forest.remove_group(self)
             else:
                 ctrl.ui.remove_ui_for(self)
 
@@ -175,7 +176,7 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         swc = []
         other_selections = set()
         if not self.allow_overlap:
-            for group in ctrl.forest.groups.values():
+            for group in self.forest.groups.values():
                 other_selections = other_selections | set(group.selection_with_children)
 
         def recursive_add_children(i):
@@ -486,3 +487,4 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
     fill = SavedField("fill")
     outline = SavedField("outline")
     persistent = SavedField("persistent")
+    forest = SavedField("forest")

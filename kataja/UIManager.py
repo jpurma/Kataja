@@ -402,7 +402,8 @@ class UIManager:
                 if groupable_nodes:
                     # Create new group for this selection
                     if not self.selection_group:
-                        self.selection_group = Group(groupable_nodes, persistent=False)
+                        self.selection_group = Group(selection=groupable_nodes, persistent=False,
+                                                     forest=ctrl.forest)
                         self.selection_group.update_colors(
                                 color_key=ctrl.forest.get_group_color_suggestion())
                         self.add_ui(self.selection_group)

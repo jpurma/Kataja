@@ -101,12 +101,12 @@ class Node(Movable):
                              g.REMOVE_NODE: {'action': 'remove_merger',
                                              'condition': 'free_drawing_mode'}}
 
-    def __init__(self, syntactic_object=None):
+    def __init__(self, forest=None, syntactic_object=None):
         """ Node is an abstract class that shouldn't be used by itself, though
         it should contain all methods to make it work. Inherit and modify
         this for
         Constituents, Features etc. """
-        Movable.__init__(self)
+        Movable.__init__(self, forest=forest)
         self.syntactic_object = syntactic_object
 
         self.label_object = None
@@ -170,7 +170,7 @@ class Node(Movable):
         self.update_bounding_rect()
         self.update_visibility()
         self.announce_creation()
-        ctrl.forest.store(self)
+        self.forest.store(self)
 
     def after_model_update(self, updated_fields, update_type):
         """ This is called after the item's model has been updated, to run
@@ -183,8 +183,8 @@ class Node(Movable):
         super().after_model_update(updated_fields, update_type)
 
         if update_type == 1:
-            ctrl.forest.store(self)
-            ctrl.forest.add_to_scene(self)
+            self.forest.store(self)
+            self.forest.add_to_scene(self)
 
         if 'folding_towards' in updated_fields:
             # do the animation and its after triggers.
@@ -198,7 +198,7 @@ class Node(Movable):
         self.update_label()
 
     @staticmethod
-    def create_synobj(label=None):
+    def create_synobj(label, forest):
         """ (Abstract) Nodes do not have corresponding syntactic object, so
         return None and the Node factory knows to not try to pass syntactic
         object -argument.
@@ -228,7 +228,8 @@ class Node(Movable):
         return self.triangle
 
     def if_changed_triangle(self, value):
-        self.update_label()
+        if self.forest:
+            self.update_label()
 
     def can_have_triangle(self):
         return not self.triangle
@@ -637,7 +638,7 @@ class Node(Movable):
         :param return_set: Return result as a set which may contain more than 1 roots.  """
         s = set()
 
-        for tree in ctrl.forest:
+        for tree in self.forest:
             if self in tree:
                 if return_set:
                     s.add(tree.top)
@@ -1021,7 +1022,7 @@ class Node(Movable):
         self.move_to(x, y, after_move_function=self.finish_folding, can_adjust=False)
         if ctrl.is_selected(self):
             ctrl.remove_from_selection(self)
-        ctrl.forest.animation_started(self.uid + '_fold')
+        self.forest.animation_started(self.uid + '_fold')
         self.fade_out()
 
     def finish_folding(self):
@@ -1032,7 +1033,7 @@ class Node(Movable):
         # update edge visibility from triangle to its immediate children
         if self.folding_towards in self.get_parents():
             self.folding_towards.update_visibility()
-        ctrl.forest.animation_finished(self.uid + '_fold')
+        self.forest.animation_finished(self.uid + '_fold')
 
     def paint_triangle(self, painter):
         """ Drawing the triangle, called from paint-method
@@ -1343,7 +1344,7 @@ class Node(Movable):
         if d.tree_top:
             dx, dy = d.tree_top.drag_data.distance_from_pointer
             d.tree_top.dragged_to((nx + dx, ny + dy))
-            for edge in ctrl.forest.edges.values():
+            for edge in self.forest.edges.values():
                 edge.make_path()
                 edge.update()
         else:

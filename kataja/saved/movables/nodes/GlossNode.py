@@ -71,8 +71,8 @@ class GlossNode(Node):
                     'name_pl': 'Gloss edges'
                     }
 
-    def __init__(self, text=''):
-        Node.__init__(self)
+    def __init__(self, text='', forest=None):
+        Node.__init__(self, forest=forest)
         if not text:
             text = 'gloss'
         self.label = text

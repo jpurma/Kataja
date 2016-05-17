@@ -77,7 +77,7 @@ class Forest(SavedObject):
         self.chain_manager = ChainManager(self)
         self.settings = ForestSettings()
         self.rules = ForestRules()
-        self.derivation_steps = DerivationStepManager()
+        self.derivation_steps = DerivationStepManager(forest=self)
         self.trees = []
         self._update_trees = False
         self.nodes = {}
@@ -807,7 +807,7 @@ class Forest(SavedObject):
         :param node:
         :return:
         """
-        tree = Tree(top=node)
+        tree = Tree(top=node, forest=self)
         self.add_to_scene(tree)
         self.trees.append(tree)
         tree.show()
@@ -869,11 +869,11 @@ class Forest(SavedObject):
         # Create corresponding syntactic object if necessary
         if not synobj:
             if hasattr(node_class, 'create_synobj'):
-                synobj = node_class.create_synobj(text)
+                synobj = node_class.create_synobj(text, self)
         if synobj:
-            node = node_class(synobj)
+            node = node_class(syntactic_object=synobj, forest=self)
         else:
-            node = node_class(text)
+            node = node_class(text, forest=self)
         # after_init should take care that syntactic object is properly
         # reflected by node's connections (call node.reflect_synobj()?)
         node.after_init()
@@ -912,7 +912,9 @@ class Forest(SavedObject):
         :param show_label:
         :return:
         """
-        AN = AttributeNode(host, attribute_id, attribute_label, show_label=show_label)
+        AN = AttributeNode(forest=self, host=host, attribute_id=attribute_id,
+                           attribute_label=attribute_label,
+                           show_label=show_label)
         self.connect_node(host, child=AN)
         self.add_to_scene(AN)
         AN.update_visibility()
@@ -927,7 +929,7 @@ class Forest(SavedObject):
         :param direction:
         :return:
         """
-        rel = Edge(start=start, end=end, edge_type=edge_type, direction=direction)
+        rel = Edge(forest=self, start=start, end=end, edge_type=edge_type, direction=direction)
         rel.after_init()
         self.store(rel)
         self.add_to_scene(rel)
@@ -2058,7 +2060,7 @@ class Forest(SavedObject):
         group.copy_from(selection_group)
 
     def create_group(self):
-        group = Group([], persistent=True)
+        group = Group(selection=[], persistent=True, forest=self)
         self.add_to_scene(group)
         self.poke('groups')
         self.groups[group.uid] = group

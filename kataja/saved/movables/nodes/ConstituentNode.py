@@ -146,9 +146,9 @@ class ConstituentNode(BaseConstituentNode):
         g.REMOVE_NODE: {'condition': ['not:is_unnecessary_merger', 'free_drawing_mode'], 'action': 'remove_node'}
     }
 
-    def __init__(self, constituent=None):
+    def __init__(self, syntactic_object=None, forest=None):
         """ Most of the initiation is inherited from Node """
-        BaseConstituentNode.__init__(self, constituent=constituent)
+        BaseConstituentNode.__init__(self, syntactic_object=syntactic_object, forest=forest)
         self.index = ''
         self.alias = ''
         self.gloss = ''
@@ -178,7 +178,7 @@ class ConstituentNode(BaseConstituentNode):
         self.update_visibility()
         self.update_status_tip()
         self.announce_creation()
-        ctrl.forest.store(self)
+        self.forest.store(self)
 
     def after_model_update(self, updated_fields, update_type):
         """ This is called after the item's model has been updated, to run the side-effects of
@@ -237,7 +237,7 @@ class ConstituentNode(BaseConstituentNode):
         if self.triangle:
             leaves = ITextNode()
             # todo: Use a better linearization here
-            for node in ctrl.forest.list_nodes_once(self):
+            for node in self.forest.list_nodes_once(self):
                 if node.is_leaf(only_visible=False) and node.label:
                     leaves += node.label
                     leaves += ' '
@@ -249,18 +249,18 @@ class ConstituentNode(BaseConstituentNode):
         if prefs.bones_mode:
             return True
         elif self.is_leaf(only_visible=True) or self.triangle:
-            return ctrl.forest.settings.show_leaf_labels
+            return self.forest.settings.show_leaf_labels
         else:
-            return ctrl.forest.settings.show_internal_labels
+            return self.forest.settings.show_internal_labels
 
     def should_show_alias(self):
         if self.is_leaf(only_visible=True) or self.triangle:
-            return ctrl.forest.settings.show_leaf_aliases
+            return self.forest.settings.show_leaf_aliases
         else:
-            return ctrl.forest.settings.show_internal_aliases
+            return self.forest.settings.show_internal_aliases
 
     def should_show_gloss_in_label(self):
-        return ctrl.forest.settings.show_glosses == 1
+        return self.forest.settings.show_glosses == 1
 
 
     def update_status_tip(self):
@@ -490,7 +490,7 @@ class ConstituentNode(BaseConstituentNode):
         if self.head is self.syntactic_object:
             return self
         elif self.head:
-            return ctrl.forest.get_node(self.head)
+            return self.forest.get_node(self.head)
         else:
             return None
 
@@ -528,9 +528,9 @@ class ConstituentNode(BaseConstituentNode):
         gloss_node = self.gloss_node
         if not ctrl.undo_disabled:
             if gloss_node and not syn_gloss:
-                ctrl.forest.delete_node(gloss_node)
+                self.forest.delete_node(gloss_node)
             elif syn_gloss and not gloss_node:
-                ctrl.forest.create_gloss_node(self)
+                self.forest.create_gloss_node(self)
             elif syn_gloss and gloss_node:
                 gloss_node.update_label()
 

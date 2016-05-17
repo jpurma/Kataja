@@ -56,6 +56,6 @@ class PropertyNode(Node):
                     'name_pl': 'Property edges'
                     }
 
-    def __init__(self, property=None):
-        Node.__init__(self, syntactic_object=property)
+    def __init__(self, forest=None, property=None):
+        Node.__init__(self, forest=forest, syntactic_object=property)
         # self.color = colors.text

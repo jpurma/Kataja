@@ -53,9 +53,9 @@ class BaseConstituentNode(Node):
     # ConstituentNode position points to the _center_ of the node.
     # boundingRect should be (w/-2, h/-2, w, h)
 
-    def __init__(self, constituent=None):
+    def __init__(self, syntactic_object=None, forest=None):
         """ Most of the initiation is inherited from Node """
-        Node.__init__(self, syntactic_object=constituent)
+        Node.__init__(self, syntactic_object=syntactic_object, forest=forest)
 
 
         # ------ Bracket drawing -------
@@ -70,21 +70,18 @@ class BaseConstituentNode(Node):
 
         # ## use update_visibility to change these: visibility of particular elements
         # depends on many factors
-        if ctrl.forest:
-            self._visibility_brackets = ctrl.forest.settings.bracket_style
-        else:
-            self._visibility_brackets = 0
+        self._visibility_brackets = 0
 
         #self.setAcceptDrops(True)
 
     @staticmethod
-    def create_synobj(label=''):
+    def create_synobj(label, forest):
         """ ConstituentNodes are wrappers for Constituents. Exact
         implementation/class of constituent is defined in ctrl.
         :return:
         """
         if not label:
-            label = ctrl.forest.get_first_free_constituent_name()
+            label = forest.get_first_free_constituent_name()
         c = classes.Constituent(label)
         c.after_init()
         return c
@@ -113,7 +110,8 @@ class BaseConstituentNode(Node):
         self.update_label()
         self.update_visibility()
         self.announce_creation()
-        ctrl.forest.store(self)
+        self._visibility_brackets = self.forest.settings.bracket_style
+        self.forest.store(self)
 
     def after_model_update(self, updated_fields, update_type):
         """ This is called after the item's model has been updated, to run the side-effects of
@@ -182,7 +180,7 @@ class BaseConstituentNode(Node):
         if self.syntactic_object:
             if hasattr(self.syntactic_object, 'ordered_parts'):
                 for synob in self.syntactic_object.ordered_parts():
-                    yield ctrl.forest.get_node(synob)
+                    yield self.forest.get_node(synob)
 
     def get_attribute_nodes(self, label_key=''):
         """
@@ -221,11 +219,11 @@ class BaseConstituentNode(Node):
 
         # ## Edges -- these have to be delayed until all constituents etc nodes know if they are
         # visible
-        ctrl.forest.order_edge_visibility_check()
+        self.forest.order_edge_visibility_check()
 
         # ## FeatureNodes
-        # ctrl.forest.settings.draw_features
-        feat_visible = visible and ctrl.forest.settings.feature_nodes
+        # self.forest.settings.draw_features
+        feat_visible = visible and self.forest.settings.feature_nodes
 
         if feat_visible and not was_visible:
             for feature in self.get_features():
@@ -260,11 +258,11 @@ class BaseConstituentNode(Node):
 
         def add_left():
             if not self.left_bracket:
-                self.left_bracket = ctrl.forest.create_bracket(host=self, left=True)
+                self.left_bracket = f.create_bracket(host=self, left=True)
 
         def add_right():
             if not self.right_bracket:
-                self.right_bracket = ctrl.forest.create_bracket(host=self, left=False)
+                self.right_bracket = f.create_bracket(host=self, left=False)
 
         def del_left():
             if self.left_bracket:
@@ -276,7 +274,7 @@ class BaseConstituentNode(Node):
                 f.bracket_manager.delete_bracket(self.right_bracket)
                 self.right_bracket = None
 
-        f = ctrl.forest
+        f = self.forest
         bs = f.settings.bracket_style
         if bs == g.ALL_BRACKETS:
             if list(self.get_children()):
@@ -503,7 +501,7 @@ class BaseConstituentNode(Node):
         """ Implement this if structure is supposed to drag with the node
         :return:
         """
-        children = ctrl.forest.list_nodes_once(self)
+        children = self.forest.list_nodes_once(self)
 
         for tree in self.trees:
             dragged_index = tree.sorted_constituents.index(self)

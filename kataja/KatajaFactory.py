@@ -143,7 +143,7 @@ class KatajaFactory:
         """
         class_object = self.get(object_class_name)
         if class_object and callable(class_object):
-            # print('creating obj %s with args %s and kwargs %s ' % (object_class_name, str(args), str(kwargs)))
+            #print('creating obj %s with args %s and kwargs %s ' % (object_class_name, str(args), str(kwargs)))
             new_object = class_object(*args, **kwargs)
             return new_object
         else:

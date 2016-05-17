@@ -159,7 +159,7 @@ class BaseParser:
         """
         if text.startswith("'"):
             text = text[1:]
-        ta = TextArea(text)
+        ta = TextArea(text=text, forest=self.forest)
         self.forest.others[ta.uid] = ta
         return ta
 

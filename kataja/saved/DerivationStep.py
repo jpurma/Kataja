@@ -43,8 +43,9 @@ class DerivationStep(SavedObject):
     Needs to be checked and tested, also what to do with saving and loading.
      """
 
-    def __init__(self, msg=None, trees=None, chains=None):
+    def __init__(self, forest=None, msg=None, trees=None, chains=None):
         super().__init__()
+        self.forest = forest
         if not trees:
             trees = []
         if not chains:
@@ -109,13 +110,13 @@ class DerivationStep(SavedObject):
             node.edges_down = []
             for edge_down in data['edges_down']:
                 child = edge_down.end
-                ctrl.forest.connect_node(parent=node, child=child)
+                self.forest.connect_node(parent=node, child=child)
             node.edges_up = []
             for edge_up in data['edges_up']:
                 parent = edge_up.start
-                ctrl.forest.connect_node(parent=parent, child=node)
+                self.forest.connect_node(parent=parent, child=node)
             node.index = data['index']
-            ctrl.forest.store(node)
+            self.forest.store(node)
         return tree
 
     def restore_from_snapshot(self):
@@ -124,12 +125,12 @@ class DerivationStep(SavedObject):
         :param forest:
         """
         print('???? restore from snapshot')
-        ctrl.forest.trees = [] # fixme: if done like this, we can't find and fix broken trees in
+        self.forest.trees = [] # fixme: if done like this, we can't find and fix broken trees in
         # nodes
         for tree_data in self.trees:
             top_node = self.rebuild_tree_from_snapshot(tree_data)
-        ctrl.forest.update_trees()
-        ctrl.forest.chain_manager.chains = self.chains
+        self.forest.update_trees()
+        self.forest.chain_manager.chains = self.chains
 
     # ############## #
     #                #
@@ -137,6 +138,7 @@ class DerivationStep(SavedObject):
     #                #
     # ############## #
 
+    forest = SavedField("forest")
     msg = SavedField("msg")
     roots = SavedField("roots")
     chains = SavedField("chains")
@@ -146,8 +148,9 @@ class DerivationStepManager(SavedObject):
     """ Stores derivation steps for one forest and takes care of related
     logic """
 
-    def __init__(self):
+    def __init__(self, forest=None):
         super().__init__()
+        self.forest = forest
         self.derivation_steps = []
         self.derivation_step_index = 0
 
@@ -161,8 +164,8 @@ class DerivationStepManager(SavedObject):
         :param msg:
         """
         # print('save_and_create_derivation_step called')
-        trees = ctrl.forest.trees
-        chains = ctrl.forest.chain_manager.chains
+        trees = self.forest.trees
+        chains = self.forest.chain_manager.chains
         if chains:
             print('saving chains into derivation step: ', chains)
             # derivation_step = DerivationStep(msg, roots, chains)
@@ -207,3 +210,4 @@ class DerivationStepManager(SavedObject):
 
     derivation_steps = SavedField("derivation_steps")
     derivation_step_index = SavedField("derivation_step_index")
+    forest = SavedField("forest")
