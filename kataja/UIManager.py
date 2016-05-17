@@ -101,7 +101,7 @@ menu_structure = OrderedDict([('file_menu', ('&File',
                                                          'merge_order_attribute',
                                                          'select_order_attribute'])),
                               ('view_menu', ('&View', ['$visualizations', '---',
-                                                       'toggle_bones_mode', 'change_colors',
+                                                       'switch_view_mode', 'change_colors',
                                                        'adjust_colors', 'zoom_to_fit', '---',
                                                        'fullscreen_mode'])),
                               ('windows_menu', ('&Windows', [('Panels', ['$panels']), '---',
@@ -555,10 +555,10 @@ class UIManager:
                     new_menu.addSeparator()
                 else:
                     new_menu.addAction(self.qt_actions[item])
-                    #if item in self.actions:
-                    #    getter = self.actions[item].get('check_state', None)
-                    #    if getter:
-                    #        self.qt_actions[item].setChecked(getter())
+                    if item in self.actions:
+                        getter = self.actions[item].get('check_state', None)
+                        if getter:
+                            self.qt_actions[item].setChecked(getter())
 
 
             parent.addMenu(new_menu)
@@ -1092,17 +1092,18 @@ class UIManager:
     # Mode HUD
     def update_edit_mode(self):
         val = ctrl.free_drawing_mode
-        self.top_bar_buttons._edit_mode_button.set_checked(val)
+        self.top_bar_buttons._edit_mode_button.set_checked(not val)
         ctrl.call_watchers(self, 'edit_mode_changed', value=val)
 
     def update_view_mode(self):
-        val = not prefs.bones_mode
-        self.top_bar_buttons._view_mode_button.set_checked(val)
-        for node in ctrl.forest.nodes.values():
-            node.update_label()
-            node.update_label_visibility()
-            node.update_visibility()
-        ctrl.call_watchers(self, 'view_mode_changed', value=val)
+        val = prefs.show_all_mode
+        self.top_bar_buttons._view_mode_button.set_checked(not val)
+        if ctrl.forest:
+            for node in ctrl.forest.nodes.values():
+                node.update_label()
+                node.update_label_visibility()
+                node.update_visibility()
+            ctrl.call_watchers(self, 'view_mode_changed', value=val)
 
 
     # ### Embedded buttons ############################
@@ -1116,6 +1117,7 @@ class UIManager:
         self.top_bar_buttons = TopBarButtons(ctrl.graph_view, self)
 
         self.top_bar_buttons.update_position()
+        self.update_view_mode()
         self.update_edit_mode()
         self.update_drag_mode(True) # selection mode
 

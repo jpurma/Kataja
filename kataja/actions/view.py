@@ -6,22 +6,6 @@ from kataja.visualizations.available import action_key
 
 a = {}
 
-def toggle_bones_mode():
-    """
-    :return:
-    """
-    prefs.bones_mode = not prefs.bones_mode
-    for node in ctrl.forest.nodes.values():
-        node.update_label()
-        node.update_label_visibility()
-        node.update_visibility()
-
-def get_bones_mode():
-    return prefs.bones_mode
-
-a['toggle_bones_mode'] = {'command': 'Show only &syntactic objects', 'method': toggle_bones_mode,
-                          'shortcut': 's', 'checkable': True, 'check_state': get_bones_mode}
-
 
 def toggle_brackets():
     """ Brackets are visible always for non-leaves, never or for important parts

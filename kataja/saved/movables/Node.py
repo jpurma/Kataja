@@ -1538,7 +1538,7 @@ class Node(Movable):
         """
         :param kwargs: dict of arguments, which are ignored
         """
-        if prefs.bones_mode:
+        if not prefs.show_all_mode:
             if self.is_syntactic:
                 self.show()
             else:

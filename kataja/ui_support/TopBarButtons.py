@@ -33,6 +33,7 @@ class TopBarButtons(QtWidgets.QFrame):
         self._left_buttons.append(self._view_mode_button)
         ui.connect_element_to_action(self._view_mode_button, 'switch_view_mode')
 
+
         layout.addStretch(0)
         # Right side
 

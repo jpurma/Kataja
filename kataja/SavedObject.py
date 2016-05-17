@@ -274,6 +274,7 @@ class SavedObject(object):
         if self.uid in open_refs:
             del open_refs[self.uid]
 
+    @time_me
     def load_objects(self, data, kataja_main):
         """ Load and restore objects starting from given obj (probably Forest
         or KatajaMain instance)
@@ -315,7 +316,6 @@ class SavedObject(object):
         map_existing(self)
         self.restore(self.uid, full_data, full_map, restored, kataja_main, root=True)
 
-    @time_me
     def restore(self, obj_key, full_data, full_map, restored, kataja_main, root=False):
         """ Recursively restore objects inside the scope of current obj. Used
         for loading kataja files.

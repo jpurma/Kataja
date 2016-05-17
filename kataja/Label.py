@@ -169,12 +169,12 @@ class Label(QtWidgets.QGraphicsTextItem):
         visible_parts = []
         html = []
         waiting = None
-        bones_mode = prefs.bones_mode
+        show_all_mode = prefs.show_all_mode
         delimiter = ''
         for field_name in self.visible_in_label:
             s = styles.get(field_name, {})
             syntactic = s.get('syntactic', False)
-            if bones_mode and not syntactic:
+            if (not show_all_mode) and not syntactic:
                 continue
             end_tag = ''
             if 'getter' in s:
@@ -249,12 +249,12 @@ class Label(QtWidgets.QGraphicsTextItem):
         h = self._host
         editable_parts = []
         editable = []
-        bones_mode = prefs.bones_mode
+        show_all_mode = prefs.show_all_mode
         for field_name in self.visible_in_label:
             s = styles.get(field_name, {})
             e = edit_styles.get(field_name, {})
             syntactic = s.get('syntactic', False)
-            if bones_mode and not syntactic:
+            if (not show_all_mode) and not syntactic:
                 continue
 
             if 'getter' in e:

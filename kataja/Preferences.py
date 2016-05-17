@@ -91,7 +91,7 @@ class Preferences(object):
                                'on_change': 'update_colors', 'order': 10}
         self.hsv = None
 
-        self.bones_mode = False
+        self.show_all_mode = True
         self.style = 'fancy'
         self.available_styles = ['plain', 'fancy']
 

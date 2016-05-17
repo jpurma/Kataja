@@ -246,7 +246,7 @@ class ConstituentNode(BaseConstituentNode):
             return self.label
 
     def should_show_label(self):
-        if prefs.bones_mode:
+        if not prefs.show_all_mode:
             return True
         elif self.is_leaf(only_visible=True) or self.triangle:
             return self.forest.settings.show_leaf_labels
@@ -254,6 +254,8 @@ class ConstituentNode(BaseConstituentNode):
             return self.forest.settings.show_internal_labels
 
     def should_show_alias(self):
+        if not prefs.show_all_mode:
+            return False
         if self.is_leaf(only_visible=True) or self.triangle:
             return self.forest.settings.show_leaf_aliases
         else:

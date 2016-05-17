@@ -267,7 +267,7 @@ class LatexFieldToINode(LatexToINode):
         ITextNodes and ICommandNodes.
             :param text: string to parse.
         """
-        print('LatexFieldToINode called with "%s"' % text)
+        #print('LatexFieldToINode called with "%s"' % text)
         self.math_mode = False
         self.node = None
         if not text:
@@ -293,7 +293,7 @@ class LatexFieldToINode(LatexToINode):
             self.node.tidy()
         else:
             self.node = ""
-        print(self.node)
+        #print(self.node)
 
 # ### Test cases
 if __name__ == "__main__":

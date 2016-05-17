@@ -164,9 +164,9 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         """
         self.connect_end_points(self.start, self.end)
         self.update_end_points()
-        self.effect = utils.create_shadow_effect(self.color)
-        self.move_effect = utils.create_blur_effect()
-        self.setGraphicsEffect(self.effect)
+        #self.effect = utils.create_shadow_effect(self.color)
+        #self.move_effect = utils.create_blur_effect()
+        #self.setGraphicsEffect(self.effect)
         self.update_visibility()
         self.announce_creation()
 
@@ -179,7 +179,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         if update_type == 1:
             self.forest.store(self)
             self.forest.add_to_scene(self)
-        #if 'visible' in updated_fields:
         self.update_visibility()
         self.connect_end_points(self.start, self.end)
         self.update_end_points()
@@ -216,7 +215,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
          for these purposes: it will have its UI buttons, it is selectable etc.
         :param value: bool
         """
-        self.update_visibility()
+        if self.forest:
+            self.update_visibility()
 
     def update_visibility(self):
         """ Hide or show according to model.visible flag, which allows edge
@@ -943,9 +943,9 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         :return: None
         """
         if prefs.move_effect:
-            self.setGraphicsEffect(self.move_effect)
+            #self.setGraphicsEffect(self.move_effect)
             self._use_simple_path = True
-            self.move_effect.setEnabled(True)
+            #self.move_effect.setEnabled(True)
 
     def start_node_stopped_moving(self):
         """ Called if the end node has started moving.
