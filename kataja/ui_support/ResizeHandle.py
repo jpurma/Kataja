@@ -1,6 +1,7 @@
 # coding=utf-8
 from PyQt5 import QtWidgets, QtCore
 
+from UIItem import UIItem
 from kataja.singletons import ctrl
 from kataja.saved.movables.Node import Node
 
@@ -53,15 +54,14 @@ class ResizeHandle(QtWidgets.QSizeGrip):
         return False
 
 
-class GraphicsResizeHandle(QtWidgets.QSizeGrip):
+class GraphicsResizeHandle(UIItem, QtWidgets.QSizeGrip):
 
     def __init__(self, view, host):
-        super().__init__(view)
-        self.host = host
+        UIItem.__init__(self, host=host)
+        QtWidgets.QSizeGrip.__init__(self, view)
         self.pressed = False
         self.adjust = None
         self.update_position()
-        self.ui_key = host.uid + '_resize_handle'
         self.show()
 
     def update_position(self):
@@ -82,11 +82,16 @@ class GraphicsResizeHandle(QtWidgets.QSizeGrip):
         self.adjust = None
 
     def mouseMoveEvent(self, e):
+        """ Implements dragging the handle (if handle is pressed)
+        :param e:
+        :return:
+        """
         if e.buttons() != QtCore.Qt.LeftButton:
             return
         if not self.pressed:
             return
         gp = e.globalPos()
+        #print('dragging GraphicsResizeHandle, gp:', gp, ' pos', e.pos())
         w = self.host.width
         h = self.host.height
         v = ctrl.graph_view
@@ -94,15 +99,11 @@ class GraphicsResizeHandle(QtWidgets.QSizeGrip):
         global_bottom_right = v.mapToGlobal(v.mapFromScene(br))
         size_diff = global_bottom_right - gp - self.adjust
         new_width = w - size_diff.x()
+        new_height = h - size_diff.y()
         if isinstance(self.host, Node):
-            lc = self.host.label_object
-            if lc.char_width:
-                lc.line_length = max(1, new_width / lc.char_width)
-                self.host.update_label()
-                self.update_position()
-            else:
-                print('no char width for label, why?')
-
+            self.host.label_object.set_user_size(new_width, new_height)
+            self.host.update_label()
+            self.update_position()
 
     def eventFilter(self, obj, event):
         """ Remove check for hiding size grip on full screen --

@@ -123,14 +123,17 @@ class KatajaFactory:
         if class_item in self.default_models:
             return class_item
         else:
-            return self.find_base_model(super(class_item))
+            for base in class_item.__bases__:
+                found = self.find_base_model(base)
+                if found:
+                    return found
 
     def remove_class(self, class_name):
-        """ Restore single class to its default implementation """
-        class_item = self.get(class_name)
-        for tclass_name, tclass_item in list(self.base_name_to_plugin_class.items()):
-            if tclass_item == class_item:
-                del self.base_name_to_plugin_class[tclass_name]
+        """ Remove mappings that replace original class with plugin's class """
+        for replaced, class_item_candidate in list(self.base_name_to_plugin_class.items()):
+            if class_item_candidate.__name__ == class_name:
+                del self.base_name_to_plugin_class[replaced]
+                break
         if class_name in self.plugin_name_to_base_class:
             del self.plugin_name_to_base_class[class_name]
 

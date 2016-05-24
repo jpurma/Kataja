@@ -45,6 +45,7 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
         :param text:
         :param parent:
         """
+        print('grouplabels parent: ', parent)
         QtWidgets.QGraphicsTextItem.__init__(self, text, parent=parent)
         self._host = self.parentItem()
         self.draggable = True

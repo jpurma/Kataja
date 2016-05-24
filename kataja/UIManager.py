@@ -1154,6 +1154,7 @@ class UIManager:
         if node.label_object.resizable:
             handle = GraphicsResizeHandle(ctrl.graph_view, node)
             self.add_ui(handle)
+            #self.scene.addItem(handle)
 
     def get_or_create_button(self, node, class_key, action):
         button = self.get_ui_by_type(host=node, ui_type=class_key)

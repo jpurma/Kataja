@@ -45,7 +45,7 @@ class CommentNode(Node):
     visible_in_label = ['text']
     editable_in_label = ['text']
     display_styles = {'text': {'resizable': True,
-                               'line_length': 24,
+                               'width': 200,
                                'text_align': g.LEFT_ALIGN}}
     editable = {'text': dict(name='',
                              prefill='comment',

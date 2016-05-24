@@ -74,6 +74,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         self.manual_zoom = False
         self._cached_visible_rect = None
         self.prev_time = time.time()
+        self.mouse_event_in_active_editor = False
         self.keep_updating_visible_area = False
         #self.focusItemChanged.connect(self.inspect_focus_change)
         self.setStickyFocus(True)
@@ -419,6 +420,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
         # Check if any UI items can receive this press
         items = self.items(event.scenePos())
+
+
         clickables = [i for i in items if getattr(i, 'clickable', False)]
         # print('clickables: ', clickables)
         success = False
@@ -435,6 +438,11 @@ class GraphScene(QtWidgets.QGraphicsScene):
             # print('draggables: ', draggables)
             if draggables:
                 closest_item = self.get_closest_item(x, y, draggables)
+                # allow selecting characters within edited label
+                if ctrl.text_editor_focus:
+                    if ctrl.text_editor_focus._host == closest_item:
+                        self.mouse_event_in_active_editor = True
+                        return QtWidgets.QGraphicsScene.mousePressEvent(self, event)
                 if closest_item:
                     ctrl.press(closest_item)
                     draggable = True
@@ -449,7 +457,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
                     draggable = closest_item.draggable
         if draggable:
             self.graph_view.toggle_suppress_drag(True)
-        return QtWidgets.QGraphicsScene.mousePressEvent(self, event)
+        if not (success or draggable):
+            return QtWidgets.QGraphicsScene.mousePressEvent(self, event)
 
     def start_dragging(self):
         """ Raise graph scene flags related to dragging -- the dragged nodes
@@ -475,7 +484,9 @@ class GraphScene(QtWidgets.QGraphicsScene):
         :param event:
         :return:
         """
-        if ctrl.pressed and ctrl.pressed.draggable:
+        if self.mouse_event_in_active_editor:
+            return QtWidgets.QGraphicsScene.mouseMoveEvent(self, event)
+        elif ctrl.pressed and ctrl.pressed.draggable:
             if self._dragging:
                 ctrl.pressed.drag(event)
                 self.item_moved()
@@ -504,6 +515,9 @@ class GraphScene(QtWidgets.QGraphicsScene):
         :return:
         """
         self.graph_view.toggle_suppress_drag(False)
+        if self.mouse_event_in_active_editor:
+            self.mouse_event_in_active_editor = False
+            return QtWidgets.QGraphicsScene.mouseReleaseEvent(self, event)
         if ctrl.pressed:
             pressed = ctrl.pressed  # : :type pressed: Movable
             x, y = to_tuple(event.scenePos())

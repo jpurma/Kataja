@@ -74,19 +74,19 @@ class NodeEditEmbed(UIEmbed):
                 field.setMaximumWidth(width)
             elif itype == 'textarea':
                 self.disable_effect = True
-                fm = QtGui.QFontMetrics(smaller_font)
-                char_width = fm.maxWidth()
-                if not char_width:
-                    char_width = 1
+                template_width = d.get('width', 0)
                 field = EmbeddedTextarea(self, tip=tt, font=smaller_font, prefill=prefill)
                 nc = node.label_object
-                if nc.line_length > 0:
-                    field.setFixedWidth(nc.line_length * char_width)
+                max_w = 200
+                if nc.user_width:
+                    w = nc.user_width
+                elif template_width:
+                    w = template_width
                 else:
-                    # if line_length is not defined, estimate it
                     w = nc.document().idealWidth()
-                    line_length = w / nc.char_width
-                    field.setFixedWidth(max(200, line_length * char_width))
+                if w > 200:
+                    w = 200
+                field.setFixedWidth(w)
                 self.resize_target = field
             elif itype == 'expandingtext':
                 field = ExpandingLineEdit(self,

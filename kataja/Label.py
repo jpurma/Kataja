@@ -56,9 +56,10 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.triangle_y = 0
         self.width = 0
         self.resizable = False
+        self.user_width = 0
+        self.user_height = 0
+        self.template_width = 0
         self.text_align = CENTER_ALIGN
-        self.char_width = 0
-        self.line_length = 0
         self._font = None
         self.html = ''
         self.editable_html = ''
@@ -94,7 +95,6 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.setFont(font)
         self._font = font
         fm = QtGui.QFontMetrics(font)
-        self.char_width = fm.maxWidth()
 
     def update_label(self):
         """ Asks for node/host to give text and update if changed
@@ -115,16 +115,20 @@ class Label(QtWidgets.QGraphicsTextItem):
             self.doc.setTextWidth(-1)
             self.setHtml(self.html)
             self.text = self.toPlainText()
-        proposed_width = self.doc.idealWidth()
-        self.setTextWidth(min(proposed_width, Label.max_width))
-
-        if self.line_length and self.line_length * self.char_width < proposed_width:
-            self.setTextWidth(self.line_length * self.char_width)
-        elif proposed_width < Label.max_width:
-            self.setTextWidth(proposed_width)
-        else:
-            self.setTextWidth(Label.max_width)
         self.resize_label()
+
+    def set_user_size(self, width, height):
+        self.user_width = width
+        self.user_height = height
+
+
+    def boundingRect(self):
+        br = QtWidgets.QGraphicsTextItem.boundingRect(self)
+        if self.user_width and self.user_width > br.width():
+            br.setWidth(self.user_width)
+        if self.user_height and self.user_height > br.height():
+            br.setHeight(self.user_height)
+        return br
 
     def prepare_template(self):
         my_class = self._host.__class__
@@ -148,10 +152,8 @@ class Label(QtWidgets.QGraphicsTextItem):
         for style in self.display_styles.values():
             if 'resizable' in style:
                 self.resizable = True
-            if 'line_length' in style:
-                ll = style['line_length']
-                if ll > self.line_length:
-                    self.line_length = ll
+            if 'width' in style:
+                self.default_width = style['width']
             if 'text_align' in style:
                 self.text_align = style['text_align']
 
@@ -342,8 +344,6 @@ class Label(QtWidgets.QGraphicsTextItem):
             #opt.setFlags(QtGui.QTextOption.ShowLineAndParagraphSeparators |
             #             QtGui.QTextOption.AddSpaceForLineAndParagraphSeparators)
             #self.doc.setDefaultTextOption(opt)
-            proposed_width = self.doc.idealWidth()
-            self.setTextWidth(min(proposed_width, Label.max_width))
             self.resize_label()
             self.setAcceptDrops(True)
             ctrl.graph_view.setFocus()
@@ -361,13 +361,13 @@ class Label(QtWidgets.QGraphicsTextItem):
             self.setAcceptDrops(False)
             self.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
             self.clearFocus()
-            if len(fields) == 0:
-                ctrl.main.action_finished("Finished editing %s, no changes." % self._host,
-                                          undoable=False)
-            elif len(fields) == 1:
-                ctrl.main.action_finished("Edited field %s in %s" % (fields[0], self._host))
-            else:
-                ctrl.main.action_finished("Edited fields %s in %s" % (str(fields), self._host))
+            #if len(fields) == 0:
+            #    ctrl.main.action_finished("Finished editing %s, no changes." % self._host,
+            #                              undoable=False)
+            #elif len(fields) == 1:
+            #    ctrl.main.action_finished("Edited field %s in %s" % (fields[0], self._host))
+            #else:
+            #    ctrl.main.action_finished("Edited fields %s in %s" % (str(fields), self._host))
 
     def analyze_changes(self):
         """ Use difflib to get a robust idea on what has changed
@@ -473,11 +473,8 @@ class Label(QtWidgets.QGraphicsTextItem):
 
     def doc_changed(self):
         if not self._recursion_block: # self._quick_editing and
-            self._recursion_block = True
-            self.prepareGeometryChange()
             w = self.width
-            proposed_width = self.doc.idealWidth()
-            self.setTextWidth(min(proposed_width, Label.max_width))
+            self._recursion_block = True
             self.resize_label()
             self._host.update_bounding_rect()
             if self.width != w and self.scene() == ctrl.graph_scene:
@@ -513,14 +510,35 @@ class Label(QtWidgets.QGraphicsTextItem):
                                c.blockNumber() == self.doc.blockCount() - 1)
 
     def resize_label(self):
-        #l = self.doc.lineCount()
-        inner_size = self.doc.size()
-        ih = inner_size.height()
-        iw = inner_size.width()
-        h2 = ih / 2.0
+
+        self.prepareGeometryChange()
+        # Width
+        if self.user_width:
+            br_width = self.user_width
+        elif self.template_width:
+            if self.doc.idealWidth() < self.template_width:
+                br_width = self.doc.idealWidth()
+            else:
+                br_width = self.template_width
+        else:
+            br_width = self.doc.idealWidth()
+        if br_width < 10:
+            br_width = 10
+        elif br_width > Label.max_width:
+            br_width = Label.max_width
+        self.setTextWidth(br_width)
+
+        document_size = self.doc.size()
+        dh = document_size.height()
+        if dh < self.user_height:
+            br_height = self.user_height
+        else:
+            br_height = dh
+
+        h2 = dh / 2.0
         self.top_y = -h2
         self.bottom_y = h2
-        self.width = iw
+        self.width = br_width
 
         self.triangle_is_present = False
         second_row = 0
@@ -541,8 +559,9 @@ class Label(QtWidgets.QGraphicsTextItem):
             self.top_part_y = 0
             self.lowert_part_y = 0
         else:
-            avg_line_height = (ih - 3) / float(row_count)
+            avg_line_height = (dh - 3) / float(row_count)
             half_height = avg_line_height / 2
+
             if self.triangle_is_present:
                 triangle_space = 0
                 if triangle_row > 1:
@@ -554,7 +573,7 @@ class Label(QtWidgets.QGraphicsTextItem):
             else:
                 self.top_part_y = self.top_y + half_height + 3
                 self.lowert_part_y = self.top_y + (second_row * avg_line_height) + half_height
-        self.setPos(iw / -2.0, self.top_y)
+        self.setPos(br_width / -2.0, self.top_y)
 
     def dropEvent(self, event):
         mim = event.mimeData()

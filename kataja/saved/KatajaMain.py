@@ -190,7 +190,6 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
                     m = "replacing %s with %s " % (base_class.__name__, classobj.__name__)
                 else:
                     m = "adding %s " % classobj.__name__
-                classes.add_class(classobj)
                 self.add_message(m)
         self.load_objects(all_data, self)
         ctrl.resume_undo()
@@ -245,14 +244,13 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
             setup = self.load_plugin(plugin_module)
             if setup and hasattr(setup, 'plugin_parts'):
                 for classobj in setup.plugin_parts:
-                    key = getattr(classobj, 'short_name', None)
-                    if key:
-                        if key in classes.classes:
-                            messages.append("replacing %s with %s " % (
-                                            classes.classes[key].__name__, classobj.__name__))
-                        else:
-                            messages.append("adding %s " % classobj.__name__)
-                        classes.add_class(key, classobj)
+                    base_class = classes.find_base_model(classobj)
+                    if base_class:
+                        messages.append("replacing %s with %s " %
+                                        (base_class.__name__, classobj.__name__))
+                    else:
+                        messages.append("adding %s " % classobj.__name__)
+                    classes.add_mapping(base_class, classobj)
         return '\n'.join(messages)
 
 
