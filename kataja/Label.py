@@ -49,19 +49,17 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.has_been_initialized = False
         self.top_y = 0
         self.top_part_y = 0
-        self.lowert_part_y = 0
+        self.lower_part_y = 0
         self.bottom_y = 0
         self.triangle_is_present = False
         self.triangle_height = 0
         self.triangle_y = 0
         self.width = 0
-        self.resizable = False
-        self.user_width = 0
-        self.user_height = 0
         self.template_width = 0
         self.text_align = CENTER_ALIGN
         self._font = None
         self.html = ''
+        self.text = ''
         self.editable_html = ''
         self._quick_editing = False
         self._recursion_block = False
@@ -94,19 +92,18 @@ class Label(QtWidgets.QGraphicsTextItem):
     def set_font(self, font):
         self.setFont(font)
         self._font = font
-        fm = QtGui.QFontMetrics(font)
 
     def update_label(self):
         """ Asks for node/host to give text and update if changed
         :param font: provide font to use for label document
         """
         self.has_been_initialized = True
-        align = QtCore.Qt.AlignHCenter
         if self.text_align == LEFT_ALIGN:
-            align = QtCore.Qt.AlignLeft
+            self.doc.set_align(QtCore.Qt.AlignLeft)
         elif self.text_align == RIGHT_ALIGN:
-            align = QtCore.Qt.AlignRight
-        self.doc.setDefaultTextOption(QtGui.QTextOption(align))
+            self.doc.set_align(QtCore.Qt.AlignRight)
+        else:
+            self.doc.set_align(QtCore.Qt.AlignHCenter)
 
         old_html = self.html
         self.compose_html_for_viewing()
@@ -116,19 +113,6 @@ class Label(QtWidgets.QGraphicsTextItem):
             self.setHtml(self.html)
             self.text = self.toPlainText()
         self.resize_label()
-
-    def set_user_size(self, width, height):
-        self.user_width = width
-        self.user_height = height
-
-
-    def boundingRect(self):
-        br = QtWidgets.QGraphicsTextItem.boundingRect(self)
-        if self.user_width and self.user_width > br.width():
-            br.setWidth(self.user_width)
-        if self.user_height and self.user_height > br.height():
-            br.setHeight(self.user_height)
-        return br
 
     def prepare_template(self):
         my_class = self._host.__class__
@@ -150,8 +134,6 @@ class Label(QtWidgets.QGraphicsTextItem):
             self.editable_in_label = my_class.editable_in_label
 
         for style in self.display_styles.values():
-            if 'resizable' in style:
-                self.resizable = True
             if 'width' in style:
                 self.default_width = style['width']
             if 'text_align' in style:
@@ -313,7 +295,7 @@ class Label(QtWidgets.QGraphicsTextItem):
         return self.top_part_y
 
     def get_lower_part_y(self):
-        return self.lowert_part_y
+        return self.lower_part_y
 
     def release_editor_focus(self):
         self.set_quick_editing(False)
@@ -509,29 +491,35 @@ class Label(QtWidgets.QGraphicsTextItem):
         self._last_blockpos = (c.atStart(), c.atEnd(), c.blockNumber() == 0,
                                c.blockNumber() == self.doc.blockCount() - 1)
 
-    def resize_label(self):
+    def get_max_size_from_host(self):
+        if self._host.resizable and self._host.user_size is not None:
+            return self._host.user_size
+        else:
+            return 0, 0
 
+    def resize_label(self):
+        old_size = self.doc.size()
         self.prepareGeometryChange()
         # Width
-        if self.user_width:
-            br_width = self.user_width
+        user_width, user_height = self.get_max_size_from_host()
+        self.setTextWidth(-1)
+        ideal_width = self.doc.idealWidth()
+        if user_width and user_width < ideal_width:
+            br_width = user_width
         elif self.template_width:
-            if self.doc.idealWidth() < self.template_width:
-                br_width = self.doc.idealWidth()
-            else:
-                br_width = self.template_width
+            br_width = self.template_width
         else:
-            br_width = self.doc.idealWidth()
-        if br_width < 10:
-            br_width = 10
+            br_width = ideal_width
+        if br_width < 20:
+            br_width = 20
         elif br_width > Label.max_width:
             br_width = Label.max_width
         self.setTextWidth(br_width)
 
         document_size = self.doc.size()
         dh = document_size.height()
-        if dh < self.user_height:
-            br_height = self.user_height
+        if dh < user_height:
+            br_height = user_height
         else:
             br_height = dh
 
@@ -557,7 +545,7 @@ class Label(QtWidgets.QGraphicsTextItem):
         row_count = last_row + 1
         if row_count == 1:
             self.top_part_y = 0
-            self.lowert_part_y = 0
+            self.lower_part_y = 0
         else:
             avg_line_height = (dh - 3) / float(row_count)
             half_height = avg_line_height / 2
@@ -568,12 +556,14 @@ class Label(QtWidgets.QGraphicsTextItem):
                     triangle_space = triangle_row * avg_line_height
                 self.top_part_y = self.top_y + triangle_space + half_height
                 self.triangle_y = self.top_y + (triangle_row * avg_line_height) + 2
-                self.lowert_part_y = self.top_y + (second_row * avg_line_height) + half_height
+                self.lower_part_y = self.top_y + (second_row * avg_line_height) + half_height
                 self.triangle_height = (avg_line_height * 2) - 4
             else:
                 self.top_part_y = self.top_y + half_height + 3
-                self.lowert_part_y = self.top_y + (second_row * avg_line_height) + half_height
+                self.lower_part_y = self.top_y + (second_row * avg_line_height) + half_height
         self.setPos(br_width / -2.0, self.top_y)
+        # Update ui items around the label (or node hosting the label)
+        ctrl.ui.update_position_for(self._host)
 
     def dropEvent(self, event):
         mim = event.mimeData()

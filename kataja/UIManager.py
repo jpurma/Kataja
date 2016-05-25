@@ -1151,9 +1151,11 @@ class UIManager:
             if node.check_conditions(values):
                 action = values.get('action', '')
                 self.get_or_create_button(node, key, action)
-        if node.label_object.resizable:
-            handle = GraphicsResizeHandle(ctrl.graph_view, node)
-            self.add_ui(handle)
+        if node.resizable:
+            handle = self.get_ui_by_type(node, 'GraphicsResizeHandle')
+            if not handle:
+                handle = GraphicsResizeHandle(ctrl.graph_view, node)
+                self.add_ui(handle)
             #self.scene.addItem(handle)
 
     def get_or_create_button(self, node, class_key, action):

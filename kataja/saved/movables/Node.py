@@ -118,7 +118,9 @@ class Node(Movable):
         self.clickable = False
         self.selectable = True
         self.draggable = True
+        self.resizable = False
         self.drag_data = None
+        self.user_size = None
         self._magnets = []
         self.status_tip = ""
         self.width = 0
@@ -960,6 +962,15 @@ class Node(Movable):
         """
         return self._label_visible
 
+    def boundingRect(self):
+        br = QtWidgets.QGraphicsTextItem.boundingRect(self)
+        if self.user_width and self.user_width > br.width():
+            br.setWidth(self.user_width)
+        if self.user_height and self.user_height > br.height():
+            br.setHeight(self.user_height)
+        return br
+
+
     def update_bounding_rect(self):
         """
 
@@ -967,22 +978,24 @@ class Node(Movable):
         :return:
         """
         my_class = self.__class__
+        if self.user_size is None:
+            user_width, user_height = 0, 0
+        else:
+            user_width, user_height = self.user_size
+
         if self._label_visible and self.label_object:
             lbr = self.label_object.boundingRect()
-            lbh = lbr.height()
             lbw = lbr.width()
-            self.label_rect = QtCore.QRectF(self.label_object.x(), self.label_object.y(), lbw,
-                                            lbh)
-            self.width = max((lbw, my_class.width))
-            self.height = max((lbh, my_class.height))
-            y = self.height / -2
-            x = self.width / -2
+            lbh = lbr.height()
+            lbx = self.label_object.x()
+            lby = self.label_object.y()
         else:
-            self.label_rect = QtCore.QRectF(0, 0, 0, 0)
-            self.width = my_class.width
-            self.height = my_class.height
-            y = self.height / -2
-            x = self.width / -2
+            lbw, lbh, lbx, lby = 0, 0, 0, 0
+        self.label_rect = QtCore.QRectF(lbx, lby, lbw, lbh)
+        self.width = max((lbw, my_class.width, user_width))
+        self.height = max((lbh, my_class.height, user_height))
+        y = self.height / -2
+        x = self.width / -2
         self.inner_rect = QtCore.QRectF(x, y, self.width, self.height)
         w4 = (self.width - 2) / 4.0
         w2 = (self.width - 2) / 2.0
@@ -994,6 +1007,11 @@ class Node(Movable):
             ctrl.ui.selection_group.update_shape()
 
         return self.inner_rect
+
+    def set_user_size(self, width, height):
+        self.user_size = (width, height)
+        if self.label_object:
+            self.label_object.resize_label()
 
     def boundingRect(self):
         """ BoundingRects are used often and cost of this method affects
@@ -1303,7 +1321,6 @@ class Node(Movable):
             tree.start_dragging_tracking(host=host, scene_pos=scene_pos)
         parent = self.parentItem()
         if parent:
-            print('parent z: ', parent.zValue())
             parent.setZValue(500)
         self.anim = QtCore.QPropertyAnimation(self, qbytes_scale)
         self.anim.setDuration(100)
@@ -1586,6 +1603,7 @@ class Node(Movable):
     label = SavedField("label")
     edges_up = SavedField("edges_up")
     edges_down = SavedField("edges_down")
+    user_size = SavedField("user_size")
     triangle = SavedField("triangle", if_changed=if_changed_triangle)
     folded_away = SavedField("folded_away")
     folding_towards = SavedField("folding_towards", if_changed=if_changed_folding_towards)

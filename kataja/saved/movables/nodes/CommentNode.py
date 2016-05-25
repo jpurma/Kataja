@@ -44,8 +44,7 @@ class CommentNode(Node):
     can_be_in_groups = False
     visible_in_label = ['text']
     editable_in_label = ['text']
-    display_styles = {'text': {'resizable': True,
-                               'width': 200,
+    display_styles = {'text': {'width': 200,
                                'text_align': g.LEFT_ALIGN}}
     editable = {'text': dict(name='',
                              prefill='comment',
@@ -87,6 +86,7 @@ class CommentNode(Node):
         Node.__init__(self, forest=forest)
         if not text:
             text = 'comment'
+        self.resizable = True
         self.label = text
         self.physics_x = False
         self.physics_y = False

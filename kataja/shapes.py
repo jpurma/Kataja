@@ -712,7 +712,6 @@ def directional_blob_path(start_point=None, end_point=None,
 
 def directional_blob_icon(painter, rect, color=None):
     """
-
     :param painter:
     :param rect:
     :param color:
@@ -841,9 +840,11 @@ def draw_x(painter, x, y, end_spot_size):
 
 def draw_triangle(painter, x, y, w=10):
     w2 = w / 2
-    painter.drawLine(x - w, y + w2, x, y)
-    painter.drawLine(x, y, x + w, y + w2)
-    painter.drawLine(x + w, y + w2, x - w, y + w2)
+    path = QtGui.QPainterPath(QtCore.QPointF(x - w, y + w2))
+    path.lineTo(x, y)
+    path.lineTo(x + w, y + w2)
+    path.lineTo(x - w, y + w2)
+    painter.drawPath(path)
 
 
 SHAPE_PRESETS = OrderedDict(od)
