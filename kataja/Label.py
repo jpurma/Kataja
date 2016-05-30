@@ -80,7 +80,7 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.setAcceptHoverEvents(False)
         self.doc.contentsChanged.connect(self.doc_changed)
         self.setTextWidth(-1)
-        self.set_font(self._host.font)
+        self.set_font(self._host.get_font())
 
     def type(self):
         """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
@@ -94,9 +94,7 @@ class Label(QtWidgets.QGraphicsTextItem):
         self._font = font
 
     def update_label(self):
-        """ Asks for node/host to give text and update if changed
-        :param font: provide font to use for label document
-        """
+        """ Asks for node/host to give text and update if changed """
         self.has_been_initialized = True
         if self.text_align == LEFT_ALIGN:
             self.doc.set_align(QtCore.Qt.AlignLeft)
@@ -498,7 +496,6 @@ class Label(QtWidgets.QGraphicsTextItem):
             return 0, 0
 
     def resize_label(self):
-        old_size = self.doc.size()
         self.prepareGeometryChange()
         # Width
         user_width, user_height = self.get_max_size_from_host()
@@ -516,13 +513,7 @@ class Label(QtWidgets.QGraphicsTextItem):
             br_width = Label.max_width
         self.setTextWidth(br_width)
 
-        document_size = self.doc.size()
-        dh = document_size.height()
-        if dh < user_height:
-            br_height = user_height
-        else:
-            br_height = dh
-
+        dh = self.doc.size().height()
         h2 = dh / 2.0
         self.top_y = -h2
         self.bottom_y = h2

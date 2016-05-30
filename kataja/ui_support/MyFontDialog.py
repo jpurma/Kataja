@@ -14,7 +14,7 @@ class MyFontDialog(QtWidgets.QFontDialog):
     def __init__(self, parent, initial_font):
         super().__init__(parent)
         self.setOption(QtWidgets.QFontDialog.NoButtons)
-        self.setCurrentFont(qt_prefs.font(initial_font))
+        self.setCurrentFont(qt_prefs.get_font(initial_font))
         self.currentFontChanged.connect(self.font_changed)
         self.font_key = initial_font
         self.show()

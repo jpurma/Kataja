@@ -22,7 +22,7 @@ class ResizeHandle(QtWidgets.QSizeGrip):
     def mousePressEvent(self, e):
         self.pressed = True
         grandparent = self.target.parent()
-        rrect = self.resizable.geometry()
+        rrect = self.target.geometry()
         bottom_right = grandparent.mapToGlobal(rrect.bottomRight())
         self.adjust = bottom_right - e.globalPos()
 

@@ -11,10 +11,11 @@ class LabelDocument(QtGui.QTextDocument):
         QtGui.QTextDocument.__init__(self)
         self.lines = []
         self.new_lines = {}
+        self.align = QtCore.Qt.AlignHCenter
         dto = self.defaultTextOption()
         dto.setWrapMode(QtGui.QTextOption.WrapAtWordBoundaryOrAnywhere)
+        dto.setAlignment(self.align)
         self.setDefaultTextOption(dto)
-        self.align = QtCore.Qt.AlignHCenter
 
     def clear(self):
         QtGui.QTextDocument.clear(self)

@@ -25,7 +25,7 @@ class EdgeLabelEmbed(UIEmbed):
         layout = QtWidgets.QVBoxLayout()
         layout.addLayout(self.top_row_layout)  # close-button from UIEmbed
         tt = 'Label for arrow'
-        f = QtGui.QFont(qt_prefs.font(g.MAIN_FONT))
+        f = QtGui.QFont(qt_prefs.get_font(g.MAIN_FONT))
         f.setPointSize(f.pointSize() * 2)
         self.input_line_edit = EmbeddedLineEdit(self, tip=tt, font=f, prefill='label')
         hlayout = QtWidgets.QHBoxLayout()

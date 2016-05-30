@@ -24,9 +24,10 @@ CommentNode is a non-functional node for freeform text
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 #############################################################################
-from PyQt5 import QtGui, QtCore
+from PyQt5 import QtGui, QtCore, QtWidgets
 
 import kataja.globals as g
+from kataja.SavedField import SavedField
 from kataja.singletons import ctrl
 from kataja.saved.movables.Node import Node
 from kataja.uniqueness_generator import next_available_type_id
@@ -57,8 +58,7 @@ class CommentNode(Node):
                      'plain': {'color': 'accent4',
                                'font': g.MAIN_FONT,
                                'font-size': 14}
-                    }
-
+                     }
 
     default_edge = {'fancy': {'shape_name': 'linear',
                               'color_id': 'accent4',
@@ -83,6 +83,7 @@ class CommentNode(Node):
     touch_areas_when_selected = {g.DELETE_ARROW: {'condition': 'has_arrow'}}
 
     def __init__(self, text='comment', forest=None):
+        self.image_object = None
         Node.__init__(self, forest=forest)
         if not text:
             text = 'comment'
@@ -90,8 +91,16 @@ class CommentNode(Node):
         self.label = text
         self.physics_x = False
         self.physics_y = False
+        self.image_path = None
+        self.image = None
         self.pos_relative_to_host = -50, -50
         self.preferred_host = None
+
+    def after_init(self):
+        if self.user_size:
+            print('after init in comment')
+            w, h = self.user_size
+            self.set_user_size(w, h)
 
     @property
     def hosts(self):
@@ -119,19 +128,88 @@ class CommentNode(Node):
     def has_arrow(self):
         return bool(self.edges_down)
 
-    def update_selection_status(self, selected):
-        """
+    def set_image_path(self, pixmap_path):
+        if pixmap_path and (self.image_path != pixmap_path or not self.image):
+            self.image_path = pixmap_path
+            self.image = QtGui.QPixmap()
+            success = self.image.load(pixmap_path)
+            if success:
+                if self.image_object:
+                    print('removing old image object')
+                    self.image_object.hide()
+                    self.image_object.setParentItem(None)
+                self.image_object = QtWidgets.QGraphicsPixmapItem(self.image, self)
+                self.image_object.setPos(self.image.width() / -2, self.image.height() / -2)
+                self.text = ''
+                self.update_label_visibility()
+                self.update_bounding_rect()
+        else:
+            self.image = None
+            if self.image_object:
+                print('removing old image object 2')
+                self.image_object.hide()
+                self.image_object.setParentItem(None)
+            self.image_object = None
 
-        :param selected:
-        :return:
-        """
-        super().update_selection_status(selected)
+    def set_user_size(self, width, height):
+        if width < 1 or height < 1:
+            return
+        self.user_size = (width, height)
+        if self.image_object:
+            scaled = self.image.scaled(width, height, QtCore.Qt.KeepAspectRatio,
+                                       QtCore.Qt.SmoothTransformation)
+            self.image_object.prepareGeometryChange()
+            self.image_object.setPixmap(scaled)
+            self.image_object.setPos(-scaled.width()/2, -scaled.height()/2)
+            # Update ui items around the label (or node hosting the label)
+            ctrl.ui.update_position_for(self)
+
+        elif self.label_object:
+            self.label_object.resize_label()
 
     def dragging_my_arrow(self):
         return True
 
     def __str__(self):
         return 'comment: %s' % self.text
+
+    def update_bounding_rect(self):
+        """
+
+
+        :return:
+        """
+        if self.image_object:
+            my_class = self.__class__
+            if self.user_size is None:
+                user_width, user_height = 0, 0
+            else:
+                user_width, user_height = self.user_size
+
+            lbr = self.image_object.boundingRect()
+            lbw = lbr.width()
+            lbh = lbr.height()
+            lbx = self.image_object.x()
+            lby = self.image_object.y()
+            self.label_rect = QtCore.QRectF(lbx, lby, lbw, lbh)
+            self.width = max((lbw, my_class.width, user_width))
+            self.height = max((lbh, my_class.height, user_height))
+            y = self.height / -2
+            x = self.width / -2
+            self.inner_rect = QtCore.QRectF(x, y, self.width, self.height)
+            w4 = (self.width - 2) / 4.0
+            w2 = (self.width - 2) / 2.0
+            h2 = (self.height - 2) / 2.0
+
+            self._magnets = [(-w2, -h2), (-w4, -h2), (0, -h2), (w4, -h2), (w2, -h2), (-w2, 0),
+                             (w2, 0), (-w2, h2), (-w4, h2), (0, h2), (w4, h2), (w2, h2)]
+            if ctrl.ui.selection_group and self in ctrl.ui.selection_group.selection:
+                ctrl.ui.selection_group.update_shape()
+
+            return self.inner_rect
+
+        else:
+            return super().update_bounding_rect()
 
     def paint(self, painter, option, widget=None):
         """ Painting is sensitive to mouse/selection issues, but usually with
@@ -232,4 +310,4 @@ class CommentNode(Node):
     #                #
     # ############## #
 
-    # all same as Node
+    image_path = SavedField("image_path", if_changed=set_image_path)

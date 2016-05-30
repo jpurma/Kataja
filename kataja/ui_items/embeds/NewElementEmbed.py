@@ -31,7 +31,7 @@ class NewElementEmbed(UIEmbed):
         self.new_arrow_button.hide()
         self.divider_button.hide()
         tt = 'Text for new node'
-        smaller_font = qt_prefs.font(g.MAIN_FONT)
+        smaller_font = qt_prefs.get_font(g.MAIN_FONT)
         big_font = QtGui.QFont(smaller_font)
         big_font.setPointSize(big_font.pointSize() * 2)
         self.input_line_edit = ExpandingLineEdit(self,

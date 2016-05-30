@@ -897,10 +897,12 @@ class Forest(SavedObject):
         self.connect_node(host, child=gn)
         return gn
 
-    def create_comment_node(self, text, host=None):
+    def create_comment_node(self, text=None, host=None, pixmap_path=None):
         cn = self.create_node(None, relative=host, text=text, node_type=g.COMMENT_NODE)
         if host:
             self.connect_node(host, child=cn)
+        if pixmap_path:
+            cn.set_image_path(pixmap_path)
         return cn
 
     def create_attribute_node(self, host, attribute_id, attribute_label, show_label=False):
@@ -1101,7 +1103,8 @@ class Forest(SavedObject):
                 found = True
                 break
         if not found:
-            self.node_types.remove(my_type)
+            if my_type in self.node_types:
+                self.node_types.remove(my_type)
         # -- synobj-to-node -mapping (is it used anymore?)
         if node.syntactic_object and node.syntactic_object.uid in self.nodes_from_synobs:
             del self.nodes_from_synobs[node.syntactic_object.uid]

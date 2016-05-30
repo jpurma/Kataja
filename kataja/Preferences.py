@@ -26,7 +26,7 @@ from PyQt5 import QtGui, QtCore
 
 from kataja.globals import *
 
-disable_saving_preferences = True
+disable_saving_preferences = False
 # Alternatives: Cambria Math, Asana Math, XITS Math
 
 curves = ['Linear', 'InQuad', 'OutQuad', 'InOutQuad', 'OutInQuad', 'InCubic', 'OutCubic',
@@ -36,6 +36,7 @@ curves = ['Linear', 'InQuad', 'OutQuad', 'InOutQuad', 'OutInQuad', 'InCubic', 'O
           'OutInCirc', 'InElastic', 'OutElastic', 'InOutElastic', 'OutInElastic', 'InBack',
           'OutBack', 'InOutBack', 'OutInBack', 'InBounce', 'OutBounce', 'InOutBounce',
           'OutInBounce']
+
 
 def extract_bitmaps(filename):
     """
@@ -273,13 +274,12 @@ class Preferences(object):
                                 "help": "Glow effect for selected nodes. "
                                         "Doesn't work well on high DPI screens."}
 
-
         # self.blender_app_path =
         # '/Applications/blender.app/Contents/MacOS/blender'
         # self.blender_env_path = '/Users/purma/Dropbox/bioling_blender'
 
         self.userspace_path = None
-        #self.file_name = 'savetest.kataja'
+        # self.file_name = 'savetest.kataja'
 
         self.custom_colors = {}
 
@@ -429,6 +429,10 @@ class QtPreferences:
 
     def __init__(self):  # called to create a placeholder in early imports
         self.easing_curve = []
+        self.fonts = {}
+        self.font_space_width = 0
+        self.font_bracket_width = 0
+        self.font_bracket_height = 0
         self.fontdb = None
         self.no_pen = None
         self.no_brush = None
@@ -463,11 +467,10 @@ class QtPreferences:
         self.redo_icon = None
         self.kataja_icon = None
 
-
-    def late_init(self, running_environment, preferences, fontdb):  # called when Qt app exists
-        # graphics and fonts can be initiated only when QApplication exists
-        """
-
+    def late_init(self, running_environment, preferences, fontdb):
+        """ Here are initializations that require Qt app to exist, to findout dpi etc. These are
+        qt requirements that are difficult to get around.
+        :param running_environment:
         :param preferences:
         :param fontdb:
         """
@@ -494,7 +497,7 @@ class QtPreferences:
             p = QtGui.QIcon(iconpath + path)
             return p
 
-        # print("font families:", QtGui.QFontDatabase().families())
+        # print("get_font families:", QtGui.QFontDatabase().families())
         self.fontdb = fontdb
         self.prepare_fonts(preferences.fonts, running_environment)
         self.prepare_easing_curve(preferences.curve, preferences.move_frames)
@@ -584,7 +587,7 @@ class QtPreferences:
             name, style, size = font_tuple
             size = int(size)
             font = self.fontdb.font(name, style, size)
-            # print(name, font.exactMatch())
+            # print(name, get_font.exactMatch())
             if name == 'Asana Math' and not font.exactMatch():
                 self.fontdb.addApplicationFont(
                     running_environment.resources_path + "Asana-Math.otf")
@@ -593,14 +596,14 @@ class QtPreferences:
                 font.setItalic(True)
             self.fonts[key] = font
         font = QtGui.QFontMetrics(self.fonts[MAIN_FONT])  # it takes 2 seconds to get FontMetrics
-        # print('font leading: %s font height: %s ' % (font.leading(),
-        # font.height()))
+        # print('get_font leading: %s get_font height: %s ' % (get_font.leading(),
+        # get_font.height()))
         main = self.fonts[MAIN_FONT]
         main.setHintingPreference(QtGui.QFont.PreferNoHinting)
         self.font_space_width = font.width(' ')
         self.font_bracket_width = font.width(']')
         self.font_bracket_height = font.height()
-        # print('font metrics: ', font)
+        # print('get_font metrics: ', get_font)
         # print(self.font_space_width, self.font_bracket_width,
         # self.font_bracket_height)
         self.fonts[SMALL_CAPS].setCapitalization(QtGui.QFont.SmallCaps)
@@ -616,17 +619,13 @@ class QtPreferences:
         else:
             ui_font.setPointSize(fonts_dict[UI_FONT][2])
             console_font.setPointSize(fonts_dict[CONSOLE_FONT][2])
-    ### Font helper ###
 
-    def font(self, name):
+    def get_font(self, name):
         """
-
         :param name:
-        :return:
+        :return: QFont
         """
         return self.fonts[name]
-
-        # return self.fonts.get(name, self.fonts[MAIN_FONT])
 
     def get_key_for_font(self, font):
         """ Find the key for given QFont. Keys are cheaper to store than actual fonts.

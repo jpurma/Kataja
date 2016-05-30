@@ -44,6 +44,12 @@ class UndoManager:
         self._stack = []
         self._current = 0
 
+    def can_undo(self):
+        return self._current > 0
+
+    def can_redo(self):
+        return self._current < len(self._stack) - 1
+
     @time_me
     def take_snapshot(self, msg=''):
         """ Store changes from ctrl.undo_pile and put them here into undo_stack.

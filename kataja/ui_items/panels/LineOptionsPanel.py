@@ -9,7 +9,6 @@ import kataja.globals as g
 
 __author__ = 'purma'
 
-@time_me
 def build_shape_dict_for_selection(selection):
     """ Create a dict of values to show in this panel. Use the first edge in selection.
     :return: dict with shape attributes and tuple for arrowheads in the start and end
@@ -76,8 +75,8 @@ class LineOptionsPanel(Panel):
         label(self, hlayout, 'General curvature')
 
         hlayout = box_row(layout)
-        self.relative_arc_button = mini_button(ui, self, hlayout, 'relative',
-                                               'edge_curvature_relative', checkable=True)
+        self.relative_arc_button = mini_button(ui, self, hlayout, text='relative',
+                                               action='edge_curvature_relative', checkable=True)
         self.relative_arc_box = QtWidgets.QWidget(inner)
         arc_layout = QtWidgets.QHBoxLayout()
         self.arc_rel_dx_spinbox = spinbox(ui, self, arc_layout,
@@ -93,8 +92,8 @@ class LineOptionsPanel(Panel):
         hlayout.addWidget(self.relative_arc_box)
 
         hlayout = box_row(layout)
-        self.fixed_arc_button = mini_button(ui, self, hlayout, 'fixed',
-                                            'edge_curvature_fixed', checkable=True)
+        self.fixed_arc_button = mini_button(ui, self, hlayout, text='fixed',
+                                            action='edge_curvature_fixed', checkable=True)
         self.fixed_arc_box = QtWidgets.QWidget(inner)
         arc_layout = QtWidgets.QHBoxLayout()
         self.arc_fixed_dx_spinbox = spinbox(ui, self, arc_layout,
@@ -180,8 +179,8 @@ class LineOptionsPanel(Panel):
                     self.update_control_points(sd['sample_edge'])
                 else:
                     self.set_title('Edge settings for selected edges')
-                    self.cp1_box.setEnabled(False)
-                    self.cp2_box.setEnabled(False)
+                    #self.cp1_box.setEnabled(False)
+                    #self.cp2_box.setEnabled(False)
                 arrowhead_at_start, arrowhead_at_end = arrowheads
             else:
                 arrowhead_at_start = False
@@ -195,95 +194,41 @@ class LineOptionsPanel(Panel):
             self.set_title('Edge settings for all ' + prefs.edge_styles[edge_type][
                 'name_pl'].lower())
         if sd:
-            # Disable control points
-            self.cp1_box.setEnabled(False)
-            self.cp2_box.setEnabled(False)
-
             # Relative / fixed curvature
             control_points = sd['control_points']
             relative = sd.get('relative', None)
             if relative is None or not control_points:  # linear shape, no arc of any kind
-                self.fixed_arc_box.setEnabled(False)
-                self.relative_arc_box.setEnabled(False)
-                self.fixed_arc_button.setEnabled(False)
-                self.relative_arc_button.setEnabled(False)
+                pass
             elif relative:
-                self.fixed_arc_box.setEnabled(False)
-                self.relative_arc_box.setEnabled(True)
-                self.fixed_arc_button.setEnabled(True)
-                self.relative_arc_button.setEnabled(True)
                 set_value(self.relative_arc_button, True)
                 set_value(self.arc_rel_dx_spinbox, sd['rel_dx'] * 100)
                 set_value(self.arc_rel_dy_spinbox, sd['rel_dy'] * 100)
             else:
-                self.fixed_arc_box.setEnabled(True)
-                self.relative_arc_box.setEnabled(False)
-                self.fixed_arc_button.setEnabled(True)
-                self.relative_arc_button.setEnabled(True)
                 set_value(self.fixed_arc_button, True)
                 set_value(self.arc_fixed_dx_spinbox, sd['fixed_dx'])
                 set_value(self.arc_fixed_dy_spinbox, sd['fixed_dy'])
 
             # Leaf-shaped lines or solid lines
             fill = sd.get('fill', None)
-            if fill is None:
-                self.fill_button.setEnabled(False)
-                self.line_button.setEnabled(False)
-                self.leaf_box.setEnabled(False)
-                self.thickness_box.setEnabled(False)
-            elif fill:
-                self.fill_button.setEnabled(True)
-                self.line_button.setEnabled(True)
-                self.thickness_box.setEnabled(False)
+            if fill:
                 if 'leaf_x' in sd:
-                    self.leaf_box.setEnabled(True)
                     set_value(self.leaf_x_spinbox, sd['leaf_x'])
                     set_value(self.leaf_y_spinbox, sd['leaf_y'])
                     set_value(self.fill_button, True)
-                else:
-                    self.leaf_box.setEnabled(False)
-            else:
-                self.fill_button.setEnabled(True)
-                self.line_button.setEnabled(True)
-                self.leaf_box.setEnabled(False)
+            elif fill is not None:
                 if sd.get('thickness', None) is not None:
-                    self.thickness_box.setEnabled(True)
                     set_value(self.thickness_spinbox, sd['thickness'])
                     set_value(self.line_button, True)
-                else:
-                    self.thickness_box.setEnabled(False)
             # Arrowheads
-            if arrowhead_at_start is None:
-                self.arrowhead_start_button.setEnabled(False)
-            else:
-                self.arrowhead_start_button.setEnabled(True)
+            if arrowhead_at_start is not None:
                 set_value(self.arrowhead_start_button, arrowhead_at_start)
-            if arrowhead_at_end is None:
-                self.arrowhead_end_button.setEnabled(False)
-            else:
-                self.arrowhead_end_button.setEnabled(True)
+            if arrowhead_at_end is not None:
                 set_value(self.arrowhead_end_button, arrowhead_at_end)
         else:
             self.set_title('Edge settings - No edge selected')
-            self.cp1_box.setEnabled(False)
-            self.cp2_box.setEnabled(False)
-            self.fixed_arc_box.setEnabled(False)
-            self.relative_arc_box.setEnabled(False)
-            self.fixed_arc_button.setEnabled(False)
-            self.relative_arc_button.setEnabled(False)
-            self.leaf_box.setEnabled(False)
-            self.thickness_box.setEnabled(False)
-            self.fill_button.setEnabled(False)
-            self.line_button.setEnabled(False)
-            self.arrowhead_end_button.setEnabled(False)
-            self.arrowhead_start_button.setEnabled(False)
 
         self.setFixedSize(self.sizeHint())
         self.updateGeometry()
-
-#    def disable_option(self, option):
-#        if isinstance(option, QSpinBox):
-#            option.setDisabled(True)
 
     def initial_position(self):
         """
@@ -304,18 +249,18 @@ class LineOptionsPanel(Panel):
 
     def update_control_points(self, edge):
         if (not edge) or not edge.curve_adjustment:
-            self.cp1_box.setDisabled(True)
-            self.cp2_box.setDisabled(True)
+            #self.cp1_box.setDisabled(True)
+            #self.cp2_box.setDisabled(True)
             return
         points = len(edge.curve_adjustment)
         if points == 1:
-            self.cp1_box.setDisabled(False)
-            self.cp2_box.setDisabled(True)
+            #self.cp1_box.setDisabled(False)
+            #self.cp2_box.setDisabled(True)
             set_value(self.cp1_x_spinbox, edge.curve_adjustment[0][0])
             set_value(self.cp1_y_spinbox, edge.curve_adjustment[0][1])
         elif points == 2:
-            self.cp1_box.setDisabled(False)
-            self.cp2_box.setDisabled(False)
+            #self.cp1_box.setDisabled(False)
+            #self.cp2_box.setDisabled(False)
             set_value(self.cp1_x_spinbox, edge.curve_adjustment[0][0])
             set_value(self.cp1_y_spinbox, edge.curve_adjustment[0][1])
             set_value(self.cp2_x_spinbox, edge.curve_adjustment[1][0])

@@ -102,14 +102,18 @@ class EdgeShape:
         :return:
         """
         e = self.host
+        shape_for_edge_type = ctrl.fs.shape_for_edge(e.edge_type)
         if key is None:
-            shape_info = ctrl.fs.shape_info(e.edge_type)
+            if shape_for_edge_type == e.shape_name:
+                base = ctrl.fs.shape_info(e.edge_type)
+            else:
+                base = SHAPE_PRESETS[e.shape_name]
             if e.local_shape_info:
-                sa = shape_info.copy()
+                sa = base.copy()
                 sa.update(e.local_shape_info)
                 return sa
             else:
-                return shape_info
+                return base.copy()
         else:
             local = e.local_shape_info.get(key, None)
             if local is not None:
@@ -118,7 +122,7 @@ class EdgeShape:
                 # if this edge type uses different shape in settings,
                 # this should get the shape preset value and not shape settings
                 # value.
-                if ctrl.fs.shape_for_edge(e.edge_type) != e.shape_name:
+                if shape_for_edge_type != e.shape_name:
                     return SHAPE_PRESETS[e.shape_name][key]
                 else:
                     return ctrl.fs.shape_info(e.edge_type, key)

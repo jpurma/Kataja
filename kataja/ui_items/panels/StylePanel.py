@@ -264,7 +264,7 @@ class StylePanel(Panel):
             set_value(self.edge_color_selector, edge_color)
             self.shape_selector.setEnabled(True)
             set_value(self.shape_selector, edge_shape)
-            # self.font_selector.setFont(qt_prefs.font(node_font))
+            # self.font_selector.setFont(qt_prefs.get_font(node_font))
             self.cached_node_color = node_color
             self.cached_edge_color = edge_color
             self.cached_font_id = node_font

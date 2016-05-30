@@ -100,16 +100,14 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
 
     def get_font(self):
         """ Font is the font used for label. What is stored is the kataja
-        internal font name, but what is
-        returned here is the actual QFont.
+        internal font name, but what is returned here is the actual QFont.
         :return: QFont instance
         """
-        return qt_prefs.font(self.get_label_data('font') or g.MAIN_FONT)
+        return qt_prefs.get_font(self.get_label_data('font') or g.MAIN_FONT)
 
     @property
     def font_name(self):
-        """ Font is the font used for label. This returns the kataja internal
-        font name.
+        """ Font is the font used for label. This returns the kataja internal font name.
         :return:
         """
         return self.get_label_data('font') or g.MAIN_FONT

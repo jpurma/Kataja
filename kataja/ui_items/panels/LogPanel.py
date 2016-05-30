@@ -22,7 +22,7 @@ class LogPanel(Panel):
         inner = QtWidgets.QTextBrowser()
         inner.setMinimumHeight(48)
         inner.preferred_size = QtCore.QSize(940, 64)
-        inner.setFont(qt_prefs.font(g.CONSOLE_FONT))  # @UndefinedVariable
+        inner.setFont(qt_prefs.get_font(g.CONSOLE_FONT))  # @UndefinedVariable
         inner.setAutoFillBackground(True)
         inner.sizeHint = self.sizeHint
         inner.setFocusPolicy(QtCore.Qt.NoFocus)
@@ -37,5 +37,5 @@ class LogPanel(Panel):
         return self.preferred_size
 
     def update(self, *args):
-        self.widget().setFont(qt_prefs.font(g.CONSOLE_FONT))
+        self.widget().setFont(qt_prefs.get_font(g.CONSOLE_FONT))
         super().update(*args)

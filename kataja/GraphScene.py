@@ -641,7 +641,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         node.lock()
                         ctrl.main.action_finished('Created constituent "%s"' % node)
                     else:
-                        node = ctrl.forest.create_comment_node(data['char'])
+                        node = ctrl.forest.create_comment_node(text=data['char'])
                                                                #pos=event.scenePos())
                         node.current_position = event.scenePos().x(), event.scenePos().y()
                         node.lock()
@@ -673,9 +673,16 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         node = ctrl.forest.create_node_from_string(text, simple_parse=True)
                         ctrl.main.action_finished('Added tree based on "%s".' % text)
                     else:
-                        node = ctrl.forest.create_comment_node(text)
+                        node = ctrl.forest.create_comment_node(text=text)
                         ctrl.main.action_finished('Added text as comment node since we are in '
                                                   'derivation mode and cannot change trees.')
+            elif data.hasUrls():
+                for url in data.urls():
+                    path = url.toString()
+                    if path.endswith(('png', 'jpg', 'pdf')):
+                        node = ctrl.forest.create_comment_node(pixmap_path=url.toLocalFile())
+                        ctrl.main.action_finished('Added image')
+
 
         ctrl.ui.remove_touch_areas()
 
@@ -692,6 +699,13 @@ class GraphScene(QtWidgets.QGraphicsScene):
             if data.hasFormat("application/x-qabstractitemmodeldatalist") or data.hasFormat(
                 "text/plain"):
                 event.acceptProposedAction()
+            elif data.hasUrls():
+                images = True
+                for url in data.urls():
+                    if not url.toString().endswith(('png', 'jpg', 'pdf')):
+                        images = False
+                if images:
+                    event.acceptProposedAction()
 
     def mouseDoubleClickEvent(self, event):
         """ If doubleclicking an empty spot, open creation menu. If

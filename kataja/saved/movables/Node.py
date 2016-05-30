@@ -98,7 +98,7 @@ class Node(Movable):
     touch_areas_when_selected = {}
 
     buttons_when_selected = {g.NODE_EDITOR_BUTTON: {'action': 'toggle_node_edit_embed'},
-                             g.REMOVE_NODE: {'action': 'remove_merger',
+                             g.REMOVE_NODE: {'action': 'remove_node',
                                              'condition': 'free_drawing_mode'}}
 
     def __init__(self, forest=None, syntactic_object=None):
@@ -238,7 +238,7 @@ class Node(Movable):
 
     def if_changed_font(self, value):
         if self.label_object:
-            self.label_object.set_font(qt_prefs.font(value))
+            self.label_object.set_font(qt_prefs.get_font(value))
 
     def if_changed_folding_towards(self, value):
         self.update_position()
@@ -755,16 +755,18 @@ class Node(Movable):
         self.color_id = None
         self.update_label()
 
+    def has_local_style_settings(self):
+        return bool(self.font_id or self.color_id)
+
     # ## Font
     # #####################################################################
 
-    @property
-    def font(self) -> QtGui.QFont:
+    def get_font(self) -> QtGui.QFont:
         """ Helper to get the QFont being used here. It may be local, or set
         for forest, or come from default preferences. You don't need to know.
         :return:
         """
-        return qt_prefs.font(self.get_font_id())
+        return qt_prefs.get_font(self.get_font_id())
 
     def get_font_id(self):
         """

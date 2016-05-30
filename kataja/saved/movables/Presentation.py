@@ -39,7 +39,7 @@ class TextArea(Movable, QtWidgets.QGraphicsTextItem):
         # self.setFlag(QtGui.QGraphicsRectItem.ItemIsSelectable)
         self.setTextInteractionFlags(QtCore.Qt.TextEditorInteraction)
         self.prepareGeometryChange()
-        # self.setFont(qt_prefs.font)
+        # self.setFont(qt_prefs.get_font)
         # self.setTextWidth(box.width())
         self.set_position(box.x(), box.y(), 0)
         self.host_tree = None

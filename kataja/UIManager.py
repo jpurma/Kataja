@@ -68,6 +68,7 @@ from kataja.ui_items.NewElementMarker import NewElementMarker
 from kataja.ui_items.embeds.NodeEditEmbed import NodeEditEmbed
 from kataja.ui_items.panels.SymbolPanel import SymbolPanel
 from kataja.ui_support.MyColorDialog import MyColorDialog
+from kataja.utils import time_me
 
 NOTHING = 0
 SELECTING_AREA = 1
@@ -93,7 +94,8 @@ menu_structure = OrderedDict([('file_menu', ('&File',
                                              ['new_project', 'new_forest', 'open', 'save',
                                               'save_as', '---', 'print_pdf', 'blender_render',
                                               '---', 'preferences', '---', 'quit'])),
-                              ('edit_menu', ('&Edit', ['undo', 'redo'])),
+                              ('edit_menu', ('&Edit', ['undo', 'redo', '---', 'cut', 'copy',
+                                                       'paste'])),
                               ('build_menu', ('&Build', ['next_forest', 'prev_forest',
                                                          'next_derivation_step',
                                                          'prev_derivation_step'])),
@@ -143,7 +145,8 @@ class UIManager:
         self.active_node_type = g.CONSTITUENT_NODE
         self.active_edge_type = g.CONSTITUENT_EDGE
         self.selection_group = None
-
+        # this is a reference dict for many ui elements adjusting edges
+        self.edge_styles_in_selection = {}
         self.preferences_dialog = None
         self.color_dialogs = {}
         self.font_dialogs = {}
@@ -166,6 +169,39 @@ class UIManager:
         ctrl.add_watcher('selection_changed', self)
         ctrl.add_watcher('forest_changed', self)
         ctrl.add_watcher('viewport_changed', self)
+
+    def disable_item(self, ui_key):
+        """ Disable ui_item, assuming it can be disabled (buttons etc).
+        :param ui_key:
+        :return:
+        """
+        item = self.get_ui(ui_key)
+        item.setEnabled(False)
+
+    def enable_item(self, ui_key):
+        """ Set ui_item enabled, for those that have enabled/disabled mode (buttons etc).
+        :param ui_key:
+        :return:
+        """
+        item = self.get_ui(ui_key)
+        item.setEnabled(True)
+
+    def hide_item(self, ui_key):
+        """ Hide ui_item. Doesn't remove it, so use carefully -- only for objects that are
+        restored to visible at some point
+        :param ui_key:
+        :return:
+        """
+        item = self.get_ui(ui_key)
+        item.hide()
+
+    def show_item(self, ui_key):
+        """ Restore ui_item to visible. Assuming one exists.
+        :param ui_key:
+        :return:
+        """
+        item = self.get_ui(ui_key)
+        item.show()
 
     def get_action_group(self, action_group_name):
         """ Get action group with this name, or create one if it doesn't exist
@@ -220,7 +256,7 @@ class UIManager:
             initial_font = g.MAIN_FONT
         if role in self.font_dialogs:
             fd = self.font_dialogs[role]
-            fd.setCurrentFont(qt_prefs.font(initial_font))
+            fd.setCurrentFont(qt_prefs.get_font(initial_font))
         else:
             fd = MyFontDialog(parent, initial_font)
             self.font_dialogs[role] = fd
@@ -228,7 +264,7 @@ class UIManager:
 
     def update_font_dialog(self, role, font_id):
         if role in self.font_dialogs:
-            self.font_dialogs[role].setCurrentFont(qt_prefs.font(font_id))
+            self.font_dialogs[role].setCurrentFont(qt_prefs.get_font(font_id))
 
     def create_or_set_font(self, font_id, font):
         if not font_id.startswith('custom'):
@@ -326,8 +362,10 @@ class UIManager:
         """
         if signal == 'selection_changed':
             self.update_selections()
+            self.update_actions()
         elif signal == 'forest_changed':
             self.clear_items()
+            self.update_actions()
         elif signal == 'viewport_changed':
             self.update_positions()
             if self.top_bar_buttons:
@@ -344,6 +382,41 @@ class UIManager:
         """ Update colors in all ui_support elements that understand that demand."""
         for item in self._items.values():
             item.update_colors()
+
+    @time_me
+    def update_actions(self):
+        # prepare style dictionaries for selections, to be used for displaying style values in UI
+        self.edge_styles_in_selection = self.build_edge_shape_info_for_selection(ctrl.selected)
+        for action in self.qt_actions.values():
+            if action.enabler:
+                action.set_enabled(action.enabler())
+            if action.getter:
+                action.set_displayed_value(action.getter())
+
+    def update_action(self, key):
+        action = self.qt_actions[key]
+        if action.enabler:
+            action.set_enabled(action.enabler())
+        if action.getter:
+            action.set_displayed_value(action.getter())
+
+    def build_edge_shape_info_for_selection(self, selection):
+        """ Create a dict of values to show in this panel. Use the first edge in selection.
+        :return: dict with shape attributes and tuple for arrowheads in the start and end
+        """
+        edges = [item for item in selection if isinstance(item, Edge)]
+        if not edges:
+            return {}
+        edge_count = len(edges)
+        sample_edge = edges[0]
+        d = sample_edge.shape_info.copy()
+        shape_name = sample_edge.shape_name
+        d['shape_name'] = shape_name
+        d['edge_count'] = edge_count
+        d['sample_edge'] = sample_edge
+        d['arrowheads_at_start'] = sample_edge.shape_info.has_arrowhead_at_start()
+        d['arrowheads_at_end'] = sample_edge.shape_info.has_arrowhead_at_end()
+        return d
 
     def update_selections(self):
         """ Many UI elements change mode depending on if object of specific
@@ -363,6 +436,7 @@ class UIManager:
         for item in list(self._items.values()):
             if item.host and not getattr(item, '_fade_out_active', False):
                 self.remove_ui(item)
+
         # create ui_support pieces for selected elements. don't create touchareas and buttons if multiple
         # selection, it gets confusing fast
         if len(ctrl.selected) == 1:
@@ -514,7 +588,7 @@ class UIManager:
         self.qt_actions = {}
 
         for key, data in self.actions.items():
-            action = Action(key, **data)
+            action = Action(key, data)
             self.qt_actions[key] = action
             main.addAction(action)
         return additional_actions
@@ -555,11 +629,6 @@ class UIManager:
                     new_menu.addSeparator()
                 else:
                     new_menu.addAction(self.qt_actions[item])
-                    if item in self.actions:
-                        getter = self.actions[item].get('check_state', None)
-                        if getter:
-                            self.qt_actions[item].setChecked(getter())
-
 
             parent.addMenu(new_menu)
             return new_menu
@@ -611,7 +680,7 @@ class UIManager:
             e['args'] = [i]
             key = 'project_%s' % project.name
             self.actions[key] = e
-            action = Action(key, **e)
+            action = Action(key, e)
             action.setChecked(project is current_project)
             self.qt_actions[key] = action
             win_menu.addAction(action)

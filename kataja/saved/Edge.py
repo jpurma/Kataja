@@ -259,6 +259,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         :param value: str
         """
         if value:
+            print('shape changed, control points: ', self.shape_info.shape_info('control_points'))
             self._shape_method = SHAPE_PRESETS[value]['method']
 
     # ## Label data and its shortcut properties
@@ -526,6 +527,15 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         self.shape_info.reset_shape_info(*self.local_shape_info.keys())
         self.curve_adjustment = [(0, 0)] * len(self.control_points)
         self.update_shape()
+
+    def has_local_style_settings(self):
+        if self.local_shape_info:
+            return True
+        if self.curve_adjustment:
+            for x, y in self.curve_adjustment:
+                if x or y:
+                    return True
+        return False
 
     def get_cached_shape_info(self):
         return self._cached_shape_info

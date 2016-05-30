@@ -113,45 +113,30 @@ class ButtonShortcutFilter(QtCore.QObject):
 
 
 class Action(QtWidgets.QAction):
-    """
-    Command
-    :param key:
-    :param command:
-    :param command_alt:
-    :param exclusive:
-    :param shortcut:
-    :param shortcut_context:
-    :param viewgroup:
-    :param checkable:
-    :param tooltip:
-    :param undoable:
-    :param method:
-    """
 
-    def __init__(self, key, command=None,
-                 command_alt=None, shortcut=None,
-                 shortcut_context=None, viewgroup=None, sender_arg=None,
-                 exclusive=None, selection=None, checkable=None,
-                 tooltip=None, action_arg=None, trigger_args=False,
-                 undoable=True, method=None, check_state=None, args=None):
+    def __init__(self, key, data):
         super().__init__(ctrl.main)
         self.key = key
-        self.command = command
-        self.command_alt = command_alt
-        self.sender_arg = sender_arg
-        self.action_arg = action_arg
-        self.trigger_args = trigger_args
-        self.setText(command)
+        self.elements = set()
+        self.command = data.get('command', None)
+        self.command_alt = data.get('command_alt', None)
+        self.sender_arg = data.get('sender_arg', None)
+        self.action_arg = data.get('action_arg', None)
+        self.trigger_args = data.get('trigger_args', None)
+        if self.command:
+            self.setText(self.command)
         self.setData(key)
-        self.undoable = undoable
-        self.method = method
-        self.args = args or []
-        self.tip = tooltip or command
-        self.check_state = check_state
+        self.undoable = data.get('undoable', True)
+        self.method = data.get('method', True)
+        self.args = data.get('args', [])
+        self.tip = data.get('tooltip', self.command)
+        self.getter = data.get('getter', None)
+        self.enabler = data.get('enabler', None)
         self.disable_undo_and_message = False
         # when triggered from menu, forward the call to more complex trigger handler
         self.triggered.connect(self.action_triggered)
-
+        shortcut = data.get('shortcut', '')
+        shortcut_context = data.get('shortcut_context', '')
         # if action has shortcut_context, it shouldn't have global shortcut
         # in these cases shortcut is tied to ui_element.
         if shortcut:
@@ -169,19 +154,17 @@ class Action(QtWidgets.QAction):
                 sc = QtCore.Qt.ApplicationShortcut
             self.setShortcutContext(sc)
             self.installEventFilter(ctrl.ui.shortcut_solver)
+        viewgroup = data.get('viewgroup', None)
         if viewgroup:
             ag = ctrl.ui.get_action_group(viewgroup)
             self.setActionGroup(ag)
-            if not exclusive:
-                ag.setExclusive(False)
-        if checkable:
-            self.setCheckable(True)
+            ag.setExclusive(data.get('exclusive', True))
+        self.setCheckable(data.get('checkable', False))
+        tooltip = data.get('tooltip', '')
         if tooltip:
             #if ctrl.main.use_tooltips:
             self.setToolTip(tooltip)
             self.setStatusTip(tooltip)
-        if check_state:
-            self.setChecked(self.check_state())
 
     def action_triggered(self, *args, **kwargs):
         """ Trigger action with parameters received from action data object and designated UI element
@@ -229,13 +212,13 @@ class Action(QtWidgets.QAction):
         self.disable_undo_and_message = False
         ctrl.resume_undo()
 
-
     def connect_element(self, element, tooltip_suffix=''):
         """
 
         :param element:
         :param tooltip_suffix:
         """
+        self.elements.add(element)
 
         tooltip = self.toolTip()
         if tooltip and not isinstance(element, EmbeddedMultibutton):
@@ -276,4 +259,34 @@ class Action(QtWidgets.QAction):
             element.valueChanged.connect(self.trigger_but_suppress_undo)
             element.editingFinished.connect(self.action_triggered)
 
+    def disconnect_element(self, element):
+        if element in self.elements:
+            self.elements.remove(element)
 
+    def set_enabled(self, value):
+        """ Sets the action enabled/disabled and also the connected ui_items.
+        :param value:
+        :return:
+        """
+        value = bool(value)
+        self.setEnabled(value)
+        for element in self.elements:
+            if hasattr(element, 'setEnabled'):
+                element.setEnabled(value)
+
+    def set_displayed_value(self, value):
+        """ Call ui_items that are related to this action and try to update them to show value
+        given here. Can be boolean for checkboxes or menu items, something more complex if the
+        ui_items support it.
+        :param value:
+        :return:
+        """
+        print('setting displayed value to ', value)
+        if self.isCheckable():
+            for element in self.elements:
+                if hasattr(element, 'setChecked'):
+                    element.setChecked(value)
+        else:
+            for element in self.elements:
+                if hasattr(element, 'setValue'):
+                    element.setValue(value)

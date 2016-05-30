@@ -103,7 +103,7 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
     #     if text:
     #         if not self.label_item:
     #             self.label_item = QtWidgets.QGraphicsSimpleTextItem(text, self)
-    #             f = QtGui.QFont(qt_prefs.font(g.SMALL_CAPS))
+    #             f = QtGui.QFont(qt_prefs.get_font(g.SMALL_CAPS))
     #             f.setPointSize(f.pointSizeF()*2)
     #             self.label_item.setFont(f)
     #             self.label_item.setPen(qt_prefs.no_pen)

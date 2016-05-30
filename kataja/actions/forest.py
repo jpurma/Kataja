@@ -52,7 +52,7 @@ def get_view_mode():
 a['switch_view_mode'] = {'command': 'Show only syntactic objects', 'method': switch_view_mode,
                          'undoable': False, 'shortcut': 'Shift+b',
                          'tooltip': 'Show only syntactic objects or show all objects (Shift+b)',
-                         'check_state': get_view_mode}
+                         'getter': get_view_mode}
 
 
 

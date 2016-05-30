@@ -105,7 +105,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.find_plugins(prefs.plugins_path or running_environment.plugins_path)
         plugin_messages = self.install_plugins()
         self.setWindowIcon(qt_prefs.kataja_icon)
-        self.app.setFont(qt_prefs.font(g.UI_FONT))
+        self.app.setFont(qt_prefs.get_font(g.UI_FONT))
         self.graph_scene = GraphScene(main=self, graph_view=None)
         self.graph_view = GraphView(main=self, graph_scene=self.graph_scene)
         self.graph_scene.graph_view = self.graph_view
@@ -361,6 +361,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
             print('=== action finished: ', m)
         else:
             ctrl.graph_scene.start_animations()
+        ctrl.ui.update_actions()
 
     def trigger_action(self, name, *args, **kwargs):
         """ Helper for programmatically triggering actions (for tests and plugins)

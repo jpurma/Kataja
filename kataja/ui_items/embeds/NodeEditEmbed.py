@@ -16,7 +16,7 @@ def make_label(text, parent=None, layout=None, tooltip='', buddy=None, palette=N
     label = QtWidgets.QLabel(text, parent=parent)
     if palette:
         label.setPalette(palette)
-    label.setFont(qt_prefs.font(g.UI_FONT))
+    label.setFont(qt_prefs.get_font(g.UI_FONT))
     label.setBuddy(buddy)
     label.setStatusTip(tooltip)
     if ctrl.main.use_tooltips:
@@ -47,7 +47,7 @@ class NodeEditEmbed(UIEmbed):
         ui_p = self._palette
         ui_s = QtGui.QPalette(ui_p)
         ui_s.setColor(QtGui.QPalette.Text, ctrl.cm.secondary())
-        smaller_font = qt_prefs.font(g.MAIN_FONT)
+        smaller_font = qt_prefs.get_font(g.MAIN_FONT)
         big_font = QtGui.QFont(smaller_font)
         big_font.setPointSize(big_font.pointSize() * 2)
 
@@ -76,17 +76,14 @@ class NodeEditEmbed(UIEmbed):
                 self.disable_effect = True
                 template_width = d.get('width', 0)
                 field = EmbeddedTextarea(self, tip=tt, font=smaller_font, prefill=prefill)
-                nc = node.label_object
                 max_w = 200
-                if nc.user_width:
-                    w = nc.user_width
+                if node.user_size:
+                    w = node.user_size[0]
                 elif template_width:
                     w = template_width
                 else:
-                    w = nc.document().idealWidth()
-                if w > 200:
-                    w = 200
-                field.setFixedWidth(w)
+                    w = node.label_object.document().idealWidth()
+                field.setFixedWidth(min(w, max_w))
                 self.resize_target = field
             elif itype == 'expandingtext':
                 field = ExpandingLineEdit(self,

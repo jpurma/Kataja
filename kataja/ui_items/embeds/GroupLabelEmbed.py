@@ -17,7 +17,7 @@ class GroupLabelEmbed(UIEmbed):
         ui = self.ui_manager
         layout = QtWidgets.QVBoxLayout()
         layout.addLayout(self.top_row_layout)  # close-button from UIEmbed
-        smaller_font = qt_prefs.font(g.ITALIC_FONT)
+        smaller_font = qt_prefs.get_font(g.ITALIC_FONT)
         big_font = QtGui.QFont(smaller_font)
         big_font.setPointSize(big_font.pointSize() * 2)
         self.input_line_edit = ExpandingLineEdit(self,

@@ -29,10 +29,15 @@ def change_master_style(sender=None):
     ctrl.forest.redraw_edges()
     return "Changed master style to '%s'" % value
 
+
+def can_change_master_style():
+    return ctrl.forest is not None
+
 a['change_master_style'] = {'command': 'Change drawing style',
                             'method': change_master_style, 'sender_arg': True,
                             'undoable': False,
-                            'tooltip': 'Changes the style of lines and nodes'}
+                            'tooltip': 'Changes the style of lines and nodes',
+                            'enabler': can_change_master_style}
 
 
 def change_style_scope(sender=None):
@@ -47,10 +52,15 @@ def change_style_scope(sender=None):
         ctrl.ui.set_scope(value)
 
 
+def can_change_style_scope():
+    return ctrl.forest is not None
+
+
 a['style_scope'] = {'command': 'Select the scope for style changes',
                     'method': change_style_scope, 'sender_arg': True,
                     'undoable': False,
-                    'tooltip': 'Select the scope for style changes'}
+                    'tooltip': 'Select the scope for style changes',
+                    'enabler': can_change_style_scope}
 
 
 def reset_style_in_scope(sender=None):
@@ -67,10 +77,25 @@ def reset_style_in_scope(sender=None):
     ctrl.forest.redraw_edges(ctrl.ui.active_edge_type)
 
 
+def can_reset_style_in_scope():
+    if ctrl.forest is None:
+        return False
+    if ctrl.ui.scope_is_selection:
+        for item in ctrl.selected:
+            if hasattr(item, 'has_local_style_settings'):
+                if item.has_local_style_settings():
+                    return True
+    elif ctrl.ui.active_node_type and ctrl.fs.has_local_node_style(ctrl.ui.active_node_type):
+        return True
+    elif ctrl.ui.active_edge_type and ctrl.fs.has_local_edge_style(ctrl.ui.active_edge_type):
+        return True
+    return False
+
 a['reset_style_in_scope'] = {'command': 'Reset style to original',
                              'method': reset_style_in_scope, 'sender_arg': True,
                              'undoable': True,
-                             'tooltip': 'Reset the style to default within the selected scope'}
+                             'tooltip': 'Reset the style to default within the selected scope',
+                             'enabler': can_reset_style_in_scope}
 
 
 def open_font_selector(sender=None):
@@ -86,10 +111,21 @@ def open_font_selector(sender=None):
         ctrl.ui.start_font_dialog(panel, 'node_font', font_key)
 
 
+def can_select_font():
+    if ctrl.ui.scope_is_selection:
+        for item in ctrl.selected:
+            if isinstance(item, Node):
+                return True
+        return False
+    else:
+        return True
+
+
 a['start_font_dialog'] = {'command': 'Use a custom font',
                           'method': open_font_selector, 'sender_arg': True,
-                          'undoable': False, 'tooltip': 'Select custom font '
-                                                        'for node label'}
+                          'undoable': False,
+                          'tooltip': 'Select your own font for node labels',
+                          'enabler': can_select_font}
 
 
 def select_font():
@@ -111,8 +147,10 @@ def select_font():
         for node in ctrl.forest.nodes.values():
             node.update_label()
 
+
 a['select_font'] = {'command': 'Change label font', 'method': select_font,
-                    'tooltip': 'Change font for current selection or for a node type'}
+                    'tooltip': 'Change font for current selection or for a node type',
+                    'enabler': can_select_font}
 
 
 def change_edge_shape(sender=None):
@@ -138,10 +176,19 @@ def change_edge_shape(sender=None):
     ctrl.main.add_message('(s) Changed relation shape to: %s' % shape)
 
 
-a['change_edge_shape'] = {'command': 'Change relation shape',
+def can_change_edge_shape():
+    if ctrl.ui.scope_is_selection:
+        for edge in ctrl.selected:
+            if isinstance(edge, Edge):
+                return True
+        return False
+    return True  # all scope options allow defining edge shape
+
+
+a['change_edge_shape'] = {'command': 'Change edge shape',
                           'method': change_edge_shape, 'sender_arg': True,
-                          'tooltip': 'Change shape of relations (lines, '
-                                     'edges) between objects'}
+                          'tooltip': 'Change shapes of lines between objects',
+                          'enabler': can_change_edge_shape}
 
 
 def change_node_color():
@@ -179,9 +226,19 @@ def change_node_color():
         ctrl.main.add_message('(s) Changed node color to: %s' % ctrl.cm.get_color_name(color_key))
 
 
+def can_change_node_color():
+    if ctrl.ui.scope_is_selection:
+        for item in ctrl.selected:
+            if isinstance(item, Node):
+                return True
+        return False
+    return True  # all scope options allow defining node color
+
+
 a['change_node_color'] = {'command': 'Change node color',
                           'method': change_node_color,
-                          'tooltip': 'Change drawing color of nodes'}
+                          'tooltip': 'Change drawing color of nodes',
+                          'enabler': can_change_node_color}
 
 
 def change_edge_color():
@@ -223,7 +280,8 @@ def change_edge_color():
 
 a['change_edge_color'] = {'command': 'Change relation color',
                           'method': change_edge_color,
-                          'tooltip': 'Change drawing color of relations'}
+                          'tooltip': 'Change drawing color of relations',
+                          'enabler': can_change_edge_shape}
 
 
 def adjust_control_point_x0(value=None):
@@ -238,10 +296,19 @@ def adjust_control_point_x0(value=None):
             edge.shape_info.adjust_control_point_x0(value)
 
 
+def can_adjust_control_point0():
+    return bool(ctrl.ui.edge_styles_in_selection.get('control_points', 0))
+
+
+def can_adjust_control_point1():
+    return bool(ctrl.ui.edge_styles_in_selection.get('control_points', 0) > 1)
+
+
 a['control_point1_x'] = {'command': 'Adjust curvature, point 1 X',
                          'method': adjust_control_point_x0,
                          'trigger_args': True,
-                         'tooltip': 'Adjust curvature, point 1 X'}
+                         'tooltip': 'Adjust curvature, point 1 X',
+                         'enabler': can_adjust_control_point0}
 
 
 def adjust_control_point_x1(value=None):
@@ -259,7 +326,8 @@ def adjust_control_point_x1(value=None):
 a['control_point2_x'] = {'command': 'Adjust curvature, point 2 X',
                          'method': adjust_control_point_x1,
                          'trigger_args': True,
-                         'tooltip': 'Adjust curvature, point 2 X'}
+                         'tooltip': 'Adjust curvature, point 2 X',
+                         'enabler': can_adjust_control_point1}
 
 
 def adjust_control_point_y0(value=None):
@@ -277,7 +345,8 @@ def adjust_control_point_y0(value=None):
 a['control_point1_y'] = {'command': 'Adjust curvature, point 1 Y',
                          'method': adjust_control_point_y0,
                          'trigger_args': True,
-                         'tooltip': 'Adjust curvature, point 1 Y'}
+                         'tooltip': 'Adjust curvature, point 1 Y',
+                         'enabler': can_adjust_control_point0}
 
 
 def adjust_control_point_y1(value=None):
@@ -295,7 +364,8 @@ def adjust_control_point_y1(value=None):
 a['control_point2_y'] = {'command': 'Adjust curvature, point 2 Y',
                          'method': adjust_control_point_y1,
                          'trigger_args': True,
-                         'tooltip': 'Adjust curvature, point 2 Y'}
+                         'tooltip': 'Adjust curvature, point 2 Y',
+                         'enabler': can_adjust_control_point1}
 
 
 def reset_control_points():
@@ -307,8 +377,18 @@ def reset_control_points():
             edge.shape_info.reset_control_points()
 
 
+def can_reset_control_points():
+    for edge in ctrl.selected:
+        if isinstance(edge, Edge):
+            if edge.curve_adjustment:
+                for x, y in edge.curve_adjustment:
+                    if x or y:
+                        return True
+    return False
+
 a['reset_control_points'] = {'command': 'Reset control point 1', 'method': reset_control_points,
-                             'tooltip': 'Remove arc adjustments'}
+                             'tooltip': 'Remove arc adjustments',
+                             'enabler': can_reset_control_points}
 
 
 def change_leaf_width(value=None):
@@ -326,8 +406,19 @@ def change_leaf_width(value=None):
         ctrl.fs.set_shape_info(etype, 'leaf_x', value)
         ctrl.forest.redraw_edges(edge_type=etype)
 
+
+def can_change_leaf_size():
+    if ctrl.ui.scope_is_selection:
+        return ctrl.ui.edge_styles_in_selection.get('fill', False)
+    else:
+        etype = ctrl.ui.active_edge_type
+        if etype and ctrl.fs:
+            return ctrl.fs.shape_info(etype, 'fill')
+    return False
+
 a['leaf_shape_x'] = {'command': 'Leaf shape width', 'method': change_leaf_width,
-                     'trigger_args': True, 'tooltip': 'Leaf shape width'}
+                     'trigger_args': True, 'tooltip': 'Leaf shape width',
+                     'enabler': can_change_leaf_size}
 
 
 def change_leaf_height(value=None):
@@ -347,7 +438,8 @@ def change_leaf_height(value=None):
 
 a['leaf_shape_y'] = {'command': 'Leaf shape height', 'method': change_leaf_height,
                      'trigger_args': True,
-                     'tooltip': 'Leaf shape height'}
+                     'tooltip': 'Leaf shape height',
+                     'enabler': can_change_leaf_size}
 
 
 def change_edge_thickness(value=None):
@@ -365,9 +457,20 @@ def change_edge_thickness(value=None):
         ctrl.fs.set_shape_info(etype, 'thickness', value)
         ctrl.forest.redraw_edges(edge_type=etype)
 
+
+def can_change_edge_thickness():
+    if ctrl.ui.scope_is_selection:
+        return ctrl.ui.edge_styles_in_selection.get('fill', None) is False
+    else:
+        etype = ctrl.ui.active_edge_type
+        if etype and ctrl.fs:
+            return ctrl.fs.shape_info(etype, 'fill') is False
+    return False
+
 a['edge_thickness'] = {'command': 'Line thickness',
                        'method': change_edge_thickness, 'trigger_args': True,
-                       'tooltip': 'Line thickness'}
+                       'tooltip': 'Line thickness',
+                       'enabler': can_change_edge_thickness}
 
 
 def change_edge_relative_curvature_x(value=None):
@@ -385,10 +488,23 @@ def change_edge_relative_curvature_x(value=None):
         ctrl.fs.set_shape_info(etype, 'rel_dx', value * .01)
         ctrl.forest.redraw_edges(edge_type=etype)
 
+
+def can_change_relative_curvature():
+    if ctrl.ui.scope_is_selection:
+        return ctrl.ui.edge_styles_in_selection.get('relative', False) and \
+               ctrl.ui.edge_styles_in_selection.get('control_points', 0)
+    else:
+        etype = ctrl.ui.active_edge_type
+        if etype and ctrl.fs:
+            return ctrl.fs.shape_info(etype, 'relative')
+    return False
+
+
 a['change_edge_relative_curvature_x'] = {'command': 'Change curvature for edge in X',
                                          'trigger_args': True,
                                          'method': change_edge_relative_curvature_x,
-                                         'tooltip': 'Curvature as relative to edge width'}
+                                         'tooltip': 'Curvature as relative to edge width',
+                                         'enabler': can_change_relative_curvature}
 
 
 def change_edge_relative_curvature_y(value=None):
@@ -409,7 +525,8 @@ def change_edge_relative_curvature_y(value=None):
 a['change_edge_relative_curvature_y'] = {'command': 'Change curvature for edge in Y',
                                          'trigger_args': True,
                                          'method': change_edge_relative_curvature_y,
-                                         'tooltip': 'Curvature as relative to edge height'}
+                                         'tooltip': 'Curvature as relative to edge height',
+                                         'enabler': can_change_relative_curvature}
 
 
 def change_edge_fixed_curvature_x(value=None):
@@ -427,10 +544,24 @@ def change_edge_fixed_curvature_x(value=None):
         ctrl.fs.set_shape_info(etype, 'fixed_dx', value * .01)
         ctrl.forest.redraw_edges(edge_type=etype)
 
+
+def can_change_fixed_curvature():
+    if ctrl.ui.scope_is_selection:
+        relative = ctrl.ui.edge_styles_in_selection.get('relative', None)
+        return relative is False and ctrl.ui.edge_styles_in_selection.get('control_points', 0)
+    else:
+        etype = ctrl.ui.active_edge_type
+        if etype and ctrl.fs:
+            relative = ctrl.fs.shape_info(etype, 'relative')
+            return relative is False
+    return False
+
+
 a['change_edge_fixed_curvature_x'] = {'command': 'Change curvature for edge in X',
                                       'trigger_args': True,
                                       'method': change_edge_fixed_curvature_x,
-                                      'tooltip': 'Curvature in edge, fixed X value in pixels'}
+                                      'tooltip': 'Curvature in edge, fixed X value in pixels',
+                                      'enabler': can_change_fixed_curvature}
 
 
 def change_edge_fixed_curvature_y(value=None):
@@ -451,7 +582,8 @@ def change_edge_fixed_curvature_y(value=None):
 a['change_edge_fixed_curvature_y'] = {'command': 'Change curvature for edge in Y',
                                       'trigger_args': True,
                                       'method': change_edge_fixed_curvature_y,
-                                      'tooltip': 'Curvature in edge, fixed Y value in pixels'}
+                                      'tooltip': 'Curvature in edge, fixed Y value in pixels',
+                                      'enabler': can_change_fixed_curvature}
 
 def toggle_edge_arrowhead_at_start(value):
     """ Draw arrowheads at start for given edges or edge type
@@ -469,10 +601,22 @@ def toggle_edge_arrowhead_at_start(value):
     if panel:
         panel.update_panel()
 
+
+def can_toggle_arrowheads():
+    if ctrl.ui.scope_is_selection:
+        return ctrl.ui.edge_styles_in_selection
+    else:
+        etype = ctrl.ui.active_edge_type
+        if etype and ctrl.fs:
+            return True
+    return False
+
+
 a['edge_arrowhead_start'] = {
     'command': 'Draw arrowhead at line start',
     'method': toggle_edge_arrowhead_at_start, 'trigger_args': True,
-    'tooltip': 'Draw arrowhead at line start'}
+    'tooltip': 'Draw arrowhead at line start',
+    'enabler': can_toggle_arrowheads}
 
 
 def toggle_edge_arrowhead_at_end(value):
@@ -494,44 +638,54 @@ def toggle_edge_arrowhead_at_end(value):
 a['edge_arrowhead_end'] = {
     'command': 'Draw arrowhead at line end',
     'method': toggle_edge_arrowhead_at_end, 'trigger_args': True,
-    'tooltip': 'Draw arrowhead at line end'}
+    'tooltip': 'Draw arrowhead at line end',
+    'enabler': can_toggle_arrowheads}
 
 
-def change_edge_shape_to_filled(value):
+def change_edge_shape_to_filled():
     """ Change edge to draw as filled shape
     :param value: bool
     """
-    fill = value
     if ctrl.ui.scope_is_selection:
         for edge in ctrl.selected:
             if isinstance(edge, Edge):
-                edge.shape_info.change_fill(fill)
+                edge.shape_info.change_fill(True)
     else:
         etype = ctrl.ui.active_edge_type
-        ctrl.fs.set_shape_info(etype, 'fill', fill)
+        ctrl.fs.set_shape_info(etype, 'fill', True)
         ctrl.forest.redraw_edges(edge_type=etype)
     panel = ctrl.ui.get_panel('LineOptionsPanel')
     if panel:
         panel.update_panel()
 
+
+def can_change_edge_shape_to_filled():
+    if ctrl.ui.scope_is_selection:
+        return ctrl.ui.edge_styles_in_selection.get('fill', None) is not None
+    else:
+        etype = ctrl.ui.active_edge_type
+        if etype and ctrl.fs:
+            return ctrl.fs.shape_info(etype, 'fill') is not None
+    return False
+
 a['edge_shape_fill'] = {
     'command': 'Set edge to be drawn as filled shape',
-    'method': change_edge_shape_to_filled, 'trigger_args': True,
-    'tooltip': 'Set edge to be drawn as filled shape'}
+    'method': change_edge_shape_to_filled,
+    'tooltip': 'Set edge to be drawn as filled shape',
+    'enabler': can_change_edge_shape_to_filled}
 
 
-def change_edge_shape_to_line(value):
+def change_edge_shape_to_line():
     """ Change edge to draw as line instead of filled shape
     :param value: bool
     """
-    fill = not value
     if ctrl.ui.scope_is_selection:
         for edge in ctrl.selected:
             if isinstance(edge, Edge):
-                edge.shape_info.change_fill(fill)
+                edge.shape_info.change_fill(False)
     else:
         etype = ctrl.ui.active_edge_type
-        ctrl.fs.set_shape_info(etype, 'fill', fill)
+        ctrl.fs.set_shape_info(etype, 'fill', False)
         ctrl.forest.redraw_edges(edge_type=etype)
     panel = ctrl.ui.get_panel('LineOptionsPanel')
     if panel:
@@ -539,8 +693,9 @@ def change_edge_shape_to_line(value):
 
 a['edge_shape_line'] = {
     'command': 'Set edge to be drawn as line with fixed width',
-    'method': change_edge_shape_to_line, 'trigger_args': True,
-    'tooltip': 'Set edge to be drawn as line with fixed width'}
+    'method': change_edge_shape_to_line,
+    'tooltip': 'Set edge to be drawn as line with fixed width',
+    'enabler': can_change_edge_shape_to_filled}
 
 
 def change_edge_curvature_to_relative(value):
@@ -563,10 +718,24 @@ def change_edge_curvature_to_relative(value):
     if panel:
         panel.update_panel()
 
+
+def can_change_edge_shape_to_relative():
+    if ctrl.ui.scope_is_selection:
+        return ctrl.ui.edge_styles_in_selection.get('relative', None) is not None and \
+               ctrl.ui.edge_styles_in_selection.get('control_points', 0)
+    else:
+        etype = ctrl.ui.active_edge_type
+        if etype and ctrl.fs:
+            return ctrl.fs.shape_info(etype, 'relative') is not None and \
+                   ctrl.fs.shape_info(etype, 'control_points')
+    return False
+
+
 a['edge_curvature_relative'] = {
     'command': 'Change line curvature to be relative to edge dimensions',
     'method': change_edge_curvature_to_relative, 'trigger_args': True,
-    'tooltip': 'Change line curvature to be relative to edge dimensions'}
+    'tooltip': 'Change line curvature to be relative to edge dimensions',
+    'enabler': can_change_edge_shape_to_relative}
 
 
 def change_edge_curvature_to_fixed(value):
@@ -593,5 +762,7 @@ def change_edge_curvature_to_fixed(value):
 a['edge_curvature_fixed'] = {
     'command': 'Change line curvature to be a fixed amount',
     'method': change_edge_curvature_to_fixed, 'trigger_args': True,
-    'tooltip': 'Change line curvature to be a fixed amount'}
+    'tooltip': 'Change line curvature to be a fixed amount',
+    'enabler': can_change_edge_shape_to_relative}
+
 

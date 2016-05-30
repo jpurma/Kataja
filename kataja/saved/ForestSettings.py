@@ -130,6 +130,9 @@ class ForestSettings(SavedObject):
         """
         return self.edge_info(edge_type, 'shape_name')
 
+    def has_local_edge_style(self, edge_type):
+        return bool(self.edge_styles_data.get(edge_type, False))
+
     def reset_edge_style(self, edge_type):
         """ """
         if edge_type in self.edge_styles_data:
@@ -243,6 +246,9 @@ class ForestSettings(SavedObject):
             settings[key] = prefs.node_styles[key][s].copy()
         settings.update(self.node_styles_data)
         return settings
+
+    def has_local_node_style(self, node_type):
+        return bool(self.node_styles_data.get(node_type, False))
 
     def reset_node_style(self, node_type):
         if node_type in self.node_styles_data:
