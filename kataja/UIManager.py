@@ -28,7 +28,7 @@ from PyQt5 import QtCore, QtWidgets
 from kataja.UIItem import UIItem
 from kataja.ui_support.MyFontDialog import MyFontDialog
 from kataja.ui_support.ResizeHandle import GraphicsResizeHandle
-from kataja.ui_support.TableModelComboBox import TableModelComboBox
+from kataja.ui_support.TableModelSelectionBox import TableModelSelectionBox
 from kataja.ui_support.TopBarButtons import TopBarButtons
 from kataja.ui_items.panels.ColorThemePanel import ColorPanel
 from kataja.ui_items.panels.ColorWheelPanel import ColorWheelPanel
@@ -136,10 +136,11 @@ class UIManager:
         self._timer_id = 0
         self._panels = {}
         self._panel_positions = {}
+        self.open_embed = None
         self.moving_things = set()
         self.button_shortcut_filter = ButtonShortcutFilter()
         self.shortcut_solver = ShortcutSolver(self)
-
+        self.active_scope = g.CONSTITUENT_NODE
         self.scope_is_selection = False
         self.default_node_type = g.CONSTITUENT_NODE
         self.active_node_type = g.CONSTITUENT_NODE
@@ -147,6 +148,8 @@ class UIManager:
         self.selection_group = None
         # this is a reference dict for many ui elements adjusting edges
         self.edge_styles_in_selection = {}
+        self.active_edge_style = {}
+        self.active_node_style = {}
         self.preferences_dialog = None
         self.color_dialogs = {}
         self.font_dialogs = {}
@@ -213,6 +216,7 @@ class UIManager:
         return self._action_groups[action_group_name]
 
     def set_scope(self, scope):
+        print('setting scope to', scope)
         if scope == g.SELECTION:
             self.scope_is_selection = True
         else:
@@ -221,6 +225,7 @@ class UIManager:
                 self.active_node_type = scope
                 node_class = classes.nodes[scope]
                 self.active_edge_type = node_class.default_edge['id']
+        self.active_scope = scope
         ctrl.call_watchers(self, 'scope_changed')
 
 
@@ -386,37 +391,67 @@ class UIManager:
     @time_me
     def update_actions(self):
         # prepare style dictionaries for selections, to be used for displaying style values in UI
-        self.edge_styles_in_selection = self.build_edge_shape_info_for_selection(ctrl.selected)
+        self.build_active_style_info()
         for action in self.qt_actions.values():
             if action.enabler:
-                action.set_enabled(action.enabler())
-            if action.getter:
-                action.set_displayed_value(action.getter())
+                on = action.enabler()
+                action.set_enabled(on)
+                if on and action.getter:
+                    action.set_displayed_value(action.getter())
 
     def update_action(self, key):
         action = self.qt_actions[key]
         if action.enabler:
-            action.set_enabled(action.enabler())
-        if action.getter:
-            action.set_displayed_value(action.getter())
+            on = action.enabler()
+            action.set_enabled(on)
+            if on and action.getter:
+                action.set_displayed_value(action.getter())
 
-    def build_edge_shape_info_for_selection(self, selection):
-        """ Create a dict of values to show in this panel. Use the first edge in selection.
-        :return: dict with shape attributes and tuple for arrowheads in the start and end
+    def build_active_style_info(self):
+        """ Build dicts for representative edge styles and node styles to be displayed by ui
+        :return: two dicts
         """
-        edges = [item for item in selection if isinstance(item, Edge)]
-        if not edges:
-            return {}
-        edge_count = len(edges)
-        sample_edge = edges[0]
-        d = sample_edge.shape_info.copy()
-        shape_name = sample_edge.shape_name
-        d['shape_name'] = shape_name
-        d['edge_count'] = edge_count
-        d['sample_edge'] = sample_edge
-        d['arrowheads_at_start'] = sample_edge.shape_info.has_arrowhead_at_start()
-        d['arrowheads_at_end'] = sample_edge.shape_info.has_arrowhead_at_end()
-        return d
+        es = {}
+        ns = {}
+        if self.scope_is_selection:
+            ecount = 0
+            ncount = 0
+            for item in ctrl.selected:
+                if isinstance(item, Edge):
+                    if not ecount:
+                        es = item.shape_info.copy()
+                        shape_name = item.shape_name
+                        es['shape_name'] = shape_name
+                        es['sample_edge'] = item
+                        es['arrowhead_at_start'] = item.shape_info.has_arrowhead_at_start()
+                        es['arrowhead_at_end'] = item.shape_info.has_arrowhead_at_end()
+                        es['curve_adjustment'] = item.curve_adjustment or [(0, 0), (0, 0)]
+                        print('selection-based edge style:', es)
+                    ecount += 1
+                elif isinstance(item, Node):
+                    if not ncount:
+                        ns = item.get_style()
+                        print('selection node style:', ns)
+                    ncount += 1
+            if ecount:
+                es['edge_count'] = ecount
+            if ncount:
+                ns['node_count'] = ncount
+        elif ctrl.fs:
+            if self.active_edge_type:
+                es = ctrl.fs.shape_info(self.active_edge_type)
+                es['arrowhead_at_start'] = ctrl.fs.edge_info(self.active_edge_type,
+                                                             'arrowhead_at_start')
+                es['arrowhead_at_end'] = ctrl.fs.edge_info(self.active_edge_type, 'arrowhead_at_end')
+                es['shape_name'] = ctrl.fs.edge_info(self.active_edge_type, 'shape_name')
+                print('fs-based edge style: ', es)
+            else:
+                es = {}
+            if self.active_node_type:
+                ns = ctrl.fs.node_style(self.active_node_type)
+                print('fs-based node style: ', ns)
+        self.active_edge_style = es
+        self.active_node_style = ns
 
     def update_selections(self):
         """ Many UI elements change mode depending on if object of specific
@@ -833,7 +868,7 @@ class UIManager:
         if not element:
             return []
         args = []
-        if isinstance(element, TableModelComboBox):
+        if isinstance(element, TableModelSelectionBox):
             i = element.view().currentIndex()
             args.append(element.model().itemFromIndex(i).data())
         elif isinstance(element, QtWidgets.QComboBox):

@@ -3,6 +3,7 @@ from PyQt5 import QtWidgets
 from kataja.singletons import ctrl
 from kataja.ui_items.Panel import Panel
 import kataja.globals as g
+from kataja.ui_support.SelectionBox import SelectionBox
 
 __author__ = 'purma'
 
@@ -44,11 +45,11 @@ class ColorPanel(Panel):
 
         ocm = ctrl.cm.ordered_color_modes
         self.selector_items = [c['name'] for c in ocm.values()]
-        selector = QtWidgets.QComboBox(self)
-        selector.addItems(self.selector_items)
+        selector = SelectionBox(self)
+        selector.add_items(self.selector_items)
         selector.activated.connect(change_color_mode)
         self.mode_select = selector
-        self.mode_select.setCurrentIndex(list(ocm.keys()).index(ctrl.cm.current_color_mode))
+        self.mode_select.select_by_text(ctrl.cm.current_color_mode)
 
         layout.addWidget(selector)
         # layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
@@ -65,6 +66,6 @@ class ColorPanel(Panel):
         current_color_modes = [c['name'] for c in ocm.values()]
         if self.selector_items != current_color_modes:
             self.mode_select.clear()
-            self.mode_select.addItems(current_color_modes)
-        self.mode_select.setCurrentIndex(list(ocm.keys()).index(ctrl.cm.current_color_mode))
+            self.mode_select.add_items(current_color_modes)
+        self.mode_select.select_by_text(ctrl.cm.current_color_mode)
 

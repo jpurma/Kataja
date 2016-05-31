@@ -4,6 +4,7 @@ from kataja.singletons import ctrl
 from kataja.ui_items import Panel
 from kataja.ui_items.panels.ColorWheelPanel import ColorWheelInner
 import kataja.globals as g
+from kataja.ui_support.SelectionBox import SelectionBox
 
 __author__ = 'purma'
 
@@ -28,9 +29,9 @@ class ColorMappingPanel(Panel):
         label_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         button_policy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.MinimumExpanding)
         self.preferred_size = (200, 220)
-        selector = QtWidgets.QComboBox(self)
+        selector = SelectionBox(self)
 
-        selector.addItems([c['name'] for c in ctrl.cm.ordered_color_modes.values()])
+        selector.add_items([c['name'] for c in ctrl.cm.ordered_color_modes.values()])
         selector.activated.connect(self.change_color_mode)
         self.mode_select = selector
         # selector.setSizeAdjustPolicy(QtWidgets.QComboBox.AdjustToContents)

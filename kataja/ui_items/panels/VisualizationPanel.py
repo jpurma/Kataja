@@ -5,6 +5,7 @@ from kataja.singletons import ctrl, qt_prefs
 from kataja.visualizations.available import VISUALIZATIONS
 from kataja.ui_items.OverlayButton import PanelButton
 from kataja.ui_items.Panel import Panel
+from kataja.ui_support.SelectionBox import SelectionBox
 
 __author__ = 'purma'
 
@@ -31,13 +32,12 @@ class VisualizationPanel(Panel):
         hlayout = QtWidgets.QHBoxLayout()
         hlayout.setContentsMargins(0, 0, 0, 0)
 
-        selector = QtWidgets.QComboBox(self)
-        self.selector = selector
-        for key, item in VISUALIZATIONS.items():
-            selector.addItem('%s (%s)' % (key, item.shortcut), key)
+        self.selector = SelectionBox(self)
+        self.selector.add_items([('%s (%s)' % (key, item.shortcut), key) for key, item in
+                                 VISUALIZATIONS.items()])
 
-        self.ui_manager.connect_element_to_action(selector, 'set_visualization')
-        hlayout.addWidget(selector)
+        self.ui_manager.connect_element_to_action(self.selector, 'set_visualization')
+        hlayout.addWidget(self.selector)
         self.toggle_options = PanelButton(pixmap=qt_prefs.settings_pixmap,
                                           tooltip='Visualization settings',
                                           parent=self, size=20)

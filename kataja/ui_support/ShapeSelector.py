@@ -4,7 +4,7 @@ from PyQt5.QtGui import QStandardItem, QIcon
 
 from kataja.shapes import SHAPE_PRESETS
 from kataja.singletons import ctrl
-from kataja.ui_support.TableModelComboBox import TableModelComboBox
+from kataja.ui_support.TableModelSelectionBox import TableModelSelectionBox
 
 
 def find_panel(parent):
@@ -14,7 +14,7 @@ def find_panel(parent):
         return find_panel(parent.parent())
 
 
-class ShapeSelector(TableModelComboBox):
+class ShapeSelector(TableModelSelectionBox):
     def __init__(self, parent):
         super().__init__(parent)
         self.setIconSize(QSize(48, 16))

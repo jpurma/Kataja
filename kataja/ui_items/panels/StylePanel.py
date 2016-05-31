@@ -5,7 +5,7 @@ from kataja.singletons import ctrl, qt_prefs, prefs, classes
 from kataja.saved.Edge import Edge
 from kataja.saved.movables.Node import Node
 from kataja.ui_items.Panel import Panel
-from kataja.ui_support.panel_utils import find_list_item, set_value, box_row, font_selector, \
+from kataja.ui_support.panel_utils import set_value, box_row, font_selector, \
     color_selector, icon_button, shape_selector, text_button, selector, mini_button
 
 __author__ = 'purma'
@@ -134,11 +134,7 @@ class StylePanel(Panel):
             elif isinstance(item, Edge):
                 self._edges_in_selection.append(item)
         self.update_scope_selector_options()
-        if ctrl.ui.scope_is_selection:
-            i = find_list_item(g.SELECTION, self.scope_selector)
-        else:
-            i = find_list_item(ctrl.ui.active_node_type, self.scope_selector)
-        self.scope_selector.setCurrentIndex(i)
+        self.scope_selector.select_by_data(ctrl.ui.active_scope)
 
     def receive_font_from_selector(self, font):
         font_key = self.cached_font_id
@@ -149,7 +145,7 @@ class StylePanel(Panel):
         self.cached_font_id = font_id
         if not self.font_selector.find_item(font_id):
             self.font_selector.add_font(font_id, qt_prefs.fonts[font_id])
-            self.font_selector.select_data(font_id)
+            self.font_selector.select_by_data(font_id)
 
     def receive_color_from_color_dialog(self, role, color):
         """ Replace color in palette with new color
@@ -171,13 +167,13 @@ class StylePanel(Panel):
         self.cached_node_color = color_key
         # launch a color dialog if color_id is unknown or if clicking
         # already selected color
-        s.select_data(color_key)
+        s.select_by_data(color_key)
         s.update()
 
     def update_edge_color_selector(self, color_key):
         s = self.edge_color_selector
         self.cached_edge_color = color_key
-        s.select_data(color_key)
+        s.select_by_data(color_key)
         s.update()
         self.shape_selector.update()
 
@@ -193,21 +189,9 @@ class StylePanel(Panel):
         """ Redraw scope selector, show only scopes that are used in this
         forest """
         ni = classes.node_info
-        ss = self.scope_selector
-        ss.clear()
-        item = QtGui.QStandardItem('Current selection')
-        item.setData(g.SELECTION, 256)
-        if not (self._nodes_in_selection or self._edges_in_selection):
-            item.setFlags(QtCore.Qt.ItemIsEnabled) #QtCore.Qt.NoItemFlags)
-        items = [item]
-        for key in classes.node_types_order:
-            name = ni[key]['name_pl']
-            item = QtGui.QStandardItem(name)
-            item.setData(key, 256)
-            items.append(item)
-        model = ss.model()
-        for r, item in enumerate(items):
-            model.setItem(r, item)
+        items = [('Current selection', g.SELECTION)]
+        items += [(ni[key]['name_pl'], key) for key in classes.node_types_order]
+        self.scope_selector.add_items(items)
 
     def update_fields(self):
         """ Update different elements in the panel to show the correct values
@@ -225,27 +209,29 @@ class StylePanel(Panel):
             for item in ctrl.selected:
                 if no_node and isinstance(item, Node):
                     no_node = False
-                    self.node_color_selector.setEnabled(True)
+                    #self.node_color_selector.setEnabled(True)
                     self.cached_node_color = item.get_color_id()
                     set_value(self.node_color_selector, self.cached_node_color)
-                    self.font_selector.setEnabled(True)
+                    #self.font_selector.setEnabled(True)
                     self.cached_font_id = item.get_font_id()
                     set_value(self.font_selector, self.cached_font_id)
                 elif no_edge and isinstance(item, Edge):
                     no_edge = False
-                    self.edge_color_selector.setEnabled(True)
+                    #self.edge_color_selector.setEnabled(True)
                     self.cached_edge_color = item.color_id
                     set_value(self.edge_color_selector, item.color_id)
-                    self.shape_selector.setEnabled(True)
+                    #self.shape_selector.setEnabled(True)
                     set_value(self.shape_selector, item.shape_name)
                 elif not (no_edge or no_node):
                     break
             if no_edge:
-                self.edge_color_selector.setEnabled(False)
-                self.shape_selector.setEnabled(False)
+                #self.edge_color_selector.setEnabled(False)
+                #self.shape_selector.setEnabled(False)
+                pass
             if no_node:
-                self.node_color_selector.setEnabled(False)
-                self.font_selector.setEnabled(False)
+                #self.node_color_selector.setEnabled(False)
+                #self.font_selector.setEnabled(False)
+                pass
         elif ctrl.forest:
             ns = ctrl.fs.node_style
             es = ctrl.fs.edge_info
@@ -256,13 +242,13 @@ class StylePanel(Panel):
             edge_color = es(edge_type, 'color_id')
             edge_shape = es(edge_type, 'shape_name')
             # Color selector - show
-            self.node_color_selector.setEnabled(True)
+            #self.node_color_selector.setEnabled(True)
             set_value(self.node_color_selector, node_color)
-            self.font_selector.setEnabled(True)
+            #self.font_selector.setEnabled(True)
             set_value(self.font_selector, node_font)
-            self.edge_color_selector.setEnabled(True)
+            #self.edge_color_selector.setEnabled(True)
             set_value(self.edge_color_selector, edge_color)
-            self.shape_selector.setEnabled(True)
+            #self.shape_selector.setEnabled(True)
             set_value(self.shape_selector, edge_shape)
             # self.font_selector.setFont(qt_prefs.get_font(node_font))
             self.cached_node_color = node_color

@@ -1,11 +1,11 @@
 from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtCore import QSize
-from kataja.ui_support.TableModelComboBox import TableModelComboBox
+from kataja.ui_support.TableModelSelectionBox import TableModelSelectionBox
 from kataja.singletons import ctrl
 from kataja.ui_support.LineColorIcon import LineColorIcon
 
 
-class ColorSelector(TableModelComboBox):
+class ColorSelector(TableModelSelectionBox):
     """
 
     :param parent:
@@ -49,17 +49,9 @@ class ColorSelector(TableModelComboBox):
         view.setMinimumWidth(self.model().columnCount() * cw)
         self.setView(view)
 
-    def select_data(self, data):
+    def select_by_data(self, data):
         """
-
         :param data:
-        :raise hell:
         """
-        item = self.find_item(data)
-        if item:
-            self.setCurrentIndex(item.row())
-            self.setModelColumn(item.column())
-            self.model().selected_color = data
-        else:
-            print('looking for ', data)
-            raise hell
+        super().select_by_data(data)
+        self.model().selected_color = data

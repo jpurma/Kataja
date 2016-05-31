@@ -30,6 +30,7 @@ from kataja.singletons import ctrl
 from kataja.ui_items.OverlayButton import PanelButton
 from kataja.ui_support.EmbeddedMultibutton import EmbeddedMultibutton
 from kataja.ui_support.EmbeddedRadiobutton import EmbeddedRadiobutton
+from kataja.ui_support.SelectionBox import SelectionBox
 
 
 class ShortcutSolver(QtCore.QObject):
@@ -281,12 +282,28 @@ class Action(QtWidgets.QAction):
         :param value:
         :return:
         """
-        print('setting displayed value to ', value)
+        print('setting displayed value for %s to %s' % (self.key, value))
         if self.isCheckable():
             for element in self.elements:
+                element.blockSignals(True)
                 if hasattr(element, 'setChecked'):
                     element.setChecked(value)
+                else:
+                    raise hell
+                element.blockSignals(False)
         else:
             for element in self.elements:
-                if hasattr(element, 'setValue'):
+                element.blockSignals(True)
+                if isinstance(element, SelectionBox):
+                    if element.uses_data:
+                        element.select_by_data(value)
+                    else:
+                        element.select_by_text(value)
+                elif hasattr(element, 'setValue'):
                     element.setValue(value)
+                elif isinstance(element, QtWidgets.QAbstractButton):
+                    element.setChecked(value)
+                else:
+                    print('ui element for action has no setValue: ', element, self.key)
+                    raise hell
+                element.blockSignals(False)

@@ -9,6 +9,7 @@ def key_backspace():
     for contexts that don't otherwise grab keyboard.
     :return: None
     """
+    print('key_backspace - action')
     ctrl.multiselection_start() # don't update selections until all are removed
     for item in list(ctrl.selected):
         ctrl.forest.delete_item(item)

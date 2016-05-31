@@ -3,10 +3,10 @@ from PyQt5.QtCore import QSize
 
 import kataja.globals as g
 from kataja.singletons import qt_prefs, ctrl
-from kataja.ui_support.TableModelComboBox import TableModelComboBox
+from kataja.ui_support.TableModelSelectionBox import TableModelSelectionBox
 
 
-class FontSelector(TableModelComboBox):
+class FontSelector(TableModelSelectionBox):
     """
 
     :param parent:

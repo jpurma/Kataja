@@ -106,10 +106,11 @@ class ForestSettings(SavedObject):
             else:
                 return local_edge_settings[key]
         else:
-            if local_edge_settings is None or local_edge_settings.get(key, None) is None:
-                return prefs.edge_styles[edge_type][prefs.style].get(key, None)
-            else:
-                return local_edge_settings[key]
+            return {} # !fixme
+            #if local_edge_settings is None or local_edge_settings.get(key, None) is None:
+            #    return prefs.edge_styles[edge_type][prefs.style].get(key, None)
+            #else:
+            #    return local_edge_settings[key]
 
     def set_edge_info(self, edge_type, key, value):
         """ Setter for settings related to various types of edges.

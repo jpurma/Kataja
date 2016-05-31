@@ -7,6 +7,7 @@ from kataja.utils import guess_node_type
 from kataja.ui_support.ExpandingLineEdit import ExpandingLineEdit
 from kataja.ui_items.UIEmbed import UIEmbed
 from kataja.ui_support.panel_utils import icon_text_button, box_row
+from kataja.ui_support.SelectionBox import SelectionBox
 
 __author__ = 'purma'
 
@@ -42,7 +43,7 @@ class NewElementEmbed(UIEmbed):
                                                  on_edit=self.guess_type_for_input)
         layout.addWidget(self.input_line_edit)
         hlayout = QtWidgets.QHBoxLayout()
-        self.node_type_selector = QtWidgets.QComboBox(self)
+        self.node_type_selector = SelectionBox(self)
         self.node_type_selector.currentIndexChanged.connect(self.changed_node_type)
 
         self.node_types = [('Guess from input', g.GUESS_FROM_INPUT)]
@@ -50,18 +51,12 @@ class NewElementEmbed(UIEmbed):
             # we have dedicated buttons for arrows and dividers
             #if key not in (g.ARROW, g.DIVIDER):
             node_class = classes.nodes.get(key, None)
-            if not node_class:
+            if (not node_class) or node_class.is_syntactic and not ctrl.free_drawing_mode:
                 continue
-            if not ctrl.free_drawing_mode:
-                if node_class.is_syntactic:
-                    continue
             self.node_types.append(('New %s' % node_class.name[0].lower(), key))
         self.node_types.append(('New arrow', g.ARROW))
         #self.node_types.append(('New divider', g.DIVIDER))
-        for i, (name, value) in enumerate(self.node_types):
-            self.node_type_selector.addItem(name)
-            self.node_type_selector.setItemData(i, value, 256)
-            # 'name' can be translated if necessary
+        self.node_type_selector.add_items(self.node_types)
         hlayout.addWidget(self.node_type_selector)
         self.enter_button = QtWidgets.QPushButton("Create ↩")  # U+21A9 &#8617;
         ui.connect_element_to_action(self.enter_button, 'create_new_node_from_text')

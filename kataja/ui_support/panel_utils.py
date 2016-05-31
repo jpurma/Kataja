@@ -2,9 +2,10 @@ from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtCore import QSize
 from kataja.ui_support.ColorSelector import ColorSelector
 from kataja.ui_support.ShapeSelector import ShapeSelector
-from kataja.ui_support.TableModelComboBox import TableModelComboBox
+from kataja.ui_support.TableModelSelectionBox import TableModelSelectionBox
 from kataja.ui_items.OverlayButton import OverlayButton, PanelButton
 from kataja.ui_support.FontSelector import FontSelector
+from kataja.ui_support.SelectionBox import SelectionBox
 
 __author__ = 'purma'
 
@@ -217,12 +218,8 @@ def mini_selector(ui_manager, panel, layout, data=None, action=''):
     """
     if data is None:
         data = []
-    selector = QtWidgets.QComboBox(panel)
-    i = 0
-    selector.addItems([text for text, value in data])
-    for text, value in data:
-        selector.setItemData(i, value)
-        i += 1
+    selector = SelectionBox(panel)
+    selector.add_items(data)
     selector.setMinimumSize(QSize(40, 20))
     selector.setMaximumSize(QSize(40, 20))
     ui_manager.connect_element_to_action(selector, action)
@@ -240,14 +237,10 @@ def selector(ui_manager, parent, layout, data=None, action='', label=''):
     :param action:
     :return:
     """
-    selector = QtWidgets.QComboBox(parent)
-    i = 0
+    selector = SelectionBox(parent)
     if data is None:
         data = []
-    selector.addItems([text for text, value in data])
-    for text, value in data:
-        selector.setItemData(i, value)
-        i += 1
+    selector.add_items(data)
     ui_manager.connect_element_to_action(selector, action)
     if label:
         labelw = QtWidgets.QLabel(label, parent)
@@ -360,9 +353,9 @@ def set_value(field, value):
     if old_v != value:
         if isinstance(field, QtWidgets.QSpinBox):
             field.setValue(value)
-        elif isinstance(field, TableModelComboBox):
-            field.select_data(value)
-        elif isinstance(field, QtWidgets.QComboBox):
+        elif isinstance(field, TableModelSelectionBox):
+            field.select_by_data(value)
+        elif isinstance(field, SelectionBox):
             field.setCurrentIndex(value)
         elif isinstance(field, QtWidgets.QCheckBox):
             field.setChecked(value)
@@ -372,25 +365,5 @@ def set_value(field, value):
     field.blockSignals(False)
 
 
-def find_list_item(data, selector):
-    """ Helper method to check the index of data item in list
-    :param data: data to match
-    :param selector: QComboBox instance
-    :return: -1 if not found, index if found
-    """
-    if isinstance(selector, TableModelComboBox):
-        return selector.find_item(data)
-    return selector.findData(data)
-
-
-def remove_list_item(data, selector):
-    """ Helper method to remove items from combo boxes
-    :param data: list item's data has to match this
-    :param selector: QComboBox instance
-    """
-    i = find_list_item(data, selector)
-    if i != -1:
-        selector.removeItem(i)
-    return i
 
 

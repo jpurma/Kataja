@@ -112,7 +112,7 @@ class GroupLabelEmbed(UIEmbed):
         self.fill_checkbox.setChecked(a.fill)
         s = self.color_select
         s.model().selected_color = a.color_key
-        s.select_data(a.color_key)
+        s.select_by_data(a.color_key)
         s.update()
         super().update_fields()
 

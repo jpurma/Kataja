@@ -758,6 +758,9 @@ class Node(Movable):
     def has_local_style_settings(self):
         return bool(self.font_id or self.color_id)
 
+    def get_style(self):
+        return {'font': self.get_font_id(), 'color': self.get_color_id()}
+
     # ## Font
     # #####################################################################
 

@@ -5,6 +5,7 @@ from kataja.parser.latex_to_unicode import latex_to_unicode
 from kataja.singletons import qt_prefs, ctrl
 from kataja.ui_items.Panel import Panel
 from kataja.ui_support.panel_utils import box_row
+from kataja.ui_support.SelectionBox import SelectionBox
 
 __author__ = 'purma'
 
@@ -112,9 +113,8 @@ class SymbolPanel(Panel):
         inner.setMinimumWidth(160)
 
         layout = QtWidgets.QVBoxLayout()
-        self.selector = QtWidgets.QComboBox()
-        for item in table_names:
-            self.selector.addItem(table_dict[item], item)
+        self.selector = SelectionBox(self)
+        self.selector.add_items([(table_dict[item], item) for item in table_names])
         self.selector.activated.connect(self.change_symbol_set)
         self.selector.setFocusPolicy(QtCore.Qt.TabFocus)
         layout.addWidget(self.selector)

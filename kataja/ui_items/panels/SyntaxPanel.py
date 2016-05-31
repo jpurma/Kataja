@@ -4,6 +4,7 @@ import kataja.globals as g
 from kataja.singletons import ctrl, qt_prefs
 from kataja.ui_items.OverlayButton import PanelButton
 from kataja.ui_items.Panel import Panel
+from kataja.ui_support.SelectionBox import SelectionBox
 
 __author__ = 'purma'
 
@@ -30,7 +31,7 @@ class SyntaxPanel(Panel):
         hlayout = QtWidgets.QHBoxLayout()
         hlayout.setContentsMargins(0, 0, 0, 0)
 
-        selector = QtWidgets.QComboBox(self)
+        selector = SelectionBox(self)
         self.selector = selector
         for key, item in []:
             selector.addItem('%s (%s)' % (key, item.shortcut), key)

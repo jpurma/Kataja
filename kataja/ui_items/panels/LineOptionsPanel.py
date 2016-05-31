@@ -9,25 +9,6 @@ import kataja.globals as g
 
 __author__ = 'purma'
 
-def build_shape_dict_for_selection(selection):
-    """ Create a dict of values to show in this panel. Use the first edge in selection.
-    :return: dict with shape attributes and tuple for arrowheads in the start and end
-    """
-    edges = [item for item in selection if isinstance(item, Edge)]
-    edge_count = len(edges)
-    if not edge_count:
-        return {}, ()
-    sample_edge = edges[0]
-    d = sample_edge.shape_info.copy()
-    shape_name = sample_edge.shape_name
-    d['shape_name'] = shape_name
-    d['edge_count'] = edge_count
-    d['sample_edge'] = sample_edge
-    arrowheads_at_start = sample_edge.shape_info.has_arrowhead_at_start()
-    arrowheads_at_end = sample_edge.shape_info.has_arrowhead_at_end()
-    return d, (arrowheads_at_start, arrowheads_at_end)
-
-
 class LineOptionsPanel(Panel):
     """ Panel for editing how edges and nodes are drawn. """
 
@@ -172,16 +153,15 @@ class LineOptionsPanel(Panel):
         if not ctrl.forest.settings:
             return
         if ctrl.ui.scope_is_selection:
-            sd, arrowheads = build_shape_dict_for_selection(ctrl.selected)
+            sd = ctrl.ui.edge_styles_in_selection
             if sd:
                 if sd['edge_count'] == 1:
                     self.set_title('Edge settings for selected edge')
                     self.update_control_points(sd['sample_edge'])
                 else:
                     self.set_title('Edge settings for selected edges')
-                    #self.cp1_box.setEnabled(False)
-                    #self.cp2_box.setEnabled(False)
-                arrowhead_at_start, arrowhead_at_end = arrowheads
+                arrowhead_at_start = sd['arrowhead_at_start']
+                arrowhead_at_end = sd['arrowhead_at_end']
             else:
                 arrowhead_at_start = False
                 arrowhead_at_end = False
@@ -199,31 +179,35 @@ class LineOptionsPanel(Panel):
             relative = sd.get('relative', None)
             if relative is None or not control_points:  # linear shape, no arc of any kind
                 pass
-            elif relative:
-                set_value(self.relative_arc_button, True)
-                set_value(self.arc_rel_dx_spinbox, sd['rel_dx'] * 100)
-                set_value(self.arc_rel_dy_spinbox, sd['rel_dy'] * 100)
-            else:
-                set_value(self.fixed_arc_button, True)
-                set_value(self.arc_fixed_dx_spinbox, sd['fixed_dx'])
-                set_value(self.arc_fixed_dy_spinbox, sd['fixed_dy'])
+            #elif relative:
+            #    set_value(self.relative_arc_button, True)
+            #    set_value(self.arc_rel_dx_spinbox, sd['rel_dx'] * 100)
+            #    set_value(self.arc_rel_dy_spinbox, sd['rel_dy'] * 100)
+            #else:
+            #    set_value(self.fixed_arc_button, True)
+            #    set_value(self.arc_fixed_dx_spinbox, sd['fixed_dx'])
+            #    set_value(self.arc_fixed_dy_spinbox, sd['fixed_dy'])
 
             # Leaf-shaped lines or solid lines
             fill = sd.get('fill', None)
             if fill:
                 if 'leaf_x' in sd:
-                    set_value(self.leaf_x_spinbox, sd['leaf_x'])
-                    set_value(self.leaf_y_spinbox, sd['leaf_y'])
-                    set_value(self.fill_button, True)
+                    #set_value(self.leaf_x_spinbox, sd['leaf_x'])
+                    #set_value(self.leaf_y_spinbox, sd['leaf_y'])
+                    #set_value(self.fill_button, True)
+                    pass
             elif fill is not None:
                 if sd.get('thickness', None) is not None:
-                    set_value(self.thickness_spinbox, sd['thickness'])
-                    set_value(self.line_button, True)
+                    #set_value(self.thickness_spinbox, sd['thickness'])
+                    #set_value(self.line_button, True)
+                    pass
             # Arrowheads
             if arrowhead_at_start is not None:
-                set_value(self.arrowhead_start_button, arrowhead_at_start)
+                #set_value(self.arrowhead_start_button, arrowhead_at_start)
+                pass
             if arrowhead_at_end is not None:
-                set_value(self.arrowhead_end_button, arrowhead_at_end)
+                #set_value(self.arrowhead_end_button, arrowhead_at_end)
+                pass
         else:
             self.set_title('Edge settings - No edge selected')
 
@@ -249,22 +233,18 @@ class LineOptionsPanel(Panel):
 
     def update_control_points(self, edge):
         if (not edge) or not edge.curve_adjustment:
-            #self.cp1_box.setDisabled(True)
-            #self.cp2_box.setDisabled(True)
             return
         points = len(edge.curve_adjustment)
         if points == 1:
-            #self.cp1_box.setDisabled(False)
-            #self.cp2_box.setDisabled(True)
-            set_value(self.cp1_x_spinbox, edge.curve_adjustment[0][0])
-            set_value(self.cp1_y_spinbox, edge.curve_adjustment[0][1])
+            pass
+            #set_value(self.cp1_x_spinbox, edge.curve_adjustment[0][0])
+            #set_value(self.cp1_y_spinbox, edge.curve_adjustment[0][1])
         elif points == 2:
-            #self.cp1_box.setDisabled(False)
-            #self.cp2_box.setDisabled(False)
-            set_value(self.cp1_x_spinbox, edge.curve_adjustment[0][0])
-            set_value(self.cp1_y_spinbox, edge.curve_adjustment[0][1])
-            set_value(self.cp2_x_spinbox, edge.curve_adjustment[1][0])
-            set_value(self.cp2_y_spinbox, edge.curve_adjustment[1][1])
+            pass
+            #set_value(self.cp1_x_spinbox, edge.curve_adjustment[0][0])
+            #set_value(self.cp1_y_spinbox, edge.curve_adjustment[0][1])
+            #set_value(self.cp2_x_spinbox, edge.curve_adjustment[1][0])
+            #set_value(self.cp2_y_spinbox, edge.curve_adjustment[1][1])
 
     def close(self):
         """ Untick check box in EDGES panel """

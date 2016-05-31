@@ -22,10 +22,15 @@ def switch_edit_mode(free_edit=None):
         return 'Derivation mode: you can edit the visualisation and browse the derivation ' \
                'history, but the underlying structure cannot be changed.'
 
+
+def get_drawing_mode():
+    return ctrl.free_drawing_mode
+
 a['switch_edit_mode'] = {'command': 'Toggle edit mode', 'method': switch_edit_mode,
                          'undoable': False, 'shortcut': 'Shift+Space',
                          'tooltip': 'Switch between free editing and derivation-based '
-                                    'visualisation (Shift+Space)'}
+                                    'visualisation (Shift+Space)',
+                         'getter': get_drawing_mode}
 
 
 def switch_view_mode(show_all_mode=None):
