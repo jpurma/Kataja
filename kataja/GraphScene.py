@@ -814,7 +814,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         if ctrl.pressed:
             return
         for node in f.nodes.values():
-            if node.is_fading():
+            if node.is_fading_out:
                 items_fading = True
             if not node.is_visible():
                 continue

@@ -50,17 +50,7 @@ class UIEmbed(UIItem, QtWidgets.QWidget):
         self.assumed_width = 200
         self.assumed_height = 100
         self._magnet = QtCore.QPoint(0, 0), 1
-        self._effect = QtWidgets.QGraphicsOpacityEffect(self)
-        self._timeline = QtCore.QTimeLine(80, self)
-        self._timeline.setFrameRange(0, 100)
-        self._timeline.frameChanged[int].connect(self.update_frame)
-        self._timeline.finished.connect(self.finished_effect_animation)
-        self._effect.setEnabled(False)
-
-        # it seems that opacityeffect and QTextEdit doesn't work well together
-        self.setGraphicsEffect(self._effect)
         # Effect will be disabled if QTextEdit is used.
-        self.disable_effect = False
         self.setAutoFillBackground(True)
         self.setBackgroundRole(QtGui.QPalette.Window)
         self.hide()
@@ -202,34 +192,6 @@ class UIEmbed(UIItem, QtWidgets.QWidget):
     def magnet(self):
         return self._magnet
 
-    def update_frame(self, frame):
-        self._effect.setOpacity(frame/100.0)
-        self._effect.update()
-        self._effect.updateBoundingRect()
-
-    def finished_effect_animation(self):
-        self._effect.setEnabled(False)
-        if self._timeline.direction() == QtCore.QTimeLine.Backward:
-            self.hide()
-            self.close()
-            ctrl.graph_scene.update()
-            ctrl.graph_view.update()
-            self.after_close()
-        else:
-            self.after_appear()
-
-    def after_appear(self):
-        """ Customizable calls for refreshing widgets that have drawing problems recovering from blur effect.
-        :return:
-        """
-        pass
-
-    def after_close(self):
-        """ Customizable call for removing the widget after the blur away effect is finished.
-        :return:
-        """
-        pass
-
     def update_colors(self):
         key = None
         if self.host and hasattr(self.host, 'get_color_id'):
@@ -241,24 +203,10 @@ class UIEmbed(UIItem, QtWidgets.QWidget):
         self.setPalette(self._palette)
 
     def wake_up(self):
-        if not self.isVisible():
-            if not self.disable_effect:
-                self._effect.setOpacity(self._timeline.startFrame()/100.0)
-                self._effect.setEnabled(True)
-                self._timeline.setDirection(QtCore.QTimeLine.Forward)
-                self._timeline.start()
-            self.show()
+        self.fade_in()
         self.raise_()
         self.focus_to_main()
 
-    def blur_away(self):
-        if self.isVisible():
-            self._effect.setOpacity(self._timeline.endFrame()/100.0)
-            self._effect.setEnabled(True)
-            self._timeline.setDirection(QtCore.QTimeLine.Backward)
-            self._timeline.start()
-        else:
-            self.close()
 
     def focus_to_main(self):
         pass

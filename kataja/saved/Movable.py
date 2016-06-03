@@ -107,8 +107,8 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         self.physics_y = False
         # Other
         self._fade_anim = None
-        self._fade_in_active = False
-        self._fade_out_active = False
+        self.is_fading_in = False
+        self.is_fading_out = False
         self.selectable = False
         self.draggable = False
         self.clickable = False
@@ -323,21 +323,15 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
 
     # ## Opacity ##############################################################
 
-    def is_fading_away(self):
-        """ Fade animation is ongoing or just finished
-        :return: bool
-        """
-        return self._fade_out_active
-
     def fade_in(self, s=300):
         """ Simple fade effect. The object exists already when fade starts.
         :return: None
         """
-        if self._fade_in_active:
+        if self.is_fading_in:
             return
-        self._fade_in_active = True
+        self.is_fading_in = True
         self.show()
-        if self._fade_out_active:
+        if self.is_fading_out:
             self._fade_anim.stop()
         self._fade_anim = QtCore.QPropertyAnimation(self, qbytes_opacity)
         self._fade_anim.setDuration(s)
@@ -348,19 +342,18 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         self._fade_anim.finished.connect(self.fade_in_finished)
 
     def fade_in_finished(self):
-        self._fade_in_active = False
-
+        self.is_fading_in = False
 
     def fade_out(self, s=300):
         """ Start fade out. The object exists until fade end.
         :return: None
         """
-        if self._fade_out_active:
+        if self.is_fading_out:
             return
         if not self.is_visible():
             return
-        self._fade_out_active = True
-        if self._fade_in_active:
+        self.is_fading_out = True
+        if self.is_fading_in:
             self._fade_anim.stop()
         self._fade_anim = QtCore.QPropertyAnimation(self, qbytes_opacity)
         self._fade_anim.setDuration(s)
@@ -371,18 +364,12 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         self._fade_anim.finished.connect(self.fade_out_finished)
 
     def fade_out_finished(self):
-        self._fade_out_active = False
+        self.is_fading_out = False
         if self.after_move_function:
             self.after_move_function()
             self.after_move_function = None
         self.hide()
         self.update_visibility()
-
-    def is_fading(self):
-        """ Either fade in or fade out is ongoing
-        :return: bool
-        """
-        return self._fade_in_active or self._fade_out_active
 
     def is_visible(self):
         """ Our own tracking of object visibility, not based on Qt's scene

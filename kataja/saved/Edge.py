@@ -143,8 +143,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         self.effect = None
         self.move_effect = None
         self._fade_anim = None
-        self._fade_in_active = False
-        self._fade_out_active = False
+        self.is_fading_in = False
+        self.is_fading_out = False
 
     def type(self):
         """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
@@ -982,22 +982,16 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             self._use_simple_path = False
             self.move_effect.setEnabled(False)
 
-    def is_fading_away(self):
-        """ Fade animation is ongoing or just finished
-        :return: bool
-        """
-        return self._fade_out_active
-
     def fade_in(self, s=300):
         """ Simple fade effect. The object exists already when fade starts.
         :return: None
         :param s: speed in ms
         """
-        if self._fade_in_active:
+        if self.is_fading_in:
             return
-        self._fade_in_active = True
+        self.is_fading_in = True
         self.show()
-        if self._fade_out_active:
+        if self.is_fading_out:
             self._fade_anim.stop()
         self._fade_anim = QtCore.QPropertyAnimation(self, qbytes_opacity)
         self._fade_anim.setDuration(s)
@@ -1008,7 +1002,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         self._fade_anim.finished.connect(self.fade_in_finished)
 
     def fade_in_finished(self):
-        self._fade_in_active = False
+        self.is_fading_in = False
 
     def fade_out(self, s=300):
         """ Start fade out. The object exists until fade end.
@@ -1016,10 +1010,10 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         """
         if not self.is_visible():
             return
-        if self._fade_out_active:
+        if self.is_fading_out:
             return
-        self._fade_out_active = True
-        if self._fade_in_active:
+        self.is_fading_out = True
+        if self.is_fading_in:
             self._fade_anim.stop()
         self._fade_anim = QtCore.QPropertyAnimation(self, qbytes_opacity)
         self._fade_anim.setDuration(s)
@@ -1031,14 +1025,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
 
     def fade_out_finished(self):
         self.visible = False
-        self._fade_out_active = False
+        self.is_fading_out = False
         self.update_visibility()
-
-    def is_fading(self):
-        """ Either fade in or fade out is ongoing
-        :return: bool
-        """
-        return self._fade_in_active or self._fade_out_active
 
     def free_drawing_mode(self, *args, **kwargs):
         """ Utility method for checking conditions for editing operations

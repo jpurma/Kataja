@@ -23,7 +23,6 @@ class FadingSymbol(UIItem, QtWidgets.QGraphicsObject):
         self.inner.setPixmap(symbol)
         self.place = place
         self.update_position()
-        self._fade_out_active = False
         self._fade_anim = None
         self.setZValue(72)
         self.show()
@@ -52,7 +51,7 @@ class FadingSymbol(UIItem, QtWidgets.QGraphicsObject):
         """ Start fade out. The object exists until fade end.
         :return: None
         """
-        self._fade_out_active = True
+        self.is_fading_out = True
         if self._fade_anim:
             self._fade_anim.stop()
         self._fade_anim = QtCore.QPropertyAnimation(self, qbytes_opacity)
@@ -66,13 +65,8 @@ class FadingSymbol(UIItem, QtWidgets.QGraphicsObject):
     def fade_out_finished(self):
         self.hide()
         self.ui_manager.remove_ui(self)
-        self._fade_out_active = False
+        self.is_fading_out = False
 
-    def is_fading(self):
-        """ Fade out is ongoing
-        :return: bool
-        """
-        return self._fade_out_active
 
     def boundingRect(self):
         return self.inner.boundingRect()

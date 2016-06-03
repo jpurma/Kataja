@@ -1241,10 +1241,7 @@ class Node(Movable):
             else:
                 pass
         else:
-            editor = ctrl.ui.get_editing_embed_for_node(self)
             ctrl.select(self)
-            if editor and editor.isVisible():
-                self.open_embed()
 
     # Drag flow:
 

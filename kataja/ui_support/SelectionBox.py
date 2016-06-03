@@ -44,5 +44,5 @@ class SelectionBox(QtWidgets.QComboBox):
         :param data:
         """
         index = self.find_list_item(data)
-        print('selecting data, data %s got index %s' % (data, index))
+        #print('selecting data, data %s got index %s' % (data, index))
         self.setCurrentIndex(index)

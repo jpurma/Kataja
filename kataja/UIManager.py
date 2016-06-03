@@ -130,13 +130,12 @@ class UIManager:
 
         self._items = {}
         self._items_by_host = {}
-        self._node_edits = set()
         self.log_writer = MessageWriter()
 
         self._timer_id = 0
         self._panels = {}
         self._panel_positions = {}
-        self.open_embed = None
+        self.active_embed = None
         self.moving_things = set()
         self.button_shortcut_filter = ButtonShortcutFilter()
         self.shortcut_solver = ShortcutSolver(self)
@@ -216,7 +215,6 @@ class UIManager:
         return self._action_groups[action_group_name]
 
     def set_scope(self, scope):
-        print('setting scope to', scope)
         if scope == g.SELECTION:
             self.scope_is_selection = True
         else:
@@ -227,7 +225,6 @@ class UIManager:
                 self.active_edge_type = node_class.default_edge['id']
         self.active_scope = scope
         ctrl.call_watchers(self, 'scope_changed')
-
 
     def start_color_dialog(self, receiver, parent, role, initial_color='content1'):
         """ There can be several color dialogs active at same time. Even when
@@ -297,10 +294,12 @@ class UIManager:
         if show:
             item.show()
 
-    def remove_ui(self, item):
-        """
-
+    def remove_ui(self, item, fade=True):
+        """ Remove ui_item from active and displayed ui_items. The item may still exist in scene
+        as a fading item, but it cannot be reached by ui_manager. Such items have to take care
+        that they are removed from scene when they finish fading.
         :param item:
+        :param fade:
         """
         if item.ui_key in self._items:
             del self._items[item.ui_key]
@@ -312,12 +311,19 @@ class UIManager:
                     parts.remove(item)
                     if not parts:
                         del self._items_by_host[key]
-        item.hide()
-        if isinstance(item, QtWidgets.QGraphicsItem):
-            self.scene.removeItem(item)
-        elif isinstance(item, QtWidgets.QWidget):
+        if isinstance(item, QtWidgets.QWidget):
             self.remove_watched_shortcuts_for(item)
-            item.close()
+        if fade and item.can_fade():
+            item.fade_out()
+        else:
+            item.hide()
+            if isinstance(item, QtWidgets.QGraphicsItem):
+                self.scene.removeItem(item)
+            elif isinstance(item, QtWidgets.QWidget):
+                item.close()
+
+    def remove_from_scene(self, item):
+        self.scene.removeItem(item)
 
     def get_ui(self, ui_key) -> QtCore.QObject:
         """ Return a managed ui_support item
@@ -426,12 +432,12 @@ class UIManager:
                         es['arrowhead_at_start'] = item.shape_info.has_arrowhead_at_start()
                         es['arrowhead_at_end'] = item.shape_info.has_arrowhead_at_end()
                         es['curve_adjustment'] = item.curve_adjustment or [(0, 0), (0, 0)]
-                        print('selection-based edge style:', es)
+                        #print('selection-based edge style:', es)
                     ecount += 1
                 elif isinstance(item, Node):
                     if not ncount:
                         ns = item.get_style()
-                        print('selection node style:', ns)
+                        #print('selection node style:', ns)
                     ncount += 1
             if ecount:
                 es['edge_count'] = ecount
@@ -444,12 +450,12 @@ class UIManager:
                                                              'arrowhead_at_start')
                 es['arrowhead_at_end'] = ctrl.fs.edge_info(self.active_edge_type, 'arrowhead_at_end')
                 es['shape_name'] = ctrl.fs.edge_info(self.active_edge_type, 'shape_name')
-                print('fs-based edge style: ', es)
+                #print('fs-based edge style: ', es)
             else:
                 es = {}
             if self.active_node_type:
                 ns = ctrl.fs.node_style(self.active_node_type)
-                print('fs-based node style: ', ns)
+                #print('fs-based node style: ', ns)
         self.active_edge_style = es
         self.active_node_style = ns
 
@@ -467,9 +473,12 @@ class UIManager:
                 return groups[0]
             return None
 
+        if self.active_embed:
+            self.active_embed = None
+
         # clear all ui_support pieces
         for item in list(self._items.values()):
-            if item.host and not getattr(item, '_fade_out_active', False):
+            if item.host and not item.is_fading_out:
                 self.remove_ui(item)
 
         # create ui_support pieces for selected elements. don't create touchareas and buttons if multiple
@@ -577,7 +586,7 @@ class UIManager:
         :param obj: Saved item, needs to have uid
         """
         for ui_item in list(self.get_uis_for(obj)):
-            if not getattr(ui_item, '_fade_out_active', False):
+            if not ui_item.is_fading_out:
                 ui_item.update_position()
                 self.remove_ui(ui_item)
 
@@ -879,24 +888,15 @@ class UIManager:
             args.append(element.value())
         return args
 
-    def get_selector_value(self, selector):
-        """
-
-        :param selector:
-        :return:
-        """
-        i = selector.currentIndex()
-        return selector.itemData(i)
-
     # Embedded dialogs, general methods
     ##########################################################
 
-    def release_editor_focus(self):
-        """ Make sure that quick editing is turned off before opening new editors
-        :return:
-        """
+    def close_active_embed(self):
         if ctrl.text_editor_focus:
             ctrl.text_editor_focus.release_editor_focus()
+        if self.active_embed:
+            self.remove_ui(self.active_embed)
+        self.active_embed = None
 
     # ### Label edge editing dialog
     # #########################################################
@@ -906,35 +906,22 @@ class UIManager:
 
         :param edge:
         """
-        self.release_editor_focus()
-        lp = edge.label_item.pos()
-        embed = self.get_ui('EdgeLabelEmbed')
-        if not embed:
-            embed = EdgeLabelEmbed(self.main.graph_view, edge)
-            self.add_ui(embed)
-        embed.update_embed(focus_point=lp)
-        embed.wake_up()
+        self.close_active_embed()
+        self.active_embed = EdgeLabelEmbed(self.main.graph_view, edge)
+        self.add_ui(self.active_embed)
+        self.active_embed.update_embed(focus_point=edge.label_item.pos())
+        self.active_embed.wake_up()
 
     def toggle_group_label_editing(self, group):
         """ Start group label editing or close it if it's already active.
         :param group:
         :return:
         """
-        self.release_editor_focus()
-        lp = group.boundingRect().center()
-        embed = self.get_ui('GroupLabelEmbed')
-        if embed:
-            if embed.host is group:
-                embed.close()
-                self.remove_ui(embed)
-                return
-            else:
-                embed.host = group
-        else:
-            embed = GroupLabelEmbed(self.main.graph_view, group)
-            self.add_ui(embed)
-        embed.update_embed(focus_point=lp)
-        embed.wake_up()
+        self.close_active_embed()
+        self.active_embed = GroupLabelEmbed(self.main.graph_view, group)
+        self.add_ui(self.active_embed)
+        self.active_embed.update_embed(focus_point=group.boundingRect().center())
+        self.active_embed.wake_up()
 
     # ### Creation dialog
     # #########################################################
@@ -944,30 +931,18 @@ class UIManager:
 
         :param scene_pos:
         """
-        self.release_editor_focus()
-        embed = self.get_ui('NewElementEmbed')
-        marker = self.get_ui('NewElementMarker')
-        if not embed:
-            embed = NewElementEmbed(self.main.graph_view)
-            self.add_ui(embed, show=False)
-        if not marker:
-            marker = NewElementMarker(scene_pos, embed)
-            self.add_ui(marker)
-        embed.marker = marker
-        embed.update_embed(focus_point=scene_pos)
+        self.close_active_embed()
+        self.active_embed = NewElementEmbed(self.main.graph_view)
+        self.add_ui(self.active_embed, show=False)
+        old_marker = self.get_ui('NewElementMarker')
+        if old_marker:
+            self.remove_ui(old_marker)
+        marker = NewElementMarker(scene_pos, self.active_embed)
+        self.add_ui(marker)
+        self.active_embed.marker = marker
+        self.active_embed.update_embed(focus_point=scene_pos)
         marker.update_position(scene_pos=scene_pos)
-        embed.wake_up()
-
-    def clean_up_creation_dialog(self):
-        """ Remove both
-        :return:
-        """
-        embed = self.get_ui('NewElementEmbed')
-        marker = self.get_ui('NewElementMarker')
-        if marker:
-            self.remove_ui(marker)
-        if embed:
-            self.remove_ui(embed)
+        self.active_embed.wake_up()
 
     # ### Node editing #########################################################
 
@@ -975,36 +950,10 @@ class UIManager:
         """
         :param node:
         """
-        self.release_editor_focus()
-        ed = self.get_ui('NodeEditEmbed')
-        if ed:
-            self.remove_edit_embed(ed)
-
-        ed = NodeEditEmbed(self.main.graph_view, node)
-        self.add_ui(ed, show=False)
-        self._node_edits.add(ed)
-        ed.wake_up()
-
-    def get_editing_embed_for_node(self, node):
-        embed = self.get_ui('NodeEditEmbed')
-        if embed and embed.host == node:
-            return embed
-
-    def close_all_edits(self):
-        """ Remove all node edit embeds from UI. e.g. when changing forests
-        :return:
-        """
-        for edit in self._node_edits:
-            edit.close()
-            self.remove_ui(edit)
-        self._node_edits = set()
-
-    def remove_edit_embed(self, embed):
-        """ Remove embed object from known UI.
-        :param embed: UIEmbed object
-        """
-        self.remove_ui(embed)
-        self._node_edits.remove(embed)
+        self.close_active_embed()
+        self.active_embed = NodeEditEmbed(self.main.graph_view, node)
+        self.add_ui(self.active_embed, show=False)
+        self.active_embed.wake_up()
 
     # ### Touch areas
     # #####################################################################

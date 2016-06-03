@@ -282,14 +282,14 @@ class Action(QtWidgets.QAction):
         :param value:
         :return:
         """
-        print('setting displayed value for %s to %s' % (self.key, value))
+        if value is None:
+            return
+        #print('setting displayed value for %s to %s' % (self.key, value))
         if self.isCheckable():
             for element in self.elements:
                 element.blockSignals(True)
                 if hasattr(element, 'setChecked'):
                     element.setChecked(value)
-                else:
-                    raise hell
                 element.blockSignals(False)
         else:
             for element in self.elements:
@@ -303,7 +303,4 @@ class Action(QtWidgets.QAction):
                     element.setValue(value)
                 elif isinstance(element, QtWidgets.QAbstractButton):
                     element.setChecked(value)
-                else:
-                    print('ui element for action has no setValue: ', element, self.key)
-                    raise hell
                 element.blockSignals(False)

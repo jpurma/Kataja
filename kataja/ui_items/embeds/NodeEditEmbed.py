@@ -73,7 +73,7 @@ class NodeEditEmbed(UIEmbed):
                 field = EmbeddedLineEdit(self, tip=tt, font=big_font, prefill=prefill)
                 field.setMaximumWidth(width)
             elif itype == 'textarea':
-                self.disable_effect = True
+                self._disable_effect = True
                 template_width = d.get('width', 0)
                 field = EmbeddedTextarea(self, tip=tt, font=smaller_font, prefill=prefill)
                 max_w = 200
@@ -196,12 +196,6 @@ class NodeEditEmbed(UIEmbed):
                 op_func = getattr(self.host, op_func, None) or getattr(self.syntactic_object,
                                                                        op_func, None)
                 field.update_selections(op_func())
-
-    def after_close(self):
-        """ Try to remove this embed after closing
-        :return:
-        """
-        self.ui_manager.remove_edit_embed(self)
 
     def submit_values(self):
         """ Submit field values back to object based on template

@@ -42,8 +42,8 @@ def close_embeds(sender=None):
     :return: None
     """
     embed = get_ui_container(sender)
-    if embed:
-        embed.blur_away()
+    ctrl.ui.remove_ui(embed, fade=True)
+    ctrl.ui.close_active_embed()
 
 
 a['close_embed'] = {'command': 'Close panel', 'method': close_embeds,
@@ -83,7 +83,7 @@ def new_element_accept(sender=None):
             ctrl.forest.create_tree_for(node)
     if node:
         node.lock()
-    embed.blur_away()
+    ctrl.ui.close_active_embed()
 
 
 a['create_new_node_from_text'] = {'command': 'New node from text', 'method': new_element_accept,
@@ -100,7 +100,7 @@ def create_new_arrow(sender=None):
     p1, p2 = embed.get_marker_points()
     text = embed.input_line_edit.text()
     ctrl.forest.create_arrow(p2, p1, text)
-    embed.blur_away()
+    ctrl.ui.close_active_embed()
 
 
 a['new_arrow'] = {'command': 'New arrow', 'sender_arg': True,
@@ -115,7 +115,7 @@ def create_new_divider(sender=None):
     """
     embed = get_ui_container(sender)
     p1, p2 = embed.get_marker_points()
-    embed.blur_away()
+    ctrl.ui.close_active_embed()
     # fixme: finish this!
 
 
@@ -132,7 +132,7 @@ def edge_label_accept(sender=None):
     embed = get_ui_container(sender)
     if embed:
         embed.host.set_label_text(embed.input_line_edit.text())
-    embed.blur_away()
+    ctrl.ui.close_active_embed()
 
 
 a['edit_edge_label_enter_text'] = {'command': 'Enter',
@@ -285,7 +285,7 @@ def finish_editing_node(sender=None):
     embed = get_ui_container(sender)
     if embed.host:
         embed.submit_values()
-    embed.blur_away()
+    ctrl.ui.close_active_embed()
 
 
 a['finish_editing_node'] = {'command': 'Save changes to node',
@@ -450,12 +450,7 @@ a['leaf_add_sibling_right'] = {'command': 'Add sibling node to right',
 
 def toggle_node_edit_embed(sender=None):
     node = get_host(sender)
-    embed = ctrl.ui.get_editing_embed_for_node(node)
-    if embed:
-        embed.close()
-        ctrl.ui.remove_edit_embed(embed)
-    else:
-        ctrl.ui.start_editing_node(node)
+    ctrl.ui.start_editing_node(node)
 
 a['toggle_node_edit_embed'] = {'command': 'Inspect and edit node',
                                'method': toggle_node_edit_embed,
@@ -500,9 +495,21 @@ def change_group_color(sender=None):
             ctrl.main.add_message(
                 'Group color changed to %s' % ctrl.cm.get_color_name(color_key))
 
+
+def can_edit_group():
+    return ctrl.ui.active_embed and ctrl.ui.active_embed.ui_key == 'GroupEditEmbed'
+
+
+def get_group_color():
+    if ctrl.ui.active_embed:
+        group = ctrl.ui.active_embed.host
+        return group.get_color_id()
+
 a['change_group_color'] = {'command': 'Change color for group',
                            'method': change_group_color,
-                           'sender_arg': True}
+                           'sender_arg': True,
+                           'enabler': can_edit_group,
+                           'getter': get_group_color}
 
 
 def change_group_fill(sender=None):
@@ -518,7 +525,9 @@ def change_group_fill(sender=None):
 
 a['change_group_fill'] = {'command': 'Group area is marked with translucent color',
                           'method': change_group_fill,
-                          'sender_arg': True}
+                          'sender_arg': True,
+                          'enabler': can_edit_group
+                          }
 
 
 def change_group_outline(sender=None):
@@ -534,7 +543,8 @@ def change_group_outline(sender=None):
 
 a['change_group_outline'] = {'command': 'Group is marked by line drawn around it',
                              'method': change_group_outline,
-                             'sender_arg': True}
+                             'sender_arg': True,
+                             'enabler': can_edit_group}
 
 
 def change_group_overlaps(sender=None):
@@ -556,7 +566,8 @@ def change_group_overlaps(sender=None):
 
 a['change_group_overlaps'] = {'command': 'Allow group to overlap other groups',
                               'method': change_group_overlaps,
-                              'sender_arg': True}
+                              'sender_arg': True,
+                              'enabler': can_edit_group}
 
 
 def change_group_children(sender=None):
@@ -578,7 +589,8 @@ def change_group_children(sender=None):
 
 a['change_group_children'] = {'command': 'Include children of the selected nodes in group',
                               'method': change_group_children,
-                              'sender_arg': True}
+                              'sender_arg': True,
+                              'enabler': can_edit_group}
 
 
 def delete_group(sender=None):
@@ -601,7 +613,8 @@ def delete_group(sender=None):
 
 a['delete_group'] = {'command': 'Remove this group',
                      'method': delete_group,
-                     'sender_arg': True}
+                     'sender_arg': True,
+                     'enabler': can_edit_group}
 
 
 def save_group_changes(sender=None):
@@ -625,10 +638,11 @@ def save_group_changes(sender=None):
 
 
 a['save_group_changes'] = {'command': 'Save this group',
-                              'method': save_group_changes,
-                              'shortcut': 'Return',
-                              'shortcut_context': 'parent_and_children',
-                              'sender_arg': True}
+                           'method': save_group_changes,
+                           'shortcut': 'Return',
+                           'shortcut_context': 'parent_and_children',
+                           'sender_arg': True,
+                           'enabler': can_edit_group}
 
 
 def set_assigned_feature(sender=None):

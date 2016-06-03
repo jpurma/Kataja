@@ -13,8 +13,8 @@ def can_cut_or_copy():
         return True
     elif ctrl.main.app:
         w = ctrl.main.app.focusWidget()
-        if w:
-            print(w)
+        #if w:
+        #    print(w)
     return False
 
 a['cut'] = {'command': 'Cut', 'method': cut_method, 'shortcut': 'Ctrl+x',

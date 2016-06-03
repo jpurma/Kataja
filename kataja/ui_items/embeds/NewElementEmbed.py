@@ -102,7 +102,7 @@ class NewElementEmbed(UIEmbed):
     def finished_effect_animation(self):
         UIEmbed.finished_effect_animation(self)
         if self._timeline.direction() == QtCore.QTimeLine.Backward and self.marker:
-            ctrl.ui.clean_up_creation_dialog()
+            ctrl.ui.remove_ui(self.marker)
 
     def get_marker_points(self):
         p1 = self.marker.pos()

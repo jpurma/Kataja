@@ -28,6 +28,8 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         self.role = None
         self.host = None
         self.watchlist = []
+        self.is_fading_in = False
+        self.is_fading_out = False
         # -- end faking as UIItem
         self.forest = forest
         self.selection = []
@@ -65,6 +67,9 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         :return:
         """
         return self.__qt_type_id__
+
+    def can_fade(self):
+        return False
 
     def after_init(self):
         self.update_selection(self.selection)
