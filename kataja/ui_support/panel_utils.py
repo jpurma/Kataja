@@ -3,7 +3,7 @@ from PyQt5.QtCore import QSize
 from kataja.ui_support.ColorSelector import ColorSelector
 from kataja.ui_support.ShapeSelector import ShapeSelector
 from kataja.ui_support.TableModelSelectionBox import TableModelSelectionBox
-from kataja.ui_items.OverlayButton import OverlayButton, PanelButton
+from kataja.ui_widgets.OverlayButton import OverlayButton, PanelButton
 from kataja.ui_support.FontSelector import FontSelector
 from kataja.ui_support.SelectionBox import SelectionBox
 

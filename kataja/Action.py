@@ -27,7 +27,7 @@ import traceback
 from PyQt5 import QtCore, QtWidgets, QtGui
 
 from kataja.singletons import ctrl
-from kataja.ui_items.OverlayButton import PanelButton
+from kataja.ui_widgets.OverlayButton import PanelButton
 from kataja.ui_support.EmbeddedMultibutton import EmbeddedMultibutton
 from kataja.ui_support.EmbeddedRadiobutton import EmbeddedRadiobutton
 from kataja.ui_support.SelectionBox import SelectionBox

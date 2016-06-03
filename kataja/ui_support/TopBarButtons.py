@@ -2,8 +2,8 @@
 from PyQt5 import QtWidgets, QtCore, QtGui
 
 from kataja.singletons import ctrl, qt_prefs
-from kataja.ui_items.OverlayButton import TopRowButton
-from kataja.ui_items.ModeLabel import ModeLabel
+from kataja.ui_widgets.OverlayButton import TopRowButton
+from kataja.ui_widgets.ModeLabel import ModeLabel
 
 
 class TopBarButtons(QtWidgets.QFrame):

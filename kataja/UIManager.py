@@ -25,50 +25,47 @@ from collections import OrderedDict
 
 from PyQt5 import QtCore, QtWidgets
 
-from kataja.UIItem import UIItem
-from kataja.ui_support.MyFontDialog import MyFontDialog
-from kataja.ui_support.ResizeHandle import GraphicsResizeHandle
-from kataja.ui_support.TableModelSelectionBox import TableModelSelectionBox
-from kataja.ui_support.TopBarButtons import TopBarButtons
-from kataja.ui_items.panels.ColorThemePanel import ColorPanel
-from kataja.ui_items.panels.ColorWheelPanel import ColorWheelPanel
-from kataja.ui_items.panels.FaceCamPanel import FaceCamPanel
-from kataja.ui_items.panels.LineOptionsPanel import LineOptionsPanel
-from kataja.ui_items.panels.LogPanel import LogPanel
-from kataja.ui_items.panels.NavigationPanel import NavigationPanel
-from kataja.ui_items.panels.NodesPanel import NodesPanel
-from kataja.ui_items.panels.StylePanel import StylePanel
-from kataja.ui_items.panels.VisualizationOptionsPanel import VisualizationOptionsPanel
-from kataja.ui_items.panels.VisualizationPanel import VisualizationPanel
-
 import kataja.globals as g
+import kataja.ui_graphicsitems.TouchArea
+import kataja.ui_widgets.OverlayButton
 from kataja.Action import Action, ShortcutSolver, ButtonShortcutFilter
 from kataja.actions import actions_dict
 from kataja.actions.file import switch_project
 from kataja.actions.view import change_visualization
 from kataja.actions.window import toggle_panel
-from kataja.singletons import ctrl, prefs, qt_prefs, classes
-from kataja.ui_support import drawn_icons
-from kataja.ui_support.MessageWriter import MessageWriter
-from kataja.visualizations.available import VISUALIZATIONS, action_key
-from kataja.saved.Group import Group
 from kataja.saved.Edge import Edge
+from kataja.saved.Group import Group
 from kataja.saved.movables.Node import Node
-from kataja.ui_items.Panel import Panel
-from kataja.ui_items.ActivityMarker import ActivityMarker
-from kataja.ui_items.ControlPoint import ControlPoint
-from kataja.ui_items.FadingSymbol import FadingSymbol
-import kataja.ui_items.OverlayButton
-from kataja.ui_items.StretchLine import StretchLine
-import kataja.ui_items.TouchArea
-from kataja.ui_items.embeds.EdgeLabelEmbed import EdgeLabelEmbed
-from kataja.ui_items.embeds.GroupLabelEmbed import GroupLabelEmbed
-from kataja.ui_items.embeds.NewElementEmbed import NewElementEmbed
-from kataja.ui_items.NewElementMarker import NewElementMarker
-from kataja.ui_items.embeds.NodeEditEmbed import NodeEditEmbed
-from kataja.ui_items.panels.SymbolPanel import SymbolPanel
+from kataja.singletons import ctrl, prefs, qt_prefs, classes
+from kataja.ui_graphicsitems.ActivityMarker import ActivityMarker
+from kataja.ui_graphicsitems.ControlPoint import ControlPoint
+from kataja.ui_graphicsitems.FadingSymbol import FadingSymbol
+from kataja.ui_graphicsitems.NewElementMarker import NewElementMarker
+from kataja.ui_graphicsitems.StretchLine import StretchLine
+from kataja.ui_support.MessageWriter import MessageWriter
 from kataja.ui_support.MyColorDialog import MyColorDialog
+from kataja.ui_support.MyFontDialog import MyFontDialog
+from kataja.ui_support.TableModelSelectionBox import TableModelSelectionBox
+from kataja.ui_support.TopBarButtons import TopBarButtons
+from kataja.ui_widgets.Panel import Panel
+from kataja.ui_widgets.embeds.EdgeLabelEmbed import EdgeLabelEmbed
+from kataja.ui_widgets.embeds.GroupLabelEmbed import GroupLabelEmbed
+from kataja.ui_widgets.embeds.NewElementEmbed import NewElementEmbed
+from kataja.ui_widgets.embeds.NodeEditEmbed import NodeEditEmbed
+from kataja.ui_widgets.panels.ColorThemePanel import ColorPanel
+from kataja.ui_widgets.panels.ColorWheelPanel import ColorWheelPanel
+from kataja.ui_widgets.panels.FaceCamPanel import FaceCamPanel
+from kataja.ui_widgets.panels.LineOptionsPanel import LineOptionsPanel
+from kataja.ui_widgets.panels.LogPanel import LogPanel
+from kataja.ui_widgets.panels.NavigationPanel import NavigationPanel
+from kataja.ui_widgets.panels.NodesPanel import NodesPanel
+from kataja.ui_widgets.panels.StylePanel import StylePanel
+from kataja.ui_widgets.panels.SymbolPanel import SymbolPanel
+from kataja.ui_widgets.panels.VisualizationOptionsPanel import VisualizationOptionsPanel
+from kataja.ui_widgets.panels.VisualizationPanel import VisualizationPanel
 from kataja.utils import time_me
+from kataja.visualizations.available import VISUALIZATIONS, action_key
+from kataja.ui_widgets.ResizeHandle import GraphicsResizeHandle
 
 NOTHING = 0
 SELECTING_AREA = 1
@@ -289,7 +286,7 @@ class UIManager:
                 self._items_by_host[key].append(item)
             else:
                 self._items_by_host[key] = [item]
-        if isinstance(item, QtWidgets.QGraphicsItem):
+        if item.scene_item:
             self.scene.addItem(item)
         if show:
             item.show()
@@ -311,15 +308,15 @@ class UIManager:
                     parts.remove(item)
                     if not parts:
                         del self._items_by_host[key]
-        if isinstance(item, QtWidgets.QWidget):
+        if item.is_widget:
             self.remove_watched_shortcuts_for(item)
-        if fade and item.can_fade():
+        if fade and item.can_fade:
             item.fade_out()
         else:
             item.hide()
-            if isinstance(item, QtWidgets.QGraphicsItem):
+            if item.scene_item:
                 self.scene.removeItem(item)
-            elif isinstance(item, QtWidgets.QWidget):
+            elif item.is_widget:
                 item.close()
 
     def remove_from_scene(self, item):
@@ -981,7 +978,7 @@ class UIManager:
         :param action:
         :return:
         """
-        ta_class = getattr(kataja.ui_items.TouchArea, ta_type)
+        ta_class = getattr(kataja.ui_graphicsitems.TouchArea, ta_type)
         ta = ta_class(host, action)
         self.add_ui(ta)
         return ta
@@ -990,7 +987,7 @@ class UIManager:
         """ Remove all touch areas from UI. Needs to be done when changing
         selection or starting dragging, or generally before touch areas are recalculated """
         for item in list(self._items.values()):
-            if isinstance(item, kataja.ui_items.TouchArea.TouchArea):
+            if isinstance(item, kataja.ui_graphicsitems.TouchArea.TouchArea):
                 self.remove_ui(item)
 
     def update_touch_areas(self):
@@ -1215,7 +1212,7 @@ class UIManager:
         button = self.get_ui_by_type(host=node, ui_type=class_key)
         if button:
             return button
-        constructor = getattr(kataja.ui_items.OverlayButton, class_key)
+        constructor = getattr(kataja.ui_widgets.OverlayButton, class_key)
         button = constructor(node, self.main.graph_view)
 
         self.add_ui(button)
