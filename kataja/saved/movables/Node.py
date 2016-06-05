@@ -209,6 +209,27 @@ class Node(Movable):
         """
         return None
 
+    def cut(self, others):
+        """
+        :param others: other items targeted for cutting, to help decide which relations to maintain
+        :return:
+        """
+        for parent in self.get_parents(only_similar=False, only_visible=False):
+            if parent not in others:
+                ctrl.forest.disconnect_node(parent, self)
+        for child in self.get_all_children():
+            if child not in others:
+                ctrl.forest.disconnect_node(self, child)
+        ctrl.forest.remove_from_scene(self)
+        return self
+
+    def copy(self):
+        if self.syntactic_object:
+            synobj = self.syntactic_object.copy()
+        else:
+            synobj = None
+
+
     def get_editing_template(self, refresh=False):
         """ Create or fetch a dictionary template to help building an editing
         UI for Node.

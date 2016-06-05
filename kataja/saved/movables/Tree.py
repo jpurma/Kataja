@@ -3,7 +3,7 @@ from PyQt5 import QtCore
 
 from kataja.SavedField import SavedField
 from kataja.saved.Movable import Movable
-from uniqueness_generator import next_available_type_id
+from kataja.uniqueness_generator import next_available_type_id
 
 __author__ = 'purma'
 

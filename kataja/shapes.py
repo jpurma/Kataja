@@ -5,7 +5,7 @@ from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import QPointF as Pf
 
 from kataja.globals import LEFT, RIGHT
-from singletons import ctrl
+from kataja.singletons import ctrl
 
 __author__ = 'purma'
 

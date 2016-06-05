@@ -63,6 +63,13 @@ class UIEmbed(UIWidget, QtWidgets.QWidget):
         """
         return self.__qt_type_id__
 
+    @property
+    def graphic_item(self):
+        """ if this _Widget_ has UI graphic items associated in scene, e.g. target reticles or so.
+        :return:
+        """
+        return None
+
     def update_embed(self, focus_point=None):
         self.update_colors()
         self.update_fields()

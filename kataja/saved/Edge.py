@@ -183,6 +183,25 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         self.connect_end_points(self.start, self.end)
         self.update_end_points()
 
+    def cut(self, others=None):
+        """ If edge ends are not included, set them to None, otherwise cut the edge as it is.
+        :param others:
+        :return:
+        """
+        start = None
+        end = None
+        if self.start and self.start in others:
+            start = self.start
+        if self.end and self.end in others:
+            end = self.end
+        self.connect_end_points(start, end)
+        ctrl.forest.remove_from_scene(self)
+        return self
+
+    def copy(self, others=None):
+        super().copy(others)
+
+
     @property
     def start_point(self) -> tuple:
         """ Helper property: returns latest known (x, y, z) coords of

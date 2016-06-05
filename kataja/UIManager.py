@@ -892,6 +892,8 @@ class UIManager:
         if ctrl.text_editor_focus:
             ctrl.text_editor_focus.release_editor_focus()
         if self.active_embed:
+            if self.active_embed.graphic_item:
+                self.remove_ui(self.active_embed.graphic_item)
             self.remove_ui(self.active_embed)
         self.active_embed = None
 
@@ -931,9 +933,6 @@ class UIManager:
         self.close_active_embed()
         self.active_embed = NewElementEmbed(self.main.graph_view)
         self.add_ui(self.active_embed, show=False)
-        old_marker = self.get_ui('NewElementMarker')
-        if old_marker:
-            self.remove_ui(old_marker)
         marker = NewElementMarker(scene_pos, self.active_embed)
         self.add_ui(marker)
         self.active_embed.marker = marker

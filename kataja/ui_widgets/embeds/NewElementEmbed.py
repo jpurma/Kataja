@@ -67,6 +67,10 @@ class NewElementEmbed(UIEmbed):
         self.assumed_width = 200
         self.assumed_height = 117
 
+    @property
+    def graphic_item(self):
+        return self.marker
+
     def mouseMoveEvent(self, event):
         self.move(self.mapToParent(event.pos()) - self._drag_diff)
         if self.marker:
@@ -98,11 +102,6 @@ class NewElementEmbed(UIEmbed):
         if self.guess_mode:
             self.set_node_type(g.ARROW)
             self.guess_mode = False
-
-    def finished_effect_animation(self):
-        UIEmbed.finished_effect_animation(self)
-        if self._timeline.direction() == QtCore.QTimeLine.Backward and self.marker:
-            ctrl.ui.remove_ui(self.marker)
 
     def get_marker_points(self):
         p1 = self.marker.pos()

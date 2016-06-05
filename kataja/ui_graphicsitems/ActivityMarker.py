@@ -1,18 +1,18 @@
 # coding=utf-8
 
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 from kataja.singletons import qt_prefs, ctrl
 from kataja.UIItem import UIGraphicsItem
 from kataja.uniqueness_generator import next_available_type_id
 
 
-class ActivityMarker(UIGraphicsItem, QtWidgets.QGraphicsRectItem):
+class ActivityMarker(QtWidgets.QGraphicsRectItem, UIGraphicsItem):
     """ Blinky thing to announce that computing is going on. """
     __qt_type_id__ = next_available_type_id()
 
     def __init__(self, role=0, ui_key=None):
+        QtWidgets.QGraphicsRectItem.__init__(self, QtCore.QRectF(0, 0, 4, 4))  # , scene = parent)
         UIGraphicsItem.__init__(self, ui_key=ui_key)
-        QtWidgets.QGraphicsRectItem.__init__(self, 0, 0, 4, 4)  # , scene = parent)
         self.role = int(role)
         self.setZValue(100)
         self.setBrush(ctrl.cm.get('accent%s' % str(self.role + 1)))

@@ -2,6 +2,7 @@
 from kataja.singletons import ctrl
 from kataja.uniqueness_generator import next_available_ui_key
 from PyQt5 import QtWidgets, QtCore
+from kataja.utils import time_me
 
 qbytes_opacity = QtCore.QByteArray()
 qbytes_opacity.append("opacity")
@@ -14,7 +15,7 @@ class UIItem:
     """
     permanent_ui = False
     unique = False
-    can_fade = False
+    can_fade = True
     scene_item = False
     is_widget = False
 
@@ -32,7 +33,9 @@ class UIItem:
         self.watchlist = []
         self.is_fading_in = False
         self.is_fading_out = False
-        self._fade_anim = None
+        self._fade_in_anim = None
+        self._fade_out_anim = None
+        self._opacity_effect = None
         self._disable_effect = False
 
     def watch_alerted(self, obj, signal, field_name, value):
@@ -50,18 +53,24 @@ class UIItem:
     def after_appear(self):
         pass
 
+    def prepare_opacity_effect(self):
+        self._opacity_effect = QtWidgets.QGraphicsOpacityEffect()
+        self._opacity_effect.setEnabled(False)
+        self.setGraphicsEffect(self._opacity_effect)
 
-class UIWidget(UIItem):
+    def prepare_fade_in_effect(self):
+        self._fade_in_anim = QtCore.QPropertyAnimation(self._opacity_effect, qbytes_opacity)
+        self._fade_in_anim.setStartValue(0.0)
+        self._fade_in_anim.setEndValue(1.0)
+        self._fade_in_anim.setEasingCurve(QtCore.QEasingCurve.InQuad)
+        self._fade_in_anim.finished.connect(self.fade_in_finished)
 
-    can_fade = True
-    is_widget = True
+    def fade_in_finished(self):
+        self.is_fading_in = False
+        self._fade_in_anim = None
+        self._opacity_effect.setEnabled(False)
 
-    def __init__(self, host=None, ui_key=None, role=None):
-        UIItem.__init__(self, host, ui_key, role)
-        self._timeline = None
-        self._effect = None
-
-    def fade_in(self, s=300):
+    def fade_in(self, s=150):
         """ Simple fade effect. The object exists already when fade starts.
         There are two ways to do fade, one for QGraphicsItems and one for QWidgets
         :return: None
@@ -71,25 +80,26 @@ class UIWidget(UIItem):
             return
         self.is_fading_in = True
         self.show()
-        if not self._effect:
-            self.prepare_widget_effect()
-        self._effect.setOpacity(self._timeline.startFrame() / 100.0)
-        self._effect.setEnabled(True)
-        self._timeline.setDirection(QtCore.QTimeLine.Forward)
-        self._timeline.start()
+        if not self._opacity_effect:
+            self.prepare_opacity_effect()
+        if not self._fade_in_anim:
+            self.prepare_fade_in_effect()
+        self._opacity_effect.setEnabled(True)
+        self._fade_in_anim.setDuration(s)
+        self._fade_in_anim.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
 
-    def prepare_widget_effect(self):
-        self._effect = QtWidgets.QGraphicsOpacityEffect(self)
-        self._timeline = QtCore.QTimeLine(80, self)
-        self._timeline.setFrameRange(0, 100)
-        self._timeline.frameChanged[int].connect(self.update_frame)
-        self._timeline.finished.connect(self.finished_effect_animation)
-        self._effect.setEnabled(False)
-        # it seems that opacityeffect and QTextEdit doesn't work well together
-        self.setGraphicsEffect(self._effect)
+    def prepare_fade_out_effect(self):
+        self._fade_out_anim = QtCore.QPropertyAnimation(self._opacity_effect, qbytes_opacity)
+        self._fade_out_anim.setStartValue(1.0)
+        self._fade_out_anim.setEndValue(0.0)
+        self._fade_out_anim.setEasingCurve(QtCore.QEasingCurve.InQuad)
+        self._fade_out_anim.finished.connect(self.fade_out_finished)
 
-    def fade_in_finished(self):
-        self.is_fading_in = False
+    def fade_out_finished(self):
+        self.visible = False
+        self.is_fading_out = False
+        self._fade_out_anim = None
+        self.after_close()
 
     def fade_out(self, s=150):
         """ Start fade out. The object exists until fade end.
@@ -100,87 +110,36 @@ class UIWidget(UIItem):
         if self.is_fading_out:
             return
         self.is_fading_out = True
-        if not self._effect:
-            self.prepare_widget_effect()
-        self._effect.setOpacity(self._timeline.endFrame() / 100.0)
-        self._effect.setEnabled(True)
-        self._timeline.setDirection(QtCore.QTimeLine.Backward)
-        self._timeline.start()
-
-    def fade_out_finished(self):
-        self.visible = False
-        self.is_fading_out = False
-        self.hide()
-        self.after_close()
-
-    def update_frame(self, frame):
-        self._effect.setOpacity(frame / 100.0)
-        self._effect.update()
-        self._effect.updateBoundingRect()
-
-    def finished_effect_animation(self):
-        self._effect.setEnabled(False)
-        if self._timeline.direction() == QtCore.QTimeLine.Backward:
-            self.fade_out_finished()
-        else:
-            self.after_appear()
+        if not self._opacity_effect:
+            self.prepare_opacity_effect()
+        if not self._fade_out_anim:
+            self.prepare_fade_out_effect()
+        self._opacity_effect.setEnabled(True)
+        if self.is_fading_in:
+            self._fade_in_anim.stop()
+        self._fade_out_anim.setDuration(s)
+        self._fade_out_anim.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
 
 
 class UIGraphicsItem(UIItem):
     """ UIGraphicsItems are UIItems that will inherit QGraphicsItem. So they must deal with
-    scene, and they have different implementation for fade in/out.
+    scene, and they are not necessarily QObjects.
     """
     can_fade = True
+    is_widget = False
     scene_item = True
 
-    def __init__(self, host=None, ui_key=None, role=None):
-        UIItem.__init__(self, host, ui_key, role)
-        self._fade_anim = None
-
-    def fade_in(self, s=300):
-        """ Simple fade effect. The object exists already when fade starts.
-        There are two ways to do fade, one for QGraphicsItems and one for QWidgets
-        :return: None
-        :param s: speed in ms
-        """
-        if self.is_fading_in:
-            return
-        self.is_fading_in = True
-        self.show()
-        if self.is_fading_out:
-            self._fade_anim.stop()
-        self._fade_anim = QtCore.QPropertyAnimation(self, qbytes_opacity)
-        self._fade_anim.setDuration(s)
-        self._fade_anim.setStartValue(0.0)
-        self._fade_anim.setEndValue(1.0)
-        self._fade_anim.setEasingCurve(QtCore.QEasingCurve.InQuad)
-        self._fade_anim.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
-        self._fade_anim.finished.connect(self.fade_in_finished)
-
-    def fade_in_finished(self):
-        self.is_fading_in = False
-
-    def fade_out(self, s=150):
-        """ Start fade out. The object exists until fade end.
-        :return: None
-        """
-        if not self.isVisible():
-            return
-        if self.is_fading_out:
-            return
-        self.is_fading_out = True
-        if self.is_fading_in:
-            self._fade_anim.stop()
-        self._fade_anim = QtCore.QPropertyAnimation(self, qbytes_opacity)
-        self._fade_anim.setDuration(s)
-        self._fade_anim.setStartValue(1.0)
-        self._fade_anim.setEndValue(0)
-        self._fade_anim.setEasingCurve(QtCore.QEasingCurve.OutQuad)
-        self._fade_anim.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
-        self._fade_anim.finished.connect(self.fade_out_finished)
-
     def fade_out_finished(self):
-        self.visible = False
-        self.is_fading_out = False
+        UIItem.fade_out_finished(self)
         ctrl.ui.remove_from_scene(self)
-        self.after_close()
+
+
+class UIWidget(UIItem):
+    can_fade = True
+    is_widget = True
+    scene_item = False
+
+    def prepare_opacity_effect(self):
+        self._opacity_effect = QtWidgets.QGraphicsOpacityEffect(self)
+        self._opacity_effect.setEnabled(False)
+        self.setGraphicsEffect(self._opacity_effect)

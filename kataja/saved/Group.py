@@ -17,6 +17,11 @@ points = 36
 class Group(SavedObject, QtWidgets.QGraphicsObject):
 
     __qt_type_id__ = next_available_type_id()
+    permanent_ui = False
+    unique = False
+    can_fade = False
+    scene_item = True
+    is_widget = False
 
     def __init__(self, forest=None, selection=None, persistent=True):
         SavedObject.__init__(self)
@@ -67,9 +72,6 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         :return:
         """
         return self.__qt_type_id__
-
-    def can_fade(self):
-        return False
 
     def after_init(self):
         self.update_selection(self.selection)

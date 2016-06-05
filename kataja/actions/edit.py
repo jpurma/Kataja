@@ -6,6 +6,13 @@ a = {}
 
 
 def cut_method():
+    qclipboard = ctrl.main.app.clipboard()
+    ctrl.clipboard = []
+    if ctrl.selected:
+        for item in ctrl.selected:
+            if hasattr(item, 'cut'):
+                ctrl.clipboard.append(item.cut(ctrl.selected))
+
     print('Cut called')
 
 def can_cut_or_copy():
@@ -22,7 +29,11 @@ a['cut'] = {'command': 'Cut', 'method': cut_method, 'shortcut': 'Ctrl+x',
 
 
 def copy_method():
-    print('Copy called')
+    ctrl.clipboard = []
+    for item in ctrl.selected:
+        if hasattr(item, 'copy'):
+            ctrl.clipboard.append(item.copy(ctrl.selected))
+
 
 a['copy'] = {'command': 'Copy', 'method': copy_method, 'shortcut': 'Ctrl+c',
              'tooltip': 'Copy element', 'enabler': can_cut_or_copy}
