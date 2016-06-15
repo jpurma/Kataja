@@ -63,6 +63,7 @@ from kataja.ui_widgets.panels.StylePanel import StylePanel
 from kataja.ui_widgets.panels.SymbolPanel import SymbolPanel
 from kataja.ui_widgets.panels.VisualizationOptionsPanel import VisualizationOptionsPanel
 from kataja.ui_widgets.panels.VisualizationPanel import VisualizationPanel
+from kataja.ui_widgets.panels.LexiconPanel import LexiconPanel
 from kataja.utils import time_me
 from kataja.visualizations.available import VISUALIZATIONS, action_key
 from kataja.ui_widgets.ResizeHandle import GraphicsResizeHandle
@@ -79,13 +80,14 @@ PANELS = [{'class': LogPanel, 'name': 'Log', 'position': 'bottom'},
           {'class': StylePanel, 'name': 'Styles', 'position': 'right'},
           {'class': ColorPanel, 'name': 'Color theme', 'position': 'right'},
           {'class': ColorWheelPanel, 'name': 'Color theme wheel', 'position': 'right',
-           'folded': True, 'closed': True },
+           'folded': True, 'closed': True},
           {'class': LineOptionsPanel, 'name': 'More line options', 'position': 'float',
-           'closed': True },
+           'closed': True},
           {'class': SymbolPanel, 'name': 'Symbols', 'position': 'right'},
           {'class': FaceCamPanel, 'name': 'Camera', 'position': 'float', 'closed': True},
           {'class': VisualizationOptionsPanel, 'name': 'Visualization options',
-           'position': 'float', 'closed': True }]
+           'position': 'float', 'closed': True},
+          {'class': LexiconPanel, 'name': 'Lexicon', 'position':'float', 'closed': False}]
 
 menu_structure = OrderedDict([('file_menu', ('&File',
                                              ['new_project', 'new_forest', 'open', 'save',

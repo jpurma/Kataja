@@ -69,10 +69,10 @@ class EquidistantElasticTree(BaseVisualization):
         """
         xvel = 0.0
         yvel = 0.0
-        node_x, node_y = node.current_position
+        node_x, node_y = node.centered_position
         vn = list(self.forest.visible_nodes())
         for other in vn:
-            other_x, other_y = other.current_position
+            other_x, other_y = other.centered_position
             if other is node:
                 continue
             dist_x = int(node_x - other_x)

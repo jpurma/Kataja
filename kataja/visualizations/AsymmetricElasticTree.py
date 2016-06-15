@@ -129,7 +129,7 @@ class AsymmetricElasticTree(BaseVisualization):
         """
         xvel = 0.0
         yvel = 0.0
-        node_x, node_y = node.current_scene_position  # @UnusedVariable
+        node_x, node_y = node.centered_scene_position  # @UnusedVariable
         node_br = node.boundingRect()
         nw2, nh2 = node_br.width() / 2.0, node_br.height() / 2.0
 
@@ -137,7 +137,7 @@ class AsymmetricElasticTree(BaseVisualization):
             other_br = other.boundingRect()
             if other is node:
                 continue
-            other_x, other_y = other.current_scene_position  # @UnusedVariable
+            other_x, other_y = other.centered_scene_position  # @UnusedVariable
 
             d, dx, dy, overlap = border_distance(node_x, node_y, nw2, nh2, other_x, other_y,
                                                  other_br.width() / 2,

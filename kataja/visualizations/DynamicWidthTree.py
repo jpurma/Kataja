@@ -52,8 +52,8 @@ class DynamicWidthTree(LinearizedStaticTree):
         :param node:
         :return:
         """
-        node_x, node_y = node.current_position
-        old_x, old_y = node.current_position
+        node_x, node_y = node.centered_position
+        old_x, old_y = node.centered_position
 
         close_ones = set()
         # attract
@@ -62,7 +62,7 @@ class DynamicWidthTree(LinearizedStaticTree):
             other = edge.end
             if other.is_visible():
                 close_ones.add(other)
-                other_x, other_y = other.current_position
+                other_x, other_y = other.centered_position
                 dist_x, dist_y = node_x - other_x, node_y - other_y
                 dist = math.hypot(dist_x, dist_y)
                 radius = (other.width + node.width) / 2
@@ -77,7 +77,7 @@ class DynamicWidthTree(LinearizedStaticTree):
             other = edge.start
             if other.is_visible():
                 close_ones.add(other)
-                other_x, other_y = other.current_position
+                other_x, other_y = other.centered_position
                 dist_x, dist_y = node_x - other_x, node_y - other_y
                 dist = math.hypot(dist_x, dist_y)
                 radius = ((other.width + node.width) / 2) * 1.4
@@ -94,7 +94,7 @@ class DynamicWidthTree(LinearizedStaticTree):
         alpha_strong = (alpha * 5) or 0.5
         alpha = alpha or 0.1
         for other in other_nodes:
-            other_x, other_y = other.current_position  # @UnusedVariable
+            other_x, other_y = other.centered_position  # @UnusedVariable
             dist_x, dist_y = node_x - other_x, node_y - other_y
             dist = math.hypot(dist_x, dist_y)
             if dist == 0:
@@ -111,7 +111,7 @@ class DynamicWidthTree(LinearizedStaticTree):
                     node_x -= 1
         # repulse weakly
         for other in close_ones:
-            other_x, other_y = other.current_position  # @UnusedVariable
+            other_x, other_y = other.centered_position  # @UnusedVariable
             dist_x, dist_y = node_x - other_x, node_y - other_y
             dist = math.hypot(dist_x, dist_y)
             if dist == 0:

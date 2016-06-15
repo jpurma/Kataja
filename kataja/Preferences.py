@@ -462,6 +462,7 @@ class QtPreferences:
         self.h_refresh_icon = None
         self.h_refresh_small_icon = None
         self.camera_icon = None
+        self.card_icon = None
         self.eye_icon = None
         self.undo_icon = None
         self.redo_icon = None
@@ -532,6 +533,7 @@ class QtPreferences:
         self.select_all_icon = icon('select_all48.png')
         self.full_icon = icon('full48.png')
         self.camera_icon = icon('camera48.png')
+        self.card_icon = icon('card48.png')
         self.eye_icon = icon('eye_shut48.png')
         self.undo_icon = icon('undo48.png')
         self.redo_icon = icon('redo48.png')

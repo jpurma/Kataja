@@ -89,7 +89,8 @@ class Node(Movable):
     display_styles = {}
     editable = {}
 
-    default_style = {'color': 'content1', 'font': g.MAIN_FONT, 'font-size': 10}
+    default_style = {'color': 'content1', 'font': g.MAIN_FONT, 'font-size': 10, 'card': False,
+                     'card_size': (0, 0)}
 
     default_edge = {'id': g.ABSTRACT_EDGE, 'shape_name': 'linear', 'color': 'content1', 'pull': .40,
                     'visible': True, 'arrowhead_at_start': False, 'arrowhead_at_end': False,
@@ -208,6 +209,39 @@ class Node(Movable):
         :return:
         """
         return None
+
+    @property
+    def offset_x(self):
+        if self.label_object:
+            return self.label_object.x_offset
+        else:
+            return self.width / -2
+
+    @property
+    def offset_y(self):
+        if self.label_object:
+            return self.label_object.y_offset
+        else:
+            return self.height / -2
+
+    @property
+    def centered_scene_position(self):
+        sx, sy = self.current_scene_position
+        ox = self.offset_x
+        oy = self.offset_y
+        cx = sx + ox + self.width / 2
+        cy = sy + oy + self.height / 2
+        return cx, cy
+
+    @property
+    def centered_position(self):
+        px, py = self.current_position
+        ox = self.offset_x
+        oy = self.offset_y
+        cx = px + ox + self.width / 2
+        cy = py + oy + self.height / 2
+        return cx, cy
+
 
     def cut(self, others):
         """
@@ -1010,25 +1044,33 @@ class Node(Movable):
             user_width, user_height = self.user_size
 
         if self._label_visible and self.label_object:
-            lbr = self.label_object.boundingRect()
+            l = self.label_object
+            lbr = l.boundingRect()
             lbw = lbr.width()
             lbh = lbr.height()
-            lbx = self.label_object.x()
-            lby = self.label_object.y()
+            lbx = l.x()
+            lby = l.y()
+            self.label_rect = QtCore.QRectF(lbx, lby, lbw, lbh)
+            self.width = max((lbw, my_class.width, user_width))
+            self.height = max((lbh, my_class.height, user_height))
+            x = l.x_offset
+            y = l.y_offset
         else:
-            lbw, lbh, lbx, lby = 0, 0, 0, 0
-        self.label_rect = QtCore.QRectF(lbx, lby, lbw, lbh)
-        self.width = max((lbw, my_class.width, user_width))
-        self.height = max((lbh, my_class.height, user_height))
-        y = self.height / -2
-        x = self.width / -2
+            self.label_rect = QtCore.QRectF(0, 0, 0, 0)
+            self.width = max((my_class.width, user_width))
+            self.height = max((my_class.height, user_height))
+            x = self.width / -2
+            y = self.height / -2
         self.inner_rect = QtCore.QRectF(x, y, self.width, self.height)
         w4 = (self.width - 2) / 4.0
         w2 = (self.width - 2) / 2.0
         h2 = (self.height - 2) / 2.0
-
-        self._magnets = [(-w2, -h2), (-w4, -h2), (0, -h2), (w4, -h2), (w2, -h2), (-w2, 0), (w2, 0),
-                         (-w2, h2), (-w4, h2), (0, h2), (w4, h2), (w2, h2)]
+        y_max = y + self.height
+        x_max = x + self.width
+        self._magnets = [(x, y), (x + w4, y), (x + w2, y), (x + w2 + w4, y), (x_max, -y),
+                         (x, y + h2), (x_max, y + h2),
+                         (x, y_max), (x + w4, y_max), (x + w2, y_max),
+                         (x + w2 + w4, y_max), (x_max, y_max)]
         if ctrl.ui.selection_group and self in ctrl.ui.selection_group.selection:
             ctrl.ui.selection_group.update_shape()
 

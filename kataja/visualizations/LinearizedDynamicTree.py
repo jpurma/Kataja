@@ -47,7 +47,7 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
         if reset:
             self.forest.settings.show_constituent_edges = True
             self.forest.settings.bracket_style = NO_BRACKETS
-            max_height_steps = max([len(tree.sorted_nodes) for tree in self.forest])
+            max_height_steps = max([len(tree.sorted_nodes) / 2 for tree in self.forest])
             self.set_vis_data('max_height_steps', max_height_steps)
             self.set_vis_data('height_steps', max_height_steps / 2)
 
@@ -84,13 +84,11 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
         """
         x = 0
         y = 0
-        start_height = self.get_vis_data('height_steps') * prefs.edge_height
         tree_x = 0
 
         for tree in self.forest:
             old_x, tree_y = tree.current_position
             tree.move_to(tree_x, tree_y)
-            print('tree moving to: ', tree_x)
             top = tree.top
             if top.node_type != CONSTITUENT_NODE:
                 continue
@@ -113,6 +111,7 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
                             pass
                         else:
                             nodelist.append(node)
+
                 else:
                     node.physics_x = True
                     node.physics_y = True
@@ -122,6 +121,10 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
             x = offset
             # measureDepth(rootnode,0)
             # depth=max(depths)
+
+            node_height = max((x.height for x in nodelist))
+            start_height = self.get_vis_data('height_steps') * (prefs.edge_height + node_height)
+
             for node in nodelist:
                 nw = node.width
                 x += nw / 2

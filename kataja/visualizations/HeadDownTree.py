@@ -133,16 +133,17 @@ class HeadDownTree(BaseVisualization):
             node_width = mnode.width
             node_height = mnode.height
             node_top_row = mnode.get_top_part_y()
+            node_offset_y = mnode.boundingRect().y()
             if node_height == 0:
                 relative_start_height = 0
             else:
-                relative_start_height = (node_height / 2.0 + node_top_row) / node_height
+                relative_start_height = (node_offset_y + node_top_row) / node_height
 
             if edge_height == 0:
                 height_in_rows = 1
             else:
-                height_in_rows = math.ceil(node_height / float(edge_height))
-            start_height = max(int(relative_start_height * height_in_rows), 1)
+                height_in_rows = math.ceil(node_height / float(edge_height)) + 1
+            start_height = max(int(relative_start_height * height_in_rows), 0)
 
             if edge_width == 0:
                 width_in_columns = 1

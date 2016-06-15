@@ -244,7 +244,7 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         :return:
         """
         return QtCore.QPoint(ctrl.main.x() / ctrl.main.devicePixelRatio() + ctrl.main.width(),
-                             ctrl.main.y() / ctrl.main.devicePixelRatio())
+                             max(40, ctrl.main.y() / ctrl.main.devicePixelRatio()))
 
     def watch_alerted(self, obj, signal, field_name, value):
         """ Receives alerts from signals that this object has chosen to listen. These signals

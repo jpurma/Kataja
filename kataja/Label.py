@@ -56,6 +56,8 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.triangle_y = 0
         self.width = 0
         self.template_width = 0
+        self.x_offset = 0
+        self.y_offset = 0
         self.text_align = CENTER_ALIGN
         self._font = None
         self.html = ''
@@ -72,6 +74,8 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.editable_parts = []
         self.prepare_template()
         self.doc = LabelDocument()
+        self.is_card = True
+        self.card_size = (90, 120)
 
         self.setDocument(self.doc)
         # not acceptin hover events is important, editing focus gets lost if other labels take
@@ -107,7 +111,10 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.compose_html_for_viewing()
         if old_html != self.html:
             self.prepareGeometryChange()
-            self.doc.setTextWidth(-1)
+            if self.is_card:
+                self.doc.setTextWidth(self.card_size[0])
+            else:
+                self.doc.setTextWidth(-1)
             self.setHtml(self.html)
             self.text = self.toPlainText()
         self.resize_label()
@@ -316,7 +323,10 @@ class Label(QtWidgets.QGraphicsTextItem):
             ctrl.text_editor_focus = self
             self.setTextInteractionFlags(QtCore.Qt.TextEditorInteraction)
             self.prepareGeometryChange()
-            self.doc.setTextWidth(-1)
+            if self.is_card:
+                self.doc.setTextWidth(self.card_size[0])
+            else:
+                self.doc.setTextWidth(-1)
             self.compose_html_for_editing()
             self.setCursor(QtGui.QCursor(QtCore.Qt.IBeamCursor))
             self.setPlainText(self.editable_html)
@@ -499,21 +509,27 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.prepareGeometryChange()
         # Width
         user_width, user_height = self.get_max_size_from_host()
-        self.setTextWidth(-1)
-        ideal_width = self.doc.idealWidth()
-        if user_width and user_width < ideal_width:
-            br_width = user_width
-        elif self.template_width:
-            br_width = self.template_width
+        if self.is_card:
+            br_width = self.card_size[0]
         else:
-            br_width = ideal_width
-        if br_width < 20:
-            br_width = 20
-        elif br_width > Label.max_width:
-            br_width = Label.max_width
+            self.setTextWidth(-1)
+            ideal_width = self.doc.idealWidth()
+            if user_width and user_width < ideal_width:
+                br_width = user_width
+            elif self.template_width:
+                br_width = self.template_width
+            else:
+                br_width = ideal_width
+            if br_width < 20:
+                br_width = 20
+            elif br_width > Label.max_width:
+                br_width = Label.max_width
         self.setTextWidth(br_width)
 
-        dh = self.doc.size().height()
+        if self.is_card:
+            dh = self.card_size[1]
+        else:
+            dh = self.doc.size().height()
         h2 = dh / 2.0
         self.top_y = -h2
         self.bottom_y = h2
@@ -552,7 +568,13 @@ class Label(QtWidgets.QGraphicsTextItem):
             else:
                 self.top_part_y = self.top_y + half_height + 3
                 self.lower_part_y = self.top_y + (second_row * avg_line_height) + half_height
-        self.setPos(br_width / -2.0, self.top_y)
+        self.x_offset = br_width / -2.0
+        if self.is_card:
+            self.y_offset = self.top_part_y
+        else:
+            self.y_offset = -h2
+
+        self.setPos(self.x_offset, self.y_offset)
         # Update ui items around the label (or node hosting the label)
         ctrl.ui.update_position_for(self._host)
 
@@ -570,6 +592,12 @@ class Label(QtWidgets.QGraphicsTextItem):
             QtWidgets.QGraphicsTextItem.dropEvent(self, event)
         else:
             QtWidgets.QGraphicsTextItem.dropEvent(self, event)
+
+    def boundingRect(self):
+        if self.is_card:
+            return QtCore.QRectF(0, 0, self.card_size[0], self.card_size[1])
+        else:
+            return super().boundingRect()
 
     def dragEnterEvent(self, event):
         """ Support dragging of items from their panel containers, e.g. symbols from symbol panel
@@ -592,4 +620,6 @@ class Label(QtWidgets.QGraphicsTextItem):
         :param widget:
         """
         self.setDefaultTextColor(self._host.contextual_color)
+        if self.is_card:
+            painter.drawRoundedRect(self.boundingRect(), 4, 8)
         QtWidgets.QGraphicsTextItem.paint(self, painter, option, widget)

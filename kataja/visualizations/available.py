@@ -29,7 +29,6 @@ from kataja.visualizations.BalancedTree import BalancedTree
 from kataja.visualizations.HeadDownTree import HeadDownTree
 from kataja.visualizations.BracketedLinearization import BracketedLinearization
 from kataja.visualizations.DynamicWidthTree import DynamicWidthTree
-from kataja.visualizations.Equidistant3dTree import Equidistant3dTree
 from kataja.visualizations.EquidistantElasticTree import EquidistantElasticTree
 from kataja.visualizations.LeftFirstTree import LeftFirstTree
 from kataja.visualizations.SpirallingTree import SpirallingTree
@@ -52,7 +51,6 @@ visualizations_list = [LeftFirstTree,
                        AsymmetricElasticTree,
                        SymmetricElasticTree,
                        EquidistantElasticTree,
-                       Equidistant3dTree,
                        Slide]
 
 VISUALIZATIONS = OrderedDict()

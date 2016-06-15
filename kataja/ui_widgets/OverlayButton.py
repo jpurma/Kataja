@@ -236,8 +236,8 @@ class CutFromStartButton(OverlayButton):
         """
         if self.host and self.host.start:
             x, y = self.host.start_point
-            x += self.host.start.width - self.w2
-            y += self.host.start.height / 2 - self.h2
+            x += self.w2
+            y -= self.h2
             self.move(ctrl.main.graph_view.mapFromScene(
                 QtCore.QPointF(x, y)))
 
@@ -257,10 +257,10 @@ class CutFromEndButton(OverlayButton):
         if self.host and self.host.end:
             x, y = self.host.end_point
             if self.host.alignment == g.LEFT:
-                x += -self.host.end.width - self.w2
+                x += self.width()
             else:
-                x += self.host.end.width - self.w2
-            y += self.host.end.height / 2 - self.h2
+                x -= self.width()
+            y -= self.h2
             self.move(ctrl.main.graph_view.mapFromScene(
                 QtCore.QPointF(x, y)))
 
@@ -278,8 +278,10 @@ class AddTriangleButton(OverlayButton):
         """ Put button left and below the starting point of edge.
         """
         if self.host:
-            x, y = self.host.current_scene_position
-            p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(x, y + self.h2))
+            x, y = self.host.centered_scene_position
+            p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(x, y + self.host.height / 2 +
+                                                                 self.h2))
+            print(y, y + self.host.height / 2, self.host.height)
             self.move(p - QtCore.QPoint(self.w2 + 4, 0))
 
 
@@ -296,8 +298,8 @@ class RemoveTriangleButton(OverlayButton):
         """ Put button left and below the starting point of edge.
         """
         if self.host:
-            x, y = self.host.current_scene_position
-            p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(x, y + self.h2))
+            x, y = self.host.centered_scene_position
+            p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(x, y + self.host.height / 2 + self.h2))
             self.move(p - QtCore.QPoint(self.w2 + 4, 0))
 
 
@@ -315,7 +317,7 @@ class RemoveMergerButton(OverlayButton):
 
     def update_position(self):
         """ """
-        x, y = self.host.current_scene_position
+        x, y = self.host.centered_scene_position
         p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(x + self.host.width / 2,
                                                              y - self.host.height / 2))
         p += QtCore.QPoint(4, -self.height())
@@ -344,7 +346,7 @@ class RemoveNodeButton(OverlayButton):
 
     def update_position(self):
         """ """
-        x, y = self.host.current_scene_position
+        x, y = self.host.centered_scene_position
         p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(x + self.host.width / 2,
                                                              y - self.host.height / 2))
         p += QtCore.QPoint(4, -self.height())
@@ -404,7 +406,7 @@ class NodeEditorButton(OverlayButton):
     def update_position(self):
         """ """
         adjust = QtCore.QPointF(9, -8)
-        x, y = self.host.current_scene_position
+        x, y = self.host.centered_scene_position
         p = QtCore.QPointF(x + (self.host.width / 2), y)
         p = ctrl.main.graph_view.mapFromScene(p) + adjust
         p = p.toPoint()

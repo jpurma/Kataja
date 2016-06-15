@@ -97,6 +97,7 @@ class UIItem:
 
     def fade_out_finished(self):
         self.visible = False
+        self.hide()
         self.is_fading_out = False
         self._fade_out_anim = None
         self.after_close()
@@ -143,3 +144,7 @@ class UIWidget(UIItem):
         self._opacity_effect = QtWidgets.QGraphicsOpacityEffect(self)
         self._opacity_effect.setEnabled(False)
         self.setGraphicsEffect(self._opacity_effect)
+
+    def fade_out_finished(self):
+        UIItem.fade_out_finished(self)
+        self.close()

@@ -334,7 +334,11 @@ def can_adjust_control_point1():
 
 
 def get_control_point0x():
-    return ctrl.ui.active_edge_style.get('curve_adjustment', [(0, 0)])[0][0]
+    ca = ctrl.ui.active_edge_style.get('curve_adjustment', [])
+    if ca:
+        return ca[0][0]
+    else:
+        return 0
 
 a['control_point1_x'] = {'command': 'Adjust curvature, point 1 X',
                          'method': adjust_control_point_x0,
@@ -357,7 +361,11 @@ def adjust_control_point_x1(value=None):
 
 
 def get_control_point1x():
-    return ctrl.ui.active_edge_style.get('curve_adjustment', [0, (0, 0)])[1][0]
+    ca = ctrl.ui.active_edge_style.get('curve_adjustment', [])
+    if len(ca) > 1:
+        return ca[1][0]
+    else:
+        return 0
 
 a['control_point2_x'] = {'command': 'Adjust curvature, point 2 X',
                          'method': adjust_control_point_x1,
@@ -379,7 +387,11 @@ def adjust_control_point_y0(value=None):
             edge.shape_info.adjust_control_point_y0(value)
 
 def get_control_point0y():
-    return ctrl.ui.active_edge_style.get('curve_adjustment', [(0, 0)])[0][1]
+    ca = ctrl.ui.active_edge_style.get('curve_adjustment', [])
+    if ca:
+        return ca[0][1]
+    else:
+        return 0
 
 a['control_point1_y'] = {'command': 'Adjust curvature, point 1 Y',
                          'method': adjust_control_point_y0,
@@ -401,7 +413,11 @@ def adjust_control_point_y1(value=None):
             edge.shape_info.adjust_control_point_y1(value)
 
 def get_control_point1y():
-    return ctrl.ui.active_edge_style.get('curve_adjustment', [0, (0, 0)])[1][1]
+    ca = ctrl.ui.active_edge_style.get('curve_adjustment', [])
+    if len(ca) > 1:
+        return ca[1][1]
+    else:
+        return 0
 
 a['control_point2_y'] = {'command': 'Adjust curvature, point 2 Y',
                          'method': adjust_control_point_y1,

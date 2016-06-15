@@ -357,7 +357,7 @@ class AddBelowTouchArea(TouchArea):
 
         :param end_point: End point can be given or it can be calculated.
         """
-        x, y = self.host.current_scene_position
+        x, y = self.host.centered_scene_position
         y += self.host.height / 2 + end_spot_size
         self.end_point = x, y
         self.start_point = self.end_point
