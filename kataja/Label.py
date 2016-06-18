@@ -74,7 +74,7 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.editable_parts = []
         self.prepare_template()
         self.doc = LabelDocument()
-        self.is_card = True
+        self.is_card = False
         self.card_size = (90, 120)
 
         self.setDocument(self.doc)
