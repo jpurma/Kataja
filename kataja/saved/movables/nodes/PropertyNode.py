@@ -33,7 +33,7 @@ class PropertyNode(Node):
     width = 20
     height = 20
     node_type = g.PROPERTY_NODE
-    name = ('Property', 'Properties')
+    display_name = ('Property', 'Properties')
     display = False
     default_style = {'fancy': {'color': 'accent6', 'font': g.SMALL_CAPS, 'font-size': 10},
                      'plain': {'color': 'accent6', 'font': g.SMALL_CAPS, 'font-size': 10}}

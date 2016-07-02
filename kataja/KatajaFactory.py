@@ -100,8 +100,8 @@ class KatajaFactory:
         self.node_info = {}
         self.node_types_order = []
         for key, nodeclass in self.nodes.items():
-            self.node_info[key] = {'name': nodeclass.name[0],
-                                   'name_pl': nodeclass.name[1],
+            self.node_info[key] = {'name': nodeclass.display_name[0],
+                                   'name_pl': nodeclass.display_name[1],
                                    'display': nodeclass.display}
             if nodeclass.display:
                 self.node_types_order.append(key)
@@ -113,6 +113,10 @@ class KatajaFactory:
         else:
             return self.classes[class_name]
 
+    @property
+    def ForestKeeper(self):
+        return self.get('ForestKeeper')
+
     def get_original(self, class_name):
         if class_name in self.classes:
             return self.classes[class_name]
@@ -122,6 +126,12 @@ class KatajaFactory:
     def find_base_model(self, class_item):
         if class_item in self.default_models:
             return class_item
+        elif hasattr(class_item, 'replaces'):
+            class_name = class_item.replaces
+            for klass in self.default_models:
+                if klass.__name__ == class_name:
+                    return klass
+            raise NameError
         else:
             for base in class_item.__bases__:
                 found = self.find_base_model(base)

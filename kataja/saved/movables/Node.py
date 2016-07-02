@@ -81,7 +81,7 @@ class Node(Movable):
     is_syntactic = True
     ordered = False
     ordering_func = None
-    name = ('Abstract node', 'Abstract nodes')
+    display_name = ('Abstract node', 'Abstract nodes')
     display = False
     can_be_in_groups = True
     visible_in_label = []

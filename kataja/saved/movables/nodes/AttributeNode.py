@@ -69,7 +69,7 @@ class AttributeNode(Node):
     width = 20
     height = 20
     node_type = ATTRIBUTE_NODE
-    name = ('Attribute', 'Attributes')
+    display_name = ('Attribute', 'Attributes')
     display = False
     __qt_type_id__ = next_available_type_id()
 

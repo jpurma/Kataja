@@ -31,6 +31,7 @@ from syntax.IConstituent import IConstituent
 from syntax.BaseFeature import BaseFeature
 # from copy import deepcopy
 
+
 class BaseConstituent(IConstituent):
     """ BaseConstituent is a default constituent used in syntax.
     It uses getters and setters so that other compatible implementations can be built using the same interface.
@@ -76,6 +77,22 @@ class BaseConstituent(IConstituent):
                 return True
         else:
             return False
+
+    def get_features(self):
+        """ Getter for features, redundant for BaseConstituent (you could use c.features ) but it
+        is better to use this consistently for compatibility with other implementations for
+        constituent.
+        :return:
+        """
+        return self.features
+
+    def get_parts(self):
+        """ Getter for parts, redundant for BaseConstituent (you could use c.parts ) but it
+        is better to use this consistently for compatibility with other implementations for
+        constituent.
+        :return:
+        """
+        return self.parts
 
     def print_tree(self):
         """ Bracket trees representation of the constituent structure. Now it is same as str(self).

@@ -47,7 +47,7 @@ class ConstituentNode(BaseConstituentNode):
      reading the trees aliases, indices and glosses.
     """
     __qt_type_id__ = next_available_type_id()
-    name = ('Constituent', 'Constituents')
+    display_name = ('Constituent', 'Constituents')
     display = True
     wraps = 'constituent'
     visible_in_label = ['alias', 'index', 'triangle', 'label', 'gloss']

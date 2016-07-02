@@ -53,7 +53,7 @@ class NewElementEmbed(UIEmbed):
             node_class = classes.nodes.get(key, None)
             if (not node_class) or node_class.is_syntactic and not ctrl.free_drawing_mode:
                 continue
-            self.node_types.append(('New %s' % node_class.name[0].lower(), key))
+            self.node_types.append(('New %s' % node_class.display_name[0].lower(), key))
         self.node_types.append(('New arrow', g.ARROW))
         #self.node_types.append(('New divider', g.DIVIDER))
         self.node_type_selector.add_items(self.node_types)

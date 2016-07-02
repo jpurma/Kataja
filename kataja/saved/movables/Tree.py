@@ -36,7 +36,7 @@ class Tree(Movable):
     :param top:
     """
     __qt_type_id__ = next_available_type_id()
-    name = ('Tree', 'Trees')
+    display_name = ('Tree', 'Trees')
 
     def __init__(self, forest=None, top=None):
         Movable.__init__(self, forest=forest)

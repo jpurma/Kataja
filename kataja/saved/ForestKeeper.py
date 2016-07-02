@@ -37,6 +37,7 @@ class ForestKeeper(SavedObject):
 
     def __init__(self, name=None, filename=None, treelist_filename=None):
         super().__init__()
+        print('basic ForestKeeper called')
         self.name = name or filename or treelist_filename
         self.filename = filename
         if treelist_filename:

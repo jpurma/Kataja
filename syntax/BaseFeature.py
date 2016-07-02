@@ -46,10 +46,10 @@ class BaseFeature(SavedObject):
     editable = {}
     addable = {}
 
-    def __init__(self, fname='Feature', value=None, assigned=True, family=''):
+    def __init__(self, name='Feature', value=None, assigned=True, family=''):
         super().__init__()
         self.assigned = assigned
-        self.fname = fname
+        self.name = name
         self.value = value
         self.assigned = assigned
         self.family = family
@@ -64,15 +64,15 @@ class BaseFeature(SavedObject):
     def name_with_u_prefix(self):
         print('name with u-prefix called')
         if not self.assigned:
-            return 'u' + self.fname
+            return 'u' + self.name
         else:
             return self.fname
 
     def satisfies(self, feature):
-        return feature.unassigned and feature.fname == self.fname and self.assigned
+        return feature.unassigned and feature.name == self.name and self.assigned
 
     def __repr__(self):
-        return "BaseFeature(fname=%r, value=%r, assigned=%r, family=%r)" % (self.fname,
+        return "BaseFeature(fname=%r, value=%r, assigned=%r, family=%r)" % (self.name,
                                                                             self.value,
                                                                             self.assigned,
                                                                             self.family)
@@ -82,9 +82,9 @@ class BaseFeature(SavedObject):
         if self.family:
             s.append(str(self.family))
         if self.assigned:
-            s.append(str(self.fname))
+            s.append(str(self.name))
         else:
-            s.append('u' + str(self.fname))
+            s.append('u' + str(self.name))
         if self.value:
             s.append(str(self.value))
         return ":".join(s)
@@ -95,7 +95,7 @@ class BaseFeature(SavedObject):
     #                #
     # ############## #
 
-    fname = SavedField("fname")
+    name = SavedField("name")
     value = SavedField("value")
     assigned = SavedField("assigned")
     family = SavedField("family")

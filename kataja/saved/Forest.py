@@ -61,7 +61,8 @@ class Forest(SavedObject):
       Forest also takes care of the operations manipulating, creating and
       removing trees. """
 
-    def __init__(self, buildstring='', definitions=None, gloss_text='', comments=None):
+    def __init__(self, buildstring='', definitions=None, gloss_text='', comments=None,
+                 synobjs=None):
         """ Create an empty forest """
         super().__init__()
         self.nodes_from_synobs = {}
@@ -97,7 +98,8 @@ class Forest(SavedObject):
         self.guessed_projections = False
         self.halt_drawing = False
         self._marked_for_deletion = set()
-
+        if synobjs:
+            self.create_nodes_from_synobjs(synobjs)
         if buildstring:
             self.create_trees_from_string(buildstring)
         if definitions:
@@ -283,6 +285,48 @@ class Forest(SavedObject):
     #                 sorted_nodes.append(item)
     #         result.append(sorted_nodes)
     #     return result
+
+    def create_nodes_from_synobjs(self, synobjs):
+        """ When receiving plain synobjs from parser, make ConstituentNodes etc. out of them.
+        :param synobjs:
+        :return:
+        """
+        def connect_if_necessary(parent, child, edge_type):
+            edge = parent.get_edge_to(child, edge_type)
+            if not edge:
+                self.connect_node(parent, child, edge_type=edge_type)
+
+        def recursive_create(synobj):
+            if isinstance(synobj, classes.Constituent):
+                node = self.get_node(synobj)
+                if not node:
+                    node = self.create_node(synobj=synobj, node_type=g.CONSTITUENT_NODE)
+                part_count = len(synobj.get_parts())
+                for i, part in enumerate(synobj.get_parts()):
+                    child = recursive_create(part)
+                    if child:
+                        connect_if_necessary(node, child, g.CONSTITUENT_EDGE)
+                for feature in synobj.get_features():
+                    nfeature = recursive_create(feature)
+                    if nfeature:
+                        connect_if_necessary(node, nfeature, g.FEATURE_EDGE)
+                return node
+            if isinstance(synobj, classes.Feature):
+                node = self.get_node(synobj)
+                if not node:
+                    self.create_node(synobj=synobj, node_type=g.FEATURE_NODE)
+                if hasattr(synobj, 'get_parts'):
+                    for part in synobj.get_parts():
+                        child = recursive_create(part)
+                        if child and child.node_type == g.FEATURE_NODE:
+                            connect_if_necessary(node, child)
+                return node
+            else:
+                print(synobj, classes.Constituent, type(synobj))
+                #raise hell
+
+        for item in synobjs:
+            recursive_create(item)
 
     def update_forest_gloss(self):
         """ Draw the gloss text on screen, if it exists. """
@@ -1039,8 +1083,7 @@ class Forest(SavedObject):
         ctrl.select(edge)
         return edge
 
-    ############# Deleting items
-    # ######################################################
+    # ############ Deleting items  ######################################################
     # item classes don't have to know how they relate to each others.
     # here when something is removed from scene, it is made sure that it is
     # also removed
@@ -1535,6 +1578,7 @@ class Forest(SavedObject):
         :param child: Node
         :param direction:
         :param edge_type: optional, force edge to be of given type
+        :param fade_in:
         """
 
         #print('--- connecting node %s to %s ' % (child, parent))
@@ -1597,8 +1641,6 @@ class Forest(SavedObject):
         #print('--- finished connect')
         if hasattr(child, 'on_connect'):
             child.on_connect(parent)
-
-
         return new_edge
 
     def partial_disconnect(self, edge, start=True, end=True):
@@ -1657,7 +1699,6 @@ class Forest(SavedObject):
         self.disconnect_edge(edge)
         if hasattr(child, 'on_disconnect'):
             child.on_disconnect(parent)
-
 
     def replace_node(self, old_node, new_node, only_for_parent=None, replace_children=False,
                      can_delete=True):
@@ -1946,15 +1987,14 @@ class Forest(SavedObject):
         if self.traces_are_visible():
             self.chain_manager.rebuild_chains()
 
-    def create_merger_node(self, left=None, right=None, pos=None, new=None,
-                           head=None):
+    def create_merger_node(self, left=None, right=None, pos=None, new=None, head=None):
         """ Gives a merger node of two nodes. Doesn't try to fix their edges
         upwards
         :param left:
         :param right:
         :param pos:
-        :param create_tree: updating the trees may be costly and can be disabled
         :param new: which one is the new node to add. This connection is animated in.
+        :param head: which one is head?
         """
         if not pos:
             pos = (0, 0)
@@ -2040,7 +2080,6 @@ class Forest(SavedObject):
             folded.update_visibility()
         node.update_label()
         node.update_visibility()  # edges from triangle to nodes below
-
 
     def can_fold(self, node):
         """

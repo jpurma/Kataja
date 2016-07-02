@@ -112,7 +112,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.ui_manager = UIManager(self)
         self.ui_manager.populate_ui_elements()
         self.add_message(plugin_messages)
-        self.forest_keepers = [ForestKeeper()]
+        self.forest_keepers = [classes.get('ForestKeeper')()]
         self.forest_keeper = self.forest_keepers[0]
         kataja_app.setPalette(self.color_manager.get_qt_palette())
         self.visualizations = VISUALIZATIONS
@@ -274,11 +274,10 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
             filename = running_environment.resources_path + DEBUG_TREESET
         else:
             filename = None
-        self.forest_keepers = [ForestKeeper(treelist_filename=filename)]
+        self.forest_keepers = [classes.ForestKeeper(treelist_filename=filename)]
         self.forest_keeper = self.forest_keepers[0]
         self.change_forest()
         self.ui_manager.update_projects_menu(self.forest_keepers, self.forest_keeper)
-
 
     def create_new_project(self):
         names = [fk.name for fk in self.forest_keepers]
@@ -289,7 +288,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
             name = '%s %s' % (name_base, c)
             c += 1
         self.forest.retire_from_drawing()
-        self.forest_keepers.append(ForestKeeper(name=name))
+        self.forest_keepers.append(classes.ForestKeeper(name=name))
         self.forest_keeper = self.forest_keepers[-1]
         self.change_forest()
         self.ui_manager.update_projects_menu(self.forest_keepers, self.forest_keeper)
@@ -516,7 +515,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         print('after collection:', gc.get_count())
         if gc.garbage:
             print('garbage:', gc.garbage)
-        self.forest_keepers.append(ForestKeeper())
+        self.forest_keepers.append(classes.ForestKeeper())
         self.forest_keeper = self.forest_keepers[-1]
 
 

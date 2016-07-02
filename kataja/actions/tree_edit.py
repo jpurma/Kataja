@@ -27,7 +27,7 @@ def add_node(sender=None, ntype=None, pos=None):
                             random.random() * 60 - 25)
     node = ctrl.forest.create_node(pos=pos, node_type=ntype)
     nclass = classes.nodes[ntype]
-    ctrl.add_message('Added new %s.' % nclass.name[0])
+    ctrl.add_message('Added new %s.' % nclass.display_name[0])
 
 
 a['add_node'] = {'command': 'Add node', 'sender_arg': True, 'method': add_node,

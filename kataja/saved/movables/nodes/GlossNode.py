@@ -40,7 +40,7 @@ class GlossNode(Node):
     width = 20
     height = 20
     node_type = GLOSS_NODE
-    name = ('Gloss', 'Glosses')
+    display_name = ('Gloss', 'Glosses')
     display = True
     is_syntactic = False
 

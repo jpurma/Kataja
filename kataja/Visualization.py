@@ -62,7 +62,7 @@ class BaseVisualization:
         """
         :return: name of the visualization e.g. Heisenberg
         """
-        return self.__class__.name
+        return self.__class__.class_name
 
     def set_vis_data(self, key, value):
         """ Sets (Saved) visualization data. Basically does the necessary poking

@@ -5,50 +5,23 @@
 # Jukka Purma
 #########################################################
 
-import re
-import string
 import sys
 import time
 
-ALL_HEADS = {'v*', 'C', 'v', 'n', 'the', 'a', "D", "in"}
-HEADS = {'v*', 'v', 'C', 'n', 'v~', "D", "D_Top", "in"}
-DET_HEADS = {'the', 'a', "D"}
-PHASE_HEADS = {"v*", "C", "C_Q", "that", "C_Null", "C_Top", "in"}
-THETA_ASSIGNERS = {"v*", "vUnerg", 'v', 'v_be'}
-SHARED_FEAT_LABELS = {"Phi", "Q", "Top", "Per"}
-TENSE_ELEMS = {'PRES', 'PAST'}
-PHI_FEATS = {"iPerson:", "iNumber:", "iGender:"}
-OTHER_FTS = {'ThetaAgr', 'EF', 'MergeF', 'ExplMerge', 'NoProject'}
-SHARED_LABELS = {"Phi", "Q", "Top"}
-ADJUNCT_LABELS = {"P_in"}
-NUM_PATTERN = r'[0-9]+'
+try:
+    from PoP.Lexicon import DET_HEADS, PHASE_HEADS, THETA_ASSIGNERS, SHARED_LABELS, \
+        ADJUNCT_LABELS, COUNTED_FEATURES, COUNTED_PHI_FEATURES, LEXICON
+    from PoP.Constituent import Constituent
+    from PoP.Feature import FeatureSet, Feature
+except ImportError:
+    from Lexicon import DET_HEADS, PHASE_HEADS, THETA_ASSIGNERS, SHARED_LABELS, \
+        ADJUNCT_LABELS, COUNTED_FEATURES, COUNTED_PHI_FEATURES, LEXICON
+    from Constituent import Constituent
+    from Feature import FeatureSet, Feature
 
-COUNTED_FEATURES = {'uPerson', 'uNumber', 'uGender', 'Case:Nom', 'Case:Acc', 'Case:Dat', 'Root',
-                    'uCase', 'uCase', 'iTop', 'uScp', 'iQ'}
-COUNTED_PHI_FEATURES = {'iPerson:', 'iNumber:', 'iGender:'}
 
-LEXICON = {
-    'v*': {'uPerson', 'uNumber', 'uGender', 'MergeF', 'Head', 'Case:Acc'},
-    'C': {'uPerson', 'uNumber', 'uGender', 'MergeF', 'Head', 'Case:Nom'},
-    'P_in': {'uPerson', 'uNumber', 'uGender', 'MergeF', 'Head', 'Case:Dat'},
-    'that': {'uPerson', 'uNumber', 'uGender', 'MergeF', 'Head', 'iC', 'Case:Nom'},
-    'C_Q': {'uPerson', 'uNumber', 'uGender', 'MergeF', 'Head', 'Case:Nom', 'uQ', 'iScp', 'iC'},
-    'C_Top': {'uPerson', 'uNumber', 'uGender', 'MergeF', 'Head', 'Case:Nom', 'uTop', 'iScp', 'iC'},
-    'C_Null': {'uPerson', 'uNumber', 'uGender', 'MergeF', 'Head', 'Case:Nom', 'Delete', 'iC'},
-    # LI name is "C"
-    'v': {'MergeF', 'Head', 'iv'}, 'v_be': {'MergeF', 'iv', 'Root'},
-    'vUnerg': {'MergeF', 'iv', 'Root'}, 'v~': {'MergeF', 'ThetaAgr'},
-    'n_Top': {'iPerson:', 'iNumber:', 'iGender:', 'MergeF', 'uCase', 'iTheta', 'Head', 'iN', 'iD',
-              'iTop', 'uScp'},
-    'n': {'iPerson:', 'iNumber:', 'iGender:', 'MergeF', 'uCase', 'iTheta', 'Head', 'iN'},
-    # +'iD' for Japanese
-    'n_Expl': {'uPerson', 'uNumber', 'uGender', 'MergeF', 'Head', 'iN'},  # LI name is "n"
-    'there': {'MergeF', 'ThetaAgr'}, 'the': {'MergeF', 'Head', 'uPhi', 'iD'},
-    'a': {'MergeF', 'Head', 'uPhi', 'iD'}, 'D': {'MergeF', 'Head', 'uPhi', 'iD'},
-    'Q': {'MergeF', 'Head', 'uPhi', 'iQ', 'uScp'},
-    'which': {'MergeF', 'Head', 'uPhi', 'iQ', 'uScp'}, 'root': {'MergeF', 'Root'},
-}
-
+start = 1
+end = 10
 
 class Stack:
 
@@ -70,9 +43,18 @@ class Stack:
 
     def end_sub_stream(self):
         self.sub_stream = False
+        for item in self.sub_stack:
+            item.stacked = False
         self.sub_stack = []
 
+    def clear_main_stack(self):
+        for item in self.main_stack:
+            item.stacked = False
+        self.main_stack = []
+
+
     def append(self, item, force_main=False):
+        item.stacked = True
         if force_main or not self.sub_stream:
             if item not in self.main_stack:
                 self.main_stack.append(item)
@@ -82,8 +64,12 @@ class Stack:
 
     def cut_to(self, item):
         if self.sub_stream:
+            for it in self.sub_stack[:self.sub_stack.index(item)]:
+                it.stacked = False
             self.sub_stack = self.sub_stack[self.sub_stack.index(item):]
         else:
+            for it in self.main_stack[:self.main_stack.index(item)]:
+                it.stacked = False
             self.main_stack = self.main_stack[self.main_stack.index(item):]
 
     def replace(self, old_chunk, new_chunk, main_only=False):
@@ -96,6 +82,7 @@ class Stack:
             if isinstance(old_chunk, Constituent):
                 if old_chunk == item:
                     item = new_chunk
+                    item.stacked = True
                 else:
                     item.recursive_replace_constituent(old_chunk, new_chunk)
             elif isinstance(old_chunk, FeatureSet):
@@ -144,351 +131,9 @@ class Stack:
             return self.main_stack[item]
 
 
-class FeatureSet(set):
-
-    def contains(self, other):
-        """ Alternative for hash-based containment """
-        for item in self:
-            if other == item:
-                return True
-
-    def has_part(self, *fparts):
-        """ Find 
-        :param fparts: 
-        :return: 
-        """
-        for fpart in fparts:
-            found = False
-            for f in self:
-                if fpart in f:
-                    found = True
-                    break
-            if not found:
-                return False
-        return True
-
-    def get_by_part(self, fpart):
-        for f in self:
-            if fpart in f:
-                return f
-
-    def copy(self):
-        return FeatureSet(set.copy(self))
-
-    def __repr__(self):
-        #return 'FS'+repr(sorted(self))
-        return repr(sorted(self))
-
-
-class Constituent:  # collections.UserList):
-
-    def __init__(self, label='', part1=None, part2=None, features=None):
-        self.label = label
-        self.part1 = part1
-        self.part2 = part2
-        self.features = FeatureSet()
-        if features:
-            for f in features:
-                if isinstance(f, str):
-                    self.features.add(Feature(f))
-                elif isinstance(f, Feature):
-                    self.features.add(f)
-
-    def __repr__(self):
-        parts = [self.label]
-        if self.part1:
-            parts.append(self.part1)
-        if self.part2:
-            parts.append(self.part2)
-        if self.features:
-            parts.append(self.features)
-        return repr(parts)
-
-    def __eq__(self, other):
-        if not isinstance(other, Constituent):
-            return False
-        elif self.label != other.label:
-            return False
-        elif self.part1 != other.part1:
-            return False
-        elif self.part2 != other.part2:
-            return False
-        elif self.features != other.features:
-            return False
-        else:
-            return True
-
-    def __hash__(self):
-        return hash(repr(self))
-
-    def labelstring(self):
-        if self.part1 and self.part2:
-            return '[%s %s %s]' % (self.label, self.part1.labelstring(), self.part2.labelstring())
-        else:
-            return self.label
-
-    def is_leaf(self):
-        return not (self.part1 and self.part2)
-
-    def get_head(self):
-        if self.part1 and self.part1.label == self.label:
-            return self.part1.get_head()
-        elif self.part2 and self.part2.label == self.label:
-            return self.part2.get_head()
-        else:
-            return self
-
-    def shared_features(self, other):
-        my_feats = self.get_head_features()
-        other_feats = other.get_head_features()
-        return FeatureSet(my_feats & other_feats)
-
-    def add_feature(self, feat):
-        if not isinstance(feat, Feature):
-            feat = Feature(feat)
-        self.features.add(feat)
-
-    def remove_feature(self, feat):
-        self.features.remove(feat)
-
-    def replace_feature(self, old, new):
-        if old in self.features:
-            self.features.remove(old)
-            self.features.add(new)
-
-    def replace_feature_by_name(self, old_name, new):
-        found = None
-        for item in self.features:
-            if item.name == old_name:
-                found = item
-                break
-        if found is not None:
-            self.features.remove(found)
-            self.features.add(new)
-        else:
-            print('couldnt find ', old_name, self)
-
-    def is_unlabeled(self):
-        return self.label == '_'
-
-    def is_labeled(self):
-        return self.label != '_'
-
-    def copy(self):
-        if self.part1 and self.part2:
-            return Constituent(label=self.label, part1=self.part1.copy(), part2=self.part2.copy())
-        elif self.features:
-            return Constituent(label=self.label, features=FeatureSet(self.features))
-        else:
-            raise TypeError
-
-    def __contains__(self, item):
-        if isinstance(item, Constituent):
-            if self.part1 == item:
-                return True
-            elif self.part2 == item:
-                return True
-            if self.part1:
-                if item in self.part1:
-                    return True
-            if self.part2:
-                if item in self.part2:
-                    return True
-        elif isinstance(item, Feature):
-            return item in self.features
-        return False
-
-    def get_head_features(self):
-        # if self.language == "Japanese":
-        #    return self.get_head_features_head_final(merged)
-        if self.is_leaf():
-            return self.features
-        if self.is_unlabeled():
-            return self.part1.recursive_get_features()
-        elif self.part2.is_unlabeled():
-            f = self.part1.recursive_get_features()
-            if f:
-                return f
-        return self.recursive_get_features()
-
-    def recursive_get_features(self):
-        if self.is_leaf():
-            return self.features
-        head = self.label
-        if self.part1.label == head:
-            return self.part1.get_head_features()
-        if self.part2.label == head:
-            return self.part2.get_head_features()
-        if head in SHARED_FEAT_LABELS:
-            elem1_feats = self.part1.get_head_features()
-            elem2_feats = self.part2.get_head_features()
-            shared_feats = FeatureSet(elem1_feats & elem2_feats)
-            if shared_feats:
-                return shared_feats
-        if "Phi" in head:
-            head_features = self.part1.get_head_features()
-            return head_features
-        assert False
-
-    def replace_within(self, old_chunk, new_chunk, label=False):
-        if self == old_chunk:
-            self.label = new_chunk.label
-            self.features = new_chunk.features
-            self.part1 = new_chunk.part1
-            self.part2 = new_chunk.part2
-            return
-        if label:
-            self.recursive_replace_label(old_chunk, new_chunk)
-        elif isinstance(old_chunk, Constituent):
-            self.recursive_replace_constituent(old_chunk, new_chunk)
-        elif isinstance(old_chunk, FeatureSet):
-            self.recursive_replace_feature_set(old_chunk, new_chunk)
-        elif isinstance(old_chunk, Feature):
-            self.recursive_replace_feature(old_chunk, new_chunk)
-        else:
-            raise TypeError
-
-    def recursive_replace_label(self, old_label, new_label):
-        if self.part1:
-            self.part1.recursive_replace_label(old_label, new_label)
-        if self.part2:
-            self.part2.recursive_replace_label(old_label, new_label)
-        if self.label == old_label:
-            self.label = new_label
-
-    def recursive_replace_feature_set(self, old, new):
-        for item in new:
-            if not isinstance(item, Feature):
-                print(new)
-                raise TypeError
-        if self.part1:
-            self.part1.recursive_replace_feature_set(old, new)
-        if self.part2:
-            self.part2.recursive_replace_feature_set(old, new)
-        if old == self.features:
-            self.features = new
-
-    def recursive_replace_feature(self, old, new):
-        if new and not isinstance(new, Feature):
-            print(new)
-            raise TypeError
-        if self.part1:
-            self.part1.recursive_replace_feature(old, new)
-        if self.part2:
-            self.part2.recursive_replace_feature(old, new)
-        if old in self.features:
-            self.features.remove(old)
-            if new:
-                self.features.add(new)
-
-    def recursive_replace_constituent(self, old, new):
-        assert(self != old)
-        if self.part1:
-            if self.part1 == old:
-                self.part1 = new
-            else:
-                self.part1.recursive_replace_constituent(old, new)
-        if self.part2:
-            if self.part2 == old:
-                self.part2 = new
-            else:
-                self.part2.recursive_replace_constituent(old, new)
-
-
-class Feature:
-    def __init__(self, namestring='', counter=0, name='', value='', unvalued=False,
-                 ifeature=False):
-        if namestring:
-            if namestring.startswith('u'):
-                namestring = namestring[1:]
-                self.unvalued = True
-                self.ifeature = False
-            elif namestring.startswith('i'):
-                namestring = namestring[1:]
-                self.unvalued = False
-                self.ifeature = True
-            else:
-                self.unvalued = False
-                self.ifeature = False
-            digits = ''
-            digit_count = 0
-            for char in reversed(namestring):
-                if char.isdigit():
-                    digits = char + digits
-                    digit_count += 1
-                else:
-                    break
-            if digit_count:
-                self.counter = int(digits)
-                namestring = namestring[:-digit_count]
-            else:
-                self.counter = 0
-            self.name, part, self.value = namestring.partition(':')
-        else:
-            self.name = name
-            self.counter = counter
-            self.value = value
-            self.unvalued = unvalued
-            self.ifeature = ifeature
-
-    def __repr__(self):
-        parts = []
-        if self.ifeature:
-            parts.append('i')
-        elif self.unvalued:
-            parts.append('u')
-        parts.append(self.name)
-        if self.value:
-            parts.append(':' + self.value)
-        if self.counter:
-            parts.append(str(self.counter))
-        #return "'"+''.join(parts)+"'"
-        return ''.join(parts)
-
-
-    def __eq__(self, o):
-        if isinstance(o, Feature):
-            return self.counter == o.counter and self.name == o.name and \
-                   self.value == o.value and self.unvalued == o.unvalued and \
-                   self.ifeature == o.ifeature
-        elif isinstance(o, str):
-            return str(self) == o
-        else:
-            return False
-
-    def __lt__(self, other):
-        return repr(self) < repr(other)
-
-    def __gt__(self, other):
-        return repr(self) > repr(other)
-
-    def __hash__(self):
-        return hash(str(self))
-
-    def __contains__(self, item):
-        if isinstance(item, Feature):
-            if item.name != self.name:
-                return False
-            if item.ifeature and not self.ifeature:
-                return False
-            if item.value and self.value != item.value:
-                return False
-            if item.unvalued and not self.unvalued:
-                return False
-            return True
-        else:
-            return item in str(self)
-
-    def copy(self):
-        return Feature(counter=self.counter, name=self.name, value=self.value,
-                       unvalued=self.unvalued, ifeature=self.ifeature)
-
-
 class Generate:
-    def __init__(self, inputlines):
+    def __init__(self):
 
-        start = 1  # 1
-        finish = 10  # 11
         self.output = []  # List of all (important) steps in the derivation
         self.phi_counter = 0
         self.feature_counter = 0
@@ -502,6 +147,7 @@ class Generate:
         self.over_counter = 0
         self.dumpfile = None
 
+    def load_data(self, inputlines, start=0, end=0):
         for line in inputlines:
             if "Japanese" in line:
                 self.language = "Japanese"
@@ -513,19 +159,20 @@ class Generate:
             sentence = sentence.strip()
             sentence_number = sentence[0]
 
-            if sentence_number.isdigit():
-                sentence = sentence[2:]  # remove number and the space after it
-                sentence_number = int(sentence_number)
-                if sentence_number >= finish:
-                    break
-                elif sentence_number < start:
-                    continue
-                target_example = eval(lbracket + target_str)
-                self.out(sentence_number, sentence, target_example)
-                self.generate_derivation(target_example)
-                self.out("MRGOperations", self.merge_counter)
-                self.out("FTInheritanceOp", self.inheritance_counter)
-                self.out("FTCheckOp", self.feature_check_counter)
+            if not sentence_number.isdigit():
+                continue
+            sentence_number = int(sentence_number)
+            if end and sentence_number >= end:
+                break
+            elif sentence_number < start:
+                continue
+            sentence = sentence[2:]  # remove number and the space after it
+            target_example = eval(lbracket + target_str)
+            self.out(sentence_number, sentence, target_example)
+            so = self.generate_derivation(target_example)
+            self.out("MRGOperations", self.merge_counter)
+            self.out("FTInheritanceOp", self.inheritance_counter)
+            self.out("FTCheckOp", self.feature_check_counter)
 
     def out(self, first, second, third=None):
         if third is None:
@@ -575,6 +222,7 @@ class Generate:
             sys.exit()
 
         self.out("Transfer", selected)
+        return selected
 
     def merge_substream(self, synobjlist, spine):
         """ Switch into substream (phrase within sentence) and build that before
@@ -612,6 +260,8 @@ class Generate:
             spine = self.merge(x, spine)
             print('finished merge: ', spine)
             #self.dump_to_file(spine, self.over_counter)
+            print('---- kataja string: ----')
+            print(spine.tex_tree(self.stack.main_stack))
             print('----------------- ', self.over_counter)
             self.over_counter += 1
             return spine
@@ -625,7 +275,9 @@ class Generate:
         print('merge')
         external_merge = "MergeF" in x.get_head_features()
         # push to stack if unlabeled or if it has uFs
+        print('++ stack append in merge1 ')
         self.stack.append(x)
+        print('++ stack append in merge2 ')
         self.stack.append(y)
         x, y, feats_passed, remerge = self.check_features(x, y)
 
@@ -800,10 +452,12 @@ class Generate:
                     merged, remerge = self.remerge_if_can(merged, dephase=True)
                 self.out("Transfer", transfer)  # Transfer actually does nothing.
                 print('******** Transfer ********')
-                self.stack.main_stack = []
+                self.stack.clear_main_stack()
                 if remerge:
+                    print('++ stack append remerge, in transfer_check')
                     self.stack.append(remerge, force_main=True)
                 if self.stack.is_sub():
+                    print('++ substack append merged, in transfer_check')
                     self.stack.append(merged, force_main=True)
                 return merged
 
@@ -826,10 +480,12 @@ class Generate:
                 prev = next_item
             self.out("Transfer", transfer)  # Transfer actually does nothing.
             print('******** Transfer ********')
-            self.stack.main_stack = []
+            self.stack.clear_main_stack()
             if remerge:
+                print('++ stack append remerge 2, in transfer_check')
                 self.stack.append(remerge, force_main=True)
         if self.stack.is_sub():
+            print('++ stack append merged 2, in transfer_check')
             self.stack.append(merged, force_main=True)
         return merged
 
@@ -842,41 +498,67 @@ class Generate:
         """
         print('dephase_and_transfer')
         # Find closest Root
-        for current in reversed(self.stack):
-            if any(x.name == "Root" for x in current.get_head_features()):
-                # Transfer the complement of v
-                if current.is_unlabeled():
-                    raise hell
-                remerge = current.copy()
-                transfer = remerge.part2
-                self.stack.cut_to(current)
-                # Dephasing takes the head of the merged structure
-                new_label = remerge.label + "+" + merged.label
-                if merged.part1.label == merged.label:
-                    target = merged.part1.copy()
-                    target.label = new_label
-                    merged = Constituent(label=new_label, part1=target, part2=merged.part2)
-                else:
-                    merged = merged.copy()
-                    merged.label = new_label
-                self.out("Dephase v", merged)
-                self.out("Transfer", transfer)
-                # Check to see if Remerge results in labeling
-                if self.stack.is_sub():
-                    self.stack.append(merged, force_main=True)
-                else:
-                    for current in reversed(self.stack):
-                        if remerge == current.part1 and current.is_unlabeled():
-                            print("Relabel", current)
-                            sys.exit()
-                return merged
+
+        def find_closest_root(const):
+            if const.stacked and any(x.name == "Root" for x in const.get_head_features()):
+                return const
+            if const.part1:
+                found = find_closest_root(const.part1)
+                if found:
+                    return found
+            if const.part2:
+                return find_closest_root(const.part2)
+            return None
+
+        current = find_closest_root(merged)
+        if current:
+            # Transfer the complement of v
+            if current.is_unlabeled():
+                raise hell
+            remerge = current.copy()
+            transfer = remerge.part2
+            print('-- stack cut in dephase and transfer')
+            self.stack.cut_to(current)
+            # Dephasing takes the head of the merged structure
+            new_label = remerge.label + "+" + merged.label
+            if merged.part1.label == merged.label:
+                target = merged.part1.copy()
+                target.label = new_label
+                merged = Constituent(label=new_label, part1=target, part2=merged.part2)
+            else:
+                merged = merged.copy()
+                merged.label = new_label
+            self.out("Dephase v", merged)
+            self.out("Transfer", transfer)
+            # Check to see if Remerge results in labeling
+            if self.stack.is_sub():
+                print('++ stack append merged, in dephase and transfer')
+                self.stack.append(merged, force_main=True)
+            else:
+                for current in reversed(self.stack):
+                    if remerge == current.part1 and current.is_unlabeled():
+                        print("Relabel", current)
+                        sys.exit()
+            return merged
 
     def dephase_deleted_c(self, merged):
         """ Dephase
             b) Deletion of C transfers phasehood to T.
         """
+        def find_next_head(con, target_label, parent_label):
+            if con.label != target_label and parent_label == target_label:
+                return con
+            if con.part1:
+                found_left = find_next_head(con.part1, target_label, con.label)
+                if found_left:
+                    return found_left
+            if con.part2:
+                return find_next_head(con.part2, target_label, con.label)
+
         print('dephase_deleted_c')
-        transfer = None
+        left = merged.part1
+        right = merged.part2
+        label = merged.label
         merged_feats = merged.get_head_features()
         spec = merged.part1
         spec_feats = spec.get_head_features()
@@ -890,13 +572,9 @@ class Generate:
         # Transfer phasehood to T and transfer complement
         if merged.is_unlabeled() or "Phi" in target_label:
             target_label = merged.part2.label
-        prev = None
-        for next_item in reversed(self.stack):
-            # Find next element in stack that lacks this label
-            if next_item.label != target_label and prev and prev.label == target_label:
-                transfer = next_item
-                break
-            prev = next_item
+        transfer = find_next_head(left, target_label, label)
+        if not transfer:
+            transfer = find_next_head(right, target_label, label)
         return transfer
 
     def remerge_if_can(self, merged, dephase=False):
@@ -951,6 +629,7 @@ class Generate:
                     if first in DET_HEADS or first == "n_Expl":
                         return merged
         if self.stack.is_main():
+            print('++ stack append in unlabeled_move')
             self.stack.append(merged)
         # Move an element within an unlabeled Merged Structure
 
@@ -996,6 +675,21 @@ class Generate:
         return merged
 
     def remerge(self, merged, remerge):
+        def relabel_my_parent(current, chosen_one):
+            """ Relabel the parent of remerged constituent """
+            if chosen_one != current and chosen_one in current:
+                current_feats = current.get_head_features()
+                if not current_feats.has_part("Root"):
+                    if current.part1 == chosen_one:
+                        current.label = current.part2.label
+                    elif current.part2 == chosen_one:
+                        current.label = current.part1.label
+                    return True
+            if current.part1 and relabel_my_parent(current.part1, chosen_one):
+                return True
+            return current.part2 and relabel_my_parent(current.part2, chosen_one)
+
+
         print('remerge (attempting to remerge)')
         if self.stack.is_sub():
             print("Do in substream999999")
@@ -1014,7 +708,9 @@ class Generate:
         merged = self.label_if_necessary(merged)
         # Find new MergedLabel
         new_merged = Constituent(label=merged.label, part1=remerge, part2=merged)
+        print('++ stack append remerge, in remerge')
         self.stack.append(remerge)
+        print('++ stack append new_merged, in remerge:', new_merged.label)
         self.stack.append(new_merged)
         new_merged = self.label_if_necessary(new_merged)
         if new_merged.is_unlabeled():
@@ -1023,80 +719,29 @@ class Generate:
             self.out("Label(SharedFeats)", new_merged)
             print("Label via shared FEatures2", new_merged)
             print("\n")
-        # this only changes label for current and its copies. current is the immediate parent
-        # of remerged item. fixme: make it shorter when the problems are gone
-        ctr = len(self.stack)
-        while ctr:
-            ctr -= 1
-            current = self.stack[ctr]
-            #for current in reversed(self.stack):
-            if remerge != current and remerge in current:
-                current_feats = current.get_head_features()
-                if not current_feats.has_part("Root"):
-                    if current.part1 == remerge:
-                        new_label = current.part2.label
-                    elif current.part2 == remerge:
-                        new_label = current.part1.label
-                    else:
-                        new_label = current.label
-                    new_current = Constituent(label=new_label, part1=current.part1,
-                                              part2=current.part2)
-                    if current != new_merged:
-                        new_merged.replace_within(current, new_current)
-                    self.stack.replace(current, new_current)  # verify if needed
-                    break
+        relabel_my_parent(new_merged, remerge)
+
+        print('++ stack append new_merged 2, in remerge, replaces previous', new_merged.label)
         self.stack.append(new_merged)
         return new_merged
 
-    def label_if_necessary(self, merged, can_return_false=False):
+    def label_if_necessary(self, merged):
         """
 
         :param merged:
         :return:
         """
-        print('label_if_necessary')
-        labeled = False
-        if not self.stack:
-            return False
-        ctr = 0
-        while ctr < len(self.stack):
-            current = self.stack[ctr]
-            if current.is_unlabeled():
-                new_label = self.labeling_function(current.part1, current.part2)
+        def check_labeling(const, merged):
+            if const.part2:
+                check_labeling(const.part2, merged)
+            if const.part1:
+                check_labeling(const.part1, merged)
+            if const.is_unlabeled() and const.part1 and const.part2:
+                new_label = self.labeling_function(const.part1, const.part2)
                 if new_label is not False:
-
-                    new_merged = Constituent(label=new_label, part1=current.part1, part2=current.part2)
-                    if current == merged:
-                        merged = new_merged
-                    elif current in merged:
-                        merged.replace_within(current, new_merged)
-                    else:
-                        print("Error: there is an unlabeled stack item that is not found in merged")
-                        print("main_stack: ", self.stack.is_main())
-                        print('-------------------------------------')
-                        print("Merged:", merged)
-                        print('-------------------------------------')
-                        print("Current:", current)
-                        print('-------------------------------------')
-                        print(merged == current)
-                        print("New Merged:", new_merged)
-                        #for i, item in enumerate(self.stack):
-                        #    print(i, item)
-                        print("Current:", current.labelstring())
-                        assert(False)
-                        #sys.exit()
-
-                    if self.stack.is_main():
-                        self.stack.replace(current, new_merged)  # verify
-                    labeled = True
-                    #assert(not merged.is_unlabeled())
-            ctr += 1
-        if merged.is_unlabeled():
-            assert not self.labeling_function(merged.part1, merged.part2)
-        if can_return_false and not labeled:
-            return False
-        else:
-            return merged
+                    const.label = new_label
+        check_labeling(merged, merged)
+        return merged
 
     def labeling_function(self, x, y):
         """ Compute label for SO that merges x, y
@@ -1341,50 +986,177 @@ class Generate:
         passed_items = set()
         feats_passed = False
         prev_label = False  # block feature passage to nominal
+
+        def pass_features(current, ignored, feats_passed, prev_label, recursive=True, parent=None):
+            cannot = False
+            if current == ignored: #or not (current.part1 and current.part2):
+                print('ignore x: ', current.label)
+                cannot = True
+            elif not current.stacked:
+                #print('not stacked: ', current.label)
+                cannot = True
+            elif prev_label == "n": # (not parent) and
+                prev_label = current.label
+                cannot = True
+                print('skip: ', current.label, current.get_head_features())
+            elif current in passed_items:
+                cannot = True
+                prev_label = current.label
+                print('passed already: ', current.label, current.get_head_features())
+            elif parent and ((parent.part1 is current and parent.part2.label == 'n') or (parent.part2 is current and parent.part1.label == 'n')):
+                cannot = True
+                print("sibling of 'n': ", current.label, current.get_head_features())
+            else:
+                prev_label = current.label
+                #if current.label == 'n':
+
+                    #print('current:', current)
+                current_feats = current.get_head_features()
+                print('stack_label: ', current.label, current_feats)
+                if current_feats.has_part("Root"):
+                    go_on = True
+                    for item in ["uPerson", "iPerson", "iD", "iN"]:
+                        if current_feats.has_part(item):
+                            go_on = False
+                            break
+                    if go_on:
+                        print('go_on')
+                        passed_items.add(current)
+                        #assert(current not in x)
+                        if current.is_labeled():
+                            other_label = current.label
+                        else:
+                            if current.part1.is_labeled():
+                                if self.language == "Japanese":
+                                    other_label = current.part2.label
+                                else:
+                                    other_label = current.part1.label
+                            elif current.part2.is_labeled():
+                                if self.language == "Japanese":
+                                    other_label = current.part1.label
+                                else:
+                                    other_label = current.part2.label
+                            else:
+                                print("error - can't find label9999")
+                                sys.exit()
+                        new_feats = FeatureSet(current_feats | unvalued_phis)
+                        new_current = self.replace_features(current, current_feats, new_feats)
+                        self.out("PassFs", "Pass Features " + inherit.label + " to " + other_label)
+                        self.out("FeaturesPassed", unvalued_phis)
+                        self.inheritance_counter += 1
+                        y.replace_within(current, new_current)
+                        feats_passed = True
+            if recursive:
+
+                if current.part1 and current.part2:
+                    if current.part1.label == current.label:
+                        ignored, feats_passed, prev_label = pass_features(current.part2, ignored, feats_passed, prev_label, parent=current)
+                        ignored, feats_passed, prev_label = pass_features(current.part1, ignored, feats_passed, prev_label, parent=current)
+                    else:
+                        ignored, feats_passed, prev_label = pass_features(current.part1, ignored, feats_passed, prev_label, parent=current)
+                        ignored, feats_passed, prev_label = pass_features(current.part2, ignored, feats_passed, prev_label, parent=current)
+            return ignored, feats_passed, prev_label
+
+        print('******************=======------- Feature check ------======*****')
+        #print('x:', x)
+        #print('y:', y)
         if self.stack.is_main():
             temp_stack = list(self.stack.main_stack)
         else:
             temp_stack = list(self.stack.sub_stack)
-        while temp_stack:
-            current = temp_stack.pop()
-            if current == x:
-                continue
-            elif prev_label == "n" or current in passed_items:
-                prev_label = current.label
-                continue
-            prev_label = current.label
-            current_feats = current.get_head_features()
-            if current_feats.has_part("Root"):
-                go_on = True
-                for item in ["uPerson", "iPerson", "iD", "iN"]:
-                    if current_feats.has_part(item):
-                        go_on = False
-                        break
-                if go_on:
-                    passed_items.add(current)
-                    if current.is_labeled():
-                        other_label = current.label
+        def find_item(item, temp_stack):
+            #if item in temp_stack:
+            #    print('stack head')
+            #else:
+            #    print('item in tree, but not stack head', item)
+            if item.stacked:
+                print(item.label, item.get_head_features())
+                if item not in temp_stack:
+                    print('marked stacked, but not there.')
+            if item.part1 and item.part2:
+                if item.part1.label == item.label:
+                    find_item(item.part2, temp_stack)
+                    find_item(item.part1, temp_stack)
+                else:
+                    find_item(item.part1, temp_stack)
+                    find_item(item.part2, temp_stack)
+        #print('-------- SO ---------')
+        #find_item(x, temp_stack)
+        #find_item(y, temp_stack)
+
+        #print('-------- stack ---------')
+        #for item in reversed(temp_stack):
+        #    print(item.label, item.get_head_features())
+
+        so = False
+        if so:
+            print('--------SO-based algo-------')
+            if inherit == x:
+                ignored, feats_passed, prev_label = pass_features(y, x, feats_passed, prev_label)
+            else:
+                ignored, feats_passed, prev_label = pass_features(x, x, feats_passed,
+                                                              prev_label)
+
+        if not so:
+            print('---------Stack-based algo--------')
+            print('unvalued phis looking for who should inherit them:', unvalued_phis)
+            if self.stack.is_main():
+                temp_stack = list(self.stack.main_stack)
+            else:
+                temp_stack = list(self.stack.sub_stack)
+            c = 0
+            while temp_stack:
+                current = temp_stack.pop()
+                print(c)
+                ignored, feats_passed, prev_label = pass_features(current, x, feats_passed, prev_label, recursive=False)
+                c += 1
+                if False:
+                    if current == x:
+                        continue
+                    elif prev_label == "n" or current in passed_items:
+                        #print('skip: ', current.label, current.get_head_features())
+                        prev_label = current.label
+                        continue
+                    print('stack_label: ', current.label, current.get_head_features())
+                    if current.part1 and current.part2:
+                        print('left: %s right: %s' % (current.part1.label, current.part2.label))
+                        assert(current.part1.label == current.label or current.part2.label == current.label)
                     else:
-                        if current.part1.is_labeled():
-                            if self.language == "Japanese":
-                                other_label = current.part2.label
+                        print('no children')
+                    prev_label = current.label
+                    current_feats = current.get_head_features()
+                    if current_feats.has_part("Root"):
+                        go_on = True
+                        for item in ["uPerson", "iPerson", "iD", "iN"]:
+                            if current_feats.has_part(item):
+                                go_on = False
+                                break
+                        if go_on:
+                            print('go_on')
+                            passed_items.add(current)
+                            if current.is_labeled():
+                                other_label = current.label
                             else:
-                                other_label = current.part1.label
-                        elif current.part2.is_labeled():
-                            if self.language == "Japanese":
-                                other_label = current.part1.label
-                            else:
-                                other_label = current.part2.label
-                        else:
-                            print("error - can't find label9999")
-                            sys.exit()
-                    new_feats = FeatureSet(current_feats | unvalued_phis)
-                    new_current = self.replace_features(current, current_feats, new_feats)
-                    self.out("PassFs", "Pass Features " + inherit.label + " to " + other_label)
-                    self.out("FeaturesPassed", unvalued_phis)
-                    self.inheritance_counter += 1
-                    y.replace_within(current, new_current)
-                    feats_passed = True
+                                if current.part1.is_labeled():
+                                    if self.language == "Japanese":
+                                        other_label = current.part2.label
+                                    else:
+                                        other_label = current.part1.label
+                                elif current.part2.is_labeled():
+                                    if self.language == "Japanese":
+                                        other_label = current.part1.label
+                                    else:
+                                        other_label = current.part2.label
+                                else:
+                                    print("error - can't find label9999")
+                                    sys.exit()
+                            new_feats = FeatureSet(current_feats | unvalued_phis)
+                            new_current = self.replace_features(current, current_feats, new_feats)
+                            self.out("PassFs", "Pass Features " + inherit.label + " to " + other_label)
+                            self.out("FeaturesPassed", unvalued_phis)
+                            self.inheritance_counter += 1
+                            y.replace_within(current, new_current)
+                            feats_passed = True
         x, y, remerge = self.feature_checking_function(x, y)
         y = self.label_if_necessary(y)
         return x, y, feats_passed, remerge
@@ -1432,8 +1204,8 @@ class Generate:
             x_feats = new_x_feats
         unvalued_phi = bool(x_feats.has_part("uPerson", "uNumber", "uGender"))
         unvalued_features = FeatureSet({f for f in x_feats if f.unvalued or
-                (f.name == "Case" and unvalued_phi) or
-                (f.name == "Scp" and f.ifeature)})
+                                        (f.name == "Case" and unvalued_phi) or
+                                        (f.name == "Scp" and f.ifeature)})
         if not unvalued_features:
             return x, y, None
         ###########################
@@ -1596,10 +1368,14 @@ class Generate:
         print('---check features func ends ---')
         return x, y, remerge
 
+# "../Languages/Japanese/DisWarn.txt"
 
-
-def start(input_data):
-    f = open(input_data, 'r')
+if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        filename = int(sys.argv[1])
+    else:
+        filename = "./POP.txt"
+    f = open(filename, 'r')
     input_data = f.readlines()
     f.close()
     t = time.time()
@@ -1611,11 +1387,7 @@ def start(input_data):
     print('*****')
     print('*****')
     print('*****')
-    a = Generate(input_data)
+    a = Generate()
+    a.load_data(input_data, start, end)
     # ProduceOutput.ProduceFile(a.output, 'new/')
     print(time.time() - t)
-
-
-# "../Languages/Japanese/DisWarn.txt"
-
-start("./POP.txt")

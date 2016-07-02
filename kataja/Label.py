@@ -75,7 +75,7 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.prepare_template()
         self.doc = LabelDocument()
         self.is_card = False
-        self.card_size = (90, 120)
+        self.card_size = (60, 90)
 
         self.setDocument(self.doc)
         # not acceptin hover events is important, editing focus gets lost if other labels take
