@@ -77,6 +77,22 @@ class LinearizedStaticTree(BalancedTree):
         """
         self.set_vis_data('rotation', self.get_vis_data('rotation') - 1)
 
+    def should_we_draw(self, node, parent):
+        """
+
+        :param node:
+        :param parent:
+        :return:
+        """
+        if node.node_type != g.CONSTITUENT_NODE:
+            return False
+        if hasattr(node, 'index') and len(node.get_parents()) > 1:
+            key = node.uid
+            if key in self.traces_to_draw:
+                if parent.uid != self.traces_to_draw[key]:
+                    return False
+        return True
+
     # @time_me
     def draw(self):
         """ Divide and conquer algorithm using a grid. Result is much like latex qtree. 
@@ -113,7 +129,7 @@ class LinearizedStaticTree(BalancedTree):
             node_offset_y = mnode.boundingRect().y()
             node_top_row = mnode.get_top_part_y()
             relative_start_height = (node_offset_y + node_top_row) / node_height
-            height_in_rows = math.ceil(node_height / float(edge_height or 1)) + 1
+            height_in_rows = math.ceil(node_height / float(edge_height or 1)) #+ 1
             start_height = max(int(relative_start_height * height_in_rows), 0)
             width_in_columns = math.ceil(node_width / float(edge_width or 1))
             left_adjust = int(width_in_columns / -2)

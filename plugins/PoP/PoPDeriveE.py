@@ -12,16 +12,18 @@ try:
     from PoP.Lexicon import DET_HEADS, PHASE_HEADS, THETA_ASSIGNERS, SHARED_LABELS, \
         ADJUNCT_LABELS, COUNTED_FEATURES, COUNTED_PHI_FEATURES, LEXICON
     from PoP.Constituent import Constituent
-    from PoP.Feature import FeatureSet, Feature
+    from PoP.Feature import Feature, has_part, get_by_part
+    in_kataja = True
 except ImportError:
     from Lexicon import DET_HEADS, PHASE_HEADS, THETA_ASSIGNERS, SHARED_LABELS, \
         ADJUNCT_LABELS, COUNTED_FEATURES, COUNTED_PHI_FEATURES, LEXICON
     from Constituent import Constituent
-    from Feature import FeatureSet, Feature
-
+    from Feature import Feature, has_part, get_by_part
+    in_kataja = False
 
 start = 1
 end = 10
+
 
 class Stack:
 
@@ -51,7 +53,6 @@ class Stack:
         for item in self.main_stack:
             item.stacked = False
         self.main_stack = []
-
 
     def append(self, item, force_main=False):
         item.stacked = True
@@ -85,7 +86,7 @@ class Stack:
                     item.stacked = True
                 else:
                     item.recursive_replace_constituent(old_chunk, new_chunk)
-            elif isinstance(old_chunk, FeatureSet):
+            elif isinstance(old_chunk, set):
                 item.recursive_replace_feature_set(old_chunk, new_chunk)
             elif isinstance(old_chunk, (str, Feature)):
                 item.recursive_replace_feature(old_chunk, new_chunk)
@@ -135,6 +136,7 @@ class Generate:
     def __init__(self):
 
         self.output = []  # List of all (important) steps in the derivation
+        self.so_list = []
         self.phi_counter = 0
         self.feature_counter = 0
         self.stack = None
@@ -143,16 +145,11 @@ class Generate:
         self.transfer_counter = 0
         self.feature_check_counter = 0
         self.lookforward_so = None
-        self.language = ""
         self.over_counter = 0
         self.dumpfile = None
 
     def load_data(self, inputlines, start=0, end=0):
         for line in inputlines:
-            if "Japanese" in line:
-                self.language = "Japanese"
-            elif "English" in line:
-                self.language = "English"
             sentence, lbracket, target_str = line.partition('[')
             if not (sentence and lbracket and target_str):
                 continue
@@ -193,6 +190,14 @@ class Generate:
         :param target_example:
         :return:
         """
+        def build_synobj_lists(example_list, result_list):
+            for li in example_list:
+                if isinstance(li, list):
+                    result_list.append(build_synobj_lists(li, []))
+                else:
+                    result_list.append(self.get_lexem(li))
+            return result_list
+
         def merge_so(my_so, spine):
             if isinstance(my_so, list):
                 return self.merge_substream(my_so, spine)
@@ -207,13 +212,17 @@ class Generate:
         self.transfer_counter = 0
         self.feature_check_counter = 0
         self.lookforward_so = None
+        self.so_list = build_synobj_lists(target_example, [])
         so = None
         selected = None
-        while target_example:
-            self.lookforward_so = target_example.pop()
+        while self.so_list:
+            self.lookforward_so = self.so_list.pop()
             if so:
                 selected = merge_so(so, selected)
             so = self.lookforward_so
+            # Use self.so_list + [self.looforward_so] as remaining numeration, lookforward_so is
+            # not actually processed yet.
+
         self.lookforward_so = None
         selected = merge_so(so, selected)
         if selected.is_unlabeled():
@@ -227,7 +236,7 @@ class Generate:
     def merge_substream(self, synobjlist, spine):
         """ Switch into substream (phrase within sentence) and build that before
         merging the whole thing into main spine.
-        :param synobjlist: list of lexicon keys
+        :param synobjlist: list of syntactic objects
         :param spine: main structure of merged objects
         :return: spine
         """
@@ -245,17 +254,16 @@ class Generate:
         self.out("merge", "merge " + spine.label + " + " + substream_spine.label)
         return self.merge(spine, substream_spine)
 
-    def merge_so(self, synobj, spine):
+    def merge_so(self, x, spine):
         """ Select new item and merge it into structure
-        :param synobj: lexicon key for synobj
+        :param x: syntactic object
         :param spine: main structure of merged objects
         :return: spine
         """
         print('merge_so')
         if not spine:
-            return self.get_lexem(synobj)
+            return x
         else:
-            x = self.get_lexem(synobj)
             self.out("merge", "merge " + x.label + " + " + spine.label)
             spine = self.merge(x, spine)
             print('finished merge: ', spine)
@@ -290,27 +298,23 @@ class Generate:
         # Head-feature gives immediately label, once
         print('determine_label')
         if "Head" in x_feats and "Head" not in y_feats:
-            new_x_feats = FeatureSet({f for f in x_feats if f != "Head"})
+            new_x_feats = {xf for xf in x_feats if xf != "Head"}
             label_giver = self.replace_features(x, x_feats, new_x_feats)
             other = y
             label_info = "Head"
         elif y.label in ADJUNCT_LABELS:
-            # Assume that label is X
             label_giver = x
             other = y
 
+        self.merge_counter += 1
         if label_giver:
             # Head merge
-            self.merge_counter += 1
-            if self.language == "Japanese":
-                merged = Constituent(label=label_giver.label, part1=other, part2=label_giver)
-            else:
-                merged = Constituent(label=label_giver.label, part1=label_giver, part2=other)
-                # !!! Unlabeled move !
-                merged = self.unlabeled_move(merged)
-                if feats_passed:
-                    if label_info == "Head":
-                        self.out("Label(Head)", merged)
+            merged = Constituent(label=label_giver.label, part1=label_giver, part2=other)
+            # !!! Unlabeled move !
+            merged = self.unlabeled_move(merged)
+            if feats_passed:
+                if label_info == "Head":
+                    self.out("Label(Head)", merged)
 
             if remerge:
                 # check_features of RemergedElement??
@@ -318,81 +322,33 @@ class Generate:
                 merged = self.remerge_back(merged, remerge)
         else:
             # Check if adjunct
-            self.merge_counter += 1
             # ordering doesn't matter, but this makes things easier
             x_is_head = None
             if "v" in x.label:
-                if self.language == "Japanese":
-                    if y.label.startswith("n"):
-                        x_is_head = False
-                elif y.label.startswith("D"):
+                if y.label.startswith("D"):
                     x_is_head = False
                 elif y.label.startswith("Q"):
                     x_is_head = False
             elif "C" in x.label:
-                if self.language == "Japanese":
-                    x_is_head = True
-                else:
-                    x_is_head = False
+                x_is_head = False
             elif "P_in" in x.label:
                 x_is_head = False
             if x_is_head is None:
                 if external_merge:
-                    if self.language == "Japanese":
-                        x_is_head = False
-                    else:
-                        x_is_head = True
+                    x_is_head = True
                 else:
-                    if self.language == "Japanese":
-                        x_is_head = True
-                    else:
-                        x_is_head = False
+                    x_is_head = False
             if x_is_head:
-                merged = Constituent(label="_", part1=x, part2=y)
+                part1 = x
+                part2 = y
             else:
-                merged = Constituent(label="_", part1=y, part2=x)
+                part1 = y
+                part2 = x
+            merged = Constituent(label="_", part1=part1, part2=part2)
 
             self.out("Label(None)", str(merged))
             # If unlabled - then remerge next available element with phi-features
             merged = self.unlabeled_move(merged)
-                # See if there are any uFs in x_feats
-        # if merged.is_labeled():
-        #     merged_feats = merged.get_head_features()
-        #     unvalued_features = []
-        #     for f in merged_feats:
-        #         if f.unvalued and f.name != "Case" and f.name != "Scp":
-        #             goal = Feature(name=f.name, value=f.value, unvalued=False, ifeature=True)
-        #             unvalued_features.append(goal)
-        #
-        #     if unvalued_features:
-        #         found = False
-        #         # Search stack for element with a matching goal
-        #         if self.stack.is_sub():
-        #             self.out("Crash(Unchecked Feature)", str(merged))
-        #             sys.exit()
-        #         # It looks like Model10 never reaches inside this:
-        #         # for current in reversed(self.stack):
-        #         #     if current.is_labeled():
-        #         #         current_feats = current.get_head_features()
-        #         #         for f in current_feats:
-        #         #             for goal in unvalued_features:
-        #         #                 if goal in f:
-        #         #                     found = True
-        #         #                     merge_data = "merge (Feature Check) %s + %s" % \
-        #         #                                  (merged.label, current.label)
-        #         #                     self.out("Merge", merge_data)
-        #         #                     # though there are many possible triggers (arriving
-        #         #                     # at indeterminate order) they all create the same
-        #         #                     # merge
-        #         #                     merged = self.merge(merged, current)
-        #         #                     break
-        #         #             if found:
-        #         #                 break
-        #         #         if found:
-        #         #             break
-        #         if not found:
-        #             self.out("Crash(Unchecked Feature)", str(merged))
-        #             sys.exit()
         if merged.label in PHASE_HEADS:
             merged = self.transfer_check(merged)
         return merged
@@ -400,9 +356,9 @@ class Generate:
     def remerge_back(self, merged, remerge):
         print('remerge_back')
         shared_feats = merged.shared_features(remerge)
-        if shared_feats.has_part("iQ"):
+        if has_part(shared_feats, "iQ"):
             label = "Q"
-        elif shared_feats.has_part("iTop"):
+        elif has_part(shared_feats, "iTop"):
             label = "Top"
         else:
             print("SharedFeats", shared_feats)
@@ -411,7 +367,7 @@ class Generate:
             print("Can't Determine Label 5555")
             sys.exit()
         remerge_feats = remerge.get_head_features()
-        new_remerge_feats = FeatureSet(remerge_feats)
+        new_remerge_feats = set(remerge_feats)
         new_remerge_feats.add(Feature(name="Copy"))
 
         if self.stack.is_sub():
@@ -436,7 +392,7 @@ class Generate:
         """
         print('transfer_check')
         # ##### Dephase because T inherits phasehood ##### #
-        if self.stack.is_main() and merged.label == "v*" and self.language != "Japanese":
+        if self.stack.is_main() and merged.label == "v*":
             success = self.dephase_and_transfer(merged)
             if success:
                 return success
@@ -545,15 +501,15 @@ class Generate:
         """ Dephase
             b) Deletion of C transfers phasehood to T.
         """
-        def find_next_head(con, target_label, parent_label):
-            if con.label != target_label and parent_label == target_label:
+        def find_next_head(con, target_l, parent_l):
+            if con.label != target_l and parent_l == target_l:
                 return con
             if con.part1:
-                found_left = find_next_head(con.part1, target_label, con.label)
+                found_left = find_next_head(con.part1, target_l, con.label)
                 if found_left:
                     return found_left
             if con.part2:
-                return find_next_head(con.part2, target_label, con.label)
+                return find_next_head(con.part2, target_l, con.label)
 
         print('dephase_deleted_c')
         left = merged.part1
@@ -620,14 +576,18 @@ class Generate:
 
     def unlabeled_move(self, merged):
         print('unlabeled_move')
-
         # I don't like this next move, looking forward to decide on current cycle:
         if self.lookforward_so:
-            if merged.part1.label in THETA_ASSIGNERS:  # External merge blocks internal merge
-                if isinstance(self.lookforward_so, list):  # not yet turned to constituent
-                    first = self.lookforward_so[0]
-                    if first in DET_HEADS or first == "n_Expl":
-                        return merged
+            # External merge blocks internal merge
+            if merged.part1.label in THETA_ASSIGNERS:
+                if isinstance(self.lookforward_so, list):
+                    lf_so = self.lookforward_so[0]  # look into substream
+                else:
+                    lf_so = self.lookforward_so
+                if lf_so.label in DET_HEADS or \
+                    (lf_so.label == "n" and has_part(lf_so.features, "uPerson")):  # = n_Expl
+                    print('external merge blocks internal merge')
+                    return merged
         if self.stack.is_main():
             print('++ stack append in unlabeled_move')
             self.stack.append(merged)
@@ -638,23 +598,22 @@ class Generate:
         if merged.is_unlabeled():
             head = merged.part1
             head_feats = head.get_head_features()
-            if self.language == "English":
-                if head_feats.has_part("iD", "iPerson"):
-                    # There's already a DP with phi-features here, so no need to merge
-                    # another DP with Phi
-                    return merged
-                elif head_feats.has_part("iQ", "iPerson"):
-                    # There's already a DP with phi-features here, so no need to merge
-                    # another DP with Phi
-                    return merged
-            ###Try looking into complement
+            if has_part(head_feats, "iD", "iPerson"):
+                # There's already a DP with phi-features here, so no need to merge
+                # another DP with Phi
+                return merged
+            elif has_part(head_feats, "iQ", "iPerson"):
+                # There's already a DP with phi-features here, so no need to merge
+                # another DP with Phi
+                return merged
+            # Try looking into complement
             comp = merged.part2
             if comp.is_unlabeled():
                 locus = comp.part1
                 locus_features = locus.get_head_features()
-                if locus_features.has_part("iN", "uPerson") or \
-                        locus_features.has_part("iQ", "iPerson") or \
-                        locus_features.has_part("iD", "iPerson"):
+                if has_part(locus_features, "iN", "uPerson") or \
+                        has_part(locus_features, "iQ", "iPerson") or \
+                        has_part(locus_features, "iD", "iPerson"):
                     remerge = locus
             elif "Phi" in comp.label:
                 locus = comp.part1
@@ -662,11 +621,11 @@ class Generate:
             else:
                 locus = comp
                 locus_features = locus.get_head_features()
-                if locus_features.has_part("iN"):
+                if has_part(locus_features, "iN"):
                     remerge = locus
             if not remerge:
-                if locus_features.has_part("iD", "iPerson") or \
-                        locus_features.has_part("iQ", "iPerson"):
+                if has_part(locus_features, "iD", "iPerson") or \
+                        has_part(locus_features, "iQ", "iPerson"):
                     remerge = locus
         if remerge:
             merged = self.remerge(merged, remerge)
@@ -679,7 +638,7 @@ class Generate:
             """ Relabel the parent of remerged constituent """
             if chosen_one != current and chosen_one in current:
                 current_feats = current.get_head_features()
-                if not current_feats.has_part("Root"):
+                if not has_part(current_feats, "Root"):
                     if current.part1 == chosen_one:
                         current.label = current.part2.label
                     elif current.part2 == chosen_one:
@@ -698,7 +657,7 @@ class Generate:
         remerge_feats = remerge.get_head_features()
         new_remerge_feats = remerge_feats.copy()
         new_remerge_feats.add(Feature(name="Copy"))
-        new_remerge.replace_within(remerge_feats, new_remerge_feats)
+        #new_remerge.replace_within(remerge_feats, new_remerge_feats)
         merged.replace_within(remerge, new_remerge)  # brr, brrrr, brrrr
         self.stack.replace(remerge, new_remerge)
         self.out("merge", "merge (for labeling) " + remerge.label + " + " + merged.label)
@@ -769,23 +728,19 @@ class Generate:
         if x.is_unlabeled() and y.is_unlabeled():
             print('2: both are unlabeled')
             return False
-        if elem1_feats.has_part("Root"):  # weak
-            if elem1_feats.has_part("iPerson", "iNumber", "iGender"):
-                if self.language == "Japanese":
-                    new_label = y.label
-                else:
-                    new_label = x.label
-                self.out("Label(Strengthened)", new_label)
+        if has_part(elem1_feats, "Root"):  # weak
+            if has_part(elem1_feats, "iPerson", "iNumber", "iGender"):
+                self.out("Label(Strengthened)", x.label)
                 print('3: iPerson, iNumber or iGender')
-                return new_label
-            elif elem1_feats.has_part("iPerson"):
+                return x.label
+            elif has_part(elem1_feats, "iPerson"):
                 print("elem1 has only iPerson of phi")
                 print("Merged", x, y)
                 sys.exit()
         if "Copy" in elem1_feats:
             if "Copy" not in elem2_feats:
-                if elem2_feats.has_part("Root") or elem1_feats.has_part("Root"):  # weak
-                    if elem2_feats.has_part("iPerson", "iNumber", "iGender"):
+                if has_part(elem2_feats, "Root") or has_part(elem1_feats, "Root"):  # weak
+                    if has_part(elem2_feats, "iPerson", "iNumber", "iGender"):
                         self.out("Label(Move)", y.label)
                         print('5: elem1 is Copy, either is Root and elem 2 has phi-features')
                         # print(new_merged)
@@ -796,90 +751,28 @@ class Generate:
                     return y.label
         elif "Copy" in elem2_feats:
             # weak if Root
-            if elem1_feats.has_part("Root", "iPerson", "iNumber", "iGender"):
+            if has_part(elem1_feats, "Root", "iPerson", "iNumber", "iGender"):
                 self.out("Label(Move)", x.label)
                 print('7: elem2 is Copy, elem1 is Root and phi')
                 return x.label
-        shared_feats = FeatureSet(elem1_feats & elem2_feats)
+        shared_feats = elem1_feats & elem2_feats
         if not shared_feats:
             # Check for strengthened element
             print('8: no shared feats (return False)')
             return False
-        person_f = shared_feats.get_by_part("iPerson")
+        person_f = get_by_part(shared_feats, "iPerson")
         if person_f:
-            if shared_feats.has_part("iNumber", "iGender"):
-                if self.language == "Japanese":
-                    self.out("Label(Strengthened)", y.label)
-                    print('9a: shares phi-features, japanese')
-                    return y.label
-                else:
-                    new_label = "Phi%s" % person_f.counter or ''
-                    self.out("Label(SharedFeats)", new_label)
-                    print('9b: shares phi-features (strengthen)', new_label)
-                    return new_label
+            if has_part(shared_feats, "iNumber", "iGender"):
+                new_label = "Phi%s" % person_f.counter or ''
+                self.out("Label(SharedFeats)", new_label)
+                print('9b: shares phi-features (strengthen)', new_label)
+                return new_label
             else:
                 self.out("Label(SharedFeats)", "Per")
                 print('10: shares iPerson, make a "Per"-constituent')
                 return "Per"
         print('11: nothing matched')
         return False
-
-    # def get_head_features_head_final(self, merged):
-    #     """ I'm not putting much effort to fix this, it should be refactored anyways,
-    # one method for
-    #      both head final and head first languages
-    #     :param merged:
-    #     :return:
-    #     !fixme: later
-    #     """
-    #
-    #     def get_head(mrged):
-    #         # this will find the head of a Merged syntactic object. The head is a string,
-    #         # and shouldn't have any brackets
-    #         for i, li in enumerate(mrged):
-    #             if not isinstance(li, list):
-    #                 if i != 0:
-    #                     print('not first: ', i, mrged)
-    #                 return li
-    #         print("Error: No Head found")
-    #         sys.exit()
-    #
-    #     if "kiPerson" in str(merged):
-    #         print("error")
-    #         print("Merged", merged)
-    #         sys.exit()
-    #
-    #     if merged.features:
-    #         return merged.features
-    #     if merged.is_unlabeled():
-    #         head = get_head(merged.part2)
-    #     else:
-    #         head = get_head(merged)
-    #     ctr = len(merged) - 1
-    #     cont = True
-    #     while cont:
-    #         current = merged[ctr]
-    #         current_head = current[0]
-    #         if current_head == head:
-    #             head_feats = self.get_head_features_head_final(current)
-    #             return head_feats
-    #         if len(current) == 2:
-    #             if type(current[-1]) == list:
-    #                 head_feats = current[-1]
-    #                 return head_feats
-    #         else:
-    #             list_pres = False
-    #             for f in current:
-    #                 if type(f) == list:
-    #                     list_pres = True
-    #             if not list_pres:
-    #                 head_feats = current
-    #                 return current
-    #         ctr -= 1
-    #         if ctr < 0:
-    #             print("Error")
-    #             print("Can't find head feats")
-    #             sys.exit()
 
     def get_lexem(self, synobj):
         """
@@ -898,7 +791,7 @@ class Generate:
             self.feature_counter += 1
         if any((f in COUNTED_PHI_FEATURES for f in features0)):
             self.phi_counter += 1
-        features = FeatureSet()
+        features = set()
         for feat in features0:
             if feat in COUNTED_FEATURES:
                 features.add(feat + str(self.feature_counter))
@@ -957,12 +850,9 @@ class Generate:
         elif y_head:
             current_label = y.label
         if current_label:
-            if self.language == "Japanese":
-                self.out("Label(Head)", "label= %s part1= %s part2= %s" % (current_label, y, x))
-            else:
-                self.out("Label(Head)", "label= %s part1= %s part2= %s" % (current_label, x, y))
+            self.out("Label(Head)", "label= %s part1= %s part2= %s" % (current_label, x, y))
         inherit = False
-        unvalued_phis = FeatureSet()
+        unvalued_phis = set()
         for f in x_feats:
             if f.name in ["Person", "Number", "Gender"] and f.unvalued:
                 unvalued_phis.add(f)
@@ -1013,10 +903,10 @@ class Generate:
                     #print('current:', current)
                 current_feats = current.get_head_features()
                 print('stack_label: ', current.label, current_feats)
-                if current_feats.has_part("Root"):
+                if has_part(current_feats, "Root"):
                     go_on = True
                     for item in ["uPerson", "iPerson", "iD", "iN"]:
-                        if current_feats.has_part(item):
+                        if has_part(current_feats, item):
                             go_on = False
                             break
                     if go_on:
@@ -1027,20 +917,15 @@ class Generate:
                             other_label = current.label
                         else:
                             if current.part1.is_labeled():
-                                if self.language == "Japanese":
-                                    other_label = current.part2.label
-                                else:
-                                    other_label = current.part1.label
+                                other_label = current.part1.label
                             elif current.part2.is_labeled():
-                                if self.language == "Japanese":
-                                    other_label = current.part1.label
-                                else:
-                                    other_label = current.part2.label
+                                other_label = current.part2.label
                             else:
                                 print("error - can't find label9999")
                                 sys.exit()
-                        new_feats = FeatureSet(current_feats | unvalued_phis)
+                        new_feats = current_feats | unvalued_phis
                         new_current = self.replace_features(current, current_feats, new_feats)
+                        assert(current == new_current) # fixme! Panic! Feature passing does nothing
                         self.out("PassFs", "Pass Features " + inherit.label + " to " + other_label)
                         self.out("FeaturesPassed", unvalued_phis)
                         self.inheritance_counter += 1
@@ -1125,10 +1010,10 @@ class Generate:
                         print('no children')
                     prev_label = current.label
                     current_feats = current.get_head_features()
-                    if current_feats.has_part("Root"):
+                    if has_part(current_feats, "Root"):
                         go_on = True
                         for item in ["uPerson", "iPerson", "iD", "iN"]:
-                            if current_feats.has_part(item):
+                            if has_part(current_feats, item):
                                 go_on = False
                                 break
                         if go_on:
@@ -1138,19 +1023,13 @@ class Generate:
                                 other_label = current.label
                             else:
                                 if current.part1.is_labeled():
-                                    if self.language == "Japanese":
-                                        other_label = current.part2.label
-                                    else:
-                                        other_label = current.part1.label
+                                    other_label = current.part1.label
                                 elif current.part2.is_labeled():
-                                    if self.language == "Japanese":
-                                        other_label = current.part1.label
-                                    else:
-                                        other_label = current.part2.label
+                                    other_label = current.part2.label
                                 else:
                                     print("error - can't find label9999")
                                     sys.exit()
-                            new_feats = FeatureSet(current_feats | unvalued_phis)
+                            new_feats = current_feats | unvalued_phis
                             new_current = self.replace_features(current, current_feats, new_feats)
                             self.out("PassFs", "Pass Features " + inherit.label + " to " + other_label)
                             self.out("FeaturesPassed", unvalued_phis)
@@ -1183,7 +1062,7 @@ class Generate:
         """
 
         def make_checking_pairs(unvalued_features, probe_feats):
-            unvalued = FeatureSet({x for x in probe_feats if x.unvalued})
+            unvalued = {p for p in probe_feats if p.unvalued}
             chkd = []
             for unvalued_feature in unvalued:
                 for u_goal in unvalued_features.copy():
@@ -1196,22 +1075,22 @@ class Generate:
             print('quick escape! ', type(x), type(y))
             return x, y, None
         x_feats, y_feats = self.get_head_features(x, y)
-        checked_feats = FeatureSet()
+        checked_feats = set()
         # XFeats probe
         if "MergeF" in x_feats:
-            new_x_feats = FeatureSet({f for f in x_feats if f.name != "MergeF"})
+            new_x_feats = {nf for nf in x_feats if nf.name != "MergeF"}
             x = self.replace_features(x, x_feats, new_x_feats)
             x_feats = new_x_feats
-        unvalued_phi = bool(x_feats.has_part("uPerson", "uNumber", "uGender"))
-        unvalued_features = FeatureSet({f for f in x_feats if f.unvalued or
-                                        (f.name == "Case" and unvalued_phi) or
-                                        (f.name == "Scp" and f.ifeature)})
+        unvalued_phi = bool(has_part(x_feats, "uPerson", "uNumber", "uGender"))
+        unvalued_features = {mf for mf in x_feats if mf.unvalued or
+                                                     (mf.name == "Case" and unvalued_phi) or
+                                                     (mf.name == "Scp" and mf.ifeature)}
         if not unvalued_features:
             return x, y, None
         ###########################
         temp_stack = list(self.stack)
         remerge = None
-        new_x_feats = FeatureSet()
+        new_x_feats = set()
         unvalued_feature_stack = sorted(unvalued_features.copy())
         while unvalued_feature_stack:
             uf = unvalued_feature_stack.pop()
@@ -1225,7 +1104,7 @@ class Generate:
                 if "Phi" in stack_top.label:
                     # Don't look at the features of an element with shared phi-features
                     # This is maybe an imperfection
-                    top_feats = FeatureSet()
+                    top_feats = set()
                 else:
                     top_feats = stack_top.get_head_features()
                 if top_feats is None:
@@ -1233,7 +1112,7 @@ class Generate:
                 uf_present = False
                 # This can match only two unvalued, but uf:s can also be iScp:s or Cases
                 if uf.unvalued:
-                    utop_feats = FeatureSet({feat for feat in top_feats if feat.unvalued})
+                    utop_feats = {feat for feat in top_feats if feat.unvalued}
                     for top_feat in utop_feats:
                         uf_present = True
                         if top_feat != uf and top_feat.name == uf.name: # both are unvalued
@@ -1248,7 +1127,7 @@ class Generate:
                 if uf.name == "Q" or uf.name == "Top":
                     uf_present = True  # it doesn't matter if a potential goal has any uFs
                     # uFs aren't needed to be visible.
-                if top_feats.has_part(goal):
+                if has_part(top_feats, goal):
                     labeled = stack_top.is_labeled()
                     if uf_present:
                         if not labeled:
@@ -1277,7 +1156,7 @@ class Generate:
                             remerge_feats = remerge.get_head_features()
                             if "Copy" in remerge_feats:
                                 # RemoveCopy
-                                copyless_features = FeatureSet({x for x in remerge_feats if x != "Copy"})
+                                copyless_features = {rf for rf in remerge_feats if rf != "Copy"}
                                 remerge.replace_within(remerge_feats, copyless_features)
                                 # print(self.remerge)
                         elif "iQ" in goal:
@@ -1299,7 +1178,8 @@ class Generate:
                             remerge_feats = remerge.get_head_features()
                             if "Copy" in remerge_feats:
                                 # RemoveCopy
-                                copyless_features = FeatureSet({x for x in remerge_feats if x.name != "Copy"})
+                                copyless_features = {rf for rf in remerge_feats if rf.name !=
+                                                     "Copy"}
                                 remerge.replace_within(remerge_feats, copyless_features)
                                 print("self.Remerge111", remerge)
                                 print("\n")
@@ -1326,33 +1206,18 @@ class Generate:
                     #    print(i, item)
                     #    print('')
                     #raise hell
-                    if self.language == "Japanese":  # head final issue
-                        pass  # uncomment and fix code below
-                    #     if "uCase" in str(y):
-                    #         y_str = str(y)
-                    #         start = y_str.find("uCase")
-                    #         temp_y_cont = True
-                    #         end = start + 1
-                    #         while temp_y_cont:
-                    #             current_y = y_str[end]
-                    #             if current_y == "'":
-                    #                 temp_y_cont = False
-                    #             end += 1
-                    #         y_feat = y_str[start:end - 1]
-                    #         y.replace_within(y_feat, f)
-                    #         if not self.sub_stream:
-                    #             self.replace(y_feat, f)
-                    else:  # not Japanese (not head final)
-                        for y_feat in y_feats:
-                            if y_feat.name == "Case" and y_feat.unvalued:
-                                y.replace_within(y_feat, uf)
-                                self.stack.replace(y_feat, uf)
+                    for y_feat in y_feats:
+                        if y_feat.name == "Case" and y_feat.unvalued:
+                            y.replace_within(y_feat, uf)
+                            self.stack.replace(y_feat, uf)
                     feat_checked = True
                 elif uf.name == "Phi":
-                    if top_feats.has_part("iPerson"):
-                        new_x_feats = FeatureSet({x for x in x_feats if not (x.unvalued and x.name == "Phi")})
+                    if has_part(top_feats, "iPerson"):
+                        new_x_feats = {xf for xf in x_feats if not (xf.unvalued and xf.name ==
+                                                                    "Phi")}
                         for top_f in top_feats:
-                            if any({x in top_f for x in ["iPerson", "iNumber", "iGender", "uCase"]}):
+                            if any({tf in top_f for tf in ["iPerson", "iNumber", "iGender",
+                                                           "uCase"]}):
                                 new_x_feats.add(top_f)
                     x = self.replace_features(x, x_feats, new_x_feats)
                     x_feats = new_x_feats

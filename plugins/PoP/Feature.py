@@ -1,45 +1,32 @@
 try:
-    from BaseFeature import BaseFeature as MyBaseClass
+    from syntax.BaseFeature import BaseFeature as MyBaseClass
+    from kataja.SavedField import SavedField
     in_kataja = True
 except ImportError:
     MyBaseClass = object
     in_kataja = False
 
 
-class FeatureSet(set):
-
-    def contains(self, other):
-        """ Alternative for hash-based containment """
-        for item in self:
-            if other == item:
-                return True
-
-    def has_part(self, *fparts):
-        """ Find
-        :param fparts:
-        :return:
-        """
-        for fpart in fparts:
-            found = False
-            for f in self:
-                if fpart in f:
-                    found = True
-                    break
-            if not found:
-                return False
-        return True
-
-    def get_by_part(self, fpart):
-        for f in self:
+def has_part(fset, *fparts):
+    """ Find
+    :param fparts:
+    :return:
+    """
+    for fpart in fparts:
+        found = False
+        for f in fset:
             if fpart in f:
-                return f
+                found = True
+                break
+        if not found:
+            return False
+    return True
 
-    def copy(self):
-        return FeatureSet(set.copy(self))
 
-    def __repr__(self):
-        #return 'FS'+repr(sorted(self))
-        return repr(sorted(self))
+def get_by_part(fset, fpart):
+    for f in fset:
+        if fpart in f:
+            return f
 
 
 class Feature(MyBaseClass):
@@ -81,6 +68,9 @@ class Feature(MyBaseClass):
             self.value = value
             self.unvalued = unvalued
             self.ifeature = ifeature
+
+    def __str__(self):
+        return repr(self)
 
     def __repr__(self):
         parts = []
@@ -132,3 +122,9 @@ class Feature(MyBaseClass):
     def copy(self):
         return Feature(counter=self.counter, name=self.name, value=self.value,
                        unvalued=self.unvalued, ifeature=self.ifeature)
+
+    if in_kataja:
+        unvalued = SavedField("unvalued")
+        ifeature = SavedField("ifeature")
+        counter = SavedField("counter")
+        # rest are same as in BaseFeature

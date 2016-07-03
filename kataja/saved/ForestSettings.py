@@ -63,8 +63,8 @@ class ForestSettings(SavedObject):
         self.color_mode = None
         self.last_key_colors = {}
         self.bracket_style = None
-        self.use_projection = True
-        self.use_xbar_aliases = True
+        self.use_projection = False
+        self.use_xbar_aliases = False
         self.projection_highlighter = False
         self.projection_strong_lines = False
         self.projection_colorized = True

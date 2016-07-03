@@ -1,11 +1,11 @@
 try:
     from PoP.Lexicon import SHARED_FEAT_LABELS
-    from PoP.Feature import FeatureSet, Feature
+    from PoP.Feature import Feature
     from BaseConstituent import BaseConstituent as MyBase
     in_kataja = True
 except ImportError:
     from Lexicon import SHARED_FEAT_LABELS
-    from Feature import FeatureSet, Feature
+    from Feature import Feature
     MyBase = object
     in_kataja = False
 
@@ -16,6 +16,10 @@ class Constituent(MyBase):  # collections.UserList):
 
     def __init__(self, label='', part1=None, part2=None, features=None):
         if in_kataja:
+            if features is not None:
+                features = set(features)
+            else:
+                features = set()
             if part1 and part2:
                 super().__init__(label=label, parts=[part1, part2], features=features)
             else:
@@ -23,14 +27,14 @@ class Constituent(MyBase):  # collections.UserList):
         self.label = label
         self.part1 = part1
         self.part2 = part2
-        self.features = FeatureSet()
+        self.features = set()
         self.stacked = False
         if features:
             for f in features:
                 if isinstance(f, str):
                     self.features.add(Feature(f))
                 elif isinstance(f, Feature):
-                    self.features.add(f)
+                    self.features.add(f.copy())
 
     def __repr__(self):
         parts = [self.label]
@@ -79,7 +83,7 @@ class Constituent(MyBase):  # collections.UserList):
     def shared_features(self, other):
         my_feats = self.get_head_features()
         other_feats = other.get_head_features()
-        return FeatureSet(my_feats & other_feats)
+        return my_feats & other_feats
 
     def add_feature(self, feat):
         if not isinstance(feat, Feature):
@@ -93,6 +97,15 @@ class Constituent(MyBase):  # collections.UserList):
         if old in self.features:
             self.features.remove(old)
             self.features.add(new)
+
+    def has_feature(self, key):
+        """ Check the existence of feature within this constituent
+        :param key: string for identifying feature type or Feature instance
+        :return: bool
+        """
+        if isinstance(key, Feature):
+            return key in self.features
+        return key in self.features
 
     def replace_feature_by_name(self, old_name, new):
         found = None
@@ -116,7 +129,7 @@ class Constituent(MyBase):  # collections.UserList):
         if self.part1 and self.part2:
             return Constituent(label=self.label, part1=self.part1.copy(), part2=self.part2.copy())
         elif self.features:
-            return Constituent(label=self.label, features=FeatureSet(self.features))
+            return Constituent(label=self.label, features=self.features)
         else:
             raise TypeError
 
@@ -174,7 +187,7 @@ class Constituent(MyBase):  # collections.UserList):
         if head in SHARED_FEAT_LABELS:
             elem1_feats = self.part1.get_head_features()
             elem2_feats = self.part2.get_head_features()
-            shared_feats = FeatureSet(elem1_feats & elem2_feats)
+            shared_feats = elem1_feats & elem2_feats
             if shared_feats:
                 return shared_feats
         if "Phi" in head:
@@ -193,8 +206,23 @@ class Constituent(MyBase):  # collections.UserList):
             self.recursive_replace_label(old_chunk, new_chunk)
         elif isinstance(old_chunk, Constituent):
             self.recursive_replace_constituent(old_chunk, new_chunk)
-        elif isinstance(old_chunk, FeatureSet):
-            self.recursive_replace_feature_set(old_chunk, new_chunk)
+        elif isinstance(old_chunk, set):
+            found = self.recursive_replace_feature_set(old_chunk, new_chunk)
+            print('found %s cases of feature set to replace' % found)
+            if found < 1:
+                print('***********************************')
+                print('***********************************')
+                print('***********************************')
+                print('***********************************')
+                print('***********************************')
+                print(self, old_chunk, new_chunk)
+                print('***********************************')
+                print('***********************************')
+                print('***********************************')
+                print('***********************************')
+                print('***********************************')
+                #assert(found)
+            assert(found < 2)
         elif isinstance(old_chunk, Feature):
             self.recursive_replace_feature(old_chunk, new_chunk)
         else:
@@ -208,17 +236,20 @@ class Constituent(MyBase):  # collections.UserList):
         if self.label == old_label:
             self.label = new_label
 
-    def recursive_replace_feature_set(self, old, new):
+    def recursive_replace_feature_set(self, old, new, found=0):
+        #print(type(old),old, type(new), new)
         for item in new:
             if not isinstance(item, Feature):
                 print(new)
                 raise TypeError
         if self.part1:
-            self.part1.recursive_replace_feature_set(old, new)
+            found = self.part1.recursive_replace_feature_set(old, new)
         if self.part2:
-            self.part2.recursive_replace_feature_set(old, new)
+            found = self.part2.recursive_replace_feature_set(old, new)
         if old == self.features:
-            self.features = new
+            self.features = set(new)
+            found += 1
+        return found
 
     def recursive_replace_feature(self, old, new):
         if new and not isinstance(new, Feature):

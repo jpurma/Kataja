@@ -40,9 +40,9 @@ class BaseFeature(SavedObject):
 
     syntactic_object = True
 
-    visible_in_label = ['fname', 'value', 'family']
-    editable_in_label = ['fname', 'value', 'family']
-    display_styles = {'fname': {'getter': 'name_with_u_prefix'}}
+    visible_in_label = ['name', 'value', 'family']
+    editable_in_label = ['name', 'value', 'family']
+    display_styles = {'name': {'getter': 'name_with_u_prefix'}}
     editable = {}
     addable = {}
 
@@ -51,7 +51,6 @@ class BaseFeature(SavedObject):
         self.assigned = assigned
         self.name = name
         self.value = value
-        self.assigned = assigned
         self.family = family
 
     def has_value(self, prop):
@@ -62,17 +61,16 @@ class BaseFeature(SavedObject):
         return not self.assigned
 
     def name_with_u_prefix(self):
-        print('name with u-prefix called')
         if not self.assigned:
             return 'u' + self.name
         else:
-            return self.fname
+            return self.name
 
     def satisfies(self, feature):
         return feature.unassigned and feature.name == self.name and self.assigned
 
     def __repr__(self):
-        return "BaseFeature(fname=%r, value=%r, assigned=%r, family=%r)" % (self.name,
+        return "BaseFeature(name=%r, value=%r, assigned=%r, family=%r)" % (self.name,
                                                                             self.value,
                                                                             self.assigned,
                                                                             self.family)

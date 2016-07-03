@@ -67,6 +67,9 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
             elif node.is_top_node():
                 node.physics_x = True
                 node.physics_y = False
+        else:
+            node.physics_x = True
+            node.physics_y = True
 
     def reselect(self):
         """ Linearization has  """
@@ -100,7 +103,7 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
             rx, ry = top.current_position
             top.move_to(rx, 0)
             for node in tree.sorted_nodes[1:]:
-                if node.is_leaf():
+                if node.is_leaf() and node.node_type == CONSTITUENT_NODE:
                     if node:
                         node.physics_x = False
                         node.physics_y = False

@@ -111,23 +111,24 @@ class BracketManager:
         if f.settings.bracket_style != g.NO_BRACKETS:
             for tree in f:
                 for node in tree.sorted_nodes:  # not sure if this should use 'once'
-                    if node.left_bracket:
-                        depth, left = self.find_leftmost(node)
-                        k = left.uid
-                        if k in self._bracket_slots:
-                            left_brackets, right_brackets = self._bracket_slots[k]
-                            left_brackets.append(node)
-                            self._bracket_slots[k] = (left_brackets, right_brackets)
-                        else:
-                            self._bracket_slots[k] = ([node], [])
-                        depth, right = self.find_rightmost(node)
-                        k = right.uid
-                        if k in self._bracket_slots:
-                            left_brackets, right_brackets = self._bracket_slots[k]
-                            right_brackets.append(node)
-                            self._bracket_slots[k] = (left_brackets, right_brackets)
-                        else:
-                            self._bracket_slots[k] = ([], [node])
+                    if hasattr(node, 'left_bracket'):
+                        if node.left_bracket:
+                            depth, left = self.find_leftmost(node)
+                            k = left.uid
+                            if k in self._bracket_slots:
+                                left_brackets, right_brackets = self._bracket_slots[k]
+                                left_brackets.append(node)
+                                self._bracket_slots[k] = (left_brackets, right_brackets)
+                            else:
+                                self._bracket_slots[k] = ([node], [])
+                            depth, right = self.find_rightmost(node)
+                            k = right.uid
+                            if k in self._bracket_slots:
+                                left_brackets, right_brackets = self._bracket_slots[k]
+                                right_brackets.append(node)
+                                self._bracket_slots[k] = (left_brackets, right_brackets)
+                            else:
+                                self._bracket_slots[k] = ([], [node])
         # print(self._bracket_slots)
         # print(self.brackets)
         for bracket in self.brackets.values():

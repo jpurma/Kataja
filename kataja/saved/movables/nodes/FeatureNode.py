@@ -46,13 +46,13 @@ class FeatureNode(Node):
     display = True
     wraps = 'feature'
 
-    visible_in_label = ['fname', 'value', 'family']
-    editable_in_label = ['fname', 'value', 'assigned', 'family']
-    display_styles = {'fname': {'align': 'continue', 'getter': 'name_with_u_prefix',
-                                'delimiter':':', 'syntactic': True},
+    visible_in_label = ['name', 'value', 'family']
+    editable_in_label = ['name', 'value', 'assigned', 'family']
+    display_styles = {'name': {'align': 'continue', 'getter': 'name_with_u_prefix',
+                               'delimiter':':', 'syntactic': True},
                       'value': {'align': 'continue', 'syntactic': True},
                       'family': {'align': 'continue', 'syntactic': True}}
-    editable = {'fname': dict(name='Name', prefill='name',
+    editable = {'name': dict(name='Name', prefill='name',
                               tooltip='Name of the feature, used as identifier',
                               syntactic=True),
                 'value': dict(name='Value',
@@ -95,7 +95,7 @@ class FeatureNode(Node):
 
     def __init__(self, forest=None, syntactic_object=None):
         Node.__init__(self, syntactic_object=syntactic_object, forest=forest)
-        self._gravity = 1
+        self._gravity = 2.5
 
     # implement color() to map one of the d['rainbow_%'] colors here. Or if bw mode is on, then something else.
 
@@ -107,7 +107,7 @@ class FeatureNode(Node):
         """
         if not label:
             label = 'Feature'
-        obj = classes.Feature(fname=label)
+        obj = classes.Feature(name=label)
         obj.after_init()
         return obj
 
@@ -184,6 +184,8 @@ class FeatureNode(Node):
             feature = self.syntactic_object
             if not constituent.has_feature(feature):
                 constituent.add_feature(feature)
+                print('have to add feature')
+                raise hell
 
     def disconnect_in_syntax(self, edge):
         """ Implement this if disconnecting this node (using this edge) needs
@@ -215,7 +217,7 @@ class FeatureNode(Node):
     #                #
     # ############## #
 
-    fname = SavedSynField("fname")
+    name = SavedSynField("name")
     assigned = SavedSynField("assigned")
     value = SavedSynField("value")
     family = SavedSynField("family")

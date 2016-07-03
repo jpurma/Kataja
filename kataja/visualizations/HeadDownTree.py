@@ -99,6 +99,23 @@ class HeadDownTree(BaseVisualization):
         """
         self.set_vis_data('rotation', self.get_vis_data('rotation') - 1)
 
+    def should_we_draw(self, node, parent):
+        """
+
+        :param node:
+        :param parent:
+        :return:
+        """
+        if node.node_type != g.CONSTITUENT_NODE:
+            return False
+        if hasattr(node, 'index') and len(node.get_parents()) > 1:
+            key = node.uid
+            if key in self.traces_to_draw:
+                if parent.uid != self.traces_to_draw[key]:
+                    return False
+        return True
+
+
     # @time_me
     def draw(self):
         """ Divide and conquer algorithm using a grid. Result is much like latex qtree.
@@ -142,7 +159,7 @@ class HeadDownTree(BaseVisualization):
             if edge_height == 0:
                 height_in_rows = 1
             else:
-                height_in_rows = math.ceil(node_height / float(edge_height)) + 1
+                height_in_rows = math.ceil(node_height / float(edge_height)) #+ 1
             start_height = max(int(relative_start_height * height_in_rows), 0)
 
             if edge_width == 0:
@@ -160,6 +177,8 @@ class HeadDownTree(BaseVisualization):
                     grid = _build_grid(child, parent=node)
                     if grid:
                         grids.append(grid)
+                    else:
+                        print('skipping empty grid item')
                 # Recursion base case
                 if not grids:
                     g = Grid()
@@ -207,6 +226,8 @@ class HeadDownTree(BaseVisualization):
                 my_head = node.head_node
                 projecting_child = None
                 for child in children:
+                    if not hasattr(child, 'head_node'):
+                        continue
                     if child is my_head or child.head_node is my_head:
                         projecting_child = child
                 if not projecting_child:

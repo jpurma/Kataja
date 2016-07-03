@@ -322,11 +322,12 @@ class Forest(SavedObject):
                             connect_if_necessary(node, child)
                 return node
             else:
-                print(synobj, classes.Constituent, type(synobj))
-                #raise hell
+                print(synobj, type(synobj))
+                raise hell
 
         for item in synobjs:
-            recursive_create(item)
+            node = recursive_create(item)
+            self.create_tree_for(node)
 
     def update_forest_gloss(self):
         """ Draw the gloss text on screen, if it exists. """
@@ -814,7 +815,8 @@ class Forest(SavedObject):
                     break
         # Create new trees for other unassigned nodes:
         for node in unassigned_top_nodes:
-            print('unassigned top node needing for tree')
+            #print('unassigned top node needing for tree')
+            print('creating separate tree for ', node)
             self.create_tree_for(node)
         # Remove trees that are part of some other tree
         for tree in invalid_trees:

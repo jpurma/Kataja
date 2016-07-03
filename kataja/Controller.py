@@ -253,6 +253,7 @@ class Controller:
         if hasattr(obj, 'syntactic_object'):
             # here is room for constituent specific print information
             self.add_message('selected %s' % str(obj))
+            print(obj)
         else:
             self.add_message('selected %s' % str(obj))
         obj.update_selection_status(True)

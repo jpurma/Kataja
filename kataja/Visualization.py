@@ -62,7 +62,7 @@ class BaseVisualization:
         """
         :return: name of the visualization e.g. Heisenberg
         """
-        return self.__class__.class_name
+        return self.__class__.name
 
     def set_vis_data(self, key, value):
         """ Sets (Saved) visualization data. Basically does the necessary poking
@@ -267,7 +267,7 @@ class BaseVisualization:
         :return:
         """
         if hasattr(node, 'index') and len(node.get_parents()) > 1:
-            key = node.index
+            key = node.uid
             if key in self.traces_to_draw:
                 if parent.uid != self.traces_to_draw[key]:
                     return False
@@ -279,6 +279,7 @@ class BaseVisualization:
         :return:
         """
         return True
+
 
     def _compute_traces_to_draw(self, rotator):
         """ This is complicated, but returns a dictionary that tells for each index key (used by chains) in which position at trees to draw the node. Positions are identified by key of their immediate parent: {'i': ConstituentNode394293, ...} """
@@ -296,6 +297,62 @@ class BaseVisualization:
         #     *   *  *
         #       * *  *
         #       *    *  *
+        # make an index-keyless version of this.
+
+        trace_dict = {}
+        sorted_parents = []
+        required_keys = set()
+        for tree in self.forest:
+            sortable_parents = []
+            ltree = tree.sorted_nodes
+            for node in ltree:
+                if not hasattr(node, 'index'):
+                    continue
+                parents = node.get_parents()
+                if len(parents) > 1:
+                    node_key = node.uid
+                    required_keys.add(node_key)
+                    my_parents = []
+                    for parent in parents:
+                        if parent in ltree:
+                            i = ltree.index(parent)
+                            my_parents.append((i, node_key, parent, True))
+                    my_parents.sort()
+                    a, b, c, d = my_parents[-1]  # @UnusedVariable
+                    my_parents[-1] = a, b, c, False
+                    sortable_parents += my_parents
+            sortable_parents.sort()
+            sorted_parents += sortable_parents
+        if rotator < 0:
+            rotator = len(sorted_parents) - len(required_keys)
+        skips = 0
+        for i, node_key, parent, can_be_skipped in sorted_parents:
+            if node_key in required_keys:
+                if skips == rotator or not can_be_skipped:
+                    trace_dict[node_key] = parent.uid
+                    required_keys.remove(node_key)
+                else:
+                    skips += 1
+        return rotator, trace_dict
+
+
+    def _compute_traces_to_draw_old(self, rotator):
+        """ This is complicated, but returns a dictionary that tells for each index key (used by chains) in which position at trees to draw the node. Positions are identified by key of their immediate parent: {'i': ConstituentNode394293, ...} """
+        # highest row = index at trees
+        # x = cannot be skipped, last instance of that trace
+        # i/j/k = index key
+        # rows = rotation
+        # * = use this node
+
+        # 2 3 7 9 13 15 16
+        # i j i i k  j  k
+        #       x    x  x
+        # * *     *
+        #   * *   *
+        #     *   *  *
+        #       * *  *
+        #       *    *  *
+        # make an index-keyless version of this.
 
         trace_dict = {}
         sorted_parents = []
