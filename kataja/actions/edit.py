@@ -31,8 +31,8 @@ a['cut'] = {'command': 'Cut', 'method': cut_method, 'shortcut': 'Ctrl+x',
 def copy_method():
     ctrl.clipboard = []
     for item in ctrl.selected:
-        if hasattr(item, 'copy'):
-            ctrl.clipboard.append(item.copy(ctrl.selected))
+        if hasattr(item, 'clipboard_copy'):
+            ctrl.clipboard.append(item.clipboard_copy(ctrl.selected))
 
 
 a['copy'] = {'command': 'Copy', 'method': copy_method, 'shortcut': 'Ctrl+c',

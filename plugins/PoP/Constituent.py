@@ -46,6 +46,12 @@ class Constituent(MyBase):  # collections.UserList):
             parts.append(self.features)
         return repr(parts)
 
+    def __str__(self):
+        """ Override BaseConstituent's __str__
+        :return:
+        """
+        return repr(self)
+
     def __eq__(self, other):
         if not isinstance(other, Constituent):
             return False
@@ -191,9 +197,35 @@ class Constituent(MyBase):  # collections.UserList):
             if shared_feats:
                 return shared_feats
         if "Phi" in head:
-            head_features = self.part1.get_head_features()
-            return head_features
+            return self.part1.get_head_features()
         assert False
+
+    def get_feature_giver(self):
+        if self.is_leaf():
+            return self
+        if self.is_unlabeled():
+            return self.part1.recursive_get_feature_giver()
+        elif self.part2.is_unlabeled():
+            f = self.part1.recursive_get_feature_giver()
+            if f:
+                return f
+        return self.recursive_get_feature_giver()
+
+    def recursive_get_feature_giver(self):
+        if self.is_leaf():
+            return self
+        head = self.label
+        if self.part1.label == head:
+            return self.part1.get_feature_giver()
+        if self.part2.label == head:
+            return self.part2.get_feature_giver()
+        if head in SHARED_FEAT_LABELS:
+            return None
+        if "Phi" in head:
+            return self.part1.get_feature_giver()
+        assert False
+
+
 
     def replace_within(self, old_chunk, new_chunk, label=False):
         if self == old_chunk:
@@ -209,7 +241,7 @@ class Constituent(MyBase):  # collections.UserList):
         elif isinstance(old_chunk, set):
             found = self.recursive_replace_feature_set(old_chunk, new_chunk)
             print('found %s cases of feature set to replace' % found)
-            if found < 1:
+            if found:
                 print('***********************************')
                 print('***********************************')
                 print('***********************************')
@@ -224,7 +256,8 @@ class Constituent(MyBase):  # collections.UserList):
                 #assert(found)
             assert(found < 2)
         elif isinstance(old_chunk, Feature):
-            self.recursive_replace_feature(old_chunk, new_chunk)
+            found = self.recursive_replace_feature(old_chunk, new_chunk)
+            print('found %s cases of feature to replace' % found)
         else:
             raise TypeError
 
@@ -243,26 +276,28 @@ class Constituent(MyBase):  # collections.UserList):
                 print(new)
                 raise TypeError
         if self.part1:
-            found = self.part1.recursive_replace_feature_set(old, new)
+            found = self.part1.recursive_replace_feature_set(old, new, found)
         if self.part2:
-            found = self.part2.recursive_replace_feature_set(old, new)
+            found = self.part2.recursive_replace_feature_set(old, new, found)
         if old == self.features:
             self.features = set(new)
             found += 1
         return found
 
-    def recursive_replace_feature(self, old, new):
+    def recursive_replace_feature(self, old, new, found=0):
         if new and not isinstance(new, Feature):
             print(new)
             raise TypeError
         if self.part1:
-            self.part1.recursive_replace_feature(old, new)
+            found = self.part1.recursive_replace_feature(old, new, found)
         if self.part2:
-            self.part2.recursive_replace_feature(old, new)
+            found = self.part2.recursive_replace_feature(old, new, found)
         if old in self.features:
+            found += 1
             self.features.remove(old)
             if new:
                 self.features.add(new)
+        return found
 
     def recursive_replace_constituent(self, old, new):
         assert(self != old)

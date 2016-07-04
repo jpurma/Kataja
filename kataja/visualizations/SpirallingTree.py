@@ -140,6 +140,7 @@ class SpirallingTree(BaseVisualization):
         self.iterations = 0
         self.edge = 0
         self.sides = 3
+        self.use_gravity = False
 
     def prepare(self, forest, reset=True):
         """ If loading a state, don't reset.

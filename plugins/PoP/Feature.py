@@ -29,6 +29,9 @@ def get_by_part(fset, fpart):
             return f
 
 
+# It would make sense visually if unvalued features are paired with value-giving features instead
+#  of just replacing them. valued_by would be this reference.
+
 class Feature(MyBaseClass):
     replaces = "BaseFeature"
 
@@ -62,12 +65,14 @@ class Feature(MyBaseClass):
             else:
                 self.counter = 0
             self.name, part, self.value = namestring.partition(':')
+            self.valued_by = None
         else:
             self.name = name
             self.counter = counter
             self.value = value
             self.unvalued = unvalued
             self.ifeature = ifeature
+            self.valued_by = None
 
     def __str__(self):
         return repr(self)
@@ -127,4 +132,5 @@ class Feature(MyBaseClass):
         unvalued = SavedField("unvalued")
         ifeature = SavedField("ifeature")
         counter = SavedField("counter")
+        valued_by = SavedField("valued_by")
         # rest are same as in BaseFeature

@@ -37,100 +37,15 @@ from kataja.SavedField import SavedField
 
 
 class DerivationStep(SavedObject):
-    """ Packed state of forest for undo -operations and for stepwise
-    animation of trees growth.
-
-    Needs to be checked and tested, also what to do with saving and loading.
+    """ Packed state of syntactic objects for stepwise animation of trees growth.
      """
 
-    def __init__(self, forest=None, msg=None, trees=None, chains=None):
+    def __init__(self, synobjs, numeration, other, msg):
         super().__init__()
-        self.forest = forest
-        if not trees:
-            trees = []
-        if not chains:
-            chains = {}
+        self.synobjs = synobjs
+        self.numeration = numeration
+        self.other = other
         self.msg = msg
-        self.trees = [self.snapshot_of_tree(tree) for tree in trees]
-        self.chains = self.snapshot_of_chains(chains)
-
-    def after_init(self):
-        """ After_init is called in 2nd step in process of creating objects:
-        1st wave creates the objects and calls __init__, and then iterates
-        through and sets the values.
-        2nd wave calls after_inits for all created objects. Now they can
-        properly refer to each other and know their
-        values.
-        :return: None
-        """
-        self.announce_creation()
-
-    def snapshot_of_chains(self, chains):
-        """ shallow copy of chains is not enough -- it refers to original
-        lists -- and deepCopy is too much.
-        :param chains:
-        This copies the dict and the lists """
-        snapshot = {}
-        for key, item in chains.items():
-            snapshot[key] = list(item)
-        return snapshot
-
-    def snapshot_of_tree(self, tree):
-        """ create a version of root with shallow copy for each node and a
-        simple structure for rebuilding/restoring
-        :param root_node:
-         them """
-        snapshot = []
-        done = set()
-        for node in tree.sorted_nodes:
-            if node not in done:
-                data = {'node': node, 'edges_up': list(node.edges_up),
-                        'edges_down': list(node.edges_down)}
-                # these are the undoable changes, add data when necessary
-                if hasattr(node, 'index'):
-                    data['index'] = node.index
-                else:
-                    data['index'] = None
-                snapshot.append(data)
-                done.add(node)
-        return {'trees': snapshot}
-
-    def rebuild_tree_from_snapshot(self, snapshot): # fixme -- move from roots to trees incomplete
-        """ Restores each node to use those connections it had when stored.
-        Notice that this is rebuilding in a very limited sense. Probably
-        we'll need something deeper soon.
-        :param snapshot:
-        :param forest:
-        """
-        tree = snapshot['trees']
-        if tree:
-            tree_top = tree[0]['node']
-        for data in tree:
-            node = data['node']
-            node.edges_down = []
-            for edge_down in data['edges_down']:
-                child = edge_down.end
-                self.forest.connect_node(parent=node, child=child)
-            node.edges_up = []
-            for edge_up in data['edges_up']:
-                parent = edge_up.start
-                self.forest.connect_node(parent=parent, child=node)
-            node.index = data['index']
-            self.forest.store(node)
-        return tree
-
-    def restore_from_snapshot(self):
-        """ Puts the given forest back to state described in this derivation
-        step
-        :param forest:
-        """
-        print('???? restore from snapshot')
-        self.forest.trees = [] # fixme: if done like this, we can't find and fix broken trees in
-        # nodes
-        for tree_data in self.trees:
-            top_node = self.rebuild_tree_from_snapshot(tree_data)
-        self.forest.update_trees()
-        self.forest.chain_manager.chains = self.chains
 
     # ############## #
     #                #
@@ -138,10 +53,10 @@ class DerivationStep(SavedObject):
     #                #
     # ############## #
 
-    forest = SavedField("forest")
+    synobjs = SavedField("synobjs")
+    numeration = SavedField("numeration")
+    other = SavedField("other")
     msg = SavedField("msg")
-    roots = SavedField("roots")
-    chains = SavedField("chains")
 
 
 class DerivationStepManager(SavedObject):
@@ -151,32 +66,47 @@ class DerivationStepManager(SavedObject):
     def __init__(self, forest=None):
         super().__init__()
         self.forest = forest
+        self.current = None
         self.derivation_steps = []
         self.derivation_step_index = 0
 
-    def save_and_create_derivation_step(self, msg=''):
+    def save_and_create_derivation_step(self, synobjs, numeration=None, other=None, msg=''):
+        """ Ok, new idea: derivation steps only include syntactic objects. Nodes etc. will be
+        created in the fly. No problems from visualisations misbehaving, chains etc.
+        :param synobjs: list of syntactic objects present in this snapshot
+        :param numeration: optional list of items
+        :param other: optional arbitrary data to store (must be Saveable or primitive data
+        structures!)
+        :param msg: optional message about derivation, to float when switching between derivations
+        :return:
+        """
+        d_step = DerivationStep(synobjs, numeration, other, msg)
+        # Use Kataja's save system to freeze objects into form where they can be stored and restored
+        # without further changes affecting them.
+        savedata = {}
+        open_references = {}
+        d_step.save_object(savedata, open_references)
+        c = 0
+        while open_references and c < 10:
+            c += 1
+            for obj in list(open_references.values()):
+                if hasattr(obj, 'uid'):
+                    obj.save_object(savedata, open_references)
+                else:
+                    print('cannot save open reference object ', obj)
+        print('total savedata: %s chars in %s items.' % (len(str(savedata)), len(savedata)))
+        self.derivation_steps.append((d_step.uid, savedata, msg))
 
-        # print 'saving derivation_step %s' % self._derivation_step_index
-        # fixme: needs to be reimplemented, make every operation
-        # bidirectional and undoable.
+    def restore_derivation_step(self, uid, frozen_data):
         """
-
-        :param msg:
+        :param uid:
+        :param frozen_data:
         """
-        # print('save_and_create_derivation_step called')
-        trees = self.forest.trees
-        chains = self.forest.chain_manager.chains
-        if chains:
-            print('saving chains into derivation step: ', chains)
-            # derivation_step = DerivationStep(msg, roots, chains)
-            # self.derivation_step_index += 1
-            # self.derivation_steps.append(derivation_step)
-
-    def restore_derivation_step(self, derivation_step):
-        """
-        :param derivation_step:
-        """
-        derivation_step.restore_from_snapshot()
+        d_step = DerivationStep([])
+        d_step.uid = uid
+        d_step.load_objects(frozen_data, ctrl.main)
+        self.current = d_step
+        self.forest.mirror_the_syntax(d_step.synobjs, d_step.numeration, d_step.other)
 
     def next_derivation_step(self):
         """
@@ -185,10 +115,10 @@ class DerivationStepManager(SavedObject):
         if self.derivation_step_index + 1 >= len(self.derivation_steps):
             return
         self.derivation_step_index += 1
-        ds = self.derivation_steps[self.derivation_step_index]
-        self.restore_derivation_step(ds)
+        uid, ds, msg = self.derivation_steps[self.derivation_step_index]
+        self.restore_derivation_step(uid, ds)
         ctrl.add_message(
-            'Derivation step %s: %s' % (self.derivation_step_index, ds.msg))
+            'Derivation step %s: %s' % (self.derivation_step_index, msg))
 
     def previous_derivation_step(self):
         """

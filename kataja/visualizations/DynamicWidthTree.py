@@ -34,6 +34,9 @@ class DynamicWidthTree(LinearizedStaticTree):
 
     """
     name = 'Dynamic width trees'
+    def __init__(self):
+        super().__init__()
+        self.use_gravity = False
 
     def reset_node(self, node):
         """
@@ -44,6 +47,9 @@ class DynamicWidthTree(LinearizedStaticTree):
         if node.node_type == g.CONSTITUENT_NODE:
             node.physics_x = True
             node.physics_y = False
+        elif node.node_type == g.FEATURE_NODE:
+            node.physics_x = True
+            node.physics_y = True
 
     def calculate_movement(self, node, alpha = 0.1):
         # Sum up all forces pushing this item away.
@@ -52,6 +58,8 @@ class DynamicWidthTree(LinearizedStaticTree):
         :param node:
         :return:
         """
+        if node.node_type == g.FEATURE_NODE:
+            return super().calculate_movement(node, alpha)
         node_x, node_y = node.centered_position
         old_x, old_y = node.centered_position
 

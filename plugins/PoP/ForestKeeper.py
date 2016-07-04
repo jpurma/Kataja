@@ -21,14 +21,12 @@
 # along with Kataja.  If not, see <http://www.gnu.org/licenses/>.
 #
 # ############################################################################
-from collections import OrderedDict
 
-from kataja.SavedObject import SavedObject
-#from kataja.SavedField import SavedField
 from kataja.singletons import ctrl, running_environment
 from kataja.saved.Forest import Forest
 from kataja.saved.ForestKeeper import ForestKeeper
 from PoP.PoPDeriveE import Generate
+
 
 class PoPForestKeeper(ForestKeeper):
     """ Container and loader for Forest objects. Remember to not enable undo for any of the actions in here,
@@ -55,8 +53,6 @@ class PoPForestKeeper(ForestKeeper):
 
         :param treelist: lines of file like above. Lines that don't begin with number are ignored.
         """
-        print('**** PoPForestKeeper create_forests called ****, treelist: ', treelist)
-
         if not treelist:
             treelist = []
 
@@ -67,7 +63,7 @@ class PoPForestKeeper(ForestKeeper):
         self.forests = []
 
         start = 0
-        end = 0
+        end = 1
         ug = Generate()
 
         for line in treelist:
@@ -84,15 +80,17 @@ class PoPForestKeeper(ForestKeeper):
             if not sentence_number.isdigit():
                 continue
             sentence_number = int(sentence_number)
-            if end and sentence_number >= end:
+            if end and sentence_number > end:
                 break
             elif sentence_number < start:
                 continue
             sentence = sentence[2:]  # remove number and the space after it
             target_example = eval(lbracket + target_str)
             ug.out(sentence_number, sentence, target_example)
-            so = ug.generate_derivation(target_example)
-            self.forests.append(Forest(synobjs=[so], gloss_text=sentence))
+            forest = Forest(gloss_text=sentence)
+            self.forests.append(forest)
+            so = ug.generate_derivation(target_example, forest=forest)
+            forest.mirror_the_syntax([so])
             ug.out("MRGOperations", ug.merge_counter)
             ug.out("FTInheritanceOp", ug.inheritance_counter)
             ug.out("FTCheckOp", ug.feature_check_counter)

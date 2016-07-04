@@ -42,7 +42,7 @@ from kataja.ui_graphicsitems.ControlPoint import ControlPoint
 from kataja.ui_graphicsitems.FadingSymbol import FadingSymbol
 from kataja.ui_graphicsitems.NewElementMarker import NewElementMarker
 from kataja.ui_graphicsitems.StretchLine import StretchLine
-from kataja.ui_support.MessageWriter import MessageWriter
+from kataja.ui_support.MessageWriter import MessageWriter, ErrorWriter
 from kataja.ui_support.MyColorDialog import MyColorDialog
 from kataja.ui_support.MyFontDialog import MyFontDialog
 from kataja.ui_support.TableModelSelectionBox import TableModelSelectionBox
@@ -130,6 +130,7 @@ class UIManager:
         self._items = {}
         self._items_by_host = {}
         self.log_writer = MessageWriter()
+        self.error_writer = ErrorWriter()
 
         self._timer_id = 0
         self._panels = {}

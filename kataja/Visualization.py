@@ -42,6 +42,7 @@ class BaseVisualization:
         self._directed = False
         self._hits = {}
         self._max_hits = {}
+        self.use_gravity = True
 
     def prepare(self, forest, reset=True):
         """ If loading a state, don't reset.
@@ -170,7 +171,7 @@ class BaseVisualization:
             # pull to center (0, 0)
             node_x += node_x * -0.009
             node_y += node_y * -0.009
-        elif not down:
+        elif (not down) and self.use_gravity:
             node_y += node._gravity
 
 

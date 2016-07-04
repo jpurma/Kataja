@@ -37,6 +37,7 @@ class SymmetricElasticTree(BaseVisualization):
     def __init__(self):
         BaseVisualization.__init__(self)
         self.forest = None
+        self.use_gravity = False
 
     def prepare(self, forest, reset=True):
         """ If loading a state, don't reset.

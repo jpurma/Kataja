@@ -20,21 +20,35 @@ class LogPanel(Panel):
         """
         Panel.__init__(self, name, default_position, parent, folded)
         inner = QtWidgets.QTextBrowser()
+        layout = QtWidgets.QVBoxLayout()
         inner.setMinimumHeight(48)
         inner.preferred_size = QtCore.QSize(940, 64)
         inner.setFont(qt_prefs.get_font(g.CONSOLE_FONT))  # @UndefinedVariable
         inner.setAutoFillBackground(True)
         inner.sizeHint = self.sizeHint
         inner.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.resize_grip = QtWidgets.QSizeGrip(self)
+        self.resize_grip.hide()
+        self.setAllowedAreas(QtCore.Qt.TopDockWidgetArea | QtCore.Qt.BottomDockWidgetArea)
+        layout.addWidget(self.resize_grip, 0, QtCore.Qt.AlignRight)
+        inner.setLayout(layout)
+
         self.preferred_size = inner.preferred_size
         self.setWidget(inner)
         self.ui_manager.log_writer.attach_display_widget(inner)
         self.finish_init()
 
-
     def sizeHint(self):
-        #print("LogPanel asking for sizeHint, ", self.preferred_size)
-        return self.preferred_size
+        if self.isFloating():
+            return QtCore.QSize(480, 640)
+        else:
+            return self.preferred_size
+
+    def report_top_level(self, floating):
+        super().report_top_level(floating)
+        if floating:
+            self.resize(QtCore.QSize(480, 480))
+
 
     def update(self, *args):
         self.widget().setFont(qt_prefs.get_font(g.CONSOLE_FONT))

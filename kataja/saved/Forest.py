@@ -50,6 +50,7 @@ from kataja.saved.movables.Tree import Tree
 from kataja.saved.movables.nodes.AttributeNode import AttributeNode
 from kataja.saved.movables.nodes.BaseConstituentNode import BaseConstituentNode
 from kataja.saved.movables.nodes.FeatureNode import FeatureNode
+from utils import time_me
 
 
 class Forest(SavedObject):
@@ -99,7 +100,7 @@ class Forest(SavedObject):
         self.halt_drawing = False
         self._marked_for_deletion = set()
         if synobjs:
-            self.create_nodes_from_synobjs(synobjs)
+            self.mirror_the_syntax(synobjs)
         if buildstring:
             self.create_trees_from_string(buildstring)
         if definitions:
@@ -286,35 +287,60 @@ class Forest(SavedObject):
     #         result.append(sorted_nodes)
     #     return result
 
-    def create_nodes_from_synobjs(self, synobjs):
-        """ When receiving plain synobjs from parser, make ConstituentNodes etc. out of them.
-        :param synobjs:
+    @time_me
+    def mirror_the_syntax(self, synobjs, numeration=None, other=None):
+        """ This is a big important function to ensure that Nodes on display are only those that
+        are present in syntactic objects. Clean up the residue, create those nodes that are
+        missing and create the edges.
+        :param synobjs: syntactic objects
+        :param numeration: list of objects waiting to be processed
+        :param other: what else we need?
         :return:
         """
+        node_keys_to_validate = set(self.nodes.keys())
+        edge_keys_to_validate = set(self.edges.keys())
+        synobjs_done = set()
+
+        # I guess that ordering of connections will be broken because of makingin and deleting
+        # connections in unruly fashion
         def connect_if_necessary(parent, child, edge_type):
             edge = parent.get_edge_to(child, edge_type)
             if not edge:
-                self.connect_node(parent, child, edge_type=edge_type)
+                self.connect_node(parent, child, edge_type=edge_type, mirror_in_syntax=False)
+            elif edge.uid in edge_keys_to_validate:
+                edge_keys_to_validate.remove(edge.uid)
 
         def recursive_create(synobj):
             if isinstance(synobj, classes.Constituent):
                 node = self.get_node(synobj)
                 if not node:
                     node = self.create_node(synobj=synobj, node_type=g.CONSTITUENT_NODE)
-                part_count = len(synobj.get_parts())
+                else:
+                    if node.uid in node_keys_to_validate:
+                        node_keys_to_validate.remove(node.uid)
+                    if synobj in synobjs_done:
+                        return node
+                synobjs_done.add(synobj)
+                # part_count = len(synobj.get_parts())
                 for i, part in enumerate(synobj.get_parts()):
                     child = recursive_create(part)
                     if child:
                         connect_if_necessary(node, child, g.CONSTITUENT_EDGE)
                 for feature in synobj.get_features():
                     nfeature = recursive_create(feature)
-                    if nfeature:
-                        connect_if_necessary(node, nfeature, g.FEATURE_EDGE)
+                    assert nfeature
+                    connect_if_necessary(node, nfeature, g.FEATURE_EDGE)
                 return node
             if isinstance(synobj, classes.Feature):
                 node = self.get_node(synobj)
                 if not node:
-                    self.create_node(synobj=synobj, node_type=g.FEATURE_NODE)
+                    node = self.create_node(synobj=synobj, node_type=g.FEATURE_NODE)
+                else:
+                    if node.uid in node_keys_to_validate:
+                        node_keys_to_validate.remove(node.uid)
+                    if synobj in synobjs_done:
+                        return node
+                synobjs_done.add(synobj)
                 if hasattr(synobj, 'get_parts'):
                     for part in synobj.get_parts():
                         child = recursive_create(part)
@@ -323,11 +349,19 @@ class Forest(SavedObject):
                 return node
             else:
                 print(synobj, type(synobj))
-                raise hell
-
+                raise ValueError
+        # Create and validate existing nodes and edges
         for item in synobjs:
             node = recursive_create(item)
             self.create_tree_for(node)
+        # Delete invalid nodes and edges
+        for key in node_keys_to_validate:
+            node = self.nodes[key]
+            self.delete_node(node)
+        for key in edge_keys_to_validate:
+            edge = self.edges.get(key, None) # most of these should be deleted already by prev.
+            if edge:
+                self.delete_edge(edge)
 
     def update_forest_gloss(self):
         """ Draw the gloss text on screen, if it exists. """
@@ -1567,7 +1601,8 @@ class Forest(SavedObject):
     # by forest's higher level methods.
     #
 
-    def connect_node(self, parent=None, child=None, direction='', edge_type=None, fade_in=False):
+    def connect_node(self, parent=None, child=None, direction='', edge_type=None, fade_in=False,
+                     mirror_in_syntax = True):
         """ This is for connecting nodes with a certain edge. Calling this
         once will create the necessary links for both partners.
         Sanity checks:
@@ -1581,6 +1616,7 @@ class Forest(SavedObject):
         :param direction:
         :param edge_type: optional, force edge to be of given type
         :param fade_in:
+        :param mirror_in_syntax: also connect synobjs -- on by default
         """
 
         #print('--- connecting node %s to %s ' % (child, parent))
@@ -1618,7 +1654,8 @@ class Forest(SavedObject):
         else:
             child.edges_up.append(new_edge)
             parent.edges_down.append(new_edge)
-        child.connect_in_syntax(new_edge)
+        if mirror_in_syntax:
+            child.connect_in_syntax(new_edge)
         # fix other edge aligns: only one left align and one right align,
         # n center aligns, and if only one child, it has center align.
         edges = [edge for edge in parent.edges_down if edge.edge_type == edge_type]
