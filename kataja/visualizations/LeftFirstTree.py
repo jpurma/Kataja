@@ -146,7 +146,7 @@ class LeftFirstTree(BaseVisualization):
             self.get_vis_data('rotation'))
         self.set_vis_data('rotation', new_rotation)
         for tree in self.forest:
-            if tree.top.node_type == g.CONSTITUENT_NODE:
+            if tree.top and tree.top.node_type == g.CONSTITUENT_NODE:
                 grid = Grid()
                 self._put_to_grid(grid, tree.top, 0, 0)
                 if merged_grid:

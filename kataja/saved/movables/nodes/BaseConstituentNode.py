@@ -57,7 +57,6 @@ class BaseConstituentNode(Node):
         """ Most of the initiation is inherited from Node """
         Node.__init__(self, syntactic_object=syntactic_object, forest=forest)
 
-
         # ------ Bracket drawing -------
         self.left_bracket = None
         self.right_bracket = None

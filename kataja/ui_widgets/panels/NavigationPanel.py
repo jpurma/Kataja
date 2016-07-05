@@ -37,13 +37,13 @@ class NavigationPanel(Panel):
         layout.addWidget(prev_tree, 1, 0, 1, 1)
         self.prev_tree = prev_tree
         ui = self.ui_manager
-        ui.connect_element_to_action(prev_tree, ui.qt_actions['prev_forest'])
+        ui.connect_element_to_action(prev_tree, 'prev_forest')
 
         next_tree = TwoColorButton(qt_prefs.right_arrow, '', self)
         next_tree.setMinimumWidth(72)
         layout.addWidget(next_tree, 1, 1, 1, 1)
         self.next_tree = next_tree
-        ui.connect_element_to_action(next_tree, ui.qt_actions['next_forest'])
+        ui.connect_element_to_action(next_tree, 'next_forest')
 
         new_tree = text_button(ui, layout, text='New forest', action='new_forest', x=0, y=3)
 
@@ -57,13 +57,14 @@ class NavigationPanel(Panel):
         prev_der = TwoColorButton(qt_prefs.left_arrow, '', self)
         layout.addWidget(prev_der, 3, 0, 1, 1)
         self.prev_der = prev_der
-        prev_der.clicked.connect(ui.qt_actions['prev_derivation_step'].triggered)
+        ui.connect_element_to_action(prev_der, 'prev_derivation_step')
 
         next_der = TwoColorButton(qt_prefs.right_arrow, '', self)
         layout.addWidget(next_der, 3, 1, 1, 1)
         self.next_der = next_der
+        ui.connect_element_to_action(next_der, 'next_derivation_step')
         inner.setLayout(layout)
-        if True: #ctrl.forest.supports_derivation:
+        if False: #ctrl.forest.supports_derivation:
             self.der_label.hide()
             self.derivation_counter.hide()
             self.next_der.hide()
@@ -78,6 +79,11 @@ class NavigationPanel(Panel):
             display_index = keeper.current_index + 1  # indexes start at 0, we want to display 1
             max_index = len(keeper.forests)
             self.treeset_counter.setText('%s/%s' % (display_index, max_index))
+            dm = ctrl.forest.derivation_steps
+            if dm:
+                max_der_step = len(dm.derivation_steps)
+                der_step = dm.derivation_step_index + 1
+                self.derivation_counter.setText('%s/%s' % (der_step, max_der_step))
 
     def watch_alerted(self, obj, signal, field_name, value):
         """ Receives alerts from signals that this object has chosen to listen. These signals

@@ -38,7 +38,7 @@ class Tree(Movable):
     __qt_type_id__ = next_available_type_id()
     display_name = ('Tree', 'Trees')
 
-    def __init__(self, forest=None, top=None):
+    def __init__(self, forest=None, top=None, numeration=False):
         Movable.__init__(self, forest=forest)
         self.top = top
         if is_constituent(top):
@@ -49,6 +49,7 @@ class Tree(Movable):
             self.sorted_nodes = [top]
         else:
             self.sorted_nodes = []
+        self.numeration = numeration
         self.current_position = 100, 100
         self.drag_data = None
         self.tree_changed = True
@@ -56,7 +57,11 @@ class Tree(Movable):
         self.setZValue(12)
 
     def __repr__(self):
-        return "Tree '%s' and %s nodes." % (self.top, len(self.sorted_nodes))
+        if self.numeration:
+            suffix = " (numeration)"
+        else:
+            suffix = ''
+        return "Tree '%s' and %s nodes.%s" % (self.top, len(self.sorted_nodes), suffix)
 
     def __contains__(self, item):
         return item in self.sorted_nodes
@@ -113,11 +118,32 @@ class Tree(Movable):
         """
         return not self.top.get_parents(only_similar=False, only_visible=False)
 
+    def add_to_numeration(self, node):
+        def add_children(node):
+            if node not in self.sorted_nodes:
+                self.sorted_nodes.append(node)
+                if self not in node.trees:
+                    node.add_to_tree(self)
+                for child in node.get_all_children():
+                    if child:  # undoing object creation may cause missing edge ends
+                        add_children(child)
+        add_children(node)
+
     def update_items(self):
         """ Check that all children of top item are included in this trees and create the sorted
         lists of items. Make sure there is a top item before calling this!
         :return:
         """
+        if self.numeration:
+            to_be_removed = set()
+            for item in self.sorted_nodes:
+                for tree in item.trees:
+                    if tree is not self:
+                        to_be_removed.add(item)
+                        break
+            for item in to_be_removed:
+                item.remove_from_tree(self)
+            return
         sorted_constituents = []
         sorted_nodes = []
         used = set()
@@ -201,9 +227,9 @@ class Tree(Movable):
             return self._cached_bounding_rect
 
     def paint(self, painter, QStyleOptionGraphicsItem, QWidget_widget=None):
-        pass
-        #br = self.boundingRect()
-        #painter.drawRect(br)
-        #painter.drawText(br.topLeft() + QtCore.QPointF(2, 10), str(self))
+        if self.numeration:
+            br = self.boundingRect()
+            painter.drawRect(br)
+            #painter.drawText(br.topLeft() + QtCore.QPointF(2, 10), str(self))
 
     top = SavedField("top")

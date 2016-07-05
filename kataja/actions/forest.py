@@ -92,19 +92,17 @@ a['prev_forest'] = {'command': 'Previous forest', 'method': previous_structure,
 def animation_step_forward():
     """ User action "step forward (>)", Move to next derivation step """
     ctrl.forest.derivation_steps.next_derivation_step()
-    ctrl.main.add_message('Step forward')
 
 
 a['next_derivation_step'] = {'command': 'Animation step forward',
-                             'method': animation_step_forward, 'shortcut': '>'}
+                             'method': animation_step_forward, 'shortcut': '>', 'undoable':False}
 
 
 def animation_step_backward():
     """ User action "step backward (<)" , Move backward in derivation steps """
     ctrl.forest.derivation_steps.previous_derivation_step()
-    ctrl.main.add_message('Step backward')
 
 
 a['prev_derivation_step'] = {'command': 'Animation step backward',
-                             'method': animation_step_backward, 'shortcut': '<'}
+                             'method': animation_step_backward, 'shortcut': '<', 'undoable':False}
 

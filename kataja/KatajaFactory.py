@@ -84,6 +84,7 @@ class KatajaFactory:
         else:
             self.base_name_to_plugin_class[plugin_class.__name__] = plugin_class
             self.plugin_name_to_base_class[plugin_class.__name__] = plugin_class
+        self.classes[plugin_class.__name__] = plugin_class
 
     def restore_default_classes(self):
         """ Restore all classes to their default implementation """

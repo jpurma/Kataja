@@ -35,11 +35,13 @@ class PoPForestKeeper(ForestKeeper):
     # unique = True
     #
 
-    def __init__(self, name=None, filename=None, treelist_filename=None):
+    def __init__(self, name=None, filename=None, treelist_filename=None, empty=False):
         # By default load the test set for POP-parser.
+
         super().__init__(name=name,
                          filename=filename,
-                         treelist_filename=running_environment.plugins_path + '/PoP/POP.txt')
+                         treelist_filename=running_environment.plugins_path + '/PoP/POP.txt',
+                         empty=empty)
 
     def create_forests(self, treelist=None):
         """ This will read example sentences in form used by Ginsburg / Fong parser
@@ -63,7 +65,7 @@ class PoPForestKeeper(ForestKeeper):
         self.forests = []
 
         start = 0
-        end = 1
+        end = 10
         ug = Generate()
 
         for line in treelist:
@@ -90,7 +92,8 @@ class PoPForestKeeper(ForestKeeper):
             forest = Forest(gloss_text=sentence)
             self.forests.append(forest)
             so = ug.generate_derivation(target_example, forest=forest)
-            forest.mirror_the_syntax([so])
+            forest.derivation_steps.jump_to_derivation_step(0)
+            #forest.mirror_the_syntax([so])
             ug.out("MRGOperations", ug.merge_counter)
             ug.out("FTInheritanceOp", ug.inheritance_counter)
             ug.out("FTCheckOp", ug.feature_check_counter)

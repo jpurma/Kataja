@@ -150,6 +150,7 @@ class Generate:
         self.over_counter = 0
         self.dumpfile = None
         self.forest = None
+        self.spine = None
 
     def load_data(self, inputlines, start=0, end=0):
         for line in inputlines:
@@ -217,6 +218,7 @@ class Generate:
         self.lookforward_so = None
         self.so_list = build_synobj_lists(target_example, [])
         self.forest = forest
+        self.spine = None
         so = None
         selected = None
         while self.so_list:
@@ -255,8 +257,29 @@ class Generate:
         print('<<<<<  ended substream')
         # merge substream back to main stream:
         self.out("MainStream", True)
-        self.out("merge", "merge " + spine.label + " + " + substream_spine.label)
-        return self.merge(spine, substream_spine)
+        msg = "merge " + spine.label + " + " + substream_spine.label
+        self.out("merge", msg)
+        self.spine = self.merge(spine, substream_spine)
+        self.announce_derivation_step(msg=msg)
+        return self.spine
+
+    def announce_derivation_step(self, spine=None, msg=''):
+        if self.forest:
+            if spine and self.stack.is_sub():
+                so_list = [spine, self.spine]
+            elif spine:
+                so_list = [spine]
+            elif self.spine:
+                so_list = [self.spine]
+            else:
+                so_list = []
+            if self.lookforward_so:
+                num = self.so_list + [self.lookforward_so]
+            else:
+                num = []
+            self.forest.derivation_steps.save_and_create_derivation_step(so_list,
+                                                                         numeration=num,
+                                                                         msg=msg)
 
     def merge_so(self, x, spine):
         """ Select new item and merge it into structure
@@ -266,13 +289,17 @@ class Generate:
         """
         print('merge_so')
         if not spine:
+            if self.stack.is_main():
+                self.spine = x
+            self.announce_derivation_step(spine, "select " + x.label)
             return x
         else:
             msg = "merge " + x.label + " + " + spine.label
             self.out("merge", msg)
             spine = self.merge(x, spine)
-            if self.forest:
-                self.forest.derivation_steps.save_and_create_derivation_step([spine], msg=msg)
+            if self.stack.is_main():
+                self.spine = spine
+            self.announce_derivation_step(spine, msg)
             print('finished merge: ', spine)
             #self.dump_to_file(spine, self.over_counter)
             print('---- kataja string: ----')
@@ -383,9 +410,11 @@ class Generate:
             sys.exit()
         merged.replace_within(remerge_feats, new_remerge_feats)
         self.stack.replace(remerge_feats, new_remerge_feats)
-        self.out("merge", "merge (for labeling) " + merged.label + " + " + remerge.label)
+        msg = "merge (for labeling) " + merged.label + " + " + remerge.label
+        self.out("merge", msg)
         merged = Constituent(label=label, part1=remerge, part2=merged)
         self.merge_counter += 1
+        self.announce_derivation_step(merged, msg)
         self.out("Label(SharedFeats)", str(merged))
         merged = self.label_if_necessary(merged)
         return merged
@@ -491,6 +520,7 @@ class Generate:
             else:
                 merged = merged.copy()
                 merged.label = new_label
+            self.announce_derivation_step(merged, "Dephase v")
             self.out("Dephase v", merged)
             self.out("Transfer", transfer)
             # Check to see if Remerge results in labeling
@@ -530,6 +560,7 @@ class Generate:
             # Core Head needs to be deleted
         else:
             merged = merged.part2
+        self.announce_derivation_step(merged, "Dephase(DeleteC)")
         self.out("Dephase(DeleteC)", merged)
         target_label = merged.label
         # Transfer phasehood to T and transfer complement
@@ -573,9 +604,10 @@ class Generate:
                                 new_remerge_feats = remerge_feats.copy()
                                 new_remerge_feats.add(Feature(name="Copy"))
                                 remerge.replace_within(remerge_feats, new_remerge_feats)
-                                self.out("merge",
-                                         "merge (due to uF) %s + %s" % (remerge.label,
-                                                                        merged.label))
+                                msg = "merge (due to uF) %s + %s" % (remerge.label,
+                                                                     merged.label)
+                                self.announce_derivation_step(merged, msg)
+                                self.out("merge", msg)
                                 self.out("Label(Head)", merged)
                                 return merged, remerge
                             return merged, None
@@ -673,6 +705,8 @@ class Generate:
         merged = self.label_if_necessary(merged)
         # Find new MergedLabel
         new_merged = Constituent(label=merged.label, part1=remerge, part2=merged)
+        self.announce_derivation_step(merged, "merge (for labeling)")
+
         print('++ stack append remerge, in remerge')
         self.stack.append(remerge)
         print('++ stack append new_merged, in remerge:', new_merged.label)

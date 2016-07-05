@@ -25,6 +25,7 @@
 
 import collections
 import itertools
+import statistics
 import string
 
 from PyQt5 import QtWidgets
@@ -287,6 +288,16 @@ class Forest(SavedObject):
     #         result.append(sorted_nodes)
     #     return result
 
+    def get_numeration(self):
+        for tree in self.trees:
+            if tree.numeration:
+                return tree
+        tree = Tree(forest=self, numeration=True)
+        self.add_to_scene(tree)
+        self.trees.append(tree)
+        tree.show()
+        return tree
+
     @time_me
     def mirror_the_syntax(self, synobjs, numeration=None, other=None):
         """ This is a big important function to ensure that Nodes on display are only those that
@@ -297,9 +308,9 @@ class Forest(SavedObject):
         :param other: what else we need?
         :return:
         """
+
         node_keys_to_validate = set(self.nodes.keys())
         edge_keys_to_validate = set(self.edges.keys())
-        synobjs_done = set()
 
         # I guess that ordering of connections will be broken because of makingin and deleting
         # connections in unruly fashion
@@ -310,58 +321,130 @@ class Forest(SavedObject):
             elif edge.uid in edge_keys_to_validate:
                 edge_keys_to_validate.remove(edge.uid)
 
-        def recursive_create(synobj):
+        def recursive_create_edges(synobj):
+            node = self.get_node(synobj)
+            if synobj in synobjs_done:
+                return node
+            synobjs_done.add(synobj)
             if isinstance(synobj, classes.Constituent):
-                node = self.get_node(synobj)
-                if not node:
-                    node = self.create_node(synobj=synobj, node_type=g.CONSTITUENT_NODE)
-                else:
-                    if node.uid in node_keys_to_validate:
-                        node_keys_to_validate.remove(node.uid)
-                    if synobj in synobjs_done:
-                        return node
-                synobjs_done.add(synobj)
                 # part_count = len(synobj.get_parts())
-                for i, part in enumerate(synobj.get_parts()):
-                    child = recursive_create(part)
+                for part in synobj.get_parts():
+                    child = recursive_create_edges(part)
                     if child:
                         connect_if_necessary(node, child, g.CONSTITUENT_EDGE)
                 for feature in synobj.get_features():
-                    nfeature = recursive_create(feature)
-                    assert nfeature
-                    connect_if_necessary(node, nfeature, g.FEATURE_EDGE)
-                return node
-            if isinstance(synobj, classes.Feature):
-                node = self.get_node(synobj)
-                if not node:
-                    node = self.create_node(synobj=synobj, node_type=g.FEATURE_NODE)
-                else:
-                    if node.uid in node_keys_to_validate:
-                        node_keys_to_validate.remove(node.uid)
-                    if synobj in synobjs_done:
-                        return node
-                synobjs_done.add(synobj)
+                    nfeature = recursive_create_edges(feature)
+                    if nfeature:
+                        connect_if_necessary(node, nfeature, g.FEATURE_EDGE)
+            elif isinstance(synobj, classes.Feature):
                 if hasattr(synobj, 'get_parts'):
                     for part in synobj.get_parts():
-                        child = recursive_create(part)
+                        child = recursive_create_edges(part)
                         if child and child.node_type == g.FEATURE_NODE:
-                            connect_if_necessary(node, child)
-                return node
+                            connect_if_necessary(node, child, g.FEATURE_EDGE)
+            return node
+
+        if numeration:
+            num_tree = self.get_numeration()
+
+        for synobj in synobjs:
+            synobjs_done = set()
+            nodes_to_create = []
+            all_known_x = []
+            all_known_y = []
+            tree_counter = []
+
+            def recursive_add_for_creation(me, parent_node, parent_synobj):
+                """ First we have to create new nodes close to existing nodes to avoid rubberbanding.
+                To help this create a list of missing nodes with known positions.
+                :param me:
+                :param parent_node:
+                :param parent_synobj:
+                :return:
+                """
+                if isinstance(me, list):
+                    for item in me:
+                        recursive_add_for_creation(item, parent_node, parent_synobj)
+                else:
+                    node = self.get_node(me)
+                    if node:
+                        if hasattr(me, 'label'):
+                            node.label = me.label
+                        node.update_label()
+                        #print(me.label, node.label)
+                        if node.uid in node_keys_to_validate:
+                            node_keys_to_validate.remove(node.uid)
+                        all_known_x.append(node.current_position[0])
+                        all_known_y.append(node.current_position[1])
+                        for tree in node.trees:
+                            if not tree.numeration:
+                                tree_counter.append(tree)
+                        if parent_synobj and not parent_node:
+                            nodes_to_create.append((parent_synobj, node.current_position))
+                    elif parent_node:
+                        nodes_to_create.append((me, parent_node.current_position))
+                    else:
+                        nodes_to_create.append((me, (0, 0)))
+                    if hasattr(me, 'get_parts'):
+                        for part in me.get_parts():
+                            recursive_add_for_creation(part, node, me)
+                    if hasattr(me, 'features'):
+                        if isinstance(me.features, dict):
+                            for feat in me.features.values():
+                                recursive_add_for_creation(feat, node, me)
+                        elif isinstance(me.features, (list, set, tuple)):
+                            for feat in me.features:
+                                recursive_add_for_creation(feat, node, me)
+
+            recursive_add_for_creation(synobj, None, None)
+            if all_known_x:
+                avg_x = int(statistics.mean(all_known_x))
             else:
-                print(synobj, type(synobj))
-                raise ValueError
-        # Create and validate existing nodes and edges
-        for item in synobjs:
-            node = recursive_create(item)
-            self.create_tree_for(node)
+                avg_x = 0
+            if all_known_y:
+                avg_y = int(statistics.mean(all_known_y))
+            else:
+                avg_y = 0
+            most_popular_trees = collections.Counter(tree_counter).most_common(1)
+            if most_popular_trees:
+                most_popular_tree = most_popular_trees[0][0]
+            else:
+                most_popular_tree = None
+            for syn_bare, pos in nodes_to_create:
+                if pos == (0, 0):
+                    pos = (avg_x, avg_y)
+                if isinstance(syn_bare, classes.Constituent):
+                    node = self.create_node(synobj=syn_bare, node_type=g.CONSTITUENT_NODE, pos=pos)
+                elif isinstance(syn_bare, classes.Feature):
+                    node = self.create_node(synobj=syn_bare, node_type=g.FEATURE_NODE, pos=pos)
+                else:
+                    continue
+                if most_popular_tree:
+                    node.add_to_tree(most_popular_tree)
+            recursive_create_edges(synobj)
+
+            if most_popular_tree:
+                most_popular_tree.top = self.get_node(synobj)
+                most_popular_tree.update_items()
+            else:
+                self.create_tree_for(self.get_node(synobj))
+
+        #for item in numeration:
+        #    node, trees = recursive_create(item, set())
+        #    if node and not trees:
+        #        node.add_to_tree(num_tree)
         # Delete invalid nodes and edges
         for key in node_keys_to_validate:
-            node = self.nodes[key]
-            self.delete_node(node)
+            node = self.nodes.get(key, None)
+            if node:
+                self.delete_node(node)
         for key in edge_keys_to_validate:
             edge = self.edges.get(key, None) # most of these should be deleted already by prev.
             if edge:
                 self.delete_edge(edge)
+        for node in self.nodes.values():
+            node.update_label()
+
 
     def update_forest_gloss(self):
         """ Draw the gloss text on screen, if it exists. """
@@ -452,7 +535,7 @@ class Forest(SavedObject):
         """
         s = []
         for tree in self.trees:
-            if tree.top.is_constituent:
+            if tree.top and tree.top.is_constituent:
                 s.append(tree.top.syntactic_object.print_tree())
         return '\n'.join(s)
 
@@ -643,7 +726,8 @@ class Forest(SavedObject):
         sc.stop_animations()
         self.update_trees()
         for tree in self.trees:
-            tree.top.update_visibility()  # fixme
+            if tree.top:
+                tree.top.update_visibility()  # fixme
         self.bracket_manager.update_brackets()
         self.update_projections()
         self.update_forest_gloss()
@@ -816,8 +900,9 @@ class Forest(SavedObject):
         invalid_tops = set()
         for tree in self.trees:
             if not tree.top:
-                print('tree without top, removing it')
-                self.remove_tree(tree)
+                if not tree.numeration:
+                    print('tree without top, removing it')
+                    self.remove_tree(tree)
             elif not tree.top.is_top_node():
                 invalid_trees.append(tree)
                 invalid_tops.add(tree.top)

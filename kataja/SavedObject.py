@@ -332,12 +332,12 @@ class SavedObject(object):
                 return
             # objects that support saving
 
-            if getattr(obj, 'unique', False):
-                key = getattr(obj, 'uid', '')
-                if key and key not in full_map:
-                    full_map[key] = obj
-                    for item in obj._saved.values():
-                        map_existing(item)
+            #if not getattr(obj, 'unique', False):
+            key = getattr(obj, 'uid', '')
+            if key and key not in full_map:
+                full_map[key] = obj
+                for item in obj._saved.values():
+                    map_existing(item)
 
         # Restore either takes existing object or creates a new 'stub' object
         #  and then loads it with given data
@@ -352,8 +352,9 @@ class SavedObject(object):
         :return:
         """
 
-        if obj_key.isdigit():
-            obj_key = int(obj_key)
+        if isinstance(obj_key, str):
+            if obj_key.isdigit():
+                obj_key = int(obj_key)
 
         def inflate(data):
             """ Recursively turn QObject descriptions back into actual
@@ -433,12 +434,7 @@ class SavedObject(object):
         class_key = new_data['class_name']
 
         if not obj:
-            #print('creating new ', class_key)
             obj = classes.create(class_key)
-            #print('created new ', obj)
-        else:
-            # print('found obj: ', obj)
-            pass
         # when creating/modifying values inside forests, they may refer back
         # to ctrl.forest. That has to be the current
 

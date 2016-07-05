@@ -35,23 +35,24 @@ class ForestKeeper(SavedObject):
 
     unique = True
 
-    def __init__(self, name=None, filename=None, treelist_filename=None):
+    def __init__(self, name=None, filename=None, treelist_filename=None, empty=False):
         super().__init__()
         print('basic ForestKeeper called')
         self.name = name or filename or treelist_filename
         self.filename = filename
-        if treelist_filename:
+        if treelist_filename and not empty:
             treelist = self.load_treelist_from_text_file(treelist_filename)
         else:
             treelist = []
-        self.forests = []
+        self.forests = [Forest()]
         self.current_index = 0
         self.forest = None
         self.lexicon = {}
         self.structures = OrderedDict()
         self.constituents = OrderedDict()
         self.features = OrderedDict()
-        self.create_forests(treelist)
+        if treelist:
+            self.create_forests(treelist)
 
     def new_forest(self):
         """ Add a new forest after the current one.

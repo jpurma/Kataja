@@ -203,8 +203,9 @@ class LinearizedStaticTree(BalancedTree):
             return grid
 
         for tree in self.forest:
-            new_grid = _build_grid(node=tree.top)
-            merged_grid.merge_grids(new_grid, extra_padding=2)
+            if tree.top:
+                new_grid = _build_grid(node=tree.top)
+                merged_grid.merge_grids(new_grid, extra_padding=2)
 
         tree_width = merged_grid.width * edge_width
         tree_height = merged_grid.height * edge_height

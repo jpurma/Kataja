@@ -111,10 +111,11 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.graph_scene.graph_view = self.graph_view
         self.ui_manager = UIManager(self)
         self.ui_manager.populate_ui_elements()
-        sys.stdout = self.ui_manager.log_writer
-        sys.stderr = self.ui_manager.error_writer
+        #sys.stdout = self.ui_manager.log_writer
+        #sys.stderr = self.ui_manager.error_writer
         self.add_message(plugin_messages)
-        self.forest_keepers = [classes.get('ForestKeeper')()]
+        # make empty forest and forest keeper so initialisations don't fail because of their absence
+        self.forest_keepers = [classes.get('ForestKeeper')(empty=True)]
         self.forest_keeper = self.forest_keepers[0]
         kataja_app.setPalette(self.color_manager.get_qt_palette())
         self.visualizations = VISUALIZATIONS

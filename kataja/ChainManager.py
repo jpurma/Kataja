@@ -96,7 +96,8 @@ class ChainManager:
                 self.chains[node.index] = chain
 
         for tree in f.trees:
-            _bottom_right_count_traces(tree.top, None)
+            if tree.top:
+                _bottom_right_count_traces(tree.top, None)
 
         for key, values in self.chains.items():
             values.reverse()
@@ -134,7 +135,8 @@ class ChainManager:
 
         count = 0
         for tree in f.trees:
-            count = _bottom_right_count_parents(tree.top, None, count)
+            if tree.top:
+                count = _bottom_right_count_parents(tree.top, None, count)
 
         # If chains are built from multidomination, they need to be sorted and sorting indexes removed
         for key, values in list(self.chains.items()):

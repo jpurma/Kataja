@@ -27,6 +27,7 @@
 from kataja.singletons import ctrl
 from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
+from kataja.utils import time_me
 
 
 # Thinking about undo system. It should be a common class Undoable inherited
@@ -40,12 +41,17 @@ class DerivationStep(SavedObject):
     """ Packed state of syntactic objects for stepwise animation of trees growth.
      """
 
-    def __init__(self, synobjs, numeration, other, msg):
+    def __init__(self, synobjs=None, numeration=None, other=None, msg=None):
         super().__init__()
-        self.synobjs = synobjs
+        self.synobjs = synobjs or []
         self.numeration = numeration
         self.other = other
         self.msg = msg
+
+    def __str__(self):
+        return "DS(" + str(self.synobjs) + ", " + str(self.numeration) + ", " + str(self.other) \
+               + ", '" + str(self.msg) + "')"
+
 
     # ############## #
     #                #
@@ -70,6 +76,7 @@ class DerivationStepManager(SavedObject):
         self.derivation_steps = []
         self.derivation_step_index = 0
 
+    @time_me
     def save_and_create_derivation_step(self, synobjs, numeration=None, other=None, msg=''):
         """ Ok, new idea: derivation steps only include syntactic objects. Nodes etc. will be
         created in the fly. No problems from visualisations misbehaving, chains etc.
@@ -87,14 +94,17 @@ class DerivationStepManager(SavedObject):
         open_references = {}
         d_step.save_object(savedata, open_references)
         c = 0
-        while open_references and c < 10:
+        max_depth = 100 # constituent trees can be surprisingly deep, and we don't have any
+        # general dict about them.
+        while open_references and c < max_depth:
             c += 1
             for obj in list(open_references.values()):
                 if hasattr(obj, 'uid'):
                     obj.save_object(savedata, open_references)
                 else:
                     print('cannot save open reference object ', obj)
-        print('total savedata: %s chars in %s items.' % (len(str(savedata)), len(savedata)))
+        if c == max_depth:
+            raise hell
         self.derivation_steps.append((d_step.uid, savedata, msg))
 
     def restore_derivation_step(self, uid, frozen_data):
@@ -102,10 +112,11 @@ class DerivationStepManager(SavedObject):
         :param uid:
         :param frozen_data:
         """
-        d_step = DerivationStep([])
+        d_step = DerivationStep()
         d_step.uid = uid
         d_step.load_objects(frozen_data, ctrl.main)
         self.current = d_step
+        print(d_step.synobjs, d_step)
         self.forest.mirror_the_syntax(d_step.synobjs, d_step.numeration, d_step.other)
 
     def next_derivation_step(self):
@@ -117,8 +128,7 @@ class DerivationStepManager(SavedObject):
         self.derivation_step_index += 1
         uid, ds, msg = self.derivation_steps[self.derivation_step_index]
         self.restore_derivation_step(uid, ds)
-        ctrl.add_message(
-            'Derivation step %s: %s' % (self.derivation_step_index, msg))
+        ctrl.add_message('Derivation step %s: %s' % (self.derivation_step_index, msg))
 
     def previous_derivation_step(self):
         """
@@ -127,10 +137,18 @@ class DerivationStepManager(SavedObject):
         if self.derivation_step_index == 0:
             return
         self.derivation_step_index -= 1
-        ds = self.derivation_steps[self.derivation_step_index]
-        self.restore_derivation_step(ds)
-        ctrl.add_message(
-            'Derivation step %s: %s' % (self.derivation_step_index, ds.msg))
+        uid, ds, msg = self.derivation_steps[self.derivation_step_index]
+        self.restore_derivation_step(uid, ds)
+        ctrl.add_message('Derivation step %s: %s' % (self.derivation_step_index, msg))
+
+    def jump_to_derivation_step(self, i):
+        """
+        :return:
+        """
+        self.derivation_step_index = i
+        uid, ds, msg = self.derivation_steps[self.derivation_step_index]
+        self.restore_derivation_step(uid, ds)
+        ctrl.add_message('Derivation step %s: %s' % (self.derivation_step_index, msg))
 
     # ############## #
     #                #
@@ -139,5 +157,5 @@ class DerivationStepManager(SavedObject):
     # ############## #
 
     derivation_steps = SavedField("derivation_steps")
-    derivation_step_index = SavedField("derivation_step_index")
+    derivation_step_index = SavedField("derivation_step_index", watcher="forest_changed")
     forest = SavedField("forest")

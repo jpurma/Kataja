@@ -87,7 +87,7 @@ PANELS = [{'class': LogPanel, 'name': 'Log', 'position': 'bottom'},
           {'class': FaceCamPanel, 'name': 'Camera', 'position': 'float', 'closed': True},
           {'class': VisualizationOptionsPanel, 'name': 'Visualization options',
            'position': 'float', 'closed': True},
-          {'class': LexiconPanel, 'name': 'Lexicon', 'position':'float', 'closed': False}]
+          {'class': LexiconPanel, 'name': 'Lexicon', 'position': 'float', 'closed': True}]
 
 menu_structure = OrderedDict([('file_menu', ('&File',
                                              ['new_project', 'new_forest', 'open', 'save',

@@ -110,7 +110,6 @@ class Node(Movable):
         Movable.__init__(self, forest=forest)
         self.syntactic_object = syntactic_object
 
-        self.label_object = None
         self._label_visible = True
         self._label_qdocument = None
         self.label_rect = None

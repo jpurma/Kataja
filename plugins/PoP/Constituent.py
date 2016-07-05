@@ -43,7 +43,7 @@ class Constituent(MyBase):  # collections.UserList):
         if self.part2:
             parts.append(self.part2)
         if self.features:
-            parts.append(self.features)
+            parts.append(sorted(list(self.features)))
         return repr(parts)
 
     def __str__(self):
@@ -67,7 +67,7 @@ class Constituent(MyBase):  # collections.UserList):
             return True
 
     def __hash__(self):
-        return hash(repr(self))
+        return id(self)
 
     def labelstring(self):
         if self.part1 and self.part2:
