@@ -98,6 +98,7 @@ class GroupLabelEmbed(UIEmbed):
         #self.assumed_width = 200
         #self.assumed_height = 37
         self.update_position()
+        self.setEnabled(True)
 
     def update_fields(self):
         """

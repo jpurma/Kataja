@@ -61,6 +61,15 @@ class Constituent(MyBaseClass):  # collections.UserList):
             parts.append(sorted(list(self.features)))
         return repr(parts)
 
+    def featureless_str(self):
+        """ Used to replicate Model10 output
+        :return:
+        """
+        if self.part1 and self.part2:
+            return '[%s %s %s]' % (self.label, self.part1.featureless_str(), self.part2.featureless_str())
+        else:
+            return '[%s ]' % self.label
+
     def __str__(self):
         """ Override BaseConstituent's __str__
         :return:

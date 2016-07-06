@@ -243,6 +243,10 @@ class ConstituentNode(BaseConstituentNode):
                     leaves += ' '
             return leaves.tidy()
         else:
+            if self.syntactic_object:
+                for item in self.syntactic_object.features:
+                    if getattr(item, 'name', '').lower() == 'root':
+                        return '<u>' + self.label + '</u>'
             return self.label
 
     def should_show_label(self):

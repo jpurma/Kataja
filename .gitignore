@@ -17,6 +17,7 @@ local.properties
 .settings/
 .loadpath
 plugins/PoP/ignore
+plugins/PoP2/ignore
 
 # External tool builders
 .externalToolBuilders/

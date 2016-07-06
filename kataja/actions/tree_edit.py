@@ -283,7 +283,7 @@ def finish_editing_node(sender=None):
     :return: None
     """
     embed = get_ui_container(sender)
-    if embed.host:
+    if embed and embed.host:
         embed.submit_values()
     ctrl.ui.close_active_embed()
 
@@ -497,7 +497,9 @@ def change_group_color(sender=None):
 
 
 def can_edit_group():
-    return ctrl.ui.active_embed and ctrl.ui.active_embed.ui_key == 'GroupEditEmbed'
+    return True
+    #print(ctrl.ui.active_embed)
+    #return ctrl.ui.active_embed and ctrl.ui.active_embed.ui_key == 'GroupEditEmbed'
 
 
 def get_group_color():

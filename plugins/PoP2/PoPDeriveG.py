@@ -135,9 +135,9 @@ class Stack:
 
 
 class Generate:
-    def __init__(self):
+    def __init__(self, out_writer=None):
 
-        self.output = []  # List of all (important) steps in the derivation
+        self.out_writer = out_writer
         self.so_list = []
         self.phi_counter = 0
         self.feature_counter = 0
@@ -178,10 +178,9 @@ class Generate:
             self.out("FTCheckOp", self.feature_check_counter)
 
     def out(self, first, second, third=None):
-        if third is None:
-            self.output.append((str(first), str(second)))
-        else:
-            self.output.append((str(first), str(second), str(third)))
+        if not self.out_writer:
+            return
+        self.out_writer.push(first, second, third)
 
     def dump_to_file(self, data, i):
         if not self.dumpfile:
@@ -425,7 +424,7 @@ class Generate:
         self.out("merge", msg)
         merged = Constituent(label=label, part1=remerge, part2=merged)
         self.merge_counter += 1
-        self.out("Label(SharedFeats)", str(merged))
+        self.out("Label(SharedFeats)", merged)
         self.announce_derivation_step([merged], "remerged back")
         merged, success = self.label_if_possible(merged)
         if success:
@@ -510,10 +509,13 @@ class Generate:
         def find_closest_root(const):
             if const.stacked and any(x.name == "Root" for x in const.get_head_features()):
                 return const
-            if const.part1:
-                found = find_closest_root(const.part1)
-                if found:
-                    return found
+            # (jukka) We are looking for v:s but if we go into branches we hit into n:s.
+            # let's try to not go into branches. another option would be to directly demand 'v' in
+            # label
+            #if const.part1:
+            #    found = find_closest_root(const.part1)
+            #    if found:
+            #        return found
             if const.part2:
                 return find_closest_root(const.part2)
             return None
@@ -960,7 +962,8 @@ class Generate:
         elif y_head:
             current_label = y.label
         if current_label:
-            self.out("Label(Head)", "label= %s part1= %s part2= %s" % (current_label, x, y))
+            # we used to have "merged" here as parameter, now we have to cook one up for debug
+            self.out("Label(Head)", Constituent(label=current_label, part1=x, part2=y))
         inherit = False
         unvalued_phis = []
         for f in x_feats:
@@ -1359,6 +1362,7 @@ class Generate:
 # "../Languages/Japanese/DisWarn.txt"
 
 if __name__ == "__main__":
+    import ProduceOutput
     if len(sys.argv) > 1:
         filename = int(sys.argv[1])
     else:
@@ -1375,7 +1379,9 @@ if __name__ == "__main__":
     print('*****')
     print('*****')
     print('*****')
-    a = Generate()
+
+    out = ProduceOutput.ProduceFile('ignore/new/')
+    a = Generate(out_writer=out)
     a.load_data(input_data, start, end)
-    # ProduceOutput.ProduceFile(a.output, 'new/')
+    out.close()
     print(time.time() - t)
