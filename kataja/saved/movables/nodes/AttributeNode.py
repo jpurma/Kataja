@@ -120,7 +120,7 @@ class AttributeNode(Node):
             else:
                 x += random.uniform(-4, 4)
                 y += random.uniform(-4, 4)
-            self.set_original_position((x, y, z))
+            self.set_original_position((x, y))
             self.update_help_text()
             self.update_label()
             self.update_bounding_rect()

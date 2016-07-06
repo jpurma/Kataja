@@ -105,6 +105,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         self.locked = False
         self.physics_x = False
         self.physics_y = False
+        self.repulsion = 0.2
         # Other
         self._fade_anim = None
         self.is_fading_in = False
@@ -246,7 +247,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
             return False, False
         # Physics move node around only if other movement types have not overridden it
         elif self.use_physics():
-            movement = self.forest.visualization.calculate_movement(self)
+            movement = self.forest.visualization.calculate_movement(self, self.repulsion)
             md['sum'] = add_xy(movement, md['sum'])
             md['nodes'].append(self)
             self.current_position = add_xy(self.current_position, movement)

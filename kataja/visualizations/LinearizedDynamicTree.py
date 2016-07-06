@@ -93,7 +93,9 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
             old_x, tree_y = tree.current_position
             tree.move_to(tree_x, tree_y)
             top = tree.top
-            if top.node_type != CONSTITUENT_NODE:
+            if not top:
+                continue
+            elif top.node_type != CONSTITUENT_NODE:
                 continue
             # linearized = ctrl.FL.Linearize(root.syntactic_object)
             depths = []
@@ -125,13 +127,14 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
             # measureDepth(rootnode,0)
             # depth=max(depths)
 
-            node_height = max((x.height for x in nodelist))
-            start_height = self.get_vis_data('height_steps') * (prefs.edge_height + node_height)
+            if nodelist:
+                node_height = max((x.height for x in nodelist))
+                start_height = self.get_vis_data('height_steps') * (prefs.edge_height + node_height)
 
-            for node in nodelist:
-                nw = node.width
-                x += nw / 2
-                node.physics_x = False
-                node.physics_y = False
-                node.move_to(x, start_height, valign=BOTTOM_ROW)
-                x += (nw / 2) + 10
+                for node in nodelist:
+                    nw = node.width
+                    x += nw / 2
+                    node.physics_x = False
+                    node.physics_y = False
+                    node.move_to(x, start_height, valign=BOTTOM_ROW)
+                    x += (nw / 2) + 10

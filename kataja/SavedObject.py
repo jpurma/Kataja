@@ -430,7 +430,11 @@ class SavedObject(object):
         obj = full_map.get(obj_key, None)
 
         # new data that the object should have
-        new_data = full_data[obj_key]
+        new_data = full_data.get(obj_key, None)
+        if not (obj or new_data):
+            return None
+        elif obj and not new_data:
+            print(obj, " is not present in save data")
         class_key = new_data['class_name']
 
         if not obj:

@@ -1,0 +1,24 @@
+English 
+
+This file is from Jason Ginsburg's computer model for PoP,
+http://www.osaka-kyoiku.ac.jp/~jginsbur/MinimalistModeling.html
+Chomsky Ms. = Problems of projection: Extensions
+
+1 Tom read a book. (Chomsky 2015:10) ['C','Tpres',['D','n','Tom'],'v*','read','a','n','book']
+2 They expected John to win. (Chomsky 2015:10) ['C','Tpast',['D','n','they'],'v*','expect','toT',['D','n','John'],'vUnerg','win']
+3 Who do you expect to win. (Chomsky 2015:10) ['C_Q','Tpres',['D','n','you'],'v*','expect','toT',['Q','n','who'],'vUnerg','win']
+4 What do you think that John read? ['C_Q','Tpres',['D','n','you'],'vUnerg','think','that','Tpast',['D','n','John'],'v*','read','Q','n','what']
+5 What do you think John read? ['C_Q','Tpres',['D','n','you'],'vUnerg','think','C_Null','Tpast',['D','n','John'],'v*','read','Q','n','what']
+6 *Who do you think that read the book. (Chomsky 2015:10) ['C_Q','Tpres',['D','n','you'],'vUnerg','think','that','Tpast',['Q','n','who'],'v*','read','the','n','book']
+7 Who do you think read the book? (Chomsky 2015:10) ['C_Q','Tpres',['D','n','you'],'vUnerg','think','C_Null','Tpast',['Q','n','who'],'v*','read','the','n','book']
+8 *Which dog do you wonder John likes? (Chomsky 2015:8) ['C_Q','Tpres',['D','n','you'],'vUnerg','wonder','C_Q','Tpast',['D','n','John'],'v*','like','which','n','dog']
+9  There is likely to be a man in the room. (Epstein, Kitahara, Seely 201: 468) ['C','Tpres','v_be','likely','toT',['n_Expl','there'],'v_be',['P_in','the','n','room'],'a','n','man']
+10 
+
+
+'C','Tpres','v*','likely','toT','be',['Q','n','who'],'v*','read','the','n','book']
+16 *There is likely a man to be in the room. (Epstein, Kitahara, Seely 201: 468) 
+
+
+
+

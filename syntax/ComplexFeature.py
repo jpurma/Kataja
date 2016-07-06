@@ -41,7 +41,7 @@ class ComplexFeature(MultivaluedFeature):
         return False
 
     def __repr__(self):
-        return "ComplexFeature(fname=%r, value=%r, assigned=%r, family=%r)" % (self.fname,
+        return "ComplexFeature(name=%r, value=%r, assigned=%r, family=%r)" % (self.name,
                                                                               self.value,
                                                                               self.assigned,
                                                                               self.family)

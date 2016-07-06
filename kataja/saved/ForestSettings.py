@@ -153,7 +153,7 @@ class ForestSettings(SavedObject):
         shape_args = local_edge_type.get('shape_args', None)
         if not shape_args:
             return
-        self.poke('edge_styles')
+        self.poke('edge_styles_data')
         shape_defaults = SHAPE_PRESETS[self.edge_info(edge_type, 'shape_name')]
         for key in keys:
             if key in shape_args:
@@ -206,7 +206,7 @@ class ForestSettings(SavedObject):
         :param key:
         :return:
         """
-        self.poke('edge_styles')
+        self.poke('edge_styles_data')
         local_edge_type = self.edge_styles_data.get(edge_type, None)
         if not local_edge_type:
             local_edge_type = {}

@@ -227,7 +227,7 @@ class Tree(Movable):
             return self._cached_bounding_rect
 
     def paint(self, painter, QStyleOptionGraphicsItem, QWidget_widget=None):
-        if self.numeration:
+        if self.numeration or True:
             br = self.boundingRect()
             painter.drawRect(br)
             #painter.drawText(br.topLeft() + QtCore.QPointF(2, 10), str(self))

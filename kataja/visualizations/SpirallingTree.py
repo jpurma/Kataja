@@ -239,10 +239,11 @@ class SpirallingTree(BaseVisualization):
             ctrl.main.add_message('Need to have at least %s sides to draw this tree.' % self.sides)
 
         for tree in self.forest:
-            layer = Layer(tree.top, parent=None, vis=self)
-            success = layer.try_to_draw(0, 1)
-            while not success:
-                self.start_x += 100
+            if tree.top:
+                layer = Layer(tree.top, parent=None, vis=self)
                 success = layer.try_to_draw(0, 1)
-            while layer:
-                layer = self.select_layer(layer)
+                while not success:
+                    self.start_x += 100
+                    success = layer.try_to_draw(0, 1)
+                while layer:
+                    layer = self.select_layer(layer)

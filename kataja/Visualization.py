@@ -202,10 +202,18 @@ class BaseVisualization:
 
         if node.physics_x:
             xvel = node_x - old_x
+            if xvel > 50:
+                xvel = 50
+            elif xvel < -50:
+                xvel = -50
         else:
             xvel = 0
         if node.physics_y:
             yvel = node_y - old_y
+            if yvel > 50:
+                yvel = 50
+            elif yvel < -50:
+                yvel = -50
         else:
             yvel = 0
         return xvel, yvel, 0
@@ -318,10 +326,11 @@ class BaseVisualization:
                         if parent in ltree:
                             i = ltree.index(parent)
                             my_parents.append((i, node_key, parent, True))
-                    my_parents.sort()
-                    a, b, c, d = my_parents[-1]  # @UnusedVariable
-                    my_parents[-1] = a, b, c, False
-                    sortable_parents += my_parents
+                    if my_parents:
+                        my_parents.sort()
+                        a, b, c, d = my_parents[-1]  # @UnusedVariable
+                        my_parents[-1] = a, b, c, False
+                        sortable_parents += my_parents
             sortable_parents.sort()
             sorted_parents += sortable_parents
         if rotator < 0:

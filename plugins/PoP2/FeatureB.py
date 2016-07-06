@@ -36,7 +36,7 @@ class Feature(MyBaseClass):
     replaces = "BaseFeature"
 
     def __init__(self, namestring='', counter=0, name='', value='', unvalued=False,
-                 ifeature=False):
+                 ifeature=False, valued_by=None):
         if in_kataja:
             super().__init__(name=name, value=value, assigned=not unvalued)
         if namestring:
@@ -88,14 +88,25 @@ class Feature(MyBaseClass):
             parts.append(':' + self.value)
         if self.counter:
             parts.append(str(self.counter))
+        if self.valued_by:
+            parts.append('(%s)' % self.valued_by)
         #return "'"+''.join(parts)+"'"
         return ''.join(parts)
+
+    def get_parts(self):
+        """ This is what Kataja uses to find if there is inner structure/links to other nodes to
+        display. Use it here for valued_by -relation.
+
+        :return:
+        """
+        return self.valued_by or []
+
 
     def __eq__(self, o):
         if isinstance(o, Feature):
             return self.counter == o.counter and self.name == o.name and \
                    self.value == o.value and self.unvalued == o.unvalued and \
-                   self.ifeature == o.ifeature
+                   self.ifeature == o.ifeature and self.valued_by == o.valued_by
         elif isinstance(o, str):
             return str(self) == o
         else:
@@ -111,6 +122,11 @@ class Feature(MyBaseClass):
         return hash(str(self))
 
     def __contains__(self, item):
+        """ This doesn't look into linked features, you should be looking into them first
+        (use expanded_features -function in Constituent to get all of them)
+        :param item:
+        :return:
+        """
         if isinstance(item, Feature):
             if item.name != self.name:
                 return False
@@ -124,15 +140,33 @@ class Feature(MyBaseClass):
         else:
             return item in str(self)
 
+    def unvalued_and_alone(self):
+        return self.unvalued and not self.valued_by
+
     def name_with_u_prefix(self):
         if self.unvalued:
             return 'u' + self.name
         else:
             return self.name
 
+    def value_with(self, other):
+        if self.valued_by:
+            self.valued_by.append(other)
+        else:
+            self.valued_by = [other]
+
+    def expand_linked_features(self):
+        if self.valued_by:
+            flist = []
+            for f in self.valued_by:
+                flist += f.expand_linked_features()
+            return flist
+        else:
+            return [self]
+
     def copy(self):
         return Feature(counter=self.counter, name=self.name, value=self.value,
-                       unvalued=self.unvalued, ifeature=self.ifeature)
+                       unvalued=self.unvalued, ifeature=self.ifeature, valued_by=valued_by)
 
     if in_kataja:
         unvalued = SavedField("unvalued")

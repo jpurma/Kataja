@@ -95,6 +95,7 @@ class FeatureNode(Node):
 
     def __init__(self, forest=None, syntactic_object=None):
         Node.__init__(self, syntactic_object=syntactic_object, forest=forest)
+        self.repulsion = 0.25
         self._gravity = 2.5
 
     # implement color() to map one of the d['rainbow_%'] colors here. Or if bw mode is on, then something else.
@@ -129,7 +130,6 @@ class FeatureNode(Node):
     def name_with_u_prefix(self):
         return self.syntactic_object.name_with_u_prefix()
 
-
     def paint(self, painter, option, widget=None):
         """ Painting is sensitive to mouse/selection issues, but usually with
         :param painter:
@@ -153,7 +153,10 @@ class FeatureNode(Node):
             return ctrl.cm.get('background1')
             # return ctrl.cm.selected(ctrl.cm.selection())
         else:
-            return self.color
+            if getattr(self.syntactic_object, 'unvalued', False):  # fixme: Temporary hack
+                return ctrl.cm.get('accent1')
+            else:
+                return self.color
 
     def contextual_background(self):
         """ Background color that is sensitive to node's state """
@@ -173,7 +176,7 @@ class FeatureNode(Node):
         :param edge:
         :return:
         """
-        if edge.edge_type is not g.FEATURE_EDGE:
+        if edge.edge_type is not g.FEATURE_EDGE:  # fixme: include CHECKING_EDGE
             # We care only for constituent relations
             return
         assert edge.end is self
@@ -193,7 +196,7 @@ class FeatureNode(Node):
         :param edge:
         :return:
         """
-        if edge.edge_type is not g.FEATURE_EDGE:
+        if edge.edge_type is not g.FEATURE_EDGE:  # fixme: include CHECKING_EDGE
             # We care only for constituent relations
             return
         assert edge.end is self

@@ -1,16 +1,31 @@
 try:
-    from PoP.Lexicon import SHARED_FEAT_LABELS
-    from PoP.Feature import Feature
-    from BaseConstituent import BaseConstituent as MyBase
+    from PoP2.Lexicon import SHARED_FEAT_LABELS
+    from PoP2.FeatureB import Feature
+    from BaseConstituent import BaseConstituent as MyBaseClass
     in_kataja = True
 except ImportError:
+    # noinspection PyUnresolvedReferences,PyPackageRequirements
     from Lexicon import SHARED_FEAT_LABELS
-    from Feature import Feature
-    MyBase = object
+    # noinspection PyUnresolvedReferences,PyPackageRequirements
+    from FeatureB import Feature
+    MyBaseClass = object
     in_kataja = False
 
 
-class Constituent(MyBase):  # collections.UserList):
+def expanded_features(feat_list):
+    alist = []
+    for feat in feat_list:
+        alist += feat.expand_linked_features()
+    return alist
+
+
+def find_shared_features(my_feats, other_feats):
+    my_feats = expanded_features(my_feats)
+    other_feats = expanded_features(other_feats)
+    return [mf for mf in my_feats if mf in other_feats]
+
+
+class Constituent(MyBaseClass):  # collections.UserList):
 
     replaces = "ConfigurableConstituent"
 
@@ -34,7 +49,7 @@ class Constituent(MyBase):  # collections.UserList):
                 if isinstance(f, str):
                     self.features.append(Feature(f))
                 elif isinstance(f, Feature):
-                    self.features.append(f.copy())
+                    self.features.append(f) #.copy())
 
     def __repr__(self):
         parts = [self.label]
@@ -52,7 +67,7 @@ class Constituent(MyBase):  # collections.UserList):
         """
         return repr(self)
 
-    def __eq__(self, other):
+    def __feq__(self, other):
         if not isinstance(other, Constituent):
             return False
         elif self.label != other.label:
@@ -89,7 +104,7 @@ class Constituent(MyBase):  # collections.UserList):
     def shared_features(self, other):
         my_feats = self.get_head_features()
         other_feats = other.get_head_features()
-        return [mf for mf in my_feats if mf in other_feats]
+        return find_shared_features(my_feats, other_feats)
 
     def add_feature(self, feat):
         if not isinstance(feat, Feature):
@@ -165,7 +180,8 @@ class Constituent(MyBase):  # collections.UserList):
                     break
         label = self.label.replace('_', '-')
         if self.part1 and self.part2:
-            return '[.%s%s %s %s ]' % (label, stacked, self.part1.tex_tree(stack), self.part2.tex_tree(stack))
+            return '[.%s%s %s %s ]' % (label, stacked, self.part1.tex_tree(stack),
+                                       self.part2.tex_tree(stack))
         else:
             return label + stacked
 
@@ -193,7 +209,7 @@ class Constituent(MyBase):  # collections.UserList):
         if head in SHARED_FEAT_LABELS:
             elem1_feats = self.part1.get_head_features()
             elem2_feats = self.part2.get_head_features()
-            shared_feats = [el for el in elem1_feats if el in elem2_feats]
+            shared_feats = find_shared_features(elem1_feats, elem2_feats)
             if shared_feats:
                 return shared_feats
         if "Phi" in head:
@@ -253,7 +269,7 @@ class Constituent(MyBase):  # collections.UserList):
             self.label = new_label
 
     def recursive_replace_feature_set(self, old, new, found=0):
-        #print(type(old),old, type(new), new)
+        # print(type(old),old, type(new), new)
         for item in new:
             if not isinstance(item, Feature):
                 print(new)
@@ -263,7 +279,7 @@ class Constituent(MyBase):  # collections.UserList):
         if self.part2:
             found = self.part2.recursive_replace_feature_set(old, new, found)
         if old == self.features:
-            self.features = new
+            self.features = list(new)
             found += 1
         return found
 

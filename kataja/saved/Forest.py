@@ -27,6 +27,7 @@ import collections
 import itertools
 import statistics
 import string
+import random
 
 from PyQt5 import QtWidgets
 
@@ -341,7 +342,7 @@ class Forest(SavedObject):
                     for part in synobj.get_parts():
                         child = recursive_create_edges(part)
                         if child and child.node_type == g.FEATURE_NODE:
-                            connect_if_necessary(node, child, g.FEATURE_EDGE)
+                            connect_if_necessary(node, child, g.CHECKING_EDGE)
             return node
 
         if numeration:
@@ -374,8 +375,9 @@ class Forest(SavedObject):
                         #print(me.label, node.label)
                         if node.uid in node_keys_to_validate:
                             node_keys_to_validate.remove(node.uid)
-                        all_known_x.append(node.current_position[0])
-                        all_known_y.append(node.current_position[1])
+                        x, y = node.current_scene_position
+                        all_known_x.append(x)
+                        all_known_y.append(y)
                         for tree in node.trees:
                             if not tree.numeration:
                                 tree_counter.append(tree)
@@ -394,7 +396,8 @@ class Forest(SavedObject):
                                 recursive_add_for_creation(feat, node, me)
                         elif isinstance(me.features, (list, set, tuple)):
                             for feat in me.features:
-                                recursive_add_for_creation(feat, node, me)
+                                if feat.unvalued:
+                                    recursive_add_for_creation(feat, node, me)
 
             recursive_add_for_creation(synobj, None, None)
             if all_known_x:
@@ -411,16 +414,24 @@ class Forest(SavedObject):
             else:
                 most_popular_tree = None
             for syn_bare, pos in nodes_to_create:
-                if pos == (0, 0):
-                    pos = (avg_x, avg_y)
+                x, y = pos
+                if x == 0 and y == 0:
+                    x = avg_x
+                    y = avg_y
                 if isinstance(syn_bare, classes.Constituent):
-                    node = self.create_node(synobj=syn_bare, node_type=g.CONSTITUENT_NODE, pos=pos)
+                    node_type = g.CONSTITUENT_NODE
+                    x += random.randint(-100, 0)
+                    y += random.randint(-20, 20)
                 elif isinstance(syn_bare, classes.Feature):
-                    node = self.create_node(synobj=syn_bare, node_type=g.FEATURE_NODE, pos=pos)
+                    node_type = g.FEATURE_NODE
+                    x += random.randint(-20, 10)
+                    y += random.randint(20, 70)
                 else:
                     continue
+                node = self.create_node(synobj=syn_bare, node_type=node_type, pos=(x, y))
                 if most_popular_tree:
                     node.add_to_tree(most_popular_tree)
+                #node.set_original_position(node.scene_position_to_tree_position((x, y)))
             recursive_create_edges(synobj)
 
             if most_popular_tree:
@@ -445,6 +456,7 @@ class Forest(SavedObject):
         for node in self.nodes.values():
             node.update_label()
 
+        self.guessed_projections = False
 
     def update_forest_gloss(self):
         """ Draw the gloss text on screen, if it exists. """
@@ -974,7 +986,7 @@ class Forest(SavedObject):
         """
         tree = Tree(top=node, forest=self)
         self.add_to_scene(tree)
-        self.trees.append(tree)
+        self.trees.insert(0, tree)
         tree.show()
         tree.update_items()
         return tree
@@ -1272,9 +1284,6 @@ class Forest(SavedObject):
         # -- synobj-to-node -mapping (is it used anymore?)
         if node.syntactic_object and node.syntactic_object.uid in self.nodes_from_synobs:
             del self.nodes_from_synobs[node.syntactic_object.uid]
-
-        # -- scene --
-        self.remove_from_scene(node)
         # -- trees --
         old_trees = set(node.trees)
         for tree in old_trees:
@@ -1282,6 +1291,10 @@ class Forest(SavedObject):
                 node.remove_from_tree(tree, recursive_down=False)
             else:
                 tree.update_items()
+        if node.parentItem():
+            node.setParentItem(None)
+        # -- scene --
+        self.remove_from_scene(node)
         # -- undo stack --
         node.announce_deletion()
         # -- remove from selection
@@ -1495,7 +1508,7 @@ class Forest(SavedObject):
         """
         C = node.syntactic_object
         F = feature.syntactic_object
-        C.set_feature(F.fname, F)
+        C.set_feature(F.name, F)
         self.connect_node(parent=node, child=feature)
 
     def add_comment_to_node(self, comment, node):

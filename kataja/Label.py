@@ -224,7 +224,6 @@ class Label(QtWidgets.QGraphicsTextItem):
         if html and html[-1] == '<br/>' or (delimiter and html[-1] == delimiter):
             html.pop()
         self.html = ''.join(html)
-        print('rebuilding label, html: ', self.html)
         self.visible_parts = visible_parts
 
     def compose_html_for_editing(self):

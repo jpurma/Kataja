@@ -262,7 +262,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
 
         :return:
         """
-        prefs.restore_default_preferences(qt_prefs, running_environment, classes.nodes)
+        prefs.restore_default_preferences(qt_prefs, running_environment, classes)
         if self.ui_manager.preferences_dialog:
             self.ui_manager.preferences_dialog.close()
         self.ui_manager.preferences_dialog = PreferencesDialog(self)
@@ -610,8 +610,9 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         open_references = {}
         savedata['save_scheme_version'] = 0.4
         self.save_object(savedata, open_references)
+        max_rounds = 10
         c = 0
-        while open_references and c < 10:
+        while open_references and c < max_rounds:
             c += 1
             #print(len(savedata))
             #print('---------------------------')
@@ -620,7 +621,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
                     obj.save_object(savedata, open_references)
                 else:
                     print('cannot save open reference object ', obj)
-
+        assert(c < max_rounds)
         print('total savedata: %s chars in %s items.' % (
         len(str(savedata)), len(savedata)))
         # print(savedata)

@@ -1,7 +1,7 @@
 {
-	"name": "Problems of Projection",
-	"description": "A rewrite for Jason Ginsburg's computer model for Chomsky 2013, 2015 PoP-model",
-	"author": "Jukka Purma",
-	"version": "0.1",
-	"setup": "setup.py"
+  "name": "Problems of Projection",
+  "description": "A rewrite for Jason Ginsburg's computer model for Chomsky 2013, 2015 PoP-model",
+  "author": "Jukka Purma",
+  "version": "0.1",
+  "setup": "setup.py"
 }

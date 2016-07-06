@@ -657,9 +657,9 @@ def set_assigned_feature(sender=None):
         featurenode.set_assigned(value)
         featurenode.update_label()
         if value:
-            return "Feature '%s' set to assigned" % featurenode.fname
+            return "Feature '%s' set to assigned" % featurenode.name
         else:
-            return "Feature '%s' set to unassigned" % featurenode.fname
+            return "Feature '%s' set to unassigned" % featurenode.name
 
 a['set_assigned_feature'] = {'command': 'Set feature as assigned',
                              'method': set_assigned_feature,

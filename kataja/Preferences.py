@@ -240,7 +240,17 @@ class Preferences(object):
                                 'visible': True, 'arrowhead_at_start': False,
                                 'arrowhead_at_end': False, 'font': MAIN_FONT,
                                 'labeled': True, 'style': 'dashed'}
+                      },
+            CHECKING_EDGE: {'fancy': {'shape_name': 'cubic', 'color_id': 'accent1', 'pull': 0,
+                                      'visible': True, 'arrowhead_at_start': False,
+                                      'arrowhead_at_end': False, 'font': MAIN_FONT,
+                                      'labeled': False, 'style': 'dashed'},
+                            'plain': {'shape_name': 'cubic', 'color_id': 'accent1', 'pull': 0,
+                                      'visible': True, 'arrowhead_at_start': False,
+                                      'arrowhead_at_end': False, 'font': MAIN_FONT,
+                                      'labeled': False, 'style': 'dashed'}
                       }
+
         }
         # Nodes are defined in their classes and preference dict is generated
         #  from those.

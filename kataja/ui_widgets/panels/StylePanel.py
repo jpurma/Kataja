@@ -143,7 +143,7 @@ class StylePanel(Panel):
 
     def update_font_selector(self, font_id):
         self.cached_font_id = font_id
-        if not self.font_selector.find_item(font_id):
+        if not self.font_selector.find_list_item(font_id):
             self.font_selector.add_font(font_id, qt_prefs.fonts[font_id])
             self.font_selector.select_by_data(font_id)
 

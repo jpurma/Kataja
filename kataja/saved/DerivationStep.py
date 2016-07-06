@@ -146,9 +146,10 @@ class DerivationStepManager(SavedObject):
         :return:
         """
         self.derivation_step_index = i
-        uid, ds, msg = self.derivation_steps[self.derivation_step_index]
-        self.restore_derivation_step(uid, ds)
-        ctrl.add_message('Derivation step %s: %s' % (self.derivation_step_index, msg))
+        if self.derivation_steps:
+            uid, ds, msg = self.derivation_steps[self.derivation_step_index]
+            self.restore_derivation_step(uid, ds)
+            ctrl.add_message('Derivation step %s: %s' % (self.derivation_step_index, msg))
 
     # ############## #
     #                #

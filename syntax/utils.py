@@ -184,7 +184,7 @@ def load_lexicon(filename, Constituent, Feature):
                             props[prop[1:]] = prop[0]
                         else:
                             props[prop] = True
-                feature = Feature(fname=name, value=value)  # , props)
+                feature = Feature(name=name, value=value)  # , props)
                 constituent.set_Feature(name, feature)
         else:
             constituent_id = line.strip()
