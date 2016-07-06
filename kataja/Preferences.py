@@ -25,6 +25,7 @@
 from PyQt5 import QtGui, QtCore
 
 from kataja.globals import *
+from copy import deepcopy
 
 disable_saving_preferences = False
 # Alternatives: Cambria Math, Asana Math, XITS Math
@@ -241,11 +242,11 @@ class Preferences(object):
                                 'arrowhead_at_end': False, 'font': MAIN_FONT,
                                 'labeled': True, 'style': 'dashed'}
                       },
-            CHECKING_EDGE: {'fancy': {'shape_name': 'cubic', 'color_id': 'accent1', 'pull': 0,
+            CHECKING_EDGE: {'fancy': {'shape_name': 'cubic', 'color_id': 'accent1tr', 'pull': 0,
                                       'visible': True, 'arrowhead_at_start': False,
                                       'arrowhead_at_end': False, 'font': MAIN_FONT,
                                       'labeled': False, 'style': 'dashed'},
-                            'plain': {'shape_name': 'cubic', 'color_id': 'accent1', 'pull': 0,
+                            'plain': {'shape_name': 'cubic', 'color_id': 'accent1tr', 'pull': 0,
                                       'visible': True, 'arrowhead_at_start': False,
                                       'arrowhead_at_end': False, 'font': MAIN_FONT,
                                       'labeled': False, 'style': 'dashed'}
@@ -296,9 +297,9 @@ class Preferences(object):
     def import_node_classes(self, classes):
         node_classes = classes.nodes
         for key, nodeclass in node_classes.items():
-            self.node_styles[key] = nodeclass.default_style.copy()
+            self.node_styles[key] = deepcopy(nodeclass.default_style)
             edge_key = nodeclass.default_edge['id']
-            self.edge_styles[edge_key] = nodeclass.default_edge.copy()
+            self.edge_styles[edge_key] = deepcopy(nodeclass.default_edge)
 
     def restore_default_preferences(self, qt_prefs, running_environment, classes):
         source_prefs = Preferences(running_environment)

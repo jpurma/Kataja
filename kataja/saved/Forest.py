@@ -92,7 +92,7 @@ class Forest(SavedObject):
         self.others = {}
         self.vis_data = {}
         self.projections = {}
-        self.projection_rotator = itertools.cycle(range(0, 8))
+        self.projection_rotator = itertools.cycle(range(3, 8))
         self.merge_counter = 0
         self.select_counter = 0
         self.comments = []
@@ -378,6 +378,8 @@ class Forest(SavedObject):
                         x, y = node.current_scene_position
                         all_known_x.append(x)
                         all_known_y.append(y)
+                        if node.node_type == g.FEATURE_NODE:
+                            node.locked_to_constituent = True #not me.unvalued
                         for tree in node.trees:
                             if not tree.numeration:
                                 tree_counter.append(tree)
@@ -396,8 +398,7 @@ class Forest(SavedObject):
                                 recursive_add_for_creation(feat, node, me)
                         elif isinstance(me.features, (list, set, tuple)):
                             for feat in me.features:
-                                if feat.unvalued:
-                                    recursive_add_for_creation(feat, node, me)
+                                recursive_add_for_creation(feat, node, me)
 
             recursive_add_for_creation(synobj, None, None)
             if all_known_x:
@@ -419,16 +420,19 @@ class Forest(SavedObject):
                     x = avg_x
                     y = avg_y
                 if isinstance(syn_bare, classes.Constituent):
-                    node_type = g.CONSTITUENT_NODE
                     x += random.randint(-100, 0)
                     y += random.randint(-20, 20)
+                    node = self.create_node(synobj=syn_bare, node_type=g.CONSTITUENT_NODE, pos=(x, y))
                 elif isinstance(syn_bare, classes.Feature):
-                    node_type = g.FEATURE_NODE
-                    x += random.randint(-20, 10)
-                    y += random.randint(20, 70)
+                    if syn_bare.unvalued and False:
+                        x += random.randint(-20, 10)
+                        y += random.randint(20, 70)
+                        node = self.create_node(synobj=syn_bare, node_type=g.FEATURE_NODE, pos=(x, y))
+                    else:
+                        node = self.create_node(synobj=syn_bare, node_type=g.FEATURE_NODE, pos=(x, y))
+                        node.locked_to_constituent = True
                 else:
                     continue
-                node = self.create_node(synobj=syn_bare, node_type=node_type, pos=(x, y))
                 if most_popular_tree:
                     node.add_to_tree(most_popular_tree)
                 #node.set_original_position(node.scene_position_to_tree_position((x, y)))

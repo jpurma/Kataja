@@ -577,8 +577,8 @@ class Node(Movable):
             return (edge.end for edge in self.edges_down if edge.edge_type == edge_type and
                     not edge.end.deleted)
         elif node_type:
-            return (edge.end for edge in self.edges_down if isinstance(edge.end, node_type) and
-                    not edge.end.deleted)
+            return (edge.end for edge in self.edges_down if edge.end and edge.end.node_type ==
+                    node_type and not edge.end.deleted)
 
     def get_parents(self, only_similar=True, only_visible=False, edge_type=None)->list:
         """

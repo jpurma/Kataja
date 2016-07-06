@@ -264,6 +264,16 @@ class ConstituentNode(BaseConstituentNode):
     def should_show_gloss_in_label(self):
         return self.forest.settings.show_glosses == 1
 
+    def get_locked_node_positions(self):
+        l = []
+        x, y = self.current_position
+        center_x = x + self.boundingRect().center().x()
+        bottom_y = y + self.boundingRect().bottom()
+        for fnode in self.get_children_of_type(node_type=g.FEATURE_NODE):
+            if fnode.locked_to_constituent:
+                l.append((fnode, center_x, bottom_y))
+                bottom_y += fnode.height
+        return l
 
     def update_status_tip(self):
         """ Hovering status tip """

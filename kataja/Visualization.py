@@ -128,7 +128,7 @@ class BaseVisualization:
         pass
 
 
-    def calculate_movement(self, node, alpha = 0.2):
+    def calculate_movement(self, node):
         # Sum up all forces pushing this item away.
         """
 
@@ -137,6 +137,7 @@ class BaseVisualization:
         """
         node_x, node_y = node.current_position
         old_x, old_y = node.current_position
+        alpha = 0.2
 
         # attract
         down = node.edges_down

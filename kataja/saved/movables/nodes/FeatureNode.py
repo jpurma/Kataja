@@ -75,7 +75,7 @@ class FeatureNode(Node):
                      'plain': {'color': 'accent2', 'font': g.SMALL_CAPS, 'font-size': 9}}
 
     default_edge = {'fancy': {'shape_name': 'cubic',
-                              'color_id': 'accent2',
+                              'color_id': 'accent2tr',
                               'pull': .40,
                               'visible': True,
                               'arrowhead_at_start': False,
@@ -83,7 +83,7 @@ class FeatureNode(Node):
                               'labeled': False},
                     'plain': {
                               'shape_name': 'linear',
-                              'color_id': 'accent2',
+                              'color_id': 'accent2tr',
                               'pull': .40,
                               'visible': True,
                               'arrowhead_at_start': False,
@@ -97,6 +97,7 @@ class FeatureNode(Node):
         Node.__init__(self, syntactic_object=syntactic_object, forest=forest)
         self.repulsion = 0.25
         self._gravity = 2.5
+        self.locked_to_constituent = False
 
     # implement color() to map one of the d['rainbow_%'] colors here. Or if bw mode is on, then something else.
 
@@ -141,6 +142,32 @@ class FeatureNode(Node):
             painter.setBrush(self.contextual_background())
             painter.drawRoundedRect(self.inner_rect, 5, 5)
         Node.paint(self, painter, option, widget)
+
+    def move(self, md):
+        """ Allow feature to be locked to constituent and ignore other forces
+        :param md:
+        :return:
+        """
+        if self.locked_to_constituent:
+            self.physics_y = False # may be expensive to be always setting these
+            self.physics_x = False
+            parent = None
+            for parent in self.get_parents(only_similar=False):
+                if parent.node_type == g.CONSTITUENT_NODE:
+                    children = parent.get_locked_node_positions()
+                    break
+            if parent:
+                for child, x, y in children:
+                    if child is self:
+                        self.current_position = x, y
+                        edge = parent.get_edge_to(self, g.FEATURE_EDGE)
+                        if edge:
+                            edge.hide()
+                        return False, False
+            return False, False
+        else:
+            return super().move(md)
+
 
     @property
     def contextual_color(self):

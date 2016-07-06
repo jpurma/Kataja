@@ -247,7 +247,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
             return False, False
         # Physics move node around only if other movement types have not overridden it
         elif self.use_physics():
-            movement = self.forest.visualization.calculate_movement(self, self.repulsion)
+            movement = self.forest.visualization.calculate_movement(self)
             md['sum'] = add_xy(movement, md['sum'])
             md['nodes'].append(self)
             self.current_position = add_xy(self.current_position, movement)

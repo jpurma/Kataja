@@ -1279,6 +1279,7 @@ class Generate:
 # "../Languages/Japanese/DisWarn.txt"
 
 if __name__ == "__main__":
+    import ProduceOutput
     if len(sys.argv) > 1:
         filename = int(sys.argv[1])
     else:
@@ -1297,5 +1298,5 @@ if __name__ == "__main__":
     print('*****')
     a = Generate()
     a.load_data(input_data, start, end)
-    # ProduceOutput.ProduceFile(a.output, 'new/')
+    ProduceOutput.ProduceFile(a.output, 'new/')
     print(time.time() - t)

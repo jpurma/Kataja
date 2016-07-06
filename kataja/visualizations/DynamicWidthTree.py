@@ -51,17 +51,17 @@ class DynamicWidthTree(LinearizedStaticTree):
             node.physics_x = True
             node.physics_y = True
 
-    def calculate_movement(self, node, alpha = 0.1):
+    def calculate_movement(self, node):
         # Sum up all forces pushing this item away.
         """
 
         :param node:
         :return:
         """
-        if node.node_type == g.FEATURE_NODE:
-            return super().calculate_movement(node, alpha)
+
         node_x, node_y = node.centered_position
         old_x, old_y = node.centered_position
+        alpha = 0.2
 
         close_ones = set()
         # attract
