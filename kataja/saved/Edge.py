@@ -529,6 +529,12 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         if ctrl.is_selected(self):
             ctrl.ui.update_position_for(self)
 
+    def path_bounding_rect(self):
+        if self._path:
+            return self._path.boundingRect()
+        else:
+            return QtCore.QRectF()
+
     def shape(self):
         """ Override of the QGraphicsItem method. Should returns the real
         shape of item to

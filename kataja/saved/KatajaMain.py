@@ -454,8 +454,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.graph_scene.photo_frame = None
         # Prepare printer
         png = prefs.print_format == 'png'
-        source = self.graph_scene.visible_rect()
-        source.adjust(0, 0, 5, 10)
+        source = self.graph_scene.print_rect()
 
         if png:
             full_path = find_path(path + filename, '.png', 0)

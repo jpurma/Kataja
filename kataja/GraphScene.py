@@ -153,6 +153,51 @@ class GraphScene(QtWidgets.QGraphicsScene):
             return QtCore.QRectF(QtCore.QPoint(x_min, y_min), QtCore.QPoint(x_max, y_max))
         # return self.itemsBoundingRect()
 
+    def print_rect(self):
+        """ A more expensive version of visible_rect, also includes curves of edges. Too slow for
+        realtime resizing, but when printing you don't want edges to be clipped.
+        :return:
+        """
+        y_min = 6000
+        y_max = -6000
+        x_min = 6000
+        x_max = -6000
+        empty = True
+        f = ctrl.forest
+        for item in chain(f.nodes.values(), f.groups.values()):
+            if not item.isVisible():
+                continue
+            empty = False
+            minx, miny, maxx, maxy = item.sceneBoundingRect().getCoords()
+            if minx < x_min:
+                x_min = minx
+            if maxx > x_max:
+                x_max = maxx
+            if miny < y_min:
+                y_min = miny
+            if maxy > y_max:
+                y_max = maxy
+        for item in f.edges.values():
+            if not item.isVisible():
+                continue
+            empty = False
+            minx, miny, maxx, maxy = item.path_bounding_rect().getCoords()
+            print(minx, miny, maxx, maxy)
+            if minx < x_min:
+                x_min = minx
+            if maxx > x_max:
+                x_max = maxx
+            if miny < y_min:
+                y_min = miny
+            if maxy > y_max:
+                y_max = maxy
+        if empty:
+            r = QtCore.QRectF(0, 0, 320, 240)
+        else:
+            r = QtCore.QRectF(QtCore.QPoint(x_min, y_min), QtCore.QPoint(x_max, y_max))
+            r.adjust(-5, -5, 15, 10)
+        return r
+
     def item_moved(self):
         """ Starts the animations unless they are running already
         :return: None

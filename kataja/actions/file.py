@@ -249,7 +249,7 @@ def print_to_file():
     # hide unwanted components
     no_brush = QtGui.QBrush(Qt.NoBrush)
     sc.setBackgroundBrush(no_brush)
-    sc.photo_frame = sc.addRect(sc.visible_rect().adjusted(-1, -1, 2, 2),
+    sc.photo_frame = sc.addRect(sc.print_rect().adjusted(-1, -1, 2, 2),
                                 ctrl.cm.selection())
     sc.update()
     ctrl.graph_view.repaint()
