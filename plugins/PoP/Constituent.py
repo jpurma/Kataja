@@ -61,6 +61,19 @@ class Constituent(MyBase):  # collections.UserList):
         """
         return repr(self)
 
+    def model10_string(self):
+        parts = [self.label]
+        if self.part1:
+            parts.append(self.part1.model10_string())
+        if self.part2:
+            parts.append(self.part2.model10_string())
+        if self.features:
+            fs = []
+            for item in self.features:
+                fs.append(repr(item))
+            parts.append(fs)
+        return parts
+
     def __eq__(self, other):
         if not isinstance(other, Constituent):
             return False
@@ -148,6 +161,19 @@ class Constituent(MyBase):  # collections.UserList):
         else:
             raise TypeError
 
+    def demote_to_copy(self):
+        """ Turn this into a SO with "Copy" feature and return a new fresh version without the
+        copy-feature.
+        :return:
+        """
+        feature_giver = self.get_feature_giver()
+        copy_feature = Feature("Copy")
+        if copy_feature in feature_giver.features:
+            feature_giver.features.remove(copy_feature)
+        fresh = self.copy()
+        feature_giver.features.append(copy_feature)
+        return fresh
+
     def __contains__(self, item):
         if isinstance(item, Constituent):
             if self.part1 == item:
@@ -229,7 +255,10 @@ class Constituent(MyBase):  # collections.UserList):
         if self.part2.label == head:
             return self.part2.get_feature_giver()
         if head in SHARED_FEAT_LABELS:
-            return None
+            #input('SHARED_FEAT_LABELS, return part1')
+            # assuming that we are looking for someone to get "Copy"
+            return self.part1
+            #return None
         if "Phi" in head:
             return self.part1.get_feature_giver()
         assert False
@@ -247,7 +276,6 @@ class Constituent(MyBase):  # collections.UserList):
             self.recursive_replace_constituent(old_chunk, new_chunk)
         elif isinstance(old_chunk, list):
             found = self.recursive_replace_feature_set(old_chunk, new_chunk)
-            assert(found < 2)
         elif isinstance(old_chunk, Feature):
             found = self.recursive_replace_feature(old_chunk, new_chunk)
         else:

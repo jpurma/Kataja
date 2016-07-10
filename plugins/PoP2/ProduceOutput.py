@@ -48,10 +48,12 @@ class ProduceFile:
 
     def __init__(self, path_prefix=''):
         self.path_prefix = path_prefix
-        self.F1 = open(self.path_prefix + "OutputFull.txt", 'w')
-        self.F2 = open(self.path_prefix + "Output.txt", 'w')
+        self.F1 = open(self.path_prefix + "OutputFull.log", 'w')
+        self.F2 = open(self.path_prefix + "Output.log", 'w')
         self.F3 = open(self.path_prefix + "TreeViewer.txt", 'w')
         self.F4 = open(self.path_prefix + "TexOutput.tex", 'w')
+        self.f1_c = 0
+        self.f2_c = 0
         tex_in = open("TexInput.tex", 'r')
         lines = tex_in.readlines()
         for line in lines:
@@ -110,12 +112,12 @@ class ProduceFile:
 
     def print_full_output(self, x, y, z):
         if z:
-            num, sent, numeration = x, y, z
-            self.F1.write("\n%s %s\n%s\n\n\n" % (num, sent, numeration))
+            # num, sent, numeration = x, y, z
+            self.F1.write("\n------------------------------------\n%s %s\n%s\n\n\n" % (x, y, z))
         else:
             description, data2 = x, y
             data2 = str(data2)
-            self.F1.write("%s\n%s\n\n" % (description, data2))
+            self.f1_write("%s\n%s" % (description, data2))
             if "Label" in description:
                 descript = ""
                 if "Head" in description:
@@ -128,14 +130,18 @@ class ProduceFile:
                     descript = "Label (Checked Phi): " + data2
                 elif "None" in description:
                     descript = "Unlabeled: " + data2
-                self.F1.write("%s\n\n" % descript)
+                self.f1_write(descript)
             elif "Unification" in description:
-                self.F1.write("Unify Features: %s\n\n" % data2)
+                self.f1_write("Unify Features: %s" % data2)
+
+    def f1_write(self, s):
+        self.f1_c += 1
+        self.F1.write("%s. %s\n\n" % (self.f1_c, s))
 
     def print_readable_output(self, x, y, z):
 
         if z:
-            self.F2.write("\n%s %s\n%s\n\n\n" % (x, y, z))
+            self.F2.write("\n------------------------------------\n%s %s\n%s\n\n\n" % (x, y, z))
         else:
             description, data_orig = x, y
             data2 = str(data_orig)
@@ -150,59 +156,61 @@ class ProduceFile:
                     s = "Label (Checked Phi): "
                 elif "None" in description:
                     s = "Unlabeled: "
-                self.F2.write(s + data2 + "\n\n")
+                self.f2_write(s + data2)
             elif "merge" in description:
-                self.F2.write(data2 + "\n\n")
+                self.f2_write(data2)
             elif "Dephase" in description:
                 if " v" in description:
                     s = "Root movement (dephase): "
                 elif "DeleteC" in description:
                     s = "Delete C (dephase): "
-                self.F2.write(s + data2 + "\n\n")
+                self.f2_write(s + data2)
             elif "Transfer" in description:
-                self.F2.write("Transfer: %s\n\n" % data2)
+                self.f2_write("Transfer: %s" % data2)
             elif "UnlabeledM" in description:
-                self.F2.write("Unlabeled merge: %s\n\n" % data2)
+                self.f2_write("Unlabeled merge: %s" % data2)
             elif "PassFs" in description:
-                self.F2.write(data2 + "\n\n")
+                self.f2_write(data2)
             elif "FeaturesPassed" in description:
-                self.F2.write("Passed Features: %s\n\n" % data2)
+                self.f2_write("Passed Features: %s" % data2)
             elif "CheckedFeatures" in description:
-                self.F2.write("Checked Features: %s\n\n" % data2)
+                self.f2_write("Checked Features: %s" % data2)
             elif "LbAfterMove" in description:
-                self.F2.write("%s labels\n\n" % data2)
+                self.f2_write("%s labels" % data2)
             elif "LbM" in description:
-                self.F2.write("Labeled After Move: %s\n\n" % data2)
+                self.f2_write("Labeled After Move: %s" % data2)
             elif "PhiPassing" in description:
-                self.F2.write("Phi Passed from N to D\n\n")
+                self.f2_write("Phi Passed from N to D")
             if "Push" in description:
-                self.F2.write("Push: %s\n\n" % data2)
+                self.f2_write("Push: %s" % data2)
             elif "ClearStack" in description:
                 stack = eval(data_orig)
                 stack.reverse()
-                self.F2.write("Clear Stack: \n\n")
+                self.f2_write("Clear Stack:")
                 stack_ctr = 1
                 for elem in stack:
-                    print_elem = "%s POP: %s" % (stack_ctr, elem)
-                    self.F2.write("%s\n\n" % print_elem)
+                    self.f2_write("%s POP: %s" % (stack_ctr, elem))
                     stack_ctr += 1
             elif "Unification" in description:
-                self.F2.write("Unify Features: %s\n\n" % data_orig)
+                self.f2_write("Unify Features: %s" % data_orig)
             elif "SubStream" in description:
-                self.F2.write("Substream\n\n")
+                self.f2_write("Substream")
             elif "MainStream" in description:
-                self.F2.write("Main Stream\n\n")
+                self.f2_write("Main Stream")
             elif "Stack" in description:
                 stack = eval(data_orig)
                 stack.reverse()
                 if "Transfer" in description:
-                    self.F2.write("Stack after Transfer: \n\n")
+                    self.f2_write("Stack after Transfer:")
                 else:
-                    self.F2.write("Stack: \n\n")
+                    self.f2_write("Stack:")
                 stack_ctr = 1
                 for elem in stack:
-                    print_elem = "%s: %s" % (stack_ctr, elem)
-                    self.F2.write("%s\n\n" % print_elem)
+                    self.f2_write("%s: %s" % (stack_ctr, elem))
+
+    def f2_write(self, s):
+        self.f2_c += 1
+        self.F2.write("%s. %s\n\n" % (self.f2_c, s))
 
     def print_tex_file(self, x, y, z):
         descript = ""

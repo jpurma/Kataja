@@ -242,11 +242,11 @@ class Preferences(object):
                                 'arrowhead_at_end': False, 'font': MAIN_FONT,
                                 'labeled': True, 'style': 'dashed'}
                       },
-            CHECKING_EDGE: {'fancy': {'shape_name': 'cubic', 'color_id': 'accent1tr', 'pull': 0,
+            CHECKING_EDGE: {'fancy': {'shape_name': 'cubic', 'color_id': 'accent1tr', 'pull': 0.4,
                                       'visible': True, 'arrowhead_at_start': False,
-                                      'arrowhead_at_end': False, 'font': MAIN_FONT,
+                                      'arrowhead_at_end': True, 'font': MAIN_FONT,
                                       'labeled': False, 'style': 'dashed'},
-                            'plain': {'shape_name': 'cubic', 'color_id': 'accent1tr', 'pull': 0,
+                            'plain': {'shape_name': 'cubic', 'color_id': 'accent1tr', 'pull': 0.4,
                                       'visible': True, 'arrowhead_at_start': False,
                                       'arrowhead_at_end': False, 'font': MAIN_FONT,
                                       'labeled': False, 'style': 'dashed'}

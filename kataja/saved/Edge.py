@@ -837,9 +837,9 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
 
             if self.is_filled():
                 painter.fillPath(self._path, c)
-            if self.shape_info.has_arrowhead_at_start():
+            if self.shape_info.has_arrowhead_at_start() and self._arrowhead_start_path:
                 painter.fillPath(self._arrowhead_start_path, c)
-            if self.shape_info.has_arrowhead_at_end():
+            if self.shape_info.has_arrowhead_at_end() and self._arrowhead_end_path:
                 painter.fillPath(self._arrowhead_end_path, c)
 
         if ctrl.is_selected(self):

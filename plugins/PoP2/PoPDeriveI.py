@@ -411,7 +411,7 @@ class Generate:
             print("Can't Determine Label 5555")
             sys.exit()
         ## Adding a Copy 1 (not in Remerge) ##
-        remerge = remerge.demote_to_copy()
+        #remerge = remerge.demote_to_copy()
         if self.stack.is_sub():
             print("Remerging in in substream999999")
             sys.exit()
@@ -630,7 +630,7 @@ class Generate:
                                 return merged, None
                             else:
                                 ## Adding a Copy 2 (not in newmerged)##
-                                remerge = current.demote_to_copy()
+                                remerge = current #.demote_to_copy()
                                 merged = Constituent(label="_", part1=remerge, part2=merged)
                                 print('assigning copy (2) to: ', remerge)
                                 #input()
@@ -727,7 +727,7 @@ class Generate:
             sys.exit()
         ## Adding a Copy 3 (in old remerge) ##
 
-        remerge = remerge.demote_to_copy()
+        #remerge = remerge.demote_to_copy()
         print('assigning copy (3) to: ', remerge)
         print(remerge)
         # just for curiosity
@@ -767,26 +767,53 @@ class Generate:
         :param merged:
         :return:
         """
-        def check_labeling(const, merged):
-            done = False
-            if const.part2:
-                done = check_labeling(const.part2, merged)
-            if const.part1:
-                done = check_labeling(const.part1, merged)
-            if const.is_unlabeled() and const.part1 and const.part2:
-                #print('attempt labeling for ', const)
-                new_label = self.labeling_function(const.part1, const.part2)
-                if new_label is not False:
-                    const.label = new_label
-                    return True
-            return done
-        success = check_labeling(merged, merged)
+        # hmm.. here we have whole structure, but labeling function needs to know if given items are copies. It would be straightforward to flag those if we would be analysing tree from top down, but labeling happens from bottom up. So we have to do it in two stages, first go top down to build a list of tuples, (item1, item2, is_copy1, is_copy2) and second to go through it in reverse.
+
+        found_items = set()
+        waiting_for_labeling = []
+        def build_pairs_to_analyse(item):
+            found_items.add(item)
+            if item.is_unlabeled() and item.part1 and item.part2:
+                p1_is_copy = item.part1 in found_items
+                p2_is_copy = item.part2 in found_items
+                waiting_for_labeling.append((item, p1_is_copy, p2_is_copy))
+            if item.part1:
+                build_pairs_to_analyse(item.part1)
+            if item.part2:
+                build_pairs_to_analyse(item.part2)
+
+        build_pairs_to_analyse(merged)
+        success = False
+
+        for item, p1_is_copy, p2_is_copy in reversed(waiting_for_labeling):
+            new_label = self.labeling_function(item.part1, item.part2, p1_is_copy, p2_is_copy)
+            if new_label is not False:
+                item.label = new_label
+                success = True
         return merged, success
 
-    def labeling_function(self, x, y):
+        # def check_labeling(const, merged):
+        #     done = False
+        #
+        #     if const.part2:
+        #         done = check_labeling(const.part2, merged)
+        #     if const.part1:
+        #         done = check_labeling(const.part1, merged)
+        #     if const.is_unlabeled() and const.part1 and const.part2:
+        #         new_label = self.labeling_function(const.part1, const.part2, merged)
+        #         if new_label is not False:
+        #             const.label = new_label
+        #             return True
+        #     return done
+        # success = check_labeling(merged, merged)
+        # return merged, success
+
+    def labeling_function(self, x, y, x_has_moved, y_has_moved):
         """ Compute label for SO that merges x, y
         :param x: Constituent
         :param y: Constituent
+        :param x_has_moved: bool, analyse structure instead of using Copy-feature.
+        :param y_has_moved: bool
         :return: label string or False
         """
         print('labeling_function for ', x.label, y.label)
@@ -809,12 +836,8 @@ class Generate:
         if x.is_unlabeled() and y.is_unlabeled():
             print('2: both are unlabeled')
             return False
-        #print(elem1_feats)
-        #print(elem2_feats)
         elem1_feats = expanded_features(elem1_feats)
         elem2_feats = expanded_features(elem2_feats)
-        #print(elem1_feats)
-        #print(elem2_feats)
         if has_part(elem1_feats, "Root"):  # weak
             if has_part(elem1_feats, "iPerson", "iNumber", "iGender"):
                 self.out("Label(Strengthened)", x.label)
@@ -824,13 +847,12 @@ class Generate:
                 print("elem1 has only iPerson of phi")
                 print("Merged", x, y)
                 sys.exit()
-        if "Copy" in elem1_feats:
-            if "Copy" not in elem2_feats:
+        if x_has_moved:
+            if not y_has_moved:
                 if has_part(elem2_feats, "Root") or has_part(elem1_feats, "Root"):  # weak
                     if has_part(elem2_feats, "iPerson", "iNumber", "iGender"):
                         self.out("Label(Move)", y.label)
                         print('5: elem1 is Copy, either is Root and elem 2 has phi-features')
-                        # print(new_merged)
                         #input()
                         return y.label
                 else:
@@ -838,7 +860,7 @@ class Generate:
                     print('6: elem1 is Copy, 2 is not, neither is Root')
                     #input()
                     return y.label
-        elif "Copy" in elem2_feats:
+        elif y_has_moved:
             # weak if Root
             if has_part(elem1_feats, "Root", "iPerson", "iNumber", "iGender"):
                 self.out("Label(Move)", x.label)
@@ -848,7 +870,7 @@ class Generate:
         shared_feats = find_shared_features(elem1_feats, elem2_feats)
         if not shared_feats:
             # Check for strengthened element
-            print('8: no shared feats (return False)') #, elem1_feats, elem2_feats)
+            print('8: no shared feats (return False)')
             return False
         person_f = get_by_part(shared_feats, "iPerson")
         if person_f:

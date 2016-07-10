@@ -54,13 +54,13 @@ class Stack:
             item.stacked = False
         self.main_stack = []
 
-    def append(self, item, force_main=False):
+    def append(self, item, force_main=False, duplicates=True):
         item.stacked = True
         if force_main or not self.sub_stream:
-            if item not in self.main_stack:
+            if duplicates or item not in self.main_stack:
                 self.main_stack.append(item)
         else:
-            if item not in self.sub_stack:
+            if duplicates or item not in self.sub_stack:
                 self.sub_stack.append(item)
 
     def cut_to(self, item):
@@ -180,11 +180,10 @@ class Generate:
             return
         self.out_writer.push(first, second, third)
 
-    def dump_to_file(self, data, i):
+    def dump_to_file(self, synobj):
         if not self.dumpfile:
-            self.dumpfile = open('test_dataC.log', 'w')
-        self.dumpfile.write('---------- %s ----------\n' % i)
-        self.dumpfile.write(str(data))
+            self.dumpfile = open('deriveF.log', 'w')
+        self.dumpfile.write(str(synobj.model10_string()))
         self.dumpfile.write('\n')
 
     def generate_derivation(self, target_example, forest=None):
@@ -194,11 +193,12 @@ class Generate:
         :return:
         """
         def build_synobj_lists(example_list, result_list):
-            for li in example_list:
+            for li in reversed(example_list):
                 if isinstance(li, list):
                     result_list.append(build_synobj_lists(li, []))
                 else:
                     result_list.append(self.get_lexem(li))
+            result_list.reverse()
             return result_list
 
         def merge_so(my_so, spine):
@@ -230,6 +230,7 @@ class Generate:
 
         self.lookforward_so = None
         selected = merge_so(so, selected)
+        self.dump_to_file(selected)
         if selected.is_unlabeled():
             self.label_if_possible(selected)
             self.out("Crash(Unlabeled)", selected)
@@ -321,9 +322,9 @@ class Generate:
         external_merge = "MergeF" in x.get_head_features()
         # push to stack if unlabeled or if it has uFs
         print('++ stack append in merge1 ')
-        self.stack.append(x)
+        self.stack.append(x, duplicates=False)
         print('++ stack append in merge2 ')
-        self.stack.append(y)
+        self.stack.append(y, duplicates=False)
         x, y, feats_passed, remerge = self.check_features(x, y)
 
         label_giver = None
@@ -404,15 +405,18 @@ class Generate:
             print("Remerge", remerge)
             print("Can't Determine Label 5555")
             sys.exit()
-        remerge_feats = remerge.get_head_features()
-        new_remerge_feats = list(remerge_feats)
-        new_remerge_feats.append(Feature(name="Copy"))
+        ## Adding a Copy 1 (not in Remerge) ##
+        remerge = remerge.demote_to_copy()
+
+        #remerge_feats = remerge.get_head_features()
+        #new_remerge_feats = list(remerge_feats)
+        #new_remerge_feats.append(Feature(name="Copy"))
 
         if self.stack.is_sub():
             print("Remerging in in substream999999")
             sys.exit()
-        merged.replace_within(remerge_feats, new_remerge_feats)
-        self.stack.replace(remerge_feats, new_remerge_feats)
+        #merged.replace_within(remerge_feats, new_remerge_feats)
+        #self.stack.replace(remerge_feats, new_remerge_feats)
         msg = "merge (for labeling) " + merged.label + " + " + remerge.label
         self.out("merge", msg)
         merged = Constituent(label=label, part1=remerge, part2=merged)
@@ -442,18 +446,18 @@ class Generate:
             transfer = None
 
             if "Delete" in merged_feats:  # Dephase because C is deleted
-                transfer = self.dephase_deleted_c(merged)
+                transfer, merged = self.dephase_deleted_c(merged)
                 remerge = None
                 if self.stack.is_main():
                     merged, remerge = self.remerge_if_can(merged, dephase=True)
                 self.out("Transfer", transfer)  # Transfer actually does nothing.
-                print('******** Transfer ********')
+                #print('******** Transfer ********')
                 self.stack.clear_main_stack()
                 if remerge:
-                    print('++ stack append remerge, in transfer_check')
+                    #print('++ stack append remerge, in transfer_check')
                     self.stack.append(remerge, force_main=True)
                 if self.stack.is_sub():
-                    print('++ substack append merged, in transfer_check')
+                    #print('++ substack append merged, in transfer_check')
                     self.stack.append(merged, force_main=True)
                 return merged
 
@@ -520,7 +524,7 @@ class Generate:
         if current:
             # Transfer the complement of v
             assert current.is_labeled()
-            remerge = current.copy()
+            remerge = current
             transfer = remerge.part2
             print('-- stack cut in dephase and transfer')
             self.stack.cut_to(current)
@@ -582,7 +586,7 @@ class Generate:
         transfer = find_next_head(left, target_label, label)
         if not transfer:
             transfer = find_next_head(right, target_label, label)
-        return transfer
+        return transfer, merged
 
     def remerge_if_can(self, merged, dephase=False):
         print('remerge_if_can')
@@ -611,19 +615,19 @@ class Generate:
             Remerge of %s blocked by Remerge Condition (shared features)
             """ % current.label)
                             else:
-                                remerge = current.copy()
+                                remerge = current.demote_to_copy()
                                 merged = Constituent(label="_", part1=remerge, part2=merged)
-                                remerge_feats = remerge.get_head_features()
-                                new_remerge_feats = remerge_feats.copy()
-                                new_remerge_feats.append(Feature(name="Copy"))
-                                remerge.replace_within(remerge_feats, new_remerge_feats)
+                                #remerge_feats = remerge.get_head_features()
+                                #new_remerge_feats = remerge_feats.copy()
+                                #new_remerge_feats.append(Feature(name="Copy"))
+                                #remerge.replace_within(remerge_feats, new_remerge_feats)
                                 msg = "merge (due to uF) %s + %s" % (remerge.label,
                                                                      merged.label)
                                 self.announce_derivation_step(merged, msg)
                                 self.out("merge", msg)
                                 self.out("Label(Head)", merged)
                                 return merged, remerge
-                            return merged, None
+                    return merged, None
         return merged, None
 
     def unlabeled_move(self, merged):
@@ -705,12 +709,12 @@ class Generate:
         if self.stack.is_sub():
             print("Do in substream999999")
             sys.exit()
-        new_remerge = remerge.copy()
-        new_remerge_feats = new_remerge.get_head_features()
-        new_remerge_feats.append(Feature(name="Copy"))
-        assert(remerge == merged.part2.part1 or remerge == merged.part2) # can be false,
+        remerge = remerge.demote_to_copy()
+        #new_remerge_feats = new_remerge.get_head_features()
+        #new_remerge_feats.append(Feature(name="Copy"))
+        #assert(remerge == merged.part2.part1 or remerge == merged.part2) # can be false,
         # just for curiosity
-        merged.replace_within(remerge, new_remerge)  # brr, brrrr, brrrr
+        #merged.replace_within(remerge, new_remerge)  # brr, brrrr, brrrr
         self.out("merge", "merge (for labeling) " + remerge.label + " + " + merged.label)
         if merged.part1.label == "vUnerg":
             sys.exit()
@@ -720,9 +724,9 @@ class Generate:
         new_merged = Constituent(label=merged.label, part1=remerge, part2=merged)
         self.announce_derivation_step(merged, "merge (for labeling)")
 
-        print('++ stack append remerge, in remerge')
+        #print('++ stack append remerge, in remerge')
         self.stack.append(remerge)
-        print('++ stack append new_merged, in remerge:', new_merged.label)
+        #print('++ stack append new_merged, in remerge:', new_merged.label)
         self.stack.append(new_merged)
         new_merged = self.label_if_possible(new_merged)
         if new_merged.is_unlabeled():
@@ -733,7 +737,7 @@ class Generate:
             print("\n")
         relabel_my_parent(new_merged, remerge)
 
-        print('++ stack append new_merged 2, in remerge, replaces previous', new_merged.label)
+        #print('++ stack append new_merged 2, in remerge, replaces previous', new_merged.label)
         self.stack.append(new_merged)
         return new_merged
 
@@ -776,8 +780,8 @@ class Generate:
             elem2_feats = y.part1.get_head_features()
         else:
             elem2_feats = y.get_head_features()
-        print(elem1_feats)
-        print(elem2_feats)
+        #print(elem1_feats)
+        #print(elem2_feats)
         #input()
 
         if not (elem1_feats and elem2_feats):
@@ -793,7 +797,7 @@ class Generate:
                 return x.label
             elif has_part(elem1_feats, "iPerson"):
                 print("elem1 has only iPerson of phi")
-                print("Merged", x, y)
+                #print("Merged", x, y)
                 sys.exit()
         if "Copy" in elem1_feats:
             if "Copy" not in elem2_feats:
@@ -1139,7 +1143,7 @@ class Generate:
         temp_stack = list(self.stack)
         remerge = None
         new_x_feats = []
-        unvalued_feature_stack = sorted(unvalued_features.copy())
+        unvalued_feature_stack = sorted(list(unvalued_features))
         while unvalued_feature_stack:
             uf = unvalued_feature_stack.pop()
             temp_stack = list(self.stack)

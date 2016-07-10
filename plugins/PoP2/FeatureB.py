@@ -146,6 +146,8 @@ class Feature(MyBaseClass):
     def name_with_u_prefix(self):
         if self.unvalued:
             return 'u' + self.name
+        elif self.ifeature:
+            return 'i' + self.name
         else:
             return self.name
 

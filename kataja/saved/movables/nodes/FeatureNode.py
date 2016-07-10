@@ -152,6 +152,7 @@ class FeatureNode(Node):
             self.physics_y = False # may be expensive to be always setting these
             self.physics_x = False
             parent = None
+            children = []
             for parent in self.get_parents(only_similar=False):
                 if parent.node_type == g.CONSTITUENT_NODE:
                     children = parent.get_locked_node_positions()
@@ -164,6 +165,11 @@ class FeatureNode(Node):
                         if edge:
                             edge.hide()
                         return False, False
+            else:
+                self.locked_to_constituent = False
+                self.physics_y = True
+                self.physics_x = True
+                return super().move(md)
             return False, False
         else:
             return super().move(md)
