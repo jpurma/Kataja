@@ -48,13 +48,26 @@ def normalise(synlist):
 norm_orig = normalise(originals)
 norm_news = normalise(news)
 
+
 def featureless(so):
     if isinstance(so, str):
         return so
-    if len(so) == 3 and isinstance(so[1], list) and isinstance(so[2], list):
-        return [so[0]]
+    if len(so) == 2 and isinstance(so[0], str) and isinstance(so[1], list):
+        return so[0]
     else: 
         return [featureless(o) for o in so]
+
+
+def copyless(so):
+    if isinstance(so, str):
+        return so
+    if len(so) == 2 and isinstance(so[0], str) and isinstance(so[1], list):
+        if 'Copy' in so[1]:
+            so[1].remove('Copy')
+        return so
+    else:
+        return [copyless(o) for o in so]
+
 
 def rec_diff(item_one, item_two):
     for i1, i2 in zip(item_one, item_two):
@@ -74,7 +87,9 @@ for item1, item2 in zip(norm_orig, norm_news):
     c += 1
     fless_item1 = featureless(item1)
     fless_item2 = featureless(item2)
-    if item1 == item2:
+    item1 = copyless(item1)
+    item2 = copyless(item2)
+    if item1 == item1:
         print('%s: Match' % c)
         success += 1
     else:
@@ -89,6 +104,7 @@ for item1, item2 in zip(norm_orig, norm_news):
         else:
             print('structure ok')
         print('%s: Feature mismatch' % c)
+        print(fless_item1)
         input()
 
 print('-------------------- success: ', success)

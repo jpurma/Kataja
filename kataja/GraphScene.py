@@ -232,149 +232,77 @@ class GraphScene(QtWidgets.QGraphicsScene):
         keyboard movement.
         """
         # ################### Nodes #############################
-        if isinstance(current, Node):
+        def find_node_in_direction(current, direction):
             if direction == 'left':
-                lefts = list(
-                    current.get_edges_down(similar=True, visible=True, alignment=g.LEFT))
-                if len(lefts) == 1:
-                    ctrl.select(lefts[0])
-                    return lefts[0]
-                elif len(lefts) >= 1:
-                    distances = [current.distance_to(x.end) for x in lefts]
-                    i = distances.index(min(distances))
-                    ctrl.select(lefts[i])
-                    return lefts[i]
+                all_siblings = []
+                for parent in current.get_parents(only_visible=True):
+                    for child in parent.get_visible_children():
+                        all_siblings.append(child)
+                i = all_siblings.index(current)
+                if i:
+                    return all_siblings[i-1]
+                else:
+                    return current
+            if direction == 'right':
+                all_siblings = []
+                for parent in current.get_parents(only_visible=True):
+                    for child in parent.get_visible_children():
+                        all_siblings.append(child)
+                i = all_siblings.index(current)
+                if i < len(all_siblings) - 2:
+                    return all_siblings[i+1]
+                else:
+                    return current
+            if direction == 'up':
+                all_parents = list(current.get_parents(only_visible=True))
+                if all_parents:
+                    return all_parents[-1]
+                else:
+                    return current
+            if direction == 'down':
+                all_children = list(current.get_visible_children())
+                if all_children:
+                    return all_children[0]
+                else:
+                    return current
 
-        best = current
-        x, y = to_tuple(current.sceneBoundingRect().center())
-        x = int(x)
-        y = int(y)
-        selectables = []
-
-        if direction == 'left':
-            found = False
-            if isinstance(current, Node):
-                edges = list(current.get_edges_down(similar=True, visible=True))
-                if edges:
-                    best = edges[0]
-                    found = True
-            elif isinstance(current, Edge):
-                if current.start and current.alignment == g.RIGHT:
-                    best = current.start
-                    found = True
-                elif current.end and current.alignment == g.LEFT:
-                    best = current.end
-                    found = True
-                elif current.end and current.alignment == g.NO_ALIGN:
-                    best = current.end
-                    found = True
-            if not found:
-                for item, pos in selectables:
-                    if item == current:
-                        continue
-                    ix, iy = pos
-                    ix, iy = int(ix), int(iy)
-                    dx = ix - x
-                    dy = iy - y
-                    dxy = (dx * dx) + (2 * dy * dy)
-                    if (dx < 0 and (dxy < min_xy)) or (dx == 0 and dy < 0 and (dxy < min_xy)):
-                        min_x = dx
-                        min_y = dy
-                        min_xy = dxy
-                        best = item
-        elif direction == 'right':
-            found = False
-            if isinstance(current, Node):
-                edges = list(current.get_edges_down(similar=True, visible=True))
-                if edges:
-                    best = edges[-1]
-                    found = True
-            elif isinstance(current, Edge):
-                if current.end and current.alignment == g.RIGHT:
-                    best = current.end
-                    found = True
-                elif current.start and current.alignment == g.LEFT:
-                    best = current.start
-                    found = True
-                elif current.end and current.alignment == g.NO_ALIGN:
-                    best = current.end
-                    found = True
-            if not found:
-                for item, pos in selectables:
-                    if item == current:
-                        continue
-                    ix, iy = pos
-                    ix, iy = int(ix), int(iy)
-                    dx = ix - x
-                    dy = iy - y
-                    dxy = (dx * dx) + (2 * dy * dy)
-                    if (dx > 0 and (dxy < min_xy)) or (dx == 0 and dy > 0 and (dxy < min_xy)):
-                        min_x = dx
-                        min_y = dy
-                        min_xy = dxy
-                        best = item
-        elif direction == 'up':
-            found = False
-            if isinstance(current, Node):
-                edges = list(current.get_edges_up(similar=True, visible=True))
-                if len(edges) == 1:
-                    best = edges[0]
-                    found = True
-            elif isinstance(current, Edge):
+        def find_edge_in_direction(current, direction):
+            if direction == 'left':
+                all_siblings = []
+                for child_edge in current.start.get_edges_down(visible=True):
+                    all_siblings.append(child_edge)
+                i = all_siblings.index(current)
+                if i:
+                    return all_siblings[i-1]
+                else:
+                    return current
+            if direction == 'right':
+                all_siblings = []
+                for child_edge in current.start.get_edges_down(visible=True):
+                    all_siblings.append(child_edge)
+                i = all_siblings.index(current)
+                if i < len(all_siblings) - 2:
+                    return all_siblings[i+1]
+                else:
+                    return current
+            if direction == 'up':
                 if current.start:
-                    best = current.start
-                    found = True
-            if not found:
-                for item, pos in selectables:
-                    if item == current:
-                        continue
-                    ix, iy = pos
-                    ix, iy = int(ix), int(iy)
-                    dx = ix - x
-                    dy = iy - y
-                    dxy = (dx * dx * 2) + (dy * dy)
-                    if (dy < 0 and (dxy < min_xy)) or (dy == 0 and dx < 0 and (dxy < min_xy)):
-                        min_x = dx
-                        min_y = dy
-                        min_xy = dxy
-                        best = item
-        elif direction == 'down':
-            found = False
-            if isinstance(current, Node):
-                edges = list(current.get_edges_down(visible=True))
-                if len(edges) == 1:
-                    best = edges[0]
-                    found = True
-                elif edges:
-                    best = edges[-1]
-                    found = True
-            elif isinstance(current, Edge):
+                    return current.start
+                else:
+                    return current
+            if direction == 'down':
                 if current.end:
-                    best = current.end
-                    found = True
-            if not found:
-                for item, pos in selectables:
-                    if item == current:
-                        continue
-                    ix, iy = pos
-                    ix, iy = int(ix), int(iy)
-                    dx = ix - x
-                    dy = iy - y
-                    dxy = (dx * dx * 2) + (dy * dy)
-                    # if dy > 0 and ((dy < min_y) or (dy == min_y and (dx > 0
-                    #  and dx < min_x ))):
-                    if (dy > 0 and (dxy < min_xy)) or (dy == 0 and dx > 0 and (dxy < min_xy)):
-                        min_x = dx
-                        min_y = dy
-                        min_xy = dxy
-                        best = item
+                    return current.end
+                else:
+                    return current
 
-                        # x,y = to_tuple(best.sceneBoundingRect().center())
-                        # el = QtGui.QGraphicsEllipseItem(x-4, y-4, 8, 8)
-                        # self.addItem(el)
-                        # ctrl.ui_manager.info('dx: %s, dy: %s, dxy: %s' % (
-                        # min_x, min_y, min_xy))
-        return best
+        found = None
+        if isinstance(current, Node):
+            found = find_node_in_direction(current, direction)
+        elif isinstance(current, Edge):
+            found = find_edge_in_direction(current, direction)
+        # if found == current, expand search to any nearest object in that direction
+        return found
 
     def move_selection(self, direction):
         """ Move selection to best candidate

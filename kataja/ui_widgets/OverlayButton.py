@@ -256,7 +256,7 @@ class CutFromEndButton(OverlayButton):
         """
         if self.host and self.host.end:
             x, y = self.host.end_point
-            if self.host.alignment == g.LEFT:
+            if self.host.direction() == g.LEFT:
                 x += self.width()
             else:
                 x -= self.width()

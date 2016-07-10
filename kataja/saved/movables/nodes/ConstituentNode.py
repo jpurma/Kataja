@@ -249,6 +249,13 @@ class ConstituentNode(BaseConstituentNode):
                         return '<u>' + self.label + '</u>'
             return self.label
 
+    def update_locked_features(self):
+        """
+
+        :return:
+        """
+        pass
+
     def should_show_label(self):
         if not prefs.show_all_mode:
             return True
@@ -356,37 +363,6 @@ class ConstituentNode(BaseConstituentNode):
         :return:
         """
         return len(list(self.get_children())) == 1
-
-    def fix_edge_aligns(self):
-        aligns = []
-        edges = []
-        for edge in self.edges_down:
-            if edge.edge_type == g.CONSTITUENT_EDGE:
-                aligns.append(edge.alignment)
-                edges.append(edge)
-        if len(aligns) == 1:
-            edges[0].alignment = g.NO_ALIGN
-        else:
-            # do syntactically justified align
-            children = self.get_ordered_children()
-            edges = [self.get_edge_to(child) for child in children]
-            for item in edges:
-                if item is None:
-                    raise ValueError
-            if not edges:
-                return
-            elif len(edges) == 1:
-                edges[0].alignment = g.LEFT
-                edges[1].alignment = g.RIGHT
-            elif len(edges) == 2:
-                edges[0].alignment = g.LEFT
-                edges[1].alignment = g.RIGHT
-            else:
-                edges[0].alignment = g.LEFT
-                edges[-1].alignment = g.RIGHT
-                for edge in edges[1:-1]:
-                    edge.alignment = g.NO_ALIGN
-
 
 
     # Conditions ##########################

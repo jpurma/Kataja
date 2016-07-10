@@ -401,8 +401,8 @@ class UIManager:
         for action in self.qt_actions.values():
             if action.enabler:
                 on = action.enabler()
-                if not on:
-                    print('disabling action:', action.command)
+                #if not on:
+                #    print('disabling action:', action.command)
                 action.set_enabled(on)
                 if on and action.getter:
                     action.set_displayed_value(action.getter())

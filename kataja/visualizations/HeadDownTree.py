@@ -177,8 +177,6 @@ class HeadDownTree(BaseVisualization):
                     grid = _build_grid(child, parent=node)
                     if grid:
                         grids.append(grid)
-                    else:
-                        print('skipping empty grid item')
                 # Recursion base case
                 if not grids:
                     g = Grid()
@@ -233,9 +231,9 @@ class HeadDownTree(BaseVisualization):
                 if not projecting_child:
                     projecting_child = children[0]
                 edge = node.get_edge_to(projecting_child)
-                if edge.alignment == g.LEFT:
+                if edge.direction() == g.LEFT:
                     node.magnet_mapper = left_bottom_is_bottom_center
-                elif edge.alignment == g.RIGHT:
+                elif edge.direction() == g.RIGHT:
                     node.magnet_mapper = right_bottom_is_bottom_center
                 x, ny = grid.find_in_grid(projecting_child)
             grid.insert_row()

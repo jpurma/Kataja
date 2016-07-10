@@ -70,12 +70,12 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
 
     __qt_type_id__ = next_available_type_id()
 
-    def __init__(self, forest=None, start=None, end=None, edge_type='', direction=''):
+    def __init__(self, forest=None, start=None, end=None, edge_type='', edge_n=0, edge_count=0):
         """
         :param Node start:
         :param Node end:
         :param string edge_type:
-        :param string direction:
+        :param string order:
         """
         SavedObject.__init__(self)
         QtWidgets.QGraphicsItem.__init__(self)
@@ -84,7 +84,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         self.shape_info = EdgeShape(self)
         self._shape_method = None
         self.edge_type = edge_type
-        self.alignment = direction or g.NO_ALIGN
+        self.edge_n = edge_n
+        self.edge_count = edge_count
         self.start = start
         self.end = end
         self.fixed_start_point = (0, 0)
@@ -426,6 +427,16 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             return False
         return not (self.start and self.end)
 
+    def direction(self):
+        """ Coarse direction of this edge, either g.LEFT or g.RIGHT. Useful for knowing if
+         to prepend or append the sibling node compared to this.
+        :return:
+        """
+        if self.edge_n <= self.edge_count / 2:
+            return g.LEFT
+        else:
+            return g.RIGHT
+
     # ### Color ############################################################
 
     @property
@@ -493,7 +504,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         c['end_point'] = ex, ey
         c['curve_adjustment'] = self.curve_adjustment
         c['thick'] = self._projection_thick
-        c['alignment'] = self.alignment
+        c['order'] = self.edge_n
+        c['sister_edges_n'] = self.edge_count
         c['start'] = self.start
         c['end'] = self.end
         c['inner_only'] = self._use_simple_path
@@ -588,10 +600,10 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
 
         if self.start and not self.end:
             self._computed_end_point = add_xy(self.start.current_scene_position,
-                                               self._relative_vector)
+                                              self._relative_vector)
         elif self.end and not self.start:
             self._computed_start_point = sub_xy(self.end.current_scene_position,
-                                                 self._relative_vector)
+                                                self._relative_vector)
         if self.edge_type == g.ARROW:
 
             if self.start:
@@ -621,12 +633,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                 if prefs.style == 'plain': # stupid hack to test how it looks
                     self._computed_start_point = self.start.bottom_center_magnet()
                 else:
-                    if self.alignment == LEFT:
-                        self._computed_start_point = self.start.bottom_left_magnet()
-                    elif self.alignment == RIGHT:
-                        self._computed_start_point = self.start.bottom_right_magnet()
-                    else:
-                        self._computed_start_point = self.start.bottom_center_magnet()
+                    self._computed_start_point = self.start.bottom_magnet(self.edge_n, self.edge_count)
             if self.end:
                 self._computed_end_point = self.end.top_center_magnet()
 
@@ -1073,7 +1080,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
     fixed_end_point = SavedField("fixed_end_point")
     edge_type = SavedField("edge_type")
     curve_adjustment = SavedField("curve_adjustment", watcher="edge_adjustment")
-    alignment = SavedField("alignment")
+    edge_i = SavedField("edge_i")
+    edge_count = SavedField("edge_count")
     start = SavedField("start")
     end = SavedField("end")
     label_data = SavedField("label_data", watcher="edge_label")

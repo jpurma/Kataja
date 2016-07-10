@@ -15,6 +15,14 @@ outline_stroker = QtGui.QPainterPathStroker()
 outline_stroker.setWidth(4)
 
 
+def curve_multiplier(edge_n, edge_count):
+    """ Returns curve multiplier between [-1.0, 1.0] depending if left edge,
+    right edge or something between. """
+    if edge_count == 1:
+        return 0
+    p = 2.0 / (edge_count - 1)
+    return edge_n * p - 1
+
 def adjusted_control_point_list(control_points, curve_adjustment):
     """ List where control points and their adjustments are added up, and (x,
     y) tuples
@@ -131,12 +139,13 @@ def to_pf(triple):
 
 
 def shaped_cubic_path(start_point=None, end_point=None, curve_adjustment=None,
-                      alignment=LEFT, relative=True, rel_dx=0.2, rel_dy=0.2,
+                      edge_n=0, edge_count=1, relative=True, rel_dx=0.2, rel_dy=0.2,
                       fixed_dx=20, fixed_dy=15, leaf_x=1, leaf_y=2, thick=False,
                       inner_only=False, **kwargs):
     """ Two point leaf-shaped curve
     :param curve_adjustment:
-    :param alignment:
+    :param edge_n:
+    :param edge_count:
     :param rel_dx:
     :param rel_dy:
     :param fixed_dx:
@@ -160,19 +169,11 @@ def shaped_cubic_path(start_point=None, end_point=None, curve_adjustment=None,
     if relative:
         dx = rel_dx * (ex - sx)
         dy = rel_dy * (ey - sy)
-        if (alignment is LEFT and sx <= ex) or (
-                        alignment is RIGHT and sx >= ex):
-            dx *= -2
     else:
-        if alignment is LEFT:
-            dx = -fixed_dx
-        else:
-            dx = fixed_dx
         dy = fixed_dy
-    if alignment is LEFT or alignment is RIGHT:
-        control_points = [(sx + dx, sy + dy), (ex, ey - dy)]
-    else:
-        control_points = [(sx, sy + dy), (ex, ey - dy)]
+        dx = fixed_dx
+    dx *= curve_multiplier(edge_n, edge_count)
+    control_points = [(sx + dx, sy + dy), (ex, ey - dy)]
     c = adjusted_control_point_list(control_points, curve_adjustment)
     if inner_only:
         path = None
@@ -210,13 +211,14 @@ def shaped_cubic_icon(painter, rect, color=None, rel_dx=0.4, rel_dy=0.8,
 
 
 def cubic_path(start_point=None, end_point=None, curve_adjustment=None,
-               alignment=LEFT, relative=True, rel_dx=0.2, rel_dy=0.2,
+               edge_n=0, edge_count=1, relative=True, rel_dx=0.2, rel_dy=0.2,
                fixed_dx=20, fixed_dy=15, **kwargs):
     """ Two point narrow curve
     :param start_point:
     :param end_point:
     :param curve_adjustment:
-    :param alignment:
+    :param edge_n:
+    :param edge_count:
     :param relative:
     :param rel_dx:
     :param rel_dy:
@@ -231,19 +233,11 @@ def cubic_path(start_point=None, end_point=None, curve_adjustment=None,
     if relative:
         dx = rel_dx * (ex - sx)
         dy = rel_dy * (ey - sy)
-        if (alignment is LEFT and sx <= ex) or (
-                        alignment is RIGHT and sx >= ex):
-            dx *= -2
     else:
-        if alignment is LEFT:
-            dx = -fixed_dx
-        else:
-            dx = fixed_dx
+        dx = fixed_dx
         dy = fixed_dy
-    if alignment is LEFT or alignment is RIGHT:
-        control_points = [(sx + dx, sy + dy), (ex, ey - dy)]
-    else:
-        control_points = [(sx, sy + dy), (ex, ey - dy)]
+    dx *= curve_multiplier(edge_n=edge_n, edge_count=edge_count)
+    control_points = [(sx + dx, sy + dy), (ex, ey - dy)]
     path = QtGui.QPainterPath(Pf(sx, sy))
     c = adjusted_control_point_list(control_points, curve_adjustment)
     path.cubicTo(c[0], c[1], c[2], c[3], ex, ey)
@@ -271,14 +265,15 @@ def cubic_icon(painter, rect, color=None, rel_dx=0.2, rel_dy=0.8):
 
 
 def shaped_quadratic_path(start_point=None, end_point=None,
-                          curve_adjustment=None, alignment=LEFT, relative=True,
+                          curve_adjustment=None, edge_n=0, edge_count=1, relative=True,
                           rel_dx=0.2, rel_dy=0, fixed_dx=20, fixed_dy=0,
                           leaf_x=3, leaf_y=3, thick=False, inner_only=False, **kwargs):
     """ One point leaf-shaped curve with curvature relative to line length
     :param start_point:
     :param end_point:
     :param curve_adjustment:
-    :param alignment:
+    :param edge_n:
+    :param edge_count:
     :param relative:
     :param rel_dx:
     :param rel_dy:
@@ -299,20 +294,11 @@ def shaped_quadratic_path(start_point=None, end_point=None,
     if relative:
         dx = rel_dx * (ex - sx)
         dy = rel_dy * (ey - sy)
-        # edges that go to wrong direction have stronger curvature
-        if (alignment is LEFT and sx <= ex) or (
-                        alignment is RIGHT and sx >= ex):
-            dx *= -2
     else:
-        if alignment is LEFT:
-            dx = -fixed_dx
-        else:
-            dx = fixed_dx
+        dx = fixed_dx
         dy = fixed_dy
-    if alignment is LEFT or alignment is RIGHT:
-        control_points = [(sx + dx, sy + dy)]
-    else:
-        control_points = [(sx, sy + dy)]
+    dx *= curve_multiplier(edge_n, edge_count)
+    control_points = [(sx + dx, sy + dy)]
     c = adjusted_control_point_list(control_points, curve_adjustment)
     if inner_only:
         path = None
@@ -349,14 +335,15 @@ def shaped_quadratic_icon(painter, rect, color=None, rel_dx=0.4, rel_dy=0,
     painter.fillPath(path, color)
 
 
-def quadratic_path(start_point=None, end_point=None, curve_adjustment=None,
-                   alignment=LEFT, relative=True, rel_dx=0.2, rel_dy=0,
+def quadratic_path(start_point=None, end_point=None, curve_adjustment=None, edge_n=0,
+                   edge_count=1, relative=True, rel_dx=0.2, rel_dy=0,
                    fixed_dx=20, fixed_dy=0, **kwargs):
     """ One point curve with curvature relative to line length
     :param start_point:
     :param end_point:
     :param curve_adjustment:
-    :param alignment:
+    :param edge_n:
+    :param edge_count:
     :param relative:
     :param rel_dx:
     :param rel_dy:
@@ -369,20 +356,11 @@ def quadratic_path(start_point=None, end_point=None, curve_adjustment=None,
     if relative:
         dx = rel_dx * (ex - sx)
         dy = rel_dy * (ey - sy)
-        # edges that go to wrong direction have stronger curvature
-        if (alignment is LEFT and sx <= ex) or (
-                        alignment is RIGHT and sx >= ex):
-            dx *= -2
     else:
-        if alignment is LEFT:
-            dx = -fixed_dx
-        else:
-            dx = fixed_dx
+        dx = fixed_dx
         dy = fixed_dy
-    if alignment is LEFT or alignment is RIGHT:
-        control_points = [(sx + dx, sy + dy)]
-    else:
-        control_points = [(sx, sy + dy)]
+    dx *= curve_multiplier(edge_n, edge_count)
+    control_points = [(sx + dx, sy + dy)]
     path = QtGui.QPainterPath(Pf(sx, sy))
     c = adjusted_control_point_list(control_points, curve_adjustment)
     path.quadTo(c[0], c[1], ex, ey)
@@ -415,7 +393,8 @@ def shaped_linear_path(start_point=None, end_point=None, leaf_x=2, leaf_y=2,
     :param start_point:
     :param end_point:
     :param curve_adjustment:
-    :param alignment:
+    :param edge_n:
+    :param edge_count:
     :param leaf_x:
     :param leaf_y:
     :param inner_only:
@@ -459,13 +438,13 @@ def shaped_linear_icon(painter, rect, color=None, leaf_x=4, leaf_y=4):
     painter.fillPath(path, color)
 
 
-def linear_path(start_point=None, end_point=None, curve_adjustment=None,
-                alignment=LEFT, **kwargs):
+def linear_path(start_point=None, end_point=None, **kwargs):
     """ Just a straight line
     :param start_point:
     :param end_point:
     :param curve_adjustment:
-    :param alignment:
+    :param edge_n:
+    :param edge_count:
     :param kwargs:
     """
     sx, sy = start_point
@@ -492,15 +471,13 @@ def linear_icon(painter, rect, color=None):
 
 
 # @time_me
-def blob_path(start_point=None, end_point=None, curve_adjustment=None,
-              alignment=LEFT, thickness=3, thick=False, start=None, end=None,
+def blob_path(start_point=None, end_point=None, curve_adjustment=None, thickness=3, thick=False, start=None, end=None,
               inner_only=False, **kwargs):
     """ Surround the node with circular shape that stretches to other node
     :param inner_only:
     :param start_point:
     :param end_point:
     :param curve_adjustment:
-    :param alignment:
     :param thickness:
     :param start:
     :param end:
@@ -614,14 +591,13 @@ def blob_icon(painter, rect, color=None, thickness=3):
 
 # @time_me
 def directional_blob_path(start_point=None, end_point=None,
-                          curve_adjustment=None, alignment=LEFT, thickness=4,
+                          curve_adjustment=None, thickness=4,
                           start=None, end=None, thick=False, inner_only=False,
                           **kwargs):
     """ Surround the node with circular shape that stretches to other node
     :param start_point:
     :param end_point:
     :param curve_adjustment:
-    :param alignment:
     :param thickness:
     :param start:
     :param end:

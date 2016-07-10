@@ -223,10 +223,7 @@ class BaseConstituent(IConstituent):
         """
         ordering_method = 1
         if ordering_method == 1:
-            if len(self.parts) == 2 and self.parts[0] and self.parts[1]:
-                return list(self.parts)
-            else:
-                return []
+            return list(self.parts)
 
     def copy(self):
         """ Make a deep copy of constituent. Useful for picking constituents from Lexicon.

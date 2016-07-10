@@ -176,10 +176,25 @@ class BaseConstituentNode(Node):
 
         :return:
         """
+        children = []
         if self.syntactic_object:
             if hasattr(self.syntactic_object, 'ordered_parts'):
-                for synob in self.syntactic_object.ordered_parts():
-                    yield self.forest.get_node(synob)
+                print('pii')
+                children += self.syntactic_object.ordered_parts()
+            if hasattr(self.syntactic_object, 'ordered_features'):
+                print('paa')
+                children += self.syntactic_object.ordered_features()
+        print('found children: ', children)
+        nodes = []
+        for child in children:
+            node = ctrl.forest.get_node(child)
+            if node:
+                nodes.append(node)
+        return nodes
+
+    def get_feature_stack(self):
+        return [x for x in self.get_children_of_type(node_type=g.FEATURE_NODE) if x.locked_to_constituent]
+
 
     def get_attribute_nodes(self, label_key=''):
         """
@@ -284,8 +299,8 @@ class BaseConstituentNode(Node):
                 del_right()
         elif bs == g.MAJOR_BRACKETS:
             should_have = False
-            for edge in self.get_edges_up():
-                if edge.alignment == g.LEFT:
+            for parent in self.get_parents(only_visible=True, only_similar=True):
+                if self == parent.get_ordered_children()[0]:
                     should_have = True
                     break
             if should_have:
@@ -424,7 +439,7 @@ class BaseConstituentNode(Node):
             parent = s.syntactic_object
             child = self.syntactic_object
             if child not in parent.parts:
-                ctrl.FL.k_connect(parent, child, align=edge.alignment)
+                ctrl.FL.k_connect(parent, child)
                 print('making syntactic connection for constituent')
 
     def disconnect_in_syntax(self, edge):
@@ -497,6 +512,16 @@ class BaseConstituentNode(Node):
 
     # ## Most of this is implemented in Node
 
+    def start_dragging_tracking(self, host=False, scene_pos=None):
+        """ Drag the node stack with me
+        :param host:
+        :param scene_pos:
+        :return:
+        """
+        super().start_dragging_tracking(host=host, scene_pos=scene_pos)
+        for feature in self.get_feature_stack():
+            feature.start_dragging_tracking(host=False, scene_pos=scene_pos)
+
     def prepare_children_for_dragging(self, scene_pos):
         """ Implement this if structure is supposed to drag with the node
         :return:
@@ -508,7 +533,6 @@ class BaseConstituentNode(Node):
             for i, node in enumerate(tree.sorted_constituents):
                 if node is not self and i > dragged_index and node in children:
                     node.start_dragging_tracking(host=False, scene_pos=scene_pos)
-
     #################################
 
     @property

@@ -1,7 +1,9 @@
+
 try:
     from PoP2.Lexicon import SHARED_FEAT_LABELS
     from PoP2.FeatureB import Feature
-    from BaseConstituent import BaseConstituent as MyBaseClass
+    from syntax.BaseConstituent import BaseConstituent as MyBaseClass
+    from kataja.SavedField import SavedField
     in_kataja = True
 except ImportError:
     # noinspection PyUnresolvedReferences,PyPackageRequirements
@@ -89,20 +91,6 @@ class Constituent(MyBaseClass):  # collections.UserList):
         """
         return repr(self)
 
-    def __feq__(self, other):
-        if not isinstance(other, Constituent):
-            return False
-        elif self.label != other.label:
-            return False
-        elif self.part1 != other.part1:
-            return False
-        elif self.part2 != other.part2:
-            return False
-        elif self.features != other.features:
-            return False
-        else:
-            return True
-
     def __hash__(self):
         return id(self)
 
@@ -161,6 +149,19 @@ class Constituent(MyBaseClass):  # collections.UserList):
             self.features.append(new)
         else:
             print('couldnt find ', old_name, self)
+
+    def ordered_parts(self):
+        if self.part1 and self.part2:
+            return [self.part1, self.part2]
+        elif self.part1:
+            return [self.part1]
+        elif self.part2:
+            return [self.part2]
+        else:
+            return []
+
+    def ordered_features(self):
+        return list(self.features)
 
     def is_unlabeled(self):
         return self.label == '_'
@@ -347,3 +348,7 @@ class Constituent(MyBaseClass):  # collections.UserList):
                 self.part2 = new
             else:
                 self.part2.recursive_replace_constituent(old, new)
+
+    if in_kataja:
+        part1 = SavedField("part1")
+        part2 = SavedField("part2")

@@ -608,6 +608,27 @@ class Node(Movable):
                 return [edge.start for edge in self.edges_up if edge.start and not
                 edge.start.deleted]
 
+    def fix_edge_aligns(self):
+        # do syntactically justified align
+        # Notice that this can be called when creating connections en masse,
+        # get_ordered_children can give silly results.
+        children = list(self.get_ordered_children())
+        print('fixing align edges: ', len(children))
+        for i, child in enumerate(children): # this depends on node type
+            edge = self.get_edge_to(child)
+            if edge:
+                print('edge ', i, len(children))
+                edge.edge_n = i
+                edge.edge_count = len(children)
+
+    def get_ordered_children(self):
+        """ Return children by using the ordering method from syntax. For basic Node there
+        isn't one, so just return children
+        :return:
+        """
+        print('getting children: ', list(self.get_all_children()))
+        return self.get_all_children()
+
     def is_connected_to(self, other):
         """ Generic check for having direct connection to some other node
         :param other:
@@ -723,11 +744,10 @@ class Node(Movable):
 
         return None
 
-    def get_edges_up(self, similar=True, visible=False, alignment=None):
+    def get_edges_up(self, similar=True, visible=False):
         """ Returns edges up, filtered
         :param similar:
         :param visible:
-        :param alignment:
         """
 
         def filter_func(rel):
@@ -736,19 +756,16 @@ class Node(Movable):
             :return: bool """
             if similar and rel.edge_type != self.edge_type():
                 return False
-            if alignment and rel.alignment != alignment:
-                return False
             if visible and not rel.is_visible():
                 return False
             return True
 
         return filter(filter_func, self.edges_up)
 
-    def get_edges_down(self, similar=True, visible=False, alignment=None):
+    def get_edges_down(self, similar=True, visible=False):
         """ Returns edges down, filtered
         :param similar:
         :param visible:
-        :param alignment:
         """
 
         def filter_func(edge):
@@ -756,8 +773,6 @@ class Node(Movable):
             :param rel:
             :return: bool """
             if similar and edge.edge_type != self.edge_type():
-                return False
-            if alignment and edge.alignment != alignment:
                 return False
             if visible and not edge.is_visible():
                 return False
@@ -1196,6 +1211,60 @@ class Node(Movable):
     def bottom_right_magnet(self):
         return self.magnet(10)
 
+    def bottom_magnet(self, i, size):
+        """ Bottom magnets that divide the bottom area to (size) points, so that each edge has a
+        separate starting point. For binary branching, use the default three points.
+        :param i: index in list of sibling
+        :param size: size of list of siblings
+        :return:
+        """
+        if size == 2: # and False:
+            if i == 0:
+                return self.magnet(8)
+            elif i == 1:
+                return self.magnet(10)
+        elif size == 3: # and False:
+            if i == 0:
+                return self.magnet(8)
+            elif i == 1:
+                return self.magnet(9)
+            elif i == 2:
+                return self.magnet(10)
+        if not prefs.use_magnets:
+            return self.current_scene_position
+        elif not self.has_visible_label():
+            return self.current_scene_position
+        elif not self._magnets:
+            self.update_bounding_rect()
+        x1, y1 = self.current_scene_position
+        x2, y2 = self._magnets[7]
+        x2 += (self.width / (size + 2)) * (i + 1)
+        if prefs.use_magnets == 2:
+            x2, y2 = self._angle_to_parent(x2, y2)
+        return x1 + x2, y1 + y2
+
+    def _angle_to_parent(self, x2, y2):
+        x1, y1 = self.current_scene_position
+        parents = list(self.get_parents())
+        # We don't want to rotate multidominated or top nodes
+        if len(parents) == 1:
+            # Compute angle to parent
+            px, py = parents[0].current_scene_position
+            dx, dy = x1 - px, y1 - py
+            r = -math.atan2(dy, dx) + (math.pi / 2)
+            # Rotate magnet coordinates according to angle
+            cos_r = math.cos(r)
+            sin_r = math.sin(r)
+            x = x2
+            y = y2
+            # if r > 0 and False:
+            #    x2 = x * cos_r - y * sin_r
+            #    y2 = x * sin_r + y * cos_r
+            # else:
+            x2 = x * cos_r + y * sin_r
+            y2 = -x * sin_r + y * cos_r
+        return x2, y2
+
     def magnet(self, n):
         """
         :param n: index of magnets. There are five magnets in top and bottom
@@ -1219,24 +1288,7 @@ class Node(Movable):
         x1, y1 = self.current_scene_position
         x2, y2 = self._magnets[n]
         if prefs.use_magnets == 2:
-            parents = list(self.get_parents())
-            # We don't want to rotate multidominated or top nodes
-            if len(parents) == 1:
-                # Compute angle to parent
-                px, py = parents[0].current_scene_position
-                dx, dy = x1 - px, y1 - py
-                r = -math.atan2(dy, dx) + (math.pi / 2)
-                # Rotate magnet coordinates according to angle
-                cos_r = math.cos(r)
-                sin_r = math.sin(r)
-                x = x2
-                y = y2
-                #if r > 0 and False:
-                #    x2 = x * cos_r - y * sin_r
-                #    y2 = x * sin_r + y * cos_r
-                #else:
-                x2 = x * cos_r + y * sin_r
-                y2 = -x * sin_r + y * cos_r
+            x2, y2 = self._angle_to_parent(x2, y2)
         return x1 + x2, y1 + y2
 
     # ### Menus #########################################

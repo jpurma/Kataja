@@ -313,8 +313,53 @@ class Forest(SavedObject):
         node_keys_to_validate = set(self.nodes.keys())
         edge_keys_to_validate = set(self.edges.keys())
 
-        # I guess that ordering of connections will be broken because of makingin and deleting
-        # connections in unruly fashion
+        def recursive_add_for_creation(me, parent_node, parent_synobj):
+            """ First we have to create new nodes close to existing nodes to avoid rubberbanding.
+            To help this create a list of missing nodes with known positions.
+            :param me:
+            :param parent_node:
+            :param parent_synobj:
+            :return:
+            """
+            if isinstance(me, list):
+                for item in me:
+                    recursive_add_for_creation(item, parent_node, parent_synobj)
+            else:
+                node = self.get_node(me)
+                if node:
+                    if hasattr(me, 'label'):
+                        node.label = me.label
+                    node.update_label()
+                    # print(me.label, node.label)
+                    if node.uid in node_keys_to_validate:
+                        node_keys_to_validate.remove(node.uid)
+                    x, y = node.current_scene_position
+                    all_known_x.append(x)
+                    all_known_y.append(y)
+                    if node.node_type == g.FEATURE_NODE:
+                        node.locked_to_constituent = True  # not me.unvalued
+                    for tree in node.trees:
+                        if not tree.numeration:
+                            tree_counter.append(tree)
+                    if parent_synobj and not parent_node:
+                        nodes_to_create.append((parent_synobj, node.current_position))
+                elif parent_node:
+                    nodes_to_create.append((me, parent_node.current_position))
+                else:
+                    nodes_to_create.append((me, (0, 0)))
+                if hasattr(me, 'get_parts'):
+                    for part in me.get_parts():
+                        recursive_add_for_creation(part, node, me)
+                if hasattr(me, 'features'):
+                    if isinstance(me.features, dict):
+                        for feat in me.features.values():
+                            recursive_add_for_creation(feat, node, me)
+                    elif isinstance(me.features, (list, set, tuple)):
+                        for feat in me.features:
+                            recursive_add_for_creation(feat, node, me)
+
+        # I guess that ordering of connections will be broken because of making
+        # and deleting connections in unruly fashion
         def connect_if_necessary(parent, child, edge_type):
             edge = parent.get_edge_to(child, edge_type)
             if not edge:
@@ -343,6 +388,7 @@ class Forest(SavedObject):
                         child = recursive_create_edges(part)
                         if child and child.node_type == g.FEATURE_NODE:
                             connect_if_necessary(node, child, g.CHECKING_EDGE)
+            node.fix_edge_aligns()
             return node
 
         if numeration:
@@ -355,50 +401,6 @@ class Forest(SavedObject):
             all_known_y = []
             tree_counter = []
 
-            def recursive_add_for_creation(me, parent_node, parent_synobj):
-                """ First we have to create new nodes close to existing nodes to avoid rubberbanding.
-                To help this create a list of missing nodes with known positions.
-                :param me:
-                :param parent_node:
-                :param parent_synobj:
-                :return:
-                """
-                if isinstance(me, list):
-                    for item in me:
-                        recursive_add_for_creation(item, parent_node, parent_synobj)
-                else:
-                    node = self.get_node(me)
-                    if node:
-                        if hasattr(me, 'label'):
-                            node.label = me.label
-                        node.update_label()
-                        #print(me.label, node.label)
-                        if node.uid in node_keys_to_validate:
-                            node_keys_to_validate.remove(node.uid)
-                        x, y = node.current_scene_position
-                        all_known_x.append(x)
-                        all_known_y.append(y)
-                        if node.node_type == g.FEATURE_NODE:
-                            node.locked_to_constituent = True #not me.unvalued
-                        for tree in node.trees:
-                            if not tree.numeration:
-                                tree_counter.append(tree)
-                        if parent_synobj and not parent_node:
-                            nodes_to_create.append((parent_synobj, node.current_position))
-                    elif parent_node:
-                        nodes_to_create.append((me, parent_node.current_position))
-                    else:
-                        nodes_to_create.append((me, (0, 0)))
-                    if hasattr(me, 'get_parts'):
-                        for part in me.get_parts():
-                            recursive_add_for_creation(part, node, me)
-                    if hasattr(me, 'features'):
-                        if isinstance(me.features, dict):
-                            for feat in me.features.values():
-                                recursive_add_for_creation(feat, node, me)
-                        elif isinstance(me.features, (list, set, tuple)):
-                            for feat in me.features:
-                                recursive_add_for_creation(feat, node, me)
 
             recursive_add_for_creation(synobj, None, None)
             if all_known_x:
@@ -1112,7 +1114,7 @@ class Forest(SavedObject):
         :param direction:
         :return:
         """
-        rel = Edge(forest=self, start=start, end=end, edge_type=edge_type, direction=direction)
+        rel = Edge(forest=self, start=start, end=end, edge_type=edge_type)
         rel.after_init()
         self.store(rel)
         self.add_to_scene(rel)
@@ -1303,12 +1305,9 @@ class Forest(SavedObject):
         node.announce_deletion()
         # -- remove from selection
         ctrl.remove_from_selection(node)
-        # -- check if parent nodes has have now one child, if so fix the edge to be unaligned
+        # -- as parent nodes have now one less children, fix the starting points of edges
         for parent in parents:
-            children = list(parent.get_children())
-            if len(children) == 1:
-                edge = parent.get_edge_to(children[0])
-                edge.alignment = g.NO_ALIGN
+            parent.fix_edge_aligns()
 
         # -- remove circularity block
         self._marked_for_deletion.remove(node)
@@ -1380,8 +1379,6 @@ class Forest(SavedObject):
         if isinstance(item, Edge):
             start = item.start
             self.delete_edge(item, ignore_consequences=ignore_consequences)
-            if (not ignore_consequences) and start:
-                self.fix_stubs_for(item.start)
         elif isinstance(item, Node):
             self.delete_node(item, ignore_consequences=ignore_consequences)
 
@@ -1424,21 +1421,6 @@ class Forest(SavedObject):
         new_end.poke('edges_up')
         new_end.edges_up.append(edge)
         new_end.connect_in_syntax(edge)
-
-    def fix_stubs_for(self, node):
-        """ Make sure that node (ConstituentNode) has binary children.
-        Creates stubs if needed, and removes stubs if
-        node has two empty stubs.
-        :param node: node to be fixed (ignore anything but constituent nodes)
-        :return: None
-        """
-        if not isinstance(node, BaseConstituentNode):
-            return
-        children = list(node.get_children())
-        if len(children) == 1:
-            edge = node.get_edge_to(children[0])
-            if edge:
-                edge.alignment = g.NO_ALIGN
 
     def order_edge_visibility_check(self):
         """ Make sure that all edges are checked to update their visibility.
@@ -1703,8 +1685,8 @@ class Forest(SavedObject):
     # by forest's higher level methods.
     #
 
-    def connect_node(self, parent=None, child=None, direction='', edge_type=None, fade_in=False,
-                     mirror_in_syntax = True):
+    def connect_node(self, parent=None, child=None, direction='', edge_type=None,
+                     fade_in=False, mirror_in_syntax = True):
         """ This is for connecting nodes with a certain edge. Calling this
         once will create the necessary links for both partners.
         Sanity checks:
@@ -1758,21 +1740,6 @@ class Forest(SavedObject):
             parent.edges_down.append(new_edge)
         if mirror_in_syntax:
             child.connect_in_syntax(new_edge)
-        # fix other edge aligns: only one left align and one right align,
-        # n center aligns, and if only one child, it has center align.
-        edges = [edge for edge in parent.edges_down if edge.edge_type == edge_type]
-        assert (edges)
-        if len(edges) == 1:
-            edges[0].alignment = g.NO_ALIGN
-        elif len(edges) == 2:
-            edges[0].alignment = g.LEFT
-            edges[-1].alignment = g.RIGHT
-        else:
-            edges[0].alignment = g.LEFT
-            for edge in edges[1:-1]:
-                edge.alignment = g.NO_ALIGN
-            edges[-1].alignment = g.RIGHT
-
         if hasattr(parent, 'rebuild_brackets'):
             parent.rebuild_brackets()
         if hasattr(child, 'rebuild_brackets'):
@@ -1782,6 +1749,7 @@ class Forest(SavedObject):
         #print('--- finished connect')
         if hasattr(child, 'on_connect'):
             child.on_connect(parent)
+        parent.fix_edge_aligns()
         return new_edge
 
     def partial_disconnect(self, edge, start=True, end=True):
@@ -1872,20 +1840,20 @@ class Forest(SavedObject):
 
         for edge in list(old_node.edges_up):
             if edge.start:
-                align = edge.alignment
+                direction = edge.direction()
                 parent = edge.start
                 if only_for_parent and parent != only_for_parent:
                     continue
                 self.disconnect_node(parent, old_node, edge.edge_type)
-                self.connect_node(parent, child=new_node, direction=align)
+                self.connect_node(parent, child=new_node, direction=direction)
 
         if replace_children and not only_for_parent:
             for edge in list(old_node.edges_down):
                 child = edge.end
                 if child:
-                    align = edge.alignment
+                    direction = edge.direction()
                     self.disconnect_node(old_node, child, edge.edge_type)
-                    self.connect_node(new_node, child, direction=align)
+                    self.connect_node(new_node, child, direction=direction)
 
         if (not old_node.edges_up) and can_delete:
             # old_node.update_visibility(active=False, fade=True)
@@ -1939,8 +1907,9 @@ class Forest(SavedObject):
                     self.disconnect_node(node, child, ignore_missing=True)
                     for parent in list(good_parents):
                         edge = parent.get_edge_to(node)
+                        direction = edge.direction()
                         self.disconnect_node(parent, node)
-                        self.connect_node(parent, child, direction=edge.alignment)
+                        self.connect_node(parent, child, direction=direction)
             if i:
                 child.set_index(i)
             self.delete_node(node)
@@ -1968,10 +1937,8 @@ class Forest(SavedObject):
         child = children[0]
         old_edge = old_node.get_edge_to(child)
         if add_left:
-            old_edge.alignment = g.RIGHT
             self.connect_node(parent=old_node, child=new_node, direction=g.LEFT, fade_in=True)
         else:
-            old_edge.alignment = g.LEFT
             self.connect_node(parent=old_node, child=new_node, direction=g.RIGHT, fade_in=True)
 
     def add_sibling_for_constituentnode(self, old_node: BaseConstituentNode, add_left=True):
@@ -1991,7 +1958,7 @@ class Forest(SavedObject):
         else:
             left = old_node
             right = new_node
-        parent_info = [(e.start, e.alignment, e.start.head_node) for e in
+        parent_info = [(e.start, e.direction(), e.start.head_node) for e in
                        old_node.get_edges_up(similar=True, visible=False)]
 
         for op, align, head in parent_info:
@@ -2095,7 +2062,7 @@ class Forest(SavedObject):
                 parent.head_node is child:
             head = parent.head
 
-        align = edge.alignment
+        direction = edge.direction()
         self.disconnect_edge(edge)
         if merge_to_left:
             left = inserted
@@ -2109,7 +2076,7 @@ class Forest(SavedObject):
         merger_node = self.create_merger_node(left=left, right=right, pos=p, new=inserted)
         merger_node.copy_position(child)
         merger_node.current_position = merger_node.scene_position_to_tree_position(p)
-        self.connect_node(parent, merger_node, direction=align)
+        self.connect_node(parent, merger_node, direction=direction)
 
         # trees
         for tree in list(parent.trees):

@@ -817,10 +817,6 @@ class Generate:
         :return: label string or False
         """
         print('labeling_function for ', x.label, y.label)
-        # print('merged on labeling_function: ', merged)
-        # for i, item in enumerate(self.stack):
-        #    print('stack item %s on labeling_function: %s' % (i, item))
-        # print('sub stream stack on labeling_function: ', self.sub_stream_stack)
 
         if x.is_unlabeled():
             elem1_feats = x.part1.get_head_features()
@@ -845,27 +841,21 @@ class Generate:
                 return x.label
             elif has_part(elem1_feats, "iPerson"):
                 print("elem1 has only iPerson of phi")
-                print("Merged", x, y)
                 sys.exit()
-        if x_has_moved:
-            if not y_has_moved:
-                if has_part(elem2_feats, "Root") or has_part(elem1_feats, "Root"):  # weak
-                    if has_part(elem2_feats, "iPerson", "iNumber", "iGender"):
-                        self.out("Label(Move)", y.label)
-                        print('5: elem1 is Copy, either is Root and elem 2 has phi-features')
-                        #input()
-                        return y.label
-                else:
+        if x_has_moved and not y_has_moved:
+            if has_part(elem2_feats, "Root") or has_part(elem1_feats, "Root"):  # weak
+                if has_part(elem2_feats, "iPerson", "iNumber", "iGender"):
                     self.out("Label(Move)", y.label)
-                    print('6: elem1 is Copy, 2 is not, neither is Root')
-                    #input()
+                    print('5: elem1 is Copy, either is Root and elem 2 has phi-features')
                     return y.label
-        elif y_has_moved:
-            # weak if Root
-            if has_part(elem1_feats, "Root", "iPerson", "iNumber", "iGender"):
+            else:
+                self.out("Label(Move)", y.label)
+                print('6: elem1 is Copy, 2 is not, neither is Root')
+                return y.label
+        elif y_has_moved and has_part(elem1_feats, "Root", "iPerson", "iNumber", "iGender"):
+                # weak if Root
                 self.out("Label(Move)", x.label)
                 print('7: elem2 is Copy, elem1 is Root and phi')
-                #input()
                 return x.label
         shared_feats = find_shared_features(elem1_feats, elem2_feats)
         if not shared_feats:

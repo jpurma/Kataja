@@ -28,6 +28,7 @@ import math
 import kataja.globals as g
 from kataja.Visualization import BaseVisualization
 from kataja.singletons import prefs
+from kataja.shapes import curve_multiplier
 
 
 def border_distance(n1x, n1y, n1w2, n1h2, n2x, n2y, n2w2, n2h2):
@@ -151,12 +152,7 @@ class AsymmetricElasticTree(BaseVisualization):
         for edge in node.edges_down:
             if not edge.is_visible():
                 continue
-            if edge.alignment == g.LEFT:
-                target_d_x = prefs.edge_width
-            elif edge.alignment == g.RIGHT:
-                target_d_x = -prefs.edge_width
-            else:
-                target_d_x = 0
+            target_d_x = curve_multiplier(edge.edge_n, edge.edge_count) * prefs.edge_width
             target_d_y = -15
             start_x, start_y = edge.start_point  # @UnusedVariable
             end_x, end_y = edge.end_point  # @UnusedVariable
@@ -171,12 +167,7 @@ class AsymmetricElasticTree(BaseVisualization):
         for i, edge in enumerate(node.edges_up):
             if not edge.is_visible():
                 continue
-            if edge.alignment == g.LEFT:
-                target_d_x = -prefs.edge_width
-            elif edge.alignment == g.RIGHT:
-                target_d_x = prefs.edge_width
-            else:
-                target_d_x = 0
+            target_d_x = curve_multiplier(edge.edge_n, edge.edge_count) * prefs.edge_width
             target_d_y = 15
             start_x, start_y = edge.start_point  # @UnusedVariable
             end_x, end_y = edge.end_point  # @UnusedVariable
@@ -225,10 +216,7 @@ class AsymmetricElasticTree(BaseVisualization):
         for edge in node.edges_down:
             if not edge.is_visible():
                 continue
-            if edge.alignment == g.LEFT:
-                target_d_x = prefs.edge_width
-            else:
-                target_d_x = -prefs.edge_width
+            target_d_x = curve_multiplier(edge.edge_n, edge.edge_count) * prefs.edge_width
             target_d_y = -15
             start_x, start_y = edge.start_point  # @UnusedVariable
             end_x, end_y = edge.end_point  # @UnusedVariable
@@ -242,10 +230,7 @@ class AsymmetricElasticTree(BaseVisualization):
         for i, edge in enumerate(node.edges_up):
             if not edge.is_visible():
                 continue
-            if edge.alignment == g.LEFT:
-                target_d_x = -prefs.edge_width
-            else:
-                target_d_x = prefs.edge_width
+            target_d_x = curve_multiplier(edge.edge_n, edge.edge_count) * prefs.edge_width
             target_d_y = 15
             start_x, start_y = edge.start_point  # @UnusedVariable
             end_x, end_y = edge.end_point  # @UnusedVariable
