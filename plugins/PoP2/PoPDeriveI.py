@@ -152,6 +152,7 @@ class Generate:
         self.forest = None
         self.workspace = []
         self.sub_workspace = []
+        self.msg_stack = []
         self.spine = None
 
     def load_data(self, inputlines, start=0, end=0):
@@ -178,6 +179,8 @@ class Generate:
             self.out("FTCheckOp", self.feature_check_counter)
 
     def out(self, first, second, third=None):
+        if self.forest:
+            self.msg_stack.append('%s: %s' % (first, second))
         if not self.out_writer:
             return
         self.out_writer.push(first, second, third)
@@ -271,6 +274,9 @@ class Generate:
     def announce_derivation_step(self, parts=None, msg=''):
         if not self.forest:
             return
+        self.msg_stack.append(msg)
+        msg = '\n'.join(self.msg_stack)
+        self.msg_stack = []
         if parts:
             if not isinstance(parts, list):
                 parts = [parts]
@@ -327,8 +333,7 @@ class Generate:
         self.stack.append(x, duplicates=False)
         print('++ stack append 2 in merge2 ')
         self.stack.append(y, duplicates=False)
-        x, y, feats_passed, remerge = self.check_features(x, y)
-
+        x, y, passed_features, postponed_remerge = self.check_features(x, y)
         label_giver = None
         other = None
         label_info = None
@@ -386,13 +391,13 @@ class Generate:
             self.out("Label(None)", str(merged))
         merged = self.unlabeled_move(merged)
         if label_giver:
-            if feats_passed:
+            if passed_features:
                 if label_info == "Head":
                     self.out("Label(Head)", merged)
-            if remerge:
+            if postponed_remerge:
                 # check_features of RemergedElement??
                 # Find Shared Feats
-                merged = self.remerge_back(merged, remerge)
+                merged = self.remerge_back(merged, postponed_remerge)
         if merged.label in PHASE_HEADS:
             merged = self.transfer_check(merged)
         return merged
@@ -410,8 +415,6 @@ class Generate:
             print("Remerge", remerge)
             print("Can't Determine Label 5555")
             sys.exit()
-        ## Adding a Copy 1 (not in Remerge) ##
-        #remerge = remerge.demote_to_copy()
         if self.stack.is_sub():
             print("Remerging in in substream999999")
             sys.exit()
@@ -420,7 +423,6 @@ class Generate:
         merged = Constituent(label=label, part1=remerge, part2=merged)
         print('assigning copy (1) to: ', remerge)
         print('merged: ', merged)
-        #input()
         self.merge_counter += 1
         self.out("Label(SharedFeats)", merged)
         self.announce_derivation_step([merged], "remerged back")
@@ -605,7 +607,7 @@ class Generate:
         inner = reversed(self.stack.main_stack)
         for current in outer:
             if current.label != merged.label and "Phi" not in current.label:
-                current_feats = current.get_head_features()
+                current_feats = expanded_features(current.get_head_features())
                 current = current
                 if any([x.unvalued_and_alone() for x in current_feats]):
                     # if Current is already Merged to element that shares features with
@@ -629,8 +631,7 @@ class Generate:
             """ % current.label)
                                 return merged, None
                             else:
-                                ## Adding a Copy 2 (not in newmerged)##
-                                remerge = current #.demote_to_copy()
+                                remerge = current
                                 merged = Constituent(label="_", part1=remerge, part2=merged)
                                 print('assigning copy (2) to: ', remerge)
                                 #input()
@@ -666,7 +667,7 @@ class Generate:
         remerge = None
         if merged.is_unlabeled():
             head = merged.part1
-            head_feats = head.get_head_features()
+            head_feats = expanded_features(head.get_head_features())
             if has_part(head_feats, "iD", "iPerson"):
                 # There's already a DP with phi-features here, so no need to merge
                 # another DP with Phi
@@ -679,17 +680,17 @@ class Generate:
             comp = merged.part2
             if comp.is_unlabeled():
                 locus = comp.part1
-                locus_features = locus.get_head_features()
+                locus_features = expanded_features(locus.get_head_features())
                 if has_part(locus_features, "iN", "uPerson") or \
                         has_part(locus_features, "iQ", "iPerson") or \
                         has_part(locus_features, "iD", "iPerson"):
                     remerge = locus
             elif "Phi" in comp.label:
                 locus = comp.part1
-                locus_features = locus.get_head_features()
+                locus_features = expanded_features(locus.get_head_features())
             else:
                 locus = comp
-                locus_features = locus.get_head_features()
+                locus_features = expanded_features(locus.get_head_features())
                 if has_part(locus_features, "iN"):
                     remerge = locus
             if not remerge:
@@ -725,11 +726,6 @@ class Generate:
         if self.stack.is_sub():
             print("Do in substream999999")
             sys.exit()
-        ## Adding a Copy 3 (in old remerge) ##
-
-        #remerge = remerge.demote_to_copy()
-        print('assigning copy (3) to: ', remerge)
-        print(remerge)
         # just for curiosity
         self.out("merge", "merge (for labeling (remerge)) " + remerge.label + " + " + merged.label)
         if merged.part1.label == "vUnerg":
@@ -816,7 +812,7 @@ class Generate:
         :param y_has_moved: bool
         :return: label string or False
         """
-        print('labeling_function for ', x.label, y.label)
+        print('labeling_function for ', x.label, y.label, x_has_moved, y_has_moved)
 
         if x.is_unlabeled():
             elem1_feats = x.part1.get_head_features()
@@ -862,6 +858,8 @@ class Generate:
             # Check for strengthened element
             print('8: no shared feats (return False)')
             return False
+        print(shared_feats)
+        #input('label via shared feats')
         person_f = get_by_part(shared_feats, "iPerson")
         if person_f:
             if has_part(shared_feats, "iNumber", "iGender"):
@@ -1005,6 +1003,7 @@ class Generate:
                 inherit = y
         if not inherit:
             x, y, remerge = self.feature_checking_function(x, y)
+            assert(not remerge)
             return x, y, False, remerge
 
         # pass feats down the tree
@@ -1036,8 +1035,7 @@ class Generate:
                 #if current.label == 'n':
 
                     #print('current:', current)
-                current_feats = current.get_head_features()
-                current_feats = expanded_features(current_feats)
+                current_feats = expanded_features(current.get_head_features())
                 #print('stack_label: ', current.label, current_feats)
                 if has_part(current_feats, "Root"):
                     go_on = True
@@ -1265,32 +1263,7 @@ class Generate:
                                 print("Check in substream999999")
                                 sys.exit()
                             self.stack.replace(old_top_f, new_top_f)
-                        if False:
-                            for old_top_f, new_top_f in top_chkd:
-                                stack_top.replace_within(old_top_f, new_top_f)
-                                label = stack_top.part1.label
-                                new_label = label + "-wa"
-                                stack_top.replace_within(label, new_label, label=True)
-                                # fixme: does label replacing work like this?
-                                print('attempting to replace label in many constituents')
-                                x.replace_within(old_top_f, new_top_f)
-                                y.replace_within(old_top_f, new_top_f)
-                                if old_top_f not in checked_feats:
-                                    checked_feats.append(old_top_f)
-                                if self.stack.is_sub():
-                                    print("Check in substream999999")
-                                    sys.exit()
-                                self.stack.replace(old_top_f, new_top_f)
-
                         remerge = stack_top.copy()
-                        # Add Copy to any copy in derivation
-                        # REmove Copy from remerged version
-                        remerge_feats = remerge.get_head_features()
-                        if "Copy" in remerge_feats:
-                            # RemoveCopy
-                            copy_f = get_by_part(remerge_feats, "Copy")
-                            remerge_feats.remove(copy_f)
-                            # print(self.remerge)
                     elif goal.name == "Q" and goal.ifeature:  # iQ
                         top_chkd = make_checking_pairs(unvalued_features, stack_top_feats)
                         print('Q: replace everywhere:', top_chkd)
@@ -1302,16 +1275,6 @@ class Generate:
                                 print("Check in substream999999")
                                 sys.exit()
                         remerge = stack_top
-                        # Add Copy to any copy in derivation
-                        # Remove Copy from remerged version
-                        remerge_feats = remerge.get_head_features()
-                        if "Copy" in remerge_feats: # Never used
-                            # RemoveCopy
-                            copy_f = get_by_part(remerge_feats, "Copy") # Never used
-                            remerge_feats.remove(copy_f)
-                            print("self.Remerge111", remerge)
-                            print("\n")
-                            # Find highest instance in derivation and add "Copy"
 
                     # Remerge due to a need to share Q features
                     #print('goal in top feats, raise feature from top_f to uf')

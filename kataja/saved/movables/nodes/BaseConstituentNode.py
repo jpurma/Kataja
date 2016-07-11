@@ -179,12 +179,9 @@ class BaseConstituentNode(Node):
         children = []
         if self.syntactic_object:
             if hasattr(self.syntactic_object, 'ordered_parts'):
-                print('pii')
                 children += self.syntactic_object.ordered_parts()
             if hasattr(self.syntactic_object, 'ordered_features'):
-                print('paa')
                 children += self.syntactic_object.ordered_features()
-        print('found children: ', children)
         nodes = []
         for child in children:
             node = ctrl.forest.get_node(child)

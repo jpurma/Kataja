@@ -94,7 +94,7 @@ def animation_step_forward():
     ctrl.forest.derivation_steps.next_derivation_step()
 
 
-a['next_derivation_step'] = {'command': 'Animation step forward',
+a['next_derivation_step'] = {'command': '',
                              'method': animation_step_forward, 'shortcut': '>', 'undoable':False}
 
 
@@ -103,6 +103,6 @@ def animation_step_backward():
     ctrl.forest.derivation_steps.previous_derivation_step()
 
 
-a['prev_derivation_step'] = {'command': 'Animation step backward',
+a['prev_derivation_step'] = {'command': '',
                              'method': animation_step_backward, 'shortcut': '<', 'undoable':False}
 

@@ -274,7 +274,7 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
                 cpy = math.sin(deg)*r + cy
                 deg += step
                 closest = None
-                closest_d = 200000
+                closest_d = 2000000
                 for px, py in corners:
                     d = (px - cpx) ** 2 + (py - cpy) ** 2
                     if d < closest_d:

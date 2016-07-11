@@ -613,11 +613,9 @@ class Node(Movable):
         # Notice that this can be called when creating connections en masse,
         # get_ordered_children can give silly results.
         children = list(self.get_ordered_children())
-        print('fixing align edges: ', len(children))
         for i, child in enumerate(children): # this depends on node type
             edge = self.get_edge_to(child)
             if edge:
-                print('edge ', i, len(children))
                 edge.edge_n = i
                 edge.edge_count = len(children)
 
@@ -626,7 +624,6 @@ class Node(Movable):
         isn't one, so just return children
         :return:
         """
-        print('getting children: ', list(self.get_all_children()))
         return self.get_all_children()
 
     def is_connected_to(self, other):

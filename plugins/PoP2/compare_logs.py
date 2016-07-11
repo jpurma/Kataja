@@ -89,7 +89,7 @@ for item1, item2 in zip(norm_orig, norm_news):
     fless_item2 = featureless(item2)
     item1 = copyless(item1)
     item2 = copyless(item2)
-    if item1 == item1:
+    if item1 == item2:
         print('%s: Match' % c)
         success += 1
     else:
