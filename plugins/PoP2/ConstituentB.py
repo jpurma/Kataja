@@ -104,14 +104,6 @@ class Constituent(MyBaseClass):  # collections.UserList):
     def is_leaf(self):
         return not (self.part1 and self.part2)
 
-    def get_head(self):
-        if self.part1 and self.part1.label == self.label:
-            return self.part1.get_head()
-        elif self.part2 and self.part2.label == self.label:
-            return self.part2.get_head()
-        else:
-            return self
-
     def shared_features(self, other):
         my_feats = self.get_head_features()
         other_feats = other.get_head_features()
@@ -222,64 +214,57 @@ class Constituent(MyBaseClass):  # collections.UserList):
         else:
             return label + stacked
 
-    def get_head_features(self):
-        # if self.language == "Japanese":
-        #    return self.get_head_features_head_final(merged)
+    def get_head(self, no_sharing=True):
         if self.is_leaf():
-            return self.features
+            return self
         if self.is_unlabeled():
-            return self.part1.recursive_get_features()
+            return self.part1.get_head()
         elif self.part2.is_unlabeled():
-            f = self.part1.recursive_get_features()
+            f = self.part1.get_head()
             if f:
                 return f
-        return self.recursive_get_features()
-
-    def recursive_get_features(self):
-        if self.is_leaf():
-            return self.features
-        head = self.label
-        if self.part1.label == head:
-            return self.part1.get_head_features()
-        if self.part2.label == head:
-            return self.part2.get_head_features()
-        if head in SHARED_FEAT_LABELS:
-            elem1_feats = self.part1.get_head_features()
-            elem2_feats = self.part2.get_head_features()
-            shared_feats = find_shared_features(elem1_feats, elem2_feats)
-            if shared_feats:
-                return shared_feats
-        if "Phi" in head:
-            return self.part1.get_head_features()
+        if self.part1.label == self.label:
+            return self.part1.get_head()
+        elif self.part2.label == self.label:
+            return self.part2.get_head()
+        elif self.label in SHARED_FEAT_LABELS:
+            if no_sharing:
+                return self.part1.get_head(no_sharing=True)
+            else:
+                head1 = self.part1.get_head()
+                head2 = self.part2.get_head()
+                result = []
+                if isinstance(head1, list):
+                    result += head1
+                else:
+                    result.append(head1)
+                if isinstance(head2, list):
+                    result += head2
+                else:
+                    result.append(head2)
+                return result
+        if "Phi" in self.label:
+            return self.part1.get_head()
         assert False
+
+    def get_head_features(self, no_sharing=False):
+        if no_sharing:
+            head = self.get_head(no_sharing=True)
+            return head.features
+        else:
+            head = self.get_head(no_sharing=False)
+            if isinstance(head, list):
+                shared_feats = find_shared_features(head[0].features, head[1].features)
+                if shared_feats:
+                    return shared_feats
+                else:
+                    head = self.get_head(no_sharing=True)
+                    return head.features
+            else:
+                return head.features
 
     def get_feature_giver(self):
-        if self.is_leaf():
-            return self
-        if self.is_unlabeled():
-            return self.part1.recursive_get_feature_giver()
-        elif self.part2.is_unlabeled():
-            f = self.part1.recursive_get_feature_giver()
-            if f:
-                return f
-        return self.recursive_get_feature_giver()
-
-    def recursive_get_feature_giver(self):
-        if self.is_leaf():
-            return self
-        head = self.label
-        if self.part1.label == head:
-            return self.part1.get_feature_giver()
-        if self.part2.label == head:
-            return self.part2.get_feature_giver()
-        if head in SHARED_FEAT_LABELS:
-            #input('SHARED_FEAT_LABELS, return part1')
-            # assuming that we are looking for someone to get "Copy"
-            return self.part1
-            #return None
-        if "Phi" in head:
-            return self.part1.get_feature_giver()
-        assert False
+        return self.get_head(no_sharing=True)
 
     def replace_within(self, old_chunk, new_chunk, label=False):
         if self == old_chunk:

@@ -21,7 +21,7 @@ except ImportError:
     from FeatureB import Feature, has_part, get_by_part
     in_kataja = False
 
-start = 1
+start = 9
 end = 10
 
 
@@ -144,7 +144,6 @@ class Generate:
         self.stack = None
         self.merge_counter = 0
         self.inheritance_counter = 0
-        self.transfer_counter = 0
         self.feature_check_counter = 0
         self.lookforward_so = None
         self.over_counter = 0
@@ -218,7 +217,6 @@ class Generate:
         self.feature_counter = 0
         self.merge_counter = 0
         self.inheritance_counter = 0
-        self.transfer_counter = 0
         self.feature_check_counter = 0
         self.lookforward_so = None
         self.so_list = build_synobj_lists(target_example, [])
@@ -319,6 +317,41 @@ class Generate:
             print('----------------- ', self.over_counter)
             self.over_counter += 1
             return spine
+
+    def grand_cycle(self, x, spine):
+        """ Do all operations of one derivation cycle
+
+        :param x:
+        :param spine:
+        :return:
+        """
+        y = spine
+        x, y, passed_features, postponed_remerge = self.check_features(x, y)
+
+        label_giver, part1, part2 = self.determine_label(x, y)
+        merged = self.merge(label_giver, part1, part2)
+        if merged.is_unlabeled():
+            merged, remerge = self.unlabeled_move(merged)
+        else:
+            remerge = None
+        merged, success = self.label_if_possible(merged)
+        if remerge:
+            merged = self.remerge(merged, remerge)
+            merged, success = self.label_if_possible(merged)
+            self.relabel_my_parent(merged, remerge)
+
+        if label_giver:
+            if postponed_remerge:
+                merged = self.remerge_back(merged, postponed_remerge)
+                merged, success = self.label_if_possible(merged)
+                if success:
+                    self.announce_derivation_step([merged], "found label for unlabeled element")
+
+
+        if merged.label in PHASE_HEADS:
+            merged = self.transfer_check(merged)
+
+
 
     def merge(self, x, y):
         """ Merge two objects and trigger all the complications...
@@ -857,67 +890,15 @@ class Generate:
             synobj = 'n'
         return Constituent(label=synobj, features=features)
 
-    @staticmethod
-    def get_head_features(x, y):
-        """
-
-        :param x:
-        :param y:
-        :return:
-        """
-        if x.is_unlabeled():
-            x_feats = x.part1.get_head_features()
-        else:
-            x_feats = x.get_head_features()
-        if y.is_unlabeled():
-            y_feats = y.part1.get_head_features()
-        elif y.label in SHARED_LABELS:
-            if y.is_leaf():
-                y_feats = y.features
-            else:
-                y_feats = y.part1.get_head_features()
-        elif y.part2 and y.part2.is_unlabeled():
-            print("problem")
-            print("Y", y)
-            sys.exit()
-        else:
-            y_feats = y.get_head_features()
-        return x_feats, y_feats
-
-    @staticmethod
-    def get_feature_givers(x, y):
-        """
-
-        :param x:
-        :param y:
-        :return:
-        """
-        x_base = x
-        y_base = y
-        if x.is_unlabeled():
-            x_base = x.part1
-        if y.is_unlabeled():
-            y_base = y.part1
-        elif y.label in SHARED_LABELS:
-            if y.is_leaf():
-                y_base = y
-            else:
-                y_base = y.part1
-        elif y.part2 and y.part2.is_unlabeled():
-            print("problem")
-            print("Y", y)
-            sys.exit()
-        return x_base.get_feature_giver(), y_base.get_feature_giver()
-
     def check_features(self, x, y):
         print('check_features: ', x.label, y.label)
         # If X has uPhi, then uPhi are passed down the tree until they are checked
-        x_feat_host, y_feat_host = self.get_feature_givers(x, y)
+        x_feat_host = x.get_head()
+        y_feat_host = y.get_head()
         assert x_feat_host and y_feat_host
 
-        x_feats, y_feats = self.get_head_features(x, y)
-        x_feats = expanded_features(x_feats)
-        y_feats = expanded_features(y_feats)
+        x_feats = expanded_features(x.get_head_features())
+        y_feats = expanded_features(y.get_head_features(no_sharing=True))
         # Which is head?
         current_label = ''
         x_head = "Head" in x_feats
@@ -989,6 +970,9 @@ class Generate:
         print('-------------')
         print('X:', x)
         print('Y:', y)
+        print('stack: ', [x.label for x in reversed(self.stack)])
+        for item in reversed(self.stack):
+            print('   ---- ', item)
 
         def find_empty_root(node, previous_label):
             feats = expanded_features(node.get_head_features())
@@ -1014,8 +998,10 @@ class Generate:
                             sys.exit()
 
                     print('passing features to current: ', node)
-                    #input()
+                    input()
                     fhost = node.get_feature_giver()
+                    print('fhost: ', fhost)
+                    #input('passing success')
                     for item in unvalued_phis:
                         fhost.features.append(item)
                     self.out("PassFs", "Pass Features " + inherit.label + " to " + other_label)
@@ -1023,11 +1009,56 @@ class Generate:
                     self.inheritance_counter += 1
                     found = True
             if previous_label != "n":
-                if node.part1 and find_empty_root(node.part1, node.label):
-                    found = True
                 if node.part2 and find_empty_root(node.part2, node.label):
                     found = True
+                if node.part1 and find_empty_root(node.part1, node.label):
+                    found = True
             return found
+
+        def find_empty_root_leaf(node, previous_label):
+            found = False
+            if node.is_leaf():
+                if has_part(node.features, "Root"):
+                    feats = expanded_features(node.features)
+                    go_on = True
+                    for item in ["uPerson", "iPerson", "iD", "iN"]:
+                        if has_part(feats, item):
+                            go_on = False
+                            break
+                    if previous_label == "n":
+                        go_on = False
+                    if go_on:
+                        if node.is_labeled():
+                            other_label = node.label
+                        else:
+                            if node.part1.is_labeled():
+                                other_label = node.part1.label
+                            elif node.part2.is_labeled():
+                                other_label = node.part2.label
+                            else:
+                                print("error - can't find label9999")
+                                sys.exit()
+
+                        print('passing features to current: ', node)
+                        print('previous_label:', previous_label)
+                        input()
+                        # input('passing success')
+                        for item in unvalued_phis:
+                            node.features.append(item)
+                        self.out("PassFs", "Pass Features " + inherit.label + " to " + other_label)
+                        self.out("FeaturesPassed", unvalued_phis)
+                        self.inheritance_counter += 1
+                        found = True
+
+                previous_label = node.label
+            else:
+                previous_label, got_it = find_empty_root_leaf(node.part2, previous_label)
+                if got_it:
+                    found = True
+                previous_label, got_it = find_empty_root_leaf(node.part1, previous_label)
+                if got_it:
+                    found = True
+            return previous_label, found
 
         if inherit == x:
             spine = y
@@ -1035,8 +1066,23 @@ class Generate:
             spine = x
         print('with inherited features from ', inherit)
         print('attempting to look into ', spine)
-
+        prev_label = ''
         while spine and False:
+            current = spine
+            if spine.part1:
+                prev_label, found_it = find_empty_root_leaf(spine.part1, prev_label)
+                if found_it:
+                    feats_passed = True
+            if spine.part2:
+                spine = spine.part2
+            else:
+                spine = None
+                prev_label, found_it = find_empty_root_leaf(current, prev_label)
+                if found_it:
+                    feats_passed = True
+            prev_label = current.label
+
+        while False and spine:
             print('*putter-putter*')
             if not (spine.part1 and spine.part2):
                 comp = spine
@@ -1050,7 +1096,7 @@ class Generate:
             elif spine.part2.is_unlabeled():
                 comp = spine.part1
                 spine = spine.part2
-            elif not spine.part2.transfered:
+            elif False and not spine.part2.transfered:
                 comp = spine.part1
                 spine = spine.part2
             else:
@@ -1071,7 +1117,7 @@ class Generate:
                 pass
             elif not current.stacked:
                 pass
-            elif prev_label == "n": # (not parent) and
+            elif prev_label == "n" and False: # (not parent) and
                 prev_label = current.label
             elif current in passed_items:
                 prev_label = current.label
@@ -1096,14 +1142,14 @@ class Generate:
                             else:
                                 print("error - can't find label9999")
                                 sys.exit()
-                        if self.stack.is_main():
-                            print('-------------')
-                            print('X:', x)
-                            print('Y:', y)
+                        print('-------------')
+                        print('X:', x)
+                        print('Y:', y)
 
-                            print('passing features to current: ', current)
-
+                        print('passing features to current: ', current)
                         fhost = current.get_feature_giver()
+                        print('fhost:', fhost)
+                        #input('passing success')
                         for item in unvalued_phis:
                             fhost.features.append(item)
                         self.out("PassFs", "Pass Features " + inherit.label + " to " + other_label)
@@ -1160,7 +1206,8 @@ class Generate:
         print('feature_checking_function: ', x.label, y.label)
         if self.stack.is_main() and not self.stack:
             return x, y, None
-        x_feat_giver, y_feat_giver = self.get_feature_givers(x, y)
+        x_feat_giver = x.get_head()
+        y_feat_giver = y.get_head()
         x_feats = x_feat_giver.features
         y_feats = y_feat_giver.features
         checked_feats = []
@@ -1248,6 +1295,9 @@ class Generate:
                 elif uf.name == "Case" and uf.value:
                     checked_feats.append(uf)
                     # hmm... Case disappears from original place and is active only in new place.
+                    x.replace_within(uf, None)
+                    y.replace_within(uf, None)
+
                     # I can't accept it?
                     uf.inactive = True
                     for y_feat in exp_y_feats:
