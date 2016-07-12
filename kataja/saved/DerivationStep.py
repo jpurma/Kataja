@@ -117,7 +117,7 @@ class DerivationStepManager(SavedObject):
         d_step.load_objects(frozen_data, ctrl.main)
         self.current = d_step
         print(d_step.synobjs, d_step)
-        self.forest.mirror_the_syntax(d_step.synobjs, d_step.numeration, d_step.other)
+        self.forest.mirror_the_syntax(d_step.synobjs, d_step.numeration, d_step.other, d_step.msg)
 
     def next_derivation_step(self):
         """

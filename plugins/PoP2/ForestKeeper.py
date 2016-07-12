@@ -25,7 +25,7 @@
 from kataja.singletons import ctrl, running_environment
 from kataja.saved.Forest import Forest
 from kataja.saved.ForestKeeper import ForestKeeper
-from PoP2.PoPDeriveI import Generate
+from PoP2.PoPDeriveJ import Generate
 
 
 class PoPForestKeeper(ForestKeeper):

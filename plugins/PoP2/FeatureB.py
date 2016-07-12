@@ -36,7 +36,7 @@ class Feature(MyBaseClass):
     replaces = "BaseFeature"
 
     def __init__(self, namestring='', counter=0, name='', value='', unvalued=False,
-                 ifeature=False, valued_by=None):
+                 ifeature=False, valued_by=None, inactive=False):
         if in_kataja:
             super().__init__(name=name, value=value, assigned=not unvalued)
         if namestring:
@@ -66,6 +66,7 @@ class Feature(MyBaseClass):
                 self.counter = 0
             self.name, part, self.value = namestring.partition(':')
             self.valued_by = None
+            self.inactive = inactive
         else:
             self.name = name
             self.counter = counter
@@ -73,6 +74,7 @@ class Feature(MyBaseClass):
             self.unvalued = unvalued
             self.ifeature = ifeature
             self.valued_by = None
+            self.inactive = inactive
 
     def __str__(self):
         return repr(self)
@@ -175,4 +177,5 @@ class Feature(MyBaseClass):
         ifeature = SavedField("ifeature")
         counter = SavedField("counter")
         valued_by = SavedField("valued_by")
+        inactive = SavedField("inactive")
         # rest are same as in BaseFeature

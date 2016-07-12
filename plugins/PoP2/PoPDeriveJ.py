@@ -181,6 +181,7 @@ class Generate:
     def out(self, first, second, third=None):
         if self.forest:
             self.msg_stack.append('%s: %s' % (first, second))
+        #print('%s: %s' % (first, second))
         if not self.out_writer:
             return
         self.out_writer.push(first, second, third)
@@ -329,9 +330,7 @@ class Generate:
         self.announce_derivation_step([x, y], "selected x, y for merge")
         external_merge = "MergeF" in x.get_head_features()
         # push to stack if unlabeled or if it has uFs
-        print('++ stack append 1 in merge1 ')
         self.stack.append(x, duplicates=False)
-        print('++ stack append 2 in merge2 ')
         self.stack.append(y, duplicates=False)
         x, y, passed_features, postponed_remerge = self.check_features(x, y)
         label_giver = None
@@ -341,7 +340,6 @@ class Generate:
         y_feats = y.get_head_features()
         # Determine label
         # Head-feature gives immediately label, once
-        print('determine_label')
         if "Head" in x_feats and "Head" not in y_feats:
             head_f = get_by_part(x_feats, "Head")
             x_feats.remove(head_f)
@@ -421,8 +419,6 @@ class Generate:
         msg = "merge (for labeling(remerge back)) " + merged.label + " + " + remerge.label
         self.out("merge", msg)
         merged = Constituent(label=label, part1=remerge, part2=merged)
-        print('assigning copy (1) to: ', remerge)
-        print('merged: ', merged)
         self.merge_counter += 1
         self.out("Label(SharedFeats)", merged)
         self.announce_derivation_step([merged], "remerged back")
@@ -439,6 +435,20 @@ class Generate:
         :param merged:
         :return: merged
         """
+        def recursive_find_complement(item, target_label, parent_matched):
+            label_match = item.label == target_label
+            if parent_matched and not label_match:
+                return item
+            if item.part1:
+                found = recursive_find_complement(item.part1, target_label, label_match)
+                if found:
+                    return found
+            if item.part2:
+                found = recursive_find_complement(item.part2, target_label, label_match)
+                if found:
+                    return found
+            return None
+
         print('transfer_check')
         # ##### Dephase because T inherits phasehood ##### #
         if self.stack.is_main() and merged.label == "v*":
@@ -449,22 +459,20 @@ class Generate:
 
         if merged.label in PHASE_HEADS:  # This is last resort
             merged_feats = merged.get_head_features()
-            transfer = None
 
             if "Delete" in merged_feats:  # Dephase because C is deleted
                 transfer, merged = self.dephase_deleted_c(merged)
+                transfer.transfered = True
                 self.announce_derivation_step(merged, "dephased deleted C")
                 remerge = None
                 if self.stack.is_main():
                     merged, remerge = self.remerge_if_can(merged, dephase=True)
                 self.out("Transfer", transfer)  # Transfer actually does nothing.
-                #print('******** Transfer ********')
+                # print('******** Transfer ********')
                 self.stack.clear_main_stack()
                 if remerge:
-                    print('++ stack append 3 remerge, in transfer_check')
                     self.stack.append(remerge, force_main=True)
                 if self.stack.is_sub():
-                    print('++ substack append 4 merged, in transfer_check')
                     self.stack.append(merged, force_main=True)
                 return merged
 
@@ -478,21 +486,14 @@ class Generate:
                 target_label = merged.part2.label
             else:
                 target_label = merged.label
-            prev = None
-            for next_item in reversed(self.stack):
-                # Find next element in stack that lacks this label
-                if next_item.label != target_label and prev and prev.label == target_label:
-                    transfer = next_item
-                    break
-                prev = next_item
+
+            transfer = recursive_find_complement(merged, target_label, False)
+            transfer.transfered = True
             self.out("Transfer", transfer)  # Transfer actually does nothing.
-            #print('******** Transfer ********')
             self.stack.clear_main_stack()
             if remerge:
-                print('++ stack append 5 remerge 2, in transfer_check')
                 self.stack.append(remerge, force_main=True)
         if self.stack.is_sub():
-            print('++ stack append 6 merged 2, in transfer_check')
             self.stack.append(merged, force_main=True)
         return merged
 
@@ -507,11 +508,11 @@ class Generate:
         # Find closest Root
 
         def find_closest_root(const):
-            if const.stacked and any(x.name == "Root" for x in const.get_head_features()):
+            if any(x.name == "Root" for x in const.get_head_features()):
                 return const
             # (jukka) We are looking for v:s but if we go into branches we hit into n:s.
-            # let's try to not go into branches. another option would be to directly demand 'v' in
-            # label
+            # let's try to not go into branches. another option would be to directly
+            # demand 'v' in label
             #if const.part1:
             #    found = find_closest_root(const.part1)
             #    if found:
@@ -526,7 +527,6 @@ class Generate:
             assert current.is_labeled()
             remerge = current
             transfer = remerge.part2
-            print('-- stack cut in dephase and transfer')
             self.stack.cut_to(current)
             # Dephasing takes the head of the merged structure
             new_label = remerge.label + "+" + merged.label
@@ -538,16 +538,12 @@ class Generate:
                 merged = merged.copy()
                 merged.label = new_label
             self.out("Dephase v", merged)
+            transfer.transfered = True
             self.out("Transfer", transfer)
             # Check to see if Remerge results in labeling
             if self.stack.is_sub():
                 print('++ stack append 7 merged, in dephase and transfer')
                 self.stack.append(merged, force_main=True)
-            else:
-                for current in reversed(self.stack):
-                    if remerge == current.part1 and current.is_unlabeled():
-                        print("Relabel", current)
-                        sys.exit()
             return merged
 
     def dephase_deleted_c(self, merged):
@@ -583,64 +579,55 @@ class Generate:
         if merged.is_unlabeled() or "Phi" in target_label:
             target_label = merged.part2.label
 
-        # Stack -based solution fixme: we can get rid of this if assert holds and checks success
-        transfer = None
-        stack_copy = list(self.stack)
-        while stack_copy:
-            item = stack_copy.pop()
-            if not stack_copy:
-                break
-            next = stack_copy[-1]
-            if item.label == target_label and next.label != item.label:
-                transfer = next
-                break
-        # Recursion-based, confirm it returns the same before restoring
-        otransfer = find_next_head(left, target_label, label)
-        if not otransfer:
-            otransfer = find_next_head(right, target_label, label)
-        assert(otransfer == transfer)
+        transfer = find_next_head(left, target_label, label)
+        if not transfer:
+            transfer = find_next_head(right, target_label, label)
         return transfer, merged
 
     def remerge_if_can(self, merged, dephase=False):
         print('remerge_if_can')
-        outer = reversed(self.stack.main_stack)
-        inner = reversed(self.stack.main_stack)
-        for current in outer:
+
+        def list_builder(node, l):
+            if node not in l:
+                l.append(node)
+                # Again it seems that anything deeper than spine is off-limits
+                #if node.part1:
+                #    l = list_builder(node.part1, l)
+                if node.part2:
+                    l = list_builder(node.part2, l)
+            return l
+
+        rstack = list_builder(merged, [])
+        for current in list(rstack):
             if current.label != merged.label and "Phi" not in current.label:
                 current_feats = expanded_features(current.get_head_features())
-                current = current
                 if any([x.unvalued_and_alone() for x in current_feats]):
                     # if Current is already Merged to element that shares features with
                     # phase head, then Remerge isn't possible
                     # Find complement of Current
                     # See if complement shares features with phase head
-                    for inner_current in inner:
-                        complement = None
-                        if current == inner_current.part1:
-                            complement = inner_current.part2
-                        elif current == inner_current.part2:
-                            complement = inner_current.part1
-                        if complement:
-                            shared_feats = merged.shared_features(complement)
-                            print('SharedFeats:', shared_feats)
-                            if shared_feats:
-                                #input('skipping :' + str(shared_feats))
-                                if not dephase:
-                                    self.out("merge", """
-            Remerge of %s blocked by Remerge Condition (shared features)
-            """ % current.label)
-                                return merged, None
-                            else:
-                                remerge = current
-                                merged = Constituent(label="_", part1=remerge, part2=merged)
-                                print('assigning copy (2) to: ', remerge)
-                                #input()
-                                msg = "merge (due to uF) %s + %s" % (remerge.label,
-                                                                     merged.label)
-                                self.announce_derivation_step(merged, msg)
-                                self.out("merge", msg)
-                                self.out("Label(Head)", merged)
-                                return merged, remerge
+                    for inner_current in rstack:
+                        if current == inner_current.part1:  # shared_feats with complement
+                            shared_feats = merged.shared_features(inner_current.part2)
+                        elif current == inner_current.part2:  # shared_feats with complement
+                            shared_feats = merged.shared_features(inner_current.part1)
+                        else:
+                            continue
+                        if shared_feats:
+                            remerge = None
+                            # input('skipping :' + str(shared_feats))
+                            if not dephase:
+                                self.out("merge", """
+                            Remerge of "%s" blocked by Remerge Condition (shared features)
+                            """ % current.label)
+                        else:
+                            remerge = current
+                            merged = Constituent(label="_", part1=remerge, part2=merged)
+                            msg = "merge (due to uF) %s + %s" % (remerge.label, merged.label)
+                            self.announce_derivation_step(merged, msg)
+                            self.out("merge", msg)
+                            self.out("Label(Head)", merged)
+                        return merged, remerge
                     return merged, None
         return merged, None
 
@@ -656,10 +643,8 @@ class Generate:
                     lf_so = self.lookforward_so
                 if lf_so.label in DET_HEADS or \
                     (lf_so.label == "n" and has_part(lf_so.features, "uPerson")):  # = n_Expl
-                    print('external merge blocks internal merge')
                     return merged
         if self.stack.is_main():
-            print('++ stack append 5 in unlabeled_move')
             self.stack.append(merged, duplicates=False)
         # Move an element within an unlabeled Merged Structure
 
@@ -721,7 +706,6 @@ class Generate:
                 return True
             return current.part2 and relabel_my_parent(current.part2, chosen_one)
 
-
         print('remerge (attempting to remerge)')
         if self.stack.is_sub():
             print("Do in substream999999")
@@ -737,9 +721,7 @@ class Generate:
         # Find new MergedLabel
         new_merged = Constituent(label=merged.label, part1=remerge, part2=merged)
 
-        print('++ stack append 6 (unlabeled move 2) in remerge')
         self.stack.append(remerge)
-        print('++ stack append 7 (unlabeled move 3) in remerge:', new_merged.label)
         self.stack.append(new_merged)
         new_merged, success = self.label_if_possible(new_merged)
         if success:
@@ -749,11 +731,7 @@ class Generate:
             self.out("Label(None)", new_merged)
         else:
             self.out("Label(SharedFeats)", new_merged)
-            print("Label via shared FEatures2", new_merged)
-            print("\n")
         relabel_my_parent(new_merged, remerge)
-
-        print('++ stack append 8 (unlabeled move 4) in remerge', new_merged.label)
         self.stack.append(new_merged)
         return new_merged
 
@@ -763,7 +741,11 @@ class Generate:
         :param merged:
         :return:
         """
-        # hmm.. here we have whole structure, but labeling function needs to know if given items are copies. It would be straightforward to flag those if we would be analysing tree from top down, but labeling happens from bottom up. So we have to do it in two stages, first go top down to build a list of tuples, (item1, item2, is_copy1, is_copy2) and second to go through it in reverse.
+        # hmm.. here we have whole structure, but labeling function needs to know if given
+        #  items are copies. It would be straightforward to flag those if we would be
+        # analysing tree from top down, but labeling happens from bottom up. So we have to
+        #  do it in two stages, first go top down to build a list of tuples, (item1, item2,
+        #  is_copy1, is_copy2) and second to go through it in reverse.
 
         found_items = set()
         waiting_for_labeling = []
@@ -788,22 +770,6 @@ class Generate:
                 success = True
         return merged, success
 
-        # def check_labeling(const, merged):
-        #     done = False
-        #
-        #     if const.part2:
-        #         done = check_labeling(const.part2, merged)
-        #     if const.part1:
-        #         done = check_labeling(const.part1, merged)
-        #     if const.is_unlabeled() and const.part1 and const.part2:
-        #         new_label = self.labeling_function(const.part1, const.part2, merged)
-        #         if new_label is not False:
-        #             const.label = new_label
-        #             return True
-        #     return done
-        # success = check_labeling(merged, merged)
-        # return merged, success
-
     def labeling_function(self, x, y, x_has_moved, y_has_moved):
         """ Compute label for SO that merges x, y
         :param x: Constituent
@@ -812,8 +778,7 @@ class Generate:
         :param y_has_moved: bool
         :return: label string or False
         """
-        print('labeling_function for ', x.label, y.label, x_has_moved, y_has_moved)
-
+        print('labeling_function')
         if x.is_unlabeled():
             elem1_feats = x.part1.get_head_features()
         else:
@@ -823,55 +788,42 @@ class Generate:
         else:
             elem2_feats = y.get_head_features()
         if not (elem1_feats and elem2_feats):
-            print('1: no elem1 and elem2 features')
             return False
         if x.is_unlabeled() and y.is_unlabeled():
-            print('2: both are unlabeled')
             return False
         elem1_feats = expanded_features(elem1_feats)
         elem2_feats = expanded_features(elem2_feats)
         if has_part(elem1_feats, "Root"):  # weak
             if has_part(elem1_feats, "iPerson", "iNumber", "iGender"):
                 self.out("Label(Strengthened)", x.label)
-                print('3: iPerson, iNumber or iGender')
                 return x.label
             elif has_part(elem1_feats, "iPerson"):
-                print("elem1 has only iPerson of phi")
                 sys.exit()
         if x_has_moved and not y_has_moved:
             if has_part(elem2_feats, "Root") or has_part(elem1_feats, "Root"):  # weak
                 if has_part(elem2_feats, "iPerson", "iNumber", "iGender"):
                     self.out("Label(Move)", y.label)
-                    print('5: elem1 is Copy, either is Root and elem 2 has phi-features')
                     return y.label
             else:
                 self.out("Label(Move)", y.label)
-                print('6: elem1 is Copy, 2 is not, neither is Root')
                 return y.label
         elif y_has_moved and has_part(elem1_feats, "Root", "iPerson", "iNumber", "iGender"):
                 # weak if Root
                 self.out("Label(Move)", x.label)
-                print('7: elem2 is Copy, elem1 is Root and phi')
                 return x.label
         shared_feats = find_shared_features(elem1_feats, elem2_feats)
         if not shared_feats:
             # Check for strengthened element
-            print('8: no shared feats (return False)')
             return False
-        print(shared_feats)
-        #input('label via shared feats')
         person_f = get_by_part(shared_feats, "iPerson")
         if person_f:
             if has_part(shared_feats, "iNumber", "iGender"):
                 new_label = "Phi%s" % person_f.counter or ''
                 self.out("Label(SharedFeats)", new_label)
-                print('9b: shares phi-features (strengthen)', new_label)
                 return new_label
             else:
                 self.out("Label(SharedFeats)", "Per")
-                print('10: shares iPerson, make a "Per"-constituent')
                 return "Per"
-        print('11: nothing matched')
         return False
 
     def get_lexem(self, synobj):
@@ -966,8 +918,6 @@ class Generate:
         x_feats, y_feats = self.get_head_features(x, y)
         x_feats = expanded_features(x_feats)
         y_feats = expanded_features(y_feats)
-        #print('x_feats (expanded):', x_feats)
-        #print('y_feats (expanded):', y_feats)
         # Which is head?
         current_label = ''
         x_head = "Head" in x_feats
@@ -985,6 +935,10 @@ class Generate:
             # we used to have "merged" here as parameter, now we have to cook one up for debug
             self.out("Label(Head)", Constituent(label=current_label, part1=x, part2=y))
         inherit = False
+
+        # First thing is to collect unvalued phis from either x or y. First try x,
+        # if it has impressive amount of unvalued features, then it is the feature giver.
+        # Then y. If neither has enough, scoot off.
         unvalued_phis = []
         for f in x_feats:
             if f.name in ["Person", "Number", "Gender"] and f.unvalued_and_alone():
@@ -1006,13 +960,113 @@ class Generate:
             assert(not remerge)
             return x, y, False, remerge
 
-        # pass feats down the tree
+        # Pass features to those who:
+        #
+        # - Have Root-feature
+        # - don’t have uPerson or iPerson
+        # - are not already chosen for feature passing (we don't double-drive)
+        # - have not iD or iN in features
+        # - don’t have ”n” as previous item in stack (wtf?)
+        # - bonus: have not transfered
+        #
+        # p. 27:
+        # According to (19), a phase head passes its uninterpretable features (uFs) to its
+        # complement X, if the complement X is unlicensed. Furthermore, X will pass these
+        # uFs down to its complement Y, if Y is unlicensed, and so on. An unlicensed
+        # complement is unlabeled.
+
+        # (19) Feature inheritance (revised)
+        # Uninterpretable features are passed to an unlicensed complement.
+
+        # hm, hm. Model10 code seems to also allow labeled Roots to inherit features.
+
+        #input('attempt feature passing for %s' % inherit.label)
+
         passed_items = []
         feats_passed = False
         prev_label = False  # block feature passage to nominal
 
+        print('-------------')
+        print('X:', x)
+        print('Y:', y)
 
-        def pass_features(current, ignored, feats_passed, prev_label, recursive=True, parent=None):
+        def find_empty_root(node, previous_label):
+            feats = expanded_features(node.get_head_features())
+            found = False
+            if has_part(feats, "Root"):
+                go_on = True
+                for item in ["uPerson", "iPerson", "iD", "iN"]:
+                    if has_part(feats, item):
+                        go_on = False
+                        break
+                if prev_label == "n":
+                    go_on = False
+                if go_on:
+                    if node.is_labeled():
+                        other_label = node.label
+                    else:
+                        if node.part1.is_labeled():
+                            other_label = node.part1.label
+                        elif node.part2.is_labeled():
+                            other_label = node.part2.label
+                        else:
+                            print("error - can't find label9999")
+                            sys.exit()
+
+                    print('passing features to current: ', node)
+                    #input()
+                    fhost = node.get_feature_giver()
+                    for item in unvalued_phis:
+                        fhost.features.append(item)
+                    self.out("PassFs", "Pass Features " + inherit.label + " to " + other_label)
+                    self.out("FeaturesPassed", unvalued_phis)
+                    self.inheritance_counter += 1
+                    found = True
+            if previous_label != "n":
+                if node.part1 and find_empty_root(node.part1, node.label):
+                    found = True
+                if node.part2 and find_empty_root(node.part2, node.label):
+                    found = True
+            return found
+
+        if inherit == x:
+            spine = y
+        else:
+            spine = x
+        print('with inherited features from ', inherit)
+        print('attempting to look into ', spine)
+
+        while spine and False:
+            print('*putter-putter*')
+            if not (spine.part1 and spine.part2):
+                comp = spine
+                spine = None
+            elif spine.part1.is_unlabeled() and spine.part2.is_unlabeled():
+                print('both children unlabeled. too strange.')
+                sys.exit()
+            elif spine.part1.is_unlabeled():
+                comp = spine.part2
+                spine = spine.part1
+            elif spine.part2.is_unlabeled():
+                comp = spine.part1
+                spine = spine.part2
+            elif not spine.part2.transfered:
+                comp = spine.part1
+                spine = spine.part2
+            else:
+                comp = spine.part1
+                spine = None
+            if comp:
+                print('looking into "%s"' % comp)
+                did_it = find_empty_root(comp, '')
+                if did_it:
+                    feats_passed = True
+                    #input('found some ^')
+                else:
+                    #input('no win this time')
+                    pass
+
+        def pass_features(current, ignored, passed, prev_label):
             if current == ignored: #or not (current.part1 and current.part2):
                 pass
             elif not current.stacked:
@@ -1021,8 +1075,6 @@ class Generate:
                 prev_label = current.label
             elif current in passed_items:
                 prev_label = current.label
-            elif parent and ((parent.part1 is current and parent.part2.label == 'n') or (parent.part2 is current and parent.part1.label == 'n')):
-                pass
             else:
                 prev_label = current.label
                 current_feats = expanded_features(current.get_head_features())
@@ -1034,7 +1086,6 @@ class Generate:
                             break
                     if go_on:
                         passed_items.append(current)
-                        #assert(current not in x)
                         if current.is_labeled():
                             other_label = current.label
                         else:
@@ -1045,82 +1096,34 @@ class Generate:
                             else:
                                 print("error - can't find label9999")
                                 sys.exit()
+                        if self.stack.is_main():
+                            print('-------------')
+                            print('X:', x)
+                            print('Y:', y)
+
+                            print('passing features to current: ', current)
+
                         fhost = current.get_feature_giver()
                         for item in unvalued_phis:
                             fhost.features.append(item)
                         self.out("PassFs", "Pass Features " + inherit.label + " to " + other_label)
                         self.out("FeaturesPassed", unvalued_phis)
                         self.inheritance_counter += 1
-                        feats_passed = True
-            if recursive:
+                        passed = True
+            return ignored, passed, prev_label
 
-                if current.part1 and current.part2:
-                    if current.part1.label == current.label:
-                        ignored, feats_passed, prev_label = pass_features(current.part2, ignored, feats_passed, prev_label, parent=current)
-                        ignored, feats_passed, prev_label = pass_features(current.part1, ignored, feats_passed, prev_label, parent=current)
-                    else:
-                        ignored, feats_passed, prev_label = pass_features(current.part1, ignored, feats_passed, prev_label, parent=current)
-                        ignored, feats_passed, prev_label = pass_features(current.part2, ignored, feats_passed, prev_label, parent=current)
-            return ignored, feats_passed, prev_label
-
-        print('******************=======------- Feature check ------======*****')
-        #print('x:', x)
-        #print('y:', y)
-        if self.stack.is_main():
-            temp_stack = list(self.stack.main_stack)
-        else:
-            temp_stack = list(self.stack.sub_stack)
-        def find_item(item, temp_stack):
-            #if item in temp_stack:
-            #    print('stack head')
-            #else:
-            #    print('item in tree, but not stack head', item)
-            if item.stacked:
-                print(item.label, item.get_head_features())
-                if item not in temp_stack:
-                    print('marked stacked, but not there.')
-                    assert(False)
-
-            if item in temp_stack:
-                for otter in temp_stack:
-                    if otter == item and otter is not item:
-                        print('%s is not the same in stack and tree' % item)
-            if item.part1 and item.part2:
-                if item.part1.label == item.label:
-                    find_item(item.part2, temp_stack)
-                    find_item(item.part1, temp_stack)
-                else:
-                    find_item(item.part1, temp_stack)
-                    find_item(item.part2, temp_stack)
-        print('-------- SO ---------')
-        find_item(x, temp_stack)
-        find_item(y, temp_stack)
-
-        #print('-------- stack ---------')
-        #for item in reversed(temp_stack):
-        #    print(item.label, item.get_head_features())
-
-        so = False
-        if so:
-            print('--------SO-based algo-------')
-            if inherit == x:
-                ignored, feats_passed, prev_label = pass_features(y, x, feats_passed, prev_label)
-            else:
-                ignored, feats_passed, prev_label = pass_features(x, x, feats_passed,
-                                                              prev_label)
-
-        if not so:
+        if True:
             print('---------Stack-based algo--------')
             print('unvalued phis looking for who should inherit them:', unvalued_phis)
             if self.stack.is_main():
                 temp_stack = list(self.stack.main_stack)
             else:
                 temp_stack = list(self.stack.sub_stack)
-            c = 0
             while temp_stack:
                 current = temp_stack.pop()
-                ignored, feats_passed, prev_label = pass_features(current, x, feats_passed, prev_label, recursive=False)
-                c += 1
+                ignored, feats_passed, prev_label = pass_features(current, x, feats_passed, prev_label)
+        if feats_passed:
+            self.announce_derivation_step([x, y], "passed features %s" % unvalued_phis)
         x, y, remerge = self.feature_checking_function(x, y)
         y, success = self.label_if_possible(y)
         if success:
@@ -1144,9 +1147,18 @@ class Generate:
                         chkd.append((unvalued_feature, u_goal))
             return chkd
 
+        def list_builder(node, l):
+            if node not in l:
+                l.append(node)
+                # Again it seems that anything deeper than spine is off-limits
+                if node.part1:
+                    l = list_builder(node.part1, l)
+                if node.part2:
+                    l = list_builder(node.part2, l)
+            return l
+
         print('feature_checking_function: ', x.label, y.label)
         if self.stack.is_main() and not self.stack:
-            print('quick escape! ', type(x), type(y))
             return x, y, None
         x_feat_giver, y_feat_giver = self.get_feature_givers(x, y)
         x_feats = x_feat_giver.features
@@ -1162,50 +1174,30 @@ class Generate:
         unvalued_features = [mf for mf in exp_x_feats if mf.unvalued_and_alone() or
                              (mf.name == "Case" and unvalued_phi) or
                              (mf.name == "Scp" and mf.ifeature)]
-        print('x_feats:', x_feats)
-        print('y_feats:', y_feats)
-        print('exp_x_feats:', exp_x_feats)
-        print('exp_y_feats:', exp_y_feats)
-        print('unvalued_features: ', unvalued_features)
         if not unvalued_features:
-            print('-- no unvalued features, escaping feature_checking_function --')
             return x, y, None
-        ###########################
         remerge = None
-        unvalued_feature_stack = list(sorted(unvalued_features)) # oh fuck the ordering matters
-        print('----------------------------------')
-        print('uFs:', unvalued_feature_stack)
-        print(' feat |<<')
+        unvalued_feature_stack = list(sorted(unvalued_features)) # oh the ordering matters
+        tree_as_list = list_builder(x, [])
+        tree_as_list = list_builder(y, tree_as_list)
 
         while unvalued_feature_stack:
             uf = unvalued_feature_stack.pop()
-            temp_stack = list(self.stack)
-            #print('*****************************')
-            #print('uf:', uf)
             goal = Feature(name=uf.name, ifeature=True, value=uf.value)
-            #print('goal: ', goal)
-            print(' stack >>| (%s)' % len(temp_stack))
-            while temp_stack:
-                stack_top = temp_stack.pop()
+            for stack_top in tree_as_list:
                 feat_checked = False
                 if stack_top == x:
-                    if temp_stack:
-                        stack_top = temp_stack.pop()
-                        print(' stack <')
-                    else:
-                        break
-                #print('++++++++++++++++')
+                    continue
                 if "Phi" in stack_top.label:
                     # Don't look at the features of an element with shared phi-features
                     # This is maybe an imperfection
                     stack_top_feats = []
-                    print('skipped Phi-constituent')
+                    stack_top_feat_base = stack_top
                 else:
                     stack_top_feats = expanded_features(stack_top.get_head_features())
+                    stack_top_feat_base = stack_top.get_feature_giver()
                 if stack_top_feats is None:
                     sys.exit()
-                #print('stack_top_feats:', stack_top_feats)
-                #print('stack top label:', stack_top.label, stack_top.is_labeled())
                 uf_present = False
                 # This can match only two unvalued, but uf:s can also be iScp:s or Cases
                 if uf.unvalued_and_alone():
@@ -1214,47 +1206,28 @@ class Generate:
                     for top_feat in unvalued_top_feats:
                         uf_present = True
                         if top_feat != uf and top_feat.name == uf.name: # both are unvalued
-                            print('unification possible: %s -> %s' % (top_feat, uf))
-                            stack_top_feats.remove(top_feat)
-                            stack_top_feats.append(uf)
-                            self.stack.replace(top_feat, uf)
-                            stack_top.replace_within(top_feat, uf)
-                            x.replace_within(top_feat, uf)
-                            y.replace_within(top_feat, uf)
+                            stack_top_feat_base.features.remove(top_feat)
+                            stack_top_feat_base.features.append(uf)
                             self.out("Unification", uf)
-                #if has_part(top_feats, "iQ"):
-                #    print('2: ', top_feats)
                 if uf.name == "Q" or uf.name == "Top":
                     uf_present = True  # it doesn't matter if a potential goal has any uFs
                     # uFs aren't needed to be visible.
                 if has_part(stack_top_feats, goal):
                     if not (uf_present and stack_top.is_labeled()):
-                        #print('skip: ', uf_present, stack_top.is_labeled())
                         continue
                     if goal.name == "Top" and goal.ifeature:  # iTop
                         # This one never seems to activate
-                        assert False
                         top_chkd = make_checking_pairs(unvalued_features, stack_top_feats)
                         for old_top_f, new_top_f in top_chkd:
                             old_top_f.value_with(new_top_f)
-                            #stack_top.replace_within(old_top_f, new_top_f)
-                            label = stack_top.part1.label
-                            new_label = label + "-wa"
-                            stack_top.replace_within(label, new_label, label=True)
-                            assert(False)
-                            print('attempting to replace label in many constituents')
-                            x.replace_within(old_top_f, new_top_f)
-                            y.replace_within(old_top_f, new_top_f)
                             if old_top_f not in checked_feats:
                                 checked_feats.append(old_top_f)
                             if self.stack.is_sub():
                                 print("Check in substream999999")
                                 sys.exit()
-                            self.stack.replace(old_top_f, new_top_f)
-                        remerge = stack_top.copy()
+                        remerge = stack_top
                     elif goal.name == "Q" and goal.ifeature:  # iQ
                         top_chkd = make_checking_pairs(unvalued_features, stack_top_feats)
-                        print('Q: replace everywhere:', top_chkd)
                         for old_top_f, new_top_f in top_chkd:
                             old_top_f.value_with(new_top_f)
                             if old_top_f not in checked_feats:
@@ -1265,10 +1238,8 @@ class Generate:
                         remerge = stack_top
 
                     # Remerge due to a need to share Q features
-                    #print('goal in top feats, raise feature from top_f to uf')
                     for top_f in stack_top_feats:
                         if goal in top_f:
-                            print('replace everywhere: ', uf, top_f)
                             uf.value_with(top_f)
 
                     feat_checked = True
@@ -1278,10 +1249,7 @@ class Generate:
                     checked_feats.append(uf)
                     # hmm... Case disappears from original place and is active only in new place.
                     # I can't accept it?
-                    x.replace_within(uf, None)
-                    y.replace_within(uf, None)
-                    #y.replace_within(uf, None)
-                    #self.stack.replace(uf, None, main_only=True)
+                    uf.inactive = True
                     for y_feat in exp_y_feats:
                         if y_feat.name == "Case" and y_feat.unvalued_and_alone():
                             print('replace in Y: ', y_feat, uf)
@@ -1304,17 +1272,11 @@ class Generate:
                     self.inheritance_counter += 1
                 if feat_checked:
                     break
-                print(' stack <')
-            print(' feat >')
 
         if checked_feats:
-            print(checked_feats)
-            print(unvalued_features)
-            #input()
             self.out("CheckedFeatures", checked_feats)
             self.feature_check_counter += len(checked_feats)
             self.announce_derivation_step([x, y], "checked features")
-        print('---check features func ends ---')
         return x, y, remerge
 
 # "../Languages/Japanese/DisWarn.txt"
@@ -1325,9 +1287,9 @@ if __name__ == "__main__":
         filename = int(sys.argv[1])
     else:
         filename = "./POP.txt"
-    f = open(filename, 'r')
-    input_data = f.readlines()
-    f.close()
+    file = open(filename, 'r')
+    input_data = file.readlines()
+    file.close()
     t = time.time()
     print('*****')
     print('*****')

@@ -46,6 +46,7 @@ class Constituent(MyBaseClass):  # collections.UserList):
         self.part2 = part2
         self.features = []
         self.stacked = False
+        self.transfered = False
         if features:
             for f in features:
                 if isinstance(f, str):

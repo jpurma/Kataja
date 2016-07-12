@@ -300,7 +300,7 @@ class Forest(SavedObject):
         return tree
 
     @time_me
-    def mirror_the_syntax(self, synobjs, numeration=None, other=None):
+    def mirror_the_syntax(self, synobjs, numeration=None, other=None, msg=None):
         """ This is a big important function to ensure that Nodes on display are only those that
         are present in syntactic objects. Clean up the residue, create those nodes that are
         missing and create the edges.
@@ -462,6 +462,8 @@ class Forest(SavedObject):
         for node in self.nodes.values():
             node.update_label()
 
+        self.gloss_text = msg
+        self.update_forest_gloss()
         self.guessed_projections = False
 
     def update_forest_gloss(self):
