@@ -79,16 +79,7 @@ class ConstituentNode(BaseConstituentNode):
     default_style = {'plain': {'color': 'content1', 'font': g.MAIN_FONT, 'font-size': 10},
                      'fancy': {'color': 'content1', 'font': g.MAIN_FONT, 'font-size': 10}}
 
-    default_edge = {'plain': {'shape_name': 'linear',
-                              'color_id': 'content1', 'pull': .24, 'visible': True,
-                              'arrowhead_at_start': False, 'arrowhead_at_end': False,
-                              'labeled': False},
-                    'fancy': {'shape_name': 'shaped_cubic',
-                              'color_id': 'content1', 'pull': .24, 'visible': True,
-                              'arrowhead_at_start': False, 'arrowhead_at_end': False,
-                              'labeled': False},
-                    'id': g.CONSTITUENT_EDGE,
-                    'name_pl': 'Constituent edges'}
+    default_edge = g.CONSTITUENT_EDGE
 
     # Touch areas are UI elements that scale with the trees: they can be
     # temporary shapes suggesting to drag or click here to create the

@@ -137,8 +137,6 @@ class Generate:
         :param spine: main structure of merged objects
         :return: spine
         """
-        print('merge_substream')
-        print('>>>>>  starting substream')
         self.in_main = False
         self.out("SubStream", True)
         substream_spine = None
@@ -147,7 +145,6 @@ class Generate:
             x = synobjlist.pop()
             substream_spine = self.merge_so(x, substream_spine)
         self.in_main = True
-        print('<<<<<  ended substream')
         # merge substream back to main stream:
         self.out("MainStream", True)
         self.out("merge", "merge " + spine.label + " + " + substream_spine.label)
@@ -184,7 +181,6 @@ class Generate:
         :param spine: main structure of merged objects
         :return: spine
         """
-        print('merge_so')
         if not spine:
             if self.in_main:
                 self.spine = x
@@ -209,7 +205,6 @@ class Generate:
         :param spine:
         :return:
         """
-        print('grand_cycle')
         y = spine
         passed_features = None
         self.announce_derivation_step([x, y], "selected '%s', '%s' for merge" % (x.label, y.label))
@@ -239,7 +234,7 @@ class Generate:
         # 5. Try to deal with possible unlabeled result of merge
         if merged.is_unlabeled():
             self.out("Label(None)", merged)
-            remerge = self.unlabeled_move(merged)
+            remerge = self.find_mover_in_unlabeled(merged)
             if self.label_if_possible(merged):
                 self.announce_derivation_step([merged], "found label for unlabeled element")
             if remerge:
@@ -247,6 +242,8 @@ class Generate:
                          "merge (for labeling (remerge)) %s +  %s" % (remerge.label,
                                                                       merged.label))
                 merged = self.remerge(merged, remerge)
+                if self.label_if_possible(merged):
+                    self.announce_derivation_step([merged], "found label for unlabeled element")
                 self.announce_derivation_step([merged], "remerged previously merged element")
                 if merged.is_unlabeled():
                     self.out("Label(None)", merged)
@@ -281,7 +278,6 @@ class Generate:
         return merged
 
     def determine_label(self, x, y):
-        print('determine_label')
         x_feats = x.get_head_features()
         y_feats = y.get_head_features()
         # Determine label
@@ -316,7 +312,6 @@ class Generate:
         :param part2: so
         :return: merged
         """
-        print('merge')
         if label_giver:
             label = label_giver.label
         else:
@@ -325,12 +320,10 @@ class Generate:
         return merged
 
     def remerge(self, merged, remerge):
-        print('remerge')
         merged = Constituent(label=merged.label, part1=remerge, part2=merged)
         return merged
 
     def remerge_postponed(self, merged, remerge):
-        print('remerge_postponed')
         shared_feats = merged.shared_features(remerge)
         if find(shared_feats, "Q", i=True):
             label = "Q"
@@ -363,7 +356,6 @@ class Generate:
                     return found
             return None
 
-        print('transfer_check')
         # ##### Dephase because T inherits phasehood ##### #
 
         merged_feats = merged.get_head_features()
@@ -399,7 +391,6 @@ class Generate:
         :param merged:
         :return: merged
         """
-        print('dephase_and_transfer')
         # Find closest Root
 
         def find_closest_root(const):
@@ -453,14 +444,13 @@ class Generate:
             if con.part2:
                 return find_next_head(con.part2, target_l, con.label)
 
-        print('dephase_deleted_c')
         left = merged.part1
         right = merged.part2
         label = merged.label
-        merged_feats = expanded_features(merged.get_head_features())
+        merged_feats = merged.get_head_features(expanded=True)
         spec = merged.part1
-        spec_feats = expanded_features(spec.get_head_features())
-        if spec_feats != merged_feats and "Delete" not in spec_feats:
+        spec_feats = spec.get_head_features(expanded=True)
+        if spec_feats != merged_feats and not find(spec_feats, "Delete"):
             input('Delete-delete')
             merged = Constituent(label=merged.label, part1=spec, part2=merged.part2.part2)
             # Core Head needs to be deleted
@@ -478,7 +468,6 @@ class Generate:
         return transfer, merged
 
     def remerge_if_can(self, merged, dephase=False):
-        print('remerge_if_can')
 
         def list_builder(node, l):
             if node not in l:
@@ -493,8 +482,8 @@ class Generate:
         rstack = list_builder(merged, [])
         for current in list(rstack):
             if current.label != merged.label and "Phi" not in current.label:
-                current_feats = expanded_features(current.get_head_features())
-                if any([x.unvalued_and_alone() for x in current_feats]):
+                # any item with unlabeled features:
+                for x in find(current.get_head_features(expanded=True), u=True):
                     # if Current is already Merged to element that shares features with
                     # phase head, then Remerge isn't possible
                     # Find complement of Current
@@ -524,12 +513,11 @@ class Generate:
                     return merged, None
         return merged, None
 
-    def unlabeled_move(self, merged):
-        """ Assume that merged is unlabeled.
+    def find_mover_in_unlabeled(self, merged):
+        """ Assuming that merged is unlabeled, find Q or D with valued phi features to raise.
         :param merged:
         :return:
         """
-        print('unlabeled_move')
         # I don't like this next move, looking forward to decide on current cycle:
         if self.lookforward_so:
             # External merge blocks internal merge
@@ -541,11 +529,10 @@ class Generate:
                 if lf_so.label in DET_HEADS or \
                     (lf_so.label == "n" and find(lf_so.features, "Person", u=True)):  # = n_Expl
                     return None
-        # Move an element within an unlabeled Merged Structure
 
         # find element in stack with phi-features and raise if possible
         head = merged.part1
-        head_feats = expanded_features(head.get_head_features())
+        head_feats = head.get_head_features(expanded=True)
         if find(head_feats, ["Q", "D"], i=True) and find(head_feats, "Person", i=True):
             # There's already a DP with phi-features here, so no need to merge
             # another DP with Phi
@@ -554,15 +541,15 @@ class Generate:
         comp = merged.part2
         if comp.is_unlabeled():
             locus = comp.part1
-            features = expanded_features(locus.get_head_features())
+            features = locus.get_head_features(expanded=True)
             if find(features, "N", i=True) and find(features, "Person", u=True):
                 return comp.part1
         elif "Phi" in comp.label:
             locus = comp.part1
-            features = expanded_features(locus.get_head_features())
+            features = locus.get_head_features(expanded=True)
         else:
             locus = comp
-            features = expanded_features(locus.get_head_features())
+            features = locus.get_head_features(expanded=True)
             if find(features, "N", i=True):
                 return locus
         if find(features, ["Q", "D"], i=True) and find(features, "Person", i=True):
@@ -594,7 +581,6 @@ class Generate:
         # analysing tree from top down, but labeling happens from bottom up. So we have to
         #  do it in two stages, first go top down to build a list of tuples, (item1, item2,
         #  is_copy1, is_copy2) and second to go through it in reverse.
-        print('label_if_possible')
         found_items = set()
         waiting_for_labeling = []
 
@@ -629,11 +615,10 @@ class Generate:
         :param y_has_moved: bool
         :return: label string or False
         """
-        print('labeling_function')
         if x.is_unlabeled() and y.is_unlabeled():
             return False
-        elem1_feats = expanded_features(x.get_head_features())
-        elem2_feats = expanded_features(y.get_head_features())
+        elem1_feats = x.get_head_features(expanded=True)
+        elem2_feats = y.get_head_features(expanded=True)
         if not (elem1_feats and elem2_feats):
             return False
         if find(elem1_feats, "Root"):  # weak
@@ -676,7 +661,6 @@ class Generate:
         :param synobj:
         :return:
         """
-        print('get_lexem')
         # "MergeF" is a feature that is deleted upon Merged
         # used to keep track of whether or not an element has undergone first MErge
         # can distinguish an X (simple) from an XP (complex)
@@ -702,10 +686,9 @@ class Generate:
         return Constituent(label=synobj, features=features)
 
     def can_pass_features(self, x, y):
-        print('check_features: ', x.label, y.label)
         # If X has uPhi, then uPhi are passed down the tree until they are checked
-        x_feats = expanded_features(x.get_head_features())  # sharing is possible
-        y_feats = expanded_features(y.get_head_features(no_sharing=True))
+        x_feats = x.get_head_features(expanded=True)  # sharing is possible
+        y_feats = y.get_head_features(no_sharing=True, expanded=True)
         # Which is head?
         current_label = ''
         x_head = find(x_feats, "Head")  # find returns lists, so this returns [x_head] or []
@@ -756,9 +739,8 @@ class Generate:
                     l = list_builder(node.part2, l)
             return l
 
-        print('feature_checking_function: ', x.label, y.label)
-        x_feats = expanded_features(x.get_head_features(no_sharing=True))
-        y_feats = expanded_features(y.get_head_features(no_sharing=True))
+        x_feats = x.get_head_features(no_sharing=True, expanded=True)
+        y_feats = y.get_head_features(no_sharing=True, expanded=True)
         checked_feats = []
         # XFeats probe
         for mf in find(x_feats, "MergeF"):
@@ -784,7 +766,7 @@ class Generate:
                     probe_feats = []
                     probe_base = probe
                 else:
-                    probe_feats = expanded_features(probe.get_head_features())
+                    probe_feats = probe.get_head_features(expanded=True)
                     probe_base = probe.get_head()
                 if probe_feats is None:
                     sys.exit()
@@ -829,7 +811,6 @@ class Generate:
                     # I can't accept it?
                     uf.inactive = True
                     for y_feat in find(y_feats, "Case", u=True):
-                        print('replace in Y: ', y_feat, uf)
                         y_feat.value_with(uf)
                     feat_checked = True
                 elif uf.name == "Phi":

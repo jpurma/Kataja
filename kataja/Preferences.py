@@ -24,8 +24,10 @@
 
 from PyQt5 import QtGui, QtCore
 
+from kataja.edge_styles import master_styles
 from kataja.globals import *
 from copy import deepcopy
+
 
 disable_saving_preferences = False
 # Alternatives: Cambria Math, Asana Math, XITS Math
@@ -225,34 +227,7 @@ class Preferences(object):
         self._shows_select_order_ui = {'tab': 'Syntax'}
 
         # Rest of the edges are defined in their corresponding node classes
-        self.edge_styles = {
-            ARROW: {'fancy': {'shape_name': 'linear', 'color_id': 'accent4', 'pull': 0,
-                              'visible': True, 'arrowhead_at_start': False,
-                              'arrowhead_at_end': True, 'font': MAIN_FONT, 'labeled': True},
-                    'plain': {'shape_name': 'linear', 'color_id': 'accent4', 'pull': 0,
-                              'visible': True, 'arrowhead_at_start': False,
-                              'arrowhead_at_end': True, 'font': MAIN_FONT, 'labeled': True}
-                    },
-            DIVIDER: {'fancy': {'shape_name': 'linear', 'color_id': 'accent6', 'pull': 0,
-                                'visible': True, 'arrowhead_at_start': False,
-                                'arrowhead_at_end': False, 'font': MAIN_FONT,
-                                'labeled': True, 'style': 'dashed'},
-                      'plain': {'shape_name': 'linear', 'color_id': 'accent6', 'pull': 0,
-                                'visible': True, 'arrowhead_at_start': False,
-                                'arrowhead_at_end': False, 'font': MAIN_FONT,
-                                'labeled': True, 'style': 'dashed'}
-                      },
-            CHECKING_EDGE: {'fancy': {'shape_name': 'cubic', 'color_id': 'accent1tr', 'pull': 0.4,
-                                      'visible': True, 'arrowhead_at_start': False,
-                                      'arrowhead_at_end': True, 'font': MAIN_FONT,
-                                      'labeled': False, 'style': 'dashed'},
-                            'plain': {'shape_name': 'cubic', 'color_id': 'accent1tr', 'pull': 0.4,
-                                      'visible': True, 'arrowhead_at_start': False,
-                                      'arrowhead_at_end': False, 'font': MAIN_FONT,
-                                      'labeled': False, 'style': 'dashed'}
-                      }
-
-        }
+        self.edge_styles = master_styles
         # Nodes are defined in their classes and preference dict is generated
         #  from those.
         self.node_styles = {}
@@ -298,8 +273,6 @@ class Preferences(object):
         node_classes = classes.nodes
         for key, nodeclass in node_classes.items():
             self.node_styles[key] = deepcopy(nodeclass.default_style)
-            edge_key = nodeclass.default_edge['id']
-            self.edge_styles[edge_key] = deepcopy(nodeclass.default_edge)
 
     def restore_default_preferences(self, qt_prefs, running_environment, classes):
         source_prefs = Preferences(running_environment)

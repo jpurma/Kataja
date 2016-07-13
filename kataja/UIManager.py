@@ -222,7 +222,7 @@ class UIManager:
             if scope in classes.nodes:
                 self.active_node_type = scope
                 node_class = classes.nodes[scope]
-                self.active_edge_type = node_class.default_edge['id']
+                self.active_edge_type = node_class.default_edge
         self.active_scope = scope
         ctrl.call_watchers(self, 'scope_changed')
 

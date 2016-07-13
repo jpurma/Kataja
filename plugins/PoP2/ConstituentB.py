@@ -247,21 +247,28 @@ class Constituent(MyBaseClass):  # collections.UserList):
             return self.part1.get_head()
         assert False
 
-    def get_head_features(self, no_sharing=False):
+    def get_head_features(self, no_sharing=False, expanded=False):
         if no_sharing:
             head = self.get_head(no_sharing=True)
-            return head.features
+            if expanded:
+                return expanded_features(head.features)
+            else:
+                return head.features
         else:
             head = self.get_head(no_sharing=False)
             if isinstance(head, list):
                 shared_feats = find_shared_features(head[0].features, head[1].features)
                 if shared_feats:
-                    return shared_feats
+                    feats_list = shared_feats
                 else:
                     head = self.get_head(no_sharing=True)
-                    return head.features
+                    feats_list = head.features
             else:
-                return head.features
+                feats_list = head.features
+            if expanded:
+                return expanded_features(feats_list)
+            else:
+                return feats_list
 
     def get_feature_giver(self):
         return self.get_head(no_sharing=True)

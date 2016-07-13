@@ -74,24 +74,7 @@ class FeatureNode(Node):
     default_style = {'fancy': {'color': 'accent2', 'font': g.SMALL_CAPS, 'font-size': 9},
                      'plain': {'color': 'accent2', 'font': g.SMALL_CAPS, 'font-size': 9}}
 
-    default_edge = {'fancy': {'shape_name': 'cubic',
-                              'color_id': 'accent2tr',
-                              'pull': .40,
-                              'visible': True,
-                              'arrowhead_at_start': False,
-                              'arrowhead_at_end': False,
-                              'labeled': False},
-                    'plain': {
-                              'shape_name': 'linear',
-                              'color_id': 'accent2tr',
-                              'pull': .40,
-                              'visible': True,
-                              'arrowhead_at_start': False,
-                              'arrowhead_at_end': False,
-                              'labeled': False},
-                    'id': g.FEATURE_EDGE,
-                    'name_pl': 'Feature edges'
-                    }
+    default_edge = g.FEATURE_EDGE
 
     def __init__(self, forest=None, syntactic_object=None):
         Node.__init__(self, syntactic_object=syntactic_object, forest=forest)

@@ -92,9 +92,7 @@ class Node(Movable):
     default_style = {'color': 'content1', 'font': g.MAIN_FONT, 'font-size': 10, 'card': False,
                      'card_size': (0, 0)}
 
-    default_edge = {'id': g.ABSTRACT_EDGE, 'shape_name': 'linear', 'color': 'content1', 'pull': .40,
-                    'visible': True, 'arrowhead_at_start': False, 'arrowhead_at_end': False,
-                    'labeled': False,  'name_pl': 'Abstract edges'}
+    default_edge = g.ABSTRACT_EDGE
     touch_areas_when_dragging = {}
     touch_areas_when_selected = {}
 
@@ -156,7 +154,7 @@ class Node(Movable):
 
     def edge_type(self):
         """ Default edge for this kind of node, as in kataja.globals type ids."""
-        return self.__class__.default_edge['id']
+        return self.__class__.default_edge
 
     def after_init(self):
         """ After_init is called in 2nd step in process of creating objects:

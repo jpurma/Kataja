@@ -38,23 +38,7 @@ class PropertyNode(Node):
     default_style = {'fancy': {'color': 'accent6', 'font': g.SMALL_CAPS, 'font-size': 10},
                      'plain': {'color': 'accent6', 'font': g.SMALL_CAPS, 'font-size': 10}}
 
-    default_edge = {'fancy': {'shape_name': 'linear',
-                              'color_id': 'accent5',
-                              'pull': .40,
-                              'visible': True,
-                              'arrowhead_at_start': False,
-                              'arrowhead_at_end': False,
-                              'labeled': False},
-                    'plain': {'shape_name': 'linear',
-                              'color_id': 'accent5',
-                              'pull': .40,
-                              'visible': True,
-                              'arrowhead_at_start': False,
-                              'arrowhead_at_end': False,
-                              'labeled': False},
-                    'id': g.PROPERTY_EDGE,
-                    'name_pl': 'Property edges'
-                    }
+    default_edge = g.PROPERTY_EDGE
 
     def __init__(self, forest=None, property=None):
         Node.__init__(self, forest=forest, syntactic_object=property)
