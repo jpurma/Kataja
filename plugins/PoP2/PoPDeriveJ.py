@@ -21,7 +21,7 @@ except ImportError:
     from FeatureB import Feature, has_part, get_by_part
     in_kataja = False
 
-start = 9
+start = 1
 end = 10
 
 
@@ -399,7 +399,7 @@ class Generate:
         return merged
 
     def remerge_back(self, merged, remerge):
-        print('remerge_back')
+        print('remerge_postponed')
         shared_feats = merged.shared_features(remerge)
         if has_part(shared_feats, "iQ"):
             label = "Q"
@@ -778,10 +778,12 @@ class Generate:
         """
         print('labeling_function')
         if x.is_unlabeled():
+            assert (x.get_head_features() == x.part1.get_head_features())
             elem1_feats = x.part1.get_head_features()
         else:
             elem1_feats = x.get_head_features()
         if y.is_unlabeled():
+            assert (y.get_head_features() == y.part1.get_head_features())
             elem2_feats = y.part1.get_head_features()
         else:
             elem2_feats = y.get_head_features()
@@ -1273,6 +1275,7 @@ class Generate:
                 elif uf.name == "Phi":
                     if has_part(stack_top_feats, "iPerson"):
                         u_phi = get_by_part(x_feats, "Phi")
+                        assert(u_phi is uf)
                         if u_phi.unvalued_and_alone():
                             for top_f in stack_top_feats:
                                 for match_f in ["Person", "Number", "Gender"]:

@@ -394,7 +394,7 @@ class Generate:
         return merged
 
     def remerge_back(self, merged, remerge):
-        print('remerge_back')
+        print('remerge_postponed')
         shared_feats = merged.shared_features(remerge)
         if has_part(shared_feats, "iQ"):
             label = "Q"

@@ -154,6 +154,7 @@ class Feature(MyBaseClass):
             return self.name
 
     def value_with(self, other):
+        assert other is not self
         if self.valued_by:
             self.valued_by.append(other)
         else:
@@ -167,6 +168,22 @@ class Feature(MyBaseClass):
             return flist
         else:
             return [self]
+
+    def match(self, name=None, value=None, u=None, i=None, phi=None):
+        if isinstance(name, list):
+            if self.name not in name:
+                return None
+        elif name is not None and self.name != name:
+            return None
+        elif value is not None and self.value != value:
+            return None
+        elif u is not None and self.unvalued != u:
+            return None
+        elif i is not None and self.ifeature != i:
+            return None
+        elif phi and self.name not in ("Person", "Number", "Gender"):
+            return None
+        return True
 
     def copy(self):
         return Feature(counter=self.counter, name=self.name, value=self.value,

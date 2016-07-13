@@ -12,17 +12,22 @@ try:
     from PoP2.Lexicon import DET_HEADS, PHASE_HEADS, THETA_ASSIGNERS, SHARED_LABELS, \
         ADJUNCT_LABELS, COUNTED_FEATURES, COUNTED_PHI_FEATURES, LEXICON
     from PoP2.ConstituentB import Constituent, find_shared_features, expanded_features
-    from PoP2.FeatureB import Feature, has_part, get_by_part
+    from PoP2.FeatureB import Feature
     in_kataja = True
 except ImportError:
     from Lexicon import DET_HEADS, PHASE_HEADS, THETA_ASSIGNERS, SHARED_LABELS, \
         ADJUNCT_LABELS, COUNTED_FEATURES, COUNTED_PHI_FEATURES, LEXICON
     from ConstituentB import Constituent, find_shared_features, expanded_features
-    from FeatureB import Feature, has_part, get_by_part
+    from FeatureB import Feature
     in_kataja = False
 
 start = 1
 end = 10
+
+
+def find(features, name=None, value=None, u=None, i=None, phi=None):
+    return [x for x in features if x.match(name=name, value=value, u=u, i=i, phi=phi)]
+
 
 class Generate:
     def __init__(self, out_writer=None):
@@ -32,9 +37,6 @@ class Generate:
         self.phi_counter = 0
         self.feature_counter = 0
         self.in_main = True
-        self.merge_counter = 0
-        self.inheritance_counter = 0
-        self.feature_check_counter = 0
         self.lookforward_so = None
         self.over_counter = 0
         self.dumpfile = None
@@ -63,9 +65,6 @@ class Generate:
             target_example = eval(lbracket + target_str)
             self.out(sentence_number, sentence, target_example)
             so = self.generate_derivation(target_example)
-            self.out("MRGOperations", self.merge_counter)
-            self.out("FTInheritanceOp", self.inheritance_counter)
-            self.out("FTCheckOp", self.feature_check_counter)
 
     def out(self, first, second, third=None):
         if self.forest:
@@ -104,9 +103,6 @@ class Generate:
 
         self.phi_counter = 0
         self.feature_counter = 0
-        self.merge_counter = 0
-        self.inheritance_counter = 0
-        self.feature_check_counter = 0
         self.lookforward_so = None
         self.so_list = build_synobj_lists(target_example, [])
         self.forest = forest
@@ -199,10 +195,10 @@ class Generate:
             spine = self.grand_cycle(x, spine)
             if self.in_main:
                 self.spine = spine
-            print('finished merge: ', spine)
-            print('---- kataja string: ----')
+            #print('finished merge: ', spine)
+            #print('---- kataja string: ----')
             #print(spine.tex_tree())
-            print('----------------- ', self.over_counter)
+            #print('----------------- ', self.over_counter)
             self.over_counter += 1
             return spine
 
@@ -213,12 +209,13 @@ class Generate:
         :param spine:
         :return:
         """
+        print('grand_cycle')
         y = spine
         passed_features = None
         self.announce_derivation_step([x, y], "selected '%s', '%s' for merge" % (x.label, y.label))
 
         # Before merge
-        # 1. Pass features downwards
+        # 1. Pass unvalued phi-features downwards
         unvalued_phis, passer = self.can_pass_features(x, y)
         if passer:
             passed_features = self.pass_features(passer, unvalued_phis, x, y)
@@ -229,7 +226,7 @@ class Generate:
         if checked_feats:
             self.announce_derivation_step([x, y], "checked features: %s" % checked_feats)
 
-        # 3. Check if labeling situation is changed
+        # 3. Check if labeling situation has changed
         if self.label_if_possible(y):
             self.announce_derivation_step([x, y], "labeled unlabeled element: '%s'" % y.label)
 
@@ -239,19 +236,23 @@ class Generate:
         merged = self.merge(label_giver, part1, part2)
         self.announce_derivation_step([merged], "merged '%s', '%s'" % (part1.label, part2.label))
 
-        # 5. Try to deal with unlabeled result of merge
+        # 5. Try to deal with possible unlabeled result of merge
         if merged.is_unlabeled():
             self.out("Label(None)", merged)
             remerge = self.unlabeled_move(merged)
             if self.label_if_possible(merged):
                 self.announce_derivation_step([merged], "found label for unlabeled element")
             if remerge:
+                self.out("merge",
+                         "merge (for labeling (remerge)) %s +  %s" % (remerge.label,
+                                                                      merged.label))
                 merged = self.remerge(merged, remerge)
                 self.announce_derivation_step([merged], "remerged previously merged element")
                 if merged.is_unlabeled():
                     self.out("Label(None)", merged)
                 else:
                     self.out("Label(SharedFeats)", merged)
+                # remerge may change the labeling situation in previous place of remerged
                 self.relabel_my_parent(merged, remerge)
 
         # 6. Echos from feature check
@@ -260,7 +261,9 @@ class Generate:
                 # if label_info == "Head":
                 self.out("Label(Head)", merged)
             if postponed_remerge:
-                merged = self.remerge_back(merged, postponed_remerge)
+                self.out("merge", "merge (remerge back) %s + %s" % (merged.label,
+                                                                    postponed_remerge.label))
+                merged = self.remerge_postponed(merged, postponed_remerge)
                 self.out("Label(SharedFeats)", merged)
                 self.announce_derivation_step([merged], "remerged back")
                 if self.label_if_possible(merged):
@@ -278,37 +281,30 @@ class Generate:
         return merged
 
     def determine_label(self, x, y):
+        print('determine_label')
         x_feats = x.get_head_features()
         y_feats = y.get_head_features()
-        external_merge = "MergeF" in x_feats
         # Determine label
         # Head-feature gives immediately label, once
-        if "Head" in x_feats and "Head" not in y_feats:
-            head_f = get_by_part(x_feats, "Head")
-            x_feats.remove(head_f)
-            label_info = "Head"
+        head_xf = find(x_feats, "Head")
+        head_yf = find(y_feats, "Head")
+        if head_xf and not head_yf:
+            x_feats.remove(head_xf[0])
+            # label_info = "Head"
             return x, x, y
         elif y.label in ADJUNCT_LABELS:
             return x, x, y
         else:
             # Check if adjunct
             # ordering doesn't matter, but this makes things easier
-            x_is_head = None
             if "v" in x.label:
-                if y.label.startswith("D"):
-                    x_is_head = False
-                elif y.label.startswith("Q"):
-                    x_is_head = False
+                if y.label.startswith("D") or y.label.startswith("Q"):
+                    return None, y, x
             elif "C" in x.label:
-                x_is_head = False
+                return None, y, x
             elif "P_in" in x.label:
-                x_is_head = False
-            if x_is_head is None:
-                if external_merge:
-                    x_is_head = True
-                else:
-                    x_is_head = False
-            if x_is_head:
+                return None, y, x
+            if "MergeF" in x_feats: # external merge
                 return None, x, y
             else:
                 return None, y, x
@@ -321,7 +317,6 @@ class Generate:
         :return: merged
         """
         print('merge')
-        self.merge_counter += 1
         if label_giver:
             label = label_giver.label
         else:
@@ -329,26 +324,21 @@ class Generate:
         merged = Constituent(label=label, part1=part1, part2=part2)
         return merged
 
-    def remerge_back(self, merged, remerge):
-        print('remerge_back')
+    def remerge(self, merged, remerge):
+        print('remerge')
+        merged = Constituent(label=merged.label, part1=remerge, part2=merged)
+        return merged
+
+    def remerge_postponed(self, merged, remerge):
+        print('remerge_postponed')
         shared_feats = merged.shared_features(remerge)
-        if has_part(shared_feats, "iQ"):
+        if find(shared_feats, "Q", i=True):
             label = "Q"
-        elif has_part(shared_feats, "iTop"):
+        elif find(shared_feats, "Top", i=True):
             label = "Top"
         else:
-            print("SharedFeats", shared_feats)
-            print("Merged", merged)
-            print("Remerge", remerge)
-            print("Can't Determine Label 5555")
-            sys.exit()
-        if not self.in_main:
-            print("Remerging in in substream999999")
-            sys.exit()
-        msg = "merge (for labeling(remerge back)) " + merged.label + " + " + remerge.label
-        self.out("merge", msg)
+            assert False
         merged = Constituent(label=label, part1=remerge, part2=merged)
-        self.merge_counter += 1
         return merged
 
     def transfer_check(self, merged):
@@ -549,18 +539,14 @@ class Generate:
                 else:
                     lf_so = self.lookforward_so
                 if lf_so.label in DET_HEADS or \
-                    (lf_so.label == "n" and has_part(lf_so.features, "uPerson")):  # = n_Expl
+                    (lf_so.label == "n" and find(lf_so.features, "Person", u=True)):  # = n_Expl
                     return None
         # Move an element within an unlabeled Merged Structure
 
         # find element in stack with phi-features and raise if possible
         head = merged.part1
         head_feats = expanded_features(head.get_head_features())
-        if has_part(head_feats, "iD", "iPerson"):
-            # There's already a DP with phi-features here, so no need to merge
-            # another DP with Phi
-            return None
-        elif has_part(head_feats, "iQ", "iPerson"):
+        if find(head_feats, ["Q", "D"], i=True) and find(head_feats, "Person", i=True):
             # There's already a DP with phi-features here, so no need to merge
             # another DP with Phi
             return None
@@ -569,19 +555,17 @@ class Generate:
         if comp.is_unlabeled():
             locus = comp.part1
             features = expanded_features(locus.get_head_features())
-            if has_part(features, "iN", "uPerson") or \
-                    has_part(features, "iQ", "iPerson") or \
-                    has_part(features, "iD", "iPerson"):
-                return locus
+            if find(features, "N", i=True) and find(features, "Person", u=True):
+                return comp.part1
         elif "Phi" in comp.label:
             locus = comp.part1
             features = expanded_features(locus.get_head_features())
         else:
             locus = comp
             features = expanded_features(locus.get_head_features())
-            if has_part(features, "iN"):
+            if find(features, "N", i=True):
                 return locus
-        if has_part(features, "iD", "iPerson") or has_part(features, "iQ", "iPerson"):
+        if find(features, ["Q", "D"], i=True) and find(features, "Person", i=True):
             return locus
         return None
 
@@ -589,7 +573,7 @@ class Generate:
         """ Relabel the parent of remerged constituent """
         if chosen_one != current and chosen_one in current:
             current_feats = current.get_head_features()
-            if not has_part(current_feats, "Root"):
+            if not find(current_feats, "Root"):
                 if current.part1 == chosen_one:
                     current.label = current.part2.label
                 elif current.part2 == chosen_one:
@@ -598,17 +582,6 @@ class Generate:
         if current.part1 and self.relabel_my_parent(current.part1, chosen_one):
             return True
         return current.part2 and self.relabel_my_parent(current.part2, chosen_one)
-
-    def remerge(self, merged, remerge):
-        print('remerge')
-        if not self.in_main:
-            print("Do in substream999999")
-            sys.exit()
-        self.out("merge", "merge (for labeling (remerge)) " + remerge.label + " + " + merged.label)
-        if merged.part1.label == "vUnerg":
-            sys.exit()
-        merged = Constituent(label=merged.label, part1=remerge, part2=merged)
-        return merged
 
     def label_if_possible(self, merged):
         """
@@ -621,13 +594,15 @@ class Generate:
         # analysing tree from top down, but labeling happens from bottom up. So we have to
         #  do it in two stages, first go top down to build a list of tuples, (item1, item2,
         #  is_copy1, is_copy2) and second to go through it in reverse.
-
+        print('label_if_possible')
         found_items = set()
         waiting_for_labeling = []
 
         def build_pairs_to_analyse(item):
+            if item in found_items:
+                return
             found_items.add(item)
-            if item.is_unlabeled() and item.part1 and item.part2:
+            if item.is_unlabeled():
                 p1_is_copy = item.part1 in found_items
                 p2_is_copy = item.part2 in found_items
                 waiting_for_labeling.append((item, p1_is_copy, p2_is_copy))
@@ -655,35 +630,28 @@ class Generate:
         :return: label string or False
         """
         print('labeling_function')
-        if x.is_unlabeled():
-            elem1_feats = x.part1.get_head_features()
-        else:
-            elem1_feats = x.get_head_features()
-        if y.is_unlabeled():
-            elem2_feats = y.part1.get_head_features()
-        else:
-            elem2_feats = y.get_head_features()
-        if not (elem1_feats and elem2_feats):
-            return False
         if x.is_unlabeled() and y.is_unlabeled():
             return False
-        elem1_feats = expanded_features(elem1_feats)
-        elem2_feats = expanded_features(elem2_feats)
-        if has_part(elem1_feats, "Root"):  # weak
-            if has_part(elem1_feats, "iPerson", "iNumber", "iGender"):
+        elem1_feats = expanded_features(x.get_head_features())
+        elem2_feats = expanded_features(y.get_head_features())
+        if not (elem1_feats and elem2_feats):
+            return False
+        if find(elem1_feats, "Root"):  # weak
+            phis = find(elem1_feats, i=True, phi=True)
+            if len(phis) > 1:
                 self.out("Label(Strengthened)", x.label)
                 return x.label
-            elif has_part(elem1_feats, "iPerson"):
-                sys.exit()
         if x_has_moved and not y_has_moved:
-            if has_part(elem2_feats, "Root") or has_part(elem1_feats, "Root"):  # weak
-                if has_part(elem2_feats, "iPerson", "iNumber", "iGender"):
+            if find(elem2_feats, "Root") or find(elem1_feats, "Root"):  # weak
+                phis = find(elem2_feats, i=True, phi=True)
+                if len(phis) > 1:
                     self.out("Label(Move)", y.label)
                     return y.label
             else:
                 self.out("Label(Move)", y.label)
                 return y.label
-        elif y_has_moved and has_part(elem1_feats, "Root", "iPerson", "iNumber", "iGender"):
+        elif y_has_moved and find(elem1_feats, "Root"):
+            if len(find(elem1_feats, i=True, phi=True)) > 1:
                 # weak if Root
                 self.out("Label(Move)", x.label)
                 return x.label
@@ -691,15 +659,15 @@ class Generate:
         if not shared_feats:
             # Check for strengthened element
             return False
-        person_f = get_by_part(shared_feats, "iPerson")
-        if person_f:
-            if has_part(shared_feats, "iNumber", "iGender"):
+        phis = find(shared_feats, i=True, phi=True)
+        if len(phis) == 3:
+            for person_f in find(phis, "Person"):
                 new_label = "Phi%s" % person_f.counter or ''
                 self.out("Label(SharedFeats)", new_label)
                 return new_label
-            else:
-                self.out("Label(SharedFeats)", "Per")
-                return "Per"
+        elif len(phis) == 1:
+            self.out("Label(SharedFeats)", "Per")
+            return "Per"
         return False
 
     def get_lexem(self, synobj):
@@ -736,16 +704,12 @@ class Generate:
     def can_pass_features(self, x, y):
         print('check_features: ', x.label, y.label)
         # If X has uPhi, then uPhi are passed down the tree until they are checked
-        x_feat_host = x.get_head()
-        y_feat_host = y.get_head()
-        assert x_feat_host and y_feat_host
-
-        x_feats = expanded_features(x.get_head_features())
+        x_feats = expanded_features(x.get_head_features())  # sharing is possible
         y_feats = expanded_features(y.get_head_features(no_sharing=True))
         # Which is head?
         current_label = ''
-        x_head = "Head" in x_feats
-        y_head = "Head" in y_feats
+        x_head = find(x_feats, "Head")  # find returns lists, so this returns [x_head] or []
+        y_head = find(y_feats, "Head")
         if x_head and y_head:
             print("Both are heads:", x_feats, y_feats)
             print("Figure out label")
@@ -763,20 +727,13 @@ class Generate:
         # First thing is to collect unvalued phis from either x or y. First try x,
         # if it has impressive amount of unvalued features, then it is the feature giver.
         # Then y. If neither has enough, scoot off.
-        unvalued_phis = []
-        for f in x_feats:
-            if f.name in ["Person", "Number", "Gender"] and f.unvalued_and_alone():
-                unvalued_phis.append(f)
-            elif f.name == "Case" and not f.unvalued_and_alone():
-                unvalued_phis.append(f)
+        unvalued_phis = find(x_feats, u=True, phi=True)
+        unvalued_phis += find(x_feats, "Case", u=False)
         if len(unvalued_phis) >= 3 or x.label in PHASE_HEADS:
             inherit = x
         if not inherit:
-            for f in y_feats:
-                if f.name in ["Person", "Number", "Gender"] and f.unvalued_and_alone():
-                    unvalued_phis.append(f)
-                elif f.name == "Case" and not f.unvalued_and_alone():
-                    unvalued_phis.append(f)
+            unvalued_phis = find(y_feats, u=True, phi=True)
+            unvalued_phis += find(y_feats, "Case", u=False)
             if len(unvalued_phis) >= 3:
                 inherit = y
         return unvalued_phis, inherit
@@ -789,15 +746,6 @@ class Generate:
         :return:
         """
 
-        def make_checking_pairs(unvalued_features, probe_feats):
-            unvalued = [p for p in probe_feats if p.unvalued_and_alone()]
-            chkd = []
-            for unvalued_feature in unvalued:
-                for u_goal in unvalued_features:
-                    if u_goal.name == unvalued_feature.name and u_goal.ifeature:
-                        chkd.append((unvalued_feature, u_goal))
-            return chkd
-
         def list_builder(node, l):
             if node not in l:
                 l.append(node)
@@ -809,78 +757,65 @@ class Generate:
             return l
 
         print('feature_checking_function: ', x.label, y.label)
-        x_feat_giver = x.get_head()
-        y_feat_giver = y.get_head()
-        x_feats = x_feat_giver.features
-        y_feats = y_feat_giver.features
+        x_feats = expanded_features(x.get_head_features(no_sharing=True))
+        y_feats = expanded_features(y.get_head_features(no_sharing=True))
         checked_feats = []
         # XFeats probe
-        if "MergeF" in x_feats:
-            mf = get_by_part(x_feats, "MergeF")
+        for mf in find(x_feats, "MergeF"):
             x_feats.remove(mf)
-        exp_x_feats = expanded_features(x_feats)
-        exp_y_feats = expanded_features(y_feats)
-        unvalued_phi = bool(has_part(exp_x_feats, "uPerson", "uNumber", "uGender"))
-        unvalued_features = [mf for mf in exp_x_feats if mf.unvalued_and_alone() or
-                             (mf.name == "Case" and unvalued_phi) or
-                             (mf.name == "Scp" and mf.ifeature)]
+        unvalued_features = find(x_feats, u=True)
+        if find(unvalued_features, phi=True):
+            unvalued_features += find(x_feats, "Case")
+        unvalued_features += find(x_feats, "Scp", i=True)
         if not unvalued_features:
             return None, None
         remerge = None
-        unvalued_feature_stack = list(sorted(unvalued_features)) # oh the ordering matters
         tree_as_list = list_builder(x, [])
         tree_as_list = list_builder(y, tree_as_list)
 
-        while unvalued_feature_stack:
-            uf = unvalued_feature_stack.pop()
-            goal = Feature(name=uf.name, ifeature=True, value=uf.value)
-            for stack_top in tree_as_list:
+        for uf in unvalued_features:
+            for probe in tree_as_list:
                 feat_checked = False
-                if stack_top == x:
+                if probe == x:
                     continue
-                if "Phi" in stack_top.label:
+                if "Phi" in probe.label:
                     # Don't look at the features of an element with shared phi-features
                     # This is maybe an imperfection
-                    stack_top_feats = []
-                    stack_top_feat_base = stack_top
+                    probe_feats = []
+                    probe_base = probe
                 else:
-                    stack_top_feats = expanded_features(stack_top.get_head_features())
-                    stack_top_feat_base = stack_top.get_feature_giver()
-                if stack_top_feats is None:
+                    probe_feats = expanded_features(probe.get_head_features())
+                    probe_base = probe.get_head()
+                if probe_feats is None:
                     sys.exit()
-                uf_present = False
+                unvalued_probe_feats = find(probe_feats, u=True)
+                # Unification
                 # This can match only two unvalued, but uf:s can also be iScp:s or Cases
-                if uf.unvalued_and_alone():
-                    unvalued_top_feats = [feat for feat in stack_top_feats if
-                                          feat.unvalued_and_alone()]
-                    for top_feat in unvalued_top_feats:
-                        uf_present = True
-                        if top_feat != uf and top_feat.name == uf.name: # both are unvalued
-                            stack_top_feat_base.features.remove(top_feat)
-                            stack_top_feat_base.features.append(uf)
+                if uf.unvalued:
+                    for unvalued_probe in unvalued_probe_feats:
+                        if unvalued_probe != uf and unvalued_probe.match(uf.name):
+                            probe_base.features.remove(unvalued_probe)
+                            probe_base.features.append(uf)
                             self.out("Unification", uf)
-                if uf.name == "Q" or uf.name == "Top":
-                    uf_present = True  # it doesn't matter if a potential goal has any uFs
-                    # uFs aren't needed to be visible.
-                if has_part(stack_top_feats, goal):
-                    if not (uf_present and stack_top.is_labeled()):
+
+                if find(probe_feats, uf.name, i=True, value=uf.value):  # goal in probe
+                    if probe.is_unlabeled() or not (unvalued_probe_feats or uf.match(["Q", "Top"])):
                         continue
-                    if goal.name == "Top" or goal.name == "Q" and goal.ifeature:  # iTop
-                        # "Top" never seems to activate
-                        top_chkd = make_checking_pairs(unvalued_features, stack_top_feats)
-                        for old_top_f, new_top_f in top_chkd:
-                            old_top_f.value_with(new_top_f)
-                            if old_top_f not in checked_feats:
-                                checked_feats.append(old_top_f)
-                            if not self.in_main:
-                                print("Check in substream999999")
-                                sys.exit()
-                        remerge = stack_top
+                    if uf.match(["Top", "Q"]):
+                        # "Top" never seems to activate, for "Q" this gets used
+                        for upb in unvalued_probe_feats:
+                            for found in find(unvalued_features, upb.name, i=True):
+                                upb.value_with(found)
+                                if upb not in checked_feats:
+                                    checked_feats.append(upb)
+                                break
+                        remerge = probe
 
                     # Remerge due to a need to share Q features
-                    for top_f in stack_top_feats:
-                        if goal in top_f:
-                            uf.value_with(top_f)
+                    for probe_match in find(probe_feats, uf.name, i=True, value=uf.value):
+                        if uf != probe_match:
+                            uf.value_with(probe_match)
+                            break
 
                     feat_checked = True
                     checked_feats.append(uf)
@@ -893,33 +828,25 @@ class Generate:
 
                     # I can't accept it?
                     uf.inactive = True
-                    for y_feat in exp_y_feats:
-                        if y_feat.name == "Case" and y_feat.unvalued_and_alone():
-                            print('replace in Y: ', y_feat, uf)
-                            y_feat.value_with(uf)
+                    for y_feat in find(y_feats, "Case", u=True):
+                        print('replace in Y: ', y_feat, uf)
+                        y_feat.value_with(uf)
                     feat_checked = True
                 elif uf.name == "Phi":
-                    if has_part(stack_top_feats, "iPerson"):
-                        u_phi = get_by_part(x_feats, "Phi")
-                        if u_phi.unvalued_and_alone():
-                            for top_f in stack_top_feats:
-                                for match_f in ["Person", "Number", "Gender"]:
-                                    if top_f.name == match_f and top_f.ifeature:
-                                        u_phi.value_with(top_f)
-                                        break
-                                if top_f.name == 'Case' and top_f.unvalued_and_alone():
-                                    u_phi.value_with(top_f)
+                    if find(probe_feats, "Person", i=True):
+                        for i_phi in find(probe_feats, i=True, phi=True):
+                            uf.value_with(i_phi)
+                        for u_case in find(probe_feats, "Case", u=True):
+                            uf.value_with(u_case)
+                            break
 
                     self.out("PhiPassing", "uPhi")
                     feat_checked = True
-                    self.inheritance_counter += 1
                 if feat_checked:
                     break
         if checked_feats:
             self.out("CheckedFeatures", checked_feats)
-            self.feature_check_counter += len(checked_feats)
         return remerge, checked_feats
-
 
     def pass_features(self, inherit, unvalued_phis, x, y):
         """Pass features to those who:
@@ -956,13 +883,11 @@ class Generate:
         def find_empty_root_leaf(node, previous_label):
             found = False
             if node.is_leaf():
-                if has_part(node.features, "Root"):
+                if find(node.features, "Root"):
                     feats = expanded_features(node.features)
                     go_on = True
-                    for item in ["uPerson", "iPerson", "iD", "iN"]:
-                        if has_part(feats, item):
-                            go_on = False
-                            break
+                    if find(feats, ["Person", "D", "N"], i=True) or find(feats, "Person", u=True):
+                        go_on = False
                     if previous_label == "n":
                         go_on = False
                     if go_on:
@@ -985,7 +910,6 @@ class Generate:
                             node.features.append(item)
                         self.out("PassFs", "Pass Features " + inherit.label + " to " + other_label)
                         self.out("FeaturesPassed", unvalued_phis)
-                        self.inheritance_counter += 1
                         found = True
 
                 previous_label = node.label
@@ -1045,7 +969,7 @@ if __name__ == "__main__":
     print('*****')
 
     out = ProduceOutput.ProduceFile('ignore/new/')
-    a = Generate(out_writer=out)
+    a = Generate(out_writer=None) #out)
     a.load_data(input_data, start, end)
     out.close()
     print(time.time() - t)
