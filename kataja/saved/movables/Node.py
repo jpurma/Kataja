@@ -357,6 +357,16 @@ class Node(Movable):
     def move(self, md):
         """ Add on Moveable.move the case when node is folding towards
         triangle. It has priority.
+
+        Things that affect if and how Node moves:
+        1. item folding towards position in part of animation to disappear etc.
+        2. item is being dragged
+        3. item is locked by user
+        4. item is tightly attached to another node which is moving (then the move is handled by
+        the other node, it is _not_ parent node, though.)
+        5. visualisation algorithm setting it specifically
+        (6) or (0) -- places where subclasses can add new movements.
+
         :param md: dict to collect total amount of movement.
         :return: (bool, bool) -- is the node moving, does it allow
         normalization of movement
@@ -778,6 +788,29 @@ class Node(Movable):
     def node_alone(self):
         return not (self.edges_down or self.edges_up)
 
+    def get_locked_node_positions(self, for_me=None):
+        x, y = self.current_position
+        center_x = x + self.boundingRect().center().x()
+        bottom_y = y + self.boundingRect().bottom()
+        if for_me:
+            for fnode in self.get_all_visible_children():
+                if fnode.locked_to_node is self:
+                    if fnode is for_me:
+                        return center_x, bottom_y
+                    else:
+                        bottom_y += fnode.height
+        else:
+            l = []
+            for fnode in self.get_all_visible_children():
+                if fnode.locked_to_node is self:
+                    l.append((fnode, center_x, bottom_y))
+                    bottom_y += fnode.height
+            return l
+
+    def get_locked_in_nodes(self):
+        return [x for x in self.get_children() if x.locked_to_node == self]
+
+
     def can_connect_with(self, other):
         """ Override this in subclasses, checks conditions when other nodes could connect to this
         node. (This node is child). Generally connection should be refuted if it already exists
@@ -785,6 +818,14 @@ class Node(Movable):
         :return:
         """
         return other not in self.get_parents(only_similar=False, only_visible=False)
+
+    def update_relations(self):
+        if self.locked_to_node:
+            edge = self.get_edge_to(self.locked_to_node)
+            if edge:
+                edge.hide()
+
+
 
     # Reflecting structural changes in syntax
     # Nodes are connected and disconnected to each other by user, through UI,
@@ -1233,7 +1274,7 @@ class Node(Movable):
             self.update_bounding_rect()
         x1, y1 = self.current_scene_position
         x2, y2 = self._magnets[7]
-        x2 += (self.width / (size + 2)) * (i + 1)
+        x2 += (self.width / (size + 1)) * (i + 1)
         if prefs.use_magnets == 2:
             x2, y2 = self._angle_to_parent(x2, y2)
         return x1 + x2, y1 + y2

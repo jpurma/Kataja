@@ -25,7 +25,8 @@
 from kataja.singletons import ctrl, running_environment
 from kataja.saved.Forest import Forest
 from kataja.saved.ForestKeeper import ForestKeeper
-from PoP2.PoPDeriveK import Generate
+from PoP2.PoPDeriveJ import Generate
+import ast
 
 
 class PoPForestKeeper(ForestKeeper):
@@ -87,12 +88,13 @@ class PoPForestKeeper(ForestKeeper):
             elif sentence_number < start:
                 continue
             sentence = sentence[2:]  # remove number and the space after it
-            target_example = eval(lbracket + target_str)
+            # ast.literal_eval is safer eval, so you cannot put destructive python code to POP.txt
+            target_example = ast.literal_eval(lbracket + target_str)
             ug.out(sentence_number, sentence, target_example)
             forest = Forest(gloss_text=sentence)
             self.forests.append(forest)
             so = ug.generate_derivation(target_example, forest=forest)
-            forest.derivation_steps.jump_to_derivation_step(0)
+            #forest.derivation_steps.jump_to_derivation_step(0)
             #forest.mirror_the_syntax([so])
             #ug.out("MRGOperations", ug.merge_counter)
             #ug.out("FTInheritanceOp", ug.inheritance_counter)

@@ -315,6 +315,10 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         if self.forest:
             self.forest.retire_from_drawing()
         self.forest = self.forest_keeper.forest
+        if self.forest.derivation_steps:
+            ds = self.forest.derivation_steps
+            if not ds.activated:
+                ds.jump_to_derivation_step(ds.derivation_step_index)
         self.forest.prepare_for_drawing()
         ctrl.resume_undo()
 

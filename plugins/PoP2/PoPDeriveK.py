@@ -285,7 +285,7 @@ class Generate:
         head_xf = find(x_feats, "Head")
         head_yf = find(y_feats, "Head")
         if head_xf and not head_yf:
-            x_feats.remove(head_xf[0])
+            x.get_head().features.remove(head_xf[0])
             # label_info = "Head"
             return x, x, y
         elif y.label in ADJUNCT_LABELS:
@@ -683,6 +683,8 @@ class Generate:
             synobj = 'C'
         elif synobj == 'n_Expl':
             synobj = 'n'
+        # Leave the actual feature parsing to feature constructor, called by Constituent
+        # as it gets strings as features.
         return Constituent(label=synobj, features=features)
 
     def can_pass_features(self, x, y):
@@ -744,7 +746,7 @@ class Generate:
         checked_feats = []
         # XFeats probe
         for mf in find(x_feats, "MergeF"):
-            x_feats.remove(mf)
+            x.get_head().features.remove(mf)
         unvalued_features = find(x_feats, u=True)
         if find(unvalued_features, phi=True):
             unvalued_features += find(x_feats, "Case")

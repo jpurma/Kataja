@@ -189,10 +189,6 @@ class BaseConstituentNode(Node):
                 nodes.append(node)
         return nodes
 
-    def get_feature_stack(self):
-        return [x for x in self.get_children_of_type(node_type=g.FEATURE_NODE) if x.locked_to_constituent]
-
-
     def get_attribute_nodes(self, label_key=''):
         """
 
@@ -516,8 +512,9 @@ class BaseConstituentNode(Node):
         :return:
         """
         super().start_dragging_tracking(host=host, scene_pos=scene_pos)
-        for feature in self.get_feature_stack():
-            feature.start_dragging_tracking(host=False, scene_pos=scene_pos)
+        for node in self.children():
+            if node.locked_to_node == self:
+                node.start_dragging_tracking(host=False, scene_pos=scene_pos)
 
     def prepare_children_for_dragging(self, scene_pos):
         """ Implement this if structure is supposed to drag with the node

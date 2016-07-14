@@ -92,8 +92,6 @@ class PoPForestKeeper(ForestKeeper):
             forest = Forest(gloss_text=sentence)
             self.forests.append(forest)
             so = ug.generate_derivation(target_example, forest=forest)
-            forest.derivation_steps.jump_to_derivation_step(0)
-            #forest.mirror_the_syntax([so])
             ug.out("MRGOperations", ug.merge_counter)
             ug.out("FTInheritanceOp", ug.inheritance_counter)
             ug.out("FTCheckOp", ug.feature_check_counter)

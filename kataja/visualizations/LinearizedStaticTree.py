@@ -126,11 +126,11 @@ class LinearizedStaticTree(BalancedTree):
         def _get_grid_size(mnode):
             node_width = mnode.width
             node_height = mnode.height
-            if hasattr(mnode, 'get_feature_stack'):
-                for fnode in mnode.get_feature_stack():
-                    node_height += fnode.height
-                    if fnode.width > node_width:
-                        node_width = fnode.width
+            if hasattr(mnode, 'get_locked_in_nodes'):
+                for lnode in mnode.get_locked_in_nodes():
+                    node_height += lnode.height
+                    if lnode.width > node_width:
+                        node_width = lnode.width
             node_offset_y = mnode.boundingRect().y()
             node_top_row = mnode.get_top_part_y()
             relative_start_height = (node_offset_y + node_top_row) / node_height

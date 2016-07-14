@@ -28,6 +28,7 @@ import itertools
 import statistics
 import string
 import random
+import time
 
 from PyQt5 import QtWidgets
 
@@ -299,7 +300,6 @@ class Forest(SavedObject):
         tree.show()
         return tree
 
-    @time_me
     def mirror_the_syntax(self, synobjs, numeration=None, other=None, msg=None):
         """ This is a big important function to ensure that Nodes on display are only those that
         are present in syntactic objects. Clean up the residue, create those nodes that are
@@ -337,7 +337,7 @@ class Forest(SavedObject):
                     all_known_x.append(x)
                     all_known_y.append(y)
                     if node.node_type == g.FEATURE_NODE:
-                        node.locked_to_constituent = True  # not me.unvalued
+                        node.locked_to_node = parent_node # not me.unvalued
                     for tree in node.trees:
                         if not tree.numeration:
                             tree_counter.append(tree)
@@ -394,28 +394,25 @@ class Forest(SavedObject):
         if numeration:
             num_tree = self.get_numeration()
 
-        for synobj in synobjs:
+        for tree_root in synobjs:
+            t = time.time()
             synobjs_done = set()
             nodes_to_create = []
             all_known_x = []
             all_known_y = []
             tree_counter = []
-
-
-            recursive_add_for_creation(synobj, None, None)
+            avg_x = 0
+            avg_y = 0
+            most_popular_tree = None
+            recursive_add_for_creation(tree_root, None, None)
             if all_known_x:
                 avg_x = int(statistics.mean(all_known_x))
-            else:
-                avg_x = 0
             if all_known_y:
                 avg_y = int(statistics.mean(all_known_y))
-            else:
-                avg_y = 0
             most_popular_trees = collections.Counter(tree_counter).most_common(1)
             if most_popular_trees:
                 most_popular_tree = most_popular_trees[0][0]
-            else:
-                most_popular_tree = None
+
             for syn_bare, pos in nodes_to_create:
                 x, y = pos
                 if x == 0 and y == 0:
@@ -432,19 +429,19 @@ class Forest(SavedObject):
                         node = self.create_node(synobj=syn_bare, node_type=g.FEATURE_NODE, pos=(x, y))
                     else:
                         node = self.create_node(synobj=syn_bare, node_type=g.FEATURE_NODE, pos=(x, y))
-                        node.locked_to_constituent = True
                 else:
                     continue
                 if most_popular_tree:
                     node.add_to_tree(most_popular_tree)
-                #node.set_original_position(node.scene_position_to_tree_position((x, y)))
-            recursive_create_edges(synobj)
+
+            #node.set_original_position(node.scene_position_to_tree_position((x, y)))
+            recursive_create_edges(tree_root)
 
             if most_popular_tree:
-                most_popular_tree.top = self.get_node(synobj)
+                most_popular_tree.top = self.get_node(tree_root)
                 most_popular_tree.update_items()
             else:
-                self.create_tree_for(self.get_node(synobj))
+                self.create_tree_for(self.get_node(tree_root))
 
         #for item in numeration:
         #    node, trees = recursive_create(item, set())
@@ -461,7 +458,7 @@ class Forest(SavedObject):
                 self.delete_edge(edge)
         for node in self.nodes.values():
             node.update_label()
-
+            node.update_relations()
         self.gloss_text = msg
         self.update_forest_gloss()
         self.guessed_projections = False

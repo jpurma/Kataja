@@ -80,7 +80,6 @@ class FeatureNode(Node):
         Node.__init__(self, syntactic_object=syntactic_object, forest=forest)
         self.repulsion = 0.25
         self._gravity = 2.5
-        self.locked_to_constituent = False
 
     # implement color() to map one of the d['rainbow_%'] colors here. Or if bw mode is on, then something else.
 
@@ -114,6 +113,17 @@ class FeatureNode(Node):
     def name_with_u_prefix(self):
         return self.syntactic_object.name_with_u_prefix()
 
+    def update_relations(self):
+        for parent in self.get_parents(only_similar=False, only_visible=False):
+            if parent.node_type == g.CONSTITUENT_NODE:
+                if parent.is_visible():
+                    self.locked_to_node = parent
+                else:
+                    self.locked_to_node = None
+            elif parent.node_type == g.FEATURE_NODE:
+                pass
+        super().update_relations()
+
     def paint(self, painter, option, widget=None):
         """ Painting is sensitive to mouse/selection issues, but usually with
         :param painter:
@@ -125,38 +135,6 @@ class FeatureNode(Node):
             painter.setBrush(self.contextual_background())
             painter.drawRoundedRect(self.inner_rect, 5, 5)
         Node.paint(self, painter, option, widget)
-
-    def move(self, md):
-        """ Allow feature to be locked to constituent and ignore other forces
-        :param md:
-        :return:
-        """
-        if self.locked_to_constituent:
-            self.physics_y = False # may be expensive to be always setting these
-            self.physics_x = False
-            parent = None
-            children = []
-            for parent in self.get_parents(only_similar=False):
-                if parent.node_type == g.CONSTITUENT_NODE:
-                    children = parent.get_locked_node_positions()
-                    break
-            if parent:
-                for child, x, y in children:
-                    if child is self:
-                        self.current_position = x, y
-                        edge = parent.get_edge_to(self, g.FEATURE_EDGE)
-                        if edge:
-                            edge.hide()
-                        return False, False
-            else:
-                self.locked_to_constituent = False
-                self.physics_y = True
-                self.physics_x = True
-                return super().move(md)
-            return False, False
-        else:
-            return super().move(md)
-
 
     @property
     def contextual_color(self):

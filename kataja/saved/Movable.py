@@ -101,6 +101,8 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         self.after_move_function = None
         self.use_adjustment = False
         self.deleted = False
+        self._high_priority_move = False
+        self.locked_to_node = None
         # PHYSICS -elements
         self.locked = False
         self.physics_x = False
@@ -217,15 +219,34 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
     def move(self, md):
         """ Do one frame of movement: either move towards target position or
         take a step according to algorithm
+        1. item folding towards position in part of animation to disappear etc.
+        2. item is being dragged
+        3. item is locked by user
+        4. item is tightly attached to another node which is moving (then the move is handled by
+        the other node, it is _not_ parent node, though.)
+        5. visualisation algorithm setting it specifically
+        (6) or (0) -- places where subclasses can add new movements.
+
         :param md: movement data dict, collects sum of all movement to help normalize it
         :return:
         """
-        # Dragging overrides everything, don't try to move this anywhere
-        if self._dragged:
-            return True, False
+        # _high_priority_move can be used together with _move_counter
+
+        if not self._high_priority_move:
+            # Dragging overrides (almost) everything, don't try to move this anywhere
+            if self._dragged:
+                return True, False
+            # Locked nodes are immune to physics
+            elif self.locked:
+                return False, False
+            elif self.locked_to_node:
+                pos = self.locked_to_node.get_locked_node_positions(self)
+                if pos:
+                    self.current_position = pos[0], pos[1]
+                return False, False
         # MOVE_TO -based movement has priority over physics. This way e.g. triangles work without
         # additional stipulation
-        elif self._move_counter:
+        if self._move_counter:
             position = self.current_position
             # stop even despite the _move_counter, if we are close enough
             if about_there(position, self.target_position):
@@ -242,9 +263,6 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
                 self.stop_moving()
             self.current_position = add_xy(self.current_position, movement)
             return True, False
-        # Locked nodes are immune to physics
-        elif self.locked:
-            return False, False
         # Physics move node around only if other movement types have not overridden it
         elif self.use_physics():
             movement = self.forest.visualization.calculate_movement(self)

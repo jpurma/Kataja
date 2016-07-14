@@ -72,11 +72,11 @@ class DerivationStepManager(SavedObject):
     def __init__(self, forest=None):
         super().__init__()
         self.forest = forest
+        self.activated = False
         self.current = None
         self.derivation_steps = []
         self.derivation_step_index = 0
 
-    @time_me
     def save_and_create_derivation_step(self, synobjs, numeration=None, other=None, msg=''):
         """ Ok, new idea: derivation steps only include syntactic objects. Nodes etc. will be
         created in the fly. No problems from visualisations misbehaving, chains etc.
@@ -115,8 +115,8 @@ class DerivationStepManager(SavedObject):
         d_step = DerivationStep()
         d_step.uid = uid
         d_step.load_objects(frozen_data, ctrl.main)
+        self.activated = True
         self.current = d_step
-        print(d_step.synobjs, d_step)
         self.forest.mirror_the_syntax(d_step.synobjs, d_step.numeration, d_step.other, d_step.msg)
 
     def next_derivation_step(self):

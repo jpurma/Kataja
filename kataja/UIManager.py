@@ -394,7 +394,6 @@ class UIManager:
         for item in self._items.values():
             item.update_colors()
 
-    @time_me
     def update_actions(self):
         # prepare style dictionaries for selections, to be used for displaying style values in UI
         self.build_active_style_info()
