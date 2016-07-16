@@ -24,6 +24,14 @@ class MyFontDialog(QtWidgets.QFontDialog):
 
         :param font:
         """
-        panel = self.parent()
-        if panel:
-            panel.receive_font_from_selector(font)
+        parent = self.sender()
+        while parent and not isinstance(parent, MyFontDialog):
+            print(parent, parent.parent())
+            parent = parent.parent()
+        if parent:
+            font_key = ctrl.ui.get_role_of_font_dialog(parent)
+            panel = self.parent()
+            if panel:
+                panel.receive_font_from_selector(font_key, font)
+        else:
+            print('???')

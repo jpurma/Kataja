@@ -91,7 +91,6 @@ a['select_order_attribute'] = {'command': 'Show select &Order',
                                'shortcut': 'Shift+o', 'checkable': True}
 
 
-
 def change_colors():
     """ DEPRECATED change colors -action (shift-c)
     :return: None
@@ -119,10 +118,11 @@ def fit_to_window():
     :return: None
     """
     ctrl.graph_scene.fit_to_window(force=True)
+    return "Zoom to fit"
 
 
 a['zoom_to_fit'] = {'command': '&Zoom to fit', 'method': fit_to_window,
-                    'shortcut': 'z'}
+                    'shortcut': 'z', 'undoable': False}
 
 
 def toggle_pan_mode():

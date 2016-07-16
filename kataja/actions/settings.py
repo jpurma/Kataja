@@ -123,7 +123,7 @@ def open_font_selector(sender=None):
     if sender:
         panel = get_ui_container(sender)
         font_key = panel.cached_font_id
-        ctrl.ui.start_font_dialog(panel, 'node_font', font_key)
+        ctrl.ui.start_font_dialog(panel, font_key, font_key)
 
 
 def can_select_font():
@@ -151,15 +151,15 @@ def select_font():
     if panel:
         font_id = panel.font_selector.currentData() or panel.cached_font_id
         panel.update_font_selector(font_id)
-    if ctrl.ui.scope_is_selection:
-        for node in ctrl.selected:
-            if isinstance(node, Node):
-                node.font_id = font_id
+        if ctrl.ui.scope_is_selection:
+            for node in ctrl.selected:
+                if isinstance(node, Node):
+                    node.font_id = font_id
+                    node.update_label()
+        else:
+            ctrl.fs.set_node_style(ctrl.ui.active_node_type, 'font', font_id)
+            for node in ctrl.forest.nodes.values():
                 node.update_label()
-    else:
-        ctrl.fs.set_node_style(ctrl.ui.active_node_type, 'font', font_id)
-        for node in ctrl.forest.nodes.values():
-            node.update_label()
 
 
 def get_current_font():
@@ -169,6 +169,27 @@ a['select_font'] = {'command': 'Change label font', 'method': select_font,
                     'tooltip': 'Change font for current selection or for a node type',
                     'enabler': can_select_font,
                     'getter': get_current_font}
+
+
+def select_font_from_dialog():
+    panel = ctrl.ui.get_panel('StylePanel')
+    if panel:
+        font_id = panel.cached_font_id
+        print('panel.cached_font_id: ', panel.cached_font_id)
+        panel.update_font_selector(font_id)
+        if ctrl.ui.scope_is_selection:
+            for node in ctrl.selected:
+                if isinstance(node, Node):
+                    node.font_id = font_id
+                    node.update_label()
+        else:
+            ctrl.fs.set_node_style(ctrl.ui.active_node_type, 'font', font_id)
+            for node in ctrl.forest.nodes.values():
+                node.update_label()
+
+a['select_font_from_dialog'] = {'command': 'Change label font', 'method': select_font_from_dialog,
+                    'tooltip': 'Change font for current selection or for a node type'}
+
 
 
 def change_edge_shape(sender=None):

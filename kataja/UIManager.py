@@ -255,7 +255,7 @@ class UIManager:
 
     def start_font_dialog(self, parent, role, initial_font=None):
         if not initial_font:
-            initial_font = g.MAIN_FONT
+            initial_font = role
         if role in self.font_dialogs:
             fd = self.font_dialogs[role]
             fd.setCurrentFont(qt_prefs.get_font(initial_font))
@@ -264,15 +264,17 @@ class UIManager:
             self.font_dialogs[role] = fd
         fd.show()
 
+    def get_role_of_font_dialog(self, dialog):
+        for key, value in self.font_dialogs.items():
+            if value is dialog:
+                return key
+
     def update_font_dialog(self, role, font_id):
         if role in self.font_dialogs:
             self.font_dialogs[role].setCurrentFont(qt_prefs.get_font(font_id))
 
-    def create_or_set_font(self, font_id, font):
-        if not font_id.startswith('custom'):
-            font_id = qt_prefs.get_key_for_font(font)
+    def set_font(self, font_id, font):
         qt_prefs.fonts[font_id] = font
-        return font_id
 
     def add_ui(self, item, show=True):
         """

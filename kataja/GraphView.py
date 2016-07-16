@@ -137,7 +137,6 @@ class GraphView(QtWidgets.QGraphicsView):
         """ Fit the current scene into view, snugly
         :param target_rect: scene rect that contains all of the items we want to fit into view.
         """
-
         sr = self.sceneRect()
         if target_rect.right() > sr.right() or target_rect.bottom() > sr.bottom():
             self.setSceneRect(sr + QtCore.QMarginsF(0, 0, 500, 500))
@@ -179,6 +178,7 @@ class GraphView(QtWidgets.QGraphicsView):
         :param event:
         """
         QtWidgets.QGraphicsView.resizeEvent(self, event)
+        self._last_rect = self.mapToScene(self.rect()).boundingRect()
         ctrl.call_watchers(self, 'viewport_changed')
 
     # ######### MOUSE ##############
@@ -235,6 +235,7 @@ class GraphView(QtWidgets.QGraphicsView):
                     if not self._selection_mode:
                         self.set_selection_mode(True)  # Select mode
 
+        self._last_rect = self.mapToScene(self.rect()).boundingRect()
         self.graph_scene._manual_zoom = True
 
     def set_selection_mode(self, selection_mode):

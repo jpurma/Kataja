@@ -97,7 +97,10 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.setFont(font)
         self._font = font
 
-    def update_label(self):
+    def update_font(self):
+        self.set_font(self._host.get_font())
+
+    def update_label(self, force_update=False):
         """ Asks for node/host to give text and update if changed """
         self.has_been_initialized = True
         if self.text_align == LEFT_ALIGN:
@@ -109,7 +112,7 @@ class Label(QtWidgets.QGraphicsTextItem):
 
         old_html = self.html
         self.compose_html_for_viewing()
-        if old_html != self.html:
+        if old_html != self.html or force_update:
             self.prepareGeometryChange()
             if self.is_card:
                 self.doc.setTextWidth(self.card_size[0])

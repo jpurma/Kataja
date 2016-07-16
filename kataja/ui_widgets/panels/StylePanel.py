@@ -136,14 +136,21 @@ class StylePanel(Panel):
         self.update_scope_selector_options()
         self.scope_selector.select_by_data(ctrl.ui.active_scope)
 
-    def receive_font_from_selector(self, font):
-        font_key = self.cached_font_id
-        ctrl.ui.create_or_set_font(font_key, font)
-        ctrl.main.trigger_action('select_font')
+    def receive_font_from_selector(self, font_key, font):
+        ctrl.ui.set_font(font_key, font)
+        self.cached_font_id = font_key
+        self.update_font_selector(font_key)
+        ctrl.main.trigger_action('select_font_from_dialog')
 
     def update_font_selector(self, font_id):
         self.cached_font_id = font_id
-        if not self.font_selector.find_list_item(font_id):
+        font = qt_prefs.fonts[font_id]
+        item = self.font_selector.find_list_item(font_id)
+        self.font_selector.setFont(font)
+        if item:
+            item.setToolTip('%s, %spt' % (font.family(), font.pointSize()))
+            item.setFont(font)
+        else:
             self.font_selector.add_font(font_id, qt_prefs.fonts[font_id])
             self.font_selector.select_by_data(font_id)
 

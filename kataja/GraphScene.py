@@ -241,8 +241,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
         def find_node_in_direction(current, direction):
             if direction == 'left':
                 all_siblings = []
-                for parent in current.get_parents(only_visible=True):
-                    for child in parent.get_visible_children():
+                for parent in current.get_parents(only_visible=True, only_similar=False):
+                    for child in parent.get_all_visible_children():
                         all_siblings.append(child)
                 i = all_siblings.index(current)
                 if i:
@@ -251,8 +251,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
                     return current
             if direction == 'right':
                 all_siblings = []
-                for parent in current.get_parents(only_visible=True):
-                    for child in parent.get_visible_children():
+                for parent in current.get_parents(only_visible=True, only_similar=False):
+                    for child in parent.get_all_visible_children():
                         all_siblings.append(child)
                 i = all_siblings.index(current)
                 if i < len(all_siblings) - 2:
@@ -260,13 +260,13 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 else:
                     return current
             if direction == 'up':
-                all_parents = list(current.get_parents(only_visible=True))
+                all_parents = current.get_parents(only_visible=True, only_similar=False)
                 if all_parents:
                     return all_parents[-1]
                 else:
                     return current
             if direction == 'down':
-                all_children = list(current.get_visible_children())
+                all_children = list(current.get_all_visible_children())
                 if all_children:
                     return all_children[0]
                 else:

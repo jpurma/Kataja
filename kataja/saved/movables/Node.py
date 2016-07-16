@@ -943,6 +943,7 @@ class Node(Movable):
         """
         if not self.label_object:
             self.label_object = Label(parent=self)
+        self.label_object.update_font()
         self.label_object.update_label()
         self.update_label_visibility()
         self.update_bounding_rect()

@@ -86,6 +86,9 @@ ITALIC_FONT = 'italic_font'
 UI_FONT = 'ui_font'
 SMALL_FEATURE = 'small_feature'
 SMALL_CAPS = 'small_caps_font'
+CUSTOM_FONT1 = 'custom1'
+CUSTOM_FONT2 = 'custom2'
+CUSTOM_FONT3 = 'custom3'
 
 # Control point roles
 START_POINT = 'start'
@@ -109,7 +112,8 @@ DELETED = 2
 # Font roles
 FONT_ROLES = [(MAIN_FONT, 'main'), (CONSOLE_FONT, 'console'), (BOLD_FONT, 'bold'),
               (ITALIC_FONT, 'italic'), (UI_FONT, 'ui_support'), (SMALL_FEATURE, 'small'),
-              (SMALL_CAPS, 'small caps')]
+              (SMALL_CAPS, 'small caps'), (CUSTOM_FONT1, 'custom 1'), (CUSTOM_FONT2, 'custom 2'),
+              (CUSTOM_FONT3, 'custom 3')]
 
 # Vertical align
 TOP = 0
