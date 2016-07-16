@@ -300,18 +300,25 @@ class Forest(SavedObject):
         tree.show()
         return tree
 
-    def mirror_the_syntax(self, synobjs, numeration=None, other=None, msg=None):
+    def mirror_the_syntax(self, synobjs, numeration=None, other=None, msg=None, gloss=None):
         """ This is a big important function to ensure that Nodes on display are only those that
         are present in syntactic objects. Clean up the residue, create those nodes that are
         missing and create the edges.
         :param synobjs: syntactic objects
         :param numeration: list of objects waiting to be processed
         :param other: what else we need?
+        :param msg: message associated with this derivation step, this will be used as gloss
+        :param gloss: gloss text for the whole forest
         :return:
         """
 
         node_keys_to_validate = set(self.nodes.keys())
         edge_keys_to_validate = set(self.edges.keys())
+
+        # Don't delete gloss node if we have message to show
+        if msg and self.gloss:
+            if self.gloss.uid in node_keys_to_validate:
+                node_keys_to_validate.remove(self.gloss.uid)
 
         def recursive_add_for_creation(me, parent_node, parent_synobj):
             """ First we have to create new nodes close to existing nodes to avoid rubberbanding.
@@ -391,15 +398,19 @@ class Forest(SavedObject):
             node.fix_edge_aligns()
             return node
 
-        if numeration:
-            num_tree = self.get_numeration()
+        #if numeration:
+        #    num_tree = self.get_numeration()
+
+        all_known_x = []
+        all_known_y = []
+
+        scene_rect = ctrl.graph_view.sceneRect()
+        sc_left = scene_rect.x()
+        sc_middle = scene_rect.center().y()
 
         for tree_root in synobjs:
-            t = time.time()
             synobjs_done = set()
             nodes_to_create = []
-            all_known_x = []
-            all_known_y = []
             tree_counter = []
             avg_x = 0
             avg_y = 0
@@ -409,6 +420,8 @@ class Forest(SavedObject):
                 avg_x = int(statistics.mean(all_known_x))
             if all_known_y:
                 avg_y = int(statistics.mean(all_known_y))
+
+            # noinspection PyArgumentList
             most_popular_trees = collections.Counter(tree_counter).most_common(1)
             if most_popular_trees:
                 most_popular_tree = most_popular_trees[0][0]
@@ -416,11 +429,9 @@ class Forest(SavedObject):
             for syn_bare, pos in nodes_to_create:
                 x, y = pos
                 if x == 0 and y == 0:
-                    x = avg_x
-                    y = avg_y
+                    x = sc_left + 100
+                    y = sc_middle - 100
                 if isinstance(syn_bare, classes.Constituent):
-                    x += random.randint(-100, 0)
-                    y += random.randint(-20, 20)
                     node = self.create_node(synobj=syn_bare, node_type=g.CONSTITUENT_NODE, pos=(x, y))
                 elif isinstance(syn_bare, classes.Feature):
                     if syn_bare.unvalued and False:
@@ -434,7 +445,7 @@ class Forest(SavedObject):
                 if most_popular_tree:
                     node.add_to_tree(most_popular_tree)
 
-            #node.set_original_position(node.scene_position_to_tree_position((x, y)))
+            # node.set_original_position(node.scene_position_to_tree_position((x, y)))
             recursive_create_edges(tree_root)
 
             if most_popular_tree:
@@ -443,23 +454,33 @@ class Forest(SavedObject):
             else:
                 self.create_tree_for(self.get_node(tree_root))
 
-        #for item in numeration:
+        # for item in numeration:
         #    node, trees = recursive_create(item, set())
         #    if node and not trees:
         #        node.add_to_tree(num_tree)
         # Delete invalid nodes and edges
+
         for key in node_keys_to_validate:
             node = self.nodes.get(key, None)
             if node:
+                # noinspection PyTypeChecker
                 self.delete_node(node)
         for key in edge_keys_to_validate:
-            edge = self.edges.get(key, None) # most of these should be deleted already by prev.
+            edge = self.edges.get(key, None)  # most of these should be deleted already by prev.
             if edge:
+                # noinspection PyTypeChecker
                 self.delete_edge(edge)
         for node in self.nodes.values():
             node.update_label()
             node.update_relations()
-        self.gloss_text = msg
+        if gloss and msg:
+            self.gloss_text = '\n'.join([gloss, msg.splitlines()[-1]])
+        elif gloss:
+            self.gloss_text = gloss
+        elif msg:
+            self.gloss_text = msg.splitlines()[-1]
+        else:
+            self.gloss_text = ''
         self.update_forest_gloss()
         self.guessed_projections = False
 
@@ -468,10 +489,13 @@ class Forest(SavedObject):
         if self.gloss_text:
             if not self.gloss:
                 self.gloss = self.create_node(synobj=None, node_type=g.GLOSS_NODE)
-                self.gloss.text = self.gloss_text
+                self.gloss.label = self.gloss_text
             elif self.gloss.text != self.gloss_text:
-                self.gloss.text = self.gloss_text
+                self.gloss.label = self.gloss_text
             self.gloss.update_label()
+            self.gloss.physics_x = False
+            self.gloss.physics_y = False
+            self.gloss.show()
         elif self.gloss:
             self.remove_from_scene(self.gloss)
             self.gloss = None
@@ -602,7 +626,7 @@ class Forest(SavedObject):
                 sc = item.scene()
                 if not sc:
                     self.scene.addItem(item)
-                #if not item.parentItem():
+                # if not item.parentItem():
                 #    print('adding to scene: ', item)
                 #    self.scene.addItem(item)
 
@@ -614,10 +638,10 @@ class Forest(SavedObject):
             if isinstance(item, QtWidgets.QGraphicsItem):
                 sc = item.scene()
                 if not sc:
-                    #print('..adding to scene ', item.uid )
+                    # print('..adding to scene ', item.uid )
                     self.scene.addItem(item)
                 elif sc != self.scene:
-                    #print('..adding to scene ', item.uid )
+                    # print('..adding to scene ', item.uid )
                     self.scene.addItem(item)
             if hasattr(item, 'deleted'):
                 item.deleted = False
@@ -630,7 +654,7 @@ class Forest(SavedObject):
         if isinstance(item, QtWidgets.QGraphicsItem):
             sc = item.scene()
             if sc == self.scene:
-                #print('..removing from scene ', item.uid)
+                # print('..removing from scene ', item.uid)
                 sc.removeItem(item)
             elif sc:
                 print('unknown scene for item %s : %s ' % (item, sc))
@@ -730,7 +754,6 @@ class Forest(SavedObject):
             if item not in legits:
                 ctrl.remove_from_selection(item)
         ctrl.multiselection_end()
-
 
     def draw(self):
         """ Update all trees in the forest according to current visualization
@@ -1132,7 +1155,6 @@ class Forest(SavedObject):
         self.add_to_scene(br)
         return br
 
-
         # Cosmetic improvemet, if gloss is created by editing the gloss text
         # field. (not present anymore)
         # ee = ctrl.ui_support.get_node_edit_embed()
@@ -1140,7 +1162,7 @@ class Forest(SavedObject):
         #     pos = ee.master_edit.pos()
         #     scene_pos = ctrl.graph_view.mapToScene(ee.mapToParent(pos))
         #     gn.set_original_position(scene_pos)
-        return gn
+        # return gn
 
     # not used
     def create_image(self, image_path):
@@ -1156,9 +1178,7 @@ class Forest(SavedObject):
 
     def create_node_from_string(self, text='', simple_parse=False):
         """
-
         :param text:
-        :param pos:
         :param simple_parse: If several words are given, merge them together
         """
         return self.parser.string_into_forest(text, simple_parse=simple_parse)
@@ -1177,6 +1197,7 @@ class Forest(SavedObject):
             self.traces_to_multidomination()
             # traces to multidomination will toggle uses_multidomination to True
 
+    # noinspection PyMethodMayBeStatic
     def read_definitions(self, definitions):
         """
         :param definitions: Try to set features and glosses according to

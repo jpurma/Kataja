@@ -70,7 +70,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
 
     __qt_type_id__ = next_available_type_id()
 
-    def __init__(self, forest=None, start=None, end=None, edge_type='', edge_n=0, edge_count=0):
+    def __init__(self, forest=None, start=None, end=None, edge_type='', edge_n=0, edge_count=0, appear=True):
         """
         :param Node start:
         :param Node end:
@@ -97,6 +97,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         self.shape_name = None
         self.pull = None
         self.visible = True
+        self.appearing = appear
 
         self._projection_thick = False
         self._projection_color = None
@@ -146,6 +147,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         self._fade_anim = None
         self.is_fading_in = False
         self.is_fading_out = False
+        if appear:
+            self.fade_in()
 
     def type(self):
         """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
@@ -629,12 +632,96 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         elif self.edge_type == g.DIVIDER:
             pass
         else:
-            if self.start:
+            if self.start and self.end:
+                if True:
+                    #    :P _: achtually  dx should between sp and first curvature point
+                    # and ep and last curvature point.
+                    # Test it when this is otherwise working.
+                    sx, sy = self.start.current_scene_position
+                    ex, ey = self.end.current_scene_position
+                    dx = ex - sx
+                    dy = ey - sy
+                    sbr = self.start.boundingRect()
+                    ebr = self.end.boundingRect()
+                    s_left, s_top, s_right, s_bottom = (x * .8 for x in sbr.getCoords())
+                    e_left, e_top, e_right, e_bottom = (x * .8 for x in ebr.getCoords())
+                    if dx == 0:
+                        if dy > 0:
+                            self._computed_start_point = sx, sy + s_bottom
+                            self._computed_end_point = ex, ey + e_top
+                        else:
+                            self._computed_start_point = sx, sy + s_top
+                            self._computed_end_point = ex, ey + e_bottom
+                    elif dy == 0:
+                        if dx > 0:
+                            self._computed_start_point = sx + s_right, sy
+                            self._computed_end_point = ex + s_left, ey
+                        else:
+                            self._computed_start_point = sx + s_left, sy
+                            self._computed_end_point = ex + s_right, ey
+                    else:
+                        ratio = dy / dx
+                        if dx > 0:
+                            if dy > 0:
+                                if s_right * ratio < s_bottom:
+                                    self._computed_start_point = sx + s_right, \
+                                                                 sy + (s_right * ratio)
+                                else:
+                                    self._computed_start_point = sx + (s_bottom / ratio), \
+                                                                 sy + s_bottom
+                                if e_left * ratio > e_top:
+                                    self._computed_end_point = ex + e_left, ey + (e_left * ratio)
+                                else:
+                                    self._computed_end_point = ex + (e_top / ratio), ey + e_top
+
+                            else:
+                                if s_right * ratio > s_top:
+                                    self._computed_start_point = sx + s_right, \
+                                                                 sy + (s_right * ratio)
+                                else:
+                                    self._computed_start_point = sx + (s_top / ratio), \
+                                                                 sy + s_top
+                                if e_left * ratio < e_bottom:
+                                    self._computed_end_point = ex + e_left, ey + (e_left * ratio)
+                                else:
+                                    self._computed_end_point = ex + (e_bottom / ratio), \
+                                                               ey + e_bottom
+                        else:
+                            if dy > 0:
+                                if s_left * ratio < s_bottom:
+                                    self._computed_start_point = sx + s_left, \
+                                                                 sy + (s_left * ratio)
+                                else:
+                                    self._computed_start_point = sx + (s_bottom / ratio), \
+                                                                 sy + s_bottom
+                                if e_right * ratio > e_top:
+                                    self._computed_end_point = ex + e_right, ey + (e_right * ratio)
+                                else:
+                                    self._computed_end_point = ex + (e_top / ratio), ey + e_top
+
+                            else:
+                                if s_left * ratio > s_top:
+                                    self._computed_start_point = sx + s_left, \
+                                                                 sy + (s_left * ratio)
+                                else:
+                                    self._computed_start_point = sx + (s_top / ratio), sy + s_top
+                                if e_right * ratio < e_bottom:
+                                    self._computed_end_point = ex + e_right, ey + (e_right * ratio)
+                                else:
+                                    self._computed_end_point = ex + (e_bottom / ratio), \
+                                                               ey + e_bottom
+
+                elif prefs.style == 'plain':  # stupid hack to test how it looks
+                    self._computed_start_point = self.start.bottom_center_magnet()
+                else:
+                    self._computed_start_point = self.start.bottom_magnet(self.edge_n, self.edge_count)
+
+            elif self.start:
                 if prefs.style == 'plain': # stupid hack to test how it looks
                     self._computed_start_point = self.start.bottom_center_magnet()
                 else:
                     self._computed_start_point = self.start.bottom_magnet(self.edge_n, self.edge_count)
-            if self.end:
+            elif self.end:
                 self._computed_end_point = self.end.top_center_magnet()
 
     def connect_end_points(self, start, end):
@@ -910,13 +997,30 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             if t:
                 size *= t
             x, y = self.start_point
-            a = math.radians(-self.get_angle_at(0) + 180)
+            # average between last control point and general direction seems to be ok.
+            if self.control_points:
+                p0x, p0y = self.control_points[0]
+                ex, ey = self.end_point
+                p0 = (p0x + ex) / 2, (p0y + ey) / 2
+            else:
+                p0 = self.end_point
+            dx, dy = sub_xy(self.start_point, p0)
+            a = math.atan2(dy, dx)
         elif pos == 'end':
             size = self.arrowhead_size_at_end
             if t:
                 size *= t
             x, y = self.end_point
-            a = math.radians(-self.get_angle_at(.95))
+            # average between last control point and general direction seems to be ok.
+            if self.control_points:
+                p1x, p1y = self.control_points[-1]
+                sx, sy = self.start_point
+                plast = (p1x + sx) / 2, (p1y + sy) / 2
+            else:
+                plast = self.start_point
+
+            dx, dy = sub_xy(self.end_point, plast)
+            a = math.atan2(dy, dx)
         p = QtGui.QPainterPath()
         p.moveTo(x, y)
         x1, y1 = x - (math.cos(a + ad) * size), y - (math.sin(a + ad) * size)

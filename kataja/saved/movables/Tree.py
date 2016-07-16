@@ -201,6 +201,8 @@ class Tree(Movable):
 
     def boundingRect(self):
         if self.tree_changed or not self._cached_bounding_rect:
+            if not self.sorted_nodes:
+                return QtCore.QRectF()
             min_x, min_y = 10000, 10000
             max_x, max_y = -10000, -10000
             for node in self.sorted_nodes:

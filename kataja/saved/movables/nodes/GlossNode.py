@@ -28,6 +28,7 @@ import kataja.globals as g
 from kataja.globals import GLOSS_EDGE, GLOSS_NODE
 from kataja.saved.movables.Node import Node
 from kataja.uniqueness_generator import next_available_type_id
+from kataja.singletons import ctrl, prefs
 
 color_map = {'tense': 0, 'person': 2, 'number': 4, 'case': 6, 'unknown': 3}
 
@@ -85,6 +86,31 @@ class GlossNode(Node):
 
     def __str__(self):
         return 'gloss: %s' % self.label
+
+    def move(self, md):
+        if self.locked or self._dragged:
+            return super().move(md)
+        elif ctrl.forest.gloss is self and ctrl.forest.trees:
+            x = 0
+            y = 100
+            for tree in ctrl.forest.trees:
+                if not tree.numeration:
+                    br = tree.boundingRect()
+                    ty = br.y() + tree.y()
+                    tx = br.center().x() + tree.x()
+                    if tx > x:
+                        x = tx
+                    if ty < y:
+                        y = ty
+            if self.use_adjustment:
+                ax, ay = self.adjustment
+                x += ax
+                y += ay
+            self.current_position = x, y - prefs.edge_height
+            return False, False
+
+        return super().move(md)
+
 
     # ############## #
     #                #

@@ -118,10 +118,12 @@ class FeatureNode(Node):
             if parent.node_type == g.CONSTITUENT_NODE:
                 if parent.is_visible():
                     self.locked_to_node = parent
+                    break
                 else:
                     self.locked_to_node = None
             elif parent.node_type == g.FEATURE_NODE:
-                pass
+                if self.locked_to_node == parent:
+                    self.locked_to_node = None
         super().update_relations()
 
     def paint(self, painter, option, widget=None):

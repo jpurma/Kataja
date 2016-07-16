@@ -45,6 +45,7 @@ class Generate:
         self.sub_workspace = []
         self.msg_stack = []
         self.spine = None
+        self.gloss = None
 
     def load_data(self, inputlines, start=0, end=0):
         for line in inputlines:
@@ -62,6 +63,7 @@ class Generate:
             elif sentence_number < start:
                 continue
             sentence = sentence[2:]  # remove number and the space after it
+            self.gloss = sentence
             target_example = eval(lbracket + target_str)
             self.out(sentence_number, sentence, target_example)
             so = self.generate_derivation(target_example)
@@ -152,6 +154,11 @@ class Generate:
         return self.spine
 
     def announce_derivation_step(self, parts=None, msg=''):
+        """ Send current structure for Kataja so it can store it as a derivation step.
+        :param parts: list of current root nodes
+        :param msg: message to show with the derivation step
+        :return:
+        """
         if not self.forest:
             return
         self.msg_stack.append(msg)
@@ -173,7 +180,8 @@ class Generate:
         self.forest.derivation_steps.save_and_create_derivation_step(self.sub_workspace +
                                                                      self.workspace,
                                                                      numeration=num,
-                                                                     msg=msg)
+                                                                     msg=msg,
+                                                                     gloss=self.gloss)
 
     def merge_so(self, x, spine):
         """ Select new item and merge it into structure
@@ -208,12 +216,13 @@ class Generate:
         y = spine
         passed_features = None
         self.announce_derivation_step([x, y], "selected '%s', '%s' for merge" % (x.label, y.label))
+        external_merge = find(x.features, "MergeF") 
 
         # Before merge
         # 1. Pass unvalued phi-features downwards
-        unvalued_phis, passer = self.can_pass_features(x, y)
-        if passer:
-            passed_features = self.pass_features(passer, unvalued_phis, x, y)
+        unvalued_phis, inherit, complement = self.can_pass_features(x, y)
+        if inherit:
+            passed_features = self.pass_features(inherit, complement, unvalued_phis)
             if passed_features:
                 self.announce_derivation_step([x, y], "passed features %s" % unvalued_phis)
         # 2. Check features
@@ -227,7 +236,7 @@ class Generate:
 
         # Now Merge:
         # 4. Merge
-        label_giver, part1, part2 = self.determine_label(x, y)
+        label_giver, part1, part2 = self.determine_label(x, y, external_merge)
         merged = self.merge(label_giver, part1, part2)
         self.announce_derivation_step([merged], "merged '%s', '%s'" % (part1.label, part2.label))
 
@@ -272,23 +281,24 @@ class Generate:
             if self.in_main and merged.label == "v*":
                 success = self.dephase_and_transfer(merged)
                 if success:
+                    merged = success
                     self.announce_derivation_step(merged, "dephased and transferred")
             if not success:
                 merged = self.transfer_check(merged)
         return merged
 
-    def determine_label(self, x, y):
+    def determine_label(self, x, y, external_merge):
         x_feats = x.get_head_features()
         y_feats = y.get_head_features()
         # Determine label
         # Head-feature gives immediately label, once
         head_xf = find(x_feats, "Head")
         head_yf = find(y_feats, "Head")
-        if head_xf and not head_yf:
+        if y.label in ADJUNCT_LABELS:
+            return x, x, y
+        elif head_xf and not head_yf:
             x.get_head().features.remove(head_xf[0])
             # label_info = "Head"
-            return x, x, y
-        elif y.label in ADJUNCT_LABELS:
             return x, x, y
         else:
             # Check if adjunct
@@ -300,7 +310,7 @@ class Generate:
                 return None, y, x
             elif "P_in" in x.label:
                 return None, y, x
-            if "MergeF" in x_feats: # external merge
+            if external_merge: 
                 return None, x, y
             else:
                 return None, y, x
@@ -421,7 +431,6 @@ class Generate:
             target.label = new_label
             merged = Constituent(label=new_label, part1=target, part2=merged.part2)
         else:
-            merged = merged.copy()
             merged.label = new_label
         self.out("Dephase v", merged)
         if transfer:
@@ -707,7 +716,8 @@ class Generate:
         if current_label:
             # we used to have "merged" here as parameter, now we have to cook one up for debug
             self.out("Label(Head)", Constituent(label=current_label, part1=x, part2=y))
-        inherit = False
+        complement = None
+        inherit = None
 
         # First thing is to collect unvalued phis from either x or y. First try x,
         # if it has impressive amount of unvalued features, then it is the feature giver.
@@ -716,12 +726,15 @@ class Generate:
         unvalued_phis += find(x_feats, "Case", u=False)
         if len(unvalued_phis) >= 3 or x.label in PHASE_HEADS:
             inherit = x
+            complement = y
+
         if not inherit:
             unvalued_phis = find(y_feats, u=True, phi=True)
             unvalued_phis += find(y_feats, "Case", u=False)
             if len(unvalued_phis) >= 3:
                 inherit = y
-        return unvalued_phis, inherit
+                complement = x
+        return unvalued_phis, inherit, complement
 
     def check_features(self, x, y):
         """
@@ -807,8 +820,8 @@ class Generate:
                 elif uf.name == "Case" and uf.value:
                     checked_feats.append(uf)
                     # hmm... Case disappears from original place and is active only in new place.
-                    x.replace_within(uf, None)
-                    y.replace_within(uf, None)
+                    # x.replace_within(uf, None)
+                    # y.replace_within(uf, None)
 
                     # I can't accept it?
                     uf.inactive = True
@@ -831,17 +844,21 @@ class Generate:
             self.out("CheckedFeatures", checked_feats)
         return remerge, checked_feats
 
-    def pass_features(self, inherit, unvalued_phis, x, y):
+    def pass_features(self, inherit, comp, unvalued_phis):
         """Pass features to those who:
 
+        Model10:s logic for passing features
         - Have Root-feature
         - don’t have uPerson or iPerson
         - are not already chosen for feature passing (we don't double-drive)
         - have not iD or iN in features
         - don’t have ”n” as previous item in stack (wtf?)
-        - bonus: have not transfered
 
-        p. 27:
+        reliance on stack causes some weird situations in Model10, where some roots in n receive
+         features because the stack has items added in unusual order. It is difficult to replicate
+         stackless, and it is wrong anyways.
+
+        Feature passing described in Ginsburg 2016 is different, p. 27:
         According to (19), a phase head passes its uninterpretable features (uFs) to its
         complement X, if the complement X is unlicensed. Furthermore, X will pass these
         uFs down to its complement Y, if Y is unlicensed, and so on. An unlicensed
@@ -850,30 +867,22 @@ class Generate:
         (19) Feature inheritance (revised)
         Uninterpretable features are passed to an unlicensed complement.
 
-        hm, hm. Model10 code seems to also allow labeled Roots to inherit features. """
+        Email clarifies how Model10 should work, and that is implemented here:
+        "The rule should be that features can’t be passed onto any element that has valued phi-features, so n and d should’t inherit features. The exception here is the n that Merges with ‘there’. This n lacks any features of its own (if I remember correctly), so it can inherit phi-features. The rule really should be that if a syntactic object has iPhi, it can’t inherit features, since an element with iPhi has no need to inherit features. In general, only roots and “weak” elements (such as T) should be able to inherit features. I think that the n that Merges with ‘there’, which I indicate as ’n_Expl’, is essentially a weak element without any phi-feaures. "
 
-        #input('attempt feature passing for %s' % inherit.label)
+         """
 
-        passed_items = []
         feats_passed = False
-        prev_label = False  # block feature passage to nominal
 
-        #print('-------------')
-        #print('X:', x)
-        #print('Y:', y)
-
-
-        def find_empty_root_leaf(node, previous_label):
+        def find_empty_root_leaf(node):
             found = False
-            if node.is_leaf():
+            feats = node.get_head_features(expanded=True)
+            if find(feats, ["Person", "Phi"]):
+                return False
+            elif node.is_leaf():
                 if find(node.features, "Root"):
                     feats = expanded_features(node.features)
-                    go_on = True
-                    if find(feats, ["Person", "D", "N"], i=True) or find(feats, "Person", u=True):
-                        go_on = False
-                    if previous_label == "n":
-                        go_on = False
-                    if go_on:
+                    if not find(feats, ["D", "N"], i=True):
                         if node.is_labeled():
                             other_label = node.label
                         else:
@@ -884,50 +893,36 @@ class Generate:
                             else:
                                 print("error - can't find label9999")
                                 sys.exit()
-
-                        #print('passing features to current: ', node)
-                        #print('previous_label:', previous_label)
-                        #input()
-                        # input('passing success')
                         for item in unvalued_phis:
                             node.features.append(item)
                         self.out("PassFs", "Pass Features " + inherit.label + " to " + other_label)
                         self.out("FeaturesPassed", unvalued_phis)
                         found = True
-
-                previous_label = node.label
             else:
-                previous_label, got_it = find_empty_root_leaf(node.part2, previous_label)
+                got_it = find_empty_root_leaf(node.part2)
                 if got_it:
                     found = True
-                previous_label, got_it = find_empty_root_leaf(node.part1, previous_label)
+                got_it = find_empty_root_leaf(node.part1)
                 if got_it:
                     found = True
-            return previous_label, found
+            return found
 
-        if inherit == x:
-            spine = y
-        else:
-            spine = x
-        #print('with inherited features from ', inherit)
-        #print('attempting to look into ', spine)
-        prev_label = ''
-        while spine:  # and False:
-            current = spine
-            if spine.part1:
-                prev_label, found_it = find_empty_root_leaf(spine.part1, prev_label)
+        while comp:  # and False:
+            current = comp
+            if comp.is_unlabeled():
+                found_it = find_empty_root_leaf(comp.part1)
                 if found_it:
                     feats_passed = True
-            if spine.part2:
-                spine = spine.part2
+            if comp.part2:
+                if find(comp.part2.get_head_features(), ["Phi", "Person"]):
+                    comp = None
+                else:
+                    comp = comp.part2
             else:
-                spine = None
-                prev_label, found_it = find_empty_root_leaf(current, prev_label)
+                comp = None
+                found_it = find_empty_root_leaf(current)
                 if found_it:
                     feats_passed = True
-            prev_label = current.label
-
-
         return feats_passed
 
 # "../Languages/Japanese/DisWarn.txt"
@@ -952,7 +947,7 @@ if __name__ == "__main__":
     print('*****')
 
     out = ProduceOutput.ProduceFile('ignore/new/')
-    a = Generate(out_writer=None) #out)
+    a = Generate(out_writer=out)  # out)
     a.load_data(input_data, start, end)
     out.close()
     print(time.time() - t)

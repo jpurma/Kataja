@@ -403,7 +403,8 @@ class Grammar:
         print('merge2')
         #empty_m = [[]] * len(self.ic.mover)
         #empty_mx = [[]] * len(self.ic.mover_index)
-        ic1 = IndexedCategory(nonterms, self.ic.mover.copy(), head_index, self.ic.mover_index.copy())
+        ic1 = IndexedCategory(nonterms, self.ic.mover.copy(), head_index,
+                              self.ic.mover_index.copy())
         # movers to head
         ic2 = IndexedCategory(self.lex_array[feature.value], {}, complement_index, {})
         # no spec movers

@@ -203,6 +203,7 @@ class Node(Movable):
         return None and the Node factory knows to not try to pass syntactic
         object -argument.
         :param label: not used here
+        :param forest: context where created
         :return:
         """
         return None
@@ -239,7 +240,6 @@ class Node(Movable):
         cy = py + oy + self.height / 2
         return cx, cy
 
-
     def cut(self, others):
         """
         :param others: other items targeted for cutting, to help decide which relations to maintain
@@ -254,12 +254,11 @@ class Node(Movable):
         ctrl.forest.remove_from_scene(self)
         return self
 
-    def copy(self):
-        if self.syntactic_object:
-            synobj = self.syntactic_object.copy()
-        else:
-            synobj = None
-
+    # def copy(self, **kwargs):
+    #     if self.syntactic_object:
+    #         synobj = self.syntactic_object.copy()
+    #     else:
+    #         synobj = None
 
     def get_editing_template(self, refresh=False):
         """ Create or fetch a dictionary template to help building an editing
@@ -488,7 +487,6 @@ class Node(Movable):
         :param other:
         :param ax:
         :param ay:
-        :param az:
         :return:
         """
         shift = (ax, ay)
@@ -521,7 +519,8 @@ class Node(Movable):
         return x + tx, y + ty
 
     def scene_position_to_tree_position(self, scene_pos):
-        """ Return scene position converted to coordinate system used by this node trees. Works for xy  -tuples.
+        """ Return scene position converted to coordinate system used by this node trees. Works for
+         xy  -tuples.
 
         :param scene_pos:
         :return:
@@ -555,8 +554,8 @@ class Node(Movable):
         :return: iterator of Nodes
         """
         et = self.edge_type()
-        return (edge.end for edge in self.edges_down if edge.edge_type == et and (edge.end and not
-        edge.end.deleted))
+        return (edge.end for edge in self.edges_down if edge.edge_type == et and
+                (edge.end and not edge.end.deleted))
 
     def get_reversed_children(self):
         """
@@ -614,7 +613,7 @@ class Node(Movable):
                         edge.start and edge.start.is_visible()]
             else:
                 return [edge.start for edge in self.edges_up if edge.start and not
-                edge.start.deleted]
+                        edge.start.deleted]
 
     def fix_edge_aligns(self):
         # do syntactically justified align
@@ -664,7 +663,6 @@ class Node(Movable):
             if len(list(parent.get_children())) == 1:
                 return True
         return False
-
 
     def get_siblings(self):
         """ Return those nodes that are other children of node's parents
@@ -731,22 +729,27 @@ class Node(Movable):
         else:
             return None
 
-    def get_edge_to(self, other, edge_type=''):
+    def get_edge_to(self, other, edge_type='') -> QtWidgets.QGraphicsItem:
         """ Returns edge object, not the related node. There should be only
         one instance of edge
         of certain type between two elements.
         :param other:
         :param edge_type:
         """
-        for edge in self.edges_down:
-            if edge.end == other:
-                if (edge_type and edge_type == edge.edge_type) or (not edge_type):
+        if edge_type:
+            for edge in self.edges_down:
+                if edge.end is other and edge_type == edge.edge_type:
                     return edge
-        for edge in self.edges_up:
-            if edge.start == other:
-                if (edge_type and edge_type == edge.edge_type) or (not edge_type):
+            for edge in self.edges_up:
+                if edge.start is other and edge_type == edge.edge_type:
                     return edge
-
+        else:
+            for edge in self.edges_down:
+                if edge.end is other:
+                    return edge
+            for edge in self.edges_up:
+                if edge.start is other:
+                    return edge
         return None
 
     def get_edges_up(self, similar=True, visible=False):
@@ -775,7 +778,7 @@ class Node(Movable):
 
         def filter_func(edge):
             """
-            :param rel:
+            :param edge:
             :return: bool """
             if similar and edge.edge_type != self.edge_type():
                 return False
@@ -808,8 +811,7 @@ class Node(Movable):
             return l
 
     def get_locked_in_nodes(self):
-        return [x for x in self.get_children() if x.locked_to_node == self]
-
+        return [x for x in self.get_all_visible_children() if x.locked_to_node is self]
 
     def can_connect_with(self, other):
         """ Override this in subclasses, checks conditions when other nodes could connect to this
@@ -824,8 +826,6 @@ class Node(Movable):
             edge = self.get_edge_to(self.locked_to_node)
             if edge:
                 edge.hide()
-
-
 
     # Reflecting structural changes in syntax
     # Nodes are connected and disconnected to each other by user, through UI,
@@ -923,7 +923,7 @@ class Node(Movable):
         if self.drag_data:
             return ctrl.cm.lighter(ctrl.cm.selection())
         elif ctrl.pressed is self:
-            return ctrl.cm.selection() #ctrl.cm.active(ctrl.cm.selection())
+            return ctrl.cm.selection() # ctrl.cm.active(ctrl.cm.selection())
         elif self._hovering:
             # return ctrl.cm.hover()
             return self.color
@@ -939,14 +939,10 @@ class Node(Movable):
 
     def update_label(self):
         """
-
-        :param force_update: Force label recomposition and visibility checks
         :return:
         """
         if not self.label_object:
             self.label_object = Label(parent=self)
-        #if force_update:
-        #    self._label_changed = True
         self.label_object.update_label()
         self.update_label_visibility()
         self.update_bounding_rect()
@@ -982,8 +978,6 @@ class Node(Movable):
 
     def has_empty_label(self):
         """
-
-
         :return:
         """
         return not self.label_object.has_content()
@@ -992,9 +986,11 @@ class Node(Movable):
         """ implement if label can be modified by editing it directly """
         pass
 
-
     def get_lower_part_y(self):
-        """ Label should answer to this.
+        """ This should return the relative (within node) y-coordinate to bottom part of label.
+        If the label is only one row, bottom and top part are the same.
+        Lower and top parts can each have multiple lines in them, the idea is that
+        triangle goes between them.
         :return:
         """
         if self.label_object:
@@ -1003,14 +999,14 @@ class Node(Movable):
             return 0
 
     def get_top_part_y(self):
-        """ Implement this if the movable has content where differentiating between bottom row and top row can potentially make sense.
+        """ Implement this if the movable has content where differentiating between bottom row and
+         top row can potentially make sense.
         :return:
         """
         if self.label_object:
             return self.label_object.get_top_part_y()
         else:
             return 0
-
 
     # ## Qt overrides
     # ######################################################################
@@ -1028,18 +1024,17 @@ class Node(Movable):
             self.paint_triangle(painter)
         if self.drag_data:
             p = QtGui.QPen(self.contextual_color)
-            #b = QtGui.QBrush(ctrl.cm.paper())
-            #p.setColor(ctrl.cm.hover())
+            # b = QtGui.QBrush(ctrl.cm.paper())
+            # p.setColor(ctrl.cm.hover())
             p.setWidth(1)
             painter.setPen(p)
             painter.setBrush(self.drag_data.background)
             painter.drawRoundedRect(self.inner_rect, 5, 5)
             painter.setBrush(Qt.NoBrush)
 
-
         elif self._hovering:
             p = QtGui.QPen(self.contextual_color)
-            #p.setColor(ctrl.cm.hover())
+            # p.setColor(ctrl.cm.hover())
             p.setWidth(1)
             painter.setPen(p)
             painter.drawRoundedRect(self.inner_rect, 5, 5)
@@ -1058,11 +1053,11 @@ class Node(Movable):
             # w2 = self.width/2.0
             # painter.setPen(self.contextual_color())
             # painter.drawEllipse(-w2, -w2, w2 + w2, w2 + w2)
-        #x = 0
-        #p = QtGui.QPen(self.contextual_color)
-        #p.setWidth(1)
-        #painter.setPen(p)
-        #for trees in self.trees:
+        # x = 0
+        # p = QtGui.QPen(self.contextual_color)
+        # p.setWidth(1)
+        # painter.setPen(p)
+        # for trees in self.trees:
         #    painter.drawEllipse(x, 10, 6, 6)
         #    x += 10
 
@@ -1071,15 +1066,6 @@ class Node(Movable):
         :return: bool
         """
         return self._label_visible
-
-    def boundingRect(self):
-        br = QtWidgets.QGraphicsTextItem.boundingRect(self)
-        if self.user_width and self.user_width > br.width():
-            br.setWidth(self.user_width)
-        if self.user_height and self.user_height > br.height():
-            br.setHeight(self.user_height)
-        return br
-
 
     def update_bounding_rect(self):
         """
@@ -1142,8 +1128,7 @@ class Node(Movable):
         else:
             return self.update_bounding_rect()
 
-    ######### Triangles #########################################
-
+    # ######## Triangles #########################################
     # Here we have only low level local behavior of triangles. Most of the
     # action is done in Forest
     # as triangles may involve complicated forest-level calculations.
@@ -1369,9 +1354,6 @@ class Node(Movable):
             ctrl.select(self)
             self.open_embed()
 
-        #if ctrl.is_selected(self):
-        #else:
-
     def select(self, event=None, multi=False):
         """ Scene has decided that this node has been clicked
         :param event:
@@ -1402,13 +1384,12 @@ class Node(Movable):
     #
     # 2. start_dragging_tracking --
     #
-    #
-    #
-    #
 
     def start_dragging(self, scene_pos):
         """ Figure out which nodes belong to the dragged set of nodes.
-        It may be that a whole trees is dragged. If this is the case, drag_to commands to nodes that are tops of trees are directed to trees instead. Node doesn't change its position in trees if the whole trees moves.
+        It may be that a whole trees is dragged. If this is the case, drag_to commands to nodes that
+         are tops of trees are directed to trees instead. Node doesn't change its position in trees
+         if the whole trees moves.
 
         :param scene_pos:
         """
@@ -1551,7 +1532,6 @@ class Node(Movable):
         """
         self.stop_moving()
         self.update()
-        message = ''
         if recipient and recipient.accepts_drops(self):
             self.release()
             message = recipient.drop(self)
@@ -1619,7 +1599,7 @@ class Node(Movable):
         """
         was_locked = self.locked or self.use_adjustment
         super().lock()
-        #if not was_locked:
+        # if not was_locked:
         if self.is_visible():
             ctrl.main.ui_manager.show_anchor(self)  # @UndefinedVariable
 
@@ -1695,7 +1675,8 @@ class Node(Movable):
             ctrl.ui.update_position_for(self)
         return QtWidgets.QGraphicsObject.itemChange(self, change, value)
 
-    def free_drawing_mode(self, *args, **kwargs):
+    @staticmethod
+    def free_drawing_mode(*args, **kwargs):
         """ Utility method for checking conditions for editing operations
         :param args: ignored
         :param kwargs: ignored
@@ -1713,6 +1694,7 @@ class Node(Movable):
             else:
                 self.hide()
 
+    # noinspection PyTypeChecker
     def check_conditions(self, cond):
         """ Various templates may need to check that all conditions apply before doing things.
         Conditions are methods in this node or in syntactic object of this node.
@@ -1723,7 +1705,7 @@ class Node(Movable):
         It returns True if the method/s return True or if the methods are missing.
         (understand this as 'no filters' instead of 'no pass')
         It also accepts 'not:methodname' in string to negate the result.
-        :param cond: string, list or dict
+        :param cond: None, string, list or dict
         :return:
         """
         if not cond:

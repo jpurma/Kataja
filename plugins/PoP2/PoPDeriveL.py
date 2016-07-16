@@ -9,13 +9,13 @@ import sys
 import time
 
 try:
-    from PoP2.Lexicon import DET_HEADS, PHASE_HEADS, THETA_ASSIGNERS, SHARED_LABELS, \
+    from PoP2.Lexicon2 import DET_HEADS, PHASE_HEADS, THETA_ASSIGNERS, SHARED_LABELS, \
         ADJUNCT_LABELS, COUNTED_FEATURES, COUNTED_PHI_FEATURES, LEXICON
     from PoP2.ConstituentB import Constituent, find_shared_features, expanded_features
     from PoP2.FeatureB import Feature, has_part, get_by_part
     in_kataja = True
 except ImportError:
-    from Lexicon import DET_HEADS, PHASE_HEADS, THETA_ASSIGNERS, SHARED_LABELS, \
+    from Lexicon2 import DET_HEADS, PHASE_HEADS, THETA_ASSIGNERS, SHARED_LABELS, \
         ADJUNCT_LABELS, COUNTED_FEATURES, COUNTED_PHI_FEATURES, LEXICON
     from ConstituentB import Constituent, find_shared_features, expanded_features
     from FeatureB import Feature, has_part, get_by_part
@@ -213,6 +213,7 @@ class Generate:
                 return self.merge_so(my_so, spine)
 
         self.stack = Stack()
+        self.core_stream = []
         self.phi_counter = 0
         self.feature_counter = 0
         self.merge_counter = 0
@@ -325,11 +326,48 @@ class Generate:
         :return: merged
         """
         print('merge')
+        phase = False
         self.announce_derivation_step([x, y], "selected x, y for merge")
-        external_merge = "MergeF" in x.get_head_features()
+        x_feats = x.get_head_features()
+        external_merge = "MergeF" in x_feats
         # push to stack if unlabeled or if it has uFs
         self.stack.append(x, duplicates=False)
         self.stack.append(y, duplicates=False)
+
+        # paste starts
+        if "Phase" in x_feats:
+            phase = True
+        if x.label == "_":
+            True
+        elif "Affix" in x_feats:
+            #Find closest available head
+            for stack_top in reversed(self.stack[:-1]):
+                if stack_top == x:
+                    continue
+                elif stack_top.is_unlabeled():
+                    head = stack_top.part1
+                    head_label = head.label
+                    if self.check_if_xp(head):
+                        continue
+                    elif head_label in NoPF:
+                        continue
+                    elif "+v*" in head_label or "+vUnerg" in head_label: #No PairM of main verb
+                        break
+                    else:
+                        dephase = None
+                        if x.label in PhaseHeads:
+                            Dephase = x.label
+                        x.label = head_label + "+" + x.label
+                        x_base = x.get_feature_giver()
+                        if 'Affix' in x_base.features:
+                            x_base.features.remove('Affix')
+                        self.out("PairMerge", x)
+                        self.pronounce_check_alg(head, pair_merge=True)
+                        x, y = self.TransferPhaseHood(x,y)
+                        break
+        self.out("Merge %s + %s" % (x.label, y.label))
+        # paste ends 
+
         x, y, passed_features, postponed_remerge = self.check_features(x, y)
         label_giver = None
         other = None
@@ -338,15 +376,15 @@ class Generate:
         y_feats = y.get_head_features()
         # Determine label
         # Head-feature gives immediately label, once
-        if "Head" in x_feats and "Head" not in y_feats:
+        if y.label in ADJUNCT_LABELS:
+            label_giver = x
+            other = y
+        elif "Head" in x_feats and "Head" not in y_feats:
             head_f = get_by_part(x_feats, "Head")
             x_feats.remove(head_f)
             label_giver = x
             other = y
             label_info = "Head"
-        elif y.label in ADJUNCT_LABELS:
-            label_giver = x
-            other = y
 
         self.merge_counter += 1
         if label_giver:
@@ -368,11 +406,35 @@ class Generate:
                 x_is_head = False
             elif "P_in" in x.label:
                 x_is_head = False
+            elif y.label == "in":
+                #Adjunct so label is label of X
+                label = x.label
+                x_is_head = True
+            elif y.label == "CASE":
+                #print "Adjunct"
+                label = x.label
+                x_is_head = False
+            elif y.label == "-na":
+                #print "Adjunct"
+                label = x.label
+                x_is_head = False                
+            elif y.label == "no":
+                #print "Adjunct"
+                label = x.label
+                x_is_head = False
+
             if x_is_head is None:
                 if external_merge:
                     x_is_head = True
                 else:
-                    x_is_head = False
+                    if "that" in y.label: #sentential adjunct
+                        label = x.label
+                        x_is_head = True
+                    elif has_part(y_feats, "iAdj"):
+                        label = x.label
+                        x_is_head = False
+                    else:
+                        x_is_head = False                            
             if x_is_head:
                 part1 = x
                 part2 = y
@@ -383,24 +445,90 @@ class Generate:
         merged = Constituent(label=label, part1=part1, part2=part2)
         self.announce_derivation_step([merged], "merged x, y")
 
-        if not label_giver:
-            self.out("Label(None)", str(merged))
-        merged = self.unlabeled_move(merged)
-        if label_giver:
-            if passed_features:
-                if label_info == "Head":
-                    self.out("Label(Head)", merged)
-            if postponed_remerge:
-                # check_features of RemergedElement??
-                # Find Shared Feats
-                merged = self.remerge_back(merged, postponed_remerge)
+        if label == '_':
+            self.out("Label(None)", merged)
+            if not (self.check_if_xp(part1) and self.check_if_xp(part2)):
+                merged = self.unlabeled_move(merged)
+                x_feats = merged.part1.get_head_features()
+        else:
+            self.out("Label(Head)", merged)
+            merged_feats = merged.get_head_features()
+            # paste
+            ufs = []
+            if 'Expl' not in merged_feats:
+                for f in merged_feats:
+                    if (f.name == "Case" or f.name == "Scp") and f.unvalued:
+                        continue
+                    ufs.append(f, Feature(f.name, ifeature=True, value=f.value))
+            if ufs:
+                if self.stack.is_main():
+                    for current in reversed(self.stack):
+                        if current.is_unlabeled():
+                            continue
+                        current_feats = current.get_head_features()
+                        for # kesken
+                        CurrentFeats = self.GetHeadFeatures(Current)
+                        p = re.findall(uFpattern,str(CurrentFeats))
+                        if p != []:#There are uFs
+            
+                            for F in CurrentFeats:
+                                for tup in uFs:
+                                    Goal = tup[1]
+                                    if Goal in F:
+##                                        print "Found", Current
+##
+##                                        print "MErged", Merged
+                                        Found = True
+##                                            print "Remerge Current", Current
+                                        MergeData = "Merge (Feature Check) " + Merged[0] + " + " + Current[0]
+                                        self.Output_L.append(("Description:Merge",MergeData))
+                                        OutputMerged = self.Merge(Merged,Current)
+                                        if self.Crash == True:
+                                            return False
+                                        Merged = OutputMerged
+                                        
+##                                                print "Merged999", Merged
+##                                                print "NewMerged", Merged
+##                                                print "Remerge", CurrentOutput = self.LabelCheck(Merged)
+####                                            print "Output", Output
+##                                            
+##                                            sys.exit()
+##            
+##                                            if Output != False:
+####                print "MergedBefore", Merged
+##                                                NewMerged = Output
+##                                                Merged = NewMerged
+                                    
+                                        Cont = False
+##                                        print "NewMerged", OutputMerged
+##                                        sys.exit()
+            if not found:
+                self.out("Crash(Unchecked Feature)",merged)
+##                        print "crash1"
+##                        print "Merged", Merged
+                sys.exit()
+##                        print "cRash"
+ # paste ends
+        if postponed_remerge:
+            # check_features of RemergedElement??
+            # Find Shared Feats
+            merged = self.remerge_back(merged, postponed_remerge)
         if merged.label in PHASE_HEADS:
             merged = self.transfer_check(merged)
         return merged
 
     def remerge_back(self, merged, remerge):
         print('remerge_postponed')
-        shared_feats = merged.shared_features(remerge)
+        remerge_feats = remerge.get_head_features()
+        if has_part(remerge_feats, "P"):
+            remerge_feats = remerge.part2.get_head_features()
+            shared_feats = merged.shared_features(remerge.part2)
+        else:
+            shared_feats = merged.shared_features(remerge)
+        if has_part(remerge_feats, 'Top') and has_part(merged.get_head_features(), 'Top') and not 'Top' in shared_feats:
+            shared_feats.append(Feature('Top'))
+
+
         if has_part(shared_feats, "iQ"):
             label = "Q"
         elif has_part(shared_feats, "iTop"):
@@ -411,12 +539,12 @@ class Generate:
             print("Remerge", remerge)
             print("Can't Determine Label 5555")
             sys.exit()
-        if self.stack.is_sub():
-            print("Remerging in in substream999999")
-            sys.exit()
+        remerge = self.pronounce_check_alg(remerge)
+        self.stack.append(merged)
         msg = "merge (for labeling(remerge back)) " + merged.label + " + " + remerge.label
         self.out("merge", msg)
         merged = Constituent(label=label, part1=remerge, part2=merged)
+        self.stack.append(remerge)
         self.merge_counter += 1
         self.out("Label(SharedFeats)", merged)
         self.announce_derivation_step([merged], "remerged back")
@@ -533,6 +661,7 @@ class Generate:
                 target.label = new_label
                 merged = Constituent(label=new_label, part1=target, part2=merged.part2)
             else:
+                merged = merged.copy()
                 merged.label = new_label
             self.out("Dephase v", merged)
             transfer.transfered = True
@@ -1172,21 +1301,48 @@ class Generate:
         print('feature_checking_function: ', x.label, y.label)
         if self.stack.is_main() and not self.stack:
             return x, y, None
+        u_phi_pres = False
         x_feat_giver = x.get_head()
         y_feat_giver = y.get_head()
         x_feats = x_feat_giver.features
         y_feats = y_feat_giver.features
         checked_feats = []
         # XFeats probe
+        if "P" in x_feats and has_part(y_feats, "iQ"):
+            iqf = get_by_part(y_feats, "iQ")
+            if iqf:                
+                x_feats.append(iqf)
+            uscp = get_by_part(y_feats, "uScp")
+            if uscp:
+                x_feats.append(uscp)
+            self.out("PiedPipe", "%s inherits iQ and uScp from %s" % (x.label, y.label))
+
         if "MergeF" in x_feats:
             mf = get_by_part(x_feats, "MergeF")
             x_feats.remove(mf)
         exp_x_feats = expanded_features(x_feats)
         exp_y_feats = expanded_features(y_feats)
-        unvalued_phi = bool(has_part(exp_x_feats, "uPerson", "uNumber", "uGender"))
-        unvalued_features = [mf for mf in exp_x_feats if mf.unvalued_and_alone() or
-                             (mf.name == "Case" and unvalued_phi) or
-                             (mf.name == "Scp" and mf.ifeature)]
+        has_id = has_part(exp_x_feats, "iD")
+        unvalued_features = []
+        for mf in exp_x_feats:
+            if mf.name == "Expl":
+                unvalued_features = []
+                break
+            elif mf.unvalued:
+                if mf.name == 'Phi':
+                    if has_part(exp_x_feats, 'Case:Gen'):
+                        u_phi_pres = True
+                    else:
+                        unvalued_features.append(mf)
+                elif mf.name == 'Case':
+                    if has_id:
+                        unvalued_features.append(mf)
+                else:                        
+                    unvalued_features.append(mf)
+            elif mf.name == 'Case':
+                unvalued_features.append(mf)
+            elif mf.name == 'Scp' and mf.ifeature:
+                unvalued_features.append(mf)
         if not unvalued_features:
             return x, y, None
         remerge = None
@@ -1216,6 +1372,8 @@ class Generate:
                 if uf.unvalued_and_alone():
                     unvalued_top_feats = [feat for feat in stack_top_feats if
                                           feat.unvalued_and_alone()]
+                    if not unvalued_top_feats:
+                        unvalued_top_feats = [feat for feat in expanded_features(stack_top.part2.get_head_features()) if feat.unvalued_and_alone()]
                     for top_feat in unvalued_top_feats:
                         uf_present = True
                         if top_feat != uf and top_feat.name == uf.name: # both are unvalued
@@ -1303,7 +1461,7 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         filename = int(sys.argv[1])
     else:
-        filename = "./POP.txt"
+        filename = "./POP2.txt"
     file = open(filename, 'r')
     input_data = file.readlines()
     file.close()

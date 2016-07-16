@@ -25,7 +25,7 @@
 from kataja.singletons import ctrl, running_environment
 from kataja.saved.Forest import Forest
 from kataja.saved.ForestKeeper import ForestKeeper
-from PoP2.PoPDeriveJ import Generate
+from PoP2.PoPDeriveK import Generate
 import ast
 
 
@@ -89,6 +89,7 @@ class PoPForestKeeper(ForestKeeper):
                 continue
             sentence = sentence[2:]  # remove number and the space after it
             # ast.literal_eval is safer eval, so you cannot put destructive python code to POP.txt
+            ug.gloss = sentence
             target_example = ast.literal_eval(lbracket + target_str)
             ug.out(sentence_number, sentence, target_example)
             forest = Forest(gloss_text=sentence)

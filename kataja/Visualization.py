@@ -80,12 +80,13 @@ class BaseVisualization:
             self.forest.poke("vis_data")
             self.forest.vis_data[key] = value
 
-    def get_vis_data(self, key):
+    def get_vis_data(self, key, null=0):
         """ Gets visualization saved within the forest.
         :param key: key in vis_data
+        :param null: what to return for missing value
         :return:
         """
-        return self.forest.vis_data[key]
+        return self.forest.vis_data.get(key, null)
 
 
     def reset_node(self, node):

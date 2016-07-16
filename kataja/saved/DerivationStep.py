@@ -41,12 +41,13 @@ class DerivationStep(SavedObject):
     """ Packed state of syntactic objects for stepwise animation of trees growth.
      """
 
-    def __init__(self, synobjs=None, numeration=None, other=None, msg=None):
+    def __init__(self, synobjs=None, numeration=None, other=None, msg=None, gloss=None):
         super().__init__()
         self.synobjs = synobjs or []
         self.numeration = numeration
         self.other = other
         self.msg = msg
+        self.gloss = gloss
 
     def __str__(self):
         return "DS(" + str(self.synobjs) + ", " + str(self.numeration) + ", " + str(self.other) \
@@ -63,6 +64,7 @@ class DerivationStep(SavedObject):
     numeration = SavedField("numeration")
     other = SavedField("other")
     msg = SavedField("msg")
+    gloss = SavedField("gloss")
 
 
 class DerivationStepManager(SavedObject):
@@ -77,7 +79,7 @@ class DerivationStepManager(SavedObject):
         self.derivation_steps = []
         self.derivation_step_index = 0
 
-    def save_and_create_derivation_step(self, synobjs, numeration=None, other=None, msg=''):
+    def save_and_create_derivation_step(self, synobjs, numeration=None, other=None, msg='', gloss=''):
         """ Ok, new idea: derivation steps only include syntactic objects. Nodes etc. will be
         created in the fly. No problems from visualisations misbehaving, chains etc.
         :param synobjs: list of syntactic objects present in this snapshot
@@ -85,9 +87,10 @@ class DerivationStepManager(SavedObject):
         :param other: optional arbitrary data to store (must be Saveable or primitive data
         structures!)
         :param msg: optional message about derivation, to float when switching between derivations
+        :param gloss: optional gloss for derivation
         :return:
         """
-        d_step = DerivationStep(synobjs, numeration, other, msg)
+        d_step = DerivationStep(synobjs, numeration, other, msg, gloss)
         # Use Kataja's save system to freeze objects into form where they can be stored and restored
         # without further changes affecting them.
         savedata = {}
@@ -100,11 +103,11 @@ class DerivationStepManager(SavedObject):
             c += 1
             for obj in list(open_references.values()):
                 if hasattr(obj, 'uid'):
+                    #print('saving obj ', obj.uid)
                     obj.save_object(savedata, open_references)
                 else:
                     print('cannot save open reference object ', obj)
-        if c == max_depth:
-            raise hell
+        assert(c < max_depth) # please raise the max depth if this is reached
         self.derivation_steps.append((d_step.uid, savedata, msg))
 
     def restore_derivation_step(self, uid, frozen_data):
@@ -117,7 +120,8 @@ class DerivationStepManager(SavedObject):
         d_step.load_objects(frozen_data, ctrl.main)
         self.activated = True
         self.current = d_step
-        self.forest.mirror_the_syntax(d_step.synobjs, d_step.numeration, d_step.other, d_step.msg)
+        self.forest.mirror_the_syntax(d_step.synobjs, d_step.numeration, d_step.other, d_step.msg,
+                                      d_step.gloss)
 
     def next_derivation_step(self):
         """

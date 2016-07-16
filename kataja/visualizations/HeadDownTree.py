@@ -97,7 +97,7 @@ class HeadDownTree(BaseVisualization):
     def reselect(self):
         """ Rotate between drawing multidominated elements close to their various parents
         """
-        self.set_vis_data('rotation', self.get_vis_data('rotation') - 1)
+        self.set_vis_data('rotation', self.get_vis_data('rotation', 0) - 1)
 
     def should_we_draw(self, node, parent):
         """
@@ -143,7 +143,7 @@ class HeadDownTree(BaseVisualization):
         merged_grid = Grid()
 
         new_rotation, self.traces_to_draw = self._compute_traces_to_draw(
-            self.get_vis_data('rotation'))
+            self.get_vis_data('rotation', 0))
         self.set_vis_data('rotation', new_rotation)
 
         def _get_grid_size(mnode):

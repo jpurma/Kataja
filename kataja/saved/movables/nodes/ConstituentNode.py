@@ -281,10 +281,10 @@ class ConstituentNode(BaseConstituentNode):
                 name = "Trace"
             if self.is_leaf():
                 name = "Leaf constituent"
-            elif self.is_top_node():
-                name = "Root constituent"
+            # elif self.is_top_node():
+            #    name = "Set %s" % self.set_string() # "Root constituent"
             else:
-                name = "Inner constituent"
+                name = "Set %s" % self.set_string()
             if self.use_adjustment:
                 self.status_tip = "%s (Alias: %s Label: %s pos: (%.1f, %.1f) w. adjustment (%.1f, " \
                                   "%.1f))" % (
@@ -308,6 +308,21 @@ class ConstituentNode(BaseConstituentNode):
             return alias + ' ' + label
         else:
             return alias or label or "no label"
+
+    def set_string(self):
+        if self.syntactic_object and hasattr(self.syntactic_object, 'set_string'):
+            return self.syntactic_object.set_string()
+        else:
+            return self._set_string()
+
+    def _set_string(self):
+        parts = []
+        for child in self.get_children():
+            parts.append(str(child._set_string()))
+        if parts:
+            return '{%s}' % ', '.join(parts)
+        else:
+            return self.label
 
     def __str__(self):
         if not self.syntactic_object:

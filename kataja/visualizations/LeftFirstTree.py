@@ -78,7 +78,7 @@ class LeftFirstTree(BaseVisualization):
     def reselect(self):
         """ if there are different modes for one visualization, rotating
         between different modes is triggered here. """
-        self.set_vis_data('rotation', self.get_vis_data('rotation') - 1)
+        self.set_vis_data('rotation', self.get_vis_data('rotation', 0) - 1)
 
     # Recursively put nodes to their correct position in grid
     def _put_to_grid(self, grid, node, x, y, parent=None):
@@ -143,7 +143,7 @@ class LeftFirstTree(BaseVisualization):
         merged_grid = None
         self._indentation = 0
         new_rotation, self.traces_to_draw = self._compute_traces_to_draw(
-            self.get_vis_data('rotation'))
+            self.get_vis_data('rotation', 0))
         self.set_vis_data('rotation', new_rotation)
         for tree in self.forest:
             if tree.top and tree.top.node_type == g.CONSTITUENT_NODE:
@@ -244,4 +244,3 @@ class LeftFirstTree(BaseVisualization):
                     node.move_to(x, y, 0, valign=g.TOP_ROW)
                 x += edge_width
             y += edge_height + extra_heights[y_i]
-

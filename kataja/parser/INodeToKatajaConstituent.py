@@ -135,5 +135,5 @@ class INodeToKatajaConstituent:
             direction = g.RIGHT
         cn.load_values_from_parsernode(parsernode)
         cn.update_label()
-        f.derivation_steps.save_and_create_derivation_step([constituent])
+        #f.derivation_steps.save_and_create_derivation_step([cn])
         return cn

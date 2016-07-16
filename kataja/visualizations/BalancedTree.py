@@ -73,7 +73,7 @@ class BalancedTree(BaseVisualization):
 
 
         """
-        self.set_vis_data('rotation', self.get_vis_data('rotation') - 1)
+        self.set_vis_data('rotation', self.get_vis_data('rotation', 0) - 1)
 
 
     # @time_me
