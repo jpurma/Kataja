@@ -183,8 +183,6 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
             return
         self.clear_all()
         ctrl.disable_undo()
-        if hasattr(setup, 'start_plugin'):
-            setup.start_plugin(self, ctrl, prefs)
         if hasattr(setup, 'plugin_parts'):
             for classobj in setup.plugin_parts:
                 base_class = classes.find_base_model(classobj)
@@ -194,7 +192,11 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
                 else:
                     m = "adding %s " % classobj.__name__
                 self.add_message(m)
-        self.load_objects(all_data, self)
+        if hasattr(setup, 'start_plugin'):
+            setup.start_plugin(self, ctrl, prefs)
+        #if not getattr(setup, 'no_legacy_trees', False):
+        #    self.load_objects(all_data, self)
+        print(classes.ForestKeeper, type(classes.ForestKeeper))
         ctrl.resume_undo()
         self.change_forest()
 

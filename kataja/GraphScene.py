@@ -106,7 +106,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         #print('late init for graph scene')
         self.sceneRectChanged.connect(ctrl.ui.update_positions)
 
-    def fit_to_window(self, force=False):
+    def fit_to_window(self, force=False, soft=True):
         """ Calls up to graph view and makes it to fit all visible items here
         to view window."""
         mw = prefs.edge_width
@@ -119,14 +119,21 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         prefs.auto_zoom or \
                         vr.width() > self._cached_visible_rect.width() or \
                         vr.height() > self._cached_visible_rect.height():
-                    self.graph_view.instant_fit_to_view(vr)
+                    if soft:
+                        self.graph_view.slow_fit_to_view(vr)
+                    else:
+                        self.graph_view.instant_fit_to_view(vr)
                     self._cached_visible_rect = vr
         else:
             vr = self.visible_rect() + margins
-            self.graph_view.instant_fit_to_view(vr)
+            if soft:
+                self.graph_view.slow_fit_to_view(vr)
+            else:
+                self.graph_view.instant_fit_to_view(vr)
             self._cached_visible_rect = vr
 
-    def visible_rect(self):
+    @staticmethod
+    def visible_rect():
         """ Counts all visible items in scene and returns QRectF object
          that contains all of them """
         y_min = 6000
@@ -151,7 +158,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             return QtCore.QRectF(0, 0, 320, 240)
         else:
             return QtCore.QRectF(QtCore.QPoint(x_min, y_min), QtCore.QPoint(x_max, y_max))
-        # return self.itemsBoundingRect()
+
 
     def print_rect(self):
         """ A more expensive version of visible_rect, also includes curves of edges. Too slow for
@@ -182,7 +189,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 continue
             empty = False
             minx, miny, maxx, maxy = item.path_bounding_rect().getCoords()
-            print(minx, miny, maxx, maxy)
             if minx < x_min:
                 x_min = minx
             if maxx > x_max:

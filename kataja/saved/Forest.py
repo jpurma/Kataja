@@ -404,8 +404,9 @@ class Forest(SavedObject):
         all_known_x = []
         all_known_y = []
 
-        scene_rect = ctrl.graph_view.sceneRect()
-        sc_left = scene_rect.x()
+        scene_rect = ctrl.graph_view.mapToScene(ctrl.graph_view.rect()).boundingRect()
+        #sc_left = scene_rect.x()
+        sc_center = scene_rect.center().x()
         sc_middle = scene_rect.center().y()
 
         for tree_root in synobjs:
@@ -429,8 +430,8 @@ class Forest(SavedObject):
             for syn_bare, pos in nodes_to_create:
                 x, y = pos
                 if x == 0 and y == 0:
-                    x = sc_left + 100
-                    y = sc_middle - 100
+                    x = sc_center #left + 100
+                    y = sc_middle #- 100
                 if isinstance(syn_bare, classes.Constituent):
                     node = self.create_node(synobj=syn_bare, node_type=g.CONSTITUENT_NODE, pos=(x, y))
                 elif isinstance(syn_bare, classes.Feature):
@@ -473,11 +474,11 @@ class Forest(SavedObject):
         for node in self.nodes.values():
             node.update_label()
             node.update_relations()
-        if gloss and msg:
-            self.gloss_text = '\n'.join([gloss, msg.splitlines()[-1]])
-        elif gloss:
-            self.gloss_text = gloss
-        elif msg:
+        #if gloss and msg:
+        #    self.gloss_text = '\n'.join([gloss, msg.splitlines()[-1]])
+        #elif gloss:
+        #    self.gloss_text = gloss
+        if msg:
             self.gloss_text = msg.splitlines()[-1]
         else:
             self.gloss_text = ''
@@ -646,12 +647,18 @@ class Forest(SavedObject):
             if hasattr(item, 'deleted'):
                 item.deleted = False
 
-    def remove_from_scene(self, item):
+    def remove_from_scene(self, item, fade_out=True):
         """ Remove item from this scene
         :param item:
+        :param fade_out: fade instead of immediate disappear
         :return:
         """
-        if isinstance(item, QtWidgets.QGraphicsItem):
+        if fade_out and hasattr(item, 'fade_out_and_delete'):
+            print('starting fade out for ', item)
+            item.fade_out_and_delete()
+
+        elif isinstance(item, QtWidgets.QGraphicsItem):
+            print('removing from scene ', item)
             sc = item.scene()
             if sc == self.scene:
                 # print('..removing from scene ', item.uid)
@@ -772,8 +779,8 @@ class Forest(SavedObject):
         self.update_projections()
         self.update_forest_gloss()
         self.visualization.draw()
-        if not sc.manual_zoom:
-            sc.fit_to_window()
+        #if not sc.manual_zoom:
+        #    sc.fit_to_window()
         sc.start_animations()
         ctrl.graph_view.repaint()
 
@@ -1094,7 +1101,7 @@ class Forest(SavedObject):
             node.set_original_position(pos)
             # node.update_position(pos)
         self.add_to_scene(node)
-        # node.fade_in()
+        #node.fade_in()
         return node
 
     def create_gloss_node(self, host):

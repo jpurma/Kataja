@@ -1159,6 +1159,32 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         self._fade_anim.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
         self._fade_anim.finished.connect(self.fade_out_finished)
 
+    def fade_out_and_delete(self, s=300):
+        """ Start fade out. The object exists until fade end.
+        :return: None
+        """
+        if self.is_fading_out:
+            self._fade_anim.finished.connect(None)
+            self._fade_anim.finished.connect(self.fade_out_finished_delete)
+            return
+        if not self.is_visible():
+            self.fade_out_finished_delete()
+            return
+        self.is_fading_out = True
+        if self.is_fading_in:
+            self._fade_anim.stop()
+        self._fade_anim = QtCore.QPropertyAnimation(self, qbytes_opacity)
+        self._fade_anim.setDuration(s)
+        self._fade_anim.setStartValue(1.0)
+        self._fade_anim.setEndValue(0)
+        self._fade_anim.setEasingCurve(QtCore.QEasingCurve.OutQuad)
+        self._fade_anim.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
+        self._fade_anim.finished.connect(self.fade_out_finished_delete)
+
+    def fade_out_finished_delete(self):
+        self.is_fading_out = False
+        ctrl.forest.remove_from_scene(self, fade_out=False)
+
     def fade_out_finished(self):
         self.visible = False
         self.is_fading_out = False

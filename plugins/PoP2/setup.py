@@ -22,11 +22,22 @@ plugin_parts = [Constituent, Feature, Generate, PoPForestKeeper]
 # When the plugin is disabled, or replaced with another, 'tear_down_plugin' is called where the
 # previously initialized special structures can be destroyed.
 
+no_legacy_trees = True
+# no_legacy_trees disables restoring the previous data. It is useful when start_plugin involves
+# loading our own example trees and data.
+
+
+def before_init(main, ctrl, prefs):
+    """ This is called when plugin is enabled but before the new classes replace the existing.
+    This is rarely needed, usually start_plugin is better place to do initialisations. """
+    pass
+
 
 def start_plugin(main, ctrl, prefs):
-    """ This is called when plugin is enabled and can be used for initializations, e.g. loading
-    lexicons or adding new data to main, ctrl or prefs without reclassing them."""
-    pass
+    """ This is called when plugin is enabled, after new classes are initialised. This can be
+    used for initializations, e.g. loading lexicons or adding new data to main, ctrl or prefs
+    without reclassing them."""
+    main.load_initial_treeset()  # runs ForestKeeper.__init__ etc
 
 
 def tear_down_plugin(main, ctrl, prefs):
