@@ -182,9 +182,12 @@ class Node(Movable):
         """
         super().after_model_update(updated_fields, update_type)
 
-        if update_type == 1:
+        if update_type == 1:  # CREATE
             self.forest.store(self)
             self.forest.add_to_scene(self)
+        if update_type == 2:  # DELETE
+            self.forest.remove_from_scene(self, fade_out=False)
+            return
 
         if 'folding_towards' in updated_fields:
             # do the animation and its after triggers.

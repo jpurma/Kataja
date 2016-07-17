@@ -235,8 +235,9 @@ class Generate:
             self.announce_derivation_step([x, y], "checked features: %s" % checked_feats)
 
         # 3. Check if labeling situation has changed
-        if self.label_if_possible(y):
-            self.announce_derivation_step([x, y], "labeled unlabeled element: '%s'" % y.label)
+        new_labels = self.label_if_possible(y)
+        if new_labels:
+            self.announce_derivation_step([x, y], "labeled unlabeled element: %s" % new_labels)
 
         # Now Merge:
         # 4. Merge
@@ -248,16 +249,21 @@ class Generate:
         if merged.is_unlabeled():
             self.out("Label(None)", merged)
             remerge = self.find_mover_in_unlabeled(merged)
-            if self.label_if_possible(merged):
-                self.announce_derivation_step([merged], "found label for unlabeled element")
+            new_labels = self.label_if_possible(merged)
+            if new_labels:
+                self.announce_derivation_step([merged], "labeled unlabeled element: %s" %
+                                              new_labels)
             if remerge:
                 self.out("merge",
                          "merge (for labeling (remerge)) %s +  %s" % (remerge.label,
                                                                       merged.label))
                 merged = self.remerge(merged, remerge)
-                if self.label_if_possible(merged):
-                    self.announce_derivation_step([merged], "found label for unlabeled element")
-                self.announce_derivation_step([merged], "remerged previously merged element")
+                new_labels = self.label_if_possible(merged)
+                if new_labels:
+                    self.announce_derivation_step([merged], "labeled unlabeled element: %s"
+                                                  % new_labels)
+                self.announce_derivation_step([merged], "remerged previous element '%s'"
+                                              % remerge.label)
                 if merged.is_unlabeled():
                     self.out("Label(None)", merged)
                 else:
@@ -275,9 +281,12 @@ class Generate:
                                                                     postponed_remerge.label))
                 merged = self.remerge_postponed(merged, postponed_remerge)
                 self.out("Label(SharedFeats)", merged)
-                self.announce_derivation_step([merged], "remerged back")
-                if self.label_if_possible(merged):
-                    self.announce_derivation_step([merged], "found label for unlabeled element")
+                self.announce_derivation_step([merged], "remerged back '%s'" %
+                                              postponed_remerge.label)
+                new_labels = self.label_if_possible(merged)
+                if new_labels:
+                    self.announce_derivation_step([merged], "labeled unlabeled element: %s"
+                                                  % new_labels)
 
         # 7. Transfer and dephase
         if merged.label in PHASE_HEADS:
@@ -285,8 +294,9 @@ class Generate:
             if self.in_main and merged.label == "v*":
                 success = self.dephase_and_transfer(merged)
                 if success:
-                    merged = success
-                    self.announce_derivation_step(merged, "dephased and transferred")
+                    merged, transfer = success
+                    self.announce_derivation_step(merged, "dephased '%s' and transferred '%s'" %
+                                                  (merged.label, transfer.label))
             if not success:
                 merged = self.transfer_check(merged)
         return merged
@@ -378,7 +388,8 @@ class Generate:
 
         if "Delete" in merged_feats:  # Dephase because C is deleted
             transfer, merged = self.dephase_deleted_c(merged)
-            self.announce_derivation_step(merged, "dephased deleted C")
+            self.announce_derivation_step(merged, "dephased deleted C to '%s' and transfered '%s'"
+                                          % (merged.label, transfer.label))
             dephase = True
 
         # check Stack if unvalued igned features are present
@@ -441,7 +452,7 @@ class Generate:
             transfer.transfered = True
         self.out("Transfer", transfer)
         # Check to see if Remerge results in labeling
-        return merged
+        return merged, transfer
 
     def dephase_deleted_c(self, merged):
         """ Dephase
@@ -611,14 +622,14 @@ class Generate:
                 build_pairs_to_analyse(item.part2)
 
         build_pairs_to_analyse(merged)
-        success = False
+        successes = []
 
         for item, p1_is_copy, p2_is_copy in reversed(waiting_for_labeling):
             new_label = self.labeling_function(item.part1, item.part2, p1_is_copy, p2_is_copy)
             if new_label is not False:
                 item.label = new_label
-                success = True
-        return success
+                successes.append(new_label)
+        return successes
 
     def labeling_function(self, x, y, x_has_moved, y_has_moved):
         """ Compute label for SO that merges x, y
