@@ -21,8 +21,8 @@ except ImportError:
     from FeatureB import Feature
     in_kataja = False
 
-start = 1
-end = 10
+start = 3
+end = 4
 
 
 def find(features, name=None, value=None, u=None, i=None, phi=None):
@@ -112,6 +112,8 @@ class Generate:
         self.workspace = []
         so = None
         selected = None
+        self.announce_derivation_step([], msg=str(target_example))
+
         while self.so_list:
             self.lookforward_so = self.so_list.pop()
             if so:
@@ -130,6 +132,8 @@ class Generate:
             sys.exit()
 
         self.out("Transfer", selected)
+        self.announce_derivation_step([selected], msg='finished')
+
         return selected
 
     def merge_substream(self, synobjlist, spine):
@@ -914,7 +918,8 @@ class Generate:
                 if found_it:
                     feats_passed = True
             if comp.part2:
-                if find(comp.part2.get_head_features(), ["Phi", "Person"]):
+                if comp.part2.is_labeled() and\
+                        find(comp.part2.get_head_features(), ["Phi", "Person"]):
                     comp = None
                 else:
                     comp = comp.part2

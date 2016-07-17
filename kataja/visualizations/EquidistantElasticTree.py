@@ -75,6 +75,8 @@ class EquidistantElasticTree(BaseVisualization):
             other_x, other_y = other.centered_position
             if other is node:
                 continue
+            elif other.locked_to_node is node or node.locked_to_node is other:
+                continue
             dist_x = int(node_x - other_x)
             dist_y = int(node_y - other_y)
             dist = math.hypot(dist_x, dist_y)
@@ -85,6 +87,8 @@ class EquidistantElasticTree(BaseVisualization):
 
         # Now subtract all forces pulling items together.
         for edge in node.edges_up:
+            if node.locked_to_node is edge.start:
+                continue
             start_x, start_y = edge.start_point
             end_x, end_y = edge.end_point
             dist_x = start_x - end_x
@@ -102,6 +106,8 @@ class EquidistantElasticTree(BaseVisualization):
             else:
                 pass
         for edge in node.edges_down:
+            if edge.end.locked_to_node is node:
+                continue
             start_x, start_y = edge.start_point
             end_x, end_y = edge.end_point
             dist_x = end_x - start_x

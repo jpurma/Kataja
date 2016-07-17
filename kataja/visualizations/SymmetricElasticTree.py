@@ -75,6 +75,8 @@ class SymmetricElasticTree(BaseVisualization):
         for other in self.forest.visible_nodes():
             if other is node:
                 continue
+            elif other.locked_to_node is node or node.locked_to_node is other:
+                continue
             other_x, other_y = other.centered_position  # @UnusedVariable
             dist_x, dist_y = int(node_x - other_x), int(node_y - other_y)
             safe_zone = (other.width + node.width) / 2
@@ -83,7 +85,7 @@ class SymmetricElasticTree(BaseVisualization):
                 continue
             required_dist = dist - safe_zone
             pushing_force = 500 / (required_dist * required_dist)
-            pushing_force = min(random.random()*60, pushing_force)
+            pushing_force = min(0.6, pushing_force)
 
             x_component = dist_x / dist
             y_component = dist_y / dist
@@ -93,6 +95,8 @@ class SymmetricElasticTree(BaseVisualization):
         # Now subtract all forces pulling items together.
         for edge in node.edges_down:
             other = edge.end
+            if other.locked_to_node is node:
+                continue
             other_x, other_y = other.centered_position
             dist_x, dist_y = int(node_x - other_x), int(node_y - other_y)
             dist = math.hypot(dist_x, dist_y)
@@ -107,6 +111,8 @@ class SymmetricElasticTree(BaseVisualization):
 
         for edge in node.edges_up:
             other = edge.start
+            if node.locked_to_node is other:
+                continue
             other_x, other_y = other.centered_position
             dist_x, dist_y = (node_x - other_x, node_y - other_y)
             dist = math.hypot(dist_x, dist_y)

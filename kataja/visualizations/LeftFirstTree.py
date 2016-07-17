@@ -46,6 +46,7 @@ class LeftFirstTree(BaseVisualization):
         self._max_hits = {}
         self._directed = True
         self._indentation = 0
+        self.traces_to_draw = {}
 
     def prepare(self, forest, reset=True):
         """ If loading a state, don't reset.
@@ -85,6 +86,11 @@ class LeftFirstTree(BaseVisualization):
         if not self.should_we_draw(node, parent):
             return
         grid.set(x, y, node)
+        fy = y
+        for fnode in node.get_locked_in_nodes():
+            fy += 1
+            grid.set(x, fy, 3)
+
         children = list(node.get_visible_children())
         if not children:
             return
@@ -154,7 +160,6 @@ class LeftFirstTree(BaseVisualization):
                     merged_grid.merge_grids(grid, extra_padding=extra_padding)
                 else:
                     merged_grid = grid
-        print(merged_grid)
         offset_x = 0  # tree_w/-2
         y = 0
         if not merged_grid:

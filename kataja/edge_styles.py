@@ -11,7 +11,7 @@ master_styles = {
             'arrowhead_at_start': False, 'arrowhead_at_end': False, 'font': MAIN_FONT,
             'labeled': True, 'style': 'dashed'
         }, CHECKING_EDGE: {
-            'shape_name': 'cubic', 'color_id': 'accent1tr', 'pull': 0.4, 'visible': True,
+            'shape_name': 'cubic', 'color_id': 'accent1tr', 'pull': .40, 'visible': True,
             'arrowhead_at_start': False, 'arrowhead_at_end': True, 'font': MAIN_FONT,
             'labeled': False, 'style': 'dashed'
         }, ATTRIBUTE_EDGE: {
@@ -44,7 +44,7 @@ master_styles = {
             'arrowhead_at_start': False, 'arrowhead_at_end': False, 'font': MAIN_FONT,
             'labeled': True, 'style': 'dashed'
         }, CHECKING_EDGE: {
-            'shape_name': 'cubic', 'color_id': 'accent1tr', 'pull': 0.4, 'visible': True,
+            'shape_name': 'cubic', 'color_id': 'accent1tr', 'pull': .40, 'visible': True,
             'arrowhead_at_start': False, 'arrowhead_at_end': False, 'font': MAIN_FONT,
             'labeled': False, 'style': 'dashed'
         }, ATTRIBUTE_EDGE: {

@@ -68,6 +68,8 @@ class DynamicWidthTree(LinearizedStaticTree):
         down = node.edges_down
         for edge in down:
             other = edge.end
+            if other.locked_to_node is node:
+                continue
             if other.is_visible():
                 close_ones.add(other)
                 other_x, other_y = other.centered_position
@@ -83,6 +85,8 @@ class DynamicWidthTree(LinearizedStaticTree):
         up = node.edges_up
         for edge in up:
             other = edge.start
+            if node.locked_to_node is other:
+                continue
             if other.is_visible():
                 close_ones.add(other)
                 other_x, other_y = other.centered_position
@@ -102,6 +106,8 @@ class DynamicWidthTree(LinearizedStaticTree):
         alpha_strong = (alpha * 5) or 0.5
         alpha = alpha or 0.1
         for other in other_nodes:
+            if other.locked_to_node is node or node.locked_to_node is other:
+                continue
             other_x, other_y = other.centered_position  # @UnusedVariable
             dist_x, dist_y = node_x - other_x, node_y - other_y
             dist = math.hypot(dist_x, dist_y)

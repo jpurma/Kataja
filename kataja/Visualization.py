@@ -43,6 +43,7 @@ class BaseVisualization:
         self._hits = {}
         self._max_hits = {}
         self.use_gravity = True
+        self.traces_to_draw = {}
 
     def prepare(self, forest, reset=True):
         """ If loading a state, don't reset.
@@ -88,7 +89,6 @@ class BaseVisualization:
         """
         return self.forest.vis_data.get(key, null)
 
-
     def reset_node(self, node):
         """
 
@@ -102,7 +102,6 @@ class BaseVisualization:
         node.update_label()
         node.update_visibility()
         node.magnet_mapper = None
-
 
     def draw(self):
         """ Subclasses implement this """
@@ -144,6 +143,8 @@ class BaseVisualization:
         down = node.edges_down
         for edge in down:
             other = edge.end
+            if other.locked_to_node is node:
+                continue
             other_x, other_y = other.current_position
             dist_x, dist_y = node_x - other_x, node_y - other_y
             dist = math.hypot(dist_x, dist_y)
@@ -158,6 +159,8 @@ class BaseVisualization:
         up = node.edges_up
         for edge in up:
             other = edge.start
+            if node.locked_to_node is other:
+                continue
             other_x, other_y = other.current_position
             dist_x, dist_y = node_x - other_x, node_y - other_y
             dist = math.hypot(dist_x, dist_y)
@@ -180,6 +183,8 @@ class BaseVisualization:
         # repulse
         for other in self.forest.visible_nodes():
             if other is node:
+                continue
+            elif other.locked_to_node is node or node.locked_to_node is other:
                 continue
             other_x, other_y = other.current_position  # @UnusedVariable
             dist_x, dist_y = node_x - other_x, node_y - other_y

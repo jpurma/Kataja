@@ -155,6 +155,13 @@ class DerivationStepManager(SavedObject):
             self.restore_derivation_step(uid, ds)
             ctrl.add_message('Derivation step %s: %s' % (self.derivation_step_index, msg))
 
+    def is_first(self):
+        print('dt i: ', self.derivation_step_index)
+        return self.derivation_step_index == 0
+
+    def is_last(self):
+        return self.derivation_step_index == len(self.derivation_steps) - 1
+
     # ############## #
     #                #
     #  Save support  #

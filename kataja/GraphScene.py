@@ -109,6 +109,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
     def fit_to_window(self, force=False, soft=True):
         """ Calls up to graph view and makes it to fit all visible items here
         to view window."""
+        soft = False
         mw = prefs.edge_width
         mh = prefs.edge_height
         margins = QtCore.QMarginsF(mw, mh, mw, mh)

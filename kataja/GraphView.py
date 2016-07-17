@@ -121,7 +121,7 @@ class GraphView(QtWidgets.QGraphicsView):
         self._zoom_rect = scr
         self._target_rect = QtCore.QRect(grx, gry, grw, grh)
         self._zoomd = dx, dy, dw, dh
-        self.zoom_anim = QtCore.QTimeLine(600, self)
+        self.zoom_anim = QtCore.QTimeLine(300, self)
         self.zoom_anim.setUpdateInterval(20)
         self.zoom_anim.setCurveShape(QtCore.QTimeLine.EaseInOutCurve)
         self.zoom_anim.valueChanged.connect(self.scale_step)

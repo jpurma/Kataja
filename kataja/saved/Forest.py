@@ -474,14 +474,19 @@ class Forest(SavedObject):
         for node in self.nodes.values():
             node.update_label()
             node.update_relations()
-        #if gloss and msg:
-        #    self.gloss_text = '\n'.join([gloss, msg.splitlines()[-1]])
-        #elif gloss:
-        #    self.gloss_text = gloss
-        if msg:
-            self.gloss_text = msg.splitlines()[-1]
-        else:
-            self.gloss_text = ''
+
+
+        gt = ''
+        if self.derivation_steps.is_first() or self.derivation_steps.is_last():
+            if gloss and msg:
+                gt = '\n'.join([gloss, '', msg.splitlines()[-1]])
+            elif gloss:
+                gt = gloss
+            elif msg:
+                gt = msg.splitlines()[-1]
+        elif msg:
+            gt = msg.splitlines()[-1]
+        self.gloss_text = gt
         self.update_forest_gloss()
         self.guessed_projections = False
 
