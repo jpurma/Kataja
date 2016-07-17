@@ -1164,7 +1164,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         :return: None
         """
         if self.is_fading_out:
-            self._fade_anim.finished.connect(None)
+            self._fade_anim.finished.disconnect()
             self._fade_anim.finished.connect(self.fade_out_finished_delete)
             return
         if not self.is_visible():

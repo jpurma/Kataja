@@ -23,6 +23,7 @@
 # ############################################################################
 
 import kataja.globals as g
+from kataja.saved.movables.Node import Node
 
 
 class Grid:
@@ -41,7 +42,7 @@ class Grid:
         for column in self.rows:
             collist = []
             for item in column:
-                if item.node_type == g.CONSTITUENT_NODE:
+                if isinstance(item, Node) and item.node_type == g.CONSTITUENT_NODE:
                     collist.append(item.label or 'Anon')
                 else:
                     collist.append(str(item))

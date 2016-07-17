@@ -518,11 +518,12 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
             self.forest.retire_from_drawing()
             self.forest = None
         self.forest_keeper = None
-        print('garbage stats:', gc.get_count())
-        gc.collect()
-        print('after collection:', gc.get_count())
-        if gc.garbage:
-            print('garbage:', gc.garbage)
+        # Garbage collection doesn't mix well with animations that are still running
+        #print('garbage stats:', gc.get_count())
+        #gc.collect()
+        #print('after collection:', gc.get_count())
+        #if gc.garbage:
+        #    print('garbage:', gc.garbage)
         self.forest_keepers.append(classes.ForestKeeper())
         self.forest_keeper = self.forest_keepers[-1]
 

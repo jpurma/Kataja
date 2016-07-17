@@ -181,7 +181,7 @@ class Forest(SavedObject):
         :return:
         """
         for item in self.get_all_objects():
-            self.remove_from_scene(item)
+            self.remove_from_scene(item, fade_out=False)
         self.in_display = False
 
     def traces_are_visible(self):
@@ -654,11 +654,9 @@ class Forest(SavedObject):
         :return:
         """
         if fade_out and hasattr(item, 'fade_out_and_delete'):
-            print('starting fade out for ', item)
             item.fade_out_and_delete()
 
         elif isinstance(item, QtWidgets.QGraphicsItem):
-            print('removing from scene ', item)
             sc = item.scene()
             if sc == self.scene:
                 # print('..removing from scene ', item.uid)

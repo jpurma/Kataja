@@ -38,7 +38,8 @@ def start_plugin(main, ctrl, prefs):
     used for initializations, e.g. loading lexicons or adding new data to main, ctrl or prefs
     without reclassing them."""
     main.load_initial_treeset()  # runs ForestKeeper.__init__ etc
-
+    ctrl.free_drawing_mode = False
+    ctrl.ui.update_edit_mode()
 
 def tear_down_plugin(main, ctrl, prefs):
     """ This is called when plugin is disabled or when switching to another plugin that would
