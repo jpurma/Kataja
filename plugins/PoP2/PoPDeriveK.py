@@ -46,6 +46,7 @@ class Generate:
         self.msg_stack = []
         self.spine = None
         self.gloss = None
+        self.transferred = []
 
     def load_data(self, inputlines, start=0, end=0):
         for line in inputlines:
@@ -110,6 +111,7 @@ class Generate:
         self.forest = forest
         self.spine = None
         self.workspace = []
+        self.transferred = []
         so = None
         selected = None
         self.announce_derivation_step([], msg=str(target_example))
@@ -157,7 +159,7 @@ class Generate:
         self.spine = self.grand_cycle(spine, substream_spine)
         return self.spine
 
-    def announce_derivation_step(self, parts=None, msg=''):
+    def announce_derivation_step(self, parts=None, msg='', transfer=None):
         """ Send current structure for Kataja so it can store it as a derivation step.
         :param parts: list of current root nodes
         :param msg: message to show with the derivation step
@@ -168,6 +170,8 @@ class Generate:
         self.msg_stack.append(msg)
         msg = '\n'.join(self.msg_stack)
         self.msg_stack = []
+        if transfer:
+            self.transferred.append(transfer)
         if parts:
             if not isinstance(parts, list):
                 parts = [parts]
@@ -185,7 +189,8 @@ class Generate:
                                                                      self.workspace,
                                                                      numeration=num,
                                                                      msg=msg,
-                                                                     gloss=self.gloss)
+                                                                     gloss=self.gloss,
+                                                                     transferred=self.transferred)
 
     def merge_so(self, x, spine):
         """ Select new item and merge it into structure
@@ -296,7 +301,7 @@ class Generate:
                 if success:
                     merged, transfer = success
                     self.announce_derivation_step(merged, "dephased '%s' and transferred '%s'" %
-                                                  (merged.label, transfer.label))
+                                                  (merged.label, transfer.label), transfer=transfer)
             if not success:
                 merged = self.transfer_check(merged)
         return merged
@@ -389,7 +394,7 @@ class Generate:
         if "Delete" in merged_feats:  # Dephase because C is deleted
             transfer, merged = self.dephase_deleted_c(merged)
             self.announce_derivation_step(merged, "dephased deleted C to '%s' and transfered '%s'"
-                                          % (merged.label, transfer.label))
+                                          % (merged.label, transfer.label), transfer=transfer)
             dephase = True
 
         # check Stack if unvalued igned features are present

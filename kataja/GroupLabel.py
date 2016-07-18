@@ -264,31 +264,36 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
         label_width = self._size.width()
         label_height = self._size.height()
         cx, cy = self._host.center_point
-        min_dist = 100000
-        prev_x, prev_y = route[-1]
-        best_x, best_y = 0, 0
-        for x, y in route:
-            mx = (prev_x + x) / 2
-            my = (prev_y + y) / 2
-            d = (cx - mx) ** 2 + (cy - my) ** 2
-            if d < min_dist:
-                if mx < cx:
-                    mx -= label_width + 2
-                else:
-                    mx += 2
-                if my < cy:
-                    my -= label_height + 2
-                else:
-                    my += 2
-                items = ctrl.graph_scene.items(QtCore.QRectF(mx, my, label_width, label_height))
-                collision = False
-                for item in items:
-                    if not isinstance(item, Tree):
-                        collision = True
-                if not collision:
-                    min_dist = d
-                    best_x, best_y = mx, my
-            prev_x, prev_y = x, y
+        br = self._host.boundingRect()
+        best_x = cx
+        best_y = br.bottom() + 4
+
+        if False:
+            min_dist = 100000
+            prev_x, prev_y = route[-1]
+            best_x, best_y = 0, 0
+            for x, y in route:
+                mx = (prev_x + x) / 2
+                my = (prev_y + y) / 2
+                d = (cx - mx) ** 2 + (cy - my) ** 2
+                if d < min_dist:
+                    if mx < cx:
+                        mx -= label_width + 2
+                    else:
+                        mx += 2
+                    if my < cy:
+                        my -= label_height + 2
+                    else:
+                        my += 2
+                    items = ctrl.graph_scene.items(QtCore.QRectF(mx, my, label_width, label_height))
+                    collision = False
+                    for item in items:
+                        if not isinstance(item, Tree):
+                            collision = True
+                    if not collision:
+                        min_dist = d
+                        best_x, best_y = mx, my
+                prev_x, prev_y = x, y
         self.prepareGeometryChange()
         self.setPos(best_x, best_y)
         self.compute_angle_for_pos(QtCore.QPointF(best_x, best_y))

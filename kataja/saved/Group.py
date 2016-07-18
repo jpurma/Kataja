@@ -168,6 +168,25 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
             else:
                 ctrl.ui.remove_ui_for(self)
 
+    def remove_nodes(self, nodes):
+        """ Remove multiple nodes, just to avoid repeated calls to expensive updates
+        :param nodes:
+        :return:
+        """
+        self.poke('selection')
+        for node in nodes:
+            if node in self.selection:
+                self.selection.remove(node)
+            if node in self.selection_with_children:
+                self.selection_with_children.remove(node)
+        if self.selection:
+            self.update_shape()
+        else:
+            if self.persistent:
+                self.forest.remove_group(self)
+            else:
+                ctrl.ui.remove_ui_for(self)
+
     def add_node(self, node):
         """ Manual addition of single node
         :param node:
@@ -289,10 +308,8 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
 
         if self.label_item:
             if self.label_item.automatic_position:
-                print('*** counting best position for label item w. group')
                 self.label_item.compute_best_position(route)
             else:
-                print('*** no automatic position, update manual position for label item')
                 self.label_item.update_position()
 
         curved_path = Group.interpolate_point_with_bezier_curves(route)
@@ -303,7 +320,8 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         # This is costly
         if True:
             for item in self.collidingItems():
-                if isinstance(item, Node) and item not in self.selection_with_children:
+                if isinstance(item, Node) and item.node_type == g.CONSTITUENT_NODE and item not in \
+                        self.selection_with_children:
                     x, y = item.current_scene_position
                     subshape = item.shape().translated(x, y)
                     subshape_points = []

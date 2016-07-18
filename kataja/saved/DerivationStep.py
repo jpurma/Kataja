@@ -41,13 +41,15 @@ class DerivationStep(SavedObject):
     """ Packed state of syntactic objects for stepwise animation of trees growth.
      """
 
-    def __init__(self, synobjs=None, numeration=None, other=None, msg=None, gloss=None):
+    def __init__(self, synobjs=None, numeration=None, other=None, msg=None, gloss=None,
+                 transferred=None):
         super().__init__()
         self.synobjs = synobjs or []
         self.numeration = numeration
         self.other = other
         self.msg = msg
         self.gloss = gloss
+        self.transferred = transferred
 
     def __str__(self):
         return "DS(" + str(self.synobjs) + ", " + str(self.numeration) + ", " + str(self.other) \
@@ -65,6 +67,7 @@ class DerivationStep(SavedObject):
     other = SavedField("other")
     msg = SavedField("msg")
     gloss = SavedField("gloss")
+    transferred = SavedField("transferred")
 
 
 class DerivationStepManager(SavedObject):
@@ -79,7 +82,8 @@ class DerivationStepManager(SavedObject):
         self.derivation_steps = []
         self.derivation_step_index = 0
 
-    def save_and_create_derivation_step(self, synobjs, numeration=None, other=None, msg='', gloss=''):
+    def save_and_create_derivation_step(self, synobjs, numeration=None, other=None, msg='',
+                                        gloss='', transferred=None):
         """ Ok, new idea: derivation steps only include syntactic objects. Nodes etc. will be
         created in the fly. No problems from visualisations misbehaving, chains etc.
         :param synobjs: list of syntactic objects present in this snapshot
@@ -88,9 +92,10 @@ class DerivationStepManager(SavedObject):
         structures!)
         :param msg: optional message about derivation, to float when switching between derivations
         :param gloss: optional gloss for derivation
+        :param transferred: items that have been transferred/spelt out
         :return:
         """
-        d_step = DerivationStep(synobjs, numeration, other, msg, gloss)
+        d_step = DerivationStep(synobjs, numeration, other, msg, gloss, transferred)
         # Use Kataja's save system to freeze objects into form where they can be stored and restored
         # without further changes affecting them.
         savedata = {}
@@ -121,7 +126,7 @@ class DerivationStepManager(SavedObject):
         self.activated = True
         self.current = d_step
         self.forest.mirror_the_syntax(d_step.synobjs, d_step.numeration, d_step.other, d_step.msg,
-                                      d_step.gloss)
+                                      d_step.gloss, d_step.transferred)
 
     def next_derivation_step(self):
         """

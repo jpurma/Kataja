@@ -300,7 +300,8 @@ class Forest(SavedObject):
         tree.show()
         return tree
 
-    def mirror_the_syntax(self, synobjs, numeration=None, other=None, msg=None, gloss=None):
+    def mirror_the_syntax(self, synobjs, numeration=None, other=None, msg=None, gloss=None,
+                          transferred=None):
         """ This is a big important function to ensure that Nodes on display are only those that
         are present in syntactic objects. Clean up the residue, create those nodes that are
         missing and create the edges.
@@ -309,6 +310,7 @@ class Forest(SavedObject):
         :param other: what else we need?
         :param msg: message associated with this derivation step, this will be used as gloss
         :param gloss: gloss text for the whole forest
+        :param transferred: list of items spelt out/transferred. These will form a group
         :return:
         """
 
@@ -340,9 +342,9 @@ class Forest(SavedObject):
                     # print(me.label, node.label)
                     if node.uid in node_keys_to_validate:
                         node_keys_to_validate.remove(node.uid)
-                    x, y = node.current_scene_position
-                    all_known_x.append(x)
-                    all_known_y.append(y)
+                    #x, y = node.current_scene_position
+                    #all_known_x.append(x)
+                    #all_known_y.append(y)
                     if node.node_type == g.FEATURE_NODE:
                         node.locked_to_node = parent_node # not me.unvalued
                     for tree in node.trees:
@@ -398,11 +400,17 @@ class Forest(SavedObject):
             node.fix_edge_aligns()
             return node
 
+        def rec_add_item(item, result_set):
+            result_set.append(self.get_node(item))
+            for part in item.get_parts():
+                result_set = rec_add_item(part, result_set)
+            return result_set
+
         #if numeration:
         #    num_tree = self.get_numeration()
 
-        all_known_x = []
-        all_known_y = []
+        #all_known_x = []
+        #all_known_y = []
 
         scene_rect = ctrl.graph_view.mapToScene(ctrl.graph_view.rect()).boundingRect()
         #sc_left = scene_rect.x()
@@ -417,10 +425,10 @@ class Forest(SavedObject):
             avg_y = 0
             most_popular_tree = None
             recursive_add_for_creation(tree_root, None, None)
-            if all_known_x:
-                avg_x = int(statistics.mean(all_known_x))
-            if all_known_y:
-                avg_y = int(statistics.mean(all_known_y))
+            #if all_known_x:
+            #    avg_x = int(statistics.mean(all_known_x))
+            #if all_known_y:
+            #    avg_y = int(statistics.mean(all_known_y))
 
             # noinspection PyArgumentList
             most_popular_trees = collections.Counter(tree_counter).most_common(1)
@@ -436,8 +444,8 @@ class Forest(SavedObject):
                     node = self.create_node(synobj=syn_bare, node_type=g.CONSTITUENT_NODE, pos=(x, y))
                 elif isinstance(syn_bare, classes.Feature):
                     if syn_bare.unvalued and False:
-                        x += random.randint(-20, 10)
-                        y += random.randint(20, 70)
+                        x += sc_center + random.randint(-20, 10)
+                        y += sc_middle + random.randint(20, 70)
                         node = self.create_node(synobj=syn_bare, node_type=g.FEATURE_NODE, pos=(x, y))
                     else:
                         node = self.create_node(synobj=syn_bare, node_type=g.FEATURE_NODE, pos=(x, y))
@@ -475,6 +483,62 @@ class Forest(SavedObject):
             node.update_label()
             node.update_relations()
 
+        # Update or create groups of transferred items
+        old_groups = [gr for gr in self.groups.values() if gr.get_label_text().startswith(
+            'Transfer')]
+        all_new_items = set()
+        all_old_items = set()
+        if old_groups:
+            for group in old_groups:
+                all_old_items.update(set(group.selection))
+        if transferred:
+            new_groups = []
+            if transferred:
+                for transfer_top in transferred:
+                    this_group = rec_add_item(transfer_top, [])
+                    new_groups.append(this_group)
+                    all_new_items.update(set(this_group))
+            # Put items to groups if they aren't there
+            if new_groups:
+                if not old_groups:
+                    for selection in new_groups:
+                        new_g = self.create_group()
+                        new_g.set_label_text('Transfer')
+                        #new_g.fill = False
+                        #new_g.outline = True
+                        new_g.update_colors('accent5')
+                        new_g.update_selection(selection)
+                else:
+                    # find partially matching group
+                    for selection in new_groups:
+                        group_to_add = None
+                        for item in selection:
+                            for group in old_groups:
+                                if item in group.selection:
+                                    group_to_add = group
+                                    break
+                            break
+                        if group_to_add:
+                            for item in selection:
+                                group_to_add.add_node(item)
+                        else:
+                            new_g = self.create_group()
+                            new_g.set_label_text('Transfer')
+                            #new_g.fill = False
+                            #new_g.outline = True
+                            new_g.update_colors('accent5')
+                            new_g.update_selection(selection)
+                            new_g.update_selection(selection)
+        if old_groups:
+            # Remove items from groups where they don't belong
+            items_to_remove = all_old_items - all_new_items
+            to_remove = [[] for x in old_groups]
+            for item in items_to_remove:
+                for i, group in enumerate(old_groups):  # we can ignore newly created groups
+                    if item in group.selection:
+                        to_remove[i].append(item)
+            for old_group, remove_list in zip(old_groups, to_remove):
+                old_group.remove_nodes(remove_list)
 
         gt = ''
         if self.derivation_steps.is_first() or self.derivation_steps.is_last():
