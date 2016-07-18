@@ -227,7 +227,7 @@ class Preferences(object):
         self._shows_select_order_ui = {'tab': 'Syntax'}
 
         # Rest of the edges are defined in their corresponding node classes
-        self.edge_styles = master_styles
+        self.edge_styles = deepcopy(master_styles)
         # Nodes are defined in their classes and preference dict is generated
         #  from those.
         self.node_styles = {}

@@ -102,7 +102,7 @@ class ForestSettings(SavedObject):
         local_edge_settings = self.edge_styles_data.get(edge_type)
         if key:
             if local_edge_settings is None or local_edge_settings.get(key, None) is None:
-                return prefs.edge_styles[edge_type][prefs.style].get(key, None)
+                return prefs.edge_styles[prefs.style][edge_type].get(key, None)
             else:
                 return local_edge_settings[key]
         else:

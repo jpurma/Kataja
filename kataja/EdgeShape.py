@@ -22,6 +22,12 @@ class EdgeShape:
         else:
             return value
 
+    def connection_style_at_start(self):
+        return self.get_edge_info('start_connects_to')
+
+    def connection_style_at_end(self):
+        return self.get_edge_info('end_connects_to')
+
     def has_arrowhead_at_start(self):
         return self.get_edge_info('arrowhead_at_start')
 

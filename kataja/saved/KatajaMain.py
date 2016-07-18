@@ -89,7 +89,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.setCorner(QtCore.Qt.BottomLeftCorner, QtCore.Qt.LeftDockWidgetArea)
         self.setCorner(QtCore.Qt.BottomRightCorner,
                        QtCore.Qt.RightDockWidgetArea)
-        x, y, w, h = (50, 50, 940, 720)
+        x, y, w, h = (50, 50, 1152, 720)
         self.setMinimumSize(w, h)
         self.app = kataja_app
         self.forest = None
@@ -223,6 +223,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.change_forest()
 
     def load_plugin(self, plugin_module):
+        setup = None
         if plugin_module in self.available_plugins:
             retry = True
             while retry:

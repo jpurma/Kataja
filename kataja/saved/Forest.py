@@ -2077,12 +2077,12 @@ class Forest(SavedObject):
             if head_node == old_node:
                 op.set_projection(head_node)
 
-    def merge_to_top(self, top, new, merge_to_left, merger_pos):
+    def merge_to_top(self, top, new, merge_to_left=True, pos=None):
         """
         :param top:
         :param new:
         :param merge_to_left:
-        :param merger_pos:
+        :param pos:
         :return:
         """
         if hasattr(new, 'index'): # fixme - this is bad idea
@@ -2104,15 +2104,13 @@ class Forest(SavedObject):
         else:
             left = top
             right = new
-        p = merger_pos[0], merger_pos[1]
-        merger_node = self.create_merger_node(left=left, right=right, pos=p, new=new)
+        merger_node = self.create_merger_node(left=left, right=right, pos=pos, new=new)
 
         # Fix trees to include the new merger node
         for tree in set(top.trees):
             tree.recalculate_top()
             tree.update_items()
         merger_node.copy_position(top)
-        #merger_node.current_position = merger_node.scene_position_to_tree_position(p)
 
         if self.traces_are_visible():
             self.chain_manager.rebuild_chains()

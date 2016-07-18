@@ -819,7 +819,7 @@ class JointedTouchArea(TouchArea):
         ctrl.forest.merge_to_top(self.host,
                                  dropped_node,
                                  merge_to_left=self._align_left,
-                                 merger_pos=self.start_point)
+                                 pos=self.start_point)
         for node in ctrl.dragged_set:
             node.adjustment = self.host.adjustment
         return 'moved node %s to sibling of %s' % (

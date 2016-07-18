@@ -246,6 +246,7 @@ def remove_node(sender=None):
 
 a['remove_node'] = {'command': 'Delete node', 'sender_arg': True, 'method': remove_node}
 
+
 def add_triangle(sender=None):
     """ Turn triggering node into triangle node
     :return: None
@@ -321,6 +322,7 @@ def constituent_set_head(sender=None):
     if embed:
         embed.update_fields()
 
+
 def can_set_head():
     return ctrl.free_drawing_mode
 
@@ -338,7 +340,7 @@ def add_top_left(sender=None):
      """
     top = get_host(sender)
     new_node = ctrl.forest.create_node(relative=top)
-    ctrl.forest.merge_to_top(top, new_node, True, new_node.current_position)
+    ctrl.forest.merge_to_top(top, new_node, merge_to_left=True, pos=new_node.current_position)
 
 a['add_top_left'] = {'command': 'Add node to left',
                      'method': add_top_left,
@@ -351,7 +353,7 @@ def add_top_right(sender=None):
      """
     top = get_host(sender)
     new_node = ctrl.forest.create_node(relative=top)
-    ctrl.forest.merge_to_top(top, new_node, False, new_node.current_position)
+    ctrl.forest.merge_to_top(top, new_node, merge_to_left=False, pos=new_node.current_position)
 
 a['add_top_right'] = {'command': 'Add node to right',
                       'method': add_top_right,

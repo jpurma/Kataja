@@ -39,6 +39,13 @@ from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
 from kataja.uniqueness_generator import next_available_type_id
 
+
+CENTER = 0
+BOTTOM_CENTER = 1
+MAGNETS = 2
+BORDER = 3
+
+
 angle_magnet_map = {0: 6, 1: 6, 2: 4, 3: 3, 4: 2, 5: 1, 6: 0, 7: 5, 8: 5, 9: 5, 10: 7, 11: 8, 12: 9,
                     13: 10, 14: 11, 15: 6, 16: 6}
 
@@ -282,7 +289,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         :param value: str
         """
         if value:
-            print('shape changed, control points: ', self.shape_info.shape_info('control_points'))
             self._shape_method = SHAPE_PRESETS[value]['method']
 
     # ## Label data and its shortcut properties
@@ -435,7 +441,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
          to prepend or append the sibling node compared to this.
         :return:
         """
-        if self.edge_n <= self.edge_count / 2:
+        if self.edge_n < self.edge_count / 2:
             return g.LEFT
         else:
             return g.RIGHT
@@ -601,12 +607,18 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             self.make_relative_vector()
             self.update_status_tip()
 
-        if self.start and not self.end:
-            self._computed_end_point = add_xy(self.start.current_scene_position,
-                                              self._relative_vector)
-        elif self.end and not self.start:
-            self._computed_start_point = sub_xy(self.end.current_scene_position,
-                                                self._relative_vector)
+        if self.start:
+            sx, sy = self.start.current_scene_position
+            if not self.end:
+                ex = sx + self._relative_vector[0]
+                ey = sy + self._relative_vector[1]
+                self._computed_end_point = ex, ey
+        if self.end:
+            ex, ey = self.end.current_scene_position
+            if not self.start:
+                sx = ex - self._relative_vector[0]
+                sy = ey - self._relative_vector[1]
+                self._computed_start_point = sx, sy
         if self.edge_type == g.ARROW:
 
             if self.start:
@@ -632,33 +644,30 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         elif self.edge_type == g.DIVIDER:
             pass
         else:
-            if self.start and self.end:
-                if True:
-                    #    :P _: achtually  dx should between sp and first curvature point
-                    # and ep and last curvature point.
-                    # Test it when this is otherwise working.
-                    sx, sy = self.start.current_scene_position
-                    ex, ey = self.end.current_scene_position
+            if self.start:
+                connection_style = self.shape_info.connection_style_at_start()
+                if connection_style == CENTER:
+                    self._computed_start_point = self.start.current_scene_position
+                elif connection_style == BOTTOM_CENTER:
+                    self._computed_start_point = self.start.bottom_center_magnet()
+                elif connection_style == MAGNETS:
+                    self._computed_start_point = self.start.bottom_magnet(self.edge_n,
+                                                                          self.edge_count)
+                elif connection_style == BORDER:
                     dx = ex - sx
                     dy = ey - sy
                     sbr = self.start.boundingRect()
-                    ebr = self.end.boundingRect()
                     s_left, s_top, s_right, s_bottom = (x * .8 for x in sbr.getCoords())
-                    e_left, e_top, e_right, e_bottom = (x * .8 for x in ebr.getCoords())
                     if dx == 0:
                         if dy > 0:
                             self._computed_start_point = sx, sy + s_bottom
-                            self._computed_end_point = ex, ey + e_top
                         else:
                             self._computed_start_point = sx, sy + s_top
-                            self._computed_end_point = ex, ey + e_bottom
                     elif dy == 0:
                         if dx > 0:
                             self._computed_start_point = sx + s_right, sy
-                            self._computed_end_point = ex + s_left, ey
                         else:
                             self._computed_start_point = sx + s_left, sy
-                            self._computed_end_point = ex + s_right, ey
                     else:
                         ratio = dy / dx
                         if dx > 0:
@@ -669,11 +678,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                                 else:
                                     self._computed_start_point = sx + (s_bottom / ratio), \
                                                                  sy + s_bottom
-                                if e_left * ratio > e_top:
-                                    self._computed_end_point = ex + e_left, ey + (e_left * ratio)
-                                else:
-                                    self._computed_end_point = ex + (e_top / ratio), ey + e_top
-
                             else:
                                 if s_right * ratio > s_top:
                                     self._computed_start_point = sx + s_right, \
@@ -681,11 +685,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                                 else:
                                     self._computed_start_point = sx + (s_top / ratio), \
                                                                  sy + s_top
-                                if e_left * ratio < e_bottom:
-                                    self._computed_end_point = ex + e_left, ey + (e_left * ratio)
-                                else:
-                                    self._computed_end_point = ex + (e_bottom / ratio), \
-                                                               ey + e_bottom
                         else:
                             if dy > 0:
                                 if s_left * ratio < s_bottom:
@@ -694,35 +693,61 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                                 else:
                                     self._computed_start_point = sx + (s_bottom / ratio), \
                                                                  sy + s_bottom
-                                if e_right * ratio > e_top:
-                                    self._computed_end_point = ex + e_right, ey + (e_right * ratio)
-                                else:
-                                    self._computed_end_point = ex + (e_top / ratio), ey + e_top
-
                             else:
                                 if s_left * ratio > s_top:
                                     self._computed_start_point = sx + s_left, \
                                                                  sy + (s_left * ratio)
                                 else:
                                     self._computed_start_point = sx + (s_top / ratio), sy + s_top
+
+            if self.end:
+                connection_style = self.shape_info.connection_style_at_end()
+                if connection_style == CENTER:
+                    self._computed_end_point = self.end.current_scene_position
+                elif connection_style == BOTTOM_CENTER or connection_style == MAGNETS:
+                    self._computed_end_point = self.end.top_center_magnet()
+                elif connection_style == BORDER:
+                    dx = ex - sx
+                    dy = ey - sy
+                    ebr = self.end.boundingRect()
+                    e_left, e_top, e_right, e_bottom = (x * .8 for x in ebr.getCoords())
+                    if dx == 0:
+                        if dy > 0:
+                            self._computed_end_point = ex, ey + e_top
+                        else:
+                            self._computed_end_point = ex, ey + e_bottom
+                    elif dy == 0:
+                        if dx > 0:
+                            self._computed_end_point = ex + e_left, ey
+                        else:
+                            self._computed_end_point = ex + e_right, ey
+                    else:
+                        ratio = dy / dx
+                        if dx > 0:
+                            if dy > 0:
+                                if e_left * ratio > e_top:
+                                    self._computed_end_point = ex + e_left, ey + (e_left * ratio)
+                                else:
+                                    self._computed_end_point = ex + (e_top / ratio), ey + e_top
+
+                            else:
+                                if e_left * ratio < e_bottom:
+                                    self._computed_end_point = ex + e_left, ey + (e_left * ratio)
+                                else:
+                                    self._computed_end_point = ex + (e_bottom / ratio), ey + e_bottom
+                        else:
+                            if dy > 0:
+                                if e_right * ratio > e_top:
+                                    self._computed_end_point = ex + e_right, ey + (e_right * ratio)
+                                else:
+                                    self._computed_end_point = ex + (e_top / ratio), ey + e_top
+
+                            else:
                                 if e_right * ratio < e_bottom:
                                     self._computed_end_point = ex + e_right, ey + (e_right * ratio)
                                 else:
-                                    self._computed_end_point = ex + (e_bottom / ratio), \
-                                                               ey + e_bottom
+                                    self._computed_end_point = ex + (e_bottom / ratio), ey + e_bottom
 
-                elif prefs.style == 'plain':  # stupid hack to test how it looks
-                    self._computed_start_point = self.start.bottom_center_magnet()
-                else:
-                    self._computed_start_point = self.start.bottom_magnet(self.edge_n, self.edge_count)
-
-            elif self.start:
-                if prefs.style == 'plain': # stupid hack to test how it looks
-                    self._computed_start_point = self.start.bottom_center_magnet()
-                else:
-                    self._computed_start_point = self.start.bottom_magnet(self.edge_n, self.edge_count)
-            elif self.end:
-                self._computed_end_point = self.end.top_center_magnet()
 
     def connect_end_points(self, start, end):
         """
