@@ -398,7 +398,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         tuples and x,y coords.
         :param p: first argument, either QPoint, tuple or x coordinate if y
         is also given
-        :param y: y coordinate
+        :param y: y coordinate if p was used to give x coordinate
         :return:
         """
 
@@ -415,7 +415,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         tuples and x,y coords.
         :param p: first argument, either QPoint, tuple or x coordinate if y
         is also given
-        :param y: y coordinate
+        :param y: y coordinate if p was used to give x coordinate
         :return:
         """
         if y is not None:
@@ -598,7 +598,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             ctrl.ui.update_control_points()
         self.update()
 
-    def update_end_points(self, foo=None):
+    def update_end_points(self):
         """
 
         :return:

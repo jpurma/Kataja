@@ -1243,6 +1243,12 @@ class Node(Movable):
         :param size: size of list of siblings
         :return:
         """
+        if not prefs.use_magnets:
+            return self.current_scene_position
+        elif not self.has_visible_label():
+            return self.current_scene_position
+        elif not self._magnets:
+            self.update_bounding_rect()
         if size == 2: # and False:
             if i == 0:
                 return self.magnet(8)
@@ -1255,12 +1261,6 @@ class Node(Movable):
                 return self.magnet(9)
             elif i == 2:
                 return self.magnet(10)
-        if not prefs.use_magnets:
-            return self.current_scene_position
-        elif not self.has_visible_label():
-            return self.current_scene_position
-        elif not self._magnets:
-            self.update_bounding_rect()
         x1, y1 = self.current_scene_position
         x2, y2 = self._magnets[7]
         x2 += (self.width / (size + 1)) * (i + 1)
@@ -1469,7 +1469,8 @@ class Node(Movable):
         """ Implement this if structure is supposed to drag with the node
         :return:
         """
-        pass
+        for node in self.get_locked_in_nodes():
+            node.start_dragging_tracking(host=False, scene_pos=scene_pos)
 
     def drag(self, event):
         """ Drags also elements that are counted to be involved: features,

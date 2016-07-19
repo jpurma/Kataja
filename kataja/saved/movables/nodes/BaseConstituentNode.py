@@ -527,6 +527,12 @@ class BaseConstituentNode(Node):
             for i, node in enumerate(tree.sorted_constituents):
                 if node is not self and i > dragged_index and node in children:
                     node.start_dragging_tracking(host=False, scene_pos=scene_pos)
+                    for n in node.get_locked_in_nodes():
+                        n.start_dragging_tracking(host=False, scene_pos=scene_pos)
+
+        for node in self.get_locked_in_nodes():
+            node.start_dragging_tracking(host=False, scene_pos=scene_pos)
+
     #################################
 
     @property
