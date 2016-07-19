@@ -86,7 +86,7 @@ class LinearizedStaticTree(BalancedTree):
         """
         if node.node_type != g.CONSTITUENT_NODE:
             return False
-        if hasattr(node, 'index') and len(node.get_parents()) > 1:
+        if hasattr(node, 'index') and len(node.get_parents(visible=True, similar=True)) > 1:
             key = node.uid
             if key in self.traces_to_draw:
                 if parent.uid != self.traces_to_draw[key]:
@@ -142,7 +142,7 @@ class LinearizedStaticTree(BalancedTree):
         def _build_grid(node, parent=None):
             if self.should_we_draw(node, parent):
                 grids = []
-                children = list(node.get_all_visible_children())
+                children = node.get_children(similar=True, visible=True)
                 for child in children:
                     grid = _build_grid(child, parent=node)
                     if grid:
@@ -172,7 +172,7 @@ class LinearizedStaticTree(BalancedTree):
             sx = 0
             size = 0
             nleft, ntop, nw, nh = _get_grid_size(node)
-            children = list(node.get_all_visible_children())
+            children = node.get_children(similar=True, visible=True)
             if len(children) == 1:
                 cleft, ctop, cw, ch = _get_grid_size(children[0])
                 cx, cy = grid.find_in_grid(children[0])

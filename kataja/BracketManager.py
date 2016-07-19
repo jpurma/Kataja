@@ -38,7 +38,7 @@ class BracketManager:
         :return: tuple (depth, leftmost_node)
         """
         def leftmost(depth, node):
-            children = node.get_children()
+            children = node.get_children(similar=True, visible=True)
             left = next(children, None)
             if left:
                 depth += 1
@@ -55,7 +55,7 @@ class BracketManager:
         :return: tuple (depth, rightmost_node)
         """
         def rightmost(depth, node):
-            children = node.get_reversed_children()
+            children = node.get_children(visible=True, similar=True, reverse=True)
             right = next(children, None)
             if right:
                 depth += 1

@@ -8,6 +8,7 @@ from kataja.actions._utils import get_ui_container, get_host
 from kataja.singletons import ctrl, classes
 from kataja.utils import guess_node_type
 from kataja.saved.Edge import Edge
+from kataja.ui_widgets.embeds.GroupLabelEmbed import GroupLabelEmbed
 
 a = {}
 
@@ -184,8 +185,6 @@ def disconnect_edge_start(sender=None):
         ctrl.forest.disconnect_edge(edge)
     else:
         ctrl.forest.partial_disconnect(edge, start=True, end=False)
-    if edge.edge_type is g.CONSTITUENT_EDGE:
-        old_start.fix_edge_aligns()
     ctrl.ui.update_selections()
 
 a['disconnect_edge_start'] = {'command': 'Disconnect edge start', 'sender_arg': True,
@@ -209,8 +208,6 @@ def disconnect_edge_end(sender=None):
         ctrl.forest.disconnect_edge(edge)
     else:
         ctrl.forest.partial_disconnect(edge, start=False, end=True)
-    if edge.edge_type is g.CONSTITUENT_EDGE:
-        old_start.fix_edge_aligns()
     ctrl.ui.update_selections()
 
 a['disconnect_edge_end'] = {'command': 'Disconnect edge end', 'sender_arg': True,
@@ -499,13 +496,12 @@ def change_group_color(sender=None):
 
 
 def can_edit_group():
-    return True
+    return ctrl.ui.active_embed and isinstance(ctrl.ui.active_embed, GroupLabelEmbed)
     #print(ctrl.ui.active_embed)
     #return ctrl.ui.active_embed and ctrl.ui.active_embed.ui_key == 'GroupEditEmbed'
 
-
 def get_group_color():
-    if ctrl.ui.active_embed:
+    if ctrl.ui.active_embed and isinstance(ctrl.ui.active_embed, GroupLabelEmbed):
         group = ctrl.ui.active_embed.host
         return group.get_color_id()
 

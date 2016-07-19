@@ -181,7 +181,7 @@ class SpirallingTree(BaseVisualization):
         if self.iterations > 500:
             print("Reached 500 iterations, quit trying")
             return None
-        ch = list(layer.focus.get_visible_children())
+        ch = layer.focus.get_children(similar=True, visible=True)
         layer.layers = []
         for i, child_node in enumerate(ch):
             if self.should_we_draw(child_node, layer.focus):
@@ -231,8 +231,9 @@ class SpirallingTree(BaseVisualization):
         changed = False
         for tree in self.forest:
             for node in tree.sorted_nodes:
-                if len(list(node.get_visible_children())) + 1 > self.sides:
-                    self.sides = len(list(node.get_visible_children())) + 1
+                my_sides = len(list(node.get_children(visible=True, similar=True))) + 1
+                if my_sides > self.sides:
+                    self.sides = my_sides
                     changed = True
 
         if changed:

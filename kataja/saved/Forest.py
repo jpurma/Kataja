@@ -202,7 +202,7 @@ class Forest(SavedObject):
 
         def _iterate(node):
             yield node
-            for child in node.get_children():
+            for child in node.get_children(similar=False, visible=False):
                 _iterate(child)
 
         return _iterate(first)
@@ -221,7 +221,7 @@ class Forest(SavedObject):
         def _iterate(node):
             if node not in result:
                 result.append(node)
-                for child in node.get_visible_children():
+                for child in node.get_children(visible=True, similar=True):
                     _iterate(child)
 
         _iterate(first)
@@ -241,7 +241,7 @@ class Forest(SavedObject):
         def _iterate(node):
             if node not in result:
                 result.append(node)
-                for child in node.get_children():
+                for child in node.get_children(similar=False, visible=False):
                     _iterate(child)
 
         _iterate(first)
@@ -397,7 +397,6 @@ class Forest(SavedObject):
                         child = recursive_create_edges(part)
                         if child and child.node_type == g.FEATURE_NODE:
                             connect_if_necessary(node, child, g.CHECKING_EDGE)
-            node.fix_edge_aligns()
             return node
 
         def rec_add_item(item, result_set):
@@ -888,7 +887,7 @@ class Forest(SavedObject):
         def is_head_projecting_upwards(chain, node, head_node) -> None:
             chain.append(node)
             ends_here = True
-            for parent in node.get_parents(only_similar=True, only_visible=False):
+            for parent in node.get_parents(similar=True, visible=False):
                 if parent is head_node or parent.head_node is head_node:
                     ends_here = False
                     # create a copy of chain so that when the chain ends it will be added
@@ -1037,7 +1036,7 @@ class Forest(SavedObject):
         #
         # Have TrA to take over the empty nodes
         for node in list(unassigned_top_nodes):
-            for child in node.get_all_children():
+            for child in node.get_children(similar=False, visible=False):
                 if child in invalid_tops:
                     tree = self.get_tree_by_top(child)
                     tree.top = child
@@ -1074,7 +1073,7 @@ class Forest(SavedObject):
                     # either parent should have the same trees or parents together should have same
                     # trees
                     union = set()
-                    for parent in node.get_parents(only_similar=False, only_visible=False):
+                    for parent in node.get_parents(similar=False, visible=False):
                         union |= parent.trees
                     problems = node.trees ^ union
                     if problems:
@@ -1339,7 +1338,7 @@ class Forest(SavedObject):
             self._marked_for_deletion.add(node)
         node.deleted = True
         # remember parent nodes before we start disconnecting them
-        parents = node.get_parents(only_similar=True, only_visible=False)
+        parents = node.get_parents(similar=True, visible=False)
 
         # -- connections to other nodes --
         if not ignore_consequences:
@@ -1399,10 +1398,6 @@ class Forest(SavedObject):
         node.announce_deletion()
         # -- remove from selection
         ctrl.remove_from_selection(node)
-        # -- as parent nodes have now one less children, fix the starting points of edges
-        for parent in parents:
-            parent.fix_edge_aligns()
-
         # -- remove circularity block
         self._marked_for_deletion.remove(node)
 
@@ -1843,7 +1838,6 @@ class Forest(SavedObject):
         #print('--- finished connect')
         if hasattr(child, 'on_connect'):
             child.on_connect(parent)
-        parent.fix_edge_aligns()
         return new_edge
 
     def partial_disconnect(self, edge, start=True, end=True):
@@ -1969,15 +1963,15 @@ class Forest(SavedObject):
             i = node.index
         else:
             i = ''
-        children = list(node.get_children())
+        children = list(node.get_children(similar=True, visible=False))
         trees = set(node.trees)
         for child in list(children):
-            parents = node.get_parents()
+            parents = node.get_parents(similar=True, visible=False)
             parents_children = set()
             bad_parents = []
             good_parents = []
             for parent in list(parents):
-                if child in parent.get_children():
+                if child in parent.get_children(similar=True, visible=False):
                     bad_parents.append(parent)
                 else:
                     good_parents.append(parent)
@@ -2024,7 +2018,7 @@ class Forest(SavedObject):
         :return:
         """
         new_node = self.create_node(relative=old_node)
-        children = list(old_node.get_children())
+        children = old_node.get_children(similar=True, visible=False)
 
         if len(children) != 1:
             return

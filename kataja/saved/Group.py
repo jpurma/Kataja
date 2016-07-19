@@ -209,7 +209,7 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
             if isinstance(i, Node) and i not in swc and \
                     (i in selection or i not in other_selections):
                 swc.append(i)
-                for child in i.get_all_children():
+                for child in i.get_children(similar=False, visible=False):
                     recursive_add_children(child)
 
         if selection:

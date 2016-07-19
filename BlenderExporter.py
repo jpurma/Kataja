@@ -45,8 +45,8 @@ def export_visible_items(path = 'tempdata.json', scene = None, forest = None, pr
         ('location', node.current_position),
         ('label', node.cosmetic_label or node.constituent.label),
         ('alias', node.cosmetic_label),
-        ('parents', [ x.key for x in node.get_parents()]),
-        ('children', [x.key for x in node.get_children()]),
+        ('parents', [x.key for x in node.get_parents(similar=False, visible=True)]),
+        ('children', [x.key for x in node.get_children(similar=False, visible=True)]),
         ('edges', [x.key for x in node.relations_down])
         ])
         data[node.key] = nobj

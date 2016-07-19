@@ -162,32 +162,13 @@ class BaseConstituentNode(Node):
         """ returns a simple bracket string representation """
         if not self.syntactic_object:
             return '0'
-        inside = ' '.join((x.as_bracket_string() for x in self.get_children()))
+        inside = ' '.join((x.as_bracket_string() for x in self.get_children(similar=True,
+                                                                            visible=False)))
         if inside:
             return '[ ' + inside + ' ]'
         else:
             return str(self.syntactic_object)
 
-    def get_ordered_children(self):
-        """ Return children by using the ordering method from syntax.
-
-        fixme: A nice behavior would be to return list when children can be ordered and set when
-        they cannot be.
-
-        :return:
-        """
-        children = []
-        if self.syntactic_object:
-            if hasattr(self.syntactic_object, 'ordered_parts'):
-                children += self.syntactic_object.ordered_parts()
-            if hasattr(self.syntactic_object, 'ordered_features'):
-                children += self.syntactic_object.ordered_features()
-        nodes = []
-        for child in children:
-            node = ctrl.forest.get_node(child)
-            if node:
-                nodes.append(node)
-        return nodes
 
     def get_attribute_nodes(self, label_key=''):
         """
@@ -284,7 +265,7 @@ class BaseConstituentNode(Node):
         f = self.forest
         bs = f.settings.bracket_style
         if bs == g.ALL_BRACKETS:
-            if list(self.get_children()):
+            if self.get_children(similar=True, visible=True):
                 add_left()
                 add_right()
             else:
@@ -292,8 +273,8 @@ class BaseConstituentNode(Node):
                 del_right()
         elif bs == g.MAJOR_BRACKETS:
             should_have = False
-            for parent in self.get_parents(only_visible=True, only_similar=True):
-                if self == parent.get_ordered_children()[0]:
+            for parent in self.get_parents(similar=True, visible=True):
+                if parent.get_children(similar=True, visible=True).index(self) == 0:
                     should_have = True
                     break
             if should_have:
@@ -343,7 +324,7 @@ class BaseConstituentNode(Node):
 
     def get_features(self):
         """ Returns FeatureNodes """
-        return self.get_children_of_type(edge_type=g.FEATURE_EDGE)
+        return self.get_children(visible=True, of_type=g.FEATURE_EDGE)
 
     def update_features(self):
         """
@@ -388,21 +369,6 @@ class BaseConstituentNode(Node):
         feature_strings = [str(f) for f in features]
         return ', '.join(feature_strings)
 
-    # ## Multidomination #############################################
-
-    def is_multidominated(self):
-        """ Check if the ConstituentNode has more than one parent. """
-        return len(self.get_parents()) > 1
-
-    def get_c_commanded(self):
-        """ Returns the closest c-commanded elements of this element. All dominated by those are
-        also c-commanded """
-        result = []
-        for parent in self.get_parents():
-            for child in parent.get_children():
-                if child is not self:
-                    result.append(child)
-        return result
 
     # Reflecting structural changes in syntax
     # Nodes are connected and disconnected to each other by user, through UI,

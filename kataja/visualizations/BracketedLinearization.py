@@ -114,7 +114,7 @@ class BracketedLinearization(BaseVisualization):
                 node.move_to(left_edge + node.width / 2, 0, 0, valign=g.BOTTOM_ROW)
                 if node.is_visible() and (not node.has_empty_label()):
                     left_edge += node.width
-                for child in node.get_visible_children():
+                for child in node.get_children(visible=True, similar=True):
                     used, left_edge = draw_node(child, used, left_edge)
                 left_edge += self.forest.bracket_manager.count_bracket_space(node, left=False)
             return used, left_edge

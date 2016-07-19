@@ -91,8 +91,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         self.shape_info = EdgeShape(self)
         self._shape_method = None
         self.edge_type = edge_type
-        self.edge_n = edge_n
-        self.edge_count = edge_count
         self.start = start
         self.end = end
         self.fixed_start_point = (0, 0)
@@ -436,12 +434,30 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             return False
         return not (self.start and self.end)
 
+    def edge_index(self):
+        """ Return tuple where first value is the order of this edge among similar type of edges
+        for this parent (parent = edge.start) and the second is the total amount of siblings (
+        edges of this type)
+        :return:
+        """
+        if not self.start:
+            return 0, 0
+        count = 0
+        found = 0
+        for ed in self.start.edges_down:
+            if ed.edge_type == self.edge_type:
+                if ed is self:
+                    found = count
+                count += 1
+        return found, count
+
     def direction(self):
         """ Coarse direction of this edge, either g.LEFT or g.RIGHT. Useful for knowing if
          to prepend or append the sibling node compared to this.
         :return:
         """
-        if self.edge_n < self.edge_count / 2:
+        en, ecount = self.edge_index()
+        if en < ecount / 2:
             return g.LEFT
         else:
             return g.RIGHT
@@ -509,12 +525,12 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         ex, ey = self.end_point
         if sx == ex:
             ex += 0.001 # fix disappearing vertical paths
+
         c['start_point'] = sx, sy
         c['end_point'] = ex, ey
         c['curve_adjustment'] = self.curve_adjustment
         c['thick'] = self._projection_thick
-        c['order'] = self.edge_n
-        c['sister_edges_n'] = self.edge_count
+        c['order'], c['sister_edges_n'] = self.edge_index()
         c['start'] = self.start
         c['end'] = self.end
         c['inner_only'] = self._use_simple_path
@@ -651,8 +667,9 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                 elif connection_style == BOTTOM_CENTER:
                     self._computed_start_point = self.start.bottom_center_magnet()
                 elif connection_style == MAGNETS:
-                    self._computed_start_point = self.start.bottom_magnet(self.edge_n,
-                                                                          self.edge_count)
+                    e_n, e_count = self.edge_index()
+                    self._computed_start_point = self.start.bottom_magnet(e_n,
+                                                                          e_count)
                 elif connection_style == BORDER:
                     dx = ex - sx
                     dy = ey - sy
@@ -1235,8 +1252,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
     fixed_end_point = SavedField("fixed_end_point")
     edge_type = SavedField("edge_type")
     curve_adjustment = SavedField("curve_adjustment", watcher="edge_adjustment")
-    edge_i = SavedField("edge_i")
-    edge_count = SavedField("edge_count")
     start = SavedField("start")
     end = SavedField("end")
     label_data = SavedField("label_data", watcher="edge_label")

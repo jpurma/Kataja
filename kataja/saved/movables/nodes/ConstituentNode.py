@@ -210,8 +210,9 @@ class ConstituentNode(BaseConstituentNode):
         """
         :return:
         """
-        gl = self.get_children_of_type(edge_type=g.GLOSS_EDGE)
-        return next(gl, None)
+        gs = self.get_children(visible=True, of_type=g.GLOSS_EDGE)
+        if gs:
+            return gs[0]
 
     @property
     def raw_alias(self):
@@ -317,7 +318,7 @@ class ConstituentNode(BaseConstituentNode):
 
     def _set_string(self):
         parts = []
-        for child in self.get_children():
+        for child in self.get_children(similar=True, visible=False):
             parts.append(str(child._set_string()))
         if parts:
             return '{%s}' % ', '.join(parts)
@@ -344,7 +345,7 @@ class ConstituentNode(BaseConstituentNode):
         if self.alias:
             if not self.syntactic_object:
                 return '0'
-            children = list(self.get_children())
+            children = list(self.get_children(similar=True, visible=False))
             if children:
                 return '[.%s %s ]' % \
                        (self.alias, ' '.join((c.as_bracket_string() for c in children)))
@@ -357,7 +358,7 @@ class ConstituentNode(BaseConstituentNode):
         """ This merge can be removed, if it has only one child
         :return:
         """
-        return len(list(self.get_children())) == 1
+        return len(list(self.get_children(similar=True, visible=False))) == 1
 
 
     # Conditions ##########################
@@ -369,10 +370,10 @@ class ConstituentNode(BaseConstituentNode):
         adding siblings
         :return: bool
         """
-        return list(self.get_children()) and not self.is_unary()
+        return self.get_children(similar=True, visible=False) and not self.is_unary()
 
     def has_one_child(self):
-        return len(list(self.get_children())) == 1
+        return len(self.get_children(similar=True, visible=False)) == 1
 
     def can_be_projection_of_another_node(self):
         """ Node can be projection from other nodes if it has other nodes
@@ -394,7 +395,7 @@ class ConstituentNode(BaseConstituentNode):
         :return: (text, value, checked, disabled, tooltip) -tuples
         """
         r = []
-        children = list(self.get_children())
+        children = self.get_children(similar=True, visible=False)
         l = len(children)
         if l == 1:
             # down arrow
@@ -439,7 +440,7 @@ class ConstituentNode(BaseConstituentNode):
             :param head:
             :return:
             """
-            for child in node.get_children():
+            for child in node.get_children(similar=True, visible=False):
                 al = child.alias or child.label
                 al = str(al)
                 if strip_xbars(al) == head_node:

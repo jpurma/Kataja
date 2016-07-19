@@ -476,8 +476,9 @@ class UIManager:
                 return groups[0]
             return None
 
-        if self.active_embed:
-            self.active_embed = None
+        # why this was here?
+        #if self.active_embed:
+        #    self.active_embed = None
 
         # clear all ui_support pieces
         for item in list(self._items.values()):
@@ -898,6 +899,7 @@ class UIManager:
         if ctrl.text_editor_focus:
             ctrl.text_editor_focus.release_editor_focus()
         if self.active_embed:
+            print('closing embed ', self.active_embed, self.active_embed.ui_key)
             if self.active_embed.graphic_item:
                 self.remove_ui(self.active_embed.graphic_item)
             self.remove_ui(self.active_embed)
@@ -1020,7 +1022,7 @@ class UIManager:
                 if place == 'edge_up':
                     hosts = node.get_edges_up(similar=True, visible=True)
                 elif place == 'parent_above':
-                    hosts = node.get_parents(only_similar=True, only_visible=True)
+                    hosts = node.get_parents(similar=True, visible=True)
                 else:
                     hosts = [node]
                 for host in hosts:

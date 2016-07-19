@@ -92,7 +92,7 @@ class BalancedTree(BaseVisualization):
                 x_pos += width
             rows[row].append((node, x_pos, node.width))
             node.move_to(x_pos + node.width / 2, row * edge_height * 2, 0, valign=g.TOP_ROW)
-            for child in node.get_visible_children():
+            for child in node.get_children(similar=True, visible=True):
                 _fill_grid(child, row + 1)
 
         for tree in self.forest:

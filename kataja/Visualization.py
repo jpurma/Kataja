@@ -282,7 +282,7 @@ class BaseVisualization:
         :param parent:
         :return:
         """
-        if hasattr(node, 'index') and len(node.get_parents()) > 1:
+        if hasattr(node, 'index') and len(node.get_parents(similar=True, visible=True)) > 1:
             key = node.uid
             if key in self.traces_to_draw:
                 if parent.uid != self.traces_to_draw[key]:
@@ -324,7 +324,7 @@ class BaseVisualization:
             for node in ltree:
                 if not hasattr(node, 'index'):
                     continue
-                parents = node.get_parents()
+                parents = node.get_parents(visible=True, similar=True)
                 if len(parents) > 1:
                     node_key = node.uid
                     required_keys.add(node_key)
@@ -380,7 +380,7 @@ class BaseVisualization:
             for node in ltree:
                 if not hasattr(node, 'index'):
                     continue
-                parents = node.get_parents()
+                parents = node.get_parents(visible=True, similar=True)
                 if len(parents) > 1:
                     index_key = node.index
                     required_keys.add(index_key)

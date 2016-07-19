@@ -93,7 +93,7 @@ class Tree(Movable):
             :return:
             """
             passed.add(node)
-            for parent in node.get_parents(only_similar=False, only_visible=False):
+            for parent in node.get_parents(similar=False, visible=False):
                 if (not parent.deleted) and parent not in passed:
                     return walk_to_top(parent)
             return node
@@ -116,7 +116,7 @@ class Tree(Movable):
           before fixed.
         :return:
         """
-        return not self.top.get_parents(only_similar=False, only_visible=False)
+        return not self.top.get_parents(similar=False, visible=False)
 
     def add_to_numeration(self, node):
         def add_children(node):
@@ -124,7 +124,7 @@ class Tree(Movable):
                 self.sorted_nodes.append(node)
                 if self not in node.trees:
                     node.add_to_tree(self)
-                for child in node.get_all_children():
+                for child in node.get_children(similar=False, visible=False):
                     if child:  # undoing object creation may cause missing edge ends
                         add_children(child)
         add_children(node)
@@ -161,7 +161,7 @@ class Tree(Movable):
                     sorted_nodes.append(node)
                     if self not in node.trees:
                         node.add_to_tree(self)
-                    for child in node.get_all_children():
+                    for child in node.get_children(similar=False, visible=False):
                         if child: # undoing object creation may cause missing edge ends
                             add_children(child)
 

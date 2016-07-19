@@ -47,7 +47,18 @@ class UIEmbed(UIWidget, QtWidgets.QWidget):
         self.top_row_layout.addSpacing(8)
         self.top_title = QtWidgets.QLabel(text)
         self.top_row_layout.addWidget(self.top_title)
-        self.assumed_width = 200
+        self.input_parsing_modes = QtWidgets.QButtonGroup()
+        self.tex_radio = QtWidgets.QRadioButton("TeX", self)
+        self.html_radio = QtWidgets.QRadioButton("HTML", self)
+        self.plain_radio = QtWidgets.QRadioButton("plain", self)
+        self.plain_radio.setChecked(True)
+        self.input_parsing_modes.addButton(self.tex_radio)
+        self.input_parsing_modes.addButton(self.html_radio)
+        self.input_parsing_modes.addButton(self.plain_radio)
+        self.top_row_layout.addWidget(self.tex_radio)
+        self.top_row_layout.addWidget(self.html_radio)
+        self.top_row_layout.addWidget(self.plain_radio)
+        self.assumed_width = 300
         self.assumed_height = 100
         self._magnet = QtCore.QPoint(0, 0), 1
         # Effect will be disabled if QTextEdit is used.

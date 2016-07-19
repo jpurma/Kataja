@@ -79,7 +79,7 @@ class WindDriftTree(BaseVisualization):
             :param node:
             :param parent:
             """
-            children = list(node.get_children())
+            children = node.get_children(similar=True, visible=True)
             children.reverse()
             for child in children:
                 draw_node(child, node)
@@ -94,7 +94,7 @@ class WindDriftTree(BaseVisualization):
                 else:
                     x, y = self._last_pos
                     left = children[0]
-                    lc = list(left.get_children())
+                    lc = left.get_children(similar=True, visible=True)
                     if lc:
                         y = min((y - self._grid_height, lc[-1].current_position[1] - self._grid_height))
                     else:

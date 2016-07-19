@@ -91,7 +91,7 @@ class LeftFirstTree(BaseVisualization):
             fy += 1
             grid.set(x, fy, 3)
 
-        children = list(node.get_visible_children())
+        children = node.get_children(similar=True, visible=True)
         if not children:
             return
         x_shift = (len(children) // 2) * -2
@@ -101,7 +101,7 @@ class LeftFirstTree(BaseVisualization):
         ny = y + y_step
         for child in children:
             blocked = True
-            grandchildren = list(child.get_visible_children())
+            grandchildren = child.get_children(similar=True, visible=True)
             while blocked:
                 # is the right node position available?
                 blocked = grid.get(nx, ny)

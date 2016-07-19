@@ -248,10 +248,10 @@ class Node(Movable):
         :param others: other items targeted for cutting, to help decide which relations to maintain
         :return:
         """
-        for parent in self.get_parents(only_similar=False, only_visible=False):
+        for parent in self.get_parents(similar=False, visible=False):
             if parent not in others:
                 ctrl.forest.disconnect_node(parent, self)
-        for child in self.get_all_children():
+        for child in self.get_children(similar=False, visible=False):
             if child not in others:
                 ctrl.forest.disconnect_node(self, child)
         ctrl.forest.remove_from_scene(self)
@@ -475,9 +475,9 @@ class Node(Movable):
             self.trees.remove(tree)
             self.update_graphics_parent()
         if recursive_down:
-            for child in self.get_children():
+            for child in self.get_children(similar=False, visible=False):
                 legit = False
-                for parent in child.get_parents():
+                for parent in child.get_parents(similar=False, visible=False):
                     if tree in parent.trees:
                         legit = True
                 if not legit:
@@ -539,102 +539,64 @@ class Node(Movable):
     # ### Children and parents
     # ####################################################
 
-    def get_all_children(self):
-        """ Get all types of child nodes of this node.
+    def get_children(self, visible=False, similar=False, reverse=False, of_type=None) -> list:
+        """
+        Get child nodes of this node
         :return: iterator of Nodes
         """
-        return (edge.end for edge in self.edges_down)
+        if reverse:
+            edges_down = reversed(self.edges_down) # edges_down has to be list where order makes
+            # some syntactic sense.
+        else:
+            edges_down = self.edges_down
+        if visible:
+            if similar:
+                et = self.edge_type()
+                return [edge.end for edge in edges_down if
+                        edge.edge_type == et and edge.end and edge.end.is_visible()]
+            elif of_type:
+                return [edge.end for edge in edges_down if
+                        edge.edge_type == of_type and edge.end and edge.end.is_visible()]
+            else:
+                return [edge.end for edge in edges_down if edge.end and edge.end.is_visible()]
+        else:
+            if similar:
+                et = self.edge_type()
+                return [edge.end for edge in edges_down if
+                        edge.edge_type == et and (edge.end and not edge.end.deleted)]
+            elif of_type:
+                return [edge.end for edge in edges_down if
+                        edge.edge_type == of_type and (edge.end and not edge.end.deleted)]
+            else:
+                return [edge.end for edge in edges_down if edge.end and not edge.end.deleted]
 
-    def get_all_visible_children(self):
-        """ Get all types of child nodes of this node if they are visible.
-        :return: iterator of Nodes
-        """
-        return (edge.end for edge in self.edges_down if edge.end.is_visible())
-
-    def get_children(self):
-        """
-        Get child nodes of this node if they are of the same type as this.
-        :return: iterator of Nodes
-        """
-        et = self.edge_type()
-        return (edge.end for edge in self.edges_down if edge.edge_type == et and
-                (edge.end and not edge.end.deleted))
-
-    def get_reversed_children(self):
-        """
-        Get child nodes of this node if they are of the same type as this.
-        :return: iterator of Nodes
-        """
-        et = self.edge_type()
-        return (edge.end for edge in reversed(self.edges_down) if edge.edge_type == et and (
-            edge.end and not edge.end.deleted))
-
-    def get_visible_children(self):
-        """
-        Get child nodes of this node if they are of the same type as this.
-        :return: iterator of Nodes
-        """
-        et = self.edge_type()
-        return (edge.end for edge in self.edges_down if
-                edge.edge_type == et and edge.end and edge.end.is_visible())
-
-    def get_children_of_type(self, edge_type=None, node_type=None):
-        """
-        Get child nodes of this node if they are of the same type as this.
-        :return: iterator of Nodes
-        """
-        if edge_type:
-            return (edge.end for edge in self.edges_down if edge.edge_type == edge_type and
-                    not edge.end.deleted)
-        elif node_type:
-            return (edge.end for edge in self.edges_down if edge.end and edge.end.node_type ==
-                    node_type and not edge.end.deleted)
-
-    def get_parents(self, only_similar=True, only_visible=False, edge_type=None)->list:
+    def get_parents(self, similar=True, visible=False, of_type=None) ->list:
         """
         Get parent nodes of this node.
-        :param only_similar: boolean, only return nodes of same type (eg.
+        :param similar: boolean, only return nodes of same type (eg.
         ConstituentNodes)
-        :param only_visible: boolean, only return visible nodes
-        :param edge_type: int, only return Edges of certain subclass.
+        :param visible: boolean, only return visible nodes
+        :param of_type: int, only return Edges of certain subclass.
         :return: list of Nodes
         """
         if not self.edges_up:
             return []
-        if only_similar or edge_type is not None:
-            if edge_type is None:
-                edge_type = self.edge_type()
-            if only_visible:
+        if similar or of_type is not None:
+            if of_type is None:
+                of_type = self.edge_type()
+            if visible:
                 return [edge.start for edge in self.edges_up if
-                        edge.edge_type == edge_type and edge.start and edge.start.is_visible()]
+                        edge.edge_type == of_type and edge.start and edge.start.is_visible()]
             else:
                 return [edge.start for edge in self.edges_up if
-                        edge.edge_type == edge_type and edge.start and not edge.start.deleted]
+                        edge.edge_type == of_type and edge.start and not edge.start.deleted]
         else:
-            if only_visible:
+            if visible:
                 return [edge.start for edge in self.edges_up if
                         edge.start and edge.start.is_visible()]
             else:
                 return [edge.start for edge in self.edges_up if edge.start and not
                         edge.start.deleted]
-
-    def fix_edge_aligns(self):
-        # do syntactically justified align
-        # Notice that this can be called when creating connections en masse,
-        # get_ordered_children can give silly results.
-        children = list(self.get_ordered_children())
-        for i, child in enumerate(children): # this depends on node type
-            edge = self.get_edge_to(child)
-            if edge:
-                edge.edge_n = i
-                edge.edge_count = len(children)
-
-    def get_ordered_children(self):
-        """ Return children by using the ordering method from syntax. For basic Node there
-        isn't one, so just return children
-        :return:
-        """
-        return self.get_all_children()
 
     def is_connected_to(self, other):
         """ Generic check for having direct connection to some other node
@@ -649,34 +611,11 @@ class Node(Movable):
                 return True
         return False
 
-    def is_sibling(self, other):
-        """ Nodes are siblings if they share a parent.
-        :param other: node to compared with
-        :return:
-        """
-        parents = self.get_parents()
-        other_parents = other.get_parents()
-        for parent in parents:
-            if parent in other_parents:
-                return True
-        return False
-
     def is_unary(self):
-        for parent in self.get_parents(only_similar=True):
-            if len(list(parent.get_children())) == 1:
+        for parent in self.get_parents(similar=True, visible=False):
+            if len(parent.get_children(visible=False, similar=True)) == 1:
                 return True
         return False
-
-    def get_siblings(self):
-        """ Return those nodes that are other children of node's parents
-        :return:
-        """
-        sibs = []
-        for parent in self.get_parents():
-            for child in parent.get_children():
-                if child is not self:
-                    sibs.append(child)
-        return sibs
 
     def is_leaf(self, only_similar=True, only_visible=False):
         """
@@ -685,22 +624,14 @@ class Node(Movable):
         :param only_visible:
         :return:
         """
-        if only_similar and only_visible:
-            gen = self.get_visible_children()
-        elif only_similar:
-            gen = self.get_children()
-        elif only_visible:
-            gen = self.get_all_visible_children()
-        else:
-            gen = self.get_all_children()
-        return not next(gen, False)
+        return not self.get_children(visible=only_visible, similar=only_similar)
 
     def get_only_parent(self, only_similar=True, only_visible=True):
         """ Returns one or zero parents -- useful when not using multidomination
         :param only_similar:
         :param only_visible:
         """
-        parents = self.get_parents(only_similar, only_visible)
+        parents = self.get_parents(similar=only_similar, visible=only_visible)
         if parents:
             return parents[0]
         return None
@@ -710,7 +641,7 @@ class Node(Movable):
         :param only_similar:
         :param only_visible:
         """
-        if self.deleted or self.get_parents(only_similar, only_visible):
+        if self.deleted or self.get_parents(similar=only_similar, visible=only_visible):
             return False
         else:
             return True
@@ -799,7 +730,7 @@ class Node(Movable):
         center_x = x + self.boundingRect().center().x()
         bottom_y = y + self.boundingRect().bottom()
         if for_me:
-            for fnode in self.get_all_visible_children():
+            for fnode in self.get_children(visible=True, similar=False):
                 if fnode.locked_to_node is self:
                     if fnode is for_me:
                         return center_x, bottom_y
@@ -807,14 +738,15 @@ class Node(Movable):
                         bottom_y += fnode.height
         else:
             l = []
-            for fnode in self.get_all_visible_children():
+            for fnode in self.get_children(visible=True, similar=False):
                 if fnode.locked_to_node is self:
                     l.append((fnode, center_x, bottom_y))
                     bottom_y += fnode.height
             return l
 
     def get_locked_in_nodes(self):
-        return [x for x in self.get_all_visible_children() if x.locked_to_node is self]
+        return [x for x in self.get_children(visible=True, similar=False) if x.locked_to_node is
+                self]
 
     def can_connect_with(self, other):
         """ Override this in subclasses, checks conditions when other nodes could connect to this
@@ -822,7 +754,7 @@ class Node(Movable):
         :param other:
         :return:
         """
-        return other not in self.get_parents(only_similar=False, only_visible=False)
+        return other not in self.get_parents(similar=False, visible=False)
 
     def update_relations(self):
         if self.locked_to_node:
@@ -1156,7 +1088,7 @@ class Node(Movable):
         self.update_visibility()
         self.update_bounding_rect()
         # update edge visibility from triangle to its immediate children
-        if self.folding_towards in self.get_parents():
+        if self.folding_towards in self.get_parents(similar=False, visible=False):
             self.folding_towards.update_visibility()
         self.forest.animation_finished(str(self.uid) + '_fold')
 
@@ -1270,7 +1202,7 @@ class Node(Movable):
 
     def _angle_to_parent(self, x2, y2):
         x1, y1 = self.current_scene_position
-        parents = list(self.get_parents())
+        parents = self.get_parents(similar=True, visible=True)
         # We don't want to rotate multidominated or top nodes
         if len(parents) == 1:
             # Compute angle to parent

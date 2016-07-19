@@ -114,7 +114,7 @@ class FeatureNode(Node):
         return self.syntactic_object.name_with_u_prefix()
 
     def update_relations(self):
-        for parent in self.get_parents(only_similar=False, only_visible=False):
+        for parent in self.get_parents(similar=False, visible=False):
             if parent.node_type == g.CONSTITUENT_NODE:
                 if parent.is_visible():
                     self.locked_to_node = parent
