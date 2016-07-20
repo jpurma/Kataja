@@ -53,7 +53,7 @@ from kataja.saved.movables.Tree import Tree
 from kataja.saved.movables.nodes.AttributeNode import AttributeNode
 from kataja.saved.movables.nodes.BaseConstituentNode import BaseConstituentNode
 from kataja.saved.movables.nodes.FeatureNode import FeatureNode
-from utils import time_me
+from kataja.utils import time_me
 
 
 class Forest(SavedObject):

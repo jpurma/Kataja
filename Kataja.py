@@ -24,7 +24,9 @@ def launch_kataja():
 
     if running_environment.platform == 'mac' and running_environment.code_mode == 'build':
         dir_path = os.path.dirname(os.path.abspath(sys.argv[0]))
-        QtCore.QCoreApplication.setLibraryPaths([dir_path + '/../plugins'])
+        print('adding library path ' + dir_path + '/../plugins')
+        QtCore.QCoreApplication.addLibraryPath(dir_path + '/../plugins')
+
     print("Launching Kataja with Python %s.%s" % (sys.version_info.major, sys.version_info.minor))
 
     author = 'Jukka Purma'

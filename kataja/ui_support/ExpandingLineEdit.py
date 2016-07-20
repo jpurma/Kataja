@@ -45,7 +45,7 @@ class ExpandingLineEdit(QtWidgets.QWidget):
         self.setAcceptDrops(True)
         self.line_edit.setDragEnabled(True)
         self.original_size = None
-
+        self.changed = False
 
     def text(self):
         if self.line_mode:
@@ -100,6 +100,8 @@ class ExpandingLineEdit(QtWidgets.QWidget):
         self.text_area.setTextCursor(cursor)
 
     def line_edit_check_for_resize(self, text):
+        self.changed = True
+        print('flagging as changed (line_edit_check_for_resize) ', self)
         if self.original_size is None:
             self.original_size = self.size()
         if len(text) > self.cut_point:
@@ -114,6 +116,8 @@ class ExpandingLineEdit(QtWidgets.QWidget):
             self.on_edit(text)
 
     def text_area_check_for_resize(self):
+        self.changed = True
+        print('flagging as changed (text_area_check_for_resize) ', self)
         text = self.text_area.toPlainText()
         if len(text) < self.cut_point:
             self.toggle_line_mode()

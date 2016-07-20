@@ -157,7 +157,8 @@ class AsymmetricElasticTree(BaseVisualization):
                 continue
             elif edge.end.locked_to_node is node:
                 continue
-            target_d_x = curve_multiplier(edge.edge_n, edge.edge_count) * prefs.edge_width
+            edge_n, edge_count = edge.edge_index()
+            target_d_x = curve_multiplier(edge_n, edge_count) * prefs.edge_width
             target_d_y = -15
             start_x, start_y = edge.start_point  # @UnusedVariable
             end_x, end_y = edge.end_point  # @UnusedVariable
@@ -174,7 +175,8 @@ class AsymmetricElasticTree(BaseVisualization):
                 continue
             elif node.locked_to_node is edge.end:
                 continue
-            target_d_x = curve_multiplier(edge.edge_n, edge.edge_count) * prefs.edge_width
+            edge_n, edge_count = edge.edge_index()
+            target_d_x = curve_multiplier(edge_n, edge_count) * prefs.edge_width
             target_d_y = 15
             start_x, start_y = edge.start_point  # @UnusedVariable
             end_x, end_y = edge.end_point  # @UnusedVariable

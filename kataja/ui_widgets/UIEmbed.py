@@ -52,9 +52,10 @@ class UIEmbed(UIWidget, QtWidgets.QWidget):
         self.html_radio = QtWidgets.QRadioButton("HTML", self)
         self.plain_radio = QtWidgets.QRadioButton("plain", self)
         self.plain_radio.setChecked(True)
-        self.input_parsing_modes.addButton(self.tex_radio)
-        self.input_parsing_modes.addButton(self.html_radio)
-        self.input_parsing_modes.addButton(self.plain_radio)
+        self.input_parsing_modes.buttonClicked.connect(self.change_text_field_mode)
+        self.input_parsing_modes.addButton(self.tex_radio, 1)
+        self.input_parsing_modes.addButton(self.html_radio, 2)
+        self.input_parsing_modes.addButton(self.plain_radio, 3)
         self.top_row_layout.addWidget(self.tex_radio)
         self.top_row_layout.addWidget(self.html_radio)
         self.top_row_layout.addWidget(self.plain_radio)
@@ -95,6 +96,13 @@ class UIEmbed(UIWidget, QtWidgets.QWidget):
         :return:
         """
         pass
+
+    def change_text_field_mode(self, button_clicked):
+        """ Subclasses implement this if there are textfields that parse and display TeX/HTML/Plain
+        :param value:
+        :return:
+        """
+        button_id = self.input_parsing_modes.id(button_clicked)
 
     def margin_x(self):
         """ Margin around embed edit provides some empty space so that the focus point of embed

@@ -1,4 +1,4 @@
-from globals import *
+from kataja.globals import *
 
 # start_connects_to and end_connects_to
 CENTER = 0

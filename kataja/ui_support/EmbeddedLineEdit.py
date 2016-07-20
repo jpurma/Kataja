@@ -29,6 +29,7 @@ class EmbeddedLineEdit(QtWidgets.QLineEdit):
             self.textChanged.connect(self.check_for_resize)
         self.setAcceptDrops(True)
         self.setDragEnabled(True)
+        self.changed = False
 
     def check_for_resize(self, *args, **kwargs):
         pass
@@ -69,3 +70,8 @@ class EmbeddedLineEdit(QtWidgets.QLineEdit):
             self.setFont(kw['font'])
         if 'text' in kw:
             self.setText(kw['text'])
+
+    def changeEvent(self, ev):
+        self.changed = True
+        print('line edit text changed')
+        return QtWidgets.QLineEdit.changeEvent(self, ev)

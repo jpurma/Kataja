@@ -98,7 +98,6 @@ class ForestKeeper(SavedObject):
         self.forest = self.forests[self.current_index]
         return self.current_index, self.forest
 
-
     def build_lexicon_dict(self):
         self.constituents = OrderedDict()
         self.features = OrderedDict()
@@ -164,32 +163,27 @@ class ForestKeeper(SavedObject):
         started_forest = False
 
         for line in treelist:
-            print('reading from treelist: ', line)
             line = line.strip()
             #line.split('=', 1)
             parts = line.split('=', 1)
             # comment line
             if line.startswith('#'):
-                print('(comment)')
                 if started_forest:
                     comments.append(line[1:])
             # Definition line
             elif len(parts) > 1 and not line.startswith('['):
-                print('(definition)')
                 started_forest = True
                 word = parts[0].strip()
                 values = parts[1]
                 definitions[word] = values
             # Gloss text:
             elif line.startswith("'"):
-                print('(gloss)')
                 if started_forest:
                     if line.endswith("'"):
                         line = line[:-1]
                     gloss_text = line[1:]
             # empty line: finalize this forest
             elif started_forest and not line:
-                print('(finalising forest)')
                 self.forests.append(Forest(buildstring=buildstring,
                                            definitions=definitions,
                                            gloss_text=gloss_text,
@@ -197,7 +191,6 @@ class ForestKeeper(SavedObject):
                 started_forest = False
             # trees definition starts a new forest
             elif line and not started_forest:
-                print('(starting a new forest)')
                 started_forest = True
                 buildstring = line
                 definitions = {}
@@ -205,11 +198,8 @@ class ForestKeeper(SavedObject):
                 comments = []
             # another trees definition, append to previous
             elif line:
-                print('(another tree)')
-
                 buildstring += '\n' + line
         if started_forest:  # make sure that the last forest is also added
-            print('push the last one out')
             self.forests.append(Forest(buildstring=buildstring,
                                        definitions=definitions,
                                        gloss_text=gloss_text,

@@ -77,7 +77,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
 
     __qt_type_id__ = next_available_type_id()
 
-    def __init__(self, forest=None, start=None, end=None, edge_type='', edge_n=0, edge_count=0, appear=True):
+    def __init__(self, forest=None, start=None, end=None, edge_type='', appear=True):
         """
         :param Node start:
         :param Node end:

@@ -42,6 +42,7 @@ class NodeEditEmbed(UIEmbed):
     def __init__(self, parent, node):
         nname = node.display_name[0].lower()
         UIEmbed.__init__(self, parent, node, 'Edit ' + nname)
+        self.input_parsing_modes.button(self.host.text_parse_mode).setChecked(True)
         layout = QtWidgets.QVBoxLayout()
         layout.addLayout(self.top_row_layout)
         layout.addSpacing(4)
@@ -174,8 +175,41 @@ class NodeEditEmbed(UIEmbed):
         """
         return self.host.boundingRect().height() / 2
 
+    def change_text_field_mode(self, button_clicked):
+        """ Subclasses implement this if there are textfields that parse and display TeX/HTML/Plain
+        :param button_clicked:
+        :return:
+        """
+        parsing_mode = self.input_parsing_modes.id(button_clicked)  # 1 = TeX,  2 = HTML, 3 = Plain
+        ed = self.host.get_editing_template()
+        for field_name, field in self.fields.items():
+            d = ed.get(field_name, {})
+            itype = d.get('input_type', 'text')
+            if itype in ['text', 'textarea', 'expandingtext']:
+                if field.changed:
+                    print('ignore field %s, value changed already' % field_name)
+                    continue
+                if 'getter' in d:
+                    value = getattr(self.host, d['getter'])()
+                else:
+                    value = getattr(self.host, field_name, '')
+
+                if isinstance(value, ITextNode):
+                    if parsing_mode == 1:
+                        parsed = value.as_latex()
+                    elif parsing_mode == 2:
+                        parsed = value.as_html()
+                    elif parsing_mode == 3:
+                        parsed = value
+                    else:
+                        raise ValueError
+                else:
+                    parsed = value
+                field.setText(parsed)
+
     def update_fields(self):
         """ Update field values on embed form based on template """
+        parsing_mode = self.input_parsing_modes.checkedId()  # 1 = TeX,  2 = HTML, 3 = Plain
         ed = self.host.get_editing_template()
         for field_name, field in self.fields.items():
             d = ed.get(field_name, {})
@@ -186,7 +220,14 @@ class NodeEditEmbed(UIEmbed):
             itype = d.get('input_type', 'text')
             if itype in ['text', 'textarea', 'expandingtext']:
                 if isinstance(value, ITextNode):
-                    parsed = value.as_html()
+                    if parsing_mode == 1:
+                        parsed = value.as_latex()
+                    elif parsing_mode == 2:
+                        parsed = value.as_html()
+                    elif parsing_mode == 3:
+                        parsed = value
+                    else:
+                        raise ValueError
                 else:
                     parsed = value
                 field.setText(parsed)
@@ -202,13 +243,22 @@ class NodeEditEmbed(UIEmbed):
         """ Submit field values back to object based on template
         :return:
         """
+        parsing_mode = self.input_parsing_modes.checkedId()  # 1 = TeX,  2 = HTML, 3 = Plain
+        self.host.text_parse_mode = parsing_mode
         ed = self.host.get_editing_template()
         for field_name, field in self.fields.items():
             d = ed.get(field_name, {})
             itype = d.get('input_type', 'text')
             if itype in ['text', 'textarea', 'expandingtext']:
-                parser = LatexFieldToINode(field.text())
-                value = parser.node
+                if not field.changed:
+                    continue
+                if parsing_mode == 1:  # TeX
+                    parser = LatexFieldToINode(field.text())
+                    value = parser.node
+                elif parsing_mode == 2:  # HTML
+                    value = field.text()
+                elif parsing_mode == 3:  # Plain text
+                    value = field.text()
             elif itype in ['multibutton', 'radiobutton', 'checkbox']:
                 # buttons take action immediately when clicked
                 continue
