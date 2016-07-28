@@ -158,13 +158,11 @@ class LinearizedStaticTree(BalancedTree):
                     _add_merger_node(grids[0], node)
                     return grids[0]
                 else:
-                    while len(grids) > 1:
-                        right_grid = grids.pop(-1)
-                        left_grid = grids.pop(-1)
-                        left_grid.merge_grids(right_grid)
-                        _add_merger_node(left_grid, node)
-                        grids.append(left_grid)
-                    return grids[0]
+                    combined = grids[0]
+                    for right_grid in grids[1:]:
+                        combined.merge_grids(right_grid)
+                    _add_merger_node(combined, node)
+                    return combined
             else:
                 return Grid()
 
