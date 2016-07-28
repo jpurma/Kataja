@@ -193,17 +193,39 @@ class NodeEditEmbed(UIEmbed):
                 else:
                     value = getattr(self.host, field_name, '')
 
-                if isinstance(value, ITextNode):
+                if isinstance(value, list):
+                    rows = []
+                    if parsing_mode == 1:
+                        for row in value:
+                            if isinstance(row, ITextNode):
+                                rows.append(row.as_latex())
+                            else:
+                                rows.append(row)
+                    elif parsing_mode == 2:
+                        for row in value:
+                            if isinstance(row, ITextNode):
+                                rows.append(row.as_html())
+                            else:
+                                rows.append(row)
+                    elif parsing_mode == 2:
+                        for row in value:
+                            if isinstance(row, ITextNode):
+                                rows.append(str(row))
+                            else:
+                                rows.append(row)
+                    parsed = '\n'.join(rows)
+                elif isinstance(value, ITextNode):
                     if parsing_mode == 1:
                         parsed = value.as_latex()
                     elif parsing_mode == 2:
                         parsed = value.as_html()
                     elif parsing_mode == 3:
-                        parsed = str(value)
+                        parsed = value
                     else:
                         raise ValueError
                 else:
                     parsed = value
+                field.set_original(parsed)
                 field.setText(parsed)
 
     def update_fields(self):
@@ -218,7 +240,28 @@ class NodeEditEmbed(UIEmbed):
                 value = getattr(self.host, field_name, '')
             itype = d.get('input_type', 'text')
             if itype in ['text', 'textarea', 'expandingtext']:
-                if isinstance(value, ITextNode):
+                if isinstance(value, list):
+                    rows = []
+                    if parsing_mode == 1:
+                        for row in value:
+                            if isinstance(row, ITextNode):
+                                rows.append(row.as_latex())
+                            else:
+                                rows.append(row)
+                    elif parsing_mode == 2:
+                        for row in value:
+                            if isinstance(row, ITextNode):
+                                rows.append(row.as_html())
+                            else:
+                                rows.append(row)
+                    elif parsing_mode == 2:
+                        for row in value:
+                            if isinstance(row, ITextNode):
+                                rows.append(str(row))
+                            else:
+                                rows.append(row)
+                    parsed = '\n'.join(rows)
+                elif isinstance(value, ITextNode):
                     if parsing_mode == 1:
                         parsed = value.as_latex()
                     elif parsing_mode == 2:

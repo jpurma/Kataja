@@ -44,7 +44,7 @@ class SuperParser:
             self.rbracket = ')'
         elif bracket == '{':
             self.rbracket = '}'
-        print('assuming brackets to be ', self.lbracket, self.rbracket)
+        #print('assuming brackets to be ', self.lbracket, self.rbracket)
         self.latex = latex
         self.html = html
         if self.latex is None and self.html is None:
@@ -76,9 +76,9 @@ class SuperParser:
                 self.dot_label = False
         else:
             self.dot_label = dot_label
-        print('assuming to be LaTeX: %s, HTML: %s, dot_label: %s ' % (self.latex, self.html,
-                                                                      self.dot_label))
-        print(ss)
+        #print('assuming to be LaTeX: %s, HTML: %s, dot_label: %s ' % (self.latex, self.html,
+        #                                                              self.dot_label))
+        #print(ss)
 
         if self.html:
             self.ltag = "<"
@@ -104,7 +104,7 @@ class SuperParser:
         if self.lbracket == '(' and not self.html and not self.latex:  # treebank format
             self.treebank = True
             self.dot_label = False
-            print('** assuming treebank format **')
+            #print('** assuming treebank format **')
         else:
             self.treebank = False
 

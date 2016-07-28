@@ -67,9 +67,9 @@ class HtmlToINode(HTMLParser):
         self.stack = []
         super().reset()
 
-#if __name__ == '__main__':
-parser = HtmlToINode()
-print(parser.process('<A href="https://github.com">link</a> and <i>italics</i>.'))
-print(parser.process("""row<br/>row<br/>row
-your boat"""))
-print(parser.process("<bonk broken < html> <b> and some</bread> butter</b>"))
+if __name__ == '__main__':
+    parser = HtmlToINode()
+    print(parser.process('<A href="https://github.com">link</a> and <i>italics</i>.'))
+    print(parser.process("""row<br/>row<br/>row
+    your boat"""))
+    print(parser.process("<bonk broken < html> <b> and some</bread> butter</b>"))

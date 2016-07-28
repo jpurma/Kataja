@@ -22,7 +22,7 @@ class ExpandingLineEdit(QtWidgets.QWidget):
         self.text_area.hide()
         self.text_area.setEnabled(False)
         self.line_edit.setEnabled(True)
-        self.cut_point = 40
+        self.cut_point = 24
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.line_edit)
         layout.addWidget(self.text_area)
@@ -48,7 +48,7 @@ class ExpandingLineEdit(QtWidgets.QWidget):
         self.original_size = None
         self.changed = False
 
-    def set_original_text(self, text):
+    def set_original(self, text):
         self.original_text = text
 
     def text(self):

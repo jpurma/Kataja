@@ -51,7 +51,7 @@ class ConstituentNode(BaseConstituentNode):
     display = True
     wraps = 'constituent'
     visible_in_label = ['display_label', 'index', 'triangle', 'label', 'gloss']
-    editable_in_label = ['display_label', 'index', 'label', 'gloss', 'head']
+    editable_in_label = ['display_label', 'label', 'index', 'gloss', 'head']
 
     display_styles = {'index': {'align': 'line-end', 'start_tag': '<sub>', 'end_tag': '</sub>'},
                       'triangle': {'special': 'triangle', 'readonly': True},
@@ -60,13 +60,15 @@ class ConstituentNode(BaseConstituentNode):
                                 'syntactic': True},
                       'display_label': {'condition': 'should_show_alias'},
                       'gloss': {'condition': 'should_show_gloss_in_label'}}
-    editable = {'display_label': dict(name='Alias', prefill='display_label',
-                              tooltip='Non-functional readable label of the constituent'),
+    editable = {'display_label': dict(name='Displayed label', prefill='display_label',
+                                      tooltip='Non-functional readable label of the constituent',
+                                      input_type='expandingtext'),
+                'label': dict(name='Label', prefill='label',
+                              tooltip='Label of the constituent (functional identifier)', width=160,
+                              focus=True, syntactic=True),
                 'index': dict(name='Index', align='line-end', width=20, prefill='i',
                               tooltip='Index to recognize multiple occurences'),
-                'label': dict(name='Label', prefill='label',
-                              tooltip='Label of the constituent (functional identifier)', width=200,
-                              focus=True, syntactic=True),
+
                 'gloss': dict(name='Gloss', prefill='gloss',
                               tooltip='translation (optional)', width=200, condition='is_leaf'),
                 'head': dict(name='Projection from',
@@ -189,7 +191,6 @@ class ConstituentNode(BaseConstituentNode):
             self.index = parsernode.indices[0]
         rows = parsernode.label_rows
         # Remove dotlabel
-        print('rows to parse for label: ', rows)
         if len(rows):
             first = rows[0]
             sfirst = str(first)
@@ -421,14 +422,12 @@ class ConstituentNode(BaseConstituentNode):
                  'enabled': enabled,
                  'tooltip': 'inherit label from ' + str(head_node_of_child)}
             r.append(d)
-        print('self.head_node:', self.head_node, self.head_node == self)
         d = {'text': 'Undefined',
              'value': None,
              'is_checked': not self.head_node,
              'enabled': True,
              'tooltip': "doesn't inherit head"}
         r.append(d)
-        print(r)
         return r
 
     def guess_projection(self):
