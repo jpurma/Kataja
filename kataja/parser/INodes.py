@@ -1,7 +1,6 @@
-import html
-
 from kataja.parser.latex_to_unicode import latex_to_unicode
-from kataja.utils import time_me
+from parser.mappings import latex_to_html, latex_to_command, command_to_latex, html_to_command, \
+    command_to_html
 
 __author__ = 'purma'
 """ INodes can be used to represent strings that have formatting commands and
@@ -127,7 +126,7 @@ class ITextNode:
             if isinstance(part, str):
                 if part:
                     current_section.append(part)
-            else:
+            elif part:
                 plain_string = False
                 if current_section:
                     merged_parts.append(''.join(current_section))
@@ -136,10 +135,17 @@ class ITextNode:
         if current_section:
             merged_parts.append(''.join(current_section))
         self.parts = merged_parts
-        if plain_string and not keep_node:
-            return str(self)
-        else:
+        if keep_node:
             return self
+        else:
+            if plain_string:
+                return str(self)
+            elif not self.parts:
+                return ''
+            elif len(self.parts) == 1:
+                return self.parts[0]
+            else:
+                return self
 
     def is_plain_string(self):
         """ Check if this ITextNode contains only strings or ITextNodes that
@@ -159,6 +165,8 @@ class ITextNode:
         """
         if self.is_plain_string():
             return str(self)
+        elif self.parts and len(self.parts) == 1:
+            return self.parts[0]
         else:
             return self
 
@@ -192,24 +200,7 @@ class ITextNode:
         return ''.join((str(x) for x in self.parts))
 
     def __repr__(self):
-        if self.is_plain_string():
-            return str(self)
-        else:
-            return 'ITextNode(parts=%r)' % self.parts
-
-
-command_to_html = {
-    'emph': ('<i>', '</i>'),
-    'textit': ('<i>', '</i>'),
-    'textbf': ('<b>', '</b>'),
-    '^': ('<sup>', '</sup>'),
-    '_': ('<sub>', '</sub>'),
-    '$': ('', ''),
-    'underline': ('<u>', '</u>'),
-    'strikeout': ('<s>', '</s>'),
-    'textsc': ('<font face="{textsc}">', '</font>'),
-    '\\': ('<br/>', '')
-}
+        return 'ITextNode(parts=%r)' % self.parts
 
 
 class ICommandNode(ITextNode):
@@ -217,12 +208,11 @@ class ICommandNode(ITextNode):
     string and where
     the scope of the command is the parts of the node. """
 
-    def __init__(self, command='', prefix='\\', parts=None):
+    def __init__(self, command='', parts=None):
         """ Command is stored as a string in self.command. self.parts are the
         TextNodes in the scope of command. """
         ITextNode.__init__(self, parts=parts)
         self.command = command
-        self.prefix = prefix
 
     def add_command_char(self, c):
         """
@@ -238,29 +228,32 @@ class ICommandNode(ITextNode):
 
     def as_html(self):
         s = []
-        start_tag = None
-        end_tag = None
         if self.command in command_to_html:
-            start_tag, end_tag = command_to_html[self.command]
+            tag = command_to_html[self.command]
+            if tag and self.parts:
+                s.append('<%s>' % tag)
+                s.append(ITextNode.as_html(self))
+                s.append('</%s>' % tag)
+            elif tag:
+                s.append('<%s/>' % tag)
+            else:
+                s.append(ITextNode.as_html(self))
         elif self.command in latex_to_unicode:
             s.append(latex_to_unicode[self.command][0])
-        if start_tag:
-            s.append(start_tag)
-        if self.parts:
-            s.append(ITextNode.as_html(self))
-        if end_tag:
-            s.append(end_tag)
         return ''.join(s)
 
     def as_latex(self):
         s = []
-        s.append(self.prefix)
-        s.append(self.command)
-        if not self.parts:
-            return ''.join(s)
-        s.append('{')
-        s.append(ITextNode.as_latex(self))
-        s.append('}')
+        if self.command in command_to_latex:
+            command = command_to_latex[self.command]
+            if command and self.parts:
+                s.append('\%s{' % command)
+                s.append(ITextNode.as_latex(self))
+                s.append('}')
+            elif command:
+                s.append('\%s ' % command)
+            else:
+                s.append(ITextNode.as_latex())
         return ''.join(s)
 
     def tidy(self, keep_node=True):
@@ -276,8 +269,7 @@ class ICommandNode(ITextNode):
         :return:
         """
         new = ITextNode(self.parts)
-        new.tidy()
-        return new.simplified()
+        return new.tidy(keep_node=False)
 
     def is_empty(self):
         return not (self.command or self.parts)
@@ -286,9 +278,17 @@ class ICommandNode(ITextNode):
         return self.as_html()
 
     def __repr__(self):
-        return 'ICommandNode(command=%r, prefix=%r, parts=%r)' % (self.command,
-                                                                  self.prefix,
-                                                                  self.parts)
+        return 'ICommandNode(command=%r, parts=%r)' % (self.command,
+                                                       self.parts)
+
+
+# class ILabelNode(ITextNode):
+#     """ Node for containing multiple lines of text. Just a list of ITextNodes/ICommandNodes """
+#
+#     def __init__(self, rows=None):
+#         super().__init__()
+#         self.rows = rows or []
+
 
 
 class IParserNode(ITextNode):
@@ -301,25 +301,28 @@ class IParserNode(ITextNode):
     If IParserNodes are found after the parsing, it is probably an error somewhere.
     """
 
-    def __init__(self, parts=None, rows=None, indices=None):
+    def __init__(self, parts=None, label_rows=None, indices=None):
         """
 
         :param parts:
         :return:
         """
         ITextNode.__init__(self, parts=parts)
-        self.rows = rows or []
+        self.label_rows = label_rows or []
         self.indices = indices or []
         self.unanalyzed = None
+
+    def is_empty(self):
+        return not (self.label_rows or self.parts)
 
     def analyze_label_data(self):
         """ Go through label complex and make rows out of it, also pick
         indices to separate list.
         :return: None
         """
-
+        # fixme: use inode command format instead of latex commands
         def find_index(inode):
-            if isinstance(inode, ICommandNode) and inode.command == '_':
+            if isinstance(inode, ICommandNode) and inode.command == 'sub':
                 return inode
             elif isinstance(inode, ITextNode):
                 for n in reversed(inode):
@@ -327,7 +330,7 @@ class IParserNode(ITextNode):
                     if found:
                         return found
 
-        self.rows = []
+        self.label_rows = []
         if not self.unanalyzed:
             return
         container = ITextNode()
@@ -341,8 +344,10 @@ class IParserNode(ITextNode):
             for part in self.unanalyzed:
                 if isinstance(part, ICommandNode):
                     # Linebreak --
-                    if part.command == '\\':
-                        self.rows.append(container.simplified())
+                    if part.command == 'br':
+                        container = container.simplified()
+                        if container:
+                            self.label_rows.append(container)
                         container = ITextNode()
                     # Anything else --
                     else:
@@ -350,7 +355,8 @@ class IParserNode(ITextNode):
                 else:
                     container.append(part)
             final_row = container.simplified()
-            self.rows.append(final_row)
+            if final_row:
+                self.label_rows.append(final_row)
 
     def tidy(self, keep_node=True):
         """ Tidy insides, but always maintain identity so that the template node remains even if it
@@ -367,4 +373,5 @@ class IParserNode(ITextNode):
         return False
 
     def __repr__(self):
-        return 'IParserNode(parts=%r, rows=%r, indices=%r)' % (self.parts, self.rows, self.indices)
+        return 'IParserNode(parts=%r, label_rows=%r, indices=%r)' % (self.parts, self.label_rows,
+                                                                     self.indices)

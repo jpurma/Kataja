@@ -75,7 +75,7 @@ def new_element_accept(sender=None):
     elif node_type == g.DIVIDER:
         create_new_divider(sender)
     elif node_type == g.TREE:
-        node = ctrl.forest.create_node_from_string(text, simple_parse=True)
+        node = ctrl.forest.simple_parse(text)
         if node:
             ctrl.forest.create_tree_for(node)
     else:

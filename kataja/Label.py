@@ -191,39 +191,48 @@ class Label(QtWidgets.QGraphicsTextItem):
                         row += 2
                     continue
             if field_value:
-                if isinstance(field_value, ITextNode):
-                    field_value = field_value.as_html()
-                field_value = str(field_value).replace('\n', '<br/>')
-                start_tag = s.get('start_tag', '')
-                if start_tag:
-                    end_tag = s.get('end_tag', '')
-                    field_value = start_tag + field_value + end_tag
-                align = s.get('align', '')
-                if align == 'line-end':
-                    if visible_parts and visible_parts[-1][0] != 'triangle':
-                        if html[-1] == '<br/>':
-                            html.pop()
-                        html.append(field_value)
-                        visible_parts.append((field_name, row, field_value))
+                if isinstance(field_value, list):
+                    for row_text in field_value:
+                        if isinstance(row_text, ITextNode):
+                            row_text = row_text.as_html()
+                        visible_parts.append((field_name, row, row_text))
+                        html.append(row_text)
                         html.append('<br/>')
                         row += 1
-                    else:
-                        waiting = (field_value, field_name)
-                    continue
-                elif align == 'continue' or align == 'append':
-                    html.append(field_value)
-                    visible_parts.append((field_name, row, field_value))
-                    if delimiter:
-                        html.append(delimiter)
                 else:
-                    html.append(field_value)
-                    visible_parts.append((field_name, row, field_value))
-                    if waiting:
-                        html.append(waiting[0])
-                        visible_parts.append((waiting[0], row, waiting[1]))
-                        waiting = None
-                    html.append('<br/>')
-                    row += 1
+                    if isinstance(field_value, ITextNode):
+                        field_value = field_value.as_html()
+                    field_value = str(field_value).replace('\n', '<br/>')
+                    start_tag = s.get('start_tag', '')
+                    if start_tag:
+                        end_tag = s.get('end_tag', '')
+                        field_value = start_tag + field_value + end_tag
+                    align = s.get('align', '')
+                    if align == 'line-end':
+                        if visible_parts and visible_parts[-1][0] != 'triangle':
+                            if html[-1] == '<br/>':
+                                html.pop()
+                            html.append(field_value)
+                            visible_parts.append((field_name, row, field_value))
+                            html.append('<br/>')
+                            row += 1
+                        else:
+                            waiting = (field_value, field_name)
+                        continue
+                    elif align == 'continue' or align == 'append':
+                        html.append(field_value)
+                        visible_parts.append((field_name, row, field_value))
+                        if delimiter:
+                            html.append(delimiter)
+                    else:
+                        html.append(field_value)
+                        visible_parts.append((field_name, row, field_value))
+                        if waiting:
+                            html.append(waiting[0])
+                            visible_parts.append((waiting[0], row, waiting[1]))
+                            waiting = None
+                        html.append('<br/>')
+                        row += 1
         if html and html[-1] == '<br/>' or (delimiter and html[-1] == delimiter):
             html.pop()
         self.html = ''.join(html)
@@ -261,7 +270,20 @@ class Label(QtWidgets.QGraphicsTextItem):
                 if s['special'] == 'triangle':
                     continue
             if field_value:
-                if isinstance(field_value, ITextNode):
+                if isinstance(field_value, list):
+                    rows = []
+                    for row in field_value:
+                        if isinstance(row, ITextNode):
+                            rows.append(row.as_html())
+                        else:
+                            rows.append(row)
+
+                    rowstring = '\n'.join(rows)
+                    editable_parts.append((field_name, rowstring, len(rows)))
+                    editable.append(rowstring)
+                    editable.append('\n')
+                    continue
+                elif isinstance(field_value, ITextNode):
                     field_value = field_value.as_html()
                 editable_parts.append((field_name,
                                        field_value,

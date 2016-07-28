@@ -219,7 +219,7 @@ a['toggle_colorized_projection'] = {'command': 'Use colors for projections',
 def toggle_label_visibility(node_location, field, action=None):
     """ Toggle labels|aliases to be visible in inner|leaf nodes.
     :param node_location: 'internal'|'leaf'
-    :param field: 'label'|'alias'
+    :param field: 'label'|'display_label'
     :param action: KatajaAction that is calling this method
     :return: str message
     """
@@ -228,14 +228,14 @@ def toggle_label_visibility(node_location, field, action=None):
         if field == 'label':
             v = not ctrl.fs.show_internal_labels
             ctrl.fs.show_internal_labels = v
-        elif field == 'alias':
+        elif field == 'display_label':
             v = not ctrl.fs.show_internal_aliases
             ctrl.fs.show_internal_aliases = v
     elif node_location == 'leaf':
         if field == 'label':
             v = not ctrl.fs.show_leaf_labels
             ctrl.fs.show_leaf_labels = v
-        elif field == 'alias':
+        elif field == 'display_label':
             v = not ctrl.fs.show_leaf_aliases
             ctrl.fs.show_leaf_aliases = v
     for node in ctrl.forest.nodes.values():
@@ -249,7 +249,7 @@ def toggle_label_visibility(node_location, field, action=None):
 
 a['toggle_show_internal_alias'] = {'command': '%s aliases in internal nodes',
                                    'method': toggle_label_visibility,
-                                   'args': ['internal', 'alias'],
+                                   'args': ['internal', 'display_label'],
                                    'action_arg': True,
                                    'tooltip': 'Show aliases in internal nodes'}
 a['toggle_show_internal_label'] = {'command': '%s labels in internal nodes',
@@ -259,7 +259,7 @@ a['toggle_show_internal_label'] = {'command': '%s labels in internal nodes',
                                    'tooltip': 'Show labels in internal nodes'}
 a['toggle_show_leaf_alias'] = {'command': '%s aliases in leaf nodes',
                                'method': toggle_label_visibility,
-                               'args': ['leaf', 'alias'],
+                               'args': ['leaf', 'display_label'],
                                'action_arg': True,
                                'tooltip': 'Show aliases in leaf nodes'}
 a['toggle_show_leaf_label'] = {'command': '%s labels in leaf nodes',

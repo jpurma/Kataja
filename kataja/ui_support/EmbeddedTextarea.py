@@ -27,6 +27,7 @@ class EmbeddedTextarea(QtWidgets.QPlainTextEdit):
         self.setAcceptDrops(True)
         self.setSizeAdjustPolicy(QtWidgets.QTextEdit.AdjustToContents)
         self.changed = False
+        self.textChanged.connect(self.flag_as_changed)
         #self.setFixedSize(200, 100)
         #self.text_area.textChanged.connect(self.text_area_check_for_resize)
         self.updateGeometry()
@@ -90,7 +91,5 @@ class EmbeddedTextarea(QtWidgets.QPlainTextEdit):
         if 'text' in kw:
             self.setPlainText(kw['text'])
 
-    def changeEvent(self, ev):
+    def flag_as_changed(self, text):
         self.changed = True
-        print('textarea text changed')
-        return QtWidgets.QPlainTextEdit.changeEvent(self, ev)

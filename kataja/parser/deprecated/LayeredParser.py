@@ -27,23 +27,23 @@ class LayeredParser(BaseParser):
         right = None
         constituent = classes.Constituent()
         children = []
-        alias = None
+        display_label = None
         for arg in args:
             if isinstance(arg, list):
                 for item in arg:
                     if isinstance(item, tuple):
                         if item[0] == 'index':
                             constituent.index = item[1]
-                        elif item[0] == 'alias':
-                            alias = item[1]
+                        elif item[0] == 'display_label':
+                            display_label = item[1]
 
             if isinstance(arg, classes.Constituent):
                 children.append(arg)
             if isinstance(arg, tuple):
                 if arg[0] == 'index':
                     constituent.index = arg[1]
-                elif arg[0] == 'alias':
-                    alias = arg[1]
+                elif arg[0] == 'display_label':
+                    display_label = arg[1]
         if len(children) == 2:
             left = children[0]
             right = children[1]
@@ -54,8 +54,8 @@ class LayeredParser(BaseParser):
         elif len(children) == 1:
             constituent = children[0]
             node = self.forest.get_node(constituent)
-        if alias:
-            node.alias = alias
+        if display_label:
+            node.display_label = display_label
         if left:
             self.forest.connect_node(parent=node, child=f.get_node(left), direction=g.LEFT)
         if right:
@@ -120,9 +120,9 @@ class LayeredParser(BaseParser):
             else:
                 alias += arg
         if alias and others:
-            return [('alias', alias)] + others
+            return [('display_label', alias)] + others
         elif alias:
-            return 'alias', alias
+            return 'display_label', alias
         elif others:
             if len(others) == 1:
                 return others[0]

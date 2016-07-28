@@ -172,6 +172,7 @@ class Forest(SavedObject):
         self.scene.keep_updating_visible_area = True
         self.scene.manual_zoom = False
         self.draw()  # do draw once to avoid having the first draw in undo stack.
+        ctrl.graph_scene.fit_to_window(soft=True)
         ctrl.resume_undo()
 
     def retire_from_drawing(self):
@@ -1249,12 +1250,15 @@ class Forest(SavedObject):
         self.add_to_scene(im)
         return im
 
-    def create_node_from_string(self, text='', simple_parse=False):
+    def simple_parse(self, text):
+        return self.parser.simple_parse(text)
+
+    def create_node_from_string(self, text):
         """
         :param text:
         :param simple_parse: If several words are given, merge them together
         """
-        return self.parser.string_into_forest(text, simple_parse=simple_parse)
+        return self.parser.string_into_forest(text)
 
     def create_trees_from_string(self, text):
         """ Use this to initially draw the trees from a bracket notation or

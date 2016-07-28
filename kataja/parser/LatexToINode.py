@@ -8,6 +8,7 @@
 
 import html
 from kataja.parser.INodes import ICommandNode, ITextNode, IParserNode
+from parser.mappings import latex_to_command
 
 
 class ParseError(Exception):
@@ -19,47 +20,41 @@ one_character_commands = ['&', '#', '%', '^', '_'] # '~',
 
 class LatexToINode:
 
-    def __init__(self, text):
-        """ Turn text into INodes (intermediary nodes). These can be ITemplateNodes,
+    def __init__(self, rows_mode=False):
+        """ Turn text into INodes (intermediary nodes). These can be IParserNodes,
          ICommandNodes or ITextNodes. INodes are then, dependent on purpose of
-         parsing turned into Kataja's ConstituentNodes, rich text format
-         representations (with NodeToQTextDocument), HTML or flat strings. The
-         nodes also store the original raw string (=text that was given to parser).
-            :param text: string to parse.
+         parsing turned into Kataja's ConstituentNodes, back to LaTeX, HTML or flat strings.
+        :param text: string to parse.
+        :param lbracket: option to use something else, e.g. '(' as a delimiter
         """
         self.math_mode = False
-        if not text:
-            return None
-        text = text.strip()
-        if not text:
-            return None
-        self.feed = list(text)
+        self.feed = []
         self.nodes = []
-        while self.feed:
-            c = self.feed[0]
-            if c == '[':
-                node = self.parse_brackets()
-                if node:
-                    self.nodes.append(node)
-            elif c == ']':
-                self.feed.pop(0)
-            else:
-                node = self.parse_word(end_on_space=True)
-                if node:
-                    self.nodes.append(node)
-                else:
-                    self.feed.pop(0)
+        self.rows = []
+        self.rows_mode = rows_mode
 
-    def parse_word(self, end_on_space=False):
+    def process(self, string):
+        self.feed = list(string)
+        self.feed.reverse()
+        self.nodes = []
+        if self.rows_mode:
+            self.rows = self.parse_word(end_on_space=False, return_rows=True)
+            # doesn't handle rows well, fix this tomorrow
+            return self.rows
+        else:
+            return self.parse_word(end_on_space=False)
+
+    def parse_word(self, end_on_space=False, return_rows=False):
         """ Turn text into ITextNodes. If something special (commands, curlybraces,
         brackets is found, deal with them by creating new Nodes of specific types
             :param feed: list of chars (strings of length 1)
         """
 
         node = ITextNode()
+        rows = []
 
         while self.feed:
-            c = self.feed[0]
+            c = self.feed[-1]
             if c == '{':
                 new_node = self.parse_curlies()
                 node.append(new_node)
@@ -67,27 +62,37 @@ class LatexToINode:
                 break
             elif c == '\\':
                 new_node = self.parse_command()
-                node.append(new_node)
+                if return_rows and isinstance(new_node, ICommandNode) and new_node.command == 'br':
+                    # fixme: doesn't handle if some style scope continues across line break
+                    rows.append(node)
+                    node = ITextNode()
+                else:
+                    node.append(new_node)
             elif c == '$':
-                self.parse_math_mode()
+                self.toggle_math_mode()
             elif c in one_character_commands:
                 new_node = self.parse_one_character_command()
                 node.append(new_node)
             elif c.isspace() and end_on_space:
-                self.feed.pop(0)
+                self.feed.pop()
                 break
-            elif c == ']' and not self.math_mode:
-                break
-            elif c == '[' and not self.math_mode:
-                break
+            #elif c == self.rbracket and not self.math_mode:
+            #    break
+            #elif c == self.lbracket and not self.math_mode:
+            #    break
             elif c in ['&', '<', '>']:
-                self.feed.pop(0)
+                self.feed.pop()
                 node.append(html.escape(c))
             else:
-                self.feed.pop(0)
+                self.feed.pop()
                 node.append(c)
-        node.tidy()
-        return node
+        node = node.tidy(keep_node=False)
+        if return_rows:
+            if node:
+                rows.append(node)
+            return rows
+        else:
+            return node
 
     def parse_curlies(self):
         """ Turn text into ITextNodes, but don't let space end the current
@@ -96,28 +101,27 @@ class LatexToINode:
         """
         node = ITextNode()
 
-        self.feed.pop(0)  # eat first "{"
+        self.feed.pop()  # eat first "{"
 
         while self.feed:
-            c = self.feed[0]
+            c = self.feed[-1]
             if c == '{':
                 self.parse_curlies()
                 node.append(new_node)
             elif c == '}':
-                self.feed.pop(0)
+                self.feed.pop()
                 break
             elif c == '\\':
                 new_node = self.parse_command()
                 node.append(new_node)
             elif c == '$':
-                self.parse_math_mode()
+                self.toggle_math_mode()
             elif c in one_character_commands:
                 new_node = self.parse_one_character_command()
                 node.append(new_node)
             else:
-                self.feed.pop(0)
+                self.feed.pop()
                 node.append(c)
-        node.tidy()
         return node
 
     def parse_one_character_command(self):
@@ -126,47 +130,49 @@ class LatexToINode:
             e.g. _{subscripted text} or ^{superscript}
             :param feed: list of chars (strings of length 1)
         """
-        node = ICommandNode(command=self.feed.pop(0), prefix='')
+        command = self.feed.pop()
+        parts = []
 
         while self.feed:
-            c = self.feed[0]
+            c = self.feed[-1]
             if c == '{':
                 new_node = self.parse_curlies()
-                node.append(new_node)
+                parts.append(new_node)
                 break
             elif c == '}':
                 break
             elif c == '\\':
-                if len(node.command) == 1:
+                if len(command) == 1:
                     # _\something -- is it possible?
-                    self.feed.pop(0)
-                    node.append(c)
+                    self.feed.pop()
+                    parts.append(c)
                     print('backslash after one character command, what to do?')
                     break
                 else:
                     break
             elif c == '$':
-                self.parse_math_mode()
+                self.toggle_math_mode()
             elif c.isspace():
                 break
-            elif c == ']' and not self.math_mode:
-                print(" plain ']' after one char command. what to do? ")
-                break
+            #elif c == self.rbracket and not self.math_mode:
+            #    print(" plain ']' after one char command. what to do? ")
+            #    break
             else:
-                self.feed.pop(0)
-                node.append(c)
+                self.feed.pop()
+                parts.append(c)
                 break
-        node.tidy()
+        command = latex_to_command.get(command, command)
+        node = ICommandNode(command=command, parts=parts)
         return node
 
-    def parse_math_mode(self):
+    def toggle_math_mode(self):
         """ Switch to math mode, main difference is that brackets are not interpreted as tree
         brackets
         :param feed:
         :param math_mode: new value for math mode, true/false
         :return:
         """
-        self.feed.pop(0)
+        self.feed.pop()
         self.math_mode = not self.math_mode
 
     def parse_command(self):
@@ -177,87 +183,47 @@ class LatexToINode:
          nodes inside the ICommandNode.
             :param feed: list of chars (strings of length 1)
         """
-        node = ICommandNode()
-
-        self.feed.pop(0)  # this is the beginning "\"
+        parts = []
+        command = ''
+        self.feed.pop()  # this is the beginning "\"
 
         while self.feed:
-            c = self.feed[0]
+            c = self.feed[-1]
             if c == '{':
                 new_node = self.parse_curlies()
-                node.append(new_node)
+                parts.append(new_node)
             elif c == '}':
                 break
             elif c == '\\':
-                if not node.command:
+                if not command:
                     # this is a line break in latex, '\\'', two backslashes in row.
                     # not two command words
-                    self.feed.pop(0)
-                    node.add_command_char(c)
+                    self.feed.pop()
+                    command += c
                     break
                 else:
                     break
             elif c == ' ':
                 break
-            elif c == ']' and not self.math_mode:
-                break
+            #elif c == self.rbracket and not self.math_mode:
+            #    break
             elif c in ['<', '>', '&']:
                 break
             elif c == '$':
-                self.parse_math_mode()
+                self.toggle_math_mode()
             else:
-                self.feed.pop(0)
-                node.add_command_char(c)
-        node.tidy()
-        return node
+                self.feed.pop()
+                command += c
 
-    def parse_brackets(self):
-        """ Turn text into IConstituentNodes. Constituents are expected to contain
-        aliases, labels and other constituents and these are read as
-        IConstituentNodes or ITextNodes.
-            :param feed: list of chars (strings of length 1)
-        """
-        parsernode = IParserNode()
-        assert (self.feed[0] == '[')
-
-        self.feed.pop(0)
-
-        while self.feed:
-            c = self.feed[0]
-            if c == '[' and not self.math_mode:
-                new_parsernode = self.parse_brackets()
-                parsernode.append(new_parsernode)
-            elif c == ']' and not self.math_mode:
-                # Finalize merger
-                self.feed.pop(0)
-                # if closing bracket continues with . ( "[ ... ].NP " )
-                # it is treated as label
-                if self.feed and self.feed[0] == '.':
-                    self.feed.pop(0)
-                    new_node = self.parse_word()
-                    parsernode.unanalyzed = new_node
-                break
-            elif c == '$':
-                self.parse_math_mode()
-            elif c.isspace():
-                self.feed.pop(0)
-            elif c == '.':
-                self.feed.pop(0)
-                new_node = self.parse_word(end_on_space=True)
-                parsernode.unanalyzed = new_node
-            else:
-                # Make a new constituent
-                new_parsernode = IParserNode()
-                # Read simple constituent e.g. A or B in [ A B ]
-                new_node = self.parse_word(end_on_space=True)
-                # What we just read was label for that constituent
-                new_parsernode.unanalyzed = new_node
-                new_parsernode.analyze_label_data()
-                parsernode.append(new_parsernode)
-        parsernode.analyze_label_data()
-        parsernode.tidy()
-        return parsernode
-
+        if command and command in latex_to_command:
+            command = latex_to_command[command]
+        if command:
+            node = ICommandNode(command=command, parts=parts)
+            return node
+        elif parts:
+            node = ITextNode(parts=parts)
+            return node
+        return ''
 
 class LatexFieldToINode(LatexToINode):
 
@@ -276,15 +242,16 @@ class LatexFieldToINode(LatexToINode):
         if not text:
             return None
         self.feed = list(text)
+        self.feed.reverse()
         nodes = []
         while self.feed:
             feed_progress = len(self.feed)
             node = self.parse_word()
+            # ensure that we are not stuck in endless loop
             if len(self.feed) < feed_progress:
                 nodes.append(node)
             else:
-                # ensure that we are not stuck in endless loop
-                self.feed.pop(0)
+                self.feed.pop()
 
         if len(nodes) == 1:
             self.node = nodes[0]

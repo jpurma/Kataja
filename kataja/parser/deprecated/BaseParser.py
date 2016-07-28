@@ -284,9 +284,9 @@ class BaseParser:
         #             topmost_C.label = C.label
         #             topmost_node = self.forest.create_node_from_constituent(topmost_C, result_of_merge=True)
         #             if dotlabel:
-        #                 topmost_node.alias = dotlabel
+        #                 topmost_node.display_label = dotlabel
         #             elif external_merge:
-        #                 topmost_node.alias = tid
+        #                 topmost_node.display_label = tid
         #             left = self.forest.get_node(topmost_C.left)
         #             right = self.forest.get_node(topmost_C.right)
         #             # These are not implemented anymore:

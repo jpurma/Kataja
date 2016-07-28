@@ -1,10 +1,10 @@
-__author__ = 'purma'
 
+__author__ = 'purma'
 import kataja.globals as g
 from kataja.parser.INodes import IParserNode, ITextNode
-from kataja.parser.LatexToINode import LatexToINode
 from kataja.saved.movables.nodes.BaseConstituentNode import BaseConstituentNode
 from kataja.singletons import ctrl, classes
+from kataja.parser.SuperParser import SuperParser
 
 
 class INodeToKatajaConstituent:
@@ -27,39 +27,47 @@ class INodeToKatajaConstituent:
         self.local_lexicon = {}
         self._definitions = {}
         self.forest = forest
+        self.parser = None
         self.should_add_to_scene = True
 
     # @time_me
-    def string_into_forest(self, string, simple_parse=False):
-        """ Parse the text as new nodes in the current forest.
 
+    def simple_parse(self, string):
+        """ Parse the text as merged nodes in the current forest.
         :param string:
-        :param simple_parse: If several words are given, merge them together
         """
         if not string:
             return None
         old_should_add = self.should_add_to_scene
         self.should_add_to_scene = True
-        # the heavy work is done in LatexToINode ###
-        parser = LatexToINode(string)
-        # done.
-        if len(parser.nodes) > 1:
-            if simple_parse:
-                result = [self.inode_to_constituentnode(inode) for inode in
-                          parser.nodes]
-                if len(result) > 1:
-                    right = result.pop()
-                    while result:
-                        left = result.pop()
-                        left.set_projection(None)
-                        right = ctrl.forest.create_merger_node(left, right, new=left, head=left)
-                    result = right
-            else:
-                result = [self.inode_into_tree(inode) for inode in parser.nodes]
-        elif parser.nodes:
-            result = self.inode_into_tree(parser.nodes[0])
-        else:
-            result = None
+        # the heavy work is done in SuperParser ###
+        self.parser = SuperParser(string)
+        result = [self.inode_to_constituentnode(inode) for inode in
+                  self.parser.nodes]
+        if len(result) > 1:
+            right = result.pop()
+            while result:
+                left = result.pop()
+                left.set_projection(None)
+                right = ctrl.forest.create_merger_node(left, right, new=left, head=left)
+            result = right
+        elif result:
+            result = result[0]
+        self.should_add_to_scene = old_should_add
+        return result
+
+    def string_into_forest(self, string):
+        """ Parse the text as new nodes in the current forest.
+
+        :param string:
+        """
+        if not string:
+            return None
+        old_should_add = self.should_add_to_scene
+        self.should_add_to_scene = True
+        # the heavy work is done in SuperParser ###
+        self.parser = SuperParser(string)
+        result = [self.inode_into_tree(inode) for inode in self.parser.nodes]
         self.should_add_to_scene = old_should_add
         return result
 
@@ -74,7 +82,6 @@ class INodeToKatajaConstituent:
         if self.forest.temp_tree:
             self.forest.temp_tree.rebuild()
         return result
-
 
     def inode_to_constituentnode(self, inode):
         """
@@ -100,11 +107,9 @@ class INodeToKatajaConstituent:
         return cn
 
     def parsernodes_to_constituentnodes(self, parsernode):
-        """ Recursively turn ITemplateNodes into Constituents supported by syntax
-        and further into
-         Kataja's ConstituentNodes.
-        :param inode: should be ITemplateNode.
-        :param forest: forest where ConstituentNodes will be added
+        """ Recursively turn IParserNodes into Constituents supported by syntax
+        and further into Kataja's ConstituentNodes.
+        :param inode: should be IParserNode.
         :return: the root ConstituentNode
         """
         f = self.forest

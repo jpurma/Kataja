@@ -24,7 +24,7 @@
 import kataja.globals as g
 from kataja.SavedField import SavedField, SavedSynField
 from kataja.saved.movables.Node import Node
-from kataja.parser.INodes import ITextNode
+from kataja.parser.INodes import ITextNode, ICommandNode
 from kataja.singletons import ctrl, prefs
 from kataja.saved.movables.nodes.BaseConstituentNode import BaseConstituentNode
 from kataja.uniqueness_generator import next_available_type_id
@@ -50,17 +50,17 @@ class ConstituentNode(BaseConstituentNode):
     display_name = ('Constituent', 'Constituents')
     display = True
     wraps = 'constituent'
-    visible_in_label = ['alias', 'index', 'triangle', 'label', 'gloss']
-    editable_in_label = ['alias', 'index', 'label', 'gloss', 'head']
+    visible_in_label = ['display_label', 'index', 'triangle', 'label', 'gloss']
+    editable_in_label = ['display_label', 'index', 'label', 'gloss', 'head']
 
     display_styles = {'index': {'align': 'line-end', 'start_tag': '<sub>', 'end_tag': '</sub>'},
                       'triangle': {'special': 'triangle', 'readonly': True},
                       'label': {'getter': 'triangled_label',
                                 'condition': 'should_show_label',
                                 'syntactic': True},
-                      'alias': {'condition': 'should_show_alias'},
+                      'display_label': {'condition': 'should_show_alias'},
                       'gloss': {'condition': 'should_show_gloss_in_label'}}
-    editable = {'alias': dict(name='Alias', prefill='alias',
+    editable = {'display_label': dict(name='Alias', prefill='display_label',
                               tooltip='Non-functional readable label of the constituent'),
                 'index': dict(name='Index', align='line-end', width=20, prefill='i',
                               tooltip='Index to recognize multiple occurences'),
@@ -70,7 +70,7 @@ class ConstituentNode(BaseConstituentNode):
                 'gloss': dict(name='Gloss', prefill='gloss',
                               tooltip='translation (optional)', width=200, condition='is_leaf'),
                 'head': dict(name='Projection from',
-                             tooltip='Inherit label from another node and rewrite alias to '
+                             tooltip='Inherit label from another node and rewrite display_label to '
                                      'reflect this',
                              condition='can_be_projection_of_another_node',
                              option_function='build_projection_options_for_ui',
@@ -141,7 +141,7 @@ class ConstituentNode(BaseConstituentNode):
         """ Most of the initiation is inherited from Node """
         BaseConstituentNode.__init__(self, syntactic_object=syntactic_object, forest=forest)
         self.index = ''
-        self.alias = ''
+        self.display_label = ''
         self.gloss = ''
 
         self.is_trace = False
@@ -187,21 +187,24 @@ class ConstituentNode(BaseConstituentNode):
         """
         if parsernode.indices and parsernode.indices[0]:
             self.index = parsernode.indices[0]
-
-        is_leaf = self.is_leaf()
-        rows = parsernode.rows
-        rowcount = len(rows)
-        features = []
-        if rowcount > 3:
-            self.alias, self.label, self.gloss, *features = rows
-        if rowcount == 3:
-            self.alias, self.label, self.gloss = rows
-        elif rowcount == 2:
-            self.alias, self.label = rows
-        elif rowcount == 1 and is_leaf:
-            self.label = rows[0]
-        elif rowcount == 1:
-            self.alias = rows[0]
+        rows = parsernode.label_rows
+        # Remove dotlabel
+        print('rows to parse for label: ', rows)
+        if len(rows):
+            first = rows[0]
+            sfirst = str(first)
+            if len(sfirst) > 1 and sfirst.startswith('.'):
+                if isinstance(first, ICommandNode):
+                    if first.parts:
+                        rows[0] = first.parts[0]
+                    else:
+                        rows[0] = ''
+                if isinstance(first, ITextNode):
+                    first.remove_prefix('.')
+                else:
+                    rows[0] = first[1:]
+        # Everything goes to display_label
+        self.display_label = rows
 
     # Other properties
 
@@ -219,7 +222,7 @@ class ConstituentNode(BaseConstituentNode):
         """ Get the unparsed raw version of label (str)
         :return:
         """
-        return self.alias
+        return self.display_label
 
     @property
     def triangled_label(self):
@@ -233,7 +236,7 @@ class ConstituentNode(BaseConstituentNode):
                 if node.is_leaf(only_visible=False) and node.label:
                     leaves += node.label
                     leaves += ' '
-            return leaves.tidy()
+            return leaves.tidy(keep_node=False)
         else:
             if self.syntactic_object:
                 for item in self.syntactic_object.features:
@@ -270,8 +273,8 @@ class ConstituentNode(BaseConstituentNode):
     def update_status_tip(self):
         """ Hovering status tip """
         if self.syntactic_object:
-            if self.alias:
-                alias = '"%s" ' % self.alias
+            if self.display_label:
+                alias = '"%s" ' % self.display_label
             else:
                 alias = ''
             if self.label:
@@ -303,7 +306,7 @@ class ConstituentNode(BaseConstituentNode):
     def short_str(self):
         if not self.syntactic_object:
             return 'empty'
-        alias = str(self.alias)
+        alias = str(self.display_label)
         label = str(self.label)
         if alias and label:
             return alias + ' ' + label
@@ -328,7 +331,7 @@ class ConstituentNode(BaseConstituentNode):
     def __str__(self):
         if not self.syntactic_object:
             return 'const with missing synobj'
-        alias = str(self.alias)
+        alias = str(self.display_label)
         label = str(self.label)
         if alias and label:
             l = alias + ' ' + label
@@ -342,15 +345,15 @@ class ConstituentNode(BaseConstituentNode):
 
     def as_bracket_string(self):
         """ returns a simple bracket string representation """
-        if self.alias:
+        if self.display_label:
             if not self.syntactic_object:
                 return '0'
             children = list(self.get_children(similar=True, visible=False))
             if children:
                 return '[.%s %s ]' % \
-                       (self.alias, ' '.join((c.as_bracket_string() for c in children)))
+                       (self.display_label, ' '.join((c.as_bracket_string() for c in children)))
             else:
-                return str(self.alias)
+                return str(self.display_label)
         else:
             return super().as_bracket_string()
 
@@ -429,19 +432,19 @@ class ConstituentNode(BaseConstituentNode):
         return r
 
     def guess_projection(self):
-        """ Analyze label, alias and children and try to guess if this is a
+        """ Analyze label, display_label and children and try to guess if this is a
         projection from somewhere. Set head accordingly.
         :return:
         """
 
         def find_original(node, head_node):
-            """ Go down in trees until the final matching label/alias is found.
+            """ Go down in trees until the final matching label/display_label is found.
             :param node: where to start searching
             :param head:
             :return:
             """
             for child in node.get_children(similar=True, visible=False):
-                al = child.alias or child.label
+                al = child.display_label or child.label
                 al = str(al)
                 if strip_xbars(al) == head_node:
                     found_below = find_original(child, head_node)
@@ -451,7 +454,7 @@ class ConstituentNode(BaseConstituentNode):
                         return child
             return None
 
-        al = self.alias or self.label
+        al = self.display_label or self.label
         head_node = find_original(self, strip_xbars(str(al)))
         self.set_projection(head_node)
 
@@ -533,7 +536,7 @@ class ConstituentNode(BaseConstituentNode):
     def is_empty_node(self):
         """ Empty nodes can be used as placeholders and deleted or replaced without structural
         worries """
-        return (not (self.alias or self.label or self.index)) and self.is_leaf()
+        return (not (self.display_label or self.label or self.index)) and self.is_leaf()
 
     # ## Indexes and chains ###################################
 
@@ -592,7 +595,7 @@ class ConstituentNode(BaseConstituentNode):
     # ############## #
 
     index = SavedField("index")
-    alias = SavedField("alias")
+    display_label = SavedField("display_label")
     gloss = SavedField("gloss", if_changed=update_gloss)
     head = SavedSynField("head")
 

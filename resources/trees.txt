@@ -1,4 +1,6 @@
 
+[.{Tom_i hit \emph{himself_i}} [ A B ]]
+
 [.Sentence [.NP [.T the ] [.N man ]] [.VP [.Verb hit ] [.NP [.T the ] [.N ball ]]]]
 
  [.CP C\\$[$-Q,-WH$]$ [.TP [.T'
@@ -97,3 +99,50 @@ loputonta = adj, number:sg, case:prt
 minuuttia = n, number:sg, case:prt
 
 [ [ [ C D ] [ A B ]] E ]
+
+
+( (S (NP-SBJ (NP Exports)
+             (PP-TMP in
+		     (NP October)))
+     (VP stood
+         (PP-LOC-CLR at
+		     (NP (NP (QP $ 5.29 billion)
+			     *U*)
+			 ,
+			 (NP (NP (ADJP (QP a mere 0.7)
+				       %)
+				 increase)
+			     (PP-TMP from
+				     (NP a year earlier)))
+			 ,))
+	 (SBAR-TMP while
+		   (S (NP-SBJ imports)
+		      (VP increased
+			  (ADVP-MNR sharply)
+			  (PP-DIR to
+				  (NP (NP (QP $ 5.39 billion)
+					  *U*)
+				      ,
+				      (ADVP up
+					    (NP 20 %)
+					    (PP-TMP from
+						    (NP last October)))))))))
+     .))
+
+
+     ( (S (NP-SBJ Government officials)
+     (VP said
+         (SBAR 0
+               (S (NP-SBJ (NP exports)
+                          (PP-TMP at
+				  (NP (NP the end)
+				      (PP of
+					  (NP the year)))))
+                  (VP would
+                      (VP remain
+                          (PP-LOC under
+				  (NP (NP a government target)
+				      (PP of
+					  (NP (QP $ 68 billion)
+					      *U*)))))))))
+     .))

@@ -39,12 +39,10 @@ class BracketManager:
         """
         def leftmost(depth, node):
             children = node.get_children(similar=True, visible=True)
-            left = next(children, None)
-            if left:
+            for left in children:
                 depth += 1
                 return leftmost(depth, left)
-            else:
-                return depth, node
+            return depth, node
         return leftmost(0, node)
 
     @staticmethod
@@ -56,12 +54,10 @@ class BracketManager:
         """
         def rightmost(depth, node):
             children = node.get_children(visible=True, similar=True, reverse=True)
-            right = next(children, None)
-            if right:
+            for right in reversed(children):
                 depth += 1
                 return rightmost(depth, right)
-            else:
-                return depth, node
+            return depth, node
         return rightmost(0, node)
 
     def create_bracket(self, host=None, left=True):

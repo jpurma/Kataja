@@ -9,6 +9,7 @@ class ExpandingLineEdit(QtWidgets.QWidget):
     def __init__(self, parent, tip='', big_font=None, smaller_font=None, prefill='', on_edit=None):
         QtWidgets.QWidget.__init__(self, parent)
         self.line_mode = True
+        self.original_text = ''
         layout = QtWidgets.QVBoxLayout()
         self.line_edit = QtWidgets.QLineEdit(parent)
         #self.line_edit.setClearButtonEnabled(True)
@@ -46,6 +47,9 @@ class ExpandingLineEdit(QtWidgets.QWidget):
         self.line_edit.setDragEnabled(True)
         self.original_size = None
         self.changed = False
+
+    def set_original_text(self, text):
+        self.original_text = text
 
     def text(self):
         if self.line_mode:
@@ -100,7 +104,8 @@ class ExpandingLineEdit(QtWidgets.QWidget):
         self.text_area.setTextCursor(cursor)
 
     def line_edit_check_for_resize(self, text):
-        self.changed = True
+        if not self.changed and text != self.original_text:
+            self.changed = True
         print('flagging as changed (line_edit_check_for_resize) ', self)
         if self.original_size is None:
             self.original_size = self.size()
@@ -116,9 +121,10 @@ class ExpandingLineEdit(QtWidgets.QWidget):
             self.on_edit(text)
 
     def text_area_check_for_resize(self):
-        self.changed = True
         print('flagging as changed (text_area_check_for_resize) ', self)
         text = self.text_area.toPlainText()
+        if not self.changed and text != self.original_text:
+            self.changed = True
         if len(text) < self.cut_point:
             self.toggle_line_mode()
             return

@@ -52,7 +52,7 @@ class BottomUpParser(BaseParser):
                 index = ''
             return hlabel, index
 
-        def create_constituent(label, dot_alias=''):
+        def create_constituent(label, dot_label=''):
             # print 'creating a constituent for label "%s"' % label
             """
 
@@ -75,17 +75,17 @@ class BottomUpParser(BaseParser):
                 node = self._new_node_from_constituent(constituent)
             if index:
                 node.index = index
-            if dot_alias:
-                node.alias = dot_alias
+            if dot_label:
+                node.display_label = dot_label
             self.add_local_lexicon(constituent)
             return node
 
-        def merge_constituents(left, right, dot_alias):
+        def merge_constituents(left, right, dot_label):
             """
 
             :param left:
             :param right:
-            :param dot_alias:
+            :param dot_label:
             :return:
             """
             f = self.forest
@@ -94,12 +94,12 @@ class BottomUpParser(BaseParser):
             constituent.right = right.syntactic_object
             node = self.forest.create_node(synobj=constituent)
             self.forest.add_merge_counter(node)
-            if dot_alias:
-                dot_alias, index = find_index(dot_alias)
+            if dot_label:
+                dot_label, index = find_index(dot_label)
                 if index:
                     node.index = index
-                if dot_alias:
-                    node.alias = dot_alias
+                if dot_label:
+                    node.display_label = dot_label
             if left:
                 self.forest.connect_node(parent=node, child=left, direction=g.LEFT)
             if right:
@@ -160,18 +160,18 @@ class BottomUpParser(BaseParser):
             # print 'didnt find a word'
             return [], word.strip()
 
-        def find_dot_alias(s):
+        def find_dot_label(s):
             """
 
             :param s:
             :return:
             """
-            alias_string = ''
+            label_string = ''
             if s[0] == '.':
-                # print 'starting dot alias'
-                s, alias_string = find_word(s[1:])
+                # print 'starting dot display_label'
+                s, label_string = find_word(s[1:])
                 # print 'found label string: ', label_string
-            return s, alias_string
+            return s, label_string
 
         def find_constituent(s):
             """
@@ -193,7 +193,7 @@ class BottomUpParser(BaseParser):
             :return: :raise:
             """
             merging = []
-            s, dot_alias = find_dot_alias(s)
+            s, dot_label = find_dot_label(s)
             s, new_label = find_constituent(s)
             if new_label:
                 # print 'found one constituent (%s), len(s): %s, s: %s' % (new_label, len(s), s)
@@ -215,19 +215,19 @@ class BottomUpParser(BaseParser):
             if len(merging) > 2:
                 print('too many constituents for binary branching. \nConstituents: %s \nMerging: %s \n%s' % (
                     constituents, merging, string))
-                M = merge_constituents(merging[0], merging[1], dot_alias)
+                M = merge_constituents(merging[0], merging[1], dot_label)
                 return M
             elif len(merging) == 2:
-                M = merge_constituents(merging[0], merging[1], dot_alias)
+                M = merge_constituents(merging[0], merging[1], dot_label)
                 return M
             else:  # len(merging) == 1
                 C = merging[0]
                 if dot_alias:
-                    dot_alias, index = find_index(dot_alias)
+                    dot_alias, index = find_index(dot_label)
                     if index:
                         C.index = index
                     if dot_alias:
-                        C.alias = dot_alias
+                        C.display_label = dot_label
                 return C
 
         def bottom_up_bracket_parser(s):

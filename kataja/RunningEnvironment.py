@@ -106,7 +106,7 @@ class RunningEnvironment:
 
     def init_mac_app_paths(self):
         """ When runnins as a mac app, the plugins directory is put to Application
-        Support/Kataja/plugins code there is loaded on launch.
+        Support/Kataja/plugins.
         Also the resources folder is inside the app package, and default save location is user's
         home path.
         :return:
@@ -124,6 +124,6 @@ class RunningEnvironment:
             if os.access(library_kat, os.W_OK):
                 local_plugin_path = app_path + '/Contents/Resources/lib/plugins'
                 if (not os.access(self.plugins_path, os.F_OK)) and os.access(local_plugin_path,
-                                                                             os.W_OK):
+                                                                             os.R_OK):
                     shutil.copytree(local_plugin_path, self.plugins_path)
 

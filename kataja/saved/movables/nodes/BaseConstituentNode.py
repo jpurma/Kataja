@@ -399,7 +399,6 @@ class BaseConstituentNode(Node):
             child = self.syntactic_object
             if child not in parent.parts:
                 ctrl.FL.k_connect(parent, child)
-                print('making syntactic connection for constituent')
 
     def disconnect_in_syntax(self, edge):
         """ Implement this if disconnecting this node (using this edge) needs

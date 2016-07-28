@@ -27,12 +27,21 @@ class EmbeddedLineEdit(QtWidgets.QLineEdit):
         self.stretch = stretch
         if stretch:
             self.textChanged.connect(self.check_for_resize)
+        self.textEdited.connect(self.flag_as_changed)
         self.setAcceptDrops(True)
         self.setDragEnabled(True)
         self.changed = False
+        self.original = ''
 
     def check_for_resize(self, *args, **kwargs):
         pass
+
+    def set_original(self, text):
+        """ This is the text to compare against for changes.
+        :param text:
+        :return:
+        """
+        self.original = text
 
     def dragEnterEvent(self, event):
         """ Announce support for regular ascii drops and drops of characters
@@ -71,7 +80,5 @@ class EmbeddedLineEdit(QtWidgets.QLineEdit):
         if 'text' in kw:
             self.setText(kw['text'])
 
-    def changeEvent(self, ev):
+    def flag_as_changed(self, text):
         self.changed = True
-        print('line edit text changed')
-        return QtWidgets.QLineEdit.changeEvent(self, ev)

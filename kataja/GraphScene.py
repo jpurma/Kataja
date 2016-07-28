@@ -245,21 +245,21 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 for parent in current.get_parents(similar=False, visible=True):
                     for child in parent.get_children(visible=True, similar=False):
                         all_siblings.append(child)
-                i = all_siblings.index(current)
-                if i:
-                    return all_siblings[i-1]
-                else:
-                    return current
+                if current in all_siblings:
+                    i = all_siblings.index(current)
+                    if i:
+                        return all_siblings[i-1]
+                return current
             if direction == 'right':
                 all_siblings = []
                 for parent in current.get_parents(similar=False, visible=True):
                     for child in parent.get_children(visible=True, similar=False):
                         all_siblings.append(child)
-                i = all_siblings.index(current)
-                if i < len(all_siblings) - 2:
-                    return all_siblings[i+1]
-                else:
-                    return current
+                if current in all_siblings:
+                    i = all_siblings.index(current)
+                    if i < len(all_siblings) - 2:
+                        return all_siblings[i+1]
+                return current
             if direction == 'up':
                 all_parents = current.get_parents(similar=False, visible=True)
                 if all_parents:
@@ -650,7 +650,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 else:
                     text = data.text().strip()
                     if ctrl.free_drawing_mode:
-                        node = ctrl.forest.create_node_from_string(text, simple_parse=True)
+                        node = ctrl.forest.simple_parse(text)
                         ctrl.main.action_finished('Added tree based on "%s".' % text)
                     else:
                         node = ctrl.forest.create_comment_node(text=text)

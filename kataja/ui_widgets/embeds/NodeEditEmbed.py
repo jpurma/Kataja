@@ -187,7 +187,6 @@ class NodeEditEmbed(UIEmbed):
             itype = d.get('input_type', 'text')
             if itype in ['text', 'textarea', 'expandingtext']:
                 if field.changed:
-                    print('ignore field %s, value changed already' % field_name)
                     continue
                 if 'getter' in d:
                     value = getattr(self.host, d['getter'])()
@@ -200,7 +199,7 @@ class NodeEditEmbed(UIEmbed):
                     elif parsing_mode == 2:
                         parsed = value.as_html()
                     elif parsing_mode == 3:
-                        parsed = value
+                        parsed = str(value)
                     else:
                         raise ValueError
                 else:
@@ -230,6 +229,7 @@ class NodeEditEmbed(UIEmbed):
                         raise ValueError
                 else:
                     parsed = value
+                field.set_original(parsed)
                 field.setText(parsed)
             elif itype == 'checkbox':
                 field.setChecked(bool(value))
