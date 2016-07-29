@@ -5,8 +5,7 @@ from kataja.parser.mappings import html_to_command
 from kataja.parser.INodes import ITextNode, ICommandNode, IParserNode
 
 
-
-class HtmlToINode(HTMLParser):
+class HTMLToINode(HTMLParser):
     """  Convert HTML to ICommandNodes and ITextNodes to use as field values. Doesn't handle
     brackets or tree parsing, only fields.
     """
@@ -67,8 +66,9 @@ class HtmlToINode(HTMLParser):
         self.stack = []
         super().reset()
 
+
 if __name__ == '__main__':
-    parser = HtmlToINode()
+    parser = HTMLToINode()
     print(parser.process('<A href="https://github.com">link</a> and <i>italics</i>.'))
     print(parser.process("""row<br/>row<br/>row
     your boat"""))

@@ -196,6 +196,15 @@ class ITextNode:
         ss = ''.join(s)
         return ss.replace('\n', '\\')
 
+    def as_plain(self):
+        r = []
+        for part in self.parts:
+            if isinstance(part, ITextNode):
+                r.append(part.as_plain())
+            else:
+                r.append(str(part))
+        return ''.join(r)
+
     def __str__(self):
         return ''.join((str(x) for x in self.parts))
 

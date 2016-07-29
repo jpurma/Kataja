@@ -50,8 +50,8 @@ class ConstituentNode(BaseConstituentNode):
     display_name = ('Constituent', 'Constituents')
     display = True
     wraps = 'constituent'
-    visible_in_label = ['display_label', 'index', 'triangle', 'label', 'gloss']
-    editable_in_label = ['display_label', 'label', 'index', 'gloss', 'head']
+    visible_in_label = ['display_label', 'index', 'triangle', 'label']  # , 'gloss']
+    editable_in_label = ['display_label', 'label', 'index', 'head']  # 'gloss',
 
     display_styles = {'index': {'align': 'line-end', 'start_tag': '<sub>', 'end_tag': '</sub>'},
                       'triangle': {'special': 'triangle', 'readonly': True},
@@ -61,13 +61,13 @@ class ConstituentNode(BaseConstituentNode):
                       'display_label': {'condition': 'should_show_alias'},
                       'gloss': {'condition': 'should_show_gloss_in_label'}}
     editable = {'display_label': dict(name='Displayed label', prefill='display_label',
-                                      tooltip='Non-functional readable label of the constituent',
+                                      tooltip='Rich text representing the constituent',
                                       input_type='expandingtext'),
-                'label': dict(name='Label', prefill='label',
-                              tooltip='Label of the constituent (functional identifier)', width=160,
+                'label': dict(name='Computational label', prefill='label',
+                              tooltip='Label used for computations, plain string', width=160,
                               focus=True, syntactic=True),
                 'index': dict(name='Index', align='line-end', width=20, prefill='i',
-                              tooltip='Index to recognize multiple occurences'),
+                              tooltip='Optional index for linking multiple instances'),
 
                 'gloss': dict(name='Gloss', prefill='gloss',
                               tooltip='translation (optional)', width=200, condition='is_leaf'),

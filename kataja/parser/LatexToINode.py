@@ -225,9 +225,20 @@ class LatexToINode:
             return node
         return ''
 
+
 class LatexFieldToINode(LatexToINode):
 
-    def __init__(self, text):
+    def __init__(self):
+        """ Simpler version of parse, turns values of text elements into INodes
+        (intermediary nodes).  Results are ITextNodes that may contain more
+        ITextNodes and ICommandNodes.
+            :param text: string to parse.
+        """
+        self.math_mode = False
+        self.node = None
+        self.feed = []
+
+    def process(self, text):
         """ Simpler version of parse, turns values of text elements into INodes
         (intermediary nodes).  Results are ITextNodes that may contain more
         ITextNodes and ICommandNodes.
@@ -237,10 +248,10 @@ class LatexFieldToINode(LatexToINode):
         self.math_mode = False
         self.node = None
         if not text:
-            return None
+            return ""
         text = text.strip()
         if not text:
-            return None
+            return ""
         self.feed = list(text)
         self.feed.reverse()
         nodes = []
@@ -254,13 +265,14 @@ class LatexFieldToINode(LatexToINode):
                 self.feed.pop()
 
         if len(nodes) == 1:
-            self.node = nodes[0]
+            return nodes[0]
         elif nodes:
-            self.node = ITextNode(parts=nodes)
-            self.node.tidy()
+            node = ITextNode(parts=nodes)
+            return node.tidy()
         else:
-            self.node = ""
-        #print(self.node)
+            return ""
+
+
 
 # ### Test cases
 if __name__ == "__main__":
@@ -290,7 +302,6 @@ if __name__ == "__main__":
 
     s = r"""[.TP [.AdvP [.Adv\\usually ] ] [.TP [.DP [.D\\{\O} ] [.NP\\John ] ] [.T\1 [.T\\\emph{PRESENT} ] [.VP [.VP [.V\\goes ] [.PP [.P\\to ] [.DP [.D\\the ] [.NP\\park ] ] ] ] [.PP [.P\\on ] [.DP [.D\\{\O} ] [.NP\\Tuesdays ] ] ] ] ] ] ] ]"""
 
-    n = LatexToINode(s)
-
-    print(n.nodes)
+    prsr = LatexToINode()
+    print(prsr.process(s))
 

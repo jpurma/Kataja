@@ -388,8 +388,7 @@ class SavedObject(object):
                 if data and isinstance(data[0], str):
                     data_type = data[0]
                     if data_type == 'INode':
-                        parser = LatexFieldToINode(data[1])
-                        return parser.node
+                        return ctrl.latex_field_parser.process(data[1])
                     elif data_type == 'QPointF':
                         return QPointF(data[1], data[2])
                     elif data_type == 'QPoint':

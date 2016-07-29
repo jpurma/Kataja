@@ -17,9 +17,10 @@ fields = [
 
 for field in fields:
     print("Entered: ", field)
-    parser = LatexFieldToINode(field)
-    print("As node: ", repr(parser.node))
-    text = parser.node.as_latex()
+    parser = LatexFieldToINode()
+    node = parser.process(field)
+    print("As node: ", repr(node))
+    text = node.as_latex()
     print("Turned back: ", text)
     print("------------------")
 

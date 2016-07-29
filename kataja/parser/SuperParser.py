@@ -1,7 +1,7 @@
 
 import ast
 
-from kataja.parser.HtmlToINode import HtmlToINode
+from kataja.parser.HTMLToINode import HTMLToINode
 from kataja.parser.LatexToINode import LatexToINode
 from kataja.parser.INodes import IParserNode, ITextNode
 
@@ -86,7 +86,7 @@ class SuperParser:
             self.bitag = ""
             self.escape = ""
             self.divider = " "
-            self.row_parser = HtmlToINode(rows_mode=True)
+            self.row_parser = HTMLToINode(rows_mode=True)
         elif self.latex:
             self.ltag = "{"
             self.rtag = "}"

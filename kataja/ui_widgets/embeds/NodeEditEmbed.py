@@ -8,7 +8,7 @@ from kataja.ui_support.EmbeddedLineEdit import EmbeddedLineEdit
 from kataja.ui_support.EmbeddedMultibutton import EmbeddedMultibutton
 from kataja.ui_support.EmbeddedRadiobutton import EmbeddedRadiobutton
 from kataja.ui_support.EmbeddedTextarea import EmbeddedTextarea
-from kataja.ui_support.ExpandingLineEdit import ExpandingLineEdit
+from kataja.ui_support.ExpandingTextArea import ExpandingTextArea
 from kataja.ui_widgets.UIEmbed import UIEmbed
 from kataja.ui_widgets.ResizeHandle import ResizeHandle
 
@@ -42,7 +42,6 @@ class NodeEditEmbed(UIEmbed):
     def __init__(self, parent, node):
         nname = node.display_name[0].lower()
         UIEmbed.__init__(self, parent, node, 'Edit ' + nname)
-        self.input_parsing_modes.button(self.host.text_parse_mode).setChecked(True)
         layout = QtWidgets.QVBoxLayout()
         layout.addLayout(self.top_row_layout)
         layout.addSpacing(4)
@@ -88,10 +87,9 @@ class NodeEditEmbed(UIEmbed):
                 field.setFixedWidth(min(w, max_w))
                 self.resize_target = field
             elif itype == 'expandingtext':
-                field = ExpandingLineEdit(self,
+                field = ExpandingTextArea(self,
                                           tip=tt,
-                                          big_font=big_font,
-                                          smaller_font=smaller_font,
+                                          font=smaller_font,
                                           prefill=prefill)
                 #field.setMaximumWidth(width)
             elif itype == 'multibutton':
@@ -162,7 +160,6 @@ class NodeEditEmbed(UIEmbed):
         self.update_position()
         self.hide()
 
-
     def margin_x(self):
         """ Try to keep all of the host node visible, not covered by this editor.
         :return:
@@ -175,62 +172,8 @@ class NodeEditEmbed(UIEmbed):
         """
         return self.host.boundingRect().height() / 2
 
-    def change_text_field_mode(self, button_clicked):
-        """ Subclasses implement this if there are textfields that parse and display TeX/HTML/Plain
-        :param button_clicked:
-        :return:
-        """
-        parsing_mode = self.input_parsing_modes.id(button_clicked)  # 1 = TeX,  2 = HTML, 3 = Plain
-        ed = self.host.get_editing_template()
-        for field_name, field in self.fields.items():
-            d = ed.get(field_name, {})
-            itype = d.get('input_type', 'text')
-            if itype in ['text', 'textarea', 'expandingtext']:
-                if field.changed:
-                    continue
-                if 'getter' in d:
-                    value = getattr(self.host, d['getter'])()
-                else:
-                    value = getattr(self.host, field_name, '')
-
-                if isinstance(value, list):
-                    rows = []
-                    if parsing_mode == 1:
-                        for row in value:
-                            if isinstance(row, ITextNode):
-                                rows.append(row.as_latex())
-                            else:
-                                rows.append(row)
-                    elif parsing_mode == 2:
-                        for row in value:
-                            if isinstance(row, ITextNode):
-                                rows.append(row.as_html())
-                            else:
-                                rows.append(row)
-                    elif parsing_mode == 2:
-                        for row in value:
-                            if isinstance(row, ITextNode):
-                                rows.append(str(row))
-                            else:
-                                rows.append(row)
-                    parsed = '\n'.join(rows)
-                elif isinstance(value, ITextNode):
-                    if parsing_mode == 1:
-                        parsed = value.as_latex()
-                    elif parsing_mode == 2:
-                        parsed = value.as_html()
-                    elif parsing_mode == 3:
-                        parsed = value
-                    else:
-                        raise ValueError
-                else:
-                    parsed = value
-                field.set_original(parsed)
-                field.setText(parsed)
-
     def update_fields(self):
         """ Update field values on embed form based on template """
-        parsing_mode = self.input_parsing_modes.checkedId()  # 1 = TeX,  2 = HTML, 3 = Plain
         ed = self.host.get_editing_template()
         for field_name, field in self.fields.items():
             d = ed.get(field_name, {})
@@ -239,41 +182,11 @@ class NodeEditEmbed(UIEmbed):
             else:
                 value = getattr(self.host, field_name, '')
             itype = d.get('input_type', 'text')
-            if itype in ['text', 'textarea', 'expandingtext']:
-                if isinstance(value, list):
-                    rows = []
-                    if parsing_mode == 1:
-                        for row in value:
-                            if isinstance(row, ITextNode):
-                                rows.append(row.as_latex())
-                            else:
-                                rows.append(row)
-                    elif parsing_mode == 2:
-                        for row in value:
-                            if isinstance(row, ITextNode):
-                                rows.append(row.as_html())
-                            else:
-                                rows.append(row)
-                    elif parsing_mode == 2:
-                        for row in value:
-                            if isinstance(row, ITextNode):
-                                rows.append(str(row))
-                            else:
-                                rows.append(row)
-                    parsed = '\n'.join(rows)
-                elif isinstance(value, ITextNode):
-                    if parsing_mode == 1:
-                        parsed = value.as_latex()
-                    elif parsing_mode == 2:
-                        parsed = value.as_html()
-                    elif parsing_mode == 3:
-                        parsed = value
-                    else:
-                        raise ValueError
-                else:
-                    parsed = value
-                field.set_original(parsed)
-                field.setText(parsed)
+            if itype == 'expandingtext':
+                field.setText(value)
+            elif itype == 'text' or itype == 'textarea':
+                field.set_original(value)
+                field.setText(value)
             elif itype == 'checkbox':
                 field.setChecked(bool(value))
             elif itype == 'multibutton':
@@ -296,8 +209,7 @@ class NodeEditEmbed(UIEmbed):
                 if not field.changed:
                     continue
                 if parsing_mode == 1:  # TeX
-                    parser = LatexFieldToINode(field.text())
-                    value = parser.node
+                    value = ctrl.latex_field_parser.process(field.text())
                 elif parsing_mode == 2:  # HTML
                     value = field.text()
                 elif parsing_mode == 3:  # Plain text

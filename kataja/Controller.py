@@ -34,6 +34,9 @@ from kataja.utils import caller
 # gc.DEBUG_OBJECTS
 # )
 # gc.set_debug(flags)
+from parser.LatexToINode import LatexFieldToINode
+from parser.HTMLToINode import HTMLToINode
+from parser.PlainTextToINode import PlainTextToINode
 
 
 class Controller:
@@ -89,6 +92,9 @@ class Controller:
         self.unassigned_objects = {}
         self.items_moving = False
         self.multiselection_delay = False
+        self.latex_field_parser = LatexFieldToINode()
+        self.html_field_parser = HTMLToINode(rows_mode=False)
+        self.plain_field_parser = PlainTextToINode(rows_mode=False)
         # -- After user action, should the visualization be redrawn and
         # should it make an undo savepoint
         # these are True by default, but action method may toggle them off
