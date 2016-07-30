@@ -50,7 +50,7 @@ class CommentNode(Node):
     editable = {'text': dict(name='',
                              prefill='comment',
                              tooltip='freeform text, invisible for processing',
-                             input_type='textarea')}
+                             input_type='expandingtext')}
 
     default_style = {'fancy': {'color': 'accent4',
                                'font': g.MAIN_FONT,

@@ -91,7 +91,10 @@ class NodeEditEmbed(UIEmbed):
                                           tip=tt,
                                           font=smaller_font,
                                           prefill=prefill)
-                #field.setMaximumWidth(width)
+                template_width = d.get('width', 0)
+                if template_width:
+                    field.setFixedWidth(template_width)
+                self.resize_target = field
             elif itype == 'multibutton':
                 # currently not used, radio button is better
                 width = d.get('width', 200)
@@ -199,21 +202,14 @@ class NodeEditEmbed(UIEmbed):
         """ Submit field values back to object based on template
         :return:
         """
-        parsing_mode = self.input_parsing_modes.checkedId()  # 1 = TeX,  2 = HTML, 3 = Plain
-        self.host.text_parse_mode = parsing_mode
         ed = self.host.get_editing_template()
         for field_name, field in self.fields.items():
             d = ed.get(field_name, {})
             itype = d.get('input_type', 'text')
-            if itype in ['text', 'textarea', 'expandingtext']:
-                if not field.changed:
-                    continue
-                if parsing_mode == 1:  # TeX
-                    value = ctrl.latex_field_parser.process(field.text())
-                elif parsing_mode == 2:  # HTML
-                    value = field.text()
-                elif parsing_mode == 3:  # Plain text
-                    value = field.text()
+            if itype == 'text' or itype == 'textarea':
+                value = field.text()
+            elif itype == 'expandingtext':
+                value = field.inode_text()
             elif itype in ['multibutton', 'radiobutton', 'checkbox']:
                 # buttons take action immediately when clicked
                 continue

@@ -227,5 +227,4 @@ class UIEmbed(UIWidget, QtWidgets.QWidget):
         QtWidgets.QWidget.mouseMoveEvent(self, event)
 
     def resizeEvent(self, event):
-        self.update_position()
         QtWidgets.QWidget.resizeEvent(self, event)

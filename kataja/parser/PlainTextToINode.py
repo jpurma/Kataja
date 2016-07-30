@@ -19,10 +19,10 @@ class PlainTextToINode:
         if self.rows_mode:
             self.rows = []
             for row in inrows:
-                self.rows.append(ITextNode(parts=[row]))
+                self.rows.append(row)
             return self.rows
         else:
-            return ITextNode(parts=[string])
+            return string
 
     def reset(self):
         pass
