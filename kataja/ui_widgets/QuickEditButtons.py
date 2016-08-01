@@ -1,0 +1,137 @@
+# coding=utf-8
+from PyQt5 import QtWidgets, QtCore, QtGui
+
+from kataja.UIItem import UIWidget
+from kataja.singletons import ctrl, qt_prefs
+from kataja.ui_widgets.OverlayButton import QuickEditButton
+
+
+class QuickEditButtons(UIWidget, QtWidgets.QFrame):
+    unique = True
+    permanent_ui = True
+
+    def __init__(self, parent=None, ui=None):
+        UIWidget.__init__(self)
+        QtWidgets.QFrame.__init__(self, parent=parent)
+        layout = QtWidgets.QHBoxLayout()
+        self.host_node = None  # find out if there are more benefits from connecting properly to
+        # host -- now we use 'host_node' instead of host, because we don't want this to be
+        # automatically destroyed with the host.
+        self.doc = None
+        self.show()
+        self.current_format = QtGui.QTextCharFormat()
+        self._left_buttons = []
+
+        # Left align
+        #self.italic_icon = icon('italic24.png')
+        #self.bold_icon = icon('bold24.png')
+        #self.strikethrough_icon = icon('strikethrough24.png')
+        #self.underline_icon = icon('underline24.png')
+        #self.subscript_icon = icon('align_bottom24.png')
+        #self.superscript_icon = icon('align_top24.png')
+        #self.left_align_icon = icon('align_left24.png')
+        #self.center_align_icon = icon('align_center24.png')
+        #self.right_align_icon = icon('align_right24.png')
+        #self.remove_styles_icon = icon('no_format24.png')
+
+        self.italic = QuickEditButton('italic_button', parent=self,
+                                      tooltip='Italic - \\emph{...} - <i>...</i>)',
+                                      pixmap=qt_prefs.italic_icon, size=(24, 24))
+        ui.add_button(self.italic, action='toggle_italic')
+        self.italic.setCheckable(True)
+        self._left_buttons.append(self.italic)
+        layout.addWidget(self.italic)
+
+        self.bold = QuickEditButton('bold_button', parent=self,
+                                    tooltip='Bold - \\textbf{...} - <b>...</b>)',
+                                    pixmap=qt_prefs.bold_icon, size=(24, 24))
+        ui.add_button(self.bold, action='toggle_bold')
+        self.bold.setCheckable(True)
+        self._left_buttons.append(self.bold)
+        layout.addWidget(self.bold)
+
+        self.underline = QuickEditButton('underline_button', parent=self,
+                                         tooltip='Underline - \\emph{...} - <u>...</u>)',
+                                         pixmap=qt_prefs.underline_icon, size=(24, 24))
+        ui.add_button(self.underline, action='toggle_underline')
+        self.underline.setCheckable(True)
+        self._left_buttons.append(self.underline)
+        layout.addWidget(self.underline)
+
+        self.strikethrough = QuickEditButton('strikethrough_button', parent=self,
+                                             tooltip='Strikethrough',
+                                             pixmap=qt_prefs.strikethrough_icon,
+                                             size=(24, 24))
+        ui.add_button(self.strikethrough, action='toggle_strikethrough')
+        self.strikethrough.setCheckable(True)
+        self._left_buttons.append(self.strikethrough)
+        layout.addWidget(self.strikethrough)
+
+        self.subscript = QuickEditButton('subscript_button', parent=self,
+                                         tooltip='Subscript - \\_{...} - <sub>...</sub>)',
+                                         pixmap=qt_prefs.subscript_icon, size=(24, 24))
+        ui.add_button(self.subscript, action='toggle_subscript')
+        self.subscript.setCheckable(True)
+        self._left_buttons.append(self.subscript)
+        layout.addWidget(self.subscript)
+
+        self.superscript = QuickEditButton('superscript_button', parent=self,
+                                           tooltip='Superscript - \\_{...} - <sup>...</sup>)',
+                                           pixmap=qt_prefs.superscript_icon, size=(24, 24))
+        ui.add_button(self.superscript, action='toggle_superscript')
+        self.superscript.setCheckable(True)
+        self._left_buttons.append(self.superscript)
+        layout.addWidget(self.superscript)
+
+        self.no_style = QuickEditButton('no_style_button', parent=self,
+                                        tooltip='Remove styles',
+                                        pixmap=qt_prefs.remove_styles_icon, size=(24, 24))
+        ui.add_button(self.no_style, action='remove_styles')
+        self._left_buttons.append(self.no_style)
+        layout.addWidget(self.no_style)
+
+
+        layout.setContentsMargins(2, 0, 2, 0)
+        self.setLayout(layout)
+        self.setMinimumHeight(28)
+        min_width = 0
+        for item in self._left_buttons:
+            min_width += item.width()
+        self.setMinimumWidth(min_width)
+        self.update_position()
+
+    def connect_to(self, node, doc):
+        self.host_node = node
+        self.doc = doc
+
+    def update_position(self):
+        """ Make sure that float buttons are on host node's top left corner
+        :return:
+        """
+        if self.host_node:
+            scbr = self.host_node.sceneBoundingRect()
+            tl = self.parentWidget().mapFromScene(scbr.topLeft())
+            tlx = tl.x()
+            tly = tl.y()
+            tly -= self.height()
+
+            if tlx < 0:
+                tlx = 0
+            if tly < 28:
+                tly = 28
+            self.move(tlx, tly)
+
+    def update_formats(self, char_format):
+        if char_format != self.current_format:
+            font = char_format.font()
+            self.bold.setChecked(font.bold())
+            self.italic.setChecked(font.italic())
+            self.underline.setChecked(font.underline())
+            self.strikethrough.setChecked(font.strikeOut())
+            self.superscript.setChecked(char_format.verticalAlignment() == 1)
+            self.subscript.setChecked(char_format.verticalAlignment() == 2)
+            self.current_format = char_format
+
+    def update_values(self):
+        if self.doc:
+            self.update_formats(self.host_node.label_object.textCursor().charFormat())

@@ -138,6 +138,7 @@ class Node(Movable):
         self.color_id = None
 
         self._editing_template = {}
+        self._last_click_at = None
 
         self.label_display_data = {}
         self.setFiltersChildEvents(True)
@@ -1297,6 +1298,8 @@ class Node(Movable):
         :param multi: assume multiple selection (append, don't replace)
         """
         self.hovering = False
+        self._last_click_at = self.mapFromScene(event.scenePos())
+        print(self._last_click_at)
         if (event and event.modifiers() == Qt.ShiftModifier) or multi:
             # multiple selection
             ctrl.area_selection = True
@@ -1542,6 +1545,15 @@ class Node(Movable):
             ctrl.main.ui_manager.show_anchor(self)  # @UndefinedVariable
 
     # ### Mouse - Qt events ##################################################
+
+    def mousePressEvent(self, event):
+        print('received mpe ', event)
+        super().mousePressEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        print('received mre ', event)
+        super().mouseReleaseEvent(event)
+
 
     def hoverEnterEvent(self, event):
         """ Hovering has some visual effects, usually handled in paint-method

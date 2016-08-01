@@ -451,6 +451,16 @@ class QtPreferences:
         self.undo_icon = None
         self.redo_icon = None
         self.kataja_icon = None
+        self.italic_icon = None
+        self.bold_icon = None
+        self.strikethrough_icon = None
+        self.underline_icon = None
+        self.subscript_icon = None
+        self.superscript_icon = None
+        self.left_align_icon = None
+        self.center_align_icon = None
+        self.right_align_icon = None
+        self.remove_styles_icon = None
 
     def late_init(self, running_environment, preferences, fontdb):
         """ Here are initializations that require Qt app to exist, to findout dpi etc. These are
@@ -491,8 +501,8 @@ class QtPreferences:
         self.no_pen.setStyle(QtCore.Qt.NoPen)
         self.no_brush = QtGui.QBrush()
         self.no_brush.setStyle(QtCore.Qt.NoBrush)
-        self.lock_icon = icon('lock32.png')
-        self.lock_pixmap = pixmap('lock32.png', 16)
+        self.lock_icon = icon('lock48.png')
+        self.lock_pixmap = pixmap('lock48.png', 16)
         self.cut_icon = icon('cut_icon48.png')
         self.delete_icon = icon('backspace48.png')
         self.close_icon = icon('close24.png')
@@ -522,6 +532,16 @@ class QtPreferences:
         self.undo_icon = icon('undo48.png')
         self.redo_icon = icon('redo48.png')
         self.kataja_icon = icon('kataja.png')
+        self.italic_icon = icon('italic48.png')
+        self.bold_icon = icon('bold48.png')
+        self.strikethrough_icon = icon('strikethrough48.png')
+        self.underline_icon = icon('underline48.png')
+        self.subscript_icon = icon('align_bottom48.png')
+        self.superscript_icon = icon('align_top48.png')
+        self.left_align_icon = icon('align_left48.png')
+        self.center_align_icon = icon('align_center48.png')
+        self.right_align_icon = icon('align_right48.png')
+        self.remove_styles_icon = icon('no_format48.png')
 
     def update(self, preferences, running_environment):
         """

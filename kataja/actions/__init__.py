@@ -13,6 +13,7 @@ import kataja.actions.forest
 import kataja.actions.help
 import kataja.actions.keyboard
 import kataja.actions.preferences
+import kataja.actions.quick_edit
 import kataja.actions.settings
 import kataja.actions.tree_edit
 import kataja.actions.view
@@ -24,6 +25,7 @@ actions_dict.update(forest.a)
 actions_dict.update(help.a)
 actions_dict.update(keyboard.a)
 actions_dict.update(preferences.a)
+actions_dict.update(quick_edit.a)
 actions_dict.update(settings.a)
 actions_dict.update(tree_edit.a)
 actions_dict.update(view.a)

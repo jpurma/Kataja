@@ -222,6 +222,28 @@ class TopRowButton(OverlayButton):
             self.setMaximumSize(size+2, size)
 
 
+class QuickEditButton(OverlayButton):
+
+    permanent_ui = True
+
+    def __init__(self, ui_key, parent=None, pixmap=None, text=None, draw_method=None,
+                 size=24, tooltip=None):
+        super().__init__(None, ui_key=ui_key,
+                         parent=parent,
+                         pixmap=pixmap,
+                         text=text,
+                         draw_method=draw_method,
+                         tooltip=tooltip,
+                         size=size,
+                         color_key='accent3')
+        if isinstance(size, tuple):
+            self.setMinimumSize(size[0]+2, size[1])
+            self.setMaximumSize(size[0]+2, size[1])
+        else:
+            self.setMinimumSize(size+2, size)
+            self.setMaximumSize(size+2, size)
+
+
 class CutFromStartButton(OverlayButton):
 
     def __init__(self, host, parent=None):
@@ -321,6 +343,10 @@ class RemoveMergerButton(OverlayButton):
         p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(x + self.host.width / 2,
                                                              y - self.host.height / 2))
         p += QtCore.QPoint(4, -self.height())
+        if ctrl.ui.quick_edit_buttons:  # avoid overlap with button bar
+            qeb = ctrl.ui.quick_edit_buttons.geometry()
+            while qeb.contains(p):
+                p += QtCore.QPoint(0, 10)
         self.move(p)
 
     def enterEvent(self, event):
@@ -350,6 +376,10 @@ class RemoveNodeButton(OverlayButton):
         p = ctrl.main.graph_view.mapFromScene(QtCore.QPointF(x + self.host.width / 2,
                                                              y - self.host.height / 2))
         p += QtCore.QPoint(4, -self.height())
+        if ctrl.ui.quick_edit_buttons:  # avoid overlap with button bar
+            qeb = ctrl.ui.quick_edit_buttons.geometry()
+            while qeb.contains(p):
+                p += QtCore.QPoint(0, 10)
         self.move(p)
 
     def enterEvent(self, event):

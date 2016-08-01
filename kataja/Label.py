@@ -47,6 +47,7 @@ class Label(QtWidgets.QGraphicsTextItem):
         QtWidgets.QGraphicsTextItem.__init__(self, parent)
         self._host = parent
         self.has_been_initialized = False
+        self.complex_edit = False
         self.top_y = 0
         self.top_part_y = 0
         self.lower_part_y = 0
@@ -119,6 +120,7 @@ class Label(QtWidgets.QGraphicsTextItem):
             else:
                 self.doc.setTextWidth(-1)
             self.setHtml(self.html)
+            ctrl.qdocument_parser.process(self.doc)
             self.text = self.toPlainText()
         self.resize_label()
 
@@ -354,7 +356,14 @@ class Label(QtWidgets.QGraphicsTextItem):
                 self.doc.setTextWidth(-1)
             self.compose_html_for_editing()
             self.setCursor(QtGui.QCursor(QtCore.Qt.IBeamCursor))
-            self.setPlainText(self.editable_html)
+
+            if self.complex_edit:
+                self.setPlainText(self.editable_html)
+            else:
+                ctrl.ui.add_quick_edit_buttons_for(self._host, self.doc)
+                self.setHtml(self.editable_html)
+            self.doc.cursorPositionChanged.connect(self.cursor_position_changed)
+
             #opt = QtGui.QTextOption()
             #opt.setFlags(QtGui.QTextOption.ShowLineAndParagraphSeparators |
             #             QtGui.QTextOption.AddSpaceForLineAndParagraphSeparators)
@@ -363,13 +372,26 @@ class Label(QtWidgets.QGraphicsTextItem):
             self.setAcceptDrops(True)
             ctrl.graph_view.setFocus()
             self.setFocus()
+            if self._host._last_click_at and False:
+                #event = QtGui.QMouseEvent(
+
+                event = QtWidgets.QGraphicsSceneMouseEvent(
+                    QtWidgets.QGraphicsSceneMouseEvent.GraphicsSceneMousePress,
+                    self._host._last_click_at, QtCore.Qt.LeftButton, QtCore.Qt.LeftButton, QtCore.Qt.NoModifier)
+
+                self.mousePressEvent(event)
+                print('clickety click on ', event.scenePos(), event.pos())
+
         elif self._quick_editing:
-            fields = []
             if self.doc.isModified():
-                fields = self.analyze_changes()
+                if self.complex_edit:
+                    self.analyze_changes()
+                else:
+                    self.parse_document_to_field()
                 self.doc.setModified(False)
             ctrl.text_editor_focus = None
             self._quick_editing = False
+            ctrl.ui.remove_quick_edit_buttons()
             self.html = ''
             self._host.update_label()
             self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
@@ -383,6 +405,34 @@ class Label(QtWidgets.QGraphicsTextItem):
             #    ctrl.main.action_finished("Edited field %s in %s" % (fields[0], self._host))
             #else:
             #    ctrl.main.action_finished("Edited fields %s in %s" % (str(fields), self._host))
+
+    def cursor_position_changed(self, cursor):
+        print('bop')
+        if self._quick_editing:
+            if not self.complex_edit:
+                ctrl.ui.quick_edit_buttons.update_formats(cursor.charFormat())
+
+    def parse_document_to_field(self):
+        """ Parse edited QDocument into rows of INodes and into receptable
+        field in host object
+
+        :return:
+        """
+        parsed_parts = ctrl.qdocument_parser.process(self.doc)
+        field_name, html_text, rows = self.editable_parts[0]
+        my_editable = self.editable.get(field_name, {})
+        setter = my_editable.get('setter', None)
+        if setter:
+            setter_method = getattr(self._host, setter, None)
+            if setter_method and callable(setter_method):
+                setter_method(parsed_parts)
+            else:
+                print('missing setter!')
+        else:
+            setattr(self._host, field_name, parsed_parts)
+
+        print(self.editable_parts)
+        print(parsed_parts)
 
     def analyze_changes(self):
         """ Use difflib to get a robust idea on what has changed
@@ -496,6 +546,11 @@ class Label(QtWidgets.QGraphicsTextItem):
                 ctrl.forest.draw()
             self._recursion_block = False
 
+    def mouseReleaseEvent(self, event):
+        if self._quick_editing:
+            self.cursor_position_changed(self.textCursor())
+        super().mouseReleaseEvent(event)
+
     def keyReleaseEvent(self, keyevent):
         """ keyReleaseEvent is received after the keypress is registered by editor, so if we
         check cursor position here we receive the situation after normal cursor movement. So
@@ -506,6 +561,7 @@ class Label(QtWidgets.QGraphicsTextItem):
         :return:
         """
         c = self.textCursor()
+        self.cursor_position_changed(c)
         next_sel = None
         if self._last_blockpos:
             first, last, first_line, last_line = self._last_blockpos

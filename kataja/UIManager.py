@@ -47,6 +47,7 @@ from kataja.ui_support.MyColorDialog import MyColorDialog
 from kataja.ui_support.MyFontDialog import MyFontDialog
 from kataja.ui_support.TableModelSelectionBox import TableModelSelectionBox
 from kataja.ui_support.TopBarButtons import TopBarButtons
+from kataja.ui_widgets.QuickEditButtons import QuickEditButtons
 from kataja.ui_widgets.Panel import Panel
 from kataja.ui_widgets.embeds.EdgeLabelEmbed import EdgeLabelEmbed
 from kataja.ui_widgets.embeds.GroupLabelEmbed import GroupLabelEmbed
@@ -126,6 +127,7 @@ class UIManager:
         self._top_menus = {}
         self.top_bar_buttons = None
         self._edit_mode_button = None
+        self.quick_edit_buttons = None
 
         self._items = {}
         self._items_by_host = {}
@@ -1239,7 +1241,6 @@ class UIManager:
         button = self.get_or_create_button(group, g.GROUP_OPTIONS, 'toggle_group_options')
         return button
 
-
     def add_buttons_for_edge(self, edge):
         """ Constituent edges have a button to remove the edge and the node
         in between.
@@ -1251,6 +1252,19 @@ class UIManager:
             self.get_or_create_button(edge, g.CUT_FROM_START_BUTTON, 'disconnect_edge_start')
         if edge.end:
             self.get_or_create_button(edge, g.CUT_FROM_END_BUTTON, 'disconnect_edge_end')
+
+    def add_quick_edit_buttons_for(self, node, doc):
+        if not self.quick_edit_buttons:
+            self.quick_edit_buttons = QuickEditButtons(parent=ctrl.graph_view, ui=self)
+            self.add_ui(self.quick_edit_buttons)
+        else:
+            self.quick_edit_buttons.show()
+        self.quick_edit_buttons.connect_to(node=node, doc=doc)
+        self.quick_edit_buttons.update_position()
+        self.quick_edit_buttons.update_values()
+
+    def remove_quick_edit_buttons(self):
+        self.quick_edit_buttons.hide()
 
     # ### Control points
     # ####################################################################

@@ -271,6 +271,13 @@ class ICommandNode(ITextNode):
         :param keep_node:
         :return:
         """
+        # editing buttons put and remove styles to words, leaving style settings for spaces
+        # between untouched. Try to get rid of commands that have ' ' or
+        if not keep_node:
+            if self.parts and len(self.parts) == 1:
+                part = self.parts[0]
+                if part and isinstance(part, str) and part.isspace():
+                    return part
         return ITextNode.tidy(self, keep_node=True)
 
     def scope(self):

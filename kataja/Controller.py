@@ -37,6 +37,7 @@ from kataja.utils import caller
 from parser.LatexToINode import LatexFieldToINode
 from parser.HTMLToINode import HTMLToINode
 from parser.PlainTextToINode import PlainTextToINode
+from parser.QDocumentToINode import QDocumentToINode
 
 
 class Controller:
@@ -95,6 +96,7 @@ class Controller:
         self.latex_field_parser = LatexFieldToINode()
         self.html_field_parser = HTMLToINode(rows_mode=False)
         self.plain_field_parser = PlainTextToINode(rows_mode=False)
+        self.qdocument_parser = QDocumentToINode()
         # -- After user action, should the visualization be redrawn and
         # should it make an undo savepoint
         # these are True by default, but action method may toggle them off
