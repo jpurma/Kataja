@@ -344,6 +344,8 @@ class Label(QtWidgets.QGraphicsTextItem):
         :return:
         """
         if value:
+            if self._quick_editing:
+                return
             self._quick_editing = True
             if ctrl.text_editor_focus:
                 ctrl.text_editor_focus.release_editor_focus()
@@ -364,25 +366,13 @@ class Label(QtWidgets.QGraphicsTextItem):
                 self.setHtml(self.editable_html)
             self.doc.cursorPositionChanged.connect(self.cursor_position_changed)
 
-            #opt = QtGui.QTextOption()
-            #opt.setFlags(QtGui.QTextOption.ShowLineAndParagraphSeparators |
-            #             QtGui.QTextOption.AddSpaceForLineAndParagraphSeparators)
-            #self.doc.setDefaultTextOption(opt)
             self.resize_label()
             self.setAcceptDrops(True)
             ctrl.graph_view.setFocus()
             self.setFocus()
-            if self._host._last_click_at and False:
-                #event = QtGui.QMouseEvent(
-
-                event = QtWidgets.QGraphicsSceneMouseEvent(
-                    QtWidgets.QGraphicsSceneMouseEvent.GraphicsSceneMousePress,
-                    self._host._last_click_at, QtCore.Qt.LeftButton, QtCore.Qt.LeftButton, QtCore.Qt.NoModifier)
-
-                self.mousePressEvent(event)
-                print('clickety click on ', event.scenePos(), event.pos())
 
         elif self._quick_editing:
+            print('disabling quick editing')
             if self.doc.isModified():
                 if self.complex_edit:
                     self.analyze_changes()
@@ -407,7 +397,6 @@ class Label(QtWidgets.QGraphicsTextItem):
             #    ctrl.main.action_finished("Edited fields %s in %s" % (str(fields), self._host))
 
     def cursor_position_changed(self, cursor):
-        print('bop')
         if self._quick_editing:
             if not self.complex_edit:
                 ctrl.ui.quick_edit_buttons.update_formats(cursor.charFormat())
@@ -546,10 +535,21 @@ class Label(QtWidgets.QGraphicsTextItem):
                 ctrl.forest.draw()
             self._recursion_block = False
 
+    def mousePressEvent(self, event):
+        # something in mousePressEvent causes it to ignore further mouse events.
+        if self._quick_editing:
+            super().mousePressEvent(event)
+        else:
+            # otherwise let the node handle mousePress logic.
+            self._host.mousePressEvent(event)
+
     def mouseReleaseEvent(self, event):
         if self._quick_editing:
             self.cursor_position_changed(self.textCursor())
-        super().mouseReleaseEvent(event)
+            super().mouseReleaseEvent(event)
+        else:
+            self._host.mouseReleaseEvent(event)
+
 
     def keyReleaseEvent(self, keyevent):
         """ keyReleaseEvent is received after the keypress is registered by editor, so if we

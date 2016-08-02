@@ -183,19 +183,19 @@ class GraphView(QtWidgets.QGraphicsView):
 
     # ######### MOUSE ##############
 
-    # def mouseReleaseEvent(self, event):
-    #     """
-    #
-    #     :param event:
-    #     """
-    #     QtWidgets.QGraphicsView.mouseReleaseEvent(self, event)
-    #
-    # def mouseMoveEvent(self, event):
-    #     """
-    #
-    #     :param event:
-    #     """
-    #     QtWidgets.QGraphicsView.mouseMoveEvent(self, event)
+    def mousePressEvent(self, event):
+        """ Here we have a workaround for clicking labels and having editing cursor appear to
+        that specific position. We always store last mousePressEvent while they are still events
+        and if we have a mousePressEvent that gets used to open the quick editing for label, replay
+         it on an interactive QGraphicsTextEdit to let text cursor to jump to pressed location.
+        :param event:
+        :return:
+        """
+        self.latest_mpe = event
+        QtWidgets.QGraphicsView.mousePressEvent(self, event)
+
+    def replay_mouse_press(self):
+        self.mousePressEvent(self.latest_mpe)
 
     def timerEvent(self, event):
         self.zoom_timer.stop()

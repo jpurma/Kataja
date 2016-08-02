@@ -199,6 +199,7 @@ class Controller:
         """
         return len(self.selected) == 1
 
+    @caller
     def multiselection_start(self):
         """ Allow delaying of 'selection_changed' signal until all selections are done. Call
         multiselection_end when done, and 'selection_changed' will be sent.
@@ -253,15 +254,14 @@ class Controller:
 
         :param obj:
         """
+        #print('selecting' , obj)
         for o in self.selected:
             o.update_selection_status(False)
         self.selected = [obj]
-        if hasattr(obj, 'on_press'):
-            obj.on_press(False)
         if hasattr(obj, 'syntactic_object'):
             # here is room for constituent specific print information
             self.add_message('selected %s' % str(obj))
-            print(obj)
+            #print(obj)
         else:
             self.add_message('selected %s' % str(obj))
         obj.update_selection_status(True)
@@ -290,11 +290,14 @@ class Controller:
         if self.pressed is obj:
             # better do nothing in this case so that on_press -animations don't freak out
             return
-        if self.pressed and hasattr(self.pressed, 'on_press'):
-            self.pressed.on_press(False)
         self.pressed = obj
-        if hasattr(obj, 'on_press'):
-            obj.on_press(True)
+        self.graph_view.toggle_suppress_drag(True)
+
+    def release(self, obj):
+        self.graph_view.toggle_suppress_drag(False)
+        if self.pressed is obj:
+            self.pressed = None
+
 
     def remove_from_selection(self, obj):
         """

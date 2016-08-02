@@ -14,8 +14,6 @@ class MarkerStartPoint(QtWidgets.QGraphicsItem):
         QtWidgets.QGraphicsItem.__init__(self, parent)
         self.setCursor(QtCore.Qt.CrossCursor)
         self.setAcceptHoverEvents(True)
-        self.draggable = True
-        self.clickable = False
 
     def type(self):
         """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
@@ -41,6 +39,21 @@ class MarkerStartPoint(QtWidgets.QGraphicsItem):
             return QtCore.QRectF(-6, -6, 12, 12)
         else:
             return QtCore.QRectF(-2, -2, 4, 4)
+
+    def mouseMoveEvent(self, event):
+        if ctrl.pressed is self:
+            if ctrl.dragged_set or (event.buttonDownScenePos(
+                    QtCore.Qt.LeftButton) - event.scenePos()).manhattanLength() > 6:
+                self.drag(event)
+                ctrl.graph_scene.dragging_over(event.scenePos())
+
+    def mouseReleaseEvent(self, event):
+        if ctrl.pressed is self:
+            ctrl.release(self)
+            if ctrl.dragged_set:
+                ctrl.graph_scene.kill_dragging()
+            return None  # this mouseRelease is now consumed
+        super().mouseReleaseEvent(event)
 
     def drag(self, event):
         pi = self.parentItem()
@@ -73,8 +86,6 @@ class NewElementMarker(UIGraphicsItem, QtWidgets.QGraphicsItem):
         self.update_position(scene_pos=scene_pos)
         self.start_point_cp = MarkerStartPoint(self)
         self.start_point_cp.show()
-        self.draggable = False  # MarkerStartPoint is draggable, not this
-        self.clickable = False
         self.dragged = False
 
     def type(self):

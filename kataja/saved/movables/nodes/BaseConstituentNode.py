@@ -61,7 +61,6 @@ class BaseConstituentNode(Node):
         self.left_bracket = None
         self.right_bracket = None
         # ###
-        self.selectable = True
 
         # ### Projection -- see also preferences that govern if these are used
         self.can_project = True

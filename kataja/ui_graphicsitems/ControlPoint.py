@@ -32,10 +32,7 @@ class ControlPoint(UIGraphicsItem, QtWidgets.QGraphicsItem):
             self.setCursor(Qt.CrossCursor)
         self._index = index
         self.focusable = True
-        self.draggable = True
         self.pressed = False
-        self.clickable = False
-        self.selectable = False
         self._hovering = False
         self.setAcceptHoverEvents(True)
         self.setZValue(52)
@@ -163,6 +160,29 @@ class ControlPoint(UIGraphicsItem, QtWidgets.QGraphicsItem):
                 self.host.connect_start_to(recipient)
             elif self.role == g.END_POINT:
                 self.host.connect_end_to(recipient)
+
+    def mousePressEvent(self, event):
+        ctrl.press(self)
+        super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        if ctrl.pressed is self:
+            if ctrl.dragged_set or (event.buttonDownScenePos(
+                    QtCore.Qt.LeftButton) - event.scenePos()).manhattanLength() > 6:
+                self.drag(event)
+                ctrl.graph_scene.dragging_over(event.scenePos())
+
+    def mouseReleaseEvent(self, event):
+        if ctrl.pressed is self:
+            ctrl.release(self)
+            if ctrl.dragged_set:
+                x, y = to_tuple(event.scenePos())
+                self.drop_to(x, y, recipient=ctrl.drag_hovering_on)
+                ctrl.graph_scene.kill_dragging()
+                ctrl.ui.update_selections()  # drag operation may have changed visible affordances
+                ctrl.main.action_finished()  # @UndefinedVariable
+            return None  # this mouseRelease is now consumed
+        super().mouseReleaseEvent(event)
 
     def hoverEnterEvent(self, event):
         """ Trigger and update hover effects.

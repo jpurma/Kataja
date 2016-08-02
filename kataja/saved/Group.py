@@ -55,9 +55,6 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         self.include_children = False
         self.allow_overlap = True
         self._br = None
-        self.selectable = persistent
-        self.clickable = False
-        self.draggable = False
         if selection:
             self.update_selection(selection)
         self.update_shape()
@@ -408,11 +405,29 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         if self.label_item:
             self.label_item.update_color()
 
+    def mousePressEvent(self, event):
+        ctrl.press(self)
+        super().mousePressEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        if ctrl.pressed is self:
+            ctrl.release(self)
+            if ctrl.dragged_set:
+                ctrl.graph_scene.kill_dragging()
+                ctrl.ui.update_selections()  # drag operation may have changed visible affordances
+            else: # This is regular click on 'pressed' object
+                self.select(event)
+                self.update()
+            return None  # this mouseRelease is now consumed
+        super().mouseReleaseEvent(event)
+
     def select(self, event=None, multi=False):
         """ Scene has decided that this node has been clicked
         :param event:
         :param multi: assume multiple selection (append, don't replace)
         """
+        if not self.persistent:
+            return
         ctrl.multiselection_start()
         if (event and event.modifiers() == QtCore.Qt.ShiftModifier) or multi:
             # multiple selection

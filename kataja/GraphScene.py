@@ -387,58 +387,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 min_d = dist
         return closest_item
 
-    def mousePressEvent(self, event):
-        """
-
-        :param event:
-        :return:
-        """
-        x, y = to_tuple(event.scenePos())
-        # um = self.main.ui_manager
-        assert (not ctrl.pressed)
-        assert (not ctrl.ui_pressed)
-
-        # Check if any UI items can receive this press
-        items = self.items(event.scenePos())
-
-
-        clickables = [i for i in items if getattr(i, 'clickable', False)]
-        # print('clickables: ', clickables)
-        success = False
-        draggable = False
-        if clickables:
-            closest_item = self.get_closest_item(x, y, clickables)
-            if closest_item:
-                ctrl.press(closest_item)
-                draggable = closest_item.draggable
-                success = True
-        if not success:
-            # It wasn't consumed, continue with other selectables:
-            draggables = [i for i in items if getattr(i, 'draggable', False)]
-            # print('draggables: ', draggables)
-            if draggables:
-                closest_item = self.get_closest_item(x, y, draggables)
-                # allow selecting characters within edited label
-                if ctrl.text_editor_focus:
-                    if ctrl.text_editor_focus._host == closest_item:
-                        self.mouse_event_in_active_editor = True
-                        return QtWidgets.QGraphicsScene.mousePressEvent(self, event)
-                if closest_item:
-                    ctrl.press(closest_item)
-                    draggable = True
-                success = True
-        if not success:
-            selectables = [i for i in items if getattr(i, 'selectable', False)]
-            # print('selectables: ', selectables)
-            if selectables:
-                closest_item = self.get_closest_item(x, y, selectables)
-                if closest_item:
-                    ctrl.press(closest_item)
-                    draggable = closest_item.draggable
-        if draggable:
-            self.graph_view.toggle_suppress_drag(True)
-        if not (success or draggable):
-            return QtWidgets.QGraphicsScene.mousePressEvent(self, event)
 
     def start_dragging(self):
         """ Raise graph scene flags related to dragging -- the dragged nodes
@@ -458,72 +406,23 @@ class GraphScene(QtWidgets.QGraphicsScene):
         ctrl.main.ui_manager.update_touch_areas()
         self.graph_view.toggle_suppress_drag(False)
 
-    def mouseMoveEvent(self, event):
-        """
-
-        :param event:
-        :return:
-        """
-        if self.mouse_event_in_active_editor:
-            return QtWidgets.QGraphicsScene.mouseMoveEvent(self, event)
-        elif ctrl.pressed and ctrl.pressed.draggable:
-            if self._dragging:
-                ctrl.pressed.drag(event)
-                self.item_moved()
-                items = (x for x in self.items(event.scenePos()) if
-                         hasattr(x, 'dragged_over_by') and x is not ctrl.pressed)
-                hovering_over = False
-                for item in items:
-                    if item.dragged_over_by(ctrl.pressed):
-                        hovering_over = True
-                if not hovering_over:
-                    ctrl.set_drag_hovering(None)
-                self.main.ui_manager.update_positions()
-            else:
-                if (event.buttonDownScenePos(QtCore.Qt.LeftButton) -
-                        event.scenePos()).manhattanLength() > 6:
-                    self.start_dragging()
-                    ctrl.pressed.drag(event)
-                    self.item_moved()
-        return QtWidgets.QGraphicsScene.mouseMoveEvent(self, event)
+    def dragging_over(self, scene_pos):
+        self.item_moved()
+        items = (x for x in self.items(scene_pos) if
+                 hasattr(x, 'dragged_over_by') and x is not ctrl.pressed)
+        hovering_over = False
+        for item in items:
+            if item.dragged_over_by(ctrl.pressed):
+                hovering_over = True
+        if not hovering_over:
+            ctrl.set_drag_hovering(None)
+        self.main.ui_manager.update_positions()
 
     def mouseReleaseEvent(self, event):
-        """ deliver clicks, drops and selections to correct objects and make
-        sure that the
-        Controller state is up to date.
-        :param event:
-        :return:
-        """
-        self.graph_view.toggle_suppress_drag(False)
-        if self.mouse_event_in_active_editor:
-            self.mouse_event_in_active_editor = False
-            return QtWidgets.QGraphicsScene.mouseReleaseEvent(self, event)
-        if ctrl.pressed:
-            pressed = ctrl.pressed  # : :type pressed: Movable
-            x, y = to_tuple(event.scenePos())
-            if self._dragging:
-                recipient = self.get_drop_recipient(pressed, event)  # @UndefinedVariable
-                message = pressed.drop_to(x, y, recipient=recipient)
-                self.kill_dragging()
-                ctrl.ui.update_selections()  # drag operation may have
-                # changed visible affordances
-                ctrl.main.action_finished(message)  # @UndefinedVariable
-            else: # This is regular click on 'pressed' object
-                if pressed.clickable:
-                    pressed.click(event)
-                if pressed.selectable:
-                    pressed.select(event)
-                pressed.update()
-                ctrl.press(None)
-            return None  # this mouseRelease is now consumed
-        elif self._dblclick:
-            # doubleclick sends one release event at the end, swallow that
-            self._dblclick = False
-            if self._dragging:
-                print('dblclick while dragging? Unpossible!')
-            ctrl.press(None)
+        super().mouseReleaseEvent(event)
+        print('scene mre')
+        if event.isAccepted():
             return
-
         # No object was pressed -- either clicking on nothing or ending a selection drag
 
         # click on empty place means select nothing, unless we are shift+selecting
@@ -545,30 +444,11 @@ class GraphScene(QtWidgets.QGraphicsScene):
             # take edges
 
             for item in self.selectedItems():
-                if getattr(item, 'selectable', False):
+                if hasattr(item, 'select'):
                     item.select(event, multi=True)
 
-                #only_nodes = False
-            #for item in self.selectedItems():
-            #    if isinstance(item, Node):
-            #        only_nodes = True
-            #        break
-            #for item in self.selectedItems():
-            #    if ((not only_nodes) or isinstance(item, Node)) and getattr(item, 'selectable',
-            #                                                                False):
-            #        item.select(event, multi=True)
             ctrl.multiselection_end()
             ctrl.area_selection = False
-        return QtWidgets.QGraphicsScene.mouseReleaseEvent(self, event)
-
-    def get_drop_recipient(self, pressed, event):
-        """ Check which of the items in scene should accept the dropped item,
-        if any
-        :param pressed:
-        :param event:
-        """
-        # redo this to be more generic
-        return ctrl.drag_hovering_on
 
     def dragEnterEvent(self, event):
         """
@@ -663,7 +543,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         node = ctrl.forest.create_comment_node(pixmap_path=url.toLocalFile())
                         ctrl.main.action_finished('Added image')
 
-
         ctrl.ui.remove_touch_areas()
 
     def dragMoveEvent(self, event):
@@ -695,15 +574,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
         :return: None
         """
         self._dblclick = True
-        QtWidgets.QGraphicsScene.mouseDoubleClickEvent(self, event)
-        found = False
-        for item in self.items(event.scenePos()):
-            if hasattr(item, 'double_click'):
-                item.double_click(event)
-                return
-            elif getattr(item, 'clickable', False):
-                found = True
-        if found:
+        super().mouseDoubleClickEvent(self, event)
+        if event.isAccepted():
             return
         ctrl.ui.create_creation_dialog(event.scenePos())
 
@@ -792,6 +664,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             e.update()
 
         if ctrl.pressed:
+            print('ctrl.pressed, ignore timerEvent')
             return
         for node in f.nodes.values():
             if node.is_fading_out:

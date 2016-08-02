@@ -55,9 +55,6 @@ class Bracket(Movable):
             self.inner.setText('[')
         else:
             self.inner.setText(']')
-        self.selectable = False
-        self.draggable = False
-        self.clickable = False
         self._hovering = False
         if left:
             self.key = 'lb_%s' % host.uid

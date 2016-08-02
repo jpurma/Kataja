@@ -48,9 +48,6 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
         print('grouplabels parent: ', parent)
         QtWidgets.QGraphicsTextItem.__init__(self, text, parent=parent)
         self._host = self.parentItem()
-        self.draggable = True
-        self.selectable = True
-        self.clickable = True
         self.selected = False
         self.automatic_position = True
         w = self.document().idealWidth()
@@ -205,8 +202,29 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
         self.automatic_position = False
         self._local_drag_handle_position = None
 
-    def click(self, event):
+    def mousePressEvent(self, event):
+        ctrl.press(self)
+        super().mousePressEvent(event)
 
+    def mouseMoveEvent(self, event):
+        if ctrl.pressed is self:
+            if ctrl.dragged_set or (event.buttonDownScenePos(
+                    QtCore.Qt.LeftButton) - event.scenePos()).manhattanLength() > 6:
+                self.drag(event)
+                ctrl.graph_scene.dragging_over(event.scenePos())
+
+    def mouseReleaseEvent(self, event):
+        if ctrl.pressed is self:
+            ctrl.release(self)
+            if ctrl.dragged_set:
+                ctrl.graph_scene.kill_dragging()
+            else: # This is regular click on 'pressed' object
+                self.click(event)
+                self.update()
+            return None  # this mouseRelease is now consumed
+        super().mouseReleaseEvent(event)
+
+    def click(self, event):
         if self._host and ctrl.is_selected(self._host):
             ctrl.ui.toggle_group_label_editing(self._host)
         else:

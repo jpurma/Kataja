@@ -112,9 +112,6 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         self._fade_anim = None
         self.is_fading_in = False
         self.is_fading_out = False
-        self.selectable = False
-        self.draggable = False
-        self.clickable = False
         self._hovering = False
 
     def type(self):

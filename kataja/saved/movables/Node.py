@@ -113,9 +113,6 @@ class Node(Movable):
         self.label_rect = None
         self._gravity = 0
         self.label_object = Label(parent=self)
-        self.clickable = False
-        self.selectable = True
-        self.draggable = True
         self.resizable = False
         self.drag_data = None
         self.user_size = None
@@ -138,10 +135,9 @@ class Node(Movable):
         self.color_id = None
 
         self._editing_template = {}
-        self._last_click_at = None
 
         self.label_display_data = {}
-        self.setFiltersChildEvents(True)
+        self.setFiltersChildEvents(False)
         self.setAcceptHoverEvents(True)
         # self.setAcceptDrops(True)
         self.setFlag(QtWidgets.QGraphicsObject.ItemSendsGeometryChanges)
@@ -1263,10 +1259,13 @@ class Node(Movable):
                 self.setToolTip("")
             self.label_object.set_quick_editing(False)
         else:
+            print('update selection status, True')
             self.setZValue(200)
             if ctrl.main.use_tooltips:
                 self.setToolTip("Edit with keyboard, click the cog to inspect the node")
-            if not (ctrl.multiple_selection() or ctrl.multiselection_delay):
+            print('multi: ', ctrl.multiple_selection(), ctrl.selected, ctrl.multiselection_delay)
+            if ctrl.single_selection() and not ctrl.multiselection_delay:
+                print('please start quick editing')
                 self.label_object.set_quick_editing(True)
         self.update()
 
@@ -1298,8 +1297,6 @@ class Node(Movable):
         :param multi: assume multiple selection (append, don't replace)
         """
         self.hovering = False
-        self._last_click_at = self.mapFromScene(event.scenePos())
-        print(self._last_click_at)
         if (event and event.modifiers() == Qt.ShiftModifier) or multi:
             # multiple selection
             ctrl.area_selection = True
@@ -1547,13 +1544,36 @@ class Node(Movable):
     # ### Mouse - Qt events ##################################################
 
     def mousePressEvent(self, event):
-        print('received mpe ', event)
+        ctrl.press(self)
         super().mousePressEvent(event)
 
-    def mouseReleaseEvent(self, event):
-        print('received mre ', event)
-        super().mouseReleaseEvent(event)
+    def mouseMoveEvent(self, event):
+        if ctrl.pressed is self:
+            if ctrl.dragged_set or (event.buttonDownScenePos(
+                    QtCore.Qt.LeftButton) - event.scenePos()).manhattanLength() > 6:
+                self.drag(event)
+                ctrl.graph_scene.dragging_over(event.scenePos())
 
+    def mouseReleaseEvent(self, event):
+        click_again = False
+        if ctrl.pressed is self:
+            ctrl.release(self)
+            if ctrl.dragged_set:
+                x, y = to_tuple(event.scenePos())
+                message = self.drop_to(x, y, recipient=ctrl.drag_hovering_on)
+                ctrl.graph_scene.kill_dragging()
+                ctrl.ui.update_selections()  # drag operation may have changed visible affordances
+                ctrl.main.action_finished(message)  # @UndefinedVariable
+            else: # This is regular click on 'pressed' object
+                self.select(event)
+                if self.label_object.is_quick_editing():
+                    click_again = True
+                self.update()
+        super().mouseReleaseEvent(event)
+        if click_again:
+            ctrl.graph_view.replay_mouse_press()
+            self.label_object.mouseReleaseEvent(event)
+            ctrl.release(self)
 
     def hoverEnterEvent(self, event):
         """ Hovering has some visual effects, usually handled in paint-method

@@ -63,10 +63,7 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
         self._fill_path = False
         self._align_left = False
         self._below_node = False
-        self.selectable = False
         self.focusable = True
-        self.draggable = False
-        self.clickable = True
         self._visible = True
         self._hovering = False
         self._drag_hint = False
@@ -143,9 +140,6 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
         self.setPos(ep[0], ep[1])
         self._path = None
 
-    def drop_to(self, x, y, recipient=None):
-        self._dragging = False
-
     # edge.py
     def update_end_points(self):
         # start
@@ -204,6 +198,31 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
                 print('received unknown command:', command, args)
         else:
             print('received just some string: ', string)
+
+    def mousePressEvent(self, event):
+        ctrl.press(self)
+        super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        if ctrl.pressed is self:
+            if ctrl.dragged_set or (event.buttonDownScenePos(
+                    QtCore.Qt.LeftButton) - event.scenePos()).manhattanLength() > 6:
+                self.drag(event)
+                ctrl.graph_scene.dragging_over(event.scenePos())
+
+    def mouseReleaseEvent(self, event):
+        if ctrl.pressed is self:
+            ctrl.release(self)
+            if ctrl.dragged_set:
+                self._dragging = False
+                ctrl.graph_scene.kill_dragging()
+                ctrl.ui.update_selections()  # drag operation may have changed visible affordances
+                ctrl.main.action_finished()  # @UndefinedVariable
+            else: # This is regular click on 'pressed' object
+                self.click(event)
+                self.update()
+            return None  # this mouseRelease is now consumed
+        super().mouseReleaseEvent(event)
 
     def click(self, event=None):
         """

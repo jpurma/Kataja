@@ -48,9 +48,6 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         """
         QtWidgets.QGraphicsTextItem.__init__(self, text, parent=parent)
         self._host = self.parentItem()
-        self.draggable = not placeholder
-        self.selectable = True
-        self.clickable = True
         self.placeholder = placeholder
         self.selected = False
         w = self.document().idealWidth()
@@ -208,8 +205,29 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
     def drop_to(self, x, y, recipient=None):
         self._local_drag_handle_position = None
 
-    def click(self, event):
+    def mousePressEvent(self, event):
+        ctrl.press(self)
+        super().mousePressEvent(event)
 
+    def mouseMoveEvent(self, event):
+        if ctrl.pressed is self:
+            if ctrl.dragged_set or (event.buttonDownScenePos(
+                    QtCore.Qt.LeftButton) - event.scenePos()).manhattanLength() > 6:
+                self.drag(event)
+                ctrl.graph_scene.dragging_over(event.scenePos())
+
+    def mouseReleaseEvent(self, event):
+        if ctrl.pressed is self:
+            ctrl.release(self)
+            if ctrl.dragged_set:
+                ctrl.graph_scene.kill_dragging()
+            else: # This is regular click on 'pressed' object
+                self.click(event)
+                self.update()
+            return None  # this mouseRelease is now consumed
+        super().mouseReleaseEvent(event)
+
+    def click(self, event):
         if self._host and ctrl.is_selected(self._host):
             ctrl.ui.start_edge_label_editing(self._host)
         else:
@@ -246,7 +264,6 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         self._size = self.boundingRect().size()
         if value:
             self.placeholder = False
-            self.draggable = True
         if self._host:
             self._host.update_selection_status(ctrl.is_selected(self._host))
 

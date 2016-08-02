@@ -124,9 +124,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         self._true_path = None  # inner arc or line without the leaf effect
         self._fat_path = None
         self._use_simple_path = False
-        self.selectable = True
-        self.draggable = not (self.start or self.end)
-        self.clickable = False
         self._hovering = False
         self._start_node_moving = False
         self._end_node_moving = False
@@ -501,6 +498,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         e.g. it is freely floating arrow or divider
         :param event: Drag event?
         """
+        #self.draggable = not (self.start or self.end)
+
         scene_pos = to_tuple(event.scenePos())
         dist = sub_xy(self.end_point, self.start_point)
         if not self._local_drag_handle_position:
@@ -819,16 +818,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
     def __repr__(self):
         return self.description()
 
-    def drop_to(self, x, y, recipient=None):
-        """ This happens only when dragging the whole edge. Just reset the
-        drag handle position so that the next
-         drag attempt will take new handle.
-        :param x: not used
-        :param y: not used
-        :param recipient: not used
-        """
-        self._local_drag_handle_position = None
-
     def delete_on_disconnect(self):
         """ Some edges are not real edges, but can have sensible existence without being
         connected to nodes. Some are better to destroy at that point.
@@ -878,6 +867,31 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         return self._cached_cp_rect or QtCore.QRectF()
 
     # ### Mouse - Qt events ##################################################
+
+    def mousePressEvent(self, event):
+        ctrl.press(self)
+        super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        if ctrl.pressed is self:
+            if ctrl.dragged_set or (event.buttonDownScenePos(
+                    QtCore.Qt.LeftButton) - event.scenePos()).manhattanLength() > 6:
+                self.drag(event)
+                ctrl.graph_scene.dragging_over(event.scenePos())
+
+    def mouseReleaseEvent(self, event):
+        if ctrl.pressed is self:
+            ctrl.release(self)
+            if ctrl.dragged_set:
+                self._local_drag_handle_position = None
+                ctrl.graph_scene.kill_dragging()
+                ctrl.ui.update_selections()  # drag operation may have changed visible affordances
+            else: # This is regular click on 'pressed' object
+                self.select(event)
+                self.update()
+            return None  # this mouseRelease is now consumed
+        super().mouseReleaseEvent(event)
+
 
     @property
     def hovering(self):
