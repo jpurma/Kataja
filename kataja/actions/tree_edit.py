@@ -602,7 +602,7 @@ def delete_group(sender=None):
     if sender:
         group = get_host(sender)
         group.persistent = False
-        ctrl.ui.toggle_group_label_editing(group)
+        ctrl.ui.close_group_label_editing(group)
         if ctrl.ui.selection_group is group:
             ctrl.deselect_objects()
             # deselecting will remove the (temporary) selection group
@@ -626,7 +626,7 @@ def save_group_changes(sender=None):
     if sender:
         embed = sender.parent()
         group = get_host(sender) or ctrl.ui.selection_group
-        ctrl.ui.toggle_group_label_editing(group)
+        ctrl.ui.close_group_label_editing(group)
         group.set_label_text(embed.input_line_edit.text())
         group.update_shape()
         name = group.get_label_text() or ctrl.cm.get_color_name(group.color_key)

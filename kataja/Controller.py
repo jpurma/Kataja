@@ -199,7 +199,6 @@ class Controller:
         """
         return len(self.selected) == 1
 
-    @caller
     def multiselection_start(self):
         """ Allow delaying of 'selection_changed' signal until all selections are done. Call
         multiselection_end when done, and 'selection_changed' will be sent.

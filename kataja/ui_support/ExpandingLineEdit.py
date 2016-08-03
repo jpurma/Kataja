@@ -106,7 +106,6 @@ class ExpandingLineEdit(QtWidgets.QWidget):
     def line_edit_check_for_resize(self, text):
         if not self.changed and text != self.original_text:
             self.changed = True
-        print('flagging as changed (line_edit_check_for_resize) ', self)
         if self.original_size is None:
             self.original_size = self.size()
         if len(text) > self.cut_point:
@@ -121,7 +120,6 @@ class ExpandingLineEdit(QtWidgets.QWidget):
             self.on_edit(text)
 
     def text_area_check_for_resize(self):
-        print('flagging as changed (text_area_check_for_resize) ', self)
         text = self.text_area.toPlainText()
         if not self.changed and text != self.original_text:
             self.changed = True

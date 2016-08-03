@@ -35,6 +35,9 @@ class ControlPoint(UIGraphicsItem, QtWidgets.QGraphicsItem):
         self.pressed = False
         self._hovering = False
         self.setAcceptHoverEvents(True)
+        self.setFlag(QtWidgets.QGraphicsObject.ItemIsMovable)
+        self.setFlag(QtWidgets.QGraphicsObject.ItemIsSelectable)
+
         self.setZValue(52)
         self._compute_position()
         self.status_tip = ""

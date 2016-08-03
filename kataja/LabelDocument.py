@@ -49,28 +49,28 @@ class LabelDocument(QtGui.QTextDocument):
                         cf.fontFamily(), cf.fontItalic(), cf.fontOverline(),
                         cf.fontStrikeOut(), cf.fontWeight(),
                         cf.fontUnderline(), cf.verticalAlignment()]
-                if ndat != dat:
-                    print('---- block %s ----' % count)
-                    print(b.text())
-                    print(frange.start, frange.length)
-                    if ndat[0] != dat[0]:
-                        print('align: %s ' % b.blockFormat().alignment())
-                    if ndat[1] != dat[1]:
-                        print('cap: ', cf.fontCapitalization())
-                    if ndat[2] != dat[2]:
-                        print('family: ', cf.fontFamily())
-                    if ndat[3] != dat[3]:
-                        print('italic: ', cf.fontItalic())
-                    if ndat[4] != dat[4]:
-                        print('overline: ', cf.fontOverline())
-                    if ndat[5] != dat[5]:
-                        print('strikeout: ', cf.fontStrikeOut())
-                    if ndat[6] != dat[6]:
-                        print('weight: ', cf.fontWeight())
-                    if ndat[7] != dat[7]:
-                        print('underline: ', cf.fontUnderline())
-                    if ndat[8] != dat[8]:
-                        print('vertical align: ', cf.verticalAlignment())
+                # if ndat != dat:
+                #     print('---- block %s ----' % count)
+                #     print(b.text())
+                #     print(frange.start, frange.length)
+                #     if ndat[0] != dat[0]:
+                #         print('align: %s ' % b.blockFormat().alignment())
+                #     if ndat[1] != dat[1]:
+                #         print('cap: ', cf.fontCapitalization())
+                #     if ndat[2] != dat[2]:
+                #         print('family: ', cf.fontFamily())
+                #     if ndat[3] != dat[3]:
+                #         print('italic: ', cf.fontItalic())
+                #     if ndat[4] != dat[4]:
+                #         print('overline: ', cf.fontOverline())
+                #     if ndat[5] != dat[5]:
+                #         print('strikeout: ', cf.fontStrikeOut())
+                #     if ndat[6] != dat[6]:
+                #         print('weight: ', cf.fontWeight())
+                #     if ndat[7] != dat[7]:
+                #         print('underline: ', cf.fontUnderline())
+                #     if ndat[8] != dat[8]:
+                #         print('vertical align: ', cf.verticalAlignment())
                 dat = ndat
             #print(b.charFormat())
             #print(b.textFormats())

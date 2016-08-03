@@ -71,6 +71,7 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
         self.setAcceptDrops(True)
         self.update_end_points()
         self.action = action
+        self.setFlag(QtWidgets.QGraphicsObject.ItemIsSelectable)
         if action and action.tip:
             self.set_tip(action.tip)
         self.setCursor(QtCore.Qt.PointingHandCursor)
@@ -200,6 +201,7 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
             print('received just some string: ', string)
 
     def mousePressEvent(self, event):
+        print('toucharea press')
         ctrl.press(self)
         super().mousePressEvent(event)
 
@@ -208,9 +210,11 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
             if ctrl.dragged_set or (event.buttonDownScenePos(
                     QtCore.Qt.LeftButton) - event.scenePos()).manhattanLength() > 6:
                 self.drag(event)
+                print('toucharea drag?')
                 ctrl.graph_scene.dragging_over(event.scenePos())
 
     def mouseReleaseEvent(self, event):
+        print('toucharea release')
         if ctrl.pressed is self:
             ctrl.release(self)
             if ctrl.dragged_set:
@@ -219,6 +223,7 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
                 ctrl.ui.update_selections()  # drag operation may have changed visible affordances
                 ctrl.main.action_finished()  # @UndefinedVariable
             else: # This is regular click on 'pressed' object
+
                 self.click(event)
                 self.update()
             return None  # this mouseRelease is now consumed
@@ -228,6 +233,7 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
         """
         :type event: QMouseEvent
          """
+        print('toucharea click')
         self._dragging = False
         if self._drag_hint:
             return False

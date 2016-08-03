@@ -2239,7 +2239,7 @@ class Forest(SavedObject):
                 continue
             # multidominated nodes can be folded if all parents are in scope
             # of fold
-            elif folded.is_multidominated():
+            elif len(parents) > 1:
                 can_fold = True
                 for parent in parents:
                     if (parent not in fold_scope) or (parent in not_my_children):

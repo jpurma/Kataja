@@ -921,7 +921,22 @@ class UIManager:
         self.active_embed.update_embed(focus_point=edge.label_item.pos())
         self.active_embed.wake_up()
 
+
     def toggle_group_label_editing(self, group):
+        """ Start group label editing or close it if it's already active.
+        :param group:
+        :return:
+        """
+        if self.active_embed and self.active_embed.host == group:
+            self.close_active_embed()
+        else:
+            self.start_group_label_editing(group)
+
+    def close_group_label_editing(self, group):
+        if self.active_embed and self.active_embed.host == group:
+            self.close_active_embed()
+
+    def start_group_label_editing(self, group):
         """ Start group label editing or close it if it's already active.
         :param group:
         :return:

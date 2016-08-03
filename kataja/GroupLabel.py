@@ -61,6 +61,8 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
         self._local_drag_handle_position = None
         self._label_start_pos = None
         self.setFont(self.get_font())
+        self.setFlag(QtWidgets.QGraphicsObject.ItemIsMovable)
+        self.setFlag(QtWidgets.QGraphicsObject.ItemIsSelectable)
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.update_color()
 
@@ -198,6 +200,10 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
     def being_dragged(self):
         return self._local_drag_handle_position
 
+    def kill_dragging(self):
+        self.automatic_position = False
+        self._local_drag_handle_position = None
+
     def drop_to(self, x, y, recipient=None):
         self.automatic_position = False
         self._local_drag_handle_position = None
@@ -208,7 +214,7 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
 
     def mouseMoveEvent(self, event):
         if ctrl.pressed is self:
-            if ctrl.dragged_set or (event.buttonDownScenePos(
+            if self.being_dragged() or (event.buttonDownScenePos(
                     QtCore.Qt.LeftButton) - event.scenePos()).manhattanLength() > 6:
                 self.drag(event)
                 ctrl.graph_scene.dragging_over(event.scenePos())
@@ -216,8 +222,8 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
     def mouseReleaseEvent(self, event):
         if ctrl.pressed is self:
             ctrl.release(self)
-            if ctrl.dragged_set:
-                ctrl.graph_scene.kill_dragging()
+            if self.being_dragged():
+                self.kill_dragging()
             else: # This is regular click on 'pressed' object
                 self.click(event)
                 self.update()
@@ -226,7 +232,7 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
 
     def click(self, event):
         if self._host and ctrl.is_selected(self._host):
-            ctrl.ui.toggle_group_label_editing(self._host)
+            ctrl.ui.start_group_label_editing(self._host)
         else:
             self._host.select(event)
 
@@ -278,40 +284,45 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
         self.set_label_data('angle', my_angle)
         self.set_label_data('dist', math.hypot(line_x, line_y))
 
-    def compute_best_position(self, route):
-        label_width = self._size.width()
-        label_height = self._size.height()
+    def position_at_bottom(self):
         cx, cy = self._host.center_point
         br = self._host.boundingRect()
         best_x = cx
         best_y = br.bottom() + 4
+        self.prepareGeometryChange()
+        self.setPos(best_x, best_y)
+        self.compute_angle_for_pos(QtCore.QPointF(best_x, best_y))
 
-        if False:
-            min_dist = 100000
-            prev_x, prev_y = route[-1]
-            best_x, best_y = 0, 0
-            for x, y in route:
-                mx = (prev_x + x) / 2
-                my = (prev_y + y) / 2
-                d = (cx - mx) ** 2 + (cy - my) ** 2
-                if d < min_dist:
-                    if mx < cx:
-                        mx -= label_width + 2
-                    else:
-                        mx += 2
-                    if my < cy:
-                        my -= label_height + 2
-                    else:
-                        my += 2
-                    items = ctrl.graph_scene.items(QtCore.QRectF(mx, my, label_width, label_height))
-                    collision = False
-                    for item in items:
-                        if not isinstance(item, Tree):
-                            collision = True
-                    if not collision:
-                        min_dist = d
-                        best_x, best_y = mx, my
-                prev_x, prev_y = x, y
+    def compute_best_position_along_route(self, route):
+        label_width = self._size.width()
+        label_height = self._size.height()
+        cx, cy = self._host.center_point
+
+        min_dist = 100000
+        prev_x, prev_y = route[-1]
+        best_x, best_y = 0, 0
+        for x, y in route:
+            mx = (prev_x + x) / 2
+            my = (prev_y + y) / 2
+            d = (cx - mx) ** 2 + (cy - my) ** 2
+            if d < min_dist:
+                if mx < cx:
+                    mx -= label_width + 2
+                else:
+                    mx += 2
+                if my < cy:
+                    my -= label_height + 2
+                else:
+                    my += 2
+                items = ctrl.graph_scene.items(QtCore.QRectF(mx, my, label_width, label_height))
+                collision = False
+                for item in items:
+                    if not isinstance(item, Tree):
+                        collision = True
+                if not collision:
+                    min_dist = d
+                    best_x, best_y = mx, my
+            prev_x, prev_y = x, y
         self.prepareGeometryChange()
         self.setPos(best_x, best_y)
         self.compute_angle_for_pos(QtCore.QPointF(best_x, best_y))

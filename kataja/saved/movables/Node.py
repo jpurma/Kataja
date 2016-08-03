@@ -141,7 +141,7 @@ class Node(Movable):
         self.setAcceptHoverEvents(True)
         # self.setAcceptDrops(True)
         self.setFlag(QtWidgets.QGraphicsObject.ItemSendsGeometryChanges)
-        # self.setFlag(QtWidgets.QGraphicsItem.ItemIsMovable)
+        self.setFlag(QtWidgets.QGraphicsObject.ItemIsMovable)
         self.setFlag(QtWidgets.QGraphicsObject.ItemIsSelectable)
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.setZValue(10)
@@ -1259,13 +1259,10 @@ class Node(Movable):
                 self.setToolTip("")
             self.label_object.set_quick_editing(False)
         else:
-            print('update selection status, True')
             self.setZValue(200)
             if ctrl.main.use_tooltips:
                 self.setToolTip("Edit with keyboard, click the cog to inspect the node")
-            print('multi: ', ctrl.multiple_selection(), ctrl.selected, ctrl.multiselection_delay)
             if ctrl.single_selection() and not ctrl.multiselection_delay:
-                print('please start quick editing')
                 self.label_object.set_quick_editing(True)
         self.update()
 
@@ -1548,7 +1545,9 @@ class Node(Movable):
         super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event):
+        print('mouseMoving')
         if ctrl.pressed is self:
+            print('jökötin')
             if ctrl.dragged_set or (event.buttonDownScenePos(
                     QtCore.Qt.LeftButton) - event.scenePos()).manhattanLength() > 6:
                 self.drag(event)

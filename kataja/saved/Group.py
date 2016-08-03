@@ -55,6 +55,8 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         self.include_children = False
         self.allow_overlap = True
         self._br = None
+        #self.setFlag(QtWidgets.QGraphicsObject.ItemIsMovable)
+        self.setFlag(QtWidgets.QGraphicsObject.ItemIsSelectable)
         if selection:
             self.update_selection(selection)
         self.update_shape()
@@ -102,23 +104,6 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         self.include_children = source.include_children
         self.allow_overlap = source.allow_overlap
 
-    # def set_label_text(self, text):
-    #     self.label_text = text
-    #     if text:
-    #         if not self.label_item:
-    #             self.label_item = QtWidgets.QGraphicsSimpleTextItem(text, self)
-    #             f = QtGui.QFont(qt_prefs.get_font(g.SMALL_CAPS))
-    #             f.setPointSize(f.pointSizeF()*2)
-    #             self.label_item.setFont(f)
-    #             self.label_item.setPen(qt_prefs.no_pen)
-    #             self.label_item.setBrush(self.color)
-    #         else:
-    #             self.label_item.setText(text)
-    #     else:
-    #         if self.label_item:
-    #             self.label_item.scene().removeItem(self.label_item)
-    #             self.label_item = None
-
     def get_label_text(self):
         """ Label text is actually stored in model.label_data, but this is a
         shortcut for it.
@@ -137,6 +122,10 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
             self.label_item = GroupLabel(value, parent=self)
             self.poke('label_data')
             self.label_data['text'] = value
+        if self.label_item.automatic_position:
+            self.label_item.position_at_bottom()
+        else:
+            self.label_item.update_position()
 
     def if_changed_color_id(self, value):
         """ Set group color, uses palette id strings as values.
@@ -144,7 +133,6 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         """
         if self.label_item:
             self.label_item.setDefaultTextColor(ctrl.cm.get(value))
-
 
     def remove_node(self, node):
         """ Manual removal of single node, should be called e.g. when node is deleted.
@@ -305,7 +293,7 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
 
         if self.label_item:
             if self.label_item.automatic_position:
-                self.label_item.compute_best_position(route)
+                self.label_item.position_at_bottom()
             else:
                 self.label_item.update_position()
 

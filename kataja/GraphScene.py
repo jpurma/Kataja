@@ -418,7 +418,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
     def mouseReleaseEvent(self, event):
         super().mouseReleaseEvent(event)
-        print('scene mre')
         if event.isAccepted():
             return
         # No object was pressed -- either clicking on nothing or ending a selection drag
@@ -570,7 +569,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         :return: None
         """
         self._dblclick = True
-        super().mouseDoubleClickEvent(self, event)
+        super().mouseDoubleClickEvent(event)
         if event.isAccepted():
             return
         ctrl.ui.create_creation_dialog(event.scenePos())
@@ -652,7 +651,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
             e.update()
 
         if ctrl.pressed:
-            print('ctrl.pressed, ignore timerEvent')
             return
         for node in f.nodes.values():
             if node.is_fading_out:

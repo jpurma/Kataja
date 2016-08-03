@@ -60,6 +60,8 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         self._label_start_pos = None
         self.setFont(self.get_font())
         self.setDefaultTextColor(self.parentItem().color)
+        self.setFlag(QtWidgets.QGraphicsObject.ItemIsMovable)
+        self.setFlag(QtWidgets.QGraphicsObject.ItemIsSelectable)
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
 
     def type(self):
@@ -199,6 +201,9 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         self.compute_angle_for_pos(event.scenePos(), self._local_drag_handle_position)
         self.update()
 
+    def kill_dragging(self):
+        self._local_drag_handle_position = None
+
     def being_dragged(self):
         return self._local_drag_handle_position
 
@@ -211,7 +216,7 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
 
     def mouseMoveEvent(self, event):
         if ctrl.pressed is self:
-            if ctrl.dragged_set or (event.buttonDownScenePos(
+            if self.being_dragged() or (event.buttonDownScenePos(
                     QtCore.Qt.LeftButton) - event.scenePos()).manhattanLength() > 6:
                 self.drag(event)
                 ctrl.graph_scene.dragging_over(event.scenePos())
@@ -219,8 +224,8 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
     def mouseReleaseEvent(self, event):
         if ctrl.pressed is self:
             ctrl.release(self)
-            if ctrl.dragged_set:
-                ctrl.graph_scene.kill_dragging()
+            if self.being_dragged():
+                self.kill_dragging()
             else: # This is regular click on 'pressed' object
                 self.click(event)
                 self.update()

@@ -11,7 +11,7 @@ BORDER = 3
 master_styles = {
     'fancy': {
         ARROW: {
-            'shape_name': 'linear', 'color_id': 'accent4', 'pull': 0, 'visible': True,
+            'shape_name': 'cubic', 'color_id': 'accent4', 'pull': 0, 'visible': True,
             'arrowhead_at_start': False, 'arrowhead_at_end': True, 'font': MAIN_FONT,
             'labeled': True, 'start_connects_to': BORDER, 'end_connects_to': BORDER
         }, DIVIDER: {
@@ -52,7 +52,7 @@ master_styles = {
 
     }, 'plain': {
         ARROW: {
-            'shape_name': 'linear', 'color_id': 'accent4', 'pull': 0, 'visible': True,
+            'shape_name': 'cubic', 'color_id': 'accent4', 'pull': 0, 'visible': True,
             'arrowhead_at_start': False, 'arrowhead_at_end': True, 'font': MAIN_FONT,
             'labeled': True, 'start_connects_to': BORDER, 'end_connects_to': BORDER
         }, DIVIDER: {

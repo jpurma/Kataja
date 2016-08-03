@@ -372,7 +372,6 @@ class Label(QtWidgets.QGraphicsTextItem):
             self.setFocus()
 
         elif self._quick_editing:
-            print('disabling quick editing')
             if self.doc.isModified():
                 if self.complex_edit:
                     self.analyze_changes()
@@ -543,13 +542,19 @@ class Label(QtWidgets.QGraphicsTextItem):
             # otherwise let the node handle mousePress logic.
             self._host.mousePressEvent(event)
 
+    def mouseMoveEvent(self, event):
+        print('got mouseMoveEvent')
+        if self._quick_editing:
+            super().mouseMoveEvent(event)
+        else:
+            self._host.mouseMoveEvent(event)
+
     def mouseReleaseEvent(self, event):
         if self._quick_editing:
             self.cursor_position_changed(self.textCursor())
             super().mouseReleaseEvent(event)
         else:
             self._host.mouseReleaseEvent(event)
-
 
     def keyReleaseEvent(self, keyevent):
         """ keyReleaseEvent is received after the keypress is registered by editor, so if we
