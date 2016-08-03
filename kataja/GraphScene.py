@@ -257,7 +257,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         all_siblings.append(child)
                 if current in all_siblings:
                     i = all_siblings.index(current)
-                    if i < len(all_siblings) - 2:
+                    if i < len(all_siblings) - 1:
                         return all_siblings[i+1]
                 return current
             if direction == 'up':
@@ -288,7 +288,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 for child_edge in current.start.get_edges_down(visible=True):
                     all_siblings.append(child_edge)
                 i = all_siblings.index(current)
-                if i < len(all_siblings) - 2:
+                if i < len(all_siblings) - 1:
                     return all_siblings[i+1]
                 else:
                     return current
@@ -354,7 +354,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 if best:
                     ctrl.select(best)
 
-
     # ######### MOUSE ##############
 
     @staticmethod
@@ -386,7 +385,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 closest_item = item
                 min_d = dist
         return closest_item
-
 
     def start_dragging(self):
         """ Raise graph scene flags related to dragging -- the dragged nodes
@@ -437,10 +435,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
             ctrl.area_selection = True
             ctrl.multiselection_start()
             ctrl.deselect_objects()
-            # prioritize nodes in multiple selection. e.g. if there are nodes
-            #  and edges in
-            # selected area, select only nodes. If there are multiple edges
-            # and no nodes, then
+            # prioritize nodes in multiple selection. e.g. if there are nodes and edges in
+            # selected area, select only nodes. If there are multiple edges and no nodes, then
             # take edges
 
             for item in self.selectedItems():
@@ -643,10 +639,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
         can_normalize = True
         md = {'sum': (0, 0), 'nodes': []}
         ctrl.items_moving = True
-        # print(len(self.items()))
-        # for item in self.items():
-        #    if getattr(item, 'is_constituent', False):
-        #        print('parent check: ', item, item.parentItem())
         if self._fade_steps:
             self.setBackgroundBrush(self._fade_steps_list[self._fade_steps - 1])
             self._fade_steps -= 1
@@ -654,10 +646,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 background_fade = True
 
         f = self.main.forest
-        # if f.gloss and f.roots and not f.gloss.use_fixed_position:
-        #    pt = f.roots[0].current_position
-        #    f.gloss.setPos(pt[0] - 20, pt[1] - 40)
-        #    f.gloss.lock()
         f.edge_visibility_check()
         for e in f.edges.values():
             e.make_path()
