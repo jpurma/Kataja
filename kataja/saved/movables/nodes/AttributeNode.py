@@ -91,12 +91,12 @@ class AttributeNode(Node):
         :param restoring: 
         :raise: 
         """
+        self.help_text = ""
         Node.__init__(self, forest=forest, syntactic_object=None)
         self.host = host
         self.attribute_label = attribute_label or attribute_id
         self.attribute_id = attribute_id
         self._show_label = show_label
-        self.help_text = ""
         # if self.attribute_label in color_map:
         # self.color = colors.feature_palette[color_map[self.attribute_label]]
         # else:

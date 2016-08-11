@@ -34,10 +34,10 @@ from kataja.utils import caller
 # gc.DEBUG_OBJECTS
 # )
 # gc.set_debug(flags)
-from parser.LatexToINode import LatexFieldToINode
-from parser.HTMLToINode import HTMLToINode
-from parser.PlainTextToINode import PlainTextToINode
-from parser.QDocumentToINode import QDocumentToINode
+from kataja.parser.LatexToINode import LatexFieldToINode
+from kataja.parser.HTMLToINode import HTMLToINode
+from kataja.parser.PlainTextToINode import PlainTextToINode
+from kataja.parser.QDocumentToINode import QDocumentToINode
 
 
 class Controller:
@@ -352,6 +352,7 @@ class Controller:
     @caller
     def quit(self):
         """*** calling quits ***"""
+        print('quit?')
         sys.exit()
 
     # Watchers #####################################

@@ -1,5 +1,5 @@
 from kataja.parser.latex_to_unicode import latex_to_unicode
-from parser.mappings import latex_to_html, latex_to_command, command_to_latex, html_to_command, \
+from kataja.parser.mappings import latex_to_html, latex_to_command, command_to_latex, html_to_command, \
     command_to_html
 
 __author__ = 'purma'

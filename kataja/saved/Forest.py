@@ -1655,12 +1655,12 @@ class Forest(SavedObject):
         S = node.get_attribute_nodes('S')
         if M and not self.settings.shows_merge_order:
             self.delete_node(M)
-        elif self.settings.shows_merge_order and (not M) and node.merge_order:
-            self.create_attribute_node(node, 'merge_order', attribute_label='M', show_label=True)
+        #elif self.settings.shows_merge_order and (not M) and node.merge_order:
+        #    self.create_attribute_node(node, 'merge_order', attribute_label='M', show_label=True)
         if S and not self.settings.shows_select_order:
             self.delete_node(S)
-        elif self.settings.shows_select_order and (not S) and node.select_order:
-            self.create_attribute_node(node, 'select_order', attribute_label='S', show_label=False)
+        #elif self.settings.shows_select_order and (not S) and node.select_order:
+        #    self.create_attribute_node(node, 'select_order', attribute_label='S', show_label=False)
 
     def add_select_counter(self, node, replace=0):
         """

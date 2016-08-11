@@ -8,7 +8,7 @@
 
 import html
 from kataja.parser.INodes import ICommandNode, ITextNode, IParserNode
-from parser.mappings import latex_to_command
+from kataja.parser.mappings import latex_to_command
 
 
 class ParseError(Exception):

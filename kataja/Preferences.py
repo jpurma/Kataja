@@ -320,6 +320,10 @@ class Preferences(object):
                 for kk, vv in v.items():
                     recursive_write(settings, str(kk), vv)
                 settings.endGroup()
+            elif isinstance(v, list):
+                settings.beginWriteArray(k)
+                for vv in v:
+                    recursive_write(settings, '', vv)
             else:
                 settings.setValue(k, v)
 
@@ -337,6 +341,7 @@ class Preferences(object):
 
     def load_preferences(self):
 
+        # fixme use saner recursion here, each function call should get the value, outer layer sets it to place
         def recursive_load(settings, pref_field, default):
             if isinstance(default, dict):
                 settings.beginGroup(pref_field)
@@ -358,7 +363,11 @@ class Preferences(object):
             elif isinstance(default, float):
                 value = float(settings.value(pref_field, default))
             elif isinstance(default, bool):
-                value = bool(settings.value(pref_field, default))
+                v = settings.value(pref_field, default)
+                if v == 'false':
+                    value = False
+                else:
+                    value = bool(v)
             elif isinstance(default, int):
                 value = int(settings.value(pref_field, default))
             else:
@@ -370,7 +379,11 @@ class Preferences(object):
             if isinstance(default, float):
                 value = float(settings.value(plist_key, default))
             elif isinstance(default, bool):
-                value = bool(settings.value(plist_key, default))
+                v = settings.value(plist_key, default)
+                if v == 'false':
+                    value = False
+                else:
+                    value = bool(v)
             elif isinstance(default, int):
                 value = int(settings.value(plist_key, default))
             else:
@@ -623,6 +636,7 @@ class QtPreferences:
             if console_font.pointSize() < 14:
                 console_font.setPointSize(14)
         else:
+            print(fonts_dict[UI_FONT])
             ui_font.setPointSize(fonts_dict[UI_FONT][2])
             console_font.setPointSize(fonts_dict[CONSOLE_FONT][2])
 
