@@ -313,20 +313,6 @@ class Preferences(object):
         platform-dependant ini/preferences files.
         It doesn't need any parameters,
         """
-        def recursive_write(settings, k, v):
-            k = str(k)
-            if isinstance(v, dict):
-                settings.beginGroup(k)
-                for kk, vv in v.items():
-                    recursive_write(settings, str(kk), vv)
-                settings.endGroup()
-            elif isinstance(v, list):
-                settings.beginWriteArray(k)
-                for vv in v:
-                    recursive_write(settings, '', vv)
-            else:
-                settings.setValue(k, v)
-
         if disable_saving_preferences:
             return
 
@@ -336,88 +322,36 @@ class Preferences(object):
         for key, value in d.items():
             if key.startswith('_') or key in Preferences.not_saved:
                 continue
-            recursive_write(settings, key, value)
+            settings.setValue(key, value)
         settings.sync()
 
     def load_preferences(self):
 
-        # fixme use saner recursion here, each function call should get the value, outer layer sets it to place
-        def recursive_load(settings, pref_field, default):
-            if isinstance(default, dict):
-                settings.beginGroup(pref_field)
-                value_dict = getattr(self, pref_field)
-                for plist_key in settings.childKeys():
-                    if plist_key.isdigit():
-                        dict_key = int(plist_key)
-                    else:
-                        dict_key = plist_key
-                    load_value_to_dict(settings, plist_key, dict_key, value_dict)
-                for plist_key in settings.childGroups():
-                    if plist_key.isdigit():
-                        dict_key = int(plist_key)
-                    else:
-                        dict_key = plist_key
-                    load_dict_to_dict(settings, plist_key, dict_key, value_dict)
+        def pythonify_prefs(settings):
+            result = {}
+            for group_key in settings.childGroups():
+                settings.beginGroup(group_key)
+                if group_key.isdigit():
+                    group_key = int(group_key)
+                result[group_key] = pythonify_prefs(settings)
                 settings.endGroup()
-                value = value_dict
-            elif isinstance(default, float):
-                value = float(settings.value(pref_field, default))
-            elif isinstance(default, bool):
-                v = settings.value(pref_field, default)
-                if v == 'false':
-                    value = False
+            for data_key in settings.childKeys():
+                if data_key.isdigit():
+                    result[int(data_key)] = settings.value(data_key)
                 else:
-                    value = bool(v)
-            elif isinstance(default, int):
-                value = int(settings.value(pref_field, default))
-            else:
-                value = settings.value(pref_field, default)
-            setattr(self, pref_field, value)
-
-        def load_value_to_dict(settings, plist_key, dict_key, value_dict):
-            default = value_dict.get(dict_key)
-            if isinstance(default, float):
-                value = float(settings.value(plist_key, default))
-            elif isinstance(default, bool):
-                v = settings.value(plist_key, default)
-                if v == 'false':
-                    value = False
-                else:
-                    value = bool(v)
-            elif isinstance(default, int):
-                value = int(settings.value(plist_key, default))
-            else:
-                value = settings.value(plist_key, default)
-            value_dict[dict_key] = value
-
-        def load_dict_to_dict(settings, plist_key, dict_key, value_dict):
-            new_dict = value_dict.get(dict_key, {})
-            if new_dict is None: # If there are borked preferences, let them be ignored
-                return
-            settings.beginGroup(plist_key)
-            for iplist_key in settings.childKeys():
-                if iplist_key.isdigit():
-                    idict_key = int(iplist_key)
-                else:
-                    idict_key = iplist_key
-                load_value_to_dict(settings, iplist_key, idict_key, new_dict)
-            for iplist_key in settings.childGroups():
-                if iplist_key.isdigit():
-                    idict_key = int(iplist_key)
-                else:
-                    idict_key = iplist_key
-                load_dict_to_dict(settings, iplist_key, idict_key, new_dict)
-            settings.endGroup()
-            value_dict[dict_key] = new_dict
+                    result[data_key] = settings.value(data_key)
+            return result
 
         if disable_saving_preferences:
             return
 
         settings = QtCore.QSettings()
+        ldict = pythonify_prefs(settings)
         for key, default_value in list(vars(self).items()):
             if key.startswith('_') or key in Preferences.not_saved:
                 continue
-            recursive_load(settings, key, default_value)
+            if key in ldict:
+                setattr(self, key, ldict[key])
 
 
 class QtPreferences:
