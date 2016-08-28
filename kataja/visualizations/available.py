@@ -25,7 +25,6 @@
 from collections import OrderedDict
 
 from kataja.visualizations.AsymmetricElasticTree import AsymmetricElasticTree
-from kataja.visualizations.BalancedTree import BalancedTree
 from kataja.visualizations.HeadDownTree import HeadDownTree
 from kataja.visualizations.BracketedLinearization import BracketedLinearization
 from kataja.visualizations.DynamicWidthTree import DynamicWidthTree
@@ -34,15 +33,15 @@ from kataja.visualizations.LeftFirstTree import LeftFirstTree
 from kataja.visualizations.SpirallingTree import SpirallingTree
 from kataja.visualizations.LinearizedDynamicTree import LinearizedDynamicTree
 from kataja.visualizations.LinearizedStaticTree import LinearizedStaticTree
-from kataja.visualizations.Slide import Slide
 from kataja.visualizations.SymmetricElasticTree import SymmetricElasticTree
+# from kataja.visualizations.BalancedTree import BalancedTree
+# from kataja.visualizations.Slide import Slide
 
 
 # These will be mapped to number keys 1...0 in given order.
 
 visualizations_list = [LeftFirstTree,
                        LinearizedStaticTree,
-                       #BalancedTree,
                        HeadDownTree,
                        DynamicWidthTree,
                        BracketedLinearization,
@@ -50,8 +49,9 @@ visualizations_list = [LeftFirstTree,
                        LinearizedDynamicTree,
                        AsymmetricElasticTree,
                        SymmetricElasticTree,
-                       EquidistantElasticTree,
-                       Slide]
+                       EquidistantElasticTree]
+                       #BalancedTree,
+                       #Slide]
 
 VISUALIZATIONS = OrderedDict()
 

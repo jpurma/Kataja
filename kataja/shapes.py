@@ -1,6 +1,7 @@
 from collections import OrderedDict
 from math import sin, cos, pi, acos, sqrt
 
+import math
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import QPointF as Pf
 
@@ -23,11 +24,9 @@ def curve_multiplier(edge_n, edge_count):
     p = 2.0 / (edge_count - 1)
     return edge_n * p - 1
 
-def adjusted_control_point_list(control_points, curve_adjustment):
-    """ List where control points and their adjustments are added up, and (x,
-    y) tuples
-    are break down into one big list x1, y1, x2, y2,... to be used in path
-    construction
+
+def adjusted_control_point_list(sx, sy, ex, ey, control_points, curve_adjustment):
+    """ List where control points and their adjustments are added up
     :param curve_adjustment:
     :param control_points:
     :return: list
@@ -37,13 +36,23 @@ def adjusted_control_point_list(control_points, curve_adjustment):
         la = 0
     else:
         la = len(curve_adjustment)
-    for i, cp in enumerate(control_points):
+    for i, (cx, cy) in enumerate(control_points):
         if la <= i:
-            l.append(cp[0])
-            l.append(cp[1])
+            l.append((cx, cy))
         else:
-            l.append(cp[0] + curve_adjustment[i][0])
-            l.append(cp[1] + curve_adjustment[i][1])
+            rdist, rrad = curve_adjustment[i]
+            if i == 0:
+                sx_to_cx = cx - sx
+                sy_to_cy = cy - sy
+            else:
+                sx_to_cx = cx - ex
+                sy_to_cy = cy - ey
+            line_rad = math.atan2(sy_to_cy, sx_to_cx)
+            line_dist = math.hypot(sx_to_cx, sy_to_cy)
+            new_dist = rdist * line_dist
+            new_x = cx + (new_dist * math.cos(rrad + line_rad))
+            new_y = cy + (new_dist * math.sin(rrad + line_rad))
+            l.append((new_x, new_y))
     return l
 
 
@@ -174,16 +183,17 @@ def shaped_cubic_path(start_point=None, end_point=None, curve_adjustment=None,
         dx = fixed_dx
     dx *= curve_multiplier(edge_n, edge_count)
     control_points = [(sx + dx, sy + dy), (ex, ey - dy)]
-    c = adjusted_control_point_list(control_points, curve_adjustment)
+    c = adjusted_control_point_list(sx, sy, ex, ey, control_points, curve_adjustment)
+    (c1x, c1y), (c2x, c2y) = c
     if inner_only:
         path = None
     else:
         path = QtGui.QPainterPath(Pf(sx, sy))
-        path.cubicTo(c[0] - leaf_x, c[1], c[2], c[3] + leaf_y, ex, ey)
-        path.cubicTo(c[2], c[3] - leaf_y, c[0] + leaf_x, c[1], sx, sy)
+        path.cubicTo(c1x - leaf_x, c1y, c2x, c2y + leaf_y, ex, ey)
+        path.cubicTo(c2x, c2y - leaf_y, c1x + leaf_x, c1y, sx, sy)
     inner_path = QtGui.QPainterPath(Pf(sx, sy))
-    inner_path.cubicTo(c[0], c[1], c[2], c[3], ex, ey)
-    return path, inner_path, control_points
+    inner_path.cubicTo(c1x, c1y, c2x, c2y, ex, ey)
+    return path, inner_path, control_points, c
 
 
 def shaped_cubic_icon(painter, rect, color=None, rel_dx=0.4, rel_dy=0.8,
@@ -239,9 +249,10 @@ def cubic_path(start_point=None, end_point=None, curve_adjustment=None,
     dx *= curve_multiplier(edge_n=edge_n, edge_count=edge_count)
     control_points = [(sx + dx, sy + dy), (ex, ey - dy)]
     path = QtGui.QPainterPath(Pf(sx, sy))
-    c = adjusted_control_point_list(control_points, curve_adjustment)
-    path.cubicTo(c[0], c[1], c[2], c[3], ex, ey)
-    return path, path, control_points
+    c = adjusted_control_point_list(sx, sy, ex, ey, control_points, curve_adjustment)
+    (c1x, c1y), (c2x, c2y) = c
+    path.cubicTo(c1x, c1y, c2x, c2y, ex, ey)
+    return path, path, control_points, c
 
 
 def cubic_icon(painter, rect, color=None, rel_dx=0.2, rel_dy=0.8):
@@ -299,16 +310,17 @@ def shaped_quadratic_path(start_point=None, end_point=None,
         dy = fixed_dy
     dx *= curve_multiplier(edge_n, edge_count)
     control_points = [(sx + dx, sy + dy)]
-    c = adjusted_control_point_list(control_points, curve_adjustment)
+    c = adjusted_control_point_list(sx, sy, ex, ey, control_points, curve_adjustment)
+    c1x, c1y = c
     if inner_only:
         path = None
     else:
         path = QtGui.QPainterPath(Pf(sx, sy))
-        path.quadTo(c[0] - leaf_x, c[1] - leaf_y, ex, ey)
-        path.quadTo(c[0] + leaf_x, c[1] + leaf_y, sx, sy)
+        path.quadTo(c1x - leaf_x, c1y - leaf_y, ex, ey)
+        path.quadTo(c1x + leaf_x, c1y + leaf_y, sx, sy)
     inner_path = QtGui.QPainterPath(Pf(sx, sy))
-    inner_path.quadTo(c[0], c[1], ex, ey)
-    return path, inner_path, control_points
+    inner_path.quadTo(c1x, c1y, ex, ey)
+    return path, inner_path, control_points, c
 
 
 def shaped_quadratic_icon(painter, rect, color=None, rel_dx=0.4, rel_dy=0,
@@ -362,9 +374,10 @@ def quadratic_path(start_point=None, end_point=None, curve_adjustment=None, edge
     dx *= curve_multiplier(edge_n, edge_count)
     control_points = [(sx + dx, sy + dy)]
     path = QtGui.QPainterPath(Pf(sx, sy))
-    c = adjusted_control_point_list(control_points, curve_adjustment)
-    path.quadTo(c[0], c[1], ex, ey)
-    return path, path, control_points
+    c = adjusted_control_point_list(sx, sy, ex, ey, control_points, curve_adjustment)
+    c1x, c1y = c
+    path.quadTo(c1x, c1y, ex, ey)
+    return path, path, control_points, c
 
 
 def quadratic_icon(painter, rect, color=None, rel_dx=0.4, rel_dy=0):
@@ -406,7 +419,6 @@ def shaped_linear_path(start_point=None, end_point=None, leaf_x=2, leaf_y=2,
         leaf_x *= 2
         leaf_y *= 2
 
-    control_points = []
     c = [(dx - leaf_x, dy - leaf_y), (dx + leaf_x, dy - leaf_y)]
     if inner_only:
         path = None
@@ -416,7 +428,7 @@ def shaped_linear_path(start_point=None, end_point=None, leaf_x=2, leaf_y=2,
         path.quadTo(c[1][0], c[1][1], sx, sy)
     inner_path = QtGui.QPainterPath(Pf(sx, sy))
     inner_path.lineTo(dx, dy)
-    return path, inner_path, control_points
+    return path, inner_path, [], []
 
 
 def shaped_linear_icon(painter, rect, color=None, leaf_x=4, leaf_y=4):
@@ -451,7 +463,7 @@ def linear_path(start_point=None, end_point=None, **kwargs):
     dx, dy = end_point
     path = QtGui.QPainterPath(Pf(sx, sy))
     path.lineTo(dx, dy)
-    return path, path, []  # [] = control_points
+    return path, path, [], []  # [] = control_points
 
 
 def linear_icon(painter, rect, color=None):
@@ -543,7 +555,7 @@ def blob_path(start_point=None, end_point=None, curve_adjustment=None, thickness
     path = path.united(path3)
     path = path.subtracted(path1neg)
     path = path.subtracted(path2neg)
-    return path.simplified(), inner_path, []
+    return path.simplified(), inner_path, [], []
 
 
 def blob_icon(painter, rect, color=None, thickness=3):
@@ -683,7 +695,7 @@ def directional_blob_path(start_point=None, end_point=None,
         path = path1.united(path2)
         path = path.subtracted(path1neg)
 
-    return path.simplified(), inner_path, []
+    return path.simplified(), inner_path, [], []
 
 
 def directional_blob_icon(painter, rect, color=None):

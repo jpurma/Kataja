@@ -31,10 +31,10 @@ from kataja.UIItem import UIGraphicsItem
 from kataja.saved.Edge import Edge
 from kataja.saved.movables.Node import Node
 from kataja.saved.movables.nodes.ConstituentNode import ConstituentNode
-from kataja.singletons import ctrl, prefs, qt_prefs
-from kataja.utils import to_tuple, sub_xy
 from kataja.shapes import draw_plus, draw_leaf, draw_x, draw_triangle, draw_tailed_leaf
+from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.uniqueness_generator import next_available_type_id
+from kataja.utils import to_tuple, sub_xy
 
 end_spot_size = 10
 
@@ -201,7 +201,6 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
             print('received just some string: ', string)
 
     def mousePressEvent(self, event):
-        print('toucharea press')
         ctrl.press(self)
         super().mousePressEvent(event)
 
@@ -210,11 +209,9 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
             if ctrl.dragged_set or (event.buttonDownScenePos(
                     QtCore.Qt.LeftButton) - event.scenePos()).manhattanLength() > 6:
                 self.drag(event)
-                print('toucharea drag?')
                 ctrl.graph_scene.dragging_over(event.scenePos())
 
     def mouseReleaseEvent(self, event):
-        print('toucharea release')
         if ctrl.pressed is self:
             ctrl.release(self)
             if ctrl.dragged_set:
@@ -233,7 +230,6 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
         """
         :type event: QMouseEvent
          """
-        print('toucharea click')
         self._dragging = False
         if self._drag_hint:
             return False
@@ -600,10 +596,10 @@ class LeftAddSibling(BranchingTouchArea):
         self.setPos(self.end_point[0], self.end_point[1])
         rel_sp = sub_xy(self.start_point, self.end_point)
         adjust = []
-        self._path, true_path, control_points = shape_method(rel_sp, (0, 0),
-                                                             alignment=g.LEFT,
-                                                             curve_adjustment=adjust,
-                                                             **shape_info)
+        self._path = shape_method(rel_sp, (0, 0),
+                                  alignment=g.LEFT,
+                                  curve_adjustment=adjust,
+                                  **shape_info)[0]
 
     def paint(self, painter, option, widget):
         """
@@ -678,10 +674,10 @@ class RightAddSibling(BranchingTouchArea):
         self.setPos(self.end_point[0], self.end_point[1])
         rel_sp = sub_xy(self.start_point, self.end_point)
         adjust = []
-        self._path, true_path, control_points = shape_method(rel_sp, (0, 0),
-                                                             alignment=g.RIGHT,
-                                                             curve_adjustment=adjust,
-                                                             **shape_info)
+        self._path = shape_method(rel_sp, (0, 0),
+                                  alignment=g.RIGHT,
+                                  curve_adjustment=adjust,
+                                  **shape_info)[0]
 
     def paint(self, painter, option, widget):
         """
@@ -807,25 +803,25 @@ class JointedTouchArea(TouchArea):
         line_middle_point = sx / 2.0, sy - hw_ratio * abs(sx)
         adjust = []
         if self._align_left:
-            self._path, true_path, control_points = shape_method(line_middle_point, (sx, sy),
-                                                                 alignment=g.RIGHT,
-                                                                 curve_adjustment=adjust,
-                                                                 **shape_info)
+            self._path = shape_method(line_middle_point, (sx, sy),
+                                      alignment=g.RIGHT,
+                                      curve_adjustment=adjust,
+                                      **shape_info)[0]
             self._path.moveTo(sx, sy)
-            path2, true_path, control_points = shape_method(line_middle_point, (ex, ey),
-                                                            alignment=g.LEFT,
-                                                            curve_adjustment=adjust,
-                                                            **shape_info)
+            path2 = shape_method(line_middle_point, (ex, ey),
+                                  alignment=g.LEFT,
+                                  curve_adjustment=adjust,
+                                  **shape_info)[0]
         else:
-            self._path, true_path, control_points = shape_method(line_middle_point, (ex, ey),
-                                                                 alignment=g.RIGHT,
-                                                                 curve_adjustment=adjust,
-                                                                 **shape_info)
+            self._path = shape_method(line_middle_point, (ex, ey),
+                                      alignment=g.RIGHT,
+                                      curve_adjustment=adjust,
+                                      **shape_info)[0]
             self._path.moveTo(ex, ey)
-            path2, true_path, control_points = shape_method(line_middle_point, (sx, sy),
-                                                            alignment=g.LEFT,
-                                                            curve_adjustment=adjust,
-                                                            **shape_info)
+            path2 = shape_method(line_middle_point, (sx, sy),
+                                 alignment=g.LEFT,
+                                 curve_adjustment=adjust,
+                                 **shape_info)[0]
         self._path |= path2
 
     def drop(self, dropped_node):
@@ -1020,10 +1016,10 @@ class LeftAddChild(BranchingTouchArea):
         self.setPos(self.end_point[0], self.end_point[1])
         rel_sp = sub_xy(self.start_point, self.end_point)
         adjust = []
-        self._path, true_path, control_points = shape_method(rel_sp, (0, 0),
-                                                             alignment=g.LEFT,
-                                                             curve_adjustment=adjust,
-                                                             **shape_info)
+        self._path = shape_method(rel_sp, (0, 0),
+                                  alignment=g.LEFT,
+                                  curve_adjustment=adjust,
+                                  **shape_info)[0]
 
     def paint(self, painter, option, widget):
         """
@@ -1091,10 +1087,10 @@ class RightAddChild(ChildTouchArea):
         self.setPos(self.end_point[0], self.end_point[1])
         rel_sp = sub_xy(self.start_point, self.end_point)
         adjust = []
-        self._path, true_path, control_points = shape_method(rel_sp, (0, 0),
-                                                             alignment=g.RIGHT,
-                                                             curve_adjustment=adjust,
-                                                             **shape_info)
+        self._path = shape_method(rel_sp, (0, 0),
+                                  alignment=g.RIGHT,
+                                  curve_adjustment=adjust,
+                                  **shape_info)[0]
 
     def paint(self, painter, option, widget):
         """

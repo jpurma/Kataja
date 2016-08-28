@@ -1,5 +1,8 @@
 
-[.{Tom_i hit \emph{himself_i}} [ A B ]]
+[.{CP} [.{DP(0)} [.{D'} [.{D} which ] [.{NP} [.{N'} [.N wine ] ] ] ] ] [.{C'} [.C \epsilon [.{VP} [.{DP} [.{D'} [.D the ] [.{NP} [.{N'} [.N queen ] ] ] ] ] [.{V'} [.V prefers ] [.{DP} t(0) ] ] ] ] ] ]
+
+[.{\circ} [.{\textbullet} {\epsilon::=V +wh C} [.{\textbullet} [.{\textbullet} {prefers::=D =D v} [.{\textbullet} {which::=N D -wh} {wine::N} ] ] [.{\textbullet} {the::=N D} {queen::N} ] ] ] ]
+
 
 [.\emph{Sentence} [.NP [.T the ] [.N man ]] [.VP [.Verb hit ] [.NP [.T the ] [.N ball ]]]]
 

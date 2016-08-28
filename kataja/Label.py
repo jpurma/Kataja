@@ -543,7 +543,6 @@ class Label(QtWidgets.QGraphicsTextItem):
             self._host.mousePressEvent(event)
 
     def mouseMoveEvent(self, event):
-        print('got mouseMoveEvent')
         if self._quick_editing:
             super().mouseMoveEvent(event)
         else:

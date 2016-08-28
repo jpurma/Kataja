@@ -111,6 +111,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         self._computed_end_point = None
 
         self.control_points = []
+        self.adjusted_control_points = []
         self._local_drag_handle_position = None
 
         # ## Adjustable values, defaults to ForestSettings if None for this
@@ -511,6 +512,25 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         if not self.end:
             self.set_end_point(add_xy(start, dist))
 
+    def compute_pos_from_adjust(self, index):
+        """ Works with 1 or 2 control points.
+        :param index:
+        :return:
+        """
+        cx, cy = self.control_points[index]
+        rdist, rrad = self.curve_adjustment[index]
+        if index == 0:
+            sx, sy = self.start_point
+        else:
+            sx, sy = self.end_point
+        sx_to_cx = cx - sx
+        sy_to_cy = cy - sy
+        line_rad = math.atan2(sy_to_cy, sx_to_cx)
+        line_dist = math.hypot(sx_to_cx, sy_to_cy)
+        new_dist = rdist * line_dist
+        new_x = cx + (new_dist * math.cos(rrad + line_rad))
+        new_y = cy + (new_dist * math.sin(rrad + line_rad))
+        return new_x, new_y
 
     # ### Derivative features ############################################
     # @utils.time_me
@@ -533,7 +553,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         c['start'] = self.start
         c['end'] = self.end
         c['inner_only'] = self._use_simple_path
-        self._path, self._true_path, self.control_points = self._shape_method(**c)
+        self._path, self._true_path, self.control_points, self.adjusted_control_points = \
+            self._shape_method(**c)
         uses_pen = c.get('thickness', 0)
 
         if self._use_simple_path:
@@ -600,6 +621,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
 
     def get_cached_shape_info(self):
         return self._cached_shape_info
+
 
     def update_shape(self):
         """ Reload shape and shape settings """
@@ -1055,9 +1077,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             x, y = self.start_point
             # average between last control point and general direction seems to be ok.
             if self.control_points:
-                p0x, p0y = self.control_points[0]
-                ex, ey = self.end_point
-                p0 = (p0x + ex) / 2, (p0y + ey) / 2
+                p0 = self.adjusted_control_points[0]
             else:
                 p0 = self.end_point
             dx, dy = sub_xy(self.start_point, p0)
@@ -1069,9 +1089,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             x, y = self.end_point
             # average between last control point and general direction seems to be ok.
             if self.control_points:
-                p1x, p1y = self.control_points[-1]
-                sx, sy = self.start_point
-                plast = (p1x + sx) / 2, (p1y + sy) / 2
+                plast = self.adjusted_control_points[-1]
             else:
                 plast = self.start_point
 

@@ -153,16 +153,15 @@ class EdgeShape:
         elif index >= len(self.host.curve_adjustment):
             self.host.curve_adjustment += [(0, 0)] * (index - len(self.host.curve_adjustment) + 1)
 
-    def adjust_control_point(self, index, points):
+    def adjust_control_point(self, index, rdist, rrad):
         """ Called from UI, when dragging
         :param index:
         :param points:
         :param cp:
         """
-        x, y = points
         self.host.poke('curve_adjustment')
         self.prepare_adjust_array(index)
-        self.host.curve_adjustment[index] = x, y
+        self.host.curve_adjustment[index] = rdist, rrad
         self.host.call_watchers('edge_adjustment', 'curve_adjustment', self.host.curve_adjustment)
         self.host.make_path()
         self.host.update()

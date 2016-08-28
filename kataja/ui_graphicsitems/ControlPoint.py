@@ -1,5 +1,6 @@
 # coding=utf-8
 # #######################################################
+import math
 from PyQt5 import QtCore, QtWidgets, QtGui
 
 from PyQt5.QtCore import QPointF as Pf
@@ -34,6 +35,7 @@ class ControlPoint(UIGraphicsItem, QtWidgets.QGraphicsItem):
         self.focusable = True
         self.pressed = False
         self._hovering = False
+        self.being_dragged = False
         self.setAcceptHoverEvents(True)
         self.setFlag(QtWidgets.QGraphicsObject.ItemIsMovable)
         self.setFlag(QtWidgets.QGraphicsObject.ItemIsSelectable)
@@ -49,6 +51,10 @@ class ControlPoint(UIGraphicsItem, QtWidgets.QGraphicsItem):
             self.status_tip = "Drag to adjust the curvature of this line"
         elif self.role == g.LABEL_START:
             self.status_tip = "Drag along the line to adjust the anchor point of label"
+            if prefs.touch:
+                self._wh = 6
+                self._xy = -3
+
         if ctrl.main.use_tooltips:
             self.setToolTip(self.status_tip)
         self.show()
@@ -78,13 +84,8 @@ class ControlPoint(UIGraphicsItem, QtWidgets.QGraphicsItem):
         """
         :return:
         """
-        if -1 < self._index < len(self.host.control_points):
-            p = self.host.control_points[self._index]
-            if self.host.curve_adjustment and len(self.host.curve_adjustment) > self._index:
-                a = self.host.curve_adjustment[self._index]
-                p = Pf(p[0] + a[0], p[1] + a[1])
-            else:
-                p = Pf(p[0], p[1])
+        if -1 < self._index < len(self.host.adjusted_control_points):
+            p = Pf(*self.host.adjusted_control_points[self._index])
         elif self.role == g.START_POINT:
             p = Pf(self.host.start_point[0], self.host.start_point[1])
         elif self.role == g.END_POINT:
@@ -121,6 +122,29 @@ class ControlPoint(UIGraphicsItem, QtWidgets.QGraphicsItem):
         return int(x - p[0]), int(y - p[1])
         # print 'computed curve_adjustment:', self.curve_adjustment
 
+    def _compute_adjust_from_pos(self, scene_pos):
+        x, y = to_tuple(scene_pos)
+        assert (self._index != -1)
+        cx, cy = self.host.control_points[self._index]
+        x_adjust = int(x - cx)
+        y_adjust = int(y - cy)
+        if self._index == 0:
+            sx, sy = self.host.start_point
+        else:
+            sx, sy = self.host.end_point
+        sx_to_cx = cx - sx
+        sy_to_cy = cy - sy
+        line_rad = math.atan2(sy_to_cy, sx_to_cx)
+        line_dist = math.hypot(sx_to_cx, sy_to_cy)
+        adj_rad = math.atan2(y_adjust, x_adjust)
+        adj_dist = math.hypot(x_adjust, y_adjust)
+        if line_dist != 0:
+            relative_dist = adj_dist / line_dist
+        else:
+            relative_dist = adj_dist
+        relative_rad = adj_rad - line_rad
+        return relative_dist, relative_rad
+
     def click(self, event=None):
         """ Clicking a control point usually does nothing. These are more for dragging.
         :param event: some kind of mouse event
@@ -135,13 +159,15 @@ class ControlPoint(UIGraphicsItem, QtWidgets.QGraphicsItem):
         :param event: some kind of mouse event
         :return: None
         """
+        scenepos = event.scenePos()
         if self.role == g.LABEL_START:
-            d, point = self.host.get_closest_path_point(event.scenePos())
+            d, point = self.host.get_closest_path_point(scenepos)
             self.host.label_item.label_start = d
         else:
-            self.setPos(event.scenePos())
+            self.setPos(scenepos)
         if self._index > -1:
-            self.host.shape_info.adjust_control_point(self._index, self._compute_adjust())
+            rdist, rrad = self._compute_adjust_from_pos(scenepos)
+            self.host.shape_info.adjust_control_point(self._index, rdist, rrad)
         elif self.role == g.START_POINT:
             self.host.set_start_point(event.scenePos())
             self.host.make_path()
@@ -150,6 +176,7 @@ class ControlPoint(UIGraphicsItem, QtWidgets.QGraphicsItem):
             self.host.set_end_point(event.scenePos())
             self.host.make_path()
             self.host.update()
+        self.being_dragged = True
 
     def drop_to(self, x, y, recipient=None):
         """ Dragging ends, possibly by dropping over another object.
@@ -170,7 +197,7 @@ class ControlPoint(UIGraphicsItem, QtWidgets.QGraphicsItem):
 
     def mouseMoveEvent(self, event):
         if ctrl.pressed is self:
-            if ctrl.dragged_set or (event.buttonDownScenePos(
+            if self.being_dragged or (event.buttonDownScenePos(
                     QtCore.Qt.LeftButton) - event.scenePos()).manhattanLength() > 6:
                 self.drag(event)
                 ctrl.graph_scene.dragging_over(event.scenePos())
@@ -178,9 +205,10 @@ class ControlPoint(UIGraphicsItem, QtWidgets.QGraphicsItem):
     def mouseReleaseEvent(self, event):
         if ctrl.pressed is self:
             ctrl.release(self)
-            if ctrl.dragged_set:
+            if self.being_dragged:
                 x, y = to_tuple(event.scenePos())
                 self.drop_to(x, y, recipient=ctrl.drag_hovering_on)
+                self.being_dragged = False
                 ctrl.graph_scene.kill_dragging()
                 ctrl.ui.update_selections()  # drag operation may have changed visible affordances
                 ctrl.main.action_finished()  # @UndefinedVariable
@@ -218,9 +246,19 @@ class ControlPoint(UIGraphicsItem, QtWidgets.QGraphicsItem):
                 p = QtGui.QPen(cm.hovering(cm.ui_tr()))
             else:
                 p = QtGui.QPen(cm.ui_tr())
-            p.setWidth(2)
-            painter.setPen(p)
-            painter.drawEllipse(self._xy, self._xy, self._wh, self._wh)
+
+            if self.role == g.START_POINT or self.role == g.END_POINT:
+                p.setWidth(4)
+                painter.setPen(p)
+                painter.drawEllipse(self._xy, self._xy, self._wh, self._wh)
+            elif self.role == g.LABEL_START:
+                p.setWidth(1)
+                painter.setPen(p)
+                painter.drawRect(self._xy, self._xy, self._wh, self._wh)
+            else:
+                p.setWidth(2)
+                painter.setPen(p)
+                painter.drawEllipse(self._xy, self._xy, self._wh, self._wh)
             #
             # if self.pressed:
             # painter.setBrush(cm.active(cm.ui_tr()))

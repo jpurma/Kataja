@@ -110,15 +110,27 @@ class Constituent(MyBaseClass):  # collections.UserList):
         return find_shared_features(my_feats, other_feats)
 
     def add_feature(self, feat):
+        self.poke('features')
         if not isinstance(feat, Feature):
             feat = Feature(feat)
         self.features.append(feat)
 
+
+    def set_feature(self, key, value, family=''):
+        """ Inherited from BaseConstituent
+        """
+        self.poke('features')
+        feat = Feature(key)
+        self.features.append(feat)
+
+
     def remove_feature(self, feat):
+        self.poke('features')
         self.features.remove(feat)
 
     def replace_feature(self, old, new):
         if old in self.features:
+            self.poke('features')
             self.features.remove(old)
             self.features.append(new)
 

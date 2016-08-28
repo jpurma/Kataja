@@ -7,7 +7,6 @@ MAGNETS = 2
 BORDER = 3
 
 
-
 master_styles = {
     'fancy': {
         ARROW: {

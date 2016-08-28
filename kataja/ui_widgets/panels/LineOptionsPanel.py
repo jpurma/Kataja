@@ -5,6 +5,7 @@ from kataja.saved.Edge import Edge
 from kataja.ui_widgets.Panel import Panel
 from kataja.ui_support.panel_utils import box_row, spinbox, label, decimal_spinbox, mini_button
 import kataja.globals as g
+from kataja.edge_styles import names as edge_names
 
 __author__ = 'purma'
 
@@ -148,7 +149,6 @@ class LineOptionsPanel(Panel):
         """ Choose which selectors to show and update their values
         :return: None
         """
-        print('updating shape options panel ')
         if not ctrl.forest.settings:
             return
         if ctrl.ui.scope_is_selection:
@@ -159,57 +159,12 @@ class LineOptionsPanel(Panel):
                     self.update_control_points(sd['sample_edge'])
                 else:
                     self.set_title('Edge settings for selected edges')
-                arrowhead_at_start = sd['arrowhead_at_start']
-                arrowhead_at_end = sd['arrowhead_at_end']
             else:
-                arrowhead_at_start = False
-                arrowhead_at_end = False
+                self.set_title('Edge settings - No edge selected')
         else:
             edge_type = ctrl.ui.active_edge_type
-            sd = ctrl.forest.settings.shape_info(edge_type)
-            arrowhead_at_start = ctrl.forest.settings.edge_info(edge_type, 'arrowhead_at_start')
-            arrowhead_at_end = ctrl.forest.settings.edge_info(edge_type, 'arrowhead_at_end')
-
-            self.set_title('Edge settings for all ' + prefs.edge_styles[edge_type][
-                'name_pl'].lower())
-        if sd:
-            # Relative / fixed curvature
-            control_points = sd['control_points']
-            relative = sd.get('relative', None)
-            if relative is None or not control_points:  # linear shape, no arc of any kind
-                pass
-            #elif relative:
-            #    set_value(self.relative_arc_button, True)
-            #    set_value(self.arc_rel_dx_spinbox, sd['rel_dx'] * 100)
-            #    set_value(self.arc_rel_dy_spinbox, sd['rel_dy'] * 100)
-            #else:
-            #    set_value(self.fixed_arc_button, True)
-            #    set_value(self.arc_fixed_dx_spinbox, sd['fixed_dx'])
-            #    set_value(self.arc_fixed_dy_spinbox, sd['fixed_dy'])
-
-            # Leaf-shaped lines or solid lines
-            fill = sd.get('fill', None)
-            if fill:
-                if 'leaf_x' in sd:
-                    #set_value(self.leaf_x_spinbox, sd['leaf_x'])
-                    #set_value(self.leaf_y_spinbox, sd['leaf_y'])
-                    #set_value(self.fill_button, True)
-                    pass
-            elif fill is not None:
-                if sd.get('thickness', None) is not None:
-                    #set_value(self.thickness_spinbox, sd['thickness'])
-                    #set_value(self.line_button, True)
-                    pass
-            # Arrowheads
-            if arrowhead_at_start is not None:
-                #set_value(self.arrowhead_start_button, arrowhead_at_start)
-                pass
-            if arrowhead_at_end is not None:
-                #set_value(self.arrowhead_end_button, arrowhead_at_end)
-                pass
-        else:
-            self.set_title('Edge settings - No edge selected')
-
+            edge_name_plural = edge_names.get(edge_type, '? edges')[1].lower()
+            self.set_title('Edge settings for all ' + edge_name_plural)
         self.setFixedSize(self.sizeHint())
         self.updateGeometry()
 

@@ -1545,9 +1545,7 @@ class Node(Movable):
         super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event):
-        print('mouseMoving')
         if ctrl.pressed is self:
-            print('jökötin')
             if ctrl.dragged_set or (event.buttonDownScenePos(
                     QtCore.Qt.LeftButton) - event.scenePos()).manhattanLength() > 6:
                 self.drag(event)

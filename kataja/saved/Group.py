@@ -225,7 +225,7 @@ class Group(SavedObject, QtWidgets.QGraphicsObject):
         if len(sel) == 0:
             self._br = QtCore.QRectF()
             self.path = None
-            self.center_point = None
+            self.center_point = 0, 0
             return
         elif len(sel) == 1:
             x1, y1, x2, y2, route = embellished_corners(sel[0])
