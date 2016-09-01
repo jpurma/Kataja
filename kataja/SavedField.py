@@ -2,65 +2,58 @@ from kataja.singletons import ctrl
 
 
 class SavedField(object):
-    """ Descriptor to use together with the BaseModel -class.
+    """ This is a descriptor to use together with the BaseModel -class.
     if class variables are created as varname = Saved("varname"),
     when the same variable name is used in instances it will store the
     values in such way that they can be used for saving the data or
-    remembering history
-    through undo/redo system
+    remembering history through undo/redo system
 
     >class Item(BaseModel):
-    >    d = Saved("d")
     >
-    >    def __init__(self):
+    >   def __init__(self):
     >       super().__init__()
     >       self.d = 30
-    Now instance variable d supports Saving, Undo and Redo!
+    >
+    >   d = Saved("d")
 
-    Descriptor can be assigned a before_set, a method of object that is
-    called with provided value
-    if setting a value needs to have some side effect. This is to replace
+    Now instance variable self.d supports Saving, Undo and Redo!
+
+    Rule of thumb is that Kataja classes that describe objects that need to be saved or undoed
+    always have __at the end of class__ definitions of its SavedFields.
+
+    Descriptor can be given parameter "before_set", which should be a method of host object that is
+    called with provided value if setting a value needs to have some side effect. This is to replace
     property -setters.
 
-    Note that if variable is container e.g. list or dict,
-    the setter doesn't activate when the insides are changed. For container,
-    you have
-    to poke them manually to notify that they need to save their current
-    state to history.
+    Note that if variable is container e.g. list or dict, the setter doesn't activate when the
+    insides are changed. For container, you have to poke them manually to notify that they need
+    to save their current state to history.
 
-    This is simple: (implemented in BaseModel)
-    before manipulating a container, e.g. append, remove, pop,
-    [key]=something assignments etc.
-    call
+    This is simple: (implemented in SavedObject)
+    before manipulating a container, e.g. append, remove, pop, making [key]=something assignments
+    etc. call:
 
-    self.poke("d")
-    d["oh"] = "my"
+    >self.poke("d")
+    >d["oh"] = "my"
 
-    since common Undo round, the old variable is stored only before the
-    changes begin, you need
-    to poke container only once if there are many changes incoming. e.g. if
-    you are doing a loop
-    that will write to a list or dictionary, poke the container before the
-    loop, not inside it.
+    With poke, old items of dict "d" are stored in SavedField's history. The changed value for
+    "oh" is the current value.
+
+    Poke is needed only once per container if there are multiple changes in a row.
+    Be careful to not put it in a loop where it would be called several times.
 
     == Watchers ==
 
-    The descriptor also supports announcing the changes in values to
-    arbitrary Kataja objects.
-    Usually this will be used to reflect changed value in UI elements,
-    e.g. changing
+    The descriptor also supports announcing the changes in values to arbitrary Kataja objects.
+    Usually this will be used to reflect changed value in UI elements, e.g. changing
     numeric values in comboboxes as user drags an element.
 
-    The signaling works by giving a string identifier for 'watcher'. Then,
-    if value is changed,
-    Kataja looks into its global dict where Kataja (UI) objects are listed
-    under the identifier.
-    If there are objects, all of them are called with method 'watch_alerted',
-    with calling
+    The signaling works by giving a string identifier for 'watcher'. Then, if value is changed,
+    Kataja looks into its global dict where Kataja (UI) objects are listed under the identifier.
+    If there are objects, all of them are called with method 'watch_alerted', with calling
     object, field name, and new value as arguments.
 
-
-     """
+    """
 
     def __init__(self, name, before_set=None, if_changed=None, watcher=None):
         self.name = name
@@ -111,8 +104,9 @@ class SavedField(object):
 
 
 class SavedFieldWithGetter(SavedField):
-    """ Saved, but getter runs the provided after_get -method for the returned
-    value. Probably bit slower than regular Saved
+    """ SavedField, but getter runs the provided after_get -method for the returned
+    value. Useful if you want to receive e.g. QPointFs, but you want to store them as
+    (x, y)-tuples. Probably bit slower than regular SavedField
     """
 
     def __init__(self, name, before_set=None, if_changed=None, getter=None):
@@ -129,9 +123,9 @@ class SavedFieldWithGetter(SavedField):
 
 class SavedSynField(SavedField):
     """ Descriptor that delegates attribute requests to syntactic_object.
-    can be given before_set, a method in object that is run when value is set
-    and if property has different name in synobj than here it can be provided as
-    name_in_synobj
+    It can be given "before_set" parameter, which should be a method in host object that is run
+    when value is set. If the property has different name in synobj than here it can be provided
+    with parameter "name_in_synobj"
     """
 
     def __init__(self, name, before_set=None, if_changed=None,

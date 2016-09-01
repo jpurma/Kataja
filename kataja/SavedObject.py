@@ -78,8 +78,6 @@ class SavedObject(object):
                 setattr(new_obj, key, new_value)
         return new_obj
 
-
-
     def poke(self, attribute):
         """ Alert undo system that this (Saved) object is being changed.
         This is used manually for container-type objects in the model before
@@ -135,8 +133,7 @@ class SavedObject(object):
     def transitions(self):
         """ Create a dict of changes based on modified attributes of the item.
         result dict has tuples as value, where the first item is value
-        before, and second
-        item is value after the change.
+        before, and second item is value after the change.
         :return: (dict of changed attributes, 0=EDITED(default) | 1=CREATED |
         2=DELETED)
         """
@@ -332,7 +329,6 @@ class SavedObject(object):
                 return
             # objects that support saving
 
-            #if not getattr(obj, 'unique', False):
             key = getattr(obj, 'uid', '')
             if key and key not in full_map:
                 full_map[key] = obj

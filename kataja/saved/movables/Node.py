@@ -139,7 +139,7 @@ class Node(Movable):
         self.label_display_data = {}
         self.setFiltersChildEvents(False)
         self.setAcceptHoverEvents(True)
-        # self.setAcceptDrops(True)
+        self.setAcceptDrops(True)
         self.setFlag(QtWidgets.QGraphicsObject.ItemSendsGeometryChanges)
         self.setFlag(QtWidgets.QGraphicsObject.ItemIsMovable)
         self.setFlag(QtWidgets.QGraphicsObject.ItemIsSelectable)
@@ -1327,11 +1327,10 @@ class Node(Movable):
 
         :param scene_pos:
         """
-        def in_any_tree(node, treeset):
+        def in_any_tree(item, treeset):
             for tree in treeset:
                 if item in tree:
                     return True
-
         ctrl.dragged_focus = self
         ctrl.dragged_set = set()
         ctrl.dragged_groups = set()
@@ -1411,16 +1410,14 @@ class Node(Movable):
         scene_pos = to_tuple(event.scenePos())
         if not ctrl.dragged_focus:
             self.start_dragging(scene_pos)
-        # change dragged positions to be based on adjustment instead of
-        # distance to main dragged.
+        # change dragged positions to be based on adjustment instead of distance to main dragged.
         for node in ctrl.dragged_set:
             node.dragged_to(scene_pos)
         for group in ctrl.dragged_groups:
             group.update_shape()
 
     def dragged_to(self, scene_pos):
-        """ Dragged focus is in scene_pos. Move there or to position
-        relative to that
+        """ Dragged focus is in scene_pos. Move there or to position relative to that
         :param scene_pos: current pos of drag pointer (tuple x,y)
         :return:
         """
@@ -1545,14 +1542,22 @@ class Node(Movable):
         super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event):
-        if ctrl.pressed is self:
-            if ctrl.dragged_set or (event.buttonDownScenePos(
-                    QtCore.Qt.LeftButton) - event.scenePos()).manhattanLength() > 6:
-                self.drag(event)
-                ctrl.graph_scene.dragging_over(event.scenePos())
+        # this only happens when this node is being pressed
+        if ctrl.dragged_set or (event.buttonDownScenePos(
+                QtCore.Qt.LeftButton) - event.scenePos()).manhattanLength() > 6:
+            self.drag(event)
+            ctrl.graph_scene.dragging_over(event.scenePos())
+        super().mouseMoveEvent(event)
 
     def mouseReleaseEvent(self, event):
-        click_again = False
+        """ Either we are finishing dragging or clicking the node. If clicking a node with
+        editable label, the click has to be replayed to Label (QGraphicsTextItem) when it has
+        toggled the edit mode on, to let its inaccessible method for positioning cursor on click
+        position to do its work.
+        :param event:
+        :return:
+        """
+        replay_click = False
         if ctrl.pressed is self:
             ctrl.release(self)
             if ctrl.dragged_set:
@@ -1561,13 +1566,13 @@ class Node(Movable):
                 ctrl.graph_scene.kill_dragging()
                 ctrl.ui.update_selections()  # drag operation may have changed visible affordances
                 ctrl.main.action_finished(message)  # @UndefinedVariable
-            else: # This is regular click on 'pressed' object
+            else:  # This is a regular click on 'pressed' object
                 self.select(event)
                 if self.label_object.is_quick_editing():
-                    click_again = True
+                    replay_click = True
                 self.update()
         super().mouseReleaseEvent(event)
-        if click_again:
+        if replay_click:
             ctrl.graph_view.replay_mouse_press()
             self.label_object.mouseReleaseEvent(event)
             ctrl.release(self)

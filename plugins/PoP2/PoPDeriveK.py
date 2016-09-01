@@ -398,7 +398,6 @@ class Generate:
             dephase = True
 
         # check Stack if unvalued igned features are present
-        remerge = None
         if self.in_main:
             merged, remerge = self.remerge_if_can(merged, dephase=dephase)
 

@@ -570,13 +570,13 @@ class Label(QtWidgets.QGraphicsTextItem):
         if self._last_blockpos:
             first, last, first_line, last_line = self._last_blockpos
             if first and keyevent.matches(QtGui.QKeySequence.MoveToPreviousChar):
-                next_sel = ctrl.graph_scene.find_next_selection(self._host, 'left')
+                next_sel = ctrl.graph_scene.next_selectable_from_node(self._host, 'left')
             elif last and keyevent.matches(QtGui.QKeySequence.MoveToNextChar):
-                next_sel = ctrl.graph_scene.find_next_selection(self._host, 'right')
+                next_sel = ctrl.graph_scene.next_selectable_from_node(self._host, 'right')
             elif first_line and keyevent.matches(QtGui.QKeySequence.MoveToPreviousLine):
-                next_sel = ctrl.graph_scene.find_next_selection(self._host, 'up')
+                next_sel = ctrl.graph_scene.next_selectable_from_node(self._host, 'up')
             elif last_line and keyevent.matches(QtGui.QKeySequence.MoveToNextLine):
-                next_sel = ctrl.graph_scene.find_next_selection(self._host, 'down')
+                next_sel = ctrl.graph_scene.next_selectable_from_node(self._host, 'down')
             if next_sel and next_sel != self._host:
                 self.clearFocus()
                 ctrl.select(next_sel)

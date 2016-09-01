@@ -9,6 +9,7 @@ from kataja.edge_styles import names as edge_names
 
 __author__ = 'purma'
 
+
 class LineOptionsPanel(Panel):
     """ Panel for editing how edges and nodes are drawn. """
 
@@ -144,7 +145,6 @@ class LineOptionsPanel(Panel):
         self.update_panel()
         self.show()
 
-    @time_me
     def update_panel(self):
         """ Choose which selectors to show and update their values
         :return: None
@@ -156,7 +156,6 @@ class LineOptionsPanel(Panel):
             if sd:
                 if sd['edge_count'] == 1:
                     self.set_title('Edge settings for selected edge')
-                    self.update_control_points(sd['sample_edge'])
                 else:
                     self.set_title('Edge settings for selected edges')
             else:
@@ -184,21 +183,6 @@ class LineOptionsPanel(Panel):
                 return Panel.initial_position(self)
         else:
             return Panel.initial_position(self)
-
-    def update_control_points(self, edge):
-        if (not edge) or not edge.curve_adjustment:
-            return
-        points = len(edge.curve_adjustment)
-        if points == 1:
-            pass
-            #set_value(self.cp1_x_spinbox, edge.curve_adjustment[0][0])
-            #set_value(self.cp1_y_spinbox, edge.curve_adjustment[0][1])
-        elif points == 2:
-            pass
-            #set_value(self.cp1_x_spinbox, edge.curve_adjustment[0][0])
-            #set_value(self.cp1_y_spinbox, edge.curve_adjustment[0][1])
-            #set_value(self.cp2_x_spinbox, edge.curve_adjustment[1][0])
-            #set_value(self.cp2_y_spinbox, edge.curve_adjustment[1][1])
 
     def close(self):
         """ Untick check box in EDGES panel """
@@ -233,6 +217,4 @@ class LineOptionsPanel(Panel):
         elif signal == 'selection_changed':
             self.update_panel()
         elif signal == 'edge_adjustment':
-            e = ctrl.get_single_selected()
-            if e and isinstance(e, Edge):
-                self.update_control_points(e)
+            pass

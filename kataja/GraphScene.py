@@ -40,8 +40,9 @@ from kataja.saved.movables.Node import Node
 # from BlenderExporter import export_visible_items
 
 class GraphScene(QtWidgets.QGraphicsScene):
-    """
-
+    """ QGraphicsScene does lots of work managing all QGraphicsItems, here are some additional
+    bookkeeping and measuring related to graphicsitems. Also the timer used here (see
+    timerEvent) is the main loop for moving nodes and iterating force graph steps.
     """
 
     def __init__(self, main=None, graph_view=None, graph_scene=None):
@@ -57,43 +58,14 @@ class GraphScene(QtWidgets.QGraphicsScene):
             self.setBackgroundBrush(ctrl.cm.gradient)
         else:
             self.setBackgroundBrush(qt_prefs.no_brush)
-        # else:
-        # self.setBackgroundBrush(QtGui.QBrush(colors.paper))
-        self.min_x = 100
-        self.max_x = -100
-        self.min_y = 100
-        self.max_y = -100
         self._timer_id = 0
-        self._dblclick = False
-        self._dragging = False
         self._fade_steps = 0
-        self._left_border = -50
-        self._right_border = 50
-        self._top_border = -50
-        self._bottom_border = 50
+        self._fade_steps_list = []
         self.manual_zoom = False
         self._cached_visible_rect = None
-        self.prev_time = time.time()
-        self.mouse_event_in_active_editor = False
         self.keep_updating_visible_area = False
         #self.focusItemChanged.connect(self.inspect_focus_change)
         self.setStickyFocus(True)
-        # self.ants = []
-        # for n in range(0,1000):
-        # ant = QtGui.QGraphicsRectItem(0,0,10,10)
-        # ant.setPos(random.random()*400-200, random.random()*400-200)
-        # #ant.setPen(colors.drawing2)
-        # self.addItem(ant)
-        # self.ants.append(ant)
-
-        # ### General events ##########
-
-    # def event(self, event):
-    # print 's:', event.type()
-    # #print 'Scene event received: %s' % event.type()
-    # return QtWidgets.QGraphicsScene.event(self, event)
-
-    # ####
 
 #    def inspect_focus_change(self, new, old, reason):
 #        print('focus changed. new: %s old: %s reason: %s, sender: %s' % (new, old, reason,
@@ -103,7 +75,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
         """ Initialization that can be done only when ctrl has all the pieces in place
         :return:
         """
-        #print('late init for graph scene')
         self.sceneRectChanged.connect(ctrl.ui.update_positions)
 
     def fit_to_window(self, force=False, soft=True):
@@ -160,7 +131,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
         else:
             return QtCore.QRectF(QtCore.QPoint(x_min, y_min), QtCore.QPoint(x_max, y_max))
 
-
     def print_rect(self):
         """ A more expensive version of visible_rect, also includes curves of edges. Too slow for
         realtime resizing, but when printing you don't want edges to be clipped.
@@ -211,7 +181,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
         """
         if not self._timer_id:
             self._timer_id = self.startTimer(prefs._fps_in_msec)
-            # print('item_moved timer id:', self._timer_id)
 
     start_animations = item_moved
 
@@ -225,7 +194,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
     def export_3d(self, path, forest):
         """ deprecated
-
         :param path:
         :param forest:
         """
@@ -233,88 +201,93 @@ class GraphScene(QtWidgets.QGraphicsScene):
         # export_visible_items(path = path, scene = self, forest = forest,
         # prefs = prefs)
 
-    def find_next_selection(self, current, direction):
-        """ Compute which is the closest or most appropriate object in given
-        direction. Used for
-        keyboard movement.
-        """
-        # ################### Nodes #############################
-        def find_node_in_direction(current, direction):
-            if direction == 'left':
-                all_siblings = []
-                for parent in current.get_parents(similar=False, visible=True):
-                    for child in parent.get_children(visible=True, similar=False):
-                        all_siblings.append(child)
-                if current in all_siblings:
-                    i = all_siblings.index(current)
-                    if i:
-                        return all_siblings[i-1]
-                return current
-            if direction == 'right':
-                all_siblings = []
-                for parent in current.get_parents(similar=False, visible=True):
-                    for child in parent.get_children(visible=True, similar=False):
-                        all_siblings.append(child)
-                if current in all_siblings:
-                    i = all_siblings.index(current)
-                    if i < len(all_siblings) - 1:
-                        return all_siblings[i+1]
-                return current
-            if direction == 'up':
-                all_parents = current.get_parents(similar=False, visible=True)
-                if all_parents:
-                    return all_parents[-1]
-                else:
-                    return current
-            if direction == 'down':
-                all_children = list(current.get_children(visible=True, similar=False))
-                if all_children:
-                    return all_children[0]
-                else:
-                    return current
-
-        def find_edge_in_direction(current, direction):
-            if direction == 'left':
-                all_siblings = []
-                for child_edge in current.start.get_edges_down(visible=True):
-                    all_siblings.append(child_edge)
-                i = all_siblings.index(current)
+    @staticmethod
+    def next_selectable_from_node(node, direction):
+        if direction == 'left':
+            all_siblings = []
+            for parent in node.get_parents(similar=False, visible=True):
+                for child in parent.get_children(visible=True, similar=False):
+                    all_siblings.append(child)
+            if node in all_siblings:
+                i = all_siblings.index(node)
                 if i:
                     return all_siblings[i-1]
-                else:
-                    return current
-            if direction == 'right':
-                all_siblings = []
-                for child_edge in current.start.get_edges_down(visible=True):
-                    all_siblings.append(child_edge)
-                i = all_siblings.index(current)
+            return node
+        if direction == 'right':
+            all_siblings = []
+            for parent in node.get_parents(similar=False, visible=True):
+                for child in parent.get_children(visible=True, similar=False):
+                    all_siblings.append(child)
+            if node in all_siblings:
+                i = all_siblings.index(node)
                 if i < len(all_siblings) - 1:
                     return all_siblings[i+1]
-                else:
-                    return current
-            if direction == 'up':
-                if current.start:
-                    return current.start
-                else:
-                    return current
-            if direction == 'down':
-                if current.end:
-                    return current.end
-                else:
-                    return current
+            return node
+        if direction == 'up':
+            all_parents = node.get_parents(similar=False, visible=True)
+            if all_parents:
+                return node.get_edge_to(all_parents[-1])
+            else:
+                return node
+        if direction == 'down':
+            all_children = list(node.get_children(visible=True, similar=False))
+            if all_children:
+                return node.get_edge_to(all_children[0])
+            else:
+                return node
 
-        found = None
-        if isinstance(current, Node):
-            found = find_node_in_direction(current, direction)
-        elif isinstance(current, Edge):
-            found = find_edge_in_direction(current, direction)
-        # if found == current, expand search to any nearest object in that direction
-        return found
+    @staticmethod
+    def next_selectable_from_edge(edge, direction):
+        if direction == 'left':
+            all_siblings = []
+            for child_edge in edge.start.get_edges_down(visible=True):
+                all_siblings.append(child_edge)
+            i = all_siblings.index(edge)
+            if i:
+                return all_siblings[i-1]
+            else:
+                return edge
+        if direction == 'right':
+            all_siblings = []
+            for child_edge in edge.start.get_edges_down(visible=True):
+                all_siblings.append(child_edge)
+            i = all_siblings.index(edge)
+            if i < len(all_siblings) - 1:
+                return all_siblings[i+1]
+            else:
+                return edge
+        if direction == 'up':
+            if edge.start:
+                return edge.start
+            else:
+                return edge
+        if direction == 'down':
+            if edge.end:
+                return edge.end
+            else:
+                return edge
 
-    def move_selection(self, direction):
+    def move_selection(self, direction, add_to_selection=False):
         """ Move selection to best candidate
         :param direction:
         """
+        def edge_of_set(my_selectables):
+            if direction == 'left':
+                sortable = [(po[0], po[1], it) for it, po in my_selectables]
+                x, y, item = min(sortable)
+            elif direction == 'right':
+                sortable = [(po[0], po[1], it) for it, po in my_selectables]
+                x, y, item = max(sortable)
+            elif direction == 'up':
+                sortable = [(po[1], po[0], it) for it, po in my_selectables]
+                y, x, item = min(sortable)
+            elif direction == 'down':
+                sortable = [(po[1], po[0], it) for it, po in my_selectables]
+                y, x, item = max(sortable)
+            else:
+                raise KeyError
+            return item
+
         # debugging plotter
         # for item, pos in selectables:
         # x,y = pos
@@ -327,71 +300,35 @@ class GraphScene(QtWidgets.QGraphicsScene):
         # if nothing is selected, select the edgemost item from given direction
         if not ctrl.selected:
             selectables = [(item, to_tuple(item.sceneBoundingRect().center())) for item in
-                           self.items() if getattr(item, 'selectable', False) and item.is_visible()]
-            if direction == 'left':
-                sortable = [(po[0], po[1], it) for it, po in selectables]
-                x, y, item = min(sortable)
-            elif direction == 'right':
-                sortable = [(po[0], po[1], it) for it, po in selectables]
-                x, y, item = max(sortable)
-            elif direction == 'up':
-                sortable = [(po[1], po[0], it) for it, po in selectables]
-                y, x, item = min(sortable)
-            elif direction == 'down':
-                sortable = [(po[1], po[0], it) for it, po in selectables]
-                y, x, item = max(sortable)
-            else:
-                raise KeyError
-            ctrl.select(item)
-            return item
+                           self.items() if hasattr(item, 'select') and item.is_visible()]
+            best = edge_of_set(selectables)
+            ctrl.select(best)
+            return best
         # ################ Relative left/right/up/down #############################
         else:
-            current = ctrl.get_single_selected()
-            if not current:
-                return
+            if len(ctrl.selected) == 1:
+                current = ctrl.get_single_selected()
             else:
-                best = self.find_next_selection(current, direction)
-                if best:
+                # when there are many selected items, extend it to given direction, from the
+                # edgemost item in that direction.
+                # this behavior may give odd results, but there may be no intuitive ways how such
+                #  a blob of selections should behave.
+                selectables = [(item, to_tuple(item.sceneBoundingRect().center())) for item in
+                               ctrl.selected if item.is_visible()]
+                current = edge_of_set(selectables)
+            best = None
+            if isinstance(current, Node):
+                best = self.next_selectable_from_node(current, direction)
+            elif isinstance(current, Edge):
+                best = self.next_selectable_from_edge(current, direction)
+            if best:
+                if add_to_selection:
+                    ctrl.add_to_selection(best)
+                else:
                     ctrl.select(best)
+            return best
 
     # ######### MOUSE ##############
-
-    @staticmethod
-    def get_closest_item(x, y, candidates, must_contain=False):
-        """ If there are several partially overlapping items at the point,
-        choose
-        the one that where we clicked closest to center.
-        :param x:
-        :param y:
-        :param candidates:
-        :param must_contain:
-        :return: GraphicsItem or None
-        """
-        min_d = 1000
-        closest_item = None
-        for item in candidates:
-            sbr = item.sceneBoundingRect()
-            if must_contain and not sbr.contains(x, y):
-                continue
-            sx, sy = to_tuple(sbr.center())
-            dist = abs(sx - x) + abs(sy - y)
-            # isObscured doesn't work with semi-transparent items,
-            # use zValues instead
-            if closest_item:
-                if dist < min_d and item.zValue() >= closest_item.zValue():
-                    closest_item = item
-                    min_d = dist
-            else:
-                closest_item = item
-                min_d = dist
-        return closest_item
-
-    def start_dragging(self):
-        """ Raise graph scene flags related to dragging -- the dragged nodes
-        have already
-        alerted controller.
-        """
-        self._dragging = True
 
     def kill_dragging(self):
         """ Remove all flags and temporary things related to dragging """
@@ -399,20 +336,25 @@ class GraphScene(QtWidgets.QGraphicsScene):
             ctrl.dragged_focus.finish_dragging()
         ctrl.dragged_text = None
         ctrl.press(None)
-        self._dragging = False
         ctrl.set_drag_hovering(None)
         ctrl.main.ui_manager.update_touch_areas()
         self.graph_view.toggle_suppress_drag(False)
 
     def dragging_over(self, scene_pos):
+        """ Dragged kataja object is in this scene position, check if there are items that should
+         react by lighting up. Update ctrl.drag_hovering_on to reflect this.
+        :param scene_pos:
+        :return:
+        """
         self.item_moved()
         items = (x for x in self.items(scene_pos) if
                  hasattr(x, 'dragged_over_by') and x is not ctrl.pressed)
-        hovering_over = False
+        hovering_over_something = False
         for item in items:
             if item.dragged_over_by(ctrl.pressed):
-                hovering_over = True
-        if not hovering_over:
+                hovering_over_something = True
+                break
+        if not hovering_over_something:
             ctrl.set_drag_hovering(None)
         self.main.ui_manager.update_positions()
 
@@ -425,10 +367,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
         # click on empty place means select nothing, unless we are shift+selecting
         if event.modifiers() != Qt.ShiftModifier:
             ctrl.deselect_objects()
-
-        # It should be impossible to still be dragging while no object is pressed:
-        if self._dragging:
-            print('still _dragging!')
 
         if self.graph_view.selection_mode():
             ctrl.area_selection = True
@@ -446,8 +384,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
             ctrl.area_selection = False
 
     def dragEnterEvent(self, event):
-        """
-
+        """ Dragging new nodes from UI items or text snippets from desktop/other programs should
+        raise hints of where the dragged object can connect.
         :param event:
         """
         data = event.mimeData()
@@ -468,8 +406,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
                     print('received unknown command:', command, args)
 
     def dragLeaveEvent(self, event):
-        """
-
+        """ Clean up drag hints
         :param event:
         """
         ctrl.ui.remove_touch_areas()
@@ -562,17 +499,14 @@ class GraphScene(QtWidgets.QGraphicsScene):
                     event.acceptProposedAction()
 
     def mouseDoubleClickEvent(self, event):
-        """ If doubleclicking an empty spot, open creation menu. If
-        doubleclicking an object,
+        """ If doubleclicking an empty spot, open creation menu. If doubleclicking an object,
         it may or may not do something with it.
         :param event: some kind of mouse event?
         :return: None
         """
-        self._dblclick = True
         super().mouseDoubleClickEvent(event)
-        if event.isAccepted():
-            return
-        ctrl.ui.create_creation_dialog(event.scenePos())
+        if not event.isAccepted():
+            ctrl.ui.create_creation_dialog(event.scenePos())
 
     # ### Timer loop
     # #################################################################
@@ -580,14 +514,12 @@ class GraphScene(QtWidgets.QGraphicsScene):
     def fade_background_gradient(self, old_base_color, new_base_color):
         """ Fade between colors of two canvases to smoothen the change. Call this only if colors
         are different and this is worth the effort.
-
-        :param old_base_color:
-        :param new_base_color:
+        :param old_base_color: QColor
+        :param new_base_color: QColor
         """
         self._fade_steps = 7
         if not self._timer_id:
             self._timer_id = self.startTimer(prefs._fps_in_msec)
-            # print('fade background timer id:', self._timer_id)
 
         self._fade_steps_list = []
         # oh, os, ov, oa = old_base_color.getRgbF()
@@ -623,8 +555,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
 
     def timerEvent(self, event):
         """ Main loop for animations and movement in the scene -- calls nodes
-        and tells them to update
-        their position
+        and tells them to update their position
         :param event: timer event? sent by Qt
         """
         # Uncomment to check what is the actual framerate:
