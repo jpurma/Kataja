@@ -36,9 +36,8 @@ differ = difflib.Differ()
 
 
 class Label(QtWidgets.QGraphicsTextItem):
-    """ Labels are names of nodes. Node itself handles all the logic of
-    deciding what to show in label, label only calls nodes method to ask for
-    text. """
+    """ Labels are names of nodes. Node itself provides a template for what to show in label,
+    label composes its document (html layout) for its contents based on that. """
     max_width = 400
     __qt_type_id__ = next_available_type_id()
 
@@ -77,7 +76,7 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.doc = LabelDocument()
         self.is_card = False
         self.card_size = (60, 90)
-
+        self._fresh_focus = False
         self.setDocument(self.doc)
         # not acceptin hover events is important, editing focus gets lost if other labels take
         # hover events. It is unclear why.
@@ -370,6 +369,7 @@ class Label(QtWidgets.QGraphicsTextItem):
             self.setAcceptDrops(True)
             ctrl.graph_view.setFocus()
             self.setFocus()
+            self._fresh_focus = True
 
         elif self._quick_editing:
             if self.doc.isModified():
@@ -387,6 +387,7 @@ class Label(QtWidgets.QGraphicsTextItem):
             self.setAcceptDrops(False)
             self.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
             self.clearFocus()
+            self._fresh_focus = False
             #if len(fields) == 0:
             #    ctrl.main.action_finished("Finished editing %s, no changes." % self._host,
             #                              undoable=False)
@@ -567,7 +568,9 @@ class Label(QtWidgets.QGraphicsTextItem):
         c = self.textCursor()
         self.cursor_position_changed(c)
         next_sel = None
-        if self._last_blockpos:
+        if self._fresh_focus:
+            self._fresh_focus = False
+        elif self._last_blockpos:
             first, last, first_line, last_line = self._last_blockpos
             if first and keyevent.matches(QtGui.QKeySequence.MoveToPreviousChar):
                 next_sel = ctrl.graph_scene.next_selectable_from_node(self._host, 'left')
