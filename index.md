@@ -3,7 +3,7 @@ layout: page
 title: Visualising biolinguistics
 ---
 
-{% include image name="purplebanner.png" %}
+{% include image name="purplebanner.jpg" %}
 
 
 Kataja is a free and open software for visualising hypothetical syntactic structures in minimalist and biolinguistic frameworks. Most of the current models in generative theory assume few basic operations cyclically applied and thus create quite complex structures. Kataja aims to help in manipulating and evaluating these. 
@@ -26,10 +26,14 @@ Kataja can be used in presentations or lectures, live in location, or streamed o
 
 Each Kataja file is a set of 'slides', independent trees or groups of them. Everything done with the trees creates a visual response or animation, to help the audience to follow what has happened. Kataja even has a facecam widget to ease setting up recording or streaming.
 
-{% include image name="facecam.png" %}
+{% include image name="facecam.jpg" %}
 
 Kataja is free and for everyone: the audience can have the same tool as the lecturer and look at the examples own their own.
 
 ## Experimenting
 
 Kataja has a plugin system for developing and running syntactic models in Python, as complex as they get. In these cases Kataja is a visualisation framework: plugin sends derivation steps, or intermediate states and Kataja provides means to browse and visualise them.   
+
+<iframe width="480" height="270" src="https://www.youtube.com/embed/_1Nn8UGDpg4?rel=0" frameborder="0" allowfullscreen></iframe>
+
+
