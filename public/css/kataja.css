@@ -57,6 +57,22 @@ p.lead {
   display: none;
 }
 
+figcaption {
+  font-size: 80%;
+}
+
+figure { 
+    margin-left: 0em; /* my figures are centered */
+    margin-right: 0em; /* my figures are centered */
+}
+
+@media (min-width: 32em) {
+  figure { 
+      margin-left: 1em; 
+      margin-right: 1em; 
+  }
+}
+
 @media (min-width: 48em) {
   #can {
     display: block;
@@ -79,5 +95,12 @@ p.lead {
     right: 0rem;
     position: absolute;
   }
+  figure { 
+      margin-left: 0em; 
+      margin-right: 0em; 
+  }
 }
+
+
+
 
