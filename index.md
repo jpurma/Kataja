@@ -28,13 +28,13 @@ Kataja can be used in presentations or lectures, live in location, or streamed o
 
 Each Kataja file is a set of 'slides', independent trees or groups of them. Everything done with the trees creates a visual response or animation, to help the audience to follow what has happened. Kataja even has a facecam widget to ease setting up recording or streaming.
 
-{% include image name="facecam.jpg" caption="Show and tell with Kataja" %}
+{% include image name="facecam.jpg" caption="Show and tell with Kataja and a nonsensical structure" %}
 
 Kataja is free and for everyone: the audience can have exactly the same tool as the lecturer and they can look at the examples own their own. Kataja should be both the entry level and the professional tool for figuring out the computational primitives of language.
 
 ## Experimenting
 
-Kataja has a plugin system for developing and running syntactic models in Python, as complex as they get. In these cases Kataja is a visualisation framework: plugin sends derivation steps, or intermediate states and Kataja provides means to browse and visualise them.   
+Kataja has a plugin system for developing and running syntactic models written in Python3, as complex as they get. In these cases Kataja is a visualisation framework and a utility provider: plugin sends derivation steps, or intermediate states and Kataja provides means to browse, visualise and debug them.   
 
 <figure>
 <center>
@@ -43,4 +43,7 @@ Kataja has a plugin system for developing and running syntactic models in Python
 </center>
 </figure>
 
+Kataja provides a simple base implementation for constituents and operations such as merge. Syntax modeler can build on them, modify them or replace them.  
+
+[›Download](/download)
 

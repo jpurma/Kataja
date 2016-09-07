@@ -13,9 +13,9 @@ This page will collect references to research that uses or acknowledges Kataja. 
 
 Since Kataja is free, references and recognition is what motivates its further development.
 
-## Theoretical position
+## My theoretical position
 
-Kataja is created to ease some general problems of biolinguistics. It is widely recognised that generative theory should build bridges to neurosciences by proposing computational primitives required for syntactic processing: low level computation. Much of the syntacticians work is done few step higher, in highest level possible to explain some syntactical generalisation. As I see it, many syntacticians have their own low level assumptions, but putting them to test is either lot of handiwork or requires writing a computer model (e.g. [Sandiway Fong](http://elmo.sbs.arizona.edu/sandiway/), [Jason Ginsberg](http://www.osaka-kyoiku.ac.jp/~jginsbur/index.html), [Edward Stabler](http://www.linguistics.ucla.edu/people/stabler/coding.html)). Kataja encourages sketching cyclic operations and writing more of these models, and helps to communicate the work to audience that expects complexity marred with visual storytelling, be they partners in multidisciplinary inquiry or students of syntax. 
+Kataja is created to ease some general problems of biolinguistics. It is widely recognised that generative theory should build bridges to neurosciences by proposing computational primitives required for syntactic processing: low level computation. Much of the syntacticians work is done few step higher, in highest level possible to explain some syntactical generalisation. As I see it, many syntacticians have their own low level assumptions, but putting them to test is either lot of handiwork or requires writing a computer model (e.g. work by [Sandiway Fong](http://elmo.sbs.arizona.edu/sandiway/), [Jason Ginsberg](http://www.osaka-kyoiku.ac.jp/~jginsbur/index.html) and [Edward Stabler](http://www.linguistics.ucla.edu/people/stabler/coding.html)). Kataja encourages sketching cyclic operations and writing more of these models, and helps to communicate the work to audience that expects complexity marred with visual storytelling, be they partners in multidisciplinary inquiry or students of syntax. 
 
 ## Suggest improvements
 
