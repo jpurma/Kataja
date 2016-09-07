@@ -5,7 +5,7 @@ title: About
 
 Kataja visualisation tool is developed by [Jukka Purma](http://purma.fi) as part of Doctor of Arts thesis in [Aalto University School of Arts, Design and Architecture](http://arts.aalto.fi/en/). Thanks for [Media Lab](https://medialab.aalto.fi) and especially [LeGroup](http://legroup.aalto.fi) for providing an inspiring research environment.
 
-{% include image name="aalto150.png" %}
+{% include image name="aalto150.png" href="http://arts.aalto.fi/en/" %}
 
 Kataja development has also been supported and supervised by [Pauli Brattico](https://finnishsyntax.wordpress.com), Saara Huhmarniemi, Tommi Gröndahl and Taija Saikkonen -- our multiyear ongoing linguistics seminar from [Cognitive Science](http://www.helsinki.fi/kognitiotiede/english/index.htm) at [University of Helsinki](https://www.helsinki.fi/en). 
 

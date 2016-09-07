@@ -2,9 +2,9 @@
 
 <figure>
     <center>
+    {% if include.href %}<a href="{{ include.href }}">{% endif %}
     <img src="/public/{{ include.name }}" srcset="/public/{{ include.name }} 1x, /public/{{ include.name | replace_first: ".", "@2x." }} 2x" {% if include.alt %} alt="{{ include.alt }}" {% endif %} {% if include.width %} width="{{ include.width }}" {% endif %} />
-    {% if include.caption %}
-    <figcaption>{{ include.caption }}</figcaption>
-    {% endif %}
+    {% if include.caption %}<figcaption>{{ include.caption }}</figcaption>{% endif %}
+    {% if include.href %}</a>{% endif %}
     </center>
 </figure>
