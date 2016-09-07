@@ -26,7 +26,7 @@ There is no reason to believe in a single best visual presentation style for syn
 
 Kataja can be used in presentations or lectures, live in location, or streamed or recorded from your desktop. 
 
-Each Kataja file is a set of 'slides', independent trees or groups of them. Everything done with the trees creates a visual response or animation, to help the audience to follow what has happened. Kataja even has a facecam widget to ease setting up recording or streaming.
+Each Kataja file is a set of 'slides', independent trees or groups of them. Everything done with the trees creates a visual response or animation, to help the audience to follow what is being done. Non-syntactic elements such as glosses, arrows, annotations and groupings can be added on a view and they behave smart when the visualisation changes. Kataja even has a facecam widget to ease setting up recording or streaming.
 
 {% include image name="facecam.jpg" caption="Show and tell with Kataja and a nonsensical structure" %}
 
