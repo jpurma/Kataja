@@ -1,0 +1,26 @@
+# Dependencies
+markdown:         kramdown
+#highlighter:      pygments
+# gems: [jekyll-paginate]
+#gems:
+#  - jekyll-srcset
+
+# Permalinks
+permalink:        pretty
+#relative_permalinks: true
+
+# Setup
+title:            Kataja
+tagline:          'Visualising biolinguistics'
+description:      'Kataja is a free tool for <a href="/#drawing">drawing</a>, <a href="/#presenting">presenting</a> and <a href="/#experimenting">experimenting</a> in current syntactic theory.'
+url:              http://kataja.purma.fi
+baseurl:          /
+
+author:
+  name:           'Jukka Purma'
+  url:            https://purma.fi/
+
+github:
+  repo:           https://github.com/jpurma/kataja
+
+github_username:  jpurma

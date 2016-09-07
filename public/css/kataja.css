@@ -1,0 +1,83 @@
+
+#can {
+  display: none;
+  background-color: #202020;
+}
+
+html {
+  font-family: "Times New Roman", serif;
+}
+h1, h2, h3, h4, h5, h6 {
+  font-family: "PT Sans", Helvetica, Arial, sans-serif;
+}
+
+h1 {
+  font-family: "Berkshire Swash", serif;  
+}
+
+h1#main_title { 
+    font-family: "Berkshire Swash", serif;  
+    position: static;
+    left: 3px;
+    top: 50px; 
+    color: #fff;
+    font-size: 4.00rem;
+    font-weight: normal;
+}
+
+#color_knob {
+    position: absolute;
+    width:24px;
+    height:24px;
+    top: 8px;
+    right: 8px;
+    border: 1px dotted rgba(255, 255, 255, .3);
+    color: #fff;
+    text-align: center;
+    border-radius: 12px;
+    transform: rotate(0deg);    
+    cursor:pointer;
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none;   /* Chrome/Safari/Opera */
+    -khtml-user-select: none;    /* Konqueror */
+    -moz-user-select: none;      /* Firefox */
+    -ms-user-select: none;       /* Internet Explorer/Edge */
+    user-select: none;   
+}
+
+a.leaf {
+    position: static;
+    color: white;
+    font-family: "Times New Roman", serif;
+    opacity: 0;
+    display: inline-block;
+}
+
+p.lead {
+  display: none;
+}
+
+@media (min-width: 48em) {
+  #can {
+    display: block;
+  }
+  h1#main_title {
+    position: absolute;
+  }
+  a.leaf {
+    position: absolute;
+  }
+  span.bracket {
+    display: none;
+  }
+  p.lead {
+    display: block;
+  }
+  div.sidebar-sticky {
+    left: 1rem;
+    bottom: 2rem;
+    right: 0rem;
+    position: absolute;
+  }
+}
+

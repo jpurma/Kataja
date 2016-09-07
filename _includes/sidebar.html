@@ -1,0 +1,31 @@
+<div class="sidebar">
+  <div class="container sidebar-sticky">
+    <div class="sidebar-about">
+      <canvas id="can" width="300" height="300">
+      </canvas>
+      <h1 id="main_title">
+        <a href="{{ site.baseurl }}">
+          {{ site.title }}
+        </a>
+      </h1>
+      <nav class="treelinks">
+      <span class="bracket">[</span>  
+      <a id="leaf1" href="{{ site.baseurl }}download" class="leaf">Download</a>
+      <span class="bracket">[</span>  
+      <a id="leaf2" href="{{ site.baseurl }}documentation" class="leaf">Documentation</a>
+      <span class="bracket">[</span>  
+      <a id="leaf3" href="{{ site.baseurl }}research" class="leaf">Research</a>
+      <span class="bracket">|</span>
+      <a id="leaf4" href="{{ site.baseurl }}about" class="leaf">About</a>
+      <span class="bracket">] ] ]</span> 
+      </nav>
+      <p></p>
+      <p class="lead">Kataja is a free tool for <a href="{{ site.baseurl }}#drawing">drawing</a>, <a href="{{ site.baseurl }}#presenting">presenting</a> and <a href="{{ site.baseurl }}#experimenting">experimenting</a> in current syntactic theory.</p>
+
+    </div>
+    <a class="sidebar-nav-item" href="{{ site.github.repo }}">GitHub project</a>
+
+    <p class="sidebar-nav-item">&copy; <a href="{{ site.author.url }}">{{ site.author.name }}</a> {{ site.time | date: '%Y' }}. </p>
+  </div>
+  <div class="color_tuner" id="color_knob">'</div>
+</div>
