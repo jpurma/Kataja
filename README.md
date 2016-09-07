@@ -2,32 +2,34 @@
 
 Visualizing Biolinguistics
 
+[Main site](http://www.kataja.purma.fi)
+
 Kataja is an open source visualization framework for researchers working with syntax of human languages. 
 Kataja aims to be the best available tool for:
 
- - **DRAWING** syntactic trees
+ - **DRAWING** syntax trees
  - **PRESENTING** syntactic phenomena
- - **CRAFTING** syntactic hypotheses
+ - **EXPERIMENTING** with syntax models
 
-The features will be added to satisfy these needs, in this order.
+The features will be added to satisfy these needs.
 
 Kataja is designed and developed by Jukka Purma and it is published under GPL3 license. See COPYING.
-The work here is the production part for PhD (Doctor of Arts) in Aalto University School of Art, Design and Architecture, supervised by doc. Pauli Brattico (University of Helsinki) and prof. Teemu Leinonen (Aalto ARTS). 
+The work here is the production part for PhD (Doctor of Arts) in Aalto University School of Art, Design and Architecture, supervised by doc. Saara Huhmarniemi (University of Helsinki, prev. supervised by Pauli Brattico) and prof. Teemu Leinonen (Aalto ARTS). 
 
-Kataja is built on Qt5 and Python3.4, using Riverbank Software's PyQt5 to provide Qt bridge for Python.
+Kataja is built on Qt5 and Python3, using Riverbank Software's PyQt5 to provide Qt bridge for Python.
 
 # About current version
 
-The software is pre-alpha, under development. Daily updates may break features, and generally are not made in order to publish new features, but to help express and maintain the daily progress with the code base.  
+The software is alpha and under intense development. Daily updates may break features, and generally are not made in order to publish new features, but to help express and maintain the daily progress with the code base.  
 
 # Running and installing on Mac OS X
 
 There are two ways for running Kataja in Mac OS X:
 
 1. As a Kataja.app -- recommended for everyday use, easier to install. 
-2. Running as a python script. Necessary for Kataja development and makes plugin development much easier. Requires installation of Qt5.5, PyQt5, sip. See instructions below.
+2. Running as a python script. Necessary for Kataja development and makes plugin development much easier. Requires installation of Qt5, PyQt5, latest sip. Installing these has become easier recently.  See instructions below.
 
-Both options can coexist on same system, but in this case they share the user preferences. (fixme: should they?) 
+Both options can coexist on same system, though they may share user  preferences. 
 
 ## Option 1: download, install and run Kataja.app
 
@@ -35,13 +37,13 @@ Both options can coexist on same system, but in this case they share the user pr
 2. Drag Kataja -application to your Applications-folder. 
 3. Double click Kataja.app to launch it.
 
-Like any well-behaving Mac app, Kataja will on first run create a folder to `~/Library/Application Support/Kataja` and a preferences file in `~/Preferences/fi.aalto.jpurma.Kataja.plist`. The Application Support folder will include folder `plugins`, which is the easiest way to extend Kataja. 
+Like any well-behaving Mac app, Kataja will on first run create a folder to `~/Library/Application Support/Kataja` and a preferences file in `~/Preferences/fi.purma.Kataja.plist`. The Application Support folder will include folder `plugins`, which is the easiest way to extend Kataja. 
 
 ## Option 2a: run as a Python3 script 
 
 This option means setting up development environment for Kataja. As Kataja is all python code, the development environment can be easily used for daily linguistic work, teaching or studying: there is no separate build phase for launching Kataja, Kataja can always be launched from terminal in Kataja directory with command `python3 Kataja.py`. It starts faster than Kataja.app-version.
 
-In following the versions mentioned are the latest versions available in 8.3. 2015. Until stabilized, Kataja will be using the latest versions available in order to benefit from performance improvements and bug fixes in build stack components. If the version numbers in this document are dated, use latest PyQt5 version and see its installation guide to find out what are the required versions for SIP and Qt. Usually when a new version of Qt is available, new versions of SIP and PyQt are soon made available.    
+Until stabilized, Kataja will be using the latest versions available from Qt and PyQt in order to benefit from performance improvements and bug fixes. If the Python Wheels-option doesn't work, refer to PyQt5's Reference Guide for installation instruction.    
 
 Here are the preparations you need to do before Kataja can be run:
 
@@ -51,28 +53,15 @@ I'm not sure if this step is necessary and what is the default Python3 provided 
 
     python3 --version
     
-If the version starts with 3.4, good, otherwise run the recommended python installer from http://python.org (On Downloads-menu, it should recommend Python 3.4.3 or newer, and Python 2.7.9 or newer, click the 3.4.3 button. Proceed as instructed. 
+If the version starts with 3.5, good, otherwise run the recommended python installer from http://python.org (On Downloads-menu, find latest Python 3.5 or greater, Proceed as instructed.)
 
-### Install Qt ###
+### Use Wheels to install Qt5.x, SIP and PyQt5 ###
 
-Download Qt 5.5.1 for Mac installer (or the latest version available) from http://www.qt.io/download-open-source/#
+A new easy method to install necessary dependencies is made possible with Python 3.5 and Python Wheels. Try: 
 
-Run installer. Installer suggests Qt installation path of form "yourhome/Qt5.5" or "yourhome/Qt"  accept that, and remember it for further use.
+    pip3 install pyqt5 
 
-### Install SIP ###
-
-Download SIP, sip-4.17.tar.gz or the latest available from http://www.riverbankcomputing.com/software/sip/download
-Unpack it to your build folder, let's assume that the resulting folder is ~/build/sip-4.17
-Move to folder:
-
-    cd sip-4.17
-    python3 configure.py 
-    make
-(this should take few seconds and result in ~40 lines of text)
-
-    sudo make install
-
-(this should take a second and result in ~7 lines of text)
+This will install open source versions of Qt and PyQt, just what you needed.
 
 ### Install PyQt5 ###
 Download PyQt5 source package from http://www.riverbankcomputing.com/software/pyqt/download5

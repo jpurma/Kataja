@@ -142,9 +142,8 @@ class PanelButton(QtWidgets.QPushButton):
             painter.end()
         else:
             return
-        self.normal_icon = QtGui.QIcon(QtGui.QPixmap.fromImage(image))
-        self.hover_icon = QtGui.QIcon(QtGui.QPixmap.fromImage(image2))
-
+        self.normal_icon = QtGui.QIcon(QtGui.QPixmap().fromImage(image))
+        self.hover_icon = QtGui.QIcon(QtGui.QPixmap().fromImage(image2))
         self.setIcon(self.normal_icon)
 
     def update_style_sheet(self):
@@ -362,7 +361,6 @@ class RemoveNodeButton(OverlayButton):
     """ Button to delete unnecessary node between grandparent and child"""
 
     def __init__(self, host, parent=None):
-
         super().__init__(host,
                          pixmap='delete_icon',
                          tooltip='Remove node',
@@ -380,10 +378,16 @@ class RemoveNodeButton(OverlayButton):
             qeb = ctrl.ui.quick_edit_buttons.geometry()
             while qeb.contains(p):
                 p += QtCore.QPoint(0, 10)
+        # avoid overlap with node editor button
+        ne_button = ctrl.ui.get_ui_by_type(host=self.host, ui_type=g.NODE_EDITOR_BUTTON)
+        if ne_button:
+            neb = ne_button.geometry()
+            while neb.contains(p + QtCore.QPoint(8, 10)):
+                p += QtCore.QPoint(16, 0)
+
         self.move(p)
 
     def enterEvent(self, event):
-
         self.host.hovering = True
         OverlayButton.enterEvent(self, event)
 
@@ -396,7 +400,7 @@ class GroupOptionsButton(OverlayButton):
 
     def __init__(self, host, parent=None):
         super().__init__(host,
-                         pixmap=qt_prefs.settings_pixmap,
+                         pixmap=qt_prefs.info_icon,
                          tooltip='Name this selection',
                          parent=parent,
                          size=16,
@@ -407,7 +411,8 @@ class GroupOptionsButton(OverlayButton):
         candidates = self.host.clockwise_path_points(8)
         if not candidates:
             return
-        scene_size = ctrl.main.graph_view.mapToScene(self.width() / 2, self.height() / 2) - ctrl.main.graph_view.mapToScene(0, 0)
+        scene_size = ctrl.main.graph_view.mapToScene(self.width() / 2, self.height() / 2) - \
+                     ctrl.main.graph_view.mapToScene(0, 0)
         w2 = scene_size.x()
         h2 = scene_size.y()
         for x, y in candidates:
@@ -419,6 +424,7 @@ class GroupOptionsButton(OverlayButton):
                     break
             if not overlap:
                 break
+        # noinspection PyUnboundLocalVariable
         p = ctrl.main.graph_view.mapFromScene(x - w2, y - h2)
         self.move(p)
 
@@ -427,7 +433,7 @@ class NodeEditorButton(OverlayButton):
 
     def __init__(self, host, parent=None):
         super().__init__(host,
-                         pixmap=qt_prefs.settings_pixmap,
+                         pixmap=qt_prefs.info_icon,
                          tooltip='Edit this node',
                          parent=parent,
                          size=16,

@@ -19,7 +19,9 @@ class SavedField(object):
     Now instance variable self.d supports Saving, Undo and Redo!
 
     Rule of thumb is that Kataja classes that describe objects that need to be saved or undoed
-    always have __at the end of class__ definitions of its SavedFields.
+    always have __at the end of class__ definitions of its SavedFields. They are at the end of
+    the class because there they can give methods defined in class as parameters to define e.g.
+    getters or watchers.
 
     Descriptor can be given parameter "before_set", which should be a method of host object that is
     called with provided value if setting a value needs to have some side effect. This is to replace

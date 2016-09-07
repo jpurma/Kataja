@@ -41,7 +41,6 @@ from kataja.ui_graphicsitems.ActivityMarker import ActivityMarker
 from kataja.ui_graphicsitems.ControlPoint import ControlPoint
 from kataja.ui_graphicsitems.FadingSymbol import FadingSymbol
 from kataja.ui_graphicsitems.NewElementMarker import NewElementMarker
-from kataja.ui_graphicsitems.StretchLine import StretchLine
 from kataja.ui_support.MessageWriter import MessageWriter, ErrorWriter
 from kataja.ui_support.MyColorDialog import MyColorDialog
 from kataja.ui_support.MyFontDialog import MyFontDialog
@@ -65,7 +64,6 @@ from kataja.ui_widgets.panels.SymbolPanel import SymbolPanel
 from kataja.ui_widgets.panels.VisualizationOptionsPanel import VisualizationOptionsPanel
 from kataja.ui_widgets.panels.VisualizationPanel import VisualizationPanel
 from kataja.ui_widgets.panels.LexiconPanel import LexiconPanel
-from kataja.utils import time_me
 from kataja.visualizations.available import VISUALIZATIONS, action_key
 from kataja.ui_widgets.ResizeHandle import GraphicsResizeHandle
 
@@ -128,12 +126,10 @@ class UIManager:
         self.top_bar_buttons = None
         self._edit_mode_button = None
         self.quick_edit_buttons = None
-
         self._items = {}
         self._items_by_host = {}
         self.log_writer = MessageWriter()
         self.error_writer = ErrorWriter()
-
         self._timer_id = 0
         self._panels = {}
         self._panel_positions = {}
@@ -238,7 +234,7 @@ class UIManager:
 
         :param receiver:
         :param parent:
-        :param slot_name:
+        :param role:
         :param initial_color:
         :return:
         """
@@ -275,7 +271,8 @@ class UIManager:
         if role in self.font_dialogs:
             self.font_dialogs[role].setCurrentFont(qt_prefs.get_font(font_id))
 
-    def set_font(self, font_id, font):
+    @staticmethod
+    def set_font(font_id, font):
         qt_prefs.fonts[font_id] = font
 
     def add_ui(self, item, show=True):
@@ -411,6 +408,11 @@ class UIManager:
                     action.set_displayed_value(action.getter())
 
     def update_action(self, key):
+        """ If action is tied to some meter (e.g. number field that is used to show value and
+        change it), update the value in the meter and see if it should be enabled.
+        :param key:
+        :return:
+        """
         action = self.qt_actions[key]
         if action.enabler:
             on = action.enabler()
@@ -487,8 +489,8 @@ class UIManager:
             if item.host and not item.is_fading_out:
                 self.remove_ui(item)
 
-        # create ui_support pieces for selected elements. don't create touchareas and buttons if multiple
-        # selection, it gets confusing fast
+        # create ui_support pieces for selected elements. don't create touchareas and buttons
+        # if multiple selection, it gets confusing fast
         if len(ctrl.selected) == 1:
             item = ctrl.selected[0]
             if isinstance(item, Edge):
@@ -626,8 +628,10 @@ class UIManager:
 
         additional_actions['panels'] = []
         for panel_data in PANELS:
+            # noinspection PyTypeChecker
             panel_key = panel_data['class'].__name__
             key = 'toggle_panel_%s' % panel_key
+            # noinspection PyTypeChecker
             d = {'command': panel_data['name'], 'method': toggle_panel,
                  'checkable': True, 'viewgroup': 'Panels', 'args': [panel_key], 'action_arg': True,
                  'undoable': False, 'exclusive': False, 'tooltip': "Close this panel"}
@@ -643,21 +647,19 @@ class UIManager:
             main.addAction(action)
         return additional_actions
 
-    def get_action(self, key):
+    def get_action(self, key) -> Action:
         """ Returns action method for key, None if no such action
         :param key:
-        :return: KatajaAction
+        :return: Action
         """
         if key:
             a = self.qt_actions.get(key, None)
             if a:
                 return a
             print('missing action ', key)
-        return None
 
     def create_menus(self, additional_actions):
-        """ Put actions to menus. Menu structure is defined at the top of
-        this file.
+        """ Put actions to menus. Menu structure is defined at the top of this file.
         :param additional_actions: dict where each key returns a list of action schemas. This way
         programmatically generated actions and those coming from e.g. plugins can be added to
         menus.
@@ -735,7 +737,6 @@ class UIManager:
             self.qt_actions[key] = action
             win_menu.addAction(action)
 
-
     # ###################################################################
     #                           PANELS
     # ###################################################################
@@ -758,6 +759,7 @@ class UIManager:
         """
         self._panels = {}
         for panel_data in PANELS:
+            # noinspection PyTypeChecker
             panel_key = panel_data['class'].__name__
 
             if panel_data.get('closed', False):
@@ -772,11 +774,7 @@ class UIManager:
         """ Create single panel. Panels come in different classes, but we have
         a local dict panel_classes to figure out which kind of panel should
         be created.
-        :param id: globals provides some constants for panel ids
-        :param name:
-        :param position:
-        :param folded:
-        :param default: bool -- use the PANELS settings
+        :param data: dict, see top of this file
         :return:
         """
         constructor = data['class']
@@ -814,8 +812,9 @@ class UIManager:
         for panel in self._panels.values():
             panel.update_fields()
 
-    def toggle_panel(self, action, panel_id):
+    def toggle_panel(self, toggle_action, panel_id):
         """ Show or hide panel depending if it is visible or not
+        :param toggle_action:
         :param panel_id: enum of panel identifiers (str)
         :return: None
         """
@@ -824,19 +823,23 @@ class UIManager:
         if panel:
             if panel.isVisible():
                 panel.close()
-                action.setChecked(False)
+                toggle_action.setChecked(False)
             else:
                 panel.setVisible(True)
                 panel.set_folded(False)
-                action.setChecked(True)
+                toggle_action.setChecked(True)
         else:
+            panel_data = None
             for panel_data in PANELS:
+                # noinspection PyTypeChecker
                 if panel_data['class'].__name__ == panel_id:
                     break
-            panel = self.create_panel(panel_data)
-            panel.setVisible(True)
-            panel.set_folded(False)
-            action.setChecked(True)
+            if panel_data:
+                # noinspection PyTypeChecker
+                panel = self.create_panel(panel_data)
+                panel.setVisible(True)
+                panel.set_folded(False)
+                toggle_action.setChecked(True)
 
     # Action connections ###########################
 
@@ -867,6 +870,7 @@ class UIManager:
         if isinstance(element, QtWidgets.QAbstractButton):
             element.installEventFilter(self.button_shortcut_filter)
             self.shortcut_solver.add_solvable_action(key_seq, element)
+            # noinspection PyUnresolvedReferences
             element.destroyed.connect(self.remove_watched_shortcuts_for)
         element.setShortcut(key_seq)
 
@@ -874,7 +878,8 @@ class UIManager:
         if self.shortcut_solver:
             self.shortcut_solver.remove_solvable_action(element)
 
-    def get_element_value(self, element):
+    @staticmethod
+    def get_element_value(element):
         """
 
         :param element:
@@ -920,7 +925,6 @@ class UIManager:
         self.add_ui(self.active_embed)
         self.active_embed.update_embed(focus_point=edge.label_item.pos())
         self.active_embed.wake_up()
-
 
     def toggle_group_label_editing(self, group):
         """ Start group label editing or close it if it's already active.
@@ -980,29 +984,33 @@ class UIManager:
     # #####################################################################
 
     def get_or_create_touch_area(self, host, subtype, action=None):
+        """ Get touch area for specific purpose or create one if it doesn't exist.
+        :param host: element that has UI items associated with it
+        :param subtype: toucharea type id
+        :param action: action to associate with toucharea if one is created
+        :return:
+        """
         ta = self.get_ui_by_type(host=host, ui_type=subtype)
         if not ta:
             ta = self.create_touch_area(host, subtype, action)
         return ta
 
-    def get_touch_area(self, host, ta_type):
-        """ Get touch area for specific purpose or create one if it doesn't
-        exist.
-        :param host:
-        :param type:
+    def get_touch_area(self, host, subtype):
+        """ Get existing touch area for a node or other scene element.
+        :param host: element that has UI items associated with it
+        :param subtype: toucharea type id
         :return:
         """
-        return self.get_ui_by_type(host=host, ui_type=ta_type)
+        return self.get_ui_by_type(host=host, ui_type=subtype)
 
-    def create_touch_area(self, host, ta_type, action):
-        """ Get touch area for specific purpose or create one if it doesn't
-        exist.
-        :param host:
-        :param ttype:
-        :param action:
+    def create_touch_area(self, host, subtype, action):
+        """ Create touch area, doesn't check if it exists already.
+        :param host: element that has UI items associated with it
+        :param subtype: toucharea type id
+        :param action: action to associate with toucharea
         :return:
         """
-        ta_class = getattr(kataja.ui_graphicsitems.TouchArea, ta_type)
+        ta_class = getattr(kataja.ui_graphicsitems.TouchArea, subtype)
         ta = ta_class(host, action)
         self.add_ui(ta)
         return ta
@@ -1051,20 +1059,17 @@ class UIManager:
         edge is selected
         :param edge: object to update
         """
-        if self.free_drawing_mode() and edge.edge_type == g.CONSTITUENT_EDGE:
+        if ctrl.free_drawing_mode and edge.edge_type == g.CONSTITUENT_EDGE:
             self.get_or_create_touch_area(edge, g.INNER_ADD_SIBLING_LEFT,
                                           self.get_action('inner_add_sibling_left'))
             self.get_or_create_touch_area(edge, g.INNER_ADD_SIBLING_RIGHT,
                                           self.get_action('inner_add_sibling_right'))
 
     def prepare_touch_areas_for_dragging(self, moving=None, multidrag=False):
-        """
-        :param drag_host: node that is being dragged
+        """ Show connection points for dragged nodes.
         :param moving: set of moving nodes (does not include drag_host)
-        :param dragged_type: If the node doesn't exist yet, node_type can be
-        given as a hint of what to expect
+        :param multidrag: are we dragging multiple disconnected items? (not parent and its children)
         """
-
         self.remove_touch_areas()
         if multidrag:
             return
@@ -1108,41 +1113,43 @@ class UIManager:
 
     # ### Stretchlines
     # ####################################################################
-
-    def begin_stretchline(self, start, end):
-        """
-        :param start:
-        :param end:
-        """
-        sl = self.get_ui('StretchLine')
-        if sl:
-            line = sl.line()
-            line.setPoints(start, end)
-            sl.setLine(line)
-        else:
-            line = QtCore.QLineF(start, end)
-            sl = StretchLine(line)
-            sl.setPen(ctrl.cm.ui())
-            self.add_ui(sl)
-        sl.show()
-
-    def draw_stretchline(self, end):
-        """
-        :param end:
-        """
-        sl = self.get_ui('StretchLine')
-        if sl:
-            line = sl.line()
-            line.setP2(end)
-            sl.setLine(line)
-
-    def end_stretchline(self):
-        """
-        :return:
-        """
-        sl = self.get_ui('StretchLine')
-        if sl:
-            self.remove_ui(sl)
+    # These are all currently not in use and not up-to-date, just left here if I need to make some
+    # action that requires connecting nodes by dragging lines.
+    #
+    # def begin_stretchline(self, start, end):
+    #     """
+    #     :param start:
+    #     :param end:
+    #     """
+    #     sl = self.get_ui('StretchLine')
+    #     if sl:
+    #         line = sl.line()
+    #         line.setPoints(start, end)
+    #         sl.setLine(line)
+    #     else:
+    #         line = QtCore.QLineF(start, end)
+    #         sl = StretchLine(line, host=None)  # give some meaningful host here
+    #         sl.setPen(ctrl.cm.ui())
+    #         self.add_ui(sl)
+    #     sl.show()
+    #
+    # def draw_stretchline(self, end):
+    #     """
+    #     :param end:
+    #     """
+    #     sl = self.get_ui('StretchLine')
+    #     if sl:
+    #         line = sl.line()
+    #         line.setP2(end)
+    #         sl.setLine(line)
+    #
+    # def end_stretchline(self):
+    #     """
+    #     :return:
+    #     """
+    #     sl = self.get_ui('StretchLine')
+    #     if sl:
+    #         self.remove_ui(sl)
 
     # ### Messages
     # ####################################################################
@@ -1166,12 +1173,12 @@ class UIManager:
     # Mode HUD
     def update_edit_mode(self):
         val = ctrl.free_drawing_mode
-        self.top_bar_buttons._edit_mode_button.set_checked(not val)
+        self.top_bar_buttons.edit_mode_button.set_checked(not val)
         ctrl.call_watchers(self, 'edit_mode_changed', value=val)
 
     def update_view_mode(self):
         val = prefs.show_all_mode
-        self.top_bar_buttons._view_mode_button.set_checked(not val)
+        self.top_bar_buttons.view_mode_button.set_checked(not val)
         if ctrl.forest:
             for node in ctrl.forest.nodes.values():
                 node.update_label()
@@ -1179,17 +1186,15 @@ class UIManager:
                 node.update_visibility()
             ctrl.call_watchers(self, 'view_mode_changed', value=val)
 
-
     # ### Embedded buttons ############################
 
     def create_float_buttons(self):
         """ Create top button row
         :return:
         """
-        #for item in self._float_buttons:
-        #    item.close()
+        #  for item in self._float_buttons:
+        #     item.close()
         self.top_bar_buttons = TopBarButtons(ctrl.graph_view, self)
-
         self.top_bar_buttons.update_position()
         self.update_view_mode()
         self.update_edit_mode()
@@ -1230,7 +1235,7 @@ class UIManager:
             if not handle:
                 handle = GraphicsResizeHandle(ctrl.graph_view, node)
                 self.add_ui(handle)
-            #self.scene.addItem(handle)
+            # self.scene.addItem(handle)
 
     def get_or_create_button(self, node, class_key, action):
         button = self.get_ui_by_type(host=node, ui_type=class_key)
@@ -1262,7 +1267,7 @@ class UIManager:
         :param edge:
         """
         # Constituent edges don't have cut-button at the start
-        #if edge.edge_type is not g.CONSTITUENT_EDGE:
+        # if edge.edge_type is not g.CONSTITUENT_EDGE:
         if edge.start:
             self.get_or_create_button(edge, g.CUT_FROM_START_BUTTON, 'disconnect_edge_start')
         if edge.end:
@@ -1340,38 +1345,29 @@ class UIManager:
             self.ui_activity_marker = ActivityMarker(role=0)
         return self.ui_activity_marker
 
-    # ### Timer ########################################################
+    # ### Timer for moving UI items ########################################################
+    # This is currently unused, there are no spontaneously moving UI elements that require this
+    # kind of timer. To reactivate this, this should reside in some QObject. UIManager is plain
+    # python object.
 
-    def item_moved(self):
-        """
-
-
-        """
-        if not self._timer_id:
-            self._timer_id = self.startTimer(prefs._fps_in_msec)
-            #print('ui_support timer id ', self._timer_id)
-
-    def timerEvent(self, event):
-        """
-
-        :param event:
-        """
-        items_have_moved = False
-        for item in self.moving_things:
-            if item.move_towards_target_position():
-                items_have_moved = True
-        if items_have_moved:
-            self.get_ui_activity_marker().show()
-        if not items_have_moved:
-            self.get_ui_activity_marker().hide()
-            self.killTimer(self._timer_id)
-            self._timer_id = 0
-
-
-    def free_drawing_mode(self, *args, **kwargs):
-        """ Utility method for checking conditions for editing operations
-        :param args: ignored
-        :param kwargs: ignored
-        :return:
-        """
-        return ctrl.free_drawing_mode
+    # def item_moved(self):
+    #     """ Wake up timer if it is not running """
+    #     assert(False)
+    #     if not self._timer_id:
+    #         self._timer_id = self.startTimer(prefs._fps_in_msec)
+    #         #print('ui_support timer id ', self._timer_id)
+    #
+    # def timerEvent(self, event):
+    #     """ Called by Qt on timer tick
+    #     :param event: timer event, could be used to inspect how far it is
+    #     """
+    #     items_have_moved = False
+    #     for item in self.moving_things:
+    #         if item.move_towards_target_position():
+    #             items_have_moved = True
+    #     if items_have_moved:
+    #         self.get_ui_activity_marker().show()
+    #     if not items_have_moved:
+    #         self.get_ui_activity_marker().hide()
+    #         self.killTimer(self._timer_id)
+    #         self._timer_id = 0

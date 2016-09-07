@@ -16,51 +16,44 @@ class TopBarButtons(QtWidgets.QFrame):
         self._right_buttons = []
 
         # Left side
+        self.edit_mode_button = ModeLabel(['Free drawing mode', 'Derivation mode'],
+                                          ui_key='edit_mode_label',
+                                          parent=self)
+        layout.addWidget(self.edit_mode_button)
+        ui.add_ui(self.edit_mode_button)
+        self._left_buttons.append(self.edit_mode_button)
+        ui.connect_element_to_action(self.edit_mode_button, 'switch_edit_mode')
 
-        self._edit_mode_button = ModeLabel(['Free drawing mode', 'Derivation mode'],
-                                           ui_key='edit_mode_label',
-                                           parent=self)
-        layout.addWidget(self._edit_mode_button)
-        ui.add_ui(self._edit_mode_button)
-        self._left_buttons.append(self._edit_mode_button)
-        ui.connect_element_to_action(self._edit_mode_button, 'switch_edit_mode')
-
-        self._view_mode_button = ModeLabel(['Show all objects', 'Show only syntactic objects'],
-                                           ui_key='view_mode_label',
-                                           parent=self)
-        layout.addWidget(self._view_mode_button)
-        ui.add_ui(self._view_mode_button)
-        self._left_buttons.append(self._view_mode_button)
-        ui.connect_element_to_action(self._view_mode_button, 'switch_view_mode')
-
-
+        self.view_mode_button = ModeLabel(['Show all objects', 'Show only syntactic objects'],
+                                          ui_key='view_mode_label',
+                                          parent=self)
+        layout.addWidget(self.view_mode_button)
+        ui.add_ui(self.view_mode_button)
+        self._left_buttons.append(self.view_mode_button)
+        ui.connect_element_to_action(self.view_mode_button, 'switch_view_mode')
         layout.addStretch(0)
-        # Right side
 
+        # Right side
         camera = TopRowButton('print_button', parent=self, tooltip='Print to file',
                               pixmap=qt_prefs.camera_icon, size=(24, 24))
-
         ui.add_button(camera, action='print_pdf')
         self._right_buttons.append(camera)
         layout.addWidget(camera)
 
         undo = TopRowButton('undo_button', parent=self, tooltip='Undo last action',
                             pixmap=qt_prefs.undo_icon)
-
         ui.add_button(undo, action='undo')
         self._right_buttons.append(undo)
         layout.addWidget(undo)
 
         redo = TopRowButton('redo_button', parent=self, tooltip='Redo action',
                             pixmap=qt_prefs.redo_icon)
-
         ui.add_button(redo, action='redo')
         self._right_buttons.append(redo)
         layout.addWidget(redo)
 
         pan_mode = TopRowButton('pan_mode', parent=self, tooltip='Move mode', size=(24, 24),
                                 pixmap=qt_prefs.pan_icon)  # draw_method=drawn_icons.pan_around
-
         ui.add_button(pan_mode, action='toggle_pan_mode')
         pan_mode.setCheckable(True)
         layout.addWidget(pan_mode)
@@ -75,7 +68,6 @@ class TopBarButtons(QtWidgets.QFrame):
 
         self._right_buttons.append(select_mode)
 
-
         fit_to_screen = TopRowButton('fit_to_screen', parent=self,
                                      tooltip='Fit to screen', size=(24, 24),
                                      pixmap=qt_prefs.full_icon)
@@ -83,8 +75,6 @@ class TopBarButtons(QtWidgets.QFrame):
         ui.add_button(fit_to_screen, action='zoom_to_fit')
         layout.addWidget(fit_to_screen)
         self._right_buttons.append(fit_to_screen)
-
-
 
         layout.setContentsMargins(2, 0, 2, 0)
         self.setLayout(layout)
