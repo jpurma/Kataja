@@ -77,10 +77,9 @@ class GraphScene(QtWidgets.QGraphicsScene):
         """
         self.sceneRectChanged.connect(ctrl.ui.update_positions)
 
-    def fit_to_window(self, force=False, soft=True):
+    def fit_to_window(self, force=False, soft=False):
         """ Calls up to graph view and makes it to fit all visible items here
         to view window."""
-        soft = False
         mw = prefs.edge_width
         mh = prefs.edge_height
         margins = QtCore.QMarginsF(mw, mh, mw, mh)
@@ -105,7 +104,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
             self._cached_visible_rect = vr
 
     @staticmethod
-    def visible_rect():
+    def visible_rect(min_w=200, min_h=100):
         """ Counts all visible items in scene and returns QRectF object
          that contains all of them """
         y_min = 6000
@@ -113,8 +112,12 @@ class GraphScene(QtWidgets.QGraphicsScene):
         x_min = 6000
         x_max = -6000
         empty = True
+        gl = ctrl.forest.gloss
+        if gl and gl.isVisible():
+            x_min, y_min, x_max, y_max = gl.sceneBoundingRect().getCoords()
+            empty = False
         for item in chain(ctrl.forest.nodes.values(), ctrl.forest.groups.values()):
-            if not item.isVisible():
+            if not item or not item.isVisible():
                 continue
             empty = False
             minx, miny, maxx, maxy = item.sceneBoundingRect().getCoords()
@@ -129,9 +132,18 @@ class GraphScene(QtWidgets.QGraphicsScene):
         if empty:
             return QtCore.QRectF(0, 0, 320, 240)
         else:
-            return QtCore.QRectF(QtCore.QPoint(x_min, y_min), QtCore.QPoint(x_max, y_max))
+            width = x_max - x_min
+            if width < min_w:
+                x_min -= (min_w - width) / 2
+                width = min_w
+            height = y_max - y_min
+            if height < min_h:
+                y_min -= (min_h - height) / 2
+                height = min_h
+            return QtCore.QRectF(x_min, y_min, width, height)
 
-    def print_rect(self):
+    @staticmethod
+    def print_rect():
         """ A more expensive version of visible_rect, also includes curves of edges. Too slow for
         realtime resizing, but when printing you don't want edges to be clipped.
         :return:
@@ -142,6 +154,10 @@ class GraphScene(QtWidgets.QGraphicsScene):
         x_max = -6000
         empty = True
         f = ctrl.forest
+        gl = ctrl.forest.gloss
+        if gl and gl.isVisible():
+            x_min, y_min, x_max, y_max = gl.sceneBoundingRect().getCoords()
+            empty = False
         for item in chain(f.nodes.values(), f.groups.values()):
             if not item.isVisible():
                 continue
@@ -434,7 +450,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
                         ctrl.main.action_finished('Created constituent "%s"' % node)
                     else:
                         node = ctrl.forest.create_comment_node(text=data['char'])
-                                                               #pos=event.scenePos())
                         node.current_position = event.scenePos().x(), event.scenePos().y()
                         node.lock()
                         ctrl.main.action_finished('Added "%s" as comment since we are in '
@@ -522,8 +537,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
             self._timer_id = self.startTimer(prefs._fps_in_msec)
 
         self._fade_steps_list = []
-        # oh, os, ov, oa = old_base_color.getRgbF()
-        # nh, ns, nv, na = new_base_color.getRgbF()
         oh, os, ov, oa = old_base_color.getHsvF()
         nh, ns, nv, na = new_base_color.getHsvF()
         if oh < 0:

@@ -259,10 +259,12 @@ class Controller:
         self.selected = [obj]
         if hasattr(obj, 'syntactic_object'):
             # here is room for constituent specific print information
-            self.add_message('selected %s' % str(obj))
+            self.add_message('selected %s (%s, %s)' % (str(obj), obj.scenePos().x(),
+                                                       obj.scenePos().y()))
             #print(obj)
         else:
-            self.add_message('selected %s' % str(obj))
+            self.add_message('selected %s (%s, %s)' % (str(obj), obj.scenePos().x(),
+                                                       obj.scenePos().y()))
         obj.update_selection_status(True)
         if not self.multiselection_delay:
             self.call_watchers(self, 'selection_changed', value=self.selected)

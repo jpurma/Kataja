@@ -106,8 +106,12 @@ class GlossNode(Node):
                 ax, ay = self.adjustment
                 x += ax
                 y += ay
-            self.current_position = x, y - prefs.edge_height
-            return False, False
+            ox, oy = self.current_position
+            if ox != x or oy != y - prefs.edge_height:
+                self.current_position = x, y - prefs.edge_height
+                return True, False
+            else:
+                return False, False
 
         return super().move(md)
 

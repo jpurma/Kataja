@@ -85,6 +85,7 @@ class Forest(SavedObject):
         self.derivation_steps = DerivationStepManager(forest=self)
         self.trees = []
         self._update_trees = False
+        self.temp_tree = None
         self.nodes = {}
         self.edges = {}
         self.edge_types = set()
@@ -326,28 +327,20 @@ class Forest(SavedObject):
         def recursive_add_for_creation(me, parent_node, parent_synobj):
             """ First we have to create new nodes close to existing nodes to avoid rubberbanding.
             To help this create a list of missing nodes with known positions.
-            :param me:
-            :param parent_node:
-            :param parent_synobj:
-            :return:
             """
             if isinstance(me, list):
-                for item in me:
-                    recursive_add_for_creation(item, parent_node, parent_synobj)
+                for list_item in me:
+                    recursive_add_for_creation(list_item, parent_node, parent_synobj)
             else:
                 node = self.get_node(me)
                 if node:
                     if hasattr(me, 'label'):
                         node.label = me.label
                     node.update_label()
-                    # print(me.label, node.label)
                     if node.uid in node_keys_to_validate:
                         node_keys_to_validate.remove(node.uid)
-                    #x, y = node.current_scene_position
-                    #all_known_x.append(x)
-                    #all_known_y.append(y)
                     if node.node_type == g.FEATURE_NODE:
-                        node.locked_to_node = parent_node # not me.unvalued
+                        node.locked_to_node = parent_node  # not me.unvalued
                     for tree in node.trees:
                         if not tree.numeration:
                             tree_counter.append(tree)
@@ -409,11 +402,7 @@ class Forest(SavedObject):
         #if numeration:
         #    num_tree = self.get_numeration()
 
-        #all_known_x = []
-        #all_known_y = []
-
         scene_rect = ctrl.graph_view.mapToScene(ctrl.graph_view.rect()).boundingRect()
-        #sc_left = scene_rect.x()
         sc_center = scene_rect.center().x()
         sc_middle = scene_rect.center().y()
 
@@ -421,14 +410,8 @@ class Forest(SavedObject):
             synobjs_done = set()
             nodes_to_create = []
             tree_counter = []
-            avg_x = 0
-            avg_y = 0
             most_popular_tree = None
             recursive_add_for_creation(tree_root, None, None)
-            #if all_known_x:
-            #    avg_x = int(statistics.mean(all_known_x))
-            #if all_known_y:
-            #    avg_y = int(statistics.mean(all_known_y))
 
             # noinspection PyArgumentList
             most_popular_trees = collections.Counter(tree_counter).most_common(1)
@@ -438,23 +421,17 @@ class Forest(SavedObject):
             for syn_bare, pos in nodes_to_create:
                 x, y = pos
                 if x == 0 and y == 0:
-                    x = sc_center #left + 100
-                    y = sc_middle #- 100
+                    x = sc_center
+                    y = sc_middle
                 if isinstance(syn_bare, classes.Constituent):
                     node = self.create_node(synobj=syn_bare, node_type=g.CONSTITUENT_NODE, pos=(x, y))
                 elif isinstance(syn_bare, classes.Feature):
-                    if syn_bare.unvalued and False:
-                        x += sc_center + random.randint(-20, 10)
-                        y += sc_middle + random.randint(20, 70)
-                        node = self.create_node(synobj=syn_bare, node_type=g.FEATURE_NODE, pos=(x, y))
-                    else:
-                        node = self.create_node(synobj=syn_bare, node_type=g.FEATURE_NODE, pos=(x, y))
+                    node = self.create_node(synobj=syn_bare, node_type=g.FEATURE_NODE, pos=(x, y))
                 else:
                     continue
                 if most_popular_tree:
                     node.add_to_tree(most_popular_tree)
 
-            # node.set_original_position(node.scene_position_to_tree_position((x, y)))
             recursive_create_edges(tree_root)
 
             if most_popular_tree:
@@ -553,6 +530,7 @@ class Forest(SavedObject):
         self.gloss_text = gt
         self.update_forest_gloss()
         self.guessed_projections = False
+        ctrl.graph_scene.fit_to_window(force=True)
 
     def update_forest_gloss(self):
         """ Draw the gloss text on screen, if it exists. """
@@ -565,6 +543,8 @@ class Forest(SavedObject):
             self.gloss.update_label()
             self.gloss.physics_x = False
             self.gloss.physics_y = False
+            self.gloss.move({})
+
             self.gloss.show()
         elif self.gloss:
             self.remove_from_scene(self.gloss)
@@ -813,7 +793,6 @@ class Forest(SavedObject):
         if key in self.ongoing_animations:
             self.ongoing_animations.remove(key)
         if not self.ongoing_animations:
-            print('animation finished!')
             self.draw()
 
     def flush_and_rebuild_temporary_items(self):
@@ -1048,7 +1027,6 @@ class Forest(SavedObject):
                     break
         # Create new trees for other unassigned nodes:
         for node in unassigned_top_nodes:
-            #print('unassigned top node needing for tree')
             print('creating separate tree for ', node)
             self.create_tree_for(node)
         # Remove trees that are part of some other tree

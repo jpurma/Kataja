@@ -26,6 +26,8 @@ class SuperParser:
             parts_list = ast.literal_eval(string)
         except SyntaxError:
             parts_list = []
+        except ValueError:
+            parts_list = []
         ss = string.strip()
         #print('stripped input:', ss)
         if not bracket:
@@ -44,6 +46,8 @@ class SuperParser:
             self.rbracket = ')'
         elif bracket == '{':
             self.rbracket = '}'
+        else:
+            self.rbracket = ''
         #print('assuming brackets to be ', self.lbracket, self.rbracket)
         self.latex = latex
         self.html = html

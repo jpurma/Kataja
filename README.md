@@ -47,13 +47,13 @@ Until stabilized, Kataja will be using the latest versions available from Qt and
 
 Here are the preparations you need to do before Kataja can be run:
 
-### Install Python3.4 ###
+### Install Python3.5 ###
 
-I'm not sure if this step is necessary and what is the default Python3 provided by OS X, however in terminal do:
+You will need Python 3.5 or greater for easy install of Kataja's dependencies (PyQt5) with Python Wheels. Check your python3 version in Terminal with: 
 
     python3 --version
     
-If the version starts with 3.5, good, otherwise run the recommended python installer from http://python.org (On Downloads-menu, find latest Python 3.5 or greater, Proceed as instructed.)
+If the version starts with 3.5, good, otherwise run the latest python 3.x installer from http://python.org 
 
 ### Use Wheels to install Qt5.x, SIP and PyQt5 ###
 
@@ -61,25 +61,13 @@ A new easy method to install necessary dependencies is made possible with Python
 
     pip3 install pyqt5 
 
+If it results in PermissionError: permission denied, try again with sudo:
+
+    sudo pip3 install pyqt5 
+
 This will install open source versions of Qt and PyQt, just what you needed.
 
-### Install PyQt5 ###
-Download PyQt5 source package from http://www.riverbankcomputing.com/software/pyqt/download5
-PyQt-gpl-5.5.1.tar.gz or later
-Unpack it to your build folder, let's assumet that the resulting folder is ~/build/PyQt-gpl-5.5.1
-
-    cd PyQt-gpl-5.5.1
-    python3 configure.py --qmake /Users/yourhome/Qt5.5/5.5/clang_64/bin/qmake
-
-(notice that --qmake path is the Qt installation path from earlier, and qmake inside it.)
-
-    sudo make
-
-(this will take several minutes)
-
-    sudo make install
-
-(several seconds)
+If you really want to use Python 3.4 or pip3-based install fails from other reasons, download PyQt5 and SIP from http://www.riverbankcomputing.com/ and follow instructions there (Software -> PyQt -> PyQt5 Reference Guide -> Building and Installing from Source)
 
 ### Download Kataja source and run Kataja ###
 
@@ -90,7 +78,6 @@ Navigate to Kataja -folder with terminal, and in there:
     python3 Kataja.py
     
  
-
 ## Option 2b -- Building Kataja.app from source for distribution
 
 Building Kataja.app is only necessary if you want to distribute your own version of Kataja, and it is necessary to test if you are proposing changes to Kataja that may break the app building, e.g. require new qt dylibs. For normal develop & run -cycle this step is not necessary.
@@ -105,8 +92,6 @@ or
     
     sudo easy_install3 -U py2app
 
-(To see which one, if either, is available just try if `pip3` or `easy_install3` give any response other than "command not found".) 
-
 Once py2app is installed, go to Kataja folder and run 
 
     python3 setup.py py2app
@@ -115,31 +100,18 @@ This will take ~10 seconds, and end with `------ Done ------` if everything is r
 
 The build script will build Kataja.app to `dist/` and Kataja.dmg to folder where it is run. Building of Kataja.dmg can be toggled off with `create_dmg` -variable in `setup.py`. 
 
-
 ## Windows ##
 
 to be added
 
 ## Linux ##
 
-I don't have time or expertise for making Linux distributables, as the variance is great and installing the dependencies is anyways easier and more expectable in linux. The same principles as in Option 2a for Mac OS X apply. You'll need Python3.4, Qt5.4, PyQt5 (and compatible SIP).  
+I don't have time or expertise for making Linux distributables, as the variance is great and installing the dependencies is anyways easier and more expectable in linux. The same principles as in Option 2a for Mac OS X apply. You'll need Python3.4>, Qt5.6, PyQt5 and compatible SIP. See instructions on  http://www.riverbankcomputing.com/ to install everything necessary for PyQt5. 
 
 When you have Kataja -folder in your preferred place, navigate there and:
  
     python3 Kataja.py
  
-Development roadmap
--------------------
-
-April 2014: Pre-alpha -- Builds for OS X, Windows and Linux.
-
-May 2014 Alpha -- Drawing features, including loading, saving, undo, preferences and printing as pdf are stable enough for use.
-
-July 2015: Beta1 -- Presenation features, step-by-step derivation and improvements on drawing.
-
-September 2015: Beta2 -- Crafting features: API for making derivation rules, interface for feature and lexicon creation and running derivations for given input files.
-
-
 3rd party resources
 -------------------
 

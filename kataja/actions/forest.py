@@ -60,7 +60,6 @@ a['switch_view_mode'] = {'command': 'Show only syntactic objects', 'method': swi
                          'getter': get_view_mode}
 
 
-
 def next_structure():
     """ Show the next 'slide', aka Forest from a list in ForestKeeper.
     :return: None
