@@ -127,3 +127,10 @@ LEFT_ALIGN = 0
 CENTER_ALIGN = 1
 RIGHT_ALIGN = 2
 
+# debug levels, copies from stdlib's logging. They are here for easier access
+CRITICAL = 50
+ERROR = 40
+WARNING = 30
+INFO = 20
+DEBUG = 10
+NOTSET = 0

@@ -3,6 +3,7 @@ from PyQt5 import QtWidgets, QtCore
 import kataja.globals as g
 from kataja.singletons import qt_prefs
 from kataja.ui_widgets.Panel import Panel
+from kataja.singletons import ctrl
 
 
 __author__ = 'purma'
@@ -35,8 +36,8 @@ class LogPanel(Panel):
 
         self.preferred_size = inner.preferred_size
         self.setWidget(inner)
-        self.ui_manager.log_writer.attach_display_widget(inner)
         self.finish_init()
+        ctrl.main.attach_widget_to_log_handler(inner)
 
     def sizeHint(self):
         if self.isFloating():
@@ -48,7 +49,6 @@ class LogPanel(Panel):
         super().report_top_level(floating)
         if floating:
             self.resize(QtCore.QSize(480, 480))
-
 
     def update(self, *args):
         self.widget().setFont(qt_prefs.get_font(g.CONSOLE_FONT))

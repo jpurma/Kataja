@@ -7,6 +7,7 @@
 
 import sys
 import time
+import logging
 
 try:
     from PoP2.Lexicon import DET_HEADS, PHASE_HEADS, THETA_ASSIGNERS, SHARED_LABELS, \
@@ -70,9 +71,11 @@ class Generate:
             so = self.generate_derivation(target_example)
 
     def out(self, first, second, third=None):
+        msg = '%s: %s' % (first, second)
         if self.forest:
-            self.msg_stack.append('%s: %s' % (first, second))
+            self.msg_stack.append(msg)
         #print('%s: %s' % (first, second))
+        logging.info(msg)
         if not self.out_writer:
             return
         self.out_writer.push(first, second, third)

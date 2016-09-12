@@ -8,10 +8,12 @@ Created on 28.8.2013
 import datetime
 import os
 import sys
+import logging
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from kataja.singletons import running_environment
+from kataja.LogWidgetPusher import LogWidgetPusher
 
 
 # QtPrintSupport is imported here only because py2app then knows to add it as a framework.
@@ -32,6 +34,8 @@ def launch_kataja():
     author = 'Jukka Purma'
 
     app = prepare_app()
+    logging.basicConfig(level=logging.DEBUG, handlers=[app.log_handler])
+    logging.info('Started')
 
     splash_color = QtGui.QColor(238, 232, 213)
     splash_pix = QtGui.QPixmap(rp + 'katajalogo.png')
@@ -96,6 +100,7 @@ def prepare_app():
     app.setOrganizationName('Purma')
     app.setOrganizationDomain('purma.fi')
     app.setStyle('fusion')
+    app.log_handler = LogWidgetPusher()
     return app
 
 if __name__ == '__main__':

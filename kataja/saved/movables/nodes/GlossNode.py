@@ -85,39 +85,43 @@ class GlossNode(Node):
         self.label = value
 
     def __str__(self):
-        return 'gloss: %s' % self.label
+        return 'gloss "%s"' % self.label
 
     def move(self, md):
         if self.locked or self._dragged:
             return super().move(md)
         elif ctrl.forest.gloss is self and ctrl.forest.trees:
-            x = 0
-            y = 100
-            for tree in ctrl.forest.trees:
-                if not tree.numeration:
-                    br = tree.boundingRect()
-                    ty = br.y() + tree.y()
-                    tx = br.center().x() + tree.x()
-                    if tx > x:
-                        x = tx
-                    if ty < y:
-                        y = ty
-            if self.use_adjustment:
-                ax, ay = self.adjustment
-                x += ax
-                y += ay
-            ox, oy = self.current_position
-            if ox != x or oy != y - prefs.edge_height:
-                self.current_position = x, y - prefs.edge_height
-                return True, False
-            else:
-                return False, False
-
+            return self.put_to_top_of_trees(), False
         return super().move(md)
 
-
-    # ############## #
-    #                #
-    #  Save support  #
-    #                #
-    # ############## #
+    def put_to_top_of_trees(self):
+        """ Assume that this is gloss for the whole treeset, move this immediately to top of the
+        trees.
+        :return: has this moved or not
+        """
+        x = 0
+        y = 100
+        found = False
+        for tree in ctrl.forest.trees:
+            if not (tree.top is self or tree.numeration):
+                found = True
+                br = tree.boundingRect()
+                ty = br.y() + tree.y() - prefs.edge_height
+                tx = br.center().x() + tree.x()
+                if tx > x:
+                    x = tx
+                if ty < y:
+                    y = ty
+        if not found:
+            x = 0
+            y = 0
+        if self.use_adjustment:
+            ax, ay = self.adjustment
+            x += ax
+            y += ay
+        ox, oy = self.current_position
+        if ox != x or oy != y:
+            self.current_position = x, y
+            return True
+        else:
+            return False

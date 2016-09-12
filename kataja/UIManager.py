@@ -22,12 +22,14 @@
 #
 # ############################################################################
 from collections import OrderedDict
+import logging
 
 from PyQt5 import QtCore, QtWidgets
 
 import kataja.globals as g
 import kataja.ui_graphicsitems.TouchArea
 import kataja.ui_widgets.OverlayButton
+from kataja.LogWidgetPusher import LogWidgetPusher
 from kataja.Action import Action, ShortcutSolver, ButtonShortcutFilter
 from kataja.actions import actions_dict
 from kataja.actions.file import switch_project
@@ -41,7 +43,6 @@ from kataja.ui_graphicsitems.ActivityMarker import ActivityMarker
 from kataja.ui_graphicsitems.ControlPoint import ControlPoint
 from kataja.ui_graphicsitems.FadingSymbol import FadingSymbol
 from kataja.ui_graphicsitems.NewElementMarker import NewElementMarker
-from kataja.ui_support.MessageWriter import MessageWriter, ErrorWriter
 from kataja.ui_support.MyColorDialog import MyColorDialog
 from kataja.ui_support.MyFontDialog import MyFontDialog
 from kataja.ui_support.TableModelSelectionBox import TableModelSelectionBox
@@ -128,8 +129,6 @@ class UIManager:
         self.quick_edit_buttons = None
         self._items = {}
         self._items_by_host = {}
-        self.log_writer = MessageWriter()
-        self.error_writer = ErrorWriter()
         self._timer_id = 0
         self._panels = {}
         self._panel_positions = {}
@@ -1154,21 +1153,19 @@ class UIManager:
     # ### Messages
     # ####################################################################
 
-    def add_command_feedback(self, msg):
-        """ Insert new row of text to message window
-        :param msg:
-        """
-        self.log_writer.add('>>>' + msg)
-
-    def add_message(self, msg):
+    def add_message(self, msg, level=logging.INFO):
         """ Insert new row of text to log
-        :param msg:
+        possible logger levels are those from logging library:
+        CRITICAL	50
+        ERROR	40
+        WARNING	30
+        INFO	20
+        DEBUG	10
+        NOTSET	0
+        :param msg: str -- message
+        :param level:
         """
-        self.log_writer.add(msg)
-
-    def show_command_prompt(self):
-        """ Show '>>>_' in log """
-        self.log_writer.add('>>>_')
+        logging.log(level, msg)
 
     # Mode HUD
     def update_edit_mode(self):

@@ -616,7 +616,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
                 node.current_position = sub_xy(node.current_position, avg)
         if items_have_moved and (not self.manual_zoom) and (not ctrl.dragged_focus):
             self.fit_to_window()
-
         if items_have_moved:
             self.main.ui_manager.get_activity_marker().show()
             if f.settings.bracket_style:

@@ -299,7 +299,6 @@ class Controller:
         if self.pressed is obj:
             self.pressed = None
 
-
     def remove_from_selection(self, obj):
         """
 

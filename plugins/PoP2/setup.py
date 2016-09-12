@@ -1,7 +1,7 @@
 # coding=utf-8
 from PoP2.ConstituentB import Constituent
 from PoP2.FeatureB import Feature
-from PoP2.PoPDeriveG import Generate
+from PoP2.PoPDeriveK import Generate
 from PoP2.ForestKeeper import PoPForestKeeper
 
 # see ExamplePlugin/readme.txt and ExamplePlugin/plugin.json

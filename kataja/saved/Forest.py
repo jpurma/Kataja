@@ -543,8 +543,7 @@ class Forest(SavedObject):
             self.gloss.update_label()
             self.gloss.physics_x = False
             self.gloss.physics_y = False
-            self.gloss.move({})
-
+            self.gloss.put_to_top_of_trees()
             self.gloss.show()
         elif self.gloss:
             self.remove_from_scene(self.gloss)
@@ -811,7 +810,9 @@ class Forest(SavedObject):
     def draw(self):
         """ Update all trees in the forest according to current visualization
         """
+        print('Forest: draw!')
         if self.halt_drawing:
+            print('drawing halted')
             return
         if not self.in_display:
             print("Why are we drawing a forest which shouldn't be in scene")

@@ -36,6 +36,7 @@ import json
 import os.path
 import time
 import traceback
+import logging
 
 import PyQt5.QtCore as QtCore
 import PyQt5.QtGui as QtGui
@@ -66,6 +67,7 @@ from kataja.ui_support.ErrorDialog import ErrorDialog
 # KatajaMain > UIView > UIManager > GraphView > GraphScene > Leaves etc.
 
 DEBUG_TREESET = 'trees.txt'
+
 
 class KatajaMain(SavedObject, QtWidgets.QMainWindow):
     """ Qt's main window. When this is closed, application closes. Graphics are
@@ -103,7 +105,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         prefs.load_preferences()
         qt_prefs.late_init(running_environment, prefs, self.fontdb)
         self.find_plugins(prefs.plugins_path or running_environment.plugins_path)
-        plugin_messages = self.install_plugins()
+        self.install_plugins()
         self.setWindowIcon(qt_prefs.kataja_icon)
         self.app.setFont(qt_prefs.get_font(g.UI_FONT))
         self.graph_scene = GraphScene(main=self, graph_view=None)
@@ -111,9 +113,6 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.graph_scene.graph_view = self.graph_view
         self.ui_manager = UIManager(self)
         self.ui_manager.populate_ui_elements()
-        #sys.stdout = self.ui_manager.log_writer
-        #sys.stderr = self.ui_manager.error_writer
-        self.add_message(plugin_messages)
         # make empty forest and forest keeper so initialisations don't fail because of their absence
         self.forest_keepers = [classes.get('ForestKeeper')(empty=True)]
         self.forest_keeper = self.forest_keepers[0]
@@ -131,7 +130,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         kataja_app.processEvents()
         self.activateWindow()
         self.status_bar = self.statusBar()
-        self.add_message('Welcome to Kataja! (h) for help')
+        self.add_message('Welcome to Kataja! (h) for help', level=g.INFO)
         self.load_initial_treeset()
         ctrl.call_watchers(self.forest_keeper, 'forest_changed')
         # toolbar = QtWidgets.QToolBar()
@@ -244,21 +243,18 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         """ If there are plugins defined in preferences to be used, activate them now.
         :return: None
         """
-        messages = []
         for plugin_module in prefs.active_plugins.keys():
-            messages.append('Installing plugin %s...' % plugin_module)
+            self.add_message('Installing plugin %s...' % plugin_module, level=g.INFO)
             setup = self.load_plugin(plugin_module)
             if setup and hasattr(setup, 'plugin_parts'):
                 for classobj in setup.plugin_parts:
                     base_class = classes.find_base_model(classobj)
                     if base_class:
-                        messages.append("replacing %s with %s " %
-                                        (base_class.__name__, classobj.__name__))
+                        self.add_message("replacing %s with %s " %
+                                        (base_class.__name__, classobj.__name__), level=g.INFO)
                     else:
-                        messages.append("adding %s " % classobj.__name__)
+                        self.add_message("adding %s " % classobj.__name__, level=g.INFO)
                     classes.add_mapping(base_class, classobj)
-        return '\n'.join(messages)
-
 
     def reset_preferences(self):
         """
@@ -331,13 +327,29 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         """
         self.forest.draw()
 
-    def add_message(self, msg):
+    def add_message(self, msg, level=logging.INFO):
         """ Show a message in UI's console
+        possible logger levels are those from logging library:
+        CRITICAL	50
+        ERROR	40
+        WARNING	30
+        INFO	20
+        DEBUG	10
+        NOTSET	0
         :param msg: str -- message
+        :param level:
         """
-        self.ui_manager.add_message(msg)
+        logging.log(level, msg)
 
-#    def mousePressEvent(self, event):
+    def attach_widget_to_log_handler(self, browserwidget):
+        """ This has to be done once: we have a logger set up before there is any output widget,
+        once the widget is created it is connected to logger.
+        :param browserwidget:
+        :return:
+        """
+        self.app.log_handler.set_widget(browserwidget)
+
+    #    def mousePressEvent(self, event):
 #        """ KatajaMain doesn't do anything with mousePressEvents, it delegates
 #        :param event:
 #        them downwards. This is for debugging. """
