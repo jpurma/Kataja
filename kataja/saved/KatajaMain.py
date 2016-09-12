@@ -43,7 +43,7 @@ import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
 import sys
 
-from kataja.singletons import ctrl, prefs, qt_prefs, running_environment, classes
+from kataja.singletons import ctrl, prefs, qt_prefs, running_environment, classes, log
 from kataja.saved.Forest import Forest
 from kataja.saved.ForestKeeper import ForestKeeper
 from kataja.GraphScene import GraphScene
@@ -130,7 +130,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         kataja_app.processEvents()
         self.activateWindow()
         self.status_bar = self.statusBar()
-        self.add_message('Welcome to Kataja! (h) for help', level=g.INFO)
+        log.info('Welcome to Kataja! (h) for help')
         self.load_initial_treeset()
         ctrl.call_watchers(self.forest_keeper, 'forest_changed')
         # toolbar = QtWidgets.QToolBar()
@@ -190,7 +190,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
                     m = "replacing %s with %s " % (base_class.__name__, classobj.__name__)
                 else:
                     m = "adding %s " % classobj.__name__
-                self.add_message(m)
+                log.info(m)
         if hasattr(setup, 'start_plugin'):
             setup.start_plugin(self, ctrl, prefs)
         #if not getattr(setup, 'no_legacy_trees', False):
@@ -215,7 +215,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
             for classobj in setup.plugin_parts:
                 class_name = classobj.__name__
                 if class_name:
-                    self.add_message('removing %s' % class_name)
+                    log.info('removing %s' % class_name)
                     classes.remove_class(class_name)
         self.load_objects(all_data, self)
         ctrl.resume_undo()
@@ -244,16 +244,15 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         :return: None
         """
         for plugin_module in prefs.active_plugins.keys():
-            self.add_message('Installing plugin %s...' % plugin_module, level=g.INFO)
+            log.info('Installing plugin %s...' % plugin_module)
             setup = self.load_plugin(plugin_module)
             if setup and hasattr(setup, 'plugin_parts'):
                 for classobj in setup.plugin_parts:
                     base_class = classes.find_base_model(classobj)
                     if base_class:
-                        self.add_message("replacing %s with %s " %
-                                        (base_class.__name__, classobj.__name__), level=g.INFO)
+                        log.info("replacing %s with %s " % (base_class.__name__, classobj.__name__))
                     else:
-                        self.add_message("adding %s " % classobj.__name__, level=g.INFO)
+                        log.info("adding %s " % classobj.__name__)
                     classes.add_mapping(base_class, classobj)
 
     def reset_preferences(self):
@@ -327,20 +326,6 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         """
         self.forest.draw()
 
-    def add_message(self, msg, level=logging.INFO):
-        """ Show a message in UI's console
-        possible logger levels are those from logging library:
-        CRITICAL	50
-        ERROR	40
-        WARNING	30
-        INFO	20
-        DEBUG	10
-        NOTSET	0
-        :param msg: str -- message
-        :param level:
-        """
-        logging.log(level, msg)
-
     def attach_widget_to_log_handler(self, browserwidget):
         """ This has to be done once: we have a logger set up before there is any output widget,
         once the widget is created it is connected to logger.
@@ -374,7 +359,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         this action.
         """
         if m:
-            self.add_message(m)
+            log.info(m)
         if ctrl.action_redraw:
             ctrl.forest.draw()
         if undoable:
@@ -489,8 +474,8 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
             painter.end()
             iwriter = QtGui.QImageWriter(full_path)
             iwriter.write(writer)
-            self.add_message("printed to %s as PNG (%spx x %spx, %sx size)." % (
-            full_path, int(target.width()), int(target.height()), scale))
+            log.info("printed to %s as PNG (%spx x %spx, %sx size)." % (
+                     full_path, int(target.width()), int(target.height()), scale))
 
         else:
             dpi = 25.4
@@ -506,8 +491,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
             painter.begin(writer)
             self.graph_scene.render(painter, target=target, source=source)
             painter.end()
-            self.add_message(
-                "printed to %s as PDF with %s dpi." % (full_path, dpi))
+            log.info("printed to %s as PDF with %s dpi." % (full_path, dpi))
 
         # Thank you!
         # Restore image

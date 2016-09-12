@@ -22,7 +22,7 @@
 #
 # ############################################################################
 
-from kataja.singletons import prefs
+from kataja.singletons import prefs, log
 from kataja.globals import NO_BRACKETS, BOTTOM_ROW, CONSTITUENT_NODE
 from kataja.visualizations.AsymmetricElasticTree import AsymmetricElasticTree
 
@@ -78,7 +78,7 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
         if self.get_vis_data('max_height_steps') < hs:
             hs = 1
         self.set_vis_data('height_steps', hs)
-        self.forest.main.add_message('Set height: %s' % hs)
+        log.info('Set height: %s' % hs)
 
     def draw(self):
         """

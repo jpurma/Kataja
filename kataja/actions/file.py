@@ -10,7 +10,7 @@ import time
 from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtCore import Qt
 
-from kataja.singletons import ctrl, prefs
+from kataja.singletons import ctrl, prefs, log
 from kataja.ui_support.PreferencesDialog import PreferencesDialog
 
 
@@ -32,7 +32,7 @@ def new_structure():
     """
     i, forest = ctrl.main.forest_keeper.new_forest()
     ctrl.main.change_forest()
-    ctrl.main.add_message('(Cmd-n) New forest, n.%s' % (i + 1))
+    log.info('(Cmd-n) New forest, n.%s' % (i + 1))
 
 a['new_forest'] = {'command': '&New forest', 'method': new_structure, 'undoable': False,
                    'shortcut': 'Ctrl+n', 'tooltip': 'Create a new forest after the current one'}
@@ -43,7 +43,7 @@ def new_project():
     :return: None
     """
     project = ctrl.main.create_new_project()
-    ctrl.main.add_message("Starting a new project '%s'" % project.name)
+    log.info("Starting a new project '%s'" % project.name)
 
 a['new_project'] = {'command': 'New project', 'method': new_project, 'undoable': False,
                     'tooltip': 'Create a new empty project.'}
@@ -56,7 +56,7 @@ def switch_project(index):
     :return:
     """
     project = ctrl.main.switch_project(index)
-    ctrl.main.add_message("Switched to project '%s'" % project.name)
+    log.info("Switched to project '%s'" % project.name)
 
 
 def open_kataja_file(filename=''):
@@ -101,7 +101,7 @@ Text files containing bracket trees (*.txt, *.tex)"""
         elif save_format == 'pickle':
             f = gzip.open(filename, 'rb')
         else:
-            ctrl.add_message("Failed to load '%s'. Unknown format." % filename)
+            log.info("Failed to load '%s'. Unknown format." % filename)
             return
     else:
         if save_format == 'pickle':
@@ -121,7 +121,7 @@ Text files containing bracket trees (*.txt, *.tex)"""
         data = json.load(f)
     else:
         f.close()
-        ctrl.add_message("Failed to load '%s'. Unknown format." % filename)
+        log.info("Failed to load '%s'. Unknown format." % filename)
         return
 
     f.close()
@@ -131,7 +131,7 @@ Text files containing bracket trees (*.txt, *.tex)"""
     m.load_objects(data, m)
     ctrl.resume_undo()
     m.change_forest()
-    ctrl.add_message("Loaded '%s'." % filename)
+    log.info("Loaded '%s'." % filename)
 
 
 a['open'] = {'command': '&Open', 'method': open_kataja_file, 'undoable': False,
@@ -184,13 +184,11 @@ def save_kataja_file(filename=''):
             f = open(filename, 'w')
         json.dump(all_data, f, indent="\t", sort_keys=False)
     else:
-        ctrl.main.add_message(
-            "Failed to save '%s', no proper format given." % filename)
+        log.info("Failed to save '%s', no proper format given." % filename)
         return
 
     f.close()
-    ctrl.main.add_message(
-        "Saved to '%s'. Took %s seconds." % (filename, time.time() - t))
+    log.info("Saved to '%s'. Took %s seconds." % (filename, time.time() - t))
 
     # fileFormat  = action.data().toByteArray()
     # self.saveFile(fileFormat)
@@ -268,7 +266,7 @@ def render_in_blender():
     """
     ctrl.graph_scene.export_3d(prefs.blender_env_path + '/temptree.json',
                                ctrl.forest)
-    ctrl.main.add_message('Command-r  - render in blender')
+    log.info('Command-r  - render in blender')
     command = '%s -b %s/puutausta.blend -P %s/treeloader.py -o ' \
               '//blenderkataja -F JPEG -x 1 -f 1' % (
                   prefs.blender_app_path, prefs.blender_env_path,

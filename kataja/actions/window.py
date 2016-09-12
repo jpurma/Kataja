@@ -1,6 +1,6 @@
 # coding=utf-8
 
-from kataja.singletons import ctrl
+from kataja.singletons import ctrl, log
 import kataja.actions._utils
 
 a = {}
@@ -51,12 +51,12 @@ def toggle_full_screen():
     """
     if ctrl.main.isFullScreen():
         ctrl.main.showNormal()
-        ctrl.main.add_message('(f) windowed')
+        log.info('(f) windowed')
         ctrl.ui.restore_panel_positions()
     else:
         ctrl.ui.store_panel_positions()
         ctrl.main.showFullScreen()
-        ctrl.main.add_message('(f) fullscreen')
+        log.info('(f) fullscreen')
     ctrl.graph_scene.fit_to_window(force=True)
 
 a['fullscreen_mode'] = {'command': '&Fullscreen', 'method': toggle_full_screen,

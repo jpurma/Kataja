@@ -1,7 +1,7 @@
 # coding=utf-8
 import kataja.globals as g
 from kataja.actions._utils import get_ui_container
-from kataja.singletons import ctrl, prefs
+from kataja.singletons import ctrl, prefs, log
 from kataja.saved.Edge import Edge
 from kataja.saved.movables.Node import Node
 
@@ -212,7 +212,7 @@ def change_edge_shape(sender=None):
 
     if line_options:
         line_options.update_panel()
-    ctrl.main.add_message('(s) Changed relation shape to: %s' % shape)
+    log.info('(s) Changed relation shape to: %s' % shape)
 
 
 def can_change_edge_shape():
@@ -266,7 +266,7 @@ def change_node_color():
         for node in ctrl.forest.nodes.values():
             node.update_label()
     if color_key:
-        ctrl.main.add_message('(s) Changed node color to: %s' % ctrl.cm.get_color_name(color_key))
+        log.info('(s) Changed node color to: %s' % ctrl.cm.get_color_name(color_key))
 
 
 def can_change_node_color():
@@ -320,8 +320,7 @@ def change_edge_color():
         for edge in ctrl.forest.edges.values():
             edge.update()
     if color_key:
-        ctrl.main.add_message(
-            '(s) Changed relation color to: %s' % ctrl.cm.get_color_name(color_key))
+        log.info('(s) Changed relation color to: %s' % ctrl.cm.get_color_name(color_key))
 
 
 def get_edge_color():

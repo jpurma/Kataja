@@ -1,6 +1,6 @@
 # coding=utf-8
 from PyQt5 import QtWidgets
-from kataja.singletons import ctrl, prefs
+from kataja.singletons import ctrl, prefs, log
 import kataja.globals as g
 from kataja.visualizations.available import action_key
 
@@ -16,11 +16,11 @@ def toggle_brackets():
     if bs == 3:
         bs = 0
     if bs == 0:
-        ctrl.main.add_message('(b) 0: No brackets')
+        log.info('(b) 0: No brackets')
     elif bs == 1:
-        ctrl.main.add_message('(b) 1: Use brackets for embedded structures')
+        log.info('(b) 1: Use brackets for embedded structures')
     elif bs == 2:
-        ctrl.main.add_message('(b) 2: Always use brackets')
+        log.info('(b) 2: Always use brackets')
     ctrl.fs.bracket_style = bs
     ctrl.forest.bracket_manager.update_brackets()
 
@@ -38,14 +38,13 @@ def toggle_traces():
 
     if fs.traces_are_grouped_together and not fs.uses_multidomination:
         ctrl.forest.traces_to_multidomination()
-        ctrl.main.add_message('(t) use multidominance')
+        log.info('(t) use multidominance')
     elif (not fs.traces_are_grouped_together) and not fs.uses_multidomination:
-        ctrl.main.add_message('(t) use traces, group them to one spot')
+        log.info('(t) use traces, group them to one spot')
         ctrl.forest.group_traces_to_chain_head()
         ctrl.action_redraw = False
     elif fs.uses_multidomination:
-        ctrl.main.add_message(
-            '(t) use traces, show constituents in their base merge positions')
+        log.info('(t) use traces, show constituents in their base merge positions')
         ctrl.forest.multidomination_to_traces()
 
 
@@ -58,11 +57,11 @@ def toggle_merge_order_markers():
     :return: None
     """
     if ctrl.fs.shows_merge_order():
-        ctrl.main.add_message('(o) Hide merge order')
+        log.info('(o) Hide merge order')
         ctrl.fs.shows_merge_order(False)
         ctrl.forest.remove_order_features('M')
     else:
-        ctrl.main.add_message('(o) Show merge order')
+        log.info('(o) Show merge order')
         ctrl.fs.shows_merge_order(True)
         ctrl.forest.add_order_features('M')
 
@@ -77,11 +76,11 @@ def show_select_order():
     :return: None
     """
     if ctrl.fs.shows_select_order():
-        ctrl.main.add_message('(O) Hide select order')
+        log.info('(O) Hide select order')
         ctrl.fs.shows_select_order(False)
         ctrl.forest.remove_order_features('S')
     else:
-        ctrl.main.add_message('(O) Show select order')
+        log.info('(O) Show select order')
         ctrl.fs.shows_select_order(True)
         ctrl.forest.add_order_features('S')
 
@@ -159,7 +158,7 @@ def change_visualization(visualization_key=None, sender=None):
         action.setChecked(True)
     if visualization_key:
         ctrl.forest.set_visualization(visualization_key)
-        ctrl.add_message(visualization_key)
+        log.info(visualization_key)
 
 
 a['set_visualization'] = {'command': 'Change visualization algorithm',

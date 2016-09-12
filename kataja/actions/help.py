@@ -1,5 +1,5 @@
 # coding=utf-8
-from kataja.singletons import ctrl
+from kataja.singletons import log
 
 a = {}
 
@@ -16,7 +16,7 @@ def show_help_message():
     (p):print trees to file
     (b):show/hide labels in middle of edges
     (q):quit"""
-    ctrl.main.add_message(m)
+    log.critical(m)
 
 
 a['help'] = {'command': '&Help', 'method': show_help_message, 'shortcut': 'h'}

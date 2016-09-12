@@ -48,6 +48,7 @@ class Generate:
         self.spine = None
         self.gloss = None
         self.transferred = []
+        self.logger = logging.getLogger('kataja.POP2')
 
     def load_data(self, inputlines, start=0, end=0):
         for line in inputlines:
@@ -74,8 +75,7 @@ class Generate:
         msg = '%s: %s' % (first, second)
         if self.forest:
             self.msg_stack.append(msg)
-        #print('%s: %s' % (first, second))
-        logging.info(msg)
+        self.logger.info(msg)
         if not self.out_writer:
             return
         self.out_writer.push(first, second, third)

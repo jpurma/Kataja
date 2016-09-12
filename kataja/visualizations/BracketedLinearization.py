@@ -25,7 +25,7 @@
 
 import kataja.globals as g
 from kataja.Visualization import BaseVisualization
-from kataja.singletons import prefs, ctrl
+from kataja.singletons import prefs, log
 
 
 class BracketedLinearization(BaseVisualization):
@@ -82,13 +82,13 @@ class BracketedLinearization(BaseVisualization):
         """ if there are different modes for one visualization, rotating between different modes is triggered here. """
         if self.forest.settings.bracket_style == g.NO_BRACKETS:
             self.forest.settings.bracket_style = g.MAJOR_BRACKETS
-            ctrl.add_message('major brackets')
+            log.info('major brackets')
         elif self.forest.settings.bracket_style == g.MAJOR_BRACKETS:
             self.forest.settings.bracket_style = g.ALL_BRACKETS
-            ctrl.add_message('all brackets')
+            log.info('all brackets')
         elif self.forest.settings.bracket_style == g.ALL_BRACKETS:
             self.forest.settings.bracket_style = g.NO_BRACKETS
-            ctrl.add_message('no brackets')
+            log.info('no brackets')
         for node in self.forest.visible_nodes():
             self.reset_node(node)
 

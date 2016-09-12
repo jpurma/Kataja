@@ -5,7 +5,7 @@ from PyQt5 import QtCore
 
 import kataja.globals as g
 from kataja.actions._utils import get_ui_container, get_host
-from kataja.singletons import ctrl, classes
+from kataja.singletons import ctrl, classes, log
 from kataja.utils import guess_node_type
 from kataja.saved.Edge import Edge
 from kataja.ui_widgets.embeds.GroupLabelEmbed import GroupLabelEmbed
@@ -28,7 +28,7 @@ def add_node(sender=None, ntype=None, pos=None):
                             random.random() * 60 - 25)
     node = ctrl.forest.create_node(pos=pos, node_type=ntype)
     nclass = classes.nodes[ntype]
-    ctrl.add_message('Added new %s.' % nclass.display_name[0])
+    log.info('Added new %s.' % nclass.display_name[0])
 
 
 a['add_node'] = {'command': 'Add node', 'sender_arg': True, 'method': add_node,
@@ -251,7 +251,7 @@ def add_triangle(sender=None):
     node = get_host(sender)
     if not node:
         return
-    ctrl.add_message('folding in %s' % node.as_bracket_string())
+    log.info('folding in %s' % node.as_bracket_string())
     ctrl.forest.add_triangle_to(node)
     ctrl.deselect_objects()
 
@@ -267,7 +267,7 @@ def remove_triangle(sender=None):
     node = get_host(sender)
     if not node:
         return
-    ctrl.add_message('unfolding from %s' % node.as_bracket_string())
+    log.info('unfolding from %s' % node.as_bracket_string())
     ctrl.forest.remove_triangle_from(node)
     ctrl.deselect_objects()
 
@@ -491,8 +491,7 @@ def change_group_color(sender=None):
             embed = sender.parent()
             if embed and hasattr(embed, 'update_colors'):
                 embed.update_colors()
-            ctrl.main.add_message(
-                'Group color changed to %s' % ctrl.cm.get_color_name(color_key))
+            log.info('Group color changed to %s' % ctrl.cm.get_color_name(color_key))
 
 
 def can_edit_group():
@@ -559,9 +558,9 @@ def change_group_overlaps(sender=None):
         group.update_selection(group.selection)
         group.update_shape()
         if group.allow_overlap:
-            ctrl.main.add_message('Group can overlap with other groups')
+            log.info('Group can overlap with other groups')
         else:
-            ctrl.main.add_message('Group cannot overlap with other groups')
+            log.info('Group cannot overlap with other groups')
 
 
 a['change_group_overlaps'] = {'command': 'Allow group to overlap other groups',
@@ -582,9 +581,9 @@ def change_group_children(sender=None):
         group.update_selection(group.selection)
         group.update_shape()
         if group.include_children:
-            ctrl.main.add_message('Group includes children of its orginal members')
+            log.info('Group includes children of its orginal members')
         else:
-            ctrl.main.add_message('Group does not include children')
+            log.info('Group does not include children')
 
 
 a['change_group_children'] = {'command': 'Include children of the selected nodes in group',
@@ -634,7 +633,7 @@ def save_group_changes(sender=None):
             ctrl.forest.turn_selection_group_to_group(group)
             ctrl.deselect_objects()
 
-        ctrl.main.add_message("Saved group '%s'" % name)
+        log.info("Saved group '%s'" % name)
 
 
 a['save_group_changes'] = {'command': 'Save this group',

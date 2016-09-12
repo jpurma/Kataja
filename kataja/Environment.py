@@ -37,11 +37,11 @@ platforms = {'darwin': 'mac', 'win32': 'win', 'default': 'nix'}
 font_map = {'mac': mac_fonts, 'win': windows_fonts, 'nix': linux_fonts, 'default': linux_fonts}
 
 
-class RunningEnvironment:
+class Environment:
     """ This single instance object will host the environment dependant variables like paths to
     preferences and typically available fonts.
 
-    RunningEnvironment can be toggled to test mode, where writing operations go to temp.
+    Environment can be toggled to test mode, where writing operations go to temp.
     """
 
     def __init__(self, test_mode=False):

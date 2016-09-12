@@ -41,7 +41,7 @@ from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
 from kataja.errors import ForestError
 from kataja.parser.INodeToKatajaConstituent import INodeToKatajaConstituent
-from kataja.singletons import ctrl, prefs, qt_prefs, classes
+from kataja.singletons import ctrl, prefs, qt_prefs, classes, log
 from kataja.saved.Group import Group
 from kataja.saved.DerivationStep import DerivationStepManager
 from kataja.saved.Edge import Edge
@@ -1965,7 +1965,7 @@ class Forest(SavedObject):
                     # more complex case
                     m = "Removing node would make parent to have same node as " \
                         "both left and right child. " + "Removing parent too."
-                    ctrl.add_message(m)
+                    log.info(m)
                     self.disconnect_node(node, child)
                     for parent in list(bad_parents):
                         for grandparent in list(parent.get_parents()):
@@ -2196,7 +2196,7 @@ class Forest(SavedObject):
         new_node = self.create_node(new_c)
         new_node.copy_position(node)
         self.add_select_counter(new_node)
-        self.main.add_message("Copied %s" % node)
+        log.info("Copied %s" % node)
         return new_node
 
     # ### Triangles ##############################################

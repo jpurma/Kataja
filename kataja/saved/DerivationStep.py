@@ -24,7 +24,7 @@
 
 ### NEED TO RETHINK DERIVATION STEP SYSTEM  -- PEN AND PAPER TIME ###
 
-from kataja.singletons import ctrl
+from kataja.singletons import ctrl, log
 from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
 from kataja.utils import time_me
@@ -137,7 +137,7 @@ class DerivationStepManager(SavedObject):
         self.derivation_step_index += 1
         uid, ds, msg = self.derivation_steps[self.derivation_step_index]
         self.restore_derivation_step(uid, ds)
-        ctrl.add_message('Derivation step %s: %s' % (self.derivation_step_index, msg))
+        log.info('Derivation step %s: %s' % (self.derivation_step_index, msg))
 
     def previous_derivation_step(self):
         """
@@ -148,7 +148,7 @@ class DerivationStepManager(SavedObject):
         self.derivation_step_index -= 1
         uid, ds, msg = self.derivation_steps[self.derivation_step_index]
         self.restore_derivation_step(uid, ds)
-        ctrl.add_message('Derivation step %s: %s' % (self.derivation_step_index, msg))
+        log.info('Derivation step %s: %s' % (self.derivation_step_index, msg))
 
     def jump_to_derivation_step(self, i):
         """
@@ -158,7 +158,7 @@ class DerivationStepManager(SavedObject):
         if self.derivation_steps:
             uid, ds, msg = self.derivation_steps[self.derivation_step_index]
             self.restore_derivation_step(uid, ds)
-            ctrl.add_message('Derivation step %s: %s' % (self.derivation_step_index, msg))
+            log.info('Derivation step %s: %s' % (self.derivation_step_index, msg))
 
     def is_first(self):
         return self.derivation_step_index == 0

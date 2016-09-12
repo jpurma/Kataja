@@ -29,7 +29,6 @@ from PyQt5 import QtCore, QtWidgets
 import kataja.globals as g
 import kataja.ui_graphicsitems.TouchArea
 import kataja.ui_widgets.OverlayButton
-from kataja.LogWidgetPusher import LogWidgetPusher
 from kataja.Action import Action, ShortcutSolver, ButtonShortcutFilter
 from kataja.actions import actions_dict
 from kataja.actions.file import switch_project
@@ -38,7 +37,7 @@ from kataja.actions.window import toggle_panel
 from kataja.saved.Edge import Edge
 from kataja.saved.Group import Group
 from kataja.saved.movables.Node import Node
-from kataja.singletons import ctrl, prefs, qt_prefs, classes
+from kataja.singletons import ctrl, prefs, qt_prefs, classes, log
 from kataja.ui_graphicsitems.ActivityMarker import ActivityMarker
 from kataja.ui_graphicsitems.ControlPoint import ControlPoint
 from kataja.ui_graphicsitems.FadingSymbol import FadingSymbol
@@ -1165,7 +1164,7 @@ class UIManager:
         :param msg: str -- message
         :param level:
         """
-        logging.log(level, msg)
+        log.log(level, msg)
 
     # Mode HUD
     def update_edit_mode(self):

@@ -27,7 +27,7 @@ import math
 
 import kataja.globals as g
 from kataja.Visualization import BaseVisualization
-from kataja.singletons import prefs, ctrl
+from kataja.singletons import prefs, log
 from kataja.utils import caller
 
 
@@ -237,7 +237,7 @@ class SpirallingTree(BaseVisualization):
                     changed = True
 
         if changed:
-            ctrl.main.add_message('Need to have at least %s sides to draw this tree.' % self.sides)
+            log.error('Need to have at least %s sides to draw this tree.' % self.sides)
 
         for tree in self.forest:
             if tree.top:

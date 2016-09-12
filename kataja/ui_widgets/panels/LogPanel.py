@@ -3,7 +3,7 @@ from PyQt5 import QtWidgets, QtCore
 import kataja.globals as g
 from kataja.singletons import qt_prefs
 from kataja.ui_widgets.Panel import Panel
-from kataja.singletons import ctrl
+from kataja.singletons import ctrl, log
 
 
 __author__ = 'purma'
@@ -37,7 +37,7 @@ class LogPanel(Panel):
         self.preferred_size = inner.preferred_size
         self.setWidget(inner)
         self.finish_init()
-        ctrl.main.attach_widget_to_log_handler(inner)
+        log.log_handler.set_widget(inner)
 
     def sizeHint(self):
         if self.isFloating():

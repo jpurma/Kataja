@@ -26,7 +26,7 @@
 import pprint
 
 from kataja.utils import time_me
-from kataja.singletons import ctrl
+from kataja.singletons import ctrl, log
 
 # Creation/Deletion flags
 CREATED = 1
@@ -72,7 +72,7 @@ class UndoManager:
             self._stack.pop(0)
             self._current -= 1
 
-        ctrl.add_message('took snapshot, undo stack size: %s items %s chars' % (
+        log.info('took snapshot, undo stack size: %s items %s chars' % (
             len(self._stack), len(str(self._stack))))
         print('stack len:', len(str(self._stack)))
 
@@ -83,7 +83,7 @@ class UndoManager:
         if not self._stack:
             return
         if self._current == 0:
-            ctrl.add_message('undo [%s]: Cannot undo further' % self._current)
+            log.info('undo [%s]: Cannot undo further' % self._current)
             return
         ctrl.disable_undo()
         ctrl.multiselection_start()
@@ -113,7 +113,7 @@ class UndoManager:
                 if node and node not in affected:
                     node.after_model_update([], revtt)
         ctrl.forest.flush_and_rebuild_temporary_items()
-        ctrl.add_message('undo [%s]: %s' % (self._current, msg))
+        log.info('undo [%s]: %s' % (self._current, msg))
         ctrl.multiselection_end()
         ctrl.resume_undo()
         self._current -= 1
@@ -128,7 +128,7 @@ class UndoManager:
         if self._current < len(self._stack) - 1:
             self._current += 1
         else:
-            ctrl.add_message('redo [%s]: In last action' % self._current)
+            log.info('redo [%s]: In last action' % self._current)
             return
         ctrl.disable_undo()
         ctrl.multiselection_start()
@@ -150,7 +150,7 @@ class UndoManager:
                 if node and node not in affected:
                     node.after_model_update([], transition_type)
         ctrl.forest.flush_and_rebuild_temporary_items()
-        ctrl.add_message('redo [%s]: %s' % (self._current, msg))
+        log.info('redo [%s]: %s' % (self._current, msg))
         ctrl.multiselection_end()
         ctrl.resume_undo()
         ctrl.forest.halt_drawing = False
