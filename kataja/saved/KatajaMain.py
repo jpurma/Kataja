@@ -165,6 +165,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
                     plugin_file.close()
                     success = True
                 except:
+                    log.error(sys.exc_info())
                     print(sys.exc_info())
                 if success:
                     mod_name = path_parts[base_ends]
@@ -351,15 +352,17 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
 
     # ## Menu management #######################################################
 
-    def action_finished(self, m='', undoable=True):
+    # fixme use success and error params instead of m and level
+    def action_finished(self, m='', undoable=True, level=g.INFO):
         """ Write action to undo stack, report back to user and redraw trees
         if necessary
         :param m: message for undo
         :param undoable: are we supposed to take a snapshot of changes after
         this action.
+        :param level: message priority level (INFO, ERROR etc.)
         """
         if m:
-            log.info(m)
+            log.log(level, m)
         if ctrl.action_redraw:
             ctrl.forest.draw()
         if undoable:

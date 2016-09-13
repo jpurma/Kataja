@@ -90,7 +90,6 @@ class QuickEditButtons(UIWidget, QtWidgets.QFrame):
         self._left_buttons.append(self.no_style)
         layout.addWidget(self.no_style)
 
-
         layout.setContentsMargins(2, 0, 2, 0)
         self.setLayout(layout)
         self.setMinimumHeight(28)
@@ -108,18 +107,12 @@ class QuickEditButtons(UIWidget, QtWidgets.QFrame):
         """ Make sure that float buttons are on host node's top left corner
         :return:
         """
-        if self.host_node:
-            scbr = self.host_node.sceneBoundingRect()
-            tl = self.parentWidget().mapFromScene(scbr.topLeft())
-            tlx = tl.x()
-            tly = tl.y()
-            tly -= self.height()
+        sh = self.sizeHint()
+        self.resize(sh)
 
-            if tlx < 0:
-                tlx = 0
-            if tly < 28:
-                tly = 28
-            self.move(tlx, tly)
+        self.move(ctrl.ui.top_bar_buttons._right_buttons[0].x() - sh.width() - 8, 2)
+        #self.move(self.parentWidget().width() / 2, 2) # - sh.width() / 2
+        self.show()
 
     def update_formats(self, char_format):
         if char_format != self.current_format:

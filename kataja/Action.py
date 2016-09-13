@@ -23,10 +23,11 @@
 # ############################################################################
 import sys
 import traceback
+import logging
 
 from PyQt5 import QtCore, QtWidgets, QtGui
 
-from kataja.singletons import ctrl
+from kataja.singletons import ctrl, log
 from kataja.ui_widgets.OverlayButton import PanelButton
 from kataja.ui_support.EmbeddedMultibutton import EmbeddedMultibutton
 from kataja.ui_support.EmbeddedRadiobutton import EmbeddedRadiobutton
@@ -192,9 +193,11 @@ class Action(QtWidgets.QAction):
         # Call method
         try:
             message = self.method(*trigger_args, **kwargs)
+            level = logging.INFO
         except:
-            e = sys.exc_info()[1]
-            message = str(e)
+            e = sys.exc_info()
+            message = e
+            level = logging.ERROR
             print("Unexpected error:", e)
             traceback.print_exc()
         # Restore undo state to what it was
@@ -204,7 +207,8 @@ class Action(QtWidgets.QAction):
             ctrl.main.action_finished(undoable=False)
         else:
             ctrl.main.action_finished(m=message or self.command,
-                                      undoable=self.undoable and not ctrl.undo_disabled)
+                                      undoable=self.undoable and not ctrl.undo_disabled,
+                                      level=level)
 
     def trigger_but_suppress_undo(self, *args, **kwargs):
         ctrl.disable_undo()
