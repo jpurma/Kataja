@@ -193,12 +193,11 @@ class Action(QtWidgets.QAction):
         # Call method
         try:
             message = self.method(*trigger_args, **kwargs)
-            level = logging.INFO
+            error = None
         except:
-            e = sys.exc_info()
-            message = e
-            level = logging.ERROR
-            print("Unexpected error:", e)
+            message = ''
+            error = '<br/>'.join(traceback.format_exception(*sys.exc_info()))
+            print("Unexpected error:", sys.exc_info())
             traceback.print_exc()
         # Restore undo state to what it was
         if not self.undoable:
@@ -208,7 +207,7 @@ class Action(QtWidgets.QAction):
         else:
             ctrl.main.action_finished(m=message or self.command,
                                       undoable=self.undoable and not ctrl.undo_disabled,
-                                      level=level)
+                                      error=error)
 
     def trigger_but_suppress_undo(self, *args, **kwargs):
         ctrl.disable_undo()

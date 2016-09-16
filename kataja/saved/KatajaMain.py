@@ -352,24 +352,23 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
 
     # ## Menu management #######################################################
 
-    # fixme use success and error params instead of m and level
-    def action_finished(self, m='', undoable=True, level=g.INFO):
+    def action_finished(self, m='', undoable=True, error=None):
         """ Write action to undo stack, report back to user and redraw trees
         if necessary
         :param m: message for undo
         :param undoable: are we supposed to take a snapshot of changes after
         this action.
-        :param level: message priority level (INFO, ERROR etc.)
+        :param error message
         """
-        if m:
-            log.log(level, m)
+        if error:
+            log.error(error)
+        elif m:
+            log.info(m)
         if ctrl.action_redraw:
             ctrl.forest.draw()
-        if undoable:
+        if undoable and not error:
             ctrl.forest.undo_manager.take_snapshot(m)
-            print('=== action finished: ', m)
-        else:
-            ctrl.graph_scene.start_animations()
+        ctrl.graph_scene.start_animations()
         ctrl.ui.update_actions()
 
     def trigger_action(self, name, *args, **kwargs):
