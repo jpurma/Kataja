@@ -109,10 +109,7 @@ class QuickEditButtons(UIWidget, QtWidgets.QFrame):
         """
         sh = self.sizeHint()
         self.resize(sh)
-
-        self.move(ctrl.ui.top_bar_buttons._right_buttons[0].x() - sh.width() - 8, 2)
-        #self.move(self.parentWidget().width() / 2, 2) # - sh.width() / 2
-        self.show()
+        self.move(ctrl.ui.top_bar_buttons.left_edge_of_right_buttons() - sh.width() - 8, 2)
 
     def update_formats(self, char_format):
         if char_format != self.current_format:
