@@ -90,7 +90,7 @@ class Node(Movable):
     editable = {}
 
     default_style = {'color': 'content1', 'font': g.MAIN_FONT, 'font-size': 10, 'card': False,
-                     'card_size': (0, 0)}
+                     'card_width': 0, 'card_height': 0}
 
     default_edge = g.ABSTRACT_EDGE
     touch_areas_when_dragging = {}

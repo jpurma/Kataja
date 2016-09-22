@@ -8,6 +8,7 @@ from kataja.globals import *
 
 __author__ = 'purma'
 
+# Alternatives: Cambria Math, Asana Math, XITS Math
 mac_fonts = {MAIN_FONT: ['Asana Math', 'Normal', 12], CONSOLE_FONT: ['Menlo', 'Normal', 10],
              UI_FONT: ['Helvetica Neue', 'Normal', 10], BOLD_FONT: ['STIX', 'Bold', 12],
              ITALIC_FONT: ['Asana Math', 'Italic', 12],

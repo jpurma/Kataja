@@ -75,13 +75,15 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
     keypresses and menus. """
     unique = True
 
-    def __init__(self, kataja_app, args):
+    def __init__(self, kataja_app, no_prefs=False, reset_prefs=False):
         """ KatajaMain initializes all its children and connects itself to
-        be the main window of the given application. """
-        t = time.time()
+        be the main window of the given application. Receives launch arguments:
+        :param no_prefs: bool, don't load or save preferences
+        :param reset_prefs: bool, don't attempt to load preferences, use defaults instead
+
+        """
         QtWidgets.QMainWindow.__init__(self)
         kataja_app.processEvents()
-
         SavedObject.__init__(self)
         self.use_tooltips = True
         self.available_plugins = {}
@@ -94,6 +96,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         x, y, w, h = (50, 50, 1152, 720)
         self.setMinimumSize(w, h)
         self.app = kataja_app
+        self.save_prefs = not no_prefs
         self.forest = None
         self.fontdb = QtGui.QFontDatabase()
         self.color_manager = PaletteManager()
@@ -102,7 +105,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.FL = classes.FL()
         prefs.import_node_classes(classes)
 
-        prefs.load_preferences()
+        prefs.load_preferences(disable=reset_prefs or no_prefs)
         qt_prefs.late_init(running_environment, prefs, self.fontdb)
         self.find_plugins(prefs.plugins_path or running_environment.plugins_path)
         self.install_plugins()
@@ -601,7 +604,8 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
                 print('garbage:', gc.garbage)
 
                 # objgraph.show_most_common_types(limit =40)
-        prefs.save_preferences()
+        if self.save_prefs:
+            prefs.save_preferences()
         print('...done')
 
     @time_me

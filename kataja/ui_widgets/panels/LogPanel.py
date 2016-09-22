@@ -8,6 +8,9 @@ from kataja.singletons import ctrl, log
 
 __author__ = 'purma'
 
+style_sheet = """
+b {font-weight: bold;}
+"""
 
 class LogPanel(Panel):
     """ Dump window """
@@ -28,6 +31,7 @@ class LogPanel(Panel):
         inner.setAutoFillBackground(True)
         inner.sizeHint = self.sizeHint
         inner.setFocusPolicy(QtCore.Qt.NoFocus)
+        inner.document().setDefaultStyleSheet(style_sheet)
         self.resize_grip = QtWidgets.QSizeGrip(self)
         self.resize_grip.hide()
         self.setAllowedAreas(QtCore.Qt.TopDockWidgetArea | QtCore.Qt.BottomDockWidgetArea)

@@ -3,19 +3,27 @@
 """
 Created on 28.8.2013
 
-@author: purma
+usage: Kataja.py [-h] [--reset_prefs] [--no_prefs]
+
+Launch Kataja visualisation environment.
+
+optional arguments:
+  -h, --help     show this help message and exit
+  --reset_prefs  reset the current preferences file to default
+  --no_prefs     don't use preferences file -- don't save it either
+
+@author: Jukka Purma
 """
 import datetime
 import os
 import sys
+import argparse
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from kataja.singletons import running_environment, log
-
-
 # QtPrintSupport is imported here only because py2app then knows to add it as a framework.
-# libqcocoa.dynlib requires QtPrintSupport.
+# libqcocoa.dynlib requires QtPrintSupport. <-- not needed anymore?
 
 
 def launch_kataja():
@@ -25,12 +33,20 @@ def launch_kataja():
     if running_environment.platform == 'mac' and running_environment.code_mode == 'build':
         dir_path = os.path.dirname(os.path.abspath(sys.argv[0]))
         print('adding library path ' + dir_path + '/../plugins')
+        # noinspection PyTypeChecker,PyCallByClass
         QtCore.QCoreApplication.addLibraryPath(dir_path + '/../plugins')
-
-    print("Launching Kataja with Python %s.%s" % (sys.version_info.major, sys.version_info.minor))
 
     author = 'Jukka Purma'
 
+    parser = argparse.ArgumentParser(description='Launch Kataja visualisation environment.')
+    parser.add_argument('--reset_prefs', action='store_true', default=False,
+                        help='reset the current preferences file to default')
+    parser.add_argument('--no_prefs', action='store_true', default=False,
+                        help="don't use preferences file -- don't save it either")
+
+    kwargs = vars(parser.parse_args())
+
+    print("Launching Kataja with Python %s.%s" % (sys.version_info.major, sys.version_info.minor))
     app = prepare_app()
     log.info('Starting Kataja...')
     splash_color = QtGui.QColor(238, 232, 213)
@@ -38,7 +54,8 @@ def launch_kataja():
     splash = QtWidgets.QSplashScreen(splash_pix)
     splash.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.SplashScreen |
                           QtCore.Qt.FramelessWindowHint | QtCore.Qt.NoDropShadowWindowHint)
-    splash.showMessage('%s | Fetching version...' % author, QtCore.Qt.AlignBottom | QtCore.Qt.AlignHCenter, splash_color)
+    splash.showMessage('%s | Fetching version...' % author, QtCore.Qt.AlignBottom |
+                       QtCore.Qt.AlignHCenter, splash_color)
     app.processEvents()
     splash.show()
     app.processEvents()
@@ -80,7 +97,7 @@ def launch_kataja():
     # importing KatajaMain here because it is slow, and splash screen is now up
     from kataja.saved.KatajaMain import KatajaMain
 
-    window = KatajaMain(app, sys.argv)
+    window = KatajaMain(app, **kwargs)
     splash.finish(window)
     app.setActiveWindow(window)
     app.processEvents()

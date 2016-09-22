@@ -24,16 +24,18 @@ class TopBarButtons(QtWidgets.QFrame):
         self._left_buttons.append(self.edit_mode_button)
         ui.connect_element_to_action(self.edit_mode_button, 'switch_edit_mode')
 
+        layout.addStretch(0)
+
+        # Right side
         self.view_mode_button = ModeLabel(['Show all objects', 'Show only syntactic objects'],
                                           ui_key='view_mode_label',
                                           parent=self)
         layout.addWidget(self.view_mode_button)
         ui.add_ui(self.view_mode_button)
-        self._left_buttons.append(self.view_mode_button)
+        self._right_buttons.append(self.view_mode_button)
         ui.connect_element_to_action(self.view_mode_button, 'switch_view_mode')
-        layout.addStretch(0)
 
-        # Right side
+
         camera = TopRowButton('print_button', parent=self, tooltip='Print to file',
                               pixmap=qt_prefs.camera_icon, size=(24, 24))
         ui.add_button(camera, action='print_pdf')

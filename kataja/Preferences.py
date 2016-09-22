@@ -28,9 +28,9 @@ from kataja.edge_styles import master_styles
 from kataja.globals import *
 from copy import deepcopy
 
-
+# Use these to debug
+disable_loading_preferences = False
 disable_saving_preferences = False
-# Alternatives: Cambria Math, Asana Math, XITS Math
 
 curves = ['Linear', 'InQuad', 'OutQuad', 'InOutQuad', 'OutInQuad', 'InCubic', 'OutCubic',
           'InOutCubic', 'OutInCubic', 'InQuart', 'OutQuart', 'InOutQuart', 'OutInQuart', 'InQuint',
@@ -311,8 +311,21 @@ class Preferences(object):
     def save_preferences(self):
         """ Save preferences uses QSettings, which is Qt:s abstraction over
         platform-dependant ini/preferences files.
-        It doesn't need any parameters,
         """
+
+        def string_keyed_dict(value):
+            if isinstance(value, dict):
+                new = {}
+                for k, v in value.items():
+                    v = string_keyed_dict(v)
+                    if isinstance(k, int):
+                        new[str(k)] = v
+                    else:
+                        new[k] = v
+                return new
+            else:
+                return value
+
         if disable_saving_preferences:
             return
 
@@ -322,10 +335,28 @@ class Preferences(object):
         for key, value in d.items():
             if key.startswith('_') or key in Preferences.not_saved:
                 continue
+            value = string_keyed_dict(value)
             settings.setValue(key, value)
         settings.sync()
+        print('saved preferences to ', settings.fileName())
 
-    def load_preferences(self):
+    def load_preferences(self, disable=False):
+
+        def string_keys_to_ints(val):
+            """ Preferences file only understands strings as dict keys. Convert back to ints
+            :param val:
+            :return:
+            """
+            if isinstance(val, dict):
+                new = {}
+                for k, v in val.items():
+                    if k.isdigit():
+                        k = int(k)
+                    v = string_keys_to_ints(v)
+                    new[k] = v
+                return new
+            else:
+                return val
 
         def pythonify_prefs(settings):
             result = {}
@@ -336,16 +367,22 @@ class Preferences(object):
                 result[group_key] = pythonify_prefs(settings)
                 settings.endGroup()
             for data_key in settings.childKeys():
+                value = string_keys_to_ints(settings.value(data_key))
                 if data_key.isdigit():
-                    result[int(data_key)] = settings.value(data_key)
+                    result[int(data_key)] = value
                 else:
-                    result[data_key] = settings.value(data_key)
+                    result[data_key] = value
             return result
 
-        if disable_saving_preferences:
+        if disable_loading_preferences:
+            print('skipping loading preferences because disable_loading_preferences -flag in code')
+            return
+        elif disable:
+            print('skipping loading preferences because command line argument')
             return
 
         settings = QtCore.QSettings()
+        print('loading preferences from ', settings.fileName())
         ldict = pythonify_prefs(settings)
         for key, default_value in list(vars(self).items()):
             if key.startswith('_') or key in Preferences.not_saved:
@@ -485,8 +522,8 @@ class QtPreferences:
         self.bold_icon = icon('bold48.png')
         self.strikethrough_icon = icon('strikethrough48.png')
         self.underline_icon = icon('underline48.png')
-        self.subscript_icon = icon('align_bottom48.png')
-        self.superscript_icon = icon('align_top48.png')
+        self.subscript_icon = icon('subscript48.png')
+        self.superscript_icon = icon('superscript48.png')
         self.left_align_icon = icon('align_left48.png')
         self.center_align_icon = icon('align_center48.png')
         self.right_align_icon = icon('align_right48.png')
@@ -572,7 +609,6 @@ class QtPreferences:
             if console_font.pointSize() < 14:
                 console_font.setPointSize(14)
         else:
-            print(fonts_dict[UI_FONT])
             ui_font.setPointSize(fonts_dict[UI_FONT][2])
             console_font.setPointSize(fonts_dict[CONSOLE_FONT][2])
 

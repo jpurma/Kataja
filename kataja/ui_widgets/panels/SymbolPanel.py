@@ -2,7 +2,7 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 
 import kataja.globals as g
 from kataja.parser.latex_to_unicode import latex_to_unicode
-from kataja.singletons import qt_prefs, ctrl
+from kataja.singletons import qt_prefs, ctrl, log
 from kataja.ui_widgets.Panel import Panel
 from kataja.ui_support.panel_utils import box_row
 from kataja.ui_support.SelectionBox import SelectionBox
@@ -140,6 +140,7 @@ class SymbolPanel(Panel):
         inner.setLayout(layout)
         self.tables = {}
         keys = list(latex_to_unicode.keys())
+        log.info('this many symbols: %s ' % len(keys))
         for name in table_names:
             self.tables[name] = []
         keys.sort()
@@ -151,6 +152,7 @@ class SymbolPanel(Panel):
         self.tables['more arrows'] = more_arrows
         self.tables['common'] = common
         # self.tables['arrows'] = arrows
+
 
         self.prepare_symbols('common')
         self.setWidget(inner)

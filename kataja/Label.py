@@ -34,6 +34,10 @@ import difflib
 
 differ = difflib.Differ()
 
+style_sheet = """
+b {font-family: StixGeneral Bold; font-weight: 900; font-style: bold}
+"""
+
 
 class Label(QtWidgets.QGraphicsTextItem):
     """ Labels are names of nodes. Node itself provides a template for what to show in label,
@@ -77,6 +81,7 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.is_card = False
         self.card_size = (60, 90)
         self._fresh_focus = False
+        self.doc.setDefaultStyleSheet(style_sheet)
         self.setDocument(self.doc)
         # not acceptin hover events is important, editing focus gets lost if other labels take
         # hover events. It is unclear why.
@@ -119,6 +124,7 @@ class Label(QtWidgets.QGraphicsTextItem):
             else:
                 self.doc.setTextWidth(-1)
             self.setHtml(self.html)
+            self.doc.setDefaultStyleSheet(style_sheet)
             ctrl.qdocument_parser.process(self.doc)
             self.text = self.toPlainText()
         self.resize_label()
