@@ -35,7 +35,6 @@ class TopBarButtons(QtWidgets.QFrame):
         self._right_buttons.append(self.view_mode_button)
         ui.connect_element_to_action(self.view_mode_button, 'switch_view_mode')
 
-
         camera = TopRowButton('print_button', parent=self, tooltip='Print to file',
                               pixmap=qt_prefs.camera_icon, size=(24, 24))
         ui.add_button(camera, action='print_pdf')

@@ -88,6 +88,7 @@ class Preferences(object):
         self._tab_order = ['General', 'Drawing', 'Printing', 'Syntax', 'Node styles',
                            'Performance', 'Plugins', 'Advanced']
 
+        self.temp_color_mode = ''
         self.color_mode = 'solarized_lt'
         self._color_mode_ui = {'tab': 'General', 'special': 'color_modes',
                                'label': 'Default colors',

@@ -5,6 +5,7 @@ import kataja.actions._utils
 
 a = {}
 
+
 def toggle_panel(panel_id, action=None):
     """ Show or hide panel depending if it is visible or not
     :param panel_id: enum of panel identifiers (str)
@@ -14,6 +15,7 @@ def toggle_panel(panel_id, action=None):
     ctrl.ui.toggle_panel(action, panel_id)
 
 # actions that call ^- this method are defined programmatically
+
 
 def toggle_fold_panel(sender=None):
     """ Fold panel into label line or reveal the whole panel.

@@ -7,6 +7,42 @@ from kataja.visualizations.available import action_key
 a = {}
 
 
+def switch_view_mode(show_all_mode=None):
+    """ Switch between showing only syntactic objects and showing richer representation
+    :type show_all_mode: None to toggle between modes, True for all items, False for
+    syntactic only
+    :return:
+    """
+    if show_all_mode is None:
+        prefs.show_all_mode = not prefs.show_all_mode
+    else:
+        prefs.show_all_mode = show_all_mode
+    ctrl.ui.update_view_mode()
+
+    if prefs.show_all_mode:
+        prefs.temp_color_mode = ''
+    else:
+        if ctrl.main.color_manager.paper().value() < 100:
+            prefs.temp_color_mode = 'dk_gray'
+        else:
+            prefs.temp_color_mode = 'gray'
+    ctrl.forest.update_colors()
+    if prefs.show_all_mode:
+        return 'Show all elements, including those that have no computational effects.'
+    else:
+        return 'Show only syntactic objects.'
+
+
+def get_view_mode():
+    return not prefs.show_all_mode
+
+
+a['switch_view_mode'] = {'command': 'Show only syntactic objects', 'method': switch_view_mode,
+                         'undoable': False, 'shortcut': 'Shift+b',
+                         'tooltip': 'Show only syntactic objects or show all objects (Shift+b)',
+                         'getter': get_view_mode}
+
+
 def toggle_brackets():
     """ Brackets are visible always for non-leaves, never or for important parts
     :return: None

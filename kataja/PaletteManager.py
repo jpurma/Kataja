@@ -70,7 +70,10 @@ color_modes = OrderedDict(
      ('print', {'name': 'Print-friendly', 'fixed': True, 'hsv': [0.2, 0.2, 0.2]}),
      ('bw', {'name': 'Black and white', 'fixed': True, 'hsv': [0, 0, 0]}),
      ('random-light', {'name': 'Random on a light background', 'fixed': False, 'hsv': [0, 0, 0]}),
-     ('random-dark', {'name': 'Against a dark background', 'fixed': False, 'hsv': [0, 0, 0]})])
+     ('random-dark', {'name': 'Against a dark background', 'fixed': False, 'hsv': [0, 0, 0]}),
+     ('gray', {'name': 'Sketch', 'fixed': True, 'hsv': [0, 0, 0.3]}),
+     ('dk_gray', {'name': 'Sketch dark', 'fixed': True, 'hsv': [0, 0, 0.7]}),
+     ])
 
 
 # HUSL colors and the code for creating them is from here:
@@ -362,7 +365,9 @@ class PaletteManager:
         """
         :return:
         """
-        if ctrl.fs:
+        if prefs.temp_color_mode:
+            return prefs.temp_color_mode
+        elif ctrl.fs:
             return ctrl.fs.color_mode
         else:
             return prefs.color_mode
@@ -412,6 +417,9 @@ class PaletteManager:
         elif mode == 'print':
             self.hsv = list(self.get_color_mode_data(mode)['hsv'])
             self.compute_palette(self.hsv, contrast=72)
+        elif mode == 'gray' or mode == 'dk_gray':
+            self.hsv = list(self.get_color_mode_data(mode)['hsv'])
+            self.compute_palette(self.hsv, contrast=50, faded=True)
         else:
             self.hsv = list(self.get_color_mode_data(mode)['hsv'])
             self.compute_palette(self.hsv)
@@ -501,7 +509,7 @@ class PaletteManager:
         self.gradient.setColorAt(1, self.d['background1'])
         self.gradient.setColorAt(0, self.d['background2'])
 
-    def compute_palette(self, hsv, contrast=50, bw=False):
+    def compute_palette(self, hsv, contrast=50, bw=False, faded=False):
         """ Create/get root color and build palette around it.
         :param hsv:
         Leaves custom colors as they are. """
@@ -529,8 +537,10 @@ class PaletteManager:
             adjusted_accent = c(accent)
             ar, ag, ab, aa = accent.getRgbF()
             ach, acs, acl = rgb_to_husl(ar, ag, ab)
-            if bw:
-                acs = 0
+            #if bw:
+            #    acs = 0
+            if faded:
+                acs /= 2
             ar, ag, ab = husl_to_rgb(ach, acs, accent_l)
             adjusted_accent.setRgbF(ar, ag, max(0, ab))
             self.d['accent%s' % (i + 1)] = adjusted_accent
