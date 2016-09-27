@@ -27,13 +27,10 @@ import logging
 from PyQt5 import QtCore, QtWidgets
 
 import kataja.globals as g
+import kataja.actions
 import kataja.ui_graphicsitems.TouchArea
 import kataja.ui_widgets.OverlayButton
-from kataja.Action import Action, ShortcutSolver, ButtonShortcutFilter
-from kataja.actions import actions_dict
-from kataja.actions.file import switch_project
-from kataja.actions.view import change_visualization
-from kataja.actions.window import toggle_panel
+from kataja.KatajaAction import KatajaAction, ShortcutSolver, ButtonShortcutFilter
 from kataja.saved.Edge import Edge
 from kataja.saved.Group import Group
 from kataja.saved.movables.Node import Node
@@ -94,7 +91,7 @@ menu_structure = OrderedDict([('file_menu', ('&File',
                                               '---', 'preferences', '---', 'quit'])),
                               ('edit_menu', ('&Edit', ['undo', 'redo', '---', 'cut', 'copy',
                                                        'paste'])),
-                              ('build_menu', ('&Build', ['next_forest', 'prev_forest',
+                              ('build_menu', ('&Build', ['next_forest', 'previous_forest',
                                                          'next_derivation_step',
                                                          'prev_derivation_step'])),
                               ('rules_menu', ('&Rules', ['bracket_mode', 'trace_mode',
@@ -102,7 +99,7 @@ menu_structure = OrderedDict([('file_menu', ('&File',
                                                          'select_order_attribute'])),
                               ('view_menu', ('&View', ['$visualizations', '---',
                                                        'switch_view_mode', 'change_colors',
-                                                       'adjust_colors', 'zoom_to_fit', '---',
+                                                       'zoom_to_fit', '---',
                                                        'fullscreen_mode'])),
                               ('windows_menu', ('&Windows', [('Panels', ['$panels']), '---',
                                                              'toggle_all_panels', '---'])),
@@ -121,7 +118,6 @@ class UIManager:
         self.scene = main.graph_scene
         self.actions = {}
         self._action_groups = {}
-        self.qt_actions = {}
         self._top_menus = {}
         self.top_bar_buttons = None
         self._edit_mode_button = None
@@ -396,7 +392,7 @@ class UIManager:
     def update_actions(self):
         # prepare style dictionaries for selections, to be used for displaying style values in UI
         self.build_active_style_info()
-        for action in self.qt_actions.values():
+        for action in self.actions.values():
             if action.enabler:
                 on = action.enabler()
                 #if not on:
@@ -411,7 +407,7 @@ class UIManager:
         :param key:
         :return:
         """
-        action = self.qt_actions[key]
+        action = self.actions[key]
         if action.enabler:
             on = action.enabler()
             action.set_enabled(on)
@@ -602,8 +598,19 @@ class UIManager:
     def create_actions(self):
         """ Build menus and other actions that can be triggered by user based
         on actions/ """
-
         main = self.main
+        a_class_type = type(KatajaAction)
+        self.actions = {}
+        self._action_groups = {}
+        for class_name in vars(kataja.actions):
+            a_class = getattr(kataja.actions, class_name)
+            if type(a_class) != a_class_type or not issubclass(a_class, KatajaAction):
+                continue
+            if a_class.k_dynamic:
+                continue
+            action = a_class()
+            self.actions[action.key] = action
+            main.addAction(action)
 
         # dynamic actions are created based on other data e.g. available
         # visualization plugins.
@@ -612,46 +619,35 @@ class UIManager:
         # them later.
         # eg. additional_actions['visualizations'] = ['vis_1','vis_2',
         # 'vis_3'...]
-        additional_actions = {}
-        self.actions = actions_dict
-
-        additional_actions['visualizations'] = []
+        vis_actions = []
         for name, vis in VISUALIZATIONS.items():
             key = action_key(name)
-            d = {'command': name, 'method': change_visualization,
-                 'shortcut': vis.shortcut, 'checkable': True, 'sender_arg': True, 'args': [name],
-                 'viewgroup': 'visualizations', 'exclusive': True}
-            self.actions[key] = d
-            additional_actions['visualizations'].append(key)
+            action = kataja.actions.ChangeVisualisation(action_uid=key, command=name, args=[name],
+                                                        shortcut=vis.shortcut)
+            self.actions[key] = action
+            vis_actions.append(key)
 
-        additional_actions['panels'] = []
+        panel_actions = []
         for panel_data in PANELS:
             # noinspection PyTypeChecker
             panel_key = panel_data['class'].__name__
             key = 'toggle_panel_%s' % panel_key
             # noinspection PyTypeChecker
-            d = {'command': panel_data['name'], 'method': toggle_panel,
-                 'checkable': True, 'viewgroup': 'Panels', 'args': [panel_key], 'action_arg': True,
-                 'undoable': False, 'exclusive': False, 'tooltip': "Close this panel"}
-            self.actions[key] = d
-            additional_actions['panels'].append(key)
+            action = kataja.actions.TogglePanel(action_uid=key,
+                                                command=panel_data['name'],
+                                                args=[panel_key])
+            self.actions[key] = action
+            panel_actions.append(key)
         # ## Create actions
-        self._action_groups = {}
-        self.qt_actions = {}
+        return {'visualizations': vis_actions, 'panels': panel_actions}
 
-        for key, data in self.actions.items():
-            action = Action(key, data)
-            self.qt_actions[key] = action
-            main.addAction(action)
-        return additional_actions
-
-    def get_action(self, key) -> Action:
+    def get_action(self, key) -> KatajaAction:
         """ Returns action method for key, None if no such action
         :param key:
         :return: Action
         """
         if key:
-            a = self.qt_actions.get(key, None)
+            a = self.actions.get(key, None)
             if a:
                 return a
             print('missing action ', key)
@@ -678,7 +674,7 @@ class UIManager:
                 elif item == '---':
                     new_menu.addSeparator()
                 else:
-                    new_menu.addAction(self.qt_actions[item])
+                    new_menu.addAction(self.actions[item])
 
             parent.addMenu(new_menu)
             return new_menu
@@ -706,14 +702,14 @@ class UIManager:
 
         # build menus
         self._top_menus = {}
+        print(sorted(list(self.actions.keys())))
+        print(len(self.actions))
+
         for key, data in expanded_menu_structure.items():
             menu = add_menu(self.main.menuBar(), *data)
             self._top_menus[key] = menu
 
     def update_projects_menu(self, projects, current_project):
-        d = {'command': '', 'method': switch_project,
-             'checkable': True, 'args': [],
-             'exclusive': True, 'undoable': False}
 
         win_menu = self._top_menus['windows_menu']
         last_separator = 0
@@ -721,18 +717,15 @@ class UIManager:
             if item.isSeparator():
                 last_separator = i
         for action in win_menu.actions()[last_separator+1:]:
-            del self.qt_actions[action.key]
             del self.actions[action.key]
             win_menu.removeAction(action)
         for i, project in enumerate(projects):
-            e = d.copy()
-            e['command'] = project.name
-            e['args'] = [i]
             key = 'project_%s' % project.name
-            self.actions[key] = e
-            action = Action(key, e)
+            action = kataja.actions.SwitchProject(action_uid=key,
+                                                  command=project.name,
+                                                  args=[i])
+            self.actions[key] = action
             action.setChecked(project is current_project)
-            self.qt_actions[key] = action
             win_menu.addAction(action)
 
     # ###################################################################

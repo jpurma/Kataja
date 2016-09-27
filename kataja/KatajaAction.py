@@ -114,31 +114,43 @@ class ButtonShortcutFilter(QtCore.QObject):
         # Move: 13
 
 
-class Action(QtWidgets.QAction):
+class KatajaAction(QtWidgets.QAction):
+    """ Actions are defined as classes that usually have only one instance. Action method()
+    performs the actual work, but class variables below can be used to finetune how action is
+    presented for the user.
 
-    def __init__(self, key, data):
+    If action is dynamic (k_dynamic = True), there are many instances of the same and __init__
+    has to be  given with uid, command, tooltip and trigger_args added to each call of the method.
+     """
+    k_action_uid = ''
+    k_command = ''
+    k_command_alt = ''
+    k_tooltip = ''
+    k_undoable = True
+    k_shortcut_context = ''
+    k_shortcut = ''
+    k_trigger_args = None
+    k_dynamic = False
+    k_exclusive = False
+    k_checkable = False
+    k_viewgroup = False
+
+    def __init__(self, action_uid='', command='', command_alt='', args=None, shortcut='', tooltip=''):
         super().__init__(ctrl.main)
-        self.key = key
+        self.key = action_uid or self.k_action_uid
         self.elements = set()
-        self.command = data.get('command', None)
-        self.command_alt = data.get('command_alt', None)
-        self.sender_arg = data.get('sender_arg', None)
-        self.action_arg = data.get('action_arg', None)
-        self.trigger_args = data.get('trigger_args', None)
+        self.command = command or self.k_command
+        self.command_alt = command_alt or self.k_command_alt
+        self.args = args
         if self.command:
             self.setText(self.command)
-        self.setData(key)
-        self.undoable = data.get('undoable', True)
-        self.method = data.get('method', True)
-        self.args = data.get('args', [])
-        self.tip = data.get('tooltip', self.command)
-        self.getter = data.get('getter', None)
-        self.enabler = data.get('enabler', None)
+        self.setData(self.key)
+        self.undoable = self.k_undoable
+        self.tip = tooltip or self.k_tooltip or self.command
         self.disable_undo_and_message = False
         # when triggered from menu, forward the call to more complex trigger handler
         self.triggered.connect(self.action_triggered)
-        shortcut = data.get('shortcut', '')
-        shortcut_context = data.get('shortcut_context', '')
+        shortcut = shortcut or self.k_shortcut
         # if action has shortcut_context, it shouldn't have global shortcut
         # in these cases shortcut is tied to ui_element.
         if shortcut:
@@ -146,34 +158,41 @@ class Action(QtWidgets.QAction):
             # those actions that have shortcut context are tied to (possibly nonexisting) UI
             # widgets and they can resolve ambiguous shortcuts only when the UI widgets are
             # connected. So disable these actions until the connection has been made.
-            if shortcut_context == 'parent_and_children':
+            if self.k_shortcut_context == 'parent_and_children':
                 sc = QtCore.Qt.WidgetWithChildrenShortcut
                 self.setEnabled(False)
-            elif shortcut_context == 'widget':
+            elif self.k_shortcut_context == 'widget':
                 sc = QtCore.Qt.WidgetShortcut
                 self.setEnabled(False)
             else:
                 sc = QtCore.Qt.ApplicationShortcut
             self.setShortcutContext(sc)
             self.installEventFilter(ctrl.ui.shortcut_solver)
-        viewgroup = data.get('viewgroup', None)
-        if viewgroup:
-            ag = ctrl.ui.get_action_group(viewgroup)
+        if self.k_viewgroup:
+            ag = ctrl.ui.get_action_group(self.k_viewgroup)
             self.setActionGroup(ag)
-            ag.setExclusive(data.get('exclusive', True))
-        self.setCheckable(data.get('checkable', False))
-        tooltip = data.get('tooltip', '')
-        if tooltip:
+            ag.setExclusive(self.k_exclusive)
+        self.setCheckable(self.k_checkable)
+        if self.tip:
             #if ctrl.main.use_tooltips:
-            self.setToolTip(tooltip)
-            self.setStatusTip(tooltip)
+            self.setToolTip(self.tip)
+            self.setStatusTip(self.tip)
+
+    def method(self):
+        pass
+
+    def enabler(self):
+        return True
+
+    def getter(self):
+        return None
 
     def action_triggered(self, *args, **kwargs):
         """ Trigger action with parameters received from action data object and designated UI element
         :param sender: optional sender object if triggered manually
         :return: None
         """
-        if self.trigger_args:
+        if self.args:
             trigger_args = list(args) + self.args
         else:
             trigger_args = self.args
@@ -181,11 +200,6 @@ class Action(QtWidgets.QAction):
             return
         # -- Redraw and undo flags: these are on by default, can be switched off by action method
         ctrl.action_redraw = True
-        if self.sender_arg:
-            if not 'sender' in kwargs:
-                kwargs['sender'] = self.sender()
-        if self.action_arg:
-            kwargs['action'] = self
         # Disable undo if necessary
         if not self.undoable:
             ctrl.disable_undo()
@@ -307,3 +321,33 @@ class Action(QtWidgets.QAction):
                 elif isinstance(element, QtWidgets.QAbstractButton):
                     element.setChecked(value)
                 element.blockSignals(False)
+
+    def get_ui_container(self):
+        """ Traverse qt-objects until something governed by UIManager is
+        found. Return this.
+        :return:
+        """
+        sender = self.sender()
+
+        def _ui_container(qt_object):
+            if getattr(qt_object, 'ui_key', None):
+                return qt_object
+            else:
+                p = qt_object.parent()
+                if p:
+                    return _ui_container(p)
+                else:
+                    return None
+
+        if not sender:
+            return None
+        return _ui_container(sender)
+
+    def get_host(self):
+        """ Get the Kataja object that this action is about, the 'host' element.
+        :return:
+        """
+        container = self.get_ui_container()
+        if container:
+            return container.host
+

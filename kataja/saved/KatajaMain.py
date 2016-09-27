@@ -380,7 +380,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         :param kwargs: keyword parameters
         :return:
         """
-        action = self.ui_manager.qt_actions[name]
+        action = self.ui_manager.actions[name]
         action.action_triggered(*args, **kwargs)
 
     def trigger_but_suppress_undo(self, name, *args, **kwargs):
@@ -389,18 +389,18 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         :param kwargs: keyword parameters
         :return:
         """
-        action = self.ui_manager.qt_actions[name]
+        action = self.ui_manager.actions[name]
         action.trigger_but_suppress_undo(*args, **kwargs)
 
     def enable_actions(self):
         """ Restores menus """
-        for action in self.ui_manager.qt_actions.values():
+        for action in self.ui_manager.actions.values():
             action.setDisabled(False)
 
     def disable_actions(self):
         """ Actions shouldn't be initiated when there is other multi-phase
         action going on """
-        for action in self.ui_manager.qt_actions.values():
+        for action in self.ui_manager.actions.values():
             action.setDisabled(True)
 
     def adjust_colors(self, hsv):

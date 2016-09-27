@@ -149,7 +149,7 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
     # print 'UIPanel %s floating: %s' % (self, floating)
 
     def get_visibility_action(self):
-        return self.ui_manager.qt_actions['toggle_panel_%s' % self.ui_key]
+        return self.ui_manager.actions['toggle_panel_%s' % self.ui_key]
 
     def update_panel(self):
         """ Implement if general update everything is needed

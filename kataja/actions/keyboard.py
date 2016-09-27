@@ -1,73 +1,64 @@
 # coding=utf-8
 from kataja.singletons import ctrl
-
-a = {}
-
-
-def key_backspace():
-    """ In many contexts this will delete something. Expand this as necessary
-    for contexts that don't otherwise grab keyboard.
-    :return: None
-    """
-    print('key_backspace - action')
-    ctrl.multiselection_start() # don't update selections until all are removed
-    for item in list(ctrl.selected):
-        ctrl.forest.delete_item(item)
-    ctrl.multiselection_end() # ok go update
+from kataja.KatajaAction import KatajaAction
 
 
-a['key_backspace'] = {'command': 'key_backspace', 'method': key_backspace,
-                      'shortcut': 'Backspace'}
+class KeyBackspace(KatajaAction):
+    k_action_uid = 'key_backspace'
+    k_command = 'key_backspace'
+    k_shortcut = 'Backspace'
+
+    def method(self):
+        """ In many contexts this will delete something. Expand this as necessary
+        for contexts that don't otherwise grab keyboard.
+        :return: None
+        """
+        print('key_backspace - action')
+        ctrl.multiselection_start() # don't update selections until all are removed
+        for item in list(ctrl.selected):
+            ctrl.forest.delete_item(item)
+        ctrl.multiselection_end() # ok go update
 
 
-a['toggle_all_panels'] = {'command': 'Hide all panels',
-                          'command_alt': 'Show all panels',
-                          'method': 'toggle_all_panels'} # missing!
+class KeyLeft(KatajaAction):
+    k_action_uid = 'key_left'
+    k_command = 'key_left'
+    k_shortcut = 'Left'
+    k_undoable = False
+
+    def method(self):
+        if not ctrl.ui_focus:
+            ctrl.graph_scene.move_selection('left')
 
 
-def key_left():
-    """ Placeholder for keypress
-    :return: None
-    """
-    if not ctrl.ui_focus:
-        ctrl.graph_scene.move_selection('left')
+class KeyRight(KatajaAction):
+    k_action_uid = 'key_right'
+    k_command = 'key_right'
+    k_shortcut = 'Right'
+    k_undoable = False
+
+    def method(self):
+        if not ctrl.ui_focus:
+            ctrl.graph_scene.move_selection('right')
 
 
-a['key_left'] = {'command': 'key_left', 'undoable': False, 'method': key_left,
-                 'shortcut': 'Left'}
+class KeyUp(KatajaAction):
+    k_action_uid = 'key_up'
+    k_command = 'key_up'
+    k_shortcut = 'Up'
+    k_undoable = False
+
+    def method(self):
+        if not ctrl.ui_focus:
+            ctrl.graph_scene.move_selection('up')
 
 
-def key_right():
-    """ Placeholder for keypress
-    :return: None
-    """
-    if not ctrl.ui_focus:
-        ctrl.graph_scene.move_selection('right')
+class KeyDown(KatajaAction):
+    k_action_uid = 'key_down'
+    k_command = 'key_down'
+    k_shortcut = 'Down'
+    k_undoable = False
 
-
-a['key_right'] = {'command': 'key_right', 'undoable': False,
-                  'method': key_right, 'shortcut': 'Right'}
-
-
-def key_up():
-    """ Placeholder for keypress
-    :return: None
-    """
-    if not ctrl.ui_focus:
-        ctrl.graph_scene.move_selection('up')
-
-
-a['key_up'] = {'command': 'key_up', 'undoable': False, 'method': key_up,
-               'shortcut': 'Up'}
-
-
-def key_down():
-    """ Placeholder for keypress
-    :return: None
-    """
-    if not ctrl.ui_focus:
-        ctrl.graph_scene.move_selection('down')
-
-
-a['key_down'] = {'command': 'key_down', 'undoable': False, 'method': key_down,
-                 'shortcut': 'Down'}
+    def method(self):
+        if not ctrl.ui_focus:
+            ctrl.graph_scene.move_selection('down')

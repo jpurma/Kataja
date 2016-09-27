@@ -37,7 +37,7 @@ class NavigationPanel(Panel):
         layout.addWidget(prev_tree, 1, 0, 1, 1)
         self.prev_tree = prev_tree
         ui = self.ui_manager
-        ui.connect_element_to_action(prev_tree, 'prev_forest')
+        ui.connect_element_to_action(prev_tree, 'previous_forest')
 
         next_tree = TwoColorButton(qt_prefs.right_arrow, '', self)
         next_tree.setMinimumWidth(72)
