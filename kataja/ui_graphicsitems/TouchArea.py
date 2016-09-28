@@ -43,6 +43,7 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
     """ Mouse sensitive areas connected to either nodes or edges between
     them. """
     __qt_type_id__ = next_available_type_id()
+    clicked = QtCore.pyqtSignal()
 
     def __init__(self, host, action):
         """
@@ -72,9 +73,11 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
         self.update_end_points()
         self.action = action
         self.setFlag(QtWidgets.QGraphicsObject.ItemIsSelectable)
+        self.setCursor(QtCore.Qt.PointingHandCursor)
+        if action:
+            action.connect_element(self)
         if action and action.tip:
             self.set_tip(action.tip)
-        self.setCursor(QtCore.Qt.PointingHandCursor)
 
     def type(self):
         """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
@@ -234,8 +237,7 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
         if self._drag_hint:
             return False
         ctrl.deselect_objects()
-        if self.action:
-            self.action.action_triggered(sender=self)
+        self.clicked.emit()
         return True
 
     # self, N, R, merge_to_left, new_node_pos, merger_node_pos):

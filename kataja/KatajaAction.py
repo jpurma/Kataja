@@ -32,6 +32,7 @@ from kataja.ui_widgets.OverlayButton import PanelButton
 from kataja.ui_support.EmbeddedMultibutton import EmbeddedMultibutton
 from kataja.ui_support.EmbeddedRadiobutton import EmbeddedRadiobutton
 from kataja.ui_support.SelectionBox import SelectionBox
+from kataja.ui_graphicsitems.TouchArea import TouchArea
 
 
 class ShortcutSolver(QtCore.QObject):
@@ -141,7 +142,7 @@ class KatajaAction(QtWidgets.QAction):
         self.elements = set()
         self.command = command or self.k_command
         self.command_alt = command_alt or self.k_command_alt
-        self.args = args
+        self.args = args or []
         if self.command:
             self.setText(self.command)
         self.setData(self.key)
@@ -189,9 +190,9 @@ class KatajaAction(QtWidgets.QAction):
 
     def action_triggered(self, *args, **kwargs):
         """ Trigger action with parameters received from action data object and designated UI element
-        :param sender: optional sender object if triggered manually
         :return: None
         """
+        print('args: ', args, 'kwargs: ', kwargs, 'self.args: ', self.args, 'sender: ', self.sender())
         if self.args:
             trigger_args = list(args) + self.args
         else:
@@ -239,16 +240,23 @@ class KatajaAction(QtWidgets.QAction):
         self.elements.add(element)
 
         tooltip = self.toolTip()
-        if tooltip and not isinstance(element, EmbeddedMultibutton):
+        if tooltip:
             if tooltip_suffix:
-                element.setStatusTip(tooltip % tooltip_suffix)
-                if ctrl.main.use_tooltips:
-                    element.setToolTip(tooltip % tooltip_suffix)
+                tt = tooltip % tooltip_suffix
             else:
-                element.setStatusTip(tooltip)
+                tt = tooltip
+            if isinstance(element, QtWidgets.QGraphicsObject):
+                # These don't have setStatusTip
+                element.status_tip = tt
                 if ctrl.main.use_tooltips:
-                    element.setToolTip(tooltip)
-            element.setToolTipDuration(2000)
+                    element.setToolTip(tt)
+            elif isinstance(element, EmbeddedMultibutton):
+                pass
+            else:
+                element.setStatusTip(tt)
+                if ctrl.main.use_tooltips:
+                    element.setToolTip(tt)
+                element.setToolTipDuration(2000)
 
         shortcut = self.shortcut()
         shortcut_context = self.shortcutContext()
@@ -256,7 +264,8 @@ class KatajaAction(QtWidgets.QAction):
             ctrl.ui.manage_shortcut(shortcut, element, self)
             # shortcuts (or actions in total were disabled before this connection to avoi)
             self.setEnabled(True)
-        element.setFocusPolicy(QtCore.Qt.TabFocus)
+        if isinstance(element, QtWidgets.QWidget):
+            element.setFocusPolicy(QtCore.Qt.TabFocus)
 
         if isinstance(element, PanelButton):
             element.clicked.connect(self.action_triggered)
@@ -276,6 +285,8 @@ class KatajaAction(QtWidgets.QAction):
         elif isinstance(element, QtWidgets.QAbstractSpinBox):
             element.valueChanged.connect(self.trigger_but_suppress_undo)
             element.editingFinished.connect(self.action_triggered)
+        elif isinstance(element, TouchArea):
+            element.clicked.connect(self.action_triggered)
 
     def disconnect_element(self, element):
         if element in self.elements:
@@ -340,6 +351,7 @@ class KatajaAction(QtWidgets.QAction):
                     return None
 
         if not sender:
+            print('couldnt receive sender!')
             return None
         return _ui_container(sender)
 
