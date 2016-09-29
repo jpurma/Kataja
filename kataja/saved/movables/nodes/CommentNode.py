@@ -64,7 +64,8 @@ class CommentNode(Node):
 
     touch_areas_when_dragging = {g.DELETE_ARROW: {'condition': 'dragging_my_arrow'}}
 
-    touch_areas_when_selected = {g.DELETE_ARROW: {'condition': 'has_arrow'}}
+    touch_areas_when_selected = {g.DELETE_ARROW: {'condition': 'has_arrow',
+                                                  'action': 'delete_arrow'}}
 
     def __init__(self, text='comment', forest=None):
         self.image_object = None

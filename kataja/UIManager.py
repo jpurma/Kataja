@@ -393,13 +393,7 @@ class UIManager:
         # prepare style dictionaries for selections, to be used for displaying style values in UI
         self.build_active_style_info()
         for action in self.actions.values():
-            if action.enabler:
-                on = action.enabler()
-                #if not on:
-                #    print('disabling action:', action.command)
-                action.set_enabled(on)
-                if on and action.getter:
-                    action.set_displayed_value(action.getter())
+            action.update_action()
 
     def update_action(self, key):
         """ If action is tied to some meter (e.g. number field that is used to show value and
@@ -407,12 +401,7 @@ class UIManager:
         :param key:
         :return:
         """
-        action = self.actions[key]
-        if action.enabler:
-            on = action.enabler()
-            action.set_enabled(on)
-            if on and action.getter:
-                action.set_displayed_value(action.getter())
+        self.actions[key].update_action()
 
     def build_active_style_info(self):
         """ Build dicts for representative edge styles and node styles to be displayed by ui
@@ -638,7 +627,8 @@ class UIManager:
                                                 args=[panel_key])
             self.actions[key] = action
             panel_actions.append(key)
-        # ## Create actions
+
+        log.info('Prepared %s actions.' % len(self.actions))
         return {'visualizations': vis_actions, 'panels': panel_actions}
 
     def get_action(self, key) -> KatajaAction:
@@ -702,8 +692,7 @@ class UIManager:
 
         # build menus
         self._top_menus = {}
-        print(sorted(list(self.actions.keys())))
-        print(len(self.actions))
+
 
         for key, data in expanded_menu_structure.items():
             menu = add_menu(self.main.menuBar(), *data)

@@ -237,7 +237,7 @@ class SaveAs(Save):
     k_shortcut = ''
     k_undoable = False
 
-    def method(self):
+    def method(self, filename=''):
         """ Save kataja data to file set by file dialog """
         self.save_as()
 

@@ -106,6 +106,22 @@ class NewArrow(KatajaAction):
         ctrl.ui.close_active_embed()
 
 
+class DeleteArrow(KatajaAction):
+    k_action_uid = 'delete_arrow'
+    k_command = 'Delete arrow'
+
+    def method(self):
+        button = self.get_ui_container()
+        if not button:
+            return
+        edge = button.host
+        if not edge:
+            return
+        # Then do the cutting
+        ctrl.forest.disconnect_edge(edge)
+        ctrl.ui.update_selections()
+
+
 class NewDivider(KatajaAction):
     k_action_uid = 'new_divider'
     k_command = 'New divider'

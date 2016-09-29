@@ -314,11 +314,11 @@ class ControlPoint1X(KatajaAction):
     k_action_uid = 'control_point1_x'
     k_command = 'Adjust curvature, point 1 X'
 
-    def method(self, value=None):
+    def method(self):
         """ Adjust specifix control point
-        :param value: new value for given dimension, doesn't matter for reset.
         :return: None
         """
+        value = self.state_arg
         if value is None:
             return
         for edge in ctrl.selected:
@@ -340,11 +340,11 @@ class ControlPoint2X(KatajaAction):
     k_action_uid = 'control_point2_x'
     k_command = 'Adjust curvature, point 2 X'
 
-    def method(self, value=None):
+    def method(self):
         """ Adjust specifix control point
-        :param value: new value for given dimension, doesn't matter for reset.
         :return: None
         """
+        value = self.state_arg
         if value is None:
             return
         for edge in ctrl.selected:
@@ -366,11 +366,11 @@ class ControlPoint1Y(KatajaAction):
     k_action_uid = 'control_point1_y'
     k_command = 'Adjust curvature, point 1 Y'
 
-    def method(self, value=None):
+    def method(self):
         """ Adjust specifix control point
-        :param value: new value for given dimension, doesn't matter for reset.
         :return: None
         """
+        value = self.state_arg
         if value is None:
             return
         for edge in ctrl.selected:
@@ -392,11 +392,11 @@ class ControlPoint2Y(KatajaAction):
     k_action_uid = 'control_point2_y'
     k_command = 'Adjust curvature, point 2 Y'
 
-    def method(self, value=None):
+    def method(self):
         """ Adjust specifix control point
-        :param value: new value for given dimension, doesn't matter for reset.
         :return: None
         """
+        value = self.state_arg
         if value is None:
             return
         for edge in ctrl.selected:
@@ -427,7 +427,6 @@ class ResetControlPoints(KatajaAction):
             if isinstance(edge, Edge):
                 edge.shape_info.reset_control_points()
 
-
     def enabler(self):
         for edge in ctrl.selected:
             if isinstance(edge, Edge):
@@ -443,10 +442,10 @@ class LeafShapeX(KatajaAction):
     k_command = 'Edge shape width'
     k_tooltip = 'Adjust horizontal thickness of edges'
 
-    def method(self, value=None):
+    def method(self):
         """ Change width of leaf-shaped edge.
-        :param value: new value (float)
         """
+        value = self.state_arg
         if value is None:
             return
         elif ctrl.ui.scope_is_selection:
@@ -470,10 +469,10 @@ class LeafShapeY(KatajaAction):
     k_command = 'Edge shape height'
     k_tooltip = 'Adjust vertical thickness of edges'
 
-    def method(self, value=None):
+    def method(self):
         """ Change height of leaf-shaped edge.
-        :param value: new value (float)
         """
+        value = self.state_arg
         if value is None:
             return
         if ctrl.ui.scope_is_selection:
@@ -494,10 +493,10 @@ class EdgeThickness(KatajaAction):
     k_command = 'Edge thickness'
     k_tooltip = 'Adjust fixed thickness for edges'
 
-    def method(self, value=None):
+    def method(self):
         """ If edge is outline (not a leaf shape)
-        :param value: new thickness (float)
         """
+        value = self.state_arg
         if value is None:
             return
         if ctrl.ui.scope_is_selection:
@@ -521,10 +520,10 @@ class ChangeEdgeRelativeCurvatureX(KatajaAction):
     k_command = 'Change horizontal curvature for edge'
     k_tooltip = 'Curvature value is relative to edge width'
 
-    def method(self, value=None):
+    def method(self):
         """ Change curvature of arching lines. Curvature is relative to width
-        :param value: float
         """
+        value = self.state_arg
         if value is None:
             return
         if ctrl.ui.scope_is_selection:
@@ -549,10 +548,10 @@ class ChangeEdgeRelativeCurvatureY(KatajaAction):
     k_command = 'Change vertical curvature for edge'
     k_tooltip = 'Curvature value is relative to edge height'
 
-    def method(self, value=None):
+    def method(self):
         """ Change curvature of arching lines. Curvature is relative to width
-        :param value: float
         """
+        value = self.state_arg
         if value is None:
             return
         if ctrl.ui.scope_is_selection:
@@ -577,10 +576,10 @@ class ChangeEdgeFixedCurvatureX(KatajaAction):
     k_command = 'Change horizontal curvature for edge'
     k_tooltip = 'Curvature is fixed amount'
 
-    def method(self, value=None):
+    def method(self):
         """ Change curvature of arching lines. Curvature is absolute pixels (X)
-        :param value: float
         """
+        value = self.state_arg
         if value is None:
             return
         if ctrl.ui.scope_is_selection:
@@ -605,10 +604,11 @@ class ChangeEdgeFixedCurvatureY(KatajaAction):
     k_command = 'Change vertical curvature for edge'
     k_tooltip = 'Curvature is fixed amount'
 
-    def method(self, value=None):
+    def method(self):
         """ Change curvature of arching lines. Curvature is absolute pixels (X)
         :param value: float
         """
+        value = self.state_arg
         if value is None:
             return
         if ctrl.ui.scope_is_selection:
@@ -632,10 +632,10 @@ class EdgeArrowheadStart(KatajaAction):
     k_action_uid = 'edge_arrowhead_start'
     k_command = 'Draw arrowhead at line start'
 
-    def method(self, value):
+    def method(self):
         """ Draw arrowheads at start for given edges or edge type
-        :param value: bool
         """
+        value = self.state_arg
         if ctrl.ui.scope_is_selection:
             for edge in ctrl.selected:
                 if isinstance(edge, Edge):
@@ -659,10 +659,11 @@ class EdgeArrowheadEnd(KatajaAction):
     k_action_uid = 'edge_arrowhead_end'
     k_command = 'Draw arrowhead at line end'
 
-    def method(self, value):
+    def method(self):
         """ Draw arrowheads at end for given edges or edge type
         :param value: bool
         """
+        value = self.state_arg
         if ctrl.ui.scope_is_selection:
             for edge in ctrl.selected:
                 if isinstance(edge, Edge):
@@ -688,7 +689,6 @@ class EdgeShapeFill(KatajaAction):
 
     def method(self):
         """ Change edge to draw as filled shape
-        :param value: bool
         """
         if ctrl.ui.scope_is_selection:
             for edge in ctrl.selected:
@@ -715,7 +715,6 @@ class EdgeShapeLine(KatajaAction):
 
     def method(self):
         """ Change edge to draw as line instead of filled shape
-        :param value: bool
         """
         if ctrl.ui.scope_is_selection:
             for edge in ctrl.selected:
@@ -740,10 +739,10 @@ class EdgeCurvatureRelative(KatajaAction):
     k_action_uid = 'edge_curvature_relative'
     k_command = 'Change line curvature to be relative to edge dimensions'
 
-    def method(self, value):
+    def method(self):
         """ Change curvature computation type. Curvature can be 'relative' or 'fixed'
-        :param value: 'relative' or 'fixed'
         """
+        value = self.state_arg
         if value:
             ref = 'relative'
         else:
@@ -772,10 +771,10 @@ class EdgeCurvatureFixed(KatajaAction):
     k_action_uid = 'edge_curvature_fixed'
     k_command = 'Change line curvature to be a pair of fixed values'
 
-    def method(self, value):
+    def method(self):
         """ Change curvature computation type. Curvature can be 'relative' or 'fixed'
-        :param value: bool
         """
+        value = self.state_arg
         if value:
             ref = 'fixed'
         else:

@@ -15,6 +15,7 @@ class SwitchEditMode(KatajaAction):
         """ Switch between visualisation mode and free edit mode
         :type free_edit: None to toggle between modes, True for free_drawing_mode,
         False for visualization
+        :param state: triggering button or menu item state
         :return:
         """
         if free_edit is None:

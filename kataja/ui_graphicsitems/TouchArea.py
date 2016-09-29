@@ -144,13 +144,8 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
         self.setPos(ep[0], ep[1])
         self._path = None
 
-    # edge.py
     def update_end_points(self):
-        # start
-        """
-
-        :param end_point: End point can be given or it can be calculated.
-        """
+        """ """
         if not self.host:
             return
         if isinstance(self.host, Edge):
@@ -345,10 +340,6 @@ class AddConstituentTouchArea(TouchArea):
 
     __qt_type_id__ = next_available_type_id()
 
-    def __init__(self, host, action):
-        super().__init__(host, action)
-        self.set_tip("Add a constituent here")
-
     def click(self, event=None):
         """
         :param event:
@@ -472,10 +463,6 @@ class DeleteArrowTouchArea(TouchArea):
 
     __qt_type_id__ = next_available_type_id()
 
-    def __init__(self, host, action):
-        super().__init__(host, action)
-        self.set_tip("Remove this arrow")
-
     def paint(self, painter, option, widget):
         """
         :param painter:
@@ -498,9 +485,6 @@ class BranchingTouchArea(TouchArea):
     """
 
     __qt_type_id__ = next_available_type_id()
-
-    def __init__(self, host, action):
-        super().__init__(host, action)
 
     def boundingRect(self):
         """

@@ -197,9 +197,13 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
                 log.info(m)
         if hasattr(setup, 'start_plugin'):
             setup.start_plugin(self, ctrl, prefs)
-        #if not getattr(setup, 'no_legacy_trees', False):
-        #    self.load_objects(all_data, self)
-        print(classes.ForestKeeper, type(classes.ForestKeeper))
+        if not self.forest:
+            try:
+                self.load_objects(all_data, self)
+                log.info('reloaded objects')
+            except:
+                log.critical('Failed to reload object, loading defaults instead.')
+                self.load_initial_treeset()
         ctrl.resume_undo()
         self.change_forest()
 
@@ -518,7 +522,6 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         """ Empty everything - maybe necessary before loading new data. """
         if self.forest:
             self.forest.retire_from_drawing()
-            self.forest = None
         self.forest_keeper = None
         # Garbage collection doesn't mix well with animations that are still running
         #print('garbage stats:', gc.get_count())
@@ -528,6 +531,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         #    print('garbage:', gc.garbage)
         self.forest_keepers.append(classes.ForestKeeper())
         self.forest_keeper = self.forest_keepers[-1]
+        self.forest = None
 
 
     # # ### Unused two-phase actions
@@ -597,16 +601,16 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         QtWidgets.QMainWindow.closeEvent(self, event)
         if ctrl.print_garbage:
             # import objgraph
-            print('garbage stats:', gc.get_count())
+            log.debug('garbage stats:', gc.get_count())
             gc.collect()
-            print('after collection:', gc.get_count())
+            log.debug('after collection:', gc.get_count())
             if gc.garbage:
-                print('garbage:', gc.garbage)
+                log.debug('garbage:', gc.garbage)
 
                 # objgraph.show_most_common_types(limit =40)
         if self.save_prefs:
             prefs.save_preferences()
-        print('...done')
+        log.info('...done')
 
     @time_me
     def create_save_data(self):

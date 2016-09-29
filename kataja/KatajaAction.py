@@ -130,7 +130,6 @@ class KatajaAction(QtWidgets.QAction):
     k_undoable = True
     k_shortcut_context = ''
     k_shortcut = ''
-    k_trigger_args = None
     k_dynamic = False
     k_exclusive = False
     k_checkable = False
@@ -142,7 +141,9 @@ class KatajaAction(QtWidgets.QAction):
         self.elements = set()
         self.command = command or self.k_command
         self.command_alt = command_alt or self.k_command_alt
-        self.args = args or []
+        self.state_arg = None  # used to hold button states, or whatever activated triggers send
+        self.args = args or []  # if there are several instances, e.g. vis_1-9, they define args
+        # that are always attached to method call.
         if self.command:
             self.setText(self.command)
         self.setData(self.key)
@@ -179,7 +180,7 @@ class KatajaAction(QtWidgets.QAction):
             self.setToolTip(self.tip)
             self.setStatusTip(self.tip)
 
-    def method(self):
+    def method(self, *args):
         pass
 
     def enabler(self):
@@ -188,17 +189,18 @@ class KatajaAction(QtWidgets.QAction):
     def getter(self):
         return None
 
-    def action_triggered(self, *args, **kwargs):
+    def action_triggered(self, state_arg=None):
         """ Trigger action with parameters received from action data object and designated UI element
+        :param state_arg: argument provided by some triggers, e.g. toggle buttons. We don't forward
+         this, instead it is saved in self.state_arg, method can use it from there if needed.
         :return: None
         """
-        print('args: ', args, 'kwargs: ', kwargs, 'self.args: ', self.args, 'sender: ', self.sender())
-        if self.args:
-            trigger_args = list(args) + self.args
-        else:
-            trigger_args = self.args
+
         if not self.isEnabled():
             return
+        if state_arg:
+            print('received state arg: ', state_arg)
+        self.state_arg = state_arg
         # -- Redraw and undo flags: these are on by default, can be switched off by action method
         ctrl.action_redraw = True
         # Disable undo if necessary
@@ -207,11 +209,12 @@ class KatajaAction(QtWidgets.QAction):
 
         # Call method
         try:
-            message = self.method(*trigger_args, **kwargs)
+            message = self.method(*self.args)
             error = None
         except:
             message = ''
-            error = '<br/>'.join(traceback.format_exception(*sys.exc_info()))
+            error = "Action %r ('%s')<br/>" % (self, self.key)
+            error += '<br/>'.join(traceback.format_exception(*sys.exc_info()))
             print("Unexpected error:", sys.exc_info())
             traceback.print_exc()
         # Restore undo state to what it was
@@ -223,6 +226,18 @@ class KatajaAction(QtWidgets.QAction):
             ctrl.main.action_finished(m=message or self.command,
                                       undoable=self.undoable and not ctrl.undo_disabled,
                                       error=error)
+
+    def update_action(self):
+        """ If action is tied to some meter (e.g. number field that is used to show value and
+        change it), update the value in the meter and see if it should be enabled.
+        :param key:
+        :return:
+        """
+        on = self.enabler()
+        self.set_enabled(on)
+        val = self.getter()
+        if on and val is not None:
+            self.set_displayed_value(val)
 
     def trigger_but_suppress_undo(self, *args, **kwargs):
         ctrl.disable_undo()
@@ -299,9 +314,9 @@ class KatajaAction(QtWidgets.QAction):
         """
         value = bool(value)
         self.setEnabled(value)
-        for element in self.elements:
-            if hasattr(element, 'setEnabled'):
-                element.setEnabled(value)
+        #for element in self.elements:
+        #    if hasattr(element, 'setEnabled'):
+        #        element.setEnabled(value)
 
     def set_displayed_value(self, value):
         """ Call ui_items that are related to this action and try to update them to show value
@@ -310,8 +325,6 @@ class KatajaAction(QtWidgets.QAction):
         :param value:
         :return:
         """
-        if value is None:
-            return
         #print('setting displayed value for %s to %s' % (self.key, value))
         if self.isCheckable():
             for element in self.elements:
@@ -321,17 +334,21 @@ class KatajaAction(QtWidgets.QAction):
                 element.blockSignals(False)
         else:
             for element in self.elements:
-                element.blockSignals(True)
                 if isinstance(element, SelectionBox):
+                    element.blockSignals(True)
                     if element.uses_data:
                         element.select_by_data(value)
                     else:
                         element.select_by_text(value)
+                    element.blockSignals(False)
                 elif hasattr(element, 'setValue'):
+                    element.blockSignals(True)
                     element.setValue(value)
+                    element.blockSignals(False)
                 elif isinstance(element, QtWidgets.QAbstractButton):
+                    element.blockSignals(True)
                     element.setChecked(value)
-                element.blockSignals(False)
+                    element.blockSignals(False)
 
     def get_ui_container(self):
         """ Traverse qt-objects until something governed by UIManager is

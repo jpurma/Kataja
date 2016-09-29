@@ -311,7 +311,7 @@ def shaped_quadratic_path(start_point=None, end_point=None,
     dx *= curve_multiplier(edge_n, edge_count)
     control_points = [(sx + dx, sy + dy)]
     c = adjusted_control_point_list(sx, sy, ex, ey, control_points, curve_adjustment)
-    c1x, c1y = c
+    c1x, c1y = c[0]
     if inner_only:
         path = None
     else:
@@ -375,7 +375,7 @@ def quadratic_path(start_point=None, end_point=None, curve_adjustment=None, edge
     control_points = [(sx + dx, sy + dy)]
     path = QtGui.QPainterPath(Pf(sx, sy))
     c = adjusted_control_point_list(sx, sy, ex, ey, control_points, curve_adjustment)
-    c1x, c1y = c
+    c1x, c1y = c[0]
     path.quadTo(c1x, c1y, ex, ey)
     return path, path, control_points, c
 
