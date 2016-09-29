@@ -832,8 +832,7 @@ class UIManager:
         """
         if isinstance(action, str):
             action = self.get_action(action)
-        if not action:
-            print('missing action: ', action)
+        assert action
         action.connect_element(element, tooltip_suffix)
 
     def manage_shortcut(self, key_seq, element, action):

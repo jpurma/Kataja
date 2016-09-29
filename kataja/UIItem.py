@@ -78,8 +78,10 @@ class UIItem:
         """
         if self.is_fading_in:
             return
-        self.is_fading_in = True
         self.show()
+        if not self.can_fade:
+            return
+        self.is_fading_in = True
         if not self._opacity_effect:
             self.prepare_opacity_effect()
         if not self._fade_in_anim:

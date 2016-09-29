@@ -29,8 +29,8 @@ class AddNode(KatajaAction):
         log.info('Added new %s.' % nclass.display_name[0])
 
 
-class CloseEmbeds(KatajaAction):
-    k_action_uid = 'close_embeds'
+class CloseEmbed(KatajaAction):
+    k_action_uid = 'close_embed'
     k_command = 'Close panel'
     k_shortcut = 'Escape'
     k_shortcut_context = 'parent_and_children'

@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtWidgets, QtGui, QtCore
 
 from kataja.singletons import ctrl, qt_prefs
 from kataja.utils import open_symbol_data
@@ -111,6 +111,8 @@ class ExpandingTextArea(QtWidgets.QWidget):
         elif self.parsing_mode == 2:
             self.text_area.setPlainText(self.parsed_html)
         self.text_preview.setHtml(self.parsed_html)
+        #self.text_area.setAlignment(QtCore.Qt.AlignCenter)
+        self.text_preview.setAlignment(QtCore.Qt.AlignCenter)
 
     def setFocus(self, *args):
         self.text_area.setFocus(*args)
@@ -134,7 +136,8 @@ class ExpandingTextArea(QtWidgets.QWidget):
         min_width = 400
         if self.changed:
             inode_text = self.inode_text()
-            self.text_preview.setHtml(as_html(inode_text))
+            #self.text_preview.setHtml(as_html(inode_text))
+            self.text_preview.setHtml('<center>%s</center>' % as_html(inode_text))
 
         #rows = self.text_area.document().size().height()
         #tot = min(self.font_height * rows + 5, max_height)

@@ -38,6 +38,7 @@ class NodeEditEmbed(UIEmbed):
     :param ui_key: unique, but predictable key for accessing this editor
     :param node: node that is to be associated with this editor
     """
+    can_fade = False  # fade and textareas don't work well together
 
     def __init__(self, parent, node):
         nname = node.display_name[0].lower()
@@ -188,6 +189,8 @@ class NodeEditEmbed(UIEmbed):
             if itype == 'expandingtext':
                 field.setText(value)
             elif itype == 'text' or itype == 'textarea':
+                if isinstance(value, list):
+                    value = '\n'.join(value)
                 field.set_original(value)
                 field.setText(value)
             elif itype == 'checkbox':
