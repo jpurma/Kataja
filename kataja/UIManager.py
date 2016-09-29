@@ -1154,16 +1154,6 @@ class UIManager:
         self.top_bar_buttons.edit_mode_button.set_checked(not val)
         ctrl.call_watchers(self, 'edit_mode_changed', value=val)
 
-    def update_view_mode(self):
-        val = prefs.show_all_mode
-        self.top_bar_buttons.view_mode_button.set_checked(not val)
-        if ctrl.forest:
-            for node in ctrl.forest.nodes.values():
-                node.update_label()
-                node.update_label_visibility()
-                node.update_visibility()
-            ctrl.call_watchers(self, 'view_mode_changed', value=val)
-
     # ### Embedded buttons ############################
 
     def create_float_buttons(self):
@@ -1174,7 +1164,6 @@ class UIManager:
         #     item.close()
         self.top_bar_buttons = TopBarButtons(ctrl.graph_view, self)
         self.top_bar_buttons.update_position()
-        self.update_view_mode()
         self.update_edit_mode()
         self.update_drag_mode(True) # selection mode
 

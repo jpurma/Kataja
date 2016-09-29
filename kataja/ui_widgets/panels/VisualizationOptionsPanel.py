@@ -20,52 +20,25 @@ class VisualizationOptionsPanel(Panel):
         :param parent: self.main
         """
         Panel.__init__(self, name, default_position, parent, folded)
-        self.watchlist = []
+        self.watchlist = ['view_mode_changed']
         inner = QtWidgets.QWidget(self)
         layout = QtWidgets.QVBoxLayout()
         layout.setSizeConstraint(QtWidgets.QLayout.SetMinimumSize)
         self.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum,
                                                  QtWidgets.QSizePolicy.MinimumExpanding))
 
-        #checkbox(ui_manager, panel, layout, label, action)
-
         grid = QtWidgets.QGridLayout()
         grid.setContentsMargins(0, 0, 0, 0)
-        # layout.addLayout(grid)
-        # label(self, grid, 'Show aliases', 0, 0)
-        # self.show_leaf_alias = checkbox(ui_manager, self, grid,
-        #                                 'for leaves',
-        #                                 'toggle_show_leaf_alias', 1, 0)
-        # self.show_internal_alias = checkbox(ui_manager, self, grid,
-        #                                     'for inner nodes',
-        #                                     'toggle_show_internal_alias', 1, 1)
-        # label(self, grid, 'Show labels', 0, 2)
-        # self.show_leaf_label = checkbox(ui_manager, self, grid,
-        #                                 'for leaves',
-        #                                 'toggle_show_leaf_label', 1, 2)
-        # self.show_internal_label = checkbox(ui_manager, self, grid,
-        #                                     'for inner nodes',
-        #                                     'toggle_show_internal_label', 1, 3)
-
         layout.addLayout(grid)
         ui = self.ui_manager
-        label(self, grid, 'For inner nodes show', 0, 0)
-        self.show_internal_alias = mini_button(ui, self, grid,
-                                               'aliases', 'toggle_show_internal_alias'
-                                                , 3, 0, checkable=True)
-        self.show_internal_label = mini_button(ui, self, grid,
-                                               'labels',
-                                               'toggle_show_internal_label',
-                                               3, 1, checkable=True)
-        label(self, grid, '╱', 2, 2)
-        label(self, grid, 'For leaf nodes show', 0, 3)
-        self.show_leaf_alias = mini_button(ui, self, grid,
-                                           'aliases', 'toggle_show_leaf_alias',
-                                           1, 3, checkable=True)
-        self.show_leaf_label = mini_button(ui, self, grid,
-                                           'labels', 'toggle_show_leaf_label',
-                                           1, 4, checkable=True)
-
+        label(self, grid, 'Show which labels ', 0, 0)
+        self.show_display_labels = text_button(ui, grid,
+                                               'display labels', 'toggle_show_display_label',
+                                               1, 0, checkable=True)
+        self.show_computational_labels = text_button(ui, grid,
+                                                     'computational labels',
+                                                     'toggle_show_computational_label',
+                                                     1, 1, checkable=True)
         layout.addLayout(grid)
         grid = QtWidgets.QGridLayout()
         grid.setContentsMargins(0, 0, 0, 0)
@@ -107,10 +80,8 @@ class VisualizationOptionsPanel(Panel):
         self.widget().updateGeometry()
         self.widget().update()
         s = ctrl.fs
-        set_value(self.show_internal_alias, s.show_internal_aliases)
-        set_value(self.show_leaf_alias, s.show_leaf_aliases)
-        set_value(self.show_internal_label, s.show_internal_labels)
-        set_value(self.show_leaf_label, s.show_leaf_labels)
+        set_value(self.show_display_labels, s.show_display_labels)
+        set_value(self.show_computational_labels, s.show_computational_labels)
         set_value(self.highlighter_button, s.projection_highlighter)
         set_value(self.strong_lines_button, s.projection_strong_lines)
         set_value(self.colorize_button, s.projection_colorized)
@@ -161,5 +132,5 @@ class VisualizationOptionsPanel(Panel):
         :param value: value given to the field
         :return:
         """
-        print('VisualizationOptions panel alerted:', signal, field_name, value)
+        self.update_panel()
 

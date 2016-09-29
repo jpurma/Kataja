@@ -68,10 +68,8 @@ class ForestSettings(SavedObject):
         self.projection_highlighter = False
         self.projection_strong_lines = False
         self.projection_colorized = True
-        self.show_leaf_labels = True
-        self.show_leaf_aliases = True
-        self.show_internal_labels = True
-        self.show_internal_aliases = True
+        self.show_display_labels = True
+        self.show_computational_labels = True
         self.show_glosses = 2 # show as separate nodes
         # ## Edges - take edge type as argument ###########################
         self.edge_styles_data = {}

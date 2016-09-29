@@ -1,6 +1,5 @@
 from kataja.parser.latex_to_unicode import latex_to_unicode
-from kataja.parser.mappings import latex_to_html, latex_to_command, command_to_latex, html_to_command, \
-    command_to_html
+from kataja.parser.mappings import command_to_latex, command_to_html
 
 __author__ = 'purma'
 """ INodes can be used to represent strings that have formatting commands and
@@ -304,7 +303,6 @@ class ICommandNode(ITextNode):
 #     def __init__(self, rows=None):
 #         super().__init__()
 #         self.rows = rows or []
-
 
 
 class IParserNode(ITextNode):

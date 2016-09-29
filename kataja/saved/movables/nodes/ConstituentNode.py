@@ -58,7 +58,7 @@ class ConstituentNode(BaseConstituentNode):
                       'label': {'getter': 'triangled_label',
                                 'condition': 'should_show_label',
                                 'syntactic': True},
-                      'display_label': {'condition': 'should_show_alias'},
+                      'display_label': {'condition': 'should_show_display_label'},
                       'gloss': {'condition': 'should_show_gloss_in_label'}}
     editable = {'display_label': dict(name='Displayed label', prefill='display_label',
                                       tooltip='Rich text representing the constituent',
@@ -190,6 +190,7 @@ class ConstituentNode(BaseConstituentNode):
         if parsernode.indices and parsernode.indices[0]:
             self.index = parsernode.indices[0]
         rows = parsernode.label_rows
+        leaf = not parsernode.parts
         # Remove dotlabel
         if len(rows):
             first = rows[0]
@@ -204,7 +205,13 @@ class ConstituentNode(BaseConstituentNode):
                     first.remove_prefix('.')
                 else:
                     rows[0] = first[1:]
-        # Everything goes to display_label
+        # With inner nodes everything goes to display_label, with leaf nodes the second line is the
+        # best bet for actual label. (first is category, second the word, third and more features)
+        if leaf:
+            if len(rows) == 1:
+                self.label = rows
+            elif len(rows) > 1:
+                self.label = rows[1:1]
         self.display_label = rows
 
     # Other properties
@@ -253,20 +260,10 @@ class ConstituentNode(BaseConstituentNode):
         pass
 
     def should_show_label(self):
-        if not prefs.show_all_mode:
-            return True
-        elif self.is_leaf(only_visible=True) or self.triangle:
-            return self.forest.settings.show_leaf_labels
-        else:
-            return self.forest.settings.show_internal_labels
+        return self.forest.settings.show_computational_labels
 
-    def should_show_alias(self):
-        if not prefs.show_all_mode:
-            return False
-        if self.is_leaf(only_visible=True) or self.triangle:
-            return self.forest.settings.show_leaf_aliases
-        else:
-            return self.forest.settings.show_internal_aliases
+    def should_show_display_label(self):
+        return self.forest.settings.show_display_labels
 
     def should_show_gloss_in_label(self):
         return self.forest.settings.show_glosses == 1

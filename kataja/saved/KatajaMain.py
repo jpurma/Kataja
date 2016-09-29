@@ -601,11 +601,11 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         QtWidgets.QMainWindow.closeEvent(self, event)
         if ctrl.print_garbage:
             # import objgraph
-            log.debug('garbage stats:', gc.get_count())
+            log.debug('garbage stats: ' + str(gc.get_count()))
             gc.collect()
-            log.debug('after collection:', gc.get_count())
+            log.debug('after collection: ' + str(gc.get_count()))
             if gc.garbage:
-                log.debug('garbage:', gc.garbage)
+                log.debug('garbage: ' + str(gc.garbage))
 
                 # objgraph.show_most_common_types(limit =40)
         if self.save_prefs:

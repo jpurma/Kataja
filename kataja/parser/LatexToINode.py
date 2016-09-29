@@ -7,7 +7,7 @@
 # from kataja.utils import time_me
 
 import html
-from kataja.parser.INodes import ICommandNode, ITextNode, IParserNode
+from kataja.parser.INodes import ICommandNode, ITextNode
 from kataja.parser.mappings import latex_to_command
 
 

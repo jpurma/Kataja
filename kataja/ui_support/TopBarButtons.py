@@ -1,7 +1,7 @@
 # coding=utf-8
 from PyQt5 import QtWidgets, QtCore, QtGui
 
-from kataja.singletons import ctrl, qt_prefs
+from kataja.singletons import ctrl, qt_prefs, prefs
 from kataja.ui_widgets.OverlayButton import TopRowButton
 from kataja.ui_widgets.ModeLabel import ModeLabel
 
@@ -85,6 +85,7 @@ class TopBarButtons(QtWidgets.QFrame):
             min_width += item.width()
             min_width += 4
         min_width += 10
+        self.view_mode_button.set_checked(not prefs.show_all_mode)
         self.update_position()
 
     def sizeHint(self):

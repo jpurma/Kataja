@@ -173,9 +173,15 @@ class Label(QtWidgets.QGraphicsTextItem):
         for field_name in self.visible_in_label:
             s = styles.get(field_name, {})
             syntactic = s.get('syntactic', False)
-            if (not show_all_mode) and not syntactic:
+            # buttons in visualisation options override other visibility considerations
+            if field_name == 'display_label':
+                if not ctrl.fs.show_display_labels:
+                    continue
+            elif field_name == 'label':
+                if not ctrl.fs.show_computational_labels:
+                    continue
+            elif (not show_all_mode) and not syntactic:
                 continue
-            end_tag = ''
             if 'getter' in s:
                 getter = getattr(h, s.get('getter'), None)
                 if callable(getter):
@@ -262,7 +268,13 @@ class Label(QtWidgets.QGraphicsTextItem):
             s = styles.get(field_name, {})
             e = edit_styles.get(field_name, {})
             syntactic = s.get('syntactic', False)
-            if (not show_all_mode) and not syntactic:
+            if field_name == 'display_label':
+                if not ctrl.fs.show_display_labels:
+                    continue
+            elif field_name == 'label':
+                if not ctrl.fs.show_computational_labels:
+                    continue
+            elif (not show_all_mode) and not syntactic:
                 continue
 
             if 'getter' in e:

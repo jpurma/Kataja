@@ -1114,17 +1114,17 @@ class Node(Movable):
             shape_name = ctrl.fs.edge_info(edge_type, 'shape_name')
             presets = kataja.shapes.SHAPE_PRESETS[shape_name]
             method = presets['method']
-            path, lpath, foo = method(start_point=(center, top),
-                                      end_point=(right, bottom),
-                                      alignment=g.RIGHT, **presets)
+            path, lpath, foo, bar = method(start_point=(center, top),
+                                           end_point=(right, bottom),
+                                           alignment=g.RIGHT, **presets)
             if presets['fill']:
                 painter.fillPath(path, c)
             else:
                 painter.drawPath(path)
             painter.drawLine(left, bottom, right, bottom)
-            path, lpath, foo = method(start_point=(center, top),
-                                      end_point=(left, bottom),
-                                      alignment=g.LEFT, **presets)
+            path, lpath, foo, bar = method(start_point=(center, top),
+                                           end_point=(left, bottom),
+                                           alignment=g.LEFT, **presets)
             if presets['fill']:
                 painter.fillPath(path, c)
             else:

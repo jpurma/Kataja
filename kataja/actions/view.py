@@ -12,19 +12,28 @@ class SwitchViewMode(KatajaAction):
     k_shortcut = 'Shift+b'
     k_undoable = False
 
-    def method(self, show_all_mode=None):
+    def method(self, show_all=None):
         """ Switch between showing only syntactic objects and showing richer representation
-        :type show_all_mode: None to toggle between modes, True for all items, False for
+        :param show_all: None to toggle between modes, True for all items, False for
         syntactic only
         :return:
         """
-        if show_all_mode is None:
-            prefs.show_all_mode = not prefs.show_all_mode
+        if show_all is None:
+            show_all = not prefs.show_all_mode
+        prefs.show_all_mode = show_all
+        ctrl.ui.top_bar_buttons.view_mode_button.set_checked(not show_all)
+        if show_all:
+            ctrl.fs.show_computational_labels = False
+            ctrl.fs.show_display_labels = True
         else:
-            prefs.show_all_mode = show_all_mode
-        ctrl.ui.update_view_mode()
-
-        if prefs.show_all_mode:
+            ctrl.fs.show_computational_labels = True
+            ctrl.fs.show_display_labels = False
+        for node in ctrl.forest.nodes.values():
+            node.update_label()
+            node.update_label_visibility()
+            node.update_visibility()
+        ctrl.call_watchers(self, 'view_mode_changed', value=show_all)
+        if show_all:
             prefs.temp_color_mode = ''
         else:
             if ctrl.main.color_manager.paper().value() < 100:
@@ -32,7 +41,7 @@ class SwitchViewMode(KatajaAction):
             else:
                 prefs.temp_color_mode = 'gray'
         ctrl.forest.update_colors()
-        if prefs.show_all_mode:
+        if show_all:
             return 'Showing all elements, including those that have no computational effects.'
         else:
             return 'Showing only syntactic objects.'
@@ -238,35 +247,14 @@ class ToggleColorizedProjection(KatajaAction):
         ctrl.forest.update_projection_display()
 
 
-class ToggleShowInternalAlias(KatajaAction):
-    k_action_uid = 'toggle_show_internal_alias'
-    k_command = '%s aliases in internal nodes'
-    k_tooltip = 'Show aliases in internal nodes'
+class ToggleShowDisplayLabel(KatajaAction):
+    k_action_uid = 'toggle_show_display_label'
+    k_command = '%s display labels'
+    k_tooltip = 'Show display labels for nodes when available'
 
     def method(self):
-        return self.toggle_label_visibility('internal', 'display_label')
-
-    def toggle_label_visibility(self, node_location, field):
-        """ Toggle labels|aliases to be visible in inner|leaf nodes.
-        :param node_location: 'internal'|'leaf'
-        :param field: 'label'|'display_label'
-        :return: str message
-        """
-        v = False
-        if node_location == 'internal':
-            if field == 'label':
-                v = not ctrl.fs.show_internal_labels
-                ctrl.fs.show_internal_labels = v
-            elif field == 'display_label':
-                v = not ctrl.fs.show_internal_aliases
-                ctrl.fs.show_internal_aliases = v
-        elif node_location == 'leaf':
-            if field == 'label':
-                v = not ctrl.fs.show_leaf_labels
-                ctrl.fs.show_leaf_labels = v
-            elif field == 'display_label':
-                v = not ctrl.fs.show_leaf_aliases
-                ctrl.fs.show_leaf_aliases = v
+        v = not ctrl.fs.show_display_labels
+        ctrl.fs.show_display_labels = v
         for node in ctrl.forest.nodes.values():
             node.update_label()
             node.update_label_visibility()
@@ -276,28 +264,19 @@ class ToggleShowInternalAlias(KatajaAction):
             return self.command % 'Hide'
 
 
-class ToggleShowInternalLabel(ToggleShowInternalAlias):
-    k_action_uid = 'toggle_show_internal_label'
-    k_command = '%s labels in internal nodes'
-    k_tooltip = 'Show labels in internal nodes'
+class ToggleShowComputationalLabel(KatajaAction):
+    k_action_uid = 'toggle_show_computational_label'
+    k_command = '%s computational labels'
+    k_tooltip = 'Show computational labels for nodes'
 
     def method(self):
-        return self.toggle_label_visibility('internal', 'label')
+        v = not ctrl.fs.show_computational_labels
+        ctrl.fs.show_computational_labels = v
+        for node in ctrl.forest.nodes.values():
+            node.update_label()
+            node.update_label_visibility()
+        if v:
+            return self.command % 'Show'
+        else:
+            return self.command % 'Hide'
 
-
-class ToggleShowLeafAlias(ToggleShowInternalAlias):
-    k_action_uid = 'toggle_show_leaf_alias'
-    k_command = '%s aliases in leaf nodes'
-    k_tooltip = 'Show aliases in leaf nodes'
-
-    def method(self):
-        return self.toggle_label_visibility('leaf', 'display_label')
-
-
-class ToggleShowLeafLabel(ToggleShowInternalAlias):
-    k_action_uid = 'toggle_show_leaf_label'
-    k_command = '%s labels in leaf nodes'
-    k_tooltip = 'Show labels in leaf nodes'
-
-    def method(self):
-        return self.toggle_label_visibility('leaf', 'label')

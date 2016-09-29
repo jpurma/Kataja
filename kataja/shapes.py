@@ -627,7 +627,7 @@ def directional_blob_path(start_point=None, end_point=None,
     inner_path = QtGui.QPainterPath(Pf(scx, scy))
     inner_path.lineTo(ecx, ecy)
     if inner_only:
-        return None, inner_path, []
+        return None, inner_path, [], []
 
     t2 = thickness * 2
     if thick:
