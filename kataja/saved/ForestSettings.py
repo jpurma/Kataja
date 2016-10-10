@@ -54,7 +54,6 @@ class ForestSettings(SavedObject):
         super().__init__()
         self.uses_multidomination = None
         self.traces_are_grouped_together = None
-        self.shows_constituent_edges = None
         self.shows_merge_order = None
         self.shows_select_order = None
         self.only_binary_trees = True
@@ -276,7 +275,6 @@ class ForestSettings(SavedObject):
 
     uses_multidomination = SavedSetting("uses_multidomination")
     traces_are_grouped_together = SavedSetting("traces_are_grouped_together")
-    shows_constituent_edges = SavedSetting("shows_constituent_edges")
     shows_merge_order = SavedSetting("shows_merge_order")
     shows_select_order = SavedSetting("shows_select_order")
     gloss_nodes = SavedSetting("gloss_nodes")

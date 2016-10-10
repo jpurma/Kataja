@@ -33,6 +33,8 @@ class BalancedTree(BaseVisualization):
 
     """
     name = 'Balanced trees'
+    banned_node_shapes = (g.BRACKETED, g.SCOPEBOX)
+
 
     def __init__(self):
         BaseVisualization.__init__(self)
@@ -48,11 +50,9 @@ class BalancedTree(BaseVisualization):
         self.forest = forest
         self._directed = True
         if reset:
-            self.forest.settings.label_shape = g.NORMAL
-            self.forest.settings.show_constituent_edges = True
             self.set_vis_data('rotation', 0)
-            for node in self.forest.visible_nodes():
-                self.reset_node(node)
+            self.reset_nodes()
+        self.validate_node_shapes()
 
     def reset_node(self, node):
         """

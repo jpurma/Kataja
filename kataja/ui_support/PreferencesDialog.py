@@ -438,7 +438,7 @@ class PreferencesDialog(QtWidgets.QDialog):
         ctrl.main.change_color_mode(prefs.color_mode, force=True)
 
     def update_visualization(self):
-        ctrl.forest.set_visualization(prefs.visualization, force=True)
+        ctrl.forest.set_visualization(prefs.visualization)
         self.main.redraw()
 
     def resize_ui_font(self):

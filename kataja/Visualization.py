@@ -25,6 +25,7 @@ import math
 
 from kataja.utils import caller
 import kataja.globals as g
+import sys
 
 LEFT = 1
 NO_ALIGN = 0
@@ -55,11 +56,23 @@ class BaseVisualization:
         self._directed = False
         self._hits = {}
         self._max_hits = {}
-        self.forest.settings.label_shape = g.NORMAL
-        self.forest.settings.show_constituent_edges = True
         if reset:
-            for node in self.forest.visible_nodes():
-                self.reset_node(node)
+            self.reset_nodes()
+        self.validate_node_shapes()
+
+    def validate_node_shapes(self):
+        print('validating node shapes, banned: ', self.banned_node_shapes)
+        if self.forest.settings.label_shape in self.banned_node_shapes:
+            self.forest.settings.label_shape = 0
+            while self.forest.settings.label_shape in self.banned_node_shapes:
+                self.forest.settings.label_shape += 1
+            self.forest.update_label_shape()
+            print('forced label shape to ', self.forest.settings.label_shape)
+            sys.exit()
+
+    def reset_nodes(self):
+        for node in self.forest.visible_nodes():
+            self.reset_node(node)
 
     def say_my_name(self):
         """

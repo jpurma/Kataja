@@ -51,11 +51,9 @@ class BracketedLinearization(BaseVisualization):
         self.forest = forest
         self._hits = {}
         self._max_hits = {}
+        self.validate_node_shapes()
         if reset:
-            #self.forest.settings.label_shape = g.NORMAL
-            self.forest.settings.show_constituent_edges = False
-            for node in self.forest.visible_nodes():
-                self.reset_node(node)
+            self.reset_nodes()
 
     def reset_node(self, node):
         """
@@ -66,8 +64,6 @@ class BracketedLinearization(BaseVisualization):
         if node.node_type == g.CONSTITUENT_NODE:
             node.physics_x = False
             node.physics_y = False
-            node.label_object.label_shape = self.forest.settings.label_shape
-            node.update_label()
 
     def show_edges_for(self, node):
         """ Bracket visualization never shows constituent edges
@@ -95,6 +91,8 @@ class BracketedLinearization(BaseVisualization):
         if self.forest.settings.label_shape == g.BRACKETED or \
            self.forest.settings.label_shape == g.NORMAL:
             y_shift = 0
+        elif self.forest.settings.label_shape == g.CARD:
+            y_shift = 12
         else:
             y_shift = 4
 

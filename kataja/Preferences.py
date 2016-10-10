@@ -185,7 +185,6 @@ class Preferences(object):
 
         self.user_palettes = {}
         self.traces_are_grouped_together = False
-        self.shows_constituent_edges = True
 
         self.dpi = 300
         self._dpi_ui = {'tab': 'Printing', 'choices': [72, 150, 300, 450, 600], 'label': 'DPI',

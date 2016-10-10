@@ -45,14 +45,11 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
         """
         self.forest = forest
         if reset:
-            self.forest.settings.show_constituent_edges = True
-            self.forest.settings.label_shape = NORMAL
             max_height_steps = max([len(tree.sorted_nodes) / 2 for tree in self.forest])
             self.set_vis_data('max_height_steps', max_height_steps)
             self.set_vis_data('height_steps', max_height_steps / 2)
-
-        for node in self.forest.visible_nodes():
-            self.reset_node(node)
+            self.reset_nodes()
+        self.validate_node_shapes()
 
     def reset_node(self, node):
         """

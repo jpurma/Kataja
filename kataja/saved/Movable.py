@@ -196,10 +196,8 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         if align == NO_ALIGN:
             pass
         elif align == CENTER_ALIGN:
-            print('center align for ', x)
             br = self.boundingRect()
             x -= br.width() / 2 + br.x()
-            print('x: ', x)
         elif align == LEFT_ALIGN:
             x -= self.boundingRect().x()
         if (x, y) == self.target_position and self._move_counter:

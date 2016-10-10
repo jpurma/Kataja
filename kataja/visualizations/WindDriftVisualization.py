@@ -55,10 +55,8 @@ class WindDriftTree(BaseVisualization):
         self._hits = {}
         self._max_hits = {}
         if reset:
-            self.forest.settings.label_shape = g.NORMAL
-            self.forest.settings.show_constituent_edges = False
-            for node in self.forest.visible_nodes():
-                self.reset_node(node)
+            self.reset_nodes()
+        self.validate_node_shapes()
 
     def reset_node(self, node):
         """

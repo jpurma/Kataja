@@ -101,7 +101,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         self.color_id = None
         self.shape_name = None
         self.pull = None
-        self.visible = True
+        self._nodes_overlap = False
+        self.visible_by_rule = True
         self.appearing = appear
 
         self._projection_thick = False
@@ -237,7 +238,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         Setting edge hidden makes it invisible for many ways of manipulating
         and updating edges, so care must
          be taken.  Note that the edge can be invisible because it has shape
-         'not drawn', but such edge is still visible
+         'not drawn', but such edge is still visible_by_rule
          for these purposes: it will have its UI buttons, it is selectable etc.
         :param value: bool
         """
@@ -245,16 +246,16 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             self.update_visibility()
 
     def update_visibility(self):
-        """ Hide or show according to model.visible flag, which allows edge
+        """ Hide or show according to model.visible_by_rule flag, which allows edge
         to exist but not be drawn.
         :return:
         """
         v = self.isVisible()
-        if v and not self.visible:
+        if v and self._nodes_overlap or not self.visible_by_rule:
             self.hide()
             ctrl.ui.remove_ui_for(self)
 
-        elif self.visible and not v:
+        elif self.visible_by_rule and not (v or self._nodes_overlap):
             self.show()
             if ctrl.is_selected(self):
                 ctrl.ui.add_control_points(self)
@@ -344,7 +345,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
 
         :return:
         """
-        return self.visible
+        return self.visible_by_rule and not self._nodes_overlap
 
     def set_projection_display(self, thick, color):
         """ Set both options related to displaying projections with edges.
@@ -585,6 +586,11 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             self.label_item.update_position()
         if ctrl.is_selected(self):
             ctrl.ui.update_position_for(self)
+        if self.start and self.end:
+            old = self._nodes_overlap
+            self._nodes_overlap = self.start.overlap_rect().intersects(self.end.overlap_rect())
+            if self._nodes_overlap != old:
+                self.update_visibility()
 
     def path_bounding_rect(self):
         if self._path:
@@ -785,7 +791,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                                     self._computed_end_point = ex + e_right, ey + (e_right * ratio)
                                 else:
                                     self._computed_end_point = ex + (e_bottom / ratio), ey + e_bottom
-
 
     def connect_end_points(self, start, end):
         """
@@ -1260,7 +1265,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         ctrl.forest.remove_from_scene(self, fade_out=False)
 
     def fade_out_finished(self):
-        self.visible = False
+        self.visible_by_rule = False
         self.is_fading_out = False
         self.update_visibility()
 
@@ -1288,7 +1293,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
     end = SavedField("end")
     label_data = SavedField("label_data", watcher="edge_label")
     local_shape_info = SavedField("local_shape_info", watcher="edge_shape")
-    visible = SavedField("visible", if_changed=if_changed_visible)
+    visible_by_rule = SavedField("visible_by_rule", if_changed=if_changed_visible)
     forest = SavedField("forest")
 
     color_id = SavedEdgeSetting("color_id", if_changed=if_changed_color_id)

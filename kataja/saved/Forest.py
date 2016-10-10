@@ -546,7 +546,7 @@ class Forest(SavedObject):
             self.remove_from_scene(self.gloss)
             self.gloss = None
 
-    def set_visualization(self, name, force=False):
+    def set_visualization(self, name):
         """ Switches the active visualization to visualization with given key
         :param name: string
         """
@@ -1483,17 +1483,13 @@ class Forest(SavedObject):
     def edge_visibility_check(self):
         """ Perform check for each edge: hide them if their start/end is
         hidden, show them if necessary.
-        changing edge.visible will cause chain reaction:
-        edge.visible -> edge.if_changed_visible ->  edge.update_visibility
+        changing edge.visible_by_rule will cause chain reaction:
+        edge.visible_by_rule -> edge.if_changed_visible ->  edge.update_visibility
         """
         if not self._do_edge_visibility_check:
             return
-        show_edges = self.settings.shows_constituent_edges
         for edge in list(self.edges.values()):
             if edge.edge_type == g.CONSTITUENT_EDGE:
-                if not show_edges:
-                    edge.visible = False
-                    continue
                 start = edge.start
                 end = edge.end
                 if start and not start.is_visible():
@@ -1523,8 +1519,7 @@ class Forest(SavedObject):
             if not visible:
                 edges_visible = False
             elif self.visualization:
-                edges_visible = self.visualization.show_edges_for(
-                    node) and self.settings.shows_constituent_edges
+                edges_visible = self.visualization.show_edges_for(node)
             else:
                 edges_visible = False
             for edge in node.edges_down:

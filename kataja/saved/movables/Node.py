@@ -952,6 +952,14 @@ class Node(Movable):
         :param option:
         :param widget:
         nodes it is the label of the node that needs complex painting """
+        ls = self.label_object.label_shape
+        if ls == g.CARD:
+            xr = 4
+            yr = 8
+        else:
+            xr = 5
+            yr = 5
+
         if self.should_draw_triangle():
             p = QtGui.QPen(self.contextual_color)
             p.setWidth(1)
@@ -970,35 +978,34 @@ class Node(Movable):
             p.setWidth(1)
             painter.setPen(p)
             painter.setBrush(self.drag_data.background)
-            painter.drawRoundedRect(self.inner_rect, 5, 5)
+            painter.drawRoundedRect(self.inner_rect, xr, yr)
             painter.setBrush(Qt.NoBrush)
         elif self._hovering:
             p = QtGui.QPen(self.contextual_color)
             # p.setColor(ctrl.cm.hover())
             p.setWidth(1)
             painter.setPen(p)
-            painter.drawRoundedRect(self.inner_rect, 5, 5)
+            painter.drawRoundedRect(self.inner_rect, xr, yr)
         elif ctrl.pressed is self or ctrl.is_selected(self):
             p = QtGui.QPen(self.contextual_color)
             p.setWidth(1)
             painter.setPen(p)
-            painter.drawRoundedRect(self.inner_rect, 5, 5)
+            painter.drawRoundedRect(self.inner_rect, xr, yr)
         elif self.has_empty_label() and self.node_alone():
             p = QtGui.QPen(self.contextual_color)
             p.setStyle(QtCore.Qt.DotLine)
             p.setWidth(1)
             painter.setPen(p)
-            painter.drawRoundedRect(self.inner_rect, 5, 5)
-        elif self.label_object.label_shape == g.SCOPEBOX or self.label_object.label_shape == g.BOX:
-            # and not self.is_leaf(only_similar=True, only_visible=True)
+            painter.drawRoundedRect(self.inner_rect, xr, yr)
+        elif ls == g.SCOPEBOX or ls == g.BOX or ls == g.CARD:
             p = QtGui.QPen(self.contextual_color)
             p.setWidth(0.5)
             painter.setPen(p)
             painter.setBrush(ctrl.cm.paper2())
-            painter.drawRoundedRect(self.inner_rect, 5, 5)
-        if self.label_object.label_shape == g.BRACKETED and not self.is_leaf(only_similar=True,
-                                                                             only_visible=True):
+            painter.drawRoundedRect(self.inner_rect, xr, yr)
+        if ls == g.BRACKETED and not self.is_leaf(only_similar=True, only_visible=True):
             p = QtGui.QPen(self.contextual_color)
+            painter.setPen(p)
             painter.setFont(self.get_font())
             painter.drawText(self.inner_rect.right() - qt_prefs.font_bracket_width - 2, 2, ']')
 
@@ -1072,8 +1079,10 @@ class Node(Movable):
                          (x + w2 + w4, y_max), (x_max, y_max)]
         if ctrl.ui.selection_group and self in ctrl.ui.selection_group.selection:
             ctrl.ui.selection_group.update_shape()
-
         return self.inner_rect
+
+    def overlap_rect(self):
+        return self.sceneBoundingRect().adjusted(-2, -2, 4, 4)
 
     def set_user_size(self, width, height):
         self.user_size = (width, height)

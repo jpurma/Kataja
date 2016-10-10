@@ -744,6 +744,4 @@ class Label(QtWidgets.QGraphicsTextItem):
         :param widget:
         """
         self.setDefaultTextColor(self._host.contextual_color)
-        if self.label_shape == CARD:
-            painter.drawRoundedRect(self.boundingRect(), 4, 8)
         QtWidgets.QGraphicsTextItem.paint(self, painter, option, widget)

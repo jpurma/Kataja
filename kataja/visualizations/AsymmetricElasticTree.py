@@ -107,18 +107,6 @@ class AsymmetricElasticTree(BaseVisualization):
         BaseVisualization.__init__(self)
         self.forest = None
 
-    def prepare(self, forest, reset=True):
-        """ If loading a state, don't reset.
-        :param forest:Forest
-        :param reset:boolean
-        """
-        self.forest = forest
-        if reset:
-            self.forest.settings.label_shape = g.NORMAL
-            self.forest.settings.show_constituent_edges = True
-            for node in self.forest.visible_nodes():
-                self.reset_node(node)
-
     def calculate_movement(self, node):
         """ Basic dynamic force net, but instead of computing distances from center of gravity of
          each object (which assumes round nodes, compute distances starting from the boundary

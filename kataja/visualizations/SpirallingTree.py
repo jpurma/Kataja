@@ -151,13 +151,11 @@ class SpirallingTree(BaseVisualization):
         self.forest = forest
         self._hits = {}
         self._max_hits = {}
+        self.validate_node_shapes()
         if reset:
             self.sides = 3
-            self.forest.settings.label_shape = g.NORMAL
-            self.forest.settings.show_constituent_edges = True
             self.set_vis_data('rotation', 0)
-            for node in self.forest.visible_nodes():
-                self.reset_node(node)
+            self.reset_nodes()
 
     def reset_node(self, node):
         """
