@@ -66,10 +66,6 @@ class BaseConstituentNode(Node):
         self.can_project = True
         self.projecting_to = set()
 
-        # ## use update_visibility to change these: visibility of particular elements
-        # depends on many factors
-        self._visibility_brackets = 0
-
         #self.setAcceptDrops(True)
 
     @staticmethod
@@ -108,7 +104,6 @@ class BaseConstituentNode(Node):
         self.update_label()
         self.update_visibility()
         self.announce_creation()
-        self._visibility_brackets = self.forest.settings.bracket_style
         self.forest.store(self)
 
     def after_model_update(self, updated_fields, update_type):
@@ -237,54 +232,6 @@ class BaseConstituentNode(Node):
         """
         pass
 
-    def rebuild_brackets(self):
-        """ Creates left and right brackets for node, depending on active bracket style.
-
-
-        """
-
-        def add_left():
-            if not self.left_bracket:
-                self.left_bracket = f.create_bracket(host=self, left=True)
-
-        def add_right():
-            if not self.right_bracket:
-                self.right_bracket = f.create_bracket(host=self, left=False)
-
-        def del_left():
-            if self.left_bracket:
-                f.bracket_manager.delete_bracket(self.left_bracket)
-                self.left_bracket = None
-
-        def del_right():
-            if self.right_bracket:
-                f.bracket_manager.delete_bracket(self.right_bracket)
-                self.right_bracket = None
-
-        f = self.forest
-        bs = f.settings.bracket_style
-        if bs == g.ALL_BRACKETS:
-            if self.get_children(similar=True, visible=True):
-                add_left()
-                add_right()
-            else:
-                del_left()
-                del_right()
-        elif bs == g.MAJOR_BRACKETS:
-            should_have = False
-            for parent in self.get_parents(similar=True, visible=True):
-                if parent.get_children(similar=True, visible=True).index(self) == 0:
-                    should_have = True
-                    break
-            if should_have:
-                add_left()
-                add_right()
-            else:
-                del_left()
-                del_right()
-        elif bs == g.NO_BRACKETS:
-            del_left()
-            del_right()
 
     # ### Features #########################################
 

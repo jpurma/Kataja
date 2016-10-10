@@ -48,7 +48,7 @@ class BalancedTree(BaseVisualization):
         self.forest = forest
         self._directed = True
         if reset:
-            self.forest.settings.bracket_style = g.NO_BRACKETS
+            self.forest.settings.label_shape = g.NORMAL
             self.forest.settings.show_constituent_edges = True
             self.set_vis_data('rotation', 0)
             for node in self.forest.visible_nodes():
@@ -91,7 +91,7 @@ class BalancedTree(BaseVisualization):
             for n, x, width in rows[row]:
                 x_pos += width
             rows[row].append((node, x_pos, node.width))
-            node.move_to(x_pos + node.width / 2, row * edge_height * 2, 0, valign=g.TOP_ROW)
+            node.move_to(x_pos, row * edge_height * 2, 0, valign=g.TOP_ROW, align=g.CENTER_ALIGN)
             for child in node.get_children(similar=True, visible=True):
                 _fill_grid(child, row + 1)
 

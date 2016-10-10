@@ -1,6 +1,7 @@
 # coding=utf-8
 from PyQt5 import QtWidgets
 from kataja.singletons import ctrl, prefs, log
+import kataja.globals as g
 from kataja.KatajaAction import KatajaAction
 from kataja.visualizations.available import action_key
 
@@ -50,6 +51,106 @@ class SwitchViewMode(KatajaAction):
         return not prefs.show_all_mode
 
 
+class ActivateNoFrameNodeShape(KatajaAction):
+    k_action_uid = 'set_no_frame_node_shape'
+    k_command = 'Borderless nodes'
+    k_checkable = True
+
+    def method(self):
+        """ Set nodes to be frameless and small
+        :return:
+        """
+        ctrl.fs.label_shape = g.NORMAL
+        ctrl.forest.update_label_shape()
+
+    def getter(self):
+        return ctrl.fs.label_shape == g.NORMAL
+
+    def enabler(self):
+        return ctrl.forest.visualization and \
+               g.NORMAL not in ctrl.forest.visualization.banned_node_shapes
+
+
+class ActivateScopeboxNodeShape(KatajaAction):
+    k_action_uid = 'set_scopebox_node_shape'
+    k_command = "Box showing node's scope"
+    k_checkable = True
+
+    def method(self):
+        """ Set nodes to be frameless and small
+        :return:
+        """
+        ctrl.fs.label_shape = g.SCOPEBOX
+        ctrl.forest.update_label_shape()
+
+    def getter(self):
+        return ctrl.fs.label_shape == g.SCOPEBOX
+
+    def enabler(self):
+        return ctrl.forest.visualization and \
+               g.SCOPEBOX not in ctrl.forest.visualization.banned_node_shapes
+
+
+class ActivateBracketedNodeShape(KatajaAction):
+    k_action_uid = 'set_bracketed_node_shape'
+    k_command = 'Bracketed nodes'
+    k_checkable = True
+
+    def method(self):
+        """ Set nodes to be frameless and small
+        :return:
+        """
+        ctrl.fs.label_shape = g.BRACKETED
+        ctrl.forest.update_label_shape()
+
+    def getter(self):
+        return ctrl.fs.label_shape == g.BRACKETED
+
+    def enabler(self):
+        return ctrl.forest.visualization and \
+               g.BRACKETED not in ctrl.forest.visualization.banned_node_shapes
+
+
+class ActivateBoxShape(KatajaAction):
+    k_action_uid = 'set_box_node_shape'
+    k_command = 'Framed nodes'
+    k_checkable = True
+
+    def method(self):
+        """ Set nodes to be frameless and small
+        :return:
+        """
+        ctrl.fs.label_shape = g.BOX
+        ctrl.forest.update_label_shape()
+
+    def getter(self):
+        return ctrl.fs.label_shape == g.BOX
+
+    def enabler(self):
+        return ctrl.forest.visualization and \
+               g.BOX not in ctrl.forest.visualization.banned_node_shapes
+
+
+class ActivateCardNodeShape(KatajaAction):
+    k_action_uid = 'set_card_node_shape'
+    k_command = 'Nodes as cards'
+    k_checkable = True
+
+    def method(self):
+        """ Set nodes to be frameless and small
+        :return:
+        """
+        ctrl.fs.label_shape = g.CARD
+        ctrl.forest.update_label_shape()
+
+    def getter(self):
+        return ctrl.fs.label_shape == g.CARD
+
+    def enabler(self):
+        return ctrl.forest.visualization and \
+               g.CARD not in ctrl.forest.visualization.banned_node_shapes
+
+
 class SwitchBracketMode(KatajaAction):
     k_action_uid = 'bracket_mode'
     k_command = 'Show &brackets'
@@ -59,18 +160,28 @@ class SwitchBracketMode(KatajaAction):
     def method(self):
         """ Brackets are visible always for non-leaves, never or for important parts
         """
-        bs = ctrl.fs.bracket_style
+        bs = ctrl.fs.label_shape
         bs += 1
-        if bs == 3:
+        if bs > 4:
             bs = 0
-        if bs == 0:
-            log.info('(b) 0: No brackets')
-        elif bs == 1:
-            log.info('(b) 1: Use brackets for embedded structures')
-        elif bs == 2:
-            log.info('(b) 2: Always use brackets')
-        ctrl.fs.bracket_style = bs
-        ctrl.forest.bracket_manager.update_brackets()
+        while bs in ctrl.forest.visualization.banned_node_shapes:
+            bs += 1
+            if bs > 4:
+                bs = 0
+
+        if bs == g.NORMAL:
+            m = '(b) Node shape: Simple'
+        elif bs == g.SCOPEBOX:
+            m = '(b) Node shape: Scopeboxes'
+        elif bs == g.BRACKETED:
+            m = '(b) Node shape: Bracket bars'
+        elif bs == g.BOX:
+            m = '(b) Node shape: Boxes'
+        elif bs == g.CARD:
+            m = '(b) Node shape: Cards'
+        ctrl.fs.label_shape = bs
+        ctrl.forest.update_label_shape()
+        return m
 
 
 class SwitchTraceMode(KatajaAction):

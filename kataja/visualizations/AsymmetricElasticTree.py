@@ -114,7 +114,7 @@ class AsymmetricElasticTree(BaseVisualization):
         """
         self.forest = forest
         if reset:
-            self.forest.settings.bracket_style = g.NO_BRACKETS
+            self.forest.settings.label_shape = g.NORMAL
             self.forest.settings.show_constituent_edges = True
             for node in self.forest.visible_nodes():
                 self.reset_node(node)

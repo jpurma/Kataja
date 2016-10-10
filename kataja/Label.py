@@ -25,7 +25,7 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 from kataja.LabelDocument import LabelDocument
-from kataja.globals import LEFT_ALIGN, CENTER_ALIGN, RIGHT_ALIGN
+from kataja.globals import NORMAL, BRACKETED, SCOPEBOX, CARD, LEFT_ALIGN, CENTER_ALIGN, RIGHT_ALIGN
 from kataja.singletons import ctrl, prefs
 from kataja.utils import combine_dicts, combine_lists, time_me, open_symbol_data
 from kataja.parser.INodes import ITextNode
@@ -63,6 +63,7 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.x_offset = 0
         self.y_offset = 0
         self.text_align = CENTER_ALIGN
+        self.label_shape = NORMAL
         self._font = None
         self.html = ''
         self.text = ''
@@ -78,7 +79,6 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.editable_parts = []
         self.prepare_template()
         self.doc = LabelDocument()
-        self.is_card = False
         self.card_size = (60, 90)
         self._fresh_focus = False
         self.doc.setDefaultStyleSheet(style_sheet)
@@ -115,11 +115,19 @@ class Label(QtWidgets.QGraphicsTextItem):
         else:
             self.doc.set_align(QtCore.Qt.AlignHCenter)
 
-        old_html = self.html
-        self.compose_html_for_viewing()
-        if old_html != self.html or force_update:
+        new_html, visible_parts = self.compose_html_for_viewing()
+        if self.label_shape == SCOPEBOX:
+            if not self._host.is_leaf():
+                new_html = '<sub>' + new_html + '</sub>'
+        elif self.label_shape == BRACKETED:
+            if not self._host.is_leaf():
+                new_html = '[<sub>' + new_html + '</sub>'
+
+        if new_html != self.html or force_update:
+            self.html = new_html
+            self.visible_parts = visible_parts
             self.prepareGeometryChange()
-            if self.is_card:
+            if self.label_shape == CARD:
                 self.doc.setTextWidth(self.card_size[0])
             else:
                 self.doc.setTextWidth(-1)
@@ -128,6 +136,17 @@ class Label(QtWidgets.QGraphicsTextItem):
             ctrl.qdocument_parser.process(self.doc)
             self.text = self.toPlainText()
         self.resize_label()
+
+    def left_bracket_width(self):
+        return self.width
+
+    def right_bracket_width(self):
+        if self.label_shape == BRACKETED:
+            return 6
+        elif self.label_shape == SCOPEBOX:
+            return 2
+        else:
+            return 0
 
     def prepare_template(self):
         my_class = self._host.__class__
@@ -248,8 +267,7 @@ class Label(QtWidgets.QGraphicsTextItem):
                         row += 1
         if html and html[-1] == '<br/>' or (delimiter and html[-1] == delimiter):
             html.pop()
-        self.html = ''.join(html)
-        self.visible_parts = visible_parts
+        return ''.join(html), visible_parts
 
     def compose_html_for_editing(self):
         """ Use 'visible_in_label' and 'display_styles' and the item attributes to compose the
@@ -369,7 +387,7 @@ class Label(QtWidgets.QGraphicsTextItem):
             ctrl.text_editor_focus = self
             self.setTextInteractionFlags(QtCore.Qt.TextEditorInteraction)
             self.prepareGeometryChange()
-            if self.is_card:
+            if self.label_shape == CARD:
                 self.doc.setTextWidth(self.card_size[0])
             else:
                 self.doc.setTextWidth(-1)
@@ -615,7 +633,7 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.prepareGeometryChange()
         # Width
         user_width, user_height = self.get_max_size_from_host()
-        if self.is_card:
+        if self.label_shape == CARD:
             br_width = self.card_size[0]
         else:
             self.setTextWidth(-1)
@@ -632,7 +650,7 @@ class Label(QtWidgets.QGraphicsTextItem):
                 br_width = Label.max_width
         self.setTextWidth(br_width)
 
-        if self.is_card:
+        if self.label_shape == CARD:
             dh = self.card_size[1]
         else:
             dh = self.doc.size().height()
@@ -675,7 +693,7 @@ class Label(QtWidgets.QGraphicsTextItem):
                 self.top_part_y = self.top_y + half_height + 3
                 self.lower_part_y = self.top_y + (second_row * avg_line_height) + half_height
         self.x_offset = br_width / -2.0
-        if self.is_card:
+        if self.label_shape == CARD:
             self.y_offset = self.top_part_y
         else:
             self.y_offset = -h2
@@ -700,7 +718,7 @@ class Label(QtWidgets.QGraphicsTextItem):
             QtWidgets.QGraphicsTextItem.dropEvent(self, event)
 
     def boundingRect(self):
-        if self.is_card:
+        if self.label_shape == CARD:
             return QtCore.QRectF(0, 0, self.card_size[0], self.card_size[1])
         else:
             return super().boundingRect()
@@ -726,6 +744,6 @@ class Label(QtWidgets.QGraphicsTextItem):
         :param widget:
         """
         self.setDefaultTextColor(self._host.contextual_color)
-        if self.is_card:
+        if self.label_shape == CARD:
             painter.drawRoundedRect(self.boundingRect(), 4, 8)
         QtWidgets.QGraphicsTextItem.paint(self, painter, option, widget)

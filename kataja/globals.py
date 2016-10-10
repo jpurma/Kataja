@@ -95,11 +95,6 @@ START_POINT = 'start'
 END_POINT = 'end'
 LABEL_START = 'label_start'
 
-# Bracket styles:
-NO_BRACKETS = 0
-MAJOR_BRACKETS = 1
-ALL_BRACKETS = 2
-
 # Projection styles:
 NO_PROJECTIONS = 0
 COLORIZE_PROJECTIONS = 1
@@ -123,6 +118,14 @@ BOTTOM_ROW = 3
 BOTTOM = 4
 
 # Horizontal align
-LEFT_ALIGN = 0
-CENTER_ALIGN = 1
-RIGHT_ALIGN = 2
+# NO_ALIGN = 0  -- this is already defined as edge alignment
+LEFT_ALIGN = 1
+CENTER_ALIGN = 2
+RIGHT_ALIGN = 3
+
+# Possible node shapes
+NORMAL = 0
+SCOPEBOX = 1
+BRACKETED = 2
+BOX = 3
+CARD = 4

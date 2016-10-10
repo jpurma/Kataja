@@ -23,7 +23,7 @@
 # ############################################################################
 
 from kataja.singletons import prefs, log
-from kataja.globals import NO_BRACKETS, BOTTOM_ROW, CONSTITUENT_NODE
+from kataja.globals import NORMAL, BOTTOM_ROW, CONSTITUENT_NODE
 from kataja.visualizations.AsymmetricElasticTree import AsymmetricElasticTree
 
 
@@ -46,7 +46,7 @@ class LinearizedDynamicTree(AsymmetricElasticTree):
         self.forest = forest
         if reset:
             self.forest.settings.show_constituent_edges = True
-            self.forest.settings.bracket_style = NO_BRACKETS
+            self.forest.settings.label_shape = NORMAL
             max_height_steps = max([len(tree.sorted_nodes) / 2 for tree in self.forest])
             self.set_vis_data('max_height_steps', max_height_steps)
             self.set_vis_data('height_steps', max_height_steps / 2)

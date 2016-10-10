@@ -34,6 +34,7 @@ RIGHT = 2
 class BaseVisualization:
     """ Base class for different 'drawTree' implementations """
     name = 'BaseVisualization base class'
+    banned_node_shapes = ()
 
     def __init__(self):
         """ This is called once when building Kataja. Set up properties for this kind of 
@@ -54,7 +55,7 @@ class BaseVisualization:
         self._directed = False
         self._hits = {}
         self._max_hits = {}
-        self.forest.settings.bracket_style = g.NO_BRACKETS
+        self.forest.settings.label_shape = g.NORMAL
         self.forest.settings.show_constituent_edges = True
         if reset:
             for node in self.forest.visible_nodes():

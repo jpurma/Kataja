@@ -26,7 +26,7 @@ import random
 
 from PyQt5 import QtWidgets, QtCore, QtGui
 
-from kataja.globals import TOP, TOP_ROW, MIDDLE, BOTTOM_ROW, BOTTOM
+from kataja.globals import TOP, TOP_ROW, MIDDLE, BOTTOM_ROW, BOTTOM, LEFT_ALIGN, CENTER_ALIGN, NO_ALIGN
 from kataja.singletons import prefs, qt_prefs, ctrl
 from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
@@ -165,7 +165,8 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
 
     # ## Movement ##############################################################
 
-    def move_to(self, x, y, after_move_function=None, valign=MIDDLE, can_adjust=True):
+    def move_to(self, x, y, after_move_function=None, valign=MIDDLE, align=NO_ALIGN,
+                can_adjust=True):
         """ Start movement to given position
         :param x:
         :param y:
@@ -174,6 +175,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         By default align is in center, but often you may want to move items
         so that e.g. their top rows are aligned.
         Values are TOP(0), TOP_ROW(1), MIDDLE(2), BOTTOM_ROW(3) and BOTTOM(4)_
+        :param align: NO_ALIGN, LEFT_ALIGN, CENTER_ALIGN, RIGHT_ALIGN
         :param can_adjust: can use movable's adjustment to adjust the target position
         :return:
         """
@@ -191,6 +193,15 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
             y -= self.get_lower_part_y()
         elif valign == BOTTOM:
             y -= self.boundingRect().bottom()
+        if align == NO_ALIGN:
+            pass
+        elif align == CENTER_ALIGN:
+            print('center align for ', x)
+            br = self.boundingRect()
+            x -= br.width() / 2 + br.x()
+            print('x: ', x)
+        elif align == LEFT_ALIGN:
+            x -= self.boundingRect().x()
         if (x, y) == self.target_position and self._move_counter:
             # already moving there
             return

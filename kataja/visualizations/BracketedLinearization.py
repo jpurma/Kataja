@@ -32,13 +32,9 @@ class BracketedLinearization(BaseVisualization):
     """ This should give the commonly used bracket notation, but instead of plain text, the elements are kataja
     nodes and the structure can be edited like any trees. Reselecting BracketedLinearization switches between different
     modes of showing brackets:
-
-    0 - g.NO_BRACKETS - no brackets
-    1 - g.MAJOR_BRACKETS - only use brackets for branches that are deeper than 1 node
-    2 - g.ALL_BRACKETS - show all brackets
-
     """
     name = 'Bracketed linearization'
+    banned_node_shapes = ()
 
     def __init__(self):
         BaseVisualization.__init__(self)
@@ -56,7 +52,7 @@ class BracketedLinearization(BaseVisualization):
         self._hits = {}
         self._max_hits = {}
         if reset:
-            self.forest.settings.bracket_style = g.NO_BRACKETS
+            #self.forest.settings.label_shape = g.NORMAL
             self.forest.settings.show_constituent_edges = False
             for node in self.forest.visible_nodes():
                 self.reset_node(node)
@@ -70,6 +66,8 @@ class BracketedLinearization(BaseVisualization):
         if node.node_type == g.CONSTITUENT_NODE:
             node.physics_x = False
             node.physics_y = False
+            node.label_object.label_shape = self.forest.settings.label_shape
+            node.update_label()
 
     def show_edges_for(self, node):
         """ Bracket visualization never shows constituent edges
@@ -79,47 +77,43 @@ class BracketedLinearization(BaseVisualization):
         return False
 
     def reselect(self):
-        """ if there are different modes for one visualization, rotating between different modes is triggered here. """
-        if self.forest.settings.bracket_style == g.NO_BRACKETS:
-            self.forest.settings.bracket_style = g.MAJOR_BRACKETS
-            log.info('major brackets')
-        elif self.forest.settings.bracket_style == g.MAJOR_BRACKETS:
-            self.forest.settings.bracket_style = g.ALL_BRACKETS
-            log.info('all brackets')
-        elif self.forest.settings.bracket_style == g.ALL_BRACKETS:
-            self.forest.settings.bracket_style = g.NO_BRACKETS
-            log.info('no brackets')
+        """ if there are different modes for one visualization, rotating between different modes
+        is triggered here. """
+
+        if self.forest.settings.label_shape == g.BOX:
+            self.forest.settings.label_shape = g.NORMAL
+        else:
+            self.forest.settings.label_shape += 1
         for node in self.forest.visible_nodes():
             self.reset_node(node)
 
     def draw(self):
-        """ We should draw recursively starting from right bottom edge and add layers when needed. """
-        # print '** drawing (bracketed linearization) **'
-        def draw_node(node, used=set(), left_edge=0):
-            """
+        """ Bracket manager's width map tells the required widths and labels know already how to
+        draw themselves """
 
-            :param node:
-            :param used:
-            :param left_edge:
-            :return:
-            """
+        width_map = self.forest.prepare_width_map()
+        if self.forest.settings.label_shape == g.BRACKETED or \
+           self.forest.settings.label_shape == g.NORMAL:
+            y_shift = 0
+        else:
+            y_shift = 4
+
+        def draw_node(node, used=set(), left_edge=0, y=0):
             if node in used:
                 return used, left_edge
             else:
                 used.add(node)
-                # we want to tile the words after each other and
-                # for that reason left and right edges
-                # are more useful than the center.
-                left_edge += self.forest.bracket_manager.count_bracket_space(node, left=True)
-                node.move_to(left_edge + node.width / 2, 0, 0, valign=g.BOTTOM_ROW)
-                if node.is_visible() and (not node.has_empty_label()):
-                    left_edge += node.width
+                nw = width_map[node.uid]
+
+                node.move_to(left_edge, y, valign=g.BOTTOM_ROW, align=g.LEFT_ALIGN)
+                le = left_edge + node.label_object.left_bracket_width()
                 for child in node.get_children(visible=True, similar=True):
-                    used, left_edge = draw_node(child, used, left_edge)
-                left_edge += self.forest.bracket_manager.count_bracket_space(node, left=False)
+                    used, le = draw_node(child, used, le, y + y_shift)
+                left_edge += nw
             return used, left_edge
 
         start = 0
+
         for tree in self.forest:
             if tree.top:
                 if tree.top.node_type == g.CONSTITUENT_NODE:

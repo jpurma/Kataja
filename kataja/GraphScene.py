@@ -618,10 +618,8 @@ class GraphScene(QtWidgets.QGraphicsScene):
             self.fit_to_window()
         if items_have_moved:
             self.main.ui_manager.get_activity_marker().show()
-            if f.settings.bracket_style:
-                f.bracket_manager.update_positions()
-                # for area in f.touch_areas:
-                # area.update_position()
+            # for area in f.touch_areas:
+            # area.update_position()
             for group in f.groups.values():
                 group.update_shape()
         elif not (items_have_moved or items_fading or frame_has_moved or background_fade):

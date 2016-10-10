@@ -38,6 +38,7 @@ class LeftFirstTree(BaseVisualization):
     branch takes the space it needs, and may force next branch drawing to
     further down and right. """
     name = 'Left first trees'
+    banned_node_shapes = (g.BRACKETED,)
 
     def __init__(self):
         BaseVisualization.__init__(self)
@@ -59,7 +60,7 @@ class LeftFirstTree(BaseVisualization):
         self._max_hits = {}
         self._indentation = 0
         if reset:
-            self.forest.settings.bracket_style = g.NO_BRACKETS
+            self.forest.settings.label_shape = g.NORMAL
             self.forest.settings.show_constituent_edges = True
             self.set_vis_data('rotation', 0)
             for node in self.forest.visible_nodes():
@@ -247,6 +248,6 @@ class LeftFirstTree(BaseVisualization):
             for x_i, node in enumerate(row):
                 x += extra_widths[x_i]
                 if node and getattr(node, 'node_type', '') == g.CONSTITUENT_NODE:
-                    node.move_to(x, y, 0, valign=g.TOP_ROW)
+                    node.move_to(x, y, 0, valign=g.TOP_ROW, align=g.CENTER_ALIGN)
                 x += edge_width
             y += edge_height + extra_heights[y_i]

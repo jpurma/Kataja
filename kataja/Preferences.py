@@ -151,14 +151,14 @@ class Preferences(object):
                                       'If the visualization draws some edges as thicker, '
                                       'this defines how much thicker.'}
 
-        self.bracket_style = 0
-        self._bracket_style_ui = {'tab': 'Drawing', 'choices':
-                                  [(0, 'No brackets'),
-                                   (1, 'Non-obvious brackets'),
-                                   (2, 'All brackets')],
-                                  'label': 'Draw brackets',
-                                  'help': 'When to draw brackets. Visualizations may override '
-                                          'this.',
+        self.label_shape = 0
+        self._label_shape_ui = {'tab': 'Drawing', 'choices':
+                                  [(0, 'Normal'),
+                                   (1, 'Box'),
+                                   (2, 'Bracketed'), (3, 'Card')],
+                                  'label': 'Node shapes',
+                                  'help': 'Overall shape when drawing a constituent node. '
+                                          'Visualizations may override this.',
                                   'order': 30}
 
         self.use_magnets = 1

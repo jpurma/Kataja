@@ -33,7 +33,6 @@ import time
 from PyQt5 import QtWidgets
 
 import kataja.globals as g
-from kataja.BracketManager import BracketManager
 from kataja.ChainManager import ChainManager
 from kataja.UndoManager import UndoManager
 from kataja.Projection import Projection
@@ -46,7 +45,6 @@ from kataja.saved.Group import Group
 from kataja.saved.DerivationStep import DerivationStepManager
 from kataja.saved.Edge import Edge
 from kataja.saved.ForestSettings import ForestSettings, ForestRules
-from kataja.saved.movables.Bracket import Bracket
 from kataja.saved.movables.Node import Node
 from kataja.saved.movables.Presentation import TextArea, Image
 from kataja.saved.movables.Tree import Tree
@@ -76,7 +74,6 @@ class Forest(SavedObject):
         self.in_display = False
         self.visualization = None
         self.gloss = None
-        self.bracket_manager = BracketManager(self)
         self.parser = INodeToKatajaConstituent(self)
         self.undo_manager = UndoManager(self)
         self.chain_manager = ChainManager(self)
@@ -94,6 +91,7 @@ class Forest(SavedObject):
         self.others = {}
         self.vis_data = {}
         self.projections = {}
+        self.width_map = {}
         self.projection_rotator = itertools.cycle(range(3, 8))
         self.merge_counter = 0
         self.select_counter = 0
@@ -148,7 +146,6 @@ class Forest(SavedObject):
         # print('created a forest %s , its traces should be visible: %s ' % (
         # self, self.traces_are_visible()))
         pass
-        # self.bracket_manager.rebuild_brackets()
         # for node in self.nodes.values():
         # if node.syntactic_object:
         # self.nodes_by_uid[node.syntactic_object.uid] = node
@@ -657,9 +654,6 @@ class Forest(SavedObject):
         elif isinstance(item, TextArea):
             self.poke('others')
             self.others[item.uid] = item
-        elif isinstance(item, Bracket):
-            self.bracket_manager.store(item)
-
         else:
             key = getattr(item, 'uid', '') or getattr(item, 'key', '')
             if key and key not in self.others:
@@ -733,8 +727,6 @@ class Forest(SavedObject):
         for n in self.projections.values():
             if n.visual:
                 yield n.visual
-        for n in self.bracket_manager.get_brackets():
-            yield n
         for n in self.groups.values():
             yield n
         if self.gloss:
@@ -822,7 +814,6 @@ class Forest(SavedObject):
         for tree in self.trees:
             if tree.top:
                 tree.top.update_visibility()  # fixme
-        self.bracket_manager.update_brackets()
         self.update_projections()
         self.update_forest_gloss()
         self.visualization.draw()
@@ -1197,18 +1188,8 @@ class Forest(SavedObject):
             rel.fade_in()
         return rel
 
-    def create_bracket(self, host=None, left=True):
-        """
 
-        :param host:
-        :param left:
-        :return:
-        """
-        br = self.bracket_manager.create_bracket(host, left)
-        self.add_to_scene(br)
-        return br
-
-        # Cosmetic improvemet, if gloss is created by editing the gloss text
+            # Cosmetic improvemet, if gloss is created by editing the gloss text
         # field. (not present anymore)
         # ee = ctrl.ui_support.get_node_edit_embed()
         # if ee and ee.isVisible():
@@ -1340,8 +1321,6 @@ class Forest(SavedObject):
 
         # -- ui_support elements --
         ctrl.ui.remove_ui_for(node)
-        # -- brackets --
-        self.bracket_manager.remove_brackets(node)
         # -- groups --
         if ctrl.ui.selection_group and node in ctrl.ui.selection_group:
             ctrl.ui.selection_group.remove_node(node)
@@ -1667,6 +1646,38 @@ class Forest(SavedObject):
             node.merge_order = self.merge_counter
         self.update_order_features(node)
 
+    def update_label_shape(self):
+        shape = self.settings.label_shape
+        for node in self.nodes.values():
+            if node.node_type == g.CONSTITUENT_NODE:
+                node.label_object.label_shape = shape
+        self.prepare_width_map()
+
+    def prepare_width_map(self):
+        """ A map of how much horizontal space each node would need -- it is better to do this
+        once than recursively compute these when updating labels.
+        :return:
+        """
+        def recursive_width(node):
+            if node.is_leaf(only_similar=True, only_visible=True):
+                if node.is_visible():
+                    w = node.label_object.width
+                else:
+                    w = 0
+            else:
+                w = node.label_object.left_bracket_width() + node.label_object.right_bracket_width()
+                for n in node.get_children(similar=True, visible=True):
+                    w += recursive_width(n)
+            self.width_map[node.uid] = w
+            node.update_bounding_rect()
+            return w
+
+        self.width_map = {}
+        for tree in self:
+            recursive_width(tree.top)
+        return self.width_map
+
+
     # ### Minor updates for forest elements
     # #######################################################################
 
@@ -1812,10 +1823,6 @@ class Forest(SavedObject):
             parent.edges_down.append(new_edge)
         if mirror_in_syntax:
             child.connect_in_syntax(new_edge)
-        if hasattr(parent, 'rebuild_brackets'):
-            parent.rebuild_brackets()
-        if hasattr(child, 'rebuild_brackets'):
-            child.rebuild_brackets()
         parent.update_label()
         child.update_label()
         #print('--- finished connect')

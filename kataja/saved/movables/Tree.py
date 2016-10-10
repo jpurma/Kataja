@@ -54,7 +54,7 @@ class Tree(Movable):
         self.drag_data = None
         self.tree_changed = True
         self._cached_bounding_rect = None
-        self.setZValue(12)
+        self.setZValue(100)
 
     def __repr__(self):
         if self.numeration:
@@ -171,6 +171,9 @@ class Tree(Movable):
             add_children(self.top)
 
         self.sorted_constituents = sorted_constituents
+        for i, item in enumerate(self.sorted_constituents):
+            item.z_value = 10 + i
+            item.setZValue(item.z_value)
         self.sorted_nodes = sorted_nodes
 
         to_be_removed = old_nodes - set(sorted_nodes)

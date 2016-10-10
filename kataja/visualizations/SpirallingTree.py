@@ -127,6 +127,7 @@ class SpirallingTree(BaseVisualization):
     Each branch takes the space it needs, and may force next branch drawing to further down and
     right. """
     name = 'Spiralling trees'
+    banned_node_shapes = (g.BRACKETED, g.SCOPEBOX)
 
     def __init__(self):
         BaseVisualization.__init__(self)
@@ -152,7 +153,7 @@ class SpirallingTree(BaseVisualization):
         self._max_hits = {}
         if reset:
             self.sides = 3
-            self.forest.settings.bracket_style = g.NO_BRACKETS
+            self.forest.settings.label_shape = g.NORMAL
             self.forest.settings.show_constituent_edges = True
             self.set_vis_data('rotation', 0)
             for node in self.forest.visible_nodes():

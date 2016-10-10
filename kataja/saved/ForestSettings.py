@@ -62,7 +62,7 @@ class ForestSettings(SavedObject):
         self.hsv = None
         self.color_mode = None
         self.last_key_colors = {}
-        self.bracket_style = None
+        self.label_shape = None
         self.use_projection = False
         self.use_xbar_aliases = False
         self.projection_highlighter = False
@@ -283,7 +283,7 @@ class ForestSettings(SavedObject):
     feature_nodes = SavedSetting("feature_nodes")
     hsv = SavedSetting("hsv")
     color_mode = SavedSetting("color_mode")
-    bracket_style = SavedSetting("bracket_style")
+    label_shape = SavedSetting("label_shape")
     # these have dicts, they don't need SavedSetting check but special care in use
     last_key_colors = SavedField("last_key_colors")
     edge_styles_data = SavedField("edge_styles_data", watcher='edge_shape')

@@ -48,7 +48,7 @@ class EquidistantElasticTree(BaseVisualization):
         self.forest = forest
         if reset:
             self.forest.settings.show_constituent_edges = True
-            self.forest.settings.bracket_style = g.NO_BRACKETS
+            self.forest.settings.label_shape = g.NORMAL
             for node in self.forest.visible_nodes():
                 self.reset_node(node)
 

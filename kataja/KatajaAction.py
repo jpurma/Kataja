@@ -313,10 +313,12 @@ class KatajaAction(QtWidgets.QAction):
         :return:
         """
         value = bool(value)
+        old_v = self.isEnabled()
         self.setEnabled(value)
-        #for element in self.elements:
-        #    if hasattr(element, 'setEnabled'):
-        #        element.setEnabled(value)
+        if old_v != value and self.elements:
+            for item in self.elements:
+                if hasattr(item, 'setEnabled'):
+                    item.setEnabled(value)
 
     def set_displayed_value(self, value):
         """ Call ui_items that are related to this action and try to update them to show value

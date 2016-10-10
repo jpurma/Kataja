@@ -124,6 +124,7 @@ class Node(Movable):
         self.inner_rect = None
         self.anim = None
         self.magnet_mapper = None
+        self.z_value = 10
 
         self.in_scene = False
 
@@ -144,7 +145,7 @@ class Node(Movable):
         self.setFlag(QtWidgets.QGraphicsObject.ItemIsMovable)
         self.setFlag(QtWidgets.QGraphicsObject.ItemIsSelectable)
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.setZValue(10)
+        self.setZValue(self.z_value)
         self.fade_in()
         self.effect = create_shadow_effect(ctrl.cm.selection())
         # self.effect = create_shadow_effect(self.color)
@@ -338,7 +339,7 @@ class Node(Movable):
         #    self.effect.setEnabled(False)
         self._hovering = False
         self.prepareGeometryChange()
-        self.setZValue(10)
+        self.setZValue(self.z_value)
         self.update()
         ctrl.remove_status(self.status_tip)
 
@@ -956,6 +957,12 @@ class Node(Movable):
             p.setWidth(1)
             painter.setPen(p)
             self.paint_triangle(painter)
+        if False:
+            p = QtGui.QPen(self.contextual_color)
+            p.setWidth(1)
+            painter.setPen(p)
+            painter.drawLine(0, 0, 0, 2)
+            painter.drawRect(self.label_rect)
         if self.drag_data:
             p = QtGui.QPen(self.contextual_color)
             # b = QtGui.QBrush(ctrl.cm.paper())
@@ -965,7 +972,6 @@ class Node(Movable):
             painter.setBrush(self.drag_data.background)
             painter.drawRoundedRect(self.inner_rect, 5, 5)
             painter.setBrush(Qt.NoBrush)
-
         elif self._hovering:
             p = QtGui.QPen(self.contextual_color)
             # p.setColor(ctrl.cm.hover())
@@ -983,6 +989,20 @@ class Node(Movable):
             p.setWidth(1)
             painter.setPen(p)
             painter.drawRoundedRect(self.inner_rect, 5, 5)
+        elif self.label_object.label_shape == g.SCOPEBOX or self.label_object.label_shape == g.BOX:
+            # and not self.is_leaf(only_similar=True, only_visible=True)
+            p = QtGui.QPen(self.contextual_color)
+            p.setWidth(0.5)
+            painter.setPen(p)
+            painter.setBrush(ctrl.cm.paper2())
+            painter.drawRoundedRect(self.inner_rect, 5, 5)
+        if self.label_object.label_shape == g.BRACKETED and not self.is_leaf(only_similar=True,
+                                                                             only_visible=True):
+            p = QtGui.QPen(self.contextual_color)
+            painter.setFont(self.get_font())
+            painter.drawText(self.inner_rect.right() - qt_prefs.font_bracket_width - 2, 2, ']')
+
+
             # x,y,z = self.current_position
             # w2 = self.width/2.0
             # painter.setPen(self.contextual_color())
@@ -1002,9 +1022,7 @@ class Node(Movable):
         return self._label_visible
 
     def update_bounding_rect(self):
-        """
-
-
+        """ Do housekeeping for bounding rect and related measurements
         :return:
         """
         my_class = self.__class__
@@ -1013,6 +1031,14 @@ class Node(Movable):
         else:
             user_width, user_height = self.user_size
 
+        lbw = 0
+        lbh = 0
+        lbx = 0
+        lby = 0
+        x_offset = 0
+        y_offset = 0
+        box_width = 0
+
         if self._label_visible and self.label_object:
             l = self.label_object
             lbr = l.boundingRect()
@@ -1020,15 +1046,18 @@ class Node(Movable):
             lbh = lbr.height()
             lbx = l.x()
             lby = l.y()
-            self.label_rect = QtCore.QRectF(lbx, lby, lbw, lbh)
-            self.width = max((lbw, my_class.width, user_width))
-            self.height = max((lbh, my_class.height, user_height))
-            x = l.x_offset
-            y = l.y_offset
+            x_offset = l.x_offset
+            y_offset = l.y_offset
+        self.label_rect = QtCore.QRectF(lbx, lby, lbw, lbh)
+        if self.label_object and self.label_object.label_shape == g.BRACKETED or \
+                        self.label_object.label_shape == g.SCOPEBOX:
+            box_width = ctrl.forest.width_map.get(self.uid, 0)
+        self.width = max((lbw, my_class.width, user_width, box_width))
+        self.height = max((lbh, my_class.height, user_height))
+        if x_offset or y_offset:
+            x = x_offset
+            y = y_offset
         else:
-            self.label_rect = QtCore.QRectF(0, 0, 0, 0)
-            self.width = max((my_class.width, user_width))
-            self.height = max((my_class.height, user_height))
             x = self.width / -2
             y = self.height / -2
         self.inner_rect = QtCore.QRectF(x, y, self.width, self.height)
@@ -1254,7 +1283,7 @@ class Node(Movable):
         :param selected:
         """
         if not selected:
-            self.setZValue(10)
+            self.setZValue(self.z_value)
             if ctrl.main.use_tooltips:
                 self.setToolTip("")
             self.label_object.set_quick_editing(False)

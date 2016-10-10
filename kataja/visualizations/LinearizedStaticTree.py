@@ -53,7 +53,7 @@ class LinearizedStaticTree(BalancedTree):
         self.forest = forest
         self._directed = True
         if reset:
-            self.forest.settings.bracket_style = g.NO_BRACKETS
+            self.forest.settings.label_shape = g.NORMAL
             self.forest.settings.show_constituent_edges = True
             self.set_vis_data('rotation', 0)
             for node in self.forest.visible_nodes():
@@ -170,6 +170,7 @@ class LinearizedStaticTree(BalancedTree):
             sx = 0
             size = 0
             nleft, ntop, nw, nh = _get_grid_size(node)
+            print(nleft, ntop, nw, nh)
             children = node.get_children(similar=True, visible=True)
             if len(children) == 1:
                 cleft, ctop, cw, ch = _get_grid_size(children[0])
@@ -222,5 +223,5 @@ class LinearizedStaticTree(BalancedTree):
             width_now = offset_x
             for x, node in enumerate(row):
                 if node and isinstance(node, Movable):
-                    node.move_to(width_now, height_now, 0, valign=g.TOP_ROW)
+                    node.move_to(width_now, height_now, 0, valign=g.TOP_ROW, align=g.CENTER_ALIGN)
                 width_now += edge_width
