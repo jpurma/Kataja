@@ -61,14 +61,11 @@ class BaseVisualization:
         self.validate_node_shapes()
 
     def validate_node_shapes(self):
-        print('validating node shapes, banned: ', self.banned_node_shapes)
         if self.forest.settings.label_shape in self.banned_node_shapes:
             self.forest.settings.label_shape = 0
             while self.forest.settings.label_shape in self.banned_node_shapes:
                 self.forest.settings.label_shape += 1
             self.forest.update_label_shape()
-            print('forced label shape to ', self.forest.settings.label_shape)
-            sys.exit()
 
     def reset_nodes(self):
         for node in self.forest.visible_nodes():

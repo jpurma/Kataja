@@ -1664,7 +1664,7 @@ class Forest(SavedObject):
                 for n in node.get_children(similar=True, visible=True):
                     w += recursive_width(n)
             self.width_map[node.uid] = w
-            node.update_bounding_rect()
+            node.update_label()
             return w
 
         self.width_map = {}

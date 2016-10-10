@@ -959,68 +959,46 @@ class Node(Movable):
         else:
             xr = 5
             yr = 5
+        pen = QtGui.QPen(self.contextual_color)
+        pen.setWidth(1)
+        rect = False
+        brush = Qt.NoBrush
 
         if self.should_draw_triangle():
-            p = QtGui.QPen(self.contextual_color)
-            p.setWidth(1)
-            painter.setPen(p)
+            painter.setPen(pen)
             self.paint_triangle(painter)
         if False:
-            p = QtGui.QPen(self.contextual_color)
-            p.setWidth(1)
-            painter.setPen(p)
+            painter.setPen(pen)
             painter.drawLine(0, 0, 0, 2)
             painter.drawRect(self.label_rect)
         if self.drag_data:
-            p = QtGui.QPen(self.contextual_color)
-            # b = QtGui.QBrush(ctrl.cm.paper())
-            # p.setColor(ctrl.cm.hover())
-            p.setWidth(1)
-            painter.setPen(p)
-            painter.setBrush(self.drag_data.background)
-            painter.drawRoundedRect(self.inner_rect, xr, yr)
-            painter.setBrush(Qt.NoBrush)
-        elif self._hovering:
-            p = QtGui.QPen(self.contextual_color)
-            # p.setColor(ctrl.cm.hover())
-            p.setWidth(1)
-            painter.setPen(p)
-            painter.drawRoundedRect(self.inner_rect, xr, yr)
+            rect = True
+            brush = self.drag_data.background
+        if ls == g.SCOPEBOX or ls == g.BOX:
+            pen.setWidth(0.5)
+            brush = ctrl.cm.paper2()
+            rect = True
+        elif ls == g.CARD and self.is_leaf(only_visible=True, only_similar=True):
+            brush = ctrl.cm.paper2()
+            rect = True
+        if self._hovering:
+            if rect:
+                brush = ctrl.cm.paper()
+            rect = True
         elif ctrl.pressed is self or ctrl.is_selected(self):
-            p = QtGui.QPen(self.contextual_color)
-            p.setWidth(1)
-            painter.setPen(p)
-            painter.drawRoundedRect(self.inner_rect, xr, yr)
+            if rect:
+                brush = ctrl.cm.paper()
+            rect = True
         elif self.has_empty_label() and self.node_alone():
-            p = QtGui.QPen(self.contextual_color)
-            p.setStyle(QtCore.Qt.DotLine)
-            p.setWidth(1)
-            painter.setPen(p)
-            painter.drawRoundedRect(self.inner_rect, xr, yr)
-        elif ls == g.SCOPEBOX or ls == g.BOX or ls == g.CARD:
-            p = QtGui.QPen(self.contextual_color)
-            p.setWidth(0.5)
-            painter.setPen(p)
-            painter.setBrush(ctrl.cm.paper2())
+            pen.setStyle(QtCore.Qt.DotLine)
+            rect = True
+        painter.setPen(pen)
+        if rect:
+            painter.setBrush(brush)
             painter.drawRoundedRect(self.inner_rect, xr, yr)
         if ls == g.BRACKETED and not self.is_leaf(only_similar=True, only_visible=True):
-            p = QtGui.QPen(self.contextual_color)
-            painter.setPen(p)
             painter.setFont(self.get_font())
             painter.drawText(self.inner_rect.right() - qt_prefs.font_bracket_width - 2, 2, ']')
-
-
-            # x,y,z = self.current_position
-            # w2 = self.width/2.0
-            # painter.setPen(self.contextual_color())
-            # painter.drawEllipse(-w2, -w2, w2 + w2, w2 + w2)
-        # x = 0
-        # p = QtGui.QPen(self.contextual_color)
-        # p.setWidth(1)
-        # painter.setPen(p)
-        # for trees in self.trees:
-        #    painter.drawEllipse(x, 10, 6, 6)
-        #    x += 10
 
     def has_visible_label(self):
         """

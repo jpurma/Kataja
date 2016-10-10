@@ -38,6 +38,7 @@ style_sheet = """
 b {font-family: StixGeneral Bold; font-weight: 900; font-style: bold}
 """
 
+inner_cards = False
 
 class Label(QtWidgets.QGraphicsTextItem):
     """ Labels are names of nodes. Node itself provides a template for what to show in label,
@@ -64,6 +65,7 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.y_offset = 0
         self.text_align = CENTER_ALIGN
         self.label_shape = NORMAL
+
         self._font = None
         self.html = ''
         self.text = ''
@@ -127,7 +129,7 @@ class Label(QtWidgets.QGraphicsTextItem):
             self.html = new_html
             self.visible_parts = visible_parts
             self.prepareGeometryChange()
-            if self.label_shape == CARD:
+            if self.is_card():
                 self.doc.setTextWidth(self.card_size[0])
             else:
                 self.doc.setTextWidth(-1)
@@ -136,6 +138,10 @@ class Label(QtWidgets.QGraphicsTextItem):
             ctrl.qdocument_parser.process(self.doc)
             self.text = self.toPlainText()
         self.resize_label()
+
+    def is_card(self):
+        return self.label_shape == CARD and (inner_cards or self._host.is_leaf(only_similar=True,
+                                                                               only_visible=True))
 
     def left_bracket_width(self):
         return self.width
@@ -387,7 +393,7 @@ class Label(QtWidgets.QGraphicsTextItem):
             ctrl.text_editor_focus = self
             self.setTextInteractionFlags(QtCore.Qt.TextEditorInteraction)
             self.prepareGeometryChange()
-            if self.label_shape == CARD:
+            if self.is_card():
                 self.doc.setTextWidth(self.card_size[0])
             else:
                 self.doc.setTextWidth(-1)
@@ -633,7 +639,7 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.prepareGeometryChange()
         # Width
         user_width, user_height = self.get_max_size_from_host()
-        if self.label_shape == CARD:
+        if self.is_card():
             br_width = self.card_size[0]
         else:
             self.setTextWidth(-1)
@@ -650,7 +656,7 @@ class Label(QtWidgets.QGraphicsTextItem):
                 br_width = Label.max_width
         self.setTextWidth(br_width)
 
-        if self.label_shape == CARD:
+        if self.is_card():
             dh = self.card_size[1]
         else:
             dh = self.doc.size().height()
@@ -693,7 +699,7 @@ class Label(QtWidgets.QGraphicsTextItem):
                 self.top_part_y = self.top_y + half_height + 3
                 self.lower_part_y = self.top_y + (second_row * avg_line_height) + half_height
         self.x_offset = br_width / -2.0
-        if self.label_shape == CARD:
+        if self.is_card():
             self.y_offset = self.top_part_y
         else:
             self.y_offset = -h2
@@ -718,7 +724,7 @@ class Label(QtWidgets.QGraphicsTextItem):
             QtWidgets.QGraphicsTextItem.dropEvent(self, event)
 
     def boundingRect(self):
-        if self.label_shape == CARD:
+        if self.is_card():
             return QtCore.QRectF(0, 0, self.card_size[0], self.card_size[1])
         else:
             return super().boundingRect()

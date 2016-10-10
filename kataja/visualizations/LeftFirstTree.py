@@ -38,7 +38,7 @@ class LeftFirstTree(BaseVisualization):
     branch takes the space it needs, and may force next branch drawing to
     further down and right. """
     name = 'Left first trees'
-    banned_node_shapes = (g.BRACKETED,)
+    banned_node_shapes = (g.BRACKETED, g.SCOPEBOX)
 
     def __init__(self):
         BaseVisualization.__init__(self)
@@ -59,10 +59,10 @@ class LeftFirstTree(BaseVisualization):
         self._hits = {}
         self._max_hits = {}
         self._indentation = 0
+        self.validate_node_shapes()
         if reset:
             self.set_vis_data('rotation', 0)
             self.reset_nodes()
-        self.validate_node_shapes()
 
     def reset_node(self, node):
         """
@@ -139,7 +139,6 @@ class LeftFirstTree(BaseVisualization):
             elif len(children) == 2:
                 nx += x_step * 2
 
-    # @time_me
     def draw(self):
         """ Draws the trees to a table or a grid, much like latex qtree and
         then scales the grid to the scene. """
@@ -188,14 +187,15 @@ class LeftFirstTree(BaseVisualization):
                     height_spillover = node.inner_rect.bottom() - edge_height
                     if height_spillover > extra_height:
                         if edge_height:
-                            extra_height = math.ceil(height_spillover / float(edge_height)) * edge_height
+                            extra_height = math.ceil(
+                                height_spillover / float(edge_height)) * edge_height
                         else:
                             extra_height = math.ceil(height_spillover)
                     width_spillover = ((node.width + prev_width) / 2) - (edge_width * 2)
                     if width_spillover > extra_widths[x_i]:
                         if edge_width:
-                            extra_widths[x_i] = math.ceil(width_spillover / float(edge_width)) * \
-                                                edge_width
+                            extra_widths[x_i] = math.ceil(
+                                width_spillover / float(edge_width)) * edge_width
                         else:
                             extra_widths[x_i] = math.ceil(width_spillover)
                     # fix cases where bottom half of tall node is overlapped by edges from smaller
@@ -224,11 +224,10 @@ class LeftFirstTree(BaseVisualization):
                     if node not in all_nodes:
                         if not node.isVisible():
                             print('non-visible node included in visualization grid: ', node,
-                              node.isVisible())
+                                  node.isVisible())
                         else:
                             print('whats wrong with node ', node)
-                            print(node, node.uid, node.deleted, node.parentObject(),
-                                  node.trees)
+                            print(node, node.uid, node.deleted, node.parentObject(), node.trees)
                     else:
                         all_nodes.remove(node)
                 else:
