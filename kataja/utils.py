@@ -34,7 +34,6 @@ from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtCore import QPointF, QPoint
 
 import kataja.globals as g
-from kataja.debug import DEBUG_TIME_ME
 
 
 def print_rect(rect):
@@ -72,8 +71,6 @@ def time_me(function):
     :param function:
     :return:
     """
-    if not DEBUG_TIME_ME:
-        return function
 
     def wrap(*arg, **kwargs):
         """

@@ -41,8 +41,8 @@ class LabelDocument(QtGui.QTextDocument):
                    cf.fontFamily(), cf.fontItalic(), cf.fontOverline(),
                    cf.fontStrikeOut(), cf.fontWeight(),
                    cf.fontUnderline(), cf.verticalAlignment()]
-            print(dat)
-            print(int(dat[0]))
+            #print(dat)
+            #print(int(dat[0]))
             for frange in b.textFormats():
                 cf = frange.format
                 ndat = [b.blockFormat().alignment(), cf.fontCapitalization(),

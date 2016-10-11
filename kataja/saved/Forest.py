@@ -114,6 +114,7 @@ class Forest(SavedObject):
 
         # Update request flags
         self._do_edge_visibility_check = False
+        self.change_view_mode(prefs.show_all_mode)
 
     def after_model_update(self, updated_fields, update_type):
         """ This is called after the item's model has been updated (e.g. by
@@ -531,7 +532,7 @@ class Forest(SavedObject):
 
     def update_forest_gloss(self):
         """ Draw the gloss text on screen, if it exists. """
-        if self.gloss_text:
+        if self.gloss_text and prefs.show_all_mode:
             if not self.gloss:
                 self.gloss = self.create_node(synobj=None, node_type=g.GLOSS_NODE)
                 self.gloss.label = self.gloss_text
@@ -802,9 +803,7 @@ class Forest(SavedObject):
     def draw(self):
         """ Update all trees in the forest according to current visualization
         """
-        print('Forest: draw!')
         if self.halt_drawing:
-            print('drawing halted')
             return
         if not self.in_display:
             print("Why are we drawing a forest which shouldn't be in scene")
@@ -2301,6 +2300,27 @@ class Forest(SavedObject):
         for i in range(1,8):
             if 'accent%s' % i not in color_keys:
                 return 'accent%s' % i
+
+    # View mode
+    def change_view_mode(self, show_all):
+        prefs.show_all_mode = show_all
+        if show_all:
+            self.settings.show_display_labels = True
+        else:
+            self.settings.show_display_labels = False
+        for node in self.nodes.values():
+            node.update_label()
+            node.update_label_visibility()
+            node.update_visibility()
+        ctrl.call_watchers(self, 'view_mode_changed', value=show_all)
+        if show_all:
+            prefs.temp_color_mode = ''
+        else:
+            if ctrl.main.color_manager.paper().value() < 100:
+                prefs.temp_color_mode = 'dk_gray'
+            else:
+                prefs.temp_color_mode = 'gray'
+        self.update_colors()
 
     # ######## Utility functions ###############################
 

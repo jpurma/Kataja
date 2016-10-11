@@ -31,14 +31,10 @@ class VisualizationOptionsPanel(Panel):
         grid.setContentsMargins(0, 0, 0, 0)
         layout.addLayout(grid)
         ui = self.ui_manager
-        label(self, grid, 'Show which labels ', 0, 0)
+        label(self, grid, 'Show labels ', 0, 0)
         self.show_display_labels = text_button(ui, grid,
-                                               'display labels', 'toggle_show_display_label',
+                                               'Show display labels', 'toggle_show_display_label',
                                                1, 0, checkable=True)
-        self.show_computational_labels = text_button(ui, grid,
-                                                     'computational labels',
-                                                     'toggle_show_computational_label',
-                                                     1, 1, checkable=True)
         layout.addLayout(grid)
         grid = QtWidgets.QGridLayout()
         grid.setContentsMargins(0, 0, 0, 0)
@@ -81,7 +77,6 @@ class VisualizationOptionsPanel(Panel):
         self.widget().update()
         s = ctrl.fs
         set_value(self.show_display_labels, s.show_display_labels)
-        set_value(self.show_computational_labels, s.show_computational_labels)
         set_value(self.highlighter_button, s.projection_highlighter)
         set_value(self.strong_lines_button, s.projection_strong_lines)
         set_value(self.colorize_button, s.projection_colorized)

@@ -33,14 +33,12 @@ class ModeLabel(UIWidget, PanelButton):
         self.update_style_sheet()
         self.setMinimumWidth(mw + 8)
 
-    def set_checked(self, val):
+    def checkStateSet(self):
+        val = self.isChecked()
         if val:
             self.setText(self.text_options[1])
-            self.setChecked(True)
         else:
             self.setText(self.text_options[0])
-            self.setChecked(False)
-        #self.setMinimumSize(self.minimumSizeHint() + QtCore.QSize(4, 4))
         self.updateGeometry()
         self.update_position()
 

@@ -167,6 +167,7 @@ class ConstituentNode(BaseConstituentNode):
         """
         self.update_features()
         self.update_gloss()
+        self.update_label_shape()
         self.update_label()
         self.update_visibility()
         self.update_status_tip()
@@ -252,6 +253,9 @@ class ConstituentNode(BaseConstituentNode):
                         return '<u>' + self.label + '</u>'
             return self.label
 
+    def update_label_shape(self):
+        self.label_object.label_shape = ctrl.fs.label_shape
+
     def update_locked_features(self):
         """
 
@@ -259,16 +263,22 @@ class ConstituentNode(BaseConstituentNode):
         """
         pass
 
-    def should_show_label(self):
-        return self.forest.settings.show_computational_labels
+    def should_show_label(self) -> bool:
+        """ A condition check called by display_styles -dict to prepare visible_in_label -list
+        """
+        return not (self.forest.settings.show_display_labels and self.display_label)
 
-    def should_show_display_label(self):
-        return self.forest.settings.show_display_labels
+    def should_show_display_label(self) -> bool:
+        """ A condition check called by display_styles -dict to prepare visible_in_label -list
+        """
+        return self.forest.settings.show_display_labels and self.display_label
 
-    def should_show_gloss_in_label(self):
+    def should_show_gloss_in_label(self) -> bool:
+        """ A condition check called by display_styles -dict to prepare visible_in_label -list
+        """
         return self.forest.settings.show_glosses == 1
 
-    def update_status_tip(self):
+    def update_status_tip(self) -> None:
         """ Hovering status tip """
         if self.syntactic_object:
             if self.display_label:

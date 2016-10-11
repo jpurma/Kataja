@@ -28,7 +28,6 @@ import math
 import kataja.globals as g
 from kataja.Grid import Grid
 from kataja.Visualization import BaseVisualization
-from kataja.debug import vis
 from kataja.singletons import prefs
 from kataja.utils import caller
 
@@ -54,7 +53,6 @@ class LeftFirstTree(BaseVisualization):
         :param forest:Forest
         :param reset:boolean
         """
-        vis('preparing LeftFirstVisualization')
         self.forest = forest
         self._hits = {}
         self._max_hits = {}

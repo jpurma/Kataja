@@ -885,7 +885,6 @@ class UIManager:
         if ctrl.text_editor_focus:
             ctrl.text_editor_focus.release_editor_focus()
         if self.active_embed:
-            print('closing embed ', self.active_embed, self.active_embed.ui_key)
             if self.active_embed.graphic_item:
                 self.remove_ui(self.active_embed.graphic_item)
             self.remove_ui(self.active_embed)
@@ -1150,7 +1149,7 @@ class UIManager:
     # Mode HUD
     def update_edit_mode(self):
         val = ctrl.free_drawing_mode
-        self.top_bar_buttons.edit_mode_button.set_checked(not val)
+        self.top_bar_buttons.edit_mode_button.setChecked(not val)
         ctrl.call_watchers(self, 'edit_mode_changed', value=val)
 
     # ### Embedded buttons ############################

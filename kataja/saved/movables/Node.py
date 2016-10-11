@@ -1682,6 +1682,9 @@ class Node(Movable):
             else:
                 self.hide()
 
+    def update_label_shape(self):
+        pass
+
     # noinspection PyTypeChecker
     def check_conditions(self, cond):
         """ Various templates may need to check that all conditions apply before doing things.
@@ -1713,6 +1716,8 @@ class Node(Movable):
                 if cmethod:
                     return cmethod()
             raise NotImplementedError(cond)
+
+
 
     # ############## #
     #                #

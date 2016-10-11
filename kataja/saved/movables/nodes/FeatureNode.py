@@ -80,8 +80,10 @@ class FeatureNode(Node):
         Node.__init__(self, syntactic_object=syntactic_object, forest=forest)
         self.repulsion = 0.25
         self._gravity = 2.5
+        self.z_value = 60
+        self.setZValue(self.z_value)
 
-    # implement color() to map one of the d['rainbow_%'] colors here. Or if bw mode is on, then something else.
+        # implement color() to map one of the d['rainbow_%'] colors here. Or if bw mode is on, then something else.
 
     @staticmethod
     def create_synobj(label, forest):

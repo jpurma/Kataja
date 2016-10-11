@@ -65,7 +65,6 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.y_offset = 0
         self.text_align = CENTER_ALIGN
         self.label_shape = NORMAL
-
         self._font = None
         self.html = ''
         self.text = ''
@@ -198,14 +197,7 @@ class Label(QtWidgets.QGraphicsTextItem):
         for field_name in self.visible_in_label:
             s = styles.get(field_name, {})
             syntactic = s.get('syntactic', False)
-            # buttons in visualisation options override other visibility considerations
-            if field_name == 'display_label':
-                if not ctrl.fs.show_display_labels:
-                    continue
-            elif field_name == 'label':
-                if not ctrl.fs.show_computational_labels:
-                    continue
-            elif (not show_all_mode) and not syntactic:
+            if (not show_all_mode) and not syntactic:
                 continue
             if 'getter' in s:
                 getter = getattr(h, s.get('getter'), None)
@@ -287,20 +279,9 @@ class Label(QtWidgets.QGraphicsTextItem):
         h = self._host
         editable_parts = []
         editable = []
-        show_all_mode = prefs.show_all_mode
         for field_name in self.visible_in_label:
             s = styles.get(field_name, {})
             e = edit_styles.get(field_name, {})
-            syntactic = s.get('syntactic', False)
-            if field_name == 'display_label':
-                if not ctrl.fs.show_display_labels:
-                    continue
-            elif field_name == 'label':
-                if not ctrl.fs.show_computational_labels:
-                    continue
-            elif (not show_all_mode) and not syntactic:
-                continue
-
             if 'getter' in e:
                 getter = getattr(h, e.get('getter'), None)
                 if callable(getter):
@@ -462,8 +443,6 @@ class Label(QtWidgets.QGraphicsTextItem):
         else:
             setattr(self._host, field_name, parsed_parts)
 
-        print(self.editable_parts)
-        print(parsed_parts)
 
     def analyze_changes(self):
         """ Use difflib to get a robust idea on what has changed

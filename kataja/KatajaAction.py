@@ -198,8 +198,6 @@ class KatajaAction(QtWidgets.QAction):
 
         if not self.isEnabled():
             return
-        if state_arg:
-            print('received state arg: ', state_arg)
         self.state_arg = state_arg
         # -- Redraw and undo flags: these are on by default, can be switched off by action method
         ctrl.action_redraw = True

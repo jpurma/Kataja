@@ -21,27 +21,7 @@ class SwitchViewMode(KatajaAction):
         """
         if show_all is None:
             show_all = not prefs.show_all_mode
-        prefs.show_all_mode = show_all
-        ctrl.ui.top_bar_buttons.view_mode_button.set_checked(not show_all)
-        if show_all:
-            ctrl.fs.show_computational_labels = False
-            ctrl.fs.show_display_labels = True
-        else:
-            ctrl.fs.show_computational_labels = True
-            ctrl.fs.show_display_labels = False
-        for node in ctrl.forest.nodes.values():
-            node.update_label()
-            node.update_label_visibility()
-            node.update_visibility()
-        ctrl.call_watchers(self, 'view_mode_changed', value=show_all)
-        if show_all:
-            prefs.temp_color_mode = ''
-        else:
-            if ctrl.main.color_manager.paper().value() < 100:
-                prefs.temp_color_mode = 'dk_gray'
-            else:
-                prefs.temp_color_mode = 'gray'
-        ctrl.forest.update_colors()
+        ctrl.forest.change_view_mode(show_all)
         if show_all:
             return 'Showing all elements, including those that have no computational effects.'
         else:
@@ -374,20 +354,6 @@ class ToggleShowDisplayLabel(KatajaAction):
         else:
             return self.command % 'Hide'
 
-
-class ToggleShowComputationalLabel(KatajaAction):
-    k_action_uid = 'toggle_show_computational_label'
-    k_command = '%s computational labels'
-    k_tooltip = 'Show computational labels for nodes'
-
-    def method(self):
-        v = not ctrl.fs.show_computational_labels
-        ctrl.fs.show_computational_labels = v
-        for node in ctrl.forest.nodes.values():
-            node.update_label()
-            node.update_label_visibility()
-        if v:
-            return self.command % 'Show'
-        else:
-            return self.command % 'Hide'
+    def getter(self):
+        return ctrl.fs.show_display_labels
 

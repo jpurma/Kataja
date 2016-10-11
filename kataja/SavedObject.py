@@ -74,7 +74,6 @@ class SavedObject(object):
                     new_value = value.copy(others=others)
                 else:
                     new_value = copy.copy(value)
-                print('copied this: ', key, new_value)
                 setattr(new_obj, key, new_value)
         return new_obj
 

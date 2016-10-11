@@ -68,7 +68,6 @@ class ForestSettings(SavedObject):
         self.projection_strong_lines = False
         self.projection_colorized = True
         self.show_display_labels = True
-        self.show_computational_labels = False
         self.show_glosses = 2 # show as separate nodes
         # ## Edges - take edge type as argument ###########################
         self.edge_styles_data = {}

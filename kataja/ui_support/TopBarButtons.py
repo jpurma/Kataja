@@ -85,7 +85,6 @@ class TopBarButtons(QtWidgets.QFrame):
             min_width += item.width()
             min_width += 4
         min_width += 10
-        self.view_mode_button.set_checked(not prefs.show_all_mode)
         self.update_position()
 
     def sizeHint(self):
