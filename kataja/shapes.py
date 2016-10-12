@@ -90,8 +90,9 @@ def draw_arrow_shape(self, painter):
     painter.drawPolygon(QtGui.QPolygonF([l2, destArrowP1, l2c, destArrowP2]))
 
 
-def draw_arrow_shape_from_points(painter, start_x, start_y, end_x, end_y, arrow_size=6):
-    painter.drawLine(start_x, start_y, end_x, end_y)
+def draw_arrow_shape_from_points(painter, start_x, start_y, end_x, end_y, color, arrow_size=6):
+    #path1 = QtGui.QPainterPath(Pf(start_x, start_y))
+    #path1.lineTo(end_x, end_y)
     dx = end_x - start_x
     dy = end_y - start_y
     length = sqrt(dx * dx + dy * dy)
@@ -104,12 +105,21 @@ def draw_arrow_shape_from_points(painter, start_x, start_y, end_x, end_y, arrow_
     prop = back / length
     if dy >= 0:
         angle = pipi - angle
-    destArrowP1 = Pf((sin(angle - pi / 3) * arrow_size) + end_x,
-                     (cos(angle - pi / 3) * arrow_size) + end_y)
-    destArrowP2 = Pf((sin(angle - pi + pi / 3) * arrow_size) + end_x,
-                     (cos(angle - pi + pi / 3) * arrow_size) + end_y)
-    l2c = Pf(dx * prop + end_x, dy * prop + end_y)
-    painter.drawPolygon(QtGui.QPolygonF([Pf(end_x, end_y), destArrowP1, l2c, destArrowP2]))
+    destArrowP1x = (sin(angle - pi / 3) * arrow_size) + end_x
+    destArrowP1y = (cos(angle - pi / 3) * arrow_size) + end_y
+    destArrowP2x = (sin(angle - pi + pi / 3) * arrow_size) + end_x
+    destArrowP2y = (cos(angle - pi + pi / 3) * arrow_size) + end_y
+    l2cx = dx * prop + end_x
+    l2cy = dy * prop + end_y
+    painter.drawLine(start_x, start_y, l2cx, l2cy)
+    path2 = QtGui.QPainterPath(Pf(end_x, end_y))
+    path2.lineTo(end_x, end_y)
+    path2.lineTo(destArrowP1x, destArrowP1y)
+    path2.lineTo(l2cx, l2cy)
+    path2.lineTo(destArrowP2x, destArrowP2y)
+    painter.fillPath(path2, color)
+    #painter.drawline(path1)
+    #painter.drawPolygon(QtGui.QPolygonF([Pf(end_x, end_y), destArrowP1, l2c, destArrowP2]))
 
 
 def arrow_shape_bounding_rect(self):

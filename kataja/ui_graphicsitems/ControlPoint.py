@@ -21,6 +21,7 @@ class ControlPoint(UIGraphicsItem, QtWidgets.QGraphicsItem):
     def __init__(self, edge, index=-1, role=''):
         UIGraphicsItem.__init__(self, host=edge, role=role)
         QtWidgets.QGraphicsItem.__init__(self)
+        print('creating control_point, role is: ', role)
         if prefs.touch:
             self._wh = 12
             self._xy = -6
@@ -47,7 +48,7 @@ class ControlPoint(UIGraphicsItem, QtWidgets.QGraphicsItem):
             self.status_tip = "Drag to move the starting point"
         elif self.role == g.END_POINT:
             self.status_tip = "Drag to move the ending point"
-        elif self._index > -1:
+        elif self.role == g.CURVE_ADJUSTMENT:
             self.status_tip = "Drag to adjust the curvature of this line"
         elif self.role == g.LABEL_START:
             self.status_tip = "Drag along the line to adjust the anchor point of label"
@@ -84,13 +85,13 @@ class ControlPoint(UIGraphicsItem, QtWidgets.QGraphicsItem):
         """
         :return:
         """
-        if -1 < self._index < len(self.host.adjusted_control_points):
+        if self.role == g.CURVE_ADJUSTMENT and self._index < len(self.host.adjusted_control_points):
             p = Pf(*self.host.adjusted_control_points[self._index])
         elif self.role == g.START_POINT:
             p = Pf(self.host.start_point[0], self.host.start_point[1])
         elif self.role == g.END_POINT:
             p = Pf(self.host.end_point[0], self.host.end_point[1])
-        elif self.role == g.LABEL_START:
+        elif self.role == g.LABEL_START and self.host.label_item:
             c = self.host.label_item.get_label_start_pos()
             p = Pf(c.x(), c.y())
         else:
@@ -165,7 +166,7 @@ class ControlPoint(UIGraphicsItem, QtWidgets.QGraphicsItem):
             self.host.label_item.label_start = d
         else:
             self.setPos(scenepos)
-        if self._index > -1:
+        if self.role == g.CURVE_ADJUSTMENT:
             rdist, rrad = self._compute_adjust_from_pos(scenepos)
             self.host.shape_info.adjust_control_point(self._index, rdist, rrad)
         elif self.role == g.START_POINT:

@@ -31,7 +31,8 @@ from kataja.UIItem import UIGraphicsItem
 from kataja.saved.Edge import Edge
 from kataja.saved.movables.Node import Node
 from kataja.saved.movables.nodes.ConstituentNode import ConstituentNode
-from kataja.shapes import draw_plus, draw_leaf, draw_x, draw_triangle, draw_tailed_leaf
+from kataja.shapes import draw_plus, draw_leaf, draw_x, draw_triangle, draw_tailed_leaf, \
+    draw_arrow_shape_from_points
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.uniqueness_generator import next_available_type_id
 from kataja.utils import to_tuple, sub_xy
@@ -47,10 +48,8 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
 
     def __init__(self, host, action):
         """
-
         :param ConstituentNode host:
-        :param boolean left:
-        :param boolean top:
+        :param string action:
         """
         UIGraphicsItem.__init__(self, host=host)
         QtWidgets.QGraphicsObject.__init__(self)
@@ -358,7 +357,7 @@ class AddConstituentTouchArea(TouchArea):
         :param dropped_node:
         """
         if isinstance(dropped_node, str):
-            dropped_node = self.make_node_from_string(dropped_node)
+            self.make_node_from_string(dropped_node)
 
 
 class AddBelowTouchArea(TouchArea):
@@ -366,11 +365,6 @@ class AddBelowTouchArea(TouchArea):
     __qt_type_id__ = next_available_type_id()
 
     def update_end_points(self):
-        # start
-        """
-
-        :param end_point: End point can be given or it can be calculated.
-        """
         x, y = self.host.centered_scene_position
         y += self.host.height / 2 + end_spot_size
         self.end_point = x, y
@@ -478,11 +472,7 @@ class DeleteArrowTouchArea(TouchArea):
 
 class BranchingTouchArea(TouchArea):
     """ TouchArea that connects to edges and has /-shape. Used to add/merge
-    nodes in middle of the trees.
-    :param host:
-    :param type:
-    :param ui_key:
-    """
+    nodes in middle of the trees. """
 
     __qt_type_id__ = next_available_type_id()
 
@@ -516,7 +506,6 @@ class BranchingTouchArea(TouchArea):
         r = QtCore.QRectF(x, y, w, h)
         return r
 
-
     def drop(self, dropped_node):
         """
         Connect dropped node to host of this TouchArea.
@@ -540,11 +529,7 @@ class BranchingTouchArea(TouchArea):
 
 class LeftAddSibling(BranchingTouchArea):
     """ TouchArea that connects to edges and has /-shape. Used to add/merge
-    nodes in middle of the trees.
-    :param host:
-    :param type:
-    :param ui_key:
-    """
+    nodes in middle of the trees. """
     __qt_type_id__ = next_available_type_id()
 
     def __init__(self, host, action):
@@ -618,11 +603,7 @@ class LeftAddInnerSibling(LeftAddSibling):
 
 class RightAddSibling(BranchingTouchArea):
     """ TouchArea that connects to edges and has /-shape. Used to add/merge
-    nodes in middle of the trees.
-    :param host:
-    :param type:
-    :param ui_key:
-    """
+    nodes in middle of the trees. """
     __qt_type_id__ = next_available_type_id()
 
     def __init__(self, host, action):
@@ -696,11 +677,7 @@ class RightAddInnerSibling(RightAddSibling):
 
 class JointedTouchArea(TouchArea):
     """ TouchArea that connects to nodes and has ^-shape. Used to add nodes
-    to top of the trees.
-    :param host:
-    :param type:
-    :param ui_key:
-    """
+    to top of the trees. """
     __qt_type_id__ = next_available_type_id()
 
     def boundingRect(self):
@@ -903,11 +880,7 @@ class RightAddTop(JointedTouchArea):
 
 class ChildTouchArea(TouchArea):
     """ TouchArea that adds children to nodes and has /-shape. Used to
-    add nodes to leaf nodes.
-    :param host:
-    :param type:
-    :param ui_key:
-    """
+    add nodes to leaf nodes. """
     __qt_type_id__ = next_available_type_id()
 
     def __init__(self, host, action):
@@ -971,11 +944,7 @@ class ChildTouchArea(TouchArea):
 
 class LeftAddChild(BranchingTouchArea):
     """ TouchArea that adds children to nodes and has /-shape. Used to
-    add nodes to leaf nodes.
-    :param host:
-    :param type:
-    :param ui_key:
-    """
+    add nodes to leaf nodes."""
     __qt_type_id__ = next_available_type_id()
 
     def __init__(self, host, action):
@@ -1042,11 +1011,7 @@ class LeftAddLeafSibling(LeftAddChild):
 
 class RightAddChild(ChildTouchArea):
     """ TouchArea that adds children to nodes and has /-shape. Used to
-    add nodes to leaf nodes.
-    :param host:
-    :param type:
-    :param ui_key:
-    """
+    add nodes to leaf nodes. """
     __qt_type_id__ = next_available_type_id()
 
     def __init__(self, host, action):
@@ -1154,3 +1119,37 @@ class RemoveTriangleTouchArea(AddBelowTouchArea):
             painter.setPen(c)
             draw_x(painter, 0, 0, end_spot_size)
 
+
+class StartArrowTouchArea(AddBelowTouchArea):
+
+    __qt_type_id__ = next_available_type_id()
+
+    def contextual_color(self):
+        if self._hovering:
+            return ctrl.cm.hovering(ctrl.cm.ui())
+        else:
+            return ctrl.cm.ui()
+
+    def boundingRect(self):
+        """
+        :return:
+        """
+        return QtCore.QRectF(-10, -5, 20, 15)
+
+    def paint(self, painter, option, widget):
+        """
+
+        :param painter:
+        :param option:
+        :param widget:
+        :raise:
+        """
+        if ctrl.pressed is self:
+            pass
+        c = self.contextual_color()
+        painter.setPen(c)
+        draw_plus(painter, -5, 5)
+        #painter.setBrush(c)
+        draw_arrow_shape_from_points(painter, -2, 0, 8, 7, c)
+        if self._hovering:
+            painter.drawRoundedRect(self.boundingRect(), 4, 4)

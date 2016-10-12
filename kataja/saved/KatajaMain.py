@@ -533,66 +533,8 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.forest_keeper = self.forest_keepers[-1]
         self.forest = None
 
-
-    # # ### Unused two-phase actions
-    # # ###############################################
-    #
-    # def start_pointing_mode(self, event, method=None, data=None):
-    #     """ Begin pointing mode, mouse pointer draws a line behind it and
-    #     normal actions are disabled
-    #     :param event:
-    #     :param method:
-    #     :param data:
-    #     """
-    #     if not data:
-    #         data = {}
-    #     ctrl.pointing_mode = True
-    #     ctrl.pointing_method = method
-    #     ctrl.pointing_data = data
-    #     self.ui_manager.begin_stretchline(data['start'].pos(),
-    #                                       event.scenePos())  # +data[
-    #                                       # 'startposF']
-    #     self.app.setOverrideCursor(QtCore.Qt.CrossCursor)
-    #     self.graph.setDragMode(QtWidgets.QGraphicsView.NoDrag)
-    #
-    # # noinspection PyUnusedLocal
-    # def end_pointing_mode(self, event):
-    #     """ End pointing mode and return to normal
-    #     :param event:
-    #     """
-    #     ctrl.pointing_mode = False
-    #     ctrl.pointing_data = {}
-    #     self.ui_manager.end_stretchline()
-    #     self.app.restoreOverrideCursor()
-    #     self.graph.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
-    #
-    # def begin_merge_to(self, event):
-    #     """ MergeTo is a two phase action. First the target is selected in
-    #     pointing mode, then 'end_merge_to' is called
-    #     :param event:
-    #     """
-    #     self.start_pointing_mode(event, method=self.end_merge_to,
-    #                              data={'start': ctrl.get_single_selected()})
-    #     return False
-    #
-    # def end_merge_to(self, event):
-    #     """
-    #     Merging a node -activity ends.
-    #     :param event: mouse-event that triggered the end.
-    #     :return:
-    #     """
-    #     node_a = ctrl.pointing_data['target']
-    #     node_b = None
-    #     self.forest.merge_nodes(node_a, node_b)
-    #     node_a.release()
-    #     # node_A.state =SELECTED # deselect doesn't have effect unless node
-    #     # is selected
-    #     self.end_pointing_mode(event)
-    #     self.action_finished()
-    #     return True
-    #
-    # ### Other window events
-    # ###################################################
+    # ## Other window events
+    ###################################################
 
     def closeEvent(self, event):
         """ Shut down the program, give some debug info

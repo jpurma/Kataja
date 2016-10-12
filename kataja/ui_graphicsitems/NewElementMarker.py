@@ -96,11 +96,13 @@ class NewElementMarker(UIGraphicsItem, QtWidgets.QGraphicsItem):
         return self.__qt_type_id__
 
     def paint(self, painter, options, QWidget_widget=None):
-        p = QtGui.QPen(ctrl.cm.ui())
+        b = ctrl.cm.ui()
+        p = QtGui.QPen(b)
         p.setWidthF(0.5)
         painter.setPen(p)
         if self.dragged:
-            draw_arrow_shape_from_points(painter, self.end_point.x(), self.end_point.y(), 0, 0, 10)
+            draw_arrow_shape_from_points(painter, self.end_point.x(), self.end_point.y(), 0, 0,
+                                         b, arrow_size=10)
         else:
             painter.drawLine(QtCore.QPoint(0, 0), self.end_point)
         painter.drawRect(self.end_point.x() - 2, self.end_point.y() - 2, 4, 4)

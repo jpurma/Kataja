@@ -62,10 +62,15 @@ class CommentNode(Node):
 
     default_edge = g.COMMENT_EDGE
 
-    touch_areas_when_dragging = {g.DELETE_ARROW: {'condition': 'dragging_my_arrow'}}
+    touch_areas_when_dragging = {g.DELETE_ARROW: {'condition': 'dragging_my_arrow'},
+                                 g.TOUCH_CONNECT_COMMENT: {'condition': 'dragging_comment'},
+                                 }
 
     touch_areas_when_selected = {g.DELETE_ARROW: {'condition': 'has_arrow',
-                                                  'action': 'delete_arrow'}}
+                                                  'action': 'delete_arrow'},
+                                 g.ADD_ARROW: {'action': 'start_arrow_from_node'}}
+
+
 
     def __init__(self, text='comment', forest=None):
         self.image_object = None
@@ -82,8 +87,8 @@ class CommentNode(Node):
         self.preferred_host = None
 
     def after_init(self):
+        Node.after_init(self)
         if self.user_size:
-            print('after init in comment')
             w, h = self.user_size
             self.set_user_size(w, h)
 

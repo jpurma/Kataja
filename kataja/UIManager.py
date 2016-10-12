@@ -845,6 +845,10 @@ class UIManager:
         :param action:
         :return:
         """
+        if not hasattr(element, 'setShortcut'):
+            log.critical('trying to put shortcut for element that doesnt support it: %s %s ' % (
+                element, action))
+            return
         action.installEventFilter(self.shortcut_solver)
         if isinstance(element, QtWidgets.QAbstractButton):
             element.installEventFilter(self.button_shortcut_filter)
@@ -1089,45 +1093,6 @@ class UIManager:
             self.add_ui(anchor)
             anchor.fade_out()
 
-    # ### Stretchlines
-    # ####################################################################
-    # These are all currently not in use and not up-to-date, just left here if I need to make some
-    # action that requires connecting nodes by dragging lines.
-    #
-    # def begin_stretchline(self, start, end):
-    #     """
-    #     :param start:
-    #     :param end:
-    #     """
-    #     sl = self.get_ui('StretchLine')
-    #     if sl:
-    #         line = sl.line()
-    #         line.setPoints(start, end)
-    #         sl.setLine(line)
-    #     else:
-    #         line = QtCore.QLineF(start, end)
-    #         sl = StretchLine(line, host=None)  # give some meaningful host here
-    #         sl.setPen(ctrl.cm.ui())
-    #         self.add_ui(sl)
-    #     sl.show()
-    #
-    # def draw_stretchline(self, end):
-    #     """
-    #     :param end:
-    #     """
-    #     sl = self.get_ui('StretchLine')
-    #     if sl:
-    #         line = sl.line()
-    #         line.setP2(end)
-    #         sl.setLine(line)
-    #
-    # def end_stretchline(self):
-    #     """
-    #     :return:
-    #     """
-    #     sl = self.get_ui('StretchLine')
-    #     if sl:
-    #         self.remove_ui(sl)
 
     # ### Messages
     # ####################################################################
@@ -1265,7 +1230,7 @@ class UIManager:
             cp.update_position()
 
         for i, point in enumerate(edge.control_points):
-            _add_cp(i, '')
+            _add_cp(i, g.CURVE_ADJUSTMENT)
         if not edge.start:
             _add_cp(-1, g.START_POINT)
         if not edge.end:

@@ -1278,6 +1278,14 @@ class Forest(SavedObject):
         ctrl.select(edge)
         return edge
 
+    def create_arrow_from_node_to_point(self, start_node, end_point):
+        edge = self.create_edge(start=None, end=None, edge_type=g.ARROW)
+        edge.connect_start_to(start_node)
+        edge.set_end_point(end_point)
+        edge.show()
+        ctrl.select(edge)
+        return edge
+
     # ############ Deleting items  ######################################################
     # item classes don't have to know how they relate to each others.
     # here when something is removed from scene, it is made sure that it is
@@ -1462,6 +1470,7 @@ class Forest(SavedObject):
         :param edge:
         :param new_end:
         """
+
         assert new_end.uid in self.nodes
         if edge.end:
             edge.end.disconnect_in_syntax(edge)
@@ -1825,15 +1834,19 @@ class Forest(SavedObject):
         return new_edge
 
     def partial_disconnect(self, edge, start=True, end=True):
-        print('partial disconnect called')
+        print('partial disconnect called, start: %s, end: %s' % (start, end))
         if start and edge.start:
             edge.start.poke('edges_down')
             edge.start.edges_down.remove(edge)
+            bx, by = edge.start.bottom_center_magnet()
             edge.start = None
+            edge.set_start_point(bx, by + 10)
         if end and edge.end:
             edge.end.poke('edges_up')
+            bx, by = edge.end.top_center_magnet()
             edge.end.edges_up.remove(edge)
             edge.end = None
+            edge.set_end_point(bx, by - 10)
         edge.update_end_points()
 
     def disconnect_edge(self, edge):

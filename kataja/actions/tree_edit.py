@@ -106,6 +106,25 @@ class NewArrow(KatajaAction):
         ctrl.ui.close_active_embed()
 
 
+class StartArrowFromNode(KatajaAction):
+    k_action_uid = 'start_arrow_from_node'
+    k_command = 'Add arrow from here to...'
+    # k_shortcut = 'a'
+    # k_shortcut_context = 'parent_and_children'
+
+    def method(self):
+        """
+        :return:
+        """
+        button = self.get_ui_container()
+        if not button:
+            return
+        node = button.host
+        end_pos = QtCore.QPointF(node.current_scene_position[0],
+                                 node.sceneBoundingRect().bottom() + 20)
+        ctrl.forest.create_arrow_from_node_to_point(node, end_pos)
+
+
 class DeleteArrow(KatajaAction):
     k_action_uid = 'delete_arrow'
     k_command = 'Delete arrow'

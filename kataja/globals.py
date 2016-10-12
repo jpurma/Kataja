@@ -39,6 +39,7 @@ RIGHT_ADD_SIBLING = 'RightAddSibling'
 TOUCH_CONNECT_FEATURE = 'ConnectFeatureTouchArea'
 TOUCH_CONNECT_GLOSS = 'ConnectGlossTouchArea'
 TOUCH_CONNECT_COMMENT = 'ConnectCommentTouchArea'
+ADD_ARROW = 'StartArrowTouchArea'
 DELETE_ARROW = 'DeleteArrowTouchArea'
 LEFT_ADD_CHILD = 'LeftAddChild'
 RIGHT_ADD_CHILD = 'RightAddChild'
@@ -94,6 +95,7 @@ CUSTOM_FONT3 = 'custom3'
 START_POINT = 'start'
 END_POINT = 'end'
 LABEL_START = 'label_start'
+CURVE_ADJUSTMENT = 'adjust'
 
 # Projection styles:
 NO_PROJECTIONS = 0
