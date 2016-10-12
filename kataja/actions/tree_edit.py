@@ -120,8 +120,8 @@ class StartArrowFromNode(KatajaAction):
         if not button:
             return
         node = button.host
-        end_pos = QtCore.QPointF(node.current_scene_position[0],
-                                 node.sceneBoundingRect().bottom() + 20)
+        ex, ey = node.bottom_center_magnet()
+        end_pos = QtCore.QPointF(ex, ey + 20)
         ctrl.forest.create_arrow_from_node_to_point(node, end_pos)
 
 

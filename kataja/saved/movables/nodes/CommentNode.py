@@ -294,6 +294,13 @@ class CommentNode(Node):
     def can_connect_with(self, other):
         return other not in self.hosts
 
+    def dragging_comment(self):
+        """ Check if the currently dragged item is comment and can connect with me
+        :return:
+        """
+        return self.is_dragging_this_type(g.COMMENT_NODE)
+
+
     # ############## #
     #                #
     #  Save support  #

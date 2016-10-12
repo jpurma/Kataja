@@ -558,17 +558,6 @@ class ConstituentNode(BaseConstituentNode):
 
     ### UI support
 
-    def is_dragging_this_type(self, dtype):
-        """ Check if the currently dragged item is in principle compatible with self.
-        :return:
-        """
-        if ctrl.dragged_focus:
-            return ctrl.dragged_focus.node_type == dtype and \
-                   ctrl.dragged_focus.can_connect_with(self)
-        elif ctrl.dragged_text:
-            return ctrl.dragged_text == dtype
-        return False
-
     def dragging_constituent(self):
         """ Check if the currently dragged item is constituent and can connect with me
         :return:

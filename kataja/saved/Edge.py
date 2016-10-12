@@ -650,147 +650,124 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             self.make_relative_vector()
             self.update_status_tip()
 
-        if self.start:
+        if self.start and self.end:
             sx, sy = self.start.current_scene_position
-            if not self.end:
-                ex = sx + self._relative_vector[0]
-                ey = sy + self._relative_vector[1]
-                self._computed_end_point = ex, ey
-        if self.end:
             ex, ey = self.end.current_scene_position
-            if not self.start:
-                sx = ex - self._relative_vector[0]
-                sy = ey - self._relative_vector[1]
-                self._computed_start_point = sx, sy
-        if self.edge_type == g.ARROW:
-
-            if self.start:
-                if self._true_path and False:
-                    a = self.get_angle_at(0)
-                    i = round(a / 22.5)
-                else:
-                    dx, dy = sub_xy(self.end_point, self.start_point)
-                    i = round(math.degrees(math.atan2(dy, dx)) / 22.5)
-                self._computed_start_point = self.start.magnet(atan_magnet_map[i])
-            if self.end:
-                if self._true_path and False:
-                    a = self.get_angle_at(1.0)
-                    if a >= 180:
-                        a -= 180
-                    elif a < 180:
-                        a += 180
-                    i = round(a / 22.5)
-                else:
-                    dx, dy = sub_xy(self.start_point, self.end_point)
-                    i = round(math.degrees(math.atan2(dy, dx)) / 22.5)
-                self._computed_end_point = self.end.magnet(atan_magnet_map[i])
-        elif self.edge_type == g.DIVIDER:
-            pass
+        elif self.start:
+            sx, sy = self.start.current_scene_position
+            ex = sx + self._relative_vector[0]
+            ey = sy + self._relative_vector[1]
+            self._computed_end_point = ex, ey
+        elif self.end:
+            ex, ey = self.end.current_scene_position
+            sx = ex - self._relative_vector[0]
+            sy = ey - self._relative_vector[1]
+            self._computed_start_point = sx, sy
         else:
-            if self.start:
-                connection_style = self.shape_info.connection_style_at_start()
-                if connection_style == CENTER:
-                    self._computed_start_point = self.start.current_scene_position
-                elif connection_style == BOTTOM_CENTER:
-                    self._computed_start_point = self.start.bottom_center_magnet()
-                elif connection_style == MAGNETS:
-                    e_n, e_count = self.edge_index()
-                    self._computed_start_point = self.start.bottom_magnet(e_n,
-                                                                          e_count)
-                elif connection_style == BORDER:
-                    dx = ex - sx
-                    dy = ey - sy
-                    sbr = self.start.boundingRect()
-                    s_left, s_top, s_right, s_bottom = (x * .8 for x in sbr.getCoords())
-                    if dx == 0:
-                        if dy > 0:
-                            self._computed_start_point = sx, sy + s_bottom
-                        else:
-                            self._computed_start_point = sx, sy + s_top
-                    elif dy == 0:
-                        if dx > 0:
-                            self._computed_start_point = sx + s_right, sy
-                        else:
-                            self._computed_start_point = sx + s_left, sy
+            return
+        if self.start:
+            connection_style = self.shape_info.connection_style_at_start()
+            if connection_style == CENTER:
+                self._computed_start_point = self.start.current_scene_position
+            elif connection_style == BOTTOM_CENTER:
+                self._computed_start_point = self.start.bottom_center_magnet()
+            elif connection_style == MAGNETS:
+                e_n, e_count = self.edge_index()
+                self._computed_start_point = self.start.bottom_magnet(e_n, e_count)
+            elif connection_style == BORDER:
+                dx = ex - sx
+                dy = ey - sy
+                sbr = self.start.boundingRect()
+                s_left, s_top, s_right, s_bottom = (x * .8 for x in sbr.getCoords())
+                if dx == 0:
+                    if dy > 0:
+                        self._computed_start_point = sx, sy + s_bottom
                     else:
-                        ratio = dy / dx
-                        if dx > 0:
-                            if dy > 0:
-                                if s_right * ratio < s_bottom:
-                                    self._computed_start_point = sx + s_right, \
-                                                                 sy + (s_right * ratio)
-                                else:
-                                    self._computed_start_point = sx + (s_bottom / ratio), \
-                                                                 sy + s_bottom
-                            else:
-                                if s_right * ratio > s_top:
-                                    self._computed_start_point = sx + s_right, \
-                                                                 sy + (s_right * ratio)
-                                else:
-                                    self._computed_start_point = sx + (s_top / ratio), \
-                                                                 sy + s_top
-                        else:
-                            if dy > 0:
-                                if s_left * ratio < s_bottom:
-                                    self._computed_start_point = sx + s_left, \
-                                                                 sy + (s_left * ratio)
-                                else:
-                                    self._computed_start_point = sx + (s_bottom / ratio), \
-                                                                 sy + s_bottom
-                            else:
-                                if s_left * ratio > s_top:
-                                    self._computed_start_point = sx + s_left, \
-                                                                 sy + (s_left * ratio)
-                                else:
-                                    self._computed_start_point = sx + (s_top / ratio), sy + s_top
-
-            if self.end:
-                connection_style = self.shape_info.connection_style_at_end()
-                if connection_style == CENTER:
-                    self._computed_end_point = self.end.current_scene_position
-                elif connection_style == BOTTOM_CENTER or connection_style == MAGNETS:
-                    self._computed_end_point = self.end.top_center_magnet()
-                elif connection_style == BORDER:
-                    dx = ex - sx
-                    dy = ey - sy
-                    ebr = self.end.boundingRect()
-                    e_left, e_top, e_right, e_bottom = (x * .8 for x in ebr.getCoords())
-                    if dx == 0:
-                        if dy > 0:
-                            self._computed_end_point = ex, ey + e_top
-                        else:
-                            self._computed_end_point = ex, ey + e_bottom
-                    elif dy == 0:
-                        if dx > 0:
-                            self._computed_end_point = ex + e_left, ey
-                        else:
-                            self._computed_end_point = ex + e_right, ey
+                        self._computed_start_point = sx, sy + s_top
+                elif dy == 0:
+                    if dx > 0:
+                        self._computed_start_point = sx + s_right, sy
                     else:
-                        ratio = dy / dx
-                        if dx > 0:
-                            if dy > 0:
-                                if e_left * ratio > e_top:
-                                    self._computed_end_point = ex + e_left, ey + (e_left * ratio)
-                                else:
-                                    self._computed_end_point = ex + (e_top / ratio), ey + e_top
-
+                        self._computed_start_point = sx + s_left, sy
+                else:
+                    ratio = dy / dx
+                    if dx > 0:
+                        if dy > 0:
+                            if s_right * ratio < s_bottom:
+                                self._computed_start_point = sx + s_right, \
+                                                             sy + (s_right * ratio)
                             else:
-                                if e_left * ratio < e_bottom:
-                                    self._computed_end_point = ex + e_left, ey + (e_left * ratio)
-                                else:
-                                    self._computed_end_point = ex + (e_bottom / ratio), ey + e_bottom
+                                self._computed_start_point = sx + (s_bottom / ratio), \
+                                                             sy + s_bottom
                         else:
-                            if dy > 0:
-                                if e_right * ratio > e_top:
-                                    self._computed_end_point = ex + e_right, ey + (e_right * ratio)
-                                else:
-                                    self._computed_end_point = ex + (e_top / ratio), ey + e_top
-
+                            if s_right * ratio > s_top:
+                                self._computed_start_point = sx + s_right, \
+                                                             sy + (s_right * ratio)
                             else:
-                                if e_right * ratio < e_bottom:
-                                    self._computed_end_point = ex + e_right, ey + (e_right * ratio)
-                                else:
-                                    self._computed_end_point = ex + (e_bottom / ratio), ey + e_bottom
+                                self._computed_start_point = sx + (s_top / ratio), \
+                                                             sy + s_top
+                    else:
+                        if dy > 0:
+                            if s_left * ratio < s_bottom:
+                                self._computed_start_point = sx + s_left, \
+                                                             sy + (s_left * ratio)
+                            else:
+                                self._computed_start_point = sx + (s_bottom / ratio), \
+                                                             sy + s_bottom
+                        else:
+                            if s_left * ratio > s_top:
+                                self._computed_start_point = sx + s_left, \
+                                                             sy + (s_left * ratio)
+                            else:
+                                self._computed_start_point = sx + (s_top / ratio), sy + s_top
+
+        if self.end:
+            connection_style = self.shape_info.connection_style_at_end()
+            if connection_style == CENTER:
+                self._computed_end_point = self.end.current_scene_position
+            elif connection_style == BOTTOM_CENTER or connection_style == MAGNETS:
+                self._computed_end_point = self.end.top_center_magnet()
+            elif connection_style == BORDER:
+                dx = ex - sx
+                dy = ey - sy
+                ebr = self.end.boundingRect()
+                e_left, e_top, e_right, e_bottom = (x * .8 for x in ebr.getCoords())
+                if dx == 0:
+                    if dy > 0:
+                        self._computed_end_point = ex, ey + e_top
+                    else:
+                        self._computed_end_point = ex, ey + e_bottom
+                elif dy == 0:
+                    if dx > 0:
+                        self._computed_end_point = ex + e_left, ey
+                    else:
+                        self._computed_end_point = ex + e_right, ey
+                else:
+                    ratio = dy / dx
+                    if dx > 0:
+                        if dy > 0:
+                            if e_left * ratio > e_top:
+                                self._computed_end_point = ex + e_left, ey + (e_left * ratio)
+                            else:
+                                self._computed_end_point = ex + (e_top / ratio), ey + e_top
+
+                        else:
+                            if e_left * ratio < e_bottom:
+                                self._computed_end_point = ex + e_left, ey + (e_left * ratio)
+                            else:
+                                self._computed_end_point = ex + (e_bottom / ratio), ey + e_bottom
+                    else:
+                        if dy > 0:
+                            if e_right * ratio > e_top:
+                                self._computed_end_point = ex + e_right, ey + (e_right * ratio)
+                            else:
+                                self._computed_end_point = ex + (e_top / ratio), ey + e_top
+
+                        else:
+                            if e_right * ratio < e_bottom:
+                                self._computed_end_point = ex + e_right, ey + (e_right * ratio)
+                            else:
+                                self._computed_end_point = ex + (e_bottom / ratio), ey + e_bottom
 
     def connect_end_points(self, start, end):
         """
