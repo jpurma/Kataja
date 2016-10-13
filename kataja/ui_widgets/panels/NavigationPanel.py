@@ -14,14 +14,17 @@ class NavigationPanel(Panel):
 
     def __init__(self, name, default_position='bottom', parent=None, folded=False):
         """
-        All of the panel constructors follow the same format so that the construction can be automated.
+        All of the panel constructors follow the same format so that the construction can be
+        automated.
         :param name: Title of the panel and the key for accessing it
         :param default_position: 'bottom', 'right'...
         :param parent: self.main
         """
         Panel.__init__(self, name, default_position, parent, folded)
         inner = QtWidgets.QWidget()
+        inner.setMaximumHeight(140)
         inner.setMinimumWidth(160)
+        inner.setMaximumWidth(220)
         self.watchlist = ['forest_changed']
         layout = QtWidgets.QGridLayout()
 
@@ -55,11 +58,13 @@ class NavigationPanel(Panel):
         self.derivation_counter = derivation_counter
 
         prev_der = TwoColorButton(qt_prefs.left_arrow, '', self)
+        prev_der.setMaximumHeight(20)
         layout.addWidget(prev_der, 3, 0, 1, 1)
         self.prev_der = prev_der
         ui.connect_element_to_action(prev_der, 'prev_derivation_step')
 
         next_der = TwoColorButton(qt_prefs.right_arrow, '', self)
+        next_der.setMaximumHeight(20)
         layout.addWidget(next_der, 3, 1, 1, 1)
         self.next_der = next_der
         ui.connect_element_to_action(next_der, 'next_derivation_step')

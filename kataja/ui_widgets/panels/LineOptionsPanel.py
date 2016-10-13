@@ -28,6 +28,8 @@ class LineOptionsPanel(Panel):
         layout.setSizeConstraint(QtWidgets.QLayout.SetMinimumSize)
         self.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum,
                                                  QtWidgets.QSizePolicy.MinimumExpanding))
+        self.setMaximumWidth(220)
+        self.setMaximumHeight(160)
         self.watchlist = ['edge_shape', 'scope_changed', 'selection_changed', 'edge_adjustment']
 
         spac = 8
@@ -178,7 +180,10 @@ class LineOptionsPanel(Panel):
             pixel_ratio = dp.devicePixelRatio()
             p = dp.mapToGlobal(dp.pos())
             if pixel_ratio:
-                return QtCore.QPoint(p.x() / pixel_ratio + dp.width() + 40, p.y() / pixel_ratio)
+                if dp.isFloating():
+                    return QtCore.QPoint(p.x() / pixel_ratio, p.y() / pixel_ratio + 20)
+                else:
+                    return QtCore.QPoint(p.x() / pixel_ratio + dp.width() + 40, p.y() / pixel_ratio)
             else:
                 return Panel.initial_position(self)
         else:

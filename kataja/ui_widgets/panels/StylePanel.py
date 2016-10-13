@@ -26,6 +26,8 @@ class StylePanel(Panel):
         inner = QtWidgets.QWidget(self)
         self.setSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Preferred)
         layout = QtWidgets.QVBoxLayout()
+        self.setMaximumWidth(220)
+        self.setMaximumHeight(140)
         self._nodes_in_selection = []
         self._edges_in_selection = []
         self.cached_node_types = set()
@@ -63,6 +65,7 @@ class StylePanel(Panel):
                                        data=[],
                                        action='style_scope',
                                        label='Style for')
+        self.scope_selector.setMinimumWidth(96)
         vline = QtWidgets.QFrame()
         vline.setFrameShape(QtWidgets.QFrame.VLine)
         hlayout.addWidget(vline)

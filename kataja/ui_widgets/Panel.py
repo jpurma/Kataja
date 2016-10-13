@@ -184,7 +184,7 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
 
         :param area:
         """
-
+        pass
 
     def report_top_level(self, floating):
         """
@@ -210,8 +210,6 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         :param value:
         """
         field.setText(value)
-
-
 
     def minimumSizeHint(self):
         if self.folded:
@@ -265,7 +263,8 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         :param QShowEvent:
         """
         if self.isFloating():
-            self.move(self.initial_position())
+            #self.move(self.initial_position())
+            pass
         if not self._watched:
             for signal in self.watchlist:
                 ctrl.add_watcher(signal, self)

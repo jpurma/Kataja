@@ -95,6 +95,8 @@ class NodesPanel(Panel):
         Panel.__init__(self, name, default_position, parent, folded)
         inner = QtWidgets.QWidget()
         inner.setMinimumWidth(160)
+        inner.setMaximumWidth(220)
+        inner.setMaximumHeight(140)
         self.watchlist = ['forest_changed', 'view_mode_changed', 'edit_mode_changed']
 
         #inner.setMinimumHeight(120)

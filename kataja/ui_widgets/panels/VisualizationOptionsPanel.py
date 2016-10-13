@@ -26,6 +26,8 @@ class VisualizationOptionsPanel(Panel):
         layout.setSizeConstraint(QtWidgets.QLayout.SetMinimumSize)
         self.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum,
                                                  QtWidgets.QSizePolicy.MinimumExpanding))
+        self.setMaximumWidth(220)
+        self.setMaximumHeight(140)
 
         grid = QtWidgets.QGridLayout()
         grid.setContentsMargins(0, 0, 0, 0)
@@ -90,7 +92,7 @@ class VisualizationOptionsPanel(Panel):
 
         :return:
         """
-        dp = self.ui_manager.get_panel('VisualizationOptionsPanel')
+        dp = self.ui_manager.get_panel('VisualizationPanel')
         if dp:
             p = dp.mapToGlobal(dp.pos())
             dpr = dp.devicePixelRatio()

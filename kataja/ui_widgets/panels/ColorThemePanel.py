@@ -31,6 +31,8 @@ class ColorPanel(Panel):
         layout = QtWidgets.QVBoxLayout()
         widget = QtWidgets.QWidget(self)
         widget.setMinimumWidth(160)
+        widget.setMaximumWidth(220)
+        widget.setMaximumHeight(60)
 
         ocm = ctrl.cm.ordered_color_modes
         self.selector_items = [(c['name'], key) for key, c in ocm.items()]

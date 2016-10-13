@@ -214,7 +214,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
     def copy(self, others=None):
         super().copy(others)
 
-
     @property
     def start_point(self) -> tuple:
         """ Helper property: returns latest known (x, y, z) coords of
