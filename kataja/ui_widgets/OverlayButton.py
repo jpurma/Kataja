@@ -154,17 +154,17 @@ class PanelButton(QtWidgets.QPushButton):
 PanelButton {border: 1px transparent none}
 :hover {border: 1px solid %s; border-radius: 3}
 :pressed {border: 2px solid %s; background-color: %s; border-radius: 3}
-:checked {border: 1px solid %s; background-color: %s; border-radius: 3}
-""" % (c.name(), c.lighter().name(), paper.name(), c.name(), paper2.name())
-        self.setStyleSheet(ss)
+:checked {border: 2px solid %s; border-radius: 3}
+""" % (c.name(), c.lighter().name(), paper.name(), c.name()) # paper2.name()
+        self.setStyleSheet(ss) # background-color: %s;
 
     def update_colors(self):
-        self.compose_icon()
         self.update_style_sheet()
+        self.compose_icon()
 
     def event(self, e):
         if e.type() == QtCore.QEvent.PaletteChange:
-            self.compose_icon()
+            self.update_colors()
         return QtWidgets.QPushButton.event(self, e)
 
 

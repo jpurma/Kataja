@@ -831,9 +831,11 @@ class UIManager:
         :param tooltip_suffix:
         """
         if isinstance(action, str):
-            action = self.get_action(action)
-        assert action
-        action.connect_element(element, tooltip_suffix)
+            kataja_action = self.get_action(action)
+            assert kataja_action
+            kataja_action.connect_element(element, tooltip_suffix)
+        elif isinstance(action, KatajaAction):
+            action.connect_element(element, tooltip_suffix)
 
     def manage_shortcut(self, key_seq, element, action):
         """ Some shortcut become ambiguous as they are used for several

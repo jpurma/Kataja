@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtGui
 
 from kataja.singletons import qt_prefs, ctrl
 from kataja.ui_support.TwoColorButton import TwoColorButton

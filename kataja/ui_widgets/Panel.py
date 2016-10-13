@@ -104,8 +104,7 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         """
         UIWidget.__init__(self)
         QtWidgets.QDockWidget.__init__(self, name, parent=parent)
-        # self.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Fixed))
-        self.ui_type == 'Panel'
+        #self.ui_type = 'Panel'
         self.folded = folded
         self.name = name
         self._watched = False

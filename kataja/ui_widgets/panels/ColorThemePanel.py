@@ -1,6 +1,6 @@
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 
-from kataja.singletons import ctrl
+from kataja.singletons import ctrl, qt_prefs
 from kataja.ui_widgets.Panel import Panel
 import kataja.globals as g
 from kataja.ui_support.SelectionBox import SelectionBox
@@ -34,12 +34,21 @@ class ColorPanel(Panel):
 
         ocm = ctrl.cm.ordered_color_modes
         self.selector_items = [(c['name'], key) for key, c in ocm.items()]
+        hlayout = QtWidgets.QHBoxLayout()
 
         self.selector = SelectionBox(self)
         self.selector.add_items(self.selector_items)
         self.ui_manager.connect_element_to_action(self.selector, 'set_color_mode')
+        hlayout.addWidget(self.selector)
+        self.randomize = QtWidgets.QPushButton('⚁⚅')
+        self.randomize.setFont(qt_prefs.fonts[g.MAIN_FONT])
+        self.randomize.setFixedSize(40, 20)
+        self.randomize.setEnabled(False)
+        ctrl.ui.connect_element_to_action(self.randomize,
+                                          'randomize_palette')
+        hlayout.addWidget(self.randomize, 1, QtCore.Qt.AlignRight)
 
-        layout.addWidget(self.selector)
+        layout.addLayout(hlayout)
         widget.setLayout(layout)
 
         self.setWidget(widget)

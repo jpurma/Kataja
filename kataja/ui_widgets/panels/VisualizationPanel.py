@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore, QtGui
 
 import kataja.globals as g
 from kataja.singletons import ctrl, qt_prefs
@@ -23,14 +23,17 @@ class VisualizationPanel(Panel):
         """
         Panel.__init__(self, name, default_position, parent, folded)
         inner = QtWidgets.QWidget()
-        #inner.setMinimumHeight(100)
-        #inner.setMaximumHeight(100)
-        inner.preferred_size = QtCore.QSize(220, 100)
+        #inner.setSizePolicy(QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Minimum,
+        #                                          QtWidgets.QSizePolicy.Fixed))
+        #inner.setFixedHeight(70)
+        #inner.setMinimumHeight(70)
+        #inner.setMaximumHeight(70)
+        inner.preferred_size = QtCore.QSize(200, 70)
         inner.sizeHint = self.sizeHint
 
         layout = QtWidgets.QVBoxLayout()
         hlayout = QtWidgets.QHBoxLayout()
-        hlayout.setContentsMargins(0, 0, 0, 0)
+        #hlayout.setContentsMargins(0, 0, 0, 0)
 
         self.selector = SelectionBox(self)
         self.selector.add_items([('%s (%s)' % (key, item.shortcut), key) for key, item in
@@ -49,7 +52,7 @@ class VisualizationPanel(Panel):
         layout.addLayout(hlayout)
 
         hlayout = QtWidgets.QHBoxLayout()
-        hlayout.setContentsMargins(0, 0, 0, 0)
+        #hlayout.setContentsMargins(0, 0, 0, 0)
         w = 36
         b1 = PanelButton(pixmap=qt_prefs.shape_icon_plain, parent=self, size=24)
         b1.setFixedWidth(w)
@@ -82,13 +85,12 @@ class VisualizationPanel(Panel):
         ctrl.ui.connect_element_to_action(b5, 'set_card_node_shape')
         hlayout.addWidget(b5)
         layout.addLayout(hlayout)
-        m = self.contentsMargins()
-        print(m.left(), m.top(), m.right(), m.bottom())
+        layout.setContentsMargins(0, 0, 0, 0)
         inner.setLayout(layout)
         self.watchlist = ['visualization']
         self.preferred_size = inner.preferred_size
         self.setWidget(inner)
-        self.widget().setAutoFillBackground(True)
+        inner.setAutoFillBackground(True)
         self.finish_init()
 
     def watch_alerted(self, obj, signal, field_name, value):

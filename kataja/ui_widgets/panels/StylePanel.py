@@ -54,7 +54,7 @@ class StylePanel(Panel):
         #                                        text='customize',
         #                                        action='customize_master_style',
         #                                        checkable=True)
-
+        self.overall_style_box.hide()
         self.style_widgets = QtWidgets.QWidget(inner)
         sw_layout = QtWidgets.QVBoxLayout()
         sw_layout.setContentsMargins(0, 0, 0, 0)
@@ -101,6 +101,7 @@ class StylePanel(Panel):
         self.style_widgets.setLayout(sw_layout)
         layout.addWidget(self.style_widgets)
         inner.setLayout(layout)
+        inner.setBackgroundRole(QtGui.QPalette.AlternateBase)
         #self.style_widgets.hide()
         self.setWidget(inner)
 

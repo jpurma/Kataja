@@ -19,6 +19,19 @@ class SetColorMode(KatajaAction):
     def getter(self):
         return prefs.color_mode
 
+class RandomizePalette(KatajaAction):
+    k_action_uid = 'randomize_palette'
+    k_command = 'Randomize palette'
+    k_tooltip = 'Create new random colors'
+
+    def method(self):
+        ctrl.forest.update_colors(refresh=True)
+
+    def enabler(self):
+        d = ctrl.cm.get_color_mode_data(ctrl.cm.current_color_mode)
+        return d and not d.get('fixed', True)
+
+
 
 class CustomizeMasterStyle(KatajaAction):
     k_action_uid = 'customize_master_style'

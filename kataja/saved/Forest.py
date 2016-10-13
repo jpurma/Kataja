@@ -830,11 +830,11 @@ class Forest(SavedObject):
             for edge in self.edges.values():
                 edge.update_shape()
 
-    def update_colors(self):
+    def update_colors(self, refresh=False):
         """ Update colors to those specified for this Forest."""
         cm = ctrl.cm
         old_gradient_base = cm.paper()
-        self.main.color_manager.update_colors()
+        self.main.color_manager.update_colors(refresh=refresh)
         self.main.app.setPalette(cm.get_qt_palette())
         if old_gradient_base != cm.paper() and cm.gradient:
             self.main.graph_scene.fade_background_gradient(old_gradient_base, cm.paper())
