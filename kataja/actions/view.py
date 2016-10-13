@@ -273,6 +273,9 @@ class TogglePanMode(KatajaAction):
         """ """
         ctrl.graph_view.set_selection_mode(False)
 
+    def getter(self):
+        return not ctrl.graph_view.selection_mode
+
 
 class ToggleSelectMode(KatajaAction):
     k_action_uid = 'toggle_select_mode'
@@ -283,6 +286,9 @@ class ToggleSelectMode(KatajaAction):
     def method(self):
         """ """
         ctrl.graph_view.set_selection_mode(True)
+
+    def getter(self):
+        return ctrl.graph_view.selection_mode
 
 
 class ChangeVisualisation(KatajaAction):
@@ -313,6 +319,9 @@ class ToggleHighlighterProjection(KatajaAction):
         ctrl.fs.projection_highlighter = not ctrl.fs.projection_highlighter
         ctrl.forest.update_projection_display()
 
+    def getter(self):
+        return ctrl.fs.projection_highlighter
+
 
 class ToggleStrongLinesProjection(KatajaAction):
     k_action_uid = 'toggle_strong_lines_projection'
@@ -325,6 +334,9 @@ class ToggleStrongLinesProjection(KatajaAction):
         ctrl.fs.projection_strong_lines = not ctrl.fs.projection_strong_lines
         ctrl.forest.update_projection_display()
 
+    def getter(self):
+        return ctrl.fs.projection_strong_lines
+
 
 class ToggleColorizedProjection(KatajaAction):
     k_action_uid = 'toggle_colorized_projection'
@@ -336,6 +348,9 @@ class ToggleColorizedProjection(KatajaAction):
         """ """
         ctrl.fs.projection_colorized = not ctrl.fs.projection_colorized
         ctrl.forest.update_projection_display()
+
+    def getter(self):
+        return ctrl.fs.projection_colorized
 
 
 class ToggleShowDisplayLabel(KatajaAction):

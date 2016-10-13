@@ -8,14 +8,6 @@ from kataja.ui_support.SelectionBox import SelectionBox
 __author__ = 'purma'
 
 
-def change_color_mode(mode):
-    """
-
-    :param mode:
-    """
-    modes = ctrl.cm.ordered_color_modes
-    mode_key = list(modes.keys())[mode]
-    ctrl.main.change_color_mode(mode_key)
 
 
 class ColorPanel(Panel):
@@ -39,20 +31,15 @@ class ColorPanel(Panel):
         layout = QtWidgets.QVBoxLayout()
         widget = QtWidgets.QWidget(self)
         widget.setMinimumWidth(160)
-        #widget.setMinimumHeight(40)
-        #widget.setMaximumHeight(50)
-        #widget.preferred_size = QtCore.QSize(220, 40)
 
         ocm = ctrl.cm.ordered_color_modes
-        self.selector_items = [c['name'] for c in ocm.values()]
-        selector = SelectionBox(self)
-        selector.add_items(self.selector_items)
-        selector.activated.connect(change_color_mode)
-        self.mode_select = selector
-        self.mode_select.select_by_text(ctrl.cm.current_color_mode)
+        self.selector_items = [(c['name'], key) for key, c in ocm.items()]
 
-        layout.addWidget(selector)
-        # layout.setSizeConstraint(QtWidgets.QLayout.SetFixedSize)
+        self.selector = SelectionBox(self)
+        self.selector.add_items(self.selector_items)
+        self.ui_manager.connect_element_to_action(self.selector, 'set_color_mode')
+
+        layout.addWidget(self.selector)
         widget.setLayout(layout)
 
         self.setWidget(widget)
@@ -63,9 +50,9 @@ class ColorPanel(Panel):
 
         """
         ocm = ctrl.cm.ordered_color_modes
-        current_color_modes = [c['name'] for c in ocm.values()]
+        current_color_modes = [(c['name'], key) for key, c in ocm.items()]
         if self.selector_items != current_color_modes:
-            self.mode_select.clear()
-            self.mode_select.add_items(current_color_modes)
-        self.mode_select.select_by_text(ctrl.cm.current_color_mode)
+            self.selector.clear()
+            self.selector.add_items(current_color_modes)
+        self.selector.select_by_text(ctrl.cm.current_color_mode)
 

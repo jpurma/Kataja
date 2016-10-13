@@ -384,7 +384,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         if event.modifiers() != Qt.ShiftModifier:
             ctrl.deselect_objects()
 
-        if self.graph_view.selection_mode():
+        if self.graph_view.selection_mode:
             ctrl.area_selection = True
             ctrl.multiselection_start()
             ctrl.deselect_objects()

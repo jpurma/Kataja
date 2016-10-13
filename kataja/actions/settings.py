@@ -5,6 +5,21 @@ from kataja.saved.Edge import Edge
 from kataja.saved.movables.Node import Node
 
 
+
+class SetColorMode(KatajaAction):
+    k_action_uid = 'set_color_mode'
+    k_command = 'Change palette'
+    k_tooltip = 'Change palette used for UI and drawings'
+
+    def method(self):
+        sender = self.sender()
+        mode = sender.currentData()
+        ctrl.main.change_color_mode(mode)
+
+    def getter(self):
+        return prefs.color_mode
+
+
 class CustomizeMasterStyle(KatajaAction):
     k_action_uid = 'customize_master_style'
     k_command = 'Customize style'

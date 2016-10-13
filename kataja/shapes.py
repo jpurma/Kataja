@@ -91,8 +91,6 @@ def draw_arrow_shape(self, painter):
 
 
 def draw_arrow_shape_from_points(painter, start_x, start_y, end_x, end_y, color, arrow_size=6):
-    #path1 = QtGui.QPainterPath(Pf(start_x, start_y))
-    #path1.lineTo(end_x, end_y)
     dx = end_x - start_x
     dy = end_y - start_y
     length = sqrt(dx * dx + dy * dy)
@@ -118,8 +116,6 @@ def draw_arrow_shape_from_points(painter, start_x, start_y, end_x, end_y, color,
     path2.lineTo(l2cx, l2cy)
     path2.lineTo(destArrowP2x, destArrowP2y)
     painter.fillPath(path2, color)
-    #painter.drawline(path1)
-    #painter.drawPolygon(QtGui.QPolygonF([Pf(end_x, end_y), destArrowP1, l2c, destArrowP2]))
 
 
 def arrow_shape_bounding_rect(self):
@@ -148,13 +144,8 @@ def arrow_shape_bounding_rect(self):
     return QtCore.QRectF(Pf(l, t), Pf(r, b))
 
 
-def to_pf(triple):
-    """
-
-    :param triple:
-    :return:
-    """
-    return Pf(triple[0], triple[1])
+def to_pf(xy):
+    return Pf(xy[0], xy[1])
 
 
 def shaped_cubic_path(start_point=None, end_point=None, curve_adjustment=None,

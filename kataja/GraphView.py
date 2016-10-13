@@ -69,7 +69,7 @@ class GraphView(QtWidgets.QGraphicsView):
 
         self._suppressed_drag_mode = self.dragMode()
 
-        self._selection_mode = True
+        self.selection_mode = True
         self._scale_factor = 1.0
         self._fit_scale = 1.0
         self._target_rect = QtCore.QRectF(-300, -300, 300, 300)
@@ -229,10 +229,10 @@ class GraphView(QtWidgets.QGraphicsView):
                 self.centerOn(view_center)
             if prefs.auto_pan_select:
                 if self.transform().m11() > self._fit_scale:
-                    if self._selection_mode:
+                    if self.selection_mode:
                         self.set_selection_mode(False)  # Pan mode
                 else:
-                    if not self._selection_mode:
+                    if not self.selection_mode:
                         self.set_selection_mode(True)  # Select mode
 
         self._last_rect = self.mapToScene(self.rect()).boundingRect()
@@ -240,10 +240,10 @@ class GraphView(QtWidgets.QGraphicsView):
 
     def set_selection_mode(self, selection_mode):
         if selection_mode:
-            self._selection_mode = True
+            self.selection_mode = True
             self.setDragMode(QtWidgets.QGraphicsView.RubberBandDrag)
         else:
-            self._selection_mode = False
+            self.selection_mode = False
             self.setDragMode(QtWidgets.QGraphicsView.ScrollHandDrag)
         self._suppressed_drag_mode = self.dragMode()
         if ctrl.ui:
@@ -259,7 +259,3 @@ class GraphView(QtWidgets.QGraphicsView):
             self.setDragMode(QtWidgets.QGraphicsView.NoDrag)
         else:
             self.setDragMode(self._suppressed_drag_mode)
-
-    def selection_mode(self):
-        """ helper to access that we really are doing rubberband dragging """
-        return self._selection_mode

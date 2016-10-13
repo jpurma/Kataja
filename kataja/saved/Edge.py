@@ -40,11 +40,19 @@ from kataja.SavedField import SavedField
 from kataja.uniqueness_generator import next_available_type_id
 
 
-CENTER = 0
-BOTTOM_CENTER = 1
-MAGNETS = 2
-BORDER = 3
+CONNECT_TO_CENTER = 0
+CONNECT_TO_BOTTOM_CENTER = 1
+CONNECT_TO_MAGNETS = 2
+CONNECT_TO_BORDER = 3
 
+TOP_LEFT_CORNER = 0
+TOP_SIDE = 1
+TOP_RIGHT_CORNER = 2
+LEFT_SIDE = 3
+RIGHT_SIDE = 4
+BOTTOM_LEFT_CORNER = 5
+BOTTOM_SIDE = 6
+BOTTOM_RIGHT_CORNER = 7
 
 angle_magnet_map = {0: 6, 1: 6, 2: 4, 3: 3, 4: 2, 5: 1, 6: 0, 7: 5, 8: 5, 9: 5, 10: 7, 11: 8, 12: 9,
                     13: 10, 14: 11, 15: 6, 16: 6}
@@ -71,6 +79,7 @@ class SavedEdgeSetting(SavedField):
         else:
             return value
 
+
 class Edge(QtWidgets.QGraphicsObject, SavedObject):
     """ Any connection between nodes: can be represented as curves, branches
     or arrows """
@@ -95,7 +104,10 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         self.end = end
         self.fixed_start_point = (0, 0)
         self.fixed_end_point = (0, 0)
-        self.curve_adjustment = None
+        self.curve_adjustment = None  # user's adjustments. contains (dist, angle) tuples.
+        self.control_points = []  # control_points are tuples of coordinates, computed by
+        # shape algorithms
+        self.adjusted_control_points = []  # combines those two above
         self.label_data = {}
         self.local_shape_info = {}
         self.color_id = None
@@ -111,8 +123,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         self._computed_start_point = None
         self._computed_end_point = None
 
-        self.control_points = []
-        self.adjusted_control_points = []
         self._local_drag_handle_position = None
 
         # ## Adjustable values, defaults to ForestSettings if None for this
@@ -146,15 +156,13 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable)
         self.setAcceptHoverEvents(True)
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.effect = None
-        self.move_effect = None
         self._fade_anim = None
         self.is_fading_in = False
         self.is_fading_out = False
         if appear:
             self.fade_in()
 
-    def type(self):
+    def type(self) -> int:
         """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
         need to differentiate between them. These are set when the program starts.
         :return:
@@ -172,9 +180,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         """
         self.connect_end_points(self.start, self.end)
         self.update_end_points()
-        #self.effect = utils.create_shadow_effect(self.color)
-        #self.move_effect = utils.create_blur_effect()
-        #self.setGraphicsEffect(self.effect)
         self.update_visibility()
         self.announce_creation()
 
@@ -263,7 +268,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
     # Edge type - based settings that can be overridden
 
     @property
-    def color(self):
+    def color(self) -> QtGui.QColor:
         """ Color for drawing the edge -- both the fill and pen color.
         Returns QColor, but what is stored is Kataja
         internal color_id.
@@ -290,7 +295,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
 
     # ## Label data and its shortcut properties
 
-    def get_label_text(self):
+    def get_label_text(self) -> str:
         """ Label text is actually stored in model.label_data, but this is a
         shortcut for it.
         :return:
@@ -323,28 +328,13 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
 
     # Helper methods for derived properties
 
-    def is_filled(self):
-        """
-
-
-        :return:
-        """
+    def is_filled(self) -> bool:
         return self._cached_shape_info['fill']
 
-    def has_outline(self):
-        """
-
-
-        :return:
-        """
+    def has_outline(self) -> int:
         return self._cached_shape_info.get('thickness', 0)
 
-    def is_visible(self):
-        """
-
-
-        :return:
-        """
+    def is_visible(self) -> bool:
         return self.visible_by_rule and not self._nodes_overlap
 
     def set_projection_display(self, thick, color):
@@ -423,7 +413,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             self.fixed_end_point = p.x(), p.y()
         self.make_relative_vector()
 
-    def is_broken(self):
+    def is_broken(self) -> bool:
         """ If this edge should be a connection between two nodes and either
         node is missing, the edge
         is broken and should be displayed differently.
@@ -433,7 +423,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             return False
         return not (self.start and self.end)
 
-    def edge_index(self):
+    def edge_index(self) -> tuple:
         """ Return tuple where first value is the order of this edge among similar type of edges
         for this parent (parent = edge.start) and the second is the total amount of siblings (
         edges of this type)
@@ -450,7 +440,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                 count += 1
         return found, count
 
-    def direction(self):
+    def direction(self) -> int:
         """ Coarse direction of this edge, either g.LEFT or g.RIGHT. Useful for knowing if
          to prepend or append the sibling node compared to this.
         :return:
@@ -464,7 +454,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
     # ### Color ############################################################
 
     @property
-    def contextual_color(self):
+    def contextual_color(self) -> QtGui.QColor:
         """ Drawing color that is sensitive to edge's state
         :return: QColor
         """
@@ -480,7 +470,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             return self.color
 
     @property
-    def uses_labels(self):
+    def uses_labels(self) -> bool:
         """ Some edge types, e.g. arrows inherently suggest adding labels to
         them. For others, having ui_support
          textbox for adding label would be unwanted noise.
@@ -513,13 +503,13 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         if not self.end:
             self.set_end_point(add_xy(start, dist))
 
-    def compute_pos_from_adjust(self, index):
+    def compute_pos_from_adjust(self, point_index) -> tuple:
         """ Works with 1 or 2 control points.
-        :param index:
+        :param point_index:
         :return:
         """
-        cx, cy = self.control_points[index]
-        rdist, rrad = self.curve_adjustment[index]
+        cx, cy = self.control_points[point_index]
+        rdist, rrad = self.curve_adjustment[point_index]
         if index == 0:
             sx, sy = self.start_point
         else:
@@ -592,13 +582,13 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             if self._nodes_overlap != old:
                 self.update_visibility()
 
-    def path_bounding_rect(self):
+    def path_bounding_rect(self) -> QtCore.QRectF:
         if self._path:
             return self._path.boundingRect()
         else:
             return QtCore.QRectF()
 
-    def shape(self):
+    def shape(self) -> QtGui.QPainterPath:
         """ Override of the QGraphicsItem method. Should returns the real
         shape of item to
         allow exact hit detection.
@@ -667,18 +657,22 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             return
         if self.start:
             connection_style = self.shape_info.connection_style_at_start()
-            if connection_style == CENTER:
+            if connection_style == CONNECT_TO_CENTER:
                 self._computed_start_point = self.start.current_scene_position
-            elif connection_style == BOTTOM_CENTER:
+            elif connection_style == CONNECT_TO_BOTTOM_CENTER:
                 self._computed_start_point = self.start.bottom_center_magnet()
-            elif connection_style == MAGNETS:
+            elif connection_style == CONNECT_TO_MAGNETS:
                 e_n, e_count = self.edge_index()
                 self._computed_start_point = self.start.bottom_magnet(e_n, e_count)
-            elif connection_style == BORDER:
+            elif connection_style == CONNECT_TO_BORDER:
+                # Find the point in bounding rect that is on the line from center of start node to
+                # center of end node / end_point. It is simple, but the point can be in any of four
+                # sides of the rect.
                 dx = ex - sx
                 dy = ey - sy
                 sbr = self.start.boundingRect()
                 s_left, s_top, s_right, s_bottom = (x * .8 for x in sbr.getCoords())
+                # orthogonal cases, handle separately to avoid division by zero
                 if dx == 0:
                     if dy > 0:
                         self._computed_start_point = sx, sy + s_bottom
@@ -723,15 +717,19 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
 
         if self.end:
             connection_style = self.shape_info.connection_style_at_end()
-            if connection_style == CENTER:
+            if connection_style == CONNECT_TO_CENTER:
                 self._computed_end_point = self.end.current_scene_position
-            elif connection_style == BOTTOM_CENTER or connection_style == MAGNETS:
+            elif connection_style == CONNECT_TO_BOTTOM_CENTER or connection_style == CONNECT_TO_MAGNETS:
                 self._computed_end_point = self.end.top_center_magnet()
-            elif connection_style == BORDER:
+            elif connection_style == CONNECT_TO_BORDER:
+                # Find the point in bounding rect that is on the line from center of end node to
+                # center of start node / start_point. It is simple, but the point can be in any of
+                # four sides of the rect.
                 dx = ex - sx
                 dy = ey - sy
                 ebr = self.end.boundingRect()
                 e_left, e_top, e_right, e_bottom = (x * .8 for x in ebr.getCoords())
+                # orthogonal cases, handle separately to avoid division by zero
                 if dx == 0:
                     if dy > 0:
                         self._computed_end_point = ex, ey + e_top
@@ -1145,9 +1143,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         :return: None
         """
         if prefs.move_effect:
-            #self.setGraphicsEffect(self.move_effect)
             self._use_simple_path = True
-            #self.move_effect.setEnabled(True)
 
     def start_node_stopped_moving(self):
         """ Called if the end node has started moving.
@@ -1172,7 +1168,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         self._make_fat_path = True
         if prefs.move_effect:
             self._use_simple_path = False
-            self.move_effect.setEnabled(False)
 
     def fade_in(self, s=300):
         """ Simple fade effect. The object exists already when fade starts.
