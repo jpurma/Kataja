@@ -50,12 +50,12 @@ class StylePanel(Panel):
                                           data=styles_data,
                                           action='change_master_style')
         self.overall_style_box.setCurrentIndex(current_style_i)
-        self.custom_overall_style = text_button(ui, hlayout,
-                                                text='customize',
-                                                action='customize_master_style',
-                                                checkable=True)
+        #self.custom_overall_style = text_button(ui, hlayout,
+        #                                        text='customize',
+        #                                        action='customize_master_style',
+        #                                        checkable=True)
 
-        self.style_widgets = QtWidgets.QWidget(self)
+        self.style_widgets = QtWidgets.QWidget(inner)
         sw_layout = QtWidgets.QVBoxLayout()
         sw_layout.setContentsMargins(0, 0, 0, 0)
         hlayout = box_row(sw_layout)
@@ -101,7 +101,7 @@ class StylePanel(Panel):
         self.style_widgets.setLayout(sw_layout)
         layout.addWidget(self.style_widgets)
         inner.setLayout(layout)
-        self.style_widgets.hide()
+        #self.style_widgets.hide()
         self.setWidget(inner)
 
         self.finish_init()
@@ -111,13 +111,8 @@ class StylePanel(Panel):
             self.style_widgets.show()
         else:
             self.style_widgets.hide()
-
-
-        #self.resize(self.sizeHint())
         self.setFixedSize(self.sizeHint())
         self.updateGeometry()
-
-        #self.update()
 
     def update_selection(self):
         """ Called after ctrl.selection has changed. Prepare panel to use

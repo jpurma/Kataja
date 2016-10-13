@@ -140,7 +140,7 @@ class Preferences(object):
                                            'position of mouse pointer',
                                    'order': 43}
 
-        self.visualization = 'Left first trees'
+        self.visualization = 'Linearized static trees'
         self._visualization_ui = {'tab': 'Drawing', 'special': 'visualizations',
                                   'help': 'Default visualization for new trees.',
                                   'order': 10,
@@ -152,14 +152,14 @@ class Preferences(object):
                                       'this defines how much thicker.'}
 
         self.label_shape = 0
-        self._label_shape_ui = {'tab': 'Drawing', 'choices':
-                                  [(0, 'Normal'),
-                                   (1, 'Box'),
-                                   (2, 'Bracketed'), (3, 'Card')],
-                                  'label': 'Node shapes',
-                                  'help': 'Overall shape when drawing a constituent node. '
-                                          'Visualizations may override this.',
-                                  'order': 30}
+        self._label_shape_ui = {'tab': 'Drawing',
+                                'choices': [(0, 'Normal'),
+                                            (1, 'Box'),
+                                            (2, 'Bracketed'), (3, 'Card')],
+                                'label': 'Node shapes',
+                                'help': 'Overall shape when drawing a constituent node. '
+                                        'Visualizations may override this.',
+                                'order': 30}
 
         self.use_magnets = 1
         self._use_magnets_ui = {'tab': 'Drawing', 'choices':
@@ -446,6 +446,11 @@ class QtPreferences:
         self.center_align_icon = None
         self.right_align_icon = None
         self.remove_styles_icon = None
+        self.shape_icon_card = None
+        self.shape_icon_plain = None
+        self.shape_icon_box = None
+        self.shape_icon_scope = None
+        self.shape_icon_brackets = None
 
     def late_init(self, running_environment, preferences, fontdb):
         """ Here are initializations that require Qt app to exist, to findout dpi etc. These are
@@ -528,6 +533,11 @@ class QtPreferences:
         self.center_align_icon = icon('align_center48.png')
         self.right_align_icon = icon('align_right48.png')
         self.remove_styles_icon = icon('no_format48.png')
+        self.shape_icon_card = icon('shape_button_card.png')
+        self.shape_icon_plain = icon('shape_button_plain.png')
+        self.shape_icon_box = icon('shape_button_box.png')
+        self.shape_icon_scope = icon('shape_button_scope.png')
+        self.shape_icon_brackets = icon('shape_button_brackets.png')
 
     def update(self, preferences, running_environment):
         """

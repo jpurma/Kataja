@@ -149,9 +149,9 @@ class EdgeShape:
         :param index:
         """
         if self.host.curve_adjustment is None:
-            self.host.curve_adjustment = [(0, 0)] * (index + 1)
-        elif index >= len(self.host.curve_adjustment):
-            self.host.curve_adjustment += [(0, 0)] * (index - len(self.host.curve_adjustment) + 1)
+            self.host.curve_adjustment = [(0, 0)]
+        while index >= len(self.host.curve_adjustment):
+            self.host.curve_adjustment.append((0, 0))
 
     def adjust_control_point(self, index, rdist, rrad):
         """ Called from UI, when dragging

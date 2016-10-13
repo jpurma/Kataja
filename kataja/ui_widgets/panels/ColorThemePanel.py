@@ -54,5 +54,5 @@ class ColorPanel(Panel):
         if self.selector_items != current_color_modes:
             self.selector.clear()
             self.selector.add_items(current_color_modes)
-        self.selector.select_by_text(ctrl.cm.current_color_mode)
+            self.selector.select_by_text(ctrl.cm.current_color_mode)
 
