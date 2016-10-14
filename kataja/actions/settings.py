@@ -19,6 +19,7 @@ class SetColorMode(KatajaAction):
     def getter(self):
         return prefs.color_mode
 
+
 class RandomizePalette(KatajaAction):
     k_action_uid = 'randomize_palette'
     k_command = 'Randomize palette'
@@ -31,6 +32,24 @@ class RandomizePalette(KatajaAction):
         d = ctrl.cm.get_color_mode_data(ctrl.cm.current_color_mode)
         return d and not d.get('fixed', True)
 
+
+class RememberPalette(KatajaAction):
+    k_action_uid = 'remember_palette'
+    k_command = 'Store palette as favorite'
+    k_tooltip = 'Store palette as favorite'
+
+    def method(self):
+        key = ctrl.cm.create_theme_from_current_color()
+        d = ctrl.cm.get_color_mode_data(key)
+        if d:
+            return "Added color theme '%s' (%s) as favorite." % (d['name'], key)
+
+    def enabler(self):
+        d = ctrl.cm.get_color_mode_data(ctrl.cm.current_color_mode)
+        if d and not d.get('fixed', True):
+            color_key = str(ctrl.cm.hsv)
+            return color_key not in ctrl.cm.ordered_color_modes
+        return False
 
 
 class CustomizeMasterStyle(KatajaAction):

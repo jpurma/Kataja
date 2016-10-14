@@ -347,11 +347,11 @@ class PaletteManager:
         self._ui_palette = None
         self._palette = None
         self._accent_palettes = {}
+        self.current_hex = ''
         self.transparent = Qt.transparent
         self.gradient = QtGui.QRadialGradient(0, 0, 300)
         self.gradient.setSpread(QtGui.QGradient.PadSpread)
         self.ordered_color_modes = OrderedDict()
-        self.update_color_modes()
         self.activate_color_mode('solarized_lt', cold_start=True)
         self.color_keys = ['content1', 'content2', 'content3', 'background1',
                            'background2', 'accent1', 'accent2', 'accent3',
@@ -375,12 +375,20 @@ class PaletteManager:
     def update_color_modes(self):
         self.ordered_color_modes = color_modes
         self.ordered_color_modes.update(OrderedDict(sorted(prefs.user_palettes.items())))
+        if ctrl.ui:
+            panel = ctrl.ui.get_panel('ColorThemePanel')
+            if panel:
+                panel.update_colors()
 
-    def create_theme_from_color(self, hsv):
-        color_key = str(hsv)
-        if color_key not in self.ordered_color_modes:
-            prefs.add_color_mode(color_key, hsv, self)
-        return color_key
+    def create_theme_from_color(self, hex_key, hsv):
+        prefs.user_palettes[hex_key] = {'name': self.get_color_name(hsv), 'fixed': True,
+                                        'hsv': hsv}
+        self.update_color_modes()
+        return hex_key
+
+    def create_theme_from_current_color(self):
+        key = self.create_theme_from_color(self.current_hex, self.hsv)
+        return key
 
     def activate_color_mode(self, mode, refresh=False, cold_start=False):
         """
@@ -398,10 +406,12 @@ class PaletteManager:
         if mode == 'solarized_lt':
             base = sol[3]
             self.hsv = [base.hueF(), base.saturationF(), base.valueF()]
+            self.current_hex = base.name()
             self.build_solarized(light=True)
         elif mode == 'solarized_dk':
             base = sol[4]
             self.hsv = [base.hueF(), base.saturationF(), base.valueF()]
+            self.current_hex = base.name()
             self.build_solarized(light=False)
         elif mode == 'random':
             compute = True
@@ -518,6 +528,7 @@ class PaletteManager:
         # # This is the base color ##
         key = c()
         key.setHsvF(*hsv)
+        self.current_hex = key.name()
         r, g, b, a = key.getRgbF()
         h, s, l = rgb_to_husl(r, g, b)
         if l > 50:

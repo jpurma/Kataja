@@ -125,7 +125,7 @@ class Controller:
         """
         :return: UIManager
         """
-        return self.main.ui_manager
+        return getattr(self.main, 'ui_manager', None)
 
     @property
     def cm(self):

@@ -1,4 +1,8 @@
 
+
+[.{CP} [.{YP_k} [.{XP_j} [.{whP_i} kenen nimmaria ] [ ilman t_i ] ]  [ jäätyään t_j ] ] [.{CP} [.{C} {} ] [.{TP} {Merja palasi suruissaan kotiin} t_k ] ] ]
+kenen = Q:force
+
 [.{CP} [.{DP(0)} [.{D'} [.{D} which ] [.{NP} [.{N'} [.N wine ] ] ] ] ] [.{C'} [.C \epsilon [.{VP} [.{DP} [.{D'} [.D the ] [.{NP} [.{N'} [.N queen ] ] ] ] ] [.{V'} [.V prefers ] [.{DP} t(0) ] ] ] ] ] ]
 
 [.{\circ} [.{\textbullet} {\epsilon::=V +wh C} [.{\textbullet} [.{\textbullet} {prefers::=D =D v} [.{\textbullet} {which::=N D -wh} {wine::N} ] ] [.{\textbullet} {the::=N D} {queen::N} ] ] ] ]
@@ -14,9 +18,6 @@
       \qroof{Dustin}.DP\\$[$ACC$]$\\$<\Theta>$  ]  ]  ]  ]
   [.AP  [.A' today ] ] ] ] ] ]
 
-
-[.{CP} [.{YP_k} [.{XP_j} [.{whP_i} kenen nimmaria ] [ ilman t_i ] ]  [ jäätyään t_j ] ] [.{CP} [.{C} {} ] [.{TP} {Merja palasi suruissaan kotiin} t_k ] ] ]
-kenen = Q:force
 
 [.TP [.AdvP [.Adv\\usually ] ] [.TP [.DP [.D\\{\O} ] [.NP\\John ] ] [.T\1 [.T\\\emph{PRESENT} ] [.VP [.VP [.V\\goes ] [.PP [.P\\to ] [.DP [.D\\the ] [.NP\\park ] ] ] ] [.PP [.P\\on ] [.DP [.D\\{\O} ] [.NP\\Tuesdays ] ] ] ] ] ] ]
 

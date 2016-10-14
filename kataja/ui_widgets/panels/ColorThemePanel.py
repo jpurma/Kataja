@@ -18,6 +18,7 @@ class ColorPanel(Panel):
         ⚃	U+2683	&#9859;
         ⚄	U+2684	&#9860;
         ⚅	U+2685	&#9861;
+        ★  U+2605  &#9733;
     """
 
     def __init__(self, name, default_position='float', parent=None, folded=False):
@@ -49,6 +50,13 @@ class ColorPanel(Panel):
         ctrl.ui.connect_element_to_action(self.randomize,
                                           'randomize_palette')
         hlayout.addWidget(self.randomize, 1, QtCore.Qt.AlignRight)
+        self.store_favorite = QtWidgets.QPushButton('★')
+        self.store_favorite.setFont(qt_prefs.fonts[g.MAIN_FONT])
+        self.store_favorite.setFixedSize(26, 20)
+        self.store_favorite.setEnabled(False)
+        ctrl.ui.connect_element_to_action(self.store_favorite,
+                                          'remember_palette')
+        hlayout.addWidget(self.store_favorite, 1, QtCore.Qt.AlignRight)
 
         layout.addLayout(hlayout)
         widget.setLayout(layout)

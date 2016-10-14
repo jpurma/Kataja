@@ -109,6 +109,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         qt_prefs.late_init(running_environment, prefs, self.fontdb)
         self.find_plugins(prefs.plugins_path or running_environment.plugins_path)
         self.install_plugins()
+        self.color_manager.update_color_modes()  # include color modes from preferences
         self.setWindowIcon(qt_prefs.kataja_icon)
         self.app.setFont(qt_prefs.get_font(g.UI_FONT))
         self.graph_scene = GraphScene(main=self, graph_view=None)
@@ -269,6 +270,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         :return:
         """
         prefs.restore_default_preferences(qt_prefs, running_environment, classes)
+        self.color_manager.update_color_modes()
         if self.ui_manager.preferences_dialog:
             self.ui_manager.preferences_dialog.close()
         self.ui_manager.preferences_dialog = PreferencesDialog(self)

@@ -288,18 +288,6 @@ class Preferences(object):
         for key, value in update_dict.items():
             setattr(self, key, value)
 
-    def add_color_mode(self, color_key, hsv, color_settings):
-        """
-
-        :param color_key:
-        :param hsv:
-        :param color_settings:
-        """
-        # Undo support for this?
-        self.user_palettes[color_key] = {'name': color_settings.get_color_name(hsv), 'fixed': True,
-                                         'hsv': hsv}
-        color_settings.update_color_modes()
-
     def copy_preferences_from(self, source):
         for key, default_value in vars(self).items():
             if key.startswith('_') or key in Preferences.not_saved:
