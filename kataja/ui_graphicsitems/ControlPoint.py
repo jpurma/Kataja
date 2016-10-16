@@ -156,7 +156,8 @@ class ControlPoint(UIGraphicsItem, QtWidgets.QGraphicsItem):
 
     def drag(self, event):
         """ Dragging a control point at least requires to update its coordinates and announcing the
-        host object that things are a'changing. How this will be announced depends on control point's _role_.
+        host object that things are a'changing. How this will be announced depends on control
+        point's _role_.
         :param event: some kind of mouse event
         :return: None
         """
@@ -169,6 +170,13 @@ class ControlPoint(UIGraphicsItem, QtWidgets.QGraphicsItem):
         if self.role == g.CURVE_ADJUSTMENT:
             rdist, rrad = self._compute_adjust_from_pos(scenepos)
             self.host.shape_info.adjust_control_point(self._index, rdist, rrad)
+            if self._index == 0:
+                ctrl.ui.get_action('control_point1_dist').update_ui_value()
+                ctrl.ui.get_action('control_point1_angle').update_ui_value()
+            elif self._index == 1:
+                ctrl.ui.get_action('control_point2_dist').update_ui_value()
+                ctrl.ui.get_action('control_point2_angle').update_ui_value()
+
         elif self.role == g.START_POINT:
             self.host.set_start_point(event.scenePos())
             self.host.make_path()

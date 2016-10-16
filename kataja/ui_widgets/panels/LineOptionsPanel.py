@@ -41,16 +41,16 @@ class LineOptionsPanel(Panel):
         hlayout = box_row(self.cp1_box)
         label(self, hlayout, '1st control point')
         ui = self.ui_manager
-        self.cp1_x_spinbox = spinbox(ui, self, hlayout, 'X', -400, 400, 'control_point1_x')
-        self.cp1_y_spinbox = spinbox(ui, self, hlayout, 'Y', -400, 400, 'control_point1_y')
+        self.cp1_x_spinbox = spinbox(ui, self, hlayout, 'd', -400, 400, 'control_point1_dist')
+        self.cp1_y_spinbox = spinbox(ui, self, hlayout, '°', -400, 400, 'control_point1_angle')
         layout.addWidget(self.cp1_box)
 
         # Control point 2 adjustment
         self.cp2_box = QtWidgets.QWidget(inner) # box allows hiding clean hide/show for this group
         hlayout = box_row(self.cp2_box)
         label(self, hlayout, '2nd control point')
-        self.cp2_x_spinbox = spinbox(ui, self, hlayout, 'X', -400, 400, 'control_point2_x')
-        self.cp2_y_spinbox = spinbox(ui, self, hlayout, 'Y', -400, 400, 'control_point2_y')
+        self.cp2_x_spinbox = spinbox(ui, self, hlayout, 'd', -400, 400, 'control_point2_dist')
+        self.cp2_y_spinbox = spinbox(ui, self, hlayout, '°', -400, 400, 'control_point2_angle')
         layout.addWidget(self.cp2_box)
 
         # Curvature

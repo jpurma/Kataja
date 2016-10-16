@@ -997,6 +997,31 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             p = QtGui.QPen(ctrl.cm.ui_tr())
             painter.setPen(p)
             painter.drawPath(self._true_path)
+            if self.control_points:
+                if self.curve_adjustment:
+                    ca = len(self.curve_adjustment)
+                else:
+                    ca = 0
+
+                p.setWidthF(0.5)
+                painter.setPen(p)
+                if len(self.control_points) > 1:
+                    painter.drawLine(self.end_point[0], self.end_point[1], self.control_points[
+                        1][0], self.control_points[1][1])
+                    if ca > 1 and self.curve_adjustment[1][0]:
+                        p.setStyle(QtCore.Qt.DashLine)
+                        painter.drawLine(self.control_points[1][0], self.control_points[1][1],
+                                         self.adjusted_control_points[1][0],
+                                         self.adjusted_control_points[1][1])
+                        p.setStyle(QtCore.Qt.SolidLine)
+                painter.drawLine(self.start_point[0], self.start_point[1],
+                                 self.control_points[0][0],
+                                 self.control_points[0][1])
+                if ca > 0 and self.curve_adjustment[0][0]:
+                    p.setStyle(QtCore.Qt.DashLine)
+                    painter.drawLine(self.control_points[0][0], self.control_points[0][1],
+                                     self.adjusted_control_points[0][0],
+                                     self.adjusted_control_points[0][1])
 
     def get_point_at(self, d: float) -> Pf:
         """ Get coordinates at the percentage of the length of the path.

@@ -228,13 +228,22 @@ class KatajaAction(QtWidgets.QAction):
     def update_action(self):
         """ If action is tied to some meter (e.g. number field that is used to show value and
         change it), update the value in the meter and see if it should be enabled.
-        :param key:
         :return:
         """
         on = self.enabler()
         self.set_enabled(on)
         val = self.getter()
         if on and val is not None:
+            self.set_displayed_value(val)
+
+    def update_ui_value(self):
+        """ This can be called for manually updating the field values for element, e.g. when
+        having to update numbers while dragging. update_action is automatic, but called only
+        between actions
+        :return:
+        """
+        val = self.getter()
+        if val is not None:
             self.set_displayed_value(val)
 
     def trigger_but_suppress_undo(self, *args, **kwargs):

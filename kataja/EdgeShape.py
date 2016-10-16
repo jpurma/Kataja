@@ -153,7 +153,7 @@ class EdgeShape:
         while index >= len(self.host.curve_adjustment):
             self.host.curve_adjustment.append((0, 0))
 
-    def adjust_control_point(self, index, rdist, rrad):
+    def adjust_control_point(self, index, dist=None, rad=None):
         """ Called from UI, when dragging
         :param index:
         :param points:
@@ -161,59 +161,12 @@ class EdgeShape:
         """
         self.host.poke('curve_adjustment')
         self.prepare_adjust_array(index)
-        self.host.curve_adjustment[index] = rdist, rrad
-        self.host.call_watchers('edge_adjustment', 'curve_adjustment', self.host.curve_adjustment)
-        self.host.make_path()
-        self.host.update()
-
-    def adjust_control_point_x0(self, value):
-        """ Called when modifying control point settings directly
-        :param value:
-        :return:
-        """
-        self.host.poke('curve_adjustment')
-        self.prepare_adjust_array(0)
-        x, y = self.host.curve_adjustment[0]
-        self.host.curve_adjustment[0] = value, y
-        self.host.call_watchers('edge_adjustment', 'curve_adjustment', self.host.curve_adjustment)
-        self.host.make_path()
-        self.host.update()
-
-    def adjust_control_point_y0(self, value):
-        """ Called when modifying control point settings directly
-        :param value:
-        :return:
-        """
-        self.host.poke('curve_adjustment')
-        self.prepare_adjust_array(0)
-        x, y = self.host.curve_adjustment[0]
-        self.host.curve_adjustment[0] = x, value
-        self.host.call_watchers('edge_adjustment', 'curve_adjustment', self.host.curve_adjustment)
-        self.host.make_path()
-        self.host.update()
-
-    def adjust_control_point_x1(self, value):
-        """ Called when modifying control point settings directly
-        :param value:
-        :return:
-        """
-        self.host.poke('curve_adjustment')
-        self.prepare_adjust_array(1)
-        x, y = self.host.curve_adjustment[1]
-        self.host.curve_adjustment[1] = value, y
-        self.host.call_watchers('edge_adjustment', 'curve_adjustment', self.host.curve_adjustment)
-        self.host.make_path()
-        self.host.update()
-
-    def adjust_control_point_y1(self, value):
-        """ Called when modifying control point settings directly
-        :param value:
-        :return:
-        """
-        self.host.poke('curve_adjustment')
-        self.prepare_adjust_array(1)
-        x, y = self.host.curve_adjustment[1]
-        self.host.curve_adjustment[1] = x, value
+        odist, orad = self.host.curve_adjustment[index]
+        if dist is None:
+            dist = odist
+        if rad is None:
+            rad = orad
+        self.host.curve_adjustment[index] = dist, rad
         self.host.call_watchers('edge_adjustment', 'curve_adjustment', self.host.curve_adjustment)
         self.host.make_path()
         self.host.update()

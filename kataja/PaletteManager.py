@@ -391,9 +391,7 @@ class PaletteManager:
         return key
 
     def activate_color_mode(self, mode, refresh=False, cold_start=False):
-        """
-        Prepare root color (self.hsv), depending on what kind of color settings are active
-
+        """ Prepare root color (self.hsv), depending on what kind of color settings are active
         :param mode:
         :param refresh:
         :param cold_start: bool -- use this if some color palette is required, but ctrl-infrastructure
