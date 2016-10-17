@@ -169,7 +169,6 @@ class LinearizedStaticTree(BalancedTree):
             sx = 0
             size = 0
             nleft, ntop, nw, nh = _get_grid_size(node)
-            print(nleft, ntop, nw, nh)
             children = node.get_children(similar=True, visible=True)
             if len(children) == 1:
                 cleft, ctop, cw, ch = _get_grid_size(children[0])

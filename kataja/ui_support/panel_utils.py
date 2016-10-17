@@ -55,6 +55,7 @@ def spinbox(ui_manager, panel, layout, label='', range_min=0, range_max=0, actio
     spinbox.setRange(range_min, range_max)
     spinbox.setSuffix(suffix)
     spinbox.setWrapping(wrapping)
+    spinbox.setFixedWidth(50)
     ui_manager.connect_element_to_action(spinbox, action)
     slabel.setBuddy(spinbox)
     spinbox.k_buddy = slabel

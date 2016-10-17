@@ -138,7 +138,6 @@ class UIManager:
         self.active_edge_type = g.CONSTITUENT_EDGE
         self.selection_group = None
         # this is a reference dict for many ui elements adjusting edges
-        self.edge_styles_in_selection = {}
         self.active_edge_style = {}
         self.active_node_style = {}
         self.preferences_dialog = None

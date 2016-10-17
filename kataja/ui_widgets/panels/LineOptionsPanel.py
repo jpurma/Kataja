@@ -173,9 +173,9 @@ class LineOptionsPanel(Panel):
         if not ctrl.forest.settings:
             return
         if ctrl.ui.scope_is_selection:
-            sd = ctrl.ui.edge_styles_in_selection
-            if sd:
-                if sd['edge_count'] == 1:
+            es = ctrl.ui.active_edge_style
+            if es:
+                if es.get('edge_count', 0) == 1:
                     self.set_title('Edge settings for selected edge')
                 else:
                     self.set_title('Edge settings for selected edges')

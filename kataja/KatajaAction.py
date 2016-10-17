@@ -284,8 +284,9 @@ class KatajaAction(QtWidgets.QAction):
         shortcut_context = self.shortcutContext()
         if shortcut and shortcut_context:
             ctrl.ui.manage_shortcut(shortcut, element, self)
-            # shortcuts (or actions in total were disabled before this connection to avoi)
-            self.setEnabled(True)
+            # shortcuts (or actions in total were disabled before this connection to avoid
+            # accidental firings)
+            #self.setEnabled(True)
         if isinstance(element, QtWidgets.QWidget):
             element.setFocusPolicy(QtCore.Qt.TabFocus)
 

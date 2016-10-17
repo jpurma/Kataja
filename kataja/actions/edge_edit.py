@@ -263,12 +263,12 @@ class ControlPoint1Dist(KatajaAction):
                 edge.shape_info.adjust_control_point(0, dist=value * 0.01)
 
     def enabler(self):
-        return bool(ctrl.ui.active_edge_style.get('control_points', 0))
+        return ctrl.ui.scope_is_selection and ctrl.ui.active_edge_style.get('control_points', 0)
 
     def getter(self):
         ca = ctrl.ui.active_edge_style.get('curve_adjustment', [])
         if ca:
-            return ca[0][0] * 100
+            return round(ca[0][0] * 100)
         else:
             return 0
 
@@ -289,12 +289,12 @@ class ControlPoint2Dist(KatajaAction):
                 edge.shape_info.adjust_control_point(1, dist=value * 0.01)
 
     def enabler(self):
-        return bool(ctrl.ui.active_edge_style.get('control_points', 0) > 1)
+        return ctrl.ui.scope_is_selection and ctrl.ui.active_edge_style.get('control_points', 0) > 1
 
     def getter(self):
         ca = ctrl.ui.active_edge_style.get('curve_adjustment', [])
         if len(ca) > 1:
-            return ca[1][0] * 100
+            return round(ca[1][0] * 100)
         else:
             return 0
 
@@ -315,7 +315,7 @@ class ControlPoint1Angle(KatajaAction):
                 edge.shape_info.adjust_control_point(0, rad=math.radians(value))
 
     def enabler(self):
-        return bool(ctrl.ui.active_edge_style.get('control_points', 0))
+        return ctrl.ui.scope_is_selection and ctrl.ui.active_edge_style.get('control_points', 0)
 
     def getter(self):
         ca = ctrl.ui.active_edge_style.get('curve_adjustment', [])
@@ -341,7 +341,7 @@ class ControlPoint2Angle(KatajaAction):
                 edge.shape_info.adjust_control_point(1, rad=math.radians(value))
 
     def enabler(self):
-        return bool(ctrl.ui.active_edge_style.get('control_points', 0) > 1)
+        return ctrl.ui.scope_is_selection and ctrl.ui.active_edge_style.get('control_points', 0) > 1
 
     def getter(self):
         ca = ctrl.ui.active_edge_style.get('curve_adjustment', [])
@@ -527,7 +527,7 @@ class ChangeEdgeRelativeCurvatureX(KatajaAction):
                ctrl.ui.active_edge_style.get('control_points', 0)
 
     def getter(self):
-        return ctrl.ui.active_edge_style.get('rel_dx', 0) * 100
+        return round(ctrl.ui.active_edge_style.get('rel_dx', 0) * 100)
 
 
 class ChangeEdgeRelativeCurvatureY(KatajaAction):
@@ -555,7 +555,7 @@ class ChangeEdgeRelativeCurvatureY(KatajaAction):
                ctrl.ui.active_edge_style.get('control_points', 0)
 
     def getter(self):
-        return ctrl.ui.active_edge_style.get('rel_dy', 0) * 100
+        return round(ctrl.ui.active_edge_style.get('rel_dy', 0) * 100)
 
 
 class ChangeEdgeFixedCurvatureX(KatajaAction):
