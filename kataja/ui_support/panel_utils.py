@@ -33,7 +33,8 @@ def label(panel, layout, text='', x=-1, y=-1):
     return slabel
 
 
-def spinbox(ui_manager, panel, layout, label='', range_min=0, range_max=0, action='', suffix=''):
+def spinbox(ui_manager, panel, layout, label='', range_min=0, range_max=0, action='', suffix='',
+            wrapping=False):
     """
 
     :param ui_manager:
@@ -48,14 +49,48 @@ def spinbox(ui_manager, panel, layout, label='', range_min=0, range_max=0, actio
     slabel = QtWidgets.QLabel(label, panel)
     slabel.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
     spinbox = QtWidgets.QSpinBox()
+    spinbox.setAccelerated(True)
+    spinbox.setReadOnly(False)
+    spinbox.setButtonSymbols(QtWidgets.QAbstractSpinBox.PlusMinus)
     spinbox.setRange(range_min, range_max)
     spinbox.setSuffix(suffix)
+    spinbox.setWrapping(wrapping)
     ui_manager.connect_element_to_action(spinbox, action)
     slabel.setBuddy(spinbox)
     spinbox.k_buddy = slabel
     layout.addWidget(slabel)
     layout.addWidget(spinbox)
     return spinbox
+
+
+def knob(ui_manager, panel, layout, label='', range_min=-180, range_max=180, action='', suffix='',
+         wrapping=True):
+    """
+
+    :param ui_manager:
+    :param panel:
+    :param layout:
+    :param label:
+    :param range_min:
+    :param range_max:
+    :param action:
+    :param suffix:
+    :param wrapping:
+    :return:
+    """
+    slabel = QtWidgets.QLabel(label, panel)
+    slabel.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+    dial = QtWidgets.QDial()
+    dial.setFixedSize(28, 28)
+    dial.setWrapping(wrapping)
+    dial.setRange(range_min, range_max)
+    ui_manager.connect_element_to_action(dial, action)
+    slabel.setBuddy(dial)
+    dial.k_buddy = slabel
+    layout.addWidget(slabel)
+    layout.addWidget(dial)
+    return spinbox
+
 
 
 def decimal_spinbox(ui_manager, panel, layout, label='', range_min=0, range_max=0, step=0,

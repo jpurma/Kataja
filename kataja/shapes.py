@@ -21,8 +21,10 @@ def curve_multiplier(edge_n, edge_count) -> float:
     right edge or something between. """
     if edge_count == 1:
         return 0
-    p = 2.0 / (edge_count - 1)
-    return (edge_n * p) - 1
+    else:
+        return 1
+    #p = 2.0 / (edge_count - 1)
+    #return (edge_n * p) - 1
 
 
 def adjusted_control_point_list(sx, sy, ex, ey, control_points, curve_adjustment) -> list:
@@ -153,7 +155,7 @@ def to_pf(xy):
 
 
 def shaped_cubic_path(start_point=None, end_point=None, curve_adjustment=None,
-                      edge_n=0, edge_count=1, relative=True, rel_dx=0.2, rel_dy=0.2,
+                      edge_n=0, edge_count=1, relative=True, rel_dx=0.2, rel_dy=0.4,
                       fixed_dx=20, fixed_dy=15, leaf_x=1, leaf_y=2, thick=False,
                       inner_only=False, **kwargs):
     """ Two point leaf-shaped curve
@@ -226,7 +228,7 @@ def shaped_cubic_icon(painter, rect, color=None, rel_dx=0.4, rel_dy=0.8,
 
 
 def cubic_path(start_point=None, end_point=None, curve_adjustment=None,
-               edge_n=0, edge_count=1, relative=True, rel_dx=0.2, rel_dy=0.2,
+               edge_n=0, edge_count=1, relative=True, rel_dx=0.2, rel_dy=0.4,
                fixed_dx=20, fixed_dy=15, **kwargs):
     """ Two point narrow curve
     :param start_point:
@@ -730,11 +732,11 @@ def no_path_icon(painter, rect, color=None):
 
 od = [('shaped_cubic',
        dict(method=shaped_cubic_path, fill=True, icon=shaped_cubic_icon,
-            control_points=2, relative=True, rel_dx=0.2, rel_dy=0.2,
-            fixed_dx=20, fixed_dy=15, leaf_x=0.5, leaf_y=2)),
+            control_points=2, relative=True, rel_dx=0.2, rel_dy=0.4,
+            fixed_dx=20, fixed_dy=15, leaf_x=0.8, leaf_y=2)),
       ('cubic',
        dict(method=cubic_path, fill=False, icon=cubic_icon, control_points=2,
-            relative=True, rel_dx=0.2, rel_dy=0.2, fixed_dx=20, fixed_dy=15,
+            relative=True, rel_dx=0.2, rel_dy=0.4, fixed_dx=20, fixed_dy=15,
             thickness=1)),
       ('shaped_quadratic',
        dict(method=shaped_quadratic_path, fill=True,

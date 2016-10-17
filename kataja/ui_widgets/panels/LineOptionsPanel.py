@@ -3,7 +3,8 @@ from kataja.singletons import ctrl, prefs
 from kataja.utils import time_me
 from kataja.saved.Edge import Edge
 from kataja.ui_widgets.Panel import Panel
-from kataja.ui_support.panel_utils import box_row, spinbox, label, decimal_spinbox, mini_button
+from kataja.ui_support.panel_utils import box_row, spinbox, label, decimal_spinbox, mini_button, \
+    knob
 import kataja.globals as g
 from kataja.edge_styles import names as edge_names
 
@@ -35,30 +36,38 @@ class LineOptionsPanel(Panel):
         spac = 8
         layout.addSpacing(spac)
         hlayout = box_row(layout)
-        label(self, hlayout, 'Control points')
+        label(self, hlayout, 'Manual adjustments to control points')
         # Control point 1 adjustment
         self.cp1_box = QtWidgets.QWidget(inner) # box allows hiding clean hide/show for this group
         hlayout = box_row(self.cp1_box)
         label(self, hlayout, '1st')
         ui = self.ui_manager
-        self.cp1_x_spinbox = spinbox(ui, self, hlayout,
-                                     label='dist', range_min=-400, range_max=400,
-                                     action='control_point1_dist', suffix='%')
-        self.cp1_y_spinbox = spinbox(ui, self, hlayout,
-                                     label='angle', range_min=-400, range_max=400,
-                                     action='control_point1_angle', suffix='°')
+        self.cp1_dist_spinbox = spinbox(ui, self, hlayout,
+                                        label='dist', range_min=-999, range_max=999,
+                                        action='control_point1_dist', suffix='%')
+        self.cp1_knob = knob(ui, self, hlayout,
+                             label='angle', range_min=-180, range_max=180,
+                             action='control_point1_angle', suffix='°')
+
+        self.cp1_spinbox = spinbox(ui, self, hlayout,
+                                   range_min=-180, range_max=180,
+                                   action='control_point1_angle', suffix='°', wrapping=True)
         layout.addWidget(self.cp1_box)
 
         # Control point 2 adjustment
         self.cp2_box = QtWidgets.QWidget(inner) # box allows hiding clean hide/show for this group
         hlayout = box_row(self.cp2_box)
         label(self, hlayout, '2nd')
-        self.cp2_x_spinbox = spinbox(ui, self, hlayout,
-                                     label='dist', range_min=-400, range_max=400,
-                                     action='control_point2_dist', suffix='%')
-        self.cp2_y_spinbox = spinbox(ui, self, hlayout,
-                                     label='angle', range_min=-400, range_max=400,
-                                     action='control_point2_angle', suffix='°')
+        self.cp2_dist_spinbox = spinbox(ui, self, hlayout,
+                                        label='dist', range_min=-999, range_max=999,
+                                        action='control_point2_dist', suffix='%')
+        self.cp2_knob = knob(ui, self, hlayout,
+                             label='angle', range_min=-180, range_max=180,
+                             action='control_point2_angle', suffix='°')
+        self.cp2_spinbox = spinbox(ui, self, hlayout,
+                                   range_min=-180, range_max=180,
+                                   action='control_point2_angle', suffix='°', wrapping=True)
+
         layout.addWidget(self.cp2_box)
 
         # Curvature

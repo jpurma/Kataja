@@ -307,6 +307,9 @@ class KatajaAction(QtWidgets.QAction):
         elif isinstance(element, QtWidgets.QAbstractSpinBox):
             element.valueChanged.connect(self.trigger_but_suppress_undo)
             element.editingFinished.connect(self.action_triggered)
+        elif isinstance(element, QtWidgets.QAbstractSlider):
+            element.sliderMoved.connect(self.trigger_but_suppress_undo)
+            element.sliderReleased.connect(self.action_triggered)
         elif isinstance(element, TouchArea):
             element.clicked.connect(self.action_triggered)
 

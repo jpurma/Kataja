@@ -260,7 +260,7 @@ class ControlPoint1Dist(KatajaAction):
             return
         for edge in ctrl.selected:
             if isinstance(edge, Edge):
-                edge.shape_info.adjust_control_point(0, dist=value)
+                edge.shape_info.adjust_control_point(0, dist=value * 0.01)
 
     def enabler(self):
         return bool(ctrl.ui.active_edge_style.get('control_points', 0))
@@ -268,7 +268,7 @@ class ControlPoint1Dist(KatajaAction):
     def getter(self):
         ca = ctrl.ui.active_edge_style.get('curve_adjustment', [])
         if ca:
-            return ca[0][0]
+            return ca[0][0] * 100
         else:
             return 0
 
@@ -286,7 +286,7 @@ class ControlPoint2Dist(KatajaAction):
             return
         for edge in ctrl.selected:
             if isinstance(edge, Edge):
-                edge.shape_info.adjust_control_point(1, dist=value)
+                edge.shape_info.adjust_control_point(1, dist=value * 0.01)
 
     def enabler(self):
         return bool(ctrl.ui.active_edge_style.get('control_points', 0) > 1)
@@ -294,7 +294,7 @@ class ControlPoint2Dist(KatajaAction):
     def getter(self):
         ca = ctrl.ui.active_edge_style.get('curve_adjustment', [])
         if len(ca) > 1:
-            return ca[1][0]
+            return ca[1][0] * 100
         else:
             return 0
 
