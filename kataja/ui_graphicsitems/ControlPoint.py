@@ -176,7 +176,6 @@ class ControlPoint(UIGraphicsItem, QtWidgets.QGraphicsItem):
             elif self._index == 1:
                 ctrl.ui.get_action('control_point2_dist').update_ui_value()
                 ctrl.ui.get_action('control_point2_angle').update_ui_value()
-
         elif self.role == g.START_POINT:
             self.host.set_start_point(event.scenePos())
             self.host.make_path()

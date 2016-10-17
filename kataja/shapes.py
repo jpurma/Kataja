@@ -16,19 +16,23 @@ outline_stroker = QtGui.QPainterPathStroker()
 outline_stroker.setWidth(4)
 
 
-def curve_multiplier(edge_n, edge_count):
+def curve_multiplier(edge_n, edge_count) -> float:
     """ Returns curve multiplier between [-1.0, 1.0] depending if left edge,
     right edge or something between. """
     if edge_count == 1:
         return 0
     p = 2.0 / (edge_count - 1)
-    return edge_n * p - 1
+    return (edge_n * p) - 1
 
 
-def adjusted_control_point_list(sx, sy, ex, ey, control_points, curve_adjustment):
+def adjusted_control_point_list(sx, sy, ex, ey, control_points, curve_adjustment) -> list:
     """ List where control points and their adjustments are added up
-    :param curve_adjustment:
-    :param control_points:
+    :param sx: start_point x
+    :param sy: start_point y
+    :param ex: end_point x
+    :param ey: end_point y
+    :param control_points: list of x,y -tuples for points between start and end
+    :param curve_adjustment: list of dist, angle -tuples, at least as long as control_points
     :return: list
     """
     l = []

@@ -52,6 +52,7 @@ def spinbox(ui_manager, panel, layout, label='', range_min=0, range_max=0, actio
     spinbox.setSuffix(suffix)
     ui_manager.connect_element_to_action(spinbox, action)
     slabel.setBuddy(spinbox)
+    spinbox.k_buddy = slabel
     layout.addWidget(slabel)
     layout.addWidget(spinbox)
     return spinbox

@@ -30,10 +30,8 @@ from PyQt5.QtCore import QPointF as Pf, Qt
 from kataja.EdgeShape import EdgeShape
 from kataja.singletons import ctrl, qt_prefs, prefs
 import kataja.globals as g
-from kataja.globals import LEFT, RIGHT
 from kataja.shapes import SHAPE_PRESETS, outline_stroker
 from kataja.EdgeLabel import EdgeLabel
-import kataja.utils as utils
 from kataja.utils import to_tuple, add_xy, sub_xy
 from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
@@ -509,7 +507,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         """
         cx, cy = self.control_points[point_index]
         rdist, rrad = self.curve_adjustment[point_index]
-        if index == 0:
+        if point_index == 0:
             sx, sy = self.start_point
         else:
             sx, sy = self.end_point
@@ -539,7 +537,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         c['end_point'] = ex, ey
         c['curve_adjustment'] = self.curve_adjustment
         c['thick'] = self._projection_thick
-        c['order'], c['sister_edges_n'] = self.edge_index()
+        c['edge_n'], c['edge_count'] = self.edge_index()
         c['start'] = self.start
         c['end'] = self.end
         c['inner_only'] = self._use_simple_path

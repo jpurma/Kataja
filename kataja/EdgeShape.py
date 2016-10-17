@@ -70,8 +70,8 @@ class EdgeShape:
         self.set_shape_info('fixed_dy', value)
         self.host.update_shape()
 
-    def change_edge_curvature_reference(self, value):
-        self.set_shape_info('relative', value == 'relative')
+    def set_edge_curvature_relative(self, value):
+        self.set_shape_info('relative', value)
         self.host.update_shape()
 
     def reset_edge_curvature(self):
@@ -156,20 +156,21 @@ class EdgeShape:
     def adjust_control_point(self, index, dist=None, rad=None):
         """ Called from UI, when dragging
         :param index:
-        :param points:
-        :param cp:
+        :param dist:
+        :param rad:
         """
-        self.host.poke('curve_adjustment')
+        h = self.host
+        h.poke('curve_adjustment')
         self.prepare_adjust_array(index)
-        odist, orad = self.host.curve_adjustment[index]
+        odist, orad = h.curve_adjustment[index]
         if dist is None:
             dist = odist
         if rad is None:
             rad = orad
-        self.host.curve_adjustment[index] = dist, rad
-        self.host.call_watchers('edge_adjustment', 'curve_adjustment', self.host.curve_adjustment)
-        self.host.make_path()
-        self.host.update()
+        h.curve_adjustment[index] = dist, rad
+        h.call_watchers('edge_adjustment', 'curve_adjustment', h.curve_adjustment)
+        h.make_path()
+        h.update()
 
     def reset_control_points(self):
         """

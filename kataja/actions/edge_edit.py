@@ -452,6 +452,56 @@ class EdgeThickness(KatajaAction):
         return ctrl.ui.active_edge_style.get('thickness', 0)
 
 
+class EdgeCurvatureRelative(KatajaAction):
+    k_action_uid = 'edge_curvature_relative'
+    k_command = 'Change line curvature to be relative to edge dimensions'
+
+    def method(self):
+        """ Change curvature computation type. Curvature can be 'relative' or 'fixed'
+        """
+        value = self.state_arg
+        if ctrl.ui.scope_is_selection:
+            for edge in ctrl.selected:
+                if isinstance(edge, Edge):
+                    edge.shape_info.set_edge_curvature_relative(value)
+        else:
+            etype = ctrl.ui.active_edge_type
+            ctrl.fs.set_shape_info(etype, 'relative', value)
+            ctrl.forest.redraw_edges(edge_type=etype)
+
+    def enabler(self):
+        return ctrl.ui.active_edge_style.get('relative', None) is not None and \
+            ctrl.ui.active_edge_style.get('control_points', 0)
+
+    def getter(self):
+        return ctrl.ui.active_edge_style.get('relative', None)
+
+
+class EdgeCurvatureFixed(KatajaAction):
+    k_action_uid = 'edge_curvature_fixed'
+    k_command = 'Change line curvature to be a pair of fixed values'
+
+    def method(self):
+        """ Change curvature computation type. Curvature can be 'relative' or 'fixed'
+        """
+        value = self.state_arg
+        if ctrl.ui.scope_is_selection:
+            for edge in ctrl.selected:
+                if isinstance(edge, Edge):
+                    edge.shape_info.set_edge_curvature_relative(not value)
+        else:
+            etype = ctrl.ui.active_edge_type
+            ctrl.fs.set_shape_info(etype, 'relative', not value)
+            ctrl.forest.redraw_edges(edge_type=etype)
+
+    def enabler(self):
+        return ctrl.ui.active_edge_style.get('relative', None) is not None and \
+            ctrl.ui.active_edge_style.get('control_points', 0)
+
+    def getter(self):
+        return not ctrl.ui.active_edge_style.get('relative', None)
+
+
 class ChangeEdgeRelativeCurvatureX(KatajaAction):
     k_action_uid = 'change_edge_relative_curvature_x'
     k_command = 'Change horizontal curvature for edge'
@@ -477,7 +527,7 @@ class ChangeEdgeRelativeCurvatureX(KatajaAction):
                ctrl.ui.active_edge_style.get('control_points', 0)
 
     def getter(self):
-        return ctrl.ui.active_edge_style.get('rel_dx', 0)
+        return ctrl.ui.active_edge_style.get('rel_dx', 0) * 100
 
 
 class ChangeEdgeRelativeCurvatureY(KatajaAction):
@@ -505,7 +555,7 @@ class ChangeEdgeRelativeCurvatureY(KatajaAction):
                ctrl.ui.active_edge_style.get('control_points', 0)
 
     def getter(self):
-        return ctrl.ui.active_edge_style.get('rel_dy', 0)
+        return ctrl.ui.active_edge_style.get('rel_dy', 0) * 100
 
 
 class ChangeEdgeFixedCurvatureX(KatajaAction):
@@ -525,11 +575,11 @@ class ChangeEdgeFixedCurvatureX(KatajaAction):
                     edge.shape_info.change_edge_fixed_curvature_x(value)
         else:
             etype = ctrl.ui.active_edge_type
-            ctrl.fs.set_shape_info(etype, 'fixed_dx', value * .01)
+            ctrl.fs.set_shape_info(etype, 'fixed_dx', value)
             ctrl.forest.redraw_edges(edge_type=etype)
 
     def enabler(self):
-        return ctrl.ui.active_edge_style.get('relative', None) and \
+        return ctrl.ui.active_edge_style.get('relative', None) is False and \
                ctrl.ui.active_edge_style.get('control_points', 0)
 
     def getter(self):
@@ -554,11 +604,11 @@ class ChangeEdgeFixedCurvatureY(KatajaAction):
                     edge.shape_info.change_edge_fixed_curvature_y(value)
         else:
             etype = ctrl.ui.active_edge_type
-            ctrl.fs.set_shape_info(etype, 'fixed_dy', value * .01)
+            ctrl.fs.set_shape_info(etype, 'fixed_dy', value)
             ctrl.forest.redraw_edges(edge_type=etype)
 
     def enabler(self):
-        return ctrl.ui.active_edge_style.get('relative', None) and \
+        return ctrl.ui.active_edge_style.get('relative', None) is False and \
                ctrl.ui.active_edge_style.get('control_points', 0)
 
     def getter(self):
@@ -672,65 +722,3 @@ class EdgeShapeLine(KatajaAction):
         return not ctrl.ui.active_edge_style.get('fill', None)
 
 
-class EdgeCurvatureRelative(KatajaAction):
-    k_action_uid = 'edge_curvature_relative'
-    k_command = 'Change line curvature to be relative to edge dimensions'
-
-    def method(self):
-        """ Change curvature computation type. Curvature can be 'relative' or 'fixed'
-        """
-        value = self.state_arg
-        if value:
-            ref = 'relative'
-        else:
-            ref = 'fixed'
-        if ctrl.ui.scope_is_selection:
-            for edge in ctrl.selected:
-                if isinstance(edge, Edge):
-                    edge.shape_info.change_edge_curvature_reference(ref)
-        else:
-            etype = ctrl.ui.active_edge_type
-            ctrl.fs.set_shape_info(etype, 'relative', value)
-            ctrl.forest.redraw_edges(edge_type=etype)
-        panel = ctrl.ui.get_panel('LineOptionsPanel')
-        if panel:
-            panel.update_panel()
-
-    def enabler(self):
-        return ctrl.ui.active_edge_style.get('relative', None) is not None and \
-            ctrl.ui.active_edge_style.get('control_points', 0)
-
-    def getter(self):
-        return ctrl.ui.active_edge_style.get('relative', None)
-
-
-class EdgeCurvatureFixed(KatajaAction):
-    k_action_uid = 'edge_curvature_fixed'
-    k_command = 'Change line curvature to be a pair of fixed values'
-
-    def method(self):
-        """ Change curvature computation type. Curvature can be 'relative' or 'fixed'
-        """
-        value = self.state_arg
-        if value:
-            ref = 'fixed'
-        else:
-            ref = 'relative'
-        if ctrl.ui.scope_is_selection:
-            for edge in ctrl.selected:
-                if isinstance(edge, Edge):
-                    edge.shape_info.change_edge_curvature_reference(ref)
-        else:
-            etype = ctrl.ui.active_edge_type
-            ctrl.fs.set_shape_info(etype, 'relative', not value)
-            ctrl.forest.redraw_edges(edge_type=etype)
-        panel = ctrl.ui.get_panel('LineOptionsPanel')
-        if panel:
-            panel.update_panel()
-
-    def enabler(self):
-        return ctrl.ui.active_edge_style.get('relative', None) is not None and \
-            ctrl.ui.active_edge_style.get('control_points', 0)
-
-    def getter(self):
-        return not ctrl.ui.active_edge_style.get('relative', None)

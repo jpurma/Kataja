@@ -326,6 +326,10 @@ class KatajaAction(QtWidgets.QAction):
             for item in self.elements:
                 if hasattr(item, 'setEnabled'):
                     item.setEnabled(value)
+                k_label = getattr(item, 'k_buddy', None)
+                if k_label:
+                    k_label.setEnabled(value)
+
 
     def set_displayed_value(self, value):
         """ Call ui_items that are related to this action and try to update them to show value

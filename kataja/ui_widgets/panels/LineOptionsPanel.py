@@ -39,18 +39,26 @@ class LineOptionsPanel(Panel):
         # Control point 1 adjustment
         self.cp1_box = QtWidgets.QWidget(inner) # box allows hiding clean hide/show for this group
         hlayout = box_row(self.cp1_box)
-        label(self, hlayout, '1st control point')
+        label(self, hlayout, '1st')
         ui = self.ui_manager
-        self.cp1_x_spinbox = spinbox(ui, self, hlayout, 'd', -400, 400, 'control_point1_dist')
-        self.cp1_y_spinbox = spinbox(ui, self, hlayout, '°', -400, 400, 'control_point1_angle')
+        self.cp1_x_spinbox = spinbox(ui, self, hlayout,
+                                     label='dist', range_min=-400, range_max=400,
+                                     action='control_point1_dist', suffix='%')
+        self.cp1_y_spinbox = spinbox(ui, self, hlayout,
+                                     label='angle', range_min=-400, range_max=400,
+                                     action='control_point1_angle', suffix='°')
         layout.addWidget(self.cp1_box)
 
         # Control point 2 adjustment
         self.cp2_box = QtWidgets.QWidget(inner) # box allows hiding clean hide/show for this group
         hlayout = box_row(self.cp2_box)
-        label(self, hlayout, '2nd control point')
-        self.cp2_x_spinbox = spinbox(ui, self, hlayout, 'd', -400, 400, 'control_point2_dist')
-        self.cp2_y_spinbox = spinbox(ui, self, hlayout, '°', -400, 400, 'control_point2_angle')
+        label(self, hlayout, '2nd')
+        self.cp2_x_spinbox = spinbox(ui, self, hlayout,
+                                     label='dist', range_min=-400, range_max=400,
+                                     action='control_point2_dist', suffix='%')
+        self.cp2_y_spinbox = spinbox(ui, self, hlayout,
+                                     label='angle', range_min=-400, range_max=400,
+                                     action='control_point2_angle', suffix='°')
         layout.addWidget(self.cp2_box)
 
         # Curvature
@@ -120,8 +128,10 @@ class LineOptionsPanel(Panel):
         box_layout = QtWidgets.QHBoxLayout()
         box_layout.setContentsMargins(0, 0, 0, 0)
         label(self, box_layout, 'Spread')
-        self.leaf_x_spinbox = spinbox(ui, self, box_layout, 'X', -20, 20, 'leaf_shape_x')
-        self.leaf_y_spinbox = spinbox(ui, self, box_layout, 'Y', -20, 20, 'leaf_shape_y')
+        self.leaf_x_spinbox = spinbox(ui, self, box_layout, label='X', range_min=-20, range_max=20,
+                                      action='leaf_shape_x', suffix=' px')
+        self.leaf_y_spinbox = spinbox(ui, self, box_layout, label='Y', range_min=-20, range_max=20,
+                                      action='leaf_shape_y', suffix=' px')
         self.leaf_box.setLayout(box_layout)
         hlayout.addWidget(self.leaf_box)
 
