@@ -351,6 +351,55 @@ class ChangeEdgeColor(KatajaAction):
 #             return 0
 
 
+class EdgeArrowheadStart(KatajaAction):
+    k_action_uid = 'edge_arrowhead_start'
+    k_command = 'Draw arrowhead at line start'
+
+    def method(self):
+        """ Draw arrowheads at start for given edges or edge type
+        """
+        value = self.state_arg
+        if ctrl.ui.scope_is_selection:
+            for edge in ctrl.selected:
+                if isinstance(edge, Edge):
+                    edge.shape_info.set_arrowhead_at_start(value)
+        else:
+            etype = ctrl.ui.active_edge_type
+            ctrl.fs.set_edge_info(etype, 'arrowhead_at_start', value)
+            ctrl.forest.redraw_edges(edge_type=etype)
+
+    def enabler(self):
+        return ctrl.ui.active_edge_style
+
+    def getter(self):
+        return ctrl.ui.active_edge_style.get('arrowhead_at_start', False)
+
+
+class EdgeArrowheadEnd(KatajaAction):
+    k_action_uid = 'edge_arrowhead_end'
+    k_command = 'Draw arrowhead at line end'
+
+    def method(self):
+        """ Draw arrowheads at end for given edges or edge type
+        :param value: bool
+        """
+        value = self.state_arg
+        if ctrl.ui.scope_is_selection:
+            for edge in ctrl.selected:
+                if isinstance(edge, Edge):
+                    edge.shape_info.set_arrowhead_at_end(value)
+        else:
+            etype = ctrl.ui.active_edge_type
+            ctrl.fs.set_edge_info(etype, 'arrowhead_at_end', value)
+            ctrl.forest.redraw_edges(edge_type=etype)
+
+    def enabler(self):
+        return ctrl.ui.active_edge_style
+
+    def getter(self):
+        return ctrl.ui.active_edge_style.get('arrowhead_at_end', False)
+
+
 class ResetControlPoints(KatajaAction):
     k_action_uid = 'reset_control_points'
     k_command = 'Reset control point'
@@ -360,18 +409,16 @@ class ResetControlPoints(KatajaAction):
         """ Reset all control points
         :return: None
         """
-        for edge in ctrl.selected:
-            if isinstance(edge, Edge):
-                edge.shape_info.reset_control_points()
-
-    def enabler(self):
-        for edge in ctrl.selected:
-            if isinstance(edge, Edge):
-                if edge.curve_adjustment:
-                    for x, y in edge.curve_adjustment:
-                        if x or y:
-                            return True
-        return False
+        if ctrl.ui.scope_is_selection:
+            for edge in ctrl.selected:
+                if isinstance(edge, Edge):
+                    edge.shape_info.reset_control_points()
+        else:
+            etype = ctrl.ui.active_edge_type
+            if etype:
+                for edge in ctrl.forest.edges.values():
+                    if edge.edge_type == etype:
+                        edge.shape_info.reset_control_points()
 
 
 class LeafShapeX(KatajaAction):
@@ -395,7 +442,7 @@ class LeafShapeX(KatajaAction):
             ctrl.forest.redraw_edges(edge_type=etype)
 
     def enabler(self):
-        return ctrl.ui.active_edge_style.get('outline', 0) != 2
+        return ctrl.ui.active_edge_style.get('fillable', False)
 
     def getter(self):
         return ctrl.ui.active_edge_style.get('leaf_x')
@@ -422,7 +469,7 @@ class LeafShapeY(KatajaAction):
             ctrl.forest.redraw_edges(edge_type=etype)
 
     def enabler(self):
-        return ctrl.ui.active_edge_style.get('outline', 0) != 2
+        return ctrl.ui.active_edge_style.get('fillable', False)
 
     def getter(self):
         return ctrl.ui.active_edge_style.get('leaf_y')
@@ -449,7 +496,7 @@ class EdgeThickness(KatajaAction):
             ctrl.forest.redraw_edges(edge_type=etype)
 
     def enabler(self):
-        return ctrl.ui.active_edge_style.get('outline', 0)
+        return ctrl.ui.active_edge_style.get('outline', False)
 
     def getter(self):
         return ctrl.ui.active_edge_style.get('thickness', 0)
@@ -618,55 +665,6 @@ class ChangeEdgeFixedCurvatureY(KatajaAction):
         return ctrl.ui.active_edge_style.get('fixed_dy')
 
 
-class EdgeArrowheadStart(KatajaAction):
-    k_action_uid = 'edge_arrowhead_start'
-    k_command = 'Draw arrowhead at line start'
-
-    def method(self):
-        """ Draw arrowheads at start for given edges or edge type
-        """
-        value = self.state_arg
-        if ctrl.ui.scope_is_selection:
-            for edge in ctrl.selected:
-                if isinstance(edge, Edge):
-                    edge.shape_info.set_arrowhead_at_start(value)
-        else:
-            etype = ctrl.ui.active_edge_type
-            ctrl.fs.set_edge_info(etype, 'arrowhead_at_start', value)
-            ctrl.forest.redraw_edges(edge_type=etype)
-
-    def enabler(self):
-        return ctrl.ui.active_edge_style
-
-    def getter(self):
-        return ctrl.ui.active_edge_style.get('arrowhead_at_start', False)
-
-
-class EdgeArrowheadEnd(KatajaAction):
-    k_action_uid = 'edge_arrowhead_end'
-    k_command = 'Draw arrowhead at line end'
-
-    def method(self):
-        """ Draw arrowheads at end for given edges or edge type
-        :param value: bool
-        """
-        value = self.state_arg
-        if ctrl.ui.scope_is_selection:
-            for edge in ctrl.selected:
-                if isinstance(edge, Edge):
-                    edge.shape_info.set_arrowhead_at_end(value)
-        else:
-            etype = ctrl.ui.active_edge_type
-            ctrl.fs.set_edge_info(etype, 'arrowhead_at_end', value)
-            ctrl.forest.redraw_edges(edge_type=etype)
-
-    def enabler(self):
-        return ctrl.ui.active_edge_style
-
-    def getter(self):
-        return ctrl.ui.active_edge_style.get('arrowhead_at_end', False)
-
-
 class EdgeShapeFill(KatajaAction):
     k_action_uid = 'edge_shape_fill'
     k_command = 'Set edges to be drawn as filled'
@@ -685,10 +683,11 @@ class EdgeShapeFill(KatajaAction):
             ctrl.forest.redraw_edges(edge_type=etype)
 
     def enabler(self):
-        return ctrl.ui.active_edge_style.get('outline', 0) != 2
+        return ctrl.ui.active_edge_style.get('fillable', False)
 
     def getter(self):
-        return ctrl.ui.active_edge_style.get('fill', None)
+        return ctrl.ui.active_edge_style.get('fill', None) and \
+               ctrl.ui.active_edge_style.get('fillable', False)
 
 
 class EdgeShapeLine(KatajaAction):
@@ -710,7 +709,7 @@ class EdgeShapeLine(KatajaAction):
             ctrl.forest.redraw_edges(edge_type=etype)
 
     def enabler(self):
-        return ctrl.ui.active_edge_style.get('outline', 0) != 2
+        return ctrl.ui.active_edge_style.get('fillable', False)
 
     def getter(self):
         return ctrl.ui.active_edge_style.get('outline', None)

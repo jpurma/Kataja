@@ -729,52 +729,48 @@ def no_path_icon(painter, rect, color=None):
     """
     pass
 
-NO = 0
-OK = 1
-MUST_HAVE = 2
-
 
 od = [('shaped_cubic',
-       dict(method=shaped_cubic_path, fill=True, outline=NO, icon=shaped_cubic_icon,
-            control_points=2, relative=True, rel_dx=0.2, rel_dy=0.4,
-            fixed_dx=20, fixed_dy=15, leaf_x=0.8, leaf_y=2)),
+       dict(method=shaped_cubic_path, fill=True, outline=False, icon=shaped_cubic_icon,
+            control_points=2, relative=True, rel_dx=0.2, rel_dy=0.4, thickness=0.5,
+            fixed_dx=20, fixed_dy=15, leaf_x=0.8, leaf_y=2, fillable=True)),
       ('cubic',
-       dict(method=cubic_path, fill=False, outline=MUST_HAVE, icon=cubic_icon, control_points=2,
+       dict(method=cubic_path, fill=False, outline=True, icon=cubic_icon, control_points=2,
             relative=True, rel_dx=0.2, rel_dy=0.4, fixed_dx=20, fixed_dy=15,
-            thickness=1)),
+            thickness=1, fillable=False)),
       ('shaped_quadratic',
-       dict(method=shaped_quadratic_path, fill=True, outline=NO,
-            icon=shaped_quadratic_icon, control_points=1,
+       dict(method=shaped_quadratic_path, fill=True, outline=False,
+            icon=shaped_quadratic_icon, control_points=1, thickness=0.5,
             relative=True, rel_dx=0.2, rel_dy=0, fixed_dx=20,
-            fixed_dy=0, leaf_x=2, leaf_y=2.5)),
+            fixed_dy=0, leaf_x=2, leaf_y=2.5, fillable=True)),
       ('quadratic',
-       dict(method=quadratic_path, fill=False, outline=MUST_HAVE, icon=quadratic_icon,
+       dict(method=quadratic_path, fill=False, outline=True, icon=quadratic_icon,
             control_points=1, relative=True, rel_dx=0.2, rel_dy=0,
-            fixed_dx=20, fixed_dy=0, thickness=1)),
+            fixed_dx=20, fixed_dy=0, thickness=1, fillable=False)),
       ('shaped_linear',
-       dict(method=shaped_linear_path, fill=True, outline=MUST_HAVE, icon=shaped_linear_icon,
-            control_points=0, leaf_x=1, leaf_y=1.5)),
+       dict(method=shaped_linear_path, fill=True, outline=False, icon=shaped_linear_icon,
+            control_points=0, leaf_x=1, leaf_y=1.5, fillable=True, thickness=0.5)),
       ('linear',
        dict(method=linear_path,
             fill=False,
-            outline=MUST_HAVE,
+            outline=True,
             icon=linear_icon,
             control_points=0,
-            thickness=1)),
+            thickness=1, fillable=False)),
       ('blob',
-       dict(method=blob_path, fill=True, outline=NO, icon=blob_icon, control_points=1,
-            thickness=0)),
+       dict(method=blob_path, fill=True, outline=False, icon=blob_icon, control_points=1,
+            thickness=0.5, fillable=True)),
       ('directional_blob',
-       dict(method=directional_blob_path, fill=True, outline=NO,
+       dict(method=directional_blob_path, fill=True, outline=False,
             icon=directional_blob_icon, control_points=1,
-            thickness=0)),
+            thickness=0.5, fillable=True)),
       ('no draw',
        dict(method=linear_path,
             fill=False,
-            outline=NO,
+            outline=False,
             icon=no_path_icon,
             control_points=0,
-            thickness=0))]
+            thickness=0.5, fillable=False))]
 
 
 def draw_circle(painter, x, y, end_spot_size):

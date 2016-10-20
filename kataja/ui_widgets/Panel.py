@@ -235,14 +235,43 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         else:
             return QtCore.QSize(100, 100)
 
-    def initial_position(self):
+    def initial_position(self, next_to=''):
         """
 
 
         :return:
         """
-        return QtCore.QPoint(ctrl.main.x() / ctrl.main.devicePixelRatio() + ctrl.main.width(),
-                             max(40, ctrl.main.y() / ctrl.main.devicePixelRatio()))
+        self.update_panel()
+        if next_to:
+            dp = self.ui_manager.get_panel(next_to)
+        else:
+            dp = None
+        if dp:
+            pixel_ratio = dp.devicePixelRatio()
+            p = dp.mapToGlobal(dp.pos())
+            x = p.x()
+            y = p.y()
+            if pixel_ratio:
+                x /= pixel_ratio
+                y /= pixel_ratio
+            if dp.isFloating():
+                y += 20
+            else:
+                x += dp.width() + 40
+        else:
+            pixel_ratio = ctrl.main.devicePixelRatio()
+            if pixel_ratio < 1:
+                pixel_ratio = 1
+            x = ctrl.main.x() / pixel_ratio + ctrl.main.width()
+            y = max(40, ctrl.main.y() / pixel_ratio)
+        w = self.width()
+        h = self.height()
+        screen_rect = ctrl.main.app.desktop().availableGeometry()
+        if x + w > screen_rect.right():
+            x = screen_rect.right() - w
+        if y + h > screen_rect.bottom():
+            y = screen_rect.bottom() - h
+        return QtCore.QPoint(x, y)
 
     def watch_alerted(self, obj, signal, field_name, value):
         """ Receives alerts from signals that this object has chosen to listen. These signals

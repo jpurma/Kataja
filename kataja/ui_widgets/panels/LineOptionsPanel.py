@@ -37,91 +37,41 @@ class LineOptionsPanel(Panel):
         ui = self.ui_manager
         layout.addSpacing(spac)
         hlayout = box_row(layout)
-        label(self, hlayout, 'Manual adjustments to control points:')
+        label(self, hlayout, 'Manual adjustments to arcs:')
         self.reset_adjustment = mini_button(ui, self, hlayout, text='reset',
                                             action='reset_control_points')
-        # Control point 1 adjustment
-        # self.cp1_box = QtWidgets.QWidget(inner) # box allows hiding clean hide/show for this group
-        # hlayout = box_row(self.cp1_box)
-        # label(self, hlayout, '1st')
-        # self.cp1_dist_spinbox = spinbox(ui, self, hlayout,
-        #                                 label='dist', range_min=-999, range_max=999,
-        #                                 action='control_point1_dist', suffix='%')
-        # self.cp1_knob = knob(ui, self, hlayout,
-        #                      label='angle', range_min=-180, range_max=180,
-        #                      action='control_point1_angle', suffix='°')
-        #
-        # self.cp1_spinbox = spinbox(ui, self, hlayout,
-        #                            range_min=-180, range_max=180,
-        #                            action='control_point1_angle', suffix='°', wrapping=True)
-        # layout.addWidget(self.cp1_box)
-        #
-        # # Control point 2 adjustment
-        # self.cp2_box = QtWidgets.QWidget(inner) # box allows hiding clean hide/show for this group
-        # hlayout = box_row(self.cp2_box)
-        # label(self, hlayout, '2nd')
-        # self.cp2_dist_spinbox = spinbox(ui, self, hlayout,
-        #                                 label='dist', range_min=-999, range_max=999,
-        #                                 action='control_point2_dist', suffix='%')
-        #
-        # self.cp2_knobdial = KnobDial(ui, self, hlayout, label='angle',
-        #                              action='control_point2_angle', suffix='°')
-        # #self.cp2_knob = knob(ui, self, hlayout,
-        # #                     label='angle', range_min=-180, range_max=180,
-        # #                     action='control_point2_angle', suffix='°')
-        # #self.cp2_spinbox = spinbox(ui, self, hlayout,
-        # #                           range_min=-180, range_max=180,
-        # #                           action='control_point2_angle', suffix='°', wrapping=True)
-        #
-        # layout.addWidget(self.cp2_box)
 
         hlayout = box_row(layout)
-        #label(self, hlayout, 'Arrowheads:')
         self.arrowhead_start_button = checkbox(ui, self, hlayout, label='Arrowheads at start',
                                                action='edge_arrowhead_start')
         self.arrowhead_end_button = checkbox(ui, self, hlayout, label='at end',
                                              action='edge_arrowhead_end')
-
-
         # Curvature
         layout.addSpacing(spac)
         hlayout = box_row(layout)
-        label(self, hlayout, 'General curvature')
-
-        hlayout = box_row(layout)
         curve_modes = QtWidgets.QButtonGroup()
-        self.relative_arc_button = radiobutton(ui, self, hlayout, label='relative',
+        self.relative_arc_button = radiobutton(ui, self, hlayout, label='Relative curve',
                                                action='edge_curvature_relative', group=curve_modes)
-        self.relative_arc_box = QtWidgets.QWidget(inner)
-        arc_layout = QtWidgets.QHBoxLayout()
-        self.arc_rel_dx_spinbox = spinbox(ui, self, arc_layout,
+        self.arc_rel_dx_spinbox = spinbox(ui, self, hlayout,
                                           label='X', range_min=-200, range_max=200,
                                           action='change_edge_relative_curvature_x',
                                           suffix='%')
-        self.arc_rel_dy_spinbox = spinbox(ui, self, arc_layout,
+        self.arc_rel_dy_spinbox = spinbox(ui, self, hlayout,
                                           label='Y', range_min=-200, range_max=200,
                                           action='change_edge_relative_curvature_y',
                                           suffix='%')
-        arc_layout.setContentsMargins(0, 0, 0, 0)
-        self.relative_arc_box.setLayout(arc_layout)
-        hlayout.addWidget(self.relative_arc_box)
 
         hlayout = box_row(layout)
-        self.fixed_arc_button = radiobutton(ui, self, hlayout, label='fixed',
+        self.fixed_arc_button = radiobutton(ui, self, hlayout, label='Fixed curve',
                                             action='edge_curvature_fixed', group=curve_modes)
-        self.fixed_arc_box = QtWidgets.QWidget(inner)
-        arc_layout = QtWidgets.QHBoxLayout()
-        self.arc_fixed_dx_spinbox = spinbox(ui, self, arc_layout,
+        self.arc_fixed_dx_spinbox = spinbox(ui, self, hlayout,
                                             label='X', range_min=-200, range_max=200,
                                             action='change_edge_fixed_curvature_x',
                                             suffix=' px')
-        self.arc_fixed_dy_spinbox = spinbox(ui, self, arc_layout,
+        self.arc_fixed_dy_spinbox = spinbox(ui, self, hlayout,
                                             label='Y', range_min=-200, range_max=200,
                                             action='change_edge_fixed_curvature_y',
                                             suffix=' px')
-        arc_layout.setContentsMargins(0, 0, 0, 0)
-        self.fixed_arc_box.setLayout(arc_layout)
-        hlayout.addWidget(self.fixed_arc_box)
         self.arc_reference_buttons = QtWidgets.QButtonGroup(self)
         self.arc_reference_buttons.addButton(self.fixed_arc_button)
         self.arc_reference_buttons.addButton(self.relative_arc_button)
@@ -129,36 +79,23 @@ class LineOptionsPanel(Panel):
         # Line thickness
         layout.addSpacing(spac)
         hlayout = box_row(layout)
-        label(self, hlayout, 'Shape and thickness')
-
-        hlayout = box_row(layout)
         self.fill_button = checkbox(ui, self, hlayout, label='Fill',
                                     action='edge_shape_fill')
 
         self.line_button = checkbox(ui, self, hlayout, label='Outline',
                                     action='edge_shape_line')
-        self.thickness_box = QtWidgets.QWidget(inner)
-        box_layout = QtWidgets.QHBoxLayout()
-        box_layout.setContentsMargins(0, 0, 0, 0)
-        self.thickness_spinbox = decimal_spinbox(ui, self, box_layout,
+        self.thickness_spinbox = decimal_spinbox(ui, self, hlayout,
                                                  label='Thickness', range_min=0.0, range_max=10.0,
                                                  step=0.1, action='edge_thickness', suffix=' px')
-        self.thickness_box.setLayout(box_layout)
-        hlayout.addWidget(self.thickness_box)
 
         # Leaf size
         hlayout = box_row(layout)
-        self.leaf_box = QtWidgets.QWidget(inner)
-        box_layout = QtWidgets.QHBoxLayout()
-        box_layout.setContentsMargins(0, 0, 0, 0)
-        self.leaf_x_spinbox = spinbox(ui, self, box_layout, label='Spread in X', range_min=-20,
+        self.leaf_x_spinbox = spinbox(ui, self, hlayout, label='Brush spread X',
+                                      range_min=-20,
                                       range_max=20,
                                       action='leaf_shape_x', suffix=' px')
-        self.leaf_y_spinbox = spinbox(ui, self, box_layout, label='Y', range_min=-20, range_max=20,
+        self.leaf_y_spinbox = spinbox(ui, self, hlayout, label='Y', range_min=-20, range_max=20,
                                       action='leaf_shape_y', suffix=' px')
-        self.leaf_box.setLayout(box_layout)
-        hlayout.addWidget(self.leaf_box)
-        layout.addSpacing(spac)
         inner.setLayout(layout)
         self.setWidget(inner)
         self.finish_init()
@@ -189,41 +126,12 @@ class LineOptionsPanel(Panel):
             self.set_title('Edge settings for all ' + edge_name_plural)
         self.setFixedSize(self.sizeHint())
         self.updateGeometry()
-        print('update panel, geometry:', self.width(), self.height())
 
-    def initial_position(self):
+    def initial_position(self, next_to=''):
         """
-
-
         :return:
         """
-        self.update_panel()
-        dp = self.ui_manager.get_panel('StylePanel')
-        if dp:
-            pixel_ratio = dp.devicePixelRatio()
-            p = dp.mapToGlobal(dp.pos())
-            if pixel_ratio:
-                if dp.isFloating():
-                    x = p.x() / pixel_ratio
-                    y = p.y() / pixel_ratio + 20
-                else:
-                    x = p.x() / pixel_ratio + dp.width() + 40
-                    y = p.y() / pixel_ratio
-                w = self.width()
-                h = self.height()
-                screen_rect = ctrl.main.app.desktop().availableGeometry()
-                print('screen geometry: ', screen_rect)
-                print('my w and h: ', w, h)
-                print('my x, y: ', x, y)
-                if x + w > screen_rect.right():
-                    x = screen_rect.right() - w
-                if y + h > screen_rect.bottom():
-                    y = screen_rect.bottom() - h
-                return QtCore.QPoint(x, y)
-            else:
-                return Panel.initial_position(self)
-        else:
-            return Panel.initial_position(self)
+        return Panel.initial_position(self, next_to=next_to or 'StylePanel')
 
     def close(self):
         """ Untick check box in EDGES panel """

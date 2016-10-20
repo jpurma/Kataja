@@ -233,7 +233,7 @@ class KatajaAction(QtWidgets.QAction):
         on = self.enabler()
         self.set_enabled(on)
         val = self.getter()
-        if on and val is not None:
+        if val is not None:
             self.set_displayed_value(val)
 
     def update_ui_value(self):
@@ -279,7 +279,8 @@ class KatajaAction(QtWidgets.QAction):
                 if ctrl.main.use_tooltips:
                     element.setToolTip(tt)
                 element.setToolTipDuration(2000)
-
+        if hasattr(element, 'setEnabled'):
+            element.setEnabled(self.isEnabled())
         shortcut = self.shortcut()
         shortcut_context = self.shortcutContext()
         if shortcut and shortcut_context:
@@ -333,7 +334,6 @@ class KatajaAction(QtWidgets.QAction):
                 k_label = getattr(item, 'k_buddy', None)
                 if k_label:
                     k_label.setEnabled(value)
-
 
     def set_displayed_value(self, value):
         """ Call ui_items that are related to this action and try to update them to show value

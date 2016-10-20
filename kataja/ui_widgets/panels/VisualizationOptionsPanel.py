@@ -86,22 +86,11 @@ class VisualizationOptionsPanel(Panel):
         self.updateGeometry()
         self.update()
 
-    def initial_position(self):
+    def initial_position(self, next_to=''):
         """
-
-
         :return:
         """
-        dp = self.ui_manager.get_panel('VisualizationPanel')
-        if dp:
-            p = dp.mapToGlobal(dp.pos())
-            dpr = dp.devicePixelRatio()
-            if dpr:
-                return QtCore.QPoint(p.x() / dpr + dp.width(), p.y() / dpr)
-            else:
-                return Panel.initial_position(self)
-        else:
-            return Panel.initial_position(self)
+        return Panel.initial_position(next_to=next_to or 'VisualizationPanel')
 
     def close(self):
         """ Raise button in VISUALIZATION panel """
