@@ -1060,7 +1060,10 @@ class Node(Movable):
         return self.inner_rect
 
     def overlap_rect(self):
-        return self.sceneBoundingRect().adjusted(-2, -2, 4, 4)
+        if self._label_visible:
+            return self.sceneBoundingRect().adjusted(-2, -2, 4, 4)
+        else:
+            return QtCore.QRectF()
 
     def set_user_size(self, width, height):
         self.user_size = (width, height)

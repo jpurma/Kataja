@@ -393,6 +393,7 @@ class UIManager:
         self.build_active_style_info()
         for action in self.actions.values():
             action.update_action()
+        log.debug('Updated %s actions' % len(list(self.actions.values())))
 
     def update_action(self, key):
         """ If action is tied to some meter (e.g. number field that is used to show value and

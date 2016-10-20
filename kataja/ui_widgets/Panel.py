@@ -124,7 +124,6 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         elif default_position == 'float':
             parent.addDockWidget(QtCore.Qt.RightDockWidgetArea, self)
             self.setFloating(True)
-            self.move(self.initial_position())
         self.dockLocationChanged.connect(self.report_dock_location)
         self.topLevelChanged.connect(self.report_top_level)
         self.setContentsMargins(0, 0, 0, 0)
@@ -140,6 +139,8 @@ class Panel(UIWidget, QtWidgets.QDockWidget):
         :return:
         """
         self.set_folded(self.folded)
+        if self.isFloating():
+            self.move(self.initial_position())
 
     # def dockLocationChanged(self, area):
     # print 'UIPanel %s docked: %s' % (self, area)

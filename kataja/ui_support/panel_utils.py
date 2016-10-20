@@ -10,6 +10,33 @@ from kataja.ui_support.SelectionBox import SelectionBox
 __author__ = 'purma'
 
 
+class KnobDial(QtWidgets.QWidget):
+
+    def __init__(self, ui_manager, parent, layout, label='', suffix='', action=''):
+        QtWidgets.QWidget.__init__(self, parent)
+        hlayout = QtWidgets.QHBoxLayout()
+        self.label = QtWidgets.QLabel(label, self)
+        hlayout.addWidget(self.label)
+        self.dial = QtWidgets.QDial(self)
+        self.dial.setFixedSize(28, 28)
+        self.dial.setWrapping(True)
+        self.dial.setRange(-180, 180)
+        hlayout.addWidget(self.dial)
+        self.spinbox = QtWidgets.QSpinBox(self)
+        self.spinbox.setAccelerated(True)
+        self.spinbox.setReadOnly(False)
+        self.spinbox.setButtonSymbols(QtWidgets.QAbstractSpinBox.PlusMinus)
+        self.spinbox.setRange(0, 360)
+        self.spinbox.setSuffix(suffix)
+        self.spinbox.setWrapping(True)
+        self.spinbox.setFixedWidth(50)
+        self.label.setBuddy(self.spinbox)
+        hlayout.addWidget(self.spinbox)
+        self.setLayout(hlayout)
+        ui_manager.connect_element_to_action(self, action)
+        layout.addWidget(self)
+
+
 def find_panel(parent):
     if hasattr(parent, 'pin_to_dock'):
         return parent
@@ -110,11 +137,16 @@ def decimal_spinbox(ui_manager, panel, layout, label='', range_min=0, range_max=
     """
     slabel = QtWidgets.QLabel(label, panel)
     spinbox = QtWidgets.QDoubleSpinBox()
+    spinbox.setAccelerated(True)
+    spinbox.setReadOnly(False)
+    spinbox.setButtonSymbols(QtWidgets.QAbstractSpinBox.PlusMinus)
     spinbox.setRange(range_min, range_max)
     spinbox.setSingleStep(step)
     spinbox.setSuffix(suffix)
+    spinbox.setFixedWidth(50)
     ui_manager.connect_element_to_action(spinbox, action)
     slabel.setBuddy(spinbox)
+    spinbox.k_buddy = slabel
     layout.addWidget(slabel)
     layout.addWidget(spinbox)
     return spinbox
@@ -360,7 +392,35 @@ def checkbox(ui_manager, parent, layout, label='', action='', x=-1, y=-1):
         layout.addWidget(slabel)
         layout.addWidget(scheckbox)
     slabel.setBuddy(scheckbox)
+    scheckbox.k_buddy = slabel
     return scheckbox
+
+
+def radiobutton(ui_manager, parent, layout, label='', action='', x=-1, y=-1, group=None):
+    """
+
+    :param ui_manager:
+    :param panel:
+    :param layout:
+    :param label:
+    :param action:
+    :return:
+    """
+    slabel = QtWidgets.QLabel(label, parent)
+    sradio = QtWidgets.QRadioButton()
+    ui_manager.connect_element_to_action(sradio, action)
+    if x > -1:
+        layout.addWidget(slabel, y, x)
+        layout.addWidget(sradio, y, x + 1)
+    else:
+        layout.addWidget(slabel)
+        layout.addWidget(sradio)
+    if group:
+        group.addButton(sradio)
+    slabel.setBuddy(sradio)
+    sradio.k_buddy = slabel
+    return sradio
+
 
 
 def box_row(container):
