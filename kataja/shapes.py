@@ -16,15 +16,15 @@ outline_stroker = QtGui.QPainterPathStroker()
 outline_stroker.setWidth(4)
 
 
-def curve_multiplier(edge_n, edge_count) -> float:
+def direction_multiplier(edge_n, edge_count) -> float:
     """ Returns curve multiplier between [-1.0, 1.0] depending if left edge,
     right edge or something between. """
     if edge_count == 1:
         return 0
-    else:
-        return 1
-    #p = 2.0 / (edge_count - 1)
-    #return (edge_n * p) - 1
+    #else:
+    #    return 1
+    p = 2.0 / (edge_count - 1)
+    return (edge_n * p) - 1
 
 
 def adjusted_control_point_list(sx, sy, ex, ey, control_points, curve_adjustment) -> list:
@@ -183,12 +183,12 @@ def shaped_cubic_path(start_point=None, end_point=None, curve_adjustment=None,
         leaf_y *= 2
 
     if relative:
-        dx = rel_dx * (ex - sx)
-        dy = rel_dy * (ey - sy)
+        dx = abs(rel_dx * (ex - sx))
+        dy = abs(rel_dy * (ey - sy))
     else:
         dy = fixed_dy
         dx = fixed_dx
-    dx *= curve_multiplier(edge_n, edge_count)
+    dx *= direction_multiplier(edge_n, edge_count)
     control_points = [(sx + dx, sy + dy), (ex, ey - dy)]
     c = adjusted_control_point_list(sx, sy, ex, ey, control_points, curve_adjustment)
     (c1x, c1y), (c2x, c2y) = c
@@ -248,12 +248,12 @@ def cubic_path(start_point=None, end_point=None, curve_adjustment=None,
     # edges that go to wrong direction have stronger curvature
 
     if relative:
-        dx = rel_dx * (ex - sx)
-        dy = rel_dy * (ey - sy)
+        dx = abs(rel_dx * (ex - sx))
+        dy = abs(rel_dy * (ey - sy))
     else:
         dx = fixed_dx
         dy = fixed_dy
-    dx *= curve_multiplier(edge_n=edge_n, edge_count=edge_count)
+    dx *= direction_multiplier(edge_n=edge_n, edge_count=edge_count)
     control_points = [(sx + dx, sy + dy), (ex, ey - dy)]
     path = QtGui.QPainterPath(Pf(sx, sy))
     c = adjusted_control_point_list(sx, sy, ex, ey, control_points, curve_adjustment)
@@ -310,12 +310,12 @@ def shaped_quadratic_path(start_point=None, end_point=None,
         leaf_y *= 2
 
     if relative:
-        dx = rel_dx * (ex - sx)
-        dy = rel_dy * (ey - sy)
+        dx = abs(rel_dx * (ex - sx))
+        dy = abs(rel_dy * (ey - sy))
     else:
         dx = fixed_dx
         dy = fixed_dy
-    dx *= curve_multiplier(edge_n, edge_count)
+    dx *= direction_multiplier(edge_n, edge_count)
     control_points = [(sx + dx, sy + dy)]
     c = adjusted_control_point_list(sx, sy, ex, ey, control_points, curve_adjustment)
     c1x, c1y = c[0]
@@ -373,12 +373,12 @@ def quadratic_path(start_point=None, end_point=None, curve_adjustment=None, edge
     sx, sy = start_point
     ex, ey = end_point
     if relative:
-        dx = rel_dx * (ex - sx)
-        dy = rel_dy * (ey - sy)
+        dx = abs(rel_dx * (ex - sx))
+        dy = abs(rel_dy * (ey - sy))
     else:
         dx = fixed_dx
         dy = fixed_dy
-    dx *= curve_multiplier(edge_n, edge_count)
+    dx *= direction_multiplier(edge_n, edge_count)
     control_points = [(sx + dx, sy + dy)]
     path = QtGui.QPainterPath(Pf(sx, sy))
     c = adjusted_control_point_list(sx, sy, ex, ey, control_points, curve_adjustment)

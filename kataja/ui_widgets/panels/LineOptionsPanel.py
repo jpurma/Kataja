@@ -35,11 +35,12 @@ class LineOptionsPanel(Panel):
 
         spac = 8
         ui = self.ui_manager
-        layout.addSpacing(spac)
         hlayout = box_row(layout)
-        label(self, hlayout, 'Manual adjustments to arcs:')
-        self.reset_adjustment = mini_button(ui, self, hlayout, text='reset',
-                                            action='reset_control_points')
+        self.reset_adjustment = mini_button(ui, self, hlayout, text='Reset arc adjustments',
+                                            action='reset_control_points', width=-1)
+        self.reset_all = mini_button(ui, self, hlayout, text='Reset edge settings',
+                                     action='reset_edge_settings', width=-1)
+        layout.addSpacing(spac)
 
         hlayout = box_row(layout)
         self.arrowhead_start_button = checkbox(ui, self, hlayout, label='Arrowheads at start',
@@ -90,12 +91,16 @@ class LineOptionsPanel(Panel):
 
         # Leaf size
         hlayout = box_row(layout)
-        self.leaf_x_spinbox = spinbox(ui, self, hlayout, label='Brush spread X',
-                                      range_min=-20,
-                                      range_max=20,
-                                      action='leaf_shape_x', suffix=' px')
-        self.leaf_y_spinbox = spinbox(ui, self, hlayout, label='Y', range_min=-20, range_max=20,
-                                      action='leaf_shape_y', suffix=' px')
+        self.leaf_x_spinbox = decimal_spinbox(ui, self, hlayout, label='Brush spread X',
+                                              range_min=-20.0,
+                                              range_max=20.0,
+                                              step=0.5,
+                                              action='leaf_shape_x', suffix=' px')
+        self.leaf_y_spinbox = decimal_spinbox(ui, self, hlayout, label='Y',
+                                              range_min=-20.0,
+                                              range_max=20.0,
+                                              step=0.5,
+                                              action='leaf_shape_y', suffix=' px')
         inner.setLayout(layout)
         self.setWidget(inner)
         self.finish_init()
@@ -115,15 +120,15 @@ class LineOptionsPanel(Panel):
             es = ctrl.ui.active_edge_style
             if es:
                 if es.get('edge_count', 0) == 1:
-                    self.set_title('Edge settings for selected edge')
+                    self.set_title('Settings for selected edge')
                 else:
-                    self.set_title('Edge settings for selected edges')
+                    self.set_title('Settings for selected edges')
             else:
                 self.set_title('Edge settings - No edge selected')
         else:
             edge_type = ctrl.ui.active_edge_type
             edge_name_plural = edge_names.get(edge_type, '? edges')[1].lower()
-            self.set_title('Edge settings for all ' + edge_name_plural)
+            self.set_title('Settings for all ' + edge_name_plural)
         self.setFixedSize(self.sizeHint())
         self.updateGeometry()
 
@@ -162,6 +167,7 @@ class LineOptionsPanel(Panel):
         if signal == 'scope_changed':
             self.update_panel()
         elif signal == 'edge_shape':
+            print('received edge_shape update')
             self.update_panel()
         elif signal == 'selection_changed':
             self.update_panel()

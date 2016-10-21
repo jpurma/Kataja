@@ -2,9 +2,9 @@
 
 from PyQt5 import QtCore
 from kataja.KatajaAction import KatajaAction
+from kataja.ui_widgets.embeds.GroupLabelEmbed import GroupLabelEmbed
 
-from kataja.singletons import ctrl
-
+from kataja.singletons import ctrl, log
 
 # ==== Class variables for KatajaActions:
 #
@@ -30,6 +30,7 @@ from kataja.singletons import ctrl
 # enabler : if enabler is defined, the action is active (also reflected into its UI elements) only
 #           when enabler returns True
 #
+
 
 class ToggleGroupOptions(KatajaAction):
     k_action_uid = 'toggle_group_options'

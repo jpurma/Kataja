@@ -421,6 +421,31 @@ class ResetControlPoints(KatajaAction):
                         edge.shape_info.reset_control_points()
 
 
+class ResetEdgeSettings(KatajaAction):
+    k_action_uid = 'reset_edge_settings'
+    k_command = 'Reset edge settings'
+    k_tooltip = 'Reset settings for this type of edges back to defaults'
+
+    def method(self):
+        """ Reset all control points
+        :return: None
+        """
+        if ctrl.ui.scope_is_selection:
+            for edge in ctrl.selected:
+                if isinstance(edge, Edge):
+                    edge.shape_info.reset_shape_info()
+            ctrl.forest.redraw_edges()
+
+        else:
+            etype = ctrl.ui.active_edge_type
+            if etype:
+                ctrl.fs.reset_edge_style(etype)
+                for edge in ctrl.forest.edges.values():
+                    if edge.edge_type == etype:
+                        edge.shape_info.reset_shape_info()
+                ctrl.forest.redraw_edges(edge_type=etype)
+
+
 class LeafShapeX(KatajaAction):
     k_action_uid = 'leaf_shape_x'
     k_command = 'Edge shape width'

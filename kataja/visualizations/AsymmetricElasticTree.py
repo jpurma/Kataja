@@ -28,7 +28,7 @@ import math
 import kataja.globals as g
 from kataja.Visualization import BaseVisualization
 from kataja.singletons import prefs
-from kataja.shapes import curve_multiplier
+from kataja.shapes import direction_multiplier
 
 
 def border_distance(n1x, n1y, n1w2, n1h2, n2x, n2y, n2w2, n2h2):
@@ -146,7 +146,7 @@ class AsymmetricElasticTree(BaseVisualization):
             elif edge.end.locked_to_node is node:
                 continue
             edge_n, edge_count = edge.edge_index()
-            target_d_x = curve_multiplier(edge_n, edge_count) * prefs.edge_width
+            target_d_x = direction_multiplier(edge_n, edge_count) * prefs.edge_width
             target_d_y = -15
             start_x, start_y = edge.start_point  # @UnusedVariable
             end_x, end_y = edge.end_point  # @UnusedVariable
@@ -164,7 +164,7 @@ class AsymmetricElasticTree(BaseVisualization):
             elif node.locked_to_node is edge.end:
                 continue
             edge_n, edge_count = edge.edge_index()
-            target_d_x = curve_multiplier(edge_n, edge_count) * prefs.edge_width
+            target_d_x = direction_multiplier(edge_n, edge_count) * prefs.edge_width
             target_d_y = 15
             start_x, start_y = edge.start_point  # @UnusedVariable
             end_x, end_y = edge.end_point  # @UnusedVariable

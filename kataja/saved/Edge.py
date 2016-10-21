@@ -326,10 +326,10 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
     # Helper methods for derived properties
 
     def is_filled(self) -> bool:
-        return self._cached_shape_info['fill']
+        return self._cached_shape_info['fill'] and self._cached_shape_info['fillable']
 
     def has_outline(self) -> int:
-        return self._cached_shape_info.get('thickness', 0)
+        return self._cached_shape_info.get('outline')
 
     def is_visible(self) -> bool:
         return self.visible_by_rule and not self._nodes_overlap
@@ -971,14 +971,14 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             painter.setPen(p)
             painter.drawPath(self._true_path)
         else:
-            width = self.has_outline()
-            if width:
+            if self.has_outline():
+                thickness = self._cached_shape_info.get('thickness')
                 p = QtGui.QPen()
                 p.setColor(c)
                 p.setCapStyle(QtCore.Qt.RoundCap)
                 if self._projection_thick:
-                    width *= 2
-                p.setWidthF(width)
+                    thickness *= 2
+                p.setWidthF(thickness)
                 painter.setPen(p)
                 if self._path.length() == 0 or self._path.isEmpty():
                     print(self, self._path.length(), self._path.isEmpty())

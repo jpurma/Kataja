@@ -5,6 +5,7 @@ from PyQt5.QtGui import QStandardItem, QIcon
 from kataja.shapes import SHAPE_PRESETS
 from kataja.singletons import ctrl
 from kataja.ui_support.TableModelSelectionBox import TableModelSelectionBox
+from kataja.utils import time_me
 
 
 def find_panel(parent):
@@ -19,11 +20,13 @@ class ShapeSelector(TableModelSelectionBox):
         super().__init__(parent)
         self.setIconSize(QSize(48, 16))
         self.panel = find_panel(parent)
-        # self.shape_selector.setView(view)
         items = []
+        self.icons = []
 
         for lt in SHAPE_PRESETS.keys():
-            item = QStandardItem(LineStyleIcon(lt, parent, self.iconSize()), '')
+            icon = LineStyleIcon(lt, self.panel, self.iconSize())
+            self.icons.append(icon)
+            item = QStandardItem(icon, '')
             item.setData(lt)
             if ctrl.main.use_tooltips:
                 item.setToolTip(lt)
@@ -35,17 +38,22 @@ class ShapeSelector(TableModelSelectionBox):
             model.setItem(r, 0, item)
         self.view().setModel(model)
 
+    def update_colors(self):
+        m = self.model()
+        for i in range(0, m.rowCount()):
+            item = m.item(i, 0)
+            icon = self.icons[i]
+            icon.compose_icon()
+            item.setIcon(icon)
+
 
 class LineStyleIcon(QIcon):
-    def __init__(self, shape_key, parent, size):
+    def __init__(self, shape_key, panel, size):
         super().__init__()
         self.shape_key = shape_key
-        self.panel = find_panel(parent)
+        self.panel = panel
         self.size_hint = size
         self.compose_icon()
-        # pixmap = QPixmap(60, 20)
-        # pixmap.fill(ctrl.cm.ui_support())
-        # self.addPixmap(pixmap)
 
     def compose_icon(self):
         draw_method = SHAPE_PRESETS[self.shape_key]['icon']
@@ -64,10 +72,3 @@ class LineStyleIcon(QIcon):
         draw_method(painter, image.rect(), c)
         painter.end()
         self.addPixmap(QtGui.QPixmap.fromImage(image))
-
-    def paint_settings(self):
-        pen = self.panel.cached_edge_color
-        if not pen:
-            pen = 'content1'
-        d = {'color': ctrl.cm.get(pen)}
-        return d

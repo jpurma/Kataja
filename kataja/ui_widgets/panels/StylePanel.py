@@ -190,6 +190,9 @@ class StylePanel(Panel):
         """
         self.update_fields()
 
+    def update_colors(self):
+        self.shape_selector.update_colors()
+
     # @time_me
     def update_scope_selector_options(self):
         """ Redraw scope selector, show only scopes that are used in this
@@ -215,29 +218,17 @@ class StylePanel(Panel):
             for item in ctrl.selected:
                 if no_node and isinstance(item, Node):
                     no_node = False
-                    #self.node_color_selector.setEnabled(True)
                     self.cached_node_color = item.get_color_id()
                     set_value(self.node_color_selector, self.cached_node_color)
-                    #self.font_selector.setEnabled(True)
                     self.cached_font_id = item.get_font_id()
                     set_value(self.font_selector, self.cached_font_id)
                 elif no_edge and isinstance(item, Edge):
                     no_edge = False
-                    #self.edge_color_selector.setEnabled(True)
                     self.cached_edge_color = item.color_id
                     set_value(self.edge_color_selector, item.color_id)
-                    #self.shape_selector.setEnabled(True)
                     set_value(self.shape_selector, item.shape_name)
                 elif not (no_edge or no_node):
                     break
-            if no_edge:
-                #self.edge_color_selector.setEnabled(False)
-                #self.shape_selector.setEnabled(False)
-                pass
-            if no_node:
-                #self.node_color_selector.setEnabled(False)
-                #self.font_selector.setEnabled(False)
-                pass
         elif ctrl.forest:
             ns = ctrl.fs.node_style
             es = ctrl.fs.edge_info
@@ -248,15 +239,10 @@ class StylePanel(Panel):
             edge_color = es(edge_type, 'color_id')
             edge_shape = es(edge_type, 'shape_name')
             # Color selector - show
-            #self.node_color_selector.setEnabled(True)
             set_value(self.node_color_selector, node_color)
-            #self.font_selector.setEnabled(True)
             set_value(self.font_selector, node_font)
-            #self.edge_color_selector.setEnabled(True)
             set_value(self.edge_color_selector, edge_color)
-            #self.shape_selector.setEnabled(True)
             set_value(self.shape_selector, edge_shape)
-            # self.font_selector.setFont(qt_prefs.get_font(node_font))
             self.cached_node_color = node_color
             self.cached_edge_color = edge_color
             self.cached_font_id = node_font

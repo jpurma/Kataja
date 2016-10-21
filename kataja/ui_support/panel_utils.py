@@ -120,7 +120,6 @@ def knob(ui_manager, panel, layout, label='', range_min=-180, range_max=180, act
     return spinbox
 
 
-
 def decimal_spinbox(ui_manager, panel, layout, label='', range_min=0, range_max=0, step=0,
                     action='', suffix=''):
     """
@@ -133,6 +132,7 @@ def decimal_spinbox(ui_manager, panel, layout, label='', range_min=0, range_max=
     :param range_max:
     :param step:
     :param action:
+    :param suffix:
     :return:
     """
     slabel = QtWidgets.QLabel(label, panel)
@@ -143,7 +143,7 @@ def decimal_spinbox(ui_manager, panel, layout, label='', range_min=0, range_max=
     spinbox.setRange(range_min, range_max)
     spinbox.setSingleStep(step)
     spinbox.setSuffix(suffix)
-    spinbox.setFixedWidth(50)
+    spinbox.setFixedWidth(58)
     ui_manager.connect_element_to_action(spinbox, action)
     slabel.setBuddy(spinbox)
     spinbox.k_buddy = slabel
@@ -214,9 +214,10 @@ def mini_icon_button(ui_manager, parent, layout, icon=None, text='', action='', 
     :param parent:
     :param text:
     :param action:
-    :param x
-    :param y
-    :param checkable
+    :param x:
+    :param y:
+    :param checkable:
+    :param max_width:
     :return:
     """
     button = PanelButton(pixmap=icon, tooltip=text, parent=parent, size=12)
@@ -230,18 +231,26 @@ def mini_icon_button(ui_manager, parent, layout, icon=None, text='', action='', 
     return button
 
 
-def mini_button(ui_manager, parent, layout, text='', action='', x=-1, y=-1, checkable=False):
+def mini_button(ui_manager, parent, layout, text='', action='', x=-1, y=-1, checkable=False,
+                width=40):
     """
 
     :param ui_manager:
     :param layout:
     :param text:
     :param action:
+    :param x:
+    :param y:
+    :param checkable:
     :return:
     """
     button = QtWidgets.QPushButton(text, parent=parent)
-    button.setMinimumSize(QSize(40, 20))
-    button.setMaximumSize(QSize(40, 20))
+    if width > -1:
+        button.setMinimumSize(QSize(width, 20))
+        button.setMaximumSize(QSize(width, 20))
+    else:
+        button.setMinimumHeight(20)
+        button.setMaximumHeight(20)
     button.setCheckable(checkable)
     ui_manager.connect_element_to_action(button, action)
     if x != -1:
@@ -420,7 +429,6 @@ def radiobutton(ui_manager, parent, layout, label='', action='', x=-1, y=-1, gro
     slabel.setBuddy(sradio)
     sradio.k_buddy = slabel
     return sradio
-
 
 
 def box_row(container):

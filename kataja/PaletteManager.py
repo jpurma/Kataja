@@ -417,7 +417,7 @@ class PaletteManager:
             lu_max = 50
             compute = True
         elif mode == 'random-dark':
-            lu_min = 50
+            lu_min = 55
             compute = True
         elif mode == 'bw':
             self.hsv = list(self.get_color_mode_data(mode)['hsv'])
@@ -517,7 +517,7 @@ class PaletteManager:
         self.gradient.setColorAt(1, self.d['background1'])
         self.gradient.setColorAt(0, self.d['background2'])
 
-    def compute_palette(self, hsv, contrast=50, bw=False, faded=False):
+    def compute_palette(self, hsv, contrast=55, bw=False, faded=False):
         """ Create/get root color and build palette around it.
         :param hsv:
         Leaves custom colors as they are. """
