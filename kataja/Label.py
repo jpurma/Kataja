@@ -263,6 +263,7 @@ class Label(QtWidgets.QGraphicsTextItem):
                             waiting = None
                         html.append('<br/>')
                         row += 1
+
         if html and html[-1] == '<br/>' or (delimiter and html[-1] == delimiter):
             html.pop()
         return ''.join(html), visible_parts
@@ -279,9 +280,15 @@ class Label(QtWidgets.QGraphicsTextItem):
         h = self._host
         editable_parts = []
         editable = []
+        show_all_mode = prefs.show_all_mode
         for field_name in self.visible_in_label:
             s = styles.get(field_name, {})
             e = edit_styles.get(field_name, {})
+            syntactic = s.get('syntactic', False)
+            if (not show_all_mode) and not syntactic:
+                continue
+            if not h.check_conditions(s):
+                continue
             if 'getter' in e:
                 getter = getattr(h, e.get('getter'), None)
                 if callable(getter):
@@ -290,6 +297,7 @@ class Label(QtWidgets.QGraphicsTextItem):
                     field_value = getter
             else:
                 field_value = getattr(h, field_name, '')
+
             if 'special' in s:
                 if s['special'] == 'triangle':
                     continue
@@ -301,7 +309,6 @@ class Label(QtWidgets.QGraphicsTextItem):
                             rows.append(row.as_html())
                         else:
                             rows.append(row)
-
                     rowstring = '\n'.join(rows)
                     editable_parts.append((field_name, rowstring, len(rows)))
                     editable.append(rowstring)

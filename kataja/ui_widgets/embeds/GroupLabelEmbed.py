@@ -91,7 +91,7 @@ class GroupLabelEmbed(UIEmbed):
         self.enter_button = QtWidgets.QPushButton("Keep ↩")  # U+21A9 &#8617;
         self.enter_button.setMaximumWidth(60)
         ui.connect_element_to_action(self.enter_button, 'save_group_changes')
-
+        hlayout.addStretch(0)
         hlayout.addWidget(self.enter_button)
         layout.addLayout(hlayout)
         self.setLayout(layout)

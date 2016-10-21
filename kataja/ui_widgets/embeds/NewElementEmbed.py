@@ -58,6 +58,7 @@ class NewElementEmbed(UIEmbed):
         #self.node_types.append(('New divider', g.DIVIDER))
         self.node_type_selector.add_items(self.node_types)
         hlayout.addWidget(self.node_type_selector)
+        hlayout.addStretch(0)
         self.enter_button = QtWidgets.QPushButton("Create ↩")  # U+21A9 &#8617;
         ui.connect_element_to_action(self.enter_button, 'create_new_node_from_text')
 

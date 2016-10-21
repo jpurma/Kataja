@@ -31,7 +31,6 @@ class EdgeLabelEmbed(UIEmbed):
         hlayout = QtWidgets.QHBoxLayout()
         hlayout.addWidget(self.input_line_edit)
         self.enter_button = QtWidgets.QPushButton("↩")  # U+21A9 &#8617;
-        self.enter_button.setMaximumWidth(20)
         self.ui_manager.connect_element_to_action(self.enter_button, 'edit_edge_label_enter_text')
 
         hlayout.addWidget(self.enter_button)

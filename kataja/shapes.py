@@ -770,7 +770,14 @@ od = [('shaped_cubic',
             outline=False,
             icon=no_path_icon,
             control_points=0,
-            thickness=0.5, fillable=False))]
+            thickness=0.5, fillable=False)),
+      ('arrow',
+       dict(method=cubic_path, fill=False, outline=True,
+            icon=cubic_icon, control_points=2, relative=False,
+            rel_dx=0.2, rel_dy=0.4, fixed_dx=0, fixed_dy=20,
+            thickness=1, fillable=False)),
+
+      ]
 
 
 def draw_circle(painter, x, y, end_spot_size):
