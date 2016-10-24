@@ -114,7 +114,7 @@ class LineOptionsPanel(Panel):
         """ Choose which selectors to show and update their values
         :return: None
         """
-        if not ctrl.forest.settings:
+        if not ctrl.forest:
             return
         if ctrl.ui.scope_is_selection:
             es = ctrl.ui.active_edge_style

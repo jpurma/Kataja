@@ -78,8 +78,8 @@ class ConstituentNode(BaseConstituentNode):
                              option_function='build_projection_options_for_ui',
                              input_type='radiobutton',
                              select_action='constituent_set_head')}
-    default_style = {'plain': {'color': 'content1', 'font': g.MAIN_FONT, 'font-size': 10},
-                     'fancy': {'color': 'content1', 'font': g.MAIN_FONT, 'font-size': 10}}
+    default_style = {'plain': {'color_id': 'content1', 'font_id': g.MAIN_FONT, 'font-size': 10},
+                     'fancy': {'color_id': 'content1', 'font_id': g.MAIN_FONT, 'font-size': 10}}
 
     default_edge = g.CONSTITUENT_EDGE
 
@@ -254,7 +254,7 @@ class ConstituentNode(BaseConstituentNode):
             return self.label
 
     def update_label_shape(self):
-        self.label_object.label_shape = ctrl.fs.label_shape
+        self.label_object.label_shape = ctrl.settings.get('label_shape')
 
     def update_locked_features(self):
         """
@@ -266,17 +266,17 @@ class ConstituentNode(BaseConstituentNode):
     def should_show_label(self) -> bool:
         """ A condition check called by display_styles -dict to prepare visible_in_label -list
         """
-        return not (self.forest.settings.show_display_labels and self.display_label)
+        return not (ctrl.settings.get('show_display_labels') and self.display_label)
 
     def should_show_display_label(self) -> bool:
         """ A condition check called by display_styles -dict to prepare visible_in_label -list
         """
-        return self.forest.settings.show_display_labels and self.display_label
+        return ctrl.settings.get('show_display_labels') and self.display_label
 
     def should_show_gloss_in_label(self) -> bool:
         """ A condition check called by display_styles -dict to prepare visible_in_label -list
         """
-        return self.forest.settings.show_glosses == 1
+        return ctrl.settings.get('show_glosses') == 1
 
     def update_status_tip(self) -> None:
         """ Hovering status tip """
@@ -393,7 +393,7 @@ class ConstituentNode(BaseConstituentNode):
         point.
         :return:
         """
-        if ctrl.fs.use_projection:
+        if ctrl.settings.get('use_projection'):
             if self.is_leaf(only_similar=True, only_visible=False):
                 return False
             else:

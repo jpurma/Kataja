@@ -29,7 +29,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import Qt
 
 import kataja.globals as g
-import kataja.shapes
+import kataja.Shapes
 from kataja.Label import Label
 from kataja.SavedField import SavedField
 from kataja.saved.Movable import Movable
@@ -89,7 +89,7 @@ class Node(Movable):
     display_styles = {}
     editable = {}
 
-    default_style = {'color': 'content1', 'font': g.MAIN_FONT, 'font-size': 10, 'card': False,
+    default_style = {'color_id': 'content1', 'font_id': g.MAIN_FONT, 'font-size': 10, 'card': False,
                      'card_width': 0, 'card_height': 0}
 
     default_edge = g.ABSTRACT_EDGE
@@ -790,15 +790,14 @@ class Node(Movable):
         pass
 
     def reset_style(self):
-        self.font_id = None
-        self.color_id = None
+        ctrl.settings.reset_node_style(node=self)
         self.update_label()
 
     def has_local_style_settings(self):
         return bool(self.font_id or self.color_id)
 
     def get_style(self):
-        return {'font': self.get_font_id(), 'color': self.get_color_id()}
+        return {'font_id': self.get_font_id(), 'color_id': self.get_color_id()}
 
     # ## Font
     # #####################################################################
@@ -810,14 +809,14 @@ class Node(Movable):
         """
         return qt_prefs.get_font(self.get_font_id())
 
-    def get_font_id(self):
+    def get_font_id(self) -> str:
         """
         :return:
         """
-        if self.font_id:
-            return self.font_id
-        else:
-            return ctrl.fs.node_style(self.node_type, 'font')
+        return ctrl.settings.get_node_setting('font_id', node=self)
+
+    def set_font_id(self, value):
+        ctrl.settings.set_node_setting('font_id', value, node=self)
 
     # ### Colors and drawing settings
     # ############################################################
@@ -833,11 +832,10 @@ class Node(Movable):
         """
         :return:
         """
-        if self.color_id is None:
-            c = ctrl.fs.node_style(self.__class__.node_type, 'color')
-            return c
-        else:
-            return self.color_id
+        return ctrl.settings.get_node_setting('color_id', node=self)
+
+    def set_color_id(self, value):
+        ctrl.settings.set_node_setting('color_id', value, node=self)
 
     def palette(self):
         """
@@ -1130,21 +1128,21 @@ class Node(Movable):
         else:
             c = self.contextual_color
             edge_type = self.edge_type()
-            shape_name = ctrl.fs.edge_info(edge_type, 'shape_name')
-            presets = kataja.shapes.SHAPE_PRESETS[shape_name]
-            method = presets['method']
-            path, lpath, foo, bar = method(start_point=(center, top),
-                                           end_point=(right, bottom),
-                                           alignment=g.RIGHT, **presets)
-            if presets['fill']:
+            shape_name = ctrl.settings.get_edge_setting('shape_name', edge_type=edge_type)
+            path_class = kataja.Shapes.SHAPE_PRESETS[shape_name]
+            path, lpath, foo, bar = path_class.path(start_point=(center, top),
+                                                    end_point=(right, bottom),
+                                                    alignment=g.RIGHT)
+            fill = ctrl.settings.get_shape_setting('fill', edge_type=edge_type)
+            if fill:
                 painter.fillPath(path, c)
             else:
                 painter.drawPath(path)
             painter.drawLine(left, bottom, right, bottom)
-            path, lpath, foo, bar = method(start_point=(center, top),
-                                           end_point=(left, bottom),
-                                           alignment=g.LEFT, **presets)
-            if presets['fill']:
+            path, lpath, foo, bar = path_class.path(start_point=(center, top),
+                                                    end_point=(left, bottom),
+                                                    alignment=g.LEFT)
+            if fill:
                 painter.fillPath(path, c)
             else:
                 painter.drawPath(path)
@@ -1748,5 +1746,3 @@ class Node(Movable):
     triangle = SavedField("triangle", if_changed=if_changed_triangle)
     folded_away = SavedField("folded_away")
     folding_towards = SavedField("folding_towards", if_changed=if_changed_folding_towards)
-    color_id = SavedField("color_id")
-    font_id = SavedField("font_id", if_changed=if_changed_font)

@@ -1,5 +1,7 @@
 # coding=utf-8
 from PyQt5 import QtWidgets
+
+from kataja.Settings import FOREST
 from kataja.singletons import ctrl, prefs, log
 import kataja.globals as g
 from kataja.KatajaAction import KatajaAction
@@ -66,11 +68,11 @@ class ActivateNoFrameNodeShape(KatajaAction):
         """ Set nodes to be frameless and small
         :return:
         """
-        ctrl.fs.label_shape = g.NORMAL
+        ctrl.settings.set('label_shape', g.NORMAL, level=FOREST)
         ctrl.forest.update_label_shape()
 
     def getter(self):
-        return ctrl.fs.label_shape == g.NORMAL
+        return ctrl.settings.get('label_shape') == g.NORMAL
 
     def enabler(self):
         return ctrl.forest.visualization and \
@@ -86,11 +88,11 @@ class ActivateScopeboxNodeShape(KatajaAction):
         """ Set nodes to be frameless and small
         :return:
         """
-        ctrl.fs.label_shape = g.SCOPEBOX
+        ctrl.settings.set('label_shape', g.SCOPEBOX, level=FOREST)
         ctrl.forest.update_label_shape()
 
     def getter(self):
-        return ctrl.fs.label_shape == g.SCOPEBOX
+        return ctrl.settings.get('label_shape') == g.SCOPEBOX
 
     def enabler(self):
         return ctrl.forest.visualization and \
@@ -106,11 +108,11 @@ class ActivateBracketedNodeShape(KatajaAction):
         """ Set nodes to be frameless and small
         :return:
         """
-        ctrl.fs.label_shape = g.BRACKETED
+        ctrl.settings.set('label_shape', g.BRACKETED, level=FOREST)
         ctrl.forest.update_label_shape()
 
     def getter(self):
-        return ctrl.fs.label_shape == g.BRACKETED
+        return ctrl.settings.get('label_shape') == g.BRACKETED
 
     def enabler(self):
         return ctrl.forest.visualization and \
@@ -126,11 +128,11 @@ class ActivateBoxShape(KatajaAction):
         """ Set nodes to be frameless and small
         :return:
         """
-        ctrl.fs.label_shape = g.BOX
+        ctrl.settings.set('label_shape', g.BOX, level=FOREST)
         ctrl.forest.update_label_shape()
 
     def getter(self):
-        return ctrl.fs.label_shape == g.BOX
+        return ctrl.settings.get('label_shape') == g.BOX
 
     def enabler(self):
         return ctrl.forest.visualization and \
@@ -146,11 +148,11 @@ class ActivateCardNodeShape(KatajaAction):
         """ Set nodes to be frameless and small
         :return:
         """
-        ctrl.fs.label_shape = g.CARD
+        ctrl.settings.set('label_shape', g.CARD, level=FOREST)
         ctrl.forest.update_label_shape()
 
     def getter(self):
-        return ctrl.fs.label_shape == g.CARD
+        return ctrl.settings.get('label_shape') == g.CARD
 
     def enabler(self):
         return ctrl.forest.visualization and \
@@ -166,7 +168,7 @@ class SwitchBracketMode(KatajaAction):
     def method(self):
         """ Brackets are visible always for non-leaves, never or for important parts
         """
-        bs = ctrl.fs.label_shape
+        bs = ctrl.settings.get('label_shape')
         bs += 1
         if bs > 4:
             bs = 0
@@ -185,7 +187,7 @@ class SwitchBracketMode(KatajaAction):
             m = '(b) Node shape: Boxes'
         elif bs == g.CARD:
             m = '(b) Node shape: Cards'
-        ctrl.fs.label_shape = bs
+        ctrl.settings.set('label_shape', bs, level=FOREST)
         ctrl.forest.update_label_shape()
         return m
 
@@ -201,16 +203,17 @@ class SwitchTraceMode(KatajaAction):
         traces are grouped to their original position
         :return: None
         """
-        fs = ctrl.fs
+        grouped_traces = ctrl.settings.get('traces_are_grouped_together')
+        multidomination = ctrl.settings.get('uses_multidomination')
 
-        if fs.traces_are_grouped_together and not fs.uses_multidomination:
+        if grouped_traces and not multidomination:
             ctrl.forest.traces_to_multidomination()
             log.info('(t) use multidominance')
-        elif (not fs.traces_are_grouped_together) and not fs.uses_multidomination:
+        elif (not grouped_traces) and not multidomination:
             log.info('(t) use traces, group them to one spot')
             ctrl.forest.group_traces_to_chain_head()
             ctrl.action_redraw = False
-        elif fs.uses_multidomination:
+        elif multidomination:
             log.info('(t) use traces, show constituents in their base merge positions')
             ctrl.forest.multidomination_to_traces()
 
@@ -225,13 +228,13 @@ class ToggleMergeOrder(KatajaAction):
         """ Toggle showing numbers indicating merge orders
         :return: None
         """
-        if ctrl.fs.shows_merge_order():
+        if ctrl.settings.get('show_merge_order'):
             log.info('(o) Hide merge order')
-            ctrl.fs.shows_merge_order(False)
+            ctrl.settings.set('show_merge_order', False, level=FOREST)
             ctrl.forest.remove_order_features('M')
         else:
             log.info('(o) Show merge order')
-            ctrl.fs.shows_merge_order(True)
+            ctrl.settings.set('show_merge_order', True, level=FOREST)
             ctrl.forest.add_order_features('M')
 
 
@@ -245,13 +248,13 @@ class ToggleSelectOrder(KatajaAction):
         """ Toggle showing numbers indicating order of lexical selection
         :return: None
         """
-        if ctrl.fs.shows_select_order():
+        if ctrl.settings.get('show_select_order'):
             log.info('(O) Hide select order')
-            ctrl.fs.shows_select_order(False)
+            ctrl.settings.set('show_select_order', False, level=FOREST)
             ctrl.forest.remove_order_features('S')
         else:
             log.info('(O) Show select order')
-            ctrl.fs.shows_select_order(True)
+            ctrl.settings.set('show_select_order', True, level=FOREST)
             ctrl.forest.add_order_features('S')
 
 
@@ -268,7 +271,7 @@ class ChangeColors(KatajaAction):
         if not color_panel.isVisible():
             color_panel.show()
         else:
-            ctrl.fs._hsv = None
+            ctrl.settings.set('hsv', None, level=FOREST)
             ctrl.forest.update_colors()
             ctrl.main.activateWindow()
             # self.ui_support.add_message('Color seed: H: %.2f S: %.2f L: %.2f' % ( h, s,
@@ -342,11 +345,12 @@ class ToggleHighlighterProjection(KatajaAction):
 
     def method(self):
         """ """
-        ctrl.fs.projection_highlighter = not ctrl.fs.projection_highlighter
+        ctrl.settings.set('projection_highlighter', not ctrl.settings.get(
+            'projection_highlighter'), level=FOREST)
         ctrl.forest.update_projection_display()
 
     def getter(self):
-        return ctrl.fs.projection_highlighter
+        return ctrl.settings.get('projection_highlighter')
 
 
 class ToggleStrongLinesProjection(KatajaAction):
@@ -357,11 +361,12 @@ class ToggleStrongLinesProjection(KatajaAction):
 
     def method(self):
         """ """
-        ctrl.fs.projection_strong_lines = not ctrl.fs.projection_strong_lines
+        ctrl.settings.set('projection_strong_lines', not ctrl.settings.get(
+            'projection_strong_lines'), level=FOREST)
         ctrl.forest.update_projection_display()
 
     def getter(self):
-        return ctrl.fs.projection_strong_lines
+        return ctrl.settings.get('projection_strong_lines')
 
 
 class ToggleColorizedProjection(KatajaAction):
@@ -372,11 +377,12 @@ class ToggleColorizedProjection(KatajaAction):
 
     def method(self):
         """ """
-        ctrl.fs.projection_colorized = not ctrl.fs.projection_colorized
+        ctrl.settings.set('projection_colorized', not ctrl.settings.get(
+            'projection_colorized'), level=FOREST)
         ctrl.forest.update_projection_display()
 
     def getter(self):
-        return ctrl.fs.projection_colorized
+        return ctrl.settings.get('projection_colorized')
 
 
 class ToggleShowDisplayLabel(KatajaAction):
@@ -385,8 +391,8 @@ class ToggleShowDisplayLabel(KatajaAction):
     k_tooltip = 'Show display labels for nodes when available'
 
     def method(self):
-        v = not ctrl.fs.show_display_labels
-        ctrl.fs.show_display_labels = v
+        v = not ctrl.settings.get('show_display_labels')
+        ctrl.settings.get('show_display_labels', v, level=FOREST)
         for node in ctrl.forest.nodes.values():
             node.update_label()
             node.update_label_visibility()
@@ -396,5 +402,5 @@ class ToggleShowDisplayLabel(KatajaAction):
             return self.command % 'Hide'
 
     def getter(self):
-        return ctrl.fs.show_display_labels
+        return ctrl.settings.get('show_display_labels')
 

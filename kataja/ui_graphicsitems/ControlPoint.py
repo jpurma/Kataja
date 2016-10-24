@@ -169,7 +169,7 @@ class ControlPoint(UIGraphicsItem, QtWidgets.QGraphicsItem):
             self.setPos(scenepos)
         if self.role == g.CURVE_ADJUSTMENT:
             rdist, rrad = self._compute_adjust_from_pos(scenepos)
-            self.host.shape_info.adjust_control_point(self._index, rdist, rrad)
+            self.host.adjust_control_point(self._index, rdist, rrad)
         elif self.role == g.START_POINT:
             self.host.set_start_point(event.scenePos())
             self.host.make_path()

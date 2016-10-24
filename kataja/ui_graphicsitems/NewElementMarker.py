@@ -3,7 +3,7 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 from kataja.singletons import prefs, ctrl
 from kataja.UIItem import UIGraphicsItem
-from kataja.shapes import draw_arrow_shape_from_points
+from kataja.Shapes import draw_arrow_shape_from_points
 from kataja.uniqueness_generator import next_available_type_id
 
 

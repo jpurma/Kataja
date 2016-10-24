@@ -1,4 +1,5 @@
 # coding=utf-8
+from kataja.Settings import FOREST
 from kataja.KatajaAction import KatajaAction
 from kataja.singletons import ctrl, prefs, log
 from kataja.saved.movables.Node import Node
@@ -149,23 +150,15 @@ class ResetStyleInScope(KatajaAction):
             for item in ctrl.selected:
                 if hasattr(item, 'reset_style'):
                     item.reset_style()
-        ctrl.fs.reset_node_style(ctrl.ui.active_node_type)
-        ctrl.fs.reset_edge_style(ctrl.ui.active_edge_type)
+        else:
+            ctrl.settings.reset_node_style(ctrl.ui.active_node_type, level=FOREST)
+            ctrl.settings.reset_edge_style(ctrl.ui.active_edge_type, level=FOREST)
         ctrl.forest.redraw_edges(ctrl.ui.active_edge_type)
 
     def enabler(self):
         if ctrl.forest is None:
             return False
-        if ctrl.ui.scope_is_selection:
-            for item in ctrl.selected:
-                if hasattr(item, 'has_local_style_settings'):
-                    if item.has_local_style_settings():
-                        return True
-        elif ctrl.ui.active_node_type and ctrl.fs.has_local_node_style(ctrl.ui.active_node_type):
-            return True
-        elif ctrl.ui.active_edge_type and ctrl.fs.has_local_edge_style(ctrl.ui.active_edge_type):
-            return True
-        return False
+        return True
 
 
 class StartFontDialog(KatajaAction):
@@ -214,7 +207,8 @@ class SelectFont(KatajaAction):
                         node.font_id = font_id
                         node.update_label()
             else:
-                ctrl.fs.set_node_style(ctrl.ui.active_node_type, 'font', font_id)
+                ctrl.settings.set_node_setting('font', font_id, node_type=ctrl.ui.active_node_type,
+                                               level=FOREST)
                 for node in ctrl.forest.nodes.values():
                     node.update_label()
 
@@ -240,7 +234,8 @@ class SelectFontFromDialog(KatajaAction):
                         node.font_id = font_id
                         node.update_label()
             else:
-                ctrl.fs.set_node_style(ctrl.ui.active_node_type, 'font', font_id)
+                ctrl.settings.set_node_setting('font', font_id, node_type=ctrl.ui.active_node_type,
+                                               level=FOREST)
                 for node in ctrl.forest.nodes.values():
                     node.update_label()
 
@@ -279,7 +274,9 @@ class ChangeNodeColor(KatajaAction):
                     node.update_label()
         # ... or update color for all nodes of this type
         else:
-            ctrl.fs.set_node_style(ctrl.ui.active_node_type, 'color', color_key)
+            ctrl.settings.set_node_setting('color_id', color_key,
+                                           node_type=ctrl.ui.active_node_type,
+                                           level=FOREST)
             for node in ctrl.forest.nodes.values():
                 node.update_label()
         if color_key:
@@ -294,6 +291,6 @@ class ChangeNodeColor(KatajaAction):
         return True  # all scope options allow defining node color
 
     def getter(self):
-        return ctrl.ui.active_node_style.get('color')
+        return ctrl.ui.active_node_style.get('color_id')
 
 

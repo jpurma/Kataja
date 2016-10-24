@@ -29,7 +29,7 @@ from kataja.globals import *
 from copy import deepcopy
 
 # Use these to debug
-disable_loading_preferences = False
+disable_loading_preferences = True
 disable_saving_preferences = False
 
 curves = ['Linear', 'InQuad', 'OutQuad', 'InOutQuad', 'OutInQuad', 'InCubic', 'OutCubic',
@@ -183,8 +183,21 @@ class Preferences(object):
                                                   'use multiples of "edge width" as padding '
                                                   'between trees.'}
 
+        self.show_display_labels = True
+        self._show_display_labels_ui = {'tab': 'Drawing',
+                                        'help': "If nodes have 'display labels', aliases that "
+                                                "are not used for syntactic computation, "
+                                                "show them instead of syntactic labels. "}
+
+        self.projection_strong_lines = True
+        self.projection_colorized = True
+        self.projection_highlighter = False
+
         self.user_palettes = {}
         self.traces_are_grouped_together = False
+        self.last_key_colors = {}
+
+        self.use_xbar_aliases = True
 
         self.dpi = 300
         self._dpi_ui = {'tab': 'Printing', 'choices': [72, 150, 300, 450, 600], 'label': 'DPI',
@@ -227,11 +240,11 @@ class Preferences(object):
         self._shows_select_order_ui = {'tab': 'Syntax'}
 
         # Rest of the edges are defined in their corresponding node classes
-        self.edge_styles = deepcopy(master_styles)
+        self.edges = deepcopy(master_styles['fancy'])
         # Nodes are defined in their classes and preference dict is generated
         #  from those.
-        self.node_styles = {}
-        self._node_styles_ui = {'tab': 'Node styles', 'special': 'nodes'}
+        self.nodes = {}
+        self._nodes_ui = {'tab': 'Node styles', 'special': 'nodes'}
 
         self.plugins_path = ''
         self.active_plugins = {}
@@ -272,7 +285,7 @@ class Preferences(object):
     def import_node_classes(self, classes):
         node_classes = classes.nodes
         for key, nodeclass in node_classes.items():
-            self.node_styles[key] = deepcopy(nodeclass.default_style)
+            self.nodes[key] = deepcopy(nodeclass.default_style['fancy'])
 
     def restore_default_preferences(self, qt_prefs, running_environment, classes):
         source_prefs = Preferences(running_environment)

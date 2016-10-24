@@ -4,6 +4,7 @@ import math
 from PyQt5 import QtCore
 from kataja.KatajaAction import KatajaAction
 from kataja.saved.Edge import Edge
+from kataja.Settings import FOREST
 
 from kataja.singletons import ctrl, log
 
@@ -182,7 +183,8 @@ class ChangeEdgeShape(KatajaAction):
                     edge.shape_name = shape
                     edge.update_shape()
         else:
-            ctrl.fs.set_edge_info(ctrl.ui.active_edge_type, 'shape_name', shape)
+            ctrl.settings.set_edge_setting('shape_name', shape,
+                                           edge_type=ctrl.ui.active_edge_type, level=FOREST)
             for edge in ctrl.forest.edges.values():
                 edge.update_shape()
         line_options = ctrl.ui.get_panel('LineOptionsPanel')
@@ -237,118 +239,15 @@ class ChangeEdgeColor(KatajaAction):
                     edge.update()
         # ... or update color for all edges of this type
         else:
-            ctrl.fs.set_edge_info(ctrl.ui.active_edge_type, 'color', color_key)
+            ctrl.settings.set_edge_setting('color_id', color_key,
+                                           edge_type=ctrl.ui.active_edge_type, level=FOREST)
             for edge in ctrl.forest.edges.values():
                 edge.update()
         if color_key:
             log.info('(s) Changed relation color to: %s' % ctrl.cm.get_color_name(color_key))
 
     def getter(self):
-        return ctrl.ui.active_edge_style.get('color')
-
-
-# class ControlPoint1Dist(KatajaAction):
-#     k_action_uid = 'control_point1_dist'
-#     k_command = 'Adjust curvature, point 1 distance'
-#
-#     def method(self):
-#         """ Adjust specifix control point
-#         :return: None
-#         """
-#         value = self.state_arg
-#         if value is None:
-#             return
-#         for edge in ctrl.selected:
-#             if isinstance(edge, Edge):
-#                 edge.shape_info.adjust_control_point(0, dist=value * 0.01)
-#
-#     def enabler(self):
-#         return ctrl.ui.scope_is_selection and ctrl.ui.active_edge_style.get('control_points', 0)
-#
-#     def getter(self):
-#         ca = ctrl.ui.active_edge_style.get('curve_adjustment', [])
-#         if ca:
-#             return round(ca[0][0] * 100)
-#         else:
-#             return 0
-#
-#
-# class ControlPoint2Dist(KatajaAction):
-#     k_action_uid = 'control_point2_dist'
-#     k_command = 'Adjust curvature, point 2 distance'
-#
-#     def method(self):
-#         """ Adjust specifix control point
-#         :return: None
-#         """
-#         value = self.state_arg
-#         if value is None:
-#             return
-#         for edge in ctrl.selected:
-#             if isinstance(edge, Edge):
-#                 edge.shape_info.adjust_control_point(1, dist=value * 0.01)
-#
-#     def enabler(self):
-#         return ctrl.ui.scope_is_selection and ctrl.ui.active_edge_style.get('control_points', 0) > 1
-#
-#     def getter(self):
-#         ca = ctrl.ui.active_edge_style.get('curve_adjustment', [])
-#         if len(ca) > 1:
-#             return round(ca[1][0] * 100)
-#         else:
-#             return 0
-#
-#
-# class ControlPoint1Angle(KatajaAction):
-#     k_action_uid = 'control_point1_angle'
-#     k_command = 'Adjust curvature, point 1 angle'
-#
-#     def method(self):
-#         """ Adjust specifix control point
-#         :return: None
-#         """
-#         value = self.state_arg
-#         if value is None:
-#             return
-#         for edge in ctrl.selected:
-#             if isinstance(edge, Edge):
-#                 edge.shape_info.adjust_control_point(0, rad=math.radians(value))
-#
-#     def enabler(self):
-#         return ctrl.ui.scope_is_selection and ctrl.ui.active_edge_style.get('control_points', 0)
-#
-#     def getter(self):
-#         ca = ctrl.ui.active_edge_style.get('curve_adjustment', [])
-#         if ca:
-#             return math.degrees(ca[0][1])
-#         else:
-#             return 0
-#
-#
-# class ControlPoint2Angle(KatajaAction):
-#     k_action_uid = 'control_point2_angle'
-#     k_command = 'Adjust curvature, point 2 angle'
-#
-#     def method(self):
-#         """ Adjust specifix control point
-#         :return: None
-#         """
-#         value = self.state_arg
-#         if value is None:
-#             return
-#         for edge in ctrl.selected:
-#             if isinstance(edge, Edge):
-#                 edge.shape_info.adjust_control_point(1, rad=math.radians(value))
-#
-#     def enabler(self):
-#         return ctrl.ui.scope_is_selection and ctrl.ui.active_edge_style.get('control_points', 0) > 1
-#
-#     def getter(self):
-#         ca = ctrl.ui.active_edge_style.get('curve_adjustment', [])
-#         if len(ca) > 1:
-#             return math.degrees(ca[1][1])
-#         else:
-#             return 0
+        return ctrl.ui.active_edge_style.get('color_id')
 
 
 class EdgeArrowheadStart(KatajaAction):
@@ -362,10 +261,11 @@ class EdgeArrowheadStart(KatajaAction):
         if ctrl.ui.scope_is_selection:
             for edge in ctrl.selected:
                 if isinstance(edge, Edge):
-                    edge.shape_info.set_arrowhead_at_start(value)
+                    edge.set_arrowhead_at_start(value)
         else:
             etype = ctrl.ui.active_edge_type
-            ctrl.fs.set_edge_info(etype, 'arrowhead_at_start', value)
+            ctrl.settings.set_edge_setting('arrowhead_at_start', value, edge_type=etype,
+                                           level=FOREST)
             ctrl.forest.redraw_edges(edge_type=etype)
 
     def enabler(self):
@@ -387,17 +287,18 @@ class EdgeArrowheadEnd(KatajaAction):
         if ctrl.ui.scope_is_selection:
             for edge in ctrl.selected:
                 if isinstance(edge, Edge):
-                    edge.shape_info.set_arrowhead_at_end(value)
+                    edge.set_arrowhead_at_end(value)
         else:
             etype = ctrl.ui.active_edge_type
-            ctrl.fs.set_edge_info(etype, 'arrowhead_at_end', value)
+            ctrl.settings.set_edge_setting('arrowhead_at_end', value, edge_type=etype, level=FOREST)
             ctrl.forest.redraw_edges(edge_type=etype)
 
     def enabler(self):
         return ctrl.ui.active_edge_style
 
     def getter(self):
-        return ctrl.ui.active_edge_style.get('arrowhead_at_end', False)
+        etype = ctrl.ui.active_edge_type
+        return ctrl.settings.get_edge_setting('arrowhead_at_end', edge_type=etype)
 
 
 class ResetControlPoints(KatajaAction):
@@ -412,13 +313,13 @@ class ResetControlPoints(KatajaAction):
         if ctrl.ui.scope_is_selection:
             for edge in ctrl.selected:
                 if isinstance(edge, Edge):
-                    edge.shape_info.reset_control_points()
+                    edge.reset_control_points()
         else:
             etype = ctrl.ui.active_edge_type
             if etype:
                 for edge in ctrl.forest.edges.values():
                     if edge.edge_type == etype:
-                        edge.shape_info.reset_control_points()
+                        edge.reset_control_points()
 
 
 class ResetEdgeSettings(KatajaAction):
@@ -433,16 +334,22 @@ class ResetEdgeSettings(KatajaAction):
         if ctrl.ui.scope_is_selection:
             for edge in ctrl.selected:
                 if isinstance(edge, Edge):
-                    edge.shape_info.reset_shape_info()
+                    edge.reset_shape()
+                    ctrl.settings.del_edge_setting('arrowhead_at_start', edge=edge)
+                    ctrl.settings.del_edge_setting('arrowhead_at_end', edge=edge)
+
             ctrl.forest.redraw_edges()
 
         else:
             etype = ctrl.ui.active_edge_type
             if etype:
-                ctrl.fs.reset_edge_style(etype)
+                ctrl.settings.reset_shape_settings(level=FOREST, edge_type=etype)
+                ctrl.settings.del_edge_setting('arrowhead_at_start', edge_type=etype)
+                ctrl.settings.del_edge_setting('arrowhead_at_end', edge_type=etype)
+
                 for edge in ctrl.forest.edges.values():
                     if edge.edge_type == etype:
-                        edge.shape_info.reset_shape_info()
+                        edge.reset_shape()
                 ctrl.forest.redraw_edges(edge_type=etype)
 
 
@@ -460,17 +367,18 @@ class LeafShapeX(KatajaAction):
         elif ctrl.ui.scope_is_selection:
             for edge in ctrl.selected:
                 if isinstance(edge, Edge):
-                    edge.shape_info.set_leaf_width(value)
+                    edge.set_leaf_width(value)
         else:
             etype = ctrl.ui.active_edge_type
-            ctrl.fs.set_shape_info(etype, 'leaf_x', value)
-            ctrl.forest.redraw_edges(edge_type=etype)
+            ctrl.settings.set_edge_setting('leaf_x', value, edge_type=etype, level=FOREST)
 
     def enabler(self):
-        return ctrl.ui.active_edge_style.get('fillable', False)
+        etype = ctrl.ui.active_edge_type
+        return ctrl.settings.get_shape_setting('fillable', edge_type=etype)
 
     def getter(self):
-        return ctrl.ui.active_edge_style.get('leaf_x')
+        etype = ctrl.ui.active_edge_type
+        return ctrl.settings.get_shape_setting('leaf_x', edge_type=etype)
 
 
 class LeafShapeY(KatajaAction):
@@ -487,17 +395,18 @@ class LeafShapeY(KatajaAction):
         if ctrl.ui.scope_is_selection:
             for edge in ctrl.selected:
                 if isinstance(edge, Edge):
-                    edge.shape_info.set_leaf_height(value)
+                    edge.set_leaf_height(value)
         else:
             etype = ctrl.ui.active_edge_type
-            ctrl.fs.set_shape_info(etype, 'leaf_y', value)
-            ctrl.forest.redraw_edges(edge_type=etype)
+            ctrl.settings.set_edge_setting('leaf_y', value, edge_type=etype, level=FOREST)
 
     def enabler(self):
-        return ctrl.ui.active_edge_style.get('fillable', False)
+        etype = ctrl.ui.active_edge_type
+        return ctrl.settings.get_shape_setting('fillable', edge_type=etype)
 
     def getter(self):
-        return ctrl.ui.active_edge_style.get('leaf_y')
+        etype = ctrl.ui.active_edge_type
+        return ctrl.settings.get_shape_setting('leaf_y', edge_type=etype)
 
 
 class EdgeThickness(KatajaAction):
@@ -514,17 +423,18 @@ class EdgeThickness(KatajaAction):
         if ctrl.ui.scope_is_selection:
             for edge in ctrl.selected:
                 if isinstance(edge, Edge):
-                    edge.shape_info.set_thickness(value)
+                    edge.set_thickness(value)
         else:
             etype = ctrl.ui.active_edge_type
-            ctrl.fs.set_shape_info(etype, 'thickness', value)
-            ctrl.forest.redraw_edges(edge_type=etype)
+            ctrl.settings.set_edge_setting('thickness', value, edge_type=etype, level=FOREST)
 
     def enabler(self):
-        return ctrl.ui.active_edge_style.get('outline', False)
+        etype = ctrl.ui.active_edge_type
+        return ctrl.settings.get_shape_setting('outline', edge_type=etype)
 
     def getter(self):
-        return ctrl.ui.active_edge_style.get('thickness', 0)
+        etype = ctrl.ui.active_edge_type
+        return ctrl.settings.get_shape_setting('thickness', edge_type=etype)
 
 
 class EdgeCurvatureRelative(KatajaAction):
@@ -538,18 +448,19 @@ class EdgeCurvatureRelative(KatajaAction):
         if ctrl.ui.scope_is_selection:
             for edge in ctrl.selected:
                 if isinstance(edge, Edge):
-                    edge.shape_info.set_edge_curvature_relative(value)
+                    edge.set_edge_curvature_relative(value)
         else:
             etype = ctrl.ui.active_edge_type
-            ctrl.fs.set_shape_info(etype, 'relative', value)
-            ctrl.forest.redraw_edges(edge_type=etype)
+            ctrl.settings.set_edge_setting('relative', value, edge_type=etype, level=FOREST)
 
     def enabler(self):
-        return ctrl.ui.active_edge_style.get('relative', None) is not None and \
-            ctrl.ui.active_edge_style.get('control_points', 0)
+        etype = ctrl.ui.active_edge_type
+        return ctrl.settings.get_shape_setting('relative', edge_type=etype) is not None and \
+               ctrl.settings.get_shape_setting('control_points', edge_type=etype)
 
     def getter(self):
-        return ctrl.ui.active_edge_style.get('relative', None)
+        etype = ctrl.ui.active_edge_type
+        return ctrl.settings.get_shape_setting('relative', edge_type=etype)
 
 
 class EdgeCurvatureFixed(KatajaAction):
@@ -563,18 +474,19 @@ class EdgeCurvatureFixed(KatajaAction):
         if ctrl.ui.scope_is_selection:
             for edge in ctrl.selected:
                 if isinstance(edge, Edge):
-                    edge.shape_info.set_edge_curvature_relative(not value)
+                    edge.set_edge_curvature_relative(not value)
         else:
             etype = ctrl.ui.active_edge_type
-            ctrl.fs.set_shape_info(etype, 'relative', not value)
-            ctrl.forest.redraw_edges(edge_type=etype)
+            ctrl.settings.set_edge_setting('relative', not value, edge_type=etype, level=FOREST)
 
     def enabler(self):
-        return ctrl.ui.active_edge_style.get('relative', None) is not None and \
-            ctrl.ui.active_edge_style.get('control_points', 0)
+        etype = ctrl.ui.active_edge_type
+        return ctrl.settings.get_shape_setting('relative', edge_type=etype) is not None and \
+               ctrl.settings.get_shape_setting('control_points', edge_type=etype)
 
     def getter(self):
-        return not ctrl.ui.active_edge_style.get('relative', None)
+        etype = ctrl.ui.active_edge_type
+        return not ctrl.settings.get_shape_setting('relative', edge_type=etype)
 
 
 class ChangeEdgeRelativeCurvatureX(KatajaAction):
@@ -591,18 +503,19 @@ class ChangeEdgeRelativeCurvatureX(KatajaAction):
         if ctrl.ui.scope_is_selection:
             for edge in ctrl.selected:
                 if isinstance(edge, Edge):
-                    edge.shape_info.change_edge_relative_curvature_x(value)
+                    edge.change_edge_relative_curvature_x(value)
         else:
             etype = ctrl.ui.active_edge_type
-            ctrl.fs.set_shape_info(etype, 'rel_dx', value * .01)
-            ctrl.forest.redraw_edges(edge_type=etype)
+            ctrl.settings.set_edge_setting('rel_dx', value * .01, edge_type=etype, level=FOREST)
 
     def enabler(self):
-        return ctrl.ui.active_edge_style.get('relative', False) and \
-               ctrl.ui.active_edge_style.get('control_points', 0)
+        etype = ctrl.ui.active_edge_type
+        return ctrl.settings.get_shape_setting('relative', edge_type=etype) and \
+               ctrl.settings.get_shape_setting('control_points', edge_type=etype)
 
     def getter(self):
-        return round(ctrl.ui.active_edge_style.get('rel_dx', 0) * 100)
+        etype = ctrl.ui.active_edge_type
+        return round((ctrl.settings.get_shape_setting('rel_dx', edge_type=etype) or 0) * 100)
 
 
 class ChangeEdgeRelativeCurvatureY(KatajaAction):
@@ -619,18 +532,20 @@ class ChangeEdgeRelativeCurvatureY(KatajaAction):
         if ctrl.ui.scope_is_selection:
             for edge in ctrl.selected:
                 if isinstance(edge, Edge):
-                    edge.shape_info.change_edge_relative_curvature_y(value)
-        else:
-            etype = ctrl.ui.active_edge_type
-            ctrl.fs.set_shape_info(etype, 'rel_dy', value * .01)
-            ctrl.forest.redraw_edges(edge_type=etype)
+                    edge.change_edge_relative_curvature_y(value)
+                else:
+                    etype = ctrl.ui.active_edge_type
+                    ctrl.settings.set_edge_setting('rel_dy', value * .01, edge_type=etype,
+                                                    level=FOREST)
 
     def enabler(self):
-        return ctrl.ui.active_edge_style.get('relative', False) and \
-               ctrl.ui.active_edge_style.get('control_points', 0)
+        etype = ctrl.ui.active_edge_type
+        return ctrl.settings.get_shape_setting('relative', edge_type=etype) and \
+               ctrl.settings.get_shape_setting('control_points', edge_type=etype)
 
     def getter(self):
-        return round(ctrl.ui.active_edge_style.get('rel_dy', 0) * 100)
+        etype = ctrl.ui.active_edge_type
+        return round((ctrl.settings.get_shape_setting('rel_dy', edge_type=etype) or 0) * 100)
 
 
 class ChangeEdgeFixedCurvatureX(KatajaAction):
@@ -647,18 +562,19 @@ class ChangeEdgeFixedCurvatureX(KatajaAction):
         if ctrl.ui.scope_is_selection:
             for edge in ctrl.selected:
                 if isinstance(edge, Edge):
-                    edge.shape_info.change_edge_fixed_curvature_x(value)
+                    edge.change_edge_fixed_curvature_x(value)
         else:
             etype = ctrl.ui.active_edge_type
-            ctrl.fs.set_shape_info(etype, 'fixed_dx', value)
-            ctrl.forest.redraw_edges(edge_type=etype)
+            ctrl.settings.set_edge_setting('fixed_dx', value, edge_type=etype, level=FOREST)
 
     def enabler(self):
-        return ctrl.ui.active_edge_style.get('relative', None) is False and \
-               ctrl.ui.active_edge_style.get('control_points', 0)
+        etype = ctrl.ui.active_edge_type
+        return ctrl.settings.get_shape_setting('relative', edge_type=etype) is False and \
+               ctrl.settings.get_shape_setting('control_points', edge_type=etype)
 
     def getter(self):
-        return ctrl.ui.active_edge_style.get('fixed_dx')
+        etype = ctrl.ui.active_edge_type
+        return ctrl.settings.get_shape_setting('fixed_dx', edge_type=etype)
 
 
 class ChangeEdgeFixedCurvatureY(KatajaAction):
@@ -676,18 +592,19 @@ class ChangeEdgeFixedCurvatureY(KatajaAction):
         if ctrl.ui.scope_is_selection:
             for edge in ctrl.selected:
                 if isinstance(edge, Edge):
-                    edge.shape_info.change_edge_fixed_curvature_y(value)
+                    edge.change_edge_fixed_curvature_y(value)
         else:
             etype = ctrl.ui.active_edge_type
-            ctrl.fs.set_shape_info(etype, 'fixed_dy', value)
-            ctrl.forest.redraw_edges(edge_type=etype)
+            ctrl.settings.set_edge_setting('fixed_dy', value, edge_type=etype, level=FOREST)
 
     def enabler(self):
-        return ctrl.ui.active_edge_style.get('relative', None) is False and \
-               ctrl.ui.active_edge_style.get('control_points', 0)
+        etype = ctrl.ui.active_edge_type
+        return ctrl.settings.get_shape_setting('relative', edge_type=etype) is False and \
+               ctrl.settings.get_shape_setting('control_points', edge_type=etype)
 
     def getter(self):
-        return ctrl.ui.active_edge_style.get('fixed_dy')
+        etype = ctrl.ui.active_edge_type
+        return ctrl.settings.get_shape_setting('fixed_dy', edge_type=etype)
 
 
 class EdgeShapeFill(KatajaAction):
@@ -701,18 +618,19 @@ class EdgeShapeFill(KatajaAction):
         if ctrl.ui.scope_is_selection:
             for edge in ctrl.selected:
                 if isinstance(edge, Edge):
-                    edge.shape_info.set_fill(value)
+                    edge.set_fill(value)
         else:
             etype = ctrl.ui.active_edge_type
-            ctrl.fs.set_shape_info(etype, 'fill', value)
-            ctrl.forest.redraw_edges(edge_type=etype)
+            ctrl.settings.set_edge_setting('fill', value, edge_type=etype, level=FOREST)
 
     def enabler(self):
-        return ctrl.ui.active_edge_style.get('fillable', False)
+        etype = ctrl.ui.active_edge_type
+        return ctrl.settings.get_shape_setting('fillable', edge_type=etype)
 
     def getter(self):
-        return ctrl.ui.active_edge_style.get('fill', None) and \
-               ctrl.ui.active_edge_style.get('fillable', False)
+        etype = ctrl.ui.active_edge_type
+        return ctrl.settings.get_shape_setting('fill', edge_type=etype) and \
+               ctrl.settings.get_shape_setting('fillable', edge_type=etype)
 
 
 class EdgeShapeLine(KatajaAction):
@@ -727,16 +645,17 @@ class EdgeShapeLine(KatajaAction):
         if ctrl.ui.scope_is_selection:
             for edge in ctrl.selected:
                 if isinstance(edge, Edge):
-                    edge.shape_info.set_outline(value)
+                    edge.set_outline(value)
         else:
             etype = ctrl.ui.active_edge_type
-            ctrl.fs.set_shape_info(etype, 'outline', value)
-            ctrl.forest.redraw_edges(edge_type=etype)
+            ctrl.settings.set_edge_setting('outline', value, edge_type=etype, level=FOREST)
 
     def enabler(self):
-        return ctrl.ui.active_edge_style.get('fillable', False)
+        etype = ctrl.ui.active_edge_type
+        return ctrl.settings.get_shape_setting('fillable', edge_type=etype)
 
     def getter(self):
-        return ctrl.ui.active_edge_style.get('outline', None)
+        etype = ctrl.ui.active_edge_type
+        return ctrl.settings.get_shape_setting('outline', edge_type=etype)
 
 

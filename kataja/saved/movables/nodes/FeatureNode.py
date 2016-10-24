@@ -71,8 +71,8 @@ class FeatureNode(Node):
                                syntactic=True)
                 }
 
-    default_style = {'fancy': {'color': 'accent2', 'font': g.SMALL_CAPS, 'font-size': 9},
-                     'plain': {'color': 'accent2', 'font': g.SMALL_CAPS, 'font-size': 9}}
+    default_style = {'fancy': {'color_id': 'accent2', 'font_id': g.SMALL_CAPS, 'font-size': 9},
+                     'plain': {'color_id': 'accent2', 'font_id': g.SMALL_CAPS, 'font-size': 9}}
 
     default_edge = g.FEATURE_EDGE
 

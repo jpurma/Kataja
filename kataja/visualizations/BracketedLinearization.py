@@ -24,8 +24,9 @@
 
 
 import kataja.globals as g
+from kataja.Settings import FOREST
 from kataja.Visualization import BaseVisualization
-from kataja.singletons import prefs, log
+from kataja.singletons import prefs, log, ctrl
 
 
 class BracketedLinearization(BaseVisualization):
@@ -76,10 +77,12 @@ class BracketedLinearization(BaseVisualization):
         """ if there are different modes for one visualization, rotating between different modes
         is triggered here. """
 
-        if self.forest.settings.label_shape == g.BOX:
-            self.forest.settings.label_shape = g.NORMAL
+        ls = ctrl.settings.get('label_shape')
+        if ls == g.BOX:
+            ls = g.NORMAL
         else:
-            self.forest.settings.label_shape += 1
+            ls += 1
+        ctrl.settings.set('label_shape', ls, level=FOREST)
         for node in self.forest.visible_nodes():
             self.reset_node(node)
 
@@ -88,10 +91,10 @@ class BracketedLinearization(BaseVisualization):
         draw themselves """
 
         width_map = self.forest.prepare_width_map()
-        if self.forest.settings.label_shape == g.BRACKETED or \
-           self.forest.settings.label_shape == g.NORMAL:
+        ls = ctrl.settings.get('label_shape')
+        if ls == g.BRACKETED or ls == g.NORMAL:
             y_shift = 0
-        elif self.forest.settings.label_shape == g.CARD:
+        elif ls == g.CARD:
             y_shift = 12
         else:
             y_shift = 4

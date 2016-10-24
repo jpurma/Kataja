@@ -71,22 +71,6 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         """
         return self.__qt_type_id__
 
-    def get_label_data(self, key):
-        value = self._host.label_data.get(key, None)
-        if value:
-            return value
-        else:
-            return ctrl.fs.edge_info(self._host.edge_type, value)
-
-    def set_label_data(self, key, value):
-        old_value = self.get_label_data(key)
-        if value == old_value:
-            return False
-        else:
-            self._host.poke('label_data')
-            self._host.label_data[key] = value
-            return True
-
     @property
     def label_text(self):
         return self._host.get_label_text()
@@ -100,37 +84,38 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         but what is returned here is the actual QFont.
         :return: QFont instance
         """
-        return qt_prefs.get_font(self.get_label_data('font') or g.MAIN_FONT)
+        font_id = ctrl.settings.get_edge_setting('font', edge=self._host)
+        return qt_prefs.get_font(font_id or g.MAIN_FONT)
 
     @property
     def font_name(self):
         """ Font is the font used for label. This returns the kataja internal font name.
         :return:
         """
-        return self.get_label_data('font') or g.MAIN_FONT
+        return ctrl.settings.get_edge_setting('font', edge=self._host) or g.MAIN_FONT
 
     @font_name.setter
     def font_name(self, value=None):
         """ Font is the font used for label. This sets the font name to be used.
         :param value: string (font name).
         """
-        self.set_label_data('font', value)
+        ctrl.settings.set_edge_setting('font', value, edge=self._host)
 
     @property
     def label_start(self):
         """
         label's startpoint in length of an edge (from 0 to 1.0)
         """
-        return self._host.label_data.get('start_at', 0.2)
+        return ctrl.settings.get_edge_setting('start_at', edge=self._host) or 0.2
 
     @label_start.setter
     def label_start(self, value):
         """ label's startpoint in length of an edge (from 0 to 1.0)
         :param value: float (0 - 1.0)
         """
-        if self.set_label_data('start_at', value):
-            self.update_position()
-            self._host.call_watchers('edge_label_adjust', 'start_at', value)
+        ctrl.settings.set_edge_setting('start_at', value, edge=self._host)
+        self.update_position()
+        self._host.call_watchers('edge_label_adjust', 'start_at', value)
 
     def update_position(self):
         """ Compute and set position for edge label. Make sure that path is
@@ -153,7 +138,7 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         """
         label's angle relative to edge where it is attached
         """
-        return self._host.label_data.get('angle', 90)
+        return ctrl.settings.get_edge_setting('angle', edge=self._host) or 90
 
     @label_angle.setter
     def label_angle(self, value):
@@ -161,16 +146,16 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         label's angle relative to edge where it is attached
         :param value:
         """
-        if self.set_label_data('angle', value):
-            self.update_position()
-            self._host.call_watchers('edge_label_adjust', 'angle', value)
+        ctrl.settings.set_edge_setting('angle', value, edge=self._host)
+        self.update_position()
+        self._host.call_watchers('edge_label_adjust', 'angle', value)
 
     @property
     def label_dist(self):
         """
         label's distance from edge
         """
-        return self._host.label_data.get('dist', 12)
+        return ctrl.settings.get_edge_setting('dist', edge=self._host) or 12
 
     @label_dist.setter
     def label_dist(self, value):
@@ -178,9 +163,9 @@ class EdgeLabel(QtWidgets.QGraphicsTextItem):
         label's distance from edge
         :param value:
         """
-        if self.set_label_data('dist', value):
-            self.update_position()
-            self._host.call_watchers('edge_label_adjust', 'dist', value)
+        ctrl.settings.set_edge_setting('dist', value, edge=self._host)
+        self.update_position()
+        self._host.call_watchers('edge_label_adjust', 'dist', value)
 
     def magnet_positions(self):
         w = self._size.width() / 2.0

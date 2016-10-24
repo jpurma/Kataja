@@ -29,7 +29,7 @@ from kataja.singletons import ctrl
 from kataja.saved.Forest import Forest
 
 
-class ForestKeeper(SavedObject):
+class KatajaDocument(SavedObject):
     """ Container and loader for Forest objects. Remember to not enable undo for any of the actions in here,
     as scope of undo should be a single Forest. """
 
@@ -124,7 +124,7 @@ class ForestKeeper(SavedObject):
 
     def create_forests(self, treelist=None):
         """ This will read list of strings where each line defines a trees or an element of trees.
-        This can be used to reset the ForestKeeper if no treeset or an empty treeset is given.
+        This can be used to reset the KatajaDocument if no treeset or an empty treeset is given.
 
         Example of tree this can read:
 

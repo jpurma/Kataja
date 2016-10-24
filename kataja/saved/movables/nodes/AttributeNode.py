@@ -74,8 +74,8 @@ class AttributeNode(Node):
     __qt_type_id__ = next_available_type_id()
 
 
-    default_style = {'fancy': {'color': 'accent4', 'font': g.SMALL_CAPS, 'font-size': 10},
-                     'plain': {'color': 'accent4', 'font': g.SMALL_CAPS, 'font-size': 10}}
+    default_style = {'fancy': {'color_id': 'accent4', 'font_id': g.SMALL_CAPS, 'font-size': 10},
+                     'plain': {'color_id': 'accent4', 'font_id': g.SMALL_CAPS, 'font-size': 10}}
 
     default_edge = g.ATTRIBUTE_EDGE
 

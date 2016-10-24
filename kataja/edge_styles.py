@@ -89,7 +89,7 @@ master_styles = {
             'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False,
             'start_connects_to': BORDER, 'end_connects_to': BORDER
         }, ABSTRACT_EDGE: {
-            'shape_name': 'linear', 'color': 'content1', 'pull': .40, 'visible': True,
+            'shape_name': 'linear', 'color_id': 'content1', 'pull': .40, 'visible': True,
             'arrowhead_at_start': False, 'arrowhead_at_end': False, 'labeled': False,
             'start_connects_to': BORDER, 'end_connects_to': BORDER
         }

@@ -35,8 +35,7 @@ class KatajaFactory:
         from kataja.saved.DerivationStep import DerivationStep, DerivationStepManager
         from kataja.saved.Edge import Edge
         from kataja.saved.Forest import Forest
-        from kataja.saved.ForestSettings import ForestSettings, ForestRules
-        from kataja.saved.ForestKeeper import ForestKeeper
+        from kataja.saved.KatajaDocument import KatajaDocument
         from kataja.saved.movables.Tree import Tree
         from syntax.BaseFeature import BaseFeature
         from syntax.ConfigurableConstituent import ConfigurableConstituent
@@ -45,14 +44,14 @@ class KatajaFactory:
 
         self.default_models = {ConstituentNode, BaseConstituentNode, AttributeNode, FeatureNode,
                                GlossNode, PropertyNode, CommentNode, Edge, Forest, DerivationStep,
-                               DerivationStepManager, ForestSettings, ForestRules,
-                               ConfigurableConstituent, BaseFeature, Tree,
-                               Group, FL, ForestKeeper, BaseConstituent}
+                               DerivationStepManager, ConfigurableConstituent, BaseFeature, Tree,
+                               Group, FL, KatajaDocument, BaseConstituent}
 
-        self.default_node_classes = {g.CONSTITUENT_NODE: ConstituentNode, g.ABSTRACT_NODE: Node,
+        self.default_node_classes = {g.CONSTITUENT_NODE: ConstituentNode,
                                      g.FEATURE_NODE: FeatureNode, g.GLOSS_NODE: GlossNode,
                                      g.ATTRIBUTE_NODE: AttributeNode, g.PROPERTY_NODE: PropertyNode,
                                      g.COMMENT_NODE: CommentNode}
+        # g.ABSTRACT_NODE: Node,
 
         self.default_edge_class = Edge
 
@@ -115,8 +114,8 @@ class KatajaFactory:
             return self.classes[class_name]
 
     @property
-    def ForestKeeper(self):
-        return self.get('ForestKeeper')
+    def KatajaDocument(self):
+        return self.get('KatajaDocument')
 
     def get_original(self, class_name):
         if class_name in self.classes:

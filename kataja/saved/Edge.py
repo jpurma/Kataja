@@ -27,15 +27,15 @@ import math
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import QPointF as Pf, Qt
 
-from kataja.EdgeShape import EdgeShape
 from kataja.singletons import ctrl, qt_prefs, prefs
 import kataja.globals as g
-from kataja.shapes import SHAPE_PRESETS, outline_stroker
+from kataja.Shapes import SHAPE_PRESETS, outline_stroker
 from kataja.EdgeLabel import EdgeLabel
 from kataja.utils import to_tuple, add_xy, sub_xy
 from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
 from kataja.uniqueness_generator import next_available_type_id
+from kataja.Settings import OBJECT
 
 
 CONNECT_TO_CENTER = 0
@@ -62,21 +62,6 @@ qbytes_opacity = QtCore.QByteArray()
 qbytes_opacity.append("opacity")
 
 
-class SavedEdgeSetting(SavedField):
-    """ Saved, but getter runs the provided after_get -method for the returned
-    value. Probably bit slower than regular Saved
-    """
-
-    def __init__(self, name, before_set=None, if_changed=None):
-        super().__init__(name, before_set=before_set, if_changed=if_changed)
-
-    def __get__(self, obj, objtype=None):
-        value = obj._saved[self.name]
-        if value is None:
-            return ctrl.fs.edge_info(obj.edge_type, self.name)
-        else:
-            return value
-
 
 class Edge(QtWidgets.QGraphicsObject, SavedObject):
     """ Any connection between nodes: can be represented as curves, branches
@@ -95,8 +80,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         QtWidgets.QGraphicsItem.__init__(self)
         self.forest = forest
         self.label_item = None
-        self.shape_info = EdgeShape(self)
-        self._shape_method = None
         self.edge_type = edge_type
         self.start = start
         self.end = end
@@ -107,10 +90,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         # shape algorithms
         self.adjusted_control_points = []  # combines those two above
         self.label_data = {}
-        self.local_shape_info = {}
-        self.color_id = None
-        self.shape_name = None
-        self.pull = None
         self._nodes_overlap = False
         self.visible_by_rule = True
         self.appearing = appear
@@ -140,7 +119,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         self._make_fat_path = False
         self.setZValue(10)
         self.status_tip = ""
-        self._cached_shape_info = {}
         #self.connect_end_points(start, end)
         self.arrowhead_size_at_start = 6
         self.arrowhead_size_at_end = 6
@@ -213,6 +191,30 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         super().copy(others)
 
     @property
+    def color_id(self) -> str:
+        return ctrl.settings.get_edge_setting('color_id', edge=self)
+
+    @color_id.setter
+    def color_id(self, value):
+        ctrl.settings.set_edge_setting('color_id', value, edge=self)
+
+    @property
+    def shape_name(self) -> str:
+        return ctrl.settings.get_edge_setting('shape_name', edge=self)
+
+    @shape_name.setter
+    def shape_name(self, value):
+        ctrl.settings.set_edge_setting('shape_name', value, edge=self)
+
+    @property
+    def pull(self) -> float:
+        return ctrl.settings.get_edge_setting('pull', edge=self)
+
+    @pull.setter
+    def pull(self, value):
+        ctrl.settings.set_edge_setting('pull', value, edge=self)
+
+    @property
     def start_point(self) -> tuple:
         """ Helper property: returns latest known (x, y, z) coords of
         starting point of the edge
@@ -280,16 +282,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         if self.label_item:
             self.label_item.setDefaultTextColor(ctrl.cm.get(value))
 
-    def if_changed_shape_name(self, value):
-        """ Set the shape name key for this edge. These keys are used to get
-        the shape drawing settings, amount of
-        control points, whether the shape is filled etc. Also updates the
-        _shape_method according to new shape_name.
-        :param value: str
-        """
-        if value:
-            self._shape_method = SHAPE_PRESETS[value]['method']
-
     # ## Label data and its shortcut properties
 
     def get_label_text(self) -> str:
@@ -326,10 +318,11 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
     # Helper methods for derived properties
 
     def is_filled(self) -> bool:
-        return self._cached_shape_info['fill'] and self._cached_shape_info['fillable']
+        return ctrl.settings.get_shape_setting('fill', edge=self) and \
+               ctrl.settings.get_shape_setting('fillable', edge=self)
 
     def has_outline(self) -> int:
-        return self._cached_shape_info.get('outline')
+        return ctrl.settings.get_shape_setting('outline', edge=self)
 
     def is_visible(self) -> bool:
         return self.visible_by_rule and not self._nodes_overlap
@@ -473,10 +466,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
          textbox for adding label would be unwanted noise.
         :return: bool
         """
-        if self._use_labels is None:
-            return ctrl.fs.edge_info(self.edge_type, 'labeled')
-        else:
-            return self._use_labels
+        return ctrl.settings.get_edge_settings('labeled', edge=self)
 
     # ### Shape / pull / visibility
     # ###############################################################
@@ -525,9 +515,9 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
     def make_path(self):
         """ Draws the shape as a path """
         self.update_end_points()
-        if not self._shape_method:
-            self.update_shape()
-        c = self._cached_shape_info
+        #if not self._path:
+        #    self.update_shape()
+        c = {}
         sx, sy = self.start_point
         ex, ey = self.end_point
         if sx == ex:
@@ -542,20 +532,20 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         c['end'] = self.end
         c['inner_only'] = self._use_simple_path
         self._path, self._true_path, self.control_points, self.adjusted_control_points = \
-            self._shape_method(**c)
+            SHAPE_PRESETS[self.shape_name].path(**c)
         uses_pen = c.get('thickness', 0)
 
         if self._use_simple_path:
             self._path = self._true_path
 
-        if self.shape_info.has_arrowhead_at_start():
+        if self.has_arrowhead_at_start():
             self._arrowhead_start_path = self.make_arrowhead_path('start')
             if uses_pen:
                 self._path = self.sharpen_arrowhead_at_start(self._path)
         else:
             self._arrowhead_start_path = None
 
-        if self.shape_info.has_arrowhead_at_end():
+        if self.has_arrowhead_at_end():
             self._arrowhead_end_path = self.make_arrowhead_path('end')
             if uses_pen:
                 self._path = self.sharpen_arrowhead_at_end(self._path)
@@ -599,27 +589,13 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
 
     def reset_style(self):
         self.shape_name = None
-        self.shape_info.reset_shape_info(*self.local_shape_info.keys())
+        ctrl.settings.reset_edge_settings(edge=self)
+        ctrl.settings.reset_shape_settings(edge=self)
         self.curve_adjustment = [(0, 0)] * len(self.control_points)
         self.update_shape()
 
-    def has_local_style_settings(self):
-        if self.local_shape_info:
-            return True
-        if self.curve_adjustment:
-            for x, y in self.curve_adjustment:
-                if x or y:
-                    return True
-        return False
-
-    def get_cached_shape_info(self):
-        return self._cached_shape_info
-
-
     def update_shape(self):
         """ Reload shape and shape settings """
-        self._shape_method = SHAPE_PRESETS[self.shape_name]['method']
-        self._cached_shape_info = self.shape_info.copy()
         cpl = len(self.control_points)
         self.make_path()
         # while len(self.curve_adjustment) < len(self.control_points):
@@ -653,7 +629,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         else:
             return
         if self.start:
-            connection_style = self.shape_info.connection_style_at_start()
+            connection_style = self.connection_style_at_start()
             if connection_style == CONNECT_TO_CENTER:
                 self._computed_start_point = self.start.current_scene_position
             elif connection_style == CONNECT_TO_BOTTOM_CENTER:
@@ -713,7 +689,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                                 self._computed_start_point = sx + (s_top / ratio), sy + s_top
 
         if self.end:
-            connection_style = self.shape_info.connection_style_at_end()
+            connection_style = self.connection_style_at_end()
             if connection_style == CONNECT_TO_CENTER:
                 self._computed_end_point = self.end.current_scene_position
             elif connection_style == CONNECT_TO_BOTTOM_CENTER or connection_style == CONNECT_TO_MAGNETS:
@@ -972,7 +948,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             painter.drawPath(self._true_path)
         else:
             if self.has_outline():
-                thickness = self._cached_shape_info.get('thickness')
+                thickness = ctrl.settings.get_shape_setting('thickness', edge=self)
                 p = QtGui.QPen()
                 p.setColor(c)
                 p.setCapStyle(QtCore.Qt.RoundCap)
@@ -986,9 +962,9 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
 
             if self.is_filled():
                 painter.fillPath(self._path, c)
-            if self.shape_info.has_arrowhead_at_start() and self._arrowhead_start_path:
+            if self.has_arrowhead_at_start() and self._arrowhead_start_path:
                 painter.fillPath(self._arrowhead_start_path, c)
-            if self.shape_info.has_arrowhead_at_end() and self._arrowhead_end_path:
+            if self.has_arrowhead_at_end() and self._arrowhead_end_path:
                 painter.fillPath(self._arrowhead_end_path, c)
 
         if ctrl.is_selected(self):
@@ -1071,7 +1047,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         """
         ad = 0.5
         x = y = size = a = 0
-        t = self._cached_shape_info.get('thickness', 0)
+        t = ctrl.settings.get_shape_setting('thickness', edge=self)
         if pos == 'start':
             size = self.arrowhead_size_at_start
             if t:
@@ -1271,6 +1247,122 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         """
         return ctrl.free_drawing_mode
 
+    ## Shape helpers #############################
+
+    def connection_style_at_start(self):
+        return ctrl.settings.get_edge_setting('start_connects_to', edge=self)
+
+    def connection_style_at_end(self):
+        return ctrl.settings.get_edge_setting('end_connects_to', edge=self)
+
+    def has_arrowhead_at_start(self):
+        return ctrl.settings.get_edge_setting('arrowhead_at_start', edge=self)
+
+    def set_arrowhead_at_start(self, value):
+        ctrl.settings.set_edge_setting('arrowhead_at_start', value, edge=self)
+
+    def has_arrowhead_at_end(self):
+        return ctrl.settings.get_edge_setting('arrowhead_at_end', edge=self)
+
+    def set_arrowhead_at_end(self, value):
+        ctrl.settings.set_edge_setting('arrowhead_at_end', value, edge=self)
+
+    def set_leaf_width(self, value):
+        ctrl.settings.set_edge_setting('leaf_x', value, edge=self)
+        self.update_shape()
+
+    def set_leaf_height(self, value):
+        ctrl.settings.set_edge_setting('leaf_y', value, edge=self)
+        self.update_shape()
+
+    def reset_leaf_shape(self):
+        ctrl.settings.del_shape_setting('leaf_x', edge=self)
+        ctrl.settings.del_shape_setting('leaf_y', edge=self)
+        self.update_shape()
+
+    def change_edge_relative_curvature_x(self, value):
+        ctrl.settings.set_edge_setting('rel_dx', value * .01, edge=self)
+        self.update_shape()
+
+    def change_edge_relative_curvature_y(self, value):
+        ctrl.settings.set_edge_setting('rel_dy', value * .01, edge=self)
+        self.update_shape()
+
+    def change_edge_fixed_curvature_x(self, value):
+        ctrl.settings.set_edge_setting('fixed_dx', value, edge=self)
+        self.update_shape()
+
+    def change_edge_fixed_curvature_y(self, value):
+        ctrl.settings.set_edge_setting('fixed_dy', value, edge=self)
+        self.update_shape()
+
+    def set_edge_curvature_relative(self, value):
+        ctrl.settings.set_edge_setting('relative', value, edge=self)
+        self.update_shape()
+
+    def reset_edge_curvature(self):
+        ctrl.settings.del_shape_setting('rel_dx', edge=self)
+        ctrl.settings.del_shape_setting('rel_dy', edge=self)
+        ctrl.settings.del_shape_setting('fixed_dx', edge=self)
+        ctrl.settings.del_shape_setting('fixed_dy', edge=self)
+        ctrl.settings.del_shape_setting('relative', edge=self)
+        self.update_shape()
+
+    def reset_thickness(self):
+        ctrl.settings.del_shape_setting('thickness', edge=self)
+        self.update_shape()
+
+    def set_thickness(self, value):
+        ctrl.settings.set_edge_setting('thickness', value, edge=self)
+        self.update_shape()
+
+    def set_fill(self, value):
+        ctrl.settings.set_edge_setting('fill', value, edge=self)
+        self.update_shape()
+
+    def set_outline(self, value):
+        ctrl.settings.set_edge_setting('outline', value, edge=self)
+        self.update_shape()
+
+    def prepare_adjust_array(self, index):
+        """
+
+        :param index:
+        """
+        if self.curve_adjustment is None:
+            self.curve_adjustment = [(0, 0)]
+        while index >= len(self.curve_adjustment):
+            self.curve_adjustment.append((0, 0))
+
+    def adjust_control_point(self, index, dist=None, rad=None):
+        """ Called from UI, when dragging
+        :param index:
+        :param dist:
+        :param rad:
+        """
+        self.poke('curve_adjustment')
+        self.prepare_adjust_array(index)
+        odist, orad = self.curve_adjustment[index]
+        if dist is None:
+            dist = odist
+        if rad is None:
+            rad = orad
+        self.curve_adjustment[index] = dist, rad
+        self.call_watchers('edge_adjustment', 'curve_adjustment', self.curve_adjustment)
+        self.make_path()
+        self.update()
+
+    def reset_control_points(self):
+        """
+        Set adjustments back to zero
+        :return:
+        """
+
+        n = ctrl.settings.get_shape_setting('control_points', edge=self)
+        self.poke('curve_adjustment')
+        self.curve_adjustment = [(0, 0)] * n
+        self.make_path()
+        self.update()
 
     # ############## #
     #                #
@@ -1285,11 +1377,5 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
     curve_adjustment = SavedField("curve_adjustment", watcher="edge_adjustment")
     start = SavedField("start")
     end = SavedField("end")
-    label_data = SavedField("label_data", watcher="edge_label")
-    local_shape_info = SavedField("local_shape_info", watcher="edge_shape")
     visible_by_rule = SavedField("visible_by_rule", if_changed=if_changed_visible)
     forest = SavedField("forest")
-
-    color_id = SavedEdgeSetting("color_id", if_changed=if_changed_color_id)
-    shape_name = SavedEdgeSetting("shape_name", if_changed=if_changed_shape_name)
-    pull = SavedEdgeSetting("pull")

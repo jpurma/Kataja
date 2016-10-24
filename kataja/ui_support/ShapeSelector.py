@@ -2,7 +2,7 @@ from PyQt5 import QtCore, QtGui
 from PyQt5.QtCore import QSize
 from PyQt5.QtGui import QStandardItem, QIcon
 
-from kataja.shapes import SHAPE_PRESETS
+from kataja.Shapes import SHAPE_PRESETS
 from kataja.singletons import ctrl
 from kataja.ui_support.TableModelSelectionBox import TableModelSelectionBox
 from kataja.utils import time_me
@@ -56,7 +56,6 @@ class LineStyleIcon(QIcon):
         self.compose_icon()
 
     def compose_icon(self):
-        draw_method = SHAPE_PRESETS[self.shape_key]['icon']
         c = ctrl.cm.get(self.panel.cached_edge_color or 'content1')
         size = self.size_hint
 
@@ -69,6 +68,6 @@ class LineStyleIcon(QIcon):
         painter = QtGui.QPainter(image)
         painter.setRenderHint(QtGui.QPainter.Antialiasing)
         painter.setPen(c)
-        draw_method(painter, image.rect(), c)
+        SHAPE_PRESETS[self.shape_key].icon_path(painter, image.rect(), c)
         painter.end()
         self.addPixmap(QtGui.QPixmap.fromImage(image))

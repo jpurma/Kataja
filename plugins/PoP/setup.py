@@ -2,7 +2,7 @@
 from PoP.Constituent import Constituent
 from PoP.Feature import Feature
 from PoP.PoPDeriveH import Generate
-from PoP.ForestKeeper import PoPForestKeeper
+from PoP.ForestKeeper import PoPDocument
 
 # see ExamplePlugin/readme.txt and ExamplePlugin/plugin.json
 
@@ -13,7 +13,7 @@ from PoP.ForestKeeper import PoPForestKeeper
 # them here, you have to put class definitions *before* the plugin_parts -line.
 
 # plugin_parts = [PythonClass,...]
-plugin_parts = [Constituent, Feature, Generate, PoPForestKeeper]
+plugin_parts = [Constituent, Feature, Generate, PoPDocument]
 
 # When a plugin is enabled it will try to rebuild the instances of all replaced classes. It is a
 # risky process, and all replaced classes can have their own _on_rebuild and _on_teardown methods

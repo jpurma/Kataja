@@ -33,6 +33,7 @@ import time
 from PyQt5 import QtWidgets
 
 import kataja.globals as g
+from kataja.Settings import FOREST
 from kataja.ChainManager import ChainManager
 from kataja.UndoManager import UndoManager
 from kataja.Projection import Projection
@@ -44,7 +45,6 @@ from kataja.singletons import ctrl, prefs, qt_prefs, classes, log
 from kataja.saved.Group import Group
 from kataja.saved.DerivationStep import DerivationStepManager
 from kataja.saved.Edge import Edge
-from kataja.saved.ForestSettings import ForestSettings, ForestRules
 from kataja.saved.movables.Node import Node
 from kataja.saved.movables.Presentation import TextArea, Image
 from kataja.saved.movables.Tree import Tree
@@ -77,8 +77,6 @@ class Forest(SavedObject):
         self.parser = INodeToKatajaConstituent(self)
         self.undo_manager = UndoManager(self)
         self.chain_manager = ChainManager(self)
-        self.settings = ForestSettings()
-        self.rules = ForestRules()
         self.derivation_steps = DerivationStepManager(forest=self)
         self.trees = []
         self._update_trees = False
@@ -188,7 +186,7 @@ class Forest(SavedObject):
         """ Helper method for checking if we need to deal with chains
         :return:
         """
-        return not self.settings.uses_multidomination
+        return not ctrl.settings.get('uses_multidomination')
 
     @staticmethod
     def list_nodes(first):
@@ -916,9 +914,10 @@ class Forest(SavedObject):
         This is done by removing all projection displays before drawing them.
         :return:
         """
-        strong_lines = ctrl.fs.projection_strong_lines
-        colorized = ctrl.fs.projection_colorized
-        highlighter = ctrl.fs.projection_highlighter
+
+        strong_lines = ctrl.settings.get('projection_strong_lines')
+        colorized = ctrl.settings.get('projection_colorized')
+        highlighter = ctrl.settings.get('projection_highlighter')
         for projection in self.projections.values():
             projection.set_visuals(strong_lines, colorized, highlighter)
 
@@ -1228,8 +1227,8 @@ class Forest(SavedObject):
         """
         text = text.strip()
         self.parser.string_into_forest(text)
-        if self.settings.uses_multidomination:
-            self.settings.uses_multidomination = False
+        if ctrl.settings.get('uses_multidomination'):
+            ctrl.settings.set('uses_multidomination', False, level=FOREST)
             self.traces_to_multidomination()
             # traces to multidomination will toggle uses_multidomination to True
 
@@ -1614,11 +1613,11 @@ class Forest(SavedObject):
         """
         M = node.get_attribute_nodes('M')
         S = node.get_attribute_nodes('S')
-        if M and not self.settings.shows_merge_order:
+        if M and not ctrl.settings('shows_merge_order'):
             self.delete_node(M)
         #elif self.settings.shows_merge_order and (not M) and node.merge_order:
         #    self.create_attribute_node(node, 'merge_order', attribute_label='M', show_label=True)
-        if S and not self.settings.shows_select_order:
+        if S and not ctrl.settings('shows_select_order'):
             self.delete_node(S)
         #elif self.settings.shows_select_order and (not S) and node.select_order:
         #    self.create_attribute_node(node, 'select_order', attribute_label='S', show_label=False)
@@ -1650,7 +1649,7 @@ class Forest(SavedObject):
         self.update_order_features(node)
 
     def update_label_shape(self):
-        shape = self.settings.label_shape
+        shape = ctrl.settings.get('label_shape')
         for node in self.nodes.values():
             if node.node_type == g.CONSTITUENT_NODE:
                 node.label_object.label_shape = shape
@@ -2316,23 +2315,20 @@ class Forest(SavedObject):
 
     # View mode
     def change_view_mode(self, show_all):
-        prefs.show_all_mode = show_all
-        if show_all:
-            self.settings.show_display_labels = True
-        else:
-            self.settings.show_display_labels = False
+        ctrl.settings.set('show_all_mode', show_all, level=FOREST)
+        ctrl.settings.set('show_display_labels', show_all, level=FOREST)
         for node in self.nodes.values():
             node.update_label()
             node.update_label_visibility()
             node.update_visibility()
         ctrl.call_watchers(self, 'view_mode_changed', value=show_all)
         if show_all:
-            prefs.temp_color_mode = ''
+            ctrl.settings.set('temp_color_mode', '', level=FOREST)
         else:
             if ctrl.main.color_manager.paper().value() < 100:
-                prefs.temp_color_mode = 'dk_gray'
+                ctrl.settings.set('temp_color_mode', 'dk_gray', level=FOREST)
             else:
-                prefs.temp_color_mode = 'gray'
+                ctrl.settings.set('temp_color_mode', 'gray', level=FOREST)
         self.update_colors()
 
     # ######## Utility functions ###############################
@@ -2357,8 +2353,6 @@ class Forest(SavedObject):
     edges = SavedField("edges", if_changed=reserve_update_for_trees)
     groups = SavedField("groups")
     others = SavedField("others")
-    settings = SavedField("settings")
-    rules = SavedField("rules")
     vis_data = SavedField("vis_data", watcher="visualization")
     derivation_steps = SavedField("derivation_steps")
     merge_counter = SavedField("merge_counter")

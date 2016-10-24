@@ -230,14 +230,12 @@ class StylePanel(Panel):
                 elif not (no_edge or no_node):
                     break
         elif ctrl.forest:
-            ns = ctrl.fs.node_style
-            es = ctrl.fs.edge_info
             node_type = ctrl.ui.active_node_type
             edge_type = ctrl.ui.active_edge_type
-            node_color = ns(node_type, 'color')
-            node_font = ns(node_type, 'font')
-            edge_color = es(edge_type, 'color_id')
-            edge_shape = es(edge_type, 'shape_name')
+            node_color = ctrl.settings.get_node_setting('color_id', node_type=node_type)
+            node_font = ctrl.settings.get_node_setting('font_id', node_type=node_type)
+            edge_color = ctrl.settings.get_edge_setting('color_id', edge_type=edge_type)
+            edge_shape = ctrl.settings.get_edge_setting('shape_name', edge_type=edge_type)
             # Color selector - show
             set_value(self.node_color_selector, node_color)
             set_value(self.font_selector, node_font)

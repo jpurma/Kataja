@@ -23,9 +23,12 @@
 # ############################################################################
 import math
 
+from kataja.Settings import FOREST
 from kataja.utils import caller
 import kataja.globals as g
 import sys
+
+from kataja.singletons import ctrl
 
 LEFT = 1
 NO_ALIGN = 0
@@ -61,10 +64,12 @@ class BaseVisualization:
         self.validate_node_shapes()
 
     def validate_node_shapes(self):
-        if self.forest.settings.label_shape in self.banned_node_shapes:
-            self.forest.settings.label_shape = 0
-            while self.forest.settings.label_shape in self.banned_node_shapes:
-                self.forest.settings.label_shape += 1
+        ls = ctrl.settings.get('label_shape')
+        if ls in self.banned_node_shapes:
+            ls = 0
+            while ls in self.banned_node_shapes:
+                ls += 1
+            ctrl.settings.set('label_shape', ls, level=FOREST)
             self.forest.update_label_shape()
 
     def reset_nodes(self):

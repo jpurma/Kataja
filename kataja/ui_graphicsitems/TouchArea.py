@@ -31,8 +31,8 @@ from kataja.UIItem import UIGraphicsItem
 from kataja.saved.Edge import Edge
 from kataja.saved.movables.Node import Node
 from kataja.saved.movables.nodes.ConstituentNode import ConstituentNode
-from kataja.shapes import draw_plus, draw_leaf, draw_x, draw_triangle, draw_tailed_leaf, \
-    draw_arrow_shape_from_points
+from kataja.Shapes import draw_plus, draw_leaf, draw_x, draw_triangle, draw_tailed_leaf, \
+    draw_arrow_shape_from_points, SHAPE_PRESETS
 from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.uniqueness_generator import next_available_type_id
 from kataja.utils import to_tuple, sub_xy
@@ -547,8 +547,7 @@ class LeftAddSibling(BranchingTouchArea):
         :param end_point: End point can be given or it can be calculated.
         """
         e = self.host
-        shape_info = ctrl.fs.shape_info(e.edge_type)
-        shape_method = shape_info['method']
+        shape_name = ctrl.settings.get_edge_setting('shape_name', edge=e)
         self._fill_path = e.is_filled()
         sx, sy = to_tuple(e.get_point_at(0.5))
         self.start_point = sx, sy
@@ -567,10 +566,9 @@ class LeftAddSibling(BranchingTouchArea):
         self.setPos(self.end_point[0], self.end_point[1])
         rel_sp = sub_xy(self.start_point, self.end_point)
         adjust = []
-        self._path = shape_method(rel_sp, (0, 0),
+        self._path = SHAPE_PRESETS[shape_name].path(rel_sp, (0, 0),
                                   alignment=g.LEFT,
-                                  curve_adjustment=adjust,
-                                  **shape_info)[0]
+                                  curve_adjustment=adjust)[0]
 
     def paint(self, painter, option, widget):
         """
@@ -621,8 +619,7 @@ class RightAddSibling(BranchingTouchArea):
         :param end_point: End point can be given or it can be calculated.
         """
         e = self.host
-        shape_info = ctrl.fs.shape_info(e.edge_type)
-        shape_method = shape_info['method']
+        shape_name = ctrl.settings.get_edge_setting('shape_name', edge=e)
         self._fill_path = e.is_filled()
         sx, sy = to_tuple(e.get_point_at(0.5))
         self.start_point = sx, sy
@@ -641,10 +638,9 @@ class RightAddSibling(BranchingTouchArea):
         self.setPos(self.end_point[0], self.end_point[1])
         rel_sp = sub_xy(self.start_point, self.end_point)
         adjust = []
-        self._path = shape_method(rel_sp, (0, 0),
+        self._path = SHAPE_PRESETS[shape_name].path(rel_sp, (0, 0),
                                   alignment=g.RIGHT,
-                                  curve_adjustment=adjust,
-                                  **shape_info)[0]
+                                  curve_adjustment=adjust)[0]
 
     def paint(self, painter, option, widget):
         """
@@ -746,10 +742,8 @@ class JointedTouchArea(TouchArea):
 
         :param end_point: End point can be given or it can be calculated.
         """
-        shape_name = ctrl.fs.shape_for_edge(g.CONSTITUENT_EDGE)
-        shape_info = ctrl.fs.shape_presets(shape_name)
-        shape_method = shape_info['method']
-        self._fill_path = shape_info.get('fill', False)
+        shape_name = ctrl.settings.get_edge_setting('shape_name', edge_type=g.CONSTITUENT_EDGE)
+        self._fill_path = ctrl.settings.get_shape_setting('fill', edge_type=g.CONSTITUENT_EDGE)
         sx, sy = self.host.magnet(2)
         self.start_point = sx, sy
         hw_ratio = float(prefs.edge_height - (ConstituentNode.height / 2)) / (prefs.edge_width or 1)
@@ -766,25 +760,21 @@ class JointedTouchArea(TouchArea):
         line_middle_point = sx / 2.0, sy - hw_ratio * abs(sx)
         adjust = []
         if self._align_left:
-            self._path = shape_method(line_middle_point, (sx, sy),
-                                      alignment=g.RIGHT,
-                                      curve_adjustment=adjust,
-                                      **shape_info)[0]
+            self._path = SHAPE_PRESETS[shape_name].path(line_middle_point, (sx, sy),
+                                                   alignment=g.RIGHT,
+                                                   curve_adjustment=adjust)[0]
             self._path.moveTo(sx, sy)
-            path2 = shape_method(line_middle_point, (ex, ey),
-                                  alignment=g.LEFT,
-                                  curve_adjustment=adjust,
-                                  **shape_info)[0]
+            path2 = SHAPE_PRESETS[shape_name].path(line_middle_point, (ex, ey),
+                                              alignment=g.LEFT,
+                                              curve_adjustment=adjust)[0]
         else:
-            self._path = shape_method(line_middle_point, (ex, ey),
-                                      alignment=g.RIGHT,
-                                      curve_adjustment=adjust,
-                                      **shape_info)[0]
+            self._path = SHAPE_PRESETS[shape_name].path(line_middle_point, (ex, ey),
+                                                   alignment=g.RIGHT,
+                                                   curve_adjustment=adjust)[0]
             self._path.moveTo(ex, ey)
-            path2 = shape_method(line_middle_point, (sx, sy),
-                                 alignment=g.LEFT,
-                                 curve_adjustment=adjust,
-                                 **shape_info)[0]
+            path2 = SHAPE_PRESETS[shape_name].path(line_middle_point, (sx, sy),
+                                              alignment=g.LEFT,
+                                              curve_adjustment=adjust)[0]
         self._path |= path2
 
     def drop(self, dropped_node):
@@ -956,10 +946,8 @@ class LeftAddChild(BranchingTouchArea):
 
         :param end_point: End point can be given or it can be calculated.
         """
-        shape_name = ctrl.fs.shape_for_edge(g.CONSTITUENT_EDGE)
-        shape_info = ctrl.fs.shape_presets(shape_name)
-        shape_method = shape_info['method']
-        self._fill_path = shape_info.get('fill', False)
+        shape_name = ctrl.settings.get_edge_setting('shape_name', edge_type=g.CONSTITUENT_EDGE)
+        self._fill_path = ctrl.settings.get_shape_setting('fill', edge_type=g.CONSTITUENT_EDGE)
         sx, sy = self.host.magnet(7)
         self.start_point = sx, sy
         if end_point:
@@ -971,10 +959,9 @@ class LeftAddChild(BranchingTouchArea):
         self.setPos(self.end_point[0], self.end_point[1])
         rel_sp = sub_xy(self.start_point, self.end_point)
         adjust = []
-        self._path = shape_method(rel_sp, (0, 0),
-                                  alignment=g.LEFT,
-                                  curve_adjustment=adjust,
-                                  **shape_info)[0]
+        self._path = SHAPE_PRESETS[shape_name].path(rel_sp, (0, 0),
+                                               alignment=g.LEFT,
+                                               curve_adjustment=adjust)[0]
 
     def paint(self, painter, option, widget):
         """
@@ -1023,10 +1010,8 @@ class RightAddChild(ChildTouchArea):
 
         :param end_point: End point can be given or it can be calculated.
         """
-        shape_name = ctrl.fs.shape_for_edge(g.CONSTITUENT_EDGE)
-        shape_info = ctrl.fs.shape_presets(shape_name)
-        shape_method = shape_info['method']
-        self._fill_path = shape_info.get('fill', False)
+        shape_name = ctrl.settings.get_edge_setting('shape_name', edge_type=g.CONSTITUENT_EDGE)
+        self._fill_path = ctrl.settings.get_shape_setting('fill', edge_type=g.CONSTITUENT_EDGE)
         sx, sy = self.host.magnet(11)
         self.start_point = sx, sy
         if end_point:
@@ -1038,10 +1023,9 @@ class RightAddChild(ChildTouchArea):
         self.setPos(self.end_point[0], self.end_point[1])
         rel_sp = sub_xy(self.start_point, self.end_point)
         adjust = []
-        self._path = shape_method(rel_sp, (0, 0),
-                                  alignment=g.RIGHT,
-                                  curve_adjustment=adjust,
-                                  **shape_info)[0]
+        self._path = SHAPE_PRESETS[shape_name].path(rel_sp, (0, 0),
+                                               alignment=g.RIGHT,
+                                               curve_adjustment=adjust)[0]
 
     def paint(self, painter, option, widget):
         """

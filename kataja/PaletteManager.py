@@ -31,7 +31,7 @@ from PyQt5.QtGui import QColor as c
 from PyQt5.QtGui import QColor
 from PyQt5.QtCore import Qt
 import PyQt5.QtGui as QtGui
-
+from kataja.Settings import FOREST
 from kataja.singletons import ctrl, prefs, running_environment
 
 
@@ -365,12 +365,10 @@ class PaletteManager:
         """
         :return:
         """
+
         if prefs.temp_color_mode:
             return prefs.temp_color_mode
-        elif ctrl.fs:
-            return ctrl.fs.color_mode
-        else:
-            return prefs.color_mode
+        return ctrl.settings.get('color_mode')
 
     def update_color_modes(self):
         self.ordered_color_modes = color_modes
@@ -433,9 +431,9 @@ class PaletteManager:
             self.compute_palette(self.hsv)
         if compute:
             if not cold_start:
-                remembered_value = ctrl.fs.last_key_color_for_mode(mode)
-                if remembered_value and not refresh:
-                    self.hsv = list(remembered_value)
+                remembered = ctrl.settings.get('last_key_colors')
+                if mode in remembered and not refresh:
+                    self.hsv = list(remembered[mode])
                     self.compute_palette(self.hsv)
                     return
             lu = 101
@@ -449,7 +447,11 @@ class PaletteManager:
             self.compute_palette(self.hsv)
 
             if not cold_start:
-                ctrl.fs.last_key_color_for_mode(mode, self.hsv)
+                remembered = ctrl.settings.get('last_key_colors')
+                if remembered:
+                    remembered[mode] = self.hsv
+                else:
+                    ctrl.settings.set('last_key_colors', {mode: self.hsv}, level=FOREST)
 
     def get_color_mode_data(self, mode):
         """

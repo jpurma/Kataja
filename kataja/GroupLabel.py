@@ -72,22 +72,6 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
         """
         return self.__qt_type_id__
 
-    def get_label_data(self, key):
-        value = self._host.label_data.get(key, None)
-        if value:
-            return value
-        else:
-            return ctrl.fs.edge_info(g.COMMENT_EDGE, value)
-
-    def set_label_data(self, key, value):
-        old_value = self.get_label_data(key)
-        if value == old_value:
-            return False
-        else:
-            self._host.poke('label_data')
-            self._host.label_data[key] = value
-            return True
-
     @property
     def label_text(self):
         return self._host.get_label_text()

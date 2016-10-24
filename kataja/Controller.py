@@ -128,6 +128,10 @@ class Controller:
         return getattr(self.main, 'ui_manager', None)
 
     @property
+    def settings(self):
+        return getattr(self.main, 'settings', None)
+
+    @property
     def cm(self):
         """ Shortcut to color manager, which replaces palettes, colors etc.
         older solutions.
@@ -141,12 +145,6 @@ class Controller:
         :return: Forest
         """
         return self.main.forest
-
-    @property
-    def fs(self):
-        """ Shortcut to active forest's settings """
-        if self.main.forest:
-            return self.main.forest.settings
 
     @property
     def graph_scene(self):

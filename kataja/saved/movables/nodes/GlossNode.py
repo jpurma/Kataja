@@ -51,8 +51,8 @@ class GlossNode(Node):
     editable = {'label': dict(name='Gloss', prefill='gloss',
                               tooltip='translation (optional)')}
 
-    default_style = {'fancy': {'color': 'accent5', 'font': g.ITALIC_FONT, 'font-size': 10},
-                     'plain': {'color': 'accent5', 'font': g.ITALIC_FONT, 'font-size': 10}}
+    default_style = {'fancy': {'color_id': 'accent5', 'font_id': g.ITALIC_FONT, 'font-size': 10},
+                     'plain': {'color_id': 'accent5', 'font_id': g.ITALIC_FONT, 'font-size': 10}}
 
     default_edge = g.GLOSS_EDGE
 

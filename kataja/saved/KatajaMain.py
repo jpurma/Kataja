@@ -43,9 +43,10 @@ import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
 import sys
 
+from kataja.Settings import Settings, FOREST
 from kataja.singletons import ctrl, prefs, qt_prefs, running_environment, classes, log
 from kataja.saved.Forest import Forest
-from kataja.saved.ForestKeeper import ForestKeeper
+from kataja.saved.KatajaDocument import KatajaDocument
 from kataja.GraphScene import GraphScene
 from kataja.GraphView import GraphView
 from kataja.UIManager import UIManager
@@ -100,6 +101,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.forest = None
         self.fontdb = QtGui.QFontDatabase()
         self.color_manager = PaletteManager()
+        self.settings = Settings()
         ctrl.late_init(self)
         classes.late_init()
         self.FL = classes.FL()
@@ -107,6 +109,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
 
         prefs.load_preferences(disable=reset_prefs or no_prefs)
         qt_prefs.late_init(running_environment, prefs, self.fontdb)
+        self.settings.set_prefs(prefs)
         self.find_plugins(prefs.plugins_path or running_environment.plugins_path)
         self.install_plugins()
         self.color_manager.update_color_modes()  # include color modes from preferences
@@ -119,10 +122,12 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.ui_manager.populate_ui_elements()
         # make empty forest and forest keeper so initialisations don't fail because of their absence
         self.visualizations = VISUALIZATIONS
-        self.forest_keepers = [classes.get('ForestKeeper')(empty=True)]
+        self.forest_keepers = [classes.get('KatajaDocument')(empty=True)]
         self.forest_keeper = self.forest_keepers[0]
+        self.settings.set_document(self.forest_keeper)
         kataja_app.setPalette(self.color_manager.get_qt_palette())
         self.forest = Forest()
+        self.settings.set_forest(self.forest)
         self.forest.update_colors()
         self.graph_scene.late_init()
         self.setCentralWidget(self.graph_view)
@@ -285,7 +290,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
             filename = running_environment.resources_path + DEBUG_TREESET
         else:
             filename = None
-        self.forest_keepers = [classes.ForestKeeper(treelist_filename=filename)]
+        self.forest_keepers = [classes.KatajaDocument(treelist_filename=filename)]
         self.forest_keeper = self.forest_keepers[0]
         self.change_forest()
         self.ui_manager.update_projects_menu(self.forest_keepers, self.forest_keeper)
@@ -299,7 +304,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
             name = '%s %s' % (name_base, c)
             c += 1
         self.forest.retire_from_drawing()
-        self.forest_keepers.append(classes.ForestKeeper(name=name))
+        self.forest_keepers.append(classes.KatajaDocument(name=name))
         self.forest_keeper = self.forest_keepers[-1]
         self.change_forest()
         self.ui_manager.update_projects_menu(self.forest_keepers, self.forest_keeper)
@@ -323,6 +328,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         if self.forest:
             self.forest.retire_from_drawing()
         self.forest = self.forest_keeper.forest
+        self.settings.set_forest(self.forest)
         if self.forest.derivation_steps:
             ds = self.forest.derivation_steps
             if not ds.activated:
@@ -415,7 +421,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
 
         :param hsv:
         """
-        self.forest.settings.hsv = hsv
+        self.settings.set('hsv', hsv, level=FOREST)
         self.forest.update_colors()
 
     def change_color_mode(self, mode, force=False):
@@ -531,8 +537,9 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         #print('after collection:', gc.get_count())
         #if gc.garbage:
         #    print('garbage:', gc.garbage)
-        self.forest_keepers.append(classes.ForestKeeper())
+        self.forest_keepers.append(classes.KatajaDocument())
         self.forest_keeper = self.forest_keepers[-1]
+        self.settings.set_document(self.forest_keeper)
         self.forest = None
 
     # ## Other window events

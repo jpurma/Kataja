@@ -52,11 +52,11 @@ class CommentNode(Node):
                              tooltip='freeform text, invisible for processing',
                              input_type='expandingtext')}
 
-    default_style = {'fancy': {'color': 'accent4',
-                               'font': g.MAIN_FONT,
+    default_style = {'fancy': {'color_id': 'accent4',
+                               'font_id': g.MAIN_FONT,
                                'font-size': 14},
-                     'plain': {'color': 'accent4',
-                               'font': g.MAIN_FONT,
+                     'plain': {'color_id': 'accent4',
+                               'font_id': g.MAIN_FONT,
                                'font-size': 14}
                      }
 

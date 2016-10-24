@@ -68,7 +68,7 @@ class NextForest(KatajaAction):
     k_tooltip = 'Switch to next forest'
 
     def method(self):
-        """ Show the next 'slide', aka Forest from a list in ForestKeeper.
+        """ Show the next 'slide', aka Forest from a list in KatajaDocument.
         :return: None
         """
         i, forest = ctrl.main.forest_keeper.next_forest()
@@ -84,7 +84,7 @@ class PreviousForest(KatajaAction):
     k_tooltip = 'Switch to previous forest'
 
     def method(self):
-        """ Show the previous 'slide', aka Forest from a list in ForestKeeper.
+        """ Show the previous 'slide', aka Forest from a list in KatajaDocument.
         :return: None
         """
         i, forest = ctrl.main.forest_keeper.prev_forest()

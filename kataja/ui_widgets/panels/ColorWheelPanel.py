@@ -243,7 +243,7 @@ class ColorWheelInner(QtWidgets.QWidget):
 
         :param event:
         """
-        h, s, v = ctrl.main.forest.settings.hsv()  # @UndefinedVariable
+        h, s, v = ctrl.settings.get('hsv')  # @UndefinedVariable
         ov = v
         v += event.angleDelta().y() / 100.0
         if v < 0:

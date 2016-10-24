@@ -24,11 +24,11 @@
 
 from kataja.singletons import ctrl, running_environment
 from kataja.saved.Forest import Forest
-from kataja.saved.ForestKeeper import ForestKeeper
+from kataja.saved.KatajaDocument import KatajaDocument
 from PoP.PoPDeriveH import Generate
 
 
-class PoPForestKeeper(ForestKeeper):
+class PoPDocument(KatajaDocument):
     """ Container and loader for Forest objects. Remember to not enable undo for any of the actions in here,
     as scope of undo should be a single Forest. """
 

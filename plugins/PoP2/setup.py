@@ -2,7 +2,7 @@
 from PoP2.ConstituentB import Constituent
 from PoP2.FeatureB import Feature
 from PoP2.PoPDeriveK import Generate
-from PoP2.ForestKeeper import PoPForestKeeper
+from PoP2.ForestKeeper import PoPDocument
 
 # see ExamplePlugin/readme.txt and ExamplePlugin/plugin.json
 
@@ -13,7 +13,7 @@ from PoP2.ForestKeeper import PoPForestKeeper
 # them here, you have to put class definitions *before* the plugin_parts -line.
 
 # plugin_parts = [PythonClass,...]
-plugin_parts = [Constituent, Feature, Generate, PoPForestKeeper]
+plugin_parts = [Constituent, Feature, Generate, PoPDocument]
 
 # When a plugin is enabled it will try to rebuild the instances of all replaced classes. It is a
 # risky process, and all replaced classes can have their own _on_rebuild and _on_teardown methods
@@ -37,7 +37,7 @@ def start_plugin(main, ctrl, prefs):
     """ This is called when plugin is enabled, after new classes are initialised. This can be
     used for initializations, e.g. loading lexicons or adding new data to main, ctrl or prefs
     without reclassing them."""
-    main.load_initial_treeset()  # runs ForestKeeper.__init__ etc
+    main.load_initial_treeset()  # runs KatajaDocument.__init__ etc
     ctrl.free_drawing_mode = False
     ctrl.ui.update_edit_mode()
 

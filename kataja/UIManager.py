@@ -136,6 +136,7 @@ class UIManager:
         self.default_node_type = g.CONSTITUENT_NODE
         self.active_node_type = g.CONSTITUENT_NODE
         self.active_edge_type = g.CONSTITUENT_EDGE
+        self.active_shape_name = 'shaped_cubic'
         self.selection_group = None
         # this is a reference dict for many ui elements adjusting edges
         self.active_edge_style = {}
@@ -214,6 +215,8 @@ class UIManager:
                 self.active_node_type = scope
                 node_class = classes.nodes[scope]
                 self.active_edge_type = node_class.default_edge
+        self.active_shape_name = ctrl.settings.get_edge_setting('shape_name',
+                                                                edge_type=self.active_edge_type)
         self.active_scope = scope
         ctrl.call_watchers(self, 'scope_changed')
 
@@ -390,7 +393,6 @@ class UIManager:
 
     def update_actions(self):
         # prepare style dictionaries for selections, to be used for displaying style values in UI
-        self.build_active_style_info()
         for action in self.actions.values():
             action.update_action()
         log.debug('Updated %s actions' % len(list(self.actions.values())))
@@ -403,51 +405,6 @@ class UIManager:
         """
         self.actions[key].update_action()
 
-    def build_active_style_info(self):
-        """ Build dicts for representative edge styles and node styles to be displayed by ui
-        :return: two dicts
-        """
-        es = {}
-        ns = {}
-        if self.scope_is_selection:
-            ecount = 0
-            ncount = 0
-            for item in ctrl.selected:
-                if isinstance(item, Edge):
-                    if not ecount:
-                        es = item.shape_info.copy()
-                        shape_name = item.shape_name
-                        es['shape_name'] = shape_name
-                        es['sample_edge'] = item
-                        es['arrowhead_at_start'] = item.shape_info.has_arrowhead_at_start()
-                        es['arrowhead_at_end'] = item.shape_info.has_arrowhead_at_end()
-                        es['curve_adjustment'] = item.curve_adjustment or [(0, 0), (0, 0)]
-                        #print('selection-based edge style:', es)
-                    ecount += 1
-                elif isinstance(item, Node):
-                    if not ncount:
-                        ns = item.get_style()
-                        #print('selection node style:', ns)
-                    ncount += 1
-            if ecount:
-                es['edge_count'] = ecount
-            if ncount:
-                ns['node_count'] = ncount
-        elif ctrl.fs:
-            if self.active_edge_type:
-                es = ctrl.fs.shape_info(self.active_edge_type)
-                es['arrowhead_at_start'] = ctrl.fs.edge_info(self.active_edge_type,
-                                                             'arrowhead_at_start')
-                es['arrowhead_at_end'] = ctrl.fs.edge_info(self.active_edge_type, 'arrowhead_at_end')
-                es['shape_name'] = ctrl.fs.edge_info(self.active_edge_type, 'shape_name')
-                #print('fs-based edge style: ', es)
-            else:
-                es = {}
-            if self.active_node_type:
-                ns = ctrl.fs.node_style(self.active_node_type)
-                #print('fs-based node style: ', ns)
-        self.active_edge_style = es
-        self.active_node_style = ns
 
     def update_selections(self):
         """ Many UI elements change mode depending on if object of specific

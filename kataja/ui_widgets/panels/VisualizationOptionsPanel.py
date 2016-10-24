@@ -1,7 +1,8 @@
 from kataja.singletons import ctrl
 from kataja.ui_widgets.Panel import Panel
 from PyQt5 import QtWidgets, QtCore
-from kataja.ui_support.panel_utils import mini_button, text_button, set_value, label
+from kataja.ui_support.panel_utils import mini_button, text_button, set_value, label, box_row, \
+    checkbox
 import kataja.globals as g
 
 __author__ = 'purma'
@@ -29,31 +30,27 @@ class VisualizationOptionsPanel(Panel):
         self.setMaximumWidth(220)
         self.setMaximumHeight(140)
 
-        grid = QtWidgets.QGridLayout()
-        grid.setContentsMargins(0, 0, 0, 0)
-        layout.addLayout(grid)
+        hlayout = box_row(layout)
+        layout.addLayout(hlayout)
         ui = self.ui_manager
-        label(self, grid, 'Show labels ', 0, 0)
-        self.show_display_labels = text_button(ui, grid,
-                                               'Show display labels', 'toggle_show_display_label',
-                                               1, 0, checkable=True)
-        layout.addLayout(grid)
+        self.show_display_labels = checkbox(ui, inner, hlayout,
+                                               'Show display labels', 'toggle_show_display_label')
         grid = QtWidgets.QGridLayout()
         grid.setContentsMargins(0, 0, 0, 0)
 
         label(self, grid, 'Show projections', 0, 0)
-        self.highlighter_button = text_button(ui, grid,
+        self.highlighter_button = checkbox(ui, inner, grid,
                                               'with highlighter',
                                               'toggle_highlighter_projection',
-                                              1, 0, checkable=True)
-        self.strong_lines_button = text_button(ui, grid,
+                                              1, 0)
+        self.strong_lines_button = checkbox(ui, inner, grid,
                                                'with stronger lines',
                                                'toggle_strong_lines_projection',
-                                               1, 1, checkable=True)
-        self.colorize_button = text_button(ui, grid,
+                                               1, 1)
+        self.colorize_button = checkbox(ui, inner, grid,
                                            'with colorized lines',
                                            'toggle_colorized_projection',
-                                           1, 2, checkable=True)
+                                           1, 2)
 
         layout.addLayout(grid)
         inner.setLayout(layout)
@@ -77,12 +74,11 @@ class VisualizationOptionsPanel(Panel):
         """
         self.widget().updateGeometry()
         self.widget().update()
-        s = ctrl.fs
-        set_value(self.show_display_labels, s.show_display_labels)
-        set_value(self.highlighter_button, s.projection_highlighter)
-        set_value(self.strong_lines_button, s.projection_strong_lines)
-        set_value(self.colorize_button, s.projection_colorized)
-
+        s = ctrl.settings
+        set_value(self.show_display_labels, s.get('show_display_labels'))
+        set_value(self.highlighter_button, s.get('projection_highlighter'))
+        set_value(self.strong_lines_button, s.get('projection_strong_lines'))
+        set_value(self.colorize_button, s.get('projection_colorized'))
         self.updateGeometry()
         self.update()
 
@@ -90,7 +86,7 @@ class VisualizationOptionsPanel(Panel):
         """
         :return:
         """
-        return Panel.initial_position(next_to=next_to or 'VisualizationPanel')
+        return Panel.initial_position(self, next_to=next_to or 'VisualizationPanel')
 
     def close(self):
         """ Raise button in VISUALIZATION panel """

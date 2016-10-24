@@ -9,7 +9,6 @@ from PyQt5.QtCore import QPointF, QPoint
 from kataja.SavedField import SavedField
 from kataja.globals import CREATED, DELETED
 from kataja.parser.INodes import ITextNode
-from kataja.parser.LatexToINode import LatexFieldToINode
 from kataja.singletons import ctrl, classes
 from kataja.utils import to_tuple, time_me
 from kataja.uniqueness_generator import next_available_uid
@@ -33,9 +32,11 @@ class SavedObject(object):
     """
     uid = SavedField("uid")
     class_name = SavedField("class_name")
+    settings = SavedField("settings")
     syntactic_object = False
     unique = False
     dont_copy = []
+    allowed_settings = []
 
     def __init__(self, uid=None, **kw):
         if self.unique:
@@ -45,6 +46,7 @@ class SavedObject(object):
         self._saved = {}
         self._history = {}
         self.uid = uid
+        self.settings = {}
         self.class_name = self.__class__.__name__
         self._cd = 0  # / CREATED / DELETED
         self._can_be_deleted_with_undo = True
@@ -195,6 +197,10 @@ class SavedObject(object):
         :return:
         """
         pass
+
+    def can_have_setting(self, key):
+        return key in self.allowed_settings
+
 
     def after_init(self):
         """ Override this to do preparations necessary for object creation

@@ -87,7 +87,7 @@ class Projection:
         If head is None, then remove label and display_label.
         :return:
         """
-        xbar = ctrl.fs.use_xbar_aliases
+        xbar = ctrl.settings.get('use_xbar_aliases')
         label = self.head.label
         if not xbar:
             for chain in self.chains:

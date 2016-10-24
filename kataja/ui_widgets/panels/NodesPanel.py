@@ -14,16 +14,14 @@ class DraggableNodeFrame(QtWidgets.QFrame):
         self.setBackgroundRole(QtGui.QPalette.AlternateBase)
         self.setAutoFillBackground(True)
 
-        if ctrl.forest:
-            style = ctrl.fs.node_style(key)
-        else:
-            style = prefs.node_styles[key][prefs.style]
         hlayout = QtWidgets.QHBoxLayout()
         hlayout.setContentsMargins(0, 0, 0, 0)
-        color_key = style['color']
+        color_key = ctrl.settings.get_node_setting('color_id', node_type=key)
+        font_key = ctrl.settings.get_node_setting('font_id', node_type=key)
+
         self.key = key
         self.setPalette(ctrl.cm.palette_from_key(color_key))
-        self.setFont(qt_prefs.get_font(style['font']))
+        self.setFont(qt_prefs.get_font(font_key))
         self.add_button = icon_button(ctrl.ui, self, hlayout,
                                       icon=qt_prefs.add_icon,
                                       text='Add ' + name,
@@ -43,10 +41,12 @@ class DraggableNodeFrame(QtWidgets.QFrame):
         self.setLayout(hlayout)
 
     def update_colors(self):
-        settings = ctrl.fs.node_style(self.key)
-        self.setPalette(ctrl.cm.palette_from_key(settings['color']))
+        color_key = ctrl.settings.get_node_setting('color_id', node_type=self.key)
+        font_key = ctrl.settings.get_node_setting('font_id', node_type=self.key)
+
+        self.setPalette(ctrl.cm.palette_from_key(color_key))
         self.add_button.update_colors()
-        self.setFont(qt_prefs.get_font(settings['font']))
+        self.setFont(qt_prefs.get_font(font_key))
 
     def update_frame(self):
         node_class = classes.nodes.get(self.key, None)

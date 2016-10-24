@@ -385,7 +385,7 @@ def checkbox(ui_manager, parent, layout, label='', action='', x=-1, y=-1):
     """
 
     :param ui_manager:
-    :param panel:
+    :param parent:
     :param layout:
     :param label:
     :param action:
