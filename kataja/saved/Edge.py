@@ -31,7 +31,7 @@ from kataja.singletons import ctrl, qt_prefs, prefs
 import kataja.globals as g
 from kataja.Shapes import SHAPE_PRESETS, outline_stroker
 from kataja.EdgeLabel import EdgeLabel
-from kataja.utils import to_tuple, add_xy, sub_xy
+from kataja.utils import to_tuple, add_xy, sub_xy, time_me
 from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
 from kataja.uniqueness_generator import next_available_type_id
@@ -192,7 +192,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
 
     @property
     def color_id(self) -> str:
-        return ctrl.settings.get_edge_setting('color_id', edge=self)
+        return self.cached('color_id')
 
     @color_id.setter
     def color_id(self, value):
@@ -200,7 +200,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
 
     @property
     def shape_name(self) -> str:
-        return ctrl.settings.get_edge_setting('shape_name', edge=self)
+        return self.cached('shape_name')
 
     @shape_name.setter
     def shape_name(self, value):
@@ -208,7 +208,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
 
     @property
     def pull(self) -> float:
-        return ctrl.settings.get_edge_setting('pull', edge=self)
+        return self.cached('pull')
 
     @pull.setter
     def pull(self, value):
@@ -318,11 +318,10 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
     # Helper methods for derived properties
 
     def is_filled(self) -> bool:
-        return ctrl.settings.get_shape_setting('fill', edge=self) and \
-               ctrl.settings.get_shape_setting('fillable', edge=self)
+        return self.cached('fill') and self.cached('fillable')
 
     def has_outline(self) -> int:
-        return ctrl.settings.get_shape_setting('outline', edge=self)
+        return self.cached('outline')
 
     def is_visible(self) -> bool:
         return self.visible_by_rule and not self._nodes_overlap
@@ -459,14 +458,13 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         else:
             return self.color
 
-    @property
     def uses_labels(self) -> bool:
         """ Some edge types, e.g. arrows inherently suggest adding labels to
         them. For others, having ui_support
          textbox for adding label would be unwanted noise.
         :return: bool
         """
-        return ctrl.settings.get_edge_settings('labeled', edge=self)
+        return self.cached('labeled')
 
     # ### Shape / pull / visibility
     # ###############################################################
@@ -511,7 +509,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         return new_x, new_y
 
     # ### Derivative features ############################################
-    # @utils.time_me
+    #@time_me
     def make_path(self):
         """ Draws the shape as a path """
         self.update_end_points()
@@ -538,14 +536,14 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         if self._use_simple_path:
             self._path = self._true_path
 
-        if self.has_arrowhead_at_start():
+        if self.cached('arrowhead_at_start'):
             self._arrowhead_start_path = self.make_arrowhead_path('start')
             if uses_pen:
                 self._path = self.sharpen_arrowhead_at_start(self._path)
         else:
             self._arrowhead_start_path = None
 
-        if self.has_arrowhead_at_end():
+        if self.cached('arrowhead_at_end'):
             self._arrowhead_end_path = self.make_arrowhead_path('end')
             if uses_pen:
                 self._path = self.sharpen_arrowhead_at_end(self._path)
@@ -629,7 +627,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         else:
             return
         if self.start:
-            connection_style = self.connection_style_at_start()
+            connection_style = self.cached('start_connects_to')
             if connection_style == CONNECT_TO_CENTER:
                 self._computed_start_point = self.start.current_scene_position
             elif connection_style == CONNECT_TO_BOTTOM_CENTER:
@@ -689,7 +687,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                                 self._computed_start_point = sx + (s_top / ratio), sy + s_top
 
         if self.end:
-            connection_style = self.connection_style_at_end()
+            connection_style = self.cached('end_connects_to')
             if connection_style == CONNECT_TO_CENTER:
                 self._computed_end_point = self.end.current_scene_position
             elif connection_style == CONNECT_TO_BOTTOM_CENTER or connection_style == CONNECT_TO_MAGNETS:
@@ -816,7 +814,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         :param selected:
         """
         if selected:
-            if self.uses_labels:
+            if self.uses_labels():
                 if not self.label_item:
                     self.label_item = EdgeLabel('', self, placeholder=True)
                     self.label_item.update_position()
@@ -932,6 +930,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             ctrl.select(self)
 
     # ## Qt paint method override
+    #@time_me
     def paint(self, painter, option, widget=None):
         """
 
@@ -948,7 +947,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             painter.drawPath(self._true_path)
         else:
             if self.has_outline():
-                thickness = ctrl.settings.get_shape_setting('thickness', edge=self)
+                thickness = self.cached('thickness')
                 p = QtGui.QPen()
                 p.setColor(c)
                 p.setCapStyle(QtCore.Qt.RoundCap)
@@ -962,9 +961,9 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
 
             if self.is_filled():
                 painter.fillPath(self._path, c)
-            if self.has_arrowhead_at_start() and self._arrowhead_start_path:
+            if self.cached('arrowhead_at_start') and self._arrowhead_start_path:
                 painter.fillPath(self._arrowhead_start_path, c)
-            if self.has_arrowhead_at_end() and self._arrowhead_end_path:
+            if self.cached('arrowhead_at_end') and self._arrowhead_end_path:
                 painter.fillPath(self._arrowhead_end_path, c)
 
         if ctrl.is_selected(self):
@@ -996,6 +995,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                     painter.drawLine(self.control_points[0][0], self.control_points[0][1],
                                      self.adjusted_control_points[0][0],
                                      self.adjusted_control_points[0][1])
+
 
     def get_point_at(self, d: float) -> Pf:
         """ Get coordinates at the percentage of the length of the path.
@@ -1047,7 +1047,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         """
         ad = 0.5
         x = y = size = a = 0
-        t = ctrl.settings.get_shape_setting('thickness', edge=self)
+        t = self.cached('thickness')
         if pos == 'start':
             size = self.arrowhead_size_at_start
             if t:
@@ -1249,20 +1249,14 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
 
     ## Shape helpers #############################
 
+    def cached(self, key):
+        return ctrl.settings.cached_edge(key, self)
+
     def connection_style_at_start(self):
-        return ctrl.settings.get_edge_setting('start_connects_to', edge=self)
-
-    def connection_style_at_end(self):
-        return ctrl.settings.get_edge_setting('end_connects_to', edge=self)
-
-    def has_arrowhead_at_start(self):
-        return ctrl.settings.get_edge_setting('arrowhead_at_start', edge=self)
+        return self.cached('start_connects_to')
 
     def set_arrowhead_at_start(self, value):
         ctrl.settings.set_edge_setting('arrowhead_at_start', value, edge=self)
-
-    def has_arrowhead_at_end(self):
-        return ctrl.settings.get_edge_setting('arrowhead_at_end', edge=self)
 
     def set_arrowhead_at_end(self, value):
         ctrl.settings.set_edge_setting('arrowhead_at_end', value, edge=self)
@@ -1358,7 +1352,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         :return:
         """
 
-        n = ctrl.settings.get_shape_setting('control_points', edge=self)
+        n = self.cached('control_points')
         self.poke('curve_adjustment')
         self.curve_adjustment = [(0, 0)] * n
         self.make_path()

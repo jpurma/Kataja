@@ -197,7 +197,7 @@ class Preferences(object):
         self.traces_are_grouped_together = False
         self.last_key_colors = {}
 
-        self.use_xbar_aliases = True
+        self.use_xbar_aliases = False
 
         self.dpi = 300
         self._dpi_ui = {'tab': 'Printing', 'choices': [72, 150, 300, 450, 600], 'label': 'DPI',

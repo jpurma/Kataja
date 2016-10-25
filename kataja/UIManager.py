@@ -138,9 +138,6 @@ class UIManager:
         self.active_edge_type = g.CONSTITUENT_EDGE
         self.active_shape_name = 'shaped_cubic'
         self.selection_group = None
-        # this is a reference dict for many ui elements adjusting edges
-        self.active_edge_style = {}
-        self.active_node_style = {}
         self.preferences_dialog = None
         self.color_dialogs = {}
         self.font_dialogs = {}
@@ -215,8 +212,7 @@ class UIManager:
                 self.active_node_type = scope
                 node_class = classes.nodes[scope]
                 self.active_edge_type = node_class.default_edge
-        self.active_shape_name = ctrl.settings.get_edge_setting('shape_name',
-                                                                edge_type=self.active_edge_type)
+        self.active_shape_name = ctrl.settings.cached_edge_type('shape_name', self.active_edge_type)
         self.active_scope = scope
         ctrl.call_watchers(self, 'scope_changed')
 

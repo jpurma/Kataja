@@ -207,13 +207,15 @@ class SelectFont(KatajaAction):
                         node.font_id = font_id
                         node.update_label()
             else:
-                ctrl.settings.set_node_setting('font', font_id, node_type=ctrl.ui.active_node_type,
+                ctrl.settings.set_node_setting('font_id', font_id,
+                                               node_type=ctrl.ui.active_node_type,
                                                level=FOREST)
                 for node in ctrl.forest.nodes.values():
                     node.update_label()
 
     def getter(self):
-        return ctrl.ui.active_node_style.get('font', None)
+        ntype = ctrl.ui.active_node_type
+        return ctrl.settings.get_node_setting('font_id', node_type=ntype)
 
 
 class SelectFontFromDialog(KatajaAction):
@@ -226,7 +228,6 @@ class SelectFontFromDialog(KatajaAction):
         panel = ctrl.ui.get_panel('StylePanel')
         if panel:
             font_id = panel.cached_font_id
-            print('panel.cached_font_id: ', panel.cached_font_id)
             panel.update_font_selector(font_id)
             if ctrl.ui.scope_is_selection:
                 for node in ctrl.selected:
@@ -234,7 +235,8 @@ class SelectFontFromDialog(KatajaAction):
                         node.font_id = font_id
                         node.update_label()
             else:
-                ctrl.settings.set_node_setting('font', font_id, node_type=ctrl.ui.active_node_type,
+                ctrl.settings.set_node_setting('font_id', font_id,
+                                               node_type=ctrl.ui.active_node_type,
                                                level=FOREST)
                 for node in ctrl.forest.nodes.values():
                     node.update_label()
@@ -291,6 +293,7 @@ class ChangeNodeColor(KatajaAction):
         return True  # all scope options allow defining node color
 
     def getter(self):
-        return ctrl.ui.active_node_style.get('color_id')
+        ntype = ctrl.ui.active_node_type
+        return ctrl.settings.get_node_setting('color_id', node_type=ntype)
 
 

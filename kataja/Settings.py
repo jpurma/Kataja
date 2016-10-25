@@ -1,7 +1,8 @@
 from kataja.singletons import ctrl
 import copy
 
-from kataja.Shapes import SHAPE_PRESETS
+from kataja.Shapes import SHAPE_PRESETS, SHAPE_DICT
+from kataja.utils import time_me
 
 HIGHEST = 0
 OBJECT = 1
@@ -35,24 +36,36 @@ class Settings:
     """
 
     def __init__(self):
+        self.document = None
+        self.forest = None
         self.s_unified = {}
         self.s_forest = {}
         self.s_document = {}
         self.prefs = None
+        self._shape_cache = {}
 
     def set_prefs(self, prefs):
         self.prefs = prefs
 
     def set_document(self, document):
+        self.document = document
+        self.forest = None
         self.s_document = document.settings
         self.s_forest = {}
         self.s_unified = {}
+        self._shape_cache = {}
 
     def set_forest(self, forest):
+        self.forest = forest
         self.s_forest = forest.settings
         self.s_unified = {}
+        self.update_shape_cache()
 
+    #@time_me
     def get(self, key, level=HIGHEST, obj=None, ignore_selection=False):
+        #print('get setting, key:%s, level:%s, obj:%s, ignore_selection:%s' % (
+        #    key, level, obj, ignore_selection
+        #))
         if obj:
             if level == HIGHEST:
                 if key in obj.settings:
@@ -88,14 +101,20 @@ class Settings:
         :param obj:
         :return:
         """
+        #print('set settings: key:%s, value:%s, level:%s, obj:%s' %
+        #      (key, value, level, obj))
+
         if level == OBJECT:
             if not obj:
                 raise ValueError
-            if obj.can_have_setting(key):
-                obj.settings[key] = value
+            obj.poke('settings')
+            obj.settings[key] = value
         elif level == FOREST:
-            self.s_forest[key] = value
+            if self.forest:
+                self.forest.poke('settings')
+                self.s_forest[key] = value
         elif level == DOCUMENT:
+            self.document.poke('settings')
             self.s_document[key] = value
         elif level == PREFS:
             setattr(self.prefs, key, value)
@@ -160,6 +179,7 @@ class Settings:
     # Edge settings are stored directly in Edge.settings, but in settings['edges'][edge_type]
     # in layers below.
 
+    #@time_me
     def get_edge_setting(self, key, edge_type=None, edge=None, level=HIGHEST):
         if edge:
             edge_type = edge.edge_type
@@ -169,6 +189,8 @@ class Settings:
     def set_edge_setting(self, key, value, edge_type=None, edge=None, level=OBJECT):
         self._set_dict_setting(key, value, subtype=edge_type, obj=edge, level=level,
                                dictname='edges')
+        if level != OBJECT:
+            self.update_shape_cache()
 
     def del_edge_setting(self, key, edge_type=None, edge=None, level=OBJECT):
         self._del_dict_setting(key, subtype=edge_type, obj=edge, level=level, dictname='edges')
@@ -176,6 +198,7 @@ class Settings:
     # Node settings are stored directly in Node.settings, but in settings['nodes'][node_type]
     # in layers below.
 
+    #@time_me
     def get_node_setting(self, key, node_type=None, node=None, level=HIGHEST):
         if node:
             node_type = node.node_type
@@ -189,12 +212,32 @@ class Settings:
     def del_node_setting(self, key, node_type=None, node=None, level=OBJECT):
         self._del_dict_setting(key, subtype=node_type, obj=node, level=level, dictname='nodes')
 
-    def get_shape_setting(self, key, edge_type=None, edge=None, level=HIGHEST):
+    #@time_me
+    def get_shape_setting(self, key, edge_type=None, edge=None, level=HIGHEST, shape_name=None):
         v = self.get_edge_setting(key, edge_type=edge_type, edge=edge, level=level)
         if v is not None:
             return v
-        sn = self.get_edge_setting('shape_name', edge_type=edge_type, edge=edge, level=level)
-        return getattr(SHAPE_PRESETS[sn], key)
+        if not shape_name:
+            shape_name = self.get_edge_setting('shape_name', edge_type=edge_type, edge=edge,
+                                               level=level)
+        return getattr(SHAPE_PRESETS[shape_name], key)
+        #return SHAPE_DICT[sn][key]
+
+    #@time_me
+    def cached_edge(self, key, edge):
+        if key in edge.settings:
+            return edge.settings[key]
+        if not self._shape_cache:
+            self.update_shape_cache()
+        return self._shape_cache[edge.edge_type][key]
+
+    def cached_edge_type(self, key, edge_type):
+        if not self._shape_cache:
+            self.update_shape_cache()
+        return self._shape_cache[edge_type][key]
+
+
+    ### Deep diggers
 
     def _get_dict_setting(self, key, subtype=None, obj=None, level=HIGHEST, dictname=None):
         if not (subtype or obj):
@@ -239,11 +282,15 @@ class Settings:
         return None
 
     def _set_dict_setting(self, key, value, subtype=None, obj=None, level=OBJECT, dictname=None):
+        #print('_set_dict settings: key:%s, value:%s, subtype:%s, obj:%s, level:%s, dictname:%s' %
+        #      (key, value, subtype, obj, level, dictname))
         if not (obj or subtype):
             raise ValueError
         if obj:
+            obj.poke('settings')
             obj.settings[key] = value
         elif level == FOREST:
+            self.forest.poke('settings')
             if dictname not in self.s_forest:
                 self.s_forest[dictname] = {subtype: {key: value}}
             elif subtype not in self.s_forest[dictname]:
@@ -251,6 +298,7 @@ class Settings:
             else:
                 self.s_forest[dictname][subtype][key] = value
         elif level == DOCUMENT:
+            self.document.poke('settings')
             if dictname not in self.s_document:
                 self.s_document[dictname] = {subtype: {key: value}}
             elif subtype not in self.s_forest[dictname]:
@@ -268,9 +316,11 @@ class Settings:
         if not (obj or subtype):
             raise ValueError
         if obj and key in obj.settings:
+            obj.poke('settings')
             del obj.settings[key]
         elif level == FOREST:
             if dictname in self.s_forest:
+                self.forest.poke('settings')
                 d = self.s_forest[dictname]
                 if subtype in d:
                     if key in d[subtype]:
@@ -281,6 +331,7 @@ class Settings:
                     del self.s_forest[dictname]
         elif level == DOCUMENT:
             if dictname in self.s_document:
+                self.document.poke('settings')
                 d = self.s_document[dictname]
                 if subtype in d:
                     if key in d[subtype]:
@@ -289,4 +340,22 @@ class Settings:
                             del d[subtype]
                 if not d:
                     del self.s_document[dictname]
+
+    # ## Shape cache #########
+
+    @time_me
+    def update_shape_cache(self):
+        new = self.prefs.edges.copy()
+        if 'edges' in self.s_document:
+            for edge_type, edge_data in self.s_document['edges'].items():
+                new[edge_type].update(edge_data)
+        if 'edges' in self.s_forest:
+            for edge_type, edge_data in self.s_forest['edges'].items():
+                new[edge_type].update(edge_data)
+        for edge_type, edge_data in new.items():
+            shape_data = SHAPE_DICT[edge_data['shape_name']].copy()
+            shape_data.update(edge_data)
+            new[edge_type] = shape_data
+        self._shape_cache = new
+        #print(self._shape_cache)
 

@@ -575,6 +575,7 @@ class BlobPath(Shape):
         path = path.subtracted(path2neg)
         painter.fillPath(path, color)
 
+
 class DirectionalBlobPath(Shape):
     """ A blob-like shape that stretches between the end points """
     path_name = 'directional_blob'
@@ -782,3 +783,20 @@ def draw_triangle(painter, x, y, w=10):
 
 
 SHAPE_PRESETS = OrderedDict([(od.path_name, od) for od in available_shapes])
+SHAPE_DICT = {}
+for od in available_shapes:
+    SHAPE_DICT[od.path_name] = dict(
+        path_name=od.path_name,
+        control_points=od.control_points,
+        fillable=od.fillable,
+        fill=od.fill,
+        outline=od.outline,
+        thickness=od.thickness,
+        relative=od.relative,
+        rel_dx=od.rel_dx,
+        rel_dy=od.rel_dy,
+        fixed_dx=od.fixed_dx,
+        fixed_dy=od.fixed_dy,
+        leaf_x=od.leaf_x,
+        leaf_y=od.leaf_y,
+    )
