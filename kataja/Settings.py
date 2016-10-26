@@ -42,10 +42,14 @@ class Settings:
         self.s_forest = {}
         self.s_document = {}
         self.prefs = None
+        self.ui = None
         self._shape_cache = {}
 
     def set_prefs(self, prefs):
         self.prefs = prefs
+
+    def set_ui_manager(self, ui_manager):
+        self.ui = ui_manager
 
     def set_document(self, document):
         self.document = document
@@ -143,7 +147,7 @@ class Settings:
             if key in self.s_document:
                 del self.s_document[key]
 
-    def update_selection(self):
+    def update_selections(self):
         """ Make a new s_unified -dict that combines the settings of all selected objects. If there
         are conflicting settings in selection, these will have value CONFLICT. If no selection, this
         dict is empty.
@@ -236,6 +240,16 @@ class Settings:
             self.update_shape_cache()
         return self._shape_cache[edge_type][key]
 
+    def cached_active_edge(self, key):
+        if key in self.s_unified:
+            return self.s_unified[key]
+        if not self._shape_cache:
+            self.update_shape_cache()
+        return self._shape_cache[self.ui.active_edge_type][key]
+
+    def active_nodes(self, key):
+        return self._get_dict_setting(key, subtype=self.ui.active_node_type, level=HIGHEST,
+                                      dictname='nodes')
 
     ### Deep diggers
 

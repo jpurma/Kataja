@@ -77,7 +77,7 @@ PANELS = [{'class': LogPanel, 'name': 'Log', 'position': 'bottom'},
           {'class': ColorPanel, 'name': 'Color theme', 'position': 'right'},
           {'class': ColorWheelPanel, 'name': 'Color theme wheel', 'position': 'right',
            'folded': True, 'closed': True},
-          {'class': LineOptionsPanel, 'name': 'More line options', 'position': 'float',
+          {'class': LineOptionsPanel, 'name': 'More edge options', 'position': 'float',
            'closed': True},
           {'class': SymbolPanel, 'name': 'Symbols', 'position': 'right'},
           {'class': FaceCamPanel, 'name': 'Camera', 'position': 'float', 'closed': True},
@@ -401,7 +401,6 @@ class UIManager:
         """
         self.actions[key].update_action()
 
-
     def update_selections(self):
         """ Many UI elements change mode depending on if object of specific
         type is selected. Also the logic of selection groups has to be handled somewhere. """
@@ -486,6 +485,23 @@ class UIManager:
                 ctrl.call_watchers(self, 'scope_changed')
             if self.selection_group:
                 self.remove_selection_group()
+        ctrl.settings.update_selections()
+
+    def has_nodes_in_scope(self):
+        if self.scope_is_selection:
+            for item in ctrl.selected:
+                if isinstance(item, Node):
+                    return True
+            return False
+        return True  # all scope options allow defining node color
+
+    def has_edges_in_scope(self):
+        if self.scope_is_selection:
+            for item in ctrl.selected:
+                if isinstance(item, Edge):
+                    return True
+            return False
+        return True  # all scope options allow defining node color
 
     def remove_selection_group(self):
         self.remove_ui_for(self.selection_group)

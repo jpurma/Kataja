@@ -26,6 +26,14 @@ no_legacy_trees = True
 # no_legacy_trees disables restoring the previous data. It is useful when start_plugin involves
 # loading our own example trees and data.
 
+plugin_preferences = {'play_nice': True}
+# These are additional preferences added by plugin. They extend the bottom layer of preferences
+# hierarchy and can have an UI elements in 'Preferences' panel. You can have custom panels or
+# code to make them editable in document-, forest- or node/edge-level, or just programmatically
+# store values there. They will be stored in prefs, document.settings, forest.settings,
+# node.settings or edge.settings, managed by ctrl.settings -object. They compete for namespace with
+# existing settings, so see kataja.Preferences to find out what is already there and use unique
+# names.
 
 def before_init(main, ctrl, prefs):
     """ This is called when plugin is enabled but before the new classes replace the existing.
@@ -41,7 +49,10 @@ def start_plugin(main, ctrl, prefs):
     ctrl.free_drawing_mode = False
     ctrl.ui.update_edit_mode()
 
+
 def tear_down_plugin(main, ctrl, prefs):
     """ This is called when plugin is disabled or when switching to another plugin that would
     conflict with this. Plugins should clean up after themselves! """
     pass
+
+

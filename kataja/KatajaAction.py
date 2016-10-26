@@ -279,8 +279,11 @@ class KatajaAction(QtWidgets.QAction):
                 if ctrl.main.use_tooltips:
                     element.setToolTip(tt)
                 element.setToolTipDuration(2000)
+        # gray out ui element and its label if action is disabled
         if hasattr(element, 'setEnabled'):
             element.setEnabled(self.isEnabled())
+        if hasattr(element, 'k_buddy') and element.k_buddy:
+            element.k_buddy.setEnabled(self.isEnabled())
         shortcut = self.shortcut()
         shortcut_context = self.shortcutContext()
         if shortcut and shortcut_context:

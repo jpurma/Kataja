@@ -119,6 +119,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.graph_view = GraphView(main=self, graph_scene=self.graph_scene)
         self.graph_scene.graph_view = self.graph_view
         self.ui_manager = UIManager(self)
+        self.settings.set_ui_manager(self.ui_manager)
         self.ui_manager.populate_ui_elements()
         # make empty forest and forest keeper so initialisations don't fail because of their absence
         self.visualizations = VISUALIZATIONS
@@ -268,6 +269,8 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
                     else:
                         log.info("adding %s " % classobj.__name__)
                     classes.add_mapping(base_class, classobj)
+
+
 
     def reset_preferences(self):
         """

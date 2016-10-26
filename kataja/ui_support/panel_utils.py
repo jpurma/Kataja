@@ -83,9 +83,9 @@ def spinbox(ui_manager, panel, layout, label='', range_min=0, range_max=0, actio
     spinbox.setSuffix(suffix)
     spinbox.setWrapping(wrapping)
     spinbox.setFixedWidth(50)
-    ui_manager.connect_element_to_action(spinbox, action)
     slabel.setBuddy(spinbox)
     spinbox.k_buddy = slabel
+    ui_manager.connect_element_to_action(spinbox, action)
     layout.addWidget(slabel)
     layout.addWidget(spinbox)
     return spinbox
@@ -112,9 +112,9 @@ def knob(ui_manager, panel, layout, label='', range_min=-180, range_max=180, act
     dial.setFixedSize(28, 28)
     dial.setWrapping(wrapping)
     dial.setRange(range_min, range_max)
-    ui_manager.connect_element_to_action(dial, action)
     slabel.setBuddy(dial)
     dial.k_buddy = slabel
+    ui_manager.connect_element_to_action(dial, action)
     layout.addWidget(slabel)
     layout.addWidget(dial)
     return spinbox
@@ -144,9 +144,9 @@ def decimal_spinbox(ui_manager, panel, layout, label='', range_min=0, range_max=
     spinbox.setSingleStep(step)
     spinbox.setSuffix(suffix)
     spinbox.setFixedWidth(58)
-    ui_manager.connect_element_to_action(spinbox, action)
     slabel.setBuddy(spinbox)
     spinbox.k_buddy = slabel
+    ui_manager.connect_element_to_action(spinbox, action)
     layout.addWidget(slabel)
     layout.addWidget(spinbox)
     return spinbox
@@ -393,7 +393,6 @@ def checkbox(ui_manager, parent, layout, label='', action='', x=-1, y=-1):
     """
     slabel = QtWidgets.QLabel(label, parent)
     scheckbox = QtWidgets.QCheckBox()
-    ui_manager.connect_element_to_action(scheckbox, action)
     if x > -1:
         layout.addWidget(slabel, y, x)
         layout.addWidget(scheckbox, y, x + 1)
@@ -402,6 +401,7 @@ def checkbox(ui_manager, parent, layout, label='', action='', x=-1, y=-1):
         layout.addWidget(scheckbox)
     slabel.setBuddy(scheckbox)
     scheckbox.k_buddy = slabel
+    ui_manager.connect_element_to_action(scheckbox, action)
     return scheckbox
 
 
@@ -417,7 +417,6 @@ def radiobutton(ui_manager, parent, layout, label='', action='', x=-1, y=-1, gro
     """
     slabel = QtWidgets.QLabel(label, parent)
     sradio = QtWidgets.QRadioButton()
-    ui_manager.connect_element_to_action(sradio, action)
     if x > -1:
         layout.addWidget(slabel, y, x)
         layout.addWidget(sradio, y, x + 1)
@@ -428,6 +427,7 @@ def radiobutton(ui_manager, parent, layout, label='', action='', x=-1, y=-1, gro
         group.addButton(sradio)
     slabel.setBuddy(sradio)
     sradio.k_buddy = slabel
+    ui_manager.connect_element_to_action(sradio, action)
     return sradio
 
 

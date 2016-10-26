@@ -150,7 +150,7 @@ class RemoveNode(KatajaAction):
 
 class AddTriangle(KatajaAction):
     k_action_uid = 'add_triangle'
-    k_command = 'Add triangle'
+    k_command = 'Turn node and its children into triangle'
 
     def method(self):
         """ Turn triggering node into triangle node

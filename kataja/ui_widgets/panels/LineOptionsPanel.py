@@ -31,7 +31,7 @@ class LineOptionsPanel(Panel):
                                                  QtWidgets.QSizePolicy.MinimumExpanding))
         self.setMaximumWidth(220)
         self.setMaximumHeight(160)
-        self.watchlist = ['edge_shape', 'scope_changed', 'selection_changed', 'edge_adjustment']
+        self.watchlist = ['scope_changed', 'selection_changed']
 
         spac = 8
         ui = self.ui_manager
@@ -117,9 +117,9 @@ class LineOptionsPanel(Panel):
         if not ctrl.forest:
             return
         if ctrl.ui.scope_is_selection:
-            es = ctrl.ui.active_edge_style
-            if es:
-                if es.get('edge_count', 0) == 1:
+            ec = ctrl.settings.get_edge_setting('edge_count', edge_type=ctrl.ui.active_edge_type)
+            if ec:
+                if ec == 1:
                     self.set_title('Settings for selected edge')
                 else:
                     self.set_title('Settings for selected edges')
@@ -166,10 +166,5 @@ class LineOptionsPanel(Panel):
         """
         if signal == 'scope_changed':
             self.update_panel()
-        elif signal == 'edge_shape':
-            print('received edge_shape update')
-            self.update_panel()
         elif signal == 'selection_changed':
             self.update_panel()
-        elif signal == 'edge_adjustment':
-            pass

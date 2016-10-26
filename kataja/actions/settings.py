@@ -178,13 +178,7 @@ class StartFontDialog(KatajaAction):
         ctrl.ui.start_font_dialog(panel, font_key, font_key)
 
     def enabler(self):
-        if ctrl.ui.scope_is_selection:
-            for item in ctrl.selected:
-                if isinstance(item, Node):
-                    return True
-            return False
-        else:
-            return True
+        return ctrl.ui.has_nodes_in_scope()
 
 
 class SelectFont(KatajaAction):
@@ -213,9 +207,11 @@ class SelectFont(KatajaAction):
                 for node in ctrl.forest.nodes.values():
                     node.update_label()
 
+    def enabler(self):
+        return ctrl.ui.has_nodes_in_scope()
+
     def getter(self):
-        ntype = ctrl.ui.active_node_type
-        return ctrl.settings.get_node_setting('font_id', node_type=ntype)
+        return ctrl.settings.active_nodes('font_id')
 
 
 class SelectFontFromDialog(KatajaAction):
@@ -285,15 +281,7 @@ class ChangeNodeColor(KatajaAction):
             log.info('(s) Changed node color to: %s' % ctrl.cm.get_color_name(color_key))
 
     def enabler(self):
-        if ctrl.ui.scope_is_selection:
-            for item in ctrl.selected:
-                if isinstance(item, Node):
-                    return True
-            return False
-        return True  # all scope options allow defining node color
+        return ctrl.ui.has_nodes_in_scope()
 
     def getter(self):
-        ntype = ctrl.ui.active_node_type
-        return ctrl.settings.get_node_setting('color_id', node_type=ntype)
-
-
+        return ctrl.settings.active_nodes('color_id')

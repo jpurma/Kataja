@@ -57,7 +57,7 @@ class TouchArea(UIGraphicsItem, QtWidgets.QGraphicsObject):
         self._path = None
         self.start_point = None
         self.end_point = None
-        self.setZValue(200)
+        self.setZValue(10)
         self.status_tip = ""
         # Drawing flags defaults
         self._fill_path = False

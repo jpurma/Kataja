@@ -210,7 +210,7 @@ class ConstituentNode(BaseConstituentNode):
         # best bet for actual label. (first is category, second the word, third and more features)
         if leaf:
             if len(rows) == 1:
-                self.label = rows
+                self.label = rows[0]
             elif len(rows) > 1:
                 self.label = rows[1:1]
         self.display_label = rows
