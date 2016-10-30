@@ -192,7 +192,7 @@ class Label(QtWidgets.QGraphicsTextItem):
         visible_parts = []
         html = []
         waiting = None
-        show_all_mode = prefs.show_all_mode
+        show_all_mode = ctrl.settings.get('show_all_mode')
         delimiter = ''
         for field_name in self.visible_in_label:
             s = styles.get(field_name, {})
@@ -270,9 +270,9 @@ class Label(QtWidgets.QGraphicsTextItem):
 
     def compose_html_for_editing(self):
         """ Use 'visible_in_label' and 'display_styles' and the item attributes to compose the
-        document html. Also stores information about the composition to 'viewable_parts'
+        document html. Also stores information about the composition to 'editable_parts'
         Actual parts is list of tuples where:
-        (field_name, position in html string, line in displayed html, html_snippet)
+        (field_name, html_snippet, length of snippet in rows)
         :return:
         """
         styles = self.display_styles
@@ -280,7 +280,7 @@ class Label(QtWidgets.QGraphicsTextItem):
         h = self._host
         editable_parts = []
         editable = []
-        show_all_mode = prefs.show_all_mode
+        show_all_mode = ctrl.settings.get('show_all_mode')
         for field_name in self.visible_in_label:
             s = styles.get(field_name, {})
             e = edit_styles.get(field_name, {})
@@ -323,8 +323,10 @@ class Label(QtWidgets.QGraphicsTextItem):
                 editable.append('\n')
         if editable and editable[-1] == '\n':
             editable.pop()
-        self.editable_html = ''.join(editable)
-
+        self.editable_html = '<br/>'.join(editable)
+        self.editable_html = self.editable_html.replace('\n', '<br/>')
+        print('editable:', editable)
+        print('editable_html:', self.editable_html)
         # if there are no previous value to compare with, use the field defined as *focus* in
         # class.editable -dict
         if not editable_parts:
@@ -449,7 +451,6 @@ class Label(QtWidgets.QGraphicsTextItem):
                 print('missing setter!')
         else:
             setattr(self._host, field_name, parsed_parts)
-
 
     def analyze_changes(self):
         """ Use difflib to get a robust idea on what has changed

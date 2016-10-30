@@ -43,7 +43,7 @@ import PyQt5.QtGui as QtGui
 import PyQt5.QtWidgets as QtWidgets
 import sys
 
-from kataja.Settings import Settings, FOREST
+from kataja.Settings import Settings, FOREST, DOCUMENT
 from kataja.singletons import ctrl, prefs, qt_prefs, running_environment, classes, log
 from kataja.saved.Forest import Forest
 from kataja.saved.KatajaDocument import KatajaDocument
@@ -101,7 +101,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.forest = None
         self.fontdb = QtGui.QFontDatabase()
         self.color_manager = PaletteManager()
-        self.settings = Settings()
+        self.settings_manager = Settings()
         ctrl.late_init(self)
         classes.late_init()
         self.FL = classes.FL()
@@ -109,7 +109,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
 
         prefs.load_preferences(disable=reset_prefs or no_prefs)
         qt_prefs.late_init(running_environment, prefs, self.fontdb)
-        self.settings.set_prefs(prefs)
+        self.settings_manager.set_prefs(prefs)
         self.find_plugins(prefs.plugins_path or running_environment.plugins_path)
         self.install_plugins()
         self.color_manager.update_color_modes()  # include color modes from preferences
@@ -119,16 +119,16 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         self.graph_view = GraphView(main=self, graph_scene=self.graph_scene)
         self.graph_scene.graph_view = self.graph_view
         self.ui_manager = UIManager(self)
-        self.settings.set_ui_manager(self.ui_manager)
+        self.settings_manager.set_ui_manager(self.ui_manager)
         self.ui_manager.populate_ui_elements()
         # make empty forest and forest keeper so initialisations don't fail because of their absence
         self.visualizations = VISUALIZATIONS
         self.forest_keepers = [classes.get('KatajaDocument')(empty=True)]
         self.forest_keeper = self.forest_keepers[0]
-        self.settings.set_document(self.forest_keeper)
+        self.settings_manager.set_document(self.forest_keeper)
         kataja_app.setPalette(self.color_manager.get_qt_palette())
         self.forest = Forest()
-        self.settings.set_forest(self.forest)
+        self.settings_manager.set_forest(self.forest)
         self.forest.update_colors()
         self.graph_scene.late_init()
         self.setCentralWidget(self.graph_view)
@@ -331,7 +331,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         if self.forest:
             self.forest.retire_from_drawing()
         self.forest = self.forest_keeper.forest
-        self.settings.set_forest(self.forest)
+        self.settings_manager.set_forest(self.forest)
         if self.forest.derivation_steps:
             ds = self.forest.derivation_steps
             if not ds.activated:
@@ -424,7 +424,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
 
         :param hsv:
         """
-        self.settings.set('hsv', hsv, level=FOREST)
+        self.settings_manager.set('hsv', hsv, level=DOCUMENT)
         self.forest.update_colors()
 
     def change_color_mode(self, mode, force=False):
@@ -433,8 +433,8 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
 
         :param mode:
         """
-        if mode != prefs.color_mode or force:
-            prefs.color_mode = mode
+        if mode != ctrl.settings.get('color_mode') or force:
+            ctrl.settings.set('color_mode', mode, level=DOCUMENT)
             self.forest.update_colors()
 
     def timerEvent(self, event):
@@ -542,7 +542,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         #    print('garbage:', gc.garbage)
         self.forest_keepers.append(classes.KatajaDocument())
         self.forest_keeper = self.forest_keepers[-1]
-        self.settings.set_document(self.forest_keeper)
+        self.settings_manager.set_document(self.forest_keeper)
         self.forest = None
 
     # ## Other window events

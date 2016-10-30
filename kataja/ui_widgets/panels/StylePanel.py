@@ -45,7 +45,7 @@ class StylePanel(Panel):
         styles_data = []
         current_style_i = 0
         for i, value in enumerate(prefs.available_styles):
-            if value == prefs.style:
+            if value == ctrl.settings.get('style'):
                 current_style_i = i
             styles_data.append((value, value))
         self.overall_style_box = selector(ui, self, hlayout,

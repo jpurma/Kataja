@@ -125,11 +125,11 @@ class Controller:
         """
         :return: UIManager
         """
-        return getattr(self.main, 'ui_manager', None)
+        return self.main.ui_manager #getattr(self.main, 'ui_manager', None)
 
     @property
     def settings(self):
-        return getattr(self.main, 'settings', None)
+        return self.main.settings_manager
 
     @property
     def cm(self):

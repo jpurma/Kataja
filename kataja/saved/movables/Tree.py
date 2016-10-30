@@ -54,6 +54,7 @@ class Tree(Movable):
         self.drag_data = None
         self.tree_changed = True
         self._cached_bounding_rect = None
+        self.deleted_nodes = set()
         self.setZValue(100)
 
     def __repr__(self):
@@ -94,7 +95,7 @@ class Tree(Movable):
             """
             passed.add(node)
             for parent in node.get_parents(similar=False, visible=False):
-                if (not parent.deleted) and parent not in passed:
+                if parent not in passed and parent not in self.deleted_nodes:
                     return walk_to_top(parent)
             return node
         if self.top: # hopefully it is a short walk
@@ -155,7 +156,7 @@ class Tree(Movable):
             """
             if node not in used:
                 used.add(node)
-                if not node.deleted:
+                if node not in self.deleted_nodes:
                     if is_constituent(node):
                         sorted_constituents.append(node)
                     sorted_nodes.append(node)
@@ -167,7 +168,7 @@ class Tree(Movable):
 
         old_nodes = set(self.sorted_nodes)
 
-        if is_constituent(self.top) and not self.top.deleted:
+        if is_constituent(self.top) and self.top not in self.deleted_nodes:
             add_children(self.top)
 
         self.sorted_constituents = sorted_constituents

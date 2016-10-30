@@ -100,7 +100,6 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         self._step = None
         self.after_move_function = None
         self.use_adjustment = False
-        self.deleted = False
         self._high_priority_move = False
         self.locked_to_node = None
         # PHYSICS -elements
@@ -109,6 +108,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         self.physics_y = False
         self.repulsion = 0.2
         # Other
+        self._visible_by_logic = True
         self._fade_anim = None
         self.is_fading_in = False
         self.is_fading_out = False
@@ -270,7 +270,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
             self.current_position = add_xy(self.current_position, movement)
             return True, False
         # Physics move node around only if other movement types have not overridden it
-        elif self.use_physics():
+        elif self.use_physics() and self.is_visible():
             movement = self.forest.visualization.calculate_movement(self)
             md['sum'] = add_xy(movement, md['sum'])
             md['nodes'].append(self)
@@ -376,7 +376,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         """
         if self.is_fading_out:
             return
-        if not self.is_visible():
+        if not self.isVisible():
             return
         self.is_fading_out = True
         if self.is_fading_in:
@@ -397,7 +397,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
             self._fade_anim.finished.disconnect() # regular fade_out isn't enough
             self._fade_anim.finished.connect(self.fade_out_finished_delete)
             return
-        if not self.is_visible():
+        if not self.isVisible():
             self.fade_out_finished_delete()
             return
         self.is_fading_out = True
@@ -417,7 +417,6 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
             self.after_move_function()
             self.after_move_function = None
         self.hide()
-        self.update_visibility()
 
     def fade_out_finished_delete(self):
         self.is_fading_out = False
@@ -428,7 +427,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         visibility.
         :return: bool
         """
-        return self.isVisible() and not self.deleted
+        return self._visible_by_logic
 
 
     # ## Selection ############################################################
@@ -502,16 +501,47 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
 
     # ## Existence ############################################################
 
-    def update_visibility(self, **kwargs):
-        """ Simplest case of update_visibility.
-        Forces item to be visible, mainly for debugging purposes.
-        This will be overridden for more complex objects
-        :param kwargs: dict of arguments, which are ignored
-        """
-        if hasattr(self, "isVisible") and hasattr(self, "show"):
-            if not self.isVisible():
-                self.show()
+    def update_visibility(self, fade_in=True, fade_out=True) -> bool:
+        """ Subclasses should set _visible_by_logic based on their many factors. In this level
+        the actual hide/show/fade -operations are made.
 
+        This is called logical visibility and can be checked with is_visible().
+        Qt's isVisible() checks for scene visibility. Items that are e.g. fading away
+        have False for logical visibility but True for scene visibility and items that are part
+        of graph in a forest that is not currently drawn may have True for logical visibility but
+        false for scene visibility.
+
+
+        :return: True if visibility has changed. Use this information to notify related parties
+        """
+        if self.scene():
+            if self._visible_by_logic:
+                if self.is_fading_out:
+                    if fade_in:
+                        self.fade_in()
+                        return True
+                    else:
+                        self._fade_anim.stop()
+                        self.is_fading_out = False
+                        self.show()
+                        return True
+                elif not self.isVisible():
+                    if fade_in:
+                        self.fade_in()
+                        return True
+                    else:
+                        self.show()
+                        return True
+            else:
+                if self.isVisible():
+                    if fade_out:
+                        if not self.is_fading_out:
+                            self.fade_out()
+                            return True
+                    else:
+                        self.hide()
+                        return True
+        return False
 
     # ############## #
     #                #

@@ -366,14 +366,14 @@ class PaletteManager:
         :return:
         """
 
-        if prefs.temp_color_mode:
-            return prefs.temp_color_mode
+        if ctrl.settings.get('temp_color_mode'):
+            return ctrl.settings.get('temp_color_mode')
         return ctrl.settings.get('color_mode')
 
     def update_color_modes(self):
         self.ordered_color_modes = color_modes
         self.ordered_color_modes.update(OrderedDict(sorted(prefs.user_palettes.items())))
-        if ctrl.ui:
+        if hasattr(ctrl.main, 'ui_manager'):
             panel = ctrl.ui.get_panel('ColorThemePanel')
             if panel:
                 panel.update_colors()

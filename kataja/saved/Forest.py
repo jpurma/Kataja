@@ -112,7 +112,7 @@ class Forest(SavedObject):
 
         # Update request flags
         self._do_edge_visibility_check = False
-        self.change_view_mode(prefs.show_all_mode)
+        self.change_view_mode(ctrl.settings.get('show_all_mode'))
 
     def after_model_update(self, updated_fields, update_type):
         """ This is called after the item's model has been updated (e.g. by
@@ -530,7 +530,7 @@ class Forest(SavedObject):
 
     def update_forest_gloss(self):
         """ Draw the gloss text on screen, if it exists. """
-        if self.gloss_text and prefs.show_all_mode:
+        if self.gloss_text and ctrl.settings.get('show_all_mode'):
             if not self.gloss:
                 self.gloss = self.create_node(synobj=None, node_type=g.GLOSS_NODE)
                 self.gloss.label = self.gloss_text
@@ -553,14 +553,14 @@ class Forest(SavedObject):
             self.visualization.reselect()
         else:
             vs = self.main.visualizations
-            self.visualization = vs.get(name, vs.get(prefs.visualization, None))
+            self.visualization = vs.get(name, vs.get(ctrl.settings.get('visualization'), None))
             self.vis_data = {'name': self.visualization.say_my_name()}
             self.visualization.prepare(self)
             self.scene.keep_updating_visible_area = True
         self.main.graph_scene.manual_zoom = False
 
     def restore_visualization(self):
-        name = self.vis_data.get('name', prefs.visualization)
+        name = self.vis_data.get('name', ctrl.settings.get('visualization'))
         if (not self.visualization) or name != self.visualization.say_my_name():
             v = self.main.visualizations.get(name, None)
             if v:
@@ -573,7 +573,7 @@ class Forest(SavedObject):
         the vis_data (saved visualization state)
         :return: None
         """
-        name = self.vis_data.get('name', prefs.visualization)
+        name = self.vis_data.get('name', ctrl.settings.get('visualization'))
         if (not self.visualization) or name != self.visualization.say_my_name():
             self.set_visualization(name)
 
@@ -685,8 +685,6 @@ class Forest(SavedObject):
                 elif sc != self.scene:
                     # print('..adding to scene ', item.uid )
                     self.scene.addItem(item)
-            if hasattr(item, 'deleted'):
-                item.deleted = False
 
     def remove_from_scene(self, item, fade_out=True):
         """ Remove item from this scene
@@ -752,7 +750,7 @@ class Forest(SavedObject):
         :return: generator
         """
         return (x for x in self.nodes.values() if
-                isinstance(x, BaseConstituentNode) and x.isVisible())
+                isinstance(x, BaseConstituentNode) and x.is_visible())
 
     def get_feature_nodes(self):
         """ Return generator of feature nodes
@@ -782,8 +780,9 @@ class Forest(SavedObject):
         """
         if key in self.ongoing_animations:
             self.ongoing_animations.remove(key)
-        if not self.ongoing_animations:
-            self.draw()
+        # fixme: put this back on when triangle animations work again
+        #if not self.ongoing_animations:
+        #    self.draw()
 
     def flush_and_rebuild_temporary_items(self):
         """ Clean up temporary stuff that may be invalidated by changes made by undo/redo.
@@ -989,7 +988,7 @@ class Forest(SavedObject):
             elif not tree.top.is_top_node():
                 invalid_trees.append(tree)
                 invalid_tops.add(tree.top)
-            elif tree.top.deleted:
+            elif tree.top in tree.deleted_nodes:
                 invalid_trees.append(tree)
                 invalid_tops.add(tree.top)
             else:
@@ -1306,7 +1305,8 @@ class Forest(SavedObject):
             return
         else:
             self._marked_for_deletion.add(node)
-        node.deleted = True
+        for tree in node.trees:
+            tree.deleted_nodes.add(node)
         # remember parent nodes before we start disconnecting them
         parents = node.get_parents(similar=True, visible=False)
 
@@ -1490,64 +1490,23 @@ class Forest(SavedObject):
     def edge_visibility_check(self):
         """ Perform check for each edge: hide them if their start/end is
         hidden, show them if necessary.
-        changing edge.visible_by_rule will cause chain reaction:
-        edge.visible_by_rule -> edge.if_changed_visible ->  edge.update_visibility
         """
         if not self._do_edge_visibility_check:
             return
-        for edge in list(self.edges.values()):
-            if edge.edge_type == g.CONSTITUENT_EDGE:
-                start = edge.start
-                end = edge.end
-                if start and not start.is_visible():
-                    edge.visible = False
-                elif end and not end.is_visible():
-                    edge.visible = False
-                elif start and not self.visualization.show_edges_for(start):
-                    edge.visible = False
-                elif not (start or end):
-                    self.delete_edge(edge)
+        for edge in set(self.edges.values()):
+            changed = edge.update_visibility()
+            if changed:
+                if edge.is_visible():
+                    if ctrl.is_selected(edge):
+                        ctrl.ui.add_control_points(edge)
                 else:
-                    edge.visible = True
-            else:
-                if edge.start:
-                    edge.visible = edge.start.is_visible()
-                else:
-                    edge.visible = True
+                    ctrl.ui.remove_ui_for(edge)
         self._do_edge_visibility_check = False
 
-    def adjust_edge_visibility_for_node(self, node, visible):
-        """
-
-        :param node:
-        :param visible:
-        """
-        if node.node_type == g.CONSTITUENT_NODE:
-            if not visible:
-                edges_visible = False
-            elif self.visualization:
-                edges_visible = self.visualization.show_edges_for(node)
-            else:
-                edges_visible = False
-            for edge in node.edges_down:
-                v = edge.visible
-                if edge.edge_type == g.CONSTITUENT_EDGE:
-                    edge.visible = edges_visible and (
-                        (edge.end and edge.end.is_visible()) or not edge.end)
-                else:
-                    edge.visible = visible
-                if v and not edge.visible:
-                    ctrl.ui.remove_touch_areas_for(edge)
-
     def add_feature_to_node(self, feature, node):
-        """
-
-        :param feature:
-        :param node:
-        """
-        C = node.syntactic_object
-        F = feature.syntactic_object
-        C.set_feature(F.name, F)
+        syn_c = node.syntactic_object
+        syn_f = feature.syntactic_object
+        syn_c.set_feature(syn_f.name, syn_f)
         self.connect_node(parent=node, child=feature)
 
     def add_comment_to_node(self, comment, node):
@@ -1701,7 +1660,7 @@ class Forest(SavedObject):
 
 
         """
-        # print('group_traces_to_chain_head called in ', self)
+        print('group_traces_to_chain_head called in ', self)
         self.chain_manager.group_traces_to_chain_head()
 
     def traces_to_multidomination(self):
@@ -1709,7 +1668,7 @@ class Forest(SavedObject):
 
 
         """
-        # print('traces_to_multidomination called in ', self)
+        print('traces_to_multidomination called in ', self)
         self.chain_manager.traces_to_multidomination()
         for node in self.nodes.values():
             if hasattr(node, 'is_trace') and node.is_trace:
@@ -1723,7 +1682,7 @@ class Forest(SavedObject):
 
 
         """
-        # print('multidomination_to_traces called in ', self)
+        print('multidomination_to_traces called in ', self)
         self.chain_manager.multidomination_to_traces()
 
 
@@ -1913,7 +1872,7 @@ class Forest(SavedObject):
 
         if not set(new_node.trees) & set(old_node.trees):
             new_node.copy_position(old_node)
-            new_node.update_visibility(active=True, fade=True)
+            new_node.update_visibility(fade=True) # active=True,
 
         # add new node to relevant groups
         # and remove old node from them

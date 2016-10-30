@@ -225,7 +225,6 @@ class Settings:
             shape_name = self.get_edge_setting('shape_name', edge_type=edge_type, edge=edge,
                                                level=level)
         return getattr(SHAPE_PRESETS[shape_name], key)
-        #return SHAPE_DICT[sn][key]
 
     #@time_me
     def cached_edge(self, key, edge):
@@ -251,7 +250,7 @@ class Settings:
         return self._get_dict_setting(key, subtype=self.ui.active_node_type, level=HIGHEST,
                                       dictname='nodes')
 
-    ### Deep diggers
+    # ## ### Deep diggers
 
     def _get_dict_setting(self, key, subtype=None, obj=None, level=HIGHEST, dictname=None):
         if not (subtype or obj):
@@ -296,8 +295,6 @@ class Settings:
         return None
 
     def _set_dict_setting(self, key, value, subtype=None, obj=None, level=OBJECT, dictname=None):
-        #print('_set_dict settings: key:%s, value:%s, subtype:%s, obj:%s, level:%s, dictname:%s' %
-        #      (key, value, subtype, obj, level, dictname))
         if not (obj or subtype):
             raise ValueError
         if obj:
@@ -371,5 +368,4 @@ class Settings:
             shape_data.update(edge_data)
             new[edge_type] = shape_data
         self._shape_cache = new
-        #print(self._shape_cache)
 

@@ -1,5 +1,5 @@
 # coding=utf-8
-from kataja.Settings import FOREST
+from kataja.Settings import FOREST, DOCUMENT
 from kataja.KatajaAction import KatajaAction
 from kataja.singletons import ctrl, prefs, log
 from kataja.saved.movables.Node import Node
@@ -42,7 +42,7 @@ class SetColorMode(KatajaAction):
         ctrl.main.change_color_mode(mode)
 
     def getter(self):
-        return prefs.color_mode
+        return ctrl.settings.get('color_mode')
 
 
 class RandomizePalette(KatajaAction):
@@ -103,15 +103,15 @@ class ChangeMasterStyle(KatajaAction):
         """ """
         sender = self.sender()
         value = sender.currentData(256)
-        prefs.style = value
+        ctrl.settings.set('style', value, level=DOCUMENT)
         ctrl.forest.redraw_edges()
         return "Changed master style to '%s'" % value
 
     def enabler(self):
-        return ctrl.forest is not None and prefs.style
+        return ctrl.forest is not None and ctrl.settings.get('style')
 
     def getter(self):
-        return prefs.style
+        return ctrl.settings.get('style')
 
 
 class ChangeStyleScope(KatajaAction):

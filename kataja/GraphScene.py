@@ -576,7 +576,6 @@ class GraphScene(QtWidgets.QGraphicsScene):
         # print((n_time - self.prev_time) * 1000, prefs._fps_in_msec)
         # self.prev_time = n_time
         items_have_moved = False
-        items_fading = False
         frame_has_moved = False
         background_fade = False
         can_normalize = True
@@ -597,9 +596,7 @@ class GraphScene(QtWidgets.QGraphicsScene):
         if ctrl.pressed:
             return
         for node in f.nodes.values():
-            if node.is_fading_out:
-                items_fading = True
-            if not node.is_visible():
+            if not node.isVisible():
                 continue
             # Computed movement
             moved, normalizable = node.move(md)
@@ -622,9 +619,9 @@ class GraphScene(QtWidgets.QGraphicsScene):
             # area.update_position()
             for group in f.groups.values():
                 group.update_shape()
-        elif not (items_have_moved or items_fading or frame_has_moved or background_fade):
+        elif not (items_have_moved or frame_has_moved or background_fade):
             self.stop_animations()
             self.main.ui_manager.get_activity_marker().hide()
             ctrl.items_moving = False
             self.keep_updating_visible_area = False
-        f.edge_visibility_check()
+        f.edge_visibility_check()  # only does something if flagged

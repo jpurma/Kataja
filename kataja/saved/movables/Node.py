@@ -121,10 +121,15 @@ class Node(Movable):
         self.status_tip = ""
         self.width = 0
         self.height = 0
+        self.is_trace = False
         self.inner_rect = None
         self.anim = None
         self.magnet_mapper = None
         self.z_value = 10
+        # Visibility flags
+        self._node_type_visible = True
+        self._node_in_triangle = False
+
 
         self.in_scene = False
 
@@ -146,10 +151,11 @@ class Node(Movable):
         self.setFlag(QtWidgets.QGraphicsObject.ItemIsSelectable)
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.setZValue(self.z_value)
-        self.fade_in()
         self.effect = create_shadow_effect(ctrl.cm.selection())
         # self.effect = create_shadow_effect(self.color)
         self.setGraphicsEffect(self.effect)
+        #self.fade_in()
+        self.update_visibility()
 
     def edge_type(self):
         """ Default edge for this kind of node, as in kataja.globals type ids."""
@@ -195,7 +201,7 @@ class Node(Movable):
             else:
                 self.folded_away = False
                 self.update_position()
-                self.fade_in()
+                #self.fade_in()
         self.update_visibility()
         self.update_label()
 
@@ -374,25 +380,24 @@ class Node(Movable):
         """
 
         if self.folding_towards and not self._move_counter:
-            #self.fold_towards(self.folding_towards)
             return True, False
         else:
             return super().move(md)
 
-    def fade_out(self, s=300):
-        for edge in itertools.chain(self.edges_down, self.edges_up):
-            edge.fade_out(s=s)
-        super().fade_out(s=s)
-
-    def fade_in(self, s=300):
-        for edge in self.edges_up:
-            if (edge.start and edge.start.is_visible()) or not edge.start:
-                edge.fade_in(s=s)
-        for edge in self.edges_down:
-            if edge.end and edge.end.is_visible():
-                edge.fade_in(s=s)
-
-        super().fade_in(s=s)
+    # def fade_out(self, s=300):
+    #     for edge in itertools.chain(self.edges_down, self.edges_up):
+    #         edge.fade_out(s=s)
+    #     super().fade_out(s=s)
+    #
+    # def fade_in(self, s=300):
+    #     for edge in self.edges_up:
+    #         if (edge.start and edge.start.is_visible()) or not edge.start:
+    #             edge.fade_in(s=s)
+    #     for edge in self.edges_down:
+    #         if edge.end and edge.end.is_visible():
+    #             edge.fade_in(s=s)
+    #
+    #     super().fade_in(s=s)
 
 
     # Tree membership ##########################################################
@@ -562,12 +567,12 @@ class Node(Movable):
             if similar:
                 et = self.edge_type()
                 return [edge.end for edge in edges_down if
-                        edge.edge_type == et and (edge.end and not edge.end.deleted)]
+                        edge.edge_type == et and edge.end]
             elif of_type:
                 return [edge.end for edge in edges_down if
-                        edge.edge_type == of_type and (edge.end and not edge.end.deleted)]
+                        edge.edge_type == of_type and edge.end]
             else:
-                return [edge.end for edge in edges_down if edge.end and not edge.end.deleted]
+                return [edge.end for edge in edges_down if edge.end]
 
     def get_parents(self, similar=True, visible=False, of_type=None) ->list:
         """
@@ -588,14 +593,13 @@ class Node(Movable):
                         edge.edge_type == of_type and edge.start and edge.start.is_visible()]
             else:
                 return [edge.start for edge in self.edges_up if
-                        edge.edge_type == of_type and edge.start and not edge.start.deleted]
+                        edge.edge_type == of_type and edge.start]
         else:
             if visible:
                 return [edge.start for edge in self.edges_up if
                         edge.start and edge.start.is_visible()]
             else:
-                return [edge.start for edge in self.edges_up if edge.start and not
-                        edge.start.deleted]
+                return [edge.start for edge in self.edges_up if edge.start]
 
     def is_connected_to(self, other):
         """ Generic check for having direct connection to some other node
@@ -640,10 +644,7 @@ class Node(Movable):
         :param only_similar:
         :param only_visible:
         """
-        if self.deleted or self.get_parents(similar=only_similar, visible=only_visible):
-            return False
-        else:
-            return True
+        return not self.get_parents(similar=only_similar, visible=only_visible)
 
     def get_top_node(self, return_set=False):
         """ Getting the top node is easiest by looking from the stored trees. Don't use this if
@@ -755,6 +756,7 @@ class Node(Movable):
         """
         return other not in self.get_parents(similar=False, visible=False)
 
+    # fixme  -- how often you call this, how is the locked relation restored to visible relation?
     def update_relations(self):
         if self.locked_to_node:
             edge = self.get_edge_to(self.locked_to_node)
@@ -1091,11 +1093,11 @@ class Node(Movable):
         """
         self.folding_towards = node
         x, y = node.current_position
+        print('fold %s towards %s' % (self, node))
         self.move_to(x, y, after_move_function=self.finish_folding, can_adjust=False)
         if ctrl.is_selected(self):
             ctrl.remove_from_selection(self)
         self.forest.animation_started(str(self.uid) + '_fold')
-        self.fade_out()
 
     def finish_folding(self):
         """ Hide, and remember why this is hidden """
@@ -1190,7 +1192,8 @@ class Node(Movable):
         :param size: size of list of siblings
         :return:
         """
-        if not prefs.use_magnets:
+        magnets = ctrl.settings.get('use_magnets')
+        if not magnets:
             return self.current_scene_position
         elif not self.has_visible_label():
             return self.current_scene_position
@@ -1211,7 +1214,7 @@ class Node(Movable):
         x1, y1 = self.current_scene_position
         x2, y2 = self._magnets[7]
         x2 += (self.width / (size + 1)) * (i + 1)
-        if prefs.use_magnets == 2:
+        if magnets == 2:
             x2, y2 = self._angle_to_parent(x2, y2)
         return x1 + x2, y1 + y2
 
@@ -1248,7 +1251,8 @@ class Node(Movable):
 
         :return:
         """
-        if not prefs.use_magnets:
+        magnets = ctrl.settings.get('use_magnets')
+        if not magnets:
             return self.current_scene_position
         elif not self.has_visible_label():
             return self.current_scene_position
@@ -1259,7 +1263,7 @@ class Node(Movable):
 
         x1, y1 = self.current_scene_position
         x2, y2 = self._magnets[n]
-        if prefs.use_magnets == 2:
+        if magnets == 2:
             x2, y2 = self._angle_to_parent(x2, y2)
         return x1 + x2, y1 + y2
 
@@ -1684,15 +1688,30 @@ class Node(Movable):
         """
         return ctrl.free_drawing_mode
 
-    def update_visibility(self, **kwargs):
+    def update_visibility(self, fade_in=True, fade_out=True) -> bool:
+        """ see Movable.update_visibility
+        This is called logical visibility and can be checked with is_visible().
+        Qt's isVisible() checks for scene visibility. Items that are e.g. fading away
+        have False for logical visibility but True for scene visibility and items that are part
+        of graph in a forest that is not currently drawn may have True for logical visibility but
+        false for scene visibility.
         """
-        :param kwargs: dict of arguments, which are ignored
-        """
-        if not prefs.show_all_mode:
-            if self.is_syntactic:
-                self.show()
-            else:
-                self.hide()
+        # Label
+        self.update_label_visibility()
+
+        if ctrl.settings.get('show_all_mode'):
+            self._node_type_visible = True
+        else:
+            self._node_type_visible = self.is_syntactic
+        self._node_in_triangle = self.folded_away or self.folding_towards
+
+        self._visible_by_logic = self._node_type_visible and not self._node_in_triangle
+        changed = super().update_visibility(fade_in=fade_in, fade_out=fade_out)
+        if changed:
+            # ## Edges -- these have to be delayed until all constituents etc nodes know if they are
+            # visible
+            self.forest.order_edge_visibility_check()
+        return changed
 
     def update_label_shape(self):
         pass

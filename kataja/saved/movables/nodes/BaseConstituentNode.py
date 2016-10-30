@@ -163,7 +163,6 @@ class BaseConstituentNode(Node):
         else:
             return str(self.syntactic_object)
 
-
     def get_attribute_nodes(self, label_key=''):
         """
 
@@ -177,41 +176,6 @@ class BaseConstituentNode(Node):
                     return a
         else:
             return atts
-
-    def update_visibility(self, **kw):
-        """ Compute visibility-related attributes for this constituent node and update those that
-        depend on this -- meaning features etc.
-
-        :param kw:
-        """
-        was_visible = self.is_visible()
-        visible = not (self.folded_away or self.folding_towards)
-
-        # Fade in / out
-        fade = kw.get('fade', False)
-        if fade:
-            if visible and not was_visible:
-                self.fade_in()
-            elif (not visible) and was_visible:
-                self.fade_out()
-        else:
-            self.setVisible(visible)
-        # Label
-        self.update_label_visibility()
-
-        # ## Edges -- these have to be delayed until all constituents etc nodes know if they are
-        # visible
-        self.forest.order_edge_visibility_check()
-
-        # ## FeatureNodes
-        # self.forest.settings.draw_features
-        feat_visible = visible and ctrl.settings.get('feature_nodes')
-        if feat_visible and not was_visible:
-            for feature in self.get_features():
-                feature.setVisible(True)
-        elif was_visible and not feat_visible:
-            for feature in self.get_features():
-                feature.setVisible(False)
 
     def reset(self):
         """

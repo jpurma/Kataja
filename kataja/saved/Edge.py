@@ -69,7 +69,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
 
     __qt_type_id__ = next_available_type_id()
 
-    def __init__(self, forest=None, start=None, end=None, edge_type='', appear=True):
+    def __init__(self, forest=None, start=None, end=None, edge_type=''):
         """
         :param Node start:
         :param Node end:
@@ -91,8 +91,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         self.adjusted_control_points = []  # combines those two above
         self.label_data = {}
         self._nodes_overlap = False
-        self.visible_by_rule = True
-        self.appearing = appear
 
         self._projection_thick = False
         self._projection_color = None
@@ -119,7 +117,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         self._make_fat_path = False
         self.setZValue(10)
         self.status_tip = ""
-        #self.connect_end_points(start, end)
         self.arrowhead_size_at_start = 6
         self.arrowhead_size_at_end = 6
         self._arrow_cut_point_start = None
@@ -132,11 +129,11 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         self.setFlag(QtWidgets.QGraphicsItem.ItemIsSelectable)
         self.setAcceptHoverEvents(True)
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self._fade_anim = None
+        self._visible_by_logic = True
+        self._fade_in_anim = None
+        self._fade_out_anim = None
         self.is_fading_in = False
         self.is_fading_out = False
-        if appear:
-            self.fade_in()
 
     def type(self) -> int:
         """ Qt's type identifier, custom QGraphicsItems should have different type ids if events
@@ -236,33 +233,64 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         else:
             return self.fixed_end_point
 
-    def if_changed_visible(self, value):
-        """ Edges may be filtered out of view without destroying them,
-        e.g. comment edges and arrows.
-        Setting edge hidden makes it invisible for many ways of manipulating
-        and updating edges, so care must
-         be taken.  Note that the edge can be invisible because it has shape
-         'not drawn', but such edge is still visible_by_rule
-         for these purposes: it will have its UI buttons, it is selectable etc.
-        :param value: bool
-        """
-        if self.forest:
-            self.update_visibility()
-
-    def update_visibility(self):
-        """ Hide or show according to model.visible_by_rule flag, which allows edge
+    def update_visibility(self, fade_in=True, fade_out=True) -> bool:
+        """ Hide or show according to various factors, which allow edge
         to exist but not be drawn.
+        This is called logical visibility and can be checked with is_visible().
+        Qt's isVisible() checks for scene visibility. Items that are e.g. fading away
+        have False for logical visibility but True for scene visibility and items that are part
+        of graph in a forest that is not currently drawn may have True for logical visibility but
+        false for scene visibility.
         :return:
         """
-        v = self.isVisible()
-        if v and self._nodes_overlap or not self.visible_by_rule:
-            self.hide()
-            ctrl.ui.remove_ui_for(self)
-
-        elif self.visible_by_rule and not (v or self._nodes_overlap):
-            self.show()
-            if ctrl.is_selected(self):
-                ctrl.ui.add_control_points(self)
+        lv = True
+        if self._nodes_overlap:
+            lv = False
+        else:
+            if self.edge_type == g.CONSTITUENT_EDGE:
+                if self.start and not self.start.is_visible():
+                    lv = False
+                elif self.end and not self.end.is_visible():
+                    lv = False
+                elif self.start and ctrl.forest.visualization and \
+                        not ctrl.forest.visualization.show_edges_for(self.start):
+                    lv = False
+                elif not (self.start or self.end):
+                    ctrl.forest.delete_edge(self)
+                    return False
+            else:
+                if self.start and not self.start.is_visible():
+                    lv = False
+        self._visible_by_logic = lv
+        # Change visibility if necessary, with fade or instantly.
+        # If forest is not drawn, only the logical visibility matters -- do nothing
+        if self.scene():
+            if lv:
+                if self.is_fading_out:
+                    if fade_in:
+                        self.fade_in()
+                        return True
+                    else:
+                        self.is_fading_out = False
+                        self._fade_out_anim.stop()
+                        self.show()
+                        return True
+                if not self.isVisible():
+                    if fade_in:
+                        self.fade_in()
+                        return True
+                    else:
+                        self.show()
+                        return True
+            else:
+                if self.isVisible():
+                    if fade_out:
+                        self.fade_out()
+                        return True
+                    else:
+                        self.hide()
+                        return True
+        return False
 
     # Edge type - based settings that can be overridden
 
@@ -324,7 +352,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         return self.cached('outline')
 
     def is_visible(self) -> bool:
-        return self.visible_by_rule and not self._nodes_overlap
+        return self._visible_by_logic
 
     def set_projection_display(self, thick, color):
         """ Set both options related to displaying projections with edges.
@@ -513,22 +541,23 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
     def make_path(self):
         """ Draws the shape as a path """
         self.update_end_points()
-        #if not self._path:
-        #    self.update_shape()
-        c = {}
         sx, sy = self.start_point
         ex, ey = self.end_point
         if sx == ex:
             ex += 0.001 # fix disappearing vertical paths
 
-        c['start_point'] = sx, sy
-        c['end_point'] = ex, ey
-        c['curve_adjustment'] = self.curve_adjustment
-        c['thick'] = self._projection_thick
-        c['edge_n'], c['edge_count'] = self.edge_index()
-        c['start'] = self.start
-        c['end'] = self.end
-        c['inner_only'] = self._use_simple_path
+        en, ec = self.edge_index()
+
+        c = dict(start_point=self.start_point,
+                 end_point=(ex, ey),
+                 curve_adjustment=self.curve_adjustment,
+                 thick=self._projection_thick,
+                 edge_n=en,
+                 edge_count=ec,
+                 start=self.start,
+                 end=self.end,
+                 inner_only=self._use_simple_path)
+
         self._path, self._true_path, self.control_points, self.adjusted_control_points = \
             SHAPE_PRESETS[self.shape_name].path(**c)
         uses_pen = c.get('thickness', 0)
@@ -561,11 +590,11 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             self.label_item.update_position()
         if ctrl.is_selected(self):
             ctrl.ui.update_position_for(self)
-        if self.start and self.end:
-            old = self._nodes_overlap
+        if self.start and self.end and self.start.is_visible() and self.end.is_visible():
             self._nodes_overlap = self.start.overlap_rect().intersects(self.end.overlap_rect())
-            if self._nodes_overlap != old:
-                self.update_visibility()
+        elif self._nodes_overlap:
+            self._nodes_overlap = False
+        self.update_visibility()
 
     def path_bounding_rect(self) -> QtCore.QRectF:
         if self._path:
@@ -996,7 +1025,6 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
                                      self.adjusted_control_points[0][0],
                                      self.adjusted_control_points[0][1])
 
-
     def get_point_at(self, d: float) -> Pf:
         """ Get coordinates at the percentage of the length of the path.
         :param d: int
@@ -1167,7 +1195,7 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         if prefs.move_effect:
             self._use_simple_path = False
 
-    def fade_in(self, s=300):
+    def fade_in(self, s=150):
         """ Simple fade effect. The object exists already when fade starts.
         :return: None
         :param s: speed in ms
@@ -1177,67 +1205,69 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
         self.is_fading_in = True
         self.show()
         if self.is_fading_out:
-            self._fade_anim.stop()
-        self._fade_anim = QtCore.QPropertyAnimation(self, qbytes_opacity)
-        self._fade_anim.setDuration(s)
-        self._fade_anim.setStartValue(0.0)
-        self._fade_anim.setEndValue(1.0)
-        self._fade_anim.setEasingCurve(QtCore.QEasingCurve.InQuad)
-        self._fade_anim.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
-        self._fade_anim.finished.connect(self.fade_in_finished)
+            self.is_fading_out = False
+            self._fade_out_anim.stop()
+        self._fade_in_anim = QtCore.QPropertyAnimation(self, qbytes_opacity)
+        self._fade_in_anim.setDuration(s)
+        self._fade_in_anim.setStartValue(0.0)
+        self._fade_in_anim.setEndValue(1.0)
+        self._fade_in_anim.setEasingCurve(QtCore.QEasingCurve.InQuad)
+        self._fade_in_anim.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
+        self._fade_in_anim.finished.connect(self.fade_in_finished)
 
     def fade_in_finished(self):
         self.is_fading_in = False
 
-    def fade_out(self, s=300):
+    def fade_out(self, s=150):
         """ Start fade out. The object exists until fade end.
         :return: None
         """
-        if not self.is_visible():
+        if not self.isVisible():
             return
         if self.is_fading_out:
             return
         self.is_fading_out = True
         if self.is_fading_in:
-            self._fade_anim.stop()
-        self._fade_anim = QtCore.QPropertyAnimation(self, qbytes_opacity)
-        self._fade_anim.setDuration(s)
-        self._fade_anim.setStartValue(1.0)
-        self._fade_anim.setEndValue(0)
-        self._fade_anim.setEasingCurve(QtCore.QEasingCurve.OutQuad)
-        self._fade_anim.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
-        self._fade_anim.finished.connect(self.fade_out_finished)
+            self.is_fading_in = False
+            self._fade_in_anim.stop()
+        self._fade_out_anim = QtCore.QPropertyAnimation(self, qbytes_opacity)
+        self._fade_out_anim.setDuration(s)
+        self._fade_out_anim.setStartValue(1.0)
+        self._fade_out_anim.setEndValue(0)
+        self._fade_out_anim.setEasingCurve(QtCore.QEasingCurve.OutQuad)
+        self._fade_out_anim.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
+        self._fade_out_anim.finished.connect(self.fade_out_finished)
 
     def fade_out_and_delete(self, s=300):
         """ Start fade out. The object exists until fade end.
         :return: None
         """
         if self.is_fading_out:
-            self._fade_anim.finished.disconnect()
-            self._fade_anim.finished.connect(self.fade_out_finished_delete)
+            self._fade_out_anim.finished.disconnect()
+            self._fade_out_anim.finished.connect(self.fade_out_finished_delete)
             return
-        if not self.is_visible():
+        if not self.isVisible():
             self.fade_out_finished_delete()
             return
         self.is_fading_out = True
         if self.is_fading_in:
-            self._fade_anim.stop()
-        self._fade_anim = QtCore.QPropertyAnimation(self, qbytes_opacity)
-        self._fade_anim.setDuration(s)
-        self._fade_anim.setStartValue(1.0)
-        self._fade_anim.setEndValue(0)
-        self._fade_anim.setEasingCurve(QtCore.QEasingCurve.OutQuad)
-        self._fade_anim.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
-        self._fade_anim.finished.connect(self.fade_out_finished_delete)
+            self.is_fading_in = False
+            self._fade_in_anim.stop()
+        self._fade_out_anim = QtCore.QPropertyAnimation(self, qbytes_opacity)
+        self._fade_out_anim.setDuration(s)
+        self._fade_out_anim.setStartValue(1.0)
+        self._fade_out_anim.setEndValue(0)
+        self._fade_out_anim.setEasingCurve(QtCore.QEasingCurve.OutQuad)
+        self._fade_out_anim.start(QtCore.QAbstractAnimation.DeleteWhenStopped)
+        self._fade_out_anim.finished.connect(self.fade_out_finished_delete)
 
     def fade_out_finished_delete(self):
         self.is_fading_out = False
         ctrl.forest.remove_from_scene(self, fade_out=False)
 
     def fade_out_finished(self):
-        self.visible_by_rule = False
         self.is_fading_out = False
-        self.update_visibility()
+        self.hide()
 
     def free_drawing_mode(self, *args, **kwargs):
         """ Utility method for checking conditions for editing operations
@@ -1371,5 +1401,4 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
     curve_adjustment = SavedField("curve_adjustment", watcher="edge_adjustment")
     start = SavedField("start")
     end = SavedField("end")
-    visible_by_rule = SavedField("visible_by_rule", if_changed=if_changed_visible)
     forest = SavedField("forest")

@@ -155,9 +155,6 @@ class ConstituentNode(BaseConstituentNode):
         # ### Cycle index stores the order when node was originally merged to structure.
         # going up in trees, cycle index should go up too
 
-        # ## use update_visibility to change these: visibility of particular elements
-        # depends on many factors
-
     def after_init(self):
         """ After_init is called in 2nd step in process of creating objects:
         1st wave creates the objects and calls __init__, and then iterates through and sets the
@@ -594,7 +591,6 @@ class ConstituentNode(BaseConstituentNode):
     gloss = SavedField("gloss", if_changed=update_gloss)
     head = SavedSynField("head")
 
-    is_trace = SavedField("is_trace")
     merge_order = SavedField("merge_order")
     select_order = SavedField("select_order")
     original_parent = SavedField("original_parent")

@@ -48,7 +48,7 @@ class SwitchViewMode(KatajaAction):
         :return:
         """
         if show_all is None:
-            show_all = not prefs.show_all_mode
+            show_all = not ctrl.settings.get('show_all_mode')
         ctrl.forest.change_view_mode(show_all)
         if show_all:
             return 'Showing all elements, including those that have no computational effects.'
@@ -56,7 +56,7 @@ class SwitchViewMode(KatajaAction):
             return 'Showing only syntactic objects.'
 
     def getter(self):
-        return not prefs.show_all_mode
+        return not ctrl.settings.get('show_all_mode')
 
 
 class ActivateNoFrameNodeShape(KatajaAction):
