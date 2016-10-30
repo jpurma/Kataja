@@ -114,13 +114,23 @@ class GraphScene(QtWidgets.QGraphicsScene):
         empty = True
         gl = ctrl.forest.gloss
         if gl and gl.isVisible():
-            x_min, y_min, x_max, y_max = gl.sceneBoundingRect().getCoords()
+            minx, miny, maxx, maxy = gl.sceneBoundingRect().getCoords()
+            if minx < x_min:
+                x_min = minx
+            if maxx > x_max:
+                x_max = maxx
+            if miny < y_min:
+                y_min = miny
+            if maxy > y_max:
+                y_max = maxy
             empty = False
-        for item in chain(ctrl.forest.nodes.values(), ctrl.forest.groups.values()):
-            if not item or not item.isVisible():
+
+        # , ctrl.forest.groups.values())
+        for tree in ctrl.forest.trees:
+            if not tree:
                 continue
             empty = False
-            minx, miny, maxx, maxy = item.sceneBoundingRect().getCoords()
+            minx, miny, maxx, maxy = tree.sceneBoundingRect().getCoords()
             if minx < x_min:
                 x_min = minx
             if maxx > x_max:

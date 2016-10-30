@@ -812,7 +812,8 @@ class Forest(SavedObject):
                 tree.top.update_visibility()  # fixme
         self.update_projections()
         self.update_forest_gloss()
-        self.visualization.draw()
+        if self.visualization:
+            self.visualization.draw()
         #if not sc.manual_zoom:
         #    sc.fit_to_window()
         sc.start_animations()

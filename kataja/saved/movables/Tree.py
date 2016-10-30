@@ -212,7 +212,10 @@ class Tree(Movable):
             for node in self.sorted_nodes:
                 if node.is_visible():
                     nbr = node.boundingRect()
-                    x, y = node.x(), node.y()
+                    if node.physics_x or node.physics_y:
+                        x, y = node.x(), node.y()
+                    else:
+                        x, y = node.target_position
                     x1, y1, x2, y2 = nbr.getCoords()
                     x1 += x
                     y1 += y

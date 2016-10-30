@@ -72,6 +72,14 @@ class GroupLabel(QtWidgets.QGraphicsTextItem):
         """
         return self.__qt_type_id__
 
+    def set_label_data(self, key, value):
+        self._host.poke('label_data')
+        self._host.label_data[key] = value
+
+    def get_label_data(self, key):
+        self._host.label_data.get(key, None)
+
+
     @property
     def label_text(self):
         return self._host.get_label_text()
