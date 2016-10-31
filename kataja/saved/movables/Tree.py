@@ -4,6 +4,7 @@ from PyQt5 import QtCore
 from kataja.SavedField import SavedField
 from kataja.saved.Movable import Movable
 from kataja.uniqueness_generator import next_available_type_id
+import kataja.globals as g
 
 __author__ = 'purma'
 
@@ -212,7 +213,15 @@ class Tree(Movable):
             for node in self.sorted_nodes:
                 if node.is_visible():
                     nbr = node.boundingRect()
-                    if node.physics_x or node.physics_y:
+                    if node.locked_to_node:  # bit expensive but may be worth it
+                        if node.locked_to_node.physics_x or node.locked_to_node.physics_y:
+                            x, y = node.x(), node.y()
+                        else:
+                            rx, ry = node.locked_to_node.get_locked_node_relative_positions(node)
+                            tx, ty = node.locked_to_node.target_position
+                            x = rx + tx
+                            y = ry + ty
+                    elif node.physics_x or node.physics_y:
                         x, y = node.x(), node.y()
                     else:
                         x, y = node.target_position

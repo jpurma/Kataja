@@ -725,10 +725,9 @@ class Node(Movable):
     def node_alone(self):
         return not (self.edges_down or self.edges_up)
 
-    def get_locked_node_positions(self, for_me=None):
-        x, y = self.current_position
-        center_x = x + self.boundingRect().center().x()
-        bottom_y = y + self.boundingRect().bottom()
+    def get_locked_node_relative_positions(self, for_me=None):
+        center_x = self.boundingRect().center().x()
+        bottom_y = self.boundingRect().bottom()
         if for_me:
             for fnode in self.get_children(visible=True, similar=False):
                 if fnode.locked_to_node is self:
@@ -743,6 +742,11 @@ class Node(Movable):
                     l.append((fnode, center_x, bottom_y))
                     bottom_y += fnode.height
             return l
+
+    def get_locked_node_positions(self, for_me=None):
+        x, y = self.current_position
+        rx, ry = self.get_locked_node_relative_positions(for_me)
+        return x+rx, y+ry
 
     def get_locked_in_nodes(self):
         return [x for x in self.get_children(visible=True, similar=False) if x.locked_to_node is

@@ -1418,6 +1418,9 @@ class Forest(SavedObject):
                     break
             if not found:
                 self.edge_types.remove(my_type)
+        # -- make sure that edge is not accidentally restored while fading away
+        edge.start = None
+        edge.end = None
         # -- scene --
         self.remove_from_scene(edge)
         # -- Order update for trees
