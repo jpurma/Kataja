@@ -2,7 +2,7 @@
 __author__ = 'purma'
 import kataja.globals as g
 from kataja.parser.INodes import IParserNode, ITextNode
-from kataja.saved.movables.nodes.BaseConstituentNode import BaseConstituentNode
+from kataja.saved.movables.nodes.ConstituentNode import ConstituentNode
 from kataja.singletons import ctrl, classes
 from kataja.parser.SuperParser import SuperParser
 
@@ -118,7 +118,7 @@ class INodeToKatajaConstituent:
             right_first = reversed(parsernode)
             for nnode in right_first:
                 child = self.parsernodes_to_constituentnodes(nnode)
-                if child and isinstance(child, BaseConstituentNode):
+                if child and isinstance(child, ConstituentNode):
                     children.append(child)
         constituent = classes.Constituent()
         cn = f.create_node(synobj=constituent)

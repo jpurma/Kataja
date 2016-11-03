@@ -31,11 +31,11 @@ from kataja.singletons import prefs
 from kataja.visualizations.BalancedTree import BalancedTree
 
 
-class LinearizedStaticTree(BalancedTree):
+class DivideAndConquerTree(BalancedTree):
     """
 
     """
-    name = 'Linearized static trees'
+    name = 'Balanced grid-based tree'
     banned_node_shapes = (g.BRACKETED, g.SCOPEBOX)
 
     def __init__(self):

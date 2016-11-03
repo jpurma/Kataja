@@ -25,11 +25,11 @@ import math
 import random
 
 from kataja.singletons import prefs, ctrl
-from kataja.visualizations.LinearizedStaticTree import LinearizedStaticTree
+from kataja.visualizations.DivideAndConquerTree import DivideAndConquerTree
 import kataja.globals as g
 
 
-class DynamicWidthTree(LinearizedStaticTree):
+class DynamicWidthTree(DivideAndConquerTree):
     """
 
     """

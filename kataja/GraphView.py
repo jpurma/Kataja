@@ -97,6 +97,7 @@ class GraphView(QtWidgets.QGraphicsView):
         :param target_rect: scene rect that contains all of the items we want to fit into view.
         """
         sr = self.sceneRect()
+        # extend the logical scene if necessary
         if target_rect.right() > sr.right() or target_rect.bottom() > sr.bottom():
             self.setSceneRect(sr + QtCore.QMarginsF(0, 0, 500, 500))
         if target_rect.left() < sr.left() or target_rect.top() < sr.top():
@@ -119,7 +120,7 @@ class GraphView(QtWidgets.QGraphicsView):
         if self.zoom_anim:
             self.zoom_anim.stop()
         self._zoom_rect = scr
-        self._target_rect = QtCore.QRect(grx, gry, grw, grh)
+        self._target_rect = target_rect.getRect() #QtCore.QRect(grx, gry, grw, grh)
         self._zoomd = dx, dy, dw, dh
         self.zoom_anim = QtCore.QTimeLine(300, self)
         self.zoom_anim.setUpdateInterval(20)

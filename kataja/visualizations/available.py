@@ -32,15 +32,16 @@ from kataja.visualizations.EquidistantElasticTree import EquidistantElasticTree
 from kataja.visualizations.LeftFirstTree import LeftFirstTree
 from kataja.visualizations.SpirallingTree import SpirallingTree
 from kataja.visualizations.LinearizedDynamicTree import LinearizedDynamicTree
-from kataja.visualizations.LinearizedStaticTree import LinearizedStaticTree
+from kataja.visualizations.DivideAndConquerTree import DivideAndConquerTree
 from kataja.visualizations.SymmetricElasticTree import SymmetricElasticTree
-# from kataja.visualizations.BalancedTree import BalancedTree
+from kataja.visualizations.BalancedTree import BalancedTree
 
 
 # These will be mapped to number keys 1...0 in given order.
 
 visualizations_list = [LeftFirstTree,
-                       LinearizedStaticTree,
+                       DivideAndConquerTree,
+                       BalancedTree,
                        HeadDownTree,
                        DynamicWidthTree,
                        BracketedLinearization,
@@ -49,7 +50,6 @@ visualizations_list = [LeftFirstTree,
                        AsymmetricElasticTree,
                        SymmetricElasticTree,
                        EquidistantElasticTree]
-                       #BalancedTree,
 
 VISUALIZATIONS = OrderedDict()
 
@@ -57,7 +57,9 @@ shortcut = 1
 for vclass in visualizations_list:
     if shortcut == 10:
         shortcut_char = '0'
-    elif shortcut > 10:
+    elif shortcut == 11:
+        shortcut_char = '+'
+    elif shortcut > 11:
         shortcut_char = ''
     else:
         shortcut_char = str(shortcut)

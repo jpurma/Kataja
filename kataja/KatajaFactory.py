@@ -24,7 +24,6 @@ class KatajaFactory:
         """ Import and set available all of the default classes """
 
         from kataja.saved.movables.nodes.AttributeNode import AttributeNode
-        from kataja.saved.movables.nodes.BaseConstituentNode import BaseConstituentNode
         from kataja.saved.movables.nodes.CommentNode import CommentNode
         from kataja.saved.movables.nodes.ConstituentNode import ConstituentNode
         from kataja.saved.movables.nodes.FeatureNode import FeatureNode
@@ -42,7 +41,7 @@ class KatajaFactory:
         from syntax.BaseConstituent import BaseConstituent
         from syntax.BaseFL import FL
 
-        self.default_models = {ConstituentNode, BaseConstituentNode, AttributeNode, FeatureNode,
+        self.default_models = {ConstituentNode, AttributeNode, FeatureNode,
                                GlossNode, PropertyNode, CommentNode, Edge, Forest, DerivationStep,
                                DerivationStepManager, ConfigurableConstituent, BaseFeature, Tree,
                                Group, FL, KatajaDocument, BaseConstituent}

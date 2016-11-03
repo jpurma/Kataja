@@ -349,6 +349,12 @@ class Node(Movable):
         self.update()
         ctrl.remove_status(self.status_tip)
 
+    def get_triangle_text(self):
+        """ Label with triangled elements concatenated into it
+        :return:
+        """
+        return ''
+
     def __repr__(self):
         """ This is a node and this represents this FL item """
         return '%s-%s' % (self.syntactic_object, self.uid)
@@ -1003,6 +1009,7 @@ class Node(Movable):
         if ls == g.BRACKETED and not self.is_leaf(only_similar=True, only_visible=True):
             painter.setFont(self.get_font())
             painter.drawText(self.inner_rect.right() - qt_prefs.font_bracket_width - 2, 2, ']')
+        #painter.drawRect(-2, -2, 4, 4)
 
     def has_visible_label(self):
         """

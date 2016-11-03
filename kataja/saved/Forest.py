@@ -49,7 +49,7 @@ from kataja.saved.movables.Node import Node
 from kataja.saved.movables.Presentation import TextArea, Image
 from kataja.saved.movables.Tree import Tree
 from kataja.saved.movables.nodes.AttributeNode import AttributeNode
-from kataja.saved.movables.nodes.BaseConstituentNode import BaseConstituentNode
+from kataja.saved.movables.nodes.ConstituentNode import ConstituentNode
 from kataja.saved.movables.nodes.FeatureNode import FeatureNode
 from kataja.utils import time_me
 
@@ -750,7 +750,7 @@ class Forest(SavedObject):
         :return: generator
         """
         return (x for x in self.nodes.values() if
-                isinstance(x, BaseConstituentNode) and x.is_visible())
+                isinstance(x, ConstituentNode) and x.is_visible())
 
     def get_feature_nodes(self):
         """ Return generator of feature nodes
@@ -1914,7 +1914,7 @@ class Forest(SavedObject):
         :param node:
         :raise ForestError:
         """
-        if not isinstance(node, BaseConstituentNode):
+        if not isinstance(node, ConstituentNode):
             raise ForestError("Trying to treat wrong kind of node as ConstituentNode and "
                               "forcing it to binary merge")
 
@@ -1969,7 +1969,7 @@ class Forest(SavedObject):
         for tree in list(trees):
             tree.update_items()
 
-    def unary_add_child_for_constituentnode(self, old_node: BaseConstituentNode, add_left=True):
+    def unary_add_child_for_constituentnode(self, old_node: ConstituentNode, add_left=True):
         """
 
         :param old_node:
@@ -1988,7 +1988,7 @@ class Forest(SavedObject):
         else:
             self.connect_node(parent=old_node, child=new_node, direction=g.RIGHT, fade_in=True)
 
-    def add_sibling_for_constituentnode(self, old_node: BaseConstituentNode, add_left=True):
+    def add_sibling_for_constituentnode(self, old_node: ConstituentNode, add_left=True):
         """ Create a new merger node to top of this node and have this node and new node as its
         children.
         :param old_node:

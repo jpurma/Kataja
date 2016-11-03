@@ -25,8 +25,7 @@ import kataja.globals as g
 from kataja.SavedField import SavedField, SavedSynField
 from kataja.saved.movables.Node import Node
 from kataja.parser.INodes import ITextNode, ICommandNode
-from kataja.singletons import ctrl, prefs
-from kataja.saved.movables.nodes.BaseConstituentNode import BaseConstituentNode
+from kataja.singletons import ctrl, prefs, classes
 from kataja.uniqueness_generator import next_available_type_id
 
 __author__ = 'purma'
@@ -42,20 +41,24 @@ def strip_xbars(al):
         return al
 
 
-class ConstituentNode(BaseConstituentNode):
+class ConstituentNode(Node):
     """ ConstituentNode is enriched with few elements that have no syntactic meaning but help with
      reading the trees aliases, indices and glosses.
     """
     __qt_type_id__ = next_available_type_id()
     display_name = ('Constituent', 'Constituents')
     display = True
+    width = 20
+    height = 20
+    is_constituent = True
+    node_type = g.CONSTITUENT_NODE
     wraps = 'constituent'
     visible_in_label = ['display_label', 'index', 'triangle', 'label']  # , 'gloss']
     editable_in_label = ['display_label', 'label', 'index', 'head']  # 'gloss',
 
     display_styles = {'index': {'align': 'line-end', 'start_tag': '<sub>', 'end_tag': '</sub>'},
                       'triangle': {'special': 'triangle', 'readonly': True},
-                      'label': {'getter': 'triangled_label',
+                      'label': {'getter': 'label_str',
                                 'condition': 'should_show_label',
                                 'syntactic': True},
                       'display_label': {'condition': 'should_show_display_label'},
@@ -141,7 +144,12 @@ class ConstituentNode(BaseConstituentNode):
 
     def __init__(self, syntactic_object=None, forest=None):
         """ Most of the initiation is inherited from Node """
-        BaseConstituentNode.__init__(self, syntactic_object=syntactic_object, forest=forest)
+        Node.__init__(self, syntactic_object=syntactic_object, forest=forest)
+
+        # ### Projection -- see also preferences that govern if these are used
+        self.can_project = True
+        self.projecting_to = set()
+
         self.index = ''
         self.display_label = ''
         self.gloss = ''
@@ -171,6 +179,18 @@ class ConstituentNode(BaseConstituentNode):
         self.announce_creation()
         self.forest.store(self)
 
+    @staticmethod
+    def create_synobj(label, forest):
+        """ ConstituentNodes are wrappers for Constituents. Exact
+        implementation/class of constituent is defined in ctrl.
+        :return:
+        """
+        if not label:
+            label = forest.get_first_free_constituent_name()
+        c = classes.Constituent(label)
+        c.after_init()
+        return c
+
     def after_model_update(self, updated_fields, update_type):
         """ This is called after the item's model has been updated, to run the side-effects of
          various setters in an order that makes sense.
@@ -179,6 +199,8 @@ class ConstituentNode(BaseConstituentNode):
         """
         # update_label will be called by Node.after_model_update
         super().after_model_update(updated_fields, update_type)
+        if 'features' in updated_fields:
+            self.update_features()
 
     def load_values_from_parsernode(self, parsernode):
         """ Update constituentnode with values from parsernode
@@ -212,6 +234,13 @@ class ConstituentNode(BaseConstituentNode):
                 self.label = rows[1:1]
         self.display_label = rows
 
+    def if_changed_features(self, value):
+        """ Synobj changed, but remind to update label here
+        :param value:
+        :return:
+        """
+        self.update_features()
+
     # Other properties
 
     @property
@@ -223,32 +252,45 @@ class ConstituentNode(BaseConstituentNode):
         if gs:
             return gs[0]
 
-    @property
-    def raw_alias(self):
-        """ Get the unparsed raw version of label (str)
-        :return:
-        """
-        return self.display_label
-
-    @property
-    def triangled_label(self):
+    def get_triangle_text(self):
         """ Label with triangled elements concatenated into it
         :return:
         """
-        if self.triangle:
-            leaves = ITextNode()
-            # todo: Use a better linearization here
-            for node in self.forest.list_nodes_once(self):
-                if node.is_leaf(only_visible=False) and node.label:
-                    leaves += node.label
-                    leaves += ' '
-            return leaves.tidy(keep_node=False)
+        children = self.get_children(visible=False, similar=True)
+        if children:
+            parts = []
+            for node in children:
+                nodestr = node.get_triangle_text()
+                if nodestr:
+                    parts.append(nodestr)
+            return ' '.join(parts)
         else:
-            if self.syntactic_object:
-                for item in self.syntactic_object.features:
-                    if getattr(item, 'name', '').lower() == 'root':
-                        return '<u>' + self.label + '</u>'
-            return self.label
+            show_all_mode = ctrl.settings.get('show_all_mode')
+            if show_all_mode and self.display_label:
+                print(type(self.display_label))
+                if isinstance(self.display_label, ITextNode):
+                    print('it was %r' % self.display_label)
+                    return self.display_label.as_html().split('<br/>')[0]
+                elif isinstance(self.display_label, str):
+                    print('it was %r' % self.display_label)
+                    return self.display_label.splitlines()[0]
+                elif isinstance(self.display_label, list):
+                    print('it was %r' % self.display_label)
+                    return str(self.display_label[0])
+            else:
+                return self.label_str
+
+
+    @property
+    def label_str(self):
+        """ Label as string
+        :return:
+        """
+        if self.syntactic_object:
+            for item in self.syntactic_object.features:
+                if getattr(item, 'name', '').lower() == 'root':
+                    return '<u>' + str(self.label) + '</u>'
+        return str(self.label)
 
     def update_label_shape(self):
         self.label_object.label_shape = ctrl.settings.get('label_shape')
@@ -350,9 +392,9 @@ class ConstituentNode(BaseConstituentNode):
 
     def as_bracket_string(self):
         """ returns a simple bracket string representation """
+        if not self.syntactic_object:
+            return '0'
         if self.display_label:
-            if not self.syntactic_object:
-                return '0'
             children = list(self.get_children(similar=True, visible=False))
             if children:
                 return '[.%s %s ]' % \
@@ -360,7 +402,26 @@ class ConstituentNode(BaseConstituentNode):
             else:
                 return str(self.display_label)
         else:
-            return super().as_bracket_string()
+            inside = ' '.join(
+                (x.as_bracket_string() for x in self.get_children(similar=True, visible=False)))
+            if inside:
+                return '[ ' + inside + ' ]'
+            else:
+                return str(self.syntactic_object)
+
+    def get_attribute_nodes(self, label_key=''):
+        """
+
+        :param label_k ey:
+        :return:
+        """
+        atts = [x.end for x in self.edges_down if x.edge_type == g.ATTRIBUTE_EDGE]
+        if label_key:
+            for a in atts:
+                if a.attribute_label == label_key:
+                    return a
+        else:
+            return atts
 
     def is_unnecessary_merger(self):
         """ This merge can be removed, if it has only one child
@@ -579,6 +640,184 @@ class ConstituentNode(BaseConstituentNode):
         """
         return self.is_dragging_this_type(g.COMMENT_NODE)
 
+    # ### Features #########################################
+    # !!!! Shouldn't be done this way. In forest, create a feature, then connect it to
+    # ConstituentNode and let Forest's
+    # methods to take care that syntactic parts are reflected properly. ConstituentNode shouldn't
+    #  be modifying its
+    # syntactic component.
+    # def set_feature(self, syntactic_feature=None, key=None, value=None, string=''):
+    #     """ Convenience method for assigning a new feature node related to this constituent.
+    #     can take syntactic feature, which is assumed to be already assigned for the syntactic
+    # constituent.
+    #         Can take key, value pair to create new syntactic feature object, and then a proper
+    # feature object is created from this.
+    #     :param syntactic_feature:
+    #     :param key:
+    #     :param value:
+    #     :param string:
+    #     """
+    #     assert self.syntactic_object
+    #     if syntactic_feature:
+    #         if ctrl.forest.settings.draw_features:
+    #             ctrl.forest.create_feature_node(self, syntactic_feature)
+    #     elif key:
+    #         sf = self.syntactic_object.set_feature(key, value)
+    #         self.set_feature(syntactic_feature=sf)
+    #     elif string:
+    #         features = ctrl.forest.parse_features(string, self)
+    #         if 'gloss' in features:
+    #             self.gloss = features['gloss']
+    #             del features['gloss']
+    #         for feature in features.values():
+    #             self.set_feature(syntactic_feature=feature)
+    #         self.update_features()
+
+    def get_features(self):
+        """ Returns FeatureNodes """
+        return self.get_children(visible=True, of_type=g.FEATURE_EDGE)
+
+    def update_features(self):
+        """
+
+
+        """
+        pass
+        # if not self.syntactic_object:
+        # return
+        # current_features = set([x.syntactic_object.get() for x in self.get_features()])
+        # correct_features = self.syntactic_object.features
+        # print(current_features, correct_features)
+        # for key, item in correct_features.items():
+        # if key not in current_features:
+        # self.set_feature(syntactic_feature=item, key=key)
+        # else:
+        # current_features.remove(key)
+        # if current_features:
+        # print('leftover features:', current_features)
+
+    def get_features_as_string(self):
+        """
+
+
+        :return:
+        """
+        features = [f.syntactic_object for f in self.get_features()]
+        feature_strings = [str(f) for f in features]
+        return ', '.join(feature_strings)
+
+    # Reflecting structural changes in syntax
+    # Nodes are connected and disconnected to each other by user, through UI,
+    # and these connections may have different syntactical meaning.
+    # Each node type can define how connect or disconnect affects syntactic
+    # elements.
+    #
+    # These are called in all forest's connect and disconnect -activities,
+    # so they get called also when the connection was initiated from syntax.
+    # In these cases methods should be smart enough to notice that the
+    # connection is already there and not duplicate it.
+    # ########################################
+
+    def connect_in_syntax(self, edge):
+        """ Implement this if connecting this node (using this edge) needs to be
+         reflected in syntax. Remember to verify it already isn't there.
+        :param edge:
+        :return:
+        """
+        if edge.edge_type is not g.CONSTITUENT_EDGE:
+            # We care only for constituent relations
+            return
+        assert edge.end is self
+        s = edge.start
+        if s and s.node_type == g.CONSTITUENT_NODE and s.syntactic_object:
+            # Calling syntax!
+            parent = s.syntactic_object
+            child = self.syntactic_object
+            if child not in parent.parts:
+                ctrl.FL.k_connect(parent, child)
+
+    def disconnect_in_syntax(self, edge):
+        """ Implement this if disconnecting this node (using this edge) needs
+        to be reflected in syntax. Remember to verify it already isn't there.
+        :param edge:
+        :return:
+        """
+        if edge.edge_type is not g.CONSTITUENT_EDGE:
+            # We care only for constituent relations
+            return
+        assert edge.end is self
+        s = edge.start
+        if s and s.node_type == g.CONSTITUENT_NODE and s.syntactic_object:
+            # Calling syntax!
+            parent = s.syntactic_object
+            child = self.syntactic_object
+            if child in parent.parts:
+                ctrl.FL.k_disconnect(parent, child)
+
+    # ### Selection ########################################################
+
+    def update_selection_status(self, selected):
+        """
+
+        :param selected:
+        """
+
+        super().update_selection_status(selected)
+        if ctrl.cm.use_glow():
+            self.effect.setEnabled(selected)
+            self.update()
+
+    # ### Checks for callable actions ####
+
+    def can_top_merge(self):
+        """
+        :return:
+        """
+        top = self.get_top_node()
+        return self is not top and self not in top.get_children()
+
+    # ### Dragging #####################################################################
+
+    # ## Most of this is implemented in Node
+
+    def start_dragging_tracking(self, host=False, scene_pos=None):
+        """ Drag the node stack with me
+        :param host:
+        :param scene_pos:
+        :return:
+        """
+        super().start_dragging_tracking(host=host, scene_pos=scene_pos)
+        for node in self.children():
+            if node.locked_to_node == self:
+                node.start_dragging_tracking(host=False, scene_pos=scene_pos)
+
+    def prepare_children_for_dragging(self, scene_pos):
+        """ Implement this if structure is supposed to drag with the node
+        :return:
+        """
+        children = self.forest.list_nodes_once(self)
+
+        for tree in self.trees:
+            dragged_index = tree.sorted_constituents.index(self)
+            for i, node in enumerate(tree.sorted_constituents):
+                if node is not self and i > dragged_index and node in children:
+                    node.start_dragging_tracking(host=False, scene_pos=scene_pos)
+                    for n in node.get_locked_in_nodes():
+                        n.start_dragging_tracking(host=False, scene_pos=scene_pos)
+
+        for node in self.get_locked_in_nodes():
+            node.start_dragging_tracking(host=False, scene_pos=scene_pos)
+
+    #################################
+
+    # ### Parents & Children ####################################################
+
+    def is_projecting_to(self, other):
+        """
+
+        :param other:
+        """
+        pass
 
     # ############## #
     #                #
@@ -586,11 +825,13 @@ class ConstituentNode(BaseConstituentNode):
     #                #
     # ############## #
 
+    label = SavedSynField("label")
     index = SavedField("index")
     display_label = SavedField("display_label")
+    features = SavedSynField("features", if_changed=if_changed_features)
     gloss = SavedField("gloss", if_changed=update_gloss)
     head = SavedSynField("head")
-
     merge_order = SavedField("merge_order")
     select_order = SavedField("select_order")
     original_parent = SavedField("original_parent")
+

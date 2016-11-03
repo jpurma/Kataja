@@ -29,7 +29,7 @@ from kataja.globals import *
 from copy import deepcopy
 
 # Use these to debug
-disable_loading_preferences = False
+disable_loading_preferences = True
 disable_saving_preferences = False
 
 curves = ['Linear', 'InQuad', 'OutQuad', 'InOutQuad', 'OutInQuad', 'InCubic', 'OutCubic',
@@ -140,7 +140,7 @@ class Preferences(object):
                                            'position of mouse pointer',
                                    'order': 43}
 
-        self.visualization = 'Linearized static trees'
+        self.visualization = 'Balanced grid-based tree'
         self._visualization_ui = {'tab': 'Drawing', 'special': 'visualizations',
                                   'help': 'Default visualization for new trees.',
                                   'order': 10,

@@ -219,7 +219,10 @@ class Label(QtWidgets.QGraphicsTextItem):
                         html.append('<br/><br/>')
                         visible_parts.append(('triangle', row, '<br/><br/>'))
                         row += 2
-                    continue
+                        row_text = h.get_triangle_text()
+                        visible_parts.append(('triangle', row, row_text))
+                        html.append(row_text)
+                    break # <-- stop after triangle
             if field_value:
                 if isinstance(field_value, list):
                     for row_text in field_value:
