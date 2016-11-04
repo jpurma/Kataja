@@ -74,64 +74,66 @@ class GraphView(QtWidgets.QGraphicsView):
         self._fit_scale = 1.0
         self._target_rect = QtCore.QRectF(-300, -300, 300, 300)
         self.zoom_timer = QtCore.QBasicTimer()
-        self.zoom_anim = None
-        self._last_rect = self._target_rect
+        #self.zoom_anim = None
+        #self._last_rect = self._target_rect
         self._zoomd = (0, 0, 0, 0)
         self.setSceneRect(-500, -500, 1000, 1000)
 
-    def scale_step(self, r):
-        ox, oy, ow, oh = self._zoom_rect
-        dx, dy, dw, dh = self._zoomd
-        nr = QtCore.QRectF(ox + r * dx, oy + r * dy, ow + r * dw, oh + r * dh)
-        self._last_rect = nr
-        self.fitInView(nr, 1)
-        self._fit_scale = self.transform().m11()
-        ctrl.call_watchers(self, 'viewport_changed')
-
-    def scale_finished(self):
-        self.zoom_anim = None
-        self._last_rect = self._target_rect
-
-    def slow_fit_to_view(self, target_rect):
-        """ Fit the current scene into view, snugly
-        :param target_rect: scene rect that contains all of the items we want to fit into view.
-        """
-        sr = self.sceneRect()
-        # extend the logical scene if necessary
-        if target_rect.right() > sr.right() or target_rect.bottom() > sr.bottom():
-            self.setSceneRect(sr + QtCore.QMarginsF(0, 0, 500, 500))
-        if target_rect.left() < sr.left() or target_rect.top() < sr.top():
-            self.setSceneRect(sr + QtCore.QMarginsF(500, 500, 0, 0))
-
-        scr = self._last_rect.getRect()
-        scx, scy, scw, sch = scr
-        grx, gry, grw, grh = target_rect.getRect()
-        block = 30
-        grx = int(grx / block) * block
-        gry = int(gry / block) * block
-        grw = int(grw / block) * block + block
-        grh = int(grh / block) * block + block
-        dx = grx - scx
-        dy = gry - scy
-        dw = grw - scw
-        dh = grh - sch
-        if not (dx or dy or dw or dh):
-            return
-        if self.zoom_anim:
-            self.zoom_anim.stop()
-        self._zoom_rect = scr
-        self._target_rect = target_rect.getRect() #QtCore.QRect(grx, gry, grw, grh)
-        self._zoomd = dx, dy, dw, dh
-        self.zoom_anim = QtCore.QTimeLine(300, self)
-        self.zoom_anim.setUpdateInterval(20)
-        self.zoom_anim.setCurveShape(QtCore.QTimeLine.EaseInOutCurve)
-        self.zoom_anim.valueChanged.connect(self.scale_step)
-        self.zoom_anim.finished.connect(self.scale_finished)
-        self.zoom_anim.start()
-        #self.setSceneRect(larger_rect)
-        #self.fitInView(target_rect, 1)
-        #self._fit_scale = self.transform().m11()
-        #ctrl.call_watchers(self, 'viewport_changed')
+    # def scale_step(self, r):
+    #     ox, oy, ow, oh = self._zoom_rect
+    #     dx, dy, dw, dh = self._zoomd
+    #     nr = QtCore.QRectF(ox + r * dx, oy + r * dy, ow + r * dw, oh + r * dh)
+    #     self._last_rect = nr
+    #     self.fitInView(nr, 1)
+    #     self._fit_scale = self.transform().m11()
+    #     ctrl.call_watchers(self, 'viewport_changed')
+    #
+    # def scale_finished(self):
+    #     self.zoom_anim = None
+    #     self._last_rect = self._target_rect
+    #
+    # # deprecated, doesn't work smoothly enough
+    # def slow_fit_to_view(self, target_rect):
+    #     """ Fit the current scene into view, snugly.
+    #     :param target_rect: scene rect that contains all of the items we want to fit into view.
+    #     """
+    #     sr = self.sceneRect()
+    #     # extend the logical scene if necessary
+    #     if target_rect.right() > sr.right() or target_rect.bottom() > sr.bottom():
+    #         self.setSceneRect(sr + QtCore.QMarginsF(0, 0, 500, 500))
+    #     if target_rect.left() < sr.left() or target_rect.top() < sr.top():
+    #         self.setSceneRect(sr + QtCore.QMarginsF(500, 500, 0, 0))
+    #     scr = self._last_rect.getRect()
+    #     scx, scy, scw, sch = scr
+    #     grx, gry, grw, grh = target_rect.getRect()
+    #     block = 30
+    #     grx = int(grx / block) * block
+    #     gry = int(gry / block) * block
+    #     grw = int(grw / block) * block + block
+    #     grh = int(grh / block) * block + block
+    #     dx = grx - scx
+    #     dy = gry - scy
+    #     dw = grw - scw
+    #     dh = grh - sch
+    #     if not (dx or dy or dw or dh):
+    #         return
+    #     if self.zoom_anim:
+    #         print("stop ongoing zoom anim!")
+    #         self.zoom_anim.stop()
+    #     print("starting zoom anim")
+    #     self._zoom_rect = scr
+    #     self._target_rect = QtCore.QRect(*target_rect.getRect()) #QtCore.QRect(grx, gry, grw, grh)
+    #     self._zoomd = dx, dy, dw, dh
+    #     self.zoom_anim = QtCore.QTimeLine(200, self)
+    #     self.zoom_anim.setUpdateInterval(5)
+    #     self.zoom_anim.setCurveShape(QtCore.QTimeLine.EaseInOutCurve)
+    #     self.zoom_anim.valueChanged.connect(self.scale_step)
+    #     self.zoom_anim.finished.connect(self.scale_finished)
+    #     self.zoom_anim.start()
+    #     #self.setSceneRect(larger_rect)
+    #     #self.fitInView(target_rect, 1)
+    #     #self._fit_scale = self.transform().m11()
+    #     #ctrl.call_watchers(self, 'viewport_changed')
 
     #@time_me
     def instant_fit_to_view(self, target_rect):
@@ -139,8 +141,8 @@ class GraphView(QtWidgets.QGraphicsView):
         :param target_rect: scene rect that contains all of the items we want to fit into view.
         """
         sr = self.sceneRect()
-        if self.zoom_anim:
-            self.zoom_anim.stop()
+        #if self.zoom_anim:
+        #    self.zoom_anim.stop()
         if target_rect.right() > sr.right() or target_rect.bottom() > sr.bottom():
             self.setSceneRect(sr + QtCore.QMarginsF(0, 0, 500, 500))
         if target_rect.left() < sr.left() or target_rect.top() < sr.top():
@@ -181,7 +183,7 @@ class GraphView(QtWidgets.QGraphicsView):
         :param event:
         """
         QtWidgets.QGraphicsView.resizeEvent(self, event)
-        self._last_rect = self.mapToScene(self.rect()).boundingRect()
+        #self._last_rect = self.mapToScene(self.rect()).boundingRect()
         ctrl.call_watchers(self, 'viewport_changed')
 
     # ######### MOUSE ##############
@@ -238,7 +240,7 @@ class GraphView(QtWidgets.QGraphicsView):
                     if not self.selection_mode:
                         self.set_selection_mode(True)  # Select mode
 
-        self._last_rect = self.mapToScene(self.rect()).boundingRect()
+        #self._last_rect = self.mapToScene(self.rect()).boundingRect()
         self.graph_scene._manual_zoom = True
 
     def set_selection_mode(self, selection_mode):

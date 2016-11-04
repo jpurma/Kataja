@@ -63,6 +63,13 @@ class BaseVisualization:
             self.reset_nodes()
         self.validate_node_shapes()
 
+    def prepare_draw(self):
+        """ This is called every time before visualisation is drawn, a place to do preparations that
+        matter for all forest and not single trees.
+        :return:
+        """
+        pass
+
     def validate_node_shapes(self):
         ls = ctrl.settings.get('label_shape')
         if ls in self.banned_node_shapes:
@@ -82,7 +89,7 @@ class BaseVisualization:
         """
         return self.__class__.name
 
-    def set_vis_data(self, key, value):
+    def set_data(self, key, value):
         """ Sets (Saved) visualization data. Basically does the necessary poking
         so visualization algorithms don't have to bother with that.
         :param key: key in vis_data
@@ -97,7 +104,7 @@ class BaseVisualization:
             self.forest.poke("vis_data")
             self.forest.vis_data[key] = value
 
-    def get_vis_data(self, key, null=0):
+    def get_data(self, key, null=0):
         """ Gets visualization saved within the forest.
         :param key: key in vis_data
         :param null: what to return for missing value
@@ -119,7 +126,7 @@ class BaseVisualization:
         node.update_visibility()
         node.magnet_mapper = None
 
-    def draw(self):
+    def draw_tree(self, tree):
         """ Subclasses implement this """
         pass
 
@@ -142,7 +149,6 @@ class BaseVisualization:
     def reselect(self):
         """ if there are different modes for one visualization, rotating between different modes is triggered here. """
         pass
-
 
     def calculate_movement(self, node):
         # Sum up all forces pushing this item away.
@@ -241,7 +247,6 @@ class BaseVisualization:
             yvel = 0
         return xvel, yvel, 0
 
-
     # def calculateFeatureMovement(self, feat, node):
     # """ Create a cloud of features around the node """
     # xvel = 0.0
@@ -288,8 +293,6 @@ class BaseVisualization:
     #         xvel+=edge_length_x*pull*.2
     #         yvel+=edge_length_y*pull*.4
     #     return (xvel, yvel, 0)
-
-
 
     def should_we_draw(self, node, parent):
         """
@@ -367,7 +370,6 @@ class BaseVisualization:
                 else:
                     skips += 1
         return rotator, trace_dict
-
 
     def _compute_traces_to_draw_old(self, rotator):
         """ This is complicated, but returns a dictionary that tells for each index key (used by chains) in which position at trees to draw the node. Positions are identified by key of their immediate parent: {'i': ConstituentNode394293, ...} """

@@ -86,11 +86,14 @@ class BracketedLinearization(BaseVisualization):
         for node in self.forest.visible_nodes():
             self.reset_node(node)
 
-    def draw(self):
+    def prepare_draw(self):
+        self.forest.prepare_width_map()
+
+    def draw_tree(self, tree):
         """ Bracket manager's width map tells the required widths and labels know already how to
         draw themselves """
 
-        width_map = self.forest.prepare_width_map()
+        width_map = self.forest.width_map
         ls = ctrl.settings.get('label_shape')
         if ls == g.BRACKETED or ls == g.NORMAL:
             y_shift = 0
@@ -115,9 +118,7 @@ class BracketedLinearization(BaseVisualization):
 
         start = 0
 
-        for tree in self.forest:
-            if tree.top:
-                if tree.top.node_type == g.CONSTITUENT_NODE:
-                    nodes_used, start = draw_node(tree.top, used=set(), left_edge=start)
-                    start += prefs.edge_width
+        if tree.top.node_type == g.CONSTITUENT_NODE:
+            nodes_used, start = draw_node(tree.top, used=set(), left_edge=start)
+            start += prefs.edge_width
 

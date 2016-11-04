@@ -169,7 +169,7 @@ class Forest(SavedObject):
         self.scene.keep_updating_visible_area = True
         self.scene.manual_zoom = False
         self.draw()  # do draw once to avoid having the first draw in undo stack.
-        ctrl.graph_scene.fit_to_window(soft=True)
+        ctrl.graph_scene.fit_to_window()
         ctrl.resume_undo()
 
     def retire_from_drawing(self):
@@ -813,7 +813,16 @@ class Forest(SavedObject):
         self.update_projections()
         self.update_forest_gloss()
         if self.visualization:
-            self.visualization.draw()
+            self.visualization.prepare_draw()
+            x = 0
+            for tree in self.trees:
+                if tree.top:
+                    self.visualization.draw_tree(tree)
+                    tree.normalize_positions()
+                    tree.move_to(x, 0)
+                    print('tree (%s) :%s' % (x, tree.boundingRect()))
+                    x += tree.boundingRect().width()
+
         #if not sc.manual_zoom:
         #    sc.fit_to_window()
         sc.start_animations()

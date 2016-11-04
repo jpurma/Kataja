@@ -59,7 +59,7 @@ class LeftFirstTree(BaseVisualization):
         self._indentation = 0
         self.validate_node_shapes()
         if reset:
-            self.set_vis_data('rotation', 0)
+            self.set_data('rotation', 0)
             self.reset_nodes()
 
     def reset_node(self, node):
@@ -76,7 +76,7 @@ class LeftFirstTree(BaseVisualization):
     def reselect(self):
         """ if there are different modes for one visualization, rotating
         between different modes is triggered here. """
-        self.set_vis_data('rotation', self.get_vis_data('rotation', 0) - 1)
+        self.set_data('rotation', self.get_data('rotation', 0) - 1)
 
     # Recursively put nodes to their correct position in grid
     def _put_to_grid(self, grid, node, x, y, parent=None):
@@ -137,37 +137,28 @@ class LeftFirstTree(BaseVisualization):
             elif len(children) == 2:
                 nx += x_step * 2
 
-    def draw(self):
+    def prepare_draw(self):
+        new_rotation, self.traces_to_draw = self._compute_traces_to_draw(
+            self.get_data('rotation', 0))
+        self.set_data('rotation', new_rotation)
+
+    def draw_tree(self, tree):
         """ Draws the trees to a table or a grid, much like latex qtree and
         then scales the grid to the scene. """
         edge_height = prefs.edge_height
         edge_width = prefs.edge_width
-        merged_grid = None
+        merged_grid = Grid()
         self._indentation = 0
-        new_rotation, self.traces_to_draw = self._compute_traces_to_draw(
-            self.get_vis_data('rotation', 0))
-        self.set_vis_data('rotation', new_rotation)
-        for tree in self.forest:
-            if tree.top and tree.top.node_type == g.CONSTITUENT_NODE:
-                grid = Grid()
-                self._put_to_grid(grid, tree.top, 0, 0)
-                if merged_grid:
-                    extra_padding = 3
-                    merged_grid.merge_grids(grid, extra_padding=extra_padding)
-                else:
-                    merged_grid = grid
+        if tree.top and tree.top.node_type == g.CONSTITUENT_NODE:
+            self._put_to_grid(merged_grid, tree.top, 0, 0)
         offset_x = 0  # tree_w/-2
         y = 0
-        if not merged_grid:
-            return
-
         # Actual drawing: set nodes to their places in scene
         extra_widths = [0] * merged_grid.width
         extra_heights = []
 
         # if node is extra wide, then move all columns to right from that point on
         # same for extra tall nodes. move everything down after that row
-        all_nodes = set(self.forest.get_constituent_nodes())
         for y_i, row in enumerate(merged_grid):
             extra_height = 0
             prev_width = 0
@@ -216,24 +207,11 @@ class LeftFirstTree(BaseVisualization):
                     prev_width = node.width
                     prev_height = node.height
                     prev_x = x
-                    if node not in all_nodes:
-                        if not node.isVisible():
-                            print('non-visible node included in visualization grid: ', node,
-                                  node.isVisible())
-                        else:
-                            print('whats wrong with node ', node)
-                            print(node, node.uid, node.parentObject(), node.trees)
-                    else:
-                        all_nodes.remove(node)
                 else:
                     x += extra_widths[x_i]
                 x += edge_width
             y += edge_height + extra_height
             extra_heights.append(extra_height)
-        if all_nodes:
-            print('nodes left remaining: ', all_nodes)
-            for node in all_nodes:
-                print(node, node.uid, node.parentObject(), node.trees)
         y = 0
         for y_i, row in enumerate(merged_grid):
             x = offset_x

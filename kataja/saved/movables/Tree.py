@@ -5,6 +5,7 @@ from kataja.SavedField import SavedField
 from kataja.saved.Movable import Movable
 from kataja.uniqueness_generator import next_available_type_id
 import kataja.globals as g
+from utils import time_me
 
 __author__ = 'purma'
 
@@ -243,6 +244,32 @@ class Tree(Movable):
             return self._cached_bounding_rect
         else:
             return self._cached_bounding_rect
+
+    def current_scene_bounding_rect(self):
+        if not self.sorted_nodes:
+            return QtCore.QRectF()
+        min_x, min_y = 10000, 10000
+        max_x, max_y = -10000, -10000
+        for node in self.sorted_nodes:
+            if node.is_visible():
+                nbr = node.sceneBoundingRect()
+                x1, y1, x2, y2 = nbr.getCoords()
+                if x1 < min_x:
+                    min_x = x1
+                if x2 > max_x:
+                    max_x = x2
+                if y1 < min_y:
+                    min_y = y1
+                if y2 > max_y:
+                    max_y = y2
+        return QtCore.QRectF(min_x, min_y, max_x - min_x, max_y - min_y)
+
+    def normalize_positions(self):
+        print('tree normalising positions')
+        tx, ty = self.top.target_position
+        for node in self.sorted_constituents:
+            nx, ny = node.target_position
+            node.move_to(nx - tx, ny - ty)
 
     def paint(self, painter, QStyleOptionGraphicsItem, QWidget_widget=None):
         if self.numeration:

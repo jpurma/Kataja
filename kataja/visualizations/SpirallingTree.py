@@ -154,7 +154,7 @@ class SpirallingTree(BaseVisualization):
         self.validate_node_shapes()
         if reset:
             self.sides = 3
-            self.set_vis_data('rotation', 0)
+            self.set_data('rotation', 0)
             self.reset_nodes()
 
     def reset_node(self, node):
@@ -171,48 +171,14 @@ class SpirallingTree(BaseVisualization):
     def reselect(self):
         """ if there are different modes for one visualization, rotating between different modes
         is triggered here. """
-        self.set_vis_data('rotation', self.get_vis_data('rotation') - 1)
+        self.set_data('rotation', self.get_data('rotation') - 1)
 
+    def prepare_draw(self):
+        new_rotation, self.traces_to_draw = self._compute_traces_to_draw(
+                self.get_data('rotation'))
+        self.set_data('rotation', new_rotation)
 
-    def select_layer(self, layer):
-        #ch.reverse()
-        self.iterations += 1
-        if self.iterations > 500:
-            print("Reached 500 iterations, quit trying")
-            return None
-        ch = layer.focus.get_children(similar=True, visible=True)
-        layer.layers = []
-        for i, child_node in enumerate(ch):
-            if self.should_we_draw(child_node, layer.focus):
-                child_layer = Layer(child_node, parent=layer, vis=self)
-                success = child_layer.try_to_draw(i, len(ch))
-                if not success:
-                    child_layer.remove_areas()
-                    expanded_layer = self.someone_must_expand(layer)
-                    return expanded_layer
-                layer.layers.append(child_layer)
-                self.waiting_list.append(child_layer)
-        for child in layer.layers:
-            if child in self.waiting_list:
-                self.waiting_list.remove(child)
-                return child
-        while layer.parent:
-            layer = layer.parent
-            if self.waiting_list:
-                return self.waiting_list.pop(0)
-
-    def someone_must_expand(self, layer):
-        can_expand = layer.expand()
-        if can_expand:
-            return layer
-        elif layer.parent:
-            layer.remove_areas()
-            return self.someone_must_expand(layer.parent)
-        else:
-            self.sides += 1
-            self.draw()
-
-    def draw(self):
+    def draw_tree(self, tree, sides=0):
         """
 
         :return:
@@ -223,27 +189,54 @@ class SpirallingTree(BaseVisualization):
         self.waiting_list = []
 
         self.edge = math.hypot(prefs.edge_width, prefs.edge_height) * 2
-        new_rotation, self.traces_to_draw = self._compute_traces_to_draw(
-                self.get_vis_data('rotation'))
-        self.set_vis_data('rotation', new_rotation)
 
-        changed = False
-        for tree in self.forest:
-            for node in tree.sorted_nodes:
-                my_sides = len(list(node.get_children(visible=True, similar=True))) + 1
-                if my_sides > self.sides:
-                    self.sides = my_sides
-                    changed = True
+        def select_layer(layer, sides):
+            # ch.reverse()
+            self.iterations += 1
+            if self.iterations > 500:
+                print("Reached 500 iterations, quit trying")
+                return None
+            ch = layer.focus.get_children(similar=True, visible=True)
+            layer.layers = []
+            for i, child_node in enumerate(ch):
+                if self.should_we_draw(child_node, layer.focus):
+                    child_layer = Layer(child_node, parent=layer, vis=self)
+                    success = child_layer.try_to_draw(i, len(ch))
+                    if not success:
+                        child_layer.remove_areas()
+                        expanded_layer = someone_must_expand(layer, sides)
+                        return expanded_layer
+                    layer.layers.append(child_layer)
+                    self.waiting_list.append(child_layer)
+            for child in layer.layers:
+                if child in self.waiting_list:
+                    self.waiting_list.remove(child)
+                    return child
+            while layer.parent:
+                layer = layer.parent
+                if self.waiting_list:
+                    return self.waiting_list.pop(0)
 
-        if changed:
-            log.error('Need to have at least %s sides to draw this tree.' % self.sides)
+        def someone_must_expand(layer, sides):
+            can_expand = layer.expand()
+            if can_expand:
+                return layer
+            elif layer.parent:
+                layer.remove_areas()
+                return someone_must_expand(layer.parent, sides)
+            else:
+                sides += 1
+                self.draw_tree(tree, sides=sides)
 
-        for tree in self.forest:
-            if tree.top:
-                layer = Layer(tree.top, parent=None, vis=self)
-                success = layer.try_to_draw(0, 1)
-                while not success:
-                    self.start_x += 100
-                    success = layer.try_to_draw(0, 1)
-                while layer:
-                    layer = self.select_layer(layer)
+        for node in tree.sorted_nodes:
+            my_sides = len(list(node.get_children(visible=True, similar=True))) + 1
+            if my_sides > sides:
+                sides = my_sides
+
+        my_layer = Layer(tree.top, parent=None, vis=self)
+        success = my_layer.try_to_draw(0, 1)
+        while not success:
+            self.start_x += 100
+            success = my_layer.try_to_draw(0, 1)
+        while my_layer:
+            my_layer = select_layer(my_layer, sides)

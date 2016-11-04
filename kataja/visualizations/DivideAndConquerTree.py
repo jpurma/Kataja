@@ -54,7 +54,7 @@ class DivideAndConquerTree(BalancedTree):
         self.forest = forest
         self._directed = True
         if reset:
-            self.set_vis_data('rotation', 0)
+            self.set_data('rotation', 0)
             self.reset_nodes()
         self.validate_node_shapes()
 
@@ -74,7 +74,7 @@ class DivideAndConquerTree(BalancedTree):
     def reselect(self):
         """ Rotate between drawing multidominated elements close to their various parents
         """
-        self.set_vis_data('rotation', self.get_vis_data('rotation') - 1)
+        self.set_data('rotation', self.get_data('rotation') - 1)
 
     def should_we_draw(self, node, parent):
         """
@@ -92,8 +92,13 @@ class DivideAndConquerTree(BalancedTree):
                     return False
         return True
 
+    def prepare_draw(self):
+        new_rotation, self.traces_to_draw = self._compute_traces_to_draw(
+            self.get_data('rotation'))
+        self.set_data('rotation', new_rotation)
+
     # @time_me
-    def draw(self):
+    def draw_tree(self, tree):
         """ Divide and conquer algorithm using a grid. Result is much like latex qtree. 
         
         Grid L + Grid R -> rightmost free of L, leftmost node of R,  sum     max of sums=4 + padding=1 = 5
@@ -116,11 +121,6 @@ class DivideAndConquerTree(BalancedTree):
         """
         edge_height = prefs.edge_height
         edge_width = prefs.edge_width / 2
-        merged_grid = Grid()
-
-        new_rotation, self.traces_to_draw = self._compute_traces_to_draw(
-            self.get_vis_data('rotation'))
-        self.set_vis_data('rotation', new_rotation)
 
         def _get_grid_size(mnode):
             node_width = mnode.width
@@ -203,10 +203,7 @@ class DivideAndConquerTree(BalancedTree):
             #    grid.fill_path(path)
             return grid
 
-        for tree in self.forest:
-            if tree.top:
-                new_grid = _build_grid(node=tree.top)
-                merged_grid.merge_grids(new_grid, extra_padding=2)
+        merged_grid = _build_grid(node=tree.top)
 
         tree_width = merged_grid.width * edge_width
         tree_height = merged_grid.height * edge_height
@@ -223,3 +220,4 @@ class DivideAndConquerTree(BalancedTree):
                 if node and isinstance(node, Movable):
                     node.move_to(width_now, height_now, 0, valign=g.TOP_ROW, align=g.CENTER_ALIGN)
                 width_now += edge_width
+

@@ -392,7 +392,7 @@ class ToggleShowDisplayLabel(KatajaAction):
 
     def method(self):
         v = not ctrl.settings.get('show_display_labels')
-        ctrl.settings.get('show_display_labels', v, level=FOREST)
+        ctrl.settings.set('show_display_labels', v, level=FOREST)
         for node in ctrl.forest.nodes.values():
             node.update_label()
             node.update_label_visibility()

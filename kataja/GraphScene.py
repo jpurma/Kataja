@@ -83,28 +83,22 @@ class GraphScene(QtWidgets.QGraphicsScene):
         mw = prefs.edge_width
         mh = prefs.edge_height
         margins = QtCore.QMarginsF(mw, mh, mw, mh)
+        use_current_positions = len(ctrl.forest.nodes) < 25
+        vr = self.visible_rect(current=use_current_positions) + margins
         if self._cached_visible_rect and not force:
-            vr = self.visible_rect() + margins
             if vr != self._cached_visible_rect:
                 if self.keep_updating_visible_area or \
                         prefs.auto_zoom or \
                         vr.width() > self._cached_visible_rect.width() or \
                         vr.height() > self._cached_visible_rect.height():
-                    if soft:
-                        self.graph_view.slow_fit_to_view(vr)
-                    else:
-                        self.graph_view.instant_fit_to_view(vr)
+                    self.graph_view.instant_fit_to_view(vr)
                     self._cached_visible_rect = vr
         else:
-            vr = self.visible_rect() + margins
-            if soft:
-                self.graph_view.slow_fit_to_view(vr)
-            else:
-                self.graph_view.instant_fit_to_view(vr)
+            self.graph_view.instant_fit_to_view(vr)
             self._cached_visible_rect = vr
 
     @staticmethod
-    def visible_rect(min_w=200, min_h=100):
+    def visible_rect(min_w=200, min_h=100, current=True):
         """ Counts all visible items in scene and returns QRectF object
          that contains all of them """
         y_min = 6000
@@ -130,7 +124,10 @@ class GraphScene(QtWidgets.QGraphicsScene):
             if not tree:
                 continue
             empty = False
-            minx, miny, maxx, maxy = tree.sceneBoundingRect().getCoords()
+            if current:
+                minx, miny, maxx, maxy = tree.current_scene_bounding_rect().getCoords()
+            else:
+                minx, miny, maxx, maxy = tree.sceneBoundingRect().getCoords()
             if minx < x_min:
                 x_min = minx
             if maxx > x_max:

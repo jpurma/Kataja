@@ -49,7 +49,7 @@ class BalancedTree(BaseVisualization):
         self.forest = forest
         self._directed = True
         if reset:
-            self.set_vis_data('rotation', 0)
+            self.set_data('rotation', 0)
             self.reset_nodes()
         self.validate_node_shapes()
 
@@ -72,13 +72,14 @@ class BalancedTree(BaseVisualization):
 
 
         """
-        self.set_vis_data('rotation', self.get_vis_data('rotation', 0) - 1)
+        self.set_data('rotation', self.get_data('rotation', 0) - 1)
 
 
     # @time_me
-    def draw(self):
+    def draw_tree(self, tree):
         """ Divide and conquer, starting from bottom right. Results in a horizontal
         linearisation of leaves."""
+
         x_margin = 0 # prefs.edge_width / 2
         y_margin = 0 # prefs.edge_height / 2
 
@@ -108,13 +109,6 @@ class BalancedTree(BaseVisualization):
                 rect = rect.united(my_rect)
             return rect
 
-        tx = 0
-        for tree in self.forest:
-            total_rect = recursive_position(tree.top, 0, 0)
-            rx = total_rect.x()
-            ry = total_rect.y()
-            for node in tree.sorted_constituents:
-                nx, ny = node.target_position
-                node.move_to(tx + nx - rx, ny - ry)
-            tx += total_rect.width()
+        recursive_position(tree.top, 0, 0)
+
 
