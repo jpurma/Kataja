@@ -41,22 +41,23 @@ class SwitchViewMode(KatajaAction):
     k_shortcut = 'Shift+b'
     k_undoable = False
 
-    def method(self, show_all=None):
+    def method(self, syntactic_mode=None):
         """ Switch between showing only syntactic objects and showing richer representation
-        :param show_all: None to toggle between modes, True for all items, False for
+        :param syntactic_mode: None to toggle between modes, True to hide other except syntactic
+        objects and values, False to show all items
         syntactic only
         :return:
         """
-        if show_all is None:
-            show_all = not ctrl.settings.get('show_all_mode')
-        ctrl.forest.change_view_mode(show_all)
-        if show_all:
-            return 'Showing all elements, including those that have no computational effects.'
-        else:
+        if syntactic_mode is None:
+            syntactic_mode = not ctrl.settings.get('syntactic_mode')
+        ctrl.forest.change_view_mode(syntactic_mode)
+        if syntactic_mode:
             return 'Showing only syntactic objects.'
+        else:
+            return 'Showing all elements, including those that have no computational effects.'
 
     def getter(self):
-        return not ctrl.settings.get('show_all_mode')
+        return not ctrl.settings.get('syntactic_mode')
 
 
 class ActivateNoFrameNodeShape(KatajaAction):

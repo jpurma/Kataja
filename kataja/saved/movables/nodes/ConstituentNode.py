@@ -23,10 +23,11 @@
 # ############################################################################
 import kataja.globals as g
 from kataja.SavedField import SavedField, SavedSynField
-from kataja.saved.movables.Node import Node
 from kataja.parser.INodes import ITextNode, ICommandNode
-from kataja.singletons import ctrl, prefs, classes
+from kataja.saved.movables.Node import Node
+from kataja.singletons import ctrl, classes
 from kataja.uniqueness_generator import next_available_type_id
+from kataja.saved.movables.Node import as_html
 
 __author__ = 'purma'
 
@@ -54,7 +55,7 @@ class ConstituentNode(Node):
     node_type = g.CONSTITUENT_NODE
     wraps = 'constituent'
     visible_in_label = ['display_label', 'index', 'triangle', 'label']  # , 'gloss']
-    editable_in_label = ['display_label', 'label', 'index', 'head']  # 'gloss',
+    editable_in_label = ['display_label', 'label']  # 'gloss',
 
     display_styles = {'index': {'align': 'line-end', 'start_tag': '<sub>', 'end_tag': '</sub>'},
                       'triangle': {'special': 'triangle', 'readonly': True},
@@ -265,8 +266,8 @@ class ConstituentNode(Node):
                     parts.append(nodestr)
             return ' '.join(parts)
         else:
-            show_all_mode = ctrl.settings.get('show_all_mode')
-            if show_all_mode and self.display_label:
+            syntactic_mode = ctrl.settings.get('syntactic_mode')
+            if (not syntactic_mode) and self.display_label:
                 print(type(self.display_label))
                 if isinstance(self.display_label, ITextNode):
                     print('it was %r' % self.display_label)
@@ -389,6 +390,62 @@ class ConstituentNode(Node):
         else:
             return "anonymous constituent"
         return "constituent '%s'" % l
+
+    def compose_html_for_viewing(self):
+        """ This method builds the html to display in label. For convenience, syntactic objects
+        can override this (going against the containment logic) by having their own
+        'compose_html_for_viewing' -method. This is so that it is easier to create custom
+        implementations for constituents without requiring custom constituentnodes.
+
+        Note that synobj's compose_html_for_viewing receives the node object as parameter,
+        so you can replicate the behavior below and add your own to it.
+        :return:
+        """
+
+        # Allow custom syntactic objects to override this
+        if hasattr(self.syntactic_object, 'compose_html_for_viewing'):
+            return self.syntactic_object.compose_html_for_viewing(self)
+
+        html = []
+        syntactic_mode = ctrl.settings.get('syntactic_mode')
+        display_labels = ctrl.settings.get('show_display_labels')
+        if display_labels and self.display_label:
+            html.append(as_html(self.display_label))
+        else:
+            if self.label_str:
+                html.append(self.label_str)
+            if self.index and not syntactic_mode:
+                html.append('<sub>%s</sub>' % self.index)
+            html.append('<br/>')
+        if self.triangle:
+            html.append('<br/><br/>')
+            html.append(self.get_triangle_text())
+
+        if self.gloss and self.should_show_gloss_in_label():
+            html.append(as_html(self.gloss))
+            html.append('<br/>')
+        if html[-1] == '<br/>':
+            html.pop()
+        return ''.join(html)
+
+    def compose_html_for_editing(self):
+        """ This is used to build the html when quickediting a label. It should reduce the label
+        into just one field value that is allowed to be edited, in constituentnode this is
+        either label or display_label. This can be overridden in syntactic object by having
+        'compose_html_for_editing' -method there. The method returns a tuple,
+          (field_name, html).
+        :return:
+        """
+
+        # Allow custom syntactic objects to override this
+        if hasattr(self.syntactic_object, 'compose_html_for_editing'):
+            return self.syntactic_object.compose_html_for_editing(self)
+
+        display_labels = ctrl.settings.get('show_display_labels')
+        if display_labels and self.display_label:
+            return 'display_label', as_html(self.display_label)
+        else:
+            return 'label', as_html(self.label)
 
     def as_bracket_string(self):
         """ returns a simple bracket string representation """

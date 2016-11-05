@@ -192,12 +192,12 @@ class Label(QtWidgets.QGraphicsTextItem):
         visible_parts = []
         html = []
         waiting = None
-        show_all_mode = ctrl.settings.get('show_all_mode')
+        syntactic_mode = ctrl.settings.get('syntactic_mode')
         delimiter = ''
         for field_name in self.visible_in_label:
             s = styles.get(field_name, {})
             syntactic = s.get('syntactic', False)
-            if (not show_all_mode) and not syntactic:
+            if syntactic_mode and not syntactic:
                 continue
             if 'getter' in s:
                 getter = getattr(h, s.get('getter'), None)
@@ -283,12 +283,12 @@ class Label(QtWidgets.QGraphicsTextItem):
         h = self._host
         editable_parts = []
         editable = []
-        show_all_mode = ctrl.settings.get('show_all_mode')
+        syntactic_mode = ctrl.settings.get('syntactic_mode')
         for field_name in self.visible_in_label:
             s = styles.get(field_name, {})
             e = edit_styles.get(field_name, {})
             syntactic = s.get('syntactic', False)
-            if (not show_all_mode) and not syntactic:
+            if syntactic_mode and not syntactic:
                 continue
             if not h.check_conditions(s):
                 continue

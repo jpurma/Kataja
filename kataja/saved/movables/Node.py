@@ -37,6 +37,7 @@ from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.uniqueness_generator import next_available_type_id
 from kataja.utils import to_tuple, create_shadow_effect, add_xy
 from kataja.ui_graphicsitems.ControlPoint import ControlPoint
+from parser.INodes import ITextNode
 
 
 class DragData:
@@ -247,6 +248,39 @@ class Node(Movable):
         cx = px + ox + self.width / 2
         cy = py + oy + self.height / 2
         return cx, cy
+
+    def compose_html_for_viewing(self):
+        """ This method builds the html to display in label. For convenience, syntactic objects
+        can override this (going against the containment logic) by having their own
+        'compose_html_for_viewing' -method. This is so that it is easier to create custom
+        implementations for constituents without requiring custom constituentnodes.
+
+        Note that synobj's compose_html_for_viewing receives the node object as parameter,
+        so you can replicate the behavior below and add your own to it.
+        :return:
+        """
+
+        # Allow custom syntactic objects to override this
+        if hasattr(self.syntactic_object, 'compose_html_for_viewing'):
+            return self.syntactic_object.compose_html_for_viewing(self)
+
+        return as_html(self.label)
+
+    def compose_html_for_editing(self):
+        """ This is used to build the html when quickediting a label. It should reduce the label
+        into just one field value that is allowed to be edited, in constituentnode this is
+        either label or display_label. This can be overridden in syntactic object by having
+        'compose_html_for_editing' -method there. The method returns a tuple,
+          (field_name, html).
+        :return:
+        """
+
+        # Allow custom syntactic objects to override this
+        if hasattr(self.syntactic_object, 'compose_html_for_editing'):
+            return self.syntactic_object.compose_html_for_editing(self)
+
+        return 'label', as_html(self.label)
+
 
     def cut(self, others):
         """
@@ -1710,10 +1744,10 @@ class Node(Movable):
         # Label
         self.update_label_visibility()
 
-        if ctrl.settings.get('show_all_mode'):
-            self._node_type_visible = True
-        else:
+        if ctrl.settings.get('syntactic_mode'):
             self._node_type_visible = self.is_syntactic
+        else:
+            self._node_type_visible = True
         self._node_in_triangle = self.folded_away or self.folding_towards
 
         self._visible_by_logic = self._node_type_visible and not self._node_in_triangle
@@ -1776,3 +1810,13 @@ class Node(Movable):
     triangle = SavedField("triangle", if_changed=if_changed_triangle)
     folded_away = SavedField("folded_away")
     folding_towards = SavedField("folding_towards", if_changed=if_changed_folding_towards)
+
+
+def as_html(item):
+    if isinstance(item, str):
+        return item
+    elif isinstance(item, ITextNode):
+        return item.as_html()
+    elif isinstance(item, list):
+        raise ValueError
+

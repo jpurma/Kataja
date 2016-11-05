@@ -112,7 +112,7 @@ class Forest(SavedObject):
 
         # Update request flags
         self._do_edge_visibility_check = False
-        self.change_view_mode(ctrl.settings.get('show_all_mode'))
+        self.change_view_mode(ctrl.settings.get('syntactic_mode'))
 
     def after_model_update(self, updated_fields, update_type):
         """ This is called after the item's model has been updated (e.g. by
@@ -530,7 +530,7 @@ class Forest(SavedObject):
 
     def update_forest_gloss(self):
         """ Draw the gloss text on screen, if it exists. """
-        if self.gloss_text and ctrl.settings.get('show_all_mode'):
+        if self.gloss_text and not ctrl.settings.get('syntactic_mode'):
             if not self.gloss:
                 self.gloss = self.create_node(synobj=None, node_type=g.GLOSS_NODE)
                 self.gloss.label = self.gloss_text
@@ -2286,21 +2286,21 @@ class Forest(SavedObject):
                 return 'accent%s' % i
 
     # View mode
-    def change_view_mode(self, show_all):
-        ctrl.settings.set('show_all_mode', show_all, level=FOREST)
-        ctrl.settings.set('show_display_labels', show_all, level=FOREST)
+    def change_view_mode(self, syntactic_mode):
+        ctrl.settings.set('syntactic_mode', syntactic_mode, level=FOREST)
+        ctrl.settings.set('show_display_labels', not syntactic_mode, level=FOREST)
         for node in self.nodes.values():
             node.update_label()
             node.update_label_visibility()
             node.update_visibility()
-        ctrl.call_watchers(self, 'view_mode_changed', value=show_all)
-        if show_all:
-            ctrl.settings.set('temp_color_mode', '', level=FOREST)
-        else:
+        ctrl.call_watchers(self, 'view_mode_changed', value=syntactic_mode)
+        if syntactic_mode:
             if ctrl.main.color_manager.paper().value() < 100:
                 ctrl.settings.set('temp_color_mode', 'dk_gray', level=FOREST)
             else:
                 ctrl.settings.set('temp_color_mode', 'gray', level=FOREST)
+        else:
+            ctrl.settings.set('temp_color_mode', '', level=FOREST)
         self.update_colors()
 
     # ######## Utility functions ###############################

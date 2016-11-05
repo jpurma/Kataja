@@ -96,7 +96,7 @@ class Preferences(object):
                                'on_change': 'update_colors', 'order': 10}
         self.hsv = None
 
-        self.show_all_mode = True
+        self.syntactic_mode = False
         self.style = 'fancy'
         self.available_styles = ['plain', 'fancy']
 

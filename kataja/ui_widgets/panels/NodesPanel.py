@@ -54,7 +54,7 @@ class DraggableNodeFrame(QtWidgets.QFrame):
             value = bool(node_class)
         else:
             value = node_class and not node_class.is_syntactic
-        if value and not prefs.show_all_mode:
+        if value and ctrl.settings.get('syntactic_mode'):
             value = node_class.is_syntactic
         self.setEnabled(value)
 
