@@ -596,7 +596,8 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             self.label_item.update_position()
         if ctrl.is_selected(self):
             ctrl.ui.update_position_for(self)
-        if self.start and self.end and self.start.is_visible() and self.end.is_visible():
+        if self.start and self.end and self.start.is_visible() and self.end.is_visible() and not \
+                (self.start.triangle or self.end.triangle):
             self._nodes_overlap = self.start.overlap_rect().intersects(self.end.overlap_rect())
         elif self._nodes_overlap:
             self._nodes_overlap = False

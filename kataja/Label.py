@@ -42,6 +42,65 @@ b {font-family: StixGeneral Bold; font-weight: 900; font-style: bold}
 inner_cards = False
 
 
+class QuickEditTextItem(QtWidgets.QGraphicsTextItem):
+
+    def mousePressEvent(self, event):
+        # something in mousePressEvent causes it to ignore further mouse events.
+        p = self.parent()
+        if p._quick_editing:
+            QtWidgets.QGraphicsTextItem.mousePressEvent(self, event)
+        else:
+            # otherwise let the node handle mousePress logic.
+            p._host.mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        p = self.parent()
+        if p._quick_editing:
+            QtWidgets.QGraphicsTextItem.mouseMoveEvent(self, event)
+        else:
+            p._host.mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        p = self.parent()
+        if p._quick_editing:
+            p.cursor_position_changed(self.textCursor())
+            QtWidgets.QGraphicsTextItem.mouseReleaseEvent(event)
+        else:
+            p._host.mouseReleaseEvent(event)
+
+    def keyReleaseEvent(self, keyevent):
+        """ keyReleaseEvent is received after the keypress is registered by editor, so if we
+        check cursor position here we receive the situation after normal cursor movement. So
+        moving 'up' to first line would also register here as being in first line and moving up.
+        Which is one up too many. So instead we store the last cursor pos and use that to decide
+        if we are eg. in first line and moving up.
+        :param keyevent:
+        :return:
+        """
+        p = self.parent()
+        c = self.textCursor()
+        p.cursor_position_changed(c)
+        next_sel = None
+        if p._fresh_focus:
+            p._fresh_focus = False
+        elif p._last_blockpos:
+            first, last, first_line, last_line = p._last_blockpos
+            if first and keyevent.matches(QtGui.QKeySequence.MoveToPreviousChar):
+                next_sel = ctrl.graph_scene.next_selectable_from_node(p._host, 'left')
+            elif last and keyevent.matches(QtGui.QKeySequence.MoveToNextChar):
+                next_sel = ctrl.graph_scene.next_selectable_from_node(p._host, 'right')
+            elif first_line and keyevent.matches(QtGui.QKeySequence.MoveToPreviousLine):
+                next_sel = ctrl.graph_scene.next_selectable_from_node(p._host, 'up')
+            elif last_line and keyevent.matches(QtGui.QKeySequence.MoveToNextLine):
+                next_sel = ctrl.graph_scene.next_selectable_from_node(p._host, 'down')
+            if next_sel and next_sel != p._host:
+                self.clearFocus()
+                ctrl.select(next_sel)
+                next_sel.setFocus()
+        p._last_blockpos = (c.atStart(), c.atEnd(), c.blockNumber() == 0,
+                            c.blockNumber() == p.editable_doc.blockCount() - 1)
+
+
 class Label(QtWidgets.QGraphicsItem):
     """ Labels are names of nodes. Node itself provides a template for what to show in label,
     label composes its document (html layout) for its contents based on that. """
@@ -51,7 +110,7 @@ class Label(QtWidgets.QGraphicsItem):
     def __init__(self, parent=None):
         """ Give node as parent. Label asks it to produce text to show here """
         QtWidgets.QGraphicsItem.__init__(self, parent)
-        self.upper_part = QtWidgets.QGraphicsTextItem(self)
+        self.editable_part = QtWidgets.QGraphicsTextItem(self)
         self.lower_part = None # QtWidgets.QGraphicsTextItem(self)
         self._host = parent
         self.has_been_initialized = False
@@ -63,6 +122,7 @@ class Label(QtWidgets.QGraphicsItem):
         self.triangle_height = 20
         self.triangle_y = 0
         self.width = 0
+        self.height = 0
         self.template_width = 0
         self.x_offset = 0
         self.y_offset = 0
@@ -70,7 +130,6 @@ class Label(QtWidgets.QGraphicsItem):
         self.label_shape = NORMAL
         self._font = None
         self.html = ''
-        self.upper_text = ''
         self.lower_html = ''
         self.lower_text = ''
         self.edited_field = ''
@@ -80,18 +139,18 @@ class Label(QtWidgets.QGraphicsItem):
         self._last_blockpos = ()
         self.editable = {}
         self.prepare_template()
-        self.upper_doc = LabelDocument()
+        self.editable_doc = LabelDocument()
         self.lower_doc = None
         self.card_size = (60, 90)
         self._fresh_focus = False
-        self.upper_doc.setDefaultStyleSheet(style_sheet)
-        self.upper_part.setDocument(self.upper_doc)
+        self.editable_doc.setDefaultStyleSheet(style_sheet)
+        self.editable_part.setDocument(self.editable_doc)
         # not acceptin hover events is important, editing focus gets lost if other labels take
         # hover events. It is unclear why.
         self.setAcceptDrops(False)
         self.setAcceptHoverEvents(False)
-        self.upper_doc.contentsChanged.connect(self.upper_doc_changed)
-        self.upper_part.setTextWidth(-1)
+        self.editable_doc.contentsChanged.connect(self.editable_doc_changed)
+        self.editable_part.setTextWidth(-1)
         self.set_font(self._host.get_font())
 
     def type(self):
@@ -117,7 +176,7 @@ class Label(QtWidgets.QGraphicsItem):
         self.lower_doc = None
 
     def set_font(self, font):
-        self.upper_part.setFont(font)
+        self.editable_part.setFont(font)
         if self.lower_part:
             self.lower_part.setFont(font)
         self._font = font
@@ -129,11 +188,11 @@ class Label(QtWidgets.QGraphicsItem):
         """ Asks for node/host to give text and update if changed """
         self.has_been_initialized = True
         if self.text_align == LEFT_ALIGN:
-            self.upper_doc.set_align(QtCore.Qt.AlignLeft)
+            self.editable_doc.set_align(QtCore.Qt.AlignLeft)
         elif self.text_align == RIGHT_ALIGN:
-            self.upper_doc.set_align(QtCore.Qt.AlignRight)
+            self.editable_doc.set_align(QtCore.Qt.AlignRight)
         else:
-            self.upper_doc.set_align(QtCore.Qt.AlignHCenter)
+            self.editable_doc.set_align(QtCore.Qt.AlignHCenter)
 
         html, lower_html = self._host.compose_html_for_viewing()
         if self.label_shape == SCOPEBOX:
@@ -150,12 +209,11 @@ class Label(QtWidgets.QGraphicsItem):
         if html != self.html or force_update:
             self.html = html
             if self.is_card():
-                self.upper_doc.setTextWidth(self.card_size[0])
+                self.editable_doc.setTextWidth(self.card_size[0])
             else:
-                self.upper_doc.setTextWidth(-1)
-            self.upper_part.setHtml(self.html)
-            ctrl.qdocument_parser.process(self.upper_doc)
-            self.upper_text = self.upper_part.toPlainText()
+                self.editable_doc.setTextWidth(-1)
+            self.editable_part.setHtml(self.html)
+            ctrl.qdocument_parser.process(self.editable_doc)
             self.prepareGeometryChange()
 
         if lower_html != self.lower_html:
@@ -209,7 +267,7 @@ class Label(QtWidgets.QGraphicsItem):
         return not (self.html or self.lower_html)
 
     def char_format(self) -> QtGui.QTextCharFormat:
-        return self.upper_part.textCursor().charFormat()
+        return self.editable_part.textCursor().charFormat()
 
     def has_content(self) -> bool:
         return bool(self.html or self.lower_html)
@@ -241,39 +299,39 @@ class Label(QtWidgets.QGraphicsItem):
             if ctrl.text_editor_focus:
                 ctrl.release_editor_focus()
             ctrl.text_editor_focus = self
-            self.upper_part.setTextInteractionFlags(QtCore.Qt.TextEditorInteraction)
+            self.editable_part.setTextInteractionFlags(QtCore.Qt.TextEditorInteraction)
             self.prepareGeometryChange()
             if self.is_card():
-                self.upper_doc.setTextWidth(self.card_size[0])
+                self.editable_doc.setTextWidth(self.card_size[0])
             else:
-                self.upper_doc.setTextWidth(-1)
+                self.editable_doc.setTextWidth(-1)
             self.edited_field, self.editable_html = self._host.compose_html_for_editing()
             self.editable_html = self.editable_html.replace('\n', '<br/>')
             self.setCursor(QtGui.QCursor(QtCore.Qt.IBeamCursor))
 
-            ctrl.ui.add_quick_edit_buttons_for(self._host, self.upper_doc)
-            self.upper_part.setHtml(self.editable_html)
-            self.upper_doc.cursorPositionChanged.connect(self.cursor_position_changed)
+            ctrl.ui.add_quick_edit_buttons_for(self._host, self.editable_doc)
+            self.editable_part.setHtml(self.editable_html)
+            self.editable_doc.cursorPositionChanged.connect(self.cursor_position_changed)
 
             self.resize_label()
-            self.upper_part.setAcceptDrops(True)
+            self.editable_part.setAcceptDrops(True)
             ctrl.graph_view.setFocus()
-            self.upper_part.setFocus()
+            self.editable_part.setFocus()
             self._fresh_focus = True
 
         elif self._quick_editing:
-            if self.upper_doc.isModified():
+            if self.editable_doc.isModified():
                 self.parse_document_to_field()
-                self.upper_doc.setModified(False)
+                self.editable_doc.setModified(False)
             ctrl.text_editor_focus = None
             self._quick_editing = False
             ctrl.ui.remove_quick_edit_buttons()
             self.html = ''
             self._host.update_label()
-            self.upper_part.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-            self.upper_part.setAcceptDrops(False)
-            self.upper_part.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
-            self.upper_part.clearFocus()
+            self.editable_part.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+            self.editable_part.setAcceptDrops(False)
+            self.editable_part.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
+            self.editable_part.clearFocus()
             self._fresh_focus = False
             #if len(fields) == 0:
             #    ctrl.main.action_finished("Finished editing %s, no changes." % self._host,
@@ -293,7 +351,7 @@ class Label(QtWidgets.QGraphicsItem):
 
         :return:
         """
-        parsed_parts = ctrl.qdocument_parser.process(self.upper_doc)
+        parsed_parts = ctrl.qdocument_parser.process(self.editable_doc)
         my_editable = self.editable.get(self.edited_field, {})
         setter = my_editable.get('setter', '')
         if setter:
@@ -305,7 +363,7 @@ class Label(QtWidgets.QGraphicsItem):
         else:
             setattr(self._host, self.edited_field, parsed_parts)
 
-    def upper_doc_changed(self):
+    def editable_doc_changed(self):
         if not self._recursion_block: # self._quick_editing and
             w = self.width
             self._recursion_block = True
@@ -314,58 +372,6 @@ class Label(QtWidgets.QGraphicsItem):
             if self.width != w and self.scene() == ctrl.graph_scene:
                 ctrl.forest.draw()
             self._recursion_block = False
-
-    def mousePressEvent(self, event):
-        # something in mousePressEvent causes it to ignore further mouse events.
-        if self._quick_editing:
-            self.upper_part.mousePressEvent(event)
-        else:
-            # otherwise let the node handle mousePress logic.
-            self._host.mousePressEvent(event)
-
-    def mouseMoveEvent(self, event):
-        if self._quick_editing:
-            self.upper_part.mouseMoveEvent(event)
-        else:
-            self._host.mouseMoveEvent(event)
-
-    def mouseReleaseEvent(self, event):
-        if self._quick_editing:
-            self.cursor_position_changed(self.upper_part.textCursor())
-            self.upper_part.mouseReleaseEvent(event)
-        else:
-            self._host.mouseReleaseEvent(event)
-
-    def keyReleaseEvent(self, keyevent):
-        """ keyReleaseEvent is received after the keypress is registered by editor, so if we
-        check cursor position here we receive the situation after normal cursor movement. So
-        moving 'up' to first line would also register here as being in first line and moving up.
-        Which is one up too many. So instead we store the last cursor pos and use that to decide
-        if we are eg. in first line and moving up.
-        :param keyevent:
-        :return:
-        """
-        c = self.upper_part.textCursor()
-        self.cursor_position_changed(c)
-        next_sel = None
-        if self._fresh_focus:
-            self._fresh_focus = False
-        elif self._last_blockpos:
-            first, last, first_line, last_line = self._last_blockpos
-            if first and keyevent.matches(QtGui.QKeySequence.MoveToPreviousChar):
-                next_sel = ctrl.graph_scene.next_selectable_from_node(self._host, 'left')
-            elif last and keyevent.matches(QtGui.QKeySequence.MoveToNextChar):
-                next_sel = ctrl.graph_scene.next_selectable_from_node(self._host, 'right')
-            elif first_line and keyevent.matches(QtGui.QKeySequence.MoveToPreviousLine):
-                next_sel = ctrl.graph_scene.next_selectable_from_node(self._host, 'up')
-            elif last_line and keyevent.matches(QtGui.QKeySequence.MoveToNextLine):
-                next_sel = ctrl.graph_scene.next_selectable_from_node(self._host, 'down')
-            if next_sel and next_sel != self._host:
-                self.clearFocus()
-                ctrl.select(next_sel)
-                next_sel.setFocus()
-        self._last_blockpos = (c.atStart(), c.atEnd(), c.blockNumber() == 0,
-                               c.blockNumber() == self.upper_doc.blockCount() - 1)
 
     def get_max_size_from_host(self):
         if self._host.resizable and self._host.user_size is not None:
@@ -381,12 +387,12 @@ class Label(QtWidgets.QGraphicsItem):
             width = self.card_size[0]
         else:
             if self.lower_html:
-                self.upper_part.setTextWidth(-1)
+                self.editable_part.setTextWidth(-1)
                 self.lower_part.setTextWidth(-1)
-                ideal_width = max((self.upper_doc.idealWidth(), self.lower_doc.idealWidth()))
+                ideal_width = max((self.editable_doc.idealWidth(), self.lower_doc.idealWidth()))
             else:
-                self.upper_part.setTextWidth(-1)
-                ideal_width = self.upper_doc.idealWidth()
+                self.editable_part.setTextWidth(-1)
+                ideal_width = self.editable_doc.idealWidth()
 
             if user_width and user_width < ideal_width:
                 width = user_width
@@ -398,25 +404,32 @@ class Label(QtWidgets.QGraphicsItem):
                 width = 20
             elif width > Label.max_width:
                 width = Label.max_width
-        self.upper_part.setTextWidth(width)
+        self.editable_part.setTextWidth(width)
         if self.lower_html:
             self.lower_part.setTextWidth(width)
 
         # Height
+        self.triangle_is_present = bool(self._host.triangle)
         if self.is_card():
             total_height = self.card_size[1]
-        elif self.lower_html:
-            total_height = self.upper_doc.size().height() + self.triangle_height + \
-                           self.lower_doc.size().height()
+        elif self.triangle_is_present:
+            if self.editable_html:
+                eh = self.editable_doc.size().height()
+            else:
+                eh = 0
+            if self.lower_html:
+                lh = self.lower_doc.size().height()
+            else:
+                lh = 0
+            total_height = eh + self.triangle_height + lh
         else:
-            total_height = self.upper_doc.size().height()
+            total_height = self.editable_doc.size().height()
         half_height = total_height / 2.0
         self.top_y = -half_height
         self.bottom_y = half_height
         self.width = width
         self.height = total_height
         # middle line is 0
-        self.triangle_is_present = bool(self._host.triangle)
         if self.triangle_is_present:
             if self._host.is_leaf(only_visible=False, only_similar=True):
                 # if triangled is leaf, put upper part below the triangle so it can be edited.
@@ -427,7 +440,10 @@ class Label(QtWidgets.QGraphicsItem):
                 # if triangled is not leaf, editing should target the upper part and leave
                 # the combination of leaves alone
                 self.upper_part_y = 0
-                self.triangle_y = self.upper_doc.size().height()
+                if self.editable_html:
+                    self.triangle_y = self.editable_doc.size().height()
+                else:
+                    self.triangle_y = 0
                 self.lower_part_y = self.triangle_y + self.triangle_height
         else:
             # no lower part, no triangle
@@ -442,7 +458,7 @@ class Label(QtWidgets.QGraphicsItem):
             self.y_offset = -half_height
 
         self.setPos(self.x_offset, self.y_offset)
-        self.upper_part.setPos(0, self.upper_part_y)
+        self.editable_part.setPos(0, self.upper_part_y)
         if self.lower_html:
             self.lower_part.setPos(0, self.lower_part_y)
 
@@ -455,14 +471,14 @@ class Label(QtWidgets.QGraphicsItem):
             event.accept()
             data = open_symbol_data(event.mimeData())
             if data and 'char' in data:
-                self.upper_part.textCursor().insertText(data['char'])
+                self.editable_part.textCursor().insertText(data['char'])
                 event.acceptProposedAction()
         elif mim.hasFormat("text/plain"):
             event.accept()
             event.acceptProposedAction()
-            self.upper_part.dropEvent(event)
+            self.editable_part.dropEvent(event)
         else:
-            self.upper_part.dropEvent(event)
+            self.editable_part.dropEvent(event)
 
     def boundingRect(self):
         if self.is_card():
@@ -490,7 +506,7 @@ class Label(QtWidgets.QGraphicsItem):
         :param option:
         :param widget:
         """
-        self.upper_part.setDefaultTextColor(self._host.contextual_color)
+        self.editable_part.setDefaultTextColor(self._host.contextual_color)
         if self.lower_part:
             self.lower_part.setDefaultTextColor(self._host.contextual_color)
         if self.triangle_is_present:

@@ -200,6 +200,7 @@ class GraphView(QtWidgets.QGraphicsView):
         QtWidgets.QGraphicsView.mousePressEvent(self, event)
 
     def replay_mouse_press(self):
+        print('replaying mousepressevent')
         self.mousePressEvent(self.latest_mpe)
 
     def timerEvent(self, event):

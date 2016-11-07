@@ -22,7 +22,7 @@ def is_constituent(item):
 class TreeDragData:
     """ Helper object to contain drag-related data for duration of dragging """
 
-    def __init__(self, tree:'Tree', is_host, mousedown_scene_pos):
+    def __init__(self, tree: 'Tree', is_host, mousedown_scene_pos):
         self.is_host = is_host
         self.position_before_dragging = tree.current_position
         self.adjustment_before_dragging = tree.adjustment
@@ -264,12 +264,12 @@ class Tree(Movable):
                     max_y = y2
         return QtCore.QRectF(min_x, min_y, max_x - min_x, max_y - min_y)
 
-    def normalize_positions(self):
-        print('tree normalising positions')
-        tx, ty = self.top.target_position
-        for node in self.sorted_constituents:
-            nx, ny = node.target_position
-            node.move_to(nx - tx, ny - ty)
+    # def normalize_positions(self):
+    #     print('tree normalising positions')
+    #     tx, ty = self.top.target_position
+    #     for node in self.sorted_constituents:
+    #         nx, ny = node.target_position
+    #         node.move_to(nx - tx, ny - ty)
 
     def paint(self, painter, QStyleOptionGraphicsItem, QWidget_widget=None):
         if self.numeration:

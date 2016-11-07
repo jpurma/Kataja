@@ -157,7 +157,7 @@ class Node(Movable):
         self.setAcceptHoverEvents(True)
         self.setAcceptDrops(True)
         self.setFlag(QtWidgets.QGraphicsObject.ItemSendsGeometryChanges)
-        self.setFlag(QtWidgets.QGraphicsObject.ItemIsMovable)
+        #self.setFlag(QtWidgets.QGraphicsObject.ItemIsMovable)
         self.setFlag(QtWidgets.QGraphicsObject.ItemIsSelectable)
         self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.setZValue(self.z_value)
@@ -321,9 +321,6 @@ class Node(Movable):
         :return: dict
         """
         return self.label_object.editable
-
-    def get_editable_field_names(self):
-        return self.label_object.editable_in_label
 
     def should_draw_triangle(self):
         return self.label_object and self.label_object.should_draw_triangle()
@@ -1144,7 +1141,6 @@ class Node(Movable):
         """
         self.folding_towards = node
         x, y = node.current_position
-        print('fold %s towards %s' % (self, node))
         self.move_to(x, y, after_move_function=self.finish_folding, can_adjust=False)
         if ctrl.is_selected(self):
             ctrl.remove_from_selection(self)
@@ -1353,8 +1349,8 @@ class Node(Movable):
 
     def start_dragging(self, scene_pos):
         """ Figure out which nodes belong to the dragged set of nodes.
-        It may be that a whole trees is dragged. If this is the case, drag_to commands to nodes that
-         are tops of trees are directed to trees instead. Node doesn't change its position in trees
+        It may be that a whole trees is dragged. If this is the case, drag_to commands that
+        target top nodes are directed to trees instead. Node doesn't change its position in trees
          if the whole trees moves.
 
         :param scene_pos:
@@ -1402,7 +1398,6 @@ class Node(Movable):
         for tree in dragged_trees:
             moving = moving.union(tree.sorted_nodes)
         ctrl.ui.prepare_touch_areas_for_dragging(moving=moving, multidrag=multidrag)
-
         self.start_moving()
 
     def start_dragging_tracking(self, host=False, scene_pos=None):
@@ -1617,7 +1612,7 @@ class Node(Movable):
         super().mouseReleaseEvent(event)
         if replay_click:
             ctrl.graph_view.replay_mouse_press()
-            self.label_object.mouseReleaseEvent(event)
+            self.label_object.editable_part.mouseReleaseEvent(event)
             ctrl.release(self)
 
     def hoverEnterEvent(self, event):

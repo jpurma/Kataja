@@ -54,7 +54,9 @@ class NodeEditEmbed(UIEmbed):
         big_font.setPointSize(big_font.pointSize() * 2)
 
         ed = node.get_editing_template()
-        field_names = node.get_editable_field_names()
+        sortable = [(item.get('order', 100), key) for key, item in ed.items()]
+        sortable.sort()
+        field_names = [key for order, key in sortable]
         self.fields = {}
         self.resize_target = None
         hlayout = None
@@ -234,6 +236,6 @@ class NodeEditEmbed(UIEmbed):
             if 'focus' in data and data['focus']:
                 self.fields[key].setFocus()
                 return
-        # default to first field in field order
+        # default to field that gets edited in quickedit
         if self.fields:
-            self.fields[self.host.get_editable_field_names()[0]].setFocus()
+            self.fields[self.host.compose_html_for_editing()[0]].setFocus()
