@@ -818,7 +818,7 @@ class Forest(SavedObject):
             for tree in self.trees:
                 if tree.top:
                     self.visualization.draw_tree(tree)
-                    tree.normalize_positions()
+                    #tree.normalize_positions()
                     tree.move_to(x, 0)
                     print('tree (%s) :%s' % (x, tree.boundingRect()))
                     x += tree.boundingRect().width()

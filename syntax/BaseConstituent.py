@@ -40,9 +40,6 @@ class BaseConstituent(IConstituent):
     # info for kataja engine
     syntactic_object = True
 
-    visible_in_label = ['label']
-    editable_in_label = ['label']
-    display_styles = {}
     editable = {}
     addable = {'features': {'condition': 'can_add_feature', 'add': 'add_feature', 'order': 20}
                }

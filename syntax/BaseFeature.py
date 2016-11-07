@@ -40,9 +40,6 @@ class BaseFeature(SavedObject):
 
     syntactic_object = True
 
-    visible_in_label = ['name', 'value', 'family']
-    editable_in_label = ['name', 'value', 'family']
-    display_styles = {'name': {'getter': 'name_with_u_prefix'}}
     editable = {}
     addable = {}
 

@@ -28,7 +28,7 @@ import kataja.globals as g
 from kataja.SavedField import SavedSynField
 from kataja.globals import FEATURE_NODE
 from kataja.singletons import ctrl, qt_prefs, classes
-from kataja.saved.movables.Node import Node
+from kataja.saved.movables.Node import Node, as_html
 from kataja.uniqueness_generator import next_available_type_id
 
 color_map = {'tense': 0, 'order': 1, 'person': 2, 'number': 4, 'case': 6, 'unknown': 3}
@@ -46,12 +46,6 @@ class FeatureNode(Node):
     display = True
     wraps = 'feature'
 
-    visible_in_label = ['name', 'value', 'family']
-    editable_in_label = ['name', 'value', 'assigned', 'family']
-    display_styles = {'name': {'align': 'continue', 'getter': 'name_with_u_prefix',
-                               'delimiter':':', 'syntactic': True},
-                      'value': {'align': 'continue', 'syntactic': True},
-                      'family': {'align': 'continue', 'syntactic': True}}
     editable = {'name': dict(name='Name', prefill='name',
                               tooltip='Name of the feature, used as identifier',
                               syntactic=True),
@@ -114,6 +108,71 @@ class FeatureNode(Node):
 
     def name_with_u_prefix(self):
         return self.syntactic_object.name_with_u_prefix()
+
+    def compose_html_for_viewing(self):
+        """ This method builds the html to display in label. For convenience, syntactic objects
+        can override this (going against the containment logic) by having their own
+        'compose_html_for_viewing' -method. This is so that it is easier to create custom
+        implementations for constituents without requiring custom constituentnodes.
+
+        Note that synobj's compose_html_for_viewing receives the node object as parameter,
+        so you can replicate the behavior below and add your own to it.
+        :return:
+        """
+
+        # Allow custom syntactic objects to override this
+        if hasattr(self.syntactic_object, 'compose_html_for_viewing'):
+            return self.syntactic_object.compose_html_for_viewing(self)
+
+        parts = [self.name_with_u_prefix()]
+        if self.syntactic_object.assigned:
+            if self.value:
+                parts.append(as_html(self.value))
+            if self.family:
+                parts.append(as_html(self.family))
+        return ':'.join(parts), ''
+
+    def compose_html_for_editing(self):
+        """ This is used to build the html when quickediting a label. It should reduce the label
+        into just one field value that is allowed to be edited, in constituentnode this is
+        either label or display_label. This can be overridden in syntactic object by having
+        'compose_html_for_editing' -method there. The method returns a tuple,
+          (field_name, html).
+        :return:
+        """
+
+        # Allow custom syntactic objects to override this
+        if hasattr(self.syntactic_object, 'compose_html_for_editing'):
+            return self.syntactic_object.compose_html_for_editing(self)
+
+        return self.compose_html_for_viewing()
+
+    def parse_quick_edit(self, text):
+        """ This is an optional method for node to parse quick edit information into multiple
+        fields. Usually nodes do without this: quickediting only changes one field at a time and
+        interpretation is straightforward. E.g. features can have more complex parsing.
+        :param text:
+        :return:
+        """
+        if hasattr(self.syntactic_object, 'parse_quick_edit'):
+            return self.syntactic_object.parse_quick_edit(self, text)
+        parts = text.split(':')
+        name = ''
+        value = ''
+        family = ''
+        if len(parts) >= 3:
+            name, value, family = parts
+        elif len(parts) == 2:
+            name, value = parts
+        elif len(parts) == 1:
+            name = parts[0]
+        if len(name) > 1 and name.startswith('u') and name[1].isupper():
+            name = name[1:]
+        self.name = name
+        self.value = value
+        self.family = family
+
+
 
     def update_relations(self):
         for parent in self.get_parents(similar=False, visible=False):

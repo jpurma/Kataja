@@ -124,4 +124,4 @@ class QuickEditButtons(UIWidget, QtWidgets.QFrame):
 
     def update_values(self):
         if self.doc:
-            self.update_formats(self.host_node.label_object.textCursor().charFormat())
+            self.update_formats(self.host_node.label_object.char_format())

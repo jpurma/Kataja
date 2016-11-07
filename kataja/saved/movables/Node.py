@@ -37,7 +37,19 @@ from kataja.singletons import ctrl, prefs, qt_prefs
 from kataja.uniqueness_generator import next_available_type_id
 from kataja.utils import to_tuple, create_shadow_effect, add_xy
 from kataja.ui_graphicsitems.ControlPoint import ControlPoint
-from parser.INodes import ITextNode
+from kataja.parser.INodes import ITextNode
+
+
+def as_html(item):
+    if isinstance(item, str):
+        return item
+    elif isinstance(item, ITextNode):
+        return item.as_html()
+    elif isinstance(item, list):
+        return '<br/>'.join([as_html(i) for i in item])
+    else:
+        print(item, type(item))
+        return ''
 
 
 class DragData:
@@ -85,9 +97,6 @@ class Node(Movable):
     display_name = ('Abstract node', 'Abstract nodes')
     display = False
     can_be_in_groups = True
-    visible_in_label = []
-    editable_in_label = []
-    display_styles = {}
     editable = {}
 
     default_style = {'color_id': 'content1', 'font_id': g.MAIN_FONT, 'font-size': 10, 'card': False,
@@ -264,7 +273,7 @@ class Node(Movable):
         if hasattr(self.syntactic_object, 'compose_html_for_viewing'):
             return self.syntactic_object.compose_html_for_viewing(self)
 
-        return as_html(self.label)
+        return as_html(self.label), ''
 
     def compose_html_for_editing(self):
         """ This is used to build the html when quickediting a label. It should reduce the label
@@ -1008,9 +1017,6 @@ class Node(Movable):
         rect = False
         brush = Qt.NoBrush
 
-        if self.should_draw_triangle():
-            painter.setPen(pen)
-            self.paint_triangle(painter)
         if False:
             painter.setPen(pen)
             painter.drawLine(0, 0, 0, 2)
@@ -1153,46 +1159,6 @@ class Node(Movable):
         if self.folding_towards in self.get_parents(similar=False, visible=False):
             self.folding_towards.update_visibility()
         self.forest.animation_finished(str(self.uid) + '_fold')
-
-    def paint_triangle(self, painter):
-        """ Drawing the triangle, called from paint-method
-        :param painter:
-        """
-        br = self.boundingRect()
-        left = br.x()
-        center = left + self.width / 2
-        right = left + self.width
-        top = self.label_object.triangle_y
-        bottom = top + self.label_object.triangle_height
-        simple = False
-        if simple:
-            triangle = QtGui.QPainterPath()
-            triangle.moveTo(center, top)
-            triangle.lineTo(right, bottom)
-            triangle.lineTo(left, bottom)
-            triangle.lineTo(center, top)
-            painter.drawPath(triangle)
-        else:
-            c = self.contextual_color
-            edge_type = self.edge_type()
-            shape_name = ctrl.settings.get_edge_setting('shape_name', edge_type=edge_type)
-            path_class = kataja.Shapes.SHAPE_PRESETS[shape_name]
-            path, lpath, foo, bar = path_class.path(start_point=(center, top),
-                                                    end_point=(right, bottom),
-                                                    alignment=g.RIGHT)
-            fill = ctrl.settings.get_shape_setting('fill', edge_type=edge_type)
-            if fill:
-                painter.fillPath(path, c)
-            else:
-                painter.drawPath(path)
-            painter.drawLine(left, bottom, right, bottom)
-            path, lpath, foo, bar = path_class.path(start_point=(center, top),
-                                                    end_point=(left, bottom),
-                                                    alignment=g.LEFT)
-            if fill:
-                painter.fillPath(path, c)
-            else:
-                painter.drawPath(path)
 
     def on_press(self, value):
         """ Testing if we can add some push-depth effect.
@@ -1810,13 +1776,4 @@ class Node(Movable):
     triangle = SavedField("triangle", if_changed=if_changed_triangle)
     folded_away = SavedField("folded_away")
     folding_towards = SavedField("folding_towards", if_changed=if_changed_folding_towards)
-
-
-def as_html(item):
-    if isinstance(item, str):
-        return item
-    elif isinstance(item, ITextNode):
-        return item.as_html()
-    elif isinstance(item, list):
-        raise ValueError
 

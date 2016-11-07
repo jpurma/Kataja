@@ -54,16 +54,7 @@ class ConstituentNode(Node):
     is_constituent = True
     node_type = g.CONSTITUENT_NODE
     wraps = 'constituent'
-    visible_in_label = ['display_label', 'index', 'triangle', 'label']  # , 'gloss']
-    editable_in_label = ['display_label', 'label']  # 'gloss',
 
-    display_styles = {'index': {'align': 'line-end', 'start_tag': '<sub>', 'end_tag': '</sub>'},
-                      'triangle': {'special': 'triangle', 'readonly': True},
-                      'label': {'getter': 'label_str',
-                                'condition': 'should_show_label',
-                                'syntactic': True},
-                      'display_label': {'condition': 'should_show_display_label'},
-                      'gloss': {'condition': 'should_show_gloss_in_label'}}
     editable = {'display_label': dict(name='Displayed label', prefill='display_label',
                                       tooltip='Rich text representing the constituent',
                                       input_type='expandingtext'),
@@ -303,19 +294,7 @@ class ConstituentNode(Node):
         """
         pass
 
-    def should_show_label(self) -> bool:
-        """ A condition check called by display_styles -dict to prepare visible_in_label -list
-        """
-        return not (ctrl.settings.get('show_display_labels') and self.display_label)
-
-    def should_show_display_label(self) -> bool:
-        """ A condition check called by display_styles -dict to prepare visible_in_label -list
-        """
-        return ctrl.settings.get('show_display_labels') and self.display_label
-
     def should_show_gloss_in_label(self) -> bool:
-        """ A condition check called by display_styles -dict to prepare visible_in_label -list
-        """
         return ctrl.settings.get('show_glosses') == 1
 
     def update_status_tip(self) -> None:
@@ -391,7 +370,7 @@ class ConstituentNode(Node):
             return "anonymous constituent"
         return "constituent '%s'" % l
 
-    def compose_html_for_viewing(self):
+    def compose_html_for_viewing(self, peek_into_synobj=True):
         """ This method builds the html to display in label. For convenience, syntactic objects
         can override this (going against the containment logic) by having their own
         'compose_html_for_viewing' -method. This is so that it is easier to create custom
@@ -403,30 +382,31 @@ class ConstituentNode(Node):
         """
 
         # Allow custom syntactic objects to override this
-        if hasattr(self.syntactic_object, 'compose_html_for_viewing'):
+        if peek_into_synobj and hasattr(self.syntactic_object, 'compose_html_for_viewing'):
             return self.syntactic_object.compose_html_for_viewing(self)
 
         html = []
+        lower_html = []
         syntactic_mode = ctrl.settings.get('syntactic_mode')
         display_labels = ctrl.settings.get('show_display_labels')
-        if display_labels and self.display_label:
+
+        if self.triangle and not self.is_leaf(only_similar=True, only_visible=False):
+            lower_html.append(self.get_triangle_text())
+        elif display_labels and self.display_label:
             html.append(as_html(self.display_label))
         else:
             if self.label_str:
                 html.append(self.label_str)
             if self.index and not syntactic_mode:
                 html.append('<sub>%s</sub>' % self.index)
-            html.append('<br/>')
-        if self.triangle:
-            html.append('<br/><br/>')
-            html.append(self.get_triangle_text())
 
         if self.gloss and self.should_show_gloss_in_label():
+            if html:
+                html.append('<br/>')
             html.append(as_html(self.gloss))
-            html.append('<br/>')
-        if html[-1] == '<br/>':
+        if html and html[-1] == '<br/>':
             html.pop()
-        return ''.join(html)
+        return ''.join(html), ''.join(lower_html)
 
     def compose_html_for_editing(self):
         """ This is used to build the html when quickediting a label. It should reduce the label

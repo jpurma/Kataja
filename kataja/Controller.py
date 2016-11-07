@@ -400,3 +400,11 @@ class Controller:
     def resume_undo(self):
         if self.undo_disabled:
             self.undo_disabled -= 1
+
+    def release_editor_focus(self):
+        if self.text_editor_focus:
+            if hasattr(self.text_editor_focus, 'release_editor_focus'):
+                self.text_editor_focus.release_editor_focus()
+            elif hasattr(self.text_editor_focus.parent(), 'release_editor_focus'):
+                self.text_editor_focus.parent().release_editor_focus()
+        self.text_editor_focus = None

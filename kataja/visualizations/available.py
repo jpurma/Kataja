@@ -37,7 +37,7 @@ from kataja.visualizations.SymmetricElasticTree import SymmetricElasticTree
 from kataja.visualizations.BalancedTree import BalancedTree
 
 
-# These will be mapped to number keys 1...0 in given order.
+# These will be mapped to number keys 1...0,+ in given order.
 
 visualizations_list = [LeftFirstTree,
                        DivideAndConquerTree,
@@ -45,11 +45,11 @@ visualizations_list = [LeftFirstTree,
                        HeadDownTree,
                        DynamicWidthTree,
                        BracketedLinearization,
-                       SpirallingTree,
                        LinearizedDynamicTree,
                        AsymmetricElasticTree,
                        SymmetricElasticTree,
-                       EquidistantElasticTree]
+                       EquidistantElasticTree,
+                       SpirallingTree]
 
 VISUALIZATIONS = OrderedDict()
 

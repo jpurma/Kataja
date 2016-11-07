@@ -24,12 +24,13 @@
 
 from PyQt5 import QtWidgets, QtGui, QtCore
 
+from kataja.Shapes import SHAPE_PRESETS
 from kataja.LabelDocument import LabelDocument
 from kataja.globals import NORMAL, BRACKETED, SCOPEBOX, CARD, LEFT_ALIGN, CENTER_ALIGN, RIGHT_ALIGN
 from kataja.singletons import ctrl, prefs
 from kataja.utils import combine_dicts, combine_lists, time_me, open_symbol_data
-from kataja.parser.INodes import ITextNode
 from kataja.uniqueness_generator import next_available_type_id
+import kataja.globals as g
 import difflib
 
 differ = difflib.Differ()
@@ -40,7 +41,8 @@ b {font-family: StixGeneral Bold; font-weight: 900; font-style: bold}
 
 inner_cards = False
 
-class Label(QtWidgets.QGraphicsTextItem):
+
+class Label(QtWidgets.QGraphicsItem):
     """ Labels are names of nodes. Node itself provides a template for what to show in label,
     label composes its document (html layout) for its contents based on that. """
     max_width = 400
@@ -48,16 +50,17 @@ class Label(QtWidgets.QGraphicsTextItem):
 
     def __init__(self, parent=None):
         """ Give node as parent. Label asks it to produce text to show here """
-        QtWidgets.QGraphicsTextItem.__init__(self, parent)
+        QtWidgets.QGraphicsItem.__init__(self, parent)
+        self.upper_part = QtWidgets.QGraphicsTextItem(self)
+        self.lower_part = None # QtWidgets.QGraphicsTextItem(self)
         self._host = parent
         self.has_been_initialized = False
-        self.complex_edit = False
         self.top_y = 0
-        self.top_part_y = 0
+        self.upper_part_y = 0
         self.lower_part_y = 0
         self.bottom_y = 0
         self.triangle_is_present = False
-        self.triangle_height = 0
+        self.triangle_height = 20
         self.triangle_y = 0
         self.width = 0
         self.template_width = 0
@@ -67,29 +70,28 @@ class Label(QtWidgets.QGraphicsTextItem):
         self.label_shape = NORMAL
         self._font = None
         self.html = ''
-        self.text = ''
+        self.upper_text = ''
+        self.lower_html = ''
+        self.lower_text = ''
+        self.edited_field = ''
         self.editable_html = ''
         self._quick_editing = False
         self._recursion_block = False
         self._last_blockpos = ()
-        self.display_styles = {}
-        self.visible_in_label = []
-        self.visible_parts = []
         self.editable = {}
-        self.editable_in_label = []
-        self.editable_parts = []
         self.prepare_template()
-        self.doc = LabelDocument()
+        self.upper_doc = LabelDocument()
+        self.lower_doc = None
         self.card_size = (60, 90)
         self._fresh_focus = False
-        self.doc.setDefaultStyleSheet(style_sheet)
-        self.setDocument(self.doc)
+        self.upper_doc.setDefaultStyleSheet(style_sheet)
+        self.upper_part.setDocument(self.upper_doc)
         # not acceptin hover events is important, editing focus gets lost if other labels take
         # hover events. It is unclear why.
         self.setAcceptDrops(False)
         self.setAcceptHoverEvents(False)
-        self.doc.contentsChanged.connect(self.doc_changed)
-        self.setTextWidth(-1)
+        self.upper_doc.contentsChanged.connect(self.upper_doc_changed)
+        self.upper_part.setTextWidth(-1)
         self.set_font(self._host.get_font())
 
     def type(self):
@@ -99,8 +101,25 @@ class Label(QtWidgets.QGraphicsTextItem):
         """
         return self.__qt_type_id__
 
+    def init_lower_part(self):
+        self.lower_part = QtWidgets.QGraphicsTextItem(self)
+        self.lower_doc = LabelDocument()
+        self.lower_doc.setDefaultStyleSheet(style_sheet)
+        self.lower_part.setDocument(self.lower_doc)
+        self.lower_part.setTextWidth(-1)
+        if self._font:
+            self.lower_part.setFont(self._font)
+
+    def remove_lower_part(self):
+        self.lower_part.setParentItem(None)
+        self.lower_part.setParent(None)
+        self.lower_part = None
+        self.lower_doc = None
+
     def set_font(self, font):
-        self.setFont(font)
+        self.upper_part.setFont(font)
+        if self.lower_part:
+            self.lower_part.setFont(font)
         self._font = font
 
     def update_font(self):
@@ -110,32 +129,50 @@ class Label(QtWidgets.QGraphicsTextItem):
         """ Asks for node/host to give text and update if changed """
         self.has_been_initialized = True
         if self.text_align == LEFT_ALIGN:
-            self.doc.set_align(QtCore.Qt.AlignLeft)
+            self.upper_doc.set_align(QtCore.Qt.AlignLeft)
         elif self.text_align == RIGHT_ALIGN:
-            self.doc.set_align(QtCore.Qt.AlignRight)
+            self.upper_doc.set_align(QtCore.Qt.AlignRight)
         else:
-            self.doc.set_align(QtCore.Qt.AlignHCenter)
+            self.upper_doc.set_align(QtCore.Qt.AlignHCenter)
 
-        new_html, visible_parts = self.compose_html_for_viewing()
+        html, lower_html = self._host.compose_html_for_viewing()
         if self.label_shape == SCOPEBOX:
             if not self._host.is_leaf():
-                new_html = '<sub>' + new_html + '</sub>'
+                html = '<sub>' + html + '</sub>'
+            if lower_html:
+                html += lower_html.replace('<br/>', '')
         elif self.label_shape == BRACKETED:
             if not self._host.is_leaf():
-                new_html = '[<sub>' + new_html + '</sub>'
+                html = '[<sub>' + html + '</sub>'
+            if lower_html:
+                html += lower_html.replace('<br/>', '')
 
-        if new_html != self.html or force_update:
-            self.html = new_html
-            self.visible_parts = visible_parts
-            self.prepareGeometryChange()
+        if html != self.html or force_update:
+            self.html = html
             if self.is_card():
-                self.doc.setTextWidth(self.card_size[0])
+                self.upper_doc.setTextWidth(self.card_size[0])
             else:
-                self.doc.setTextWidth(-1)
-            self.setHtml(self.html)
-            self.doc.setDefaultStyleSheet(style_sheet)
-            ctrl.qdocument_parser.process(self.doc)
-            self.text = self.toPlainText()
+                self.upper_doc.setTextWidth(-1)
+            self.upper_part.setHtml(self.html)
+            ctrl.qdocument_parser.process(self.upper_doc)
+            self.upper_text = self.upper_part.toPlainText()
+            self.prepareGeometryChange()
+
+        if lower_html != self.lower_html:
+            self.lower_html = lower_html
+            if lower_html:
+                if not self.lower_part:
+                    self.init_lower_part()
+                if self.is_card():
+                    self.lower_doc.setTextWidth(self.card_size[0])
+                else:
+                    self.lower_doc.setTextWidth(-1)
+                self.lower_part.setHtml(self.lower_html)
+                ctrl.qdocument_parser.process(self.lower_doc)
+                self.lower_text = self.lower_part.toPlainText()
+                self.prepareGeometryChange()
+            else:
+                self.remove_lower_part()
         self.resize_label()
 
     def is_card(self):
@@ -145,7 +182,7 @@ class Label(QtWidgets.QGraphicsTextItem):
     def left_bracket_width(self):
         return self.width
 
-    def right_bracket_width(self):
+    def right_bracket_width(self) -> int:
         if self.label_shape == BRACKETED:
             return 6
         elif self.label_shape == SCOPEBOX:
@@ -157,216 +194,36 @@ class Label(QtWidgets.QGraphicsTextItem):
         my_class = self._host.__class__
         if self._host.syntactic_object:
             synclass = self._host.syntactic_object.__class__
-            syn_display_styles = getattr(synclass, 'display_styles', {})
-            syn_visible_in_label = getattr(synclass, 'visible_in_label', [])
             syn_editable = getattr(synclass, 'editable', {})
-            syn_editable_in_label = getattr(synclass, 'editable_in_label', [])
-            self.display_styles = combine_dicts(syn_display_styles, my_class.display_styles)
-            self.visible_in_label = combine_lists(my_class.visible_in_label, syn_visible_in_label)
             self.editable = combine_dicts(syn_editable, my_class.editable)
-            self.editable_in_label = combine_lists(my_class.editable_in_label,
-                                                   syn_editable_in_label)
         else:
-            self.display_styles = my_class.display_styles
-            self.visible_in_label = my_class.visible_in_label
             self.editable = my_class.editable
-            self.editable_in_label = my_class.editable_in_label
 
-        for style in self.display_styles.values():
-            if 'width' in style:
-                self.default_width = style['width']
-            if 'text_align' in style:
-                self.text_align = style['text_align']
-
-    def compose_html_for_viewing(self):
-        """ Use 'visible_in_label' and 'display_styles' and the item attributes to compose the
-        document html. Also stores information about the composition to 'viewable_parts'
-        Actual parts is list of tuples where:
-        (field_name, position in html string, line in displayed html, html_snippet)
-        :return:
-        """
-
-        styles = self.display_styles
-        h = self._host
-        row = 0
-        visible_parts = []
-        html = []
-        waiting = None
-        syntactic_mode = ctrl.settings.get('syntactic_mode')
-        delimiter = ''
-        for field_name in self.visible_in_label:
-            s = styles.get(field_name, {})
-            syntactic = s.get('syntactic', False)
-            if syntactic_mode and not syntactic:
-                continue
-            if 'getter' in s:
-                getter = getattr(h, s.get('getter'), None)
-                if callable(getter):
-                    field_value = getter()
-                else:
-                    field_value = getter
-            else:
-                field_value = getattr(h, field_name, '')
-            if not h.check_conditions(s):
-                continue
-            if 'delimiter' in s:
-                delimiter = s['delimiter']
-
-            if 'special' in s:
-                special = s['special']
-                if special == 'triangle':
-                    if h.triangle:
-                        html.append('<br/><br/>')
-                        visible_parts.append(('triangle', row, '<br/><br/>'))
-                        row += 2
-                        row_text = h.get_triangle_text()
-                        visible_parts.append(('triangle', row, row_text))
-                        html.append(row_text)
-                    break # <-- stop after triangle
-            if field_value:
-                if isinstance(field_value, list):
-                    for row_text in field_value:
-                        if isinstance(row_text, ITextNode):
-                            row_text = row_text.as_html()
-                        visible_parts.append((field_name, row, row_text))
-                        html.append(row_text)
-                        html.append('<br/>')
-                        row += 1
-                else:
-                    if isinstance(field_value, ITextNode):
-                        field_value = field_value.as_html()
-                    field_value = str(field_value).replace('\n', '<br/>')
-                    start_tag = s.get('start_tag', '')
-                    if start_tag:
-                        end_tag = s.get('end_tag', '')
-                        field_value = start_tag + field_value + end_tag
-                    align = s.get('align', '')
-                    if align == 'line-end':
-                        if visible_parts and visible_parts[-1][0] != 'triangle':
-                            if html[-1] == '<br/>':
-                                html.pop()
-                            html.append(field_value)
-                            visible_parts.append((field_name, row, field_value))
-                            html.append('<br/>')
-                            row += 1
-                        else:
-                            waiting = (field_value, field_name)
-                        continue
-                    elif align == 'continue' or align == 'append':
-                        html.append(field_value)
-                        visible_parts.append((field_name, row, field_value))
-                        if delimiter:
-                            html.append(delimiter)
-                    else:
-                        html.append(field_value)
-                        visible_parts.append((field_name, row, field_value))
-                        if waiting:
-                            html.append(waiting[0])
-                            visible_parts.append((waiting[0], row, waiting[1]))
-                            waiting = None
-                        html.append('<br/>')
-                        row += 1
-
-        if html and html[-1] == '<br/>' or (delimiter and html[-1] == delimiter):
-            html.pop()
-        return ''.join(html), visible_parts
-
-    def compose_html_for_editing(self):
-        """ Use 'visible_in_label' and 'display_styles' and the item attributes to compose the
-        document html. Also stores information about the composition to 'editable_parts'
-        Actual parts is list of tuples where:
-        (field_name, html_snippet, length of snippet in rows)
-        :return:
-        """
-        styles = self.display_styles
-        edit_styles = self.editable
-        h = self._host
-        editable_parts = []
-        editable = []
-        syntactic_mode = ctrl.settings.get('syntactic_mode')
-        for field_name in self.visible_in_label:
-            s = styles.get(field_name, {})
-            e = edit_styles.get(field_name, {})
-            syntactic = s.get('syntactic', False)
-            if syntactic_mode and not syntactic:
-                continue
-            if not h.check_conditions(s):
-                continue
-            if 'getter' in e:
-                getter = getattr(h, e.get('getter'), None)
-                if callable(getter):
-                    field_value = getter()
-                else:
-                    field_value = getter
-            else:
-                field_value = getattr(h, field_name, '')
-
-            if 'special' in s:
-                if s['special'] == 'triangle':
-                    continue
-            if field_value:
-                if isinstance(field_value, list):
-                    rows = []
-                    for row in field_value:
-                        if isinstance(row, ITextNode):
-                            rows.append(row.as_html())
-                        else:
-                            rows.append(row)
-                    rowstring = '\n'.join(rows)
-                    editable_parts.append((field_name, rowstring, len(rows)))
-                    editable.append(rowstring)
-                    editable.append('\n')
-                    continue
-                elif isinstance(field_value, ITextNode):
-                    field_value = field_value.as_html()
-                editable_parts.append((field_name,
-                                       field_value,
-                                       len(field_value.splitlines(keepends=False))))
-                editable.append(field_value)
-                editable.append('\n')
-        if editable and editable[-1] == '\n':
-            editable.pop()
-        self.editable_html = '<br/>'.join(editable)
-        self.editable_html = self.editable_html.replace('\n', '<br/>')
-        print('editable:', editable)
-        print('editable_html:', self.editable_html)
-        # if there are no previous value to compare with, use the field defined as *focus* in
-        # class.editable -dict
-        if not editable_parts:
-            for key, value in self.editable.items():
-                if value.get('focus', False):
-                    editable_parts = [(key, '', 1)]
-                    break
-
-        # if there was no focus declared, use the first field from class.editable_in_label
-        if not editable_parts:
-            if self.editable_in_label:
-                editable_parts = [(self.editable_in_label[0], '', 1)]
-
-        self.editable_parts = editable_parts
-
-    def should_draw_triangle(self):
+    def should_draw_triangle(self) -> bool:
         return self.triangle_is_present and not self._quick_editing
 
-    def is_empty(self):
+    def is_empty(self) -> bool:
         """ Turning this node into label would result in an empty label.
         :return: bool
         """
-        return not self.html
+        return not (self.html or self.lower_html)
 
-    def has_content(self):
-        return bool(self.html)
+    def char_format(self) -> QtGui.QTextCharFormat:
+        return self.upper_part.textCursor().charFormat()
 
-    def get_top_part_y(self):
-        return self.top_part_y
+    def has_content(self) -> bool:
+        return bool(self.html or self.lower_html)
 
-    def get_lower_part_y(self):
+    def get_top_part_y(self) -> int:
+        return self.upper_part_y
+
+    def get_lower_part_y(self) -> int:
         return self.lower_part_y
 
     def release_editor_focus(self):
         self.set_quick_editing(False)
 
-    def is_quick_editing(self):
+    def is_quick_editing(self) -> bool:
         return self._quick_editing
 
     def set_quick_editing(self, value):
@@ -382,46 +239,41 @@ class Label(QtWidgets.QGraphicsTextItem):
                 return
             self._quick_editing = True
             if ctrl.text_editor_focus:
-                ctrl.text_editor_focus.release_editor_focus()
+                ctrl.release_editor_focus()
             ctrl.text_editor_focus = self
-            self.setTextInteractionFlags(QtCore.Qt.TextEditorInteraction)
+            self.upper_part.setTextInteractionFlags(QtCore.Qt.TextEditorInteraction)
             self.prepareGeometryChange()
             if self.is_card():
-                self.doc.setTextWidth(self.card_size[0])
+                self.upper_doc.setTextWidth(self.card_size[0])
             else:
-                self.doc.setTextWidth(-1)
-            self.compose_html_for_editing()
+                self.upper_doc.setTextWidth(-1)
+            self.edited_field, self.editable_html = self._host.compose_html_for_editing()
+            self.editable_html = self.editable_html.replace('\n', '<br/>')
             self.setCursor(QtGui.QCursor(QtCore.Qt.IBeamCursor))
 
-            if self.complex_edit:
-                self.setPlainText(self.editable_html)
-            else:
-                ctrl.ui.add_quick_edit_buttons_for(self._host, self.doc)
-                self.setHtml(self.editable_html)
-            self.doc.cursorPositionChanged.connect(self.cursor_position_changed)
+            ctrl.ui.add_quick_edit_buttons_for(self._host, self.upper_doc)
+            self.upper_part.setHtml(self.editable_html)
+            self.upper_doc.cursorPositionChanged.connect(self.cursor_position_changed)
 
             self.resize_label()
-            self.setAcceptDrops(True)
+            self.upper_part.setAcceptDrops(True)
             ctrl.graph_view.setFocus()
-            self.setFocus()
+            self.upper_part.setFocus()
             self._fresh_focus = True
 
         elif self._quick_editing:
-            if self.doc.isModified():
-                if self.complex_edit:
-                    self.analyze_changes()
-                else:
-                    self.parse_document_to_field()
-                self.doc.setModified(False)
+            if self.upper_doc.isModified():
+                self.parse_document_to_field()
+                self.upper_doc.setModified(False)
             ctrl.text_editor_focus = None
             self._quick_editing = False
             ctrl.ui.remove_quick_edit_buttons()
             self.html = ''
             self._host.update_label()
-            self.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-            self.setAcceptDrops(False)
-            self.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
-            self.clearFocus()
+            self.upper_part.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+            self.upper_part.setAcceptDrops(False)
+            self.upper_part.setTextInteractionFlags(QtCore.Qt.NoTextInteraction)
+            self.upper_part.clearFocus()
             self._fresh_focus = False
             #if len(fields) == 0:
             #    ctrl.main.action_finished("Finished editing %s, no changes." % self._host,
@@ -433,8 +285,7 @@ class Label(QtWidgets.QGraphicsTextItem):
 
     def cursor_position_changed(self, cursor):
         if self._quick_editing:
-            if not self.complex_edit:
-                ctrl.ui.quick_edit_buttons.update_formats(cursor.charFormat())
+            ctrl.ui.quick_edit_buttons.update_formats(cursor.charFormat())
 
     def parse_document_to_field(self):
         """ Parse edited QDocument into rows of INodes and into receptable
@@ -442,10 +293,9 @@ class Label(QtWidgets.QGraphicsTextItem):
 
         :return:
         """
-        parsed_parts = ctrl.qdocument_parser.process(self.doc)
-        field_name, html_text, rows = self.editable_parts[0]
-        my_editable = self.editable.get(field_name, {})
-        setter = my_editable.get('setter', None)
+        parsed_parts = ctrl.qdocument_parser.process(self.upper_doc)
+        my_editable = self.editable.get(self.edited_field, {})
+        setter = my_editable.get('setter', '')
         if setter:
             setter_method = getattr(self._host, setter, None)
             if setter_method and callable(setter_method):
@@ -453,111 +303,9 @@ class Label(QtWidgets.QGraphicsTextItem):
             else:
                 print('missing setter!')
         else:
-            setattr(self._host, field_name, parsed_parts)
+            setattr(self._host, self.edited_field, parsed_parts)
 
-    def analyze_changes(self):
-        """ Use difflib to get a robust idea on what has changed
-        :return:
-        """
-        if not self.editable_parts:
-            return []
-
-        def safe_field_name(c):
-            if len(field_names) > c:
-                return field_names[c]
-            else:
-                return field_names[-1]
-
-        def do_replacements(fname):
-            # print('replacements:', replacements)
-            # print('replace_these:', replace_these)
-            for fname in replace_these:
-                if replacements:
-                    new_d.append((fname, replacements.pop(0)))
-                else:
-                    new_d.append((fname, ''))
-            for fvalue in replacements:
-                new_d.append((fname, fvalue))
-            replace_these.clear()
-            replacements.clear()
-
-        al = self.editable_html.splitlines(keepends=False)
-        bl = self.doc.toPlainText().splitlines(keepends=False)
-        replacements = []
-        replace_these = []
-        new_d = []
-        field_names = []
-        old_fields = {}
-
-        # Prepare a list that has equal length to old html split into lines. Each item in the list
-        # is name of the field at that point in the old html. This list is a schema for recognizing
-        # where changed lines belong to.
-        for field_name, old_part, linespan in self.editable_parts:
-            field_names += [field_name] * linespan
-            old_fields[field_name] = old_part
-        # print('field_names: ', field_names)
-        if not field_names:
-            return []
-
-        # Use diff to find out which lines have been (- ) deleted and which have been (+ )added. If
-        # there are deleted lines followed by added lines, these lines should replace each other.
-        # So every time a deleted line is found, the field name for that line is stored, and when
-        # the continuous series of deleted and added lines is finished, replace deleted lines with
-        # the corresponding added lines.
-        # Lists of deleted and added lines can have different lengths. If there are more
-        # additions, the additions continue to the last available field, or the first, if starting
-        # with an added line.
-        c = 0
-        for comp in differ.compare(al, bl):
-            # print('comp: "%s"' % comp)
-            word = comp[2:]
-            op = comp[0]
-            if op == ' ':
-                do_replacements(safe_field_name(c))
-                new_d.append((safe_field_name(c), word))
-                c += 1
-            elif op == '+':
-                replacements.append(word)
-            elif op == '-':
-                replace_these.append(safe_field_name(c))
-                c += 1
-        if field_names:
-            do_replacements(field_names[-1])
-        # print('new_d:', new_d)
-
-        # Merge all lines that belong to same field into one string and save it to new_fields
-        current_field = ''
-        current_stack = []
-        new_fields = {}
-
-        for field_name, value in new_d:
-            if field_name and current_field and current_field != field_name:
-                new_fields[current_field] = '\n'.join(current_stack).rstrip()
-                current_stack = []
-            current_field = field_name
-            if value:
-                current_stack.append(value)
-        if current_field:
-            new_fields[current_field] = '\n'.join(current_stack).rstrip()
-
-        # Write changed values to label's host object and return list of changed field names
-        changed = []
-        for field_name, new_value in new_fields.items():
-            if new_value != old_fields.get(field_name, ''):
-                changed.append(field_name)
-                my_editable = self.editable.get(field_name, {})
-                setter = my_editable.get('setter', None)
-                if setter:
-                    setter_method = getattr(self._host, setter, None)
-                    if setter_method and callable(setter_method):
-                        setter_method(new_value)
-                    else:
-                        print('missing setter!')
-                else:
-                    setattr(self._host, field_name, new_value)
-        return changed
-
-    def doc_changed(self):
+    def upper_doc_changed(self):
         if not self._recursion_block: # self._quick_editing and
             w = self.width
             self._recursion_block = True
@@ -570,21 +318,21 @@ class Label(QtWidgets.QGraphicsTextItem):
     def mousePressEvent(self, event):
         # something in mousePressEvent causes it to ignore further mouse events.
         if self._quick_editing:
-            super().mousePressEvent(event)
+            self.upper_part.mousePressEvent(event)
         else:
             # otherwise let the node handle mousePress logic.
             self._host.mousePressEvent(event)
 
     def mouseMoveEvent(self, event):
         if self._quick_editing:
-            super().mouseMoveEvent(event)
+            self.upper_part.mouseMoveEvent(event)
         else:
             self._host.mouseMoveEvent(event)
 
     def mouseReleaseEvent(self, event):
         if self._quick_editing:
-            self.cursor_position_changed(self.textCursor())
-            super().mouseReleaseEvent(event)
+            self.cursor_position_changed(self.upper_part.textCursor())
+            self.upper_part.mouseReleaseEvent(event)
         else:
             self._host.mouseReleaseEvent(event)
 
@@ -597,7 +345,7 @@ class Label(QtWidgets.QGraphicsTextItem):
         :param keyevent:
         :return:
         """
-        c = self.textCursor()
+        c = self.upper_part.textCursor()
         self.cursor_position_changed(c)
         next_sel = None
         if self._fresh_focus:
@@ -617,7 +365,7 @@ class Label(QtWidgets.QGraphicsTextItem):
                 ctrl.select(next_sel)
                 next_sel.setFocus()
         self._last_blockpos = (c.atStart(), c.atEnd(), c.blockNumber() == 0,
-                               c.blockNumber() == self.doc.blockCount() - 1)
+                               c.blockNumber() == self.upper_doc.blockCount() - 1)
 
     def get_max_size_from_host(self):
         if self._host.resizable and self._host.user_size is not None:
@@ -630,71 +378,74 @@ class Label(QtWidgets.QGraphicsTextItem):
         # Width
         user_width, user_height = self.get_max_size_from_host()
         if self.is_card():
-            br_width = self.card_size[0]
+            width = self.card_size[0]
         else:
-            self.setTextWidth(-1)
-            ideal_width = self.doc.idealWidth()
+            if self.lower_html:
+                self.upper_part.setTextWidth(-1)
+                self.lower_part.setTextWidth(-1)
+                ideal_width = max((self.upper_doc.idealWidth(), self.lower_doc.idealWidth()))
+            else:
+                self.upper_part.setTextWidth(-1)
+                ideal_width = self.upper_doc.idealWidth()
+
             if user_width and user_width < ideal_width:
-                br_width = user_width
+                width = user_width
             elif self.template_width:
-                br_width = self.template_width
+                width = self.template_width
             else:
-                br_width = ideal_width
-            if br_width < 20:
-                br_width = 20
-            elif br_width > Label.max_width:
-                br_width = Label.max_width
-        self.setTextWidth(br_width)
+                width = ideal_width
+            if width < 20:
+                width = 20
+            elif width > Label.max_width:
+                width = Label.max_width
+        self.upper_part.setTextWidth(width)
+        if self.lower_html:
+            self.lower_part.setTextWidth(width)
 
+        # Height
         if self.is_card():
-            dh = self.card_size[1]
+            total_height = self.card_size[1]
+        elif self.lower_html:
+            total_height = self.upper_doc.size().height() + self.triangle_height + \
+                           self.lower_doc.size().height()
         else:
-            dh = self.doc.size().height()
-        h2 = dh / 2.0
-        self.top_y = -h2
-        self.bottom_y = h2
-        self.width = br_width
-
-        self.triangle_is_present = False
-        second_row = 0
-        triangle_row = 0
-        last_row = 0
-        for field_name, row, html in self.visible_parts:
-            if row > last_row:
-                last_row = row
-            if field_name == 'triangle':
-                self.triangle_is_present = True
-                triangle_row = row
-            elif not second_row and row > second_row:
-                second_row = row
-        if last_row < 0:
-            last_row = 0
-        row_count = last_row + 1
-        if row_count == 1:
-            self.top_part_y = 0
+            total_height = self.upper_doc.size().height()
+        half_height = total_height / 2.0
+        self.top_y = -half_height
+        self.bottom_y = half_height
+        self.width = width
+        self.height = total_height
+        # middle line is 0
+        self.triangle_is_present = bool(self._host.triangle)
+        if self.triangle_is_present:
+            if self._host.is_leaf(only_visible=False, only_similar=True):
+                # if triangled is leaf, put upper part below the triangle so it can be edited.
+                self.upper_part_y = self.triangle_height
+                self.triangle_y = 0
+                self.lower_part_y = self.triangle_height
+            else:
+                # if triangled is not leaf, editing should target the upper part and leave
+                # the combination of leaves alone
+                self.upper_part_y = 0
+                self.triangle_y = self.upper_doc.size().height()
+                self.lower_part_y = self.triangle_y + self.triangle_height
+        else:
+            # no lower part, no triangle
+            self.upper_part_y = 0
+            self.triangle_y = 0
             self.lower_part_y = 0
-        else:
-            avg_line_height = (dh - 3) / float(row_count)
-            half_height = avg_line_height / 2
 
-            if self.triangle_is_present:
-                triangle_space = 0
-                if triangle_row > 1:
-                    triangle_space = triangle_row * avg_line_height
-                self.top_part_y = self.top_y + triangle_space + half_height
-                self.triangle_y = self.top_y + (triangle_row * avg_line_height) + 2
-                self.lower_part_y = self.top_y + (second_row * avg_line_height) + half_height
-                self.triangle_height = (avg_line_height * 2) - 4
-            else:
-                self.top_part_y = self.top_y + half_height + 3
-                self.lower_part_y = self.top_y + (second_row * avg_line_height) + half_height
-        self.x_offset = br_width / -2.0
+        self.x_offset = width / -2.0
         if self.is_card():
-            self.y_offset = self.top_part_y
+            self.y_offset = self.upper_part_y
         else:
-            self.y_offset = -h2
+            self.y_offset = -half_height
 
         self.setPos(self.x_offset, self.y_offset)
+        self.upper_part.setPos(0, self.upper_part_y)
+        if self.lower_html:
+            self.lower_part.setPos(0, self.lower_part_y)
+
         # Update ui items around the label (or node hosting the label)
         ctrl.ui.update_position_for(self._host)
 
@@ -704,20 +455,20 @@ class Label(QtWidgets.QGraphicsTextItem):
             event.accept()
             data = open_symbol_data(event.mimeData())
             if data and 'char' in data:
-                self.textCursor().insertText(data['char'])
+                self.upper_part.textCursor().insertText(data['char'])
                 event.acceptProposedAction()
         elif mim.hasFormat("text/plain"):
             event.accept()
             event.acceptProposedAction()
-            QtWidgets.QGraphicsTextItem.dropEvent(self, event)
+            self.upper_part.dropEvent(event)
         else:
-            QtWidgets.QGraphicsTextItem.dropEvent(self, event)
+            self.upper_part.dropEvent(event)
 
     def boundingRect(self):
         if self.is_card():
             return QtCore.QRectF(0, 0, self.card_size[0], self.card_size[1])
         else:
-            return super().boundingRect()
+            return QtCore.QRectF(self.x_offset, self.y_offset, self.width, self.height)
 
     def dragEnterEvent(self, event):
         """ Support dragging of items from their panel containers, e.g. symbols from symbol panel
@@ -739,5 +490,45 @@ class Label(QtWidgets.QGraphicsTextItem):
         :param option:
         :param widget:
         """
-        self.setDefaultTextColor(self._host.contextual_color)
-        QtWidgets.QGraphicsTextItem.paint(self, painter, option, widget)
+        self.upper_part.setDefaultTextColor(self._host.contextual_color)
+        if self.lower_part:
+            self.lower_part.setDefaultTextColor(self._host.contextual_color)
+        if self.triangle_is_present:
+            br = self.boundingRect()
+            #print(br, self.x(), self.y(), br.x(), br.y())
+            left = 0
+            center = self.width / 2
+            right = self.width
+            top = self.triangle_y
+            bottom = top + self.triangle_height
+            simple = False
+            if simple:
+                triangle = QtGui.QPainterPath()
+                triangle.moveTo(center, top)
+                triangle.lineTo(right, bottom)
+                triangle.lineTo(left, bottom)
+                triangle.lineTo(center, top)
+                painter.drawPath(triangle)
+            else:
+                c = self._host.contextual_color
+                edge_type = self._host.edge_type()
+                shape_name = ctrl.settings.get_edge_setting('shape_name', edge_type=edge_type)
+                path_class = SHAPE_PRESETS[shape_name]
+                path, lpath, foo, bar = path_class.path(start_point=(center, top),
+                                                        end_point=(right, bottom),
+                                                        alignment=g.RIGHT)
+                fill = ctrl.settings.get_shape_setting('fill', edge_type=edge_type)
+                if fill:
+                    painter.fillPath(path, c)
+                else:
+                    painter.drawPath(path)
+                painter.drawLine(left, bottom, right, bottom)
+                path, lpath, foo, bar = path_class.path(start_point=(center, top),
+                                                        end_point=(left, bottom),
+                                                        alignment=g.LEFT)
+                if fill:
+                    painter.fillPath(path, c)
+                else:
+                    painter.drawPath(path)
+
+

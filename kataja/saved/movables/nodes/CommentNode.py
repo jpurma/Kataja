@@ -43,10 +43,6 @@ class CommentNode(Node):
     display = True
     is_syntactic = False
     can_be_in_groups = False
-    visible_in_label = ['text']
-    editable_in_label = ['text']
-    display_styles = {'text': {'width': 200,
-                               'text_align': g.LEFT_ALIGN}}
     editable = {'text': dict(name='',
                              prefill='comment',
                              tooltip='freeform text, invisible for processing',

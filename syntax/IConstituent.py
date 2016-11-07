@@ -35,9 +35,6 @@ class IConstituent(SavedObject):
     """ IConstituent is the interface for constituents in syntax. """
 
     syntactic_object = True
-    visible_in_label = []
-    editable_in_label = []
-    display_styles = {}
     editable = {}
     addable = []
 

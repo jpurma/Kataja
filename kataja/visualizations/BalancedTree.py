@@ -25,7 +25,6 @@ from PyQt5 import QtCore
 
 import kataja.globals as g
 from kataja.Visualization import BaseVisualization
-from kataja.singletons import prefs
 
 
 class BalancedTree(BaseVisualization):
@@ -33,7 +32,7 @@ class BalancedTree(BaseVisualization):
 
     """
     name = 'Balanced trees'
-    banned_node_shapes = (g.BRACKETED, g.SCOPEBOX)
+    banned_node_shapes = (g.BRACKETED,)
 
     def __init__(self):
         BaseVisualization.__init__(self)
@@ -66,14 +65,8 @@ class BalancedTree(BaseVisualization):
             node.physics_x = True
             node.physics_y = True
 
-
     def reselect(self):
-        """
-
-
-        """
         self.set_data('rotation', self.get_data('rotation', 0) - 1)
-
 
     # @time_me
     def draw_tree(self, tree):
@@ -89,7 +82,7 @@ class BalancedTree(BaseVisualization):
                 rect.adjust(-x_margin, -y_margin, x_margin, y_margin)
                 x -= rect.width() / 2
                 rect.moveCenter(QtCore.QPoint(x, y))
-                node.move_to(rect.center().x(), rect.center().y())
+                node.move_to(rect.center().x(), rect.center().y(), align=g.CENTER_ALIGN)
             else:
                 rect = None
                 uw = 0
@@ -105,10 +98,8 @@ class BalancedTree(BaseVisualization):
                 my_rect = QtCore.QRectF(node.boundingRect())
                 my_rect.adjust(-x_margin, -y_margin, x_margin, y_margin)
                 my_rect.moveCenter(QtCore.QPoint(rect.center().x(), y - (my_rect.height() / 2)))
-                node.move_to(my_rect.center().x(), my_rect.center().y())
+                node.move_to(my_rect.center().x(), my_rect.center().y(), align=g.CENTER_ALIGN)
                 rect = rect.united(my_rect)
             return rect
 
         recursive_position(tree.top, 0, 0)
-
-

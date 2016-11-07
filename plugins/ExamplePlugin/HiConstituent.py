@@ -7,13 +7,6 @@ class HiConstituent(BaseConstituent):
     """ HiConstituent is a slight modification from BaseConstituent.
     Everything that is not explicitly defined here is inherited from parent class."""
 
-    # Info for kataja engine on how to display the constituent and what is editable.
-    # Note that when you use inherited list or dict from parent class, don't modify it in place,
-    # as the changes will then affect the parent class too. Construct a new list or dict instead,
-    # or use methods that result in a new list and then you can modify it at will.
-    visible_in_label = BaseConstituent.visible_in_label + ['hi']
-    editable_in_label = BaseConstituent.editable_in_label + ['hi']
-
     def __init__(self, *args, **kwargs):
         """ Constructor for new HiConstituents """
         super().__init__(*args, **kwargs)
@@ -32,6 +25,21 @@ class HiConstituent(BaseConstituent):
             return 'HiConstituent(id=%s)' % self.label
         else:
             return "[ %s ]" % (' '.join((x.__repr__() for x in self.parts)))
+
+    def compose_html_for_viewing(self, node):
+        """ This method builds the html to display in label. For convenience, syntactic objects
+        can override this (going against the containment logic) by having their own
+        'compose_html_for_viewing' -method. This is so that it is easier to create custom
+        implementations for constituents without requiring custom constituentnodes.
+
+        Note that synobj's compose_html_for_viewing receives the node object as parameter,
+        so you can call the parent to do its part and then add your own to it.
+        :return:
+        """
+
+        html, lower_html = node.compose_html_for_viewing(peek_into_synobj=False)
+        html += ', hi: ' + self.hi
+        return html, lower_html
 
     def copy(self):
         """ Make a deep copy of constituent. Useful for picking constituents from Lexicon.

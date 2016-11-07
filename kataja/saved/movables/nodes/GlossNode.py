@@ -45,9 +45,6 @@ class GlossNode(Node):
     display = True
     is_syntactic = False
 
-    visible_in_label = ['label']
-    editable_in_label = ['label']
-    display_styles = {}
     editable = {'label': dict(name='Gloss', prefill='gloss',
                               tooltip='translation (optional)')}
 
