@@ -378,6 +378,10 @@ class ConstituentNode(Node):
 
         Note that synobj's compose_html_for_viewing receives the node object as parameter,
         so you can replicate the behavior below and add your own to it.
+
+        :param peek_into_synobj: allow syntactic object to override this method. If synobj in turn
+        needs the result from this implementation (e.g. to append something to it), you have to
+        turn this off to avoid infinite loop. See example plugins.
         :return:
         """
 
@@ -392,7 +396,7 @@ class ConstituentNode(Node):
 
         if self.triangle and not self.is_leaf(only_similar=True, only_visible=False):
             lower_html.append(self.get_triangle_text())
-        elif display_labels and self.display_label:
+        if display_labels and self.display_label:
             html.append(as_html(self.display_label))
         else:
             if self.label_str:

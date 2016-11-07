@@ -258,7 +258,7 @@ class Node(Movable):
         cy = py + oy + self.height / 2
         return cx, cy
 
-    def compose_html_for_viewing(self):
+    def compose_html_for_viewing(self, peek_into_synobj=True):
         """ This method builds the html to display in label. For convenience, syntactic objects
         can override this (going against the containment logic) by having their own
         'compose_html_for_viewing' -method. This is so that it is easier to create custom
@@ -266,11 +266,15 @@ class Node(Movable):
 
         Note that synobj's compose_html_for_viewing receives the node object as parameter,
         so you can replicate the behavior below and add your own to it.
+
+        :param peek_into_synobj: allow syntactic object to override this method. If synobj in turn
+        needs the result from this implementation (e.g. to append something to it), you have to
+        turn this off to avoid infinite loop. See example plugins.
         :return:
         """
 
         # Allow custom syntactic objects to override this
-        if hasattr(self.syntactic_object, 'compose_html_for_viewing'):
+        if peek_into_synobj and hasattr(self.syntactic_object, 'compose_html_for_viewing'):
             return self.syntactic_object.compose_html_for_viewing(self)
 
         return as_html(self.label), ''
@@ -983,13 +987,13 @@ class Node(Movable):
         else:
             return 0
 
-    def get_top_part_y(self):
+    def get_top_y(self):
         """ Implement this if the movable has content where differentiating between bottom row and
          top row can potentially make sense.
         :return:
         """
         if self.label_object:
-            return self.label_object.get_top_part_y()
+            return self.label_object.get_top_y()
         else:
             return 0
 

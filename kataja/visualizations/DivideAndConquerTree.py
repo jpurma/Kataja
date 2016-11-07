@@ -130,7 +130,7 @@ class DivideAndConquerTree(BalancedTree):
                 if lnode.width > node_width:
                     node_width = lnode.width
             node_offset_y = mnode.boundingRect().y()
-            node_top_row = mnode.get_top_part_y()
+            node_top_row = mnode.get_top_y()
             relative_start_height = (node_offset_y + node_top_row) / node_height
             height_in_rows = math.ceil(node_height / float(edge_height or 1)) - 1#+ 1
             start_height = max(int(relative_start_height * height_in_rows), 0)

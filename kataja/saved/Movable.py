@@ -188,7 +188,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         elif valign == TOP:
             y -= self.boundingRect().top()
         elif valign == TOP_ROW:
-            y -= self.get_top_part_y()
+            y -= self.get_top_y()
         elif valign == BOTTOM_ROW:
             y -= self.get_lower_part_y()
         elif valign == BOTTOM:
@@ -215,7 +215,7 @@ class Movable(SavedObject, QtWidgets.QGraphicsObject):
         """
         return 0
 
-    def get_top_part_y(self):
+    def get_top_y(self):
         """ Implement this if the movable has content where differentiating between bottom row
         and top row can potentially make sense.
         :return:

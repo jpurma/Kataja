@@ -28,7 +28,7 @@ from kataja.Shapes import SHAPE_PRESETS
 from kataja.LabelDocument import LabelDocument
 from kataja.globals import NORMAL, BRACKETED, SCOPEBOX, CARD, LEFT_ALIGN, CENTER_ALIGN, RIGHT_ALIGN
 from kataja.singletons import ctrl, prefs
-from kataja.utils import combine_dicts, combine_lists, time_me, open_symbol_data
+from kataja.utils import combine_dicts, combine_lists, time_me, open_symbol_data, report
 from kataja.uniqueness_generator import next_available_type_id
 import kataja.globals as g
 import difflib
@@ -195,6 +195,8 @@ class Label(QtWidgets.QGraphicsItem):
             self.editable_doc.set_align(QtCore.Qt.AlignHCenter)
 
         html, lower_html = self._host.compose_html_for_viewing()
+        update = force_update or html != self.html or lower_html != self.lower_html
+        print('brrrt:', html, lower_html)
         if self.label_shape == SCOPEBOX:
             if not self._host.is_leaf():
                 html = '<sub>' + html + '</sub>'
@@ -206,7 +208,7 @@ class Label(QtWidgets.QGraphicsItem):
             if lower_html:
                 html += lower_html.replace('<br/>', '')
 
-        if html != self.html or force_update:
+        if update:
             self.html = html
             if self.is_card():
                 self.editable_doc.setTextWidth(self.card_size[0])
@@ -217,6 +219,7 @@ class Label(QtWidgets.QGraphicsItem):
             self.prepareGeometryChange()
 
         if lower_html != self.lower_html:
+            print('making triangle labels: ', self.html, ' and ', self.lower_html)
             self.lower_html = lower_html
             if lower_html:
                 if not self.lower_part:
@@ -272,11 +275,11 @@ class Label(QtWidgets.QGraphicsItem):
     def has_content(self) -> bool:
         return bool(self.html or self.lower_html)
 
-    def get_top_part_y(self) -> int:
-        return self.upper_part_y
+    def get_top_y(self) -> int:
+        return self.y_offset
 
     def get_lower_part_y(self) -> int:
-        return self.lower_part_y
+        return self.y_offset + self.lower_part_y
 
     def release_editor_focus(self):
         self.set_quick_editing(False)
@@ -463,6 +466,7 @@ class Label(QtWidgets.QGraphicsItem):
             self.lower_part.setPos(0, self.lower_part_y)
 
         # Update ui items around the label (or node hosting the label)
+        print('resize label offsets: ', self.x_offset, self.y_offset)
         ctrl.ui.update_position_for(self._host)
 
     def dropEvent(self, event):
@@ -518,6 +522,8 @@ class Label(QtWidgets.QGraphicsItem):
             top = self.triangle_y
             bottom = top + self.triangle_height
             simple = False
+            c = self._host.contextual_color
+            painter.setPen(c)
             if simple:
                 triangle = QtGui.QPainterPath()
                 triangle.moveTo(center, top)
@@ -526,7 +532,6 @@ class Label(QtWidgets.QGraphicsItem):
                 triangle.lineTo(center, top)
                 painter.drawPath(triangle)
             else:
-                c = self._host.contextual_color
                 edge_type = self._host.edge_type()
                 shape_name = ctrl.settings.get_edge_setting('shape_name', edge_type=edge_type)
                 path_class = SHAPE_PRESETS[shape_name]

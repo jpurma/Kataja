@@ -66,8 +66,8 @@ def caller(function):
 
 
 def time_me(function):
-    """
-
+    """ Print out the duration in ms it takes to run this function.
+    You know, for debugging!
     :param function:
     :return:
     """
@@ -86,6 +86,28 @@ def time_me(function):
         return r
 
     return wrap
+
+
+def report(function):
+    """ Print out the name of function and representation (__repr__) of its returned value.
+    You know, for debugging!
+    :param function:
+    :return:
+    """
+
+    def wrap(*arg, **kwargs):
+        """
+
+        :param arg:
+        :param kwargs:
+        :return:
+        """
+        r = function(*arg, **kwargs)
+        print("%s: %r" % (function.__name__, r))
+        return r
+
+    return wrap
+
 
 
 def to_tuple(p):
