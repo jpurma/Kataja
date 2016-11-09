@@ -68,6 +68,10 @@ class BalancedTree(BaseVisualization):
     def reselect(self):
         self.set_data('rotation', self.get_data('rotation', 0) - 1)
 
+    def prepare_draw(self):
+        new_rotation = self.forest.compute_traces_to_draw(self.get_data('rotation'))
+        self.set_data('rotation', new_rotation)
+
     # @time_me
     def draw_tree(self, tree):
         """ Divide and conquer, starting from bottom right. Results in a horizontal
@@ -88,13 +92,14 @@ class BalancedTree(BaseVisualization):
                 rect = None
                 uw = 0
                 for child in node.get_children(visible=True, similar=True, reverse=True):
-                    crect = recursive_position(child, x, y)
-                    x -= crect.width()
-                    if not rect:
-                        rect = crect
-                    else:
-                        rect = rect.united(crect)
-                    uw += crect.width()
+                    if self.forest.should_we_draw(child, node):
+                        crect = recursive_position(child, x, y)
+                        x -= crect.width()
+                        if not rect:
+                            rect = crect
+                        else:
+                            rect = rect.united(crect)
+                        uw += crect.width()
                 y -= rect.height()
                 my_rect = QtCore.QRectF(node.boundingRect())
                 my_rect.adjust(-x_margin, -y_margin, x_margin, y_margin)

@@ -174,8 +174,7 @@ class SpirallingTree(BaseVisualization):
         self.set_data('rotation', self.get_data('rotation') - 1)
 
     def prepare_draw(self):
-        new_rotation, self.traces_to_draw = self._compute_traces_to_draw(
-                self.get_data('rotation'))
+        new_rotation = self.forest.compute_traces_to_draw(self.get_data('rotation'))
         self.set_data('rotation', new_rotation)
 
     def draw_tree(self, tree, sides=0):
@@ -199,7 +198,7 @@ class SpirallingTree(BaseVisualization):
             ch = layer.focus.get_children(similar=True, visible=True)
             layer.layers = []
             for i, child_node in enumerate(ch):
-                if self.should_we_draw(child_node, layer.focus):
+                if self.forest.should_we_draw(child_node, layer.focus):
                     child_layer = Layer(child_node, parent=layer, vis=self)
                     success = child_layer.try_to_draw(i, len(ch))
                     if not success:

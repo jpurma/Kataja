@@ -90,6 +90,7 @@ class Forest(SavedObject):
         self.vis_data = {}
         self.projections = {}
         self.width_map = {}
+        self.traces_to_draw = {}
         self.projection_rotator = itertools.cycle(range(3, 8))
         self.merge_counter = 0
         self.select_counter = 0
@@ -1635,6 +1636,82 @@ class Forest(SavedObject):
                 node.label_object.label_shape = shape
         self.prepare_width_map()
 
+    def compute_traces_to_draw(self, rotator) -> int:
+        """ This is complicated, but returns a dictionary that tells for each index key
+        (used by chains) in which position at trees to draw the node. Positions are identified by
+        key of their immediate parent: {'i': ConstituentNode394293, ...} """
+        # highest row = index at trees
+        # x = cannot be skipped, last instance of that trace
+        # i/j/k = index key
+        # rows = rotation
+        # * = use this node
+
+        # 2 3 7 9 13 15 16
+        # i j i i k  j  k
+        #       x    x  x
+        # * *     *
+        #   * *   *
+        #     *   *  *
+        #       * *  *
+        #       *    *  *
+        # make an index-keyless version of this.
+
+        trace_dict = {}
+        sorted_parents = []
+        required_keys = set()
+        for tree in self:
+            sortable_parents = []
+            ltree = tree.sorted_nodes
+            for node in ltree:
+                if not hasattr(node, 'index'):
+                    continue
+                parents = node.get_parents(visible=True, similar=True)
+                if len(parents) > 1:
+                    node_key = node.uid
+                    required_keys.add(node_key)
+                    my_parents = []
+                    for parent in parents:
+                        if parent in ltree:
+                            i = ltree.index(parent)
+                            my_parents.append((i, node_key, parent, True))
+                    if my_parents:
+                        my_parents.sort()
+                        a, b, c, d = my_parents[-1]  # @UnusedVariable
+                        my_parents[-1] = a, b, c, False
+                        sortable_parents += my_parents
+            sortable_parents.sort()
+            sorted_parents += sortable_parents
+        if rotator < 0:
+            rotator = len(sorted_parents) - len(required_keys)
+        skips = 0
+        for i, node_key, parent, can_be_skipped in sorted_parents:
+            if node_key in required_keys:
+                if skips == rotator or not can_be_skipped:
+                    trace_dict[node_key] = parent.uid
+                    required_keys.remove(node_key)
+                else:
+                    skips += 1
+        self.traces_to_draw = trace_dict
+        return rotator
+
+    def should_we_draw(self, node, parent) -> bool:
+        """ With multidominated nodes the child will eventually be drawn under one of its parents.
+        Under which one is stored in traces_to_draw -dict. This checks if the node should be
+        drawn under given parent.
+
+        :param node:
+        :param parent:
+        :return:
+        """
+        if not self.traces_to_draw:
+            return True
+        if hasattr(node, 'index') and len(node.get_parents(similar=True, visible=True)) > 1:
+            key = node.uid
+            if key in self.traces_to_draw:
+                if parent.uid != self.traces_to_draw[key]:
+                    return False
+        return True
+
     def prepare_width_map(self):
         """ A map of how much horizontal space each node would need -- it is better to do this
         once than recursively compute these when updating labels.
@@ -1649,7 +1726,8 @@ class Forest(SavedObject):
             else:
                 w = node.label_object.left_bracket_width() + node.label_object.right_bracket_width()
                 for n in node.get_children(similar=True, visible=True):
-                    w += recursive_width(n)
+                    if self.should_we_draw(n, node):
+                        w += recursive_width(n)
             self.width_map[node.uid] = w
             node.update_label()
             return w

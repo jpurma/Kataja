@@ -97,25 +97,8 @@ class HeadDownTree(BaseVisualization):
         """
         self.set_data('rotation', self.get_data('rotation', 0) - 1)
 
-    def should_we_draw(self, node, parent):
-        """
-
-        :param node:
-        :param parent:
-        :return:
-        """
-        if node.node_type != g.CONSTITUENT_NODE:
-            return False
-        if hasattr(node, 'index') and len(node.get_parents(visible=True, similar=True)) > 1:
-            key = node.uid
-            if key in self.traces_to_draw:
-                if parent.uid != self.traces_to_draw[key]:
-                    return False
-        return True
-
     def prepare_draw(self):
-        new_rotation, self.traces_to_draw = self._compute_traces_to_draw(
-            self.get_data('rotation'))
+        new_rotation = self.forest.compute_traces_to_draw(self.get_data('rotation'))
         self.set_data('rotation', new_rotation)
 
     # @time_me
@@ -167,7 +150,7 @@ class HeadDownTree(BaseVisualization):
             return left_adjust, -start_height, width_in_columns, height_in_rows
 
         def _build_grid(node, parent=None):
-            if self.should_we_draw(node, parent):
+            if self.forest.should_we_draw(node, parent):
                 grids = []
                 children = node.get_children(visible=True, similar=True)
                 for child in children:

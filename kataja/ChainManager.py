@@ -156,7 +156,7 @@ class ChainManager:
             for node, parent, is_head in chain:
                 if not is_head:
                     if key not in y_adjust:
-                        y_adjust[key] = head.boundingRect().height(), head.boundingRect().height()
+                        y_adjust[key] = 0, head.boundingRect().height()
                     dx, dy = y_adjust[key]
                     node.use_adjustment = False
                     node.adjustment = (0, 0)

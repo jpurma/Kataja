@@ -80,7 +80,7 @@ class LeftFirstTree(BaseVisualization):
 
     # Recursively put nodes to their correct position in grid
     def _put_to_grid(self, grid, node, x, y, parent=None):
-        if not self.should_we_draw(node, parent):
+        if not self.forest.should_we_draw(node, parent):
             return
         grid.set(x, y, node)
         fy = y
@@ -138,8 +138,7 @@ class LeftFirstTree(BaseVisualization):
                 nx += x_step * 2
 
     def prepare_draw(self):
-        new_rotation, self.traces_to_draw = self._compute_traces_to_draw(
-            self.get_data('rotation', 0))
+        new_rotation = self.forest.compute_traces_to_draw(self.get_data('rotation'))
         self.set_data('rotation', new_rotation)
 
     def draw_tree(self, tree):

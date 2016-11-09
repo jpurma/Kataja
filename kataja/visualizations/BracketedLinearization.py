@@ -87,7 +87,9 @@ class BracketedLinearization(BaseVisualization):
             self.reset_node(node)
 
     def prepare_draw(self):
+        new_rotation = self.forest.compute_traces_to_draw(self.get_data('rotation'))
         self.forest.prepare_width_map()
+        self.set_data('rotation', new_rotation)
 
     def draw_tree(self, tree):
         """ Bracket manager's width map tells the required widths and labels know already how to
@@ -102,23 +104,18 @@ class BracketedLinearization(BaseVisualization):
         else:
             y_shift = 4
 
-        def draw_node(node, used=set(), left_edge=0, y=0):
-            if node in used:
-                return used, left_edge
-            else:
-                used.add(node)
-                nw = width_map[node.uid]
-
-                node.move_to(left_edge, y, valign=g.BOTTOM_ROW, align=g.LEFT_ALIGN)
-                le = left_edge + node.label_object.left_bracket_width()
-                for child in node.get_children(visible=True, similar=True):
-                    used, le = draw_node(child, used, le, y + y_shift)
-                left_edge += nw
-            return used, left_edge
+        def draw_node(node, left_edge=0, y=0):
+            nw = width_map[node.uid]
+            node.move_to(left_edge, y, valign=g.BOTTOM_ROW, align=g.LEFT_ALIGN)
+            le = left_edge + node.label_object.left_bracket_width()
+            for child in node.get_children(visible=True, similar=True):
+                if ctrl.forest.should_we_draw(child, node):
+                    le = draw_node(child, le, y + y_shift)
+            left_edge += nw
+            return left_edge
 
         start = 0
-
         if tree.top.node_type == g.CONSTITUENT_NODE:
-            nodes_used, start = draw_node(tree.top, used=set(), left_edge=start)
+            start = draw_node(tree.top, left_edge=start)  # used=set(),
             start += prefs.edge_width
 
