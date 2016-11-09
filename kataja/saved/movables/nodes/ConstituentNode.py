@@ -301,11 +301,11 @@ class ConstituentNode(Node):
         """ Hovering status tip """
         if self.syntactic_object:
             if self.display_label:
-                alias = '"%s" ' % self.display_label
+                alias = 'Alias: "%s" ' % self.display_label
             else:
                 alias = ''
             if self.label:
-                label = '"%s" ' % self.label
+                label = ' Label: "%s" ' % self.label
             else:
                 label = ''
             if self.is_trace:
@@ -317,15 +317,13 @@ class ConstituentNode(Node):
             else:
                 name = "Set %s" % self.set_string()
             if self.use_adjustment:
-                self.status_tip = "%s (Alias: %s Label: %s pos: (%.1f, %.1f) w. adjustment (%.1f, " \
-                                  "%.1f))" % (
-                                  name, alias, label, self.current_scene_position[0],
-                                  self.current_scene_position[1],
-                                  self.adjustment[0], self.adjustment[1])
+                adjustment = ' w. adjustment (%.1f, "%.1f)' % (self.adjustment[0],
+                                                              self.adjustment[1])
             else:
-                self.status_tip = "%s (Alias: %s Label: %s pos: (%.1f, %.1f))" % (
-                                  name, alias, label, self.current_scene_position[0],
-                                  self.current_scene_position[1])
+                adjustment = ''
+            self.status_tip = "%s (%s%s pos: (%.1f, %.1f)%s z-index: %s/%s)" % (
+                              name, alias, label, self.current_scene_position[0],
+                              self.current_scene_position[1], adjustment, self.zValue(), self.z_value)
 
         else:
             self.status_tip = "Empty, but mandatory constituent position"

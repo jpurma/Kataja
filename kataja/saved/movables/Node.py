@@ -326,9 +326,6 @@ class Node(Movable):
         """
         return self.label_object.editable
 
-    def should_draw_triangle(self):
-        return self.label_object and self.label_object.should_draw_triangle()
-
     def has_triangle(self):
         return self.triangle
 
@@ -1032,6 +1029,14 @@ class Node(Movable):
         elif ls == g.CARD and self.is_leaf(only_visible=True, only_similar=True):
             brush = ctrl.cm.paper2()
             rect = True
+            # make a deck of cards based on how many cards are folded into triangle
+            if self.triangle and self.triangle is not self:
+                leaves = [x for x in ctrl.forest.list_nodes_once(self) if
+                          x.is_leaf(only_similar=True, only_visible=False)]
+                painter.setBrush(brush)
+                for yd in range((len(leaves) - 1) * 2, 0, -2):
+                    painter.drawRoundedRect(self.inner_rect.translated(yd, yd), xr, yr)
+
         if self._hovering:
             if rect:
                 brush = ctrl.cm.paper()

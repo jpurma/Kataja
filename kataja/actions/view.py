@@ -57,7 +57,7 @@ class SwitchViewMode(KatajaAction):
             return 'Showing all elements, including those that have no computational effects.'
 
     def getter(self):
-        return not ctrl.settings.get('syntactic_mode')
+        return ctrl.settings.get('syntactic_mode')
 
 
 class ActivateNoFrameNodeShape(KatajaAction):

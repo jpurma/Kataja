@@ -59,6 +59,10 @@ class Environment:
         self.resources_path = ''
         self.default_userspace_path = ''
         self.plugins_path = ''
+        if self.platform == 'mac':
+            self.cmd_or_ctrl = '⌘'
+        else:
+            self.cmd_or_ctrl = 'Ctrl'
 
         if self.code_mode == 'test':
             self.init_test_paths()

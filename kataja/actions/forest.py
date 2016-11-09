@@ -1,6 +1,6 @@
 # coding=utf-8
 
-from kataja.singletons import ctrl, prefs
+from kataja.singletons import ctrl, prefs, running_environment
 from kataja.KatajaAction import KatajaAction
 
 
@@ -35,7 +35,9 @@ class SwitchEditMode(KatajaAction):
     k_command = 'Toggle edit mode'
     k_shortcut = 'Ctrl+Shift+Space'
     k_undoable = False
-    k_tooltip = 'Switch between free editing and derivation-based visualisation (Shift+Space)'
+
+    k_tooltip = 'Switch between free editing and derivation-based visualisation (%s+Shift+Space)' % \
+                running_environment.cmd_or_ctrl
 
     def method(self, free_edit=None):
         """ Switch between visualisation mode and free edit mode
@@ -57,7 +59,7 @@ class SwitchEditMode(KatajaAction):
                    'history, but the underlying structure cannot be changed.'
 
     def getter(self):
-        return ctrl.free_drawing_mode
+        return not ctrl.free_drawing_mode
 
 
 class NextForest(KatajaAction):

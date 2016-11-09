@@ -131,7 +131,6 @@ class Label(QtWidgets.QGraphicsItem):
         self._font = None
         self.html = ''
         self.lower_html = ''
-        self.lower_text = ''
         self.edited_field = ''
         self.editable_html = ''
         self._quick_editing = False
@@ -159,6 +158,9 @@ class Label(QtWidgets.QGraphicsItem):
         :return:
         """
         return self.__qt_type_id__
+
+    def __str__(self):
+        return 'Label:' + self.html + self.lower_html
 
     def init_lower_part(self):
         self.lower_part = QtWidgets.QGraphicsTextItem(self)
@@ -195,20 +197,18 @@ class Label(QtWidgets.QGraphicsItem):
             self.editable_doc.set_align(QtCore.Qt.AlignHCenter)
 
         html, lower_html = self._host.compose_html_for_viewing()
-        update = force_update or html != self.html or lower_html != self.lower_html
-        print('brrrt:', html, lower_html)
         if self.label_shape == SCOPEBOX:
-            if not self._host.is_leaf():
+            if not self._host.is_leaf(only_similar=True, only_visible=True):
                 html = '<sub>' + html + '</sub>'
             if lower_html:
                 html += lower_html.replace('<br/>', '')
         elif self.label_shape == BRACKETED:
-            if not self._host.is_leaf():
+            if not self._host.is_leaf(only_similar=True, only_visible=True):
                 html = '[<sub>' + html + '</sub>'
             if lower_html:
                 html += lower_html.replace('<br/>', '')
 
-        if update:
+        if force_update or html != self.html or lower_html != self.lower_html:
             self.html = html
             if self.is_card():
                 self.editable_doc.setTextWidth(self.card_size[0])
@@ -218,21 +218,20 @@ class Label(QtWidgets.QGraphicsItem):
             ctrl.qdocument_parser.process(self.editable_doc)
             self.prepareGeometryChange()
 
-        if lower_html != self.lower_html:
-            print('making triangle labels: ', self.html, ' and ', self.lower_html)
+        if lower_html and self.label_shape not in [g.SCOPEBOX, g.BRACKETED]:
             self.lower_html = lower_html
-            if lower_html:
-                if not self.lower_part:
-                    self.init_lower_part()
-                if self.is_card():
-                    self.lower_doc.setTextWidth(self.card_size[0])
-                else:
-                    self.lower_doc.setTextWidth(-1)
-                self.lower_part.setHtml(self.lower_html)
-                ctrl.qdocument_parser.process(self.lower_doc)
-                self.lower_text = self.lower_part.toPlainText()
-                self.prepareGeometryChange()
+            if not self.lower_part:
+                self.init_lower_part()
+            if self.is_card():
+                self.lower_doc.setTextWidth(self.card_size[0])
             else:
+                self.lower_doc.setTextWidth(-1)
+            self.lower_part.setHtml(self.lower_html)
+            ctrl.qdocument_parser.process(self.lower_doc)
+            self.prepareGeometryChange()
+        else:
+            self.lower_html = ''
+            if self.lower_part:
                 self.remove_lower_part()
         self.resize_label()
 
@@ -259,9 +258,6 @@ class Label(QtWidgets.QGraphicsItem):
             self.editable = combine_dicts(syn_editable, my_class.editable)
         else:
             self.editable = my_class.editable
-
-    def should_draw_triangle(self) -> bool:
-        return self.triangle_is_present and not self._quick_editing
 
     def is_empty(self) -> bool:
         """ Turning this node into label would result in an empty label.
@@ -412,7 +408,8 @@ class Label(QtWidgets.QGraphicsItem):
             self.lower_part.setTextWidth(width)
 
         # Height
-        self.triangle_is_present = bool(self._host.triangle)
+        self.triangle_is_present = self._host.triangle \
+                                   and self.label_shape not in [g.SCOPEBOX, g.CARD, g.BRACKETED]
         if self.is_card():
             total_height = self.card_size[1]
         elif self.triangle_is_present:
@@ -448,6 +445,27 @@ class Label(QtWidgets.QGraphicsItem):
                 else:
                     self.triangle_y = 0
                 self.lower_part_y = self.triangle_y + self.triangle_height
+        elif self.label_shape == g.CARD and self._host.triangle:
+            # no lower part, no triangle
+            self.upper_part_y = 0
+            self.triangle_y = 0
+            self.lower_part_y = self.editable_doc.size().height()
+            # reduce font size until it fits
+            font = self.lower_part.font()
+            use_point_size = font.pointSize() != -1
+            if use_point_size:
+                fsize = font.pointSize()
+            else:
+                fsize = font.pixelSize()
+            attempts = 0
+            while attempts < 10 and self.lower_part_y + self.lower_doc.size().height() > \
+                    total_height:
+                fsize -= 1
+                if use_point_size:
+                    font.setPointSize(fsize)
+                else:
+                    font.setPixelSize(fsize)
+                self.lower_part.setFont(font)
         else:
             # no lower part, no triangle
             self.upper_part_y = 0
@@ -466,7 +484,6 @@ class Label(QtWidgets.QGraphicsItem):
             self.lower_part.setPos(0, self.lower_part_y)
 
         # Update ui items around the label (or node hosting the label)
-        print('resize label offsets: ', self.x_offset, self.y_offset)
         ctrl.ui.update_position_for(self._host)
 
     def dropEvent(self, event):
