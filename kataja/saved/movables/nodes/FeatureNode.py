@@ -28,7 +28,8 @@ import kataja.globals as g
 from kataja.SavedField import SavedSynField
 from kataja.globals import FEATURE_NODE
 from kataja.singletons import ctrl, qt_prefs, classes
-from kataja.saved.movables.Node import Node, as_html
+from kataja.saved.movables.Node import Node
+from kataja.parser.INodes import as_html
 from kataja.uniqueness_generator import next_available_type_id
 
 color_map = {'tense': 0, 'order': 1, 'person': 2, 'number': 4, 'case': 6, 'unknown': 3}

@@ -1,5 +1,5 @@
 # coding=utf-8
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtGui
 from kataja.UIItem import UIWidget
 from kataja.singletons import qt_prefs, ctrl
 import kataja.globals as g
@@ -13,7 +13,7 @@ ModeLabel {border: 1px transparent none}
 color: %(paper)s}
 :checked:hover {border-color: %(lighter)s; background-color: %(draw)s; border-radius: 3;
 color: %(lighter)s}
-"""  # (c.name(), c.lighter().name(), paper.name(), c.name(), paper.name())
+"""
 
 
 class ModeLabel(UIWidget, PanelButton):
@@ -22,8 +22,7 @@ class ModeLabel(UIWidget, PanelButton):
 
     def __init__(self, text_options, ui_key, parent=None):
         UIWidget.__init__(self, ui_key=ui_key)
-        PanelButton.__init__(self, None, text_options[0], size=24, parent=parent) #
-        # qt_prefs.v_refresh_small_icon
+        PanelButton.__init__(self, None, text_options[0], size=24, parent=parent)
         self.setCheckable(True)
         self.text_options = text_options
         f = QtGui.QFont(qt_prefs.fonts[g.UI_FONT])

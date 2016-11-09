@@ -29,27 +29,14 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5.QtCore import Qt
 
 import kataja.globals as g
-import kataja.Shapes
 from kataja.Label import Label
 from kataja.SavedField import SavedField
 from kataja.saved.Movable import Movable
 from kataja.singletons import ctrl, prefs, qt_prefs
+from kataja.ui_graphicsitems.ControlPoint import ControlPoint
 from kataja.uniqueness_generator import next_available_type_id
 from kataja.utils import to_tuple, create_shadow_effect, add_xy
-from kataja.ui_graphicsitems.ControlPoint import ControlPoint
-from kataja.parser.INodes import ITextNode
-
-
-def as_html(item):
-    if isinstance(item, str):
-        return item
-    elif isinstance(item, ITextNode):
-        return item.as_html()
-    elif isinstance(item, list):
-        return '<br/>'.join([as_html(i) for i in item])
-    else:
-        print(item, type(item))
-        return ''
+from kataja.parser.INodes import as_html
 
 
 class DragData:

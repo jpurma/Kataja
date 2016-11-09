@@ -37,6 +37,10 @@ differ = difflib.Differ()
 
 style_sheet = """
 b {font-family: StixGeneral Bold; font-weight: 900; font-style: bold}
+sub sub {font-size: 8pt; vertical-align: sub}
+sup sub {font-size: 8pt; vertical-align: sub}
+sub sup {font-size: 8pt; vertical-align: sup}
+sup sup {font-size: 8pt; vertical-align: sup}
 """
 
 inner_cards = False
@@ -106,6 +110,7 @@ class Label(QtWidgets.QGraphicsItem):
     label composes its document (html layout) for its contents based on that. """
     max_width = 400
     __qt_type_id__ = next_available_type_id()
+    card_size = (60, 90)
 
     def __init__(self, parent=None):
         """ Give node as parent. Label asks it to produce text to show here """
@@ -136,11 +141,11 @@ class Label(QtWidgets.QGraphicsItem):
         self._quick_editing = False
         self._recursion_block = False
         self._last_blockpos = ()
+        self._previous_values = None
         self.editable = {}
         self.prepare_template()
         self.editable_doc = LabelDocument()
         self.lower_doc = None
-        self.card_size = (60, 90)
         self._fresh_focus = False
         self.editable_doc.setDefaultStyleSheet(style_sheet)
         self.editable_part.setDocument(self.editable_doc)
@@ -207,32 +212,31 @@ class Label(QtWidgets.QGraphicsItem):
                 html = '[<sub>' + html + '</sub>'
             if lower_html:
                 html += lower_html.replace('<br/>', '')
-
-        if force_update or html != self.html or lower_html != self.lower_html:
-            self.html = html
+        if force_update or (self.label_shape, html, lower_html) != self._previous_values:
+            self.prepareGeometryChange()
             if self.is_card():
                 self.editable_doc.setTextWidth(self.card_size[0])
             else:
                 self.editable_doc.setTextWidth(-1)
-            self.editable_part.setHtml(self.html)
+            self.html = html
+            self.editable_part.setHtml(html)
             ctrl.qdocument_parser.process(self.editable_doc)
-            self.prepareGeometryChange()
-
-        if lower_html and self.label_shape not in [g.SCOPEBOX, g.BRACKETED]:
-            self.lower_html = lower_html
-            if not self.lower_part:
-                self.init_lower_part()
-            if self.is_card():
-                self.lower_doc.setTextWidth(self.card_size[0])
+            if lower_html and self.label_shape not in [g.SCOPEBOX, g.BRACKETED]:
+                self.lower_html = lower_html
+                if not self.lower_part:
+                    self.init_lower_part()
+                if self.is_card():
+                    self.lower_doc.setTextWidth(self.card_size[0])
+                else:
+                    self.lower_doc.setTextWidth(-1)
+                self.lower_part.setHtml(self.lower_html)
+                ctrl.qdocument_parser.process(self.lower_doc)
+                self.prepareGeometryChange()
             else:
-                self.lower_doc.setTextWidth(-1)
-            self.lower_part.setHtml(self.lower_html)
-            ctrl.qdocument_parser.process(self.lower_doc)
-            self.prepareGeometryChange()
-        else:
-            self.lower_html = ''
-            if self.lower_part:
-                self.remove_lower_part()
+                self.lower_html = ''
+                if self.lower_part:
+                    self.remove_lower_part()
+            self._previous_values = (self.label_shape, self.html, self.lower_html)
         self.resize_label()
 
     def is_card(self):
@@ -325,7 +329,6 @@ class Label(QtWidgets.QGraphicsItem):
             ctrl.text_editor_focus = None
             self._quick_editing = False
             ctrl.ui.remove_quick_edit_buttons()
-            self.html = ''
             self._host.update_label()
             self.editable_part.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
             self.editable_part.setAcceptDrops(False)

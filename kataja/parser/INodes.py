@@ -10,6 +10,13 @@ instead.
 """
 
 
+def as_html(item):
+    if isinstance(item, list):
+        return '<br/>'.join([str(i) for i in item])
+    else:
+        return str(item)
+
+
 class ITextNode:
     """ Node to represent text that may contain other kinds of nodes. e.g.
     "here is a text \emph{with latexnode} inside."
@@ -297,14 +304,6 @@ class ICommandNode(ITextNode):
                                                        self.parts)
 
 
-# class ILabelNode(ITextNode):
-#     """ Node for containing multiple lines of text. Just a list of ITextNodes/ICommandNodes """
-#
-#     def __init__(self, rows=None):
-#         super().__init__()
-#         self.rows = rows or []
-
-
 class IParserNode(ITextNode):
     """ Node used temporarily for parsing latex-style trees. It represents ConstituentNode while
     parsing, but it is mostly agnostic for what to do with the data about the constituent it has
@@ -323,54 +322,34 @@ class IParserNode(ITextNode):
         """
         ITextNode.__init__(self, parts=parts)
         self.label_rows = label_rows or []
-        self.indices = indices or []
-        self.unanalyzed = None
+        self.index = None
 
     def is_empty(self):
         return not (self.label_rows or self.parts)
 
-    def analyze_label_data(self):
-        """ Go through label complex and make rows out of it, also pick
-        indices to separate list.
-        :return: None
+    def check_for_index(self):
+        """ Tries to find value for index from within this parsernode. Saves it to self.index
+        :return:
         """
-        # fixme: use inode command format instead of latex commands
-        def find_index(inode):
-            if isinstance(inode, ICommandNode) and inode.command == 'sub':
-                return inode
-            elif isinstance(inode, ITextNode):
-                for n in reversed(inode):
-                    found = find_index(n)
+        def find_index(part):
+            if isinstance(part, ICommandNode) and part.command == 'sub':
+                return ITextNode.as_html(part)
+            elif isinstance(part, ITextNode):
+                for p in part.parts:
+                    found = find_index(p)
                     if found:
                         return found
 
-        self.label_rows = []
-        if not self.unanalyzed:
-            return
-        container = ITextNode()
+        found = None
+        self.index = None
+        for row in self.label_rows:
+            if isinstance(row, ITextNode):
+                for rpart in row.parts:
+                    found = find_index(rpart)
+                if found:
+                    self.index = found
+                    break
 
-        if isinstance(self.unanalyzed, ITextNode):
-            index_found = find_index(self.unanalyzed)
-            if index_found:
-                self.unanalyzed.find_and_remove_part(index_found)
-                self.indices.append(index_found.scope())
-
-            for part in self.unanalyzed:
-                if isinstance(part, ICommandNode):
-                    # Linebreak --
-                    if part.command == 'br':
-                        container = container.simplified()
-                        if container:
-                            self.label_rows.append(container)
-                        container = ITextNode()
-                    # Anything else --
-                    else:
-                        container.append(part)
-                else:
-                    container.append(part)
-            final_row = container.simplified()
-            if final_row:
-                self.label_rows.append(final_row)
 
     def tidy(self, keep_node=True):
         """ Tidy insides, but always maintain identity so that the template node remains even if it
@@ -387,5 +366,7 @@ class IParserNode(ITextNode):
         return False
 
     def __repr__(self):
-        return 'IParserNode(parts=%r, label_rows=%r, indices=%r)' % (self.parts, self.label_rows,
-                                                                     self.indices)
+        return 'IParserNode(parts=%r, label_rows=%r, index=%r)' % (self.parts, self.label_rows,
+                                                                     self.index)
+
+

@@ -1,7 +1,7 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 import kataja.globals as g
-from kataja.parser.INodes import ITextNode
+from kataja.parser.INodes import ITextNode, as_html
 from kataja.parser.LatexToINode import LatexFieldToINode
 from kataja.singletons import qt_prefs, ctrl
 from kataja.ui_support.EmbeddedLineEdit import EmbeddedLineEdit
@@ -189,10 +189,10 @@ class NodeEditEmbed(UIEmbed):
                 value = getattr(self.host, field_name, '')
             itype = d.get('input_type', 'text')
             if itype == 'expandingtext':
+                value = as_html(value)
                 field.setText(value)
             elif itype == 'text' or itype == 'textarea':
-                if isinstance(value, list):
-                    value = '\n'.join(value)
+                value = as_html(value)
                 field.set_original(value)
                 field.setText(value)
             elif itype == 'checkbox':

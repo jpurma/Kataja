@@ -252,11 +252,12 @@ class SuperParser:
                 else:
                     new_part = IParserNode()
                     new_part.label_rows = tidy_rows
+                    new_part.check_for_index()
                     node.parts.append(new_part)
         if tidy_up:
-            return node.tidy(keep_node=True)
-        else:
-            return node
+            node = node.tidy(keep_node=True)
+        node.check_for_index()
+        return node
 
     def parse_word(self, string):
         """ Parse string of label text into ITextNodes or ICommandNodes. Relies on HtmlToINode,

@@ -987,6 +987,7 @@ class Forest(SavedObject):
         to top should keep its identity, and just reset the top node to be the new node.
         :return:
         """
+        print('doing update_trees')
         invalid_trees = []
         valid_tops = set()
         invalid_tops = set()
@@ -1007,13 +1008,16 @@ class Forest(SavedObject):
         top_nodes = set()
         for node in self.nodes.values():
             if node.is_top_node():
+                print('found top node: ', str(node), repr(node))
                 top_nodes.add(node)
+        print('invalid tops:', invalid_tops)
         unassigned_top_nodes = top_nodes - valid_tops
         # In   (Empty)
         #       /  \
         #     TrA  (Empty)
         #
         # Have TrA to take over the empty nodes
+        print('unassigned_top_nodes before looking into its children:', unassigned_top_nodes)
         for node in list(unassigned_top_nodes):
             for child in node.get_children(similar=False, visible=False):
                 if child in invalid_tops:
@@ -1024,6 +1028,8 @@ class Forest(SavedObject):
                     invalid_trees.remove(tree)
                     unassigned_top_nodes.remove(node)
                     break
+        print('unassigned_top_nodes after:', unassigned_top_nodes)
+
         # Create new trees for other unassigned nodes:
         for node in unassigned_top_nodes:
             print('creating separate tree for ', node)
@@ -1042,7 +1048,7 @@ class Forest(SavedObject):
         # Remove this if we found it to be unnecessary -- it is slow, and these problems
         # shouldn't happen -- this is more for debugging
         # Go through all nodes and check if they are ok.
-        if False:
+        if True:
             for node in self.nodes.values():
                 if node.is_top_node():
                     if not self.get_tree_by_top(node):
@@ -1057,6 +1063,7 @@ class Forest(SavedObject):
                     if problems:
                         print('problem with trees: node %s belongs to trees %s, but its parents '
                               'belong to trees %s' % (node, node.trees, union))
+        print('done updating trees')
 
     def create_tree_for(self, node):
         """ Create new trees around given node.
@@ -1116,6 +1123,7 @@ class Forest(SavedObject):
         :param text: label text for node, behaviour depends on node type
         :return:
         """
+        print('creating new node')
         # First check that the node doesn't exist already
         if synobj:
             n = self.get_node(synobj)
@@ -1885,7 +1893,7 @@ class Forest(SavedObject):
 
         if not set(new_node.trees) & set(old_node.trees):
             new_node.copy_position(old_node)
-            new_node.update_visibility(fade=True) # active=True,
+            new_node.update_visibility(fade_in=True)  # active=True,
 
         # add new node to relevant groups
         # and remove old node from them
@@ -2162,7 +2170,9 @@ class Forest(SavedObject):
             pos = (0, 0)
         merger_const = ctrl.FL.merge(left.syntactic_object, right.syntactic_object)
         merger_const.after_init()
+        print('creating merger node...')
         merger_node = self.create_node(synobj=merger_const, relative=right)
+        print('created merger node: ', str(merger_node), repr(merger_node))
         merger_node.current_position = pos
         self.add_merge_counter(merger_node)
         self.connect_node(parent=merger_node, child=left, direction=g.LEFT, fade_in=new is left)

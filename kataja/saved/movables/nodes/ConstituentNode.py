@@ -27,7 +27,7 @@ from kataja.parser.INodes import ITextNode, ICommandNode
 from kataja.saved.movables.Node import Node
 from kataja.singletons import ctrl, classes
 from kataja.uniqueness_generator import next_available_type_id
-from kataja.saved.movables.Node import as_html
+from kataja.parser.INodes import as_html
 
 __author__ = 'purma'
 
@@ -199,8 +199,8 @@ class ConstituentNode(Node):
         :param parsernode:
         :return:
         """
-        if parsernode.indices and parsernode.indices[0]:
-            self.index = parsernode.indices[0]
+        if parsernode.index:
+            self.index = parsernode.index
         rows = parsernode.label_rows
         leaf = not parsernode.parts
         # Remove dotlabel
