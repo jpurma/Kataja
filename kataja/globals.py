@@ -59,6 +59,7 @@ NODE_EDITOR_BUTTON = 'NodeEditorButton'
 REMOVE_NODE = 'RemoveNodeButton'
 CUT_FROM_START_BUTTON = 'CutFromStartButton'
 CUT_FROM_END_BUTTON = 'CutFromEndButton'
+QUICK_EDIT_LABEL = 'OverlayLabel'
 
 # ## Our custom signals
 

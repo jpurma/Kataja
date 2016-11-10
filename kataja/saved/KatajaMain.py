@@ -69,6 +69,24 @@ from kataja.ui_support.ErrorDialog import ErrorDialog
 
 DEBUG_TREESET = 'trees.txt'
 
+stylesheet = """
+OverlayLabel {color: %(ui)s; border-radius: 3; padding: 4px;}
+b {font-family: StixGeneral Bold; font-weight: 900; font-style: bold}
+sub sub {font-size: 8pt; vertical-align: sub}
+sup sub {font-size: 8pt; vertical-align: sub}
+sub sup {font-size: 8pt; vertical-align: sup}
+sup sup {font-size: 8pt; vertical-align: sup}
+EmbeddedMultibutton:disabled {text-decoration: line-through; color: gray;}
+EmbeddedRadiobutton:disabled {text-decoration: line-through; color: gray;}
+ModeLabel {border: 1px transparent none}
+ModeLabel:hover {border: 1px solid %(ui)s; border-radius: 3}
+ModeLabel:pressed {border: 1px solid %(ui_lighter)s; background-color: %(paper)s; border-radius: 3}
+ModeLabel:checked:!hover {border: 1px solid %(paper)s; background-color: %(ui)s; border-radius: 3;
+color: %(paper)s}
+ModeLabel:checked:hover {border-color: %(ui_lighter)s; background-color: %(ui)s; border-radius: 3;
+color: %(ui_lighter)s}
+"""
+
 
 class KatajaMain(SavedObject, QtWidgets.QMainWindow):
     """ Qt's main window. When this is closed, application closes. Graphics are
@@ -129,6 +147,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         kataja_app.setPalette(self.color_manager.get_qt_palette())
         self.forest = Forest()
         self.settings_manager.set_forest(self.forest)
+        self.update_style_sheet()
         self.forest.update_colors()
         self.graph_scene.late_init()
         self.setCentralWidget(self.graph_view)
@@ -151,6 +170,13 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         #for gesture in gestures:
         #    self.grabGesture(gesture)
         self.action_finished()
+
+    def update_style_sheet(self):
+        c = ctrl.cm.drawing()
+        ui = ctrl.cm.ui()
+        self.setStyleSheet(stylesheet % {'draw': c.name(), 'lighter': c.lighter().name(),
+                                         'paper': ctrl.cm.paper().name(),
+                                         'ui': ui.name(), 'ui_lighter': ui.lighter().name()})
 
     def find_plugins(self, plugins_path):
         """ Find the plugins dir for the running configuration and read the metadata of plugins.

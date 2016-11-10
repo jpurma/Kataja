@@ -60,5 +60,3 @@ class EmbeddedRadiobutton(QtWidgets.QFrame):
                 button.setEnabled(od['enabled'])
                 self.layout.addWidget(button)
                 self.bgroup.addButton(button)
-                s = ":disabled {text-decoration: line-through; color: gray;}"
-                button.setStyleSheet(s)

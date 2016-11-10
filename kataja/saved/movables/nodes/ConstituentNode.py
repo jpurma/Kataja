@@ -134,9 +134,12 @@ class ConstituentNode(Node):
     }
 
     buttons_when_selected = {
-        g.REMOVE_MERGER: {'condition': ['is_unnecessary_merger', 'free_drawing_mode'], 'action': 'remove_merger'},
+        g.REMOVE_MERGER: {'condition': ['is_unnecessary_merger', 'free_drawing_mode'],
+                          'action': 'remove_merger'},
         g.NODE_EDITOR_BUTTON: {'action': 'toggle_node_edit_embed'},
-        g.REMOVE_NODE: {'condition': ['not:is_unnecessary_merger', 'free_drawing_mode'], 'action': 'remove_node'}
+        g.REMOVE_NODE: {'condition': ['not:is_unnecessary_merger', 'free_drawing_mode'],
+                        'action': 'remove_node'},
+        g.QUICK_EDIT_LABEL: {}, # 'condition': 'is_quick_editing'
     }
 
     def __init__(self, syntactic_object=None, forest=None):

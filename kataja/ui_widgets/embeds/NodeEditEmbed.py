@@ -52,7 +52,6 @@ class NodeEditEmbed(UIEmbed):
         smaller_font = qt_prefs.get_font(g.MAIN_FONT)
         big_font = QtGui.QFont(smaller_font)
         big_font.setPointSize(big_font.pointSize() * 2)
-
         ed = node.get_editing_template()
         sortable = [(item.get('order', 100), key) for key, item in ed.items()]
         sortable.sort()
@@ -110,9 +109,7 @@ class NodeEditEmbed(UIEmbed):
                 field = EmbeddedMultibutton(self, options=op_func())
                 field.setMaximumWidth(width)
             elif itype == 'checkbox':
-                #width = d.get('width', 200)
                 field = QtWidgets.QCheckBox(self)
-                #field.setMaximumWidth(width)
             elif itype == 'radiobutton':
                 width = d.get('width', 200)
                 op_func = d.get('option_function')
@@ -122,9 +119,7 @@ class NodeEditEmbed(UIEmbed):
                 field.setMaximumWidth(width)
                 field_first = False
             elif itype == 'preview':
-                field = PreviewLabel(self, tip=tt,
-                                     font=smaller_font)
-
+                field = PreviewLabel(self, tip=tt, font=smaller_font)
             else:
                 raise NotImplementedError
 

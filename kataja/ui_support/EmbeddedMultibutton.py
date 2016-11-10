@@ -61,5 +61,3 @@ class EmbeddedMultibutton(QtWidgets.QFrame):
                 button.setEnabled(od['enabled'])
                 self.bgroup.addButton(button)
                 self.layout.addWidget(button)
-                s = ":disabled {text-decoration: line-through; color: gray;}"
-                button.setStyleSheet(s)

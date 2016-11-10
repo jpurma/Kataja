@@ -32,7 +32,6 @@ class ModeLabel(UIWidget, PanelButton):
         self.setFont(f)
         self.setPalette(ctrl.cm.get_qt_palette_for_ui())
         self.setFlat(True)
-        self.update_style_sheet()
         self.setMinimumWidth(mw + 12)
         self.setMinimumHeight(24)
 
@@ -46,10 +45,7 @@ class ModeLabel(UIWidget, PanelButton):
         self.update_position()
 
     def update_colors(self):
-        self.update_style_sheet()
+        pass
 
     def update_style_sheet(self):
-        paper = ctrl.cm.paper()
-        c = ctrl.cm.get(self.color_key)
-        self.setStyleSheet(style_sheet % {'draw': c.name(), 'lighter': c.lighter().name(),
-                                          'paper': paper.name()})
+        pass

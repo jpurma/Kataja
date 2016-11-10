@@ -141,6 +141,7 @@ class UIManager:
         self.preferences_dialog = None
         self.color_dialogs = {}
         self.font_dialogs = {}
+        self.qe_label = None
         self.activity_marker = None
         self.ui_activity_marker = None
 
@@ -421,7 +422,7 @@ class UIManager:
 
         # clear all ui_support pieces
         for item in list(self._items.values()):
-            if item.host and not item.is_fading_out:
+            if item.host and not (item.is_fading_out or item.selection_independent):
                 self.remove_ui(item)
 
         # create ui_support pieces for selected elements. don't create touchareas and buttons
@@ -1149,8 +1150,6 @@ class UIManager:
         button.update_position()
         if action:
             self.connect_element_to_action(button, action)
-        else:
-            print('missing action for button ', button, class_key)
         button.show()
         return button
 
@@ -1184,8 +1183,19 @@ class UIManager:
         self.quick_edit_buttons.update_position()
         self.quick_edit_buttons.update_values()
 
+        qe_label = self.get_ui(g.QUICK_EDIT_LABEL)
+        if not qe_label:
+            qe_label = kataja.ui_widgets.OverlayButton.OverlayLabel(node, self.main.graph_view)
+            self.add_ui(qe_label)
+        qe_label.setText(node.label_object.edited_field + "→")
+        qe_label.update_position()
+        qe_label.show()
+
     def remove_quick_edit_buttons(self):
         self.quick_edit_buttons.hide()
+        qe_label = self.get_ui(g.QUICK_EDIT_LABEL)
+        if qe_label:
+            self.remove_ui(qe_label)
 
     # ### Control points
     # ####################################################################

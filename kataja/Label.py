@@ -147,7 +147,6 @@ class Label(QtWidgets.QGraphicsItem):
         self.editable_doc = LabelDocument()
         self.lower_doc = None
         self._fresh_focus = False
-        self.editable_doc.setDefaultStyleSheet(style_sheet)
         self.editable_part.setDocument(self.editable_doc)
         # not acceptin hover events is important, editing focus gets lost if other labels take
         # hover events. It is unclear why.
@@ -170,7 +169,6 @@ class Label(QtWidgets.QGraphicsItem):
     def init_lower_part(self):
         self.lower_part = QtWidgets.QGraphicsTextItem(self)
         self.lower_doc = LabelDocument()
-        self.lower_doc.setDefaultStyleSheet(style_sheet)
         self.lower_part.setDocument(self.lower_doc)
         self.lower_part.setTextWidth(-1)
         if self._font:
@@ -303,6 +301,7 @@ class Label(QtWidgets.QGraphicsItem):
             if self._quick_editing:
                 return
             self._quick_editing = True
+            self._host.update_label_visibility()
             if ctrl.text_editor_focus:
                 ctrl.release_editor_focus()
             ctrl.text_editor_focus = self
@@ -346,6 +345,7 @@ class Label(QtWidgets.QGraphicsItem):
             #    ctrl.main.action_finished("Edited field %s in %s" % (fields[0], self._host))
             #else:
             #    ctrl.main.action_finished("Edited fields %s in %s" % (str(fields), self._host))
+
 
     def cursor_position_changed(self, cursor):
         if self._quick_editing:
@@ -575,5 +575,6 @@ class Label(QtWidgets.QGraphicsItem):
                     painter.fillPath(path, c)
                 else:
                     painter.drawPath(path)
+
 
 

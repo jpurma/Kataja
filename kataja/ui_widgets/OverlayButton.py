@@ -148,7 +148,6 @@ class PanelButton(QtWidgets.QPushButton):
 
     def update_style_sheet(self):
         paper = ctrl.cm.paper()
-        paper2 = ctrl.cm.paper2()
         c = ctrl.cm.get(self.color_key)
         ss = """
 PanelButton {border: 1px transparent none}
@@ -457,4 +456,33 @@ class NodeEditorButton(OverlayButton):
         OverlayButton.leaveEvent(self, event)
 
 
+class OverlayLabel(UIWidget, QtWidgets.QLabel):
+    """ A floating label on top of main canvas. These are individual UI
+    elements each.
+    """
+    selection_independent = True
 
+    def __init__(self, host, parent=None, ui_key=None, text=None,
+                 size=16, color_key='accent8', tooltip=None, **kwargs):
+        UIWidget.__init__(self, ui_key=ui_key or 'OverlayLabel', host=host)
+        text = host.label_object.edited_field + "→"
+        QtWidgets.QLabel.__init__(self, text, parent)
+
+        #self.setBackgroundRole(QtGui.QPalette.WindowText)
+        #self.setForegroundRole(QtGui.QPalette.Window)
+        if tooltip:
+            self.setToolTip(tooltip)
+
+    def update_colors(self):
+        pass
+        #self.setBackgroundRole(QtGui.QPalette.WindowText)
+        #self.setForegroundRole(QtGui.QPalette.Window)
+
+    def update_position(self):
+        """ """
+        adjust = QtCore.QPointF(-self.width() - 4, -8)
+        x, y = self.host.centered_scene_position
+        p = QtCore.QPointF(x - (self.host.width / 2), y)
+        p = ctrl.main.graph_view.mapFromScene(p) + adjust
+        p = p.toPoint()
+        self.move(p)

@@ -928,7 +928,7 @@ class Node(Movable):
         """
         if not self.label_object:
             self.update_label()
-        self._label_visible = self.label_object.has_content()
+        self._label_visible = self.label_object.has_content() or self.label_object.is_quick_editing()
         self.label_object.setVisible(self._label_visible)
 
     @property
@@ -1717,6 +1717,11 @@ class Node(Movable):
 
     def update_label_shape(self):
         pass
+
+    def is_quick_editing(self):
+        if self.label_object:
+            return self.label_object.is_quick_editing()
+        return False
 
     # noinspection PyTypeChecker
     def check_conditions(self, cond):

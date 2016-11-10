@@ -844,6 +844,7 @@ class Forest(SavedObject):
         old_gradient_base = cm.paper()
         self.main.color_manager.update_colors(refresh=refresh)
         self.main.app.setPalette(cm.get_qt_palette())
+        self.main.update_style_sheet()
         if cm.gradient:
             if old_gradient_base != cm.paper():
                 self.main.graph_scene.fade_background_gradient(old_gradient_base, cm.paper())
@@ -991,7 +992,6 @@ class Forest(SavedObject):
         to top should keep its identity, and just reset the top node to be the new node.
         :return:
         """
-        print('doing update_trees')
         invalid_trees = []
         valid_tops = set()
         invalid_tops = set()
@@ -1012,16 +1012,13 @@ class Forest(SavedObject):
         top_nodes = set()
         for node in self.nodes.values():
             if node.is_top_node():
-                print('found top node: ', str(node), repr(node))
                 top_nodes.add(node)
-        print('invalid tops:', invalid_tops)
         unassigned_top_nodes = top_nodes - valid_tops
         # In   (Empty)
         #       /  \
         #     TrA  (Empty)
         #
         # Have TrA to take over the empty nodes
-        print('unassigned_top_nodes before looking into its children:', unassigned_top_nodes)
         for node in list(unassigned_top_nodes):
             for child in node.get_children(similar=False, visible=False):
                 if child in invalid_tops:
@@ -1032,15 +1029,12 @@ class Forest(SavedObject):
                     invalid_trees.remove(tree)
                     unassigned_top_nodes.remove(node)
                     break
-        print('unassigned_top_nodes after:', unassigned_top_nodes)
 
         # Create new trees for other unassigned nodes:
         for node in unassigned_top_nodes:
-            print('creating separate tree for ', node)
             self.create_tree_for(node)
         # Remove trees that are part of some other tree
         for tree in invalid_trees:
-            print('removing invalid tree: ', tree)
             self.remove_tree(tree)
 
         if self._update_trees:
@@ -1067,8 +1061,6 @@ class Forest(SavedObject):
                     if problems:
                         print('problem with trees: node %s belongs to trees %s, but its parents '
                               'belong to trees %s' % (node, node.trees, union))
-        print('done updating trees')
-        log.debug('Update trees: we have %s trees.' % len(self.trees))
 
     def create_tree_for(self, node):
         """ Create new trees around given node.
@@ -1128,7 +1120,6 @@ class Forest(SavedObject):
         :param text: label text for node, behaviour depends on node type
         :return:
         """
-        print('creating new node')
         # First check that the node doesn't exist already
         if synobj:
             n = self.get_node(synobj)

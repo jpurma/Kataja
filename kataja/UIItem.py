@@ -18,6 +18,7 @@ class UIItem:
     can_fade = True
     scene_item = False
     is_widget = False
+    selection_independent = False
 
     def __init__(self, host=None, ui_key=None, role=None):
         if ui_key:
