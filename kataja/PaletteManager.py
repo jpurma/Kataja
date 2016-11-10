@@ -517,7 +517,7 @@ class PaletteManager:
         tr.setAlphaF(0.7)
         self.d['background2tr'] = shady(self.d['background2'], 0.7)
         self.gradient.setColorAt(1, self.d['background1'])
-        self.gradient.setColorAt(0, self.d['background2'])
+        self.gradient.setColorAt(0, self.d['background1'].lighter())
 
     def compute_palette(self, hsv, contrast=55, bw=False, faded=False):
         """ Create/get root color and build palette around it.
@@ -567,7 +567,8 @@ class PaletteManager:
         self.d['background2tr'] = shady(background2, 0.7)
         # ## Gradient ###
         self.gradient.setColorAt(1, self.d['background1'])
-        self.gradient.setColorAt(0, self.d['background2'])
+        self.gradient.setColorAt(0, self.d['background1'].lighter())
+
 
     def drawing(self) -> QColor:
         """ Main drawing color for constituent branches

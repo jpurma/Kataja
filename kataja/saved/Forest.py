@@ -844,8 +844,11 @@ class Forest(SavedObject):
         old_gradient_base = cm.paper()
         self.main.color_manager.update_colors(refresh=refresh)
         self.main.app.setPalette(cm.get_qt_palette())
-        if old_gradient_base != cm.paper() and cm.gradient:
-            self.main.graph_scene.fade_background_gradient(old_gradient_base, cm.paper())
+        if cm.gradient:
+            if old_gradient_base != cm.paper():
+                self.main.graph_scene.fade_background_gradient(old_gradient_base, cm.paper())
+            else:
+                self.main.graph_scene.setBackgroundBrush(cm.gradient)
         else:
             self.main.graph_scene.setBackgroundBrush(qt_prefs.no_brush)
         for other in self.others.values():
@@ -1065,6 +1068,7 @@ class Forest(SavedObject):
                         print('problem with trees: node %s belongs to trees %s, but its parents '
                               'belong to trees %s' % (node, node.trees, union))
         print('done updating trees')
+        log.debug('Update trees: we have %s trees.' % len(self.trees))
 
     def create_tree_for(self, node):
         """ Create new trees around given node.
