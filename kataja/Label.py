@@ -269,6 +269,10 @@ class Label(QtWidgets.QGraphicsItem):
         """
         return not (self.html or self.lower_html)
 
+
+    def cursor(self):
+        return self.editable_part.textCursor()
+
     def char_format(self) -> QtGui.QTextCharFormat:
         return self.editable_part.textCursor().charFormat()
 

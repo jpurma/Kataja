@@ -13,7 +13,7 @@ class EmbeddedLineEdit(QtWidgets.QLineEdit):
     :param prefill:
     """
 
-    def __init__(self, parent, tip='', font=None, prefill='', stretch=False):
+    def __init__(self, parent, tip='', font=None, prefill='', stretch=False, on_edit=None):
         QtWidgets.QLineEdit.__init__(self, parent)
         if tip:
             if ctrl.main.use_tooltips:
@@ -28,6 +28,8 @@ class EmbeddedLineEdit(QtWidgets.QLineEdit):
         if stretch:
             self.textChanged.connect(self.check_for_resize)
         self.textEdited.connect(self.flag_as_changed)
+        if on_edit:
+            self.textChanged.connect(on_edit)
         self.setAcceptDrops(True)
         self.setDragEnabled(True)
         self.changed = False

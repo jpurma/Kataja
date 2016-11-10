@@ -250,12 +250,12 @@ class Controller:
         self.selected = [obj]
         if hasattr(obj, 'syntactic_object'):
             # here is room for constituent specific print information
-            self.ui.add_message('selected %s (%s, %s)' % (str(obj), obj.scenePos().x(),
-                                                       obj.scenePos().y()))
+            self.ui.add_message('selected %s (%.1f, %.1f)' % (str(obj), obj.scenePos().x(),
+                                                              obj.scenePos().y()))
             #print(obj)
         else:
-            self.ui.add_message('selected %s (%s, %s)' % (str(obj), obj.scenePos().x(),
-                                                       obj.scenePos().y()))
+            self.ui.add_message('selected %s (%.1f, %.1f)' % (str(obj), obj.scenePos().x(),
+                                                              obj.scenePos().y()))
         obj.update_selection_status(True)
         if not self.multiselection_delay:
             self.call_watchers(self, 'selection_changed', value=self.selected)
@@ -403,8 +403,5 @@ class Controller:
 
     def release_editor_focus(self):
         if self.text_editor_focus:
-            if hasattr(self.text_editor_focus, 'release_editor_focus'):
-                self.text_editor_focus.release_editor_focus()
-            elif hasattr(self.text_editor_focus.parent(), 'release_editor_focus'):
-                self.text_editor_focus.parent().release_editor_focus()
+            self.text_editor_focus.release_editor_focus()
         self.text_editor_focus = None

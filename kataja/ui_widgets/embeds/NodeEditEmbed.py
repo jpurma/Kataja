@@ -8,7 +8,7 @@ from kataja.ui_support.EmbeddedLineEdit import EmbeddedLineEdit
 from kataja.ui_support.EmbeddedMultibutton import EmbeddedMultibutton
 from kataja.ui_support.EmbeddedRadiobutton import EmbeddedRadiobutton
 from kataja.ui_support.EmbeddedTextarea import EmbeddedTextarea
-from kataja.ui_support.ExpandingTextArea import ExpandingTextArea
+from kataja.ui_support.ExpandingTextArea import ExpandingTextArea, PreviewLabel
 from kataja.ui_widgets.UIEmbed import UIEmbed
 from kataja.ui_widgets.ResizeHandle import ResizeHandle
 
@@ -70,16 +70,19 @@ class NodeEditEmbed(UIEmbed):
             itype = d.get('input_type', 'text')
             prefill = d.get('prefill', '')
             syntactic = d.get('syntactic', False)
+            on_edit = d.get('on_edit', None)
+            if on_edit and isinstance(on_edit, str):
+                on_edit = getattr(node, on_edit, None)
             field_first = False
             field = None
             if itype == 'text':
                 width = d.get('width', 140)
-                field = EmbeddedLineEdit(self, tip=tt, font=big_font, prefill=prefill)
+                field = EmbeddedLineEdit(self, tip=tt, font=big_font, prefill=prefill, on_edit=on_edit)
                 field.setMaximumWidth(width)
             elif itype == 'textarea':
                 self._disable_effect = True
                 template_width = d.get('width', 0)
-                field = EmbeddedTextarea(self, tip=tt, font=smaller_font, prefill=prefill)
+                field = EmbeddedTextarea(self, tip=tt, font=smaller_font, prefill=prefill, on_edit=on_edit)
                 max_w = 200
                 if node.user_size:
                     w = node.user_size[0]
@@ -93,7 +96,7 @@ class NodeEditEmbed(UIEmbed):
                 field = ExpandingTextArea(self,
                                           tip=tt,
                                           font=smaller_font,
-                                          prefill=prefill)
+                                          prefill=prefill, on_edit=on_edit)
                 template_width = d.get('width', 0)
                 if template_width:
                     field.setFixedWidth(template_width)
@@ -118,6 +121,10 @@ class NodeEditEmbed(UIEmbed):
                 field = EmbeddedRadiobutton(self, options=op_func())
                 field.setMaximumWidth(width)
                 field_first = False
+            elif itype == 'preview':
+                field = PreviewLabel(self, tip=tt,
+                                     font=smaller_font)
+
             else:
                 raise NotImplementedError
 
@@ -215,8 +222,8 @@ class NodeEditEmbed(UIEmbed):
                 value = field.text()
             elif itype == 'expandingtext':
                 value = field.inode_text()
-            elif itype in ['multibutton', 'radiobutton', 'checkbox']:
-                # buttons take action immediately when clicked
+            elif itype in ['multibutton', 'radiobutton', 'checkbox', 'preview']:
+                # buttons take action immediately when clicked and preview cannot be edited
                 continue
             else:
                 raise NotImplementedError

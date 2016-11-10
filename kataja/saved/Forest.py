@@ -1635,9 +1635,11 @@ class Forest(SavedObject):
 
     def update_label_shape(self):
         shape = ctrl.settings.get('label_shape')
+        ctrl.release_editor_focus()
         for node in self.nodes.values():
             if node.node_type == g.CONSTITUENT_NODE:
                 node.label_object.label_shape = shape
+                node.label_object.update_label()
         self.prepare_width_map()
 
     def compute_traces_to_draw(self, rotator) -> int:

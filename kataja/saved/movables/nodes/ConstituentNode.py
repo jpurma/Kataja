@@ -57,22 +57,27 @@ class ConstituentNode(Node):
 
     editable = {'display_label': dict(name='Displayed label', prefill='display_label',
                                       tooltip='Rich text representing the constituent',
-                                      input_type='expandingtext'),
+                                      input_type='expandingtext', order=15,
+                                      on_edit='update_preview'),
                 'label': dict(name='Computational label', prefill='label',
                               tooltip='Label used for computations, plain string', width=160,
-                              focus=True, syntactic=True),
+                              focus=True, syntactic=True, order=10, on_edit='update_preview'),
                 'index': dict(name='Index', align='line-end', width=20, prefill='i',
-                              tooltip='Optional index for linking multiple instances'),
-
+                              tooltip='Optional index for linking multiple instances', order=11,
+                              on_edit='update_preview'),
+                'preview': dict(name='Preview', tooltip='Preview how label will be displayed. '
+                                                        'Display label overrides computational '
+                                                        'label.', input_type='preview'),
                 'gloss': dict(name='Gloss', prefill='gloss',
-                              tooltip='translation (optional)', width=200, condition='is_leaf'),
+                              tooltip='translation (optional)', width=200, condition='is_leaf',
+                              order=40),
                 'head': dict(name='Projection from',
                              tooltip='Inherit label from another node and rewrite display_label to '
                                      'reflect this',
                              condition='can_be_projection_of_another_node',
                              option_function='build_projection_options_for_ui',
                              input_type='radiobutton',
-                             select_action='constituent_set_head')}
+                             select_action='constituent_set_head', order=30)}
     default_style = {'plain': {'color_id': 'content1', 'font_id': g.MAIN_FONT, 'font-size': 10},
                      'fancy': {'color_id': 'content1', 'font_id': g.MAIN_FONT, 'font-size': 10}}
 
@@ -233,7 +238,35 @@ class ConstituentNode(Node):
         """
         self.update_features()
 
+    # Editing with NodeEditEmbed and given editable-template
+    def update_preview(self):
+        """ Update preview label in NodeEditEmbed with composite from display_label, label and index
+        :param edited: the field that triggered the update.
+        :return:
+        """
+        embed = self.sender().parent()
+        surefail = 0
+        while not hasattr(embed, 'fields') and surefail < 5:
+            embed = embed.parent()
+            surefail += 1
+        index = embed.fields.get('index', None)
+        display_label = embed.fields.get('display_label', None)
+        label = embed.fields.get('label', None)
+        preview = embed.fields.get('preview', None)
+        index_text = as_html(index.text())
+        display_label_text = as_html(display_label.inode_text())
+        label_text = as_html(label.text())
+        if display_label_text:
+            parsed = display_label_text
+        else:
+            parsed = label_text
+            if index_text:
+                parsed += '<sub>' + index_text + '</sub>'
+        preview.setText(parsed)
+
+
     # Other properties
+
 
     @property
     def gloss_node(self):

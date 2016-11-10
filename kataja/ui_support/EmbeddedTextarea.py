@@ -13,7 +13,7 @@ class EmbeddedTextarea(QtWidgets.QPlainTextEdit):
     :param prefill:
     """
 
-    def __init__(self, parent, tip='', font=None, prefill=''):
+    def __init__(self, parent, tip='', font=None, prefill='', on_edit=None):
         QtWidgets.QPlainTextEdit.__init__(self, parent)
         if tip:
             if ctrl.main.use_tooltips:
@@ -28,6 +28,8 @@ class EmbeddedTextarea(QtWidgets.QPlainTextEdit):
         self.setSizeAdjustPolicy(QtWidgets.QTextEdit.AdjustToContents)
         self.changed = False
         self.textChanged.connect(self.flag_as_changed)
+        if on_edit:
+            self.textChanged.connect(on_edit)
         #self.setFixedSize(200, 100)
         #self.text_area.textChanged.connect(self.text_area_check_for_resize)
         self.updateGeometry()
@@ -57,21 +59,6 @@ class EmbeddedTextarea(QtWidgets.QPlainTextEdit):
         else:
             return QtWidgets.QPlainTextEdit.dropEvent(self, event)
 
-    # currently not used
-    def text_area_check_for_resize(self):
-        text = self.text_area.toPlainText()
-        max_height = 400
-        min_width = 400
-        fh = self.text_area.fontMetrics().height()
-        rows = self.text_area.document().size().height()
-        tot = min(fh * rows + 5, max_height)
-        if self.text_area.height() < tot:
-            if self.text_area.width() < min_width:
-                self.setFixedWidth(min_width)
-            self.setFixedHeight(tot)
-            self.parentWidget().update_size()
-        if self.on_edit:
-            self.on_edit(text)
 
     def text(self):
         return self.toPlainText()

@@ -49,7 +49,7 @@ class ToggleItalic(KatajaAction):
         sender = self.sender()
         fmt = QtGui.QTextCharFormat()
         fmt.setFontItalic(sender.isChecked())
-        cursor = ctrl.text_editor_focus.textCursor()
+        cursor = ctrl.text_editor_focus.cursor()
         if not cursor.hasSelection():
             cursor.select(QtGui.QTextCursor.WordUnderCursor)
         cursor.mergeCharFormat(fmt)
@@ -72,7 +72,7 @@ class ToggleBold(KatajaAction):
             fmt.setFontWeight(QtGui.QFont.Bold)
         else:
             fmt.setFontWeight(QtGui.QFont.Normal)
-        cursor = ctrl.text_editor_focus.textCursor()
+        cursor = ctrl.text_editor_focus.cursor()
         if not cursor.hasSelection():
             cursor.select(QtGui.QTextCursor.WordUnderCursor)
         cursor.mergeCharFormat(fmt)
@@ -92,7 +92,7 @@ class ToggleUnderline(KatajaAction):
         sender = self.sender()
         fmt = QtGui.QTextCharFormat()
         fmt.setFontUnderline(sender.isChecked())
-        cursor = ctrl.text_editor_focus.textCursor()
+        cursor = ctrl.text_editor_focus.cursor()
         if not cursor.hasSelection():
             cursor.select(QtGui.QTextCursor.WordUnderCursor)
         cursor.mergeCharFormat(fmt)
@@ -112,7 +112,7 @@ class ToggleStrikethrough(KatajaAction):
         sender = self.sender()
         fmt = QtGui.QTextCharFormat()
         fmt.setFontStrikeOut(sender.isChecked())
-        cursor = ctrl.text_editor_focus.textCursor()
+        cursor = ctrl.text_editor_focus.cursor()
         if not cursor.hasSelection():
             cursor.select(QtGui.QTextCursor.WordUnderCursor)
         cursor.mergeCharFormat(fmt)
@@ -135,7 +135,7 @@ class ToggleSubscript(KatajaAction):
             fmt.setVerticalAlignment(QtGui.QTextCharFormat.AlignSubScript)
         else:
             fmt.setVerticalAlignment(QtGui.QTextCharFormat.AlignNormal)
-        cursor = ctrl.text_editor_focus.textCursor()
+        cursor = ctrl.text_editor_focus.cursor()
         if not cursor.hasSelection():
             cursor.select(QtGui.QTextCursor.WordUnderCursor)
         cursor.mergeCharFormat(fmt)
@@ -158,7 +158,7 @@ class ToggleSuperscript(KatajaAction):
             fmt.setVerticalAlignment(QtGui.QTextCharFormat.AlignSuperScript)
         else:
             fmt.setVerticalAlignment(QtGui.QTextCharFormat.AlignNormal)
-        cursor = ctrl.text_editor_focus.textCursor()
+        cursor = ctrl.text_editor_focus.text_cursor()
         if not cursor.hasSelection():
             cursor.select(QtGui.QTextCursor.WordUnderCursor)
         cursor.mergeCharFormat(fmt)
@@ -179,7 +179,7 @@ class RemoveStyles(KatajaAction):
         fmt.setFontUnderline(False)
         fmt.setFontWeight(QtGui.QFont.Normal)
         fmt.setFontItalic(False)
-        cursor = ctrl.text_editor_focus.textCursor()
+        cursor = ctrl.text_editor_focus.cursor()
         if not cursor.hasSelection():
             cursor.select(QtGui.QTextCursor.WordUnderCursor)
         cursor.mergeCharFormat(fmt)

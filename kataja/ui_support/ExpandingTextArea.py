@@ -61,40 +61,26 @@ class ExpandingTextArea(QtWidgets.QWidget):
         self.text_area.setSizeAdjustPolicy(self.text_area.AdjustToContents)
         self.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding,
                            QtWidgets.QSizePolicy.MinimumExpanding)
-        self.between_layout = QtWidgets.QHBoxLayout()
-        self.between_layout.addWidget(QtWidgets.QLabel('↑↑↑ edit ↑↑↑'))
-        self.between_layout.addWidget(QtWidgets.QLabel('↓↓↓ preview ↓↓↓'))
-        self.text_preview = QtWidgets.QTextEdit(parent)
-        self.text_preview.setAutoFillBackground(True)
-        self.text_preview.setSizeAdjustPolicy(self.text_preview.AdjustToContents)
-        self.text_preview.setReadOnly(True)
-
-        self.on_edit = on_edit
         self.text_area.setEnabled(True)
         self.cut_point = 24
         self.input_parsing_modes.button(self.get_host().text_parse_mode).setChecked(True)
 
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(self.text_area)
-        layout.addLayout(self.between_layout)
-        layout.addWidget(self.text_preview)
         self.setLayout(layout)
         self.text_area.setFont(qt_prefs.get_font(g.CONSOLE_FONT))
         self.text_area.setMinimumHeight(40)
-        self.text_preview.setMinimumHeight(40)
         self.text_area.setMinimumWidth(200)
-        self.text_preview.setMinimumWidth(200)
         if tip:
             if ctrl.main.use_tooltips:
                 self.setToolTip(tip)
                 self.setToolTipDuration(2000)
             self.setStatusTip(tip)
-        if font:
-            self.text_preview.setFont(font)
         if prefill:
             self.text_area.setPlaceholderText(prefill)
-        self.font_height = self.text_preview.fontMetrics().height()
         self.text_area.textChanged.connect(self.text_area_check_for_resize)
+        if on_edit:
+            self.text_area.textChanged.connect(on_edit)
         self.setAcceptDrops(True)
         self.original_size = None
         self.changed = False
@@ -115,9 +101,7 @@ class ExpandingTextArea(QtWidgets.QWidget):
             self.text_area.setPlainText(self.parsed_latex)
         elif self.parsing_mode == 2:
             self.text_area.setPlainText(self.parsed_html)
-        self.text_preview.setHtml(self.parsed_html)
         #self.text_area.setAlignment(QtCore.Qt.AlignCenter)
-        self.text_preview.setAlignment(QtCore.Qt.AlignCenter)
 
     def setFocus(self, *args):
         self.text_area.setFocus(*args)
@@ -137,22 +121,6 @@ class ExpandingTextArea(QtWidgets.QWidget):
         elif self.parsing_mode == 2:
             if not self.changed and text != self.parsed_html:
                 self.changed = True
-        max_height = 400
-        min_width = 400
-        if self.changed:
-            inode_text = self.inode_text()
-            #self.text_preview.setHtml(as_html(inode_text))
-            self.text_preview.setHtml('<center>%s</center>' % as_html(inode_text))
-
-        #rows = self.text_area.document().size().height()
-        #tot = min(self.font_height * rows + 5, max_height)
-        #if self.text_area.height() < tot:
-        #    if self.text_area.width() < min_width:
-        #        self.setFixedWidth(min_width)
-        #    self.setFixedHeight(tot)
-        #    self.parentWidget().update_size()
-        if self.on_edit:
-            self.on_edit(text)
 
     def dragEnterEvent(self, event):
         """ Announce support for regular ascii drops and drops of characters
@@ -225,3 +193,17 @@ class ExpandingTextArea(QtWidgets.QWidget):
             self.setFont(kw['font'])
         if 'text' in kw:
             self.setText(kw['text'])
+
+class PreviewLabel(QtWidgets.QLabel):
+
+    def __init__(self, parent, tip='', font=None):
+        QtWidgets.QLabel.__init__(self, parent)
+        if font:
+            self.setFont(font)
+        self.font_height = self.fontMetrics().height()
+        self.setAlignment(QtCore.Qt.AlignCenter)
+        if tip:
+            if ctrl.main.use_tooltips:
+                self.setToolTip(tip)
+                self.setToolTipDuration(2000)
+            self.setStatusTip(tip)
