@@ -938,16 +938,18 @@ class Node(Movable):
         """
         return self.label
 
+    @property
+    def label_html(self):
+        """ Label as string
+        :return:
+        """
+        return as_html(self.label)
+
     def update_status_tip(self):
         """ implement properly in subclasses, let tooltip tell about the node
         :return: None
         """
         self.status_tip = str(self)
-
-    def get_html_for_label(self):
-        """ This should be overridden if there are alternative displays for
-        label """
-        return self.label
 
     def has_empty_label(self):
         """
@@ -1659,7 +1661,7 @@ class Node(Movable):
             edge.end_node_started_moving()
 
     def short_str(self):
-        return self.label or "no label"
+        return as_html(self.label) or "no label"
 
     def stop_moving(self):
         """ Experimental: remove glow effect from moving things

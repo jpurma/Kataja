@@ -280,45 +280,44 @@ class ConstituentNode(Node):
         if gs:
             return gs[0]
 
-    def get_triangle_text(self):
+    def get_triangle_text(self, included=None):
         """ Label with triangled elements concatenated into it
         :return:
         """
+        if not included:
+            included = set()
         children = self.get_children(visible=False, similar=True)
         if children:
             parts = []
             for node in children:
-                nodestr = node.get_triangle_text()
-                if nodestr:
-                    parts.append(nodestr)
+                if node not in included:
+                    included.add(node)
+                    nodestr = node.get_triangle_text(included)
+                    if nodestr:
+                        parts.append(nodestr)
             return ' '.join(parts)
         else:
             syntactic_mode = ctrl.settings.get('syntactic_mode')
             if (not syntactic_mode) and self.display_label:
-                print(type(self.display_label))
                 if isinstance(self.display_label, ITextNode):
-                    print('it was %r' % self.display_label)
                     return self.display_label.as_html().split('<br/>')[0]
                 elif isinstance(self.display_label, str):
-                    print('it was %r' % self.display_label)
                     return self.display_label.splitlines()[0]
                 elif isinstance(self.display_label, list):
-                    print('it was %r' % self.display_label)
                     return str(self.display_label[0])
             else:
-                return self.label_str
-
+                return self.label_html
 
     @property
-    def label_str(self):
+    def label_html(self):
         """ Label as string
         :return:
         """
         if self.syntactic_object:
             for item in self.syntactic_object.features:
                 if getattr(item, 'name', '').lower() == 'root':
-                    return '<u>' + str(self.label) + '</u>'
-        return str(self.label)
+                    return '<u>' + as_html(self.label) + '</u>'
+        return as_html(self.label)
 
     def update_label_shape(self):
         self.label_object.label_shape = ctrl.settings.get('label_shape')
@@ -367,8 +366,8 @@ class ConstituentNode(Node):
     def short_str(self):
         if not self.syntactic_object:
             return 'empty'
-        alias = str(self.display_label)
-        label = str(self.label)
+        alias = as_html(self.display_label)
+        label = as_html(self.label)
         if alias and label:
             return alias + ' ' + label
         else:
@@ -433,8 +432,8 @@ class ConstituentNode(Node):
         if display_labels and self.display_label:
             html.append(as_html(self.display_label))
         else:
-            if self.label_str:
-                html.append(self.label_str)
+            if self.label_html:
+                html.append(self.label_html)
             if self.index and not syntactic_mode:
                 html.append('<sub>%s</sub>' % self.index)
 
@@ -753,10 +752,7 @@ class ConstituentNode(Node):
         return self.get_children(visible=True, of_type=g.FEATURE_EDGE)
 
     def update_features(self):
-        """
-
-
-        """
+        """ """
         pass
         # if not self.syntactic_object:
         # return
@@ -773,8 +769,6 @@ class ConstituentNode(Node):
 
     def get_features_as_string(self):
         """
-
-
         :return:
         """
         features = [f.syntactic_object for f in self.get_features()]

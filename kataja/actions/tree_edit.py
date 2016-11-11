@@ -128,6 +128,7 @@ class RemoveMerger(KatajaAction):
         triggering host.
         :return: None
         """
+        ctrl.release_editor_focus()
         node = self.get_host()
         if not node:
             return
@@ -143,6 +144,7 @@ class RemoveNode(KatajaAction):
         """ Remove selected node
         :return:
         """
+        ctrl.release_editor_focus()
         node = self.get_host()
         ctrl.remove_from_selection(node)
         ctrl.forest.delete_node(node, ignore_consequences=False)
@@ -156,11 +158,13 @@ class AddTriangle(KatajaAction):
         """ Turn triggering node into triangle node
         :return: None
         """
+        ctrl.release_editor_focus()
         node = self.get_host()
         if not node:
             return
         log.info('folding in %s' % node.as_bracket_string())
         ctrl.forest.add_triangle_to(node)
+        node.update_label()
         ctrl.deselect_objects()
 
 
@@ -172,6 +176,7 @@ class RemoveTriangle(KatajaAction):
         """ If triggered node is triangle node, restore it to normal
         :return: None
         """
+        ctrl.release_editor_focus()
         node = self.get_host()
         if not node:
             return
@@ -237,6 +242,7 @@ class AddTopLeft(KatajaAction):
 
     def method(self):
         """ """
+        ctrl.release_editor_focus()
         top = self.get_host()
         new_node = ctrl.forest.create_node(relative=top)
         ctrl.forest.merge_to_top(top, new_node, merge_to_left=True, pos=new_node.current_position)
@@ -248,6 +254,7 @@ class AddTopRight(KatajaAction):
 
     def method(self):
         """ """
+        ctrl.release_editor_focus()
         top = self.get_host()
         new_node = ctrl.forest.create_node(relative=top)
         ctrl.forest.merge_to_top(top, new_node, merge_to_left=False, pos=new_node.current_position)
@@ -271,6 +278,7 @@ class InnerAddSiblingRight(KatajaAction):
 
     def method(self):
         """ """
+        ctrl.release_editor_focus()
         node = self.get_host()
         if isinstance(node, Edge):
             node = node.end
@@ -283,6 +291,7 @@ class UnaryAddChildLeft(KatajaAction):
 
     def method(self):
         """ """
+        ctrl.release_editor_focus()
         node = self.get_host()
         ctrl.forest.unary_add_child_for_constituentnode(node, add_left=True)
 
@@ -293,6 +302,7 @@ class UnaryAddChildRight(KatajaAction):
 
     def method(self):
         """ """
+        ctrl.release_editor_focus()
         node = self.get_host()
         ctrl.forest.unary_add_child_for_constituentnode(node, add_left=False)
 
@@ -303,6 +313,7 @@ class LeafAddSiblingLeft(KatajaAction):
 
     def method(self):
         """ """
+        ctrl.release_editor_focus()
         node = self.get_host()
         ctrl.forest.add_sibling_for_constituentnode(node, add_left=True)
 
@@ -313,6 +324,7 @@ class LeafAddSiblingRight(KatajaAction):
 
     def method(self):
         """ """
+        ctrl.release_editor_focus()
         node = self.get_host()
         ctrl.forest.add_sibling_for_constituentnode(node, add_left=False)
 

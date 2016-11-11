@@ -192,6 +192,7 @@ class Label(QtWidgets.QGraphicsItem):
     def update_label(self, force_update=False):
         """ Asks for node/host to give text and update if changed """
         self.has_been_initialized = True
+        is_card = self.is_card()
         if self.text_align == LEFT_ALIGN:
             self.editable_doc.set_align(QtCore.Qt.AlignLeft)
         elif self.text_align == RIGHT_ALIGN:
@@ -210,9 +211,9 @@ class Label(QtWidgets.QGraphicsItem):
                 html = '[<sub>' + html + '</sub>'
             if lower_html:
                 html += lower_html.replace('<br/>', '')
-        if force_update or (self.label_shape, html, lower_html) != self._previous_values:
+        if force_update or (self.label_shape, html, lower_html, is_card) != self._previous_values:
             self.prepareGeometryChange()
-            if self.is_card():
+            if is_card:
                 self.editable_doc.setTextWidth(self.card_size[0])
             else:
                 self.editable_doc.setTextWidth(-1)
@@ -223,7 +224,7 @@ class Label(QtWidgets.QGraphicsItem):
                 self.lower_html = lower_html
                 if not self.lower_part:
                     self.init_lower_part()
-                if self.is_card():
+                if is_card:
                     self.lower_doc.setTextWidth(self.card_size[0])
                 else:
                     self.lower_doc.setTextWidth(-1)
@@ -234,12 +235,14 @@ class Label(QtWidgets.QGraphicsItem):
                 self.lower_html = ''
                 if self.lower_part:
                     self.remove_lower_part()
-            self._previous_values = (self.label_shape, self.html, self.lower_html)
+            self._previous_values = (self.label_shape, self.html, self.lower_html, is_card)
         self.resize_label()
 
     def is_card(self):
-        return self.label_shape == CARD and (inner_cards or self._host.is_leaf(only_similar=True,
-                                                                               only_visible=True))
+        return self.label_shape == CARD and \
+               (inner_cards or
+                self._host.triangle or
+                self._host.is_leaf(only_similar=True, only_visible=True))
 
     def left_bracket_width(self):
         return self.width
@@ -458,21 +461,23 @@ class Label(QtWidgets.QGraphicsItem):
             self.triangle_y = 0
             self.lower_part_y = self.editable_doc.size().height()
             # reduce font size until it fits
-            font = self.lower_part.font()
-            use_point_size = font.pointSize() != -1
-            if use_point_size:
-                fsize = font.pointSize()
-            else:
-                fsize = font.pixelSize()
-            attempts = 0
-            while attempts < 10 and self.lower_part_y + self.lower_doc.size().height() > \
-                    total_height:
-                fsize -= 1
+            if self.lower_part and self.lower_html:
+                font = self.lower_part.font()
+                use_point_size = font.pointSize() != -1
                 if use_point_size:
-                    font.setPointSize(fsize)
+                    fsize = font.pointSize()
                 else:
-                    font.setPixelSize(fsize)
-                self.lower_part.setFont(font)
+                    fsize = font.pixelSize()
+                attempts = 0
+                while fsize > 5 and attempts < 10 and self.lower_part_y + \
+                        self.lower_doc.size().height() > total_height:
+                    fsize -= 1
+                    if use_point_size:
+                        font.setPointSize(fsize)
+                    else:
+                        font.setPixelSize(fsize)
+                    self.lower_part.setFont(font)
+                    attempts += 1
         else:
             # no lower part, no triangle
             self.upper_part_y = 0
