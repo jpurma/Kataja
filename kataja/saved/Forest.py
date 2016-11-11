@@ -557,6 +557,8 @@ class Forest(SavedObject):
             self.visualization = vs.get(name, vs.get(ctrl.settings.get('visualization'), None))
             self.vis_data = {'name': self.visualization.say_my_name()}
             self.visualization.prepare(self)
+            ctrl.settings.set('hide_edges_if_nodes_overlap',
+                              self.visualization.hide_edges_if_nodes_overlap, level=FOREST)
             self.scene.keep_updating_visible_area = True
         self.main.graph_scene.manual_zoom = False
 

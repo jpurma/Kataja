@@ -101,7 +101,8 @@ class AsymmetricElasticTree(BaseVisualization):
     """
 
     """
-    name = 'Dynamic directed net'
+    name = 'Asymmetric Elastic Tree'
+    hide_edges_if_nodes_overlap = False
 
     def __init__(self):
         BaseVisualization.__init__(self)

@@ -33,6 +33,7 @@ class SymmetricElasticTree(BaseVisualization):
 
     """
     name = 'Dynamic directionless net'
+    hide_edges_if_nodes_overlap = False
 
     def __init__(self):
         BaseVisualization.__init__(self)

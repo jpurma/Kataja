@@ -33,8 +33,9 @@ class EquidistantElasticTree(BaseVisualization):
     """
 
     """
-    name = 'Equidistant net'
+    name = 'Equidistant Elastic Tree'
     banned_node_shapes = (g.BRACKETED, g.SCOPEBOX)
+    hide_edges_if_nodes_overlap = False
 
     def __init__(self):
         BaseVisualization.__init__(self)

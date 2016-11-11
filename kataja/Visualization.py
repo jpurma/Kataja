@@ -39,6 +39,7 @@ class BaseVisualization:
     """ Base class for different 'drawTree' implementations """
     name = 'BaseVisualization base class'
     banned_node_shapes = ()
+    hide_edges_if_nodes_overlap = True
 
     def __init__(self):
         """ This is called once when building Kataja. Set up properties for this kind of 

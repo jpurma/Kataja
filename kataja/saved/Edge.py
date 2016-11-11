@@ -35,8 +35,7 @@ from kataja.utils import to_tuple, add_xy, sub_xy, time_me
 from kataja.SavedObject import SavedObject
 from kataja.SavedField import SavedField
 from kataja.uniqueness_generator import next_available_type_id
-from kataja.Settings import OBJECT
-
+from kataja.Settings import OBJECT, FOREST
 
 CONNECT_TO_CENTER = 0
 CONNECT_TO_BOTTOM_CENTER = 1
@@ -596,8 +595,12 @@ class Edge(QtWidgets.QGraphicsObject, SavedObject):
             self.label_item.update_position()
         if ctrl.is_selected(self):
             ctrl.ui.update_position_for(self)
-        if self.start and self.end and self.start.is_visible() and self.end.is_visible() and not \
-                (self.start.triangle or self.end.triangle):
+        if self.start and \
+           self.end and \
+           ctrl.settings.get('hide_edges_if_nodes_overlap', level=FOREST) and \
+           self.start.is_visible() and \
+           self.end.is_visible() and \
+           not (self.start.triangle or self.end.triangle):
             self._nodes_overlap = self.start.overlap_rect().intersects(self.end.overlap_rect())
         elif self._nodes_overlap:
             self._nodes_overlap = False
