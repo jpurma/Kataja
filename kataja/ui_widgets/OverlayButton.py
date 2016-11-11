@@ -480,9 +480,9 @@ class OverlayLabel(UIWidget, QtWidgets.QLabel):
 
     def update_position(self):
         """ """
-        adjust = QtCore.QPointF(-self.width() - 4, -8)
-        x, y = self.host.centered_scene_position
+        adjust = QtCore.QPointF(-self.width() - 4, 8)
+        x, y = self.host.current_scene_position
+        y += self.host.get_top_y()
         p = QtCore.QPointF(x - (self.host.width / 2), y)
         p = ctrl.main.graph_view.mapFromScene(p) + adjust
-        p = p.toPoint()
-        self.move(p)
+        self.move(p.toPoint())
