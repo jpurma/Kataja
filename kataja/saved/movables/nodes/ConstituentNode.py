@@ -313,9 +313,10 @@ class ConstituentNode(Node):
         """ Label as string
         :return:
         """
-        if self.syntactic_object:
+        if self.syntactic_object and hasattr(self.syntactic_object, 'features'):
             for item in self.syntactic_object.features:
-                if getattr(item, 'name', '').lower() == 'root':
+                name = getattr(item, 'name', '')
+                if name and isinstance(name, str) and name.lower() == 'root':
                     return '<u>' + as_html(self.label) + '</u>'
         return as_html(self.label)
 

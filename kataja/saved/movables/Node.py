@@ -1034,9 +1034,9 @@ class Node(Movable):
             if rect:
                 brush = ctrl.cm.paper()
             rect = True
-        elif self.has_empty_label() and self.node_alone():
-            pen.setStyle(QtCore.Qt.DotLine)
-            rect = True
+        #elif self.has_empty_label() and self.node_alone():
+        #    pen.setStyle(QtCore.Qt.DotLine)
+        #    rect = True
         painter.setPen(pen)
         if rect:
             painter.setBrush(brush)

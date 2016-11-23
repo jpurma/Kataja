@@ -467,16 +467,8 @@ class OverlayLabel(UIWidget, QtWidgets.QLabel):
         UIWidget.__init__(self, ui_key=ui_key or 'OverlayLabel', host=host)
         text = host.label_object.edited_field + "→"
         QtWidgets.QLabel.__init__(self, text, parent)
-
-        #self.setBackgroundRole(QtGui.QPalette.WindowText)
-        #self.setForegroundRole(QtGui.QPalette.Window)
         if tooltip:
             self.setToolTip(tooltip)
-
-    def update_colors(self):
-        pass
-        #self.setBackgroundRole(QtGui.QPalette.WindowText)
-        #self.setForegroundRole(QtGui.QPalette.Window)
 
     def update_position(self):
         """ """
