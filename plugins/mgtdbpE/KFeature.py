@@ -10,11 +10,17 @@ class KFeature(Feature, BaseFeature):
     editable = {}
     addable = {}
 
-    def __init__(self, name=None, value=None):
+    def __init__(self, value='', name=''):
         BaseFeature.__init__(self)
-        Feature.__init__(self, name, value)
+        Feature.__init__(self, value, name)
         self.assigned = True
         self.family = ''
+
+    def compose_html_for_viewing(self, node):
+        """ Providing this overrides FeatureNode's attempt to represent feature string
+        :return:
+        """
+        return str(self), ''
 
     def __str__(self):
         return repr(self)

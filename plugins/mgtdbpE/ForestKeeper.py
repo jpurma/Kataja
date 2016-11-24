@@ -25,8 +25,7 @@
 from kataja.singletons import ctrl, running_environment
 from kataja.saved.Forest import Forest
 from kataja.saved.KatajaDocument import KatajaDocument
-from mgtdbpE.Parser import Parser
-import mgtdbpE.mg0 as grammar
+from mgtdbpE.Parser import Parser, load_grammar
 import ast
 
 
@@ -58,8 +57,7 @@ class Document(KatajaDocument):
             self.forest.retire_from_drawing()
         self.forests = []
 
-        start = 0
-        end = 10
+        grammar = load_grammar(running_environment.plugins_path + '/mgtdbpE/mg0.txt')
 
         for line in treelist:
             sentence = line.strip()
@@ -67,7 +65,7 @@ class Document(KatajaDocument):
                 continue
             forest = Forest(gloss_text=sentence)
             self.forests.append(forest)
-            parser = Parser(grammar.g, -0.0001, forest=forest)
+            parser = Parser(grammar, -0.0001, forest=forest)
             my_success, my_dnodes = parser.parse(sentence=sentence, start='C')
             print(my_success)
         self.current_index = 0

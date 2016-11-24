@@ -1,19 +1,24 @@
 try:
-    from syntax.BaseConstituent import BaseConstituent as MyBaseClass
+    from syntax.BaseConstituent import BaseConstituent
     from syntax.BaseFeature import BaseFeature as Feature
     from kataja.SavedField import SavedField
     in_kataja = True
 except ImportError:
     from Feature import Feature
-    MyBaseClass = object
+    BaseConstituent = object
     in_kataja = False
 
 
-class Constituent(MyBaseClass):
-    """ Basic constituent tree, base for other kinds of trees. """
+class Constituent(BaseConstituent):
+    """ The main difference between mgtdbp Constituents and Kataja's BaseConstituents is that
+    features are stored as lists instead of dicts. See footnote 1, p.3 in Stabler 2012, 'Two models
+    of minimalist, incremental syntactic analysis'. The order of features is important in parsing
+    (though Constituents are actually used only for displaying results, not in parsing itself)
+    and -- more importantly -- one Constituent can have two counts for the same feature,
+    e.g. =D =D. and we have to be able to present such constituents. """
     replaces = "ConfigurableConstituent"
 
-    def __init__(self, label='', features=None, parts=None):
+    def __init__(self, label='', features=None, parts=None, index_str=None):
         if in_kataja:
             if features is not None:
                 features = list(features)
@@ -27,49 +32,50 @@ class Constituent(MyBaseClass):
         self.label = label or []
         self.features = features or []
         self.parts = parts or []
+        self.index_str = index_str
+        self.touched = True  # flag to help remove nodes that don't belong to current parse
 
     def __repr__(self):
         return '[%r:%r, %r]' % (self.label, self.features, self.parts)
 
-    def build_from_dnodes(self, parent_path, dnodes, terminals, all_features=False):
-        if terminals and terminals[0].path == parent_path:
+    @staticmethod
+    def build_from_dnodes(dnode, dnodes, terminals, dtrees, all_features=False):
+        key = dnode.path
+        c = dtrees.get(key, Constituent(index_str=key))
+        if terminals and terminals[0].path == key:
             leaf = terminals.pop(0)
-            self.label = ' '.join(leaf.label)
-            self.features = list(leaf.features)
-            self.features.reverse()
-            # s = ''
-            # for char in leaf.path:
-            #     if char == '0':
-            #         s += 'L'
-            #     else:
-            #         s += 'R'
-            # s += ':' + self.label
-            # print(s)
-        elif dnodes and dnodes[0].path.startswith(parent_path):
-            root = dnodes.pop(0)
-            if all_features:
-                self.features = list(root.features)
-                self.features.reverse()
+            c.label = ' '.join(leaf.label)
+            c.features = list(reversed(leaf.features))
+            if dnode.features and dnode.features != leaf.features:
+                print('dnode has features: ', dnode.features)
+                print('leaf has features: ', leaf.features)
+            c.parts = []
+        elif dnodes and dnodes[0].path.startswith(key):
+            parts = []
+            child_dnode = dnodes.pop(0)
+            child = Constituent.build_from_dnodes(child_dnode, dnodes, terminals, dtrees,
+                                                  all_features=all_features)
+            parts.append(child)
+            if dnodes and dnodes[0].path.startswith(key):
+                child_dnode = dnodes.pop(0)
+                child = Constituent.build_from_dnodes(child_dnode, dnodes, terminals, dtrees,
+                                                      all_features=all_features)
+                parts.append(child)
 
-            child0 = Constituent()
-            child0.build_from_dnodes(root.path, dnodes, terminals, all_features=all_features)
-            self.parts.append(child0)
-            if dnodes and dnodes[0].path.startswith(parent_path):
-                self.label = '*'
-                root1 = dnodes.pop(0)
-                child1 = Constituent()
-                child1.build_from_dnodes(root1.path, dnodes, terminals, all_features=all_features)
-                self.parts.append(child1)
+            if all_features:
+                c.features = list(reversed(dnode.features))
             else:
-                self.label = 'o'
-                # s = ''
-                # for char in parent_path:
-                #     if char == '0':
-                #         s += 'L'
-                #     else:
-                #         s += 'R'
-                # s += ':' + self.label
-                # print(s)
+                c.features = []
+            if len(parts) > 1:
+                c.label = '*'
+            elif len(parts) == 1:
+                c.label = 'o'
+            else:
+                c.label = ''
+            c.parts = parts
+        c.touched = True
+        dtrees[key] = c
+        return c
 
     def as_list_tree(self):
         if len(self.parts) == 2:
@@ -84,7 +90,9 @@ class Constituent(MyBaseClass):
             return label, [str(f) for f in self.features]
 
     @staticmethod
-    def dnodes_to_dtree(dnodes, all_features=False):
+    def dnodes_to_dtree(dnodes, all_features=False, dtrees=None):
+        if dtrees is None:
+            dtrees = {}
         nonterms = []
         terms = []
         for dn in dnodes:
@@ -95,13 +103,23 @@ class Constituent(MyBaseClass):
         terms.sort()
         nonterms.sort()
         root = nonterms.pop(0)
-        dtree = Constituent()
-        dtree.build_from_dnodes(root.path, nonterms, terms, all_features=all_features)
+        for item in dtrees.values():
+            item.touched = False
+        dtree = Constituent.build_from_dnodes(root, nonterms, terms, dtrees,
+                                              all_features=all_features)
+
+        for key, item in list(dtrees.items()):
+            if not item.touched:
+                del dtrees[key]
+        #dtree = Constituent()
+        #dtree.build_from_dnodes(root.path, nonterms, terms, dtrees, all_features=all_features)
         if terms or nonterms:
             print('dnodes_to_dtree error: unused derivation steps')
             print('terms=' + str(terms))
             print('nonterms=' + str(nonterms))
         return dtree
+
+    ### Reimplement feature handling interface from BaseConstituent, it has dict, we have list.
 
     def get_feature(self, key):
         """ Gets the local feature (within this constituent, not of its children) with key 'key'
@@ -165,3 +183,6 @@ class Constituent(MyBaseClass):
                 if f.name == name:
                     self.poke('features')
                     self.features.remove(f)
+
+    def __hash__(self):
+        return hash(self.index_str)

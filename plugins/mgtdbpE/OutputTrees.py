@@ -1,8 +1,11 @@
 # Output trees ########
 
-
-#from ... import nltktreeport # (Tree)
 import io
+
+try:
+    from mgtdbpE.Constituent import Constituent
+except ImportError:
+    from Constituent import Constituent
 
 #try:
 #    from nltk.tree import Tree
@@ -34,7 +37,7 @@ def list_tree_to_nltk_tree(listtree):
 
 
 def print_results(dnodes, lexicon=None):
-        dt = DTree.dnodes_to_dtree(dnodes, all_features=False)
+        dt = Constituent.dnodes_to_dtree(dnodes, all_features=False)
         res = {}
         # d -- derivation tree
         res['d'] = list_tree_to_nltk_tree(dt.as_list_tree())
@@ -110,90 +113,6 @@ def lex_array_as_list(lexicon):
     return [as_list(y) for y in lexicon.values()]
 
 
-class DTree:
-    """ Basic constituent tree, base for other kinds of trees. """
-
-    def __init__(self, label='', features=None, parts=None):
-        self.label = label or []
-        self.features = features or []
-        self.parts = parts or []
-
-    def __repr__(self):
-        return '[%r:%r, %r]' % (self.label, self.features, self.parts)
-
-    def build_from_dnodes(self, parent_path, dnodes, terminals, all_features=False):
-        if terminals and terminals[0].path == parent_path:
-            leaf = terminals.pop(0)
-            self.label = ' '.join(leaf.label)
-            self.features = list(leaf.features)
-            self.features.reverse()
-            # s = ''
-            # for char in leaf.path:
-            #     if char == '0':
-            #         s += 'L'
-            #     else:
-            #         s += 'R'
-            # s += ':' + self.label
-            # print(s)
-        elif dnodes and dnodes[0].path.startswith(parent_path):
-            root = dnodes.pop(0)
-            if all_features:
-                self.features = list(root.features)
-                self.features.reverse()
-
-            child0 = DTree()
-            child0.build_from_dnodes(root.path, dnodes, terminals, all_features=all_features)
-            self.parts.append(child0)
-            if dnodes and dnodes[0].path.startswith(parent_path):
-                self.label = '*'
-                root1 = dnodes.pop(0)
-                child1 = DTree()
-                child1.build_from_dnodes(root1.path, dnodes, terminals, all_features=all_features)
-                self.parts.append(child1)
-            else:
-                self.label = 'o'
-                # s = ''
-                # for char in parent_path:
-                #     if char == '0':
-                #         s += 'L'
-                #     else:
-                #         s += 'R'
-                # s += ':' + self.label
-                # print(s)
-
-    def as_list_tree(self):
-        if len(self.parts) == 2:
-            return [self.label, self.parts[0].as_list_tree(), self.parts[1].as_list_tree()]
-        elif len(self.parts) == 1:
-            return [self.label, self.parts[0].as_list_tree()]
-        elif self.features:
-            if self.label:
-                label = [self.label]
-            else:
-                label = []
-            return label, [str(f) for f in self.features]
-
-    @staticmethod
-    def dnodes_to_dtree(dnodes, all_features=False):
-        nonterms = []
-        terms = []
-        for dn in dnodes:
-            if dn.terminal:
-                terms.append(dn)
-            else:
-                nonterms.append(dn)
-        terms.sort()
-        nonterms.sort()
-        root = nonterms.pop(0)
-        dtree = DTree()
-        dtree.build_from_dnodes(root.path, nonterms, terms, all_features=all_features)
-        if terms or nonterms:
-            print('dnodes_to_dtree error: unused derivation steps')
-            print('terms=' + str(terms))
-            print('nonterms=' + str(nonterms))
-        return dtree
-
-
 class StateTree:
     """
     convert derivation tree to state tree
@@ -217,7 +136,7 @@ class StateTree:
     def merge_check(self):
         headf0, *remainders0 = self.part0.features
         headf1, *remainders1 = self.part1.features
-        if headf0.value == 'sel' and headf1.value == 'cat' and headf0.name == headf1.name:
+        if headf0.value == '=' and headf1.value == '' and headf0.name == headf1.name:
             self.features = remainders0
             if remainders1:
                 self.movers = [remainders1]
@@ -286,7 +205,7 @@ class BareTree:
     def merge_check(self):
         headf0, *remainders0 = self.part0.features
         headf1, *remainders1 = self.part1.features
-        if headf0.value == 'sel' and headf1.value == 'cat' and headf0.name == headf1.name:
+        if headf0.value == '=' and headf1.value == '' and headf0.name == headf1.name:
             self.features = remainders0
             self.movers = self.part0.movers + self.part1.movers
             if remainders1:
@@ -365,7 +284,7 @@ class XBarTree:
                 self.features = dtree.features
                 self.lexical = True
                 for f in dtree.features:
-                    if f.value == 'cat':
+                    if f.value == '':
                         self.category = f.name
                         break
                 assert self.category
@@ -385,7 +304,7 @@ class XBarTree:
     def merge_check(self):
         headf0, *remainders0 = self.part0.features
         headf1, *remainders1 = self.part1.features
-        if headf0.value == 'sel' and headf1.value == 'cat' and headf0.name == headf1.name:
+        if headf0.value == '=' and headf1.value == '' and headf0.name == headf1.name:
             self.features = remainders0  # copy remaining head1 features
             self.movers = self.part0.movers + self.part1.movers  # add movers1 and 2
             self.cntr = self.part1.cntr

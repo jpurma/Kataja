@@ -36,8 +36,11 @@ if in_kataja:
     from mgtdbpE.OutputTrees import print_results
     from mgtdbpE.KFeature import KFeature as Feature
 else:
-    from OutputTrees import DTree, print_results
+    #from OutputTrees import DTree, print_results
+    from OutputTrees import print_results
+    from Constituent import Constituent as DTree
     from Feature import Feature
+
 
 class LexItem:
     """ These are more typical LIs. It takes in list of words instead of one string for
@@ -49,7 +52,10 @@ class LexItem:
         self.features = features
 
     def __str__(self):
-        return ' '.join(self.words) + '::' + ' '.join([str(f) for f in self.features])
+        return ', '.join(self.words) + ' :: ' + ' '.join([str(f) for f in self.features])
+
+    def __repr__(self):
+        return 'LI(%r, %r)' % (self.words, self.features)
 
 
 class LexTreeNode:
@@ -87,7 +93,7 @@ class Prediction:
         self._min_index = min([self.head_path] + [x for x in self.mover_paths.values()])
 
     def copy(self):
-        return Prediction(self.head, self.movers.copy(), self.head_path[:], self.mover_paths.copy(),
+        return Prediction(self.head, self.movers.copy(), self.head_path, self.mover_paths.copy(),
                           self.tree.copy())
 
     def __repr__(self):
@@ -134,7 +140,8 @@ class Derivation:
                 ', '.join([str(x) for x in self.results]))
 
     def copy(self):
-        return Derivation(self.probability, self.input[:], self.predictions[:], self.results[:])
+        return Derivation(self.probability, self.input.copy(), self.predictions.copy(),
+                          self.results.copy())
 
     def __lt__(self, other):
         return self.probability < other.probability
@@ -154,7 +161,7 @@ class DerivationNode:
         self.terminal = terminal
 
     def copy(self):
-        return DerivationNode(self.path[:], self.label[:], self.features[:],
+        return DerivationNode(self.path, self.label.copy(), self.features.copy(),
                               self.moving_features.copy(), self.terminal)
 
     def __repr__(self):
@@ -187,28 +194,24 @@ class DerivationNode:
 
 
 class Parser:
-    def __init__(self, lex_tuples, min_p, start=None, sentence=None, forest=None):
+    def __init__(self, lex_items, min_p, forest=None):
         print('****** Starting Parser *******')
-        self.d = []
+        self.d = lex_items
         self.min_p = min_p
         self.lex = OrderedDict()
         self.derivation_stack = []
         self.new_parses = []
         self.results = {}
-        self.forest = forest # optional kataja forest where to push trees 
+        self.forest = forest  # optional kataja forest where to push trees
+        self.dtrees = {}  # store resulting structures across parsing rounds so that nodes 'grow'
+        #                   instead of starting from a blank slate at each iteration.
+
         # Read LIs and features from grammar.
-        feature_names = set()
         base = LexTreeNode(None)
-        for words, feature_tuples in lex_tuples:
-            features = []
-            for value, name in feature_tuples:
-                feat = Feature(value, name)
-                feature_names.add(name)
-                features.append(feat)
-            self.d.append(LexItem(words, features))
+        for lex_item in lex_items:
             # Build LexTrees
             node = base
-            for f in reversed(features):
+            for f in reversed(lex_item.features):
                 found = False
                 for subtree in node.subtrees:
                     if subtree.feature == f:
@@ -219,17 +222,9 @@ class Parser:
                     new_node = LexTreeNode(f)
                     node.subtrees.append(new_node)
                     node = new_node
-            node.terminals.append(words)
+            node.terminals.append(lex_item.words)
         for node in base.subtrees:
             self.lex[node.feature.name] = node  # dict for quick access to starting categories
-
-        if start and sentence:
-            success, dnodes = self.parse(start, sentence)
-            if success:
-                self.print_results(dnodes)
-            else:
-                print('parse failed, what we have is:')
-                print(dnodes)
 
     def __str__(self):
         return str(self.d)
@@ -237,7 +232,7 @@ class Parser:
     def parse(self, start, sentence):
         # Prepare prediction queue. We have a prediction that the derivation will finish
         # in a certain kind of category, e.g. 'C'
-        final_features = [Feature('cat', start)]
+        final_features = [Feature('', start)]
         topmost_head = self.lex[start]
         prediction = Prediction(topmost_head, tree=DerivationNode('', features=final_features))
 
@@ -295,14 +290,14 @@ class Parser:
         # e.g. if current head is C, nodes are =V, -wh
         print('---prediction now: ', prediction.compact())
         for node in prediction.head.subtrees:
-            if node.feature.value == 'sel':
+            if node.feature.value == '=':
                 if node.terminals:
                     self.merge1(node, prediction)  # merge a (non-moving) complement
                     self.merge3(node, prediction)  # merge a (moving) complement
                 elif node.subtrees:
                     self.merge2(node, prediction)  # merge a (non-moving) specifier
                     self.merge4(node, prediction)  # merge a (moving) specifier
-            elif node.feature.value == 'pos':
+            elif node.feature.value == '+':
                 self.move1(node, prediction)
                 self.move2(node, prediction)
             else:
@@ -347,14 +342,14 @@ class Parser:
         pr0.head_path += '0'  # left
         pr0.movers = {}  # this is external merge, doesn't bring any movers
         pr0.mover_paths = {}
-        pr0.tree.features.append(Feature('sel', category)) # =D, =N,...
+        pr0.tree.features.append(Feature('=', category)) # =D, =N,...
         pr0.tree.path += '0'  # left
         pr0.tree.moving_features = {}
 
         pr1 = prediction.copy()  # movers to complement only
         pr1.head = self.lex[category]  # head can be any LI in this category
         pr1.head_path += '1'  # right
-        pr1.tree.features = [Feature('cat', category)] # D, N,...
+        pr1.tree.features = [Feature('', category)] # D, N,...
         pr1.tree.path += '1'  # right
         print('merge1, pr0:', pr0.compact())
         print('merge1, pr1:', pr1.compact())
@@ -374,7 +369,7 @@ class Parser:
         pr0 = prediction.copy()  # pr0 receives movers from prediction.
         pr0.head = node
         pr0.head_path += '1'  # right?
-        pr0.tree.features.append(Feature('sel', category))  # =D, =N,...
+        pr0.tree.features.append(Feature('=', category))  # =D, =N,...
         pr0.tree.path += '0'  # left?
 
         pr1 = prediction.copy()
@@ -382,7 +377,7 @@ class Parser:
         pr1.movers = {}  # pr1 is non-mover and a specifier
         pr1.head_path += '0'  # left, as in specifier? Why head_path and tree path are different?
         pr1.mover_paths = {}
-        pr1.tree.features = [Feature('cat', category)]  # D, N,...
+        pr1.tree.features = [Feature('', category)]  # D, N,...
         pr1.tree.path += '1'
         pr1.tree.moving_features = {}
         print('merge2, pr0:', pr0.compact())
@@ -407,7 +402,7 @@ class Parser:
                 pr0.head = node  # head path is not changing. wonder why?
                 pr0.movers = {}
                 pr0.mover_paths = {}
-                pr0.tree.features.append(Feature('sel', cat)) # =D, =N
+                pr0.tree.features.append(Feature('=', cat)) # =D, =N
                 pr0.tree.path += '0'
                 pr0.tree.moving_features = {}
 
@@ -417,8 +412,9 @@ class Parser:
                 del pr1.movers[mover_cat]  # we used the licensee, so now empty
                 pr1.head_path = pr1.mover_paths[mover_cat]
                 del pr1.mover_paths[mover_cat]
-                pr1.tree.features = pr1.tree.moving_features[mover_cat][:]  # movers to complement
-                pr1.tree.features.append(Feature('cat', cat))
+                pr1.tree.features = pr1.tree.moving_features[mover_cat].copy()  # movers to
+                # complement
+                pr1.tree.features.append(Feature('', cat))
                 pr1.tree.path += '1'
                 del pr1.tree.moving_features[mover_cat]
                 print('merge3, pr0:', pr0.compact())
@@ -443,7 +439,7 @@ class Parser:
                 pr0.head = node
                 del pr0.movers[mover_cat]  # we used the "next" licensee, so now empty
                 del pr0.mover_paths[mover_cat]
-                pr0.tree.features.append(Feature('sel', cat))
+                pr0.tree.features.append(Feature('=', cat))
                 pr0.tree.path += '0'
                 del pr0.tree.moving_features[mover_cat]
 
@@ -452,8 +448,8 @@ class Parser:
                 pr1.movers = {}
                 pr1.head_path = pr1.mover_paths[mover_cat]
                 pr1.mover_paths = {}
-                pr1.tree.features = pr1.tree.moving_features[mover_cat][:]  # copy
-                pr1.tree.features.append(Feature('cat', cat))
+                pr1.tree.features = pr1.tree.moving_features[mover_cat].copy()
+                pr1.tree.features.append(Feature('', cat))
                 pr1.tree.path += '1'
                 pr1.tree.moving_features = {}
                 print('merge4, pr0:', pr0.compact())
@@ -474,9 +470,9 @@ class Parser:
             pr0.head_path += '1'
             pr0.mover_paths[cat] = prediction.head_path
             pr0.mover_paths[cat] += '0'
-            pr0.tree.features.append(Feature('pos', cat))  # trunk has '+'
+            pr0.tree.features.append(Feature('+', cat))  # trunk has '+'
             pr0.tree.path += '0'
-            pr0.tree.moving_features[cat] = [Feature('neg', cat)]  # mover has '-'
+            pr0.tree.moving_features[cat] = [Feature('-', cat)]  # mover has '-'
             print('move1, pr0:', pr0.compact())
             self.new_parses.append((pr0, None))
 
@@ -494,18 +490,18 @@ class Parser:
                     print('doing move2')
                     print(node)
                     # print('doing move2')
-                    mts = matching_tree  # matchingTree[1:][:]
+                    mts = matching_tree  # matchingTree[1:][:] <-- not sure what to do here
                     pr0 = prediction.copy()
                     pr0.head = node
                     del pr0.movers[mover_cat]  # we used the "next" licensee, so now empty
                     pr0.movers[root_f] = mts
-                    pr0.mover_paths[root_f] = pr0.mover_paths[mover_cat][:]
+                    pr0.mover_paths[root_f] = pr0.mover_paths[mover_cat].copy()
                     del pr0.mover_paths[mover_cat]
-                    pr0.tree.moving_features[root_f] = pr0.tree.moving_features[mover_cat][:]
+                    pr0.tree.moving_features[root_f] = pr0.tree.moving_features[mover_cat].copy()
                     pr0.tree.moving_features[root_f].append(
-                        Feature('neg', cat))  # extend prev features of mover with (neg cat)
+                        Feature('-', cat))  # extend prev features of mover with (neg cat)
                     del pr0.tree.moving_features[mover_cat]
-                    pr0.tree.features.append(Feature('pos', cat))
+                    pr0.tree.features.append(Feature('+', cat))
                     pr0.tree.path += '0'
                     print('move2, pr0:', pr0.compact())
                     self.new_parses.append((pr0, None))
@@ -527,20 +523,35 @@ class Parser:
 
     def checkpoint(self, derivation):
         """ Here we can output, pause or otherwise intercept the parsing process """
-        dtree = DTree.dnodes_to_dtree(derivation.results, all_features=True)
+        dtree = DTree.dnodes_to_dtree(derivation.results, all_features=True, dtrees=self.dtrees)
         #input()
         if in_kataja:
             self.forest.derivation_steps.save_and_create_derivation_step([dtree])
+            pprint.pprint(dtree)
         else:
             print('******* dtree *******')
             pprint.pprint(dtree)
 
 
+def load_grammar(filename):
+    lex_items = []
+    f = open(filename)
+    for line in f.readlines():
+        line = line.strip()
+        if line.startswith('#'):
+            continue
+        if '::' not in line:
+            continue
+        words, features = line.rsplit('::', 1)
+        words = [x.strip() for x in words.split(',') if x.strip()]
+        features = [Feature.from_string(x.strip()) for x in features.split(' ') if x.strip()]
+        lex_items.append(LexItem(words, features))
+    return lex_items
 
 ############################################################################################
 
 if __name__ == '__main__':
-    import mg0 as grammar
+    g = load_grammar('mg0.txt')
 
     sentences = ["the king prefers the beer",
                  "which king says which queen knows which king says which wine the queen prefers",
@@ -551,7 +562,7 @@ if __name__ == '__main__':
     sentences = ["which wine the queen prefers"]
     t = time.time()
     for s in sentences:
-        pr = Parser(grammar.g, -0.0001)
+        pr = Parser(g, -0.0001)
         my_success, my_dnodes = pr.parse(sentence=s, start='C')
         results = print_results(my_dnodes, pr.lex)
         if True:
