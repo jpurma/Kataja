@@ -206,16 +206,31 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
                     data['module_path'] = root
                     self.available_plugins[mod_name] = data
 
-    def enable_plugin(self, plugin_key):
+    def enable_plugin(self, plugin_key, keep_data=True, reload=False):
         """ Start one plugin: save data, replace required classes with plugin classes, load data.
 
         """
-        all_data = self.create_save_data()
+        if keep_data:
+            all_data = self.create_save_data()
         setup = self.load_plugin(plugin_key)
         if not setup:
             return
         self.clear_all()
         ctrl.disable_undo()
+        if reload:
+            available = []
+            for key in sys.modules:
+                if key.startswith(plugin_key):
+                    available.append(key)
+            if getattr(setup, 'reload_order', None):
+                to_reload = [x for x in setup.reload_order if x in available]
+            else:
+                to_reload = sorted(available)
+            for mod_name in to_reload:
+                importlib.reload(sys.modules[mod_name])
+                print('reloaded ', mod_name)
+                log.info('reloaded module %s' % mod_name)
+
         if hasattr(setup, 'plugin_parts'):
             for classobj in setup.plugin_parts:
                 base_class = classes.find_base_model(classobj)
@@ -225,23 +240,28 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
                 else:
                     m = "adding %s " % classobj.__name__
                 log.info(m)
+                print(m)
         if hasattr(setup, 'start_plugin'):
             setup.start_plugin(self, ctrl, prefs)
         if not self.forest:
-            try:
-                self.load_objects(all_data, self)
-                log.info('reloaded objects')
-            except:
-                log.critical('Failed to reload object, loading defaults instead.')
+            if keep_data:
+                try:
+                    self.load_objects(all_data, self)
+                    log.info('reloaded objects')
+                except:
+                    log.critical('Failed to reload object, loading defaults instead.')
+                    self.load_initial_treeset()
+            else:
                 self.load_initial_treeset()
         ctrl.resume_undo()
         self.change_forest()
 
-    def disable_plugin(self, plugin_key):
+    def disable_plugin(self, plugin_key, keep_data=True):
         """ Remove one plugin from use: save data, replace plugin classes with original classes,
         load data. """
-        all_data = self.create_save_data()
-        #plugin_data = self.available_plugins[plugin_key]
+        if keep_data:
+            all_data = self.create_save_data()
+            #plugin_data = self.available_plugins[plugin_key]
         setup = self.load_plugin(plugin_key)
         if not setup:
             return
@@ -255,12 +275,14 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
                 if class_name:
                     log.info('removing %s' % class_name)
                     classes.remove_class(class_name)
-        self.load_objects(all_data, self)
-        ctrl.resume_undo()
-        self.change_forest()
+        if keep_data:
+            self.load_objects(all_data, self)
+            ctrl.resume_undo()
+            self.change_forest()
 
     def load_plugin(self, plugin_module):
         setup = None
+        importlib.invalidate_caches()
         if plugin_module in self.available_plugins:
             retry = True
             while retry:
@@ -559,7 +581,7 @@ class KatajaMain(SavedObject, QtWidgets.QMainWindow):
         #print('after collection:', gc.get_count())
         #if gc.garbage:
         #    print('garbage:', gc.garbage)
-        self.forest_keepers.append(classes.KatajaDocument())
+        self.forest_keepers.append(classes.KatajaDocument(clear=True))
         self.forest_keeper = self.forest_keepers[-1]
         self.settings_manager.set_document(self.forest_keeper)
         self.forest = None

@@ -310,10 +310,31 @@ class PrintToFile(KatajaAction):
         ctrl.main.print_started = True  # to avoid a bug where other timers end up triggering main's
         ctrl.main.startTimer(50)
 
+#
+# class RenderInBlender(KatajaAction):
+#     k_action_uid = 'blender_render'
+#     k_command = '&Render in Blender'
+#     k_shortcut = 'Ctrl+r'
+#     k_undoable = False
+#
+#     def method(self):
+#         """ (not working recently) Try to export as a blender file and run
+#         blender render.
+#         :return: None
+#         """
+#         ctrl.graph_scene.export_3d(prefs.blender_env_path + '/temptree.json',
+#                                    ctrl.forest)
+#         log.info('Command-r  - render in blender')
+#         command = '%s -b %s/puutausta.blend -P %s/treeloader.py -o ' \
+#                   '//blenderkataja -F JPEG -x 1 -f 1' % (
+#                       prefs.blender_app_path, prefs.blender_env_path,
+#                       prefs.blender_env_path)
+#         args = shlex.split(command)
+#         subprocess.Popen(args)  # , cwd =prefs.blender_env_path)
 
-class RenderInBlender(KatajaAction):
-    k_action_uid = 'blender_render'
-    k_command = '&Render in Blender'
+class ReloadPlugin(KatajaAction):
+    k_action_uid = 'reload_plugin'
+    k_command = '&Reload plugins'
     k_shortcut = 'Ctrl+r'
     k_undoable = False
 
@@ -322,16 +343,11 @@ class RenderInBlender(KatajaAction):
         blender render.
         :return: None
         """
-        ctrl.graph_scene.export_3d(prefs.blender_env_path + '/temptree.json',
-                                   ctrl.forest)
-        log.info('Command-r  - render in blender')
-        command = '%s -b %s/puutausta.blend -P %s/treeloader.py -o ' \
-                  '//blenderkataja -F JPEG -x 1 -f 1' % (
-                      prefs.blender_app_path, prefs.blender_env_path,
-                      prefs.blender_env_path)
-        args = shlex.split(command)
-        subprocess.Popen(args)  # , cwd =prefs.blender_env_path)
 
+        keys = list(prefs.active_plugins.keys())
+        for key in keys:
+            ctrl.main.disable_plugin(key, keep_data=False)
+            ctrl.main.enable_plugin(key, keep_data=False, reload=True)
 
 class OpenPreferences(KatajaAction):
     k_action_uid = 'preferences'

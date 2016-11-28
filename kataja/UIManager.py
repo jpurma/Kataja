@@ -87,7 +87,7 @@ PANELS = [{'class': LogPanel, 'name': 'Log', 'position': 'bottom'},
 
 menu_structure = OrderedDict([('file_menu', ('&File',
                                              ['new_project', 'new_forest', 'open', 'save',
-                                              'save_as', '---', 'print_pdf', 'blender_render',
+                                              'save_as', '---', 'print_pdf', # 'blender_render'
                                               '---', 'preferences', '---', 'quit'])),
                               ('edit_menu', ('&Edit', ['undo', 'redo', '---', 'cut', 'copy',
                                                        'paste'])),
@@ -392,7 +392,6 @@ class UIManager:
         # prepare style dictionaries for selections, to be used for displaying style values in UI
         for action in self.actions.values():
             action.update_action()
-        log.debug('Updated %s actions' % len(list(self.actions.values())))
 
     def update_action(self, key):
         """ If action is tied to some meter (e.g. number field that is used to show value and

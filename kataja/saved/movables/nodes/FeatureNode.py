@@ -146,7 +146,7 @@ class FeatureNode(Node):
         if hasattr(self.syntactic_object, 'compose_html_for_editing'):
             return self.syntactic_object.compose_html_for_editing(self)
 
-        return 'name', self.compose_html_for_viewing()
+        return 'name', self.compose_html_for_viewing()[0]
 
     def parse_quick_edit(self, text):
         """ This is an optional method for node to parse quick edit information into multiple

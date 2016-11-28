@@ -42,13 +42,16 @@ class KatajaDocument(SavedObject):
     default_treeset_file = running_environment.resources_path + 'trees.txt'
     default_treeset = ''
 
-    def __init__(self, name=None, filename=None):
+    def __init__(self, name=None, filename=None, clear=False):
         super().__init__()
         self.name = name or filename or ''
         self.filename = filename
-        treelist = self.__class__.default_treeset
-        if not treelist:
-            treelist = self.load_treelist_from_text_file(self.__class__.default_treeset_file)
+        if clear:
+            treelist = []
+        else:
+            treelist = self.__class__.default_treeset
+            if not treelist:
+                treelist = self.load_treelist_from_text_file(self.__class__.default_treeset_file)
         self.forests = [Forest()]
         self.current_index = 0
         self.forest = None
